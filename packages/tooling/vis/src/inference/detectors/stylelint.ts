@@ -16,8 +16,8 @@ export const stylelintDetector: Detector = {
     detect: ({ matchedConfigs }) => {
         return {
             targets: {
-            // CSS-only — distinct from `lint` so eslint/biome/oxlint
-            // can coexist with stylelint in the same project.
+                // CSS-only — distinct from `lint` so eslint/biome/oxlint
+                // can coexist with stylelint in the same project.
                 "lint:css": {
                     command: 'stylelint "**/*.{css,scss,sass,less,vue,svelte,astro}"',
                     description: "stylelint (inferred)",

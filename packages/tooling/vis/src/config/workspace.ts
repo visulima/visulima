@@ -601,9 +601,7 @@ const discoverWorkspace = (
 
         for (const [targetName, target] of Object.entries(visTargets)) {
             const { inferred: _inferred, options, preset: _preset, type: _type, ...rest } = target;
-            const expandedDependsOn = target.dependsOn
-                ? expandTaskGroups(target.dependsOn, config.taskGroups)
-                : undefined;
+            const expandedDependsOn = target.dependsOn ? expandTaskGroups(target.dependsOn, config.taskGroups) : undefined;
 
             sanitizedTargets[targetName] = {
                 ...rest,

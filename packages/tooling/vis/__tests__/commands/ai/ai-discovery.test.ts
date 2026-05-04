@@ -24,11 +24,11 @@ interface StreamSpy {
 const spyStream = (stream: NodeJS.WriteStream): StreamSpy => {
     let captured = "";
 
-    vi.spyOn(stream, "write").mockImplementation(((chunk: string | Uint8Array): boolean => {
+    vi.spyOn(stream, "write").mockImplementation((chunk: string | Uint8Array): boolean => {
         captured += typeof chunk === "string" ? chunk : Buffer.from(chunk).toString();
 
         return true;
-    }));
+    });
 
     return {
         get value() {

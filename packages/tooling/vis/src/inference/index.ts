@@ -109,14 +109,10 @@ const hasDependency = (pkg: Pick<PackageJson, "dependencies" | "devDependencies"
     // workspace-link sentinels, `"file:..."` style entries) still counts
     // as "this dep is declared". `Boolean(value)` would drop the empty
     // string and miss the dep.
-    (
-        (pkg.dependencies !== undefined && Object.hasOwn(pkg.dependencies, name))
-        || (pkg.devDependencies !== undefined && Object.hasOwn(pkg.devDependencies, name))
-        || (pkg.peerDependencies !== undefined && Object.hasOwn(pkg.peerDependencies, name))
-        || (pkg.optionalDependencies !== undefined && Object.hasOwn(pkg.optionalDependencies, name))
-    )
-;
-
+    (pkg.dependencies !== undefined && Object.hasOwn(pkg.dependencies, name))
+    || (pkg.devDependencies !== undefined && Object.hasOwn(pkg.devDependencies, name))
+    || (pkg.peerDependencies !== undefined && Object.hasOwn(pkg.peerDependencies, name))
+    || (pkg.optionalDependencies !== undefined && Object.hasOwn(pkg.optionalDependencies, name));
 const matchConfigFiles = (projectRoot: string, configFiles: ReadonlyArray<string>): string[] => {
     const matched: string[] = [];
 

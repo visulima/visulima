@@ -489,7 +489,7 @@ const syncAllowBuildsToNativeConfig = (pm: PackageManagerName, workspaceRoot: st
             try {
                 const data = readYamlSync(filePath) as { allowBuilds?: Record<string, boolean> } | undefined;
 
-                existing = data?.allowBuilds ?? ({});
+                existing = data?.allowBuilds ?? {};
             } catch {
                 /* fall through: treat as empty */
             }

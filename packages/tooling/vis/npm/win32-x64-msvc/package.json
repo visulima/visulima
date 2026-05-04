@@ -3,31 +3,31 @@
     "version": "0.0.1",
     "description": "Native binding for @visulima/vis (Windows x64 MSVC)",
     "homepage": "https://visulima.com",
-    "license": "MIT",
-    "author": {
-        "name": "Daniel Bannert",
-        "email": "d.bannert@anolilab.de"
-    },
     "repository": {
         "type": "git",
         "url": "https://github.com/visulima/visulima.git",
         "directory": "packages/tooling/vis"
     },
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "main": "vis-native.win32-x64-msvc.node",
     "files": [
         "vis-native.win32-x64-msvc.node"
     ],
+    "engines": {
+        "node": "^22.14.0 || >=24.10.0"
+    },
     "os": [
         "win32"
     ],
     "cpu": [
         "x64"
     ],
-    "main": "vis-native.win32-x64-msvc.node",
     "publishConfig": {
         "access": "public",
         "provenance": true
-    },
-    "engines": {
-        "node": "^22.14.0 || >=24.10.0"
     }
 }

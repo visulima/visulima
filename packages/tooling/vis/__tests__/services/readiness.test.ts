@@ -23,7 +23,9 @@ const listen = (server: Server, port = 0): Promise<number> =>
 
 const close = (server: Server): Promise<void> =>
     new Promise((resolve) => {
-        server.close(() => { resolve(); });
+        server.close(() => {
+            resolve();
+        });
     });
 
 describe(waitForTcp, () => {

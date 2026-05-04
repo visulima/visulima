@@ -249,7 +249,9 @@ describe(commitFiles, () => {
     it("should fall back to webUrl (camelCase) when GitLab returns it", async () => {
         expect.assertions(1);
 
-        const create = vi.fn(async () => { return { id: "abc", webUrl: "https://gitlab.example.com/x" }; });
+        const create = vi.fn(async () => {
+            return { id: "abc", webUrl: "https://gitlab.example.com/x" };
+        });
 
         const result = await commitFiles({
             branch: "topic/x",

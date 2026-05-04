@@ -42,20 +42,11 @@ const seedWorkspace = (workspaceRoot: string): void => {
     mkdirSync(appDir, { recursive: true });
     mkdirSync(libDir, { recursive: true });
 
-    writeFileSync(
-        join(appDir, "package.json"),
-        JSON.stringify({ dependencies: { "@my/lib": "*" }, name: "@my/app", scripts: { build: "echo app" } }),
-    );
-    writeFileSync(
-        join(appDir, "project.json"),
-        JSON.stringify({ targets: { build: { command: "echo app", dependsOn: ["^build"] } } }),
-    );
+    writeFileSync(join(appDir, "package.json"), JSON.stringify({ dependencies: { "@my/lib": "*" }, name: "@my/app", scripts: { build: "echo app" } }));
+    writeFileSync(join(appDir, "project.json"), JSON.stringify({ targets: { build: { command: "echo app", dependsOn: ["^build"] } } }));
 
     writeFileSync(join(libDir, "package.json"), JSON.stringify({ name: "@my/lib", scripts: { build: "echo lib" } }));
-    writeFileSync(
-        join(libDir, "project.json"),
-        JSON.stringify({ targets: { build: { command: "echo lib" } } }),
-    );
+    writeFileSync(join(libDir, "project.json"), JSON.stringify({ targets: { build: { command: "echo lib" } } }));
 };
 
 describe("vis run --reverse", () => {

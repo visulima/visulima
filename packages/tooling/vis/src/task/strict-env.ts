@@ -58,7 +58,9 @@ export const extractEnvReferences = (command: string): { hasDefault: boolean; na
         }
     }
 
-    return [...found.entries()].map(([name, hasDefault]) => { return { hasDefault, name }; });
+    return [...found.entries()].map(([name, hasDefault]) => {
+        return { hasDefault, name };
+    });
 };
 
 export interface StrictEnvViolation {

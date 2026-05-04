@@ -22,7 +22,9 @@ const findFreePort = async (): Promise<number> =>
             if (typeof address === "object" && address !== null) {
                 const { port } = address;
 
-                server.close(() => { resolve(port); });
+                server.close(() => {
+                    resolve(port);
+                });
 
                 return;
             }

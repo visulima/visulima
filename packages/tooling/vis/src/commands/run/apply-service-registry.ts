@@ -7,7 +7,7 @@ import type { VisTargetOptions } from "../../task/target-options";
 const getVisOptions = (task: Task): VisTargetOptions | undefined => {
     const options = task.overrides["visOptions"];
 
-    return options && typeof options === "object" ? (options) : undefined;
+    return options && typeof options === "object" ? options : undefined;
 };
 
 export interface ServiceRegistryDiagnostic {

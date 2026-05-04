@@ -96,7 +96,7 @@ describe("cacheDoctorExecute", () => {
         it("reports failure when fetch throws (e.g. ECONNREFUSED)", async () => {
             expect.assertions(2);
 
-            vi.spyOn(globalThis, 'fetch').mockImplementation().mockRejectedValue(new Error("ECONNREFUSED"));
+            vi.spyOn(globalThis, "fetch").mockImplementation().mockRejectedValue(new Error("ECONNREFUSED"));
             const toolbox = buildToolbox({}, { taskRunnerOptions: { remoteCache: { url: "https://cache.example.com" } } });
 
             await cacheDoctorExecute(toolbox as never);
@@ -127,7 +127,7 @@ describe("cacheDoctorExecute", () => {
         it("--format=json emits parseable JSON", async () => {
             expect.assertions(3);
 
-            vi.spyOn(globalThis, 'fetch').mockImplementation().mockResolvedValue({ status: 401 });
+            vi.spyOn(globalThis, "fetch").mockImplementation().mockResolvedValue({ status: 401 });
             const toolbox = buildToolbox({ format: "json" }, { taskRunnerOptions: { remoteCache: { url: "https://cache.example.com" } } });
 
             await cacheDoctorExecute(toolbox as never);
@@ -158,7 +158,7 @@ describe("cacheDoctorExecute", () => {
             expect.assertions(2);
 
             probeCapabilitiesMock.mockResolvedValue({ digestFunctions: ["SHA256"], maxBatchTotalSizeBytes: 16 });
-            vi.spyOn(globalThis, 'fetch').mockImplementation();
+            vi.spyOn(globalThis, "fetch").mockImplementation();
             const toolbox = buildToolbox({ backend: "reapi" }, { taskRunnerOptions: { remoteCache: { url: "https://cache.example.com" } } });
 
             await cacheDoctorExecute(toolbox as never);

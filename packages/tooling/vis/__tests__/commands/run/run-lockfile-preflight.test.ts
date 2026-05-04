@@ -10,7 +10,9 @@ import { cleanupTemporaryDirectory, createTemporaryDirectory } from "../../test-
 // the host CI env. `is-in-ci` resolves once at import — without this mock,
 // running the suite under GitHub Actions (where CI=true) would flip the
 // helper into throw-mode and the test would assert the wrong path.
-vi.mock(import('is-in-ci'), () => { return { default: false }; });
+vi.mock(import("is-in-ci"), () => {
+    return { default: false };
+});
 
 const makeLogger = (): {
     calls: { args: unknown[]; level: "debug" | "error" | "info" | "warn" }[];
@@ -104,7 +106,7 @@ describe("vis run lockfile preflight wiring", () => {
             workspaceRoot,
         } as never);
 
-        const warnings = calls.filter((c) => c.level === "warn" && typeof c.args[0] === "string" && (c.args[0]).startsWith("preflight:"));
+        const warnings = calls.filter((c) => c.level === "warn" && typeof c.args[0] === "string" && c.args[0].startsWith("preflight:"));
 
         expect(warnings.length).toBeGreaterThanOrEqual(1);
         expect(warnings[0]!.args[0]).toContain("pnpm install");
@@ -126,7 +128,7 @@ describe("vis run lockfile preflight wiring", () => {
             workspaceRoot,
         } as never);
 
-        const preflightWarnings = calls.filter((c) => c.level === "warn" && typeof c.args[0] === "string" && (c.args[0]).startsWith("preflight:"));
+        const preflightWarnings = calls.filter((c) => c.level === "warn" && typeof c.args[0] === "string" && c.args[0].startsWith("preflight:"));
 
         expect(preflightWarnings).toHaveLength(0);
     });

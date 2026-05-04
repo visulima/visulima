@@ -8,9 +8,9 @@ export const bunDetector: Detector = {
     detect: ({ matchedConfigs }) => {
         return {
             targets: {
-            // Registers under `test`. With vitest and jest ahead of it
-            // in the registry, projects that already use one keep their
-            // command; this only fires when bun is the primary runner.
+                // Registers under `test`. With vitest and jest ahead of it
+                // in the registry, projects that already use one keep their
+                // command; this only fires when bun is the primary runner.
                 test: {
                     command: "bun test",
                     description: "bun test (inferred)",

@@ -93,14 +93,7 @@ const migrateDepsExecuteImpl = async ({ logger, options, visConfig, workspaceRoo
     announceDryRun(ctx);
 
     logger.info("── Migrating dependencies and scripts ──");
-    migrateDeps(
-        ctx.root,
-        ctx.packageManager,
-        ctx.config,
-        { dryRun: ctx.dryRun },
-        logger,
-        ctx.report,
-    );
+    migrateDeps(ctx.root, ctx.packageManager, ctx.config, { dryRun: ctx.dryRun }, logger, ctx.report);
     logger.info("");
 
     printSummary(ctx.report, logger);
