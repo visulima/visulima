@@ -190,7 +190,7 @@ describe(createTaskGraph, () => {
         const graph = createTaskGraph([task], { projectGraph, workspace });
 
         // Dep tasks are added via "^build" — they must not inherit overrides.
-        expect(graph.tasks["lib-a:build"]?.overrides).toEqual({});
-        expect(graph.tasks["lib-b:build"]?.overrides).toEqual({});
+        expect(graph.tasks["lib-a:build"]?.overrides).toStrictEqual({});
+        expect(graph.tasks["lib-b:build"]?.overrides).toStrictEqual({});
     });
 });

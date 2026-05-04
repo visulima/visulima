@@ -8,15 +8,15 @@ import { createTarBrotli, extractTarBrotli } from "../../src/archive";
 
 let workspaceRoot: string;
 
-beforeEach(async () => {
-    workspaceRoot = await mkdtemp(join(tmpdir(), "task-runner-archive-"));
-});
-
-afterEach(async () => {
-    await rm(workspaceRoot, { force: true, recursive: true });
-});
-
 describe("archive round-trip fidelity", () => {
+    beforeEach(async () => {
+        workspaceRoot = await mkdtemp(join(tmpdir(), "task-runner-archive-"));
+    });
+
+    afterEach(async () => {
+        await rm(workspaceRoot, { force: true, recursive: true });
+    });
+
     it("restores file mtime to within one second of the original", async () => {
         expect.assertions(2);
 

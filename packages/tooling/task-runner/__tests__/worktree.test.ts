@@ -1,3 +1,4 @@
+/* eslint-disable vitest/no-conditional-in-test -- conditionals are platform/feature gates (Linux git availability, POSIX symlink support) that skip the body cleanly when the environment cannot satisfy them */
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -14,7 +15,7 @@ import { getMainWorktreeRoot, isLinkedWorktree, resetWorktreeCache } from "../sr
 // on the fixture's own `.git`.
 for (const key of Object.keys(process.env)) {
     if (key.startsWith("GIT_")) {
-        delete process.env[key];
+        Reflect.deleteProperty(process.env, key);
     }
 }
 

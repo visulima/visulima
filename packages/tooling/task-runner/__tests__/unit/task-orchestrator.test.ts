@@ -665,7 +665,7 @@ describe(TaskOrchestrator, () => {
                 return { code: 0, terminalOutput: "modified-own-input" };
             };
 
-            const printSelfModifyingSkip = vi.fn();
+            const printSelfModifyingSkip = vi.fn<(task: Task, modifiedFiles: string[]) => void>();
             const lifeCycle: LifeCycleInterface = { printSelfModifyingSkip };
             const orchestrator = createOrchestrator([task], executor, { lifeCycle });
 
@@ -697,7 +697,7 @@ describe(TaskOrchestrator, () => {
                 target: { project: "app", target: "build" },
             };
 
-            const printSelfModifyingSkip = vi.fn();
+            const printSelfModifyingSkip = vi.fn<(task: Task, modifiedFiles: string[]) => void>();
             const lifeCycle: LifeCycleInterface = { printSelfModifyingSkip };
             const orchestrator = createOrchestrator([task], successExecutor, { lifeCycle });
 
@@ -744,7 +744,7 @@ describe(TaskOrchestrator, () => {
             };
             const scheduler = new TaskScheduler(taskGraph, projectGraph, 3);
 
-            const printEmptyFingerprintWarning = vi.fn();
+            const printEmptyFingerprintWarning = vi.fn<(task: Task, reason: string) => void>();
             const executor: TaskExecutor = async () => {
                 return { code: 0, terminalOutput: "ran" };
             };
