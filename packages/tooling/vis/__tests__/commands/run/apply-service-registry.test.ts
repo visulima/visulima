@@ -7,30 +7,34 @@ import type { VisTargetOptions } from "../../../src/task/target-options";
 
 const VIS_VERSION = "0.0.0-test";
 
-const buildTask = (id: string, options?: VisTargetOptions): Task => ({
-    cache: false,
-    id,
-    outputs: [],
-    overrides: {
-        command: `echo ${id}`,
-        ...(options ? { visOptions: options } : {}),
-    },
-    target: { project: id.split(":")[0]!, target: id.split(":")[1]! },
-});
+const buildTask = (id: string, options?: VisTargetOptions): Task => {
+    return {
+        cache: false,
+        id,
+        outputs: [],
+        overrides: {
+            command: `echo ${id}`,
+            ...(options ? { visOptions: options } : {}),
+        },
+        target: { project: id.split(":")[0]!, target: id.split(":")[1]! },
+    };
+};
 
-const buildEntry = (id: string, overrides: Partial<ServiceEntry> = {}): ServiceEntry => ({
-    command: `echo ${id}`,
-    config: {},
-    cwd: "/tmp",
-    env: { DB_URL: "postgres://attached" },
-    id,
-    logFile: `/tmp/${id}.log`,
-    pid: process.pid,
-    slug: id.replaceAll(":", "__"),
-    startedAt: new Date().toISOString(),
-    visVersion: VIS_VERSION,
-    ...overrides,
-});
+const buildEntry = (id: string, overrides: Partial<ServiceEntry> = {}): ServiceEntry => {
+    return {
+        command: `echo ${id}`,
+        config: {},
+        cwd: "/tmp",
+        env: { DB_URL: "postgres://attached" },
+        id,
+        logFile: `/tmp/${id}.log`,
+        pid: process.pid,
+        slug: id.replaceAll(":", "__"),
+        startedAt: new Date().toISOString(),
+        visVersion: VIS_VERSION,
+        ...overrides,
+    };
+};
 
 describe(applyServiceRegistry, () => {
     it("prunes a satisfied service from the graph and threads its env to the dependent", async () => {
@@ -356,8 +360,8 @@ describe(applyServiceRegistry, () => {
         expect(result.taskGraph.tasks["api:db"]).toBeDefined();
     });
 
-    it("demotes an entry whose probe rejects to the missing-service path", async () => {
-        expect.assertions(2);
+    it("demotes an entry whose probe rejects and emits a restart hint", async () => {
+        expect.assertions(3);
 
         const dbTask = buildTask("api:db", { service: { port: 5432 } });
         const testTask = buildTask("api:test");
@@ -375,13 +379,15 @@ describe(applyServiceRegistry, () => {
             visVersion: VIS_VERSION,
         });
 
-        // Probe failure → entry treated as not-alive → diagnostic.
         expect(result.diagnostics).toHaveLength(1);
+        // Probe failure → distinct diagnostic from "no entry": the wrapper
+        // is alive, the user just needs to restart it.
+        expect(result.diagnostics[0]?.message).toMatch(/vis service restart api:db/);
         expect(result.satisfiedServices).toEqual([]);
     });
 
-    it("treats a probe that throws as a probe failure", async () => {
-        expect.assertions(1);
+    it("treats a probe that throws as a probe failure with the restart hint", async () => {
+        expect.assertions(2);
 
         const dbTask = buildTask("api:db", { service: { port: 5432 } });
         const testTask = buildTask("api:test");
@@ -402,5 +408,6 @@ describe(applyServiceRegistry, () => {
         });
 
         expect(result.diagnostics).toHaveLength(1);
+        expect(result.diagnostics[0]?.message).toMatch(/vis service restart api:db/);
     });
 });

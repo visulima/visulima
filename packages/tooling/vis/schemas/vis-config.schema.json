@@ -106,8 +106,9 @@
             }
         },
         "inferTargets": {
+            "default": false,
             "oneOf": [
-                { "type": "boolean", "default": false },
+                { "type": "boolean" },
                 {
                     "type": "object",
                     "description": "Per-detector opt-out. Keys are detector names (`vite`, `vitest`, `packem`); set to `false` to disable. Detectors omitted from the object stay enabled.",

@@ -25,7 +25,7 @@ const findFreePort = async (): Promise<number> =>
             if (typeof address === "object" && address !== null) {
                 const { port } = address;
 
-                server.close(() => resolve(port));
+                server.close(() => { resolve(port); });
 
                 return;
             }
@@ -36,16 +36,18 @@ const findFreePort = async (): Promise<number> =>
 
 const VIS_VERSION = "0.0.0-integration";
 
-const buildTask = (id: string, options?: VisTargetOptions): Task => ({
-    cache: false,
-    id,
-    outputs: [],
-    overrides: {
-        command: `echo ${id}`,
-        ...(options ? { visOptions: options } : {}),
-    },
-    target: { project: id.split(":")[0]!, target: id.split(":")[1]! },
-});
+const buildTask = (id: string, options?: VisTargetOptions): Task => {
+    return {
+        cache: false,
+        id,
+        outputs: [],
+        overrides: {
+            command: `echo ${id}`,
+            ...(options ? { visOptions: options } : {}),
+        },
+        target: { project: id.split(":")[0]!, target: id.split(":")[1]! },
+    };
+};
 
 /**
  * Integration test: drive the full service-registry chain that `vis service`
@@ -175,9 +177,11 @@ describe("services/lifecycle — end-to-end", () => {
         const stopResult = await stopService({ graceMs: 1000, id: dbId, workspaceRoot });
 
         expect(stopResult.stopped).toBe(true);
+
         await sleep(150);
-        expect(await readEntry(workspaceRoot, dbId)).toBeUndefined();
-        expect(await readAllEntries(workspaceRoot)).toEqual([]);
+
+        await expect(readEntry(workspaceRoot, dbId)).resolves.toBeUndefined();
+        await expect(readAllEntries(workspaceRoot)).resolves.toEqual([]);
 
         // 5) re-attach with the service gone — the same graph now
         //    surfaces an actionable diagnostic instead of attaching.
@@ -195,8 +199,8 @@ describe("services/lifecycle — end-to-end", () => {
         expect(reAttach.diagnostics[0]?.message).toMatch(/vis service start/);
     });
 
-    it("demotes a registered service whose port is unreachable to the missing-service path", async () => {
-        expect.assertions(3);
+    it("demotes a registered service whose port is unreachable to the restart-service path", async () => {
+        expect.assertions(4);
 
         // Start the service successfully, then immediately kill the
         // child while *leaving the registry entry in place*. This is
@@ -247,9 +251,9 @@ describe("services/lifecycle — end-to-end", () => {
             service: { port, readiness: { tcp: { port, timeoutMs: 500 } } },
         });
         const taskGraph: TaskGraph = {
-            dependencies: { [dbId]: [], "@app/api:test": [dbId] },
+            dependencies: { "@app/api:test": [dbId], [dbId]: [] },
             roots: ["@app/api:test"],
-            tasks: { [dbId]: dbTask, "@app/api:test": testTask },
+            tasks: { "@app/api:test": testTask, [dbId]: dbTask },
         };
 
         const attachResult = await applyServiceRegistry({
@@ -268,8 +272,12 @@ describe("services/lifecycle — end-to-end", () => {
             visVersion: startResult.entry.visVersion,
         });
 
-        // PID looks alive, port doesn't — probe rejects → diagnostic.
+        // PID looks alive, port doesn't — probe rejects → diagnostic
+        // distinct from the missing-entry path: we tell the operator to
+        // *restart* (the wrapper is alive but the server is gone), not
+        // to *start*.
         expect(attachResult.diagnostics).toHaveLength(1);
+        expect(attachResult.diagnostics[0]?.message).toMatch(/vis service restart/);
         expect(attachResult.satisfiedServices).toEqual([]);
     });
 });

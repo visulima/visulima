@@ -44,6 +44,7 @@ export interface ApplyServiceRegistryResult {
     initialTasks: Task[];
     /** Entries actually attached (alive + version-matched + present in graph). */
     satisfiedServices: ServiceEntry[];
+
     /**
      * Pre-computed env to merge per dependent task id. Keyed by *dependent* —
      * not by service — because the post-prune graph no longer carries the
@@ -89,6 +90,15 @@ export const applyServiceRegistry = async (input: ApplyServiceRegistryInput): Pr
     const aliveById = new Map<string, ServiceEntry>();
     const staleById = new Map<string, ServiceEntry>();
 
+    /**
+     * Entries the OS still reports as alive but whose readiness probe
+     * failed. Tracked separately from `staleById` so we can emit a
+     * "restart" diagnostic rather than "start" — the operator's mental
+     * model is "this thing was running, something broke it" not "I
+     * forgot to start it".
+     */
+    const probeFailedById = new Map<string, ServiceEntry>();
+
     for (const entry of registeredEntries) {
         if (!isAlive(entry.pid)) {
             continue;
@@ -103,7 +113,8 @@ export const applyServiceRegistry = async (input: ApplyServiceRegistryInput): Pr
     }
 
     // Run the optional probe in parallel — a failed probe demotes the
-    // entry to "missing" (same diagnostic path as no entry at all).
+    // entry into `probeFailedById` so the diagnostic can suggest
+    // `vis service restart` instead of `vis service start`.
     if (probe) {
         const aliveEntries = [...aliveById.values()];
         const probeResults = await Promise.all(
@@ -118,7 +129,13 @@ export const applyServiceRegistry = async (input: ApplyServiceRegistryInput): Pr
 
         for (const [id, ok] of probeResults) {
             if (!ok) {
+                const entry = aliveById.get(id);
+
                 aliveById.delete(id);
+
+                if (entry) {
+                    probeFailedById.set(id, entry);
+                }
             }
         }
     }
@@ -167,9 +184,17 @@ export const applyServiceRegistry = async (input: ApplyServiceRegistryInput): Pr
         }
 
         const stale = staleById.get(taskId);
-        const reason = stale
-            ? `Service ${taskId} is registered with vis ${stale.visVersion}, but this invocation is vis ${visVersion}. Restart with \`vis service restart ${taskId}\` to pick up the new version.`
-            : `Target depends on the service ${taskId}, which is not running. Run \`vis service start ${taskId}\` first, or invoke \`${taskId}\` directly.`;
+        const probeFailed = probeFailedById.get(taskId);
+
+        let reason: string;
+
+        if (stale) {
+            reason = `Service ${taskId} is registered with vis ${stale.visVersion}, but this invocation is vis ${visVersion}. Restart with \`vis service restart ${taskId}\` to pick up the new version.`;
+        } else if (probeFailed) {
+            reason = `Service ${taskId} is registered (PID ${String(probeFailed.pid)}) but failed its readiness probe — the wrapper process is alive but the underlying server is not responding. Run \`vis service restart ${taskId}\` to recover.`;
+        } else {
+            reason = `Target depends on the service ${taskId}, which is not running. Run \`vis service start ${taskId}\` first, or invoke \`${taskId}\` directly.`;
+        }
 
         diagnostics.push({ message: reason, targetId: taskId });
     }
