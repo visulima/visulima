@@ -87,16 +87,16 @@ Add the server to `~/Library/Application Support/Claude/claude_desktop_config.js
 
 All eight tools are read-only. The agent prepares commands; a human runs them.
 
-| Tool                | What it does                                                                                           |
-| ------------------- | ------------------------------------------------------------------------------------------------------ |
-| `list_projects`     | List all workspace projects, optionally filtered by a vis query string.                                |
-| `describe_project`  | Return full metadata for one project (language, layer, stack, targets).                                |
-| `list_targets`      | Flatten projects into per-target rows; optionally narrow to one project.                               |
-| `list_templates`    | List scaffolding templates discovered in the workspace, with source and one-line description.          |
-| `describe_template` | Return template metadata: description, default destination, and the variable schema for `vis generate`.|
-| `get_run_logs`      | Read a run summary from `.task-runner/`; optionally filter to one task.                                |
-| `cache_why`         | Diff a task's hash inputs against the previous run to explain a rotation.                              |
-| `cache_hash`        | Print the recorded hash and per-input hash details for a task.                                         |
+| Tool                | What it does                                                                                            |
+| ------------------- | ------------------------------------------------------------------------------------------------------- |
+| `list_projects`     | List all workspace projects, optionally filtered by a vis query string.                                 |
+| `describe_project`  | Return full metadata for one project (language, layer, stack, targets).                                 |
+| `list_targets`      | Flatten projects into per-target rows; optionally narrow to one project.                                |
+| `list_templates`    | List scaffolding templates discovered in the workspace, with source and one-line description.           |
+| `describe_template` | Return template metadata: description, default destination, and the variable schema for `vis generate`. |
+| `get_run_logs`      | Read a run summary from `.task-runner/`; optionally filter to one task.                                 |
+| `cache_why`         | Diff a task's hash inputs against the previous run to explain a rotation.                               |
+| `cache_hash`        | Print the recorded hash and per-input hash details for a task.                                          |
 
 ## Related
 
