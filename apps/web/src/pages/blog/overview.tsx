@@ -49,8 +49,8 @@ const Overview = () => {
 
     // `getRouteApi("/blog/" as "/")` casts to root (no /blog route file yet), so
     // search params come back as `{}`. Re-type to the shape the page actually uses.
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    const { includeCategories, pageIndex = 1 } = routeApi.useSearch() as { includeCategories?: string[]; pageIndex?: number };
+
+    const { includeCategories, pageIndex = 1 } = routeApi.useSearch();
 
     // Sort blogs by publishedAt date, handling undefined dates (they go to the end)
     const sortedBlogs = allBlogs.toSorted((a, b) => {
