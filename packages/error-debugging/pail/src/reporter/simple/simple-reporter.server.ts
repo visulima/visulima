@@ -1,8 +1,6 @@
 import { stderr, stdout } from "node:process";
 
 import colorize from "@visulima/colorize";
-
-const { bgGrey, bold, cyan, green, greenBright, grey, red, underline, white } = colorize;
 import type { RenderErrorOptions } from "@visulima/error";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { renderError } from "@visulima/error/error";
@@ -25,6 +23,10 @@ import type { PrettyStyleOptions } from "../pretty/abstract-pretty-reporter";
 import { AbstractPrettyReporter } from "../pretty/abstract-pretty-reporter";
 import defaultInspectorConfig from "../utils/default-inspector-config";
 import formatLabel from "../utils/format-label";
+
+// `colorize` default export exposes named ANSI helpers as properties; the rule's check is a false positive here
+// eslint-disable-next-line import/no-named-as-default-member
+const { bgGrey, bold, cyan, green, greenBright, grey, red, underline, white } = colorize;
 
 const PAIL_DIST_REGEX = /[\\/]pail[\\/]dist/;
 const pailFileFilter = (line: string) => !PAIL_DIST_REGEX.test(line);
@@ -94,7 +96,7 @@ export class SimpleReporter<T extends string = string, L extends string = string
         const message = this.formatMessage(meta);
         const logLevel = meta.type.level as LiteralUnion<ExtendedRfc5424LogLevels, L>;
 
-        const streamType = ["error", "trace", "warn"].includes(logLevel as string) ? "stderr" : "stdout";
+        const streamType = ["error", "trace", "warn"].includes(logLevel) ? "stderr" : "stdout";
         const stream = streamType === "stderr" ? this.#stderr : this.#stdout;
 
         if (this.#interactive && this.#interactiveManager !== undefined && stream.isTTY) {

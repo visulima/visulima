@@ -75,7 +75,7 @@ export const createWithPail
                 });
 
                 if (skipped) {
-                    return handler(...args) as Promise<TReturn>;
+                    return handler(...args);
                 }
 
                 try {

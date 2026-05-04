@@ -158,13 +158,13 @@ describe("next.js adapter", () => {
                 },
             };
 
-            const middleware = pailMiddleware(MockNextResponse as any);
+            const middleware = pailMiddleware(MockNextResponse);
             const request = {
                 headers: new Headers(),
                 nextUrl: { pathname: "/api/users" },
             };
 
-            const response = middleware(request as any);
+            const response = middleware(request);
 
             expect(response.headers.get("x-request-id")).toBeTypeOf("string");
             expect(response.headers).toBeDefined();
@@ -184,13 +184,13 @@ describe("next.js adapter", () => {
                 },
             };
 
-            const middleware = pailMiddleware(MockNextResponse as any);
+            const middleware = pailMiddleware(MockNextResponse);
             const request = {
                 headers: new Headers({ "x-request-id": "existing-id" }),
                 nextUrl: { pathname: "/api/users" },
             };
 
-            middleware(request as any);
+            middleware(request);
 
             expect(capturedHeaders[0]?.get("x-request-id")).toBe("existing-id");
         });

@@ -69,7 +69,7 @@ describe("jsonReporter browser", () => {
         const stringifyMock = vi.fn().mockReturnValue(JSON.stringify(meta));
 
         reporter.setStringify(stringifyMock);
-        reporter.log(meta as unknown as ReadonlyMeta<string>);
+        reporter.log(meta);
 
         expect(stringifyMock).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ file: "test.js:10:5" }));
     });

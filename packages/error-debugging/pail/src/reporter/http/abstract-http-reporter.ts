@@ -470,12 +470,7 @@ export abstract class AbstractHttpReporter<L extends string = string> extends Ab
             this.maxRetries,
             this.retryDelay,
             this.respectRateLimit,
-            this.onDebugRequestResponse as
-                | ((requestResponse: {
-                    req: { body: string | Uint8Array; headers: Record<string, string>; method: string; url: string };
-                    res: { body: string; headers: Record<string, string>; status: number; statusText: string };
-                }) => void)
-                | undefined,
+            this.onDebugRequestResponse,
             this.onError,
         );
     }

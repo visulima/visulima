@@ -41,7 +41,7 @@ describe("svelteKit middleware", () => {
             const event = createMockEvent();
 
             await handle({
-                event: event as any,
+                event,
                 resolve: async () => new Response("ok", { status: 200 }),
             });
 
@@ -57,7 +57,7 @@ describe("svelteKit middleware", () => {
             const event = createMockEvent();
 
             await handle({
-                event: event as any,
+                event,
                 resolve: async () => new Response("ok", { status: 200 }),
             });
 
@@ -97,7 +97,7 @@ describe("svelteKit middleware", () => {
             const event = createMockEvent({ path: "/health" });
 
             await handle({
-                event: event as any,
+                event,
                 resolve: async () => new Response("ok"),
             });
 
@@ -112,7 +112,7 @@ describe("svelteKit middleware", () => {
             const event = createMockEvent();
 
             await handle({
-                event: event as any,
+                event,
                 resolve: async () => {
                     const log = useLogger();
 
@@ -135,7 +135,7 @@ describe("svelteKit middleware", () => {
 
             // First set up the logger via handle
             await handle({
-                event: event as any,
+                event,
                 resolve: async () => new Response("ok", { status: 200 }),
             });
 
@@ -143,7 +143,7 @@ describe("svelteKit middleware", () => {
 
             handleError({
                 error: testError,
-                event: event as any,
+                event,
                 message: "test",
                 status: 500,
             });
@@ -162,7 +162,7 @@ describe("svelteKit middleware", () => {
             expect(() => {
                 handleError({
                     error: new Error("test"),
-                    event: event as any,
+                    event,
                     message: "test",
                     status: 500,
                 });

@@ -114,7 +114,7 @@ const detectEnvironment = (): EnvironmentInfo => {
     };
 
     // Clean up undefined values
-    return Object.fromEntries(Object.entries(info).filter(([, v]) => v !== undefined)) as EnvironmentInfo;
+    return Object.fromEntries(Object.entries(info).filter(([, v]) => v !== undefined));
 };
 
 /**
