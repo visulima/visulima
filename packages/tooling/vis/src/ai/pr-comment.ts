@@ -4,18 +4,25 @@ import type { CiContext } from "./ci-context";
 
 /**
  * Result of attempting to post a comment to a PR (GitHub) or MR
- * (GitLab). The orchestrator surfaces this to the user so a CI run
- * that produced a fix but failed to comment is still actionable —
- * the proposal is printed locally regardless of post outcome.
+ * (GitLab), or an annotation to a Buildkite build. The orchestrator
+ * surfaces this to the user so a CI run that produced a fix but failed
+ * to comment is still actionable — the proposal is printed locally
+ * regardless of post outcome.
  */
 export interface PostPrCommentResult {
     error?: string;
-    method: "gh-cli" | "rest" | "skipped";
+    method: "buildkite-cli" | "gh-cli" | "rest" | "skipped";
     posted: boolean;
 }
 
 export interface PostPrCommentOptions {
     body: string;
+    /**
+     * Override the `buildkite-agent` lookup for tests. Defaults to
+     * whichever `buildkite-agent` binary is on PATH. Pass `"/bin/false"`
+     * to force the REST fallback path in tests.
+     */
+    buildkiteAgentBin?: string;
     context: CiContext;
     /** Override `fetch` for tests. Defaults to globalThis.fetch. */
     fetchImpl?: typeof fetch;
@@ -138,6 +145,148 @@ const postViaGitlabRest = async (
     }
 };
 
+const runBuildkiteAnnotate = (
+    binary: string,
+    body: string,
+    style: "error" | "info" | "warning",
+    contextName: string,
+): Promise<{ exitCode: number; stderr: string }> =>
+    new Promise((resolve) => {
+        const args = ["annotate", "--style", style, "--context", contextName];
+
+        // argv form, no shell — `body` reaches the agent over stdin so
+        // shell metacharacters in the heal proposal are inert.
+        const child = spawn(binary, args, { stdio: ["pipe", "ignore", "pipe"] });
+        let stderr = "";
+
+        child.stderr?.setEncoding("utf8");
+        child.stderr?.on("data", (chunk: string) => {
+            stderr += chunk;
+        });
+
+        child.once("error", () => {
+            // ENOENT etc. — surface as 127 so the caller falls back to REST.
+            resolve({ exitCode: 127, stderr });
+        });
+
+        child.once("close", (code) => {
+            resolve({ exitCode: code ?? -1, stderr });
+        });
+
+        child.stdin?.on("error", () => {});
+        child.stdin?.end(body);
+    });
+
+const postViaBuildkiteRest = async (
+    fetchImpl: typeof fetch,
+    apiBaseUrl: string,
+    repo: string,
+    buildNumber: number,
+    body: string,
+    style: "error" | "info" | "warning",
+    contextName: string,
+    token: string,
+): Promise<{ error?: string; ok: boolean }> => {
+    // `repo` is `{org-slug}/{pipeline-slug}` — both segments are URL-safe
+    // slugs in Buildkite's data model, but encode anyway in case a future
+    // version loosens that. The annotations API takes the build number,
+    // not the build UUID, in the path.
+    const [organization, pipeline] = repo.split("/", 2);
+
+    if (!organization || !pipeline) {
+        return { error: `Buildkite repo identifier \`${repo}\` is not in {org}/{pipeline} form.`, ok: false };
+    }
+
+    // `apiBaseUrl` is already trimmed of trailing slashes in `detectBuildkite`.
+    const url = `${apiBaseUrl}/v2/organizations/${encodeURIComponent(organization)}/pipelines/${encodeURIComponent(pipeline)}/builds/${String(buildNumber)}/annotations`;
+
+    try {
+        const response = await fetchImpl(url, {
+            body: JSON.stringify({ body, context: contextName, style }),
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+            method: "POST",
+        });
+
+        if (!response.ok) {
+            const text = await response.text().catch(() => "");
+
+            return { error: `Buildkite REST returned ${String(response.status)}: ${text.slice(0, 500)}`, ok: false };
+        }
+
+        return { ok: true };
+    } catch (error) {
+        return { error: error instanceof Error ? error.message : String(error), ok: false };
+    }
+};
+
+const postBuildkiteAnnotation = async (
+    body: string,
+    context: CiContext,
+    buildkiteAgentBin: string,
+    fetchImpl: typeof fetch,
+): Promise<PostPrCommentResult> => {
+    // The annotation `--context` uniquely identifies an annotation
+    // *within a build*. Reusing the same context on rerun causes
+    // Buildkite to update the existing annotation in place instead of
+    // stacking a new one — which is exactly what we want when a heal
+    // proposal is regenerated. Falls back to a static slug if buildId
+    // is missing (e.g. when called from a non-build context).
+    const contextName = context.buildId ? `vis-ai-heal-${context.buildId}` : "vis-ai-heal";
+
+    // The heal flow only posts on success. If a future caller wants the
+    // red "error" bar, surface it through this function's signature at
+    // that point — no need for an unused option today.
+    const style = "info";
+
+    // Prefer the bundled CLI: it auto-uses BUILDKITE_AGENT_ACCESS_TOKEN
+    // (always present on agents) and needs no extra plumbing. REST is
+    // the escape hatch for stripped-down runners and self-hosted
+    // setups where the agent binary isn't on PATH.
+    const cliResult = await runBuildkiteAnnotate(buildkiteAgentBin, body, style, contextName);
+
+    if (cliResult.exitCode === 0) {
+        return { method: "buildkite-cli", posted: true };
+    }
+
+    if (!context.apiBaseUrl || !context.repo || context.buildNumber === undefined || !context.token) {
+        const missing: string[] = [];
+
+        if (!context.repo) missing.push("BUILDKITE_ORGANIZATION_SLUG / BUILDKITE_PIPELINE_SLUG");
+        if (context.buildNumber === undefined) missing.push("BUILDKITE_BUILD_NUMBER");
+        if (!context.token) missing.push("BUILDKITE_API_TOKEN (with `write_build_annotations` scope)");
+
+        return {
+            error: `buildkite-agent annotate exited ${String(cliResult.exitCode)} (${cliResult.stderr.trim().slice(0, 200)}); cannot fall back to REST without ${missing.join(", ")}`,
+            method: "buildkite-cli",
+            posted: false,
+        };
+    }
+
+    const restResult = await postViaBuildkiteRest(
+        fetchImpl,
+        context.apiBaseUrl,
+        context.repo,
+        context.buildNumber,
+        body,
+        style,
+        contextName,
+        context.token,
+    );
+
+    if (restResult.ok) {
+        return { method: "rest", posted: true };
+    }
+
+    return {
+        error: `buildkite-agent annotate exited ${String(cliResult.exitCode)}; REST fallback also failed: ${restResult.error ?? "unknown"}`,
+        method: "rest",
+        posted: false,
+    };
+};
+
 const postGithubComment = async (
     body: string,
     context: CiContext,
@@ -216,19 +365,27 @@ const postGitlabComment = async (
 };
 
 /**
- * Post a PR/MR comment, dispatching on the resolved CI provider.
+ * Post a PR/MR comment or build annotation, dispatching on the
+ * resolved CI provider.
  *
  * - GitHub Actions: try `gh pr comment` first (uses the runner's bundled
  *   gh + auto-injected token), fall back to GitHub REST.
  * - GitLab CI: post via GitLab REST `merge_requests/:iid/notes`. `glab`
  *   isn't preinstalled and the auto-injected `CI_JOB_TOKEN` can't post
  *   notes, so the workflow must provide `GITLAB_TOKEN` (or `CI_TOKEN`).
+ * - Buildkite: try `buildkite-agent annotate` first (uses the bundled
+ *   `BUILDKITE_AGENT_ACCESS_TOKEN`), fall back to Buildkite REST when
+ *   the agent binary is missing or fails. The REST fallback requires
+ *   `BUILDKITE_API_TOKEN` with `write_build_annotations` scope. The
+ *   annotation `--context` is keyed off `BUILDKITE_BUILD_ID` so reruns
+ *   update the existing annotation rather than stacking new ones.
  *
  * Returns `{ posted: false, method: "skipped" }` when there's no PR
- * number — push-event runs have nothing to comment on.
+ * number on GitHub/GitLab — push-event runs have nothing to comment
+ * on. Buildkite always has a build to annotate, even on push events.
  */
 export const postPrComment = async (options: PostPrCommentOptions): Promise<PostPrCommentResult> => {
-    const { body, context, fetchImpl = globalThis.fetch, ghBin = "gh" } = options;
+    const { body, buildkiteAgentBin = "buildkite-agent", context, fetchImpl = globalThis.fetch, ghBin = "gh" } = options;
 
     if (context.provider === "github-actions") {
         return await postGithubComment(body, context, ghBin, fetchImpl);
@@ -236,6 +393,10 @@ export const postPrComment = async (options: PostPrCommentOptions): Promise<Post
 
     if (context.provider === "gitlab-ci") {
         return await postGitlabComment(body, context, fetchImpl);
+    }
+
+    if (context.provider === "buildkite") {
+        return await postBuildkiteAnnotation(body, context, buildkiteAgentBin, fetchImpl);
     }
 
     return { method: "skipped", posted: false };

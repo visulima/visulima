@@ -65,14 +65,27 @@ Anything after `--` is forwarded as variable overrides (`--name=Button` → `opt
 
 ## Discovery
 
-Templates are discovered, in priority order:
+Templates are discovered, in priority order (first match wins):
 
 1. `<workspace>/.vis/templates/<name>.{ts,js,mjs}` — native templates.
 2. `<workspace>/.vis/templates/<name>/` (any directory containing `template.yml`) — moon-format templates living alongside native ones.
 3. `<workspace>/.moon/templates/<name>/` — moon-format templates from the moon ecosystem (auto-discovered for zero-config migration).
 4. Extra directories listed in `vis.config.ts` `generator.templates`.
+5. **Builtin templates** shipped with `@visulima/vis` (e.g. `buildkite-ci`). Lowest priority — any user template with the same name overrides.
 
-When a name resolves in multiple sources, **native wins** and a warning is printed at discovery.
+When a name resolves in multiple sources, **the higher-priority source wins** and a warning is printed at discovery so the conflict is visible. In particular, dropping `.vis/templates/<builtin-name>/` into your repo is the supported way to vendor and customise a bundled preset.
+
+`--list` annotates each row with its source (`native`, `moon`, `config`, `builtin`, `remote`) so you can see at a glance which copy is in effect.
+
+## Builtin templates
+
+`@visulima/vis` ships a small set of opinionated presets so you don't have to copy reference YAML out of the docs. They are bundled in the package's `templates/` directory and resolved relative to the installed module — they work the same in dev, production, and CI containers, with no extra setup.
+
+| Template      | Generates                                                                | Purpose                                                                                                                         |
+| ------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| `buildkite-ci` | `.buildkite/pipeline.yml`                                                | Buildkite pipeline that runs `vis ci` against affected packages, with an optional `vis ai heal` propose + block-step accept flow. |
+
+Run `vis generate buildkite-ci` to invoke it; the prompts cover `targets`, `packageManager` (pnpm/npm/yarn), `withHeal`, and `agentQueue`. To customise, vendor a copy at `.vis/templates/buildkite-ci/` — the user copy wins over the bundled preset.
 
 ## Configuration
 

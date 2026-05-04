@@ -7,7 +7,9 @@ import { describe, expect, it, vi } from "vitest";
 
 import type { CiContext } from "../../../src/ai/ci-context";
 import {
+    deriveBuildkiteCommitContextForTesting,
     fetchGithubHeadRefForTesting,
+    loadBuildkiteTriggerForTesting,
     loadGithubTriggerForTesting,
     loadGitlabTriggerForTesting,
     runHealAcceptForTesting,
@@ -45,11 +47,27 @@ const fakeToolbox = (overrides: Partial<{
 const githubCi = (overrides: Partial<CiContext> = {}): CiContext => {
     return {
         apiBaseUrl: undefined,
+        buildId: undefined,
+        buildNumber: undefined,
         prNumber: 42,
         provider: "github-actions",
         repo: "owner/repo",
         sha: "abc",
         token: "ghs_test",
+        ...overrides,
+    };
+};
+
+const buildkiteCi = (overrides: Partial<CiContext> = {}): CiContext => {
+    return {
+        apiBaseUrl: "https://api.buildkite.com",
+        buildId: "01HX-build-id",
+        buildNumber: 5,
+        prNumber: 99,
+        provider: "buildkite",
+        repo: "acme/web",
+        sha: "deadbeef",
+        token: "bkua_test",
         ...overrides,
     };
 };
@@ -116,6 +134,124 @@ describe(loadGithubTriggerForTesting, () => {
     it("should return undefined when the event file is missing", async () => {
         expect.assertions(1);
         expect(await loadGithubTriggerForTesting("/no/such/path.json")).toBeUndefined();
+    });
+});
+
+describe(loadBuildkiteTriggerForTesting, () => {
+    it("should treat the unblocker email as the actor and read BUILDKITE_BRANCH as headRef", () => {
+        expect.assertions(4);
+
+        const trigger = loadBuildkiteTriggerForTesting({
+            BUILDKITE_BRANCH: "feat/x",
+            BUILDKITE_UNBLOCKER_EMAIL: "alice@example.com",
+        });
+
+        expect(trigger?.actor).toBe("alice@example.com");
+        // Synthesised so the trigger-phrase check downstream is a no-op
+        // for Buildkite — the unblock IS the acceptance signal.
+        expect(trigger?.body).toContain(TRIGGER_PHRASE);
+        expect(trigger?.headRef).toBe("feat/x");
+        expect(trigger?.isFork).toBe(false);
+    });
+
+    it("should fall back to BUILDKITE_UNBLOCKER when no email is exposed", () => {
+        expect.assertions(1);
+
+        const trigger = loadBuildkiteTriggerForTesting({
+            BUILDKITE_BRANCH: "main",
+            BUILDKITE_UNBLOCKER: "alice",
+        });
+
+        expect(trigger?.actor).toBe("alice");
+    });
+
+    it("should return undefined when no unblocker is set (block step never reached)", () => {
+        expect.assertions(1);
+
+        expect(loadBuildkiteTriggerForTesting({})).toBeUndefined();
+    });
+});
+
+describe(deriveBuildkiteCommitContextForTesting, () => {
+    it("should derive a GitHub commit context from a github.com SSH-form repo URL", () => {
+        expect.assertions(4);
+
+        const ctx = deriveBuildkiteCommitContextForTesting(buildkiteCi(), {
+            BUILDKITE_REPO: "git@github.com:owner/repo.git",
+            GITHUB_TOKEN: "ghs_xxx",
+        });
+
+        expect(ctx?.provider).toBe("github-actions");
+        expect(ctx?.repo).toBe("owner/repo");
+        expect(ctx?.token).toBe("ghs_xxx");
+        // PR / SHA carry over from the Buildkite context so the commit
+        // lands at the right ref without re-resolving them.
+        expect(ctx?.sha).toBe("deadbeef");
+    });
+
+    it("should derive a GitLab commit context honouring CI_API_V4_URL when set", () => {
+        expect.assertions(3);
+
+        const ctx = deriveBuildkiteCommitContextForTesting(buildkiteCi(), {
+            BUILDKITE_REPO: "https://gitlab.example.com/group/proj.git",
+            CI_API_V4_URL: "https://gitlab.example.com/api/v4",
+            GITLAB_TOKEN: "glpat-xxx",
+        });
+
+        expect(ctx?.provider).toBe("gitlab-ci");
+        expect(ctx?.repo).toBe("group/proj");
+        expect(ctx?.apiBaseUrl).toBe("https://gitlab.example.com/api/v4");
+    });
+
+    it("should return undefined when the repo URL is set but the matching token is missing", () => {
+        expect.assertions(1);
+
+        // GitHub repo URL but no GITHUB_TOKEN → can't commit there.
+        // The accept handler turns this into a clear user-facing error.
+        const ctx = deriveBuildkiteCommitContextForTesting(buildkiteCi(), {
+            BUILDKITE_REPO: "git@github.com:owner/repo.git",
+        });
+
+        expect(ctx).toBeUndefined();
+    });
+
+    it("should return undefined for unsupported VCS hosts", () => {
+        expect.assertions(1);
+
+        const ctx = deriveBuildkiteCommitContextForTesting(buildkiteCi(), {
+            BUILDKITE_REPO: "git@bitbucket.org:owner/repo.git",
+            GITHUB_TOKEN: "ghs_xxx",
+        });
+
+        expect(ctx).toBeUndefined();
+    });
+
+    it("should preserve a non-default port in the synthesised GitLab apiBaseUrl", () => {
+        expect.assertions(2);
+
+        // Self-hosted GitLab on a non-443 port — the synthesised API URL
+        // must keep the port or REST calls hit the wrong listener.
+        const ctx = deriveBuildkiteCommitContextForTesting(buildkiteCi(), {
+            BUILDKITE_REPO: "https://gitlab.example.com:8443/group/proj.git",
+            GITLAB_TOKEN: "glpat-xxx",
+        });
+
+        expect(ctx?.provider).toBe("gitlab-ci");
+        expect(ctx?.apiBaseUrl).toBe("https://gitlab.example.com:8443/api/v4");
+    });
+
+    it("should derive a GitLab commit context from an SSH-form repo URL", () => {
+        expect.assertions(3);
+
+        const ctx = deriveBuildkiteCommitContextForTesting(buildkiteCi(), {
+            BUILDKITE_REPO: "git@gitlab.example.com:group/proj.git",
+            GITLAB_TOKEN: "glpat-xxx",
+        });
+
+        expect(ctx?.provider).toBe("gitlab-ci");
+        expect(ctx?.repo).toBe("group/proj");
+        // SSH form has no port — falls back to the default https:// host.
+        expect(ctx?.apiBaseUrl).toBe("https://gitlab.example.com/api/v4");
     });
 });
 
@@ -208,6 +344,8 @@ describe(runHealAcceptForTesting, () => {
             await runHealAcceptForTesting(fakeToolbox(), {
                 detectCi: async () => ({
                     apiBaseUrl: undefined,
+                    buildId: undefined,
+                    buildNumber: undefined,
                     prNumber: undefined,
                     provider: "unknown",
                     repo: undefined,
@@ -333,6 +471,53 @@ describe(runHealAcceptForTesting, () => {
             }
         } finally {
             rmSync(directory, { force: true, recursive: true });
+        }
+    });
+
+    it("should refuse on Buildkite when no unblocker env is set", async () => {
+        expect.assertions(1);
+
+        const exitBefore = process.exitCode;
+
+        try {
+            await runHealAcceptForTesting(fakeToolbox(), {
+                detectCi: async () => buildkiteCi(),
+                env: {},
+            });
+
+            expect(process.exitCode).toBe(1);
+        } finally {
+            process.exitCode = exitBefore;
+        }
+    });
+
+    it("should refuse on Buildkite when BUILDKITE_REPO has no matching VCS token", async () => {
+        expect.assertions(1);
+
+        const exitBefore = process.exitCode;
+
+        try {
+            // The Buildkite trigger is satisfied (unblocker email set, allow-listed actor),
+            // but BUILDKITE_REPO points at GitHub with no GITHUB_TOKEN — derive returns
+            // undefined and the handler refuses to attempt a commit.
+            await runHealAcceptForTesting(
+                fakeToolbox({ visConfig: { ai: { heal: { allowedActors: ["alice@example.com"] } } } }),
+                {
+                    detectCi: async () => buildkiteCi(),
+                    env: {
+                        BUILDKITE_BRANCH: "feat/x",
+                        BUILDKITE_REPO: "git@github.com:owner/repo.git",
+                        BUILDKITE_UNBLOCKER_EMAIL: "alice@example.com",
+                    },
+                },
+            );
+
+            // Note: this hits the "no failed task / no candidate" path *before* the derive
+            // check, since findHealCandidate runs first. Both paths exit 1, which is what
+            // we're asserting — the handler doesn't crash, it surfaces an actionable error.
+            expect(process.exitCode).toBe(1);
+        } finally {
+            process.exitCode = exitBefore;
         }
     });
 

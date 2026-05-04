@@ -91,6 +91,142 @@ Cache task runner artifacts between CI runs:
           vis-cache-${{ runner.os }}-
 ```
 
+## GitLab CI
+
+`vis ci` auto-detects GitLab merge-request pipelines via `CI_MERGE_REQUEST_TARGET_BRANCH_NAME` and `CI_COMMIT_SHA`, so the affected-graph base/head are derived without manual flags.
+
+### Build and Test
+
+```yaml
+default:
+    image: node:22
+
+variables:
+    GIT_DEPTH: 0 # Full history for affected detection
+
+stages:
+    - ci
+
+ci:
+    stage: ci
+    rules:
+        - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    before_script:
+        - corepack enable
+        - corepack prepare pnpm@latest --activate
+    script:
+        - pnpm vis ci lint,test,build
+```
+
+`vis ci` runs `pnpm install --frozen-lockfile`, then `vis affected` for each comma-separated target. Pass `--no-install` if the install step is already handled elsewhere.
+
+### vis ai heal on merge requests
+
+`vis ai heal` posts the proposed patch as an MR note. It needs an API token that can write notes — `CI_JOB_TOKEN` cannot, so set `GITLAB_TOKEN` (or `CI_TOKEN`) on the job:
+
+```yaml
+heal:
+    stage: ci
+    needs: [ci]
+    when: on_failure
+    rules:
+        - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    variables:
+        GITLAB_TOKEN: $GITLAB_HEAL_TOKEN # project/group access token with `api` scope
+    script:
+        - pnpm vis ai heal
+```
+
+When a maintainer comments `/vis heal accept` on the MR, run `vis ai heal accept` from a follow-up pipeline (or scheduled poll) — the command re-derives the proposal, validates it, and commits via the GitLab REST API using the same token.
+
+## Buildkite
+
+Buildkite agents auto-detect through `BUILDKITE`, `BUILDKITE_PULL_REQUEST_BASE_BRANCH`, and `BUILDKITE_COMMIT`. `vis ai heal` renders as a build [annotation](https://buildkite.com/docs/agent/v3/cli-annotate); acceptance is a manual unblock on a [block step](https://buildkite.com/docs/pipelines/block-step) — there is no PR-comment surface to listen to.
+
+### Generate the pipeline
+
+The shape below ships as a builtin `vis generate` template — point at the package preset instead of copy-pasting:
+
+```bash
+vis generate buildkite-ci
+```
+
+The template prompts for `targets`, `packageManager`, `withHeal`, and `agentQueue`, and writes to `.buildkite/pipeline.yml`. Vendor a customised copy at `.vis/templates/buildkite-ci/` to override the bundled preset — discovery prefers the user copy when names collide.
+
+### Reference pipeline
+
+The generator emits the same shape as below. Drop this in `.buildkite/pipeline.yml` if you'd rather hand-write it:
+
+```yaml
+steps:
+    - label: ":hammer: vis ci"
+      key: ci
+      command: |
+          corepack enable
+          corepack prepare pnpm@latest --activate
+          pnpm vis ci lint,test,build
+      agents:
+          queue: default
+
+    - label: ":sparkles: vis ai heal"
+      key: heal-propose
+      depends_on: ci
+      if: build.failed_jobs > 0
+      command: pnpm vis ai heal
+      env:
+          # Required so heal can commit cross-VCS once accepted.
+          # Set whichever matches the upstream repo.
+          GITHUB_TOKEN: "${GITHUB_TOKEN}"
+          # GITLAB_TOKEN: "${GITLAB_TOKEN}"
+
+    - block: ":white_check_mark: Apply AI heal patch?"
+      key: heal-gate
+      depends_on: heal-propose
+      prompt: "Unblocking will apply and commit the patch from the heal annotation."
+
+    - label: ":robot_face: vis ai heal accept"
+      depends_on: heal-gate
+      command: pnpm vis ai heal accept
+      env:
+          GITHUB_TOKEN: "${GITHUB_TOKEN}"
+          # GITLAB_TOKEN: "${GITLAB_TOKEN}"
+```
+
+The annotation context is keyed on `BUILDKITE_BUILD_ID`, so reruns update the existing annotation instead of stacking duplicates on the same build.
+
+### Token requirements
+
+| Surface                      | Token                                                           | Why                                                                                                                                          |
+| ---------------------------- | --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Annotation via `buildkite-agent` | none — uses the agent's `BUILDKITE_AGENT_ACCESS_TOKEN`          | First fallback path; works on every standard Buildkite agent.                                                                                |
+| Annotation via REST          | `BUILDKITE_API_TOKEN` with `write_build_annotations`            | Second fallback when the CLI is missing (uncommon).                                                                                          |
+| `vis ai heal accept` commit  | `GITHUB_TOKEN` _or_ `GITLAB_TOKEN`                              | Buildkite has no commit API of its own — vis derives the upstream provider from `BUILDKITE_REPO` and commits through GitHub/GitLab directly. |
+| Self-hosted Buildkite        | `BUILDKITE_API_BASE_URL=https://buildkite.acme.internal/api`    | Honoured by the REST fallback; the agent CLI honours its own config.                                                                         |
+
+The block-step unblocker is the acceptance signal — `BUILDKITE_UNBLOCKER_EMAIL` (preferred) or `BUILDKITE_UNBLOCKER` is checked against the heal allow-list, so `/vis heal accept` is implicit on Buildkite (no comment-trigger phrase to match).
+
+### Allow-list entries on Buildkite
+
+`ai.heal.allowedActors` is matched against the trigger actor verbatim. The actor identifier differs by provider:
+
+| Provider         | Source env / payload                              | Example entry              |
+| ---------------- | ------------------------------------------------- | -------------------------- |
+| GitHub Actions   | `comment.user.login` from the `issue_comment`     | `octocat`                  |
+| GitLab CI        | `VIS_HEAL_TRIGGER_ACTOR` (set by webhook bridge)  | `ada-lovelace`             |
+| Buildkite        | `BUILDKITE_UNBLOCKER_EMAIL` then `BUILDKITE_UNBLOCKER` | `maintainer@example.com` |
+
+If you operate the same allow-list across providers (vendoring `vis.config.ts` in a shared preset), include both shapes — Buildkite emails and platform usernames — for any maintainer authorised to accept heal patches. A mismatched allow-list yields an actionable refusal naming the missing entry shape.
+
+### Push-event builds
+
+Push builds (no PR) report `BUILDKITE_PULL_REQUEST=false`. `vis ai heal` still runs and the annotation still renders, but heal-accept refuses to commit because there is no MR/PR head branch to push to. Gate the heal step on PR builds if you want it skipped entirely:
+
+```yaml
+- label: ":sparkles: vis ai heal"
+  if: build.pull_request.id != null && build.failed_jobs > 0
+  command: pnpm vis ai heal
+```
+
 ## Enforcing Dependency Policies
 
 Use `--exit-code` to fail the pipeline when outdated dependencies are found:

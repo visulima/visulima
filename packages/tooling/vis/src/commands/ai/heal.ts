@@ -432,8 +432,12 @@ export interface PostHealCommentResult {
     error?: string;
     method?: string;
     outcome: PostHealCommentOutcome;
-    /** "PR" for GitHub, "MR" for GitLab — used by callers to phrase log messages. */
-    surface: "MR" | "PR";
+    /**
+     * Provider-specific noun used by callers to phrase log messages:
+     * "PR" (GitHub), "MR" (GitLab), or "annotation" (Buildkite — there's
+     * no PR-comment surface, the heal proposal lands as a build annotation).
+     */
+    surface: "annotation" | "MR" | "PR";
 }
 
 export interface PostHealCommentDeps {
@@ -451,7 +455,12 @@ const postHealComment = async (
 ): Promise<PostHealCommentResult> => {
     const detectCi = deps.detectCi ?? detectCiContext;
     const ciContext = await detectCi();
-    const surface = ciContext.provider === "gitlab-ci" ? "MR" : "PR";
+    const surface: "annotation" | "MR" | "PR"
+        = ciContext.provider === "gitlab-ci"
+            ? "MR"
+            : ciContext.provider === "buildkite"
+                ? "annotation"
+                : "PR";
 
     if (ciContext.provider === "unknown") {
         return { ciContext, outcome: "no-ci", surface };
@@ -589,7 +598,15 @@ const heal = async (toolbox: Toolbox<Console, AiHealOptions>, deps: HealRunDeps 
     }
 
     if (postResult.outcome === "posted") {
-        pail.success(`Posted fix proposal to ${postResult.surface} #${String(postResult.ciContext.prNumber)} via ${postResult.method ?? "unknown"}.`);
+        // Buildkite identifies the surface by build number (annotations
+        // are scoped to a build, not a PR); GH/GitLab key off the PR/MR
+        // number. `prNumber` may be undefined on Buildkite push builds,
+        // which is fine — the build number always exists.
+        const identifier = postResult.surface === "annotation"
+            ? `build #${String(postResult.ciContext.buildNumber ?? "?")}`
+            : `${postResult.surface} #${String(postResult.ciContext.prNumber)}`;
+
+        pail.success(`Posted fix proposal to ${identifier} via ${postResult.method ?? "unknown"}.`);
 
         return;
     }
@@ -600,7 +617,9 @@ const heal = async (toolbox: Toolbox<Console, AiHealOptions>, deps: HealRunDeps 
         return;
     }
 
-    pail.error(`Failed to post ${postResult.surface} comment: ${postResult.error ?? "unknown error"}`);
+    const noun = postResult.surface === "annotation" ? "annotation" : `${postResult.surface} comment`;
+
+    pail.error(`Failed to post ${noun}: ${postResult.error ?? "unknown error"}`);
 };
 
 export const aiHeal: CommandExecute<Toolbox<Console, AiHealOptions>> = async (toolbox) => {

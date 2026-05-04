@@ -449,6 +449,64 @@ Aube reuses pnpm/npm/yarn/bun lockfile formats but its serialized output isn't b
 
 Aube supports the pnpm `catalog:` and `catalog:<name>` protocol from `pnpm-workspace.yaml`, including walk-up resolution from subpackages. No additional configuration needed.
 
+### AI
+
+Configures provider selection, cache TTL, and the allow-list for `vis ai heal accept`.
+
+```typescript
+export default defineConfig({
+    ai: {
+        // Optional: pin to a specific provider; otherwise vis auto-detects.
+        provider: "claude",
+        // Optional: override default provider priority (higher = preferred).
+        priority: { claude: 80, gemini: 50 },
+        // Optional: override the AI response cache TTL (ms).
+        cacheTtl: 3_600_000,
+        heal: {
+            // Allow-list for `vis ai heal accept`. Empty = auto-commit disabled.
+            // GitHub/GitLab: platform usernames (no leading `@`).
+            // Buildkite: BUILDKITE_UNBLOCKER_EMAIL value (preferred) or BUILDKITE_UNBLOCKER username.
+            // List both shapes for any maintainer who accepts patches across providers.
+            allowedActors: ["ada-lovelace", "maintainer@example.com"],
+        },
+    },
+});
+```
+
+| Field                  | Default        | Description                                                                                  |
+| ---------------------- | -------------- | -------------------------------------------------------------------------------------------- |
+| `ai.provider`          | auto-detect    | Pin a specific AI runner (`"claude"`, `"gemini"`, etc.). Skips detection.                    |
+| `ai.priority`          | built-in order | Override the per-provider priority. Higher numbers win when multiple are detected.           |
+| `ai.cacheTtl`          | 1 h (30 min for security analyses) | AI response cache TTL in milliseconds.                              |
+| `ai.heal.allowedActors`| `[]`           | Usernames/emails authorised to trigger `vis ai heal accept`. Empty list disables auto-commit. |
+
+The allow-list is the only gate between an AI proposal and a real commit, so vendoring `vis.config.ts` in a shared preset is the recommended way to manage it. A mismatched entry yields a provider-aware refusal that names the env var checked (`BUILDKITE_UNBLOCKER_EMAIL` on Buildkite, comment-author login on GitHub/GitLab) so the operator can fix the right thing. See the [AI integration guide](/guides/ai-integration#acceptance-vis-ai-heal-accept) for the full per-provider trigger flow.
+
+### Generator
+
+Points `vis generate` at extra template directories beyond the defaults (`.vis/templates/`, `.moon/templates/`) and the bundled builtins.
+
+```typescript
+export default defineConfig({
+    generator: {
+        templates: ["./tools/generators", "./packages/scaffolding/templates"],
+        // Optional: token forwarded to giget for `git://` / `npm://` remote
+        // templates. Falls back to GIGET_AUTH / GITHUB_TOKEN / GH_TOKEN.
+        auth: process.env.PRIVATE_TEMPLATES_TOKEN,
+        // Optional: prefer locally-cached remote templates over re-downloading.
+        preferOffline: false,
+    },
+});
+```
+
+| Field                      | Default | Description                                                                                                                                                |
+| -------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `generator.templates`      | `[]`    | Extra directories to scan. Each is checked for both native templates (`<name>.ts`) and moon-format directories (`<name>/template.yml`).                    |
+| `generator.auth`           |         | Auth token for downloading private remote templates via giget. Falls back to `GIGET_AUTH` / `GITHUB_TOKEN` / `GH_TOKEN` env vars.                          |
+| `generator.preferOffline`  | `false` | Prefer the giget cache over re-downloading. Override per-invocation with `--prefer-offline`.                                                               |
+
+Discovery and override semantics — including how to vendor a customised copy of a builtin (e.g. `buildkite-ci`) at `.vis/templates/<name>/` — are in the [`vis generate` reference](/commands/generate#discovery).
+
 ---
 
 ## project.json

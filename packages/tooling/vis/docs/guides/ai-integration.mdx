@@ -162,9 +162,9 @@ List per-target rows across the workspace. Optionally narrow to one project.
 
 ### `list_templates`
 
-List scaffolding templates discovered in `.vis/templates/`, `.moon/templates/`, and `vis.config.ts` `generator.templates`.
+List scaffolding templates discovered in `.vis/templates/`, `.moon/templates/`, `vis.config.ts` `generator.templates`, and the builtins shipped with `@visulima/vis` (e.g. `buildkite-ci`).
 
-Takes no arguments. Returns each template's `name`, `source` (`native` | `moon` | `config` | `remote`), on-disk `path`, and one-line `description`.
+Takes no arguments. Returns each template's `name`, `source` (`native` | `moon` | `config` | `builtin` | `remote`), on-disk `path`, and one-line `description`. The agent uses `source` to tell the user when a template is the bundled preset vs. their own copy — and that vendoring `.vis/templates/<builtin-name>/` is the supported way to override a builtin.
 
 ### `describe_template`
 
@@ -217,15 +217,26 @@ CI surface detection lives in [`src/ai/ci-context.ts`](https://github.com/visuli
 
 - **GitHub Actions** (`GITHUB_ACTIONS=true`): resolves the PR number from `GITHUB_REF` (`refs/pull/<n>/merge`) or the `GITHUB_EVENT_PATH` payload, captures the head SHA from the event, and reads `GITHUB_TOKEN` for REST fallback.
 - **GitLab CI** (`GITLAB_CI=true`): reads `CI_MERGE_REQUEST_IID`, `CI_API_V4_URL`, `CI_PROJECT_ID` (with `CI_PROJECT_PATH` fallback), and `GITLAB_TOKEN` / `CI_TOKEN` (the auto-injected `CI_JOB_TOKEN` cannot post MR notes — `vis ai heal` skips it deliberately).
+- **Buildkite** (`BUILDKITE=true`): captures `BUILDKITE_BUILD_ID` (annotation dedup key), `BUILDKITE_BUILD_NUMBER`, `BUILDKITE_ORGANIZATION_SLUG`, `BUILDKITE_PIPELINE_SLUG`, the literal `BUILDKITE_PULL_REQUEST` value (`"false"` for non-PR builds), and `BUILDKITE_API_BASE_URL` for self-hosted Enterprise. There is no PR-comment surface to listen to — heal acceptance flows through a [block step](https://buildkite.com/docs/pipelines/block-step) instead.
 - **Anything else**: provider is reported as `unknown` and the comment step is skipped — the patch is still applied and validated locally.
 
 Comment posting in [`src/ai/pr-comment.ts`](https://github.com/visulima/visulima/blob/main/packages/tooling/vis/src/ai/pr-comment.ts) dispatches on the resolved provider:
 
 - **GitHub**: tries `gh pr comment --body-file -` first (uses the runner's bundled `gh` and auto-injected token, falls back to `--repo` when the local clone lacks `origin`). On failure, falls back to `POST /repos/:owner/:repo/issues/:n/comments` with `GITHUB_TOKEN`.
 - **GitLab**: posts directly to `POST /projects/:id/merge_requests/:iid/notes` via the REST API. `glab` is not preinstalled on shared runners and project tokens are the standard auth shape, so `vis` skips the CLI path entirely.
+- **Buildkite**: posts a build [annotation](https://buildkite.com/docs/agent/v3/cli-annotate) via `buildkite-agent annotate` with `--context vis-ai-heal-${BUILDKITE_BUILD_ID}` so reruns update the same annotation in place. Falls back to the Buildkite REST API (`POST /v2/.../builds/{n}/annotations`, requires `BUILDKITE_API_TOKEN`, honours `BUILDKITE_API_BASE_URL`) when the agent CLI isn't available.
 - **Push-event runs**: report `posted: false, method: "skipped"` — there's no PR/MR to comment on.
 
-Pass `--dry-run` to inspect the proposal without applying or commenting; pass `--validation-timeout <seconds>` to cap how long the re-run is allowed to take (default 30 min). The PR/MR comment is bounded at ~60 KB; oversized patch sets drop the inline diff body and leave a pointer to `vis ai fix … --apply`.
+Pass `--dry-run` to inspect the proposal without applying or commenting; pass `--validation-timeout <seconds>` to cap how long the re-run is allowed to take (default 30 min). The PR/MR comment (or Buildkite annotation) is bounded at ~60 KB; oversized patch sets drop the inline diff body and leave a pointer to `vis ai fix … --apply`.
+
+### Acceptance: `vis ai heal accept`
+
+`vis ai heal accept` ([command reference](/commands/ai#heal-accept)) closes the loop: it re-validates the latest heal proposal, then commits the patch to the PR/MR branch via the upstream provider. The acceptance signal is provider-specific and lives in [`src/commands/ai/heal-accept.ts`](https://github.com/visulima/visulima/blob/main/packages/tooling/vis/src/commands/ai/heal-accept.ts):
+
+- **GitHub Actions / GitLab CI**: an allow-listed maintainer comments `/vis heal accept` on the PR/MR.
+- **Buildkite**: an allow-listed maintainer **unblocks** a block step. `BUILDKITE_UNBLOCKER_EMAIL` (preferred) or `BUILDKITE_UNBLOCKER` is the actor checked against the allow-list — there is no comment phrase. Because Buildkite has no commit API of its own, vis derives the upstream provider from `BUILDKITE_REPO` (`*github*` → GitHub, `*gitlab*` → GitLab) and commits through whichever `GITHUB_TOKEN` / `GITLAB_TOKEN` is set. Both HTTPS and SSH `BUILDKITE_REPO` shapes are recognised, and non-default ports on self-hosted GitLab (e.g. `:8443`) are preserved in the synthesised API base URL.
+
+When the trigger actor is missing from the allow-list, the error message is provider-aware so the operator can fix the right env var: GitHub/GitLab entries are platform usernames (no leading `@`), Buildkite entries are unblocker emails or Buildkite usernames. Acceptance is also refused when the change is on a forked repository — the CI token can't push to forks.
 
 ## Troubleshooting
 

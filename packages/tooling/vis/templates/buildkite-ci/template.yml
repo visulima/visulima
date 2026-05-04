@@ -1,0 +1,20 @@
+title: Buildkite CI
+description: A Buildkite pipeline.yml that runs `vis ci` against affected packages, with an optional `vis ai heal` block-step flow.
+variables:
+    targets:
+        type: string
+        default: "lint,test,build"
+        prompt: Comma-separated list of `vis ci` targets to run
+    packageManager:
+        type: enum
+        values: [pnpm, npm, yarn, bun]
+        default: pnpm
+        prompt: Package manager (used in the install line)
+    withHeal:
+        type: boolean
+        default: false
+        prompt: Include the `vis ai heal` propose + block-step accept flow?
+    agentQueue:
+        type: string
+        default: default
+        prompt: Buildkite agent queue to schedule on

@@ -10,6 +10,8 @@ import {
 const githubContext = (overrides: Partial<CiContext> = {}): CiContext => {
     return {
         apiBaseUrl: undefined,
+        buildId: undefined,
+        buildNumber: undefined,
         prNumber: 42,
         provider: "github-actions",
         repo: "owner/repo",
@@ -22,6 +24,8 @@ const githubContext = (overrides: Partial<CiContext> = {}): CiContext => {
 const gitlabContext = (overrides: Partial<CiContext> = {}): CiContext => {
     return {
         apiBaseUrl: "https://gitlab.example.com/api/v4",
+        buildId: undefined,
+        buildNumber: undefined,
         prNumber: 7,
         provider: "gitlab-ci",
         repo: "group/proj",
@@ -92,7 +96,7 @@ describe(commitFiles, () => {
         await expect(
             commitFiles({
                 branch: "main",
-                ciContext: { apiBaseUrl: undefined, prNumber: undefined, provider: "unknown", repo: undefined, sha: undefined, token: undefined },
+                ciContext: { apiBaseUrl: undefined, buildId: undefined, buildNumber: undefined, prNumber: undefined, provider: "unknown", repo: undefined, sha: undefined, token: undefined },
                 files: ["a.ts"],
                 message: "noop",
                 workspaceRoot: "/ws",

@@ -96,6 +96,37 @@ const loadGitlabTrigger = (env: NodeJS.ProcessEnv): AcceptTrigger | undefined =>
     };
 };
 
+const loadBuildkiteTrigger = (env: NodeJS.ProcessEnv): AcceptTrigger | undefined => {
+    // Buildkite has no PR-comment surface — the canonical accept
+    // signal is a block step that a maintainer manually unblocks.
+    // Buildkite then sets BUILDKITE_UNBLOCKER_* on every dependent
+    // step. The presence of the email (or username fallback) is the
+    // implicit acceptance: there's no comment body to scan, so we
+    // synthesize one containing the trigger phrase to keep the rest
+    // of the accept flow uniform.
+    const actor = env.BUILDKITE_UNBLOCKER_EMAIL ?? env.BUILDKITE_UNBLOCKER;
+
+    if (!actor) {
+        return undefined;
+    }
+
+    return {
+        actor,
+        body: TRIGGER_PHRASE,
+        // BUILDKITE_BRANCH is the source branch in the upstream remote
+        // namespace. Unlike GitHub Actions (which exposes a synthetic
+        // `refs/pull/<n>/merge` ref via GITHUB_REF on PR builds),
+        // Buildkite always reports the underlying branch — exactly what
+        // the heal commit needs to land on. For non-PR builds it's the
+        // pushed branch, same target either way.
+        headRef: env.BUILDKITE_BRANCH,
+        // Buildkite doesn't model forks at this layer; whether the
+        // upstream PR is from a fork is a property of the originating
+        // VCS (GitHub/GitLab), checked when we derive the commit context.
+        isFork: false,
+    };
+};
+
 const loadTrigger = async (ciContext: CiContext, env: NodeJS.ProcessEnv): Promise<AcceptTrigger | undefined> => {
     if (ciContext.provider === "github-actions") {
         return await loadGithubTrigger(env.GITHUB_EVENT_PATH);
@@ -103,6 +134,78 @@ const loadTrigger = async (ciContext: CiContext, env: NodeJS.ProcessEnv): Promis
 
     if (ciContext.provider === "gitlab-ci") {
         return loadGitlabTrigger(env);
+    }
+
+    if (ciContext.provider === "buildkite") {
+        return loadBuildkiteTrigger(env);
+    }
+
+    return undefined;
+};
+
+/**
+ * Buildkite is a CI host, not a VCS — accepting a heal commit means
+ * routing it back to whatever git host triggered the build (GitHub or
+ * GitLab today). This parses `BUILDKITE_REPO` and synthesises the
+ * matching VCS `CiContext` that `commitFiles` expects.
+ *
+ * Returns `undefined` when the repo URL doesn't match a supported VCS
+ * or the corresponding token isn't set; the caller surfaces a clear
+ * error so users know exactly which env var to plumb.
+ */
+const deriveBuildkiteCommitContext = (buildkite: CiContext, env: NodeJS.ProcessEnv): CiContext | undefined => {
+    const repoUrl = env.BUILDKITE_REPO;
+
+    if (!repoUrl) {
+        return undefined;
+    }
+
+    // Match git@github.com:owner/repo(.git) and https://github.com/owner/repo(.git).
+    // Also tolerate ssh://git@github.com/owner/repo URLs which some
+    // mirrors emit. The trailing .git is optional.
+    const githubMatch = /(?:^|@|\/\/)github\.com[:/]([^/]+)\/([^/]+?)(?:\.git)?\/?$/i.exec(repoUrl);
+
+    if (githubMatch && env.GITHUB_TOKEN) {
+        return {
+            apiBaseUrl: undefined,
+            buildId: undefined,
+            buildNumber: undefined,
+            prNumber: buildkite.prNumber,
+            provider: "github-actions",
+            repo: `${githubMatch[1]!}/${githubMatch[2]!}`,
+            sha: buildkite.sha,
+            token: env.GITHUB_TOKEN,
+        };
+    }
+
+    // GitLab URLs come in two shapes — keep them split so the HTTPS form
+    // can carry a `:port` in the host while the SSH form treats `:` as
+    // the host/path separator. We honour an explicit CI_API_V4_URL when
+    // set (some self-hosted GitLabs proxy the API on a sibling host),
+    // otherwise we synthesise the API base from the matched host so a
+    // non-default port survives into REST calls.
+    //
+    // HTTPS:  https://gitlab.example.com[:port]/group/sub/proj(.git)
+    const gitlabHttpsMatch = /\/\/([^/]*gitlab[^/]*)\/([^/]+)\/(.+?)(?:\.git)?\/?$/i.exec(repoUrl);
+    // SSH:    git@gitlab.example.com:group/sub/proj(.git) — `@` is mandatory
+    // here so we don't swallow the username segment into the host capture.
+    const gitlabSshMatch = gitlabHttpsMatch ? null : /@([^/:]*gitlab[^/:]*):([^/]+)\/(.+?)(?:\.git)?\/?$/i.exec(repoUrl);
+    const gitlabMatch = gitlabHttpsMatch ?? gitlabSshMatch;
+
+    if (gitlabMatch && env.GITLAB_TOKEN) {
+        const host = gitlabMatch[1]!;
+        const apiBaseUrl = env.CI_API_V4_URL ?? `https://${host}/api/v4`;
+
+        return {
+            apiBaseUrl,
+            buildId: undefined,
+            buildNumber: undefined,
+            prNumber: buildkite.prNumber,
+            provider: "gitlab-ci",
+            repo: `${gitlabMatch[2]!}/${gitlabMatch[3]!}`,
+            sha: buildkite.sha,
+            token: env.GITLAB_TOKEN,
+        };
     }
 
     return undefined;
@@ -183,7 +286,7 @@ const acceptHeal = async (toolbox: Toolbox<Console, AiHealAcceptOptions>, deps: 
     const ciContext = await (deps.detectCi ?? (() => detectCiContext(env)))();
 
     if (ciContext.provider === "unknown") {
-        pail.error("`vis ai heal accept` must run inside a recognised CI provider (GitHub Actions or GitLab CI).");
+        pail.error("`vis ai heal accept` must run inside a recognised CI provider (GitHub Actions, GitLab CI, or Buildkite).");
         process.exitCode = 1;
 
         return;
@@ -192,17 +295,21 @@ const acceptHeal = async (toolbox: Toolbox<Console, AiHealAcceptOptions>, deps: 
     const trigger = await loadTrigger(ciContext, env);
 
     if (!trigger) {
-        pail.error(
-            ciContext.provider === "github-actions"
-                ? "No issue_comment payload found. Trigger this command from a workflow listening for `issue_comment.created`."
-                : "No GitLab trigger payload found. Set VIS_HEAL_TRIGGER_BODY, VIS_HEAL_TRIGGER_ACTOR, and VIS_HEAL_HEAD_REF in the bridge that re-emits note hooks as pipeline runs.",
-        );
+        const message = ciContext.provider === "github-actions"
+            ? "No issue_comment payload found. Trigger this command from a workflow listening for `issue_comment.created`."
+            : ciContext.provider === "gitlab-ci"
+                ? "No GitLab trigger payload found. Set VIS_HEAL_TRIGGER_BODY, VIS_HEAL_TRIGGER_ACTOR, and VIS_HEAL_HEAD_REF in the bridge that re-emits note hooks as pipeline runs."
+                : "No Buildkite unblock signal found. Wire this command to run after a manually-unblocked block step so BUILDKITE_UNBLOCKER_EMAIL is set.";
+
+        pail.error(message);
         process.exitCode = 1;
 
         return;
     }
 
-    if (!trigger.body.includes(TRIGGER_PHRASE)) {
+    // On Buildkite, the block-step unblock IS the acceptance signal —
+    // there's no comment body to scan. Skip the trigger phrase check.
+    if (ciContext.provider !== "buildkite" && !trigger.body.includes(TRIGGER_PHRASE)) {
         pail.notice(`Trigger comment does not contain \`${TRIGGER_PHRASE}\`; nothing to do.`);
 
         return;
@@ -219,8 +326,18 @@ const acceptHeal = async (toolbox: Toolbox<Console, AiHealAcceptOptions>, deps: 
     }
 
     if (!trigger.actor || !allowedActors.includes(trigger.actor)) {
+        // Allow-list semantics differ per provider — surface the
+        // expected entry shape so the user knows what to add. GitHub /
+        // GitLab use platform usernames; Buildkite uses the unblocker
+        // email (or Buildkite username when the email isn't exposed).
+        const hint = ciContext.provider === "buildkite"
+            ? "Buildkite entries are emails (BUILDKITE_UNBLOCKER_EMAIL) or Buildkite usernames (BUILDKITE_UNBLOCKER), not the upstream GitHub/GitLab username."
+            : ciContext.provider === "gitlab-ci"
+                ? "GitLab entries are platform usernames (without the leading `@`)."
+                : "GitHub entries are platform usernames (without the leading `@`).";
+
         pail.error(
-            `Actor \`${trigger.actor || "(unknown)"}\` is not in \`ai.heal.allowedActors\`. Refusing to commit.`,
+            `Actor \`${trigger.actor || "(unknown)"}\` is not in \`ai.heal.allowedActors\`. Refusing to commit. ${hint}`,
         );
         process.exitCode = 1;
 
@@ -228,7 +345,11 @@ const acceptHeal = async (toolbox: Toolbox<Console, AiHealAcceptOptions>, deps: 
     }
 
     if (trigger.isFork) {
-        pail.error("Refusing to accept: the PR head is on a fork. The CI token does not have write access to the fork repository.");
+        // `isFork` is only set by the GitHub trigger today (fork PRs).
+        // GitLab MRs from forks would surface here too if/when we
+        // populate it. Buildkite leaves it false and defers the
+        // fork check to the derived upstream context.
+        pail.error("Refusing to accept: the change is from a forked repository. The CI token does not have write access to the fork.");
         process.exitCode = 1;
 
         return;
@@ -359,12 +480,33 @@ const acceptHeal = async (toolbox: Toolbox<Console, AiHealAcceptOptions>, deps: 
         "Auto-committed by `vis ai heal accept`.",
     ].join("\n");
 
+    // Buildkite is a CI host, not a VCS — route the commit through the
+    // upstream git provider derived from BUILDKITE_REPO + the relevant
+    // VCS token. The original Buildkite ciContext is still used below
+    // to post the confirmation as an annotation.
+    let commitContext = ciContext;
+
+    if (ciContext.provider === "buildkite") {
+        const derived = deriveBuildkiteCommitContext(ciContext, env);
+
+        if (!derived) {
+            pail.error(
+                "Cannot determine the upstream VCS to commit to. Buildkite jobs need GITHUB_TOKEN or GITLAB_TOKEN set (matching the host parsed from BUILDKITE_REPO) for `vis ai heal accept` to land the commit.",
+            );
+            process.exitCode = 1;
+
+            return;
+        }
+
+        commitContext = derived;
+    }
+
     let commit: CommitFilesResult;
 
     try {
         commit = await commitFiles({
             branch,
-            ciContext,
+            ciContext: commitContext,
             files: appliedFiles,
             message,
             workspaceRoot,
@@ -394,7 +536,9 @@ export const aiHealAccept: CommandExecute<Toolbox<Console, AiHealAcceptOptions>>
 
 export {
     acceptHeal as runHealAcceptForTesting,
+    deriveBuildkiteCommitContext as deriveBuildkiteCommitContextForTesting,
     fetchGithubHeadRef as fetchGithubHeadRefForTesting,
+    loadBuildkiteTrigger as loadBuildkiteTriggerForTesting,
     loadGithubTrigger as loadGithubTriggerForTesting,
     loadGitlabTrigger as loadGitlabTriggerForTesting,
     summariseDetail as summariseDetailForTesting,
