@@ -11,15 +11,15 @@ export const EMPTY_CELL_REPRESENTATION = "__EMPTY__";
  */
 export const normalizeGridCell = (cell: GridCell): InternalGridItem => {
     if (typeof cell === "string") {
-        return { content: cell } as InternalGridItem;
+        return { content: cell };
     }
 
     if (typeof cell === "number" || typeof cell === "bigint" || typeof cell === "boolean") {
-        return { content: String(cell) } as InternalGridItem;
+        return { content: String(cell) };
     }
 
     if (cell === null || cell === undefined) {
-        return { content: EMPTY_CELL_REPRESENTATION } as InternalGridItem; // Represent null/undefined as empty string
+        return { content: EMPTY_CELL_REPRESENTATION }; // Represent null/undefined as empty string
     }
 
     if (typeof cell === "object" && "content" in cell) {
@@ -35,7 +35,7 @@ export const normalizeGridCell = (cell: GridCell): InternalGridItem => {
             );
         }
 
-        return { ...cell, content } as InternalGridItem;
+        return { ...cell, content };
     }
 
     // If it's none of the above, throw an error (e.g., bigint, boolean, function)
