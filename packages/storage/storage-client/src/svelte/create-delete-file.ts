@@ -51,9 +51,7 @@ export const createDeleteFile = (options: CreateDeleteFileOptions): CreateDelete
         };
     });
 
-    const errorStore = derived((mutation.error as Readable<Error | null> | null) ?? readable<Error | null>(undefined), ($error) =>
-        ($error ? ($error as Error) : undefined),
-    );
+    const errorStore = derived((mutation.error as Readable<Error | null> | null) ?? readable<Error | null>(), ($error) => $error ?? undefined);
     const isLoadingStore: Readable<boolean>
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TanStack Query mutation type is complex
         = typeof (mutation.isPending as any) === "object" && (mutation.isPending as any) !== null && "subscribe" in (mutation.isPending as any)
