@@ -1,3 +1,21 @@
+## @visulima/tui [1.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/tui@1.0.0-alpha.5...@visulima/tui@1.0.0-alpha.6) (2026-05-04)
+
+### Bug Fixes
+
+* declare libc on linux binding subpackages ([078b31f](https://github.com/visulima/visulima/commit/078b31f1a9029487c86651e75ecdad70f02b37e8)), closes [npm/cli#4828](https://github.com/npm/cli/issues/4828)
+
+### Documentation
+
+* **tui:** cover 51 components, 4 hooks, ink PR ports ([0138e99](https://github.com/visulima/visulima/commit/0138e99694d82c0789bae32977480ee9dc61aa79)), closes [123/#125](https://github.com/123/visulima/issues/125)
+
+### Miscellaneous Chores
+
+* **deps:** bump rust crates to current majors ([3a1d9bb](https://github.com/visulima/visulima/commit/3a1d9bb7f6e2c6b2d3862e212ae62707d60815cc))
+
+### Tests
+
+* **tui:** replace fragile delay() waits with vi.waitFor ([1e90e64](https://github.com/visulima/visulima/commit/1e90e64a454c8ed3ed058f1c4ee286357192904f))
+
 ## @visulima/tui [1.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/tui@1.0.0-alpha.4...@visulima/tui@1.0.0-alpha.5) (2026-04-28)
 
 ### Bug Fixes
