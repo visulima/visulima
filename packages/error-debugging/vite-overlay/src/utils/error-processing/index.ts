@@ -42,17 +42,16 @@ const escapeHtml = (text: string): string => text.replaceAll(HTML_SPECIAL_CHARS_
  * @returns Array of individual error objects
  */
 const extractIndividualErrors = (error: Error): Error[] => {
-    if (Array.isArray(error) && isESBuildErrorArray(error as unknown[])) {
+    if (Array.isArray(error) && isESBuildErrorArray(error)) {
         const processedErrors = processESBuildErrors(error as ESBuildMessage[]);
 
-        return processedErrors.map(
-            (processedError) =>
-                ({
-                    message: processedError.message || "ESBuild error",
-                    name: processedError.name || "Error",
-                    stack: processedError.stack || "",
-                }) as Error,
-        );
+        return processedErrors.map((processedError) => {
+            return {
+                message: processedError.message || "ESBuild error",
+                name: processedError.name || "Error",
+                stack: processedError.stack || "",
+            };
+        });
     }
 
     return extractErrors(error);
@@ -658,7 +657,7 @@ const buildExtendedErrorData = async (
                 message: cleanMessage,
                 name: primaryError.name,
                 stack: cleanedStack,
-            } as Error),
+            }),
             {
                 header: { message: cleanMessage, name: primaryError.name },
             },
