@@ -119,14 +119,10 @@ export const CodePreview: FC<
                 <div className="flex items-center justify-between gap-3 pb-4">
                     <TabsList>
                         <TabsTrigger value="preview">
-                            <Eye className="mr-2.5 size-4" />
-{" "}
-Preview
+                            <Eye className="mr-2.5 size-4" /> Preview
                         </TabsTrigger>
                         <TabsTrigger value="code">
-                            <Code2 className="mr-2.5 size-4" />
-{" "}
-Code
+                            <Code2 className="mr-2.5 size-4" /> Code
                         </TabsTrigger>
                     </TabsList>
 

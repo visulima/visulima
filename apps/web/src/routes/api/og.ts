@@ -23,7 +23,7 @@ function generateOgSvg(title: string, description: string, accentColor: string):
 }
 
 function escapeXml(text: string): string {
-    return text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&apos;");
+    return text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&apos;");
 }
 
 export const Route = createFileRoute("/api/og")({

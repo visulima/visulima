@@ -84,8 +84,8 @@ const CategoryFilter: FC<{
                             ? "border-gray-900 bg-gray-900 text-white"
                             : "border-gray-200 text-gray-400 hover:border-gray-400 hover:text-gray-600"
                         : active === cat
-                            ? "border-white/20 bg-white/10 text-white"
-                            : "border-white/6 text-white/40 hover:border-white/10 hover:text-white/60",
+                          ? "border-white/20 bg-white/10 text-white"
+                          : "border-white/6 text-white/40 hover:border-white/10 hover:text-white/60",
                 )}
                 key={cat}
                 onClick={() => {
@@ -147,10 +147,10 @@ const PackagesListing: FC = () => {
 
             result = result.filter(
                 (p) =>
-                    p.name.toLowerCase().includes(query)
-                    || p.description.toLowerCase().includes(query)
-                    || p.npmName.toLowerCase().includes(query)
-                    || p.category.toLowerCase().includes(query),
+                    p.name.toLowerCase().includes(query) ||
+                    p.description.toLowerCase().includes(query) ||
+                    p.npmName.toLowerCase().includes(query) ||
+                    p.category.toLowerCase().includes(query),
             );
         }
 

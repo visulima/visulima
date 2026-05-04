@@ -273,13 +273,13 @@ const Logo = ({ pathname }: { pathname: string }) => {
         setIsOpen(true);
     };
 
-    const itemClass
-        = "block select-none space-y-1 p-3 leading-none no-underline outline-hidden transition-colors hover:white/10 hover:text-accent-foreground focus:white/10 text-sm flex items-center gap-2";
+    const itemClass =
+        "block select-none space-y-1 p-3 leading-none no-underline outline-hidden transition-colors hover:white/10 hover:text-accent-foreground focus:white/10 text-sm flex items-center gap-2";
 
     return (
         <div className="relative">
             <div className="logo-context-menu" onContextMenu={handleContextMenu}>
-                <Link className="group relative z-20 flex items-center gap-2" to={(pathname.startsWith("/docs") ? "/docs/$" : "/")}>
+                <Link className="group relative z-20 flex items-center gap-2" to={pathname.startsWith("/docs") ? "/docs/$" : "/"}>
                     <VisulimaLogo className="h-8 w-8" title="Visulima" />
                     <span className="text-[var(--nav-text-color)] transition-colors hover:[var(--nav-text-color)]/80">
                         {pathname.startsWith("/docs") ? "Documentation" : null}
@@ -293,9 +293,7 @@ const Logo = ({ pathname }: { pathname: string }) => {
             >
                 <li>
                     <span className={itemClass} onClick={() => navigator.clipboard.writeText(visulimaLogoRaw)}>
-                        <VisulimaLogo className="h-4 w-4" title="Visulima" />
-{" "}
-Copy Logo as SVG
+                        <VisulimaLogo className="h-4 w-4" title="Visulima" /> Copy Logo as SVG
                     </span>
                 </li>
                 <li className="py-2">
@@ -303,16 +301,12 @@ Copy Logo as SVG
                 </li>
                 <li>
                     <Link className={itemClass} target="_blank" to="/brand">
-                        <Signature className="h-4 w-4" />
-{" "}
-Brand Guidelines
+                        <Signature className="h-4 w-4" /> Brand Guidelines
                     </Link>
                 </li>
                 <li>
                     <Link className={itemClass} target="_blank" to="/">
-                        <Home className="h-4 w-4" />
-{" "}
-Home Page
+                        <Home className="h-4 w-4" /> Home Page
                     </Link>
                 </li>
             </ul>

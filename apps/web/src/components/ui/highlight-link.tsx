@@ -13,8 +13,8 @@ type SharedProperties = {
 
 type InternalLinkProperties = CreateLinkProps & SharedProperties;
 
-type ExternalLinkProperties = AnchorHTMLAttributes<HTMLAnchorElement>
-    & SharedProperties & {
+type ExternalLinkProperties = AnchorHTMLAttributes<HTMLAnchorElement> &
+    SharedProperties & {
         href: string;
     };
 
