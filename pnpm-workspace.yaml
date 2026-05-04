@@ -701,7 +701,7 @@ catalogs:
   utils:
     embla-carousel-react: 8.6.0
     use-count-up: 3.0.1
-    zod: 4.4.1
+    zod: 4.4.2
 
 dedupeInjectedDeps: true
 
