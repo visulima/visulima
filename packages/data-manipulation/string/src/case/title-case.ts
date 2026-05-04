@@ -20,7 +20,7 @@ const defaultCacheStore = new LRUCache<string, string>(1000);
 // eslint-disable-next-line func-style
 function titleCase<T extends string = string>(value?: T, options?: CaseOptions): TitleCase<T> {
     if (typeof value !== "string") {
-        return "" as TitleCase<T>;
+        return "";
     }
 
     const shouldCache = options?.cache ?? false;

@@ -17,6 +17,6 @@ const defaultCacheStore = new LRUCache<string, string>(1000);
  * ```
  */
 const snakeCase = <T extends string = string>(value?: T, options?: CaseOptions): SnakeCase<T> =>
-    kebabCase(value, { cacheStore: defaultCacheStore, ...options, joiner: "_" }) as SnakeCase<T>;
+    kebabCase(value, { cacheStore: defaultCacheStore, ...options, joiner: "_" });
 
 export default snakeCase;

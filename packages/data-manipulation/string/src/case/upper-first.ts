@@ -13,12 +13,12 @@ import type { LocaleOptions, UpperFirst } from "./types";
  */
 const upperFirst = <T extends string = string>(value?: T, options?: LocaleOptions): UpperFirst<T> => {
     if (typeof value !== "string" || value === "") {
-        return "" as UpperFirst<T>;
+        return "";
     }
 
     const firstChar = options?.locale ? (value[0] as string).toLocaleUpperCase(options.locale) : (value[0] as string).toUpperCase();
 
-    return (firstChar + value.slice(1)) as UpperFirst<T>;
+    return firstChar + value.slice(1);
 };
 
 export default upperFirst;
