@@ -111,11 +111,51 @@
                 { "type": "boolean" },
                 {
                     "type": "object",
-                    "description": "Per-detector opt-out. Keys are detector names (`vite`, `vitest`, `packem`); set to `false` to disable. Detectors omitted from the object stay enabled.",
-                    "additionalProperties": { "type": "boolean" }
+                    "description": "Per-detector opt-out map. Keys must be one of the 36 built-in detector names; set a key to `false` to disable that detector. Detectors omitted from the object stay enabled. Unknown keys log a warning at config-load time.",
+                    "additionalProperties": { "type": "boolean" },
+                    "propertyNames": {
+                        "enum": [
+                            "nuxt",
+                            "next",
+                            "remix",
+                            "astro",
+                            "gatsby",
+                            "docusaurus",
+                            "vite",
+                            "vitepress",
+                            "nest",
+                            "rolldown",
+                            "tsdown",
+                            "tsup",
+                            "packem",
+                            "rollup",
+                            "webpack",
+                            "vitest",
+                            "jest",
+                            "bun",
+                            "playwright",
+                            "cypress",
+                            "storybook",
+                            "typescript",
+                            "typedoc",
+                            "eslint",
+                            "prettier",
+                            "biome",
+                            "oxlint",
+                            "oxfmt",
+                            "stylelint",
+                            "knip",
+                            "deno",
+                            "prisma",
+                            "drizzle",
+                            "graphql-codegen",
+                            "api-extractor",
+                            "changeset"
+                        ]
+                    }
                 }
             ],
-            "description": "Project Crystal-style inference: synthesize default targets (build/test/dev/...) from config files and dependencies (vite, packem, vitest). Inferred targets are the lowest-priority layer — package.json scripts, project.json, and vis.task.ts always win. Boolean `true` enables every detector; the object form opts individual detectors in or out."
+            "description": "Project Crystal-style inference. Synthesizes default targets (`build`, `test`, `dev`, `lint`, `format`, `typecheck`, `docs`, `db:*`, …) for each project by sniffing config files and `package.json` dependencies. Ships with 36 detectors covering app frameworks (nuxt, next, remix, astro, gatsby, docusaurus), bundlers (vite, rolldown, tsdown, tsup, packem, rollup, webpack), test runners (vitest, jest, bun, deno, playwright, cypress), lint/format tools (eslint, prettier, biome, oxlint, oxfmt, stylelint, knip), docs (typedoc, vitepress), DB tooling (prisma, drizzle), and release plumbing (graphql-codegen, api-extractor, changeset). Inferred targets are the lowest-priority layer — package.json scripts, project.json, and vis.task.ts always win on a per-target-name basis. Boolean `true` enables every detector; the object form opts individual detectors in or out by name. See `vis list --inferred` to inspect what each project resolves to."
         },
         "create": {
             "type": "object",

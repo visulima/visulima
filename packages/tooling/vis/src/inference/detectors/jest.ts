@@ -1,13 +1,14 @@
 import type { DetectedTargets, Detector } from "../types";
 
-export const vitestDetector: Detector = {
-    configFiles: ["vitest.config.ts", "vitest.config.js", "vitest.config.mjs", "vitest.config.mts", "vitest.config.cjs"],
+export const jestDetector: Detector = {
+    configFiles: ["jest.config.ts", "jest.config.js", "jest.config.mjs", "jest.config.mts", "jest.config.cjs", "jest.config.json"],
     detect: ({ hasConfigFile, matchedConfigs }) => {
         const configRef = matchedConfigs[0] ? `{projectRoot}/${matchedConfigs[0]}` : undefined;
+
         const targets: DetectedTargets["targets"] = {
             test: {
-                command: "vitest run",
-                description: "vitest run (inferred)",
+                command: "jest",
+                description: "jest (inferred)",
                 inputs: [
                     "{projectRoot}/src/**/*",
                     "{projectRoot}/__tests__/**/*",
@@ -21,19 +22,16 @@ export const vitestDetector: Detector = {
             },
         };
 
-        // Watch-mode is a long-running interactive process — only emit
-        // it when a vitest config file actually exists, so dep-only
-        // matches don't sprout a phantom watcher.
         if (hasConfigFile) {
             targets["test:watch"] = {
-                command: "vitest",
-                description: "vitest watch mode (inferred)",
+                command: "jest --watch",
+                description: "jest watch mode (inferred)",
                 preset: "server",
             };
         }
 
         return { targets };
     },
-    fallbackDependency: "vitest",
-    name: "vitest",
+    fallbackDependency: "jest",
+    name: "jest",
 };
