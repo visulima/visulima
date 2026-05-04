@@ -73,10 +73,10 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@modelcontextprotocol/sdk": "^1.26.0",
+        "@modelcontextprotocol/sdk": "^1.29.0",
         "@visulima/fs": "5.0.0-alpha.12",
         "@visulima/path": "3.0.0-alpha.10",
-        "zod": "^3.25.76"
+        "zod": "catalog:utils"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",
