@@ -145,7 +145,7 @@ const defaultPromptFilter = async (input: NodeJS.ReadableStream, output: NodeJS.
  */
 export const installKeybinds = (options: InstallKeybindsOptions): KeybindHandle => {
     const { handlers } = options;
-    const input = options.input ?? (process.stdin);
+    const input = options.input ?? process.stdin;
     const output = options.output ?? process.stdout;
     const promptFilter = options.promptFilter ?? defaultPromptFilter;
 
@@ -239,11 +239,14 @@ export const installKeybinds = (options: InstallKeybindsOptions): KeybindHandle 
         });
     };
 
-    input.on("keypress", onKeypress);
+    // The intersection type breaks `.on`/`.off` overload resolution; narrow to `EventEmitter`.
+    const eventEmitter = input as NodeJS.EventEmitter;
+
+    eventEmitter.on("keypress", onKeypress);
 
     return {
         close: () => {
-            input.off("keypress", onKeypress);
+            eventEmitter.off("keypress", onKeypress);
 
             if (!previousIsRaw) {
                 try {
