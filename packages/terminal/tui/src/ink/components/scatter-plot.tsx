@@ -78,8 +78,7 @@ export default function ScatterPlot({
                 version={[series, width, height, minX, maxX, minY, maxY, axisColor, palette]}
                 width={width}
             />
-            {showLegend
-                ? (
+            {showLegend ? (
                 <Box gap={2} marginTop={1}>
                     {config.seriesList.map(({ color, series: input }, index) => (
                         // Composite key: series index plus label so two
@@ -91,8 +90,7 @@ export default function ScatterPlot({
                         </Box>
                     ))}
                 </Box>
-                )
-                : undefined}
+            ) : undefined}
         </Box>
     );
 }

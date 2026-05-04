@@ -191,8 +191,7 @@ export default function BarChart({
                 version={[data, computedMax, palette, barWidth, gap, height]}
                 width={plotWidth}
             />
-            {showValues
-                ? (
+            {showValues ? (
                 <Box>
                     {data.map((datum, index) => (
                         // eslint-disable-next-line react-x/no-array-index-key -- chart column index is stable for the render
@@ -201,10 +200,8 @@ export default function BarChart({
                         </Box>
                     ))}
                 </Box>
-                )
-                : undefined}
-            {showLabels
-                ? (
+            ) : undefined}
+            {showLabels ? (
                 <Box>
                     {data.map((datum, index) => (
                         // eslint-disable-next-line react-x/no-array-index-key -- chart column index is stable for the render
@@ -215,8 +212,7 @@ export default function BarChart({
                         </Box>
                     ))}
                 </Box>
-                )
-                : undefined}
+            ) : undefined}
         </Box>
     );
 }

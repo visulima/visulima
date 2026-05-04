@@ -156,9 +156,7 @@ export default function Heatmap({
                     version={[data, palette, cellWidth, minOverride, maxOverride]}
                     width={width}
                 />
-                {columnLabels === undefined
-                    ? undefined
-                    : (
+                {columnLabels === undefined ? undefined : (
                     <Box>
                         {columnLabels.map((label, index) => (
                             // eslint-disable-next-line react-x/no-array-index-key -- column index is stable for the render
@@ -169,7 +167,7 @@ export default function Heatmap({
                             </Box>
                         ))}
                     </Box>
-                    )}
+                )}
             </Box>
         </Box>
     );

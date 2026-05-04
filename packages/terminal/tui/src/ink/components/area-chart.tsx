@@ -197,8 +197,7 @@ export default function AreaChart({
                 version={[series, width, height, minY, maxY, fillDensity, axisColor, palette]}
                 width={width}
             />
-            {showLegend
-                ? (
+            {showLegend ? (
                 <Box gap={2} marginTop={1}>
                     {prepared.list.map(({ color, series: input }, index) => (
                         // Composite key: series index plus label so two
@@ -210,8 +209,7 @@ export default function AreaChart({
                         </Box>
                     ))}
                 </Box>
-                )
-                : undefined}
+            ) : undefined}
         </Box>
     );
 }
