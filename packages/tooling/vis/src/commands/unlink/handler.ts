@@ -6,7 +6,7 @@ import type { UnlinkOptions } from "./index";
 const execute = async ({ argument, logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, UnlinkOptions>): Promise<void> => {
     const packages = argument || [];
     const cwd = wsRoot ?? process.cwd();
-    const pm = resolveInstaller(cwd, { configBackend: visConfig?.install?.backend });
+    const pm = resolveInstaller(cwd, { configBackend: visConfig?.install?.backend, configCorepack: visConfig?.install?.corepack });
 
     const code = runUnlink(pm, packages, options.recursive || false, cwd, logger);
 

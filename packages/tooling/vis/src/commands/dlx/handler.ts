@@ -12,7 +12,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
 
     const [pkg, ...rest] = args;
     const cwd = wsRoot ?? process.cwd();
-    const pm = resolveInstaller(cwd, { configBackend: visConfig?.install?.backend });
+    const pm = resolveInstaller(cwd, { configBackend: visConfig?.install?.backend, configCorepack: visConfig?.install?.corepack });
 
     const additionalPackages = options.package ? (Array.isArray(options.package) ? options.package : [options.package as unknown as string]) : [];
 

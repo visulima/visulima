@@ -546,7 +546,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
 
     // Default to current directory; workspace root used only for PM detection
     const cwd = process.cwd();
-    const pm = resolveInstaller(wsRoot ?? cwd, { configBackend: visConfig?.install?.backend });
+    const pm = resolveInstaller(wsRoot ?? cwd, { configBackend: visConfig?.install?.backend, configCorepack: visConfig?.install?.corepack });
 
     // Secure-by-default: lifecycle scripts are off unless the user opts in
     // with --run-scripts. Mirrors pnpm v10's universal block-then-allowlist

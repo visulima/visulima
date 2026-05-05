@@ -23,19 +23,14 @@ deno@…`, `npm_config_user_agent`), every resolver in `pm_resolve.rs`
 `exec` → `deno task`, `pm` umbrella maps to nearest deno equivalents),
 and the TS dispatcher in `pm-runner.ts`/`package-manager.ts`.
 
-### 2. No corepack passthrough
+### 2. ~~No corepack passthrough~~ — **shipped**
 
-vis treats corepack as a _version manager_
-(`runtime/toolchain.ts`, `SUPPORTED_MANAGERS`), but `runResolved`
-invokes `pnpm` / `yarn` directly. If `packageManager` field pins
-`pnpm@9.x` and the user only has corepack on PATH, vis runs whichever
-shim wins.
-
-nypm has an opt-in `corepack: true` that prefixes commands with
-`corepack`.
-
-**Action:** add `install.corepack` config, or auto-detect when
-`packageManager` field is present and `corepack` is on PATH.
+`install.corepack` config (`"auto" | true | false`, default `"auto"`)
+threads through every PM dispatcher. `applyCorepack` in
+`pm-runner.ts` rewrites `{ bin: "pnpm", args: [...] }` into
+`{ bin: "corepack", args: ["pnpm", ...] }` for npm/pnpm/yarn when
+corepack is on PATH and `packageManager` is pinned. bun, deno, and
+aube are skipped — corepack does not manage them.
 
 ### 3. No `npm_config_user_agent` fallback in detection
 
@@ -56,12 +51,6 @@ useful for tests and override scenarios.
 integrity hash. nypm preserves it as `buildMeta` so callers can verify
 a corepack pin. Low-effort retention.
 
-### 6. No `ensureDependencyInstalled(name)` equivalent
-
-Common embedder need: "make sure `vitest` is in devDeps; if not, add
-it." vis has `add` but no idempotent check-then-add. The `generate`
-runner could use it internally.
-
 ### 7. ~~No `installPeerDependencies` option on add~~ — **shipped**
 
 `vis add --auto-install-peers` now mirrors nypm's `installPeerDependencies`.
@@ -72,12 +61,13 @@ skipped), and recursively adds the peers that aren't already present
 in the workspace. Opt-in (matches nypm's default). Deno is excluded —
 it has no peer-dependency concept.
 
-### 8. Unified `dry` / `silent` / `env` only partially wired
+### 8. ~~Unified `dry` / `silent` / `env` only partially wired~~ — **shipped**
 
-`--dry-run` exists on update (`pm_resolve.rs:486`); `silent` exists on
-`InstallOptions` / `DlxOptions` only. nypm passes them uniformly.
-`execPmCommandInteractive` also has no per-call env injection (process
-env only).
+`RunOverrides { dry?, env? }` plus a `silent?` extra threads through
+every `runResolved` / `resolveAndRun` call site. `applyDryRun` and
+`applySilent` post-process the resolved command per-PM. `env` triggers
+a `spawnSync` fallback so per-call env injection works without
+changing the Rust ABI.
 
 ### 9. `bun dedupe` / `deno dedupe` fallback
 
@@ -92,19 +82,24 @@ rm-lockfile + reinstall fallback that nypm uses.
 
 ## API surface gaps (only if vis becomes a library)
 
-### 10. No public command-generator export
+### 6. No `ensureDependencyInstalled(name)` equivalent — **out of scope**
 
-nypm ships `installDependenciesCommand`, `addDependencyCommand`,
-`runScriptCommand`, `dlxCommand` returning `{ bin, args }`. vis's
-resolvers are NAPI-internal and `aube-resolver.ts` is not in
-`package.json` `exports`. If third parties should embed vis's PM logic
-(the way Nuxt embeds nypm), expose them under `@visulima/vis/pm`.
+Embedder API (Nuxt-style: "make sure vitest is in devDeps before I run
+my generator"). vis is a CLI, not a library, so it has no need for an
+idempotent check-then-add helper exposed to callers. The underlying
+primitives (`collectExistingDeps`, `runAdd`) remain available
+internally if a future `vis generate` step ever needs them.
 
-### 11. No programmatic `runScript(name)`
+### 10. No public command-generator export — **out of scope**
 
-`vis run` is CLI-only. nypm's `runScript("build")` resolves to
-`pnpm run build` / `yarn build` / `bun run build` etc. A thin wrapper
-over `resolvePmCommand` with `subcommand="run"` would suffice.
+vis is a CLI runner, not a PM library. The resolvers stay
+NAPI-internal; `aube-resolver.ts` stays out of `package.json` exports.
+Embedders that want this surface should depend on nypm directly.
+
+### 11. No programmatic `runScript(name)` — **out of scope**
+
+Same reasoning: vis is invoked from the shell, not imported. CLI
+callers use `vis run <script>`.
 
 ---
 
@@ -133,13 +128,13 @@ feature-parity with nypm is the goal.
 | Priority     | Item                                | Effort | Status                                      |
 | ------------ | ----------------------------------- | ------ | ------------------------------------------- |
 | High         | 1. deno support                     | M      | **shipped**                                 |
-| High         | 2. corepack passthrough             | S      | open                                        |
+| High         | 2. corepack passthrough             | S      | **shipped** (`install.corepack`)            |
 | High         | 3. `npm_config_user_agent` fallback | S      | **shipped** (in pm_detect.rs)               |
-| High         | 6. `ensureDependencyInstalled`      | S      | open                                        |
+| High         | 7. `--auto-install-peers` on add    | S      | **shipped**                                 |
 | Med          | 4. detect opt-out flags             | S      | **shipped** (`DetectPackageManagerOptions`) |
 | Med          | 5. `buildMeta` retention            | XS     | **shipped**                                 |
-| Med          | 8. unified `dry` / `silent` / `env` | M      | open                                        |
+| Med          | 8. unified `dry` / `silent` / `env` | M      | **shipped** (`RunOverrides`)                |
 | Low          | 9. bun/deno dedupe fallback         | S      | **shipped** (deno reinstall fallback)       |
-| Library-only | 10. public command generators       | M      | open                                        |
-| Library-only | 11. programmatic `runScript`        | XS     | open                                        |
-| High         | 7. `--auto-install-peers` on add    | S      | **shipped**                                 |
+| Library-only | 6. `ensureDependencyInstalled`      | S      | **out of scope** (vis is a CLI)             |
+| Library-only | 10. public command generators       | M      | **out of scope** (vis is a CLI)             |
+| Library-only | 11. programmatic `runScript`        | XS     | **out of scope** (vis is a CLI)             |

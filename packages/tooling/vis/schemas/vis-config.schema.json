@@ -253,6 +253,19 @@
                     ],
                     "description": "Which package manager performs install/add/remove/etc.\n- `auto` (default): use `aube` when it is on PATH; otherwise   fall back to the lockfile-detected PM.\n- explicit name: always use that PM. Errors when the named   binary is missing rather than silently falling back.",
                     "default": "auto"
+                },
+                "corepack": {
+                    "anyOf": [
+                        {
+                            "type": "string",
+                            "const": "auto"
+                        },
+                        {
+                            "type": "boolean"
+                        }
+                    ],
+                    "description": "Whether to dispatch PM invocations through `corepack`.\n- `\"auto\"` (default): use corepack only when the workspace   pins a PM via the `packageManager` field AND `corepack` is   on PATH AND the PM is one corepack manages (pnpm/yarn/npm).\n- `true`: always prefix `corepack` when the binary is on PATH   and the PM is corepack-managed (errors loudly otherwise).\n- `false`: never go through corepack — invoke the PM directly.\n\nMirrors nypm's `corepack: true` flag. Bun, deno, and aube are never wrapped — corepack does not manage them.",
+                    "default": "auto"
                 }
             },
             "additionalProperties": false,
