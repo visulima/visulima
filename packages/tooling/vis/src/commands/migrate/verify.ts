@@ -269,12 +269,20 @@ const scanCatalogs = (root: string): VerificationIssue[] => {
 };
 
 /**
+ * Pure scan with no logging — exposed so callers like `vis doctor` can
+ * surface leftover migration references without going through the
+ * verify command's logger.
+ */
+export const scanMigrationLeftovers = (root: string): VerificationIssue[] =>
+    [...scanPackageJson(root), ...scanHooks(root), ...scanConfigs(root), ...scanCi(root), ...scanCatalogs(root)];
+
+/**
  * Check that a prior `vis migrate gitleaks` / `secretlint` / `syncpack` run was
  * complete: no stray scripts, devDependencies, hooks, or configs referencing
  * the old tools. Safe to run repeatedly — purely read-only.
  */
 export const verifyMigration = (root: string, logger: MigrateLogger): VerificationIssue[] => {
-    const issues = [...scanPackageJson(root), ...scanHooks(root), ...scanConfigs(root), ...scanCi(root), ...scanCatalogs(root)];
+    const issues = scanMigrationLeftovers(root);
 
     if (issues.length === 0) {
         logger.info("✓ No unmigrated gitleaks/secretlint/syncpack references found.");
