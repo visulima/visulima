@@ -47,7 +47,7 @@ export interface ExtraTypeMeta {
     /** Required when `strategy === "string"`. */
     depName?: string;
     path: string;
-    strategy: "name@version" | "string" | "versionsByName";
+    strategy: "name@version" | "name~version" | "string" | "versionsByName";
 }
 
 /**
@@ -115,6 +115,7 @@ const ENGINES_FIELDS = ["engines", "volta"] as const;
 const VOLTA_META_FIELDS = new Set(["extends"]);
 
 const PACKAGE_MANAGER_REGEX = /^([@\w./-]+?)@([^+]+)(\+.+)?$/;
+const NAME_TILDE_VERSION_REGEX = /^([@\w./-]+)~(.+)$/;
 
 interface ParsedPackageManager {
     hash: string;
@@ -132,6 +133,20 @@ const parsePackageManager = (raw: string): ParsedPackageManager | undefined => {
     return { hash: match[3] ?? "", name: match[1], version: match[2] };
 };
 
+/**
+ * Parse a `name~version` literal. Unlike `name@version` there's no hash
+ * suffix — syncpack's tilde form is a plain split on the first `~`.
+ */
+const parseNameTildeVersion = (raw: string): { name: string; version: string } | undefined => {
+    const match = NAME_TILDE_VERSION_REGEX.exec(raw.trim());
+
+    if (!match?.[1] || !match[2]) {
+        return undefined;
+    }
+
+    return { name: match[1], version: match[2] };
+};
+
 const isPlainObject = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
 
 interface DevEnginesEntry {
@@ -143,7 +158,7 @@ interface DevEnginesEntry {
 const isDevEnginesEntry = (value: unknown): value is DevEnginesEntry =>
     typeof value === "object" && value !== null && !Array.isArray(value) && typeof (value as DevEnginesEntry).name === "string";
 
-const STRATEGIES: ReadonlySet<ExtraTypeMeta["strategy"]> = new Set(["name@version", "string", "versionsByName"]);
+const STRATEGIES: ReadonlySet<ExtraTypeMeta["strategy"]> = new Set(["name@version", "name~version", "string", "versionsByName"]);
 
 /**
  * Validate a `policy.customTypes.extraTypes` config block. Returns one
@@ -186,7 +201,7 @@ export const validateExtraTypes = (extraTypes: ExtraCustomType[] | undefined): s
         }
 
         if (!STRATEGIES.has(entry.strategy)) {
-            errors.push(`extraTypes[${label}]: invalid strategy "${String(entry.strategy)}" (expected name@version | string | versionsByName)`);
+            errors.push(`extraTypes[${label}]: invalid strategy "${String(entry.strategy)}" (expected name@version | name~version | string | versionsByName)`);
         }
 
         if (entry.strategy === "string" && (typeof entry.depName !== "string" || entry.depName.length === 0)) {
@@ -267,6 +282,31 @@ const iterateExtraType = (
         }
 
         const parsed = parsePackageManager(block);
+
+        if (!parsed) {
+            return [];
+        }
+
+        return [
+            {
+                customType: extraType.name,
+                depName: parsed.name,
+                extra: meta,
+                packageDir,
+                packageJsonPath,
+                packageName,
+                rawValue: block,
+                specifier: parsed.version,
+            },
+        ];
+    }
+
+    if (extraType.strategy === "name~version") {
+        if (typeof block !== "string") {
+            return [];
+        }
+
+        const parsed = parseNameTildeVersion(block);
 
         if (!parsed) {
             return [];
@@ -606,6 +646,24 @@ const applyExtraTypeFix = (pkg: Record<string, unknown>, issue: CustomTypeDriftI
         }
 
         parent[leafKey] = `${parsed.name}@${issue.fix}`;
+
+        return true;
+    }
+
+    if (meta.strategy === "name~version") {
+        const raw = parent[leafKey];
+
+        if (typeof raw !== "string") {
+            return false;
+        }
+
+        const parsed = parseNameTildeVersion(raw);
+
+        if (!parsed) {
+            return false;
+        }
+
+        parent[leafKey] = `${parsed.name}~${issue.fix}`;
 
         return true;
     }

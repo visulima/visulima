@@ -180,6 +180,16 @@ const update: Command = {
             name: "no-typosquat-check",
             type: Boolean,
         },
+        {
+            description: "Cap concurrent registry requests during outdated checks (default: 8)",
+            name: "max-concurrent-requests",
+            type: Number,
+        },
+        {
+            description: "Release channel filter: stable (default), same (match current's prerelease channel), or any",
+            name: "release-channel",
+            type: String,
+        },
     ],
 };
 
@@ -200,6 +210,7 @@ export type UpdateOptions = CreateOptions<{
     install: boolean | undefined;
     interactive: boolean | undefined;
     latest: boolean | undefined;
+    "max-concurrent-requests": number | undefined;
     "no-catalog": boolean | undefined;
     "no-optional": boolean | undefined;
     "no-save": boolean | undefined;
@@ -207,6 +218,7 @@ export type UpdateOptions = CreateOptions<{
     prerelease: boolean | undefined;
     prod: boolean | undefined;
     recursive: boolean | undefined;
+    "release-channel": string | undefined;
     rollback: boolean | undefined;
     security: boolean | undefined;
     target: string | undefined;

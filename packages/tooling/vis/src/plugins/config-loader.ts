@@ -16,6 +16,7 @@ const configLoaderPlugin: Plugin = {
     beforeCommand: async (toolbox) => {
         try {
             const cwdOption = toolbox.options?.cwd as string | undefined;
+            const configOption = toolbox.options?.config as string | undefined;
             let workspaceRoot: string;
 
             if (cwdOption) {
@@ -31,13 +32,17 @@ const configLoaderPlugin: Plugin = {
 
             toolbox.workspaceRoot = workspaceRoot;
 
+            // --config wins over discovery: resolve against cwd so users
+            // can point at any file regardless of workspaceRoot.
+            const explicitConfigPath = configOption ? resolve(process.cwd(), configOption) : undefined;
+
             // Cache the config-file path so the three callers below
             // (load, error handler, first-run hint) share one
             // directory-scan instead of each running their own.
-            let configFilePath = findVisConfigFile(workspaceRoot);
+            let configFilePath = explicitConfigPath ?? findVisConfigFile(workspaceRoot);
 
             try {
-                toolbox.visConfig = await loadVisConfig(workspaceRoot);
+                toolbox.visConfig = await loadVisConfig(workspaceRoot, explicitConfigPath ? { explicitConfigPath } : undefined);
 
                 const constraint = (toolbox.visConfig as VisConfig | undefined)?.versionConstraint;
 
@@ -133,7 +138,7 @@ const configLoaderPlugin: Plugin = {
                     if (shouldInit) {
                         const configPath = join(workspaceRoot, "vis.config.ts");
                         const content = [
-                            'import { defineConfig } from "@visulima/vis/config";',
+                            "import { defineConfig } from \"@visulima/vis/config\";",
                             "",
                             "// Secure defaults are applied automatically by defineConfig().",
                             "// You only need to add allowBuilds for packages with build scripts.",
@@ -141,7 +146,7 @@ const configLoaderPlugin: Plugin = {
                             "export default defineConfig({",
                             "    security: {",
                             "        allowBuilds: {",
-                            '            // "esbuild": true,',
+                            "            // \"esbuild\": true,",
                             "        },",
                             "    },",
                             "});",

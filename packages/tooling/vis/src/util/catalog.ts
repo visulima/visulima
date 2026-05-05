@@ -75,15 +75,26 @@ interface OutdatedEntry {
     vulnerabilities?: SecurityVulnerability[];
 }
 
+type ReleaseChannel = "any" | "same" | "stable";
+
 interface CatalogCheckOptions {
     exclude: string[];
     ignore: string[];
     include: string[];
     includeLocked: boolean;
     includePrerelease: boolean;
+    /** Cap on simultaneous registry requests during outdated checks. Default 8. */
+    maxConcurrentRequests?: number;
     minimumReleaseAge?: number;
     minimumReleaseAgeExclude?: string[];
     packageMode?: Record<string, UpdateTarget>;
+
+    /**
+     * Channel filter applied on top of `includePrerelease`. When unset, falls
+     * back to `includePrerelease` (true → "any", false → "stable") so the
+     * legacy `--prerelease` flag keeps working.
+     */
+    releaseChannel?: ReleaseChannel;
     security?: boolean;
     target: UpdateTarget;
 }
@@ -138,6 +149,36 @@ const extractPrefix = (range: string): string => {
     const match = PREFIX_REGEX.exec(range);
 
     return match?.[1] ?? "";
+};
+
+/**
+ * Extract the prerelease channel identifier — `"alpha"`, `"rc"`, `"beta-dev"`
+ * etc. — from a parsed version. Returns the empty string for stable releases.
+ *
+ * The channel is the first dot-separated tag, ignoring trailing numeric ids
+ * (`alpha.5`, `rc.0`, `beta`). Mirrors how Renovate / syncpack group
+ * prereleases when applying their `releaseChannel` policy.
+ */
+const extractChannel = (version: ParsedVersion): string => {
+    if (!version.prerelease) {
+        return "";
+    }
+
+    const head = version.prerelease.split(".")[0] ?? "";
+
+    return /^\d+$/.test(head) ? "" : head;
+};
+
+const matchesReleaseChannel = (candidate: ParsedVersion, current: ParsedVersion, releaseChannel: ReleaseChannel | undefined): boolean => {
+    if (releaseChannel === "any") {
+        return true;
+    }
+
+    if (releaseChannel === "same") {
+        return extractChannel(candidate) === extractChannel(current);
+    }
+
+    return candidate.prerelease === "";
 };
 
 const versionToString = (v: ParsedVersion): string => {
@@ -624,13 +665,13 @@ const hasPackageJsonDeps = (workspaceRoot: string): boolean => {
         const pkg = readJsonSync(pkgPath) as Record<string, unknown>;
 
         return !!(
-            pkg.dependencies ||
-            pkg.devDependencies ||
-            pkg.peerDependencies ||
-            pkg.optionalDependencies ||
-            pkg.overrides ||
-            pkg.resolutions ||
-            getNestedField(pkg, "pnpm.overrides")
+            pkg.dependencies
+            || pkg.devDependencies
+            || pkg.peerDependencies
+            || pkg.optionalDependencies
+            || pkg.overrides
+            || pkg.resolutions
+            || getNestedField(pkg, "pnpm.overrides")
         );
     } catch {
         return false;
@@ -1091,6 +1132,16 @@ const resolveMinAgeMs = (maturity?: MaturityOptions): number => {
     return isExcluded ? 0 : maturity.minimumReleaseAge * 60 * 1000;
 };
 
+/**
+ * Resolve the effective release-channel filter — bridges the legacy
+ * `includePrerelease` boolean to the new `releaseChannel` enum so callers
+ * can keep passing `--prerelease` without setting `--release-channel`.
+ */
+const resolveReleaseChannel = (
+    includePrerelease: boolean,
+    releaseChannel: ReleaseChannel | undefined,
+): ReleaseChannel => releaseChannel ?? (includePrerelease ? "any" : "stable");
+
 /** Filters and sorts version candidates that are newer than `current`, optionally constrained by major/minor and maturity. */
 const filterCandidates = (
     versions: string[],
@@ -1099,7 +1150,10 @@ const filterCandidates = (
     minAgeMs: number,
     publishTimes: Map<string, string> | undefined,
     constraint?: (parsed: ParsedVersion) => boolean,
+    releaseChannel?: ReleaseChannel,
 ): string | undefined => {
+    const channel = resolveReleaseChannel(includePrerelease, releaseChannel);
+
     const best = versions
         .map((v) => {
             return { parsed: parseVersion(v), raw: v };
@@ -1109,7 +1163,7 @@ const filterCandidates = (
                 return false;
             }
 
-            if (!includePrerelease && v.parsed.prerelease !== "") {
+            if (!matchesReleaseChannel(v.parsed, current, channel)) {
                 return false;
             }
 
@@ -1135,6 +1189,7 @@ const findTargetVersion = (
     target: UpdateTarget,
     includePrerelease: boolean,
     maturity?: MaturityOptions,
+    releaseChannel?: ReleaseChannel,
 ): string | undefined => {
     const current = parseVersion(currentRange);
 
@@ -1143,6 +1198,7 @@ const findTargetVersion = (
     }
 
     const minAgeMs = resolveMinAgeMs(maturity);
+    const channel = resolveReleaseChannel(includePrerelease, releaseChannel);
 
     if (target === "latest") {
         const latestParsed = parseVersion(latest);
@@ -1151,8 +1207,12 @@ const findTargetVersion = (
             return undefined;
         }
 
-        if (!includePrerelease && latestParsed.prerelease !== "") {
-            return undefined;
+        if (!matchesReleaseChannel(latestParsed, current, channel)) {
+            // Caller wanted "stable" / "same" but the dist-tag latest is on a
+            // different channel — fall back to scanning the version list so
+            // we don't miss a valid mature candidate just because npm pinned
+            // `latest` at an off-channel release.
+            return filterCandidates(versions, current, includePrerelease, minAgeMs, maturity?.publishTimes, undefined, channel);
         }
 
         if (!isNewer(current, latestParsed)) {
@@ -1163,17 +1223,15 @@ const findTargetVersion = (
             return latest;
         }
 
-        // Latest is too new — fall back to the newest mature version
-        return filterCandidates(versions, current, includePrerelease, minAgeMs, maturity?.publishTimes);
+        return filterCandidates(versions, current, includePrerelease, minAgeMs, maturity?.publishTimes, undefined, channel);
     }
 
-    // For minor/patch, find highest constrained version
-    const constraint =
-        target === "patch"
+    const constraint
+        = target === "patch"
             ? (p: ParsedVersion): boolean => p.major === current.major && p.minor === current.minor
             : (p: ParsedVersion): boolean => p.major === current.major;
 
-    return filterCandidates(versions, current, includePrerelease, minAgeMs, maturity?.publishTimes, constraint);
+    return filterCandidates(versions, current, includePrerelease, minAgeMs, maturity?.publishTimes, constraint, channel);
 };
 
 // --- Check outdated ---
@@ -1233,10 +1291,13 @@ const fetchVersionsBatched = async (
     npmrcConfig: NpmrcConfig | undefined,
     onProgress: ((current: number, total: number) => void) | undefined,
     fetchPublishTimes: boolean = false,
+    maxConcurrentRequests?: number,
 ): Promise<{ failed: string[]; versionCache: Map<string, RegistryVersionInfo> }> => {
     const versionCache = new Map<string, RegistryVersionInfo>();
     const failed: string[] = [];
-    const concurrency = 8;
+    // Clamp to [1, 64] so a misconfigured value can't either deadlock (0)
+    // or starve the registry (1000).
+    const concurrency = Math.max(1, Math.min(64, Math.floor(maxConcurrentRequests ?? 8) || 8));
     let completed = 0;
 
     for (let index = 0; index < uniquePackages.length; index += concurrency) {
@@ -1293,12 +1354,20 @@ const buildOutdatedEntries = (
         }
 
         const effectiveTarget = resolvePackageTarget(entry.packageName, options.target, options.packageMode);
-        const targetVersion = findTargetVersion(info.versions, info.latest, entry.range, effectiveTarget, options.includePrerelease, {
-            minimumReleaseAge: options.minimumReleaseAge,
-            minimumReleaseAgeExclude: options.minimumReleaseAgeExclude,
-            packageName: entry.packageName,
-            publishTimes: info.publishTimes,
-        });
+        const targetVersion = findTargetVersion(
+            info.versions,
+            info.latest,
+            entry.range,
+            effectiveTarget,
+            options.includePrerelease,
+            {
+                minimumReleaseAge: options.minimumReleaseAge,
+                minimumReleaseAgeExclude: options.minimumReleaseAgeExclude,
+                packageName: entry.packageName,
+                publishTimes: info.publishTimes,
+            },
+            options.releaseChannel,
+        );
 
         if (!targetVersion) {
             continue;
@@ -1416,7 +1485,9 @@ const computeCacheHash = (
         }
     }
 
-    parts.push(`target=${options.target},pre=${String(options.includePrerelease)},sec=${String(options.security ?? false)}`);
+    parts.push(
+        `target=${options.target},pre=${String(options.includePrerelease)},chan=${options.releaseChannel ?? "_"},sec=${String(options.security ?? false)}`,
+    );
     parts.push(`in=${options.include.join(",")},ex=${options.exclude.join(",")},ig=${options.ignore.join(",")}`);
     parts.push(`locked=${String(options.includeLocked)}`);
     parts.push(`mra=${String(options.minimumReleaseAge ?? 0)}`);
@@ -1511,7 +1582,13 @@ const checkOutdated = async (
     const uniquePackages = [...new Set(entries.map((entry) => entry.packageName))];
 
     const needPublishTimes = Boolean(options.minimumReleaseAge && options.minimumReleaseAge > 0);
-    const { failed, versionCache } = await fetchVersionsBatched(uniquePackages, npmrcConfig, onProgress, needPublishTimes);
+    const { failed, versionCache } = await fetchVersionsBatched(
+        uniquePackages,
+        npmrcConfig,
+        onProgress,
+        needPublishTimes,
+        options.maxConcurrentRequests,
+    );
     const outdated = buildOutdatedEntries(entries, versionCache, options);
 
     // Compute packages filtered out by target constraint (have updates on "latest" but not on current target)

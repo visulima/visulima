@@ -108,16 +108,28 @@
                     "type": "string",
                     "const": "vscode",
                     "description": "Default editor to configure after scaffolding. When set, `vis create` automatically generates editor config files.",
-                    "examples": ["vscode"]
+                    "examples": [
+                        "vscode"
+                    ]
                 },
                 "defaultPm": {
                     "type": "string",
-                    "enum": ["bun", "npm", "pnpm", "yarn"],
+                    "enum": [
+                        "bun",
+                        "npm",
+                        "pnpm",
+                        "yarn"
+                    ],
                     "description": "Default package manager for new standalone projects. When set, skips the PM selection prompt in interactive mode."
                 },
                 "defaultProvider": {
                     "type": "string",
-                    "enum": ["bitbucket", "github", "gitlab", "sourcehut"],
+                    "enum": [
+                        "bitbucket",
+                        "github",
+                        "gitlab",
+                        "sourcehut"
+                    ],
                     "description": "Default giget provider for `owner/repo` shorthand inputs.",
                     "default": "github"
                 },
@@ -231,7 +243,14 @@
             "properties": {
                 "backend": {
                     "type": "string",
-                    "enum": ["aube", "auto", "bun", "npm", "pnpm", "yarn"],
+                    "enum": [
+                        "aube",
+                        "auto",
+                        "bun",
+                        "npm",
+                        "pnpm",
+                        "yarn"
+                    ],
                     "description": "Which package manager performs install/add/remove/etc.\n- `auto` (default): use `aube` when it is on PATH; otherwise   fall back to the lockfile-detected PM.\n- explicit name: always use that PM. Errors when the named   binary is missing rather than silently falling back.",
                     "default": "auto"
                 }
@@ -260,7 +279,10 @@
                                                     "properties": {
                                                         "base": {
                                                             "type": "string",
-                                                            "enum": ["package", "workspace"],
+                                                            "enum": [
+                                                                "package",
+                                                                "workspace"
+                                                            ],
                                                             "description": "Anchor for the pattern."
                                                         },
                                                         "pattern": {
@@ -268,7 +290,10 @@
                                                             "description": "Glob pattern (may start with `!` for negation)."
                                                         }
                                                     },
-                                                    "required": ["base", "pattern"],
+                                                    "required": [
+                                                        "base",
+                                                        "pattern"
+                                                    ],
                                                     "additionalProperties": false,
                                                     "description": "Object form of a fileset pattern, for anchoring to the workspace root."
                                                 },
@@ -278,7 +303,9 @@
                                             ]
                                         }
                                     },
-                                    "required": ["fileset"],
+                                    "required": [
+                                        "fileset"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "An input based on file patterns.\n\n`fileset` may be a bare glob string (package-root relative) or an object form `{ pattern, base }` to anchor explicitly to the workspace root. Negation (`!` prefix) works in both forms."
                                 },
@@ -289,7 +316,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["runtime"],
+                                    "required": [
+                                        "runtime"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "An input based on a runtime command."
                                 },
@@ -300,7 +329,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["env"],
+                                    "required": [
+                                        "env"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "An input based on environment variables."
                                 },
@@ -314,7 +345,9 @@
                                             }
                                         }
                                     },
-                                    "required": ["externalDependencies"],
+                                    "required": [
+                                        "externalDependencies"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "An input based on external dependency versions."
                                 }
@@ -372,7 +405,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["reason"],
+                                "required": [
+                                    "reason"
+                                ],
                                 "additionalProperties": false
                             }
                         ]
@@ -411,7 +446,10 @@
                         },
                         "resolve": {
                             "type": "string",
-                            "enum": ["highest", "lowest"],
+                            "enum": [
+                                "highest",
+                                "lowest"
+                            ],
                             "description": "Resolution strategy used when `--fix` runs.\n- `highest` (default): align every drifting instance to the   highest declared version.\n- `lowest`: align to the lowest.",
                             "default": "highest"
                         }
@@ -478,7 +516,11 @@
                         },
                         "resolve": {
                             "type": "string",
-                            "enum": ["catalog", "highest", "lowest"],
+                            "enum": [
+                                "catalog",
+                                "highest",
+                                "lowest"
+                            ],
                             "description": "Resolution strategy used when `--fix` runs.\n- `highest` (default): rewrite every drifting instance to the   highest sibling specifier.\n- `lowest`: rewrite to the lowest.\n- `catalog`: rewrite any dep already pinned in a workspace catalog   to `catalog:` / `catalog:&lt;name>`. Catalog must exist; this lint   does not create the catalog (see `vis lint --resolve catalog --propose`).",
                             "default": "highest"
                         }
@@ -633,7 +675,9 @@
                 "minimumReleaseAge": {
                     "type": "number",
                     "description": "Minimum number of minutes that must pass after a version is published before vis will allow installation. Reduces risk of installing compromised packages that are typically discovered within hours. Equivalent to pnpm's `minimumReleaseAge`.",
-                    "examples": [1440],
+                    "examples": [
+                        1440
+                    ],
                     "default": 0
                 },
                 "minimumReleaseAgeExclude": {
@@ -642,7 +686,13 @@
                         "type": "string"
                     },
                     "description": "Package names/patterns excluded from minimumReleaseAge check. Equivalent to pnpm's `minimumReleaseAgeExclude`.",
-                    "examples": [["webpack", "react", "@myorg/*"]]
+                    "examples": [
+                        [
+                            "webpack",
+                            "react",
+                            "@myorg/*"
+                        ]
+                    ]
                 },
                 "socket": {
                     "type": "object",
@@ -665,7 +715,11 @@
                                         "description": "User-provided reason for accepting the risk."
                                     }
                                 },
-                                "required": ["acceptedAt", "acceptedScore", "reason"],
+                                "required": [
+                                    "acceptedAt",
+                                    "acceptedScore",
+                                    "reason"
+                                ],
                                 "additionalProperties": false
                             },
                             "description": "Packages whose low Socket.dev scores or alerts have been reviewed and explicitly accepted. These packages skip the confirmation prompt during `vis add` and show as \"acknowledged\" in `vis audit`.\n\nKey format: package name (`\"lodash\"`), name@version (`\"lodash@4.17.21\"`), or glob (`\"@myorg/*\"`). Unversioned keys match all versions of that package."
@@ -705,7 +759,10 @@
                 },
                 "trustPolicy": {
                     "type": "string",
-                    "enum": ["no-downgrade", "off"],
+                    "enum": [
+                        "no-downgrade",
+                        "off"
+                    ],
                     "description": "Trust level checking for package publishing.\n- \"off\": No trust checking (default)\n- \"no-downgrade\": Fail if a package's trust level has decreased   compared to previous releases (e.g., was published by trusted   publisher, now only has provenance). Equivalent to pnpm's `trustPolicy`.",
                     "default": "off"
                 },
@@ -715,12 +772,19 @@
                         "type": "string"
                     },
                     "description": "Package selectors excluded from trust policy checks. Equivalent to pnpm's `trustPolicyExclude`.",
-                    "examples": [["chokidar@4.0.3", "@babel/core@7.28.5"]]
+                    "examples": [
+                        [
+                            "chokidar@4.0.3",
+                            "@babel/core@7.28.5"
+                        ]
+                    ]
                 },
                 "trustPolicyIgnoreAfter": {
                     "type": "number",
                     "description": "Ignore the trust policy check for packages published more than the specified number of minutes ago. Useful for older packages that pre-date provenance support. Equivalent to pnpm's `trustPolicyIgnoreAfter` (10.27+).",
-                    "examples": [43200]
+                    "examples": [
+                        43200
+                    ]
                 },
                 "typosquatAllowlist": {
                     "type": "array",
@@ -728,7 +792,12 @@
                         "type": "string"
                     },
                     "description": "Package names to skip during typosquat detection. Use this for internal packages or known-safe names that happen to look similar to popular packages.",
-                    "examples": [["my-internal-axois", "@myorg/recat"]]
+                    "examples": [
+                        [
+                            "my-internal-axois",
+                            "@myorg/recat"
+                        ]
+                    ]
                 }
             },
             "additionalProperties": false,
@@ -863,7 +932,10 @@
                                         },
                                         "params": {
                                             "type": "string",
-                                            "enum": ["forward", "ignore"],
+                                            "enum": [
+                                                "forward",
+                                                "ignore"
+                                            ],
                                             "description": "Params to pass through"
                                         },
                                         "projects": {
@@ -885,7 +957,9 @@
                                             "description": "The target name"
                                         }
                                     },
-                                    "required": ["target"],
+                                    "required": [
+                                        "target"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "Defines a dependency on another target."
                                 }
@@ -916,7 +990,10 @@
                                                             "properties": {
                                                                 "base": {
                                                                     "type": "string",
-                                                                    "enum": ["package", "workspace"],
+                                                                    "enum": [
+                                                                        "package",
+                                                                        "workspace"
+                                                                    ],
                                                                     "description": "Anchor for the pattern."
                                                                 },
                                                                 "pattern": {
@@ -924,7 +1001,10 @@
                                                                     "description": "Glob pattern (may start with `!` for negation)."
                                                                 }
                                                             },
-                                                            "required": ["base", "pattern"],
+                                                            "required": [
+                                                                "base",
+                                                                "pattern"
+                                                            ],
                                                             "additionalProperties": false,
                                                             "description": "Object form of a fileset pattern, for anchoring to the workspace root."
                                                         },
@@ -934,7 +1014,9 @@
                                                     ]
                                                 }
                                             },
-                                            "required": ["fileset"],
+                                            "required": [
+                                                "fileset"
+                                            ],
                                             "additionalProperties": false,
                                             "description": "An input based on file patterns.\n\n`fileset` may be a bare glob string (package-root relative) or an object form `{ pattern, base }` to anchor explicitly to the workspace root. Negation (`!` prefix) works in both forms."
                                         },
@@ -945,7 +1027,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["runtime"],
+                                            "required": [
+                                                "runtime"
+                                            ],
                                             "additionalProperties": false,
                                             "description": "An input based on a runtime command."
                                         },
@@ -956,7 +1040,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["env"],
+                                            "required": [
+                                                "env"
+                                            ],
                                             "additionalProperties": false,
                                             "description": "An input based on environment variables."
                                         },
@@ -970,7 +1056,9 @@
                                                     }
                                                 }
                                             },
-                                            "required": ["externalDependencies"],
+                                            "required": [
+                                                "externalDependencies"
+                                            ],
                                             "additionalProperties": false,
                                             "description": "An input based on external dependency versions."
                                         }
@@ -1050,7 +1138,9 @@
                                                         "description": "Variable name."
                                                     }
                                                 },
-                                                "required": ["name"],
+                                                "required": [
+                                                    "name"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         ],
@@ -1079,7 +1169,9 @@
                                                             "description": "Variable name."
                                                         }
                                                     },
-                                                    "required": ["name"],
+                                                    "required": [
+                                                        "name"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             ],
@@ -1131,7 +1223,9 @@
                                                                 "description": "Variable name."
                                                             }
                                                         },
-                                                        "required": ["name"],
+                                                        "required": [
+                                                            "name"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 ],
@@ -1160,7 +1254,9 @@
                                                                     "description": "Variable name."
                                                                 }
                                                             },
-                                                            "required": ["name"],
+                                                            "required": [
+                                                                "name"
+                                                            ],
                                                             "additionalProperties": false
                                                         }
                                                     ],
@@ -1173,14 +1269,32 @@
                                         "anyOf": [
                                             {
                                                 "type": "string",
-                                                "enum": ["aix", "darwin", "freebsd", "linux", "openbsd", "sunos", "windows", "win32"],
+                                                "enum": [
+                                                    "aix",
+                                                    "darwin",
+                                                    "freebsd",
+                                                    "linux",
+                                                    "openbsd",
+                                                    "sunos",
+                                                    "windows",
+                                                    "win32"
+                                                ],
                                                 "description": "Aliased platform list — `\"windows\"` is sugar for Node's `\"win32\"`."
                                             },
                                             {
                                                 "type": "array",
                                                 "items": {
                                                     "type": "string",
-                                                    "enum": ["aix", "darwin", "freebsd", "linux", "openbsd", "sunos", "windows", "win32"],
+                                                    "enum": [
+                                                        "aix",
+                                                        "darwin",
+                                                        "freebsd",
+                                                        "linux",
+                                                        "openbsd",
+                                                        "sunos",
+                                                        "windows",
+                                                        "win32"
+                                                    ],
                                                     "description": "Aliased platform list — `\"windows\"` is sugar for Node's `\"win32\"`."
                                                 }
                                             }
@@ -1194,14 +1308,32 @@
                                 "anyOf": [
                                     {
                                         "type": "string",
-                                        "enum": ["aix", "darwin", "freebsd", "linux", "openbsd", "sunos", "windows", "win32"],
+                                        "enum": [
+                                            "aix",
+                                            "darwin",
+                                            "freebsd",
+                                            "linux",
+                                            "openbsd",
+                                            "sunos",
+                                            "windows",
+                                            "win32"
+                                        ],
                                         "description": "Aliased platform list — `\"windows\"` is sugar for Node's `\"win32\"`."
                                     },
                                     {
                                         "type": "array",
                                         "items": {
                                             "type": "string",
-                                            "enum": ["aix", "darwin", "freebsd", "linux", "openbsd", "sunos", "windows", "win32"],
+                                            "enum": [
+                                                "aix",
+                                                "darwin",
+                                                "freebsd",
+                                                "linux",
+                                                "openbsd",
+                                                "sunos",
+                                                "windows",
+                                                "win32"
+                                            ],
                                             "description": "Aliased platform list — `\"windows\"` is sugar for Node's `\"win32\"`."
                                         }
                                     }
@@ -1256,7 +1388,9 @@
                                     "type": "string"
                                 }
                             },
-                            "required": ["target"],
+                            "required": [
+                                "target"
+                            ],
                             "additionalProperties": false
                         },
                         {
@@ -1266,7 +1400,9 @@
                                     "type": "string"
                                 }
                             },
-                            "required": ["group"],
+                            "required": [
+                                "group"
+                            ],
                             "additionalProperties": false
                         }
                     ]
@@ -1368,7 +1504,10 @@
                                                             "properties": {
                                                                 "base": {
                                                                     "type": "string",
-                                                                    "enum": ["package", "workspace"],
+                                                                    "enum": [
+                                                                        "package",
+                                                                        "workspace"
+                                                                    ],
                                                                     "description": "Anchor for the pattern."
                                                                 },
                                                                 "pattern": {
@@ -1376,7 +1515,10 @@
                                                                     "description": "Glob pattern (may start with `!` for negation)."
                                                                 }
                                                             },
-                                                            "required": ["base", "pattern"],
+                                                            "required": [
+                                                                "base",
+                                                                "pattern"
+                                                            ],
                                                             "additionalProperties": false,
                                                             "description": "Object form of a fileset pattern, for anchoring to the workspace root."
                                                         },
@@ -1386,7 +1528,9 @@
                                                     ]
                                                 }
                                             },
-                                            "required": ["fileset"],
+                                            "required": [
+                                                "fileset"
+                                            ],
                                             "additionalProperties": false,
                                             "description": "An input based on file patterns.\n\n`fileset` may be a bare glob string (package-root relative) or an object form `{ pattern, base }` to anchor explicitly to the workspace root. Negation (`!` prefix) works in both forms."
                                         },
@@ -1397,7 +1541,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["runtime"],
+                                            "required": [
+                                                "runtime"
+                                            ],
                                             "additionalProperties": false,
                                             "description": "An input based on a runtime command."
                                         },
@@ -1408,7 +1554,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["env"],
+                                            "required": [
+                                                "env"
+                                            ],
                                             "additionalProperties": false,
                                             "description": "An input based on environment variables."
                                         },
@@ -1422,7 +1570,9 @@
                                                     }
                                                 }
                                             },
-                                            "required": ["externalDependencies"],
+                                            "required": [
+                                                "externalDependencies"
+                                            ],
                                             "additionalProperties": false,
                                             "description": "An input based on external dependency versions."
                                         }
@@ -1440,7 +1590,10 @@
                     "default": false
                 },
                 "parallel": {
-                    "type": ["number", "boolean"],
+                    "type": [
+                        "number",
+                        "boolean"
+                    ],
                     "description": "Maximum number of parallel tasks"
                 },
                 "remoteCache": {
@@ -1452,7 +1605,10 @@
                         },
                         "backend": {
                             "type": "string",
-                            "enum": ["http", "reapi"],
+                            "enum": [
+                                "http",
+                                "reapi"
+                            ],
                             "description": "Wire-protocol selector. `\"http\"` is the Turborepo-compatible single-tarball cache; `\"reapi\"` switches to the Bazel Remote Execution API gRPC client, unlocking `bazel-remote`, BuildBuddy, BuildBarn, EngFlow as drop-in backends.",
                             "default": "http"
                         },
@@ -1462,7 +1618,10 @@
                         },
                         "compression": {
                             "type": "string",
-                            "enum": ["brotli", "gzip"],
+                            "enum": [
+                                "brotli",
+                                "gzip"
+                            ],
                             "description": "HTTP-only: tarball compression on the wire.",
                             "default": "gzip"
                         },
@@ -1476,7 +1635,11 @@
                         },
                         "mode": {
                             "type": "string",
-                            "enum": ["read", "readwrite", "write"],
+                            "enum": [
+                                "read",
+                                "readwrite",
+                                "write"
+                            ],
                             "description": "Canonical cache mode flag.\n\n- `\"read\"`: Pull cache hits, never push. Sensible default for   local dev so a developer doesn't poison the shared cache while   their workspace is dirty.\n- `\"write\"`: Push results, never read. Useful for refill /   warm-up jobs that should always re-execute and re-upload.\n- `\"readwrite\"`: Both. Default for CI.",
                             "default": "readwrite"
                         },
@@ -1493,7 +1656,9 @@
                                     "default": false
                                 }
                             },
-                            "required": ["secret"],
+                            "required": [
+                                "secret"
+                            ],
                             "additionalProperties": false,
                             "description": "HTTP-only: HMAC-SHA256 signing for upload integrity."
                         },
@@ -1515,7 +1680,9 @@
                             "description": "Cache server URL.\n\n- HTTP: `https://cache.example.com`\n- REAPI: `grpcs://host:port` (TLS, recommended) or `grpc://host:port`   (cleartext — bearer tokens are refused unless `allowInsecureBearer`)."
                         }
                     },
-                    "required": ["url"],
+                    "required": [
+                        "url"
+                    ],
                     "additionalProperties": false,
                     "description": "Remote cache configuration. When configured, the task runner checks the remote cache after a local miss and uploads results after execution. See  {@link  RemoteCacheOptions }  for the full HTTP and REAPI surface."
                 },
@@ -1593,7 +1760,10 @@
                                                 },
                                                 "params": {
                                                     "type": "string",
-                                                    "enum": ["forward", "ignore"],
+                                                    "enum": [
+                                                        "forward",
+                                                        "ignore"
+                                                    ],
                                                     "description": "Params to pass through"
                                                 },
                                                 "projects": {
@@ -1615,7 +1785,9 @@
                                                     "description": "The target name"
                                                 }
                                             },
-                                            "required": ["target"],
+                                            "required": [
+                                                "target"
+                                            ],
                                             "additionalProperties": false,
                                             "description": "Defines a dependency on another target."
                                         }
@@ -1646,7 +1818,10 @@
                                                                     "properties": {
                                                                         "base": {
                                                                             "type": "string",
-                                                                            "enum": ["package", "workspace"],
+                                                                            "enum": [
+                                                                                "package",
+                                                                                "workspace"
+                                                                            ],
                                                                             "description": "Anchor for the pattern."
                                                                         },
                                                                         "pattern": {
@@ -1654,7 +1829,10 @@
                                                                             "description": "Glob pattern (may start with `!` for negation)."
                                                                         }
                                                                     },
-                                                                    "required": ["base", "pattern"],
+                                                                    "required": [
+                                                                        "base",
+                                                                        "pattern"
+                                                                    ],
                                                                     "additionalProperties": false,
                                                                     "description": "Object form of a fileset pattern, for anchoring to the workspace root."
                                                                 },
@@ -1664,7 +1842,9 @@
                                                             ]
                                                         }
                                                     },
-                                                    "required": ["fileset"],
+                                                    "required": [
+                                                        "fileset"
+                                                    ],
                                                     "additionalProperties": false,
                                                     "description": "An input based on file patterns.\n\n`fileset` may be a bare glob string (package-root relative) or an object form `{ pattern, base }` to anchor explicitly to the workspace root. Negation (`!` prefix) works in both forms."
                                                 },
@@ -1675,7 +1855,9 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["runtime"],
+                                                    "required": [
+                                                        "runtime"
+                                                    ],
                                                     "additionalProperties": false,
                                                     "description": "An input based on a runtime command."
                                                 },
@@ -1686,7 +1868,9 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["env"],
+                                                    "required": [
+                                                        "env"
+                                                    ],
                                                     "additionalProperties": false,
                                                     "description": "An input based on environment variables."
                                                 },
@@ -1700,7 +1884,9 @@
                                                             }
                                                         }
                                                     },
-                                                    "required": ["externalDependencies"],
+                                                    "required": [
+                                                        "externalDependencies"
+                                                    ],
                                                     "additionalProperties": false,
                                                     "description": "An input based on external dependency versions."
                                                 }
@@ -1785,7 +1971,9 @@
                                                                 "description": "Variable name."
                                                             }
                                                         },
-                                                        "required": ["name"],
+                                                        "required": [
+                                                            "name"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 ],
@@ -1814,7 +2002,9 @@
                                                                     "description": "Variable name."
                                                                 }
                                                             },
-                                                            "required": ["name"],
+                                                            "required": [
+                                                                "name"
+                                                            ],
                                                             "additionalProperties": false
                                                         }
                                                     ],
@@ -1866,7 +2056,9 @@
                                                                         "description": "Variable name."
                                                                     }
                                                                 },
-                                                                "required": ["name"],
+                                                                "required": [
+                                                                    "name"
+                                                                ],
                                                                 "additionalProperties": false
                                                             }
                                                         ],
@@ -1895,7 +2087,9 @@
                                                                             "description": "Variable name."
                                                                         }
                                                                     },
-                                                                    "required": ["name"],
+                                                                    "required": [
+                                                                        "name"
+                                                                    ],
                                                                     "additionalProperties": false
                                                                 }
                                                             ],
@@ -1908,14 +2102,32 @@
                                                 "anyOf": [
                                                     {
                                                         "type": "string",
-                                                        "enum": ["aix", "darwin", "freebsd", "linux", "openbsd", "sunos", "windows", "win32"],
+                                                        "enum": [
+                                                            "aix",
+                                                            "darwin",
+                                                            "freebsd",
+                                                            "linux",
+                                                            "openbsd",
+                                                            "sunos",
+                                                            "windows",
+                                                            "win32"
+                                                        ],
                                                         "description": "Aliased platform list — `\"windows\"` is sugar for Node's `\"win32\"`."
                                                     },
                                                     {
                                                         "type": "array",
                                                         "items": {
                                                             "type": "string",
-                                                            "enum": ["aix", "darwin", "freebsd", "linux", "openbsd", "sunos", "windows", "win32"],
+                                                            "enum": [
+                                                                "aix",
+                                                                "darwin",
+                                                                "freebsd",
+                                                                "linux",
+                                                                "openbsd",
+                                                                "sunos",
+                                                                "windows",
+                                                                "win32"
+                                                            ],
                                                             "description": "Aliased platform list — `\"windows\"` is sugar for Node's `\"win32\"`."
                                                         }
                                                     }
@@ -1929,14 +2141,32 @@
                                         "anyOf": [
                                             {
                                                 "type": "string",
-                                                "enum": ["aix", "darwin", "freebsd", "linux", "openbsd", "sunos", "windows", "win32"],
+                                                "enum": [
+                                                    "aix",
+                                                    "darwin",
+                                                    "freebsd",
+                                                    "linux",
+                                                    "openbsd",
+                                                    "sunos",
+                                                    "windows",
+                                                    "win32"
+                                                ],
                                                 "description": "Aliased platform list — `\"windows\"` is sugar for Node's `\"win32\"`."
                                             },
                                             {
                                                 "type": "array",
                                                 "items": {
                                                     "type": "string",
-                                                    "enum": ["aix", "darwin", "freebsd", "linux", "openbsd", "sunos", "windows", "win32"],
+                                                    "enum": [
+                                                        "aix",
+                                                        "darwin",
+                                                        "freebsd",
+                                                        "linux",
+                                                        "openbsd",
+                                                        "sunos",
+                                                        "windows",
+                                                        "win32"
+                                                    ],
                                                     "description": "Aliased platform list — `\"windows\"` is sugar for Node's `\"win32\"`."
                                                 }
                                             }
@@ -1969,7 +2199,16 @@
             "properties": {
                 "preferredManager": {
                     "type": "string",
-                    "enum": ["asdf", "corepack", "fnm", "mise", "none", "nvm", "proto", "volta"]
+                    "enum": [
+                        "asdf",
+                        "corepack",
+                        "fnm",
+                        "mise",
+                        "none",
+                        "nvm",
+                        "proto",
+                        "volta"
+                    ]
                 },
                 "autoInstall": {
                     "type": "boolean",
@@ -2019,7 +2258,10 @@
             "type": "object",
             "properties": {
                 "autoExit": {
-                    "type": ["boolean", "number"],
+                    "type": [
+                        "boolean",
+                        "number"
+                    ],
                     "description": "Auto-exit the TUI after tasks complete.\n- `false`: Stay open until the user presses `q` (default)\n- `true`: Show quit dialog with 3-second countdown after completion\n- `number`: Show quit dialog with custom countdown in seconds"
                 }
             },
@@ -2035,7 +2277,12 @@
                         "type": "string"
                     },
                     "description": "Dependency fields to scan for outdated packages. Beyond the standard fields, supports:\n- `\"overrides\"` (npm)\n- `\"resolutions\"` (yarn)\n- `\"pnpm.overrides\"`",
-                    "default": ["dependencies", "devDependencies", "optionalDependencies", "peerDependencies"]
+                    "default": [
+                        "dependencies",
+                        "devDependencies",
+                        "optionalDependencies",
+                        "peerDependencies"
+                    ]
                 },
                 "exclude": {
                     "type": "array",
@@ -2045,7 +2292,11 @@
                 },
                 "format": {
                     "type": "string",
-                    "enum": ["json", "minimal", "table"]
+                    "enum": [
+                        "json",
+                        "minimal",
+                        "table"
+                    ]
                 },
                 "ignore": {
                     "type": "array",
@@ -2053,7 +2304,12 @@
                         "type": "string"
                     },
                     "description": "Package names or glob patterns to permanently ignore during updates. Ignored packages are skipped and listed in the output so you know they were not checked.",
-                    "examples": [["eslint", "@types/*"]]
+                    "examples": [
+                        [
+                            "eslint",
+                            "@types/*"
+                        ]
+                    ]
                 },
                 "include": {
                     "type": "array",
@@ -2069,10 +2325,17 @@
                 "install": {
                     "type": "boolean"
                 },
+                "maxConcurrentRequests": {
+                    "type": "number",
+                    "description": "Maximum number of concurrent registry requests during outdated checks. Higher values speed up large workspaces but risk hitting registry rate limits or self-hosted Verdaccio caps.",
+                    "default": 8
+                },
                 "minimumReleaseAge": {
                     "type": "number",
                     "description": "Minimum number of minutes since a version was published before vis will consider it for updates. This mirrors pnpm's `minimumReleaseAge` — a single setting that applies to both install and update.\n\nNot set by default. If your package manager config (`pnpm-workspace.yaml`) has `minimumReleaseAge`, vis will read it from there as a fallback.",
-                    "examples": [1440]
+                    "examples": [
+                        1440
+                    ]
                 },
                 "minimumReleaseAgeExclude": {
                     "type": "array",
@@ -2080,13 +2343,22 @@
                         "type": "string"
                     },
                     "description": "Package names/patterns excluded from the minimumReleaseAge check.",
-                    "examples": [["webpack", "@myorg/*"]]
+                    "examples": [
+                        [
+                            "webpack",
+                            "@myorg/*"
+                        ]
+                    ]
                 },
                 "packageMode": {
                     "type": "object",
                     "additionalProperties": {
                         "type": "string",
-                        "enum": ["latest", "minor", "patch"]
+                        "enum": [
+                            "latest",
+                            "minor",
+                            "patch"
+                        ]
                     },
                     "description": "Per-package or per-pattern update target overrides. Keys are exact package names, glob patterns, or regex patterns wrapped in `/` (e.g., `/^@vue/`). Values are `\"latest\"`, `\"minor\"`, or `\"patch\"`.",
                     "examples": [
@@ -2099,12 +2371,26 @@
                 "prerelease": {
                     "type": "boolean"
                 },
+                "releaseChannel": {
+                    "type": "string",
+                    "enum": [
+                        "any",
+                        "same",
+                        "stable"
+                    ],
+                    "description": "Which release channels to consider when picking the target version.\n- `\"stable\"` (default) — only ship stable releases (no prereleases).\n- `\"same\"` — match the prerelease channel of the *current* range:   if you're on `react@19.0.0-rc.1`, only `rc.*` candidates qualify;   if you're on a stable, only stable candidates. Prevents   accidentally promoting a prerelease pin to a stable major bump.\n- `\"any\"` — equivalent to `--prerelease`. Any channel is fair game.\n\n`--release-channel` on the CLI overrides this. If `prerelease: true` is set without `releaseChannel`, vis treats it as `\"any\"`.",
+                    "default": "stable"
+                },
                 "security": {
                     "type": "boolean"
                 },
                 "target": {
                     "type": "string",
-                    "enum": ["latest", "minor", "patch"]
+                    "enum": [
+                        "latest",
+                        "minor",
+                        "patch"
+                    ]
                 }
             },
             "additionalProperties": false,
@@ -2113,7 +2399,9 @@
         "versionConstraint": {
             "type": "string",
             "description": "Minimum vis CLI version required by this workspace. When the running vis binary is older than this constraint, vis exits with an actionable error before executing any command.\n\nAccepts a semver range string (e.g. `\">=1.0.0\"`, `\"^1.2.0\"`).",
-            "examples": [">=1.0.0"]
+            "examples": [
+                ">=1.0.0"
+            ]
         }
     },
     "additionalProperties": false,
@@ -2133,12 +2421,20 @@
                 },
                 "orderBy": {
                     "type": "string",
-                    "enum": ["file-source", "project-id"],
+                    "enum": [
+                        "file-source",
+                        "project-id"
+                    ],
                     "description": "Sort order for generated entries — mirrors moon's `orderBy`."
                 },
                 "provider": {
                     "type": "string",
-                    "enum": ["bitbucket", "github", "gitlab", "other"],
+                    "enum": [
+                        "bitbucket",
+                        "github",
+                        "gitlab",
+                        "other"
+                    ],
                     "description": "Provider determines whether `channel` is emitted (GitHub supports it via comment)."
                 }
             },
@@ -2222,7 +2518,9 @@
                     "description": "Plugin name — surfaced in debug logs."
                 }
             },
-            "required": ["name"],
+            "required": [
+                "name"
+            ],
             "additionalProperties": false,
             "description": "Public plugin contract. Implementations register handlers by returning a partial  {@link  VisHooks }  map from `hooks`, or by mutating the Hookable instance directly via `setup(hooks)` for advanced cases (dynamic registration, removeHook, etc.).\n\nPlugins are loaded in the order they appear in `visConfig.plugins`. Handler execution order within a hook follows registration order, so earlier plugins see events first."
         },
@@ -2243,11 +2541,20 @@
                 },
                 "strategy": {
                     "type": "string",
-                    "enum": ["name@version", "string", "versionsByName"],
-                    "description": "How to interpret the JSON found at `path`."
+                    "enum": [
+                        "name@version",
+                        "name~version",
+                        "string",
+                        "versionsByName"
+                    ],
+                    "description": "How to interpret the JSON found at `path`.\n- `name@version` — single string `pnpm@9.0.0` (with optional `+sha512.…` hash).\n- `name~version` — single string `node~20.0.0`, mirrors syncpack's tilde form.\n- `string` — bare version literal (requires `depName`).\n- `versionsByName` — `{ name: version }` object such as `engines`."
                 }
             },
-            "required": ["name", "path", "strategy"],
+            "required": [
+                "name",
+                "path",
+                "strategy"
+            ],
             "additionalProperties": false,
             "description": "One user-declared customTypes entry. See `policy.customTypes.extraTypes` for the full contract — this is just the row shape."
         },
@@ -2324,7 +2631,10 @@
                 },
                 "outputStyle": {
                     "type": "string",
-                    "enum": ["normal", "quiet"],
+                    "enum": [
+                        "normal",
+                        "quiet"
+                    ],
                     "description": "Per-target output verbosity. Overrides the global `--output-style` flag for this specific target.\n\n- `\"normal\"` (default): print every task's terminal output\n- `\"quiet\"`: only print output when the task fails. Successful   and cached tasks contribute their status line and timing, but   their captured stdout/stderr is suppressed.\n\nUseful when a routinely-noisy task (a linter or test runner with verbose progress output) should stay quiet during green builds but reveal everything when it fails."
                 },
                 "persistent": {
@@ -2405,13 +2715,24 @@
             "description": "Vis-specific target options that extend the task-runner's base `TargetConfiguration`. These live under `target.options` and are interpreted by vis before handing the task off to task-runner.\n\nConditional execution (`when:`) and finally tasks (`always:`) live at the target top level, not under `options` — they're handled by the task-runner orchestrator. See `@visulima/task-runner`'s `WhenCondition`."
         },
         "AffectedFilesMode": {
-            "type": ["string", "boolean"],
-            "enum": ["args", "both", "env", false],
+            "type": [
+                "string",
+                "boolean"
+            ],
+            "enum": [
+                "args",
+                "both",
+                "env",
+                false
+            ],
             "description": "Controls how affected files are forwarded to a task.\n- `false` (default): Do not forward.\n- `\"args\"`: Append affected paths as additional command arguments.\n- `\"env\"`: Expose them via `VIS_AFFECTED_FILES` environment variable.\n- `\"both\"`: Both of the above."
         },
         "TargetPreset": {
             "type": "string",
-            "enum": ["server", "utility"],
+            "enum": [
+                "server",
+                "utility"
+            ],
             "description": "Preset bundles of target options.\n- `server`: Long-running local dev server — caching off, not in CI,   interactive, persistent.\n- `utility`: Short-lived helper — caching off, not in CI."
         },
         "RunInCI": {
@@ -2465,11 +2786,15 @@
                                     "type": "number"
                                 }
                             },
-                            "required": ["port"],
+                            "required": [
+                                "port"
+                            ],
                             "additionalProperties": false
                         }
                     },
-                    "required": ["tcp"],
+                    "required": [
+                        "tcp"
+                    ],
                     "additionalProperties": false,
                     "description": "Readiness probe configuration. v1 supports TCP only."
                 }
@@ -2479,7 +2804,11 @@
         },
         "TargetType": {
             "type": "string",
-            "enum": ["build", "run", "test"],
+            "enum": [
+                "build",
+                "run",
+                "test"
+            ],
             "description": "Semantic classification for a target.\n- `build`: Generates one or more artifacts; cached by default.\n- `test`: Validation task (lint, typecheck, unit test). Default type.\n- `run`: One-off or long-running process. Not cached by default."
         },
         "TaskDefaultsBlock": {
@@ -2577,7 +2906,10 @@
                                                 },
                                                 "params": {
                                                     "type": "string",
-                                                    "enum": ["forward", "ignore"],
+                                                    "enum": [
+                                                        "forward",
+                                                        "ignore"
+                                                    ],
                                                     "description": "Params to pass through"
                                                 },
                                                 "projects": {
@@ -2599,7 +2931,9 @@
                                                     "description": "The target name"
                                                 }
                                             },
-                                            "required": ["target"],
+                                            "required": [
+                                                "target"
+                                            ],
                                             "additionalProperties": false,
                                             "description": "Defines a dependency on another target."
                                         }
@@ -2630,7 +2964,10 @@
                                                                     "properties": {
                                                                         "base": {
                                                                             "type": "string",
-                                                                            "enum": ["package", "workspace"],
+                                                                            "enum": [
+                                                                                "package",
+                                                                                "workspace"
+                                                                            ],
                                                                             "description": "Anchor for the pattern."
                                                                         },
                                                                         "pattern": {
@@ -2638,7 +2975,10 @@
                                                                             "description": "Glob pattern (may start with `!` for negation)."
                                                                         }
                                                                     },
-                                                                    "required": ["base", "pattern"],
+                                                                    "required": [
+                                                                        "base",
+                                                                        "pattern"
+                                                                    ],
                                                                     "additionalProperties": false,
                                                                     "description": "Object form of a fileset pattern, for anchoring to the workspace root."
                                                                 },
@@ -2648,7 +2988,9 @@
                                                             ]
                                                         }
                                                     },
-                                                    "required": ["fileset"],
+                                                    "required": [
+                                                        "fileset"
+                                                    ],
                                                     "additionalProperties": false,
                                                     "description": "An input based on file patterns.\n\n`fileset` may be a bare glob string (package-root relative) or an object form `{ pattern, base }` to anchor explicitly to the workspace root. Negation (`!` prefix) works in both forms."
                                                 },
@@ -2659,7 +3001,9 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["runtime"],
+                                                    "required": [
+                                                        "runtime"
+                                                    ],
                                                     "additionalProperties": false,
                                                     "description": "An input based on a runtime command."
                                                 },
@@ -2670,7 +3014,9 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["env"],
+                                                    "required": [
+                                                        "env"
+                                                    ],
                                                     "additionalProperties": false,
                                                     "description": "An input based on environment variables."
                                                 },
@@ -2684,7 +3030,9 @@
                                                             }
                                                         }
                                                     },
-                                                    "required": ["externalDependencies"],
+                                                    "required": [
+                                                        "externalDependencies"
+                                                    ],
                                                     "additionalProperties": false,
                                                     "description": "An input based on external dependency versions."
                                                 }
@@ -2764,7 +3112,9 @@
                                                                 "description": "Variable name."
                                                             }
                                                         },
-                                                        "required": ["name"],
+                                                        "required": [
+                                                            "name"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 ],
@@ -2793,7 +3143,9 @@
                                                                     "description": "Variable name."
                                                                 }
                                                             },
-                                                            "required": ["name"],
+                                                            "required": [
+                                                                "name"
+                                                            ],
                                                             "additionalProperties": false
                                                         }
                                                     ],
@@ -2845,7 +3197,9 @@
                                                                         "description": "Variable name."
                                                                     }
                                                                 },
-                                                                "required": ["name"],
+                                                                "required": [
+                                                                    "name"
+                                                                ],
                                                                 "additionalProperties": false
                                                             }
                                                         ],
@@ -2874,7 +3228,9 @@
                                                                             "description": "Variable name."
                                                                         }
                                                                     },
-                                                                    "required": ["name"],
+                                                                    "required": [
+                                                                        "name"
+                                                                    ],
                                                                     "additionalProperties": false
                                                                 }
                                                             ],
@@ -2887,14 +3243,32 @@
                                                 "anyOf": [
                                                     {
                                                         "type": "string",
-                                                        "enum": ["aix", "darwin", "freebsd", "linux", "openbsd", "sunos", "windows", "win32"],
+                                                        "enum": [
+                                                            "aix",
+                                                            "darwin",
+                                                            "freebsd",
+                                                            "linux",
+                                                            "openbsd",
+                                                            "sunos",
+                                                            "windows",
+                                                            "win32"
+                                                        ],
                                                         "description": "Aliased platform list — `\"windows\"` is sugar for Node's `\"win32\"`."
                                                     },
                                                     {
                                                         "type": "array",
                                                         "items": {
                                                             "type": "string",
-                                                            "enum": ["aix", "darwin", "freebsd", "linux", "openbsd", "sunos", "windows", "win32"],
+                                                            "enum": [
+                                                                "aix",
+                                                                "darwin",
+                                                                "freebsd",
+                                                                "linux",
+                                                                "openbsd",
+                                                                "sunos",
+                                                                "windows",
+                                                                "win32"
+                                                            ],
                                                             "description": "Aliased platform list — `\"windows\"` is sugar for Node's `\"win32\"`."
                                                         }
                                                     }
@@ -2908,14 +3282,32 @@
                                         "anyOf": [
                                             {
                                                 "type": "string",
-                                                "enum": ["aix", "darwin", "freebsd", "linux", "openbsd", "sunos", "windows", "win32"],
+                                                "enum": [
+                                                    "aix",
+                                                    "darwin",
+                                                    "freebsd",
+                                                    "linux",
+                                                    "openbsd",
+                                                    "sunos",
+                                                    "windows",
+                                                    "win32"
+                                                ],
                                                 "description": "Aliased platform list — `\"windows\"` is sugar for Node's `\"win32\"`."
                                             },
                                             {
                                                 "type": "array",
                                                 "items": {
                                                     "type": "string",
-                                                    "enum": ["aix", "darwin", "freebsd", "linux", "openbsd", "sunos", "windows", "win32"],
+                                                    "enum": [
+                                                        "aix",
+                                                        "darwin",
+                                                        "freebsd",
+                                                        "linux",
+                                                        "openbsd",
+                                                        "sunos",
+                                                        "windows",
+                                                        "win32"
+                                                    ],
                                                     "description": "Aliased platform list — `\"windows\"` is sugar for Node's `\"win32\"`."
                                                 }
                                             }
@@ -2932,7 +3324,9 @@
                     "description": "Target default configurations."
                 }
             },
-            "required": ["targets"],
+            "required": [
+                "targets"
+            ],
             "additionalProperties": false,
             "description": "A single task-defaults block — a set of target defaults gated by an optional scope predicate."
         },
@@ -2957,7 +3351,14 @@
                     "anyOf": [
                         {
                             "type": "string",
-                            "enum": ["application", "automation", "configuration", "library", "scaffolding", "tool"],
+                            "enum": [
+                                "application",
+                                "automation",
+                                "configuration",
+                                "library",
+                                "scaffolding",
+                                "tool"
+                            ],
                             "description": "Project layer, used for constraint inheritance and query filtering."
                         },
                         {
@@ -3000,14 +3401,23 @@
                 },
                 "projectType": {
                     "type": "string",
-                    "enum": ["application", "library"],
+                    "enum": [
+                        "application",
+                        "library"
+                    ],
                     "description": "Match on project type."
                 },
                 "stack": {
                     "anyOf": [
                         {
                             "type": "string",
-                            "enum": ["backend", "data", "frontend", "infrastructure", "systems"],
+                            "enum": [
+                                "backend",
+                                "data",
+                                "frontend",
+                                "infrastructure",
+                                "systems"
+                            ],
                             "description": "Tech stack."
                         },
                         {

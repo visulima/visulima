@@ -10,6 +10,7 @@ import type {
     WorkspaceConfiguration,
 } from "@visulima/task-runner";
 import { looksLikeInputUri, parseInputUri } from "@visulima/task-runner";
+import { parse as parseYaml } from "yaml";
 
 import { BUILT_IN_DETECTORS, inferProjectTargets } from "../inference";
 import { mergeTargetWithInherit } from "../task/target-merge";
@@ -192,7 +193,7 @@ export const expandTaskGroups = (
 const validateWorkspacesField = (raw: PackageJson["workspaces"]): string[] => {
     if (Array.isArray(raw)) {
         if (raw.length === 0) {
-            throw new Error('Invalid package.json `workspaces`: empty array. Add at least one pattern like "packages/*" or remove the field.');
+            throw new Error("Invalid package.json `workspaces`: empty array. Add at least one pattern like \"packages/*\" or remove the field.");
         }
 
         for (const entry of raw) {
@@ -208,7 +209,7 @@ const validateWorkspacesField = (raw: PackageJson["workspaces"]): string[] => {
         const { packages } = raw;
 
         if (packages === undefined) {
-            throw new Error('Invalid package.json `workspaces`: object form requires a `packages` array (e.g. `{ "packages": ["packages/*"] }`).');
+            throw new Error("Invalid package.json `workspaces`: object form requires a `packages` array (e.g. `{ \"packages\": [\"packages/*\"] }`).");
         }
 
         if (!Array.isArray(packages)) {
@@ -219,6 +220,52 @@ const validateWorkspacesField = (raw: PackageJson["workspaces"]): string[] => {
     }
 
     throw new TypeError(`Invalid package.json \`workspaces\`: expected an array or { packages: string[] } object, got ${typeof raw}.`);
+};
+
+/**
+ * Read `overrides:` from `pnpm-workspace.yaml` (pnpm v9+ moved the
+ * `pnpm.overrides` block out of `package.json` into the workspace
+ * config). Returns the flat `{ depName: specifier }` map, or
+ * `undefined` if the file is missing / unparseable / has no overrides.
+ *
+ * Best-effort: a malformed YAML file returns `undefined` instead of
+ * throwing — drift detection should silently skip the file rather than
+ * crash a `vis lint` invocation.
+ */
+const readPnpmWorkspaceOverrides = (workspaceRoot: string): Record<string, string> | undefined => {
+    const filePath = join(workspaceRoot, "pnpm-workspace.yaml");
+
+    if (!isAccessibleSync(filePath)) {
+        return undefined;
+    }
+
+    let parsed: unknown;
+
+    try {
+        parsed = parseYaml(readFileSync(filePath));
+    } catch {
+        return undefined;
+    }
+
+    if (typeof parsed !== "object" || parsed === null) {
+        return undefined;
+    }
+
+    const { overrides } = (parsed as { overrides?: unknown });
+
+    if (typeof overrides !== "object" || overrides === null || Array.isArray(overrides)) {
+        return undefined;
+    }
+
+    const out: Record<string, string> = {};
+
+    for (const [key, value] of Object.entries(overrides as Record<string, unknown>)) {
+        if (typeof value === "string") {
+            out[key] = value;
+        }
+    }
+
+    return Object.keys(out).length > 0 ? out : undefined;
 };
 
 const readPnpmWorkspacePatterns = (workspaceRoot: string): string[] | undefined => {
@@ -781,6 +828,7 @@ export {
     collectTargetDefaults,
     discoverWorkspace,
     loadVisTaskConfigsForWorkspace,
+    readPnpmWorkspaceOverrides,
     readPnpmWorkspacePatterns,
     readWorkspacePatterns,
     resolveWorkspacePatterns,

@@ -40,6 +40,8 @@ Each NDJSON line is one of:
 
 `packageJsonPath` is always workspace-relative for portability across CI runners. `internal: true` indicates the dep name resolves to another workspace package.
 
+`pnpm-workspace.yaml#overrides` (pnpm v9+ moved `pnpm.overrides` from `package.json` into the workspace config) is read automatically and surfaced under `depType: "pnpm.overrides"`. The `packageJsonPath` for those entries points at `pnpm-workspace.yaml` so downstream tools know where to write back.
+
 #### Options
 
 | Option            | Default  | Description                                                                                                                                |
