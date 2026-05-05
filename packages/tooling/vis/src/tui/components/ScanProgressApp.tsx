@@ -70,7 +70,7 @@ const ScanProgressApp = ({ rows }: ScanProgressProps): React.JSX.Element => (
                         <Box>
                             <Text dimColor>
                                 {DASH}
-{' '}
+{" "}
 {row.summary}
                             </Text>
                         </Box>

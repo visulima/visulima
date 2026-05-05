@@ -24,12 +24,12 @@ describe(spawnDetached, () => {
     });
 
     it("returns a PID that is alive immediately after spawn", async () => {
-        expect.assertions(2);
+        expect.assertions(1);
 
         const logFile = join(temporaryDirectory, "test.log");
 
         const { pid } = await spawnDetached({
-            command: 'node -e "setInterval(()=>{}, 1000)"',
+            command: "node -e \"setInterval(()=>{}, 1000)\"",
             cwd: temporaryDirectory,
             env: {},
             logFile,

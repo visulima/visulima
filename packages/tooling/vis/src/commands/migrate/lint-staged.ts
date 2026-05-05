@@ -389,16 +389,16 @@ const migrateLintStaged = (root: string, options: { dryRun: boolean; silent?: bo
 
     // Check for unsupported config formats
     if (hasUnsupportedLintStagedConfig(root)) {
-        addMigrationWarning(report, 'Non-JSON lint-staged config found — please migrate to "staged" in vis.config.ts manually');
+        addMigrationWarning(report, "Non-JSON lint-staged config found — please migrate to \"staged\" in vis.config.ts manually");
         addManualStep(report, "Convert your lint-staged config file to JSON format or add staged config to vis.config.ts manually");
     }
 
     // Check if vis.config.ts already has staged
     if (hasStagedConfigInVisConfig(root)) {
-        addMigrationWarning(report, 'vis.config.ts already has a "staged" config — skipping lint-staged merge');
+        addMigrationWarning(report, "vis.config.ts already has a \"staged\" config — skipping lint-staged merge");
 
         if (!options.silent) {
-            logger.warn('vis.config.ts already has a "staged" config — skipping');
+            logger.warn("vis.config.ts already has a \"staged\" config — skipping");
         }
 
         if (!options.dryRun) {

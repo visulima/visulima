@@ -170,7 +170,7 @@ const SortListPanel = ({ counts, entries, filterType, focused, selectedIndex, to
                 </Text>
                 <Text wrap="truncate">
                     {totalEntries}
-{' '}
+{" "}
 file
 {totalEntries === 1 ? "" : "s"}
                 </Text>
@@ -189,11 +189,11 @@ file
                             </Text>
                             <Text dimColor={!isActive}>]</Text>
                             <Text color={isActive ? "white" : "gray"}>
-{' '}
+{" "}
 {f.label}
                             </Text>
                             <Text dimColor>
-{' '}
+{" "}
 (
 {tabCount}
 )

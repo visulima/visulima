@@ -12,7 +12,7 @@ describe(parseCommandString, () => {
     it("preserves double-quoted arguments with spaces", () => {
         expect.assertions(1);
 
-        expect(parseCommandString('prettier --write "src/a b.ts"')).toStrictEqual(["prettier", "--write", "src/a b.ts"]);
+        expect(parseCommandString("prettier --write \"src/a b.ts\"")).toStrictEqual(["prettier", "--write", "src/a b.ts"]);
     });
 
     it("preserves single-quoted arguments with spaces", () => {
@@ -36,7 +36,7 @@ describe(parseCommandString, () => {
     it("rejects unterminated double quotes", () => {
         expect.assertions(1);
 
-        expect(() => parseCommandString('echo "oops')).toThrow(/unterminated double quote/i);
+        expect(() => parseCommandString("echo \"oops")).toThrow(/unterminated double quote/i);
     });
 
     it("rejects unterminated single quotes", () => {
@@ -49,7 +49,7 @@ describe(parseCommandString, () => {
         expect.assertions(2);
 
         // `\"` inside double quotes is the escaped quote character.
-        expect(parseCommandString(String.raw`node -e "console.log(\"hi\")"`)).toStrictEqual(["node", "-e", 'console.log("hi")']);
+        expect(parseCommandString(String.raw`node -e "console.log(\"hi\")"`)).toStrictEqual(["node", "-e", "console.log(\"hi\")"]);
         // `\\` inside double quotes is a single backslash.
         expect(parseCommandString(String.raw`echo "path\\file"`)).toStrictEqual(["echo", String.raw`path\file`]);
     });

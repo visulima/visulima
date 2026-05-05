@@ -109,7 +109,7 @@ describe("vis lint autofix opt-out (item 16)", () => {
             expect(calls.some(([level, message]) => level === "warn" && typeof message === "string" && message.includes("autofix = false"))).toBe(true);
         });
 
-        it('treats policy.workspaceProtocol.autofix === "prompt" as report-only (interactive deferred)', async () => {
+        it("treats policy.workspaceProtocol.autofix === \"prompt\" as report-only (interactive deferred)", async () => {
             expect.assertions(3);
 
             writeWorkspaceRoot(workspaceRoot);

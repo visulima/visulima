@@ -45,7 +45,7 @@ const ProjectDetailPanel = ({ focused, node, scrollRef }: ProjectDetailPanelProp
                             DEPENDS ON
                         </Text>
                         <Text dimColor>
-{' '}
+{" "}
 (
 {node.deps.length}
 )
@@ -84,7 +84,7 @@ const ProjectDetailPanel = ({ focused, node, scrollRef }: ProjectDetailPanelProp
                             REQUIRED BY
                         </Text>
                         <Text dimColor>
-{' '}
+{" "}
 (
 {node.reverseDeps.length}
 )

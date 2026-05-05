@@ -144,7 +144,7 @@ const VisOptimizeApp = ({ isDryRun, store }: VisOptimizeAppProps): React.JSX.Ele
                 <Text color="yellow">
                     Terminal too small. Resize to at least
                     {MIN_VIEWPORT_HEIGHT}
-{' '}
+{" "}
 rows.
                 </Text>
             </Box>
@@ -177,7 +177,7 @@ rows.
             <Box flexShrink={0} paddingX={1}>
                 <Text dimColor>
                     {isDryRun ? "Preview mode" : "space:toggle a:all enter:apply"}
-{' '}
+{" "}
 | tab:switch panel /: filter q:quit |
 {"\u2699"}
                     =codemod available

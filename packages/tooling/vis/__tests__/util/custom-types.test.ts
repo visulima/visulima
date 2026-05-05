@@ -430,7 +430,7 @@ describe("custom-types", () => {
             expect(lowest[0]?.fix).toBe("10.0.0-rc.1");
         });
 
-        it('normalises packageManager: "yarn@4.0.0" without a +sha512 hash', () => {
+        it("normalises packageManager: \"yarn@4.0.0\" without a +sha512 hash", () => {
             expect.assertions(1);
 
             writeWorkspaceRoot({ name: "root", packageManager: "yarn@4.0.0", workspaces: ["packages/*"] });

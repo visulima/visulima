@@ -286,7 +286,7 @@ const buildHookCommand = (entry: PrekHookEntry, stage: string, builtin?: string)
         }
 
         if ((entry.pass_filenames ?? true) && !entry.always_run) {
-            parts.push('"$@"');
+            parts.push("\"$@\"");
         }
 
         return parts.join(" ");

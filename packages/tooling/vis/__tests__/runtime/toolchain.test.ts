@@ -168,7 +168,7 @@ describe("toolchain", () => {
 
             writeFileSync(
                 join(tmpDirectory, ".prototools"),
-                ["# comment line", 'node = "22.13.0"', "pnpm = 10.32.1", "[plugins]", 'foo = "bar"', ""].join("\n"),
+                ["# comment line", "node = \"22.13.0\"", "pnpm = 10.32.1", "[plugins]", "foo = \"bar\"", ""].join("\n"),
             );
 
             const specs = parseExpectedTools(tmpDirectory);
@@ -182,7 +182,7 @@ describe("toolchain", () => {
         it("should parse .mise.toml [tools] section only", () => {
             expect.assertions(2);
 
-            writeFileSync(join(tmpDirectory, ".mise.toml"), ["[tools]", 'node = "22.13.0"', 'python = "3.12"', "", "[env]", 'FOO = "bar"'].join("\n"));
+            writeFileSync(join(tmpDirectory, ".mise.toml"), ["[tools]", "node = \"22.13.0\"", "python = \"3.12\"", "", "[env]", "FOO = \"bar\""].join("\n"));
 
             const specs = parseExpectedTools(tmpDirectory);
 
@@ -259,7 +259,7 @@ describe("toolchain", () => {
         it("should detect a manager from its workspace config file even if the binary is missing", () => {
             expect.assertions(3);
 
-            writeFileSync(join(tmpDirectory, ".prototools"), 'node = "22.13.0"\n');
+            writeFileSync(join(tmpDirectory, ".prototools"), "node = \"22.13.0\"\n");
 
             const originalPath = process.env["PATH"];
 
@@ -731,7 +731,7 @@ describe("toolchain", () => {
 
             const pkgPath = join(tmpDirectory, "package.json");
 
-            writeFileSync(pkgPath, '{ "name": "demo", invalid json here');
+            writeFileSync(pkgPath, "{ \"name\": \"demo\", invalid json here");
 
             let captured: Error | undefined;
 

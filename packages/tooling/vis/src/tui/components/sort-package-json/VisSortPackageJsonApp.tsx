@@ -132,7 +132,7 @@ const VisSortPackageJsonApp = ({ checkMode, store }: VisSortPackageJsonAppProps)
                 <Text color="yellow">
                     Terminal too small. Resize to at least
                     {MIN_VIEWPORT_HEIGHT}
-{' '}
+{" "}
 rows.
                 </Text>
             </Box>

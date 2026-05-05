@@ -32,7 +32,6 @@ export default createConfig(
         rules: {
             // Extra parens are sometimes needed for clarity
             "@stylistic/no-extra-parens": "off",
-            "@stylistic/quotes": "off",
             // Explicit member accessibility not required for internal CLI code
             "@typescript-eslint/explicit-member-accessibility": "off",
             // Explicit module boundary types not required

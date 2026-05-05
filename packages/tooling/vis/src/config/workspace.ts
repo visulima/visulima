@@ -192,7 +192,7 @@ export const expandTaskGroups = (
 const validateWorkspacesField = (raw: PackageJson["workspaces"]): string[] => {
     if (Array.isArray(raw)) {
         if (raw.length === 0) {
-            throw new Error('Invalid package.json `workspaces`: empty array. Add at least one pattern like "packages/*" or remove the field.');
+            throw new Error("Invalid package.json `workspaces`: empty array. Add at least one pattern like \"packages/*\" or remove the field.");
         }
 
         for (const entry of raw) {
@@ -208,7 +208,7 @@ const validateWorkspacesField = (raw: PackageJson["workspaces"]): string[] => {
         const { packages } = raw;
 
         if (packages === undefined) {
-            throw new Error('Invalid package.json `workspaces`: object form requires a `packages` array (e.g. `{ "packages": ["packages/*"] }`).');
+            throw new Error("Invalid package.json `workspaces`: object form requires a `packages` array (e.g. `{ \"packages\": [\"packages/*\"] }`).");
         }
 
         if (!Array.isArray(packages)) {

@@ -146,7 +146,7 @@ const PackageDetailPanel = ({ changelogUrl, entry, focused, recommendation, scro
                                 <Box gap={1}>
                                     <Text bold color={SEVERITY_COLORS[vuln.severity] ?? "gray"}>
                                         {"\u26A0"}
-{' '}
+{" "}
 {vuln.severity}
                                     </Text>
                                     <Text bold>{vuln.id}</Text>
@@ -223,7 +223,7 @@ const PackageDetailPanel = ({ changelogUrl, entry, focused, recommendation, scro
                                 <Text dimColor>License: </Text>
                                 <Text>
                                     {entry.socketReport.license || "unknown"}
-{' '}
+{" "}
 (
 {String(Math.round(entry.socketReport.score.license * 100))}
                                     %)
@@ -234,9 +234,9 @@ const PackageDetailPanel = ({ changelogUrl, entry, focused, recommendation, scro
                             <Box flexDirection="column" marginTop={1}>
                                 <Text bold color="yellow">
                                     {"\u26A0"}
-{' '}
+{" "}
 {String(entry.socketReport.alerts.length)}
-{' '}
+{" "}
 alert
 {entry.socketReport.alerts.length === 1 ? "" : "s"}
 :
@@ -301,7 +301,7 @@ alert
                                     <Text key={String(i)}>
                                         {" "}
                                         {"\u2022"}
-{' '}
+{" "}
 {change}
                                     </Text>
                                 ))}
@@ -351,7 +351,7 @@ alert
                                 <>
                                     <Text color="red">
 {"\u26A0"}
-{' '}
+{" "}
 Major update — likely contains breaking changes.
                                     </Text>
                                     <Text dimColor> Review the changelog before updating.</Text>
@@ -362,7 +362,7 @@ Major update — likely contains breaking changes.
                                 <>
                                     <Text color="yellow">
 {"\u2139"}
-{' '}
+{" "}
 Minor update — new features, backward compatible.
                                     </Text>
                                     <Text dimColor> Generally safe to update.</Text>
@@ -372,7 +372,7 @@ Minor update — new features, backward compatible.
                                 <>
                                     <Text color="green">
 {"\u2713"}
-{' '}
+{" "}
 Patch update — bug fixes only.
                                     </Text>
                                     <Text dimColor> Safe to update.</Text>

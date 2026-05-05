@@ -29,7 +29,7 @@ const CheckProgressApp = ({ current, total }: CheckProgressProps): React.ReactEl
                 <Text color="cyan">{"━".repeat(filled)}</Text>
                 <Text dimColor>{"─".repeat(empty)}</Text>
                 <Text dimColor>
-{' '}
+{" "}
 {pctText}
                 </Text>
             </Box>

@@ -27,7 +27,7 @@ const ProjectRow = ({ isSelected, node }: ProjectRowProps): React.JSX.Element =>
         <Box flexShrink={0} height={1}>
             <Text>
 {isSelected ? "\u25B6" : " "}
-{' '}
+{" "}
             </Text>
             <Box flexGrow={1}>
                 <Text bold={isSelected} inverse={isSelected} wrap="truncate">
@@ -35,14 +35,14 @@ const ProjectRow = ({ isSelected, node }: ProjectRowProps): React.JSX.Element =>
                 </Text>
             </Box>
             <Text color={typeColor}>
-{' '}
+{" "}
 {typeLabel}
             </Text>
             <Text dimColor>
                 {" "}
                 {"\u2192"}
                 {node.deps.length}
-{' '}
+{" "}
 {"\u2190"}
                 {node.reverseDeps.length}
             </Text>
@@ -59,13 +59,13 @@ const TypeHeader = ({ count, label }: TypeHeaderProps): React.JSX.Element => (
     <Box flexShrink={0} height={1} marginTop={1}>
         <Text dimColor>
 {"\u25BC"}
-{' '}
+{" "}
         </Text>
         <Text bold color="white">
             {label.toUpperCase()}
         </Text>
         <Text dimColor>
-{' '}
+{" "}
 (
 {count}
 )
@@ -152,21 +152,21 @@ const ProjectListPanel = ({
                 </Text>
                 <Text wrap="truncate">
 {stats.total}
-{' '}
+{" "}
 packages
                 </Text>
                 <Text dimColor>
                     (
 {stats.apps}
-{' '}
+{" "}
 apps,
-{' '}
+{" "}
 {stats.libs}
-{' '}
+{" "}
 libs,
-{' '}
+{" "}
 {stats.deps}
-{' '}
+{" "}
 deps)
                 </Text>
             </Box>
@@ -184,7 +184,7 @@ deps)
                             </Text>
                             <Text dimColor={!isActive}>]</Text>
                             <Text color={isActive ? "white" : "gray"}>
-{' '}
+{" "}
 {f.label}
                             </Text>
                         </Box>

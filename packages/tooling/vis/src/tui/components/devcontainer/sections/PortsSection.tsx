@@ -23,10 +23,10 @@ const PortsSection = ({ addingPort, addPortValue, config, fieldIndex }: PortsSec
                     Forwarded Ports
                 </Text>
                 <Text dimColor>
-{' '}
+{" "}
 (
 {ports.length}
-{' '}
+{" "}
 ports)
                 </Text>
             </Box>
@@ -49,7 +49,7 @@ ports)
                         ? (
                         <Text>
                             Enter port:
-{' '}
+{" "}
 <Text color="yellow">{addPortValue || "_"}</Text>
                         </Text>
                         )

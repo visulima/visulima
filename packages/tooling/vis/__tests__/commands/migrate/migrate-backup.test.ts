@@ -24,14 +24,14 @@ describe("migrate-backup", () => {
 
             const path = join(tmpDir, "a.json");
 
-            writeFileSync(path, '{"k":1}');
+            writeFileSync(path, "{\"k\":1}");
 
             const report = createMigrationReport();
 
             backupFile(path, report);
 
             expect(existsSync(`${path}.bak`)).toBe(true);
-            expect(readFileSync(`${path}.bak`, "utf8")).toBe('{"k":1}');
+            expect(readFileSync(`${path}.bak`, "utf8")).toBe("{\"k\":1}");
             expect(report.backupsCreated).toContain(`${path}.bak`);
         });
 

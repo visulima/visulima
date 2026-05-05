@@ -27,17 +27,17 @@ const EntryRow = ({ checked, entry, isSelected }: EntryRowProps): React.JSX.Elem
         <Box flexShrink={0} height={1}>
             <Text>{isSelected ? ">" : " "}</Text>
             <Text color={checked ? "white" : "gray"}>
-{' '}
+{" "}
 {checkbox}
-{' '}
+{" "}
             </Text>
             <Text bold color={catColor}>
                 {`[${catLabel}]`.padEnd(9)}
             </Text>
             <Text>
-{' '}
+{" "}
 {codemodBadge}
-{' '}
+{" "}
             </Text>
             <Box flexGrow={1}>
                 <Text bold={isSelected} inverse={isSelected} wrap="truncate">
@@ -146,16 +146,16 @@ const OptimizeListPanel = ({
                 </Text>
                 <Text wrap="truncate">
                     {totalEntries}
-{' '}
+{" "}
 optimizations
 {summaryText}
                 </Text>
                 {!isDryRun && checkedCount > 0 && (
 <Text dimColor>
-{' '}
+{" "}
 —
 {checkedCount}
-{' '}
+{" "}
 selected
 </Text>
                 )}
@@ -173,7 +173,7 @@ selected
                             </Text>
                             <Text dimColor={!isActive}>]</Text>
                             <Text color={isActive ? "white" : "gray"}>
-{' '}
+{" "}
 {f.label}
                             </Text>
                         </Box>
