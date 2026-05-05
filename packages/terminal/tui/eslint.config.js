@@ -103,6 +103,7 @@ export default createConfig(
         rules: {
             // PascalCase is the standard naming convention for React component files
             "unicorn/filename-case": ["error", { cases: { kebabCase: true, pascalCase: true } }],
+            // null is the canonical "render nothing" return for React components
             "unicorn/no-null": "off",
         },
     },

@@ -97,6 +97,10 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
         argv.push("--reverse");
     }
 
+    if (typeof options.runnerTags === "string" && options.runnerTags !== "") {
+        argv.push(`--runner-tags=${options.runnerTags}`);
+    }
+
     try {
         await runtime.runCommand("run", { argv });
     } finally {

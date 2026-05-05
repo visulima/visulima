@@ -107,4 +107,48 @@ describe("vis affected --reverse → run forwarding", () => {
         expect(runCall, "expected affected handler to delegate to `run`").toBeDefined();
         expect(runCall!.argv).not.toContain("--reverse");
     });
+
+    it("forwards --runner-tags verbatim so capability filtering survives the affected → run hop", async () => {
+        expect.assertions(2);
+
+        const calls: RunCommandCall[] = [];
+
+        await affectedExecute({
+            argument: ["destroy"],
+            logger: makeLogger(),
+            options: { base: "HEAD~1", head: "HEAD", runnerTags: "gpu,slow" },
+            runtime: makeRuntime(calls) as never,
+            visConfig: undefined,
+            workspaceRoot,
+        } as never);
+
+        const runCall = calls.find((c) => c.name === "run");
+
+        expect(runCall, "expected affected handler to delegate to `run`").toBeDefined();
+        expect(runCall!.argv).toContain("--runner-tags=gpu,slow");
+    });
+
+    it("omits --runner-tags when neither flag nor empty string is passed (don't bind a phantom filter)", async () => {
+        expect.assertions(2);
+
+        const calls: RunCommandCall[] = [];
+
+        await affectedExecute({
+            argument: ["destroy"],
+            logger: makeLogger(),
+            // empty-string is what `--runner-tags=` yields; must not be
+            // forwarded or it'd flip the downstream into "filter active
+            // with zero tags" — which the run handler also guards against
+            // but it's cleaner to drop it at the source.
+            options: { base: "HEAD~1", head: "HEAD", runnerTags: "" },
+            runtime: makeRuntime(calls) as never,
+            visConfig: undefined,
+            workspaceRoot,
+        } as never);
+
+        const runCall = calls.find((c) => c.name === "run");
+
+        expect(runCall, "expected affected handler to delegate to `run`").toBeDefined();
+        expect(runCall!.argv.some((a) => a.startsWith("--runner-tags"))).toBe(false);
+    });
 });

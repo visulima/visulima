@@ -5,7 +5,7 @@ import pathRegexParser from "./path-regex-parser";
 import type { Key, Layer, Parameter, Route, RouteMetaData } from "./types";
 
 /**
- * Parses a route object. Route objects are the leafs of an express router tree
+ * Parses a route object. Route objects are the leafs of an express router tree.
  * @param layer The layer of this route object - represents the stack of middleware and other metadata
  * @param keys The full set of keys for this particular route
  * @param basePath The base path as it was initial declared for this route
@@ -74,7 +74,7 @@ const traverse = (routes: RouteMetaData[], path: string, layer: Layer, keys: Key
  * - Optional parameters e.g. /:name?
  * - Complex Matching routes e.g. /ma*tch, /ex(ab)?mple
  * - Regex routes e.g. /\/abc|\/xyz/
- * - Array of paths e.g. app.get(['/abc', '/xyz']) -> /abc,xyz/
+ * - Array of paths e.g. app.get(['/abc', '/xyz']) -> /abc,xyz/.
  * @param app The Express app reference. Must be used after all routes have been attached
  * @returns List of routes for this express app with meta-data that has been picked up
  */

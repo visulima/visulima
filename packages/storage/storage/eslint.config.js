@@ -225,6 +225,7 @@ export default createConfig(
         },
     },
     {
+        // sonarjs expects camelCase filenames matching the class; the project standard is kebab-case
         files: ["src/openapi/*.ts", "src/storage/gcs/gcs-storage.ts", "src/handler/multipart/multipart.ts"],
         rules: {
             "sonarjs/file-name-differ-from-class": "off",

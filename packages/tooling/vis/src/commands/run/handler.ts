@@ -802,6 +802,10 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
             argv.push("--reverse");
         }
 
+        if (typeof options.runnerTags === "string" && options.runnerTags !== "") {
+            argv.push(`--runner-tags=${options.runnerTags}`);
+        }
+
         await runtime.runCommand("affected", { argv });
 
         return;
@@ -910,8 +914,8 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
 
         if (exactMatchProjects.length > 0) {
             // The target exists somewhere in the workspace — it was
-            // just filtered out by selector/query/os/runInCI. Tell
-            // the user which projects do implement it.
+            // just filtered out by selector/query/os/runInCI/runner-tags.
+            // Tell the user which projects do implement it.
             logger.info("");
             logger.info(`Target "${target}" exists in these projects but was filtered out:`);
 

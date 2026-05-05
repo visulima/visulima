@@ -12,7 +12,7 @@ export const setErrorHeaders = (response: ServerResponse, error: unknown): void 
 };
 
 /**
- * Send `JSON` object
+ * Send `JSON` object.
  * @param response response object
  * @param jsonBody of data
  */
