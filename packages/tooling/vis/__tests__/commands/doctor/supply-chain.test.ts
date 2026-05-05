@@ -100,4 +100,31 @@ describe(buildSupplyChainPosture, () => {
 
         expect(result.findings.some((finding) => finding.label.includes("patchedDependencies"))).toBe(false);
     });
+
+    it("emits a warn finding when leftover syncpack references are detected", () => {
+        expect.assertions(3);
+
+        writeFileSync(
+            join(workspaceRoot, "package.json"),
+            JSON.stringify({ devDependencies: { syncpack: "^12.0.0" }, name: "root", scripts: { check: "syncpack lint" } }, undefined, 2),
+        );
+
+        const result = buildSupplyChainPosture(baseSecurity, { packageManager: "bun", workspaceRoot });
+
+        const leftover = result.findings.find((f) => f.label.includes("leftover"));
+
+        expect(leftover).toBeDefined();
+        expect(leftover?.severity).toBe("warn");
+        expect(leftover?.label).toContain("syncpack");
+    });
+
+    it("does not emit a leftover finding for a clean workspace", () => {
+        expect.assertions(1);
+
+        writeFileSync(join(workspaceRoot, "package.json"), JSON.stringify({ name: "root" }, undefined, 2));
+
+        const result = buildSupplyChainPosture(baseSecurity, { packageManager: "bun", workspaceRoot });
+
+        expect(result.findings.some((f) => f.label.includes("leftover"))).toBe(false);
+    });
 });

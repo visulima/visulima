@@ -19,6 +19,7 @@
 
 import type { VisConfig } from "../../config/workspace";
 import { findPatchIssues, readPatchedDependencies } from "../../util/patched-dependencies";
+import { scanMigrationLeftovers } from "../migrate/verify";
 import type { SectionStatus, SupplyChainFinding, SupplyChainPosture } from "./sections";
 
 /**
@@ -134,6 +135,36 @@ export const buildSupplyChainPosture = (config: VisConfig | undefined, context: 
             label: "strictDepBuilds is on but allowBuilds is empty",
             severity: "error",
         });
+    }
+
+    // Leftover migration tool references — when `vis migrate <tool>` was
+    // run incompletely, scripts/hooks/configs may still mention the old
+    // tool. Surface as `warn` so reviewers can re-run the verify step.
+    if (context.workspaceRoot) {
+        const leftovers = scanMigrationLeftovers(context.workspaceRoot);
+
+        if (leftovers.length > 0) {
+            const tools = new Set<string>();
+
+            for (const issue of leftovers) {
+                if (issue.detail.includes("gitleaks"))
+                    tools.add("gitleaks");
+
+                if (issue.detail.includes("secretlint"))
+                    tools.add("secretlint");
+
+                if (issue.detail.includes("syncpack"))
+                    tools.add("syncpack");
+            }
+
+            const toolList = [...tools].sort((a, b) => a.localeCompare(b)).join(", ") || "migrated tools";
+
+            findings.push({
+                detail: `Run \`vis migrate verify\` for the full list, then re-run \`vis migrate <tool>\` to clean up.`,
+                label: `${String(leftovers.length)} leftover ${leftovers.length === 1 ? "reference" : "references"} to ${toolList}`,
+                severity: "warn",
+            });
+        }
     }
 
     // patchedDependencies — pnpm/bun ship a patch system whose entries
