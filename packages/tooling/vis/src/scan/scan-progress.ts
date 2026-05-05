@@ -5,8 +5,8 @@ import isInCi from "is-in-ci";
 import React from "react";
 
 import { SYMBOLS } from "../io/symbols";
-import type { ScanRowState, ScanRowStatus } from "../tui/components/ScanProgressApp";
-import ScanProgressApp from "../tui/components/ScanProgressApp";
+import type { ScanRowState, ScanRowStatus } from "../tui/components/scan-progress-app";
+import ScanProgressApp from "../tui/components/scan-progress-app";
 
 /**
  * Multi-row progress reporter for parallel scans (doctor / audit / etc.).

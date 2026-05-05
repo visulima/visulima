@@ -1,7 +1,7 @@
 import type { ScrollViewRef } from "@visulima/tui";
 import { Box, ScrollView, Text } from "@visulima/tui";
 
-import type { SortFileEntry } from "./SortPackageJsonStore";
+import type { SortFileEntry } from "./sort-package-json-store";
 
 interface SortDetailPanelProps {
     checkMode: boolean;

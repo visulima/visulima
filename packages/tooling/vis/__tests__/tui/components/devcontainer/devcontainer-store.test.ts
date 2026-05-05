@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { DevcontainerStore } from "../../../../src/tui/components/devcontainer/DevcontainerStore";
+import { DevcontainerStore } from "../../../../src/tui/components/devcontainer/devcontainer-store";
 import type { DevcontainerConfig } from "../../../../src/tui/components/devcontainer/types";
 
 const baseConfig: DevcontainerConfig = {

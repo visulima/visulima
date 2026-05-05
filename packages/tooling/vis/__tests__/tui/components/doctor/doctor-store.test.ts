@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { DoctorStore } from "../../../../src/tui/components/doctor/DoctorStore";
+import { DoctorStore } from "../../../../src/tui/components/doctor/doctor-store";
 import type { DoctorFinding } from "../../../../src/tui/components/doctor/findings";
 
 const make = (section: DoctorFinding["section"], title: string, severity: DoctorFinding["severity"] = "warn"): DoctorFinding => {

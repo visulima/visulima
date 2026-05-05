@@ -3,7 +3,7 @@ import { Box, ScrollView, Text } from "@visulima/tui";
 
 import { formatMs } from "../pretty-time";
 import { getStatusInfo, isCacheStatus } from "../status-utils";
-import type { TaskRowData } from "./TaskRow";
+import type { TaskRowData } from "./task-row";
 
 // Extended status info for non-TaskStatus states (running, pending)
 const getDisplayInfo = (status: TaskRowData["status"]): { color: string; icon: string } => {

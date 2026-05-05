@@ -2,7 +2,7 @@ import type { LifeCycleInterface, Task, TaskResult, TaskStatus } from "@visulima
 import { renderToString } from "@visulima/tui";
 import React from "react";
 
-import TaskSummaryView from "./components/TaskSummaryView";
+import TaskSummaryView from "./components/task-summary-view";
 
 interface TaskSummaryEntry {
     output: string;

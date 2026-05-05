@@ -2,13 +2,13 @@ import type { ScrollViewRef } from "@visulima/tui";
 import { Box, Dialog, Text, useApp, useInput, useWindowSize } from "@visulima/tui";
 import React, { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 
-import type { ConfigBannerSeverity } from "../ConfigBanner";
-import ConfigBanner from "../ConfigBanner";
-import QuitDialog from "../QuitDialog";
-import DoctorDetailPanel from "./DoctorDetailPanel";
-import DoctorListPanel from "./DoctorListPanel";
-import type { DoctorStore, FilterType, PendingAction } from "./DoctorStore";
-import { FILTER_TABS } from "./DoctorStore";
+import type { ConfigBannerSeverity } from "../config-banner";
+import ConfigBanner from "../config-banner";
+import QuitDialog from "../quit-dialog";
+import DoctorDetailPanel from "./doctor-detail-panel";
+import DoctorListPanel from "./doctor-list-panel";
+import type { DoctorStore, FilterType, PendingAction } from "./doctor-store";
+import { FILTER_TABS } from "./doctor-store";
 import type { DoctorFinding } from "./findings";
 
 const buildUpdateAction = (finding: DoctorFinding): PendingAction | undefined => {

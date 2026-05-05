@@ -88,8 +88,6 @@ export default createConfig(
             "sonarjs/no-os-command-from-path": "off",
             // Slow regex patterns are acceptable in CLI (not hot-path)
             "sonarjs/slow-regex": "off",
-            // Filename case is pre-existing and consistent within the package
-            "unicorn/filename-case": "off",
             // Array sort is used intentionally
             "unicorn/no-array-sort": "off",
             // null is used for JSON serialization and PM API compatibility

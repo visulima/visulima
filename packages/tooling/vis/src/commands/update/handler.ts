@@ -19,9 +19,9 @@ import { resolveUpdateCommand } from "../../pm/package-manager";
 import { resolveInstaller } from "../../pm/pm-runner";
 import { buildSocketOptions, scoreColor } from "../../security/socket-security";
 import { runTyposquatCheck, scanDepsForTyposquats } from "../../security/typosquats";
-import CheckProgressApp from "../../tui/components/CheckProgressApp";
-import { UpdateStore } from "../../tui/components/update/UpdateStore";
-import VisUpdateApp from "../../tui/components/update/VisUpdateApp";
+import CheckProgressApp from "../../tui/components/check-progress-app";
+import { UpdateStore } from "../../tui/components/update/update-store";
+import VisUpdateApp from "../../tui/components/update/vis-update-app";
 import type { CatalogCheckOptions, NpmrcConfig, OutdatedEntry, UpdateTarget } from "../../util/catalog";
 import {
     applyCatalogUpdates,

@@ -3,9 +3,9 @@ import isInCi from "is-in-ci";
 import React from "react";
 
 import type { VisConfig } from "../../config/workspace";
-import type { MigrateItem } from "../../tui/components/migrate/MigrateStore";
-import { MigrateStore } from "../../tui/components/migrate/MigrateStore";
-import VisMigrateApp from "../../tui/components/migrate/VisMigrateApp";
+import type { MigrateItem } from "../../tui/components/migrate/migrate-store";
+import { MigrateStore } from "../../tui/components/migrate/migrate-store";
+import VisMigrateApp from "../../tui/components/migrate/vis-migrate-app";
 import type { MigrationEntry } from "./registry";
 import { buildProbeContext, getApplicableMigrations } from "./registry";
 import { printSummary } from "./summary";

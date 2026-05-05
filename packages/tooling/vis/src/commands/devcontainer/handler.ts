@@ -7,9 +7,9 @@ import { detectPm } from "../../pm/pm-runner";
 import type { PackageManager } from "../../tui/components/devcontainer/catalogs/mount-suggestions";
 import { TEMPLATES } from "../../tui/components/devcontainer/catalogs/templates";
 import { readDevcontainerJson, writeDevcontainerJson } from "../../tui/components/devcontainer/devcontainer-io";
-import { DevcontainerStore } from "../../tui/components/devcontainer/DevcontainerStore";
+import { DevcontainerStore } from "../../tui/components/devcontainer/devcontainer-store";
 import type { DevcontainerConfig } from "../../tui/components/devcontainer/types";
-import VisDevcontainerApp from "../../tui/components/devcontainer/VisDevcontainerApp";
+import VisDevcontainerApp from "../../tui/components/devcontainer/vis-devcontainer-app";
 import type { DevcontainerOptions } from "./index";
 
 const execute = async ({ logger, options, workspaceRoot: wsRoot }: Toolbox<Console, DevcontainerOptions>): Promise<void> => {

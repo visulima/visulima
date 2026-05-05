@@ -6,8 +6,8 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import type { PmInfo } from "../../src/pm/overrides";
 import { applyOverrides, readOverrides } from "../../src/pm/overrides";
-import type { OptimizeEntry } from "../../src/tui/components/optimize/OptimizeStore";
-import { OptimizeStore } from "../../src/tui/components/optimize/OptimizeStore";
+import type { OptimizeEntry } from "../../src/tui/components/optimize/optimize-store";
+import { OptimizeStore } from "../../src/tui/components/optimize/optimize-store";
 
 describe("optimize", () => {
     let tmpDir: string;

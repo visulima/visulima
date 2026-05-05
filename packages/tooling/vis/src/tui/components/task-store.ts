@@ -1,6 +1,6 @@
 import type { Task, TaskResult } from "@visulima/task-runner";
 
-import type { TaskRowData } from "./TaskRow";
+import type { TaskRowData } from "./task-row";
 
 // ── State Shape ─────────────────────────────────────────────────────────
 

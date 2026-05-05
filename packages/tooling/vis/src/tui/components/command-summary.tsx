@@ -3,7 +3,7 @@ import { Box, StaticRender, Text } from "@visulima/tui";
 
 import { formatTargetsAndProjects } from "../formatting-utils";
 import { CROSS, TICK } from "../symbols";
-import Header from "./Header";
+import Header from "./header";
 
 interface CommandSummaryProps {
     cached: number;

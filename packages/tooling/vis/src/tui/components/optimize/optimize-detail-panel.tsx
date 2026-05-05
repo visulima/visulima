@@ -2,7 +2,7 @@ import type { ScrollViewRef } from "@visulima/tui";
 import { Box, ScrollView, Text } from "@visulima/tui";
 
 import { CATEGORY_COLORS, CATEGORY_DESCRIPTIONS } from "./constants";
-import type { OptimizeEntry } from "./OptimizeStore";
+import type { OptimizeEntry } from "./optimize-store";
 
 interface OptimizeDetailPanelProps {
     entry: OptimizeEntry | null;

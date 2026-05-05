@@ -1,6 +1,6 @@
 import type { RuntimeDiagnostic } from "../../runtime/runtime-diagnostics";
 import type { DuplicatePackage } from "../../security/dependency-scan";
-import type { OptimizeEntry } from "../../tui/components/optimize/OptimizeStore";
+import type { OptimizeEntry } from "../../tui/components/optimize/optimize-store";
 import type { OutdatedEntry } from "../../util/catalog";
 
 export const SECTION_IDS = ["dependencies", "security", "optimization", "runtime"] as const;
