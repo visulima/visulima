@@ -62,7 +62,7 @@ const getNested = (object: Record<string, unknown>, dotPath: string): Record<str
 };
 
 /** Resolve every workspace-package directory (including the root). */
-const collectWorkspaceDirectories = (workspaceRoot: string): string[] => {
+export const collectWorkspaceDirectories = (workspaceRoot: string): string[] => {
     const rootPkgPath = join(workspaceRoot, "package.json");
 
     if (!isAccessibleSync(rootPkgPath)) {
@@ -95,7 +95,7 @@ const collectWorkspaceDirectories = (workspaceRoot: string): string[] => {
     return [".", ...directories];
 };
 
-const readPkg = (pkgPath: string): Record<string, unknown> | undefined => {
+export const readPkg = (pkgPath: string): Record<string, unknown> | undefined => {
     if (!isAccessibleSync(pkgPath)) {
         return undefined;
     }

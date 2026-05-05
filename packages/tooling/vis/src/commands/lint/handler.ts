@@ -7,6 +7,8 @@ import { lintBannedDeps } from "../../util/banned-deps-lint";
 import { readCatalogs } from "../../util/catalog";
 import type { CatalogProposal } from "../../util/catalog-proposals";
 import { applyCatalogProposals, proposeCatalogAdditions, renderCatalogProposalsDiff } from "../../util/catalog-proposals";
+import type { CustomTypeDriftIssue } from "../../util/custom-types";
+import { applyCustomTypeFixes, iterateCustomTypeDeps, lintCustomTypes } from "../../util/custom-types";
 import type { RedefineRootIssue } from "../../util/redefine-root-lint";
 import { lintRedefineRoot } from "../../util/redefine-root-lint";
 import { iterateWorkspaceDeps } from "../../util/workspace-deps";
@@ -19,6 +21,7 @@ import type { LintOptions } from "./index";
 interface LintReport {
     bannedDeps?: BannedDepIssue[];
     catalogProposals?: CatalogProposal[];
+    customTypes?: CustomTypeDriftIssue[];
     redefineRoot?: RedefineRootIssue[];
     workspaceProtocol?: WorkspaceProtocolIssue[];
     workspaceVersions?: WorkspaceVersionDriftIssue[];
@@ -26,6 +29,7 @@ interface LintReport {
 
 interface LintSelection {
     bannedDeps: boolean;
+    customTypes: boolean;
     redefineRoot: boolean;
     workspaceProtocol: boolean;
     workspaceVersions: boolean;
@@ -39,6 +43,7 @@ interface LintSelection {
  */
 interface FixState {
     catalogProposals: boolean;
+    customTypes: boolean;
     workspaceProtocol: boolean;
     workspaceVersions: boolean;
 }
@@ -207,6 +212,41 @@ const printCatalogProposalsHuman = (proposals: CatalogProposal[], workspaceRoot:
     }
 };
 
+const printCustomTypesHuman = (issues: CustomTypeDriftIssue[], workspaceRoot: string, didFix: boolean, logger: Toolbox["logger"]): void => {
+    if (issues.length === 0) {
+        logger.info(green("✓ custom-types: no engines / packageManager / volta drift"));
+
+        return;
+    }
+
+    const verb = didFix ? "Fixed" : "Found";
+    const colour = didFix ? cyan : yellow;
+
+    logger.info(colour(bold(`${verb} ${String(issues.length)} custom-type drift${issues.length === 1 ? "" : "s"}`)));
+
+    // Group by `${customType} ${depName}` so e.g. "engines.node" and
+    // "volta.node" stack under separate headings — they're independently
+    // tracked pins, not the same drift cluster.
+    for (const [key, keyIssues] of groupBy(issues, (i) => `${i.customType} ${i.depName}`)) {
+        const canonical = (keyIssues[0] as CustomTypeDriftIssue).fix;
+        const source = (keyIssues[0] as CustomTypeDriftIssue).canonicalSource;
+
+        logger.info(`  ${bold(key)} ${dim(`canonical: ${canonical} (from ${source})`)}`);
+
+        for (const issue of keyIssues) {
+            const path = relative(workspaceRoot, issue.packageJsonPath);
+            const packageKey = issue.packageName ?? path;
+            const arrow = didFix ? cyan("→") : yellow("→");
+
+            logger.info(`    ${packageKey} ${dim(`(${path})`)}: ${red(issue.specifier)} ${arrow} ${green(issue.fix)}`);
+        }
+    }
+
+    if (!didFix) {
+        logger.info(dim("  Run with --fix to align engines/packageManager/volta versions."));
+    }
+};
+
 const printHuman = (report: LintReport, workspaceRoot: string, fixState: FixState, selection: LintSelection, logger: Toolbox["logger"]): void => {
     let firstSection = true;
 
@@ -234,6 +274,12 @@ const printHuman = (report: LintReport, workspaceRoot: string, fixState: FixStat
     if (selection.workspaceVersions) {
         section(() => {
             printWorkspaceVersionsHuman(report.workspaceVersions ?? [], workspaceRoot, fixState.workspaceVersions, logger);
+        });
+    }
+
+    if (selection.customTypes) {
+        section(() => {
+            printCustomTypesHuman(report.customTypes ?? [], workspaceRoot, fixState.customTypes, logger);
         });
     }
 
@@ -267,6 +313,12 @@ const printMinimal = (report: LintReport, workspaceRoot: string): void => {
         const path = relative(workspaceRoot, issue.packageJsonPath);
 
         process.stdout.write(`workspace-versions\t${path}\t${issue.depType}\t${issue.depName}\t${issue.specifier} → ${issue.fix}\n`);
+    }
+
+    for (const issue of report.customTypes ?? []) {
+        const path = relative(workspaceRoot, issue.packageJsonPath);
+
+        process.stdout.write(`custom-types\t${path}\t${issue.customType}\t${issue.depName}\t${issue.specifier} → ${issue.fix}\n`);
     }
 
     for (const issue of report.bannedDeps ?? []) {
@@ -308,6 +360,12 @@ const printJson = (report: LintReport, workspaceRoot: string, fixState: FixState
         out.workspaceVersions = { issues, total: issues.length };
     }
 
+    if (selection.customTypes) {
+        const issues = (report.customTypes ?? []).map((i) => relativize(i));
+
+        out.customTypes = { issues, total: issues.length };
+    }
+
     if (selection.bannedDeps) {
         const issues = (report.bannedDeps ?? []).map((i) => relativize(i));
 
@@ -336,15 +394,17 @@ const resolveSelection = (options: LintOptions): LintSelection => {
             || (options.redefineRoot ?? false)
             || (options.bannedDeps ?? false)
             || (options.workspaceVersions ?? false)
+            || (options.customTypes ?? false)
             || hasBan
             || hasPin;
 
     if (!anySelected) {
-        return { bannedDeps: true, redefineRoot: true, workspaceProtocol: true, workspaceVersions: true };
+        return { bannedDeps: true, customTypes: true, redefineRoot: true, workspaceProtocol: true, workspaceVersions: true };
     }
 
     return {
         bannedDeps: (options.bannedDeps ?? false) || hasBan,
+        customTypes: options.customTypes ?? false,
         redefineRoot: options.redefineRoot ?? false,
         workspaceProtocol: options.workspaceProtocol ?? false,
         workspaceVersions: (options.workspaceVersions ?? false) || hasPin,
@@ -414,13 +474,19 @@ const isAutofixAllowed = (fix: boolean, autofix: "prompt" | boolean | undefined)
  * and `autofix: "prompt"` (the latter is documented as report-only until
  * interactive mode lands).
  */
+const AUTOFIX_CONFIG_PATHS: Record<"custom-types" | "workspace-protocol" | "workspace-versions", string> = {
+    "custom-types": "policy.customTypes.autofix",
+    "workspace-protocol": "policy.workspaceProtocol.autofix",
+    "workspace-versions": "policy.workspaceVersions.autofix",
+};
+
 const warnAutofixDenied = (
     logger: Toolbox["logger"],
-    rule: "workspace-protocol" | "workspace-versions",
+    rule: "custom-types" | "workspace-protocol" | "workspace-versions",
     autofix: "prompt" | boolean | undefined,
     issueCount: number,
 ): void => {
-    const configPath = rule === "workspace-protocol" ? "policy.workspaceProtocol.autofix" : "policy.workspaceVersions.autofix";
+    const configPath = AUTOFIX_CONFIG_PATHS[rule];
     const reason = autofix === "prompt"
         ? `${configPath} = "prompt" (interactive mode not yet implemented; report-only)`
         : `${configPath} = false`;
@@ -454,7 +520,7 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
 
     const instances = iterateWorkspaceDeps(workspaceRoot);
     const report: LintReport = {};
-    const fixState: FixState = { catalogProposals: false, workspaceProtocol: false, workspaceVersions: false };
+    const fixState: FixState = { catalogProposals: false, customTypes: false, workspaceProtocol: false, workspaceVersions: false };
     let totalIssues = 0;
 
     if (selection.workspaceProtocol) {
@@ -543,6 +609,38 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
                 // Proposals are *suggestions*, not violations — don't fail CI.
                 // Drift count above already covers genuine issues.
             }
+        }
+    }
+
+    if (selection.customTypes) {
+        const customInstances = iterateCustomTypeDeps(workspaceRoot);
+        // Custom-type pins (engines.node, packageManager, volta.*) only ever
+        // hold semver versions — `--resolve catalog` is meaningless here, so
+        // fall back to highest if a workspace-versions catalog mode bled in.
+        const requestedResolve = options.resolve ?? policy.customTypes?.resolve;
+        const resolve = requestedResolve === "lowest" ? "lowest" : "highest";
+
+        const issues = lintCustomTypes(customInstances, {
+            dep: options.dep,
+            ignoreDeps: policy.customTypes?.ignore,
+            resolve,
+        });
+
+        const autofixAllowed = isAutofixAllowed(fix, policy.customTypes?.autofix);
+
+        if (autofixAllowed && issues.length > 0) {
+            applyCustomTypeFixes(issues);
+            fixState.customTypes = true;
+        }
+
+        report.customTypes = issues;
+
+        if (!autofixAllowed) {
+            totalIssues += issues.length;
+        }
+
+        if (fix && !autofixAllowed && issues.length > 0 && !quiet) {
+            warnAutofixDenied(logger, "custom-types", policy.customTypes?.autofix, issues.length);
         }
     }
 

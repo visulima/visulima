@@ -225,7 +225,7 @@ describe("vis lint autofix opt-out (item 16)", () => {
 
             const payload = JSON.parse(writes.join(""));
 
-            expect(payload.fixed).toStrictEqual({ catalogProposals: false, workspaceProtocol: false, workspaceVersions: false });
+            expect(payload.fixed).toStrictEqual({ catalogProposals: false, customTypes: false, workspaceProtocol: false, workspaceVersions: false });
             // Sanity: the issue is still present in the report.
             expect(payload.workspaceProtocol.total).toBe(1);
 
