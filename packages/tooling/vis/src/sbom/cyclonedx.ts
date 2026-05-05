@@ -63,6 +63,7 @@ export interface BuildSbomOptions {
 
 const CYCLONEDX_SPEC_VERSION = "1.6" as const;
 const CYCLONEDX_BOM_FORMAT = "CycloneDX" as const;
+// eslint-disable-next-line sonarjs/no-clear-text-protocols -- canonical CycloneDX $schema URI; not a fetch target
 const CYCLONEDX_SCHEMA_URL = "http://cyclonedx.org/schema/bom-1.6.schema.json";
 const GENERATOR_NAME = "@visulima/vis";
 
@@ -521,6 +522,7 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
 export const serializeBomToXml = (bom: CycloneDxBom): string => {
     const rootAttributes: Record<string, string | number> = {
         version: bom.version ?? 1,
+        // eslint-disable-next-line sonarjs/no-clear-text-protocols -- XML namespace URI fixed by the CycloneDX spec; never resolved at runtime
         xmlns: "http://cyclonedx.org/schema/bom/1.6",
     };
 

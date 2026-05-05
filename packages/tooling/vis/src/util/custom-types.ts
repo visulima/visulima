@@ -26,6 +26,7 @@ export type BuiltInCustomDepType = "devEngines.packageManager" | "devEngines.run
  * Kept as `string` to admit user-defined names; tests can compare against
  * {@link BUILTIN_CUSTOM_TYPES} when they need the closed set.
  */
+// eslint-disable-next-line sonarjs/redundant-type-aliases -- documentation alias: open-ended union of built-in literals and user-defined names
 export type CustomDepType = string;
 
 export const BUILTIN_CUSTOM_TYPES: ReadonlySet<BuiltInCustomDepType> = new Set([

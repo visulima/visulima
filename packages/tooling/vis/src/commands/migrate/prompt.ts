@@ -11,13 +11,10 @@ export const confirm = async (question: string): Promise<boolean> => {
     const rl = createInterface({ input: stdin, output: stdout });
 
     try {
-        const answer = (await rl.question(`${question} [Y/n] `)).trim().toLowerCase();
+        const raw = await rl.question(`${question} [Y/n] `);
+        const answer = raw.trim().toLowerCase();
 
-        if (answer === "" || answer === "y" || answer === "yes") {
-            return true;
-        }
-
-        return false;
+        return answer === "" || answer === "y" || answer === "yes";
     } finally {
         rl.close();
     }

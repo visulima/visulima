@@ -243,7 +243,7 @@ if (isBareMigrateInvocation(process.argv.slice(2))) {
     // Run inside an async IIFE so there's no top-level await — Node 22 logs
     // "Detected unsettled top-level await" if cerebro's plugin lifecycle keeps
     // a microtask in flight when the loop empties.
-    // eslint-disable-next-line unicorn/prefer-top-level-await
+    // eslint-disable-next-line unicorn/prefer-top-level-await, no-void -- void marks the IIFE promise as intentionally discarded
     void (async () => {
         try {
             await cli.run({ shouldExitProcess: false });

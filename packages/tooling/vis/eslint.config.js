@@ -45,12 +45,8 @@ export default createConfig(
             "@typescript-eslint/no-base-to-string": "off",
             // Allow non-null assertions in CLI code where runtime context is known
             "@typescript-eslint/no-non-null-assertion": "off",
-            // Redundant type constituents
-            "@typescript-eslint/no-redundant-type-constituents": "off",
             // require imports used for conditional loading
             "@typescript-eslint/no-require-imports": "off",
-            // No-shadow is too strict for CLI commands
-            "@typescript-eslint/no-shadow": "off",
             // Allow unnecessary conditions for defensive programming
             "@typescript-eslint/no-unnecessary-condition": "off",
             // Type conversion is intentional
@@ -73,8 +69,6 @@ export default createConfig(
             "@typescript-eslint/restrict-plus-operands": "off",
             // Template expressions use dynamic values throughout CLI output
             "@typescript-eslint/restrict-template-expressions": "off",
-            // class-methods-use-this
-            "class-methods-use-this": "off",
             // Default case not required in CLI switch statements
             "default-case": "off",
             // Ban dependencies - CLI tool has specific dep requirements
@@ -103,14 +97,10 @@ export default createConfig(
             "n/no-unsupported-features/node-builtins": "off",
             // await in loop is used for sequential PM operations
             "no-await-in-loop": "off",
-            // Confusing arrow is a style preference
-            "no-confusing-arrow": "off",
             // CLI tool uses console output extensively for user-facing messages
             "no-console": "off",
             // Performance-oriented for...of rule - not critical in CLI context
             "no-for-of-array/no-for-of-array": "off",
-            // Lone blocks used for scoping
-            "no-lone-blocks": "off",
             // Allow param reassignment for option normalization
             "no-param-reassign": "off",
             // CLI code uses postfix increment/decrement idiomatically
@@ -126,17 +116,10 @@ export default createConfig(
             // Dead assignments are handled by TS; false-positive prone in CLI patterns
             // where we assign for the side-effect of capturing the discriminant.
             "no-useless-assignment": "off",
-            // No useless concat
-            "no-useless-concat": "off",
-            // No void
-            "no-void": "off",
-            // prefer-const auto-fix conflicts
-            "prefer-const": "off",
             // Preserve caught error
             "preserve-caught-error": "off",
             // Promise patterns are handled correctly
             "promise/always-return": "off",
-            "promise/catch-or-return": "off",
             // Promise param names
             "promise/param-names": "off",
             // Super-linear backtracking - patterns are used on bounded input
@@ -145,45 +128,31 @@ export default createConfig(
             "regexp/no-unused-capturing-group": "off",
             // Complex CLI commands naturally have high cognitive complexity
             "sonarjs/cognitive-complexity": "off",
-            // Different types comparison is intentional for loose checks
-            "sonarjs/different-types-comparison": "off",
             // Function return type
             "sonarjs/function-return-type": "off",
             // Alphabetical sort patterns are acceptable
             "sonarjs/no-alphabetical-sort": "off",
-            // Clear text protocols detection
-            "sonarjs/no-clear-text-protocols": "off",
             // Dead store
             "sonarjs/no-dead-store": "off",
-            // Empty collection
-            "sonarjs/no-empty-collection": "off",
             // Duplicate helpers across commands are deliberate: each CLI command
             // owns its own copy so refactors don't ripple unexpectedly.
             "sonarjs/no-identical-functions": "off",
-            // Reverse/sort in place is idiomatic CLI code.
-            "sonarjs/no-misleading-array-reverse": "off",
             // Nested conditionals are acceptable in command handlers
             "sonarjs/no-nested-conditional": "off",
             // OS command from path is expected in CLI tool
             "sonarjs/no-os-command-from-path": "off",
             // Redundant optional not enforced
             "sonarjs/no-redundant-optional": "off",
-            // Undefined argument
-            "sonarjs/no-undefined-argument": "off",
             // Sonar unused vars - handled by TS
             "sonarjs/no-unused-vars": "off",
             // OS command detection - this is a CLI tool
             "sonarjs/os-command": "off",
-            // Prefer single boolean return
-            "sonarjs/prefer-single-boolean-return": "off",
             // Pseudo random is acceptable in CLI
             "sonarjs/pseudo-random": "off",
             // tmpdir() paths in CLI code are fine — we don't run as root.
             "sonarjs/publicly-writable-directories": "off",
             // Slow regex patterns are acceptable in CLI (not hot-path)
             "sonarjs/slow-regex": "off",
-            // Void use
-            "sonarjs/void-use": "off",
             // Filename case is pre-existing and consistent within the package
             "unicorn/filename-case": "off",
             // Unicorn misc
@@ -192,17 +161,13 @@ export default createConfig(
             "unicorn/no-array-reduce": "off",
             // Array sort is used intentionally
             "unicorn/no-array-sort": "off",
-            "unicorn/no-await-expression-member": "off",
             // Immediate mutation patterns are used for config building
             "unicorn/no-immediate-mutation": "off",
             // null is used for JSON serialization and PM API compatibility
             "unicorn/no-null": "off",
             "unicorn/no-process-exit": "off",
-            "unicorn/prefer-code-point": "off",
-            "unicorn/prefer-math-trunc": "off",
             // Single-call preference not enforced
             "unicorn/prefer-single-call": "off",
-            "unicorn/prefer-spread": "off",
             // Abbreviations are conventional in CLI tooling (e.g., pkg, cmd, args, env)
             "unicorn/prevent-abbreviations": "off",
             // Unused vars handled by TypeScript

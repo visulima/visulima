@@ -18,6 +18,7 @@
  */
 
 import type { VisConfig } from "../../config/workspace";
+import { findPatchIssues, readPatchedDependencies } from "../../util/patched-dependencies";
 import type { SectionStatus, SupplyChainFinding, SupplyChainPosture } from "./sections";
 
 /**
@@ -38,7 +39,14 @@ const rollUpStatus = (findings: ReadonlyArray<SupplyChainFinding>): SectionStatu
     return "ok";
 };
 
-export const buildSupplyChainPosture = (config: VisConfig | undefined): SupplyChainPosture => {
+export interface SupplyChainContext {
+    /** Optional — when provided, enables PM-native patch validation. */
+    packageManager?: string;
+    /** Optional — when provided, enables PM-native patch validation. */
+    workspaceRoot?: string;
+}
+
+export const buildSupplyChainPosture = (config: VisConfig | undefined, context: SupplyChainContext = {}): SupplyChainPosture => {
     const findings: SupplyChainFinding[] = [];
     const security = config?.security;
 
@@ -126,6 +134,33 @@ export const buildSupplyChainPosture = (config: VisConfig | undefined): SupplyCh
             label: "strictDepBuilds is on but allowBuilds is empty",
             severity: "error",
         });
+    }
+
+    // patchedDependencies — pnpm/bun ship a patch system whose entries
+    // reference `.patch` files relative to the manifest. A missing file
+    // makes `install` fail; we surface it as `error` so the next install
+    // doesn't blow up unannounced. Skipped silently for npm/yarn.
+    if (context.workspaceRoot && context.packageManager) {
+        const patchEntries = readPatchedDependencies(context.workspaceRoot, context.packageManager);
+
+        if (patchEntries.length > 0) {
+            const issues = findPatchIssues(patchEntries);
+
+            if (issues.length === 0) {
+                findings.push({
+                    label: `patchedDependencies: ${String(patchEntries.length)} ${patchEntries.length === 1 ? "entry" : "entries"} resolved`,
+                    severity: "ok",
+                });
+            } else {
+                for (const issue of issues) {
+                    findings.push({
+                        detail: `Referenced from ${context.packageManager === "pnpm" ? "pnpm-workspace.yaml" : "package.json"} but the file is not present at ${issue.entry.patchFile}.`,
+                        label: `patchedDependencies: missing patch file for ${issue.entry.name}@${issue.entry.version}`,
+                        severity: "error",
+                    });
+                }
+            }
+        }
     }
 
     return { findings, status: rollUpStatus(findings) };

@@ -74,11 +74,7 @@ export const isGitUrl = (input: string): boolean => {
     }
 
     // owner/repo shorthand (but NOT @scope/package — that's npm)
-    if (!input.startsWith("@") && /^[^/#@][^/#]*\/[^/#]+/.test(input)) {
-        return true;
-    }
-
-    return false;
+    return !input.startsWith("@") && /^[^/#@][^/#]*\/[^/#]+/.test(input);
 };
 
 // ── npm shorthand expansion ───────────────────────────────────────

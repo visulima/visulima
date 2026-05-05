@@ -255,8 +255,9 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
                 },
             );
 
-            instance.waitUntilExit().then(
-                () => {
+            instance
+                .waitUntilExit()
+                .then(() => {
                     clearKeepAlive();
                     killAllPtyProcesses();
                     process.removeListener("SIGINT", onSignal);
@@ -264,15 +265,14 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
 
                     printExitSummary();
                     resolveDone();
-                },
-                () => {
+                })
+                .catch(() => {
                     clearKeepAlive();
                     killAllPtyProcesses();
                     process.removeListener("SIGINT", onSignal);
                     process.removeListener("SIGTERM", onSignal);
                     resolveDone();
-                },
-            );
+                });
         },
 
         startTasks(started: Task[]): void {

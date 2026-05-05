@@ -115,14 +115,14 @@ const configLoaderPlugin: Plugin = {
             if (!skipHint.has(command) && !configFilePath && !isInCi) {
                 if (process.stdin.isTTY) {
                     const rl = createInterface({ input: process.stdin, output: process.stderr });
-                    const answer = await new Promise<string>((resolve) => {
+                    const answer = await new Promise<string>((resolveAnswer) => {
                         rl.question(
                             "\u001B[36;1m?\u001B[0m \u001B[1mNo vis.config.ts found. Create one with best-practice security defaults?\u001B[0m \u001B[90m(\u001B[92mY\u001B[90m/n)\u001B[0m ",
-                            resolve,
+                            resolveAnswer,
                         );
                         rl.on("SIGINT", () => {
                             rl.close();
-                            resolve("n");
+                            resolveAnswer("n");
                         });
                     });
 

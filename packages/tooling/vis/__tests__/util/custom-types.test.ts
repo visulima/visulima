@@ -544,8 +544,8 @@ describe("custom-types", () => {
             expect.assertions(1);
 
             const errors = validateExtraTypes([
-                { name: "myType", path: "a", strategy: "string", depName: "x" },
-                { name: "myType", path: "b", strategy: "string", depName: "y" },
+                { depName: "x", name: "myType", path: "a", strategy: "string" },
+                { depName: "y", name: "myType", path: "b", strategy: "string" },
             ]);
 
             expect(errors.some((message) => /duplicate name/.test(message))).toBe(true);
@@ -574,7 +574,7 @@ describe("custom-types", () => {
                 validateExtraTypes([
                     { name: "pnpmOverridesLegacy", path: "pnpm.overrides", strategy: "versionsByName" },
                     { name: "myToolPin", path: "myTool.runtime", strategy: "name@version" },
-                    { name: "minNode", path: "config.minNode", strategy: "string", depName: "node" },
+                    { depName: "node", name: "minNode", path: "config.minNode", strategy: "string" },
                 ]),
             ).toStrictEqual([]);
         });
@@ -594,7 +594,7 @@ describe("custom-types", () => {
             const reactInstances = instances.filter((instance) => instance.customType === "pnpmOverridesLegacy" && instance.depName === "react");
 
             expect(reactInstances).toHaveLength(2);
-            expect(new Set(reactInstances.map((instance) => instance.specifier))).toStrictEqual(new Set(["18.2.0", "18.0.0"]));
+            expect(new Set(reactInstances.map((instance) => instance.specifier))).toStrictEqual(new Set(["18.0.0", "18.2.0"]));
         });
 
         it("strategy 'name@version' parses the leading name and the trailing version separately", () => {
@@ -607,7 +607,7 @@ describe("custom-types", () => {
 
             expect(instances).toHaveLength(2);
             expect(instances.every((instance) => instance.depName === "node")).toBe(true);
-            expect(new Set(instances.map((instance) => instance.specifier))).toStrictEqual(new Set(["22.14.0", "22.10.0"]));
+            expect(new Set(instances.map((instance) => instance.specifier))).toStrictEqual(new Set(["22.10.0", "22.14.0"]));
         });
 
         it("strategy 'string' uses the configured depName for the bare-version cluster", () => {
@@ -617,7 +617,7 @@ describe("custom-types", () => {
             writeJson("packages/a/package.json", { config: { minNode: "22.10.0" }, name: "@my/a" });
 
             const instances = iterateCustomTypeDeps(workspaceRoot, [
-                { name: "minNode", path: "config.minNode", strategy: "string", depName: "node" },
+                { depName: "node", name: "minNode", path: "config.minNode", strategy: "string" },
             ]);
 
             expect(instances).toHaveLength(2);
@@ -649,7 +649,7 @@ describe("custom-types", () => {
             // the user-declared "engines" entry must not produce phantom instances.
             const engines = instances.filter((instance) => instance.customType === "engines");
 
-            expect(engines.length).toBe(2);
+            expect(engines).toHaveLength(2);
         });
     });
 
@@ -716,7 +716,7 @@ describe("custom-types", () => {
             writeWorkspaceRoot({ config: { minNode: "22.14.0" }, name: "root", workspaces: ["packages/*"] });
             writeJson("packages/a/package.json", { config: { minNode: "22.10.0" }, name: "@my/a" });
 
-            const extras = [{ name: "minNode", path: "config.minNode", strategy: "string", depName: "node" } as const];
+            const extras = [{ depName: "node", name: "minNode", path: "config.minNode", strategy: "string" } as const];
             const issues = lintCustomTypes(iterateCustomTypeDeps(workspaceRoot, extras));
 
             applyCustomTypeFixes(issues);

@@ -60,7 +60,7 @@ describe(readPmNativeMinimumReleaseAge, () => {
             const result = readPmNativeMinimumReleaseAge(workspaceRoot, "bun");
 
             // 259200 from bunfig.toml — definitively not 9999 from package.json.
-            expect(result.minutes).toBe(259200);
+            expect(result.minutes).toBe(259_200);
             // Bun spells the excludes field plural (`Excludes`); we normalise
             // to the vis-internal singular (`excludes`) for symmetry with pnpm.
             expect(result.excludes).toStrictEqual(["@types/bun", "typescript"]);

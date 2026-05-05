@@ -238,15 +238,15 @@ const listTemplates = (aliases?: Record<string, string>): void => {
 // ── Print next steps ──────────────────────────────────────────────
 
 const printNextSteps = (targetDir: string, cwd: string, pmName: string, depsInstalled: boolean): void => {
-    const relative = resolve(cwd) === resolve(targetDir) ? "" : targetDir;
+    const relativeDir = resolve(cwd) === resolve(targetDir) ? "" : targetDir;
 
     process.stderr.write("\n");
     pail.success("Project created successfully!");
     process.stderr.write("\n");
     pail.notice("Next steps:");
 
-    if (relative) {
-        pail.info(`  cd ${relative}`);
+    if (relativeDir) {
+        pail.info(`  cd ${relativeDir}`);
     }
 
     if (!depsInstalled) {

@@ -283,6 +283,7 @@ describe("link command argument handling", () => {
         expect.assertions(1);
 
         const argument: string[] = [];
+        // eslint-disable-next-line sonarjs/no-empty-collection -- this test asserts behavior on an empty argv array; the literal-empty initializer is the point
         const target = argument[0] ?? null;
 
         expect(target).toBeNull();

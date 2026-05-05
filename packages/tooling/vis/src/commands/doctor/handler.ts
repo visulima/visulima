@@ -487,7 +487,7 @@ const streamScans = async (context: ScanContext): Promise<Omit<DoctorResults, "e
         // compute so the doctor section can render even when --only is
         // limited to other sections (the section filters its own
         // visibility in displayResults).
-        supplyChain: buildSupplyChainPosture(visConfig),
+        supplyChain: buildSupplyChainPosture(visConfig, { packageManager, workspaceRoot }),
         vulnCount,
         workspaceCount: workspaceDirectories.length,
     };

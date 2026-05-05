@@ -437,7 +437,7 @@ describe("vis sync package-json-fields", () => {
             captured += typeof chunk === "string" ? chunk : Buffer.from(chunk).toString("utf8");
 
             return true;
-        }) as typeof process.stdout.write;
+        });
 
         try {
             await syncExecute({
@@ -453,7 +453,7 @@ describe("vis sync package-json-fields", () => {
         }
 
         const payload = JSON.parse(captured) as {
-            changes: Array<{ field: string; packageJsonPath: string; packageName: string }>;
+            changes: { field: string; packageJsonPath: string; packageName: string }[];
             kind: string;
             mode: string;
             totalChanges: number;

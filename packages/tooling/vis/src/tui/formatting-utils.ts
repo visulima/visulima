@@ -52,9 +52,7 @@ export const formatTargetsAndProjects = (projectNames: string[], targets: string
     const targetLabel = matchedTargets.length === 1 ? "target" : "targets";
     const targetList = matchedTargets.join(", ");
 
-    let projectLabel: string;
-
-    projectLabel = matchedProjects.length === 1 ? `project ${matchedProjects[0]}` : `${matchedProjects.length} projects`;
+    const projectLabel = matchedProjects.length === 1 ? `project ${matchedProjects[0]}` : `${matchedProjects.length} projects`;
 
     let result = `${targetLabel} ${targetList} for ${projectLabel}`;
 

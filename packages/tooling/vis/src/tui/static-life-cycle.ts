@@ -112,6 +112,7 @@ export class StaticOutputLifeCycle implements LifeCycleInterface {
         process.stdout.write("\n");
     }
 
+    // eslint-disable-next-line class-methods-use-this -- LifeCycleInterface contract; the static variant has no instance state
     public startTasks(tasks: Task[]): void {
         const columns = process.stdout.columns || 80;
 

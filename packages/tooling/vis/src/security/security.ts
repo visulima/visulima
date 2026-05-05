@@ -124,7 +124,7 @@ const emitSecurityWarnings = (config: VisConfig, packageManager: string, enforce
 
     if (summarized.length > 0) {
         pail.warn(
-            `${summarized.length} security recommendation${summarized.length === 1 ? "" : "s"} found. ` + "Run 'vis check --security-config' for details.",
+            `${summarized.length} security recommendation${summarized.length === 1 ? "" : "s"} found. Run 'vis check --security-config' for details.`,
         );
     }
 };

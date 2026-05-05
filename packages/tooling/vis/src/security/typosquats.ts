@@ -111,7 +111,8 @@ export const generateVariants = (name: string): Set<string> => {
             const nextIsSeparator = name[i + 1] === "-" || name[i + 1] === "." || name[i + 1] === "_";
 
             if (!isSeparator && !nextIsSeparator) {
-                const chars = name.split("");
+                // eslint-disable-next-line @typescript-eslint/no-misused-spread -- typosquat domain is ASCII identifiers; UTF-16 code units are correct for character-level transposition
+                const chars = [...name];
 
                 [chars[i], chars[i + 1]] = [chars[i + 1] as string, chars[i] as string];
                 variants.add(chars.join(""));

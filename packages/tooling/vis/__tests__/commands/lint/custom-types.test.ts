@@ -263,7 +263,7 @@ describe("vis lint --custom-types", () => {
         // Strip ANSI colours so assertions don't depend on TTY detection.
         // eslint-disable-next-line no-control-regex
         const ansi = /\[[0-9;]*m/g;
-        const messages = calls.filter(([level]) => level === "info").map(([, message]) => String(message).replace(ansi, ""));
+        const messages = calls.filter(([level]) => level === "info").map(([, message]) => String(message).replaceAll(ansi, ""));
 
         expect(messages.some((message) => message.includes("Found 1 custom-type drift"))).toBe(true);
         // Heading uses the `${customType} ${depName}` form to keep engines vs volta distinct.

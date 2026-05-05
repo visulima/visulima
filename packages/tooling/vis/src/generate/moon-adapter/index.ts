@@ -143,11 +143,7 @@ const isLikelyText = (path: string): boolean => {
     // already covered by TEXT_EXTENSIONS via `lastDot`. A bare name
     // like `Dockerfile` hits here — allow the well-known set; anything
     // else is considered binary.
-    if (BARE_TEXT_BASENAMES.has(name)) {
-        return true;
-    }
-
-    return false;
+    return BARE_TEXT_BASENAMES.has(name);
 };
 
 interface PreparedFile {

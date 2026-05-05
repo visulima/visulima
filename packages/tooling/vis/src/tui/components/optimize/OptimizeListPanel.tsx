@@ -99,10 +99,7 @@ const OptimizeListPanel = ({
                 break;
             }
             case "socket": {
-                {
-                    socketCount++;
-                    // No default
-                }
+                socketCount++;
                 break;
             }
         }
