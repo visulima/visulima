@@ -144,23 +144,10 @@ export const buildSupplyChainPosture = (config: VisConfig | undefined, context: 
         const leftovers = scanMigrationLeftovers(context.workspaceRoot);
 
         if (leftovers.length > 0) {
-            const tools = new Set<string>();
-
-            for (const issue of leftovers) {
-                if (issue.detail.includes("gitleaks"))
-                    tools.add("gitleaks");
-
-                if (issue.detail.includes("secretlint"))
-                    tools.add("secretlint");
-
-                if (issue.detail.includes("syncpack"))
-                    tools.add("syncpack");
-            }
-
-            const toolList = [...tools].sort((a, b) => a.localeCompare(b)).join(", ") || "migrated tools";
+            const toolList = [...new Set(leftovers.map((issue) => issue.tool))].sort((a, b) => a.localeCompare(b)).join(", ");
 
             findings.push({
-                detail: `Run \`vis migrate verify\` for the full list, then re-run \`vis migrate <tool>\` to clean up.`,
+                detail: "Run `vis migrate verify` for the full list, then re-run `vis migrate <tool>` to clean up.",
                 label: `${String(leftovers.length)} leftover ${leftovers.length === 1 ? "reference" : "references"} to ${toolList}`,
                 severity: "warn",
             });

@@ -6,10 +6,13 @@ import { join } from "@visulima/path";
 
 import type { MigrateLogger } from "./types";
 
+export type MigrationTool = "gitleaks" | "secretlint" | "syncpack";
+
 export interface VerificationIssue {
     detail: string;
     kind: "catalog" | "ci" | "config" | "script" | "hook" | "devDep";
     location: string;
+    tool: MigrationTool;
 }
 
 const HOOK_CANDIDATES = [".husky/pre-commit", ".vis-hooks/pre-commit", ".git/hooks/pre-commit"];
@@ -66,15 +69,15 @@ const scanPackageJson = (root: string): VerificationIssue[] => {
             }
 
             if (/\bgitleaks\b/.test(value)) {
-                issues.push({ detail: `Script "${name}" still invokes gitleaks: ${value}`, kind: "script", location: "package.json" });
+                issues.push({ detail: `Script "${name}" still invokes gitleaks: ${value}`, kind: "script", location: "package.json", tool: "gitleaks" });
             }
 
             if (/\bsecretlint\b/.test(value)) {
-                issues.push({ detail: `Script "${name}" still invokes secretlint: ${value}`, kind: "script", location: "package.json" });
+                issues.push({ detail: `Script "${name}" still invokes secretlint: ${value}`, kind: "script", location: "package.json", tool: "secretlint" });
             }
 
             if (/\bsyncpack\b/.test(value)) {
-                issues.push({ detail: `Script "${name}" still invokes syncpack: ${value}`, kind: "script", location: "package.json" });
+                issues.push({ detail: `Script "${name}" still invokes syncpack: ${value}`, kind: "script", location: "package.json", tool: "syncpack" });
             }
         }
     }
@@ -82,15 +85,15 @@ const scanPackageJson = (root: string): VerificationIssue[] => {
     if (pkg.devDependencies) {
         for (const dep of Object.keys(pkg.devDependencies)) {
             if (dep === "gitleaks" || dep === "@gitleaks/cli") {
-                issues.push({ detail: `devDependency \`${dep}\` is still installed`, kind: "devDep", location: "package.json" });
+                issues.push({ detail: `devDependency \`${dep}\` is still installed`, kind: "devDep", location: "package.json", tool: "gitleaks" });
             }
 
             if (dep === "secretlint" || dep.startsWith("@secretlint/")) {
-                issues.push({ detail: `devDependency \`${dep}\` is still installed`, kind: "devDep", location: "package.json" });
+                issues.push({ detail: `devDependency \`${dep}\` is still installed`, kind: "devDep", location: "package.json", tool: "secretlint" });
             }
 
             if (dep === "syncpack") {
-                issues.push({ detail: `devDependency \`${dep}\` is still installed`, kind: "devDep", location: "package.json" });
+                issues.push({ detail: `devDependency \`${dep}\` is still installed`, kind: "devDep", location: "package.json", tool: "syncpack" });
             }
         }
     }
@@ -111,15 +114,15 @@ const scanHooks = (root: string): VerificationIssue[] => {
         const content = readFileSync(abs);
 
         if (/\bgitleaks\b/.test(content)) {
-            issues.push({ detail: "gitleaks invocation still present in hook", kind: "hook", location: rel });
+            issues.push({ detail: "gitleaks invocation still present in hook", kind: "hook", location: rel, tool: "gitleaks" });
         }
 
         if (/\bsecretlint\b/.test(content)) {
-            issues.push({ detail: "secretlint invocation still present in hook", kind: "hook", location: rel });
+            issues.push({ detail: "secretlint invocation still present in hook", kind: "hook", location: rel, tool: "secretlint" });
         }
 
         if (/\bsyncpack\b/.test(content)) {
-            issues.push({ detail: "syncpack invocation still present in hook", kind: "hook", location: rel });
+            issues.push({ detail: "syncpack invocation still present in hook", kind: "hook", location: rel, tool: "syncpack" });
         }
     }
 
@@ -131,13 +134,13 @@ const scanConfigs = (root: string): VerificationIssue[] => {
 
     for (const name of SECRETLINT_CONFIG_FILES) {
         if (isAccessibleSync(join(root, name))) {
-            issues.push({ detail: "secretlint config should be removed after migration", kind: "config", location: name });
+            issues.push({ detail: "secretlint config should be removed after migration", kind: "config", location: name, tool: "secretlint" });
         }
     }
 
     for (const name of SYNCPACK_CONFIG_FILES) {
         if (isAccessibleSync(join(root, name))) {
-            issues.push({ detail: "syncpack config should be removed after migration", kind: "config", location: name });
+            issues.push({ detail: "syncpack config should be removed after migration", kind: "config", location: name, tool: "syncpack" });
         }
     }
 
@@ -157,7 +160,7 @@ const scanCi = (root: string): VerificationIssue[] => {
         }
 
         if (/\bsyncpack\b/.test(readFileSync(abs))) {
-            issues.push({ detail: "syncpack invocation still present in CI", kind: "ci", location: rel });
+            issues.push({ detail: "syncpack invocation still present in CI", kind: "ci", location: rel, tool: "syncpack" });
         }
     };
 
@@ -212,7 +215,7 @@ const scanCatalogs = (root: string): VerificationIssue[] => {
             const catalog = parsed["catalog"] as Record<string, string> | undefined;
 
             if (catalog && typeof catalog["syncpack"] === "string") {
-                issues.push({ detail: "`syncpack` still listed in pnpm-workspace.yaml#catalog", kind: "catalog", location: "pnpm-workspace.yaml" });
+                issues.push({ detail: "`syncpack` still listed in pnpm-workspace.yaml#catalog", kind: "catalog", location: "pnpm-workspace.yaml", tool: "syncpack" });
             }
 
             const catalogs = parsed["catalogs"] as Record<string, Record<string, string>> | undefined;
@@ -220,7 +223,7 @@ const scanCatalogs = (root: string): VerificationIssue[] => {
             if (catalogs && typeof catalogs === "object") {
                 for (const [name, entries] of Object.entries(catalogs)) {
                     if (entries && typeof entries["syncpack"] === "string") {
-                        issues.push({ detail: `\`syncpack\` still listed in pnpm-workspace.yaml#catalogs.${name}`, kind: "catalog", location: "pnpm-workspace.yaml" });
+                        issues.push({ detail: `\`syncpack\` still listed in pnpm-workspace.yaml#catalogs.${name}`, kind: "catalog", location: "pnpm-workspace.yaml", tool: "syncpack" });
                     }
                 }
             }
@@ -244,7 +247,7 @@ const scanCatalogs = (root: string): VerificationIssue[] => {
             const catalog = workspaces["catalog"] as Record<string, string> | undefined;
 
             if (catalog && typeof catalog["syncpack"] === "string") {
-                issues.push({ detail: "`syncpack` still listed in package.json#workspaces.catalog", kind: "catalog", location: "package.json" });
+                issues.push({ detail: "`syncpack` still listed in package.json#workspaces.catalog", kind: "catalog", location: "package.json", tool: "syncpack" });
             }
 
             const catalogs = workspaces["catalogs"] as Record<string, Record<string, string>> | undefined;
@@ -252,7 +255,7 @@ const scanCatalogs = (root: string): VerificationIssue[] => {
             if (catalogs && typeof catalogs === "object") {
                 for (const [name, entries] of Object.entries(catalogs)) {
                     if (entries && typeof entries["syncpack"] === "string") {
-                        issues.push({ detail: `\`syncpack\` still listed in package.json#workspaces.catalogs.${name}`, kind: "catalog", location: "package.json" });
+                        issues.push({ detail: `\`syncpack\` still listed in package.json#workspaces.catalogs.${name}`, kind: "catalog", location: "package.json", tool: "syncpack" });
                     }
                 }
             }
@@ -261,7 +264,7 @@ const scanCatalogs = (root: string): VerificationIssue[] => {
         const topLevelCatalog = pkg["catalog"] as Record<string, string> | undefined;
 
         if (topLevelCatalog && typeof topLevelCatalog["syncpack"] === "string") {
-            issues.push({ detail: "`syncpack` still listed in package.json#catalog", kind: "catalog", location: "package.json" });
+            issues.push({ detail: "`syncpack` still listed in package.json#catalog", kind: "catalog", location: "package.json", tool: "syncpack" });
         }
     }
 
