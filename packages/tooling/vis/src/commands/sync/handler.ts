@@ -167,13 +167,15 @@ const runPackageJsonFields = ({ logger, options, workspaceRoot: wsRoot }: Toolbo
         }
     }
 
-    const reportChanges: PackageJsonReportChange[] = writes.flatMap((write) => write.pkgChanges.map((change) => ({
-        after: change.after,
-        before: change.before,
-        field: change.field,
-        packageJsonPath: write.packageJsonPath,
-        packageName: write.packageName,
-    })));
+    const reportChanges: PackageJsonReportChange[] = writes.flatMap((write) => write.pkgChanges.map((change) => {
+        return {
+            after: change.after,
+            before: change.before,
+            field: change.field,
+            packageJsonPath: write.packageJsonPath,
+            packageName: write.packageName,
+        };
+    }));
 
     const report: PackageJsonReport = {
         changes: reportChanges,
