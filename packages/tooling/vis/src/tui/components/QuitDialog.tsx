@@ -21,16 +21,33 @@ const QuitDialog = ({ autoExitSeconds, onCancel, visible }: QuitDialogProps): Re
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const openedAtRef = useRef(0);
 
-    // Reset countdown when dialog opens
     useEffect(() => {
-        if (visible) {
-            setCountdown(autoExitSeconds || 3);
-            openedAtRef.current = Date.now();
-
-            timerRef.current = setInterval(() => {
-                setCountdown((c) => Math.max(0, c - 1));
-            }, 1000);
+        if (!visible) {
+            return undefined;
         }
+
+        const start = autoExitSeconds || 3;
+
+        setCountdown(start);
+        openedAtRef.current = Date.now();
+
+        let remaining = start;
+
+        timerRef.current = setInterval(() => {
+            remaining -= 1;
+
+            if (remaining <= 0) {
+                if (timerRef.current) {
+                    clearInterval(timerRef.current);
+                    timerRef.current = null;
+                }
+
+                setCountdown(0);
+                exit();
+            } else {
+                setCountdown(remaining);
+            }
+        }, 1000);
 
         return () => {
             if (timerRef.current) {
@@ -38,19 +55,7 @@ const QuitDialog = ({ autoExitSeconds, onCancel, visible }: QuitDialogProps): Re
                 timerRef.current = null;
             }
         };
-    }, [visible, autoExitSeconds]);
-
-    // Exit when countdown reaches 0
-    useEffect(() => {
-        if (countdown <= 0 && visible) {
-            if (timerRef.current) {
-                clearInterval(timerRef.current);
-                timerRef.current = null;
-            }
-
-            exit();
-        }
-    }, [countdown, visible, exit]);
+    }, [visible, autoExitSeconds, exit]);
 
     const handleCancel = useCallback(() => {
         if (timerRef.current) {

@@ -30,7 +30,6 @@ export default createConfig(
     {
         files: ["**/*.ts", "**/*.tsx"],
         rules: {
-            "@stylistic/max-statements-per-line": "off",
             // Extra parens are sometimes needed for clarity
             "@stylistic/no-extra-parens": "off",
             "@stylistic/quotes": "off",
@@ -40,8 +39,6 @@ export default createConfig(
             "@typescript-eslint/explicit-module-boundary-types": "off",
             // Allow non-null assertions in CLI code where runtime context is known
             "@typescript-eslint/no-non-null-assertion": "off",
-            // require imports used for conditional loading
-            "@typescript-eslint/no-require-imports": "off",
             // Allow unnecessary conditions for defensive programming
             "@typescript-eslint/no-unnecessary-condition": "off",
             // Type conversion is intentional
@@ -60,8 +57,6 @@ export default createConfig(
             "@typescript-eslint/restrict-template-expressions": "off",
             // Static regex optimization is not critical in CLI startup code
             "e18e/prefer-static-regex": "off",
-            // require imports used for conditional loading
-            "global-require": "off",
             // Inline exports are used throughout for co-located declarations
             "import/exports-last": "off",
             // Extraneous deps are workspace-resolved
@@ -72,8 +67,6 @@ export default createConfig(
             "jsdoc/check-indentation": "off",
             // await in loop is used for sequential PM operations
             "no-await-in-loop": "off",
-            // Performance-oriented for...of rule - not critical in CLI context
-            "no-for-of-array/no-for-of-array": "off",
             // Allow param reassignment for option normalization
             "no-param-reassign": "off",
             // CLI code uses postfix increment/decrement idiomatically
@@ -90,8 +83,6 @@ export default createConfig(
             "sonarjs/cognitive-complexity": "off",
             // Alphabetical sort patterns are acceptable
             "sonarjs/no-alphabetical-sort": "off",
-            // Dead store
-            "sonarjs/no-dead-store": "off",
             // Nested conditionals are acceptable in command handlers
             "sonarjs/no-nested-conditional": "off",
             // OS command from path is expected in CLI tool
@@ -100,7 +91,6 @@ export default createConfig(
             "sonarjs/slow-regex": "off",
             // Filename case is pre-existing and consistent within the package
             "unicorn/filename-case": "off",
-            "unicorn/no-abusive-eslint-disable": "off",
             // Array sort is used intentionally
             "unicorn/no-array-sort": "off",
             // null is used for JSON serialization and PM API compatibility
@@ -114,7 +104,6 @@ export default createConfig(
     {
         files: ["**/*.test.ts"],
         rules: {
-            "sonarjs/no-nested-functions": "off",
             // tests use tmpdir() for fixtures — safe outside test runner
             "sonarjs/publicly-writable-directories": "off",
             "vitest/require-mock-type-parameters": "off",
@@ -134,10 +123,7 @@ export default createConfig(
             "react-x/no-array-index-key": "off",
             "react-x/set-state-in-effect": "off",
             "react-you-might-not-need-an-effect/no-adjust-state-on-prop-change": "off",
-            "react-you-might-not-need-an-effect/no-event-handler": "off",
             // React components use default exports and specific patterns
-            "react/function-component-definition": "off",
-            "react/no-array-index-key": "off",
             "react/style-prop-object": "off",
         },
     },
