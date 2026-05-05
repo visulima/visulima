@@ -247,11 +247,17 @@ const execute = async ({ argument, options, rawUnknown, visConfig, workspaceRoot
             for (const variable of described.variables) {
                 const flags: string[] = [variable.type];
 
-                if (variable.required) flags.push("required");
+                if (variable.required) {
+                    flags.push("required");
+                }
 
-                if (variable.default !== undefined) flags.push(`default=${JSON.stringify(variable.default)}`);
+                if (variable.default !== undefined) {
+                    flags.push(`default=${JSON.stringify(variable.default)}`);
+                }
 
-                if (variable.values) flags.push(`values=${variable.values.join("|")}`);
+                if (variable.values) {
+                    flags.push(`values=${variable.values.join("|")}`);
+                }
 
                 process.stderr.write(`  ${bold(cyan(variable.name))} ${dim(`(${flags.join(", ")})`)}\n`);
             }

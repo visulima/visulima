@@ -250,11 +250,17 @@ const postBuildkiteAnnotation = async (body: string, context: CiContext, buildki
     if (!context.apiBaseUrl || !context.repo || context.buildNumber === undefined || !context.token) {
         const missing: string[] = [];
 
-        if (!context.repo) missing.push("BUILDKITE_ORGANIZATION_SLUG / BUILDKITE_PIPELINE_SLUG");
+        if (!context.repo) {
+            missing.push("BUILDKITE_ORGANIZATION_SLUG / BUILDKITE_PIPELINE_SLUG");
+        }
 
-        if (context.buildNumber === undefined) missing.push("BUILDKITE_BUILD_NUMBER");
+        if (context.buildNumber === undefined) {
+            missing.push("BUILDKITE_BUILD_NUMBER");
+        }
 
-        if (!context.token) missing.push("BUILDKITE_API_TOKEN (with `write_build_annotations` scope)");
+        if (!context.token) {
+            missing.push("BUILDKITE_API_TOKEN (with `write_build_annotations` scope)");
+        }
 
         return {
             error: `buildkite-agent annotate exited ${String(cliResult.exitCode)} (${cliResult.stderr.trim().slice(0, 200)}); cannot fall back to REST without ${missing.join(", ")}`,
