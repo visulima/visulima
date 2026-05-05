@@ -171,6 +171,11 @@
             "additionalProperties": false,
             "description": "Configuration for the `vis create` scaffolding command. Controls template downloads (via giget), default options, and post-creation behavior."
         },
+        "editorconfig": {
+            "type": "boolean",
+            "description": "Discover `.editorconfig` for indent / line-ending defaults during file transformations (sort-package-json, migrate, hook, pm overrides, workspace catalog rewrites). Per-command flags can still override.",
+            "default": true
+        },
         "extends": {
             "anyOf": [
                 {

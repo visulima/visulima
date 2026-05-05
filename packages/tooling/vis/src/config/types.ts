@@ -262,6 +262,14 @@ export interface VisConfig {
     };
 
     /**
+     * Discover `.editorconfig` for indent / line-ending defaults during
+     * file transformations (sort-package-json, migrate, hook, pm overrides,
+     * workspace catalog rewrites). Per-command flags can still override.
+     * @default true
+     */
+    editorconfig?: boolean;
+
+    /**
      * Inherit configuration from one or more parent configs. Entries are
      * resolved left-to-right (later wins) and the consumer's own values
      * always override anything pulled in from `extends`.
