@@ -11,13 +11,14 @@ import zeptomatch from "zeptomatch";
 
 import { sortPackageJsonStringWithOptions } from "#native";
 
-import { readPnpmWorkspacePatterns, resolveWorkspacePatterns } from "../../config/workspace";
+import { readPnpmWorkspacePatterns, readWorkspacePatterns, resolveWorkspacePatterns } from "../../config/workspace";
 import { pail } from "../../io/logger";
 import type { SortError, SortFileEntry, SortKeyDiff } from "../../tui/components/sort-package-json/SortPackageJsonStore";
 import { SortPackageJsonStore } from "../../tui/components/sort-package-json/SortPackageJsonStore";
 import VisSortPackageJsonApp from "../../tui/components/sort-package-json/VisSortPackageJsonApp";
 import type { FormatPackageJsonOptions } from "../../util/format-package-json-fields";
 import { formatPackageJsonFields } from "../../util/format-package-json-fields";
+import { buildGitignoreMatcher, extractWorkspaceExcludePatterns } from "../../util/gitignore-matcher";
 import { errorMessage } from "../../util/utils";
 import type { SortPackageJsonOptions } from "./index";
 
@@ -366,6 +367,32 @@ const sortContents = (contents: string, config: NormalizedConfig, editorDefaults
     return output;
 };
 
+interface DiscoveryResult {
+    afterGitignore: string[];
+    allFiles: string[];
+    files: string[];
+}
+
+/**
+ * Walks the workspace, then strips `package.json` paths the user
+ * shouldn't be touching: `.gitignore`d directories, `!`-excluded
+ * workspace patterns, and the user's `--ignore` globs. Returns each
+ * stage so callers can distinguish "nothing matched" from "everything
+ * was excluded by X".
+ */
+const discoverPackageJsonFiles = (cwd: string, userIgnorePatterns: string[]): DiscoveryResult => {
+    const allFiles = findPackageJsonFiles(cwd);
+    const workspacePatterns = readWorkspacePatterns(cwd);
+    const gitignoreMatcher = buildGitignoreMatcher({
+        cwd,
+        extraPatterns: extractWorkspaceExcludePatterns(workspacePatterns),
+    });
+    const afterGitignore = allFiles.filter((file) => !gitignoreMatcher.ignores(file));
+    const files = filterByIgnore(afterGitignore, userIgnorePatterns, cwd);
+
+    return { afterGitignore, allFiles, files };
+};
+
 interface ProcessFileOptions {
     checkMode: boolean;
     cwd: string;
@@ -505,11 +532,17 @@ const execute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Co
         unsorted: [...splitList(options.unsorted), ...(config?.unsorted ?? [])],
     };
 
-    const allFiles = findPackageJsonFiles(cwd);
-    const files = filterByIgnore(allFiles, normalized.ignore, cwd);
+    const discovery = discoverPackageJsonFiles(cwd, normalized.ignore);
+    const { afterGitignore, allFiles, files } = discovery;
 
     if (files.length === 0) {
-        pail.info(allFiles.length === 0 ? "No package.json files found." : "All package.json files were excluded by --ignore.");
+        if (allFiles.length === 0) {
+            pail.info("No package.json files found.");
+        } else if (afterGitignore.length === 0) {
+            pail.info("All package.json files were excluded by .gitignore or workspace exclusions.");
+        } else {
+            pail.info("All package.json files were excluded by --ignore.");
+        }
 
         return;
     }
@@ -605,4 +638,4 @@ const execute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Co
 };
 
 export default execute as CommandExecute<Toolbox>;
-export { buildSnippet, computeKeyDiff, computeLineColumn, extractParseErrorContext, processFile };
+export { buildSnippet, computeKeyDiff, computeLineColumn, discoverPackageJsonFiles, extractParseErrorContext, processFile };

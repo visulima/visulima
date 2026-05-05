@@ -253,6 +253,39 @@ const readPnpmWorkspacePatterns = (workspaceRoot: string): string[] | undefined 
     return patterns.length > 0 ? patterns : undefined;
 };
 
+/**
+ * Read the *raw* workspace patterns array — pnpm-workspace.yaml first,
+ * package.json#workspaces as fallback. Returns the patterns verbatim,
+ * including any `!`-prefixed exclusions, so callers can decide how to
+ * apply them (the existing {@link resolveWorkspacePatterns} only
+ * resolves positive entries).
+ *
+ * Best-effort: a malformed `workspaces` field returns `undefined`
+ * instead of throwing, so consumers using this for filtering (e.g.
+ * sort-package-json) don't fail the whole command on a config typo.
+ * Strict consumers should call {@link validateWorkspacesField}
+ * directly to surface diagnostics.
+ */
+const readWorkspacePatterns = (workspaceRoot: string): string[] | undefined => {
+    const pnpm = readPnpmWorkspacePatterns(workspaceRoot);
+
+    if (pnpm) {
+        return pnpm;
+    }
+
+    const rootPkg = readJsonFileSafe<PackageJson>(join(workspaceRoot, "package.json"));
+
+    if (rootPkg?.workspaces === undefined) {
+        return undefined;
+    }
+
+    try {
+        return validateWorkspacesField(rootPkg.workspaces);
+    } catch {
+        return undefined;
+    }
+};
+
 const FILE_GROUP_PREFIX = "@filegroup:";
 
 /**
@@ -741,6 +774,7 @@ export {
     discoverWorkspace,
     loadVisTaskConfigsForWorkspace,
     readPnpmWorkspacePatterns,
+    readWorkspacePatterns,
     resolveWorkspacePatterns,
     scopeMatches,
     validateWorkspacesField,
