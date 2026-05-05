@@ -146,6 +146,7 @@ describe("utils", () => {
 
         let errorMessage = "Unexpected token i in JSON at position 0";
 
+        // eslint-disable-next-line vitest/no-conditional-in-test -- node version-specific JSON parser error messages diverge; condition picks the right expected string
         if (process.version.includes("v19") || process.version.includes("v20")) {
             errorMessage = "Unexpected token 'i', \"invalid JSON\" is not valid JSON";
         } else if (
