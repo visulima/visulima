@@ -47,7 +47,7 @@ export const useFileInput = (options: UseFileInputOptions = {}): UseFileInputRet
         const fileArray = [...fileList];
 
         files.value = fileArray;
-        options?.onFilesSelected?.(fileArray);
+        options.onFilesSelected?.(fileArray);
     };
 
     const handleFileChange = (event: Event): void => {

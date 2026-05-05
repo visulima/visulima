@@ -46,9 +46,9 @@ export const useFileInput = (options: UseFileInputOptions = {}): UseFileInputRet
             const fileArray = [...fileList];
 
             setFiles(fileArray);
-            options?.onFilesSelected?.(fileArray);
+            options.onFilesSelected?.(fileArray);
         },
-        [options?.onFilesSelected],
+        [options.onFilesSelected],
     );
 
     const handleFileChange = useCallback(

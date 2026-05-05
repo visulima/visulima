@@ -110,8 +110,15 @@ export const useChunkedRestUpload = (options: UseChunkedRestUploadOptions): UseC
         });
 
         // Sync state with adapter periodically
-        const checkInterval = setInterval(async () => {
-            offset.value = await adapterInstance.getOffset();
+        const checkInterval = setInterval(() => {
+            adapterInstance
+                .getOffset()
+                .then((value) => {
+                    offset.value = value;
+
+                    return value;
+                })
+                .catch(() => {});
             isPaused.value = adapterInstance.isPaused();
         }, 100);
 

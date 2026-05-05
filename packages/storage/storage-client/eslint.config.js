@@ -34,6 +34,15 @@ export default createConfig(
             "vitest/require-mock-type-parameters": "off",
         },
     },
+    {
+        files: ["src/**/*.ts", "src/**/*.tsx"],
+        rules: {
+            // Prettier owns indent and operator-linebreak placement; ESLint's stylistic rules
+            // disagree on multi-line variable declarations, type unions, and ternary objects.
+            "@stylistic/indent": "off",
+            "@stylistic/operator-linebreak": "off",
+        },
+    },
     // Vue configuration
     ...vue.configs["flat/recommended"],
     {

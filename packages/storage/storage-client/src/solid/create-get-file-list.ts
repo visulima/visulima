@@ -65,13 +65,19 @@ export const createGetFileList = (options: CreateGetFileListOptions): CreateGetF
 
             // Build filters with stable structure - use undefined for missing values
             // This ensures TanStack Query can properly compare queryKeys using deep equality
-            const filters: { limit?: number; page?: number } | undefined
-                = currentLimit !== undefined || currentPage !== undefined
-                    ? {
-                        ...currentLimit !== undefined && { limit: currentLimit },
-                        ...currentPage !== undefined && { page: currentPage },
-                    }
-                    : undefined;
+            let filters: { limit?: number; page?: number } | undefined;
+
+            if (currentLimit !== undefined || currentPage !== undefined) {
+                filters = {};
+
+                if (currentLimit !== undefined) {
+                    filters.limit = currentLimit;
+                }
+
+                if (currentPage !== undefined) {
+                    filters.page = currentPage;
+                }
+            }
 
             const queryKey = storageQueryKeys.files.list(endpoint, filters);
 
@@ -85,9 +91,9 @@ export const createGetFileList = (options: CreateGetFileListOptions): CreateGetF
                     return Array.isArray(data)
                         ? { data }
                         : {
-                            data: data.data,
-                            meta: data.meta,
-                        };
+                              data: data.data,
+                              meta: data.meta,
+                          };
                 },
                 queryKey,
             };
