@@ -185,6 +185,93 @@ describe("vis lint --custom-types", () => {
         expect(after.volta.node).toBe("22.14.0");
     });
 
+    it("emits each JSON issue with depName, customType, fix, specifier, and workspace-relative packageJsonPath", async () => {
+        expect.assertions(7);
+
+        writeWorkspaceRoot(workspaceRoot);
+        writePackage(workspaceRoot, "packages/a", { engines: { node: "22.14.0" }, name: "@my/a" });
+        writePackage(workspaceRoot, "packages/b", { engines: { node: "20.0.0" }, name: "@my/b" });
+
+        const writes: string[] = [];
+        const originalWrite = process.stdout.write.bind(process.stdout);
+
+        (process.stdout.write as unknown) = ((chunk: string | Uint8Array): boolean => {
+            writes.push(typeof chunk === "string" ? chunk : Buffer.from(chunk).toString("utf8"));
+
+            return true;
+        });
+
+        try {
+            await callLint(workspaceRoot, { "custom-types": true, format: "json" });
+        } finally {
+            process.stdout.write = originalWrite;
+        }
+
+        const payload = JSON.parse(writes.join(""));
+        const issue = payload.customTypes.issues[0];
+
+        // Lock down the shape that editor/CI consumers rely on.
+        expect(issue.customType).toBe("engines");
+        expect(issue.depName).toBe("node");
+        expect(issue.specifier).toBe("20.0.0");
+        expect(issue.fix).toBe("22.14.0");
+        expect(issue.packageName).toBe("@my/b");
+        // Path must be workspace-relative, not absolute (CI portability).
+        expect(issue.packageJsonPath).toBe("packages/b/package.json");
+        expect(issue.canonicalSource).toBe("@my/a");
+    });
+
+    it("emits a tab-separated `custom-types` line per issue in --format minimal", async () => {
+        expect.assertions(2);
+
+        writeWorkspaceRoot(workspaceRoot);
+        writePackage(workspaceRoot, "packages/a", { engines: { node: "22.14.0" }, name: "@my/a" });
+        writePackage(workspaceRoot, "packages/b", { engines: { node: "20.0.0" }, name: "@my/b" });
+
+        const writes: string[] = [];
+        const originalWrite = process.stdout.write.bind(process.stdout);
+
+        (process.stdout.write as unknown) = ((chunk: string | Uint8Array): boolean => {
+            writes.push(typeof chunk === "string" ? chunk : Buffer.from(chunk).toString("utf8"));
+
+            return true;
+        });
+
+        try {
+            await callLint(workspaceRoot, { "custom-types": true, format: "minimal" });
+        } finally {
+            process.stdout.write = originalWrite;
+        }
+
+        const lines = writes.join("").split("\n").filter(Boolean);
+        const customTypesLine = lines.find((line) => line.startsWith("custom-types\t"));
+
+        expect(customTypesLine).toBeDefined();
+        // Field order: rule\tpath\tcustomType\tdepName\t<specifier> → <fix>
+        expect(customTypesLine).toBe("custom-types\tpackages/b/package.json\tengines\tnode\t20.0.0 → 22.14.0");
+    });
+
+    it("emits a human-readable section grouped by `engines node` heading", async () => {
+        expect.assertions(3);
+
+        writeWorkspaceRoot(workspaceRoot);
+        writePackage(workspaceRoot, "packages/a", { engines: { node: "22.14.0" }, name: "@my/a" });
+        writePackage(workspaceRoot, "packages/b", { engines: { node: "20.0.0" }, name: "@my/b" });
+
+        const { calls } = await callLint(workspaceRoot, { "custom-types": true });
+
+        // Strip ANSI colours so assertions don't depend on TTY detection.
+        // eslint-disable-next-line no-control-regex
+        const ansi = /\[[0-9;]*m/g;
+        const messages = calls.filter(([level]) => level === "info").map(([, message]) => String(message).replace(ansi, ""));
+
+        expect(messages.some((message) => message.includes("Found 1 custom-type drift"))).toBe(true);
+        // Heading uses the `${customType} ${depName}` form to keep engines vs volta distinct.
+        expect(messages.some((message) => message.includes("engines node") && message.includes("canonical: 22.14.0"))).toBe(true);
+        // Per-package row shows old → new and includes the package name.
+        expect(messages.some((message) => message.includes("@my/b") && message.includes("20.0.0") && message.includes("22.14.0"))).toBe(true);
+    });
+
     it("emits JSON output containing the customTypes section with a fixed flag", async () => {
         expect.assertions(2);
 
