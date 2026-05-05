@@ -132,9 +132,9 @@ async function loadPackageJson() {
 
     const parsedContent = JSON.parse(content) as
         | {
-            name?: string;
-            version?: string;
-        }
+              name?: string;
+              version?: string;
+          }
         | undefined;
 
     return {

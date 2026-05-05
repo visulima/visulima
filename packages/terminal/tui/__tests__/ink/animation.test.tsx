@@ -91,13 +91,11 @@ describe(AnimatePresence, () => {
 
         const Harness = ({ visible }: { visible: boolean }) => (
             <AnimatePresence>
-                {visible
-                    ? (
+                {visible ? (
                     <Transition duration={30} key="panel" preset="fade" tickInterval={5}>
                         <Text>panel-body</Text>
                     </Transition>
-                    )
-                    : null}
+                ) : null}
             </AnimatePresence>
         );
 

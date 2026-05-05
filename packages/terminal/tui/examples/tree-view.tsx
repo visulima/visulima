@@ -87,16 +87,13 @@ const App = () => {
                     <Text bold>Info</Text>
                     {focusedId && (
                         <Text>
-                            Focused:
-{" "}
-<Text color="blue">{focusedId}</Text>
+                            Focused: <Text color="blue">{focusedId}</Text>
                         </Text>
                     )}
                     {selectedIds.size > 0 && (
                         <Box flexDirection="column" marginTop={1}>
                             <Text bold>
-                                Selected (
-{selectedIds.size}
+                                Selected ({selectedIds.size}
                                 ):
                             </Text>
                             {[...selectedIds].map((id) => (

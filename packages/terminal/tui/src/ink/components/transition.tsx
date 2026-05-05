@@ -73,33 +73,33 @@ const renderFade: RenderProgress = (progress, children) => {
 
 const slideOffset = (progress: number, distance: number): number => Math.max(0, Math.min(distance, Math.round((1 - progress) * distance)));
 
-const renderSlide
-    = (axis: "x" | "y", sign: 1 | -1): RenderProgress =>
-        (progress, children, distance) => {
-            const offset = slideOffset(progress, distance);
+const renderSlide =
+    (axis: "x" | "y", sign: 1 | -1): RenderProgress =>
+    (progress, children, distance) => {
+        const offset = slideOffset(progress, distance);
 
-            if (progress >= 1) {
-                return <Box>{children}</Box>;
-            }
+        if (progress >= 1) {
+            return <Box>{children}</Box>;
+        }
 
-            if (progress <= 0) {
-                return <Box />;
-            }
+        if (progress <= 0) {
+            return <Box />;
+        }
 
-            if (axis === "x") {
-                return (
+        if (axis === "x") {
+            return (
                 <Box paddingLeft={sign === 1 ? offset : 0} paddingRight={sign === -1 ? offset : 0}>
                     {children}
                 </Box>
-                );
-            }
+            );
+        }
 
-            return (
+        return (
             <Box flexDirection="column" paddingBottom={sign === -1 ? offset : 0} paddingTop={sign === 1 ? offset : 0}>
                 {children}
             </Box>
-            );
-        };
+        );
+    };
 
 const renderReveal: RenderProgress = (progress, children, distance) => {
     // Wraps content in a Box whose height grows from 0 to `distance` rows.

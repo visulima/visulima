@@ -89,25 +89,16 @@ const StatsBar = ({ cols, fps, frame, rows }: { cols: number; fps: number; frame
                 {"  "}
             </Text>
             <Text>
-                {String(fps).padStart(3)}
-{" "}
-updates/sec
-{"  "}
-                Frame:
-{" "}
-<Text color="white">{String(frame).padStart(7)}</Text>
+                {String(fps).padStart(3)} updates/sec
                 {"  "}
-                Terminal:
-{" "}
+                Frame: <Text color="white">{String(frame).padStart(7)}</Text>
+                {"  "}
+                Terminal:{" "}
                 <Text color="white">
-                    {cols}
-×
-{rows}
+                    {cols}×{rows}
                 </Text>
                 {"  "}
-                Cells/frame:
-{" "}
-<Text color="white">{(gridCols * gridRows).toLocaleString()}</Text>
+                Cells/frame: <Text color="white">{(gridCols * gridRows).toLocaleString()}</Text>
                 {"  "}
                 <Text dim>q / Esc / Ctrl+C to exit</Text>
             </Text>

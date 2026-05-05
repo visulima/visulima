@@ -43,17 +43,15 @@ describe("ratatat renderer layout", () => {
                 <Text> </Text>
                 {SECTIONS.map((s, i) => (
                     <Box key={s} marginRight={1}>
-                        {i === 0
-                            ? (
+                        {i === 0 ? (
                             <Box paddingX={1}>
                                 <Text bold>{s}</Text>
                             </Box>
-                            )
-                            : (
+                        ) : (
                             <Box paddingX={1}>
                                 <Text>{s}</Text>
                             </Box>
-                            )}
+                        )}
                     </Box>
                 ))}
                 <Spacer />

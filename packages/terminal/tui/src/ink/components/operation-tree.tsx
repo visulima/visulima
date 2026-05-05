@@ -120,25 +120,18 @@ const NodeLine = ({ isLast, node, prefix, showSpinner }: NodeLineProps): ReactEl
                         {node.label}
                     </Text>
                 </Box>
-                {node.durationMs === undefined
-                    ? undefined
-                    : (
+                {node.durationMs === undefined ? undefined : (
                     <Box flexShrink={0}>
-                        <Text dimColor>
-{" "}
-{formatDuration(node.durationMs)}
-                        </Text>
+                        <Text dimColor> {formatDuration(node.durationMs)}</Text>
                     </Box>
-                    )}
+                )}
             </Box>
-            {node.details === undefined
-                ? undefined
-                : (
+            {node.details === undefined ? undefined : (
                 <Box>
                     <Text dimColor>{childPrefix}</Text>
                     <Text dimColor>{node.details}</Text>
                 </Box>
-                )}
+            )}
             {node.children?.map((child, index, all) => (
                 <NodeLine isLast={index === all.length - 1} key={child.id} node={child} prefix={childPrefix} showSpinner={showSpinner} />
             ))}

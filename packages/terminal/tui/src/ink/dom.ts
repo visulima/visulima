@@ -431,7 +431,7 @@ export const setTextNodeValue = (node: TextNode, text: string): void => {
     markNodeAsDirty(node);
 };
 
-export const addLayoutListener = (rootNode: DOMElement, listener: LayoutListener): () => void => {
+export const addLayoutListener = (rootNode: DOMElement, listener: LayoutListener): (() => void) => {
     if (rootNode.nodeName !== "ink-root") {
         return () => {};
     }

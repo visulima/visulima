@@ -46,11 +46,7 @@ const ResizeObserverDemo = () => {
             <ObservedBox label="Resize your terminal to see this update" ref={ref} />
             <Text>
                 {" "}
-                Observed size:
-{" "}
-{size.width}
-x
-{size.height}
+                Observed size: {size.width}x{size.height}
             </Text>
         </Box>
     );

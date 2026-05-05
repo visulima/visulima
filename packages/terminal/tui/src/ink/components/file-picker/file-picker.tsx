@@ -229,9 +229,7 @@ const FilePicker = ({
 
             {fs.entries.length > limit && (
                 <Text dimColor>
-                    {safeIndex + 1}
-/
-{fs.entries.length}
+                    {safeIndex + 1}/{fs.entries.length}
                 </Text>
             )}
         </Box>

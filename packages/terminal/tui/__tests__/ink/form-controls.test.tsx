@@ -293,8 +293,6 @@ describe(Accordion, () => {
     });
 
     it("should allow multiple panels open when allowMultiple is true", async () => {
-        expect.assertions(2);
-
         const { getOutput, stdin } = await setup(<Accordion allowMultiple autoFocus defaultExpanded={["1"]} items={items} />);
 
         emitReadable(stdin, "j");

@@ -204,11 +204,7 @@ const Header = ({ focus, time, tokens }: { focus: Focus; time: string; tokens: n
             </Box>
             <Box flexDirection="row" gap={2}>
                 <Text color="blackBright">{hints[focus]}</Text>
-                <Text color="blackBright">
-{tokens.toLocaleString()}
-{" "}
-tok
-                </Text>
+                <Text color="blackBright">{tokens.toLocaleString()} tok</Text>
                 <Text color="blackBright">{time}</Text>
             </Box>
         </Box>
@@ -230,27 +226,16 @@ const Sidebar = ({ focused, selectedIdx, width }: { focused: boolean; selectedId
 
                 return (
                     <Box key={i} paddingLeft={1 + f.indent * 2}>
-                        {f.dir
-                            ? (
-                            <Text color="blueBright">
-▸
-{f.name}
-                            </Text>
-                            )
-                            : isSelected
-                                ? (
+                        {f.dir ? (
+                            <Text color="blueBright">▸{f.name}</Text>
+                        ) : isSelected ? (
                             <Text bold color="cyan" inverse>
                                 {" "}
-                                {f.name}
-{" "}
+                                {f.name}{" "}
                             </Text>
-                                )
-                                : (
-                            <Text color="blackBright">
-{" "}
-{f.name}
-                            </Text>
-                                )}
+                        ) : (
+                            <Text color="blackBright"> {f.name}</Text>
+                        )}
                     </Box>
                 );
             })}
@@ -287,8 +272,7 @@ const MessageBlock = ({ msg }: { msg: Message }) => {
         return (
             <Box marginTop={1} paddingX={2}>
                 <Text bold color="yellow">
-                    you
-{" "}
+                    you{" "}
                 </Text>
                 <Text color="blackBright">{msg.text}</Text>
             </Box>
@@ -311,8 +295,7 @@ const MessageBlock = ({ msg }: { msg: Message }) => {
     return (
         <Box marginTop={1} paddingX={2}>
             <Text bold color="cyan">
-                rat
-{" "}
+                rat{" "}
             </Text>
             <Box flexDirection="column" flexGrow={1}>
                 {msg.text.split("\n").map((line, i) => (
@@ -327,20 +310,17 @@ const MessageBlock = ({ msg }: { msg: Message }) => {
 
 const InputBar = ({ disabled, focused, value }: { disabled: boolean; focused: boolean; value: string }) => {
     const borderColor = focused ? "yellow" : "blackBright";
-    const prompt = disabled
-        ? (
+    const prompt = disabled ? (
         <Text color="blackBright"> waiting for rattata…</Text>
-        )
-        : (
+    ) : (
         <>
             <Text bold color="yellow">
-                ▸
-{" "}
+                ▸{" "}
             </Text>
             <Text color={focused ? "white" : "blackBright"}>{value}</Text>
             {focused && <Text color="yellow">█</Text>}
         </>
-        );
+    );
 
     return (
         <Box alignItems="center" borderColor={borderColor} borderStyle="single" height={3} paddingX={1}>
@@ -359,20 +339,16 @@ const StatusBar = ({ focus, scriptDone, spinner, thinking }: { focus: Focus; scr
     return (
         <Box borderColor="blackBright" borderStyle="single" flexDirection="row" justifyContent="space-between" paddingX={1}>
             <Box flexDirection="row" gap={1}>
-                {thinking
-                    ? (
+                {thinking ? (
                     <>
                         <Text color="cyan">{spinner}</Text>
                         <Text color="cyan">thinking…</Text>
                     </>
-                    )
-                    : scriptDone
-                        ? (
+                ) : scriptDone ? (
                     <Text color="greenBright">✓ ready</Text>
-                        )
-                        : (
+                ) : (
                     <Text color="blackBright">ready</Text>
-                        )}
+                )}
             </Box>
             <Box flexDirection="row" gap={2}>
                 <Text color="blackBright">focus: </Text>
@@ -421,8 +397,8 @@ const RattataApp = () => {
     const allMessages: Message[] = active
         ? [...settled, active]
         : thinking
-            ? [...settled, { done: false, id: -1, kind: "tool", text: `${spinner} running…` }]
-            : settled;
+          ? [...settled, { done: false, id: -1, kind: "tool", text: `${spinner} running…` }]
+          : settled;
 
     const contentHeight = allMessages.reduce((sum, m) => sum + messageRows(m), 0);
 
@@ -709,12 +685,7 @@ const RattataApp = () => {
                     <Box borderColor={focus === "chat" ? "cyan" : "blackBright"} borderStyle="single" flexDirection="column" flexGrow={1} paddingX={1}>
                         {!atTop && (
                             <Box justifyContent="center">
-                                <Text color="blackBright">
-↑
-{displayOffset}
-{" "}
-rows above
-                                </Text>
+                                <Text color="blackBright">↑{displayOffset} rows above</Text>
                             </Box>
                         )}
                         {visibleMessages.map((message) => (

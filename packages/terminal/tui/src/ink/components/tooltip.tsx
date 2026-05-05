@@ -54,8 +54,7 @@ const PLACEMENT_STYLE: Record<TooltipPlacement, { flexDirection: "column" | "row
 export default function Tooltip({ children, color = "gray", content, isVisible = true, placement = "right" }: Props): ReactElement {
     const { flexDirection, orderFirst } = PLACEMENT_STYLE[placement];
 
-    const tooltip = isVisible
-        ? (
+    const tooltip = isVisible ? (
         <Box
             borderColor={color}
             borderStyle="round"
@@ -66,8 +65,7 @@ export default function Tooltip({ children, color = "gray", content, isVisible =
         >
             {typeof content === "string" ? <Text color={color}>{content}</Text> : content}
         </Box>
-        )
-        : undefined;
+    ) : undefined;
 
     return (
         <Box alignItems="center" flexDirection={flexDirection}>

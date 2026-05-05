@@ -95,13 +95,11 @@ export default function Checkbox({
                 {isFocused ? "▸ " : "  "}
                 {checked ? CHECKED_ICON : UNCHECKED_ICON}
             </Text>
-            {children === undefined
-                ? undefined
-                : (
+            {children === undefined ? undefined : (
                 <Text color={isFocused ? accentColor : undefined} dimColor={isDisabled}>
                     {children}
                 </Text>
-                )}
+            )}
         </Box>
     );
 }

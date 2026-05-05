@@ -168,13 +168,11 @@ const IncrementalRendering = () => {
                 <Box flexDirection="column">
                     <Box flexDirection="row">
                         <Text bold color="cyan">
-                            Incremental Rendering Demo
-{" "}
+                            Incremental Rendering Demo{" "}
                         </Text>
                         <Text dim>↑↓ navigate · Q quit · </Text>
                         <Text>
-                            FPS:
-{" "}
+                            FPS:{" "}
                             <Text bold color={fps >= 55 ? "green" : fps >= 30 ? "yellow" : "red"}>
                                 {fps}
                             </Text>
@@ -182,44 +180,23 @@ const IncrementalRendering = () => {
                     </Box>
                     <Box flexDirection="row" gap={3} marginTop={1}>
                         <Text>
-                            Time:
-{" "}
-<Text color="green">{timestamp}</Text>
+                            Time: <Text color="green">{timestamp}</Text>
                         </Text>
                         <Text>
-                            Updates:
-{" "}
-<Text color="yellow">{counter}</Text>
+                            Updates: <Text color="yellow">{counter}</Text>
                         </Text>
                         <Text>
-                            Rand:
-{" "}
-<Text color="cyan">{randomValue}</Text>
+                            Rand: <Text color="cyan">{randomValue}</Text>
                         </Text>
                     </Box>
                     <Text>
-                        P1:
-{" "}
-<Text color="green">{progressBar(progress1)}</Text>
-{" "}
-{String(progress1).padStart(3)}
-%
+                        P1: <Text color="green">{progressBar(progress1)}</Text> {String(progress1).padStart(3)}%
                     </Text>
                     <Text>
-                        P2:
-{" "}
-<Text color="yellow">{progressBar(progress2)}</Text>
-{" "}
-{String(progress2).padStart(3)}
-%
+                        P2: <Text color="yellow">{progressBar(progress2)}</Text> {String(progress2).padStart(3)}%
                     </Text>
                     <Text>
-                        P3:
-{" "}
-<Text color="red">{progressBar(progress3)}</Text>
-{" "}
-{String(progress3).padStart(3)}
-%
+                        P3: <Text color="red">{progressBar(progress3)}</Text> {String(progress3).padStart(3)}%
                     </Text>
                 </Box>
             </Box>
@@ -228,9 +205,7 @@ const IncrementalRendering = () => {
             <Box borderColor="yellow" borderStyle="single" flexShrink={0} marginTop={1} paddingX={2} paddingY={1}>
                 <Box flexDirection="column">
                     <Text bold color="yellow">
-                        Live Logs
-{" "}
-<Text dim>(1-2 lines update per frame)</Text>
+                        Live Logs <Text dim>(1-2 lines update per frame)</Text>
                     </Text>
                     {logLines.map((line, i) => (
                         <Text color="green" dim key={i}>
@@ -244,16 +219,9 @@ const IncrementalRendering = () => {
             <Box borderColor="gray" borderStyle="single" flexGrow={1} marginTop={1} paddingX={2} paddingY={1}>
                 <Box flexDirection="column">
                     <Text bold color="magenta">
-                        System Services
-{" "}
+                        System Services{" "}
                         <Text dim>
-                            (
-{serviceCount}
-{" "}
-of
-{" "}
-{SERVICES.length}
-)
+                            ({serviceCount} of {SERVICES.length})
                         </Text>
                     </Text>
                     {visibleServices.map((svc, i) => {
@@ -275,11 +243,7 @@ of
                 <Text bold color="magenta">
                     {visibleServices[selectedIndex]?.split(" - ")[0]}
                 </Text>
-                <Text dim>
-{" "}
-—
-{visibleServices[selectedIndex]?.split(" - ")[1]}
-                </Text>
+                <Text dim> —{visibleServices[selectedIndex]?.split(" - ")[1]}</Text>
             </Box>
         </Box>
     );

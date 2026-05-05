@@ -87,11 +87,7 @@ const FpsHud = ({ fps }: { fps: number }) => {
 
     return (
         <Box borderColor="gray" borderStyle="round" paddingX={1}>
-            <Text dim>
-{label}
-{" "}
-updates/sec
-            </Text>
+            <Text dim>{label} updates/sec</Text>
         </Box>
     );
 };
