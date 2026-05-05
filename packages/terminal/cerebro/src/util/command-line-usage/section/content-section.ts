@@ -119,9 +119,9 @@ class ContentSection extends BaseSection {
         }
 
         if (
-            Array.isArray(content)
+            Array.isArray(content) &&
             // eslint-disable-next-line @typescript-eslint/no-shadow
-            && content.every((value) => typeof value === "string" || (Array.isArray(value) && value.every((value) => typeof value === "string")))
+            content.every((value) => typeof value === "string" || (Array.isArray(value) && value.every((value) => typeof value === "string")))
         ) {
             const table = createTable({
                 showHeader: false,

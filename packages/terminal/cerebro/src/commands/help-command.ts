@@ -77,9 +77,9 @@ const printGeneralHelp = (logger: Console, runtime: ICli<Console>, commands: Map
                 }),
                 commands.has("help")
                     ? {
-                        header: inverse.yellow(" Command Options "),
-                        optionList: (commands.get("help") as ICommand).options?.filter((option) => !option.hidden),
-                    }
+                          header: inverse.yellow(" Command Options "),
+                          optionList: (commands.get("help") as ICommand).options?.filter((option) => !option.hidden),
+                      }
                     : undefined,
                 { header: inverse.yellow(" Global Options "), optionList: runtime.getGlobalOptions() },
                 {
@@ -137,7 +137,7 @@ const printParentHelp = <OD extends OptionDefinition<any>>(logger: Console, runt
         },
         {
             content: children.map((child) => {
-                const fullPath = [...child.commandPath ?? [], child.name].join(" ");
+                const fullPath = [...(child.commandPath ?? []), child.name].join(" ");
 
                 return [green(fullPath), child.description ?? ""];
             }),
@@ -253,13 +253,13 @@ const printCommandHelp = <OD extends OptionDefinition<any>>(
         });
     }
 
-    const ownPath = [...command.commandPath ?? [], command.name];
+    const ownPath = [...(command.commandPath ?? []), command.name];
     const ownChildren = findChildren(commands, ownPath);
 
     if (ownChildren.length > 0) {
         usageGroups.push({
             content: ownChildren.map((child) => {
-                const fullPath = [...child.commandPath ?? [], child.name].join(" ");
+                const fullPath = [...(child.commandPath ?? []), child.name].join(" ");
 
                 return [green(fullPath), child.description ?? ""];
             }),

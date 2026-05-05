@@ -115,7 +115,7 @@ export const prepareToolbox = <OD extends OptionDefinition<unknown>, TLogger ext
     // everything after a `--` separator) so commands can forward it to
     // inner tools without peeking at `process.argv`. `stopAtFirstUnknown`
     // is set above, so this is the authoritative passthrough buffer.
-    toolbox.rawUnknown = [..._unknown ?? []];
+    toolbox.rawUnknown = [...(_unknown ?? [])];
 
     const hasExtraOptions = Object.keys(extraOptions).length > 0;
 
