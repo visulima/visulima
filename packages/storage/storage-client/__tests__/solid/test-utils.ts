@@ -55,7 +55,6 @@ export const runInRoot = <T>(callback: () => T, queryClient?: QueryClient): T =>
                             }
 
                             // Return null - we don't need to render anything, just establish context
-                            // eslint-disable-next-line unicorn/no-null
                             return null;
                         },
                         client: queryClient,

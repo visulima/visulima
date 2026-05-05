@@ -4,7 +4,6 @@
     import { onDestroy } from "svelte";
     import { buildUrl, extractFileMetaFromHeaders, storageQueryKeys } from "../../src/core";
     import type { CreateGetFileOptions, CreateGetFileReturn } from "../../src/svelte/create-get-file";
-    import type { FileMeta } from "../../src/react/types";
 
     export let result: CreateGetFileReturn | undefined = undefined;
     export let options: CreateGetFileOptions;
@@ -57,11 +56,28 @@
             };
         });
 
-
         // Check if data/error are stores or accessors
-        const dataStore = typeof query.data === 'function' ? query.data : readable(query.data, (set) => { set(query.data); return () => {}; });
-        const errorStore = typeof query.error === 'function' ? query.error : readable(query.error || undefined, (set) => { set(query.error || undefined); return () => {}; });
-        const isLoadingStore = typeof query.isLoading === 'function' ? query.isLoading : readable(query.isLoading, (set) => { set(query.isLoading); return () => {}; });
+        const dataStore = typeof query.data === "function"
+            ? query.data
+            : readable(query.data, (set) => {
+                set(query.data);
+
+                return () => {};
+            });
+        const errorStore = typeof query.error === "function"
+            ? query.error
+            : readable(query.error || undefined, (set) => {
+                set(query.error || undefined);
+
+                return () => {};
+            });
+        const isLoadingStore = typeof query.isLoading === "function"
+            ? query.isLoading
+            : readable(query.isLoading, (set) => {
+                set(query.isLoading);
+
+                return () => {};
+            });
 
         // Extract metadata from response if available
         const meta = derived(dataStore, ($data) => $data?.meta || undefined);
@@ -74,6 +90,7 @@
             unsubscribeData = dataStore.subscribe(($data) => {
                 if ($data && onSuccess) {
                     const currentMeta = get(meta);
+
                     onSuccess($data.blob, currentMeta);
                 }
             });
@@ -90,6 +107,7 @@
             });
         }
 
+        // eslint-disable-next-line svelte/infinite-reactive-loop -- test fixture: options is stable per render so no loop in practice
         result = {
             data: derived(dataStore, ($data) => $data?.blob),
             error: derived(errorStore, ($error) => ($error as Error) || undefined),
@@ -101,4 +119,3 @@
         };
     }
 </script>
-

@@ -1,6 +1,6 @@
 <script lang="ts">
     import { createMutation, useQueryClient } from "@tanstack/svelte-query";
-    import { derived, readable } from "svelte/store";
+    import { readable } from "svelte/store";
     import { buildUrl, deleteRequest, storageQueryKeys } from "../../src/core";
     import type { CreateDeleteFileOptions, CreateDeleteFileReturn } from "../../src/svelte/create-delete-file";
 
@@ -18,6 +18,7 @@
             return {
                 mutationFn: async (id: string): Promise<void> => {
                     const url = buildUrl(endpoint, id);
+
                     await deleteRequest(url);
                 },
                 onSuccess: (_data, id) => {
@@ -35,14 +36,17 @@
         // Convert null to undefined for error to match expected interface
         const errorStore = readable(mutation.error || undefined, (set) => {
             set(mutation.error || undefined);
+
             return () => {};
         });
 
         const isLoadingStore = readable(mutation.isPending, (set) => {
             set(mutation.isPending);
+
             return () => {};
         });
 
+        // eslint-disable-next-line svelte/infinite-reactive-loop -- test fixture: options is stable per render so no loop in practice
         result = {
             deleteFile: mutation.mutateAsync,
             error: errorStore,
@@ -51,4 +55,3 @@
         };
     }
 </script>
-

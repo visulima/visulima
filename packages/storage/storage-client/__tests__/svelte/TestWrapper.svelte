@@ -8,4 +8,3 @@
 <QueryClientProvider {client}>
     <slot />
 </QueryClientProvider>
-

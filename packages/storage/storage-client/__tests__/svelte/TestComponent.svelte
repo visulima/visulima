@@ -6,9 +6,9 @@
 
     export let client: QueryClient;
     export let options: CreateGetFileOptions;
-    
+
     let innerResult: CreateGetFileReturn | undefined = undefined;
-    
+
     // Expose result for testing
     export const getResult = () => innerResult;
 </script>
