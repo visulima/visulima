@@ -133,7 +133,7 @@ vis migrate syncpack --dry-run
 
 **Not supported in v1:**
 
-TS/JS configs (`.syncpackrc.{cjs,js,mjs,ts}`, `syncpack.config.{cjs,js,mjs,ts}`) are flagged with a manual step — they need a sandboxed loader the rest of `vis migrate` does not pull in. Convert them to `.syncpackrc.json` first, then re-run.
+TS/JS configs (`.syncpackrc.{cjs,js,mjs,ts}`, `syncpack.config.{cjs,js,mjs,ts}`) are flagged with a manual step — `vis migrate` does not load executable config (no sandboxed evaluator). Convert them to `.syncpackrc.json` first, then re-run. Tracked in [#622](https://github.com/visulima/visulima/issues/622).
 
 ### verify
 
