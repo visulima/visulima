@@ -75,7 +75,7 @@ const ci: Command = {
             type: Number,
         },
         {
-            description: 'Partition tasks for distributed CI (e.g., "1/4")',
+            description: "Partition tasks for distributed CI (e.g., \"1/4\")",
             name: "partition",
             type: String,
         },

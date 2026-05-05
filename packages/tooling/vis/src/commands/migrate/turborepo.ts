@@ -130,7 +130,7 @@ const renderVisConfig = (turbo: TurboJson, workspaceRoot: string, useEditorconfi
         "// Review the generated targetDefaults and move project-specific tasks",
         "// into each project's project.json.",
         "",
-        'import { defineConfig } from "@visulima/vis/config";',
+        "import { defineConfig } from \"@visulima/vis/config\";",
         "",
         `export default defineConfig(${serialised});`,
         "",

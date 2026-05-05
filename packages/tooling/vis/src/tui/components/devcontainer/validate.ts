@@ -23,28 +23,28 @@ export const validateConfig = (config: DevcontainerConfig): ValidationResult => 
 
     // Must have either image or build
     if (!config.image && !config.build && !config.dockerComposeFile) {
-        errors.push({ field: "image", message: 'One of "image", "build", or "dockerComposeFile" is required' });
+        errors.push({ field: "image", message: "One of \"image\", \"build\", or \"dockerComposeFile\" is required" });
     }
 
     // Build validation
     if (config.build) {
         if (config.image) {
-            warnings.push({ field: "image", message: 'Both "image" and "build" are set; "build" takes precedence' });
+            warnings.push({ field: "image", message: "Both \"image\" and \"build\" are set; \"build\" takes precedence" });
         }
 
         if (!config.build.dockerfile) {
-            errors.push({ field: "build.dockerfile", message: '"build" requires a "dockerfile" path' });
+            errors.push({ field: "build.dockerfile", message: "\"build\" requires a \"dockerfile\" path" });
         }
     }
 
     // Docker Compose validation
     if (config.dockerComposeFile && !config.service) {
-        errors.push({ field: "service", message: '"service" is required when using "dockerComposeFile"' });
+        errors.push({ field: "service", message: "\"service\" is required when using \"dockerComposeFile\"" });
     }
 
     // Features must be an object
     if (config.features !== undefined && (typeof config.features !== "object" || Array.isArray(config.features))) {
-        errors.push({ field: "features", message: '"features" must be an object mapping feature IDs to options' });
+        errors.push({ field: "features", message: "\"features\" must be an object mapping feature IDs to options" });
     }
 
     // Ports validation
@@ -56,7 +56,7 @@ export const validateConfig = (config: DevcontainerConfig): ValidationResult => 
                 }
             }
         } else {
-            errors.push({ field: "forwardPorts", message: '"forwardPorts" must be an array' });
+            errors.push({ field: "forwardPorts", message: "\"forwardPorts\" must be an array" });
         }
     }
 

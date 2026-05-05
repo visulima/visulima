@@ -182,20 +182,20 @@ describe(buildHookCommand, () => {
 
         const command = buildHookCommand({ args: ["--foo", "bar baz"], entry: "pnpm exec lint-staged" }, "pre-commit");
 
-        expect(command).toContain('node "$(dirname "$0")/.builtins/prek-runner.mjs"');
+        expect(command).toContain("node \"$(dirname \"$0\")/.builtins/prek-runner.mjs\"");
         expect(command).toContain("-- pnpm exec lint-staged");
         expect(command).toContain("'--foo' 'bar baz'");
     });
 
-    it('forwards "$@" for commit-msg stage with pass_filenames default', () => {
+    it("forwards \"$@\" for commit-msg stage with pass_filenames default", () => {
         expect.assertions(1);
 
         const command = buildHookCommand({ entry: "pnpm exec commitlint --edit" }, "commit-msg");
 
-        expect(command).toBe('pnpm exec commitlint --edit "$@"');
+        expect(command).toBe("pnpm exec commitlint --edit \"$@\"");
     });
 
-    it('omits "$@" when pass_filenames is false even for commit-msg', () => {
+    it("omits \"$@\" when pass_filenames is false even for commit-msg", () => {
         expect.assertions(1);
 
         const command = buildHookCommand({ entry: "bash scripts/verify.sh", pass_filenames: false }, "commit-msg");
@@ -863,7 +863,7 @@ describe(mergeAdditionalDependencies, () => {
 
         const text: string = readFileSync(join(temporary.root, "package.json"), "utf8");
 
-        expect(text).toContain('\n  "devDependencies"');
+        expect(text).toContain("\n  \"devDependencies\"");
     });
 
     it.skipIf(process.platform === "win32")("errors when config is missing", () => {

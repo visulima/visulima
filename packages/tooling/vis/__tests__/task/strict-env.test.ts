@@ -20,7 +20,7 @@ describe(extractEnvReferences, () => {
 
     it("marks ${VAR:-default} as having a default", () => {
         expect.assertions(1);
-        expect(extractEnvReferences('echo "${LOG_LEVEL:-info}"')).toStrictEqual([{ hasDefault: true, name: "LOG_LEVEL" }]);
+        expect(extractEnvReferences("echo \"${LOG_LEVEL:-info}\"")).toStrictEqual([{ hasDefault: true, name: "LOG_LEVEL" }]);
     });
 
     it("treats a mixed reference (one with default, one without) as required", () => {
@@ -38,7 +38,7 @@ describe(extractEnvReferences, () => {
 
     it("ignores POSIX special vars ($@, $*, $#, $$)", () => {
         expect.assertions(1);
-        expect(extractEnvReferences('node script.js "$@" $#')).toStrictEqual([]);
+        expect(extractEnvReferences("node script.js \"$@\" $#")).toStrictEqual([]);
     });
 
     it("ignores numeric positional params ($0, $1)", () => {
@@ -93,7 +93,7 @@ describe(checkStrictEnv, () => {
 
     it("does not flag a var that has a default", () => {
         expect.assertions(1);
-        expect(checkStrictEnv({ ...baseOptions, command: 'echo "${LOG_LEVEL:-info}"' })).toBeUndefined();
+        expect(checkStrictEnv({ ...baseOptions, command: "echo \"${LOG_LEVEL:-info}\"" })).toBeUndefined();
     });
 });
 

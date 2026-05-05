@@ -143,7 +143,9 @@ const VisOptimizeApp = ({ isDryRun, store }: VisOptimizeAppProps): React.JSX.Ele
             <Box alignItems="center" justifyContent="center">
                 <Text color="yellow">
                     Terminal too small. Resize to at least
-                    {MIN_VIEWPORT_HEIGHT} rows.
+                    {MIN_VIEWPORT_HEIGHT}
+{" "}
+rows.
                 </Text>
             </Box>
         );
@@ -174,7 +176,10 @@ const VisOptimizeApp = ({ isDryRun, store }: VisOptimizeAppProps): React.JSX.Ele
 
             <Box flexShrink={0} paddingX={1}>
                 <Text dimColor>
-                    {isDryRun ? "Preview mode" : "space:toggle a:all enter:apply"} | tab:switch panel /: filter q:quit |{"\u2699"}
+                    {isDryRun ? "Preview mode" : "space:toggle a:all enter:apply"}
+{" "}
+| tab:switch panel /: filter q:quit |
+{"\u2699"}
                     =codemod available
                 </Text>
             </Box>

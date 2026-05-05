@@ -29,31 +29,31 @@ vis list --targets --format=json         # per-target rows as JSON
 
 ## Options
 
-| Option            | Default | Description                                                                                          |
-| ----------------- | ------- | ---------------------------------------------------------------------------------------------------- |
-| `--format`        | `table` | Output format: `table`, `json` (single document), or `ndjson` (one record per line; `--deps` only)   |
-| `--pretty`        | `false` | Pretty-print with 2-space indent (only meaningful with `--format=json` in `--deps` mode)             |
-| `--query`         |         | Filter projects by query (see below)                                                                 |
-| `--targets`       | `false` | Show per-target rows (type, cache, description)                                                      |
-| `--deps`          | `false` | Render a dep-instance view (table by default; use `--format=ndjson`/`json` for jq-friendly streams)  |
-| `--dep-type`      |         | With `--deps`: restrict to specific dep blocks. Repeatable.                                          |
-| `--internal-only` | `false` | With `--deps`: only show internal/workspace deps                                                     |
-| `--external-only` | `false` | With `--deps`: only show external/registry deps                                                      |
-| `--include`       |         | With `--deps`: glob of declaring package names to keep. Repeatable.                                  |
-| `--exclude`       |         | With `--deps`: glob of declaring package names to drop. Repeatable.                                  |
+| Option            | Default | Description                                                                                         |
+| ----------------- | ------- | --------------------------------------------------------------------------------------------------- |
+| `--format`        | `table` | Output format: `table`, `json` (single document), or `ndjson` (one record per line; `--deps` only)  |
+| `--pretty`        | `false` | Pretty-print with 2-space indent (only meaningful with `--format=json` in `--deps` mode)            |
+| `--query`         |         | Filter projects by query (see below)                                                                |
+| `--targets`       | `false` | Show per-target rows (type, cache, description)                                                     |
+| `--deps`          | `false` | Render a dep-instance view (table by default; use `--format=ndjson`/`json` for jq-friendly streams) |
+| `--dep-type`      |         | With `--deps`: restrict to specific dep blocks. Repeatable.                                         |
+| `--internal-only` | `false` | With `--deps`: only show internal/workspace deps                                                    |
+| `--external-only` | `false` | With `--deps`: only show external/registry deps                                                     |
+| `--include`       |         | With `--deps`: glob of declaring package names to keep. Repeatable.                                 |
+| `--exclude`       |         | With `--deps`: glob of declaring package names to drop. Repeatable.                                 |
 
 ## `--deps` columns
 
 When `--deps` is set, the table shows one row per `(declaring package, dep block, dep name)`:
 
-| Column      | Description                                                                          |
-| ----------- | ------------------------------------------------------------------------------------ |
-| `Package`   | `package.json#name` of the declaring package (or directory when no name)             |
-| `Block`     | Dep block: `dependencies`, `devDependencies`, `peerDependencies`, `pnpm.overrides`…  |
-| `Dep`       | Dependency name (with scope)                                                         |
-| `Specifier` | Verbatim version string as written in `package.json`                                 |
-| `Internal`  | `yes` when the dep resolves to another workspace package, otherwise `no`             |
-| `Path`      | Workspace-relative path of the source `package.json` (or `pnpm-workspace.yaml`)      |
+| Column      | Description                                                                         |
+| ----------- | ----------------------------------------------------------------------------------- |
+| `Package`   | `package.json#name` of the declaring package (or directory when no name)            |
+| `Block`     | Dep block: `dependencies`, `devDependencies`, `peerDependencies`, `pnpm.overrides`… |
+| `Dep`       | Dependency name (with scope)                                                        |
+| `Specifier` | Verbatim version string as written in `package.json`                                |
+| `Internal`  | `yes` when the dep resolves to another workspace package, otherwise `no`            |
+| `Path`      | Workspace-relative path of the source `package.json` (or `pnpm-workspace.yaml`)     |
 
 ## `--deps --format=ndjson` record shape
 

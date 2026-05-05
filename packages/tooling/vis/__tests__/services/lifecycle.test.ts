@@ -118,7 +118,7 @@ describe("services/lifecycle", () => {
 
         await expect(
             startService({
-                command: 'node -e "setInterval(()=>{},1000)"',
+                command: "node -e \"setInterval(()=>{},1000)\"",
                 config: {},
                 cwd: workspaceRoot,
                 env: {},
@@ -148,7 +148,7 @@ describe("services/lifecycle", () => {
         // SIGKILL the orphan and unregister.
         await expect(
             startService({
-                command: 'node -e "setInterval(()=>{},1000)"',
+                command: "node -e \"setInterval(()=>{},1000)\"",
                 config: { readiness: { tcp: { port, timeoutMs: 300 } } },
                 cwd: workspaceRoot,
                 env: {},

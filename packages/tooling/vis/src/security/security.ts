@@ -78,8 +78,8 @@ const checkSecurityConfig = (config: VisConfig, packageManager: string): Securit
     // Error: strictDepBuilds is on but no allowBuilds
     if (security.strictDepBuilds && (!security.allowBuilds || Object.keys(security.allowBuilds).length === 0)) {
         result.errors.push(
-            "security.strictDepBuilds is enabled but security.allowBuilds is empty. All dependencies with build scripts will be blocked. " +
-                "Run 'vis approve-builds' to review and add packages.",
+            "security.strictDepBuilds is enabled but security.allowBuilds is empty. All dependencies with build scripts will be blocked. "
+            + "Run 'vis approve-builds' to review and add packages.",
         );
     }
 

@@ -77,11 +77,11 @@ Fields missing from root are skipped — sync never deletes from a package. Fiel
 
 ## Options
 
-| Option                  | Default                  | Description                                                                              |
-| ----------------------- | ------------------------ | ---------------------------------------------------------------------------------------- |
-| `--out`                 | `<workspace>/CODEOWNERS` | Output file path (codeowners only)                                                       |
-| `--check`               | `false`                  | Exit non-zero if drift is found (no writes)                                              |
-| `--fields`              |                          | Comma-separated field list to mirror (package-json-fields only). Repeatable.             |
-| `--ignore-package-name` |                          | Glob of package names to skip (package-json-fields only). Repeatable.                    |
-| `--format`              | `human`                  | Output format for package-json-fields: `human` or `json`.                                |
-| `--quiet`               | `false`                  | Suppress per-package log lines; print only the summary (package-json-fields only).       |
+| Option                  | Default                  | Description                                                                        |
+| ----------------------- | ------------------------ | ---------------------------------------------------------------------------------- |
+| `--out`                 | `<workspace>/CODEOWNERS` | Output file path (codeowners only)                                                 |
+| `--check`               | `false`                  | Exit non-zero if drift is found (no writes)                                        |
+| `--fields`              |                          | Comma-separated field list to mirror (package-json-fields only). Repeatable.       |
+| `--ignore-package-name` |                          | Glob of package names to skip (package-json-fields only). Repeatable.              |
+| `--format`              | `human`                  | Output format for package-json-fields: `human` or `json`.                          |
+| `--quiet`               | `false`                  | Suppress per-package log lines; print only the summary (package-json-fields only). |

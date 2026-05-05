@@ -153,7 +153,7 @@ describe("vis lint --custom-types", () => {
         expect(after.engines.pnpm).toBe("9.0.0");
     });
 
-    it('treats policy.customTypes.autofix === "prompt" as report-only', async () => {
+    it("treats policy.customTypes.autofix === \"prompt\" as report-only", async () => {
         expect.assertions(3);
 
         writeWorkspaceRoot(workspaceRoot);

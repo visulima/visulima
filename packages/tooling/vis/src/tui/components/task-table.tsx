@@ -21,8 +21,8 @@ const TaskTable = ({ parallelSlots, rows, totalCompleted, totalRows }: TaskTable
     const pending = rows.filter((r) => r.status === "pending");
 
     // Calculate padding rows to prevent layout jumping
-    const paddingCount =
-        totalCompleted !== totalRows && parallelSlots !== undefined ? Math.max(0, Math.min(parallelSlots, totalRows - totalCompleted) - running.length) : 0;
+    const paddingCount
+        = totalCompleted !== totalRows && parallelSlots !== undefined ? Math.max(0, Math.min(parallelSlots, totalRows - totalCompleted) - running.length) : 0;
 
     return (
         <Box flexDirection="column">
@@ -67,7 +67,11 @@ const TaskTable = ({ parallelSlots, rows, totalCompleted, totalRows }: TaskTable
                 <Box>
                     <Box width={3} />
                     <Text dimColor>
-                        {ELLIPSIS} {pending.length - 1} more
+                        {ELLIPSIS}
+{" "}
+{pending.length - 1}
+{" "}
+more
                     </Text>
                 </Box>
             )}

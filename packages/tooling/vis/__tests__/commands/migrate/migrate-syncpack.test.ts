@@ -629,7 +629,7 @@ describe("migrate-syncpack", () => {
 
             expect(result["request"]).toBe("first reason");
             expect(report.warnings.some((w) => w.includes("Multiple banned versionGroups"))).toBe(true);
-            expect(report.warnings.some((w) => w.includes('"request"'))).toBe(true);
+            expect(report.warnings.some((w) => w.includes("\"request\""))).toBe(true);
         });
     });
 
@@ -656,8 +656,8 @@ describe("migrate-syncpack", () => {
             const visConfig = readFileSync(join(tmpDir, "vis.config.ts"), "utf8");
 
             expect(visConfig).toContain("bannedDeps:");
-            expect(visConfig).toContain('"react": { reason: "no react in legacy app", packages: ["@app/legacy"] }');
-            expect(visConfig).toContain('"react-dom": { reason: "no react in legacy app", packages: ["@app/legacy"] }');
+            expect(visConfig).toContain("\"react\": { reason: \"no react in legacy app\", packages: [\"@app/legacy\"] }");
+            expect(visConfig).toContain("\"react-dom\": { reason: \"no react in legacy app\", packages: [\"@app/legacy\"] }");
             // The manual step still fires for the remaining (non-isBanned) versionGroup entry.
             expect(report.manualSteps.some((s) => s.includes("versionGroups"))).toBe(true);
             // But not for the isBanned half — that translation succeeded.
@@ -681,7 +681,7 @@ describe("migrate-syncpack", () => {
 
             const visConfig = readFileSync(join(tmpDir, "vis.config.ts"), "utf8");
 
-            expect(visConfig).toContain('"request": "deprecated"');
+            expect(visConfig).toContain("\"request\": \"deprecated\"");
             expect(report.manualSteps.some((s) => s.includes("versionGroups"))).toBe(false);
         });
     });

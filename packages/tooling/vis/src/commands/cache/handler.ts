@@ -244,8 +244,8 @@ export const runClean = async (cacheDirectory: string, workspaceRoot: string, op
         const totalBytes = entries.reduce((sum, entry) => sum + entry.sizeBytes, 0);
 
         pail.info(
-            `Would remove ${String(entries.length)} cache entr${entries.length === 1 ? "y" : "ies"} ` +
-                `(${formatBytes(totalBytes, { decimals: 1, space: false })}) from ${cacheDirectory}`,
+            `Would remove ${String(entries.length)} cache entr${entries.length === 1 ? "y" : "ies"} `
+            + `(${formatBytes(totalBytes, { decimals: 1, space: false })}) from ${cacheDirectory}`,
         );
 
         return;
@@ -466,10 +466,10 @@ export const runWhy = async (taskId: string, options: RunWhyOptions, logger: Con
                     previousRunId: previousSummary?.id ?? null,
                     previousTask: previousTask
                         ? {
-                              cacheStatus: previousTask.cacheStatus,
-                              hash: previousTask.hash ?? null,
-                              hashDetails: previousTask.hashDetails ?? null,
-                          }
+                            cacheStatus: previousTask.cacheStatus,
+                            hash: previousTask.hash ?? null,
+                            hashDetails: previousTask.hashDetails ?? null,
+                        }
                         : null,
                     runId: summary.id,
                     task: {
@@ -506,17 +506,17 @@ export const runWhy = async (taskId: string, options: RunWhyOptions, logger: Con
         return;
     }
 
-    const noChanges =
-        !diff.commandChanged &&
-        diff.nodes.added.length === 0 &&
-        diff.nodes.changed.length === 0 &&
-        diff.nodes.removed.length === 0 &&
-        diff.runtime.added.length === 0 &&
-        diff.runtime.changed.length === 0 &&
-        diff.runtime.removed.length === 0 &&
-        diff.implicitDeps.added.length === 0 &&
-        diff.implicitDeps.changed.length === 0 &&
-        diff.implicitDeps.removed.length === 0;
+    const noChanges
+        = !diff.commandChanged
+            && diff.nodes.added.length === 0
+            && diff.nodes.changed.length === 0
+            && diff.nodes.removed.length === 0
+            && diff.runtime.added.length === 0
+            && diff.runtime.changed.length === 0
+            && diff.runtime.removed.length === 0
+            && diff.implicitDeps.added.length === 0
+            && diff.implicitDeps.changed.length === 0
+            && diff.implicitDeps.removed.length === 0;
 
     if (noChanges) {
         pail.success("No hash inputs changed since the previous run.");

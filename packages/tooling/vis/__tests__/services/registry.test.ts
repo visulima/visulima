@@ -209,8 +209,7 @@ describe("services/registry", () => {
             expect.assertions(1);
 
             const writers = Array.from({ length: 20 }, (_, index) =>
-                writeEntry(workspaceRoot, buildEntry({ command: `cmd-${String(index)}`, id: "race:svc" })),
-            );
+                writeEntry(workspaceRoot, buildEntry({ command: `cmd-${String(index)}`, id: "race:svc" })));
 
             await Promise.all(writers);
 

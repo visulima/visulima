@@ -23,11 +23,14 @@ SOFTWARE.
 <!-- DEPENDENCIES -->
 
 # Licenses of bundled dependencies
+
 The published @visulima/vis artifact additionally contains code with the following licenses:
-BlueOak-1.0.0, ISC, MIT
+ISC, MIT
 
 # Bundled dependencies:
+
 ## @nkzw/safe-word-list
+
 License: MIT
 By: Christoph Nakazawa
 Repository: https://github.com/nkzw-tech/safe-word-list.git
@@ -54,124 +57,10 @@ Repository: https://github.com/nkzw-tech/safe-word-list.git
 > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > SOFTWARE.
 
----------------------------------------
-
-## @one-ini/wasm
-License: MIT
-Repository: https://github.com/one-ini/core
-
-> MIT License
->
-> Copyright (c) 2019 Jed Mao
->
-> Permission is hereby granted, free of charge, to any person obtaining a copy
-> of this software and associated documentation files (the "Software"), to deal
-> in the Software without restriction, including without limitation the rights
-> to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-> copies of the Software, and to permit persons to whom the Software is
-> furnished to do so, subject to the following conditions:
->
-> The above copyright notice and this permission notice shall be included in all
-> copies or substantial portions of the Software.
->
-> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-> IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-> FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-> AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-> LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-> OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-> SOFTWARE.
-
----------------------------------------
-
-## balanced-match
-License: MIT
-Repository: git://github.com/juliangruber/balanced-match.git
-
-> (MIT)
->
-> Original code Copyright Julian Gruber <julian@juliangruber.com>
->
-> Port to TypeScript Copyright Isaac Z. Schlueter <i@izs.me>
->
-> Permission is hereby granted, free of charge, to any person obtaining a copy of
-> this software and associated documentation files (the "Software"), to deal in
-> the Software without restriction, including without limitation the rights to
-> use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
-> of the Software, and to permit persons to whom the Software is furnished to do
-> so, subject to the following conditions:
->
-> The above copyright notice and this permission notice shall be included in all
-> copies or substantial portions of the Software.
->
-> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-> IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-> FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-> AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-> LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-> OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-> SOFTWARE.
-
----------------------------------------
-
-## brace-expansion
-License: MIT
-Repository: git+ssh://git@github.com/juliangruber/brace-expansion.git
-
-> MIT License
->
-> Copyright Julian Gruber <julian@juliangruber.com>
->
-> TypeScript port Copyright Isaac Z. Schlueter <i@izs.me>
->
-> Permission is hereby granted, free of charge, to any person obtaining a copy
-> of this software and associated documentation files (the "Software"), to deal
-> in the Software without restriction, including without limitation the rights
-> to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-> copies of the Software, and to permit persons to whom the Software is
-> furnished to do so, subject to the following conditions:
->
-> The above copyright notice and this permission notice shall be included in all
-> copies or substantial portions of the Software.
->
-> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-> IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-> FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-> AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-> LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-> OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-> SOFTWARE.
-
----------------------------------------
-
-## editorconfig
-License: MIT
-By: EditorConfig Team, Hong Xu, Jed Mao, Trey Hunner, Joe Hildebrand, SunsetTechuila, Rex Lorenzo
-Repository: git://github.com/editorconfig/editorconfig-core-js.git
-
-> Copyright © 2012 EditorConfig Team
->
-> Permission is hereby granted, free of charge, to any person obtaining a copy
-> of this software and associated documentation files (the “Software”), to deal
-> in the Software without restriction, including without limitation the rights
-> to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-> copies of the Software, and to permit persons to whom the Software is
-> furnished to do so, subject to the following conditions:
->
-> The above copyright notice and this permission notice shall be included in
-> all copies or substantial portions of the Software.
->
-> THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-> IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-> FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-> AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-> LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-> OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-> THE SOFTWARE.
-
----------------------------------------
+---
 
 ## giget
+
 License: MIT
 Repository: unjs/giget
 
@@ -360,9 +249,10 @@ Repository: unjs/giget
 > software or this license, under any kind of legal claim._**
 > """
 
----------------------------------------
+---
 
 ## grammex
+
 License: MIT
 Repository: github:fabiospampinato/grammex
 
@@ -388,9 +278,10 @@ Repository: github:fabiospampinato/grammex
 > FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 > DEALINGS IN THE SOFTWARE.
 
----------------------------------------
+---
 
 ## graphmatch
+
 License: MIT
 Repository: github:fabiospampinato/graphmatch
 
@@ -416,9 +307,10 @@ Repository: github:fabiospampinato/graphmatch
 > FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 > DEALINGS IN THE SOFTWARE.
 
----------------------------------------
+---
 
 ## hookable
+
 License: MIT
 Repository: unjs/hookable
 
@@ -444,9 +336,10 @@ Repository: unjs/hookable
 > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > SOFTWARE.
 
----------------------------------------
+---
 
 ## is-in-ci
+
 License: MIT
 By: Sindre Sorhus
 Repository: sindresorhus/is-in-ci
@@ -461,9 +354,10 @@ Repository: sindresorhus/is-in-ci
 >
 > THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
----------------------------------------
+---
 
 ## jstoxml
+
 License: MIT
 By: David Calhoun
 Repository: git://github.com/davidcalhoun/jstoxml
@@ -490,72 +384,10 @@ Repository: git://github.com/davidcalhoun/jstoxml
 > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 > THE SOFTWARE.
 
----------------------------------------
-
-## minimatch
-License: BlueOak-1.0.0
-By: Isaac Z. Schlueter
-Repository: git@github.com:isaacs/minimatch
-
-> # Blue Oak Model License
->
-> Version 1.0.0
->
-> ## Purpose
->
-> This license gives everyone as much permission to work with
-> this software as possible, while protecting contributors
-> from liability.
->
-> ## Acceptance
->
-> In order to receive this license, you must agree to its
-> rules. The rules of this license are both obligations
-> under that agreement and conditions to your license.
-> You must not do anything with this software that triggers
-> a rule that you cannot or will not follow.
->
-> ## Copyright
->
-> Each contributor licenses you to do everything with this
-> software that would otherwise infringe that contributor's
-> copyright in it.
->
-> ## Notices
->
-> You must ensure that everyone who gets a copy of
-> any part of this software from you, with or without
-> changes, also gets the text of this license or a link to
-> <https://blueoakcouncil.org/license/1.0.0>.
->
-> ## Excuse
->
-> If anyone notifies you in writing that you have not
-> complied with [Notices](#notices), you can keep your
-> license by taking all practical steps to comply within 30
-> days after the notice. If you do not do so, your license
-> ends immediately.
->
-> ## Patent
->
-> Each contributor licenses you to do everything with this
-> software that would otherwise infringe any patent claims
-> they can license or become able to license.
->
-> ## Reliability
->
-> No contributor can revoke this license.
->
-> ## No Liability
->
-> **_As far as the law allows, this software comes as is,
-> without any warranty or condition, and no contributor
-> will be liable to anyone for any damages related to this
-> software or this license, under any kind of legal claim._**
-
----------------------------------------
+---
 
 ## semver
+
 License: ISC
 By: GitHub Inc.
 Repository: git+https://github.com/npm/node-semver.git
@@ -576,23 +408,24 @@ Repository: git+https://github.com/npm/node-semver.git
 > ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR
 > IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
----------------------------------------
+---
 
 ## validate-npm-package-name
+
 License: ISC
 By: GitHub Inc.
 Repository: git+https://github.com/npm/validate-npm-package-name.git
 
 > Copyright (c) 2015, npm, Inc
 >
->
 > Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies.
 >
 > THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
----------------------------------------
+---
 
 ## yaml
+
 License: ISC
 By: Eemeli Aro
 Repository: github:eemeli/yaml
@@ -611,9 +444,10 @@ Repository: github:eemeli/yaml
 > TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
 > THIS SOFTWARE.
 
----------------------------------------
+---
 
 ## zeptomatch
+
 License: MIT
 Repository: github:fabiospampinato/zeptomatch
 

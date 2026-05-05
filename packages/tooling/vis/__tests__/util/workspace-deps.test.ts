@@ -228,14 +228,9 @@ describe("workspace-deps", () => {
 
             writeJson("package.json", { name: "root" });
             writeJson("packages/lib/package.json", { name: "@scope/lib" });
-            writeFileSync(
-                join(workspaceRoot, "pnpm-workspace.yaml"),
-                "packages:\n  - 'packages/*'\noverrides:\n  '@scope/lib': 'workspace:*'\n",
-            );
+            writeFileSync(join(workspaceRoot, "pnpm-workspace.yaml"), "packages:\n  - 'packages/*'\noverrides:\n  '@scope/lib': 'workspace:*'\n");
 
-            const internal = iterateWorkspaceDeps(workspaceRoot).find(
-                (i) => i.depType === "pnpm.overrides" && i.depName === "@scope/lib",
-            );
+            const internal = iterateWorkspaceDeps(workspaceRoot).find((i) => i.depType === "pnpm.overrides" && i.depName === "@scope/lib");
 
             expect(internal?.isInternal).toBe(true);
         });

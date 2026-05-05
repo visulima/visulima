@@ -112,8 +112,8 @@ const runPersistentTasks = async (tasks: Task[], workspaceRoot: string, affected
             const cwd = resolveCwd(workspaceRoot, task.projectRoot, Boolean(visOptions?.runFromWorkspaceRoot));
 
             const envFileVars = visOptions?.envFile ? loadEnvFile(cwd, visOptions.envFile) : {};
-            const affectedEnv =
-                affectedFiles && (visOptions?.affectedFiles === "env" || visOptions?.affectedFiles === "both")
+            const affectedEnv
+                = affectedFiles && (visOptions?.affectedFiles === "env" || visOptions?.affectedFiles === "both")
                     ? { [AFFECTED_FILES_ENV]: affectedFiles.join("\n") }
                     : {};
 
@@ -536,8 +536,8 @@ const createConcurrentExecutor = (deps: ExecutorDependencies) => {
             const retryCount = retryBudget ? retryBudget.claim(requestedRetries) : requestedRetries;
 
             const timeoutMs = typeof visOptions?.timeout === "number" && visOptions.timeout > 0 ? visOptions.timeout : 0;
-            const killGracePeriodMs =
-                typeof visOptions?.killGracePeriodMs === "number" && visOptions.killGracePeriodMs >= 0 ? visOptions.killGracePeriodMs : 5000;
+            const killGracePeriodMs
+                = typeof visOptions?.killGracePeriodMs === "number" && visOptions.killGracePeriodMs >= 0 ? visOptions.killGracePeriodMs : 5000;
             let timedOut = false;
 
             const timeoutKill = scheduleTimeoutKill({
@@ -563,9 +563,9 @@ const createConcurrentExecutor = (deps: ExecutorDependencies) => {
                             name: task.id,
                             ...(isPty
                                 ? {
-                                      ptySize: { cols: process.stdout.columns ?? 80, rows: process.stdout.rows ?? 24 },
-                                      stdin: "pty" as const,
-                                  }
+                                    ptySize: { cols: process.stdout.columns ?? 80, rows: process.stdout.rows ?? 24 },
+                                    stdin: "pty" as const,
+                                }
                                 : {}),
                         },
                     ],
@@ -861,11 +861,11 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
     const runnerTagsRaw = (typeof options.runnerTags === "string" ? options.runnerTags : process.env["VIS_RUNNER_TAGS"]) ?? undefined;
     const runnerTags = runnerTagsRaw
         ? new Set(
-              runnerTagsRaw
-                  .split(",")
-                  .map((tag: string) => tag.trim())
-                  .filter(Boolean),
-          )
+            runnerTagsRaw
+                .split(",")
+                .map((tag: string) => tag.trim())
+                .filter(Boolean),
+        )
         : undefined;
 
     const projectsWithTarget: string[] = [];
@@ -1108,14 +1108,14 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
         probe: options.dryRun
             ? undefined
             : async (entry) => {
-                  try {
-                      await runReadiness(entry.config, { timeoutMs: SERVICE_PROBE_TIMEOUT_MS });
+                try {
+                    await runReadiness(entry.config, { timeoutMs: SERVICE_PROBE_TIMEOUT_MS });
 
-                      return true;
-                  } catch {
-                      return false;
-                  }
-              },
+                    return true;
+                } catch {
+                    return false;
+                }
+            },
         registeredEntries,
         taskGraph,
         visVersion: process.env["VIS_VERSION"] ?? "0.0.0",
@@ -1476,8 +1476,8 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
     } else {
         const mutexPool: MutexPool = new Map();
         const logModeOption = typeof options.log === "string" ? options.log.toLowerCase() : "";
-        const logMode: LogMode | undefined =
-            logModeOption === "labeled" || logModeOption === "grouped" || logModeOption === "interleaved" ? logModeOption : undefined;
+        const logMode: LogMode | undefined
+            = logModeOption === "labeled" || logModeOption === "grouped" || logModeOption === "interleaved" ? logModeOption : undefined;
         const logReporter = logMode ? createLogReporter(logMode) : undefined;
         // Composite so plugin hooks see every task boundary event in
         // addition to the CI-style static renderer. Build the
@@ -1640,8 +1640,8 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
 
             currentHandle = initial.handle;
 
-            const scope =
-                initial.mode === "tracked"
+            const scope
+                = initial.mode === "tracked"
                     ? `Watching ${String(collectTrackedWatchTargets(lastResults, workspaceRoot).files.size)} tracked file(s)`
                     : `Watching ${String(absoluteRoots.length)} project root(s)`;
 
