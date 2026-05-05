@@ -3,7 +3,7 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { applyCustomTypeFixes, iterateCustomTypeDeps, lintCustomTypes } from "../../src/util/custom-types";
+import { applyCustomTypeFixes, iterateCustomTypeDeps, lintCustomTypes, validateExtraTypes } from "../../src/util/custom-types";
 import { cleanupTemporaryDirectory, createTemporaryDirectory } from "../test-helpers";
 
 let workspaceRoot: string;
@@ -521,6 +521,188 @@ describe("custom-types", () => {
 
             // node@22.14.0 in package A must not be touched by the bun fix on package B.
             expect(node?.version).toBe("22.14.0");
+        });
+    });
+
+    describe(validateExtraTypes, () => {
+        it("returns no errors for an undefined or empty config", () => {
+            expect.assertions(2);
+
+            expect(validateExtraTypes(undefined)).toStrictEqual([]);
+            expect(validateExtraTypes([])).toStrictEqual([]);
+        });
+
+        it("flags an entry that collides with a built-in customType name", () => {
+            expect.assertions(1);
+
+            const errors = validateExtraTypes([{ name: "engines", path: "wherever", strategy: "versionsByName" }]);
+
+            expect(errors[0]).toMatch(/collides with a built-in/);
+        });
+
+        it("flags duplicate names within the array", () => {
+            expect.assertions(1);
+
+            const errors = validateExtraTypes([
+                { name: "myType", path: "a", strategy: "string", depName: "x" },
+                { name: "myType", path: "b", strategy: "string", depName: "y" },
+            ]);
+
+            expect(errors.some((message) => /duplicate name/.test(message))).toBe(true);
+        });
+
+        it("flags an unknown strategy", () => {
+            expect.assertions(1);
+
+            const errors = validateExtraTypes([{ name: "myType", path: "a.b", strategy: "wat" as never }]);
+
+            expect(errors[0]).toMatch(/invalid strategy/);
+        });
+
+        it("requires depName when strategy is 'string'", () => {
+            expect.assertions(1);
+
+            const errors = validateExtraTypes([{ name: "minNode", path: "config.minNode", strategy: "string" }]);
+
+            expect(errors[0]).toMatch(/requires 'depName'/);
+        });
+
+        it("accepts a fully-formed config", () => {
+            expect.assertions(1);
+
+            expect(
+                validateExtraTypes([
+                    { name: "pnpmOverridesLegacy", path: "pnpm.overrides", strategy: "versionsByName" },
+                    { name: "myToolPin", path: "myTool.runtime", strategy: "name@version" },
+                    { name: "minNode", path: "config.minNode", strategy: "string", depName: "node" },
+                ]),
+            ).toStrictEqual([]);
+        });
+    });
+
+    describe("extraTypes iterator", () => {
+        it("strategy 'versionsByName' reads each key as a depName via a dot-path", () => {
+            expect.assertions(2);
+
+            writeWorkspaceRoot({ name: "root", pnpm: { overrides: { react: "18.2.0" } }, workspaces: ["packages/*"] });
+            writeJson("packages/a/package.json", { name: "@my/a", pnpm: { overrides: { react: "18.0.0" } } });
+
+            const instances = iterateCustomTypeDeps(workspaceRoot, [
+                { name: "pnpmOverridesLegacy", path: "pnpm.overrides", strategy: "versionsByName" },
+            ]);
+
+            const reactInstances = instances.filter((instance) => instance.customType === "pnpmOverridesLegacy" && instance.depName === "react");
+
+            expect(reactInstances).toHaveLength(2);
+            expect(new Set(reactInstances.map((instance) => instance.specifier))).toStrictEqual(new Set(["18.2.0", "18.0.0"]));
+        });
+
+        it("strategy 'name@version' parses the leading name and the trailing version separately", () => {
+            expect.assertions(3);
+
+            writeWorkspaceRoot({ myTool: { runtime: "node@22.14.0" }, name: "root", workspaces: ["packages/*"] });
+            writeJson("packages/a/package.json", { myTool: { runtime: "node@22.10.0" }, name: "@my/a" });
+
+            const instances = iterateCustomTypeDeps(workspaceRoot, [{ name: "myToolPin", path: "myTool.runtime", strategy: "name@version" }]);
+
+            expect(instances).toHaveLength(2);
+            expect(instances.every((instance) => instance.depName === "node")).toBe(true);
+            expect(new Set(instances.map((instance) => instance.specifier))).toStrictEqual(new Set(["22.14.0", "22.10.0"]));
+        });
+
+        it("strategy 'string' uses the configured depName for the bare-version cluster", () => {
+            expect.assertions(2);
+
+            writeWorkspaceRoot({ config: { minNode: "22.14.0" }, name: "root", workspaces: ["packages/*"] });
+            writeJson("packages/a/package.json", { config: { minNode: "22.10.0" }, name: "@my/a" });
+
+            const instances = iterateCustomTypeDeps(workspaceRoot, [
+                { name: "minNode", path: "config.minNode", strategy: "string", depName: "node" },
+            ]);
+
+            expect(instances).toHaveLength(2);
+            expect(instances.every((instance) => instance.depName === "node" && instance.customType === "minNode")).toBe(true);
+        });
+
+        it("emits zero instances when the path is missing on the package", () => {
+            expect.assertions(1);
+
+            writeWorkspaceRoot();
+            writeJson("packages/a/package.json", { name: "@my/a" });
+
+            const instances = iterateCustomTypeDeps(workspaceRoot, [
+                { name: "pnpmOverridesLegacy", path: "pnpm.overrides", strategy: "versionsByName" },
+            ]);
+
+            expect(instances).toStrictEqual([]);
+        });
+
+        it("ignores user-declared types whose name shadows a built-in", () => {
+            expect.assertions(1);
+
+            writeWorkspaceRoot({ engines: { node: "22.14.0" }, name: "root", workspaces: ["packages/*"] });
+            writeJson("packages/a/package.json", { engines: { node: "22.14.0" }, name: "@my/a" });
+
+            const instances = iterateCustomTypeDeps(workspaceRoot, [{ name: "engines", path: "wherever", strategy: "versionsByName" }]);
+
+            // The built-in still emits engines.node × 2 (root + @my/a) — but
+            // the user-declared "engines" entry must not produce phantom instances.
+            const engines = instances.filter((instance) => instance.customType === "engines");
+
+            expect(engines.length).toBe(2);
+        });
+    });
+
+    describe("extraTypes lint + fix", () => {
+        it("detects drift in pnpm.overrides and rewrites the lower one to the highest", () => {
+            expect.assertions(3);
+
+            writeWorkspaceRoot({ name: "root", pnpm: { overrides: { react: "18.2.0" } }, workspaces: ["packages/*"] });
+            writeJson("packages/a/package.json", { name: "@my/a", pnpm: { overrides: { react: "18.0.0" } } });
+
+            const extras = [{ name: "pnpmOverridesLegacy", path: "pnpm.overrides", strategy: "versionsByName" } as const];
+            const issues = lintCustomTypes(iterateCustomTypeDeps(workspaceRoot, extras));
+
+            expect(issues).toHaveLength(1);
+            expect(issues[0]?.fix).toBe("18.2.0");
+
+            applyCustomTypeFixes(issues);
+
+            const after = readJson("packages/a/package.json");
+
+            expect((after.pnpm as Record<string, Record<string, string>>).overrides.react).toBe("18.2.0");
+        });
+
+        it("name@version strategy preserves the leading name segment when fixing", () => {
+            expect.assertions(1);
+
+            writeWorkspaceRoot({ myTool: { runtime: "node@22.14.0" }, name: "root", workspaces: ["packages/*"] });
+            writeJson("packages/a/package.json", { myTool: { runtime: "node@22.10.0" }, name: "@my/a" });
+
+            const extras = [{ name: "myToolPin", path: "myTool.runtime", strategy: "name@version" } as const];
+            const issues = lintCustomTypes(iterateCustomTypeDeps(workspaceRoot, extras));
+
+            applyCustomTypeFixes(issues);
+
+            const after = readJson("packages/a/package.json");
+
+            expect((after.myTool as Record<string, string>).runtime).toBe("node@22.14.0");
+        });
+
+        it("string strategy replaces the bare version", () => {
+            expect.assertions(1);
+
+            writeWorkspaceRoot({ config: { minNode: "22.14.0" }, name: "root", workspaces: ["packages/*"] });
+            writeJson("packages/a/package.json", { config: { minNode: "22.10.0" }, name: "@my/a" });
+
+            const extras = [{ name: "minNode", path: "config.minNode", strategy: "string", depName: "node" } as const];
+            const issues = lintCustomTypes(iterateCustomTypeDeps(workspaceRoot, extras));
+
+            applyCustomTypeFixes(issues);
+
+            const after = readJson("packages/a/package.json");
+
+            expect((after.config as Record<string, string>).minNode).toBe("22.14.0");
         });
     });
 });

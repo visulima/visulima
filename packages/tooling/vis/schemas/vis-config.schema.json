@@ -397,6 +397,49 @@
                     },
                     "description": "Map of dep names or globs → reason (or `{ reason, replacement }`). Internal/workspace deps are never flagged here; the workspace-protocol lint owns those."
                 },
+                "customTypes": {
+                    "type": "object",
+                    "properties": {
+                        "autofix": {
+                            "anyOf": [
+                                {
+                                    "type": "string",
+                                    "const": "prompt"
+                                },
+                                {
+                                    "type": "boolean"
+                                }
+                            ],
+                            "description": "Three-state autofix opt-out. See `workspaceProtocol.autofix` for the contract — same semantics, applied to drift rewrites across engines / packageManager / volta / devEngines.\n\nNote: `--fix` strips any `+sha512.&lt;hash&gt;` suffix from `packageManager` on bump — content-integrity hashes are tied to a specific package, not a version, so users must regenerate via their PM (`pnpm install` re-pins; `corepack use pnpm@X` etc.).",
+                            "default": true
+                        },
+                        "ignore": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            },
+                            "description": "Dep names exempt from the drift check (exact match against the field name within the block — e.g. `node`, `pnpm`)."
+                        },
+                        "resolve": {
+                            "type": "string",
+                            "enum": [
+                                "highest",
+                                "lowest"
+                            ],
+                            "description": "Resolution strategy used when `--fix` runs.\n- `highest` (default): align every drifting instance to the   highest declared version.\n- `lowest`: align to the lowest.",
+                            "default": "highest"
+                        },
+                        "extraTypes": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/$defs/ExtraCustomType"
+                            },
+                            "description": "User-defined custom-type pin locations. Each entry tells the customTypes lint to read additional version pins from a non-standard JSON path inside every workspace package.json, cluster them by `(name × depName)` like the built-in types, and rewrite them with `--fix`.\n\nThe original built-ins (`engines`, `volta`, `packageManager`, `devEngines.runtime`, `devEngines.packageManager`) keep running unconditionally — these layer on top.\n\nStrategies:\n- `versionsByName`: the JSON at `path` is `{ [depName]: version }`   (like `engines` or `pnpm.overrides`).\n- `name@version`: the JSON at `path` is a string of the form   `name@version` (like `packageManager`). The leading `name@`   is preserved; only the version segment is rewritten.\n- `string`: the JSON at `path` is a bare version string. The   `depName` field is required and identifies the dep cluster.\n\n`name` must not collide with a built-in type name. `path` is a dot-separated walk into the package.json (e.g. `pnpm.overrides`)."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "description": "Tweak the custom-types lint that flags drift in `engines.{node,pnpm,...}`, `packageManager`, `volta.{node,pnpm,yarn}`, and the proposed `devEngines.{runtime,packageManager}` array form.\n\nEach (customType × name) cluster is tracked independently — `engines.node` and `volta.node` don't cross-couple here. Use a versionGroup once that lands if you need to enforce they agree."
+                },
                 "redefineRoot": {
                     "type": "object",
                     "properties": {
@@ -430,42 +473,6 @@
                     },
                     "additionalProperties": false,
                     "description": "Tweak the workspace-protocol lint that flags internal deps not using the `workspace:` protocol."
-                },
-                "customTypes": {
-                    "type": "object",
-                    "properties": {
-                        "autofix": {
-                            "anyOf": [
-                                {
-                                    "type": "string",
-                                    "const": "prompt"
-                                },
-                                {
-                                    "type": "boolean"
-                                }
-                            ],
-                            "description": "Three-state autofix opt-out. See `workspaceProtocol.autofix` for the contract — same semantics, applied to drift rewrites across engines / packageManager / volta / devEngines.\n\nNote: `--fix` strips any `+sha512.<hash>` suffix from `packageManager` on bump — content-integrity hashes are tied to a specific package, not a version, so users must regenerate via their PM (`pnpm install` re-pins; `corepack use pnpm@X` etc.).",
-                            "default": true
-                        },
-                        "ignore": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            },
-                            "description": "Dep names exempt from the drift check (exact match against the field name within the block — e.g. `node`, `pnpm`)."
-                        },
-                        "resolve": {
-                            "type": "string",
-                            "enum": [
-                                "highest",
-                                "lowest"
-                            ],
-                            "description": "Resolution strategy used when `--fix` runs.\n- `highest` (default): align every drifting instance to the   highest declared version.\n- `lowest`: align to the lowest.",
-                            "default": "highest"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "description": "Tweak the custom-types lint that flags drift in `engines.{node,pnpm,...}`, `packageManager`, `volta.{node,pnpm,yarn}`, and the proposed `devEngines.{runtime,packageManager}` array form.\n\nEach (customType × name) cluster is tracked independently — `engines.node` and `volta.node` don't cross-couple here. Use a versionGroup once that lands if you need to enforce they agree."
                 },
                 "workspaceVersions": {
                     "type": "object",
@@ -2484,6 +2491,39 @@
             ],
             "additionalProperties": false,
             "description": "Public plugin contract. Implementations register handlers by returning a partial  {@link  VisHooks }  map from `hooks`, or by mutating the Hookable instance directly via `setup(hooks)` for advanced cases (dynamic registration, removeHook, etc.).\n\nPlugins are loaded in the order they appear in `visConfig.plugins`. Handler execution order within a hook follows registration order, so earlier plugins see events first."
+        },
+        "ExtraCustomType": {
+            "type": "object",
+            "properties": {
+                "depName": {
+                    "type": "string",
+                    "description": "Required when `strategy === \"string\"`. The dep-cluster key the bare version string at `path` should be associated with."
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Display name for this customType. Used as the cluster key prefix in lint output and JSON. Must not collide with the built-in names."
+                },
+                "path": {
+                    "type": "string",
+                    "description": "Dot-separated walk into package.json (e.g. `pnpm.overrides`, `myTool.runtime`)."
+                },
+                "strategy": {
+                    "type": "string",
+                    "enum": [
+                        "name@version",
+                        "string",
+                        "versionsByName"
+                    ],
+                    "description": "How to interpret the JSON found at `path`."
+                }
+            },
+            "required": [
+                "name",
+                "path",
+                "strategy"
+            ],
+            "additionalProperties": false,
+            "description": "One user-declared customTypes entry. See `policy.customTypes.extraTypes` for the full contract — this is just the row shape."
         },
         "StagedConfig": {
             "type": "object",
