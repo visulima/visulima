@@ -13,18 +13,18 @@ type ListFormat = "json" | "ndjson" | "table";
 
 const VALID_FORMATS: ReadonlySet<string> = new Set(["json", "ndjson", "table"]);
 
-const resolveFormat = (raw: string | undefined, jsonAlias: boolean): ListFormat => {
-    if (raw !== undefined) {
-        const lower = raw.toLowerCase();
-
-        if (!VALID_FORMATS.has(lower)) {
-            throw new Error(`--format must be one of: table, json, ndjson (got "${raw}")`);
-        }
-
-        return lower as ListFormat;
+const resolveFormat = (raw: string | undefined): ListFormat => {
+    if (raw === undefined) {
+        return "table";
     }
 
-    return jsonAlias ? "json" : "table";
+    const lower = raw.toLowerCase();
+
+    if (!VALID_FORMATS.has(lower)) {
+        throw new Error(`--format must be one of: table, json, ndjson (got "${raw}")`);
+    }
+
+    return lower as ListFormat;
 };
 
 const toDepRecord = (instance: DepInstance, workspaceRoot: string): Record<string, unknown> => {
@@ -85,7 +85,7 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
         throw new Error("Could not determine workspace root.");
     }
 
-    const format = resolveFormat(options.format, options.json === true);
+    const format = resolveFormat(options.format);
 
     if (options.deps === true) {
         if (options.internalOnly && options.externalOnly) {

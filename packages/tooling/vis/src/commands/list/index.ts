@@ -10,7 +10,7 @@ const list: Command = {
         ["vis list --deps --internal-only", "Only workspace deps in human form"],
         ["vis list --deps --format=ndjson", "Stream every dep-instance as NDJSON for jq pipelines"],
         ["vis list --deps --format=json --pretty", "Single pretty-printed JSON array of dep-instances"],
-        ["vis list --json", "Machine-readable output (alias for --format=json)"],
+        ["vis list --format=json", "Machine-readable project listing"],
         ["vis list --query \"tag=frontend\"", "Filter by query"],
     ],
     group: "Workspace",
@@ -21,12 +21,6 @@ const list: Command = {
             defaultValue: false,
             description: "Filter target rows to only inferred targets (implies --targets)",
             name: "inferred",
-            type: Boolean,
-        },
-        {
-            defaultValue: false,
-            description: "Emit JSON instead of a table (alias for --format=json)",
-            name: "json",
             type: Boolean,
         },
         {
@@ -101,7 +95,6 @@ export type ListOptions = CreateOptions<{
     include: string[] | undefined;
     inferred: boolean | undefined;
     "internal-only": boolean | undefined;
-    json: boolean | undefined;
     pretty: boolean | undefined;
     query: string | undefined;
     targets: boolean | undefined;
