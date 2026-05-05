@@ -59,5 +59,34 @@ describe("migrate-verify", () => {
 
             expect(issues.some((issue) => issue.kind === "hook" && issue.detail.includes("secretlint"))).toBe(true);
         });
+
+        it("flags syncpack devDependency, script, hook, and config file", () => {
+            expect.assertions(4);
+
+            writeFileSync(
+                join(tmpDir, "package.json"),
+                JSON.stringify({ devDependencies: { syncpack: "^12.0.0" }, scripts: { "deps:lint": "syncpack lint" } }),
+            );
+            writeFileSync(join(tmpDir, ".syncpackrc.json"), "{}");
+            mkdirSync(join(tmpDir, ".husky"), { recursive: true });
+            writeFileSync(join(tmpDir, ".husky", "pre-commit"), "#!/bin/sh\nsyncpack lint\n");
+
+            const issues = verifyMigration(tmpDir, createMockLogger());
+
+            expect(issues.some((issue) => issue.kind === "devDep" && issue.detail.includes("syncpack"))).toBe(true);
+            expect(issues.some((issue) => issue.kind === "script" && issue.detail.includes("syncpack"))).toBe(true);
+            expect(issues.some((issue) => issue.kind === "hook" && issue.detail.includes("syncpack"))).toBe(true);
+            expect(issues.some((issue) => issue.kind === "config" && issue.location === ".syncpackrc.json")).toBe(true);
+        });
+
+        it("flags TS-format syncpack configs that the migrate adapter cannot auto-remove", () => {
+            expect.assertions(1);
+
+            writeFileSync(join(tmpDir, "syncpack.config.ts"), "export default {};");
+
+            const issues = verifyMigration(tmpDir, createMockLogger());
+
+            expect(issues.some((issue) => issue.kind === "config" && issue.location === "syncpack.config.ts")).toBe(true);
+        });
     });
 });

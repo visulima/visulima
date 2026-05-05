@@ -19,6 +19,20 @@ const SECRETLINT_CONFIG_FILES = [
     ".secretlintrc.yml",
     ".secretlintrc.yaml",
 ];
+const SYNCPACK_CONFIG_FILES = [
+    ".syncpackrc",
+    ".syncpackrc.json",
+    ".syncpackrc.yaml",
+    ".syncpackrc.yml",
+    ".syncpackrc.cjs",
+    ".syncpackrc.js",
+    ".syncpackrc.mjs",
+    ".syncpackrc.ts",
+    "syncpack.config.cjs",
+    "syncpack.config.js",
+    "syncpack.config.mjs",
+    "syncpack.config.ts",
+];
 
 interface PackageJson {
     devDependencies?: Record<string, string>;
@@ -55,6 +69,10 @@ const scanPackageJson = (root: string): VerificationIssue[] => {
             if (/\bsecretlint\b/.test(value)) {
                 issues.push({ detail: `Script "${name}" still invokes secretlint: ${value}`, kind: "script", location: "package.json" });
             }
+
+            if (/\bsyncpack\b/.test(value)) {
+                issues.push({ detail: `Script "${name}" still invokes syncpack: ${value}`, kind: "script", location: "package.json" });
+            }
         }
     }
 
@@ -65,6 +83,10 @@ const scanPackageJson = (root: string): VerificationIssue[] => {
             }
 
             if (dep === "secretlint" || dep.startsWith("@secretlint/")) {
+                issues.push({ detail: `devDependency \`${dep}\` is still installed`, kind: "devDep", location: "package.json" });
+            }
+
+            if (dep === "syncpack") {
                 issues.push({ detail: `devDependency \`${dep}\` is still installed`, kind: "devDep", location: "package.json" });
             }
         }
@@ -92,6 +114,10 @@ const scanHooks = (root: string): VerificationIssue[] => {
         if (/\bsecretlint\b/.test(content)) {
             issues.push({ detail: "secretlint invocation still present in hook", kind: "hook", location: rel });
         }
+
+        if (/\bsyncpack\b/.test(content)) {
+            issues.push({ detail: "syncpack invocation still present in hook", kind: "hook", location: rel });
+        }
     }
 
     return issues;
@@ -106,19 +132,25 @@ const scanConfigs = (root: string): VerificationIssue[] => {
         }
     }
 
+    for (const name of SYNCPACK_CONFIG_FILES) {
+        if (isAccessibleSync(join(root, name))) {
+            issues.push({ detail: "syncpack config should be removed after migration", kind: "config", location: name });
+        }
+    }
+
     return issues;
 };
 
 /**
- * Check that a prior `vis migrate gitleaks` / `secretlint` run was complete:
- * no stray scripts, devDependencies, hooks, or configs referencing the old
- * tools. Safe to run repeatedly — purely read-only.
+ * Check that a prior `vis migrate gitleaks` / `secretlint` / `syncpack` run was
+ * complete: no stray scripts, devDependencies, hooks, or configs referencing
+ * the old tools. Safe to run repeatedly — purely read-only.
  */
 export const verifyMigration = (root: string, logger: MigrateLogger): VerificationIssue[] => {
     const issues = [...scanPackageJson(root), ...scanHooks(root), ...scanConfigs(root)];
 
     if (issues.length === 0) {
-        logger.info("✓ No unmigrated gitleaks/secretlint references found.");
+        logger.info("✓ No unmigrated gitleaks/secretlint/syncpack references found.");
 
         return [];
     }
