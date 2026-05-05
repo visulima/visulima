@@ -6,7 +6,7 @@ export interface CheckProgressProps {
     readonly total: number;
 }
 
-export default function CheckProgressApp({ current, total }: CheckProgressProps): React.ReactElement {
+const CheckProgressApp = ({ current, total }: CheckProgressProps): React.ReactElement => {
     const { columns: termColumns } = useWindowSize();
     const cols = termColumns || 80;
     const percent = total > 0 ? Math.min(1, current / total) : 0;
@@ -35,4 +35,6 @@ export default function CheckProgressApp({ current, total }: CheckProgressProps)
             </Box>
         </Box>
     );
-}
+};
+
+export default CheckProgressApp;
