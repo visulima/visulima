@@ -6,7 +6,8 @@
  */
 
 import { isAccessibleSync, readFileSync } from "@visulima/fs";
-import { parseSync as parseEditorConfigSync } from "editorconfig";
+
+import { resolveEditorconfigDefaults as resolveEditorconfigDefaultsNative } from "#native";
 
 export interface EditorConfigDefaults {
     indent?: string;
@@ -24,32 +25,21 @@ const INDENT_RE = /\n([ \t]+)/;
 
 /**
  * Reads `.editorconfig` for the given file path and maps the relevant
- * properties onto `{ indent, lineEnding }`. Swallows parse failures so
- * callers can fall back to other detection paths without try/catch noise.
+ * properties onto `{ indent, lineEnding }`. The native binding wraps `ec4rs`,
+ * which already collapses parse / IO failures to empty defaults — callers
+ * can rely on the result without try/catch noise.
  */
 export const resolveEditorConfigDefaults = (filePath: string): EditorConfigDefaults => {
-    let props: Record<string, unknown>;
-
-    try {
-        props = parseEditorConfigSync(filePath);
-    } catch {
-        return {};
-    }
+    const { indent, lineEnding } = resolveEditorconfigDefaultsNative(filePath);
 
     const defaults: EditorConfigDefaults = {};
-    const indentStyle = props["indent_style"];
-    const indentSize = props["indent_size"];
 
-    if (indentStyle === "tab") {
-        defaults.indent = "\t";
-    } else if (typeof indentSize === "number" && Number.isInteger(indentSize) && indentSize > 0) {
-        defaults.indent = " ".repeat(indentSize);
+    if (indent !== undefined) {
+        defaults.indent = indent;
     }
 
-    const endOfLine = props["end_of_line"];
-
-    if (endOfLine === "lf" || endOfLine === "crlf") {
-        defaults.lineEnding = endOfLine;
+    if (lineEnding === "lf" || lineEnding === "crlf") {
+        defaults.lineEnding = lineEnding;
     }
 
     return defaults;
