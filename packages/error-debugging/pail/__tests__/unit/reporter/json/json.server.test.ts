@@ -55,7 +55,7 @@ describe("jsonReporter server", () => {
         reporter.setStringify(JSON.stringify);
         reporter.log({ ...baseMeta, label: "  label  ", message: "test message", type: { level: "informational", name: "informational" } });
 
-        expect(mockStdout.write).toHaveBeenCalledExactlyOnceWith(expect.stringContaining("\"label\":\"label\""));
+        expect(mockStdout.write).toHaveBeenCalledExactlyOnceWith(expect.stringContaining('"label":"label"'));
     });
 
     it("should handle undefined or null values in log metadata gracefully", () => {
@@ -81,7 +81,7 @@ describe("jsonReporter server", () => {
         reporter.setStringify(JSON.stringify);
         reporter.log({ ...baseMeta, message: "", type: { level: "informational", name: "informational" } });
 
-        expect(mockStdout.write).toHaveBeenCalledExactlyOnceWith(expect.stringContaining("\"\""));
+        expect(mockStdout.write).toHaveBeenCalledExactlyOnceWith(expect.stringContaining('""'));
     });
 
     it("should handle log levels not in ExtendedRfc5424LogLevels", () => {

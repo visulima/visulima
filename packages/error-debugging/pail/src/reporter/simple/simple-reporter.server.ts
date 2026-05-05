@@ -173,12 +173,12 @@ export class SimpleReporter<T extends string = string, L extends string = string
             const formattedMessage: string = typeof message === "string" ? message : inspect(message, this.#inspectOptions);
 
             items.push(
-                groupSpaces
-                + wordWrap(formattedMessage, {
-                    trim: false,
-                    width: size - 3,
-                    wrapMode: WrapMode.STRICT_WIDTH,
-                }),
+                groupSpaces +
+                    wordWrap(formattedMessage, {
+                        trim: false,
+                        width: size - 3,
+                        wrapMode: WrapMode.STRICT_WIDTH,
+                    }),
             );
         }
 
