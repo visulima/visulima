@@ -148,7 +148,7 @@ export const useBatchUpload = (options: UseBatchUploadOptions): UseBatchUploadRe
                 const batch = itemOrBatch;
 
                 if (batch.id === currentBatchId.value) {
-                    const uploadError = new Error(`Batch upload failed: ${batch.errorCount} file(s) failed`);
+                    const uploadError = new Error(`Batch upload failed: ${String(batch.errorCount)} file(s) failed`);
 
                     error.value = uploadError;
                     isUploading.value = false;

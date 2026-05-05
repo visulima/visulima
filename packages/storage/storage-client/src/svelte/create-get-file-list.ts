@@ -70,9 +70,9 @@ export const createGetFileList = (options: CreateGetFileListOptions): CreateGetF
                 return Array.isArray(data)
                     ? { data }
                     : {
-                        data: data.data,
-                        meta: data.meta,
-                    };
+                          data: data.data,
+                          meta: data.meta,
+                      };
             },
             queryKey: storageQueryKeys.files.list(endpoint, { limit: currentLimit, page: currentPage }),
         };
@@ -80,9 +80,9 @@ export const createGetFileList = (options: CreateGetFileListOptions): CreateGetF
 
     const dataStore = (query.data as unknown as Readable<FileListResponse | undefined> | null) ?? readable<FileListResponse | undefined>();
     const errorStore = derived((query.error as unknown as Readable<Error | null> | null) ?? readable<Error | null>(), ($error) => $error ?? undefined);
-    const isLoadingStore: Readable<boolean>
+    const isLoadingStore: Readable<boolean> =
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TanStack Query query type is complex
-        = typeof (query.isLoading as any) === "object" && (query.isLoading as any) !== null && "subscribe" in (query.isLoading as any)
+        typeof (query.isLoading as any) === "object" && (query.isLoading as any) !== null && "subscribe" in (query.isLoading as any)
             ? (query.isLoading as unknown as Readable<boolean>)
             : readable(false);
 

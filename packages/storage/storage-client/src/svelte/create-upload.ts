@@ -124,8 +124,10 @@ export const createUpload = (options: CreateUploadOptions): CreateUploadReturn =
         detectedMethod = method;
     }
 
-    const chunkedRestOptions: CreateChunkedRestUploadOptions | undefined = endpointChunkedRest
-        ? {
+    let chunkedRestOptions: CreateChunkedRestUploadOptions | undefined;
+
+    if (endpointChunkedRest) {
+        chunkedRestOptions = {
             chunkSize,
             endpoint: endpointChunkedRest,
             maxRetries,
@@ -137,22 +139,26 @@ export const createUpload = (options: CreateUploadOptions): CreateUploadReturn =
             onStart,
             onSuccess,
             retry,
-        }
-        : undefined;
+        };
+    }
 
-    const multipartOptions: CreateMultipartUploadOptions | undefined = endpointMultipart
-        ? {
+    let multipartOptions: CreateMultipartUploadOptions | undefined;
+
+    if (endpointMultipart) {
+        multipartOptions = {
             endpoint: endpointMultipart,
             metadata,
             onError,
             onProgress,
             onStart,
             onSuccess,
-        }
-        : undefined;
+        };
+    }
 
-    const tusOptions: CreateTusUploadOptions | undefined = endpointTus
-        ? {
+    let tusOptions: CreateTusUploadOptions | undefined;
+
+    if (endpointTus) {
+        tusOptions = {
             chunkSize,
             endpoint: endpointTus,
             maxRetries,
@@ -164,8 +170,8 @@ export const createUpload = (options: CreateUploadOptions): CreateUploadReturn =
             onStart,
             onSuccess,
             retry,
-        }
-        : undefined;
+        };
+    }
 
     const chunkedRestUpload = chunkedRestOptions ? createChunkedRestUpload(chunkedRestOptions) : undefined;
     const multipartUpload = multipartOptions ? createMultipartUpload(multipartOptions) : undefined;
@@ -282,7 +288,12 @@ export const createUpload = (options: CreateUploadOptions): CreateUploadReturn =
     );
 
     // Create derived stores for reactive values
-    const pickError = (current: UploadMethod, tusError: Error | undefined, chunkedRestError: Error | undefined, multipartError: Error | undefined): Error | undefined => {
+    const pickError = (
+        current: UploadMethod,
+        tusError: Error | undefined,
+        chunkedRestError: Error | undefined,
+        multipartError: Error | undefined,
+    ): Error | undefined => {
         if (current === "tus") {
             return tusError;
         }
@@ -380,8 +391,7 @@ export const createUpload = (options: CreateUploadOptions): CreateUploadReturn =
             chunkedRestUpload?.progress ?? { subscribe: () => () => {} },
             multipartUpload?.progress ?? { subscribe: () => () => {} },
         ],
-        ([current, tusProgress, chunkedRestProgress, multipartProgress]) =>
-            pickProgress(current, tusProgress, chunkedRestProgress, multipartProgress),
+        ([current, tusProgress, chunkedRestProgress, multipartProgress]) => pickProgress(current, tusProgress, chunkedRestProgress, multipartProgress),
     );
 
     const pickResult = (

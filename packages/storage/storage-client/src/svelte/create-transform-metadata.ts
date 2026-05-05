@@ -60,9 +60,9 @@ export const createTransformMetadata = (options: CreateTransformMetadataOptions)
 
     const dataStore = (query.data as Readable<TransformMetadata | undefined> | null) ?? readable<TransformMetadata | undefined>();
     const errorStore = (query.error as Readable<Error | null> | null) ?? readable<Error | null>();
-    const isLoadingStore: Readable<boolean>
+    const isLoadingStore: Readable<boolean> =
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TanStack Query query type is complex
-        = typeof (query.isLoading as any) === "object" && (query.isLoading as any) !== null && "subscribe" in (query.isLoading as any)
+        typeof (query.isLoading as any) === "object" && (query.isLoading as any) !== null && "subscribe" in (query.isLoading as any)
             ? (query.isLoading as unknown as Readable<boolean>)
             : readable(false);
 

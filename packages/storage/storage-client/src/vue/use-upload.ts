@@ -129,45 +129,45 @@ export const useUpload = (options: UseUploadOptions): UseUploadReturn => {
 
     const chunkedRestOptions: UseChunkedRestUploadOptions | undefined = endpointChunkedRest
         ? {
-            chunkSize,
-            endpoint: endpointChunkedRest,
-            maxRetries,
-            metadata,
-            onError,
-            onPause,
-            onProgress,
-            onResume,
-            onStart,
-            onSuccess,
-            retry,
-        }
+              chunkSize,
+              endpoint: endpointChunkedRest,
+              maxRetries,
+              metadata,
+              onError,
+              onPause,
+              onProgress,
+              onResume,
+              onStart,
+              onSuccess,
+              retry,
+          }
         : undefined;
 
     const multipartOptions: UseMultipartUploadOptions | undefined = endpointMultipart
         ? {
-            endpoint: endpointMultipart,
-            metadata,
-            onError,
-            onProgress,
-            onStart,
-            onSuccess,
-        }
+              endpoint: endpointMultipart,
+              metadata,
+              onError,
+              onProgress,
+              onStart,
+              onSuccess,
+          }
         : undefined;
 
     const tusOptions: UseTusUploadOptions | undefined = endpointTus
         ? {
-            chunkSize,
-            endpoint: endpointTus,
-            maxRetries,
-            metadata,
-            onError,
-            onPause,
-            onProgress,
-            onResume,
-            onStart,
-            onSuccess,
-            retry,
-        }
+              chunkSize,
+              endpoint: endpointTus,
+              maxRetries,
+              metadata,
+              onError,
+              onPause,
+              onProgress,
+              onResume,
+              onStart,
+              onSuccess,
+              retry,
+          }
         : undefined;
 
     const chunkedRestUpload = chunkedRestOptions ? useChunkedRestUpload(chunkedRestOptions) : undefined;

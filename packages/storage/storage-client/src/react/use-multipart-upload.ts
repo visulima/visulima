@@ -142,7 +142,7 @@ export const useMultipartUpload = (options: UseMultipartUploadOptions): UseMulti
         const onUploadError = (itemOrBatch: UploadItem | BatchState): void => {
             if ("file" in itemOrBatch && itemOrBatch.id === currentItemRef.current) {
                 const item = itemOrBatch;
-                const uploadError = new Error(item.error || "Upload failed");
+                const uploadError = new Error(item.error ?? "Upload failed");
 
                 setError(uploadError);
                 setIsUploading(false);

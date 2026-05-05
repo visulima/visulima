@@ -51,8 +51,8 @@ export const createGetFile = (options: CreateGetFileOptions): CreateGetFileRetur
 
     // Convert to stores if needed
     const idStore: Readable<string> = typeof id === "object" && "subscribe" in id ? id : derived([], () => id);
-    const transformStore: Readable<Record<string, string | number | boolean> | undefined>
-        = typeof transform === "object" && "subscribe" in transform
+    const transformStore: Readable<Record<string, string | number | boolean> | undefined> =
+        typeof transform === "object" && "subscribe" in transform
             ? (transform as Readable<Record<string, string | number | boolean> | undefined>)
             : derived([], () => transform);
     const enabledStore: Readable<boolean> = typeof enabled === "object" && "subscribe" in enabled ? enabled : derived([], () => enabled);
@@ -97,13 +97,12 @@ export const createGetFile = (options: CreateGetFileOptions): CreateGetFileRetur
         };
     });
 
-    const queryDataStore
-        = (query.data as unknown as Readable<{ blob: Blob; meta: FileMeta } | undefined> | null)
-            ?? readable<{ blob: Blob; meta: FileMeta } | undefined>();
+    const queryDataStore =
+        (query.data as unknown as Readable<{ blob: Blob; meta: FileMeta } | undefined> | null) ?? readable<{ blob: Blob; meta: FileMeta } | undefined>();
     const queryErrorStore = (query.error as unknown as Readable<Error | null> | null) ?? readable<Error | null>();
-    const queryIsLoadingStore: Readable<boolean>
+    const queryIsLoadingStore: Readable<boolean> =
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TanStack Query query type is complex
-        = typeof (query.isLoading as any) === "object" && (query.isLoading as any) !== null && "subscribe" in (query.isLoading as any)
+        typeof (query.isLoading as any) === "object" && (query.isLoading as any) !== null && "subscribe" in (query.isLoading as any)
             ? (query.isLoading as unknown as Readable<boolean>)
             : readable(false);
 
