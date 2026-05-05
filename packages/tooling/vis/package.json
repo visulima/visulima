@@ -115,7 +115,6 @@
         "@visulima/string": "3.0.0-alpha.11",
         "@visulima/task-runner": "1.0.0-alpha.9",
         "@visulima/tui": "1.0.0-alpha.6",
-        "editorconfig": "^1.0.7",
         "execa": "catalog:dev",
         "ignore": "^7.0.5",
         "jiti": "catalog:dev",
