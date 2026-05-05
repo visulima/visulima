@@ -34,12 +34,12 @@ const gitlabContext = (overrides: Partial<CiContext> = {}): CiContext => {
 describe(splitGithubRepoForTesting, () => {
     it("should split owner/repo on the first slash", () => {
         expect.assertions(1);
-        expect(splitGithubRepoForTesting("owner/repo")).toEqual({ owner: "owner", repo: "repo" });
+        expect(splitGithubRepoForTesting("owner/repo")).toStrictEqual({ owner: "owner", repo: "repo" });
     });
 
     it("should support repos containing dots and dashes", () => {
         expect.assertions(1);
-        expect(splitGithubRepoForTesting("acme-corp/some.repo")).toEqual({ owner: "acme-corp", repo: "some.repo" });
+        expect(splitGithubRepoForTesting("acme-corp/some.repo")).toStrictEqual({ owner: "acme-corp", repo: "some.repo" });
     });
 
     it("should reject malformed values that lack a slash", () => {
@@ -150,7 +150,7 @@ describe(commitFiles, () => {
                         calls.push("tree");
 
                         expect(parameters.base_tree).toBe("base-tree-sha");
-                        expect(parameters.tree).toEqual([{ mode: "100644", path: "src/a.ts", sha: "blob-sha", type: "blob" }]);
+                        expect(parameters.tree).toStrictEqual([{ mode: "100644", path: "src/a.ts", sha: "blob-sha", type: "blob" }]);
 
                         return { data: { sha: "tree-sha" } };
                     }),
@@ -184,8 +184,8 @@ describe(commitFiles, () => {
         });
 
         // Calls happen in the canonical Git-Trees-API order.
-        expect(calls).toEqual(["getRef", "getCommit", "blob:base64", "tree", "commit", "updateRef"]);
-        expect(result).toEqual({ sha: "new-sha", url: "https://github.com/owner/repo/commit/new-sha" });
+        expect(calls).toStrictEqual(["getRef", "getCommit", "blob:base64", "tree", "commit", "updateRef"]);
+        expect(result).toStrictEqual({ sha: "new-sha", url: "https://github.com/owner/repo/commit/new-sha" });
     });
 
     it("should commit to GitLab via Commits.create with update actions", async () => {
@@ -195,7 +195,7 @@ describe(commitFiles, () => {
             async (projectId: number | string, branch: string, _message: string, actions: { action: string; content?: string; filePath: string }[]) => {
                 expect(projectId).toBe("group/proj");
                 expect(branch).toBe("topic/x");
-                expect(actions).toEqual([{ action: "update", content: "file body\n", filePath: "src/a.ts" }]);
+                expect(actions).toStrictEqual([{ action: "update", content: "file body\n", filePath: "src/a.ts" }]);
 
                 return { id: "gitlab-sha", web_url: "https://gitlab.example.com/group/proj/-/commit/gitlab-sha" };
             },
@@ -211,7 +211,7 @@ describe(commitFiles, () => {
             workspaceRoot: "/ws",
         });
 
-        expect(result).toEqual({ sha: "gitlab-sha", url: "https://gitlab.example.com/group/proj/-/commit/gitlab-sha" });
+        expect(result).toStrictEqual({ sha: "gitlab-sha", url: "https://gitlab.example.com/group/proj/-/commit/gitlab-sha" });
     });
 
     it("should reject GitLab commits when CI_API_V4_URL is missing", async () => {

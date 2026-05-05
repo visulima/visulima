@@ -201,6 +201,7 @@ const VisDoctorApp = ({ autoExitSeconds = 0, banner, fromCache = false, startedA
     const maxScrollOffset = Math.max(0, contentHeight - listViewportHeight);
 
     useEffect(() => {
+        // eslint-disable-next-line react-you-might-not-need-an-effect/no-derived-state -- clamp must run as a side effect when content/viewport change; using useMemo would re-render with stale offset
         setListScrollOffset((current) => Math.min(current, maxScrollOffset));
     }, [maxScrollOffset]);
 

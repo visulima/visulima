@@ -6,31 +6,31 @@ describe(parseCommandString, () => {
     it("splits a simple command into argv", () => {
         expect.assertions(1);
 
-        expect(parseCommandString("eslint --fix")).toEqual(["eslint", "--fix"]);
+        expect(parseCommandString("eslint --fix")).toStrictEqual(["eslint", "--fix"]);
     });
 
     it("preserves double-quoted arguments with spaces", () => {
         expect.assertions(1);
 
-        expect(parseCommandString('prettier --write "src/a b.ts"')).toEqual(["prettier", "--write", "src/a b.ts"]);
+        expect(parseCommandString('prettier --write "src/a b.ts"')).toStrictEqual(["prettier", "--write", "src/a b.ts"]);
     });
 
     it("preserves single-quoted arguments with spaces", () => {
         expect.assertions(1);
 
-        expect(parseCommandString("echo 'hello world'")).toEqual(["echo", "hello world"]);
+        expect(parseCommandString("echo 'hello world'")).toStrictEqual(["echo", "hello world"]);
     });
 
     it("handles backslash escapes outside quotes", () => {
         expect.assertions(1);
 
-        expect(parseCommandString(String.raw`echo a\ b c`)).toEqual(["echo", "a b", "c"]);
+        expect(parseCommandString(String.raw`echo a\ b c`)).toStrictEqual(["echo", "a b", "c"]);
     });
 
     it("returns an empty array for blank input", () => {
         expect.assertions(1);
 
-        expect(parseCommandString("   ")).toEqual([]);
+        expect(parseCommandString("   ")).toStrictEqual([]);
     });
 
     it("rejects unterminated double quotes", () => {
@@ -49,15 +49,15 @@ describe(parseCommandString, () => {
         expect.assertions(2);
 
         // `\"` inside double quotes is the escaped quote character.
-        expect(parseCommandString(String.raw`node -e "console.log(\"hi\")"`)).toEqual(["node", "-e", 'console.log("hi")']);
+        expect(parseCommandString(String.raw`node -e "console.log(\"hi\")"`)).toStrictEqual(["node", "-e", 'console.log("hi")']);
         // `\\` inside double quotes is a single backslash.
-        expect(parseCommandString(String.raw`echo "path\\file"`)).toEqual(["echo", String.raw`path\file`]);
+        expect(parseCommandString(String.raw`echo "path\\file"`)).toStrictEqual(["echo", String.raw`path\file`]);
     });
 
     it("treats backslashes as literal inside single quotes", () => {
         expect.assertions(1);
 
-        expect(parseCommandString(String.raw`echo 'a\b'`)).toEqual(["echo", String.raw`a\b`]);
+        expect(parseCommandString(String.raw`echo 'a\b'`)).toStrictEqual(["echo", String.raw`a\b`]);
     });
 });
 
@@ -86,7 +86,7 @@ describe(chunkFiles, () => {
     it("returns a single chunk when everything fits", () => {
         expect.assertions(1);
 
-        expect(chunkFiles(["a", "b", "c"], 20, 131_072)).toEqual([["a", "b", "c"]]);
+        expect(chunkFiles(["a", "b", "c"], 20, 131_072)).toStrictEqual([["a", "b", "c"]]);
     });
 
     it("splits files into chunks when the limit is tight", () => {
@@ -95,7 +95,7 @@ describe(chunkFiles, () => {
         const chunks = chunkFiles(["aaa", "bbb", "ccc"], 0, 5);
 
         expect(chunks.length).toBeGreaterThan(1);
-        expect(chunks.flat()).toEqual(["aaa", "bbb", "ccc"]);
+        expect(chunks.flat()).toStrictEqual(["aaa", "bbb", "ccc"]);
     });
 
     it("guarantees at least one file per chunk even for long paths", () => {
@@ -103,12 +103,12 @@ describe(chunkFiles, () => {
 
         const chunks = chunkFiles(["x".repeat(200)], 0, 10);
 
-        expect(chunks).toEqual([["x".repeat(200)]]);
+        expect(chunks).toStrictEqual([["x".repeat(200)]]);
     });
 
     it("falls back to the default limit when maxArgLength is 0", () => {
         expect.assertions(1);
 
-        expect(chunkFiles(["a", "b"], 0, 0)).toEqual([["a", "b"]]);
+        expect(chunkFiles(["a", "b"], 0, 0)).toStrictEqual([["a", "b"]]);
     });
 });

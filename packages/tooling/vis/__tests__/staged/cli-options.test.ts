@@ -49,11 +49,13 @@ describe("buildRunOptions — VIS_STAGED_CONCURRENT env var fallback", () => {
 
     beforeEach(() => {
         previous = process.env[CONCURRENT_ENV_VAR];
+        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- CONCURRENT_ENV_VAR is a typed string constant
         delete process.env[CONCURRENT_ENV_VAR];
     });
 
     afterEach(() => {
         if (previous === undefined) {
+            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- CONCURRENT_ENV_VAR is a typed string constant
             delete process.env[CONCURRENT_ENV_VAR];
         } else {
             process.env[CONCURRENT_ENV_VAR] = previous;

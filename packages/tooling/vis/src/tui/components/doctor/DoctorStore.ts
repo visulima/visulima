@@ -295,6 +295,7 @@ export class DoctorStore {
         const newEntries = filterFindings(newAll, this.#state.filterType, this.#state.filterText, this.#state.severityFilter);
         const nextMessage = { ...this.#state.sectionMessage };
 
+        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- section is the SectionId enum
         delete nextMessage[section];
 
         this.#emit({

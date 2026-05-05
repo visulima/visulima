@@ -13,7 +13,7 @@ describe(buildTaskGraph, () => {
 
         expect(patterns).toHaveLength(1);
         expect(patterns[0]?.pattern).toBe("*.ts");
-        expect(patterns[0]?.commands.map((c) => c.title)).toEqual(["eslint --fix"]);
+        expect(patterns[0]?.commands.map((c) => c.title)).toStrictEqual(["eslint --fix"]);
     });
 
     it("expands array tasks into multiple serial commands", async () => {
@@ -22,7 +22,7 @@ describe(buildTaskGraph, () => {
         const patterns = await buildTaskGraph({ config: { "*.ts": ["eslint --fix", "prettier --write"] }, cwd, files });
 
         expect(patterns).toHaveLength(1);
-        expect(patterns[0]?.commands.map((c) => c.title)).toEqual(["eslint --fix", "prettier --write"]);
+        expect(patterns[0]?.commands.map((c) => c.title)).toStrictEqual(["eslint --fix", "prettier --write"]);
     });
 
     it("drops patterns that match no files", async () => {
@@ -30,7 +30,7 @@ describe(buildTaskGraph, () => {
 
         const patterns = await buildTaskGraph({ config: { "*.rs": "cargo fmt" }, cwd, files });
 
-        expect(patterns).toEqual([]);
+        expect(patterns).toStrictEqual([]);
     });
 
     it("resolves function tasks by invoking them with matched files", async () => {

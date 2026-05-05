@@ -508,13 +508,13 @@ describe(checkTyposquats, () => {
 
         const result = checkTyposquats(["react", "express", "lodash"]);
 
-        expect(result).toEqual([]);
+        expect(result).toStrictEqual([]);
     });
 
     it("should return empty array for an empty input", () => {
         expect.assertions(1);
 
-        expect(checkTyposquats([])).toEqual([]);
+        expect(checkTyposquats([])).toStrictEqual([]);
     });
 
     it("should return a single match among safe packages", () => {
@@ -586,7 +586,7 @@ describe(runTyposquatCheck, () => {
         const result = await runTyposquatCheck(["react", "express"]);
 
         expect(result.ok).toBe(true);
-        expect(result.packages).toEqual(["react", "express"]);
+        expect(result.packages).toStrictEqual(["react", "express"]);
     });
 
     it("should return ok=false in non-interactive mode when typosquat is detected", async () => {
@@ -597,7 +597,7 @@ describe(runTyposquatCheck, () => {
         const result = await runTyposquatCheck(["axois"]);
 
         expect(result.ok).toBe(false);
-        expect(result.packages).toEqual(["axois"]);
+        expect(result.packages).toStrictEqual(["axois"]);
     });
 
     it("should return ok=false when user answers N (abort)", async () => {
@@ -609,7 +609,7 @@ describe(runTyposquatCheck, () => {
         const result = await runTyposquatCheck(["axois"]);
 
         expect(result.ok).toBe(false);
-        expect(result.packages).toEqual(["axois"]);
+        expect(result.packages).toStrictEqual(["axois"]);
     });
 
     it("should return ok=false when user presses enter (default N)", async () => {
@@ -632,7 +632,7 @@ describe(runTyposquatCheck, () => {
         const result = await runTyposquatCheck(["axois"]);
 
         expect(result.ok).toBe(true);
-        expect(result.packages).toEqual(["axois"]);
+        expect(result.packages).toStrictEqual(["axois"]);
     });
 
     it("should return ok=true with 'yes' answer (keep original)", async () => {
@@ -644,7 +644,7 @@ describe(runTyposquatCheck, () => {
         const result = await runTyposquatCheck(["axois"]);
 
         expect(result.ok).toBe(true);
-        expect(result.packages).toEqual(["axois"]);
+        expect(result.packages).toStrictEqual(["axois"]);
     });
 
     it("should return ok=true with corrected packages when user answers S (suggested)", async () => {
@@ -656,7 +656,7 @@ describe(runTyposquatCheck, () => {
         const result = await runTyposquatCheck(["axois"]);
 
         expect(result.ok).toBe(true);
-        expect(result.packages).toEqual(["axios"]);
+        expect(result.packages).toStrictEqual(["axios"]);
     });
 
     it("should return ok=true with 'suggested' answer", async () => {
@@ -668,7 +668,7 @@ describe(runTyposquatCheck, () => {
         const result = await runTyposquatCheck(["axois"]);
 
         expect(result.ok).toBe(true);
-        expect(result.packages).toEqual(["axios"]);
+        expect(result.packages).toStrictEqual(["axios"]);
     });
 
     it("should only replace typosquat names while keeping safe names untouched", async () => {
@@ -680,7 +680,7 @@ describe(runTyposquatCheck, () => {
         const result = await runTyposquatCheck(["react", "axois", "lodash"]);
 
         expect(result.ok).toBe(true);
-        expect(result.packages).toEqual(["react", "axios", "lodash"]);
+        expect(result.packages).toStrictEqual(["react", "axios", "lodash"]);
     });
 
     it("should replace multiple typosquats when user answers S", async () => {
@@ -692,7 +692,7 @@ describe(runTyposquatCheck, () => {
         const result = await runTyposquatCheck(["axois", "halk"]);
 
         expect(result.ok).toBe(true);
-        expect(result.packages).toEqual(["axios", "chalk"]);
+        expect(result.packages).toStrictEqual(["axios", "chalk"]);
     });
 
     it("should handle case-insensitive answers", async () => {
@@ -707,7 +707,7 @@ describe(runTyposquatCheck, () => {
             const result = await runTyposquatCheck(["axois"]);
 
             expect(result.ok, `answer "${answer}" should result in ok=true`).toBe(true);
-            expect(result.packages).toEqual(["axios"]);
+            expect(result.packages).toStrictEqual(["axios"]);
         }
     });
 });
@@ -718,67 +718,67 @@ describe(parsePackageArgument, () => {
     it("should parse a bare package name", () => {
         expect.assertions(1);
 
-        expect(parsePackageArgument("react")).toEqual({ name: "react", versionSpec: undefined });
+        expect(parsePackageArgument("react")).toStrictEqual({ name: "react", versionSpec: undefined });
     });
 
     it("should parse name@version", () => {
         expect.assertions(1);
 
-        expect(parsePackageArgument("react@19")).toEqual({ name: "react", versionSpec: "19" });
+        expect(parsePackageArgument("react@19")).toStrictEqual({ name: "react", versionSpec: "19" });
     });
 
     it("should parse name@semver-range", () => {
         expect.assertions(1);
 
-        expect(parsePackageArgument("lodash@^4.17.0")).toEqual({ name: "lodash", versionSpec: "^4.17.0" });
+        expect(parsePackageArgument("lodash@^4.17.0")).toStrictEqual({ name: "lodash", versionSpec: "^4.17.0" });
     });
 
     it("should parse name@tilde-range", () => {
         expect.assertions(1);
 
-        expect(parsePackageArgument("express@~4.18.0")).toEqual({ name: "express", versionSpec: "~4.18.0" });
+        expect(parsePackageArgument("express@~4.18.0")).toStrictEqual({ name: "express", versionSpec: "~4.18.0" });
     });
 
     it("should parse name@dist-tag", () => {
         expect.assertions(1);
 
-        expect(parsePackageArgument("react@next")).toEqual({ name: "react", versionSpec: "next" });
+        expect(parsePackageArgument("react@next")).toStrictEqual({ name: "react", versionSpec: "next" });
     });
 
     it("should parse a scoped package without version", () => {
         expect.assertions(1);
 
-        expect(parsePackageArgument("@types/react")).toEqual({ name: "@types/react", versionSpec: undefined });
+        expect(parsePackageArgument("@types/react")).toStrictEqual({ name: "@types/react", versionSpec: undefined });
     });
 
     it("should parse a scoped package with version", () => {
         expect.assertions(1);
 
-        expect(parsePackageArgument("@types/react@18")).toEqual({ name: "@types/react", versionSpec: "18" });
+        expect(parsePackageArgument("@types/react@18")).toStrictEqual({ name: "@types/react", versionSpec: "18" });
     });
 
     it("should parse a scoped package with semver range", () => {
         expect.assertions(1);
 
-        expect(parsePackageArgument("@scope/pkg@^2.0.0")).toEqual({ name: "@scope/pkg", versionSpec: "^2.0.0" });
+        expect(parsePackageArgument("@scope/pkg@^2.0.0")).toStrictEqual({ name: "@scope/pkg", versionSpec: "^2.0.0" });
     });
 
     it("should handle a scope without a slash", () => {
         expect.assertions(1);
 
-        expect(parsePackageArgument("@something")).toEqual({ name: "@something", versionSpec: undefined });
+        expect(parsePackageArgument("@something")).toStrictEqual({ name: "@something", versionSpec: undefined });
     });
 
     it("should handle a scope with slash but no version", () => {
         expect.assertions(1);
 
-        expect(parsePackageArgument("@org/lib")).toEqual({ name: "@org/lib", versionSpec: undefined });
+        expect(parsePackageArgument("@org/lib")).toStrictEqual({ name: "@org/lib", versionSpec: undefined });
     });
 
     it("should parse a scoped package with dist-tag", () => {
         expect.assertions(1);
 
-        expect(parsePackageArgument("@scope/pkg@latest")).toEqual({ name: "@scope/pkg", versionSpec: "latest" });
+        expect(parsePackageArgument("@scope/pkg@latest")).toStrictEqual({ name: "@scope/pkg", versionSpec: "latest" });
     });
 });
 
@@ -799,7 +799,7 @@ describe("checkTyposquats with allowlist", () => {
 
         const result = checkTyposquats(["axois", "halk"], ["axois", "halk"]);
 
-        expect(result).toEqual([]);
+        expect(result).toStrictEqual([]);
     });
 
     it("should behave normally when allowlist is empty", () => {

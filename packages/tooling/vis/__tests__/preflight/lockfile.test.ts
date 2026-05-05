@@ -23,178 +23,180 @@ const writeFile = (relative: string, contents: string, mtimeSecondsAgo = 0): str
     return absolute;
 };
 
-beforeEach(() => {
-    tmp = createTemporaryDirectory("vis-preflight-");
-});
-
-afterEach(() => {
-    cleanupTemporaryDirectory(tmp);
-});
-
-describe(checkLockfileFreshness, () => {
-    it("should return checked=false when no lockfile is present", () => {
-        expect.assertions(1);
-
-        expect(checkLockfileFreshness(tmp)).toStrictEqual({ checked: false });
+describe("lockfile", () => {
+    beforeEach(() => {
+        tmp = createTemporaryDirectory("vis-preflight-");
     });
 
-    it("should report missing-install when the lockfile exists but no install marker does", () => {
-        expect.assertions(3);
-
-        writeFile("pnpm-lock.yaml", "lockfileVersion: 9.0\n");
-
-        const result = checkLockfileFreshness(tmp);
-
-        expect(result.failure).toBe("missing-install");
-        expect(result.detail?.packageManager).toBe("pnpm");
-        expect(result.message).toContain("pnpm install");
+    afterEach(() => {
+        cleanupTemporaryDirectory(tmp);
     });
 
-    it("should pass when the install marker is fresher than the lockfile", () => {
-        expect.assertions(2);
+    describe(checkLockfileFreshness, () => {
+        it("should return checked=false when no lockfile is present", () => {
+            expect.assertions(1);
 
-        writeFile("pnpm-lock.yaml", "lockfileVersion: 9.0\n", 60);
-        writeFile("node_modules/.modules.yaml", "registry: https://registry\n");
+            expect(checkLockfileFreshness(tmp)).toStrictEqual({ checked: false });
+        });
 
-        const result = checkLockfileFreshness(tmp);
+        it("should report missing-install when the lockfile exists but no install marker does", () => {
+            expect.assertions(3);
 
-        expect(result.failure).toBeUndefined();
-        expect(result.checked).toBe(true);
+            writeFile("pnpm-lock.yaml", "lockfileVersion: 9.0\n");
+
+            const result = checkLockfileFreshness(tmp);
+
+            expect(result.failure).toBe("missing-install");
+            expect(result.detail?.packageManager).toBe("pnpm");
+            expect(result.message).toContain("pnpm install");
+        });
+
+        it("should pass when the install marker is fresher than the lockfile", () => {
+            expect.assertions(2);
+
+            writeFile("pnpm-lock.yaml", "lockfileVersion: 9.0\n", 60);
+            writeFile("node_modules/.modules.yaml", "registry: https://registry\n");
+
+            const result = checkLockfileFreshness(tmp);
+
+            expect(result.failure).toBeUndefined();
+            expect(result.checked).toBe(true);
+        });
+
+        it("should report stale-install when the lockfile is fresher than the install marker", () => {
+            expect.assertions(3);
+
+            writeFile("node_modules/.modules.yaml", "registry: https://registry\n", 120);
+            writeFile("pnpm-lock.yaml", "lockfileVersion: 9.0\n");
+
+            const result = checkLockfileFreshness(tmp);
+
+            expect(result.failure).toBe("stale-install");
+            expect(result.detail?.marker).toBe("node_modules/.modules.yaml");
+            expect(result.message).toContain("pnpm install");
+        });
+
+        it("should pick the freshest of multiple install markers", () => {
+            expect.assertions(2);
+
+            writeFile("yarn.lock", "# yarn lockfile\n", 60);
+            writeFile("node_modules/.yarn-integrity", "{}", 600);
+            writeFile("node_modules/.yarn-state.yml", "version: 1\n");
+
+            const result = checkLockfileFreshness(tmp);
+
+            expect(result.failure).toBeUndefined();
+            expect(result.detail?.marker).toBe("node_modules/.yarn-state.yml");
+        });
+
+        it("should detect npm by package-lock.json (TTY recommends plain npm install)", () => {
+            expect.assertions(2);
+
+            writeFile("package-lock.json", "{}\n");
+
+            const result = checkLockfileFreshness(tmp);
+
+            expect(result.detail?.packageManager).toBe("npm");
+            expect(result.message).toContain("npm install");
+        });
+
+        it("should recommend `npm ci` when running in CI", () => {
+            expect.assertions(1);
+
+            writeFile("package-lock.json", "{}\n");
+
+            const result = checkLockfileFreshness(tmp, { inCi: true });
+
+            expect(result.message).toContain("npm ci");
+        });
+
+        it("should detect bun by bun.lockb", () => {
+            expect.assertions(2);
+
+            writeFile("bun.lockb", "");
+
+            const result = checkLockfileFreshness(tmp);
+
+            expect(result.detail?.packageManager).toBe("bun");
+            expect(result.message).toContain("bun install");
+        });
+
+        it("should detect bun by the bun.lock text format (bun 1.2+)", () => {
+            expect.assertions(2);
+
+            writeFile("bun.lock", "{}\n");
+
+            const result = checkLockfileFreshness(tmp);
+
+            expect(result.detail?.packageManager).toBe("bun");
+            // detail paths are workspace-root-relative (no leading absolute prefix).
+            expect(result.detail?.lockfilePath).toBe("bun.lock");
+        });
     });
 
-    it("should report stale-install when the lockfile is fresher than the install marker", () => {
-        expect.assertions(3);
+    describe(runLockfilePreflight, () => {
+        it("should be a no-op when skip is set", () => {
+            expect.assertions(2);
 
-        writeFile("node_modules/.modules.yaml", "registry: https://registry\n", 120);
-        writeFile("pnpm-lock.yaml", "lockfileVersion: 9.0\n");
+            writeFile("pnpm-lock.yaml", "lockfileVersion: 9.0\n");
 
-        const result = checkLockfileFreshness(tmp);
+            const warn = vi.fn();
+            const result = runLockfilePreflight(tmp, false, { warn }, { skip: true });
 
-        expect(result.failure).toBe("stale-install");
-        expect(result.detail?.marker).toBe("node_modules/.modules.yaml");
-        expect(result.message).toContain("pnpm install");
-    });
+            expect(result.shouldContinue).toBe(true);
+            expect(warn).not.toHaveBeenCalled();
+        });
 
-    it("should pick the freshest of multiple install markers", () => {
-        expect.assertions(2);
+        it("should warn but continue in TTY (non-CI) on drift", () => {
+            expect.assertions(2);
 
-        writeFile("yarn.lock", "# yarn lockfile\n", 60);
-        writeFile("node_modules/.yarn-integrity", "{}", 600);
-        writeFile("node_modules/.yarn-state.yml", "version: 1\n");
+            writeFile("node_modules/.modules.yaml", "registry: x\n", 120);
+            writeFile("pnpm-lock.yaml", "lockfileVersion: 9.0\n");
 
-        const result = checkLockfileFreshness(tmp);
+            const warn = vi.fn();
+            const result = runLockfilePreflight(tmp, false, { warn });
 
-        expect(result.failure).toBeUndefined();
-        expect(result.detail?.marker).toBe("node_modules/.yarn-state.yml");
-    });
+            expect(result.shouldContinue).toBe(true);
+            expect(warn).toHaveBeenCalledTimes(1);
+        });
 
-    it("should detect npm by package-lock.json (TTY recommends plain npm install)", () => {
-        expect.assertions(2);
+        it("should stop and surface formattedMessage (without logging) in CI on drift", () => {
+            expect.assertions(3);
 
-        writeFile("package-lock.json", "{}\n");
+            writeFile("node_modules/.modules.yaml", "registry: x\n", 120);
+            writeFile("pnpm-lock.yaml", "lockfileVersion: 9.0\n");
 
-        const result = checkLockfileFreshness(tmp);
+            const warn = vi.fn();
+            const result = runLockfilePreflight(tmp, true, { warn });
 
-        expect(result.detail?.packageManager).toBe("npm");
-        expect(result.message).toContain("npm install");
-    });
+            // CI contract: helper stays quiet, caller throws with `formattedMessage`
+            // — guarantees the user sees the detail exactly once.
+            expect(result.shouldContinue).toBe(false);
+            expect(result.formattedMessage).toContain("preflight:");
+            expect(warn).not.toHaveBeenCalled();
+        });
 
-    it("should recommend `npm ci` when running in CI", () => {
-        expect.assertions(1);
+        it("should downgrade CI failures to warnings when ciAsWarning is set", () => {
+            expect.assertions(2);
 
-        writeFile("package-lock.json", "{}\n");
+            writeFile("node_modules/.modules.yaml", "registry: x\n", 120);
+            writeFile("pnpm-lock.yaml", "lockfileVersion: 9.0\n");
 
-        const result = checkLockfileFreshness(tmp, { inCi: true });
+            const warn = vi.fn();
+            const result = runLockfilePreflight(tmp, true, { warn }, { ciAsWarning: true });
 
-        expect(result.message).toContain("npm ci");
-    });
+            expect(result.shouldContinue).toBe(true);
+            expect(warn).toHaveBeenCalledTimes(1);
+        });
 
-    it("should detect bun by bun.lockb", () => {
-        expect.assertions(2);
+        it("should silently continue when no lockfile is present", () => {
+            expect.assertions(2);
 
-        writeFile("bun.lockb", "");
+            const warn = vi.fn();
+            const result = runLockfilePreflight(tmp, true, { warn });
 
-        const result = checkLockfileFreshness(tmp);
-
-        expect(result.detail?.packageManager).toBe("bun");
-        expect(result.message).toContain("bun install");
-    });
-
-    it("should detect bun by the bun.lock text format (bun 1.2+)", () => {
-        expect.assertions(2);
-
-        writeFile("bun.lock", "{}\n");
-
-        const result = checkLockfileFreshness(tmp);
-
-        expect(result.detail?.packageManager).toBe("bun");
-        // detail paths are workspace-root-relative (no leading absolute prefix).
-        expect(result.detail?.lockfilePath).toBe("bun.lock");
-    });
-});
-
-describe(runLockfilePreflight, () => {
-    it("should be a no-op when skip is set", () => {
-        expect.assertions(2);
-
-        writeFile("pnpm-lock.yaml", "lockfileVersion: 9.0\n");
-
-        const warn = vi.fn();
-        const result = runLockfilePreflight(tmp, false, { warn }, { skip: true });
-
-        expect(result.shouldContinue).toBe(true);
-        expect(warn).not.toHaveBeenCalled();
-    });
-
-    it("should warn but continue in TTY (non-CI) on drift", () => {
-        expect.assertions(2);
-
-        writeFile("node_modules/.modules.yaml", "registry: x\n", 120);
-        writeFile("pnpm-lock.yaml", "lockfileVersion: 9.0\n");
-
-        const warn = vi.fn();
-        const result = runLockfilePreflight(tmp, false, { warn });
-
-        expect(result.shouldContinue).toBe(true);
-        expect(warn).toHaveBeenCalledTimes(1);
-    });
-
-    it("should stop and surface formattedMessage (without logging) in CI on drift", () => {
-        expect.assertions(3);
-
-        writeFile("node_modules/.modules.yaml", "registry: x\n", 120);
-        writeFile("pnpm-lock.yaml", "lockfileVersion: 9.0\n");
-
-        const warn = vi.fn();
-        const result = runLockfilePreflight(tmp, true, { warn });
-
-        // CI contract: helper stays quiet, caller throws with `formattedMessage`
-        // — guarantees the user sees the detail exactly once.
-        expect(result.shouldContinue).toBe(false);
-        expect(result.formattedMessage).toContain("preflight:");
-        expect(warn).not.toHaveBeenCalled();
-    });
-
-    it("should downgrade CI failures to warnings when ciAsWarning is set", () => {
-        expect.assertions(2);
-
-        writeFile("node_modules/.modules.yaml", "registry: x\n", 120);
-        writeFile("pnpm-lock.yaml", "lockfileVersion: 9.0\n");
-
-        const warn = vi.fn();
-        const result = runLockfilePreflight(tmp, true, { warn }, { ciAsWarning: true });
-
-        expect(result.shouldContinue).toBe(true);
-        expect(warn).toHaveBeenCalledTimes(1);
-    });
-
-    it("should silently continue when no lockfile is present", () => {
-        expect.assertions(2);
-
-        const warn = vi.fn();
-        const result = runLockfilePreflight(tmp, true, { warn });
-
-        expect(result.shouldContinue).toBe(true);
-        expect(warn).not.toHaveBeenCalled();
+            expect(result.shouldContinue).toBe(true);
+            expect(warn).not.toHaveBeenCalled();
+        });
     });
 });

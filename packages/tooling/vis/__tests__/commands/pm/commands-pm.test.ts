@@ -130,7 +130,7 @@ describe("add command argument validation", () => {
 
         const packages: string[] = [];
 
-        expect(packages.length === 0).toBe(true);
+        expect(packages).toHaveLength(0);
     });
 
     it("should accept multiple packages", () => {
@@ -173,7 +173,7 @@ describe("remove command argument validation", () => {
 
         const packages: string[] = [];
 
-        expect(packages.length === 0).toBe(true);
+        expect(packages).toHaveLength(0);
     });
 
     it("should build correct RemoveOptions", () => {
@@ -223,7 +223,7 @@ describe("why command argument validation", () => {
 
         const packages: string[] = [];
 
-        expect(packages.length === 0).toBe(true);
+        expect(packages).toHaveLength(0);
     });
 
     it("should build correct WhyOptions with depth", () => {
@@ -333,7 +333,7 @@ describe("dlx command argument validation", () => {
 
         const args: string[] = [];
 
-        expect(args.length === 0).toBe(true);
+        expect(args).toHaveLength(0);
     });
 
     it("should extract package and remaining args", () => {
@@ -383,7 +383,7 @@ describe("exec command argument validation", () => {
 
         const args: string[] = [];
 
-        expect(args.length === 0).toBe(true);
+        expect(args).toHaveLength(0);
     });
 
     it("should extract command and remaining args", () => {
@@ -419,7 +419,7 @@ describe("pm command argument validation", () => {
 
         const args: string[] = [];
 
-        expect(args.length === 0).toBe(true);
+        expect(args).toHaveLength(0);
     });
 
     it("should extract subcommand and rest", () => {

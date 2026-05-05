@@ -419,6 +419,99 @@ export interface VisConfig {
     plugins?: VisPlugin[];
 
     /**
+     * Workspace dep-policy lints exposed via `vis lint`. Each block opts in
+     * to a single rule; the command flags (`--workspace-protocol`,
+     * `--no-redefine-root`, `--banned-deps`) toggle them per-run.
+     */
+    policy?: {
+        /**
+         * Map of dep names or globs → reason (or `{ reason, replacement }`).
+         * Internal/workspace deps are never flagged here; the
+         * workspace-protocol lint owns those.
+         * @example
+         * ```
+         * bannedDeps: {
+         *   request: "deprecated; use undici",
+         *   moment: { reason: "huge bundle, frozen upstream", replacement: "date-fns" },
+         *   "@radix-ui/*": "we standardized on shadcn",
+         * }
+         * ```
+         */
+        bannedDeps?: Record<string, string | { reason: string; replacement?: string }>;
+
+        /**
+         * Tweak the redefine-root lint that flags non-root packages duplicating
+         * deps already pinned at the workspace root.
+         */
+        redefineRoot?: {
+            /** Dep names that are exempt from the redefine-root rule (exact match). */
+            ignore?: string[];
+        };
+
+        /**
+         * Tweak the workspace-protocol lint that flags internal deps not
+         * using the `workspace:` protocol.
+         */
+        workspaceProtocol?: {
+            /**
+             * Three-state autofix opt-out. Some workspaces want detection
+             * without rewrite (e.g. dual-licensed packages where `workspace:*`
+             * is unsafe).
+             * - `true` (default): `--fix` rewrites the specifier.
+             * - `false`: never rewrite — report the violation only.
+             * - `"prompt"`: ask before each rewrite. Falls back to report-only
+             *   when stdin isn't a TTY (CI). Reserved; not yet implemented.
+             *
+             * Note: when `false` (or `"prompt"`), `--fix` still **fails CI** on
+             * detected violations — the rule is "report only", not "ignore".
+             * Drop the rule from the lint selection if you want a clean exit.
+             * @default true
+             * @example
+             * ```
+             * policy: {
+             *   workspaceProtocol: { autofix: false },
+             * }
+             * ```
+             */
+            autofix?: "prompt" | boolean;
+        };
+
+        /**
+         * Tweak the workspace-versions lint that flags external deps declared
+         * at inconsistent versions across the workspace.
+         */
+        workspaceVersions?: {
+            /**
+             * Three-state autofix opt-out. See `workspaceProtocol.autofix`
+             * for the contract — same semantics, applied to drift rewrites.
+             *
+             * Also gates the `--propose-min` catalog suggestion writer:
+             * when `false` / `"prompt"`, `--fix --propose-min` reports the
+             * proposed catalog entries but does not write
+             * `pnpm-workspace.yaml`. Same "report only, still fails CI"
+             * note applies as on `workspaceProtocol.autofix`.
+             * @default true
+             */
+            autofix?: "prompt" | boolean;
+
+            /** Dep names exempt from the version-drift check (exact match). */
+            ignore?: string[];
+
+            /**
+             * Resolution strategy used when `--fix` runs.
+             * - `highest` (default): rewrite every drifting instance to the
+             *   highest sibling specifier.
+             * - `lowest`: rewrite to the lowest.
+             * - `catalog`: rewrite any dep already pinned in a workspace catalog
+             *   to `catalog:` / `catalog:&lt;name>`. Catalog must exist; this lint
+             *   does not create the catalog (see `vis lint --resolve catalog --propose`).
+             * @default "highest"
+             */
+            resolve?: "catalog" | "highest" | "lowest";
+        };
+    };
+
+    /**
      * Pre-flight checks fired before `vis run` starts the orchestrator.
      * Each check is opt-out (`false`) — defaults are sensible for the
      * common monorepo case.
@@ -677,6 +770,14 @@ export interface VisConfig {
 
     /** sort-package-json command defaults */
     sortPackageJson?: {
+        /** Discover `.editorconfig` for indent / line-ending defaults (default: true). */
+        editorconfig?: boolean;
+        /** Collapse `bugs: { url }` to the bare string form when `url` is the only field (default: true). */
+        formatBugs?: boolean;
+        /** Collapse `repository: { type, url }` to the GitHub `owner/repo` shorthand (default: true). */
+        formatRepository?: boolean;
+        /** Sort `exports` condition keys in canonical order (default: true). */
+        sortExports?: boolean;
         /** Alphabetize script commands (default: false) */
         sortScripts?: boolean;
     };

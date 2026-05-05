@@ -209,7 +209,7 @@ describe(DevcontainerStore, () => {
 
             store.addPort(3000);
 
-            expect(store.getSnapshot().config.forwardPorts).toEqual([3000]);
+            expect(store.getSnapshot().config.forwardPorts).toStrictEqual([3000]);
         });
 
         it("should not add duplicate port", () => {
@@ -219,7 +219,7 @@ describe(DevcontainerStore, () => {
 
             store.addPort(3000);
 
-            expect(store.getSnapshot().config.forwardPorts).toEqual([3000]);
+            expect(store.getSnapshot().config.forwardPorts).toStrictEqual([3000]);
         });
 
         it("should remove a port", () => {
@@ -229,7 +229,7 @@ describe(DevcontainerStore, () => {
 
             store.removePort(0);
 
-            expect(store.getSnapshot().config.forwardPorts).toEqual([8080]);
+            expect(store.getSnapshot().config.forwardPorts).toStrictEqual([8080]);
         });
 
         it("should set forwardPorts to undefined when removing the last port", () => {
@@ -279,7 +279,7 @@ describe(DevcontainerStore, () => {
 
             store.addEnvVar("container", "NODE_ENV", "development");
 
-            expect(store.getSnapshot().config.containerEnv).toEqual({ NODE_ENV: "development" });
+            expect(store.getSnapshot().config.containerEnv).toStrictEqual({ NODE_ENV: "development" });
         });
 
         it("should add a remote env var", () => {
@@ -289,7 +289,7 @@ describe(DevcontainerStore, () => {
 
             store.addEnvVar("remote", "EDITOR", "code");
 
-            expect(store.getSnapshot().config.remoteEnv).toEqual({ EDITOR: "code" });
+            expect(store.getSnapshot().config.remoteEnv).toStrictEqual({ EDITOR: "code" });
         });
 
         it("should remove a container env var", () => {
@@ -305,7 +305,7 @@ describe(DevcontainerStore, () => {
 
             store.removeEnvVar("container", "FOO");
 
-            expect(store.getSnapshot().config.containerEnv).toEqual({ NODE_ENV: "dev" });
+            expect(store.getSnapshot().config.containerEnv).toStrictEqual({ NODE_ENV: "dev" });
         });
 
         it("should set containerEnv to undefined when removing the last var", () => {
@@ -424,7 +424,7 @@ describe(DevcontainerStore, () => {
 
             const cleaned = store.cleanConfig();
 
-            expect(cleaned).toEqual({ image: "ubuntu" });
+            expect(cleaned).toStrictEqual({ image: "ubuntu" });
         });
 
         it("should strip empty arrays", () => {
@@ -514,8 +514,8 @@ describe(DevcontainerStore, () => {
 
             expect(cleaned.name).toBe("test");
             expect(cleaned.image).toBe("ubuntu");
-            expect(cleaned.forwardPorts).toEqual([3000]);
-            expect(cleaned.features).toEqual({ "ghcr.io/devcontainers/features/node:1": {} });
+            expect(cleaned.forwardPorts).toStrictEqual([3000]);
+            expect(cleaned.features).toStrictEqual({ "ghcr.io/devcontainers/features/node:1": {} });
         });
     });
 

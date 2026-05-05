@@ -30,8 +30,8 @@ describe(DoctorStore, () => {
         const state = store.getSnapshot();
 
         expect(state.filterType).toBe("dependencies");
-        expect(state.entries.map((f) => f.title)).toEqual(["alpha", "bravo"]);
-        expect([...state.grouped.keys()]).toEqual(["dependencies"]);
+        expect(state.entries.map((f) => f.title)).toStrictEqual(["alpha", "bravo"]);
+        expect([...state.grouped.keys()]).toStrictEqual(["dependencies"]);
         expect(state.selectedIndex).toBe(0);
         expect(state.focusedPanel).toBe("list");
     });
@@ -46,9 +46,9 @@ describe(DoctorStore, () => {
 
         const state = store.getSnapshot();
 
-        expect(state.entries.map((f) => f.title)).toEqual(["charlie"]);
+        expect(state.entries.map((f) => f.title)).toStrictEqual(["charlie"]);
         expect(state.selectedIndex).toBe(0);
-        expect([...state.grouped.keys()]).toEqual(["security"]);
+        expect([...state.grouped.keys()]).toStrictEqual(["security"]);
     });
 
     it("filters by free text case-insensitively against title", () => {
@@ -58,7 +58,7 @@ describe(DoctorStore, () => {
 
         store.setFilter("ALPHA");
 
-        expect(store.getSnapshot().entries.map((f) => f.title)).toEqual(["alpha"]);
+        expect(store.getSnapshot().entries.map((f) => f.title)).toStrictEqual(["alpha"]);
     });
 
     it("combines section filter and text filter", () => {
@@ -69,7 +69,7 @@ describe(DoctorStore, () => {
         store.setFilterType("dependencies");
         store.setFilter("br");
 
-        expect(store.getSnapshot().entries.map((f) => f.title)).toEqual(["bravo"]);
+        expect(store.getSnapshot().entries.map((f) => f.title)).toStrictEqual(["bravo"]);
     });
 
     it("clears the text on filter close", () => {
@@ -85,7 +85,7 @@ describe(DoctorStore, () => {
 
         expect(state.filterActive).toBe(false);
         expect(state.filterText).toBe("");
-        expect(state.entries.map((f) => f.title)).toEqual(["alpha", "bravo"]);
+        expect(state.entries.map((f) => f.title)).toStrictEqual(["alpha", "bravo"]);
     });
 
     it("clamps selectedIndex to entries length", () => {
@@ -186,7 +186,7 @@ describe(DoctorStore, () => {
 
         expect(state.sectionStatus.dependencies).toBe("done");
         expect(state.sectionMessage.dependencies).toBeUndefined();
-        expect(state.entries.map((f) => f.title)).toEqual(["alpha", "bravo"]);
+        expect(state.entries.map((f) => f.title)).toStrictEqual(["alpha", "bravo"]);
         expect(state.grouped.get("dependencies")).toHaveLength(2);
     });
 
@@ -198,11 +198,11 @@ describe(DoctorStore, () => {
         store.completeSection("dependencies", [make("dependencies", "alpha", "warn")]);
         store.completeSection("security", [make("security", "charlie", "error")]);
 
-        expect(store.getSnapshot().all.map((f) => f.title)).toEqual(["alpha", "charlie"]);
+        expect(store.getSnapshot().all.map((f) => f.title)).toStrictEqual(["alpha", "charlie"]);
 
         store.setFilterType("security");
 
-        expect(store.getSnapshot().entries.map((f) => f.title)).toEqual(["charlie"]);
+        expect(store.getSnapshot().entries.map((f) => f.title)).toStrictEqual(["charlie"]);
     });
 
     it("failSection records error and flips status without dropping prior data", () => {
@@ -231,7 +231,7 @@ describe(DoctorStore, () => {
         const state = store.getSnapshot();
 
         expect(state.severityFilter).toBe("error");
-        expect(state.entries.map((f) => f.title)).toEqual(["charlie"]);
+        expect(state.entries.map((f) => f.title)).toStrictEqual(["charlie"]);
         expect(state.selectedIndex).toBe(0);
     });
 
@@ -247,7 +247,7 @@ describe(DoctorStore, () => {
         const state = store.getSnapshot();
 
         expect(state.severityFilter).toBeUndefined();
-        expect(state.entries.map((f) => f.title)).toEqual(["charlie"]);
+        expect(state.entries.map((f) => f.title)).toStrictEqual(["charlie"]);
     });
 
     it("setPendingAction stores and clears the action", () => {
@@ -257,7 +257,7 @@ describe(DoctorStore, () => {
 
         store.setPendingAction({ command: "vis update lodash", description: "Update lodash" });
 
-        expect(store.getSnapshot().pendingAction).toEqual({ command: "vis update lodash", description: "Update lodash" });
+        expect(store.getSnapshot().pendingAction).toStrictEqual({ command: "vis update lodash", description: "Update lodash" });
 
         store.setPendingAction(undefined);
 
@@ -272,7 +272,7 @@ describe(DoctorStore, () => {
         store.setFilterType("security");
         store.setSeverityFilter("error");
 
-        expect(store.getSnapshot().entries.map((f) => f.title)).toEqual(["charlie"]);
+        expect(store.getSnapshot().entries.map((f) => f.title)).toStrictEqual(["charlie"]);
 
         store.setSeverityFilter("warn");
 

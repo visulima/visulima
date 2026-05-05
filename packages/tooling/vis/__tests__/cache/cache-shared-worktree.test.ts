@@ -15,6 +15,7 @@ import { resolveSharedCacheDirectory } from "../../src/cache/cache-directory";
 // on the fixture's own `.git`.
 for (const key of Object.keys(process.env)) {
     if (key.startsWith("GIT_")) {
+        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- key is iterated over process.env so it must be dynamic
         delete process.env[key];
     }
 }
@@ -57,6 +58,7 @@ describe("cache sharing across git worktrees", () => {
     it("entries written from a linked worktree are readable from the main checkout", async () => {
         expect.assertions(3);
 
+        // eslint-disable-next-line vitest/no-conditional-in-test -- skip when git is missing
         if (!hasGit) {
             return;
         }
@@ -93,6 +95,7 @@ describe("cache sharing across git worktrees", () => {
     it("opting out via sharedWorktreeCache=false isolates each worktree's cache", async () => {
         expect.assertions(2);
 
+        // eslint-disable-next-line vitest/no-conditional-in-test -- skip when git is missing
         if (!hasGit) {
             return;
         }
@@ -129,6 +132,7 @@ describe("cache sharing across git worktrees", () => {
         // 1 collision + 6 hash-N existence checks
         expect.assertions(7);
 
+        // eslint-disable-next-line vitest/no-conditional-in-test -- skip when git is missing
         if (!hasGit) {
             return;
         }
@@ -187,6 +191,7 @@ describe("cache sharing across git worktrees", () => {
     it("primary checkout resolves to its own cache regardless of share toggle", () => {
         expect.assertions(2);
 
+        // eslint-disable-next-line vitest/no-conditional-in-test -- skip when git is missing
         if (!hasGit) {
             return;
         }

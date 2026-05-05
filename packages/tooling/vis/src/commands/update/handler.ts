@@ -21,7 +21,7 @@ import { runTyposquatCheck, scanDepsForTyposquats } from "../../security/typosqu
 import CheckProgressApp from "../../tui/components/CheckProgressApp";
 import { UpdateStore } from "../../tui/components/update/UpdateStore";
 import VisUpdateApp from "../../tui/components/update/VisUpdateApp";
-import type { CatalogCheckOptions, OutdatedEntry, UpdateTarget } from "../../util/catalog";
+import type { CatalogCheckOptions, NpmrcConfig, OutdatedEntry, UpdateTarget } from "../../util/catalog";
 import {
     applyCatalogUpdates,
     checkOutdated,
@@ -134,6 +134,7 @@ const applyCatalogAndInstall = async (
     toApply: OutdatedEntry[],
     options: Record<string, unknown>,
     logger: Console,
+    npmrcConfig?: NpmrcConfig,
 ): Promise<void> => {
     const backupPath = applyCatalogUpdates(workspaceRoot, toApply, packageManager);
     const targetFile = packageManager === "pnpm" ? "pnpm-workspace.yaml" : "package.json";
@@ -147,7 +148,7 @@ const applyCatalogAndInstall = async (
     if (options.changelog) {
         logger.info("\nFetching changelogs...");
 
-        const changelogs = await fetchChangelogInfo(toApply);
+        const changelogs = await fetchChangelogInfo(toApply, undefined, npmrcConfig);
 
         for (const info of changelogs) {
             const url = info.releaseUrl ?? info.repoUrl ?? info.npmUrl;
@@ -344,7 +345,7 @@ const executeCatalogUpdate = async (
         if (options.changelog) {
             logger.info("Fetching changelogs...");
 
-            const changelogs = await fetchChangelogInfo(outdated);
+            const changelogs = await fetchChangelogInfo(outdated, undefined, npmrcConfig);
 
             changelogUrls = new Map<string, string>();
 
@@ -459,7 +460,7 @@ const executeCatalogUpdate = async (
 
             const mergedOptions = { ...options, install: options.install ?? configDefaults.install };
 
-            await applyCatalogAndInstall(workspaceRoot, packageManager, toApply, mergedOptions, logger);
+            await applyCatalogAndInstall(workspaceRoot, packageManager, toApply, mergedOptions, logger, npmrcConfig);
         }
 
         return;
@@ -513,7 +514,7 @@ const executeCatalogUpdate = async (
 
     const mergedOptions = { ...options, install: options.install ?? configDefaults.install };
 
-    await applyCatalogAndInstall(workspaceRoot, packageManager, toApply, mergedOptions, logger);
+    await applyCatalogAndInstall(workspaceRoot, packageManager, toApply, mergedOptions, logger, npmrcConfig);
 };
 
 const executePmWrapper = (

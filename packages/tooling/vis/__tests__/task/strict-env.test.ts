@@ -5,22 +5,22 @@ import { checkStrictEnv, extractEnvReferences, formatStrictEnvError } from "../.
 describe(extractEnvReferences, () => {
     it("returns an empty list when the command has no references", () => {
         expect.assertions(1);
-        expect(extractEnvReferences("vitest run")).toEqual([]);
+        expect(extractEnvReferences("vitest run")).toStrictEqual([]);
     });
 
     it("parses bare $VAR references", () => {
         expect.assertions(1);
-        expect(extractEnvReferences("psql $DB_URL")).toEqual([{ hasDefault: false, name: "DB_URL" }]);
+        expect(extractEnvReferences("psql $DB_URL")).toStrictEqual([{ hasDefault: false, name: "DB_URL" }]);
     });
 
     it("parses braced ${VAR} references", () => {
         expect.assertions(1);
-        expect(extractEnvReferences("psql ${DB_URL}/app")).toEqual([{ hasDefault: false, name: "DB_URL" }]);
+        expect(extractEnvReferences("psql ${DB_URL}/app")).toStrictEqual([{ hasDefault: false, name: "DB_URL" }]);
     });
 
     it("marks ${VAR:-default} as having a default", () => {
         expect.assertions(1);
-        expect(extractEnvReferences('echo "${LOG_LEVEL:-info}"')).toEqual([{ hasDefault: true, name: "LOG_LEVEL" }]);
+        expect(extractEnvReferences('echo "${LOG_LEVEL:-info}"')).toStrictEqual([{ hasDefault: true, name: "LOG_LEVEL" }]);
     });
 
     it("treats a mixed reference (one with default, one without) as required", () => {
@@ -28,22 +28,22 @@ describe(extractEnvReferences, () => {
         // The unconditional reference will silently expand to "" if
         // unset — the fact that it's also referenced WITH a default
         // somewhere doesn't save it.
-        expect(extractEnvReferences("echo $TOKEN && echo ${TOKEN:-x}")).toEqual([{ hasDefault: false, name: "TOKEN" }]);
+        expect(extractEnvReferences("echo $TOKEN && echo ${TOKEN:-x}")).toStrictEqual([{ hasDefault: false, name: "TOKEN" }]);
     });
 
     it("dedupes repeated references", () => {
         expect.assertions(1);
-        expect(extractEnvReferences("$A $A ${A}")).toEqual([{ hasDefault: false, name: "A" }]);
+        expect(extractEnvReferences("$A $A ${A}")).toStrictEqual([{ hasDefault: false, name: "A" }]);
     });
 
     it("ignores POSIX special vars ($@, $*, $#, $$)", () => {
         expect.assertions(1);
-        expect(extractEnvReferences('node script.js "$@" $#')).toEqual([]);
+        expect(extractEnvReferences('node script.js "$@" $#')).toStrictEqual([]);
     });
 
     it("ignores numeric positional params ($0, $1)", () => {
         expect.assertions(1);
-        expect(extractEnvReferences("echo $0 $1")).toEqual([]);
+        expect(extractEnvReferences("echo $0 $1")).toStrictEqual([]);
     });
 });
 
@@ -77,7 +77,7 @@ describe(checkStrictEnv, () => {
 
     it("returns a violation listing the missing var", () => {
         expect.assertions(1);
-        expect(checkStrictEnv(baseOptions)).toEqual({ missing: ["DB_URL"], taskId: "@app/api:test" });
+        expect(checkStrictEnv(baseOptions)).toStrictEqual({ missing: ["DB_URL"], taskId: "@app/api:test" });
     });
 
     it("returns missing names sorted alphabetically", () => {
@@ -88,7 +88,7 @@ describe(checkStrictEnv, () => {
                 command: "$DB_URL $API_KEY $REDIS_HOST",
                 taskEnv: {},
             }),
-        ).toEqual({ missing: ["API_KEY", "DB_URL", "REDIS_HOST"], taskId: "@app/api:test" });
+        ).toStrictEqual({ missing: ["API_KEY", "DB_URL", "REDIS_HOST"], taskId: "@app/api:test" });
     });
 
     it("does not flag a var that has a default", () => {

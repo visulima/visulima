@@ -2094,7 +2094,7 @@ interface ChangelogInfo {
     repoUrl?: string;
 }
 
-const fetchChangelogInfo = async (packages: OutdatedEntry[], timeoutMs: number = 10_000): Promise<ChangelogInfo[]> => {
+const fetchChangelogInfo = async (packages: OutdatedEntry[], timeoutMs: number = 10_000, npmrcConfig?: NpmrcConfig): Promise<ChangelogInfo[]> => {
     const results: ChangelogInfo[] = [];
 
     const controller = new AbortController();
@@ -2107,8 +2107,16 @@ const fetchChangelogInfo = async (packages: OutdatedEntry[], timeoutMs: number =
             const npmUrl = `https://www.npmjs.com/package/${entry.packageName}`;
 
             try {
-                const response = await fetch(`https://registry.npmjs.org/${entry.packageName}`, {
-                    headers: { Accept: "application/json" },
+                const registry = npmrcConfig ? getRegistryForPackage(entry.packageName, npmrcConfig) : { url: "https://registry.npmjs.org" };
+                const baseUrl = registry.url.replace(TRAILING_SLASH_REGEX, "");
+                const headers: Record<string, string> = { Accept: "application/json" };
+
+                if (registry.token) {
+                    headers["Authorization"] = `Bearer ${registry.token}`;
+                }
+
+                const response = await fetch(`${baseUrl}/${entry.packageName}`, {
+                    headers,
                     signal: controller.signal,
                 });
 

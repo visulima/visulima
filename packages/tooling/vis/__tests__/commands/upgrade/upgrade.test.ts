@@ -7,7 +7,7 @@ describe("upgrade version comparison", () => {
         const current = "1.0.0-alpha.3";
         const latest = "1.0.0-alpha.3";
 
-        expect(current === latest).toBe(true);
+        expect(current).toBe(latest);
     });
 
     it("should detect when update is available", () => {
@@ -16,7 +16,7 @@ describe("upgrade version comparison", () => {
         const current = "1.0.0-alpha.3";
         const latest = "1.0.0-alpha.4";
 
-        expect(current === latest).toBe(false);
+        expect(current).not.toBe(latest);
     });
 });
 

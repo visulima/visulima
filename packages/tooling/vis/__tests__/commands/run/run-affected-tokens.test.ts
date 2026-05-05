@@ -39,7 +39,12 @@ const makeLogger = (): {
     };
 };
 
-const writeCaptureProject = (workspaceRoot: string, projectName: string, command: string, options?: { affectedFiles?: "args" | "both" | "env" | false }): string => {
+const writeCaptureProject = (
+    workspaceRoot: string,
+    projectName: string,
+    command: string,
+    options?: { affectedFiles?: "args" | "both" | "env" | false },
+): string => {
     const pkgDir = join(workspaceRoot, "packages", projectName);
 
     mkdirSync(pkgDir, { recursive: true });
@@ -148,7 +153,7 @@ describe("vis run — `${affected.files}` token expansion", () => {
 
         // After the user's `--quiet` flag we expect the two expanded paths.
         // Project-root scoping rewrites `packages/lib/src/a.ts` to `src/a.ts`.
-        expect(argv).toEqual(["--quiet", "src/a.ts", "src/b.ts"]);
+        expect(argv).toStrictEqual(["--quiet", "src/a.ts", "src/b.ts"]);
     });
 
     it("expands the `flag` form `${changed_files | flag '--file'}` to one flag per file", async () => {
@@ -170,7 +175,7 @@ describe("vis run — `${affected.files}` token expansion", () => {
             workspaceRoot,
         } as never);
 
-        expect(readCapture(capturePath)).toEqual(["--file", "src/a.ts", "--file", "src/b.ts"]);
+        expect(readCapture(capturePath)).toStrictEqual(["--file", "src/a.ts", "--file", "src/b.ts"]);
     });
 
     it("filters affected files outside the project root before expansion", async () => {
@@ -194,7 +199,7 @@ describe("vis run — `${affected.files}` token expansion", () => {
             workspaceRoot,
         } as never);
 
-        expect(readCapture(capturePath)).toEqual(["src/x.ts"]);
+        expect(readCapture(capturePath)).toStrictEqual(["src/x.ts"]);
     });
 
     it("expands the token to nothing when no files match the project root", async () => {
@@ -218,7 +223,7 @@ describe("vis run — `${affected.files}` token expansion", () => {
             workspaceRoot,
         } as never);
 
-        expect(readCapture(capturePath)).toEqual(["--done"]);
+        expect(readCapture(capturePath)).toStrictEqual(["--done"]);
     });
 
     it("preserves a backslash-escaped `\\${affected.files}` as a literal token", async () => {
@@ -247,10 +252,10 @@ describe("vis run — `${affected.files}` token expansion", () => {
         // The expander emits the literal token; single quotes around it in
         // the command keep bash from substituting, so node's argv sees
         // `${affected.files}` verbatim.
-        expect(readCapture(capturePath)).toEqual(["${affected.files}"]);
+        expect(readCapture(capturePath)).toStrictEqual(["${affected.files}"]);
     });
 
-    it("coexists with `affectedFiles: \"args\"` — token wins explicit position, mode appends to the end", async () => {
+    it('coexists with `affectedFiles: "args"` — token wins explicit position, mode appends to the end', async () => {
         expect.assertions(1);
 
         const captureScript = "require('fs').appendFileSync(process.env.CAPTURE, JSON.stringify(process.argv) + String.fromCharCode(10))";
@@ -259,12 +264,7 @@ describe("vis run — `${affected.files}` token expansion", () => {
         // the same paths as a trailing append. The user gets both — useful
         // when a tool needs the file list both as a positional arg AND as a
         // separate flag-driven block. Testing it here to lock the docs claim.
-        writeCaptureProject(
-            workspaceRoot,
-            "lib",
-            `node -e "${captureScript}" -- --check \${affected.files} --done`,
-            { affectedFiles: "args" },
-        );
+        writeCaptureProject(workspaceRoot, "lib", `node -e "${captureScript}" -- --check \${affected.files} --done`, { affectedFiles: "args" });
 
         process.env["VIS_AFFECTED_FILES"] = ["packages/lib/src/a.ts"].join("\n");
         process.env["CAPTURE"] = capturePath;
@@ -280,10 +280,10 @@ describe("vis run — `${affected.files}` token expansion", () => {
 
         // Token expands at its position; `affectedFiles: "args"` then
         // appends the workspace-relative paths after `--done`.
-        expect(readCapture(capturePath)).toEqual(["--check", "src/a.ts", "--done", "packages/lib/src/a.ts"]);
+        expect(readCapture(capturePath)).toStrictEqual(["--check", "src/a.ts", "--done", "packages/lib/src/a.ts"]);
     });
 
-    it("coexists with `affectedFiles: \"env\"` — token expands at position, env var still set", async () => {
+    it('coexists with `affectedFiles: "env"` — token expands at position, env var still set', async () => {
         expect.assertions(2);
 
         // env mode injects VIS_AFFECTED_FILES without appending args, so
@@ -310,7 +310,7 @@ describe("vis run — `${affected.files}` token expansion", () => {
         const lines = readFileSync(capturePath, "utf8").trim().split("\n").filter(Boolean);
         const last = JSON.parse(lines.at(-1)!) as { argv: string[]; env: string };
 
-        expect(last.argv.slice(1)).toEqual(["src/a.ts", "src/b.ts"]);
+        expect(last.argv.slice(1)).toStrictEqual(["src/a.ts", "src/b.ts"]);
         expect(last.env).toBe("packages/lib/src/a.ts\npackages/lib/src/b.ts");
     });
 
@@ -338,7 +338,7 @@ describe("vis run — `${affected.files}` token expansion", () => {
             workspaceRoot,
         } as never);
 
-        expect(readCapture(capturePath)).toEqual(["--check", "src/a.ts", "--bail", "--max-warnings=0"]);
+        expect(readCapture(capturePath)).toStrictEqual(["--check", "src/a.ts", "--bail", "--max-warnings=0"]);
     });
 
     it("expands multiple tokens in the same command independently", async () => {
@@ -350,11 +350,7 @@ describe("vis run — `${affected.files}` token expansion", () => {
         // same source list, but the renderer treats each occurrence
         // independently. A bare token + a flag-form token together
         // exercise both substitution shapes in one pass.
-        writeCaptureProject(
-            workspaceRoot,
-            "lib",
-            `node -e "${captureScript}" -- \${affected.files} --separator \${changed_files | flag '--also'}`,
-        );
+        writeCaptureProject(workspaceRoot, "lib", `node -e "${captureScript}" -- \${affected.files} --separator \${changed_files | flag '--also'}`);
 
         process.env["VIS_AFFECTED_FILES"] = ["packages/lib/src/a.ts", "packages/lib/src/b.ts"].join("\n");
         process.env["CAPTURE"] = capturePath;
@@ -368,15 +364,7 @@ describe("vis run — `${affected.files}` token expansion", () => {
             workspaceRoot,
         } as never);
 
-        expect(readCapture(capturePath)).toEqual([
-            "src/a.ts",
-            "src/b.ts",
-            "--separator",
-            "--also",
-            "src/a.ts",
-            "--also",
-            "src/b.ts",
-        ]);
+        expect(readCapture(capturePath)).toStrictEqual(["src/a.ts", "src/b.ts", "--separator", "--also", "src/a.ts", "--also", "src/b.ts"]);
     });
 
     it("varies the cache key when `${affected.files}` resolves to a different set — regression for the raw-command hash bug", async () => {

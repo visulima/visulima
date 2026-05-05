@@ -37,7 +37,7 @@ describe("services/lifecycle", () => {
     let workspaceRoot: string;
     let homeOverride: string;
     let originalHome: string | undefined;
-    let toCleanup: number[] = [];
+    let toCleanup: number[];
 
     beforeEach(() => {
         workspaceRoot = createTemporaryDirectory("vis-test-lc-ws-");
@@ -155,7 +155,7 @@ describe("services/lifecycle", () => {
                 id: "broken:db",
                 workspaceRoot,
             }),
-        ).rejects.toThrow();
+        ).rejects.toThrow(expect.anything());
 
         // Entry must not be left behind.
         await expect(readEntry(workspaceRoot, "broken:db")).resolves.toBeUndefined();

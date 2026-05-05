@@ -7,290 +7,297 @@ import { detectKingfisherBaseline, detectKingfisherRules, migrateKingfisher, par
 import { createMigrationReport } from "../../../src/commands/migrate/types";
 import { cleanupTemporaryDirectory, createMockLogger, createTemporaryDirectory } from "../../test-helpers";
 
-let tmpDir: string;
+describe("migrate-kingfisher", () => {
+    let tmpDir: string;
 
-beforeEach(() => {
-    tmpDir = createTemporaryDirectory("vis-migrate-kingfisher-");
-});
-
-afterEach(() => {
-    cleanupTemporaryDirectory(tmpDir);
-});
-
-describe(detectKingfisherBaseline, () => {
-    it("returns undefined when no baseline exists", () => {
-        expect.assertions(1);
-        expect(detectKingfisherBaseline(tmpDir)).toBeUndefined();
+    beforeEach(() => {
+        tmpDir = createTemporaryDirectory("vis-migrate-kingfisher-");
     });
 
-    it.each(["kingfisher-baseline.yaml", ".kingfisher-baseline.yaml", "kingfisher-baseline.yml", ".kingfisher-baseline.yml"])("finds %s", (name) => {
-        expect.assertions(1);
-
-        writeFileSync(join(tmpDir, name), "ExactFindings:\n  matches: []\n");
-
-        expect(detectKingfisherBaseline(tmpDir)).toContain(name);
-    });
-});
-
-describe(detectKingfisherRules, () => {
-    it("returns undefined when no rules file exists", () => {
-        expect.assertions(1);
-        expect(detectKingfisherRules(tmpDir)).toBeUndefined();
+    afterEach(() => {
+        cleanupTemporaryDirectory(tmpDir);
     });
 
-    it("finds kingfisher-rules.yml", () => {
-        expect.assertions(1);
+    describe(detectKingfisherBaseline, () => {
+        it("returns undefined when no baseline exists", () => {
+            expect.assertions(1);
+            expect(detectKingfisherBaseline(tmpDir)).toBeUndefined();
+        });
 
-        writeFileSync(join(tmpDir, "kingfisher-rules.yml"), "rules: []\n");
+        it.each(["kingfisher-baseline.yaml", ".kingfisher-baseline.yaml", "kingfisher-baseline.yml", ".kingfisher-baseline.yml"])("finds %s", (name) => {
+            expect.assertions(1);
 
-        expect(detectKingfisherRules(tmpDir)).toContain("kingfisher-rules.yml");
-    });
-});
+            writeFileSync(join(tmpDir, name), "ExactFindings:\n  matches: []\n");
 
-describe(parseKingfisherBaseline, () => {
-    it("extracts filepath/fingerprint/linenum from the upstream shape", () => {
-        expect.assertions(2);
-
-        const yaml = [
-            "ExactFindings:",
-            "  matches:",
-            "    - filepath: src/app.ts",
-            "      fingerprint: abcdef0123456789",
-            "      linenum: 42",
-            "      lastupdated: 2025-01-01T00:00:00Z",
-            "    - filepath: src/db.ts",
-            "      fingerprint: 0123456789abcdef",
-            "      linenum: 7",
-            "",
-        ].join("\n");
-
-        const records = parseKingfisherBaseline(yaml);
-
-        expect(records).toHaveLength(2);
-        expect(records[0]).toStrictEqual({ filepath: "src/app.ts", fingerprint: "abcdef0123456789", linenum: 42 });
+            expect(detectKingfisherBaseline(tmpDir)).toContain(name);
+        });
     });
 
-    it("ignores comments and blank lines", () => {
-        expect.assertions(1);
+    describe(detectKingfisherRules, () => {
+        it("returns undefined when no rules file exists", () => {
+            expect.assertions(1);
+            expect(detectKingfisherRules(tmpDir)).toBeUndefined();
+        });
 
-        const yaml = [
-            "# comment line",
-            "ExactFindings:",
-            "  matches:",
-            "    - filepath: src/only.ts  # trailing comment",
-            "      fingerprint: ff00ff00ff00ff00",
-            "      linenum: 1",
-            "",
-            "",
-        ].join("\n");
+        it("finds kingfisher-rules.yml", () => {
+            expect.assertions(1);
 
-        expect(parseKingfisherBaseline(yaml)).toStrictEqual([{ filepath: "src/only.ts", fingerprint: "ff00ff00ff00ff00", linenum: 1 }]);
+            writeFileSync(join(tmpDir, "kingfisher-rules.yml"), "rules: []\n");
+
+            expect(detectKingfisherRules(tmpDir)).toContain("kingfisher-rules.yml");
+        });
     });
 
-    it("returns an empty array for baselines with no matches", () => {
-        expect.assertions(1);
-        expect(parseKingfisherBaseline("ExactFindings:\n  matches: []\n")).toStrictEqual([]);
+    describe(parseKingfisherBaseline, () => {
+        it("extracts filepath/fingerprint/linenum from the upstream shape", () => {
+            expect.assertions(2);
+
+            const yaml = [
+                "ExactFindings:",
+                "  matches:",
+                "    - filepath: src/app.ts",
+                "      fingerprint: abcdef0123456789",
+                "      linenum: 42",
+                "      lastupdated: 2025-01-01T00:00:00Z",
+                "    - filepath: src/db.ts",
+                "      fingerprint: 0123456789abcdef",
+                "      linenum: 7",
+                "",
+            ].join("\n");
+
+            const records = parseKingfisherBaseline(yaml);
+
+            expect(records).toHaveLength(2);
+            expect(records[0]).toStrictEqual({ filepath: "src/app.ts", fingerprint: "abcdef0123456789", linenum: 42 });
+        });
+
+        it("ignores comments and blank lines", () => {
+            expect.assertions(1);
+
+            const yaml = [
+                "# comment line",
+                "ExactFindings:",
+                "  matches:",
+                "    - filepath: src/only.ts  # trailing comment",
+                "      fingerprint: ff00ff00ff00ff00",
+                "      linenum: 1",
+                "",
+                "",
+            ].join("\n");
+
+            expect(parseKingfisherBaseline(yaml)).toStrictEqual([{ filepath: "src/only.ts", fingerprint: "ff00ff00ff00ff00", linenum: 1 }]);
+        });
+
+        it("returns an empty array for baselines with no matches", () => {
+            expect.assertions(1);
+            expect(parseKingfisherBaseline("ExactFindings:\n  matches: []\n")).toStrictEqual([]);
+        });
+
+        it("strips quotes around string values", () => {
+            expect.assertions(1);
+
+            const yaml = [
+                "ExactFindings:",
+                "  matches:",
+                '    - filepath: "quoted/path.ts"',
+                "      fingerprint: 'singlequoted0000'",
+                "      linenum: 5",
+                "",
+            ].join("\n");
+
+            expect(parseKingfisherBaseline(yaml)[0]?.filepath).toBe("quoted/path.ts");
+        });
     });
 
-    it("strips quotes around string values", () => {
-        expect.assertions(1);
+    describe(migrateKingfisher, () => {
+        it("reports no artifacts when the workspace is clean", () => {
+            expect.assertions(2);
 
-        const yaml = ["ExactFindings:", "  matches:", '    - filepath: "quoted/path.ts"', "      fingerprint: 'singlequoted0000'", "      linenum: 5", ""].join(
-            "\n",
-        );
+            writeFileSync(join(tmpDir, "package.json"), JSON.stringify({ name: "test", scripts: { build: "tsc" } }));
 
-        expect(parseKingfisherBaseline(yaml)[0]?.filepath).toBe("quoted/path.ts");
-    });
-});
+            const logger = createMockLogger();
+            const report = createMigrationReport();
+            const changed = migrateKingfisher(tmpDir, { dryRun: false }, logger, report);
 
-describe(migrateKingfisher, () => {
-    it("reports no artifacts when the workspace is clean", () => {
-        expect.assertions(2);
+            expect(changed).toBe(false);
+            expect(logger.infoMessages.join("\n")).toContain("No Kingfisher artifacts found");
+        });
 
-        writeFileSync(join(tmpDir, "package.json"), JSON.stringify({ name: "test", scripts: { build: "tsc" } }));
+        it("stays silent when called in silent mode on a clean workspace", () => {
+            expect.assertions(2);
 
-        const logger = createMockLogger();
-        const report = createMigrationReport();
-        const changed = migrateKingfisher(tmpDir, { dryRun: false }, logger, report);
+            writeFileSync(join(tmpDir, "package.json"), JSON.stringify({ name: "test", scripts: {} }));
 
-        expect(changed).toBe(false);
-        expect(logger.infoMessages.join("\n")).toContain("No Kingfisher artifacts found");
-    });
+            const logger = createMockLogger();
+            const report = createMigrationReport();
+            const changed = migrateKingfisher(tmpDir, { dryRun: false, silent: true }, logger, report);
 
-    it("stays silent when called in silent mode on a clean workspace", () => {
-        expect.assertions(2);
+            expect(changed).toBe(false);
+            expect(logger.infoMessages).toStrictEqual([]);
+        });
 
-        writeFileSync(join(tmpDir, "package.json"), JSON.stringify({ name: "test", scripts: {} }));
+        it("converts a baseline to a placeholder `.secrets-baseline.json` and records a manual follow-up", () => {
+            expect.assertions(4);
 
-        const logger = createMockLogger();
-        const report = createMigrationReport();
-        const changed = migrateKingfisher(tmpDir, { dryRun: false, silent: true }, logger, report);
+            writeFileSync(
+                join(tmpDir, "kingfisher-baseline.yaml"),
+                ["ExactFindings:", "  matches:", "    - filepath: a.ts", "      fingerprint: aaaaaaaaaaaaaaaa", "      linenum: 10", ""].join("\n"),
+            );
+            writeFileSync(join(tmpDir, "package.json"), JSON.stringify({ name: "t", scripts: {} }));
 
-        expect(changed).toBe(false);
-        expect(logger.infoMessages).toStrictEqual([]);
-    });
+            const logger = createMockLogger();
+            const report = createMigrationReport();
+            const changed = migrateKingfisher(tmpDir, { dryRun: false }, logger, report);
 
-    it("converts a baseline to a placeholder `.secrets-baseline.json` and records a manual follow-up", () => {
-        expect.assertions(4);
+            expect(changed).toBe(true);
 
-        writeFileSync(
-            join(tmpDir, "kingfisher-baseline.yaml"),
-            ["ExactFindings:", "  matches:", "    - filepath: a.ts", "      fingerprint: aaaaaaaaaaaaaaaa", "      linenum: 10", ""].join("\n"),
-        );
-        writeFileSync(join(tmpDir, "package.json"), JSON.stringify({ name: "t", scripts: {} }));
+            const target = join(tmpDir, ".secrets-baseline.json");
 
-        const logger = createMockLogger();
-        const report = createMigrationReport();
-        const changed = migrateKingfisher(tmpDir, { dryRun: false }, logger, report);
+            expect(existsSync(target)).toBe(true);
 
-        expect(changed).toBe(true);
+            const parsed = JSON.parse(readFileSync(target, "utf8")) as { _kingfisherMigration?: unknown; file?: string; startLine?: number }[];
 
-        const target = join(tmpDir, ".secrets-baseline.json");
+            expect(parsed[0]).toMatchObject({ file: "a.ts", startLine: 10 });
+            expect(report.manualSteps.some((step) => step.includes("--update-baseline"))).toBe(true);
+        });
 
-        expect(existsSync(target)).toBe(true);
+        it("leaves an existing `.secrets-baseline.json` alone and warns about the collision", () => {
+            expect.assertions(2);
 
-        const parsed = JSON.parse(readFileSync(target, "utf8")) as { _kingfisherMigration?: unknown; file?: string; startLine?: number }[];
+            writeFileSync(
+                join(tmpDir, "kingfisher-baseline.yaml"),
+                ["ExactFindings:", "  matches:", "    - filepath: a.ts", "      fingerprint: aaaaaaaaaaaaaaaa", "      linenum: 10", ""].join("\n"),
+            );
+            writeFileSync(join(tmpDir, ".secrets-baseline.json"), "[]\n");
+            writeFileSync(join(tmpDir, "package.json"), JSON.stringify({ name: "t", scripts: {} }));
 
-        expect(parsed[0]).toMatchObject({ file: "a.ts", startLine: 10 });
-        expect(report.manualSteps.some((step) => step.includes("--update-baseline"))).toBe(true);
-    });
+            const logger = createMockLogger();
+            const report = createMigrationReport();
 
-    it("leaves an existing `.secrets-baseline.json` alone and warns about the collision", () => {
-        expect.assertions(2);
+            migrateKingfisher(tmpDir, { dryRun: false }, logger, report);
 
-        writeFileSync(
-            join(tmpDir, "kingfisher-baseline.yaml"),
-            ["ExactFindings:", "  matches:", "    - filepath: a.ts", "      fingerprint: aaaaaaaaaaaaaaaa", "      linenum: 10", ""].join("\n"),
-        );
-        writeFileSync(join(tmpDir, ".secrets-baseline.json"), "[]\n");
-        writeFileSync(join(tmpDir, "package.json"), JSON.stringify({ name: "t", scripts: {} }));
+            expect(readFileSync(join(tmpDir, ".secrets-baseline.json"), "utf8")).toBe("[]\n");
+            expect(report.warnings.some((w) => w.includes("already exists"))).toBe(true);
+        });
 
-        const logger = createMockLogger();
-        const report = createMigrationReport();
+        it("rewrites `kingfisher scan` / `kingfisher validate` in package.json scripts", () => {
+            expect.assertions(3);
 
-        migrateKingfisher(tmpDir, { dryRun: false }, logger, report);
+            writeFileSync(
+                join(tmpDir, "package.json"),
+                JSON.stringify({
+                    name: "t",
+                    scripts: {
+                        scan: "kingfisher scan --path .",
+                        "scan:validate": "kingfisher validate --rules/aws.yml",
+                    },
+                }),
+            );
 
-        expect(readFileSync(join(tmpDir, ".secrets-baseline.json"), "utf8")).toBe("[]\n");
-        expect(report.warnings.some((w) => w.includes("already exists"))).toBe(true);
-    });
+            const logger = createMockLogger();
+            const report = createMigrationReport();
 
-    it("rewrites `kingfisher scan` / `kingfisher validate` in package.json scripts", () => {
-        expect.assertions(3);
+            migrateKingfisher(tmpDir, { dryRun: false }, logger, report);
 
-        writeFileSync(
-            join(tmpDir, "package.json"),
-            JSON.stringify({
-                name: "t",
-                scripts: {
-                    scan: "kingfisher scan --path .",
-                    "scan:validate": "kingfisher validate --rules/aws.yml",
-                },
-            }),
-        );
+            const pkg = JSON.parse(readFileSync(join(tmpDir, "package.json"), "utf8")) as { scripts: Record<string, string> };
 
-        const logger = createMockLogger();
-        const report = createMigrationReport();
+            expect(pkg.scripts.scan).toBe("vis secrets");
+            expect(pkg.scripts["scan:validate"]).toBe("vis secrets --validate");
+            expect(report.perMigration.kingfisher?.rewrittenScriptCount).toBeGreaterThan(0);
+        });
 
-        migrateKingfisher(tmpDir, { dryRun: false }, logger, report);
+        it("removes kingfisher devDependencies when present", () => {
+            expect.assertions(2);
 
-        const pkg = JSON.parse(readFileSync(join(tmpDir, "package.json"), "utf8")) as { scripts: Record<string, string> };
+            writeFileSync(
+                join(tmpDir, "package.json"),
+                JSON.stringify({
+                    devDependencies: { kingfisher: "^1.0.0", typescript: "^5.0.0" },
+                    name: "t",
+                    scripts: { scan: "kingfisher scan" },
+                }),
+            );
 
-        expect(pkg.scripts.scan).toBe("vis secrets");
-        expect(pkg.scripts["scan:validate"]).toBe("vis secrets --validate");
-        expect(report.perMigration.kingfisher?.rewrittenScriptCount).toBeGreaterThan(0);
-    });
+            const logger = createMockLogger();
+            const report = createMigrationReport();
 
-    it("removes kingfisher devDependencies when present", () => {
-        expect.assertions(2);
+            migrateKingfisher(tmpDir, { dryRun: false }, logger, report);
 
-        writeFileSync(
-            join(tmpDir, "package.json"),
-            JSON.stringify({
-                devDependencies: { kingfisher: "^1.0.0", typescript: "^5.0.0" },
-                name: "t",
-                scripts: { scan: "kingfisher scan" },
-            }),
-        );
+            const pkg = JSON.parse(readFileSync(join(tmpDir, "package.json"), "utf8")) as { devDependencies?: Record<string, string> };
 
-        const logger = createMockLogger();
-        const report = createMigrationReport();
+            expect(pkg.devDependencies).not.toHaveProperty("kingfisher");
+            expect(pkg.devDependencies).toHaveProperty("typescript");
+        });
 
-        migrateKingfisher(tmpDir, { dryRun: false }, logger, report);
+        it("rewrites `.husky/pre-commit` hooks that call kingfisher", () => {
+            expect.assertions(2);
 
-        const pkg = JSON.parse(readFileSync(join(tmpDir, "package.json"), "utf8")) as { devDependencies?: Record<string, string> };
+            writeFileSync(join(tmpDir, "package.json"), JSON.stringify({ name: "t", scripts: {} }));
+            mkdirSync(join(tmpDir, ".husky"), { recursive: true });
+            writeFileSync(join(tmpDir, ".husky", "pre-commit"), "#!/usr/bin/env sh\nkingfisher scan --staged\n");
 
-        expect(pkg.devDependencies).not.toHaveProperty("kingfisher");
-        expect(pkg.devDependencies).toHaveProperty("typescript");
-    });
+            const logger = createMockLogger();
+            const report = createMigrationReport();
 
-    it("rewrites `.husky/pre-commit` hooks that call kingfisher", () => {
-        expect.assertions(2);
+            migrateKingfisher(tmpDir, { dryRun: false }, logger, report);
 
-        writeFileSync(join(tmpDir, "package.json"), JSON.stringify({ name: "t", scripts: {} }));
-        mkdirSync(join(tmpDir, ".husky"), { recursive: true });
-        writeFileSync(join(tmpDir, ".husky", "pre-commit"), "#!/usr/bin/env sh\nkingfisher scan --staged\n");
+            const hook = readFileSync(join(tmpDir, ".husky", "pre-commit"), "utf8");
 
-        const logger = createMockLogger();
-        const report = createMigrationReport();
+            expect(hook).toContain("vis secrets --staged");
+            expect(report.gitHooksConfigured).toBe(true);
+        });
 
-        migrateKingfisher(tmpDir, { dryRun: false }, logger, report);
+        it("wires `--config` through to scripts and hooks when a custom rules file is present", () => {
+            expect.assertions(2);
 
-        const hook = readFileSync(join(tmpDir, ".husky", "pre-commit"), "utf8");
+            writeFileSync(join(tmpDir, "kingfisher-rules.yml"), "rules: []\n");
+            writeFileSync(join(tmpDir, "package.json"), JSON.stringify({ name: "t", scripts: { scan: "kingfisher scan --rules-path kingfisher-rules.yml" } }));
+            mkdirSync(join(tmpDir, ".husky"), { recursive: true });
+            writeFileSync(join(tmpDir, ".husky", "pre-commit"), "kingfisher scan --staged --rules-path kingfisher-rules.yml\n");
 
-        expect(hook).toContain("vis secrets --staged");
-        expect(report.gitHooksConfigured).toBe(true);
-    });
+            const logger = createMockLogger();
+            const report = createMigrationReport();
 
-    it("wires `--config` through to scripts and hooks when a custom rules file is present", () => {
-        expect.assertions(2);
+            migrateKingfisher(tmpDir, { dryRun: false }, logger, report);
 
-        writeFileSync(join(tmpDir, "kingfisher-rules.yml"), "rules: []\n");
-        writeFileSync(join(tmpDir, "package.json"), JSON.stringify({ name: "t", scripts: { scan: "kingfisher scan --rules-path kingfisher-rules.yml" } }));
-        mkdirSync(join(tmpDir, ".husky"), { recursive: true });
-        writeFileSync(join(tmpDir, ".husky", "pre-commit"), "kingfisher scan --staged --rules-path kingfisher-rules.yml\n");
+            const pkg = JSON.parse(readFileSync(join(tmpDir, "package.json"), "utf8")) as { scripts: Record<string, string> };
+            const hook = readFileSync(join(tmpDir, ".husky", "pre-commit"), "utf8");
 
-        const logger = createMockLogger();
-        const report = createMigrationReport();
+            expect(pkg.scripts.scan).toBe("vis secrets --config kingfisher-rules.yml");
+            expect(hook).toContain("vis secrets --staged --config kingfisher-rules.yml");
+        });
 
-        migrateKingfisher(tmpDir, { dryRun: false }, logger, report);
+        it("flags `kingfisher:ignore` marker replacement and CI-workflow review as manual steps", () => {
+            expect.assertions(2);
 
-        const pkg = JSON.parse(readFileSync(join(tmpDir, "package.json"), "utf8")) as { scripts: Record<string, string> };
-        const hook = readFileSync(join(tmpDir, ".husky", "pre-commit"), "utf8");
+            writeFileSync(join(tmpDir, "package.json"), JSON.stringify({ name: "t", scripts: { scan: "kingfisher scan" } }));
 
-        expect(pkg.scripts.scan).toBe("vis secrets --config kingfisher-rules.yml");
-        expect(hook).toContain("vis secrets --staged --config kingfisher-rules.yml");
-    });
+            const logger = createMockLogger();
+            const report = createMigrationReport();
 
-    it("flags `kingfisher:ignore` marker replacement and CI-workflow review as manual steps", () => {
-        expect.assertions(2);
+            migrateKingfisher(tmpDir, { dryRun: false }, logger, report);
 
-        writeFileSync(join(tmpDir, "package.json"), JSON.stringify({ name: "t", scripts: { scan: "kingfisher scan" } }));
+            expect(report.manualSteps.some((step) => step.toLowerCase().includes("kingfisher:ignore"))).toBe(true);
+            expect(report.manualSteps.some((step) => step.toLowerCase().includes("workflows"))).toBe(true);
+        });
 
-        const logger = createMockLogger();
-        const report = createMigrationReport();
+        it("respects dry-run mode: no file mutations + logs preview", () => {
+            expect.assertions(3);
 
-        migrateKingfisher(tmpDir, { dryRun: false }, logger, report);
+            writeFileSync(
+                join(tmpDir, "kingfisher-baseline.yaml"),
+                ["ExactFindings:", "  matches:", "    - filepath: a.ts", "      fingerprint: aaaaaaaaaaaaaaaa", "      linenum: 1", ""].join("\n"),
+            );
+            writeFileSync(join(tmpDir, "package.json"), JSON.stringify({ name: "t", scripts: { scan: "kingfisher scan" } }));
 
-        expect(report.manualSteps.some((step) => step.toLowerCase().includes("kingfisher:ignore"))).toBe(true);
-        expect(report.manualSteps.some((step) => step.toLowerCase().includes("workflows"))).toBe(true);
-    });
+            const logger = createMockLogger();
+            const report = createMigrationReport();
 
-    it("respects dry-run mode: no file mutations + logs preview", () => {
-        expect.assertions(3);
+            migrateKingfisher(tmpDir, { dryRun: true }, logger, report);
 
-        writeFileSync(
-            join(tmpDir, "kingfisher-baseline.yaml"),
-            ["ExactFindings:", "  matches:", "    - filepath: a.ts", "      fingerprint: aaaaaaaaaaaaaaaa", "      linenum: 1", ""].join("\n"),
-        );
-        writeFileSync(join(tmpDir, "package.json"), JSON.stringify({ name: "t", scripts: { scan: "kingfisher scan" } }));
-
-        const logger = createMockLogger();
-        const report = createMigrationReport();
-
-        migrateKingfisher(tmpDir, { dryRun: true }, logger, report);
-
-        expect(existsSync(join(tmpDir, ".secrets-baseline.json"))).toBe(false);
-        expect(JSON.parse(readFileSync(join(tmpDir, "package.json"), "utf8")).scripts.scan).toBe("kingfisher scan");
-        expect(logger.infoMessages.join("\n")).toContain("[dry-run]");
+            expect(existsSync(join(tmpDir, ".secrets-baseline.json"))).toBe(false);
+            expect(JSON.parse(readFileSync(join(tmpDir, "package.json"), "utf8")).scripts.scan).toBe("kingfisher scan");
+            expect(logger.infoMessages.join("\n")).toContain("[dry-run]");
+        });
     });
 });

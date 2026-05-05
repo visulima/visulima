@@ -4,6 +4,7 @@ import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 import { isAccessibleSync, readFileSync } from "@visulima/fs";
 import { basename, join, relative, resolve } from "@visulima/path";
 import { render } from "@visulima/tui";
+import { parseSync as parseEditorConfigSync } from "editorconfig";
 import isInCi from "is-in-ci";
 import React from "react";
 import zeptomatch from "zeptomatch";
@@ -15,29 +16,45 @@ import { pail } from "../../io/logger";
 import type { SortError, SortFileEntry, SortKeyDiff } from "../../tui/components/sort-package-json/SortPackageJsonStore";
 import { SortPackageJsonStore } from "../../tui/components/sort-package-json/SortPackageJsonStore";
 import VisSortPackageJsonApp from "../../tui/components/sort-package-json/VisSortPackageJsonApp";
+import type { FormatPackageJsonOptions } from "../../util/format-package-json-fields";
+import { formatPackageJsonFields } from "../../util/format-package-json-fields";
 import { errorMessage } from "../../util/utils";
 import type { SortPackageJsonOptions } from "./index";
 
 type LineEnding = "auto" | "crlf" | "lf";
 
 interface SortPackageJsonConfig {
+    editorconfig?: boolean;
     finalNewline?: boolean;
+    formatBugs?: boolean;
+    formatRepository?: boolean;
     ignore?: string[];
     indent?: string;
     lineEnding?: LineEnding;
+    sortExports?: boolean;
     sortOrder?: string[];
     sortScripts?: boolean;
     unsorted?: string[];
 }
 
 interface NormalizedConfig {
+    editorconfig: boolean;
     finalNewline: boolean;
+    formatBugs: boolean;
+    formatRepository: boolean;
     ignore: string[];
+    /** Explicit indent override (CLI/config). When undefined the per-file pipeline tries .editorconfig, then file detection. */
     indent: string | undefined;
     lineEnding: LineEnding;
+    sortExports: boolean;
     sortOrder: string[];
     sortScripts: boolean;
     unsorted: string[];
+}
+
+interface EditorConfigDefaults {
+    indent?: string;
+    lineEnding?: "crlf" | "lf";
 }
 
 const PARSE_POSITION_REGEX = /at position (\d+)/;
@@ -124,6 +141,34 @@ const splitList = (raw: string | string[] | undefined): string[] => {
 };
 
 const detectLineEnding = (contents: string): "crlf" | "lf" => (contents.includes("\r\n") ? "crlf" : "lf");
+
+const resolveEditorConfigDefaults = (filePath: string): EditorConfigDefaults => {
+    let props: Record<string, unknown>;
+
+    try {
+        props = parseEditorConfigSync(filePath);
+    } catch {
+        return {};
+    }
+
+    const defaults: EditorConfigDefaults = {};
+    const indentStyle = props["indent_style"];
+    const indentSize = props["indent_size"];
+
+    if (indentStyle === "tab") {
+        defaults.indent = "\t";
+    } else if (typeof indentSize === "number" && Number.isInteger(indentSize) && indentSize > 0) {
+        defaults.indent = " ".repeat(indentSize);
+    }
+
+    const endOfLine = props["end_of_line"];
+
+    if (endOfLine === "lf" || endOfLine === "crlf") {
+        defaults.lineEnding = endOfLine;
+    }
+
+    return defaults;
+};
 
 const ALLOWED_LINE_ENDINGS = new Set<LineEnding>(["auto", "crlf", "lf"]);
 
@@ -282,9 +327,9 @@ const computeKeyDiff = (originalJson: string, sortedJson: string): SortKeyDiff[]
     return diff;
 };
 
-const sortContents = (contents: string, config: NormalizedConfig): string => {
-    const indent = config.indent ?? detectIndent(contents);
-    const lineEnding = config.lineEnding === "auto" ? detectLineEnding(contents) : config.lineEnding;
+const sortContents = (contents: string, config: NormalizedConfig, editorDefaults: EditorConfigDefaults): string => {
+    const indent = config.indent ?? editorDefaults.indent ?? detectIndent(contents);
+    const resolvedLineEnding: "crlf" | "lf" = config.lineEnding === "auto" ? (editorDefaults.lineEnding ?? detectLineEnding(contents)) : config.lineEnding;
 
     const compact = sortPackageJsonStringWithOptions(contents, {
         pretty: false,
@@ -301,13 +346,20 @@ const sortContents = (contents: string, config: NormalizedConfig): string => {
 
     parsed = applySortOrder(parsed, config.sortOrder);
 
-    let output = JSON.stringify(parsed, null, indent);
+    const formatOptions: FormatPackageJsonOptions = {
+        formatBugs: config.formatBugs,
+        formatRepository: config.formatRepository,
+        sortExports: config.sortExports,
+    };
+    const formatted = formatPackageJsonFields(parsed, formatOptions);
+
+    let output = JSON.stringify(formatted.pkg, null, indent);
 
     if (config.finalNewline) {
         output += "\n";
     }
 
-    if (lineEnding === "crlf") {
+    if (resolvedLineEnding === "crlf") {
         output = output.replaceAll("\n", "\r\n");
     }
 
@@ -360,10 +412,12 @@ const processFile = (filePath: string, { checkMode, cwd, normalized }: ProcessFi
         return { diff: [], error: sortError, filePath, relativePath, status: "error" };
     }
 
+    const editorDefaults: EditorConfigDefaults = normalized.editorconfig ? resolveEditorConfigDefaults(filePath) : {};
+
     let sorted: string;
 
     try {
-        sorted = sortContents(contents, normalized);
+        sorted = sortContents(contents, normalized, editorDefaults);
     } catch (error: unknown) {
         const sortError: SortError = { message: errorMessage(error), step: "json-parse" };
         const context = extractParseErrorContext(error, contents);
@@ -435,11 +489,17 @@ const execute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Co
     const config = (visConfig as Record<string, unknown> | undefined)?.["sortPackageJson"] as SortPackageJsonConfig | undefined;
     const checkMode = options.check || false;
 
+    const editorconfigEnabled = options.editorconfig === false ? false : (config?.editorconfig ?? true);
+
     const normalized: NormalizedConfig = {
+        editorconfig: editorconfigEnabled,
         finalNewline: options.finalNewline ?? config?.finalNewline ?? true,
+        formatBugs: options.formatBugs === false ? false : (config?.formatBugs ?? true),
+        formatRepository: options.formatRepository === false ? false : (config?.formatRepository ?? true),
         ignore: [...splitList(options.ignore), ...(config?.ignore ?? [])],
         indent: resolveIndentOverride(options.indent ?? config?.indent),
         lineEnding: validateLineEnding(options.lineEnding ?? config?.lineEnding),
+        sortExports: options.sortExports === false ? false : (config?.sortExports ?? true),
         sortOrder: [...splitList(options.sortOrder), ...(config?.sortOrder ?? [])],
         sortScripts: options.sortScripts || config?.sortScripts || false,
         unsorted: [...splitList(options.unsorted), ...(config?.unsorted ?? [])],

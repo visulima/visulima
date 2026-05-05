@@ -55,12 +55,12 @@ describe(applyServiceRegistry, () => {
             visVersion: VIS_VERSION,
         });
 
-        expect(result.diagnostics).toEqual([]);
+        expect(result.diagnostics).toStrictEqual([]);
         expect(result.taskGraph.tasks["api:db"]).toBeUndefined();
         expect(result.taskGraph.tasks["api:test"]).toBeDefined();
-        expect(result.taskGraph.dependencies["api:test"]).toEqual([]);
-        expect(result.satisfiedServices.map((s) => s.id)).toEqual(["api:db"]);
-        expect(result.serviceEnvByTaskId.get("api:test")).toEqual({ DB_URL: "postgres://attached" });
+        expect(result.taskGraph.dependencies["api:test"]).toStrictEqual([]);
+        expect(result.satisfiedServices.map((s) => s.id)).toStrictEqual(["api:db"]);
+        expect(result.serviceEnvByTaskId.get("api:test")).toStrictEqual({ DB_URL: "postgres://attached" });
     });
 
     it("emits a diagnostic when a service dep is missing and not user-invoked", async () => {
@@ -103,7 +103,7 @@ describe(applyServiceRegistry, () => {
             visVersion: VIS_VERSION,
         });
 
-        expect(result.diagnostics).toEqual([]);
+        expect(result.diagnostics).toStrictEqual([]);
         expect(result.taskGraph.tasks["api:db"]).toBeDefined();
         expect(result.initialTasks).toHaveLength(1);
     });
@@ -169,7 +169,7 @@ describe(applyServiceRegistry, () => {
             visVersion: VIS_VERSION,
         });
 
-        expect(result.diagnostics).toEqual([]);
+        expect(result.diagnostics).toStrictEqual([]);
         expect(result.taskGraph).toBe(taskGraph);
         expect(result.serviceEnvByTaskId.size).toBe(0);
     });
@@ -232,7 +232,7 @@ describe(applyServiceRegistry, () => {
             visVersion: VIS_VERSION,
         });
 
-        expect(result.serviceEnvByTaskId.get("api:test")).toEqual({
+        expect(result.serviceEnvByTaskId.get("api:test")).toStrictEqual({
             DB_URL: "postgres://attached",
             REDIS_URL: "redis://attached",
         });
@@ -259,7 +259,7 @@ describe(applyServiceRegistry, () => {
         });
 
         // Originals untouched.
-        expect(taskGraph.dependencies["api:test"]).toEqual(["api:db"]);
+        expect(taskGraph.dependencies["api:test"]).toStrictEqual(["api:db"]);
         expect(taskGraph.tasks["api:db"]).toBeDefined();
     });
 
@@ -294,8 +294,8 @@ describe(applyServiceRegistry, () => {
             visVersion: VIS_VERSION,
         });
 
-        expect(result.serviceEnvByTaskId.get("api:middle")).toEqual({ DB_URL: "postgres://attached" });
-        expect(result.serviceEnvByTaskId.get("api:chain")).toEqual({ DB_URL: "postgres://attached" });
+        expect(result.serviceEnvByTaskId.get("api:middle")).toStrictEqual({ DB_URL: "postgres://attached" });
+        expect(result.serviceEnvByTaskId.get("api:chain")).toStrictEqual({ DB_URL: "postgres://attached" });
     });
 
     it("merges multi-service env in deterministic alphabetical order", async () => {
@@ -327,7 +327,7 @@ describe(applyServiceRegistry, () => {
         });
 
         // a then b → b wins because alphabetical sort, last-write wins.
-        expect(result.serviceEnvByTaskId.get("api:consumer")).toEqual({ DATABASE_URL: "from-b" });
+        expect(result.serviceEnvByTaskId.get("api:consumer")).toStrictEqual({ DATABASE_URL: "from-b" });
     });
 
     it("does not emit a diagnostic for a service task that is an orphan in the graph", async () => {
@@ -351,7 +351,7 @@ describe(applyServiceRegistry, () => {
             visVersion: VIS_VERSION,
         });
 
-        expect(result.diagnostics).toEqual([]);
+        expect(result.diagnostics).toStrictEqual([]);
         // Orphan stays in graph — it isn't satisfied, but it isn't a
         // problem either.
         expect(result.taskGraph.tasks["api:db"]).toBeDefined();
@@ -380,7 +380,7 @@ describe(applyServiceRegistry, () => {
         // Probe failure → distinct diagnostic from "no entry": the wrapper
         // is alive, the user just needs to restart it.
         expect(result.diagnostics[0]?.message).toMatch(/vis service restart api:db/);
-        expect(result.satisfiedServices).toEqual([]);
+        expect(result.satisfiedServices).toStrictEqual([]);
     });
 
     it("treats a probe that throws as a probe failure with the restart hint", async () => {

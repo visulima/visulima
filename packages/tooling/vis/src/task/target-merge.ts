@@ -77,6 +77,7 @@ export const mergeTargetWithInherit = (
         const result = mergeArrayWithInherit(parentValue, childValue);
 
         if (result === undefined) {
+            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- field is constrained to ARRAY_FIELDS literal tuple
             delete merged[field];
         } else {
             merged[field] = result;

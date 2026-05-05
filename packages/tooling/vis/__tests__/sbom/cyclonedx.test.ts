@@ -253,7 +253,7 @@ packages:
 
         // `app` is the focused project — it lives in metadata.component
         // only, so it must not duplicate into components[].
-        expect(names).toEqual(["utils"]);
+        expect(names).toStrictEqual(["utils"]);
         expect(bom.metadata?.component?.name).toBe("app");
     });
 
@@ -482,7 +482,7 @@ packages:
         const lodash = bom.components!.find((c) => c.name === "lodash");
 
         // The licence came from the installed copy, not from the workspace root.
-        expect(lodash?.licenses).toEqual([{ license: { id: "Apache-2.0" } }]);
+        expect(lodash?.licenses).toStrictEqual([{ license: { id: "Apache-2.0" } }]);
         expect(lodash?.description).toBe("A JavaScript utility library");
     });
 });

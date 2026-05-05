@@ -147,7 +147,7 @@ describe(flattenFindings, () => {
 
         const ids = findings.filter((f) => f.kind === "runtime").map((f) => f.id);
 
-        expect(ids).toEqual(["runtime:warn-check"]);
+        expect(ids).toStrictEqual(["runtime:warn-check"]);
     });
 
     it("respects section selection — does not emit findings for sections not in the set", () => {

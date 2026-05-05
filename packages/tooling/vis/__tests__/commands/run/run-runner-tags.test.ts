@@ -47,22 +47,13 @@ const seedWorkspace = (workspaceRoot: string): void => {
     mkdirSync(generalDir, { recursive: true });
 
     writeFileSync(join(gpuDir, "package.json"), JSON.stringify({ name: "@my/gpu" }));
-    writeFileSync(
-        join(gpuDir, "project.json"),
-        JSON.stringify({ targets: { test: { command: "echo gpu", options: { runnerTags: ["gpu"] } } } }),
-    );
+    writeFileSync(join(gpuDir, "project.json"), JSON.stringify({ targets: { test: { command: "echo gpu", options: { runnerTags: ["gpu"] } } } }));
 
     writeFileSync(join(slowDir, "package.json"), JSON.stringify({ name: "@my/slow" }));
-    writeFileSync(
-        join(slowDir, "project.json"),
-        JSON.stringify({ targets: { test: { command: "echo slow", options: { runnerTags: ["slow"] } } } }),
-    );
+    writeFileSync(join(slowDir, "project.json"), JSON.stringify({ targets: { test: { command: "echo slow", options: { runnerTags: ["slow"] } } } }));
 
     writeFileSync(join(generalDir, "package.json"), JSON.stringify({ name: "@my/general" }));
-    writeFileSync(
-        join(generalDir, "project.json"),
-        JSON.stringify({ targets: { test: { command: "echo general" } } }),
-    );
+    writeFileSync(join(generalDir, "project.json"), JSON.stringify({ targets: { test: { command: "echo general" } } }));
 };
 
 const collectInfoText = (calls: LoggerCall[]): string =>
