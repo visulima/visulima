@@ -166,8 +166,11 @@ const extractConfig = (root: string, source: string, report: MigrationReport): S
     }
 
     if ((SYNCPACK_UNSUPPORTED_CONFIG_FILES as ReadonlyArray<string>).includes(source)) {
-        addMigrationWarning(report, `${source} is a TS/JS config and cannot be auto-migrated — please convert manually.`);
-        addManualStep(report, `Translate ${source} into vis.config.ts (policy.* and security.*)`);
+        addMigrationWarning(
+            report,
+            `${source} is a TS/JS config and cannot be auto-migrated — vis migrate does not load executable config. Convert to .syncpackrc.json and re-run, or translate directly into vis.config.ts. Tracked in https://github.com/visulima/visulima/issues/622.`,
+        );
+        addManualStep(report, `Translate ${source} into vis.config.ts (policy.* and security.*) — see https://github.com/visulima/visulima/issues/622`);
 
         return undefined;
     }
@@ -861,8 +864,8 @@ const applyMigration = (
  * dependency + scripts, and routes everything we can't translate today
  * (versionGroups, semverGroups, regex filters, …) into manualSteps so
  * the reviewer sees what's still pending. TS/JS configs are out of scope
- * for v1 — they need a sandboxed loader the rest of vis-migrate doesn't
- * pull in.
+ * for v1 — vis migrate does not load executable config. Tracked in
+ * https://github.com/visulima/visulima/issues/622.
  */
 const migrateSyncpack = (
     root: string,
@@ -883,11 +886,17 @@ const migrateSyncpack = (
     const unsupported = hasUnsupportedSyncpackConfig(root);
 
     if (unsupported) {
-        addMigrationWarning(report, `Syncpack config ${unsupported} is a non-JSON/YAML format vis cannot parse — please convert manually.`);
-        addManualStep(report, `Convert ${unsupported} to .syncpackrc.json (or translate it directly into policy.customTypes.extraTypes in vis.config.ts)`);
+        addMigrationWarning(
+            report,
+            `Syncpack config ${unsupported} is a TS/JS format vis migrate cannot load — executable config support is tracked in https://github.com/visulima/visulima/issues/622. Convert to .syncpackrc.json and re-run.`,
+        );
+        addManualStep(
+            report,
+            `Convert ${unsupported} to .syncpackrc.json (or translate it directly into policy.customTypes.extraTypes in vis.config.ts) — see https://github.com/visulima/visulima/issues/622`,
+        );
 
         if (!options.silent) {
-            logger.warn(`Cannot read ${unsupported} — manual migration required.`);
+            logger.warn(`Cannot read ${unsupported} — manual migration required (https://github.com/visulima/visulima/issues/622).`);
         }
     }
 
