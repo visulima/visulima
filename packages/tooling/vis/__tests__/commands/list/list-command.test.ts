@@ -375,5 +375,85 @@ describe("vis list", () => {
             expect(text).toContain("2 dep-instance(s)");
             expect(text).not.toContain("@my/b");
         });
+
+        it("--format=ndjson emits one JSON record per dep-instance", async () => {
+            expect.assertions(3);
+
+            const { calls, logger } = makeLogger();
+
+            await listExecute({
+                argument: [],
+                logger,
+                options: { deps: true, format: "ndjson" },
+                runtime: {} as never,
+                visConfig: undefined,
+                workspaceRoot,
+            } as never);
+
+            const lines = calls.filter((c) => c[0] === "info").map((c) => c[1] as string);
+
+            expect(lines).toHaveLength(4);
+
+            const records = lines.map((line) => JSON.parse(line) as { depName: string; isInternal: boolean; specifier: string });
+
+            expect(records.find((r) => r.depName === "@my/a")?.isInternal).toBe(true);
+            expect(records.filter((r) => r.depName === "react").map((r) => r.specifier).sort()).toStrictEqual(["^17.0.0", "^18.2.0"]);
+        });
+
+        it("--format=json emits a single array; --pretty switches to indented", async () => {
+            expect.assertions(2);
+
+            const compact = makeLogger();
+
+            await listExecute({
+                argument: [],
+                logger: compact.logger,
+                options: { deps: true, format: "json" },
+                runtime: {} as never,
+                visConfig: undefined,
+                workspaceRoot,
+            } as never);
+
+            const compactText = compact.calls.find((c) => c[0] === "info")?.[1] as string;
+            const compactParsed = JSON.parse(compactText) as unknown[];
+
+            expect(compactParsed).toHaveLength(4);
+            // Compact form has no newlines between records.
+            expect(compactText.includes("\n")).toBe(false);
+        });
+
+        it("--format=ndjson outside --deps is rejected", async () => {
+            expect.assertions(1);
+
+            const { logger } = makeLogger();
+
+            await expect(
+                listExecute({
+                    argument: [],
+                    logger,
+                    options: { format: "ndjson" },
+                    runtime: {} as never,
+                    visConfig: undefined,
+                    workspaceRoot,
+                } as never),
+            ).rejects.toThrow(/--format=ndjson is only supported with --deps/);
+        });
+
+        it("rejects unknown --format values", async () => {
+            expect.assertions(1);
+
+            const { logger } = makeLogger();
+
+            await expect(
+                listExecute({
+                    argument: [],
+                    logger,
+                    options: { deps: true, format: "yaml" },
+                    runtime: {} as never,
+                    visConfig: undefined,
+                    workspaceRoot,
+                } as never),
+            ).rejects.toThrow(/--format must be one of/);
+        });
     });
 });

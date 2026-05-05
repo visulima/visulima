@@ -8,7 +8,9 @@ const list: Command = {
         ["vis list --targets --inferred", "Only show targets synthesized by Project Crystal-style inference"],
         ["vis list --deps", "Human-readable table of every dep-instance across the workspace"],
         ["vis list --deps --internal-only", "Only workspace deps in human form"],
-        ["vis list --json", "Machine-readable output"],
+        ["vis list --deps --format=ndjson", "Stream every dep-instance as NDJSON for jq pipelines"],
+        ["vis list --deps --format=json --pretty", "Single pretty-printed JSON array of dep-instances"],
+        ["vis list --json", "Machine-readable output (alias for --format=json)"],
         ["vis list --query \"tag=frontend\"", "Filter by query"],
     ],
     group: "Workspace",
@@ -23,8 +25,19 @@ const list: Command = {
         },
         {
             defaultValue: false,
-            description: "Emit JSON instead of a table",
+            description: "Emit JSON instead of a table (alias for --format=json)",
             name: "json",
+            type: Boolean,
+        },
+        {
+            description: "Output format: table (default), json (single document), or ndjson (one record per line; --deps only)",
+            name: "format",
+            type: String,
+        },
+        {
+            defaultValue: false,
+            description: "Pretty-print with 2-space indent (only meaningful with --format=json)",
+            name: "pretty",
             type: Boolean,
         },
         {
@@ -40,7 +53,7 @@ const list: Command = {
         },
         {
             defaultValue: false,
-            description: "Render a human-readable dep-instance table (use vis json deps for NDJSON)",
+            description: "Render a dep-instance view (table by default; use --format=ndjson|json for jq-friendly streams)",
             name: "deps",
             type: Boolean,
         },
@@ -84,10 +97,12 @@ export type ListOptions = CreateOptions<{
     deps: boolean | undefined;
     exclude: string[] | undefined;
     "external-only": boolean | undefined;
+    format: string | undefined;
     include: string[] | undefined;
     inferred: boolean | undefined;
     "internal-only": boolean | undefined;
     json: boolean | undefined;
+    pretty: boolean | undefined;
     query: string | undefined;
     targets: boolean | undefined;
 }>;
