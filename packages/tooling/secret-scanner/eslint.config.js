@@ -56,8 +56,6 @@ export default createConfig(
             // wrapping each in `String(...)` is pure noise.
             "@typescript-eslint/restrict-template-expressions": "off",
 
-            "antfu/if-newline": "off",
-
             // Export positions are interleaved with types/helpers for readability;
             // forcing every export to the bottom hurts our layout.
             "import/exports-last": "off",

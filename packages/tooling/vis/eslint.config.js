@@ -73,7 +73,6 @@ export default createConfig(
             "@typescript-eslint/restrict-plus-operands": "off",
             // Template expressions use dynamic values throughout CLI output
             "@typescript-eslint/restrict-template-expressions": "off",
-            "antfu/if-newline": "off",
             // class-methods-use-this
             "class-methods-use-this": "off",
             // Default case not required in CLI switch statements
