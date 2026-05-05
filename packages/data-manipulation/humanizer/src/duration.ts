@@ -309,7 +309,7 @@ const duration = (milliseconds: number, options?: DurationOptions): string => {
         throw new TypeError("Expected a number for milliseconds input");
     }
 
-    const config = {
+    const config: InternalOptions = {
         conjunction: "",
         language: durationLanguage,
         round: false,
