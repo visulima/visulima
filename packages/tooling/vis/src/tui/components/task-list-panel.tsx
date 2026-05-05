@@ -4,7 +4,7 @@ import { Box, ScrollView, Spinner, Text } from "@visulima/tui";
 import { formatMs } from "../pretty-time";
 import { getStatusInfo, isCacheStatus } from "../status-utils";
 import { DASH, ELLIPSIS } from "../symbols";
-import type { TaskRowData } from "./TaskRow";
+import type { TaskRowData } from "./task-row";
 
 // ── Column widths (matching Nx constants) ───────────────────────────────
 

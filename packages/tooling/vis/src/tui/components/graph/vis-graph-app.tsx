@@ -2,10 +2,10 @@ import type { ScrollViewRef } from "@visulima/tui";
 import { Box, Dialog, Text, useApp, useInput, useWindowSize } from "@visulima/tui";
 import React, { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 
-import QuitDialog from "../QuitDialog";
-import type { GraphFilterType, GraphStore } from "./GraphStore";
-import ProjectDetailPanel from "./ProjectDetailPanel";
-import ProjectListPanel from "./ProjectListPanel";
+import QuitDialog from "../quit-dialog";
+import type { GraphFilterType, GraphStore } from "./graph-store";
+import ProjectDetailPanel from "./project-detail-panel";
+import ProjectListPanel from "./project-list-panel";
 
 // ── Layout constants ────────────────────────────────────────────────────
 

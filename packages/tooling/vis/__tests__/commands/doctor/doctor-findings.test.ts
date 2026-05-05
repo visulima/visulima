@@ -6,7 +6,7 @@ import type { RuntimeDiagnostic } from "../../../src/runtime/runtime-diagnostics
 import type { DuplicatePackage } from "../../../src/security/dependency-scan";
 import type { DoctorFinding } from "../../../src/tui/components/doctor/findings";
 import { flattenFindings, SECTION_LABELS } from "../../../src/tui/components/doctor/findings";
-import type { OptimizeEntry } from "../../../src/tui/components/optimize/OptimizeStore";
+import type { OptimizeEntry } from "../../../src/tui/components/optimize/optimize-store";
 import type { OutdatedEntry } from "../../../src/util/catalog";
 
 const buildResults = (overrides: Partial<DoctorResults> = {}): DoctorResults => {

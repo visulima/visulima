@@ -2,13 +2,13 @@ import type { Task } from "@visulima/task-runner";
 import { useSyncExternalStore } from "react";
 
 import { formatMs } from "../pretty-time";
-import CommandSummary from "./CommandSummary";
-import type { TaskRowData } from "./TaskRow";
-import type { TaskStore } from "./TaskStore";
-import TaskTable from "./TaskTable";
+import CommandSummary from "./command-summary";
+import type { TaskRowData } from "./task-row";
+import type { TaskStore } from "./task-store";
+import TaskTable from "./task-table";
 
 // Re-export for backwards compatibility
-export { type TaskState, TaskStore } from "./TaskStore";
+export { type TaskState, TaskStore } from "./task-store";
 
 interface DynamicTaskRunnerProps {
     parallelSlots?: number;

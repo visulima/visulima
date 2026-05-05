@@ -12,9 +12,9 @@ import { sortPackageJsonStringWithOptions } from "#native";
 
 import { readPnpmWorkspacePatterns, readWorkspacePatterns, resolveWorkspacePatterns } from "../../config/workspace";
 import { pail } from "../../io/logger";
-import type { SortError, SortFileEntry, SortKeyDiff } from "../../tui/components/sort-package-json/SortPackageJsonStore";
-import { SortPackageJsonStore } from "../../tui/components/sort-package-json/SortPackageJsonStore";
-import VisSortPackageJsonApp from "../../tui/components/sort-package-json/VisSortPackageJsonApp";
+import type { SortError, SortFileEntry, SortKeyDiff } from "../../tui/components/sort-package-json/sort-package-json-store";
+import { SortPackageJsonStore } from "../../tui/components/sort-package-json/sort-package-json-store";
+import VisSortPackageJsonApp from "../../tui/components/sort-package-json/vis-sort-package-json-app";
 import type { EditorConfigDefaults } from "../../util/editorconfig";
 import { resolveEditorConfigDefaults } from "../../util/editorconfig";
 import type { FormatPackageJsonOptions } from "../../util/format-package-json-fields";

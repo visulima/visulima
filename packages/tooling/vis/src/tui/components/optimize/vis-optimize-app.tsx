@@ -2,10 +2,10 @@ import type { ScrollViewRef } from "@visulima/tui";
 import { Box, Text, useApp, useInput, useWindowSize } from "@visulima/tui";
 import React, { useCallback, useRef, useState, useSyncExternalStore } from "react";
 
-import QuitDialog from "../QuitDialog";
-import OptimizeDetailPanel from "./OptimizeDetailPanel";
-import OptimizeListPanel from "./OptimizeListPanel";
-import type { FilterType, OptimizeStore } from "./OptimizeStore";
+import QuitDialog from "../quit-dialog";
+import OptimizeDetailPanel from "./optimize-detail-panel";
+import OptimizeListPanel from "./optimize-list-panel";
+import type { FilterType, OptimizeStore } from "./optimize-store";
 
 const MIN_HORIZONTAL_WIDTH = 100;
 const MIN_VIEWPORT_HEIGHT = 10;

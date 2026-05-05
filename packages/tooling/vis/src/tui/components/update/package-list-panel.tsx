@@ -3,7 +3,7 @@ import { Box, ScrollBar, Tab, Tabs, Text } from "@visulima/tui";
 import { scoreColor } from "../../../security/socket-security";
 import type { OutdatedEntry } from "../../../util/catalog";
 import { useMeasuredHeight } from "../../use-measured-height";
-import type { FilterType } from "./UpdateStore";
+import type { FilterType } from "./update-store";
 
 // ── Helpers ─────────────────────────────────────────────────────────────
 

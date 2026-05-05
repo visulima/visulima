@@ -10,7 +10,7 @@ import {
     shouldFail,
     summarizeOptimizations,
 } from "../../../src/commands/doctor/sections";
-import type { OptimizeEntry } from "../../../src/tui/components/optimize/OptimizeStore";
+import type { OptimizeEntry } from "../../../src/tui/components/optimize/optimize-store";
 
 const opt = (category: OptimizeEntry["category"], name: string): OptimizeEntry =>
     ({

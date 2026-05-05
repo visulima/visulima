@@ -1,8 +1,8 @@
 import { Box, StaticRender, Text } from "@visulima/tui";
 
 import { ELLIPSIS } from "../symbols";
-import type { TaskRowData } from "./TaskRow";
-import TaskRow from "./TaskRow";
+import type { TaskRowData } from "./task-row";
+import TaskRow from "./task-row";
 
 interface TaskTableProps {
     parallelSlots?: number;

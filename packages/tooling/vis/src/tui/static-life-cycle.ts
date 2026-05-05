@@ -3,8 +3,8 @@ import { renderToString, Text } from "@visulima/tui";
 import React from "react";
 
 import type { VisTargetOptions } from "../task/target-options";
-import CommandSummary from "./components/CommandSummary";
-import Header from "./components/Header";
+import CommandSummary from "./components/command-summary";
+import Header from "./components/header";
 import { formatFlags, formatTargetsAndProjects } from "./formatting-utils";
 import { formatMs } from "./pretty-time";
 import { getStatusIcon, isCacheStatus, logCommandOutputCI } from "./status-utils";

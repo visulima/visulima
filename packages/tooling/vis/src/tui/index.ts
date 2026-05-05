@@ -1,5 +1,5 @@
-export type { TaskState } from "./components/TaskStore";
-export { TaskStore } from "./components/TaskStore";
+export type { TaskState } from "./components/task-store";
+export { TaskStore } from "./components/task-store";
 export { createDynamicOutputRenderer } from "./dynamic-life-cycle";
 export { formatFlags, formatTargetsAndProjects } from "./formatting-utils";
 export { formatHrtime, formatMs } from "./pretty-time";

@@ -1,6 +1,6 @@
 import { Box, ScrollBar, Text } from "@visulima/tui";
 
-import type { FilterType, SortFileEntry, SortFileStatus } from "./SortPackageJsonStore";
+import type { FilterType, SortFileEntry, SortFileStatus } from "./sort-package-json-store";
 
 const STATUS_COLORS: Record<SortFileStatus, string> = {
     error: "red",

@@ -3,8 +3,8 @@ import React from "react";
 
 import type { SectionId } from "../../../commands/doctor/sections";
 import { useMeasuredHeight } from "../../use-measured-height";
-import type { FilterType, SectionStatus } from "./DoctorStore";
-import { FILTER_TABS } from "./DoctorStore";
+import type { FilterType, SectionStatus } from "./doctor-store";
+import { FILTER_TABS } from "./doctor-store";
 import type { DoctorFinding, FindingSeverity } from "./findings";
 import { SECTION_LABELS } from "./findings";
 

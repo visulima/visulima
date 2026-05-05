@@ -2,7 +2,7 @@ import type { DoctorResults, SectionId } from "../../../commands/doctor/sections
 import type { RuntimeDiagnostic } from "../../../runtime/runtime-diagnostics";
 import type { DuplicatePackage } from "../../../security/dependency-scan";
 import type { OutdatedEntry } from "../../../util/catalog";
-import type { OptimizeEntry } from "../optimize/OptimizeStore";
+import type { OptimizeEntry } from "../optimize/optimize-store";
 
 /**
  * Severity drives the color/icon used in the list pane and the

@@ -17,9 +17,9 @@ import { pail } from "../../io/logger";
 import type { OverrideEntry, PmInfo } from "../../pm/overrides";
 import { applyOverrides, lockfileContainsPackage, readLockfileText } from "../../pm/overrides";
 import { detectPm, runInstall } from "../../pm/pm-runner";
-import type { OptimizeEntry } from "../../tui/components/optimize/OptimizeStore";
-import { OptimizeStore } from "../../tui/components/optimize/OptimizeStore";
-import VisOptimizeApp from "../../tui/components/optimize/VisOptimizeApp";
+import type { OptimizeEntry } from "../../tui/components/optimize/optimize-store";
+import { OptimizeStore } from "../../tui/components/optimize/optimize-store";
+import VisOptimizeApp from "../../tui/components/optimize/vis-optimize-app";
 import type { OptimizeOptions } from "./index";
 
 // ── Types ───────────────────────────────────────────────────────────

@@ -1,7 +1,7 @@
 import { Box, ScrollBar, Text } from "@visulima/tui";
 import React from "react";
 
-import type { GraphFilterType, GraphNode } from "./GraphStore";
+import type { GraphFilterType, GraphNode } from "./graph-store";
 
 // ── Filter bar labels ───────────────────────────────────────────────────
 

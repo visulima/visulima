@@ -22,11 +22,11 @@ import type { InstalledPackage } from "../../security/dependency-scan";
 import { findDuplicateDependencies, lockedPackages } from "../../security/dependency-scan";
 import type { PackageReportData } from "../../security/socket-security";
 import { buildSocketOptions, DEFAULT_LOW_SCORE_THRESHOLD, fetchSocketReports } from "../../security/socket-security";
-import { DoctorStore } from "../../tui/components/doctor/DoctorStore";
+import { DoctorStore } from "../../tui/components/doctor/doctor-store";
 import type { DoctorFinding } from "../../tui/components/doctor/findings";
 import { flattenFindings } from "../../tui/components/doctor/findings";
-import type { DoctorBannerInput } from "../../tui/components/doctor/VisDoctorApp";
-import VisDoctorApp from "../../tui/components/doctor/VisDoctorApp";
+import type { DoctorBannerInput } from "../../tui/components/doctor/vis-doctor-app";
+import VisDoctorApp from "../../tui/components/doctor/vis-doctor-app";
 import type { CatalogCheckOptions } from "../../util/catalog";
 import { checkOutdated, fetchVulnerabilities, loadNpmrc, readCatalogs } from "../../util/catalog";
 import {

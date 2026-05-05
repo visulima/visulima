@@ -3,10 +3,10 @@ import { Box, Dialog, Text, useApp, useInput, useWindowSize } from "@visulima/tu
 import React, { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 
 import type { OutdatedEntry } from "../../../util/catalog";
-import QuitDialog from "../QuitDialog";
-import PackageDetailPanel from "./PackageDetailPanel";
-import PackageListPanel from "./PackageListPanel";
-import type { FilterType, UpdateStore } from "./UpdateStore";
+import QuitDialog from "../quit-dialog";
+import PackageDetailPanel from "./package-detail-panel";
+import PackageListPanel from "./package-list-panel";
+import type { FilterType, UpdateStore } from "./update-store";
 
 // ── Layout constants ────────────────────────────────────────────────────
 

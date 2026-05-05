@@ -3,9 +3,9 @@ import type { Instance } from "@visulima/tui";
 import { render, renderToString, Text } from "@visulima/tui";
 import React from "react";
 
-import CommandSummary from "./components/CommandSummary";
-import { TaskStore } from "./components/TaskStore";
-import VisTaskRunnerApp from "./components/VisTaskRunnerApp";
+import CommandSummary from "./components/command-summary";
+import { TaskStore } from "./components/task-store";
+import VisTaskRunnerApp from "./components/vis-task-runner-app";
 import { formatMs } from "./pretty-time";
 import type { OutputStyle } from "./static-life-cycle";
 import { getStatusInfo } from "./status-utils";

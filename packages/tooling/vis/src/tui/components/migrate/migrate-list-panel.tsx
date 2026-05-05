@@ -1,7 +1,7 @@
 import { Box, ScrollBar, Text } from "@visulima/tui";
 import React from "react";
 
-import type { MigrateItem } from "./MigrateStore";
+import type { MigrateItem } from "./migrate-store";
 
 interface MigrationRowProps {
     checked: boolean;

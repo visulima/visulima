@@ -2,9 +2,9 @@ import type { ScrollViewRef } from "@visulima/tui";
 import { Box, Text, useApp, useInput, useWindowSize } from "@visulima/tui";
 import React, { useCallback, useRef, useSyncExternalStore } from "react";
 
-import SortDetailPanel from "./SortDetailPanel";
-import SortListPanel, { computeGroupCounts } from "./SortListPanel";
-import type { FilterType, SortPackageJsonStore } from "./SortPackageJsonStore";
+import SortDetailPanel from "./sort-detail-panel";
+import SortListPanel, { computeGroupCounts } from "./sort-list-panel";
+import type { FilterType, SortPackageJsonStore } from "./sort-package-json-store";
 
 const MIN_HORIZONTAL_WIDTH = 100;
 const MIN_VIEWPORT_HEIGHT = 10;

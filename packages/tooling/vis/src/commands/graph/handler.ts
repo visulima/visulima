@@ -9,8 +9,8 @@ import isInCi from "is-in-ci";
 import React from "react";
 
 import { buildProjectGraph, discoverWorkspace } from "../../config/workspace";
-import { GraphStore } from "../../tui/components/graph/GraphStore";
-import VisGraphApp from "../../tui/components/graph/VisGraphApp";
+import { GraphStore } from "../../tui/components/graph/graph-store";
+import VisGraphApp from "../../tui/components/graph/vis-graph-app";
 import type { GraphOptions } from "./index";
 
 // ── ASCII Graph Renderer ────────────────────────────────────────────

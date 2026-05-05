@@ -7,10 +7,10 @@ import { formatTargetsAndProjects } from "../formatting-utils";
 import { formatMs } from "../pretty-time";
 import { isCacheStatus } from "../status-utils";
 import type { StdinEntry } from "../types";
-import OutputPanel from "./OutputPanel";
-import QuitDialog from "./QuitDialog";
-import TaskListPanel from "./TaskListPanel";
-import type { TaskStore } from "./TaskStore";
+import OutputPanel from "./output-panel";
+import QuitDialog from "./quit-dialog";
+import TaskListPanel from "./task-list-panel";
+import type { TaskStore } from "./task-store";
 
 // ── Layout constants ───────────────────────────────────────────────────
 

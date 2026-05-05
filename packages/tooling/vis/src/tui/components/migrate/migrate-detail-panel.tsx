@@ -2,7 +2,7 @@ import type { ScrollViewRef } from "@visulima/tui";
 import { Box, ScrollView, Text } from "@visulima/tui";
 import React from "react";
 
-import type { MigrateItem } from "./MigrateStore";
+import type { MigrateItem } from "./migrate-store";
 
 interface MigrateDetailPanelProps {
     focused: boolean;

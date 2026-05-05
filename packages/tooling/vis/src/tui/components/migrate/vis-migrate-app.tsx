@@ -2,10 +2,10 @@ import type { ScrollViewRef } from "@visulima/tui";
 import { Box, Dialog, Text, useApp, useInput, useWindowSize } from "@visulima/tui";
 import React, { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 
-import QuitDialog from "../QuitDialog";
-import MigrateDetailPanel from "./MigrateDetailPanel";
-import MigrateListPanel from "./MigrateListPanel";
-import type { MigrateStore } from "./MigrateStore";
+import QuitDialog from "../quit-dialog";
+import MigrateDetailPanel from "./migrate-detail-panel";
+import MigrateListPanel from "./migrate-list-panel";
+import type { MigrateStore } from "./migrate-store";
 
 const MIN_HORIZONTAL_WIDTH = 100;
 const MIN_VIEWPORT_WIDTH = 40;

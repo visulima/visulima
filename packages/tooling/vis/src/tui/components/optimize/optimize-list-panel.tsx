@@ -1,7 +1,7 @@
 import { Box, ScrollBar, Text } from "@visulima/tui";
 
 import { CATEGORY_COLORS, CATEGORY_LABELS } from "./constants";
-import type { FilterType, OptimizeEntry } from "./OptimizeStore";
+import type { FilterType, OptimizeEntry } from "./optimize-store";
 
 const FILTER_LABELS: { key: FilterType; label: string; shortcut: string }[] = [
     { key: "all", label: "All", shortcut: "1" },
