@@ -18,7 +18,15 @@ const stringify = (value: unknown): string => {
         return "";
     }
 
-    return typeof value === "string" ? value : String(value);
+    if (typeof value === "string") {
+        return value;
+    }
+
+    if (typeof value === "number" || typeof value === "boolean" || typeof value === "bigint") {
+        return String(value);
+    }
+
+    return JSON.stringify(value);
 };
 
 /**
@@ -38,7 +46,7 @@ export const FILTERS: Record<string, FilterFn> = {
      * an additional path segment. Matches moon's `value | path_join("subdir")`.
      */
     path_join: (value, ...args) => {
-        const segments = [stringify(value), ...args.map(stringify)];
+        const segments = [stringify(value), ...args.map((argument) => stringify(argument))];
 
         return join(...segments);
     },

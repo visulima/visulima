@@ -33,7 +33,7 @@ export const readDevcontainerJson = (workspaceRoot: string): ReadResult | null =
     } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
 
-        throw new Error(`Failed to parse ${filePath}: ${message}`);
+        throw new Error(`Failed to parse ${filePath}: ${message}`, { cause: error });
     }
 
     return { config, hadComments };

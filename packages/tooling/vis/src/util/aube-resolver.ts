@@ -1,7 +1,7 @@
 /**
  * TypeScript-side resolvers for the `aube` package manager.
  *
- * Aube is a standalone Rust CLI distributed via `npm i -g @endevco/aube`,
+ * Aube is a standalone Rust CLI distributed via `npm i -g` `@endevco/aube`,
  * `mise`, or `brew`. Unlike pnpm/npm/yarn/bun (whose flag mappings live in
  * the NAPI binding), aube is resolved here in TS so the Rust addon does
  * not need to know about it. Once aube support lands in the native

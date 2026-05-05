@@ -181,7 +181,7 @@ const runSocketPreCheck = async (
     minimumScore: number,
     acceptedRisks: Record<string, AcceptedRisk> | undefined,
 ): Promise<boolean> => {
-    const parsed = packages.map(parsePackageArgument);
+    const parsed = packages.map((argument) => parsePackageArgument(argument));
 
     // Coerce version specs to concrete semver (handles "^1.2.3", "19", "latest" etc.)
     const coercedSpecs = new Map<string, string>();

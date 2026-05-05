@@ -70,7 +70,7 @@ const resolveFromCatalogs = (name: string, catalogs: Map<string, Map<string, str
     return {
         candidates: [...matchedCatalogs],
         conflict: true,
-        source: `${labelForCatalog(preferred)} (also in: ${others.map(labelForCatalog).join(", ")})`,
+        source: `${labelForCatalog(preferred)} (also in: ${others.map((c) => labelForCatalog(c)).join(", ")})`,
         spec: buildCatalogRef(preferred),
     };
 };

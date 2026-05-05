@@ -376,7 +376,9 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
 
                         break;
                     }
-                    // No default
+                    default: {
+                        break;
+                    }
                 }
 
                 return;
@@ -637,7 +639,9 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
 
                         break;
                     }
-                    // No default
+                    default: {
+                        break;
+                    }
                 }
 
                 return;
@@ -679,7 +683,9 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
 
                         break;
                     }
-                    // No default
+                    default: {
+                        break;
+                    }
                 }
 
                 return;
@@ -784,7 +790,9 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
 
                         break;
                     }
-                    // No default
+                    default: {
+                        break;
+                    }
                 }
             }
         },

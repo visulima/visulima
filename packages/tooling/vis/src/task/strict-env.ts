@@ -19,7 +19,7 @@
  *   even when `VAR` is unset — the shell would expand the default.
  */
 
-const PLACEHOLDER_REGEX = /\$(\{([A-Z_]\w*)(:-[^}]*)?\}|([A-Z_]\w*))/gi;
+const PLACEHOLDER_REGEX = /\$(?:\{([A-Z_]\w*)(:-[^}]*)?\}|([A-Z_]\w*))/gi;
 
 const POSIX_SPECIALS = new Set(["0", "!", "#", "$", "*", "-", "?", "@", "_"]);
 
@@ -32,9 +32,9 @@ export const extractEnvReferences = (command: string): { hasDefault: boolean; na
     const found = new Map<string, boolean>();
 
     for (const match of command.matchAll(PLACEHOLDER_REGEX)) {
-        const braced = match[2];
-        const bareName = match[4];
-        const defaultClause = match[3];
+        const braced = match[1];
+        const bareName = match[3];
+        const defaultClause = match[2];
         const name = braced ?? bareName;
 
         if (name === undefined) {

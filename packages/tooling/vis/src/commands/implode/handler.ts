@@ -94,7 +94,7 @@ const execute = async ({ logger, options }: Toolbox<Console, ImplodeOptions>): P
         rmSync(VIS_HOME, { force: true, recursive: true });
         logger.info(`\n✓ Removed ${VIS_HOME}`);
     } catch (error: unknown) {
-        throw new Error(`Failed to remove ${VIS_HOME}: ${error instanceof Error ? error.message : String(error)}`);
+        throw new Error(`Failed to remove ${VIS_HOME}: ${error instanceof Error ? error.message : String(error)}`, { cause: error });
     }
 
     logger.info("✓ vis has been uninstalled.");

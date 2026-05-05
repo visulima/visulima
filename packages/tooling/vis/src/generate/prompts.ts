@@ -50,10 +50,10 @@ const selectOne = async (rl: RL, question: string, choices: string[], defaultVal
             return defaultValue;
         }
 
-        const number_ = Number.parseInt(answer, 10);
+        const picked = Number.parseInt(answer, 10);
 
-        if (Number.isInteger(number_) && number_ >= 1 && number_ <= choices.length) {
-            return choices[number_ - 1]!;
+        if (Number.isInteger(picked) && picked >= 1 && picked <= choices.length) {
+            return choices[picked - 1]!;
         }
 
         const match = choices.find((c) => c === answer);

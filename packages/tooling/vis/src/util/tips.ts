@@ -179,11 +179,11 @@ const tips: Tip[] = [
  * Show a contextual tip if rate-limits allow and a tip matches.
  *
  * Flow:
- * 1. Check environment (skip in CI/test)
- * 2. Check global cooldown (max 1 tip per 5 minutes)
- * 3. Find matching tips, filter by per-tip cooldowns
- * 4. Apply probability filter
- * 5. Show the first surviving tip, update state
+ * 1. Check environment (skip in CI/test).
+ * 2. Check global cooldown (max 1 tip per 5 minutes).
+ * 3. Find matching tips, filter by per-tip cooldowns.
+ * 4. Apply probability filter.
+ * 5. Show the first surviving tip, update state.
  */
 const showTip = (context: TipContext): void => {
     // Skip in test/CI environments
@@ -219,6 +219,7 @@ const showTip = (context: TipContext): void => {
     const selected = candidates.find((tip) => {
         const probability = tip.probability ?? 1;
 
+        // eslint-disable-next-line sonarjs/pseudo-random -- tip-of-the-day display: not security-sensitive
         return Math.random() < probability;
     });
 

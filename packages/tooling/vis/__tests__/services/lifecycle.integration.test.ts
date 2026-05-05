@@ -37,8 +37,6 @@ const findFreePort = async (): Promise<number> =>
         });
     });
 
-const VIS_VERSION = "0.0.0-integration";
-
 const buildTask = (id: string, options?: VisTargetOptions): Task => {
     return {
         cache: false,

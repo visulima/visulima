@@ -107,6 +107,7 @@ const runScript = (script: Script, cwd: string, silent: boolean = false): boolea
             pail.info(`$ ${command}`);
         }
 
+        // eslint-disable-next-line sonarjs/os-command -- script comes from the user's own template manifest; running it through the shell is the documented contract
         const result = spawnSync(command, {
             cwd,
             shell: true,

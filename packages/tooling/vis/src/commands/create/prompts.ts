@@ -17,9 +17,9 @@ import { isEmptyDir, isValidPackageName, toValidPackageName } from "./utils";
 type RL = ReturnType<typeof createInterface>;
 
 const ask = (rl: RL, question: string): Promise<string> =>
-    new Promise((resolveAnswer) => {
+    new Promise((_resolve) => {
         rl.question(question, (answer) => {
-            resolveAnswer(answer.trim());
+            _resolve(answer.trim());
         });
     });
 
@@ -38,18 +38,18 @@ const select = async (rl: RL, question: string, choices: { hint?: string; label:
     process.stderr.write(`  ${question}\n`);
 
     for (const [index, choice] of choices.entries()) {
-        const number_ = bold(cyan(`  ${String(index + 1)}.`));
+        const prefix = bold(cyan(`  ${String(index + 1)}.`));
         const hint = choice.hint ? dim(` — ${choice.hint}`) : "";
 
-        process.stderr.write(`${number_} ${choice.label}${hint}\n`);
+        process.stderr.write(`${prefix} ${choice.label}${hint}\n`);
     }
 
     while (true) {
         const answer = await ask(rl, `\n  ${dim(`Enter choice (1-${String(choices.length)}):`)} `);
-        const number_ = Number.parseInt(answer, 10);
+        const picked = Number.parseInt(answer, 10);
 
-        if (number_ >= 1 && number_ <= choices.length) {
-            return (choices[number_ - 1] as { value: string }).value;
+        if (picked >= 1 && picked <= choices.length) {
+            return (choices[picked - 1] as { value: string }).value;
         }
 
         // Also accept typing the value directly
@@ -65,12 +65,14 @@ const select = async (rl: RL, question: string, choices: { hint?: string; label:
 
 // ── High-level prompt flows ───────────────────────────────────────
 
+export type PackageManager = "bun" | "npm" | "pnpm" | "yarn";
+
 export interface PromptResult {
-    editor?: "vscode" | undefined;
+    editor?: "vscode";
     gitInit: boolean;
     /** Whether the user confirmed overwriting an existing non-empty directory. */
     overwrite: boolean;
-    pm?: "bun" | "npm" | "pnpm" | "yarn" | undefined;
+    pm?: PackageManager;
     projectName: string;
     targetDir: string;
     template: string;
@@ -78,6 +80,7 @@ export interface PromptResult {
 
 /**
  * Run the full interactive prompt flow and return the collected answers.
+ * @param options Prompt options.
  * @param options.cwd Working directory for resolving paths.
  * @param options.defaultPm Pre-selected package manager (skips PM prompt when set).
  * @param options.defaultGitInit Default for the git-init prompt (from vis.config.ts).

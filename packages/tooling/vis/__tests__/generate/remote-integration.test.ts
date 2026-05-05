@@ -4,7 +4,7 @@
  * Gated behind `VITEST_INTEGRATION=1` because it hits the network
  * (GitHub). Normal `pnpm test` skips it. Run it locally with:
  *
- *     VITEST_INTEGRATION=1 pnpm --filter @visulima/vis test __tests__/generate/remote-integration.test.ts
+ *     VITEST_INTEGRATION=1 pnpm --filter `@visulima/vis` test __tests__/generate/remote-integration.test.ts
  *
  * Source points at the `moon-component` fixture we already ship inside
  * this very package — it's a self-hosted, deterministic template that

@@ -1,4 +1,4 @@
-import { execSync } from "node:child_process";
+import { execFileSync, execSync } from "node:child_process";
 // `mkdtempSync` has no `@visulima/fs` equivalent (it's a node-specific API);
 // writes and removals go through @visulima/fs.
 import { mkdtempSync } from "node:fs";
@@ -47,7 +47,7 @@ const createTemporaryGitRepo = (): { cleanup: () => void; commit: (message: stri
     const commit = (message: string): string => {
         writeFileSync(join(root, `f-${fileSeq++}`), "x");
         execSync("git add -A", { cwd: root });
-        execSync(`git commit -q -m ${JSON.stringify(message)}`, { cwd: root });
+        execFileSync("git", ["commit", "-q", "-m", message], { cwd: root });
 
         return execSync("git rev-parse HEAD", { cwd: root }).toString().trim();
     };

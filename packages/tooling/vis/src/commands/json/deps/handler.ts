@@ -1,7 +1,6 @@
 import type { Toolbox } from "@visulima/cerebro";
 import { relative } from "@visulima/path";
 
-import { pail } from "../../../io/logger";
 import { filterDepInstances } from "../../../util/json-deps-filter";
 import type { DepInstance, DepType } from "../../../util/workspace-deps";
 import { iterateWorkspaceDeps } from "../../../util/workspace-deps";
@@ -42,8 +41,7 @@ const parseDepTypes = (raw: string[] | undefined): DepType[] | undefined => {
     }
 
     if (invalid.length > 0) {
-        pail.error(`Unknown --dep-type value(s): ${invalid.join(", ")}. Valid: ${[...KNOWN_DEP_TYPES].join(", ")}`);
-        process.exit(2);
+        throw new Error(`Unknown --dep-type value(s): ${invalid.join(", ")}. Valid: ${[...KNOWN_DEP_TYPES].join(", ")}`);
     }
 
     return parsed.length > 0 ? parsed : undefined;
@@ -66,13 +64,11 @@ export const jsonDepsExecute = async ({ options, workspaceRoot: wsRoot }: Toolbo
     const format = (options.format ?? "ndjson").toLowerCase();
 
     if (format !== "ndjson" && format !== "json") {
-        pail.error(`--format must be one of: ndjson, json (got "${String(options.format)}")`);
-        process.exit(2);
+        throw new Error(`--format must be one of: ndjson, json (got "${String(options.format)}")`);
     }
 
     if (options.internalOnly && options.externalOnly) {
-        pail.error("--internal-only and --external-only are mutually exclusive");
-        process.exit(2);
+        throw new Error("--internal-only and --external-only are mutually exclusive");
     }
 
     const depTypes = parseDepTypes(options.depType);

@@ -17,7 +17,7 @@ vi.mock(import("node:readline"), async (importOriginal) => {
         ...original,
         createInterface: (...args: unknown[]) => {
             if (mockCreateInterface) {
-                return mockCreateInterface(...args);
+                return mockCreateInterface(...args) as ReturnType<typeof original.createInterface>;
             }
 
             return original.createInterface(...(args as Parameters<typeof original.createInterface>));

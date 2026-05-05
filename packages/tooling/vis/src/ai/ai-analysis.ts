@@ -94,11 +94,12 @@ const buildPackageList = (outdated: OutdatedEntry[]): string =>
                 const parts = [`score:${String(score)}%`];
 
                 if (entry.socketReport.alerts.length > 0) {
-                    const alertsByLevel = entry.socketReport.alerts.reduce<Record<string, number>>((accumulator, a) => {
-                        accumulator[a.severity] = (accumulator[a.severity] ?? 0) + 1;
+                    const alertsByLevel: Record<string, number> = {};
 
-                        return accumulator;
-                    }, {});
+                    for (const a of entry.socketReport.alerts) {
+                        alertsByLevel[a.severity] = (alertsByLevel[a.severity] ?? 0) + 1;
+                    }
+
                     const alertSummary = Object.entries(alertsByLevel)
                         .map(([s, c]) => `${String(c)} ${s}`)
                         .join(", ");

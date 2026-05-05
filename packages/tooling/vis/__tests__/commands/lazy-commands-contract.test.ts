@@ -104,8 +104,8 @@ describe("vis lazy command contract", () => {
     it.each(ALL_COMMANDS.map((c) => [c.name, c]))("%s loader resolves to a default-exported function", async (_name, command) => {
         expect.assertions(1);
 
-        const module_ = await command.loader!();
+        const loaded = await command.loader!();
 
-        expect(module_.default).toBeTypeOf("function");
+        expect(loaded.default).toBeTypeOf("function");
     });
 });

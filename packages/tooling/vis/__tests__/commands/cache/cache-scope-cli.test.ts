@@ -239,7 +239,7 @@ describe("cache --scope CLI dispatch", () => {
 
             // Two list payloads are emitted (one per directory) — concatenate
             // and pick them apart by braces.
-            const written = stdoutSpy.mock.calls.map((call) => String(call[0])).join("");
+            const written = (stdoutSpy.mock.calls as unknown[][]).map((call) => String(call[0])).join("");
             const payloads = splitJsonObjects(written);
 
             expect(payloads.map((p) => p.directory)).toStrictEqual([sharedCache, linkedCache]);
@@ -277,7 +277,7 @@ describe("cache --scope CLI dispatch", () => {
             workspaceRoot: main,
         } as never);
 
-        const written = stdoutSpy.mock.calls.map((call) => String(call[0])).join("");
+        const written = (stdoutSpy.mock.calls as unknown[][]).map((call) => String(call[0])).join("");
         const payload = JSON.parse(written) as { task: { directory: string }[] };
 
         // Primary checkout: shared and worktree resolve to the same directory,

@@ -51,7 +51,9 @@ type CompiledValidator = ((data: unknown) => boolean) & {
  * stderr.
  */
 const ajvLogger = {
+    // eslint-disable-next-line no-console -- ajv requires a `console`-shaped logger; this helper only loads in tests so stderr/stdout output is acceptable
     error: console.error.bind(console),
+    // eslint-disable-next-line no-console -- ajv requires a `console`-shaped logger; this helper only loads in tests so stderr/stdout output is acceptable
     log: console.log.bind(console),
     warn: () => {
         /* silenced: ajv-formats does not implement iri-reference / idn-email */

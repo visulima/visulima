@@ -34,6 +34,7 @@ describe("vis task-why", () => {
     let workspaceRoot: string;
 
     beforeEach(async () => {
+        // eslint-disable-next-line sonarjs/pseudo-random -- temp-dir suffix in tests, not security-sensitive
         workspaceRoot = join(tmpdir(), `vis-taskwhy-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
 
         await mkdir(workspaceRoot, { recursive: true });

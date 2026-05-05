@@ -130,7 +130,7 @@ const getCacheStats = (): CacheStats => {
 
 const buildHashCacheKey = (payload: unknown): string => xxh3Hash(Buffer.from(JSON.stringify(payload)));
 
-const getCachedJson = <T>(cacheKey: string): T | undefined => {
+const getCachedJson = (cacheKey: string): unknown => {
     const filePath = join(getCacheDirectory(), `${cacheKey}.json`);
 
     if (!isAccessibleSync(filePath)) {
@@ -138,7 +138,7 @@ const getCachedJson = <T>(cacheKey: string): T | undefined => {
     }
 
     try {
-        const entry = readJsonSync(filePath) as unknown as CacheEntry<T>;
+        const entry = readJsonSync(filePath) as unknown as CacheEntry<unknown>;
 
         if (Date.now() - entry.createdAt > entry.ttlMs) {
             rmSync(filePath, { force: true });
@@ -154,11 +154,11 @@ const getCachedJson = <T>(cacheKey: string): T | undefined => {
     }
 };
 
-const setCachedJson = <T>(cacheKey: string, result: T, ttlMs: number): void => {
+const setCachedJson = (cacheKey: string, result: unknown, ttlMs: number): void => {
     ensureCacheDirectory();
 
     const cacheDirectory = getCacheDirectory();
-    const entry: CacheEntry<T> = {
+    const entry: CacheEntry<unknown> = {
         createdAt: Date.now(),
         result,
         ttlMs,

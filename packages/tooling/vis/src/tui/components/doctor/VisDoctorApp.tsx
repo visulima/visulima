@@ -214,7 +214,7 @@ const VisDoctorApp = ({ autoExitSeconds = 0, banner, fromCache = false, startedA
             for (const [, items] of state.grouped) {
                 row += 2;
 
-                for (const _ of items) {
+                for (let i = 0; i < items.length; i++) {
                     if (count === index) {
                         return row;
                     }

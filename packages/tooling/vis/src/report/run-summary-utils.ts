@@ -66,7 +66,7 @@ export const readRunSummaryById = async (workspaceRoot: string, runId: string): 
  * Returns the previous run summary — the second-most-recent file in
  * `.task-runner/runs/`. Excludes the currently-loaded summary by `id`
  * so callers passing a specific run via `--run` get *that run's*
- * prior, not just "the one before now."
+ * prior, not just "the one before now".
  */
 export const readPreviousRunSummary = async (workspaceRoot: string, currentId: string | undefined): Promise<RunSummary | undefined> => {
     const runsDirectory = join(workspaceRoot, ".task-runner", "runs");

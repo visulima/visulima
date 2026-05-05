@@ -131,7 +131,9 @@ export const buildRunOptions = (raw: Record<string, unknown>, stagedConfig: Stag
             options.concurrent = parseConcurrent(envValue.trim());
         }
     } else {
-        options.concurrent = parseConcurrent(String(raw["concurrent"]));
+        const { concurrent } = raw;
+
+        options.concurrent = parseConcurrent(typeof concurrent === "string" ? concurrent : typeof concurrent === "number" || typeof concurrent === "boolean" ? String(concurrent) : "");
     }
 
     return options;

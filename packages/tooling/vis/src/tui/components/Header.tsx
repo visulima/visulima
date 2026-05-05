@@ -16,7 +16,7 @@ const variantColors: Record<HeaderProps["variant"], string> = {
 /**
  * Renders the VIS badge + status dot + title header line.
  *
- *   ` VIS `  ●  Running targets build for 3 projects
+ * Example output: ` VIS `  ●  Running targets build for 3 projects.
  */
 const Header = ({ children, title, variant }: HeaderProps): React.JSX.Element => {
     const color = variantColors[variant];

@@ -425,6 +425,9 @@ const enforceScriptSecurity = (pm: PackageManagerName, workspaceRoot: string, co
 
             break;
         }
+        default: {
+            break;
+        }
     }
 
     return result;
@@ -561,6 +564,9 @@ const syncAllowBuildsToNativeConfig = (pm: PackageManagerName, workspaceRoot: st
 
             break;
         }
+        default: {
+            break;
+        }
     }
 
     return actions;
@@ -650,7 +656,10 @@ const runApprovedScripts = (workspaceRoot: string, patterns: string[]): void => 
                     pail.info(`Running ${hook} for ${pkg}...`);
 
                     try {
-                        execSync(scripts[hook], { cwd: pkgDir, env: { ...process.env }, stdio: "inherit" });
+                        const hookScript = scripts[hook];
+
+                        // eslint-disable-next-line sonarjs/os-command -- install hook scripts are arbitrary shell strings authored by the package; the security policy already gates whether we run them
+                        execSync(hookScript, { cwd: pkgDir, env: { ...process.env }, stdio: "inherit" });
                     } catch {
                         pail.error(`${hook} script failed for ${pkg}`);
                         hadFailure = true;

@@ -253,13 +253,8 @@ const formatDecisionLine = (decision: IgnoreDecision): string => {
  * Maps a decision to its process exit code, honoring
  * `--exit-zero-on-build` for users who want normal exit semantics.
  *
- *   Default:
- *     skip  → 0 (platform cancels)
- *     build → 1 (platform continues)
- *
- *   With --exit-zero-on-build:
- *     skip  → 0
- *     build → 0
+ * Default: skip → 0 (platform cancels); build → 1 (platform continues).
+ * With `--exit-zero-on-build`: skip → 0; build → 0.
  * @param decision The decision to map.
  * @param exitZeroOnBuild If `true`, builds exit with `0` instead of `1`.
  * @returns The literal exit code (`0` or `1`).

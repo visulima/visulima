@@ -45,7 +45,7 @@ describe("tui/SummaryLifeCycle", () => {
         lc.endTasks([createResult(task, "success")]);
         lc.endCommand();
 
-        const allOutput = writeSpy.mock.calls.map((c) => strip(String(c[0]))).join("");
+        const allOutput = (writeSpy.mock.calls as unknown[][]).map((c) => strip(String(c[0]))).join("");
 
         expect(allOutput).toContain("Task Summary");
         expect(allOutput).toContain("app-a:build");
@@ -61,7 +61,7 @@ describe("tui/SummaryLifeCycle", () => {
         lc.endTasks([createResult(task, "local-cache")]);
         lc.endCommand();
 
-        const allOutput = writeSpy.mock.calls.map((c) => strip(String(c[0]))).join("");
+        const allOutput = (writeSpy.mock.calls as unknown[][]).map((c) => strip(String(c[0]))).join("");
 
         expect(allOutput).toContain("[cache]");
     });
@@ -78,7 +78,7 @@ describe("tui/SummaryLifeCycle", () => {
         lc.endTasks([createResult(taskA, "success"), createResult(taskB, "failure"), createResult(taskC, "local-cache")]);
         lc.endCommand();
 
-        const allOutput = writeSpy.mock.calls.map((c) => strip(String(c[0]))).join("");
+        const allOutput = (writeSpy.mock.calls as unknown[][]).map((c) => strip(String(c[0]))).join("");
 
         // Failure should appear before success and cache
         const failureIndex = allOutput.indexOf("app-b:build");
@@ -112,7 +112,7 @@ describe("tui/SummaryLifeCycle", () => {
         lc.endCommand();
 
         // The summary itself only shows task IDs and status, not output
-        const allOutput = writeSpy.mock.calls.map((c) => strip(String(c[0]))).join("");
+        const allOutput = (writeSpy.mock.calls as unknown[][]).map((c) => strip(String(c[0]))).join("");
 
         expect(allOutput).toContain("app-a:build");
     });
@@ -128,7 +128,7 @@ describe("tui/SummaryLifeCycle", () => {
         lc.endTasks([createResult(task, "success")]);
         lc.endCommand();
 
-        const allOutput = writeSpy.mock.calls.map((c) => strip(String(c[0]))).join("");
+        const allOutput = (writeSpy.mock.calls as unknown[][]).map((c) => strip(String(c[0]))).join("");
 
         expect(allOutput).toContain("app-a:build");
     });
@@ -143,7 +143,7 @@ describe("tui/SummaryLifeCycle", () => {
         lc.endTasks([createResult(task, "success")]);
         lc.endCommand();
 
-        const allOutput = writeSpy.mock.calls.map((c) => strip(String(c[0]))).join("");
+        const allOutput = (writeSpy.mock.calls as unknown[][]).map((c) => strip(String(c[0]))).join("");
 
         expect(allOutput).toContain("app-a:build");
     });

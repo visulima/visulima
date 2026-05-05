@@ -311,12 +311,12 @@ const executeInstall = (workspaceRoot: string, toolchainConfig: ToolchainConfig 
                 continue;
             }
 
-            const status_ = runInvocation(invocation.bin, invocation.args, workspaceRoot);
+            const result = runInvocation(invocation.bin, invocation.args, workspaceRoot);
 
             ranAnything = true;
 
-            if (status_ !== 0) {
-                exitCode = status_;
+            if (result !== 0) {
+                exitCode = result;
                 break;
             }
         }
@@ -471,10 +471,10 @@ const executeUse = (
         return;
     }
 
-    const status_ = runInvocation(invocation.bin, invocation.args, workspaceRoot);
+    const result = runInvocation(invocation.bin, invocation.args, workspaceRoot);
 
-    if (status_ !== 0) {
-        process.exitCode = status_;
+    if (result !== 0) {
+        process.exitCode = result;
 
         return;
     }

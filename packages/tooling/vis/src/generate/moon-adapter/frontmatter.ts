@@ -78,7 +78,7 @@ export const splitFrontmatter = (source: string, parseYaml: (yaml: string) => un
     } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
 
-        throw new Error(`Failed to parse frontmatter YAML: ${message}`);
+        throw new Error(`Failed to parse frontmatter YAML: ${message}`, { cause: error });
     }
 
     if (parsed === null || parsed === undefined) {

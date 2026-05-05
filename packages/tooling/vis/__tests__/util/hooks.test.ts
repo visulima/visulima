@@ -64,8 +64,8 @@ describe(registerPlugins, () => {
             {
                 name: "slow",
                 setup: async () => {
-                    await new Promise<void>((r) => {
-                        setTimeout(r, 5);
+                    await new Promise<void>((resolve) => {
+                        setTimeout(resolve, 5);
                     });
                     order.push("slow");
                 },

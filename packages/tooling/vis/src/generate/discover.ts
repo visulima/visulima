@@ -160,11 +160,11 @@ const resolveBuiltinTemplatesDirectory = (): string | undefined => {
  */
 export const discoverTemplates = (options: DiscoverOptions): DiscoveredTemplate[] => {
     const { extraDirectories = [], onWarning, workspaceRoot } = options;
-    const results: DiscoveredTemplate[] = [];
-
-    results.push(...scanNativeDirectory(join(workspaceRoot, ".vis", "templates"), "native"));
-    results.push(...scanMoonDirectory(join(workspaceRoot, ".vis", "templates"), "moon"));
-    results.push(...scanMoonDirectory(join(workspaceRoot, ".moon", "templates"), "moon"));
+    const results: DiscoveredTemplate[] = [
+        ...scanNativeDirectory(join(workspaceRoot, ".vis", "templates"), "native"),
+        ...scanMoonDirectory(join(workspaceRoot, ".vis", "templates"), "moon"),
+        ...scanMoonDirectory(join(workspaceRoot, ".moon", "templates"), "moon"),
+    ];
 
     for (const directory of extraDirectories) {
         results.push(...scanMoonDirectory(directory, "config"));

@@ -99,7 +99,9 @@ export const formatText = (findings: Finding[], root: string, useColor: boolean,
 
                     break;
                 }
-                // No default
+                default: {
+                    break;
+                }
             }
 
             lines.push(

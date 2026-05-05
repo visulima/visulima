@@ -232,9 +232,9 @@ const loadCodemods = async (): Promise<Record<string, CodemodFactory>> => {
     }
 
     try {
-        const module_ = (await import("module-replacements-codemods")) as { codemods: Record<string, CodemodFactory> };
+        const sdk = (await import("module-replacements-codemods")) as { codemods: Record<string, CodemodFactory> };
 
-        cachedCodemods = module_.codemods;
+        cachedCodemods = sdk.codemods;
 
         return cachedCodemods;
     } catch {

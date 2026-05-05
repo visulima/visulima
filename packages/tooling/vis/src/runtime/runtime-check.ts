@@ -122,7 +122,7 @@ export const checkRuntimeVersions = (workspaceRoot: string): RuntimeFinding[] =>
     const findings: RuntimeFinding[] = [];
     const pkgPath = join(workspaceRoot, "package.json");
 
-    let rootPkg: RootPackageJson = {};
+    let rootPkg: RootPackageJson;
 
     try {
         rootPkg = readJsonSync(pkgPath) as RootPackageJson;

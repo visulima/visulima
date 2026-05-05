@@ -51,6 +51,7 @@ export const getRegistryDir = async (workspaceRoot: string): Promise<string> => 
         if ((error as NodeJS.ErrnoException).code === "ENOTDIR") {
             throw new Error(
                 `Service registry path ${directory} exists but is not a directory. Remove it or move the conflicting file before running \`vis service\`.`,
+                { cause: error },
             );
         }
 

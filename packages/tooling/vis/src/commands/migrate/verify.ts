@@ -1,11 +1,14 @@
+import { readdirSync } from "node:fs";
+
 import { isAccessibleSync, readFileSync } from "@visulima/fs";
+import { readYamlSync } from "@visulima/fs/yaml";
 import { join } from "@visulima/path";
 
 import type { MigrateLogger } from "./types";
 
 export interface VerificationIssue {
     detail: string;
-    kind: "config" | "script" | "hook" | "devDep";
+    kind: "catalog" | "ci" | "config" | "script" | "hook" | "devDep";
     location: string;
 }
 
@@ -141,13 +144,137 @@ const scanConfigs = (root: string): VerificationIssue[] => {
     return issues;
 };
 
+const CI_PATH_CANDIDATES = [".github/workflows", ".gitlab-ci.yml", ".circleci/config.yml", ".woodpecker.yml", ".drone.yml"];
+
+const scanCi = (root: string): VerificationIssue[] => {
+    const issues: VerificationIssue[] = [];
+
+    const scanFile = (rel: string): void => {
+        const abs = join(root, rel);
+
+        if (!isAccessibleSync(abs)) {
+            return;
+        }
+
+        if (/\bsyncpack\b/.test(readFileSync(abs))) {
+            issues.push({ detail: "syncpack invocation still present in CI", kind: "ci", location: rel });
+        }
+    };
+
+    for (const rel of CI_PATH_CANDIDATES) {
+        const abs = join(root, rel);
+
+        if (!isAccessibleSync(abs)) {
+            continue;
+        }
+
+        if (rel === ".github/workflows") {
+            try {
+                for (const entry of readdirSync(abs)) {
+                    if (entry.endsWith(".yml") || entry.endsWith(".yaml")) {
+                        scanFile(`.github/workflows/${entry}`);
+                    }
+                }
+            } catch {
+                // Unreadable directory — skip.
+            }
+
+            continue;
+        }
+
+        scanFile(rel);
+    }
+
+    return issues;
+};
+
+/**
+ * Looks for `syncpack` entries surviving in catalog protocol locations
+ * (`pnpm-workspace.yaml#catalog`, `package.json#workspaces.catalog`,
+ * top-level `package.json#catalog` for bun, and any named catalog
+ * bucket under `catalogs.&lt;name>`).
+ */
+const scanCatalogs = (root: string): VerificationIssue[] => {
+    const issues: VerificationIssue[] = [];
+
+    const yamlPath = join(root, "pnpm-workspace.yaml");
+
+    if (isAccessibleSync(yamlPath)) {
+        let parsed: Record<string, unknown> | undefined;
+
+        try {
+            parsed = readYamlSync(yamlPath);
+        } catch {
+            parsed = undefined;
+        }
+
+        if (parsed && typeof parsed === "object") {
+            const catalog = parsed["catalog"] as Record<string, string> | undefined;
+
+            if (catalog && typeof catalog["syncpack"] === "string") {
+                issues.push({ detail: "`syncpack` still listed in pnpm-workspace.yaml#catalog", kind: "catalog", location: "pnpm-workspace.yaml" });
+            }
+
+            const catalogs = parsed["catalogs"] as Record<string, Record<string, string>> | undefined;
+
+            if (catalogs && typeof catalogs === "object") {
+                for (const [name, entries] of Object.entries(catalogs)) {
+                    if (entries && typeof entries["syncpack"] === "string") {
+                        issues.push({ detail: `\`syncpack\` still listed in pnpm-workspace.yaml#catalogs.${name}`, kind: "catalog", location: "pnpm-workspace.yaml" });
+                    }
+                }
+            }
+        }
+    }
+
+    const packageJsonPath = join(root, "package.json");
+
+    if (isAccessibleSync(packageJsonPath)) {
+        let pkg: Record<string, unknown>;
+
+        try {
+            pkg = JSON.parse(readFileSync(packageJsonPath)) as Record<string, unknown>;
+        } catch {
+            return issues;
+        }
+
+        const workspaces = pkg["workspaces"] as Record<string, unknown> | undefined;
+
+        if (workspaces && typeof workspaces === "object" && !Array.isArray(workspaces)) {
+            const catalog = workspaces["catalog"] as Record<string, string> | undefined;
+
+            if (catalog && typeof catalog["syncpack"] === "string") {
+                issues.push({ detail: "`syncpack` still listed in package.json#workspaces.catalog", kind: "catalog", location: "package.json" });
+            }
+
+            const catalogs = workspaces["catalogs"] as Record<string, Record<string, string>> | undefined;
+
+            if (catalogs && typeof catalogs === "object") {
+                for (const [name, entries] of Object.entries(catalogs)) {
+                    if (entries && typeof entries["syncpack"] === "string") {
+                        issues.push({ detail: `\`syncpack\` still listed in package.json#workspaces.catalogs.${name}`, kind: "catalog", location: "package.json" });
+                    }
+                }
+            }
+        }
+
+        const topLevelCatalog = pkg["catalog"] as Record<string, string> | undefined;
+
+        if (topLevelCatalog && typeof topLevelCatalog["syncpack"] === "string") {
+            issues.push({ detail: "`syncpack` still listed in package.json#catalog", kind: "catalog", location: "package.json" });
+        }
+    }
+
+    return issues;
+};
+
 /**
  * Check that a prior `vis migrate gitleaks` / `secretlint` / `syncpack` run was
  * complete: no stray scripts, devDependencies, hooks, or configs referencing
  * the old tools. Safe to run repeatedly — purely read-only.
  */
 export const verifyMigration = (root: string, logger: MigrateLogger): VerificationIssue[] => {
-    const issues = [...scanPackageJson(root), ...scanHooks(root), ...scanConfigs(root)];
+    const issues = [...scanPackageJson(root), ...scanHooks(root), ...scanConfigs(root), ...scanCi(root), ...scanCatalogs(root)];
 
     if (issues.length === 0) {
         logger.info("✓ No unmigrated gitleaks/secretlint/syncpack references found.");

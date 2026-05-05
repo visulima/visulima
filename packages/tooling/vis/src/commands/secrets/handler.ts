@@ -61,8 +61,7 @@ const validateFormat = (raw: string | undefined): ReportFormat => {
     const allowed = new Set(["json", "sarif", "text"]);
 
     if (raw && !allowed.has(raw)) {
-        pail.error(`--format must be one of: ${[...allowed].join(", ")} (got "${raw}")`);
-        process.exit(2);
+        throw new Error(`--format must be one of: ${[...allowed].join(", ")} (got "${raw}")`);
     }
 
     return (raw ?? "text") as ReportFormat;
@@ -76,8 +75,7 @@ const validateConfidence = (raw: string | undefined): Confidence | undefined => 
     const allowed = new Set<Confidence>(["high", "low", "medium"]);
 
     if (!allowed.has(raw as Confidence)) {
-        pail.error(`--min-confidence must be one of: ${[...allowed].join(", ")} (got "${raw}")`);
-        process.exit(2);
+        throw new Error(`--min-confidence must be one of: ${[...allowed].join(", ")} (got "${raw}")`);
     }
 
     return raw as Confidence;
@@ -135,7 +133,9 @@ const runInit = async (root: string, scanOptions: ScanOptions, dryRun: boolean):
 
     if (!dryRun && isAccessibleSync(baselinePath)) {
         pail.warn(`Detected existing ${DEFAULT_BASELINE} — refusing to overwrite. Delete it first to re-init.`);
-        process.exit(1);
+        process.exitCode = 1;
+
+        return;
     }
 
     pail.info(dryRun ? "[dry-run] Previewing init — no files will be written." : "Scanning workspace to seed baseline…");
@@ -235,8 +235,7 @@ const printDiff = (diff: { fresh: Finding[]; resolved: Finding[]; surviving: Fin
 const chooseScanPaths = async (flags: SecretsFlags, args: string[], root: string): Promise<{ files?: string[]; paths?: string[] }> => {
     if (flags.staged) {
         if (!hasGit(root)) {
-            pail.error("--staged requires a git working tree, and none was detected.");
-            process.exit(2);
+            throw new Error("--staged requires a git working tree, and none was detected.");
         }
 
         return { files: stagedFiles(root) };
@@ -244,8 +243,7 @@ const chooseScanPaths = async (flags: SecretsFlags, args: string[], root: string
 
     if (flags.since) {
         if (!hasGit(root)) {
-            pail.error("--since requires a git working tree, and none was detected.");
-            process.exit(2);
+            throw new Error("--since requires a git working tree, and none was detected.");
         }
 
         return { files: filesSince(root, flags.since) };
@@ -344,8 +342,7 @@ const execute = async ({ argument, options, visConfig, workspaceRoot }: Toolbox<
         spinner.succeed();
     } catch (error) {
         spinner.failed();
-        pail.error(`secret scan failed: ${error instanceof Error ? error.message : String(error)}`);
-        process.exit(2);
+        throw new Error(`secret scan failed: ${error instanceof Error ? error.message : String(error)}`, { cause: error });
     }
 
     // Optional skipped-rule diagnostics (verbose only)
@@ -391,7 +388,9 @@ const execute = async ({ argument, options, visConfig, workspaceRoot }: Toolbox<
             pail.notice("Suppress individual lines with `gitleaks:allow` / `secret-scanner:allow`, or run `vis secrets --update-baseline`.");
         }
 
-        process.exit(1);
+        process.exitCode = 1;
+
+        return;
     }
 
     if (!flags.quiet) {

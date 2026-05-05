@@ -88,5 +88,36 @@ describe("migrate-verify", () => {
 
             expect(issues.some((issue) => issue.kind === "config" && issue.location === "syncpack.config.ts")).toBe(true);
         });
+
+        it("flags syncpack invocations in CI workflow files", () => {
+            expect.assertions(2);
+
+            mkdirSync(join(tmpDir, ".github", "workflows"), { recursive: true });
+            writeFileSync(join(tmpDir, ".github", "workflows", "ci.yml"), "jobs:\n  lint:\n    steps:\n      - run: pnpm syncpack lint\n");
+            writeFileSync(join(tmpDir, ".gitlab-ci.yml"), "lint:\n  script:\n    - syncpack lint\n");
+
+            const issues = verifyMigration(tmpDir, createMockLogger());
+
+            expect(issues.some((issue) => issue.kind === "ci" && issue.location === ".github/workflows/ci.yml")).toBe(true);
+            expect(issues.some((issue) => issue.kind === "ci" && issue.location === ".gitlab-ci.yml")).toBe(true);
+        });
+
+        it("flags stray syncpack catalog protocol entries", () => {
+            expect.assertions(2);
+
+            writeFileSync(
+                join(tmpDir, "pnpm-workspace.yaml"),
+                "catalog:\n  syncpack: ^12.0.0\ncatalogs:\n  lint:\n    syncpack: ^12.0.0\n",
+            );
+            writeFileSync(
+                join(tmpDir, "package.json"),
+                JSON.stringify({ workspaces: { catalog: { syncpack: "^12.0.0" } } }),
+            );
+
+            const issues = verifyMigration(tmpDir, createMockLogger());
+
+            expect(issues.some((issue) => issue.kind === "catalog" && issue.location === "pnpm-workspace.yaml")).toBe(true);
+            expect(issues.some((issue) => issue.kind === "catalog" && issue.location === "package.json")).toBe(true);
+        });
     });
 });

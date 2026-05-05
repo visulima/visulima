@@ -196,10 +196,10 @@ describe("formatSecurityOverview", () => {
     it("should show scanned count and alert breakdown", () => {
         expect.assertions(3);
 
-        const reports = new Map<string, PackageReportData>();
-
-        reports.set("a@1", makeReport({ alerts: [{ category: "sec", key: "a", severity: "critical", type: "vuln" }] }));
-        reports.set("b@1", makeReport({ alerts: [], name: "b" }));
+        const reports = new Map<string, PackageReportData>([
+            ["a@1", makeReport({ alerts: [{ category: "sec", key: "a", severity: "critical", type: "vuln" }] })],
+            ["b@1", makeReport({ alerts: [], name: "b" })],
+        ]);
 
         const overview = formatSecurityOverview(reports);
 
@@ -211,9 +211,7 @@ describe("formatSecurityOverview", () => {
     it("should count low-score packages", () => {
         expect.assertions(1);
 
-        const reports = new Map<string, PackageReportData>();
-
-        reports.set("a@1", makeReport({ score: makeScore({ overall: 0.2 }) }));
+        const reports = new Map<string, PackageReportData>([["a@1", makeReport({ score: makeScore({ overall: 0.2 }) })]]);
 
         const overview = formatSecurityOverview(reports);
 

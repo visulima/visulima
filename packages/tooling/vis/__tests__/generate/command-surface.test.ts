@@ -11,7 +11,10 @@ import generateCommand from "../../src/commands/generate";
 type CommandLike = Record<string, unknown>;
 
 const stripExecute = (cmd: CommandLike): CommandLike => {
-    const { execute: _execute, loader: _loader, ...rest } = cmd;
+    const rest = { ...cmd };
+
+    delete rest["execute"];
+    delete rest["loader"];
 
     return rest;
 };

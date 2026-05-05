@@ -12,6 +12,7 @@ let root: string;
 const sh = (args: string[], cwd: string): string => execFileSync("git", args, { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim();
 
 const initRepo = (): string => {
+    // eslint-disable-next-line sonarjs/pseudo-random -- temp-dir suffix in tests, not security-sensitive
     const directory = join(tmpdir(), `vis-staged-integration-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
 
     mkdirSync(directory, { recursive: true });

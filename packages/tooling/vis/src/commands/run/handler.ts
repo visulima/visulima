@@ -201,7 +201,7 @@ const buildAffectedFilesArgs = (command: string, affectedFiles: string[] | undef
     }
 
     if (mode === "args" || mode === "both") {
-        const quoted = affectedFiles.map(singleQuoteEscape).join(" ");
+        const quoted = affectedFiles.map((file) => singleQuoteEscape(file)).join(" ");
 
         return `${command} ${quoted}`;
     }
@@ -225,7 +225,7 @@ const appendForwardedArgs = (command: string, task: Task): string => {
         return command;
     }
 
-    const quoted = (args as string[]).map(singleQuoteEscape).join(" ");
+    const quoted = (args as string[]).map((argument) => singleQuoteEscape(argument)).join(" ");
 
     return `${command} ${quoted}`;
 };
@@ -1456,6 +1456,8 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
                     .then(() => {
                         unsubscribe();
                         resolve("quit");
+
+                        return undefined;
                     })
                     .catch(() => {
                         unsubscribe();
@@ -1672,7 +1674,7 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
                 }
             };
 
-            await new Promise<void>((resolveExit) => {
+            await new Promise<void>((resolve) => {
                 let exited = false;
                 // Forward declarations so `exit()` can reference both the
                 // SIGINT listener and the keybind handle without hitting
@@ -1691,7 +1693,7 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
                     keybinds?.close();
                     process.off("SIGINT", onSigint);
                     currentHandle?.close();
-                    resolveExit();
+                    resolve();
                 };
 
                 process.on("SIGINT", onSigint);

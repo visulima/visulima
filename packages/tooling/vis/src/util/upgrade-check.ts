@@ -100,7 +100,7 @@ const fetchLatestVersion = async (packageName: string): Promise<string | undefin
  * a malformed registry response.
  */
 const showUpgradeNotice = (currentVersion: string, cache: UpgradeCheckCache): void => {
-    let isNewer = false;
+    let isNewer: boolean;
 
     try {
         isNewer = gt(cache.latestVersion, currentVersion, { loose: true });
@@ -171,9 +171,9 @@ const shouldCheck = (command: string): boolean => {
 /**
  * Runs the background upgrade check. Non-blocking.
  *
- * 1. Check if we need to query the registry (24h cooldown)
- * 2. If yes, fetch latest version asynchronously
- * 3. Return a promise that resolves with the check function to call after command
+ * 1. Check if we need to query the registry (24h cooldown).
+ * 2. If yes, fetch latest version asynchronously.
+ * 3. Return a promise that resolves with the check function to call after command.
  */
 const startUpgradeCheck = (currentVersion: string, command: string): (() => void) | undefined => {
     if (!shouldCheck(command)) {
@@ -196,14 +196,18 @@ const startUpgradeCheck = (currentVersion: string, command: string): (() => void
     // Fire and forget the registry query
     fetchLatestVersion("@visulima/vis")
         .then((latestVersion) => {
-            if (latestVersion) {
-                pendingCache = {
-                    lastNoticeAt: cache?.lastNoticeAt ?? 0,
-                    lastQueryAt: now,
-                    latestVersion,
-                };
-                writeCache(pendingCache);
+            if (!latestVersion) {
+                return undefined;
             }
+
+            pendingCache = {
+                lastNoticeAt: cache?.lastNoticeAt ?? 0,
+                lastQueryAt: now,
+                latestVersion,
+            };
+            writeCache(pendingCache);
+
+            return undefined;
         })
         .catch(() => {
             // Silently ignore network failures

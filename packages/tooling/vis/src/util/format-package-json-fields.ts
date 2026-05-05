@@ -25,7 +25,7 @@ const cloneDeep = <T>(value: T): T => {
     }
 
     if (Array.isArray(value)) {
-        return value.map((item) => cloneDeep(item)) as unknown as T;
+        return (value as unknown[]).map((item) => cloneDeep(item)) as unknown as T;
     }
 
     const result: Record<string, unknown> = {};

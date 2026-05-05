@@ -104,7 +104,7 @@ const rewritePackageJson = (root: string, packageManager: PackageManagerType, ov
                         bunCatalog[key] = value;
                     }
 
-                    if (workspacesObject?.catalog == undefined) {
+                    if (workspacesObject?.catalog === undefined) {
                         pkg["catalog"] = bunCatalog;
                     } else {
                         workspacesObject.catalog = bunCatalog;
