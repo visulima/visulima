@@ -119,7 +119,7 @@ class Rest<
         const contentType = getHeader(request, "content-type") || "application/octet-stream";
         const config = extractFileInit(request, contentLength, contentType);
 
-        const requestUrl = (request as NodeRequest & { originalUrl?: string }).originalUrl || request.url;
+        const requestUrl = (request as NodeRequest & { originalUrl?: string }).originalUrl || request.url || "";
         const bodyStream = getRequestStream(request);
 
         return this.restBase.handlePost(config, isChunkedUpload, requestUrl, bodyStream, contentLength);
@@ -183,7 +183,7 @@ class Rest<
             size: contentLength,
         };
 
-        const requestUrl = (request as NodeRequest & { originalUrl?: string }).originalUrl || request.url;
+        const requestUrl = (request as NodeRequest & { originalUrl?: string }).originalUrl || request.url || "";
         const bodyStream = getRequestStream(request);
 
         return this.restBase.handlePut(id, config, requestUrl, bodyStream, contentLength, metadata);
@@ -303,7 +303,7 @@ class Rest<
         }
 
         const chunkChecksum = getHeader(request, "x-chunk-checksum", true);
-        const requestUrl = (request as NodeRequest & { originalUrl?: string }).originalUrl || request.url;
+        const requestUrl = (request as NodeRequest & { originalUrl?: string }).originalUrl || request.url || "";
         const bodyStream = getRequestStream(request);
 
         return this.restBase.handlePatch(id, chunkOffset, contentLength, chunkChecksum, requestUrl, bodyStream);

@@ -102,7 +102,7 @@ export class Tus<
         const metadataHeader = getHeader(request, "upload-metadata", true);
         const contentType = getHeader(request, "content-type") || "";
         const contentLength = Number.parseInt(getHeader(request, "content-length") || "0", 10);
-        const requestUrl = (request as NodeRequest & { originalUrl?: string }).originalUrl || request.url;
+        const requestUrl = (request as NodeRequest & { originalUrl?: string }).originalUrl || request.url || "";
         const bodyStream = getRequestStream(request);
 
         return this.tusBase.handlePost(uploadLength, uploadDeferLength, uploadConcat, metadataHeader, requestUrl, bodyStream, contentLength, contentType);
@@ -138,7 +138,7 @@ export class Tus<
             const contentLength = Number(getHeader(request, "content-length"));
             const checksumHeader = getHeader(request, "upload-checksum");
             const { checksum, checksumAlgorithm } = this.tusBase.extractChecksum(checksumHeader);
-            const requestUrl = (request as NodeRequest & { originalUrl?: string }).originalUrl || request.url;
+            const requestUrl = (request as NodeRequest & { originalUrl?: string }).originalUrl || request.url || "";
             const bodyStream = getRequestStream(request);
 
             return this.tusBase.handlePatch(id, uploadOffset, uploadLength, metadataHeader, checksum, checksumAlgorithm, requestUrl, bodyStream, contentLength);

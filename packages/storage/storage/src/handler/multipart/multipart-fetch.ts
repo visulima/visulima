@@ -204,7 +204,7 @@ class Multipart<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
                 "Access-Control-Allow-Methods": (child.methods || Multipart.methods).map((method) => method.toUpperCase()).join(", "),
             },
             statusCode: 204,
-        } as ResponseFile<TFile>;
+        } as unknown as ResponseFile<TFile>;
     }
 
     /**

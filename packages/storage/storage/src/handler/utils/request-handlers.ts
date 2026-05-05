@@ -64,7 +64,7 @@ export const handleTransformationRequest = async <TFile extends UploadFile>(
                 ...(transformedResult.originalFile?.ETag === undefined ? {} : { ETag: transformedResult.originalFile.ETag }),
             },
             statusCode: 200,
-        } as ResponseFile<TFile>;
+        } as unknown as ResponseFile<TFile>;
     } catch (transformError: unknown) {
         // If transformation fails, check if it's a validation error
         if ((transformError as { name?: string }).name === "ValidationError") {
@@ -154,7 +154,7 @@ export const handleRegularRequest = async <TFile extends UploadFile>(
         statusCode: 200,
         ...file,
         contentType,
-    } as ResponseFile<TFile>;
+    } as unknown as ResponseFile<TFile>;
 };
 
 /**

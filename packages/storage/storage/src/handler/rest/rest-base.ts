@@ -327,7 +327,7 @@ abstract class RestBase<TFile extends UploadFile> {
         return {
             headers,
             statusCode: 204,
-        } as ResponseFile<TFile>;
+        } as unknown as ResponseFile<TFile>;
     }
 
     /**
