@@ -10,6 +10,7 @@ import { validateBom } from "./validator";
  */
 const buildFixtureBom = (): CycloneDxBom => {
     return {
+        // eslint-disable-next-line sonarjs/no-clear-text-protocols -- canonical CycloneDX schema $id, not a fetch target
         $schema: "http://cyclonedx.org/schema/bom-1.6.schema.json",
         bomFormat: "CycloneDX",
         components: [

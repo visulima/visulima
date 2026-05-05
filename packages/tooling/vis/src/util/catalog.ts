@@ -40,7 +40,7 @@ const getBackupDir = (workspaceRoot: string): string => {
     const cacheDir = findCacheDirSync("vis", { create: true, cwd: workspaceRoot });
 
     if (!cacheDir) {
-        throw new Error("Cannot resolve cache directory. Ensure node_modules exists in your workspace. " + "Run your package manager's install command first.");
+        throw new Error("Cannot resolve cache directory. Ensure node_modules exists in your workspace. Run your package manager's install command first.");
     }
 
     return join(cacheDir, "backup");
@@ -394,7 +394,7 @@ const parseBunCatalogs = (pkg: BunPackageJson): Map<string, Map<string, string>>
 
     if (pkg.workspaces?.catalogs && typeof pkg.workspaces.catalogs === "object") {
         for (const [name, deps] of Object.entries(pkg.workspaces.catalogs)) {
-            if (typeof deps === "object" && deps !== undefined) {
+            if (deps && typeof deps === "object") {
                 catalogs.set(name, new Map(Object.entries(deps)));
             }
         }
@@ -1439,7 +1439,8 @@ const computeCacheHash = (
     const string_ = parts.join("|");
 
     for (let i = 0; i < string_.length; i++) {
-        hash = ((hash << 5) + hash + string_.charCodeAt(i)) | 0; // eslint-disable-line no-bitwise
+        // eslint-disable-next-line no-bitwise, unicorn/prefer-math-trunc, unicorn/prefer-code-point -- djb2 hash: bitwise int32 truncation and code-unit iteration are required for stable cache keys
+        hash = ((hash << 5) + hash + string_.charCodeAt(i)) | 0;
     }
 
     return String(hash);

@@ -441,6 +441,7 @@ export class DevcontainerStore {
     }
 
     /** Recalculate suggested mounts for the given state. */
+    // eslint-disable-next-line class-methods-use-this -- private method; co-located with state-mutating helpers for symmetry
     #withSuggestions(state: DevcontainerState): DevcontainerState {
         return {
             ...state,

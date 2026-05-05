@@ -37,9 +37,7 @@ describe("stagedConfig type", () => {
     it("accepts task function objects", () => {
         assertType<StagedConfig>({
             "*.ts": {
-                task: (files: ReadonlyArray<string>) => {
-                    void files;
-                },
+                task: (files: ReadonlyArray<string>) => files.length,
                 title: "Run eslint",
             },
         });

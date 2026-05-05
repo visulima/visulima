@@ -118,7 +118,7 @@ export const checkStrictEnv = (options: StrictEnvCheckOptions): StrictEnvViolati
         return undefined;
     }
 
-    return { missing: missing.sort(), taskId };
+    return { missing: missing.toSorted(), taskId };
 };
 
 /**

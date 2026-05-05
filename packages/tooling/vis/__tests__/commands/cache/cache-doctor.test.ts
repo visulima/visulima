@@ -7,6 +7,7 @@ let lastReapiOptions: Record<string, unknown> | undefined;
 vi.mock(import("@visulima/task-runner"), async (importOriginal) => {
     const actual = await importOriginal<typeof import("@visulima/task-runner")>();
 
+    /* eslint-disable class-methods-use-this -- mock class methods delegate to module-level vi.fn() spies; instance state isn't relevant */
     class MockReapiRemoteCache {
         public constructor(options: Record<string, unknown>) {
             lastReapiOptions = options;
@@ -20,6 +21,7 @@ vi.mock(import("@visulima/task-runner"), async (importOriginal) => {
             return probeCapabilitiesMock();
         }
     }
+    /* eslint-enable class-methods-use-this */
 
     return {
         ...actual,
@@ -69,7 +71,7 @@ describe("cacheDoctorExecute", () => {
         it("exits with code 1 when no remote cache is configured and no --url is passed", async () => {
             expect.assertions(1);
 
-            await cacheDoctorExecute(buildToolbox({}, undefined) as never);
+            await cacheDoctorExecute(buildToolbox({}) as never);
 
             expect(process.exitCode).toBe(1);
         });

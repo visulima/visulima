@@ -13,7 +13,7 @@ export type TaskStatus = "failed" | "pending" | "running" | "skipped" | "success
  * and returns a promise that resolves on success or rejects on failure.
  */
 export interface CustomTask {
-    readonly task: (files: string[]) => Promise<unknown> | unknown;
+    readonly task: (files: string[]) => unknown;
     readonly title: string;
 }
 
@@ -119,7 +119,7 @@ export interface CommandDescriptor {
     /** A stable id for renderer lookups. */
     readonly id: string;
     /** Custom task callback; only set when `source === "custom"`. */
-    readonly run?: (files: string[]) => Promise<unknown> | unknown;
+    readonly run?: (files: string[]) => unknown;
     readonly source: "custom" | "function" | "string";
     readonly title: string;
 }

@@ -379,7 +379,7 @@ export const runPrune = async (
         return;
     }
 
-    pail.success(`Pruned ${String(removed)} entr${removed === 1 ? "y" : "ies"}, ` + `freed ${formatBytes(reclaimedBytes, { decimals: 1, space: false })}.`);
+    pail.success(`Pruned ${String(removed)} entr${removed === 1 ? "y" : "ies"}, freed ${formatBytes(reclaimedBytes, { decimals: 1, space: false })}.`);
 };
 
 /**
@@ -702,7 +702,8 @@ const walkAndDigest = async (root: string): Promise<CachedFileMeta[]> => {
     const out: CachedFileMeta[] = [];
 
     const walk = async (absolute: string): Promise<void> => {
-        const items = (await readdir(absolute, { withFileTypes: true })).sort((a, b) => a.name.localeCompare(b.name));
+        const entries = await readdir(absolute, { withFileTypes: true });
+        const items = entries.toSorted((a, b) => a.name.localeCompare(b.name));
 
         for (const item of items) {
             const childAbsolute = join(absolute, item.name);

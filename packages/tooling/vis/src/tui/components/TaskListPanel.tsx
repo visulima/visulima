@@ -30,8 +30,17 @@ const getCacheLabel = (status: TaskRowData["status"]): string => {
     return DASH;
 };
 
-const getPinLabel = (taskId: string, pinnedTaskIds: [string | null, string | null]): string =>
-    pinnedTaskIds[0] === taskId ? "[1]" : pinnedTaskIds[1] === taskId ? "[2]" : "";
+const getPinLabel = (taskId: string, pinnedTaskIds: [string | null, string | null]): string => {
+    if (pinnedTaskIds[0] === taskId) {
+        return "[1]";
+    }
+
+    if (pinnedTaskIds[1] === taskId) {
+        return "[2]";
+    }
+
+    return "";
+};
 
 // ── Sub-components ──────────────────────────────────────────────────────
 

@@ -324,8 +324,7 @@ const parseNdjsonResponse = (text: string, batch: { name: string; version: strin
 // ── Name helpers ────────────────────────────────────────────────────
 
 /** Returns the full package name including namespace scope if present. */
-const getFullPackageName = (report: Pick<PackageReportData, "name" | "namespace">): string =>
-    report.namespace ? `${report.namespace}/${report.name}` : report.name;
+const getFullPackageName = (report: Pick<PackageReportData, "name" | "namespace">): string => (report.namespace ? `${report.namespace}/${report.name}` : report.name);
 
 // ── Display helpers ─────────────────────────────────────────────────
 

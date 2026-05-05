@@ -62,7 +62,7 @@ const installHooks = (directory: string = DEFAULT_HOOKS_DIRECTORY): InstallResul
 
     const prefixResult = spawnSync("git", ["rev-parse", "--show-prefix"]);
 
-    if (prefixResult.status === undefined || prefixResult.status === null) {
+    if (prefixResult.status === null) {
         return { isError: true, message: "git command not found" };
     }
 
@@ -86,7 +86,7 @@ const installHooks = (directory: string = DEFAULT_HOOKS_DIRECTORY): InstallResul
 
     const { status, stderr } = spawnSync("git", ["config", "core.hooksPath", target]);
 
-    if (status === undefined || status === null) {
+    if (status === null) {
         return { isError: true, message: "git command not found" };
     }
 

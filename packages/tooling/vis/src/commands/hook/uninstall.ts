@@ -16,7 +16,7 @@ const uninstallHooks = (directory: string = DEFAULT_HOOKS_DIRECTORY): InstallRes
 
     const { status, stderr } = spawnSync("git", ["config", "--local", "--unset", "core.hooksPath"]);
 
-    if (status === undefined || status === null) {
+    if (status === null) {
         return { isError: true, message: "git command not found" };
     }
 

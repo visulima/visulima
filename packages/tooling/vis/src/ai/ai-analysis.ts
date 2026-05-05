@@ -209,7 +209,7 @@ const JSON_BLOCK_REGEX = /```(?:json)?\s*([\s\S]*?)```/;
 
 const JSON_OBJECT_REGEX = /\{[\s\S]*\}/;
 
-const extractJson = (text: string): unknown | undefined => {
+const extractJson = (text: string): unknown => {
     try {
         return JSON.parse(text) as unknown;
     } catch {

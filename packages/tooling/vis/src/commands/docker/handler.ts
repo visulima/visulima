@@ -47,7 +47,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
         });
 
         logger.info(`Scaffolded ${projects.length} project(s) into ${outDir}`);
-        logger.info(`Focus closure: ${projects.sort().join(", ")}`);
+        logger.info(`Focus closure: ${projects.toSorted().join(", ")}`);
 
         return;
     }

@@ -17,9 +17,9 @@ import { isEmptyDir, isValidPackageName, toValidPackageName } from "./utils";
 type RL = ReturnType<typeof createInterface>;
 
 const ask = (rl: RL, question: string): Promise<string> =>
-    new Promise((resolve) => {
+    new Promise((resolveAnswer) => {
         rl.question(question, (answer) => {
-            resolve(answer.trim());
+            resolveAnswer(answer.trim());
         });
     });
 

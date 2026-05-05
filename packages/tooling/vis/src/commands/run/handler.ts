@@ -1452,16 +1452,15 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
                     }
                 });
 
-                dynamic.renderIsDone.then(
-                    () => {
+                dynamic.renderIsDone
+                    .then(() => {
                         unsubscribe();
                         resolve("quit");
-                    },
-                    () => {
+                    })
+                    .catch(() => {
                         unsubscribe();
                         resolve("quit");
-                    },
-                );
+                    });
             });
         }
 

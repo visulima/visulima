@@ -87,7 +87,7 @@ const setCachedAnalysis = (cacheKey: string, result: AiAnalysisResult, ttlMs: nu
     writeFileSync(join(cacheDirectory, `${cacheKey}.json`), JSON.stringify(entry, undefined, 2), "utf8");
 };
 
-const getTtlForAnalysisType = (analysisType: AnalysisType | string, configTtl?: number): number => {
+const getTtlForAnalysisType = (analysisType: AnalysisType | (string & {}), configTtl?: number): number => {
     if (configTtl !== undefined && configTtl > 0) {
         return configTtl;
     }

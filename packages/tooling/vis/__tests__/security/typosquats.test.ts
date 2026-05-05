@@ -813,7 +813,7 @@ describe("checkTyposquats with allowlist", () => {
     it("should behave normally when allowlist is undefined", () => {
         expect.assertions(1);
 
-        const result = checkTyposquats(["axois"], undefined);
+        const result = checkTyposquats(["axois"]);
 
         expect(result).toHaveLength(1);
     });

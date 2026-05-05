@@ -85,6 +85,7 @@ describe(isGitUrl, () => {
         expect.assertions(2);
 
         expect(isGitUrl("https://example.com/templates/my-template.tar.gz")).toBe(true);
+        // eslint-disable-next-line sonarjs/no-clear-text-protocols -- isGitUrl must accept http: too; this asserts that branch
         expect(isGitUrl("http://internal.corp/archive/template.tar.gz")).toBe(true);
     });
 
