@@ -595,7 +595,7 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, stdinR
 x
 {rows}
                     ). Minimum:
-{' '}
+{" "}
 {MIN_VIEWPORT_WIDTH}
 x
 {MIN_VIEWPORT_HEIGHT}
@@ -611,27 +611,27 @@ x
             {state.succeeded > 0 && (
                 <Text bold color="green">
                     {"\u2713"}
-{' '}
+{" "}
 {state.succeeded}
                 </Text>
             )}
             {state.failed > 0 && (
                 <Text bold color="red">
                     {"\u2717"}
-{' '}
+{" "}
 {state.failed}
                 </Text>
             )}
             {runningCount > 0 && (
                 <Text color="cyan">
                     {"\u25F7"}
-{' '}
+{" "}
 {runningCount}
                 </Text>
             )}
             <Text dimColor>
 {state.rows.length}
-{' '}
+{" "}
 total
             </Text>
             {state.statusFilter !== "all" && (
@@ -941,13 +941,13 @@ total
                     <Text dimColor>
                         {" "}
                         List
-{' '}
+{" "}
 {"\u2192"}
-{' '}
+{" "}
 Split
-{' '}
+{" "}
 {"\u2192"}
-{' '}
+{" "}
 Fullscreen
                     </Text>
                 </Text>
@@ -959,13 +959,13 @@ Fullscreen
                     <Text dimColor>
                         {" "}
                         Fullscreen
-{' '}
+{" "}
 {"\u2192"}
-{' '}
+{" "}
 Split
-{' '}
+{" "}
 {"\u2192"}
-{' '}
+{" "}
 List
                     </Text>
                 </Text>

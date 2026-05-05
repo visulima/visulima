@@ -145,9 +145,9 @@ const execute = async ({ options, visConfig }: Toolbox<Console, StagedOptions>):
 
     if (!stagedConfig) {
         throw new Error(
-            'No "staged" config found in vis.config.ts. Add one:\n\n'
+            "No \"staged\" config found in vis.config.ts. Add one:\n\n"
             + "  // vis.config.ts\n"
-            + '  import { defineConfig } from "@visulima/vis/config";\n\n'
+            + "  import { defineConfig } from \"@visulima/vis/config\";\n\n"
             + "  export default defineConfig({\n"
             + "    staged: { '*': 'vis check --fix' },\n"
             + "  });\n\n"

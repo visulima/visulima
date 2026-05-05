@@ -42,13 +42,13 @@ const MountsSection = ({
             <Box flexShrink={0} gap={1} paddingX={1}>
                 <Text bold color="cyan">
                     {mounts.length}
-{' '}
+{" "}
 mounts
                 </Text>
                 {detectedPm && (
                     <Text dimColor>
                         — detected:
-{' '}
+{" "}
 <Text color="white">{detectedPm}</Text>
                     </Text>
                 )}

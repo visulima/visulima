@@ -76,7 +76,7 @@ describe(extractJson, () => {
     it("should parse direct JSON", () => {
         expect.assertions(1);
 
-        const result = extractJson('{"foo": "bar"}');
+        const result = extractJson("{\"foo\": \"bar\"}");
 
         expect(result).toStrictEqual({ foo: "bar" });
     });
@@ -84,7 +84,7 @@ describe(extractJson, () => {
     it("should extract from markdown code block", () => {
         expect.assertions(1);
 
-        const result = extractJson('Here is the analysis:\n```json\n{"foo": "bar"}\n```\nDone.');
+        const result = extractJson("Here is the analysis:\n```json\n{\"foo\": \"bar\"}\n```\nDone.");
 
         expect(result).toStrictEqual({ foo: "bar" });
     });
@@ -92,7 +92,7 @@ describe(extractJson, () => {
     it("should extract from plain code block", () => {
         expect.assertions(1);
 
-        const result = extractJson('```\n{"foo": "bar"}\n```');
+        const result = extractJson("```\n{\"foo\": \"bar\"}\n```");
 
         expect(result).toStrictEqual({ foo: "bar" });
     });
@@ -100,7 +100,7 @@ describe(extractJson, () => {
     it("should find JSON object in text", () => {
         expect.assertions(1);
 
-        const result = extractJson('Some text before {"foo": "bar"} and after');
+        const result = extractJson("Some text before {\"foo\": \"bar\"} and after");
 
         expect(result).toStrictEqual({ foo: "bar" });
     });
@@ -215,7 +215,7 @@ describe(parseAiResponse, () => {
     it("should handle missing recommendations field", () => {
         expect.assertions(2);
 
-        const result = parseAiResponse('{"summary": "test"}', "codex", "impact");
+        const result = parseAiResponse("{\"summary\": \"test\"}", "codex", "impact");
 
         expect(result.recommendations).toHaveLength(0);
         expect(result.summary).toBe("test");

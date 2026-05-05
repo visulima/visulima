@@ -37,7 +37,7 @@ describe("tui/formatting-utils", () => {
 
             const result = formatFlags("", "config", { key: "val" });
 
-            expect(result).toBe('--config={"key":"val"}');
+            expect(result).toBe("--config={\"key\":\"val\"}");
         });
 
         it("should format positional arguments (underscore flag)", () => {

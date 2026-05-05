@@ -7,7 +7,7 @@ const list: Command = {
         ["vis list --targets", "Per-target rows with type, cache status and description"],
         ["vis list --targets --inferred", "Only show targets synthesized by Project Crystal-style inference"],
         ["vis list --json", "Machine-readable output"],
-        ['vis list --query "tag=frontend"', "Filter by query"],
+        ["vis list --query \"tag=frontend\"", "Filter by query"],
     ],
     group: "Workspace",
     loader: () => import("./handler"),

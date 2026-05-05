@@ -448,13 +448,13 @@ x
             {checkedItems.map((item) => (
                 <Box gap={1} key={item.entry.id}>
                     <Text>
-{' '}
+{" "}
 {item.entry.title}
                     </Text>
                     <Text dimColor>
                         (
 {item.preview.length}
-{' '}
+{" "}
 change
 {item.preview.length === 1 ? "" : "s"}
 )

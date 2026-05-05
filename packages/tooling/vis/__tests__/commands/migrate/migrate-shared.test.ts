@@ -24,7 +24,7 @@ describe("migrate-shared", () => {
             const result = serializeConfigObject({ baz: 42, foo: "bar" });
 
             expect(result).toContain("foo:");
-            expect(result).not.toContain('"foo":');
+            expect(result).not.toContain("\"foo\":");
         });
 
         it("should pretty-print with 4-space indent", () => {
@@ -46,7 +46,7 @@ describe("migrate-shared", () => {
         it("should parse a valid JSON file", () => {
             expect.assertions(1);
 
-            writeFileSync(join(tmpDir, "test.json"), '{"key":"value"}');
+            writeFileSync(join(tmpDir, "test.json"), "{\"key\":\"value\"}");
 
             expect(readJsonConfig(tmpDir, "test.json")).toStrictEqual({ key: "value" });
         });

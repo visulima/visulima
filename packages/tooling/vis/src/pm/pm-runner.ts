@@ -164,7 +164,7 @@ const resolveInstaller = (cwd: string, override: { backend?: InstallBackend; con
     if (explicit && explicit !== "auto") {
         if (explicit === "aube" && !hasBinaryOnPath("aube")) {
             throw new Error(
-                'install.backend is set to "aube" but the `aube` binary is not on PATH. '
+                "install.backend is set to \"aube\" but the `aube` binary is not on PATH. "
                 + "Install it via `npm i -g @endevco/aube`, `mise use -g aube`, or `brew install endevco/tap/aube`.",
             );
         }

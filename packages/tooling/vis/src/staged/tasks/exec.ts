@@ -37,7 +37,7 @@ export const parseCommandString = (input: string): string[] => {
             const next = input[i + 1];
 
             if (next !== undefined) {
-                if (inDouble && next !== '"' && next !== "\\") {
+                if (inDouble && next !== "\"" && next !== "\\") {
                     buffer += character;
                     buffer += next;
                 } else {
@@ -50,7 +50,7 @@ export const parseCommandString = (input: string): string[] => {
             }
         }
 
-        if (character === '"' && !inSingle) {
+        if (character === "\"" && !inSingle) {
             inDouble = !inDouble;
 
             continue;

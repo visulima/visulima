@@ -85,7 +85,7 @@ const OptimizeDetailPanel = ({ entry, focused, scrollRef }: OptimizeDetailPanelP
                                 <>
                                     <Text color="green">
 {"\u2713"}
-{' '}
+{" "}
 Codemod will rewrite imports to use native API.
                                     </Text>
                                     <Text dimColor> The package can then be removed from dependencies.</Text>
@@ -95,7 +95,7 @@ Codemod will rewrite imports to use native API.
                                 <>
                                     <Text color="yellow">
 {"\u2139"}
-{' '}
+{" "}
 No automated codemod available.
                                     </Text>
                                     <Text dimColor> Manual migration required — replace usage with native equivalent.</Text>
@@ -114,7 +114,7 @@ No automated codemod available.
                         <Box flexDirection="column" marginTop={1} paddingLeft={2}>
                             <Text color="cyan">
 {"\u2713"}
-{' '}
+{" "}
 Override will redirect resolution to the hardened package.
                             </Text>
                             <Text dimColor> No source code changes needed — drop-in replacement.</Text>
@@ -134,7 +134,7 @@ Override will redirect resolution to the hardened package.
                                 <>
                                     <Text color="green">
 {"\u2713"}
-{' '}
+{" "}
 Codemod will rewrite imports to the recommended alternative.
                                     </Text>
                                     <Text dimColor> The original package can then be removed from dependencies.</Text>
@@ -144,7 +144,7 @@ Codemod will rewrite imports to the recommended alternative.
                                 <>
                                     <Text color="yellow">
 {"\u2139"}
-{' '}
+{" "}
 Manual migration required.
                                     </Text>
                                     {entry.docUrl

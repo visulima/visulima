@@ -68,9 +68,9 @@ const TaskTable = ({ parallelSlots, rows, totalCompleted, totalRows }: TaskTable
                     <Box width={3} />
                     <Text dimColor>
                         {ELLIPSIS}
-{' '}
+{" "}
 {pending.length - 1}
-{' '}
+{" "}
 more
                     </Text>
                 </Box>

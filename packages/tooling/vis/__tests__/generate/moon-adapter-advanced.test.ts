@@ -84,7 +84,7 @@ describe("moon adapter — advanced (to, force, comparison if, nested partials)"
         expect(creation.filesMeta?.["out/widget/index.ts"]).toStrictEqual({ force: true });
     });
 
-    it('should evaluate `if: mode == "prod"` — include only in prod mode', async () => {
+    it("should evaluate `if: mode == \"prod\"` — include only in prod mode", async () => {
         expect.assertions(2);
 
         const template = loadMoonTemplate(MOON_ADVANCED, "advanced");
@@ -96,7 +96,7 @@ describe("moon adapter — advanced (to, force, comparison if, nested partials)"
         expect(flatten(prod.files ?? {})["prod-only.ts"]).toBeDefined();
     });
 
-    it('should resolve `{% include "layouts/header" %}` by relative path', async () => {
+    it("should resolve `{% include \"layouts/header\" %}` by relative path", async () => {
         expect.assertions(1);
 
         const template = loadMoonTemplate(MOON_ADVANCED, "advanced");

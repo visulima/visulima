@@ -39,7 +39,7 @@ const renderVisConfig = (nx: NxJson, workspaceRoot: string, useEditorconfig?: bo
         "// Per-project project.json files are compatible with vis and do not need to be rewritten —",
         "// vis already reads targets, tags, implicitDependencies, and sourceRoot.",
         "",
-        'import { defineConfig } from "@visulima/vis/config";',
+        "import { defineConfig } from \"@visulima/vis/config\";",
         "",
         `export default defineConfig(${serialised});`,
         "",

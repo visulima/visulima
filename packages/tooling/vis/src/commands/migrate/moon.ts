@@ -96,7 +96,7 @@ const renderVisConfig = (tasks: MoonTasksYaml, workspaceRoot: string, useEditorc
         "// Per-project moon.yml files can be converted to project.json —",
         "// review the generated file and move project-specific tasks there.",
         "",
-        'import { defineConfig } from "@visulima/vis/config";',
+        "import { defineConfig } from \"@visulima/vis/config\";",
         "",
         `export default defineConfig(${serialised});`,
         "",

@@ -39,9 +39,9 @@ const FindingRow = ({ finding, isSelected }: FindingRowProps): React.JSX.Element
         <Box flexShrink={0} height={1}>
             <Text>{isSelected ? ">" : " "}</Text>
             <Text color={sevColor}>
-{' '}
+{" "}
 {SEVERITY_GLYPH[finding.severity]}
-{' '}
+{" "}
             </Text>
             <Box flexGrow={1}>
                 <Text bold={isSelected} inverse={isSelected} wrap="truncate">
@@ -280,7 +280,7 @@ s
                     <Box flexShrink={0} paddingX={1}>
                         <Text dimColor wrap="truncate">
                             <Spinner type="dots" />
-{' '}
+{" "}
 {running.join(" · ")}
                         </Text>
                     </Box>

@@ -723,7 +723,7 @@ const migrateSyncpack = (root: string, options: { dryRun: boolean; silent?: bool
         addMigrationWarning(report, "vis.config.ts already declares `policy.customTypes.extraTypes` — skipping syncpack customTypes merge to avoid duplicates.");
 
         if (!options.silent) {
-            logger.warn('vis.config.ts already has policy.customTypes.extraTypes — skipping merge');
+            logger.warn("vis.config.ts already has policy.customTypes.extraTypes — skipping merge");
         }
     }
 

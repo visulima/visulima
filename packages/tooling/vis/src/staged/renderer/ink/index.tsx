@@ -71,7 +71,7 @@ const App = ({ state, tick: _tick, verbose }: AppProps): ReactElement => (
                 <Box>
                     {iconForStatus(pattern.status)}
                     <Text>
-{' '}
+{" "}
 {pattern.title}
                     </Text>
                 </Box>
@@ -80,9 +80,9 @@ const App = ({ state, tick: _tick, verbose }: AppProps): ReactElement => (
                         <Box>
                             {iconForStatus(command.status)}
                             <Text>
-{' '}
+{" "}
 {command.title}
-{' '}
+{" "}
                             </Text>
                             {command.status !== "pending" && command.status !== "running"
                                 ? (

@@ -816,7 +816,7 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
 x
 {rows}
                     ), need
-{' '}
+{" "}
 {MIN_VIEWPORT_WIDTH}
 x
 {MIN_VIEWPORT_HEIGHT}
@@ -845,7 +845,7 @@ x
                                     {isSelected ? " \u276F " : "   "}
                                     <Text bold={isSelected}>{template.name}</Text>
                                     <Text dimColor>
-{' '}
+{" "}
 -
 {template.description}
                                     </Text>
@@ -906,9 +906,9 @@ x
                         <Box marginTop={1} paddingX={1}>
                             <Text color="cyan">
                                 Add
-{' '}
+{" "}
 {addingEnv}
-{' '}
+{" "}
 env:
 {" "}
                                 {addEnvPhase === "key"
@@ -916,7 +916,7 @@ env:
                                     <Text>
                                         key=
                                         <Text color="yellow">{addEnvKey || "_"}</Text>
-{' '}
+{" "}
 (Enter to set value)
                                     </Text>
                                     )
@@ -925,7 +925,7 @@ env:
                                         {addEnvKey}
 =
 <Text color="yellow">{addEnvValue || "_"}</Text>
-{' '}
+{" "}
 (Enter to confirm, Esc to cancel)
                                     </Text>
                                     )}
@@ -1080,7 +1080,7 @@ env:
                 {saveMessage && (
 <Text color={saveMessage.startsWith("Error") ? "red" : "green"}>
 {saveMessage}
-{' '}
+{" "}
 </Text>
                 )}
                 {state.isDirty && <Text color="yellow">[modified]</Text>}
@@ -1270,7 +1270,7 @@ env:
                 </Text>
                 <Text wrap="truncate">
 {state.mode === "create" ? "Create" : "Edit"}
-{' '}
+{" "}
 devcontainer
                 </Text>
             </Box>

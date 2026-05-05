@@ -45,7 +45,7 @@ describe(conformToCatalog, () => {
         });
 
         expect(conformToCatalog("react", catalogs)).toStrictEqual({
-            source: 'catalog "react18"',
+            source: "catalog \"react18\"",
             spec: "catalog:react18",
         });
     });
@@ -63,7 +63,7 @@ describe(conformToCatalog, () => {
         expect(result).toStrictEqual({
             candidates: ["default", "react18"],
             conflict: true,
-            source: 'default catalog (also in: catalog "react18")',
+            source: "default catalog (also in: catalog \"react18\")",
             spec: "catalog:",
         });
     });

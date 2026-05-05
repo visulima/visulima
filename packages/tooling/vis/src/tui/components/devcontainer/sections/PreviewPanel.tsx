@@ -17,7 +17,7 @@ const PreviewPanel = ({ focused, hadComments, jsonPreview, mode, scrollRef }: Pr
                 Preview
             </Text>
             <Text dimColor>
-{' '}
+{" "}
 (
 {mode === "create" ? "new" : "edit"}
 )

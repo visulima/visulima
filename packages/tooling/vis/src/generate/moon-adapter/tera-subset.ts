@@ -25,7 +25,7 @@
 import { applyFilter } from "./filters";
 import { splitCommaOutsideQuotes } from "./util";
 
-type QuoteChar = '"' | "'";
+type QuoteChar = "\"" | "'";
 
 // ── Tokens ───────────────────────────────────────────────────────
 
@@ -199,7 +199,7 @@ const parse = (tokens: Token[], filename: string): Node[] => {
 };
 
 const stripQuotes = (input: string): string | undefined => {
-    if ((input.startsWith('"') && input.endsWith('"')) || (input.startsWith("'") && input.endsWith("'"))) {
+    if ((input.startsWith("\"") && input.endsWith("\"")) || (input.startsWith("'") && input.endsWith("'"))) {
         return input.slice(1, -1);
     }
 
@@ -285,7 +285,7 @@ const splitFilterPipe = (expression: string): string[] => {
             continue;
         }
 
-        if (character === '"' || character === "'") {
+        if (character === "\"" || character === "'") {
             inQuote = character;
             continue;
         }
@@ -399,7 +399,7 @@ const findOperatorOutsideQuotes = (input: string, operator: string): number => {
             continue;
         }
 
-        if (character === '"' || character === "'") {
+        if (character === "\"" || character === "'") {
             inQuote = character;
             continue;
         }
@@ -530,7 +530,7 @@ const matchingParen = (input: string): number => {
             continue;
         }
 
-        if (character === '"' || character === "'") {
+        if (character === "\"" || character === "'") {
             inQuote = character;
             continue;
         }

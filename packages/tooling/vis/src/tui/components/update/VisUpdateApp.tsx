@@ -676,12 +676,12 @@ FILTERED (
                 <Box marginBottom={1} marginTop={1}>
                     <Text color="yellow">
                         {"\u26A0"}
-{' '}
+{" "}
 {majorCount}
-{' '}
+{" "}
 major update
 {majorCount === 1 ? "" : "s"}
-{' '}
+{" "}
 — review breaking changes
                     </Text>
                 </Box>
@@ -721,14 +721,14 @@ major update
             {checkedList.map((e) => (
                 <Box gap={1} key={e.packageName}>
                     <Text>
-{' '}
+{" "}
 {e.packageName}
                     </Text>
                     <Text dimColor>
                         {e.currentRange}
-{' '}
+{" "}
 {"\u2192"}
-{' '}
+{" "}
 {e.newRange}
                     </Text>
                     <Text bold color={e.updateType === "major" ? "red" : e.updateType === "minor" ? "yellow" : "green"}>
@@ -784,14 +784,14 @@ major update
                     {filteredOutEntries.map((e) => (
                         <Box gap={1} key={e.packageName}>
                             <Text>
-{' '}
+{" "}
 {e.packageName}
                             </Text>
                             <Text dimColor>
                                 {e.currentRange}
-{' '}
+{" "}
 {"\u2192"}
-{' '}
+{" "}
 {e.newRange}
                             </Text>
                             <Text bold color={e.updateType === "major" ? "red" : e.updateType === "minor" ? "yellow" : "green"}>

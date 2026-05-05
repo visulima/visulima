@@ -18,9 +18,9 @@ export const resolveConfig = async (options: RunOptions): Promise<StagedConfig> 
 
     throw new ConfigError(
         "No staged config provided. Add `staged` to your vis.config.ts:\n\n"
-        + '  import { defineConfig } from "@visulima/vis/config";\n\n'
+        + "  import { defineConfig } from \"@visulima/vis/config\";\n\n"
         + "  export default defineConfig({\n"
-        + '    staged: { "*.ts": "eslint --fix" },\n'
+        + "    staged: { \"*.ts\": \"eslint --fix\" },\n"
         + "  });\n\n"
         + "Coming from lint-staged or nano-staged? Run `vis migrate lint-staged`"
         + " (or `vis migrate nano-staged`) to move the config in and remove the legacy files.",
