@@ -12,6 +12,7 @@ import { migrateMoon } from "./moon";
 import { detectNanoStagedConfig, migrateNanoStaged } from "./nano-staged";
 import { migrateNx } from "./nx";
 import { detectSecretlintConfig, detectSecretlintIgnore, migrateSecretlint } from "./secretlint";
+import { detectSyncpackConfig, migrateSyncpack } from "./syncpack";
 import { migrateTurborepo } from "./turborepo";
 import type { MigrateLogger, MigrationReport, PackageManagerType } from "./types";
 import { createMigrationReport } from "./types";
@@ -260,6 +261,23 @@ const MIGRATIONS: MigrationEntry[] = [
             return lines;
         },
         title: "Secretlint",
+    },
+    {
+        apply: ({ root }, report, logger) => {
+            migrateSyncpack(root, { dryRun: false }, logger, report);
+        },
+        description: "Translate syncpack customTypes into policy.customTypes.extraTypes and strip the syncpack dep/scripts.",
+        detect: ({ root }) => Boolean(detectSyncpackConfig(root)),
+        id: "syncpack",
+        probe: ({ root }) => {
+            const { lines, logger } = createCapturingLogger();
+            const report = createMigrationReport();
+
+            migrateSyncpack(root, { dryRun: true }, logger, report);
+
+            return lines;
+        },
+        title: "Syncpack",
     },
 ];
 

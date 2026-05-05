@@ -90,6 +90,52 @@ Merges lint-staged config into `vis.config.ts` staged block:
 vis migrate lint-staged
 ```
 
+### syncpack
+
+Translates the parts of a [syncpack](https://jamiemason.github.io/syncpack/) config that vis can act on today, strips the `syncpack` dependency / scripts, and routes the rest into `manualSteps` so reviewers see what's still pending:
+
+```bash
+vis migrate syncpack
+vis migrate syncpack --dry-run
+```
+
+**Detects** (in priority order):
+
+- `package.json#syncpack`
+- `.syncpackrc` (parsed as JSON, falling back to YAML)
+- `.syncpackrc.json`
+- `.syncpackrc.yaml` / `.syncpackrc.yml`
+
+**Auto-migrated:**
+
+- `customTypes` (record) → `policy.customTypes.extraTypes` (array). Entries colliding with vis built-ins (`engines`, `volta`, `packageManager`, `devEngines.runtime`, `devEngines.packageManager`) are dropped with a warning — vis already lints those surfaces natively.
+- `syncpack` removed from `dependencies` / `devDependencies`.
+- Any `scripts` matching `\bsyncpack\b` are deleted.
+- `.syncpackrc{,.json,.yaml,.yml}` is backed up (`.bak`) and removed.
+- The `syncpack` block inside `package.json` is removed.
+
+**Routed to manual steps:**
+
+- `versionGroups` and `semverGroups` — deferred to the vis DSL tracked in [issue #622](https://github.com/visulima/visulima/issues/622).
+- `dependencyTypes`, `specifierTypes`, `filter` — no direct vis equivalent today; reviewer is prompted to recreate them with `policy.*` filters.
+- Pre-commit hooks (`.husky/pre-commit`, `.vis-hooks/pre-commit`, `.git/hooks/pre-commit`) referencing `syncpack` are flagged but **not auto-rewritten** — `syncpack lint` ≈ `vis lint` and `syncpack format` ≈ `vis sort-package-json`, but `fix-mismatches` / `set-semver-ranges` have no 1:1 mapping. The reviewer makes the call.
+
+**Superseded (no migration needed):**
+
+- `sortAz`, `sortFirst`, `sortExports` are handled by `vis sort-package-json`.
+
+**Not supported in v1:**
+
+TS/JS configs (`.syncpackrc.{cjs,js,mjs,ts}`, `syncpack.config.{cjs,js,mjs,ts}`) are flagged with a manual step — they need a sandboxed loader the rest of `vis migrate` does not pull in. Convert them to `.syncpackrc.json` first, then re-run.
+
+### verify
+
+Read-only audit that exits non-zero if it finds any leftover `gitleaks`, `secretlint`, or `syncpack` references in `package.json` scripts/devDependencies, pre-commit hooks, or stale config files. Useful as a CI gate after a migration.
+
+```bash
+vis migrate verify
+```
+
 ## Options
 
 | Option      | Default | Description                             |

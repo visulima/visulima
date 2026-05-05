@@ -124,10 +124,23 @@ const migrateSecretlintCmd: Command = {
     options: [...sharedMigrateOptions],
 };
 
+const migrateSyncpackCmd: Command = {
+    commandPath: ["migrate"],
+    description: "Translate syncpack customTypes into vis policy and strip the syncpack dep/scripts",
+    examples: [["vis migrate syncpack", "Translate syncpack customTypes into vis policy and strip the syncpack dep/scripts"]],
+    group: "Scaffold & Config",
+    loader: () =>
+        import("./handler").then((m) => {
+            return { default: m.migrateSyncpackExecute };
+        }),
+    name: "syncpack",
+    options: [...sharedMigrateOptions],
+};
+
 const migrateVerify: Command = {
     commandPath: ["migrate"],
-    description: "Audit the workspace for stray gitleaks/secretlint references (exit 1 on issues)",
-    examples: [["vis migrate verify", "Audit the workspace for stray gitleaks/secretlint references (exit 1 on issues)"]],
+    description: "Audit the workspace for stray gitleaks/secretlint/syncpack references (exit 1 on issues)",
+    examples: [["vis migrate verify", "Audit the workspace for stray gitleaks/secretlint/syncpack references (exit 1 on issues)"]],
     group: "Scaffold & Config",
     loader: () =>
         import("./handler").then((m) => {
@@ -147,6 +160,7 @@ const migrateCommands: Command[] = [
     migrateGitleaksCmd,
     migrateKingfisherCmd,
     migrateSecretlintCmd,
+    migrateSyncpackCmd,
     migrateVerify,
 ];
 
@@ -170,3 +184,4 @@ export type MigrateMoonOptions = CreateOptions<
 export type MigrateGitleaksOptions = CreateOptions<SharedMigrateOptions>;
 export type MigrateKingfisherOptions = CreateOptions<SharedMigrateOptions>;
 export type MigrateSecretlintOptions = CreateOptions<SharedMigrateOptions>;
+export type MigrateSyncpackOptions = CreateOptions<SharedMigrateOptions>;
