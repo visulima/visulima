@@ -54,9 +54,34 @@ export default defineConfig({
 });
 ```
 
+### package-json-fields
+
+Mirrors a small set of metadata fields from the **root** `package.json` to every workspace package, so each package keeps a consistent `license`, `author`, `bugs`, `homepage`, `engines`, and `repository`. `repository.directory` is preserved per package — only `type` and `url` are copied from root.
+
+```bash
+vis sync package-json-fields                            # Mirror defaults from root → every package
+vis sync package-json-fields --check                    # CI: exit 1 if any package is out of sync
+vis sync package-json-fields --fields license,engines   # Override the field list for this run
+vis sync package-json-fields --ignore-package-name '@scope/internal-*'
+vis sync package-json-fields --format=json              # Machine-readable diff
+vis sync package-json-fields --quiet                    # Only print the summary line
+```
+
+#### Default fields
+
+`author`, `bugs`, `homepage`, `license`, `repository`, `engines`.
+
+For `repository`, root's `type` and `url` overwrite the package's, but the package's `directory` (its subpath inside the monorepo) is kept. For every other field the root value is copied verbatim.
+
+Fields missing from root are skipped — sync never deletes from a package. Fields already deep-equal to root are skipped — no mtime churn.
+
 ## Options
 
-| Option    | Default                  | Description                                 |
-| --------- | ------------------------ | ------------------------------------------- |
-| `--out`   | `<workspace>/CODEOWNERS` | Output file path                            |
-| `--check` | `false`                  | Exit non-zero if the existing file is stale |
+| Option                  | Default                  | Description                                                                              |
+| ----------------------- | ------------------------ | ---------------------------------------------------------------------------------------- |
+| `--out`                 | `<workspace>/CODEOWNERS` | Output file path (codeowners only)                                                       |
+| `--check`               | `false`                  | Exit non-zero if drift is found (no writes)                                              |
+| `--fields`              |                          | Comma-separated field list to mirror (package-json-fields only). Repeatable.             |
+| `--ignore-package-name` |                          | Glob of package names to skip (package-json-fields only). Repeatable.                    |
+| `--format`              | `human`                  | Output format for package-json-fields: `human` or `json`.                                |
+| `--quiet`               | `false`                  | Suppress per-package log lines; print only the summary (package-json-fields only).       |
