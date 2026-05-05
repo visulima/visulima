@@ -32,7 +32,7 @@ const sweegoProvider: ProviderFactory<SweegoConfig> = defineProvider((config: Sw
         endpoint: config.endpoint ?? DEFAULT_ENDPOINT,
         retries: config.retries ?? DEFAULT_RETRIES,
         timeout: config.timeout ?? DEFAULT_TIMEOUT,
-        ...config.logger && { logger: config.logger },
+        ...(config.logger && { logger: config.logger }),
     };
 
     const providerState = new ProviderState();
@@ -118,7 +118,7 @@ const sweegoProvider: ProviderFactory<SweegoConfig> = defineProvider((config: Sw
          */
         async initialize(): Promise<void> {
             await providerState.ensureInitialized(async () => {
-                if (!await this.isAvailable()) {
+                if (!(await this.isAvailable())) {
                     throw new EmailError(PROVIDER_NAME, "Sweego API not available or invalid API key");
                 }
 
@@ -246,7 +246,7 @@ const sweegoProvider: ProviderFactory<SweegoConfig> = defineProvider((config: Sw
                                 content,
                                 contentType: attachment.contentType ?? "application/octet-stream",
                                 filename: attachment.filename,
-                                ...attachment.cid && { cid: attachment.cid },
+                                ...(attachment.cid && { cid: attachment.cid }),
                             };
                         }),
                     );

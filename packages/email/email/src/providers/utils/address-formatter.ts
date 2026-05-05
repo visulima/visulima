@@ -71,7 +71,7 @@ export const formatAddressEmails = (addresses: EmailAddress | EmailAddress[]): s
 export const formatAzureAddress = (address: EmailAddress): { displayName?: string; email: string } => {
     return {
         email: address.email,
-        ...address.name && { displayName: address.name },
+        ...(address.name && { displayName: address.name }),
     };
 };
 
@@ -123,7 +123,7 @@ export const formatMailjetAddresses = (addresses: EmailAddress | EmailAddress[])
 export const formatMandrillAddress = (address: EmailAddress, type: string = "to"): { email: string; name?: string; type: string } => {
     return {
         email: address.email,
-        ...address.name && { name: address.name },
+        ...(address.name && { name: address.name }),
         type,
     };
 };
@@ -148,7 +148,7 @@ export const formatMandrillAddresses = (addresses: EmailAddress | EmailAddress[]
 export const formatPostalAddress = (address: EmailAddress): { address: string; name?: string } => {
     return {
         address: address.email,
-        ...address.name && { name: address.name },
+        ...(address.name && { name: address.name }),
     };
 };
 
