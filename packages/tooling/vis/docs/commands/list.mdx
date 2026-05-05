@@ -16,28 +16,32 @@ vis list [options]
 ## Examples
 
 ```bash
-vis list                              # all projects with type, layer, tags, targets
-vis list --targets                    # per-target rows
-vis list --deps                       # human-readable dep-instance table
-vis list --deps --internal-only       # only workspace deps
-vis list --json                       # machine-readable output
-vis list --query "tag=frontend"       # filter by query
-vis list --targets --json             # per-target rows as JSON
+vis list                                 # all projects with type, layer, tags, targets
+vis list --targets                       # per-target rows
+vis list --deps                          # human-readable dep-instance table
+vis list --deps --internal-only          # only workspace deps
+vis list --deps --format=ndjson          # stream every dep-instance as NDJSON for jq pipelines
+vis list --deps --format=json --pretty   # single pretty-printed JSON array
+vis list --json                          # machine-readable output (alias for --format=json)
+vis list --query "tag=frontend"          # filter by query
+vis list --targets --json                # per-target rows as JSON
 ```
 
 ## Options
 
-| Option            | Default | Description                                                                       |
-| ----------------- | ------- | --------------------------------------------------------------------------------- |
-| `--json`          | `false` | Emit JSON instead of a table                                                      |
-| `--query`         |         | Filter projects by query (see below)                                              |
-| `--targets`       | `false` | Show per-target rows (type, cache, description)                                   |
-| `--deps`          | `false` | Render a human-readable dep-instance table (use `vis json deps` for NDJSON)       |
-| `--dep-type`      |         | With `--deps`: restrict to specific dep blocks. Repeatable.                       |
-| `--internal-only` | `false` | With `--deps`: only show internal/workspace deps                                  |
-| `--external-only` | `false` | With `--deps`: only show external/registry deps                                   |
-| `--include`       |         | With `--deps`: glob of declaring package names to keep. Repeatable.               |
-| `--exclude`       |         | With `--deps`: glob of declaring package names to drop. Repeatable.               |
+| Option            | Default | Description                                                                                          |
+| ----------------- | ------- | ---------------------------------------------------------------------------------------------------- |
+| `--json`          | `false` | Emit JSON instead of a table (alias for `--format=json`)                                             |
+| `--format`        | `table` | Output format: `table`, `json` (single document), or `ndjson` (one record per line; `--deps` only)   |
+| `--pretty`        | `false` | Pretty-print with 2-space indent (only meaningful with `--format=json` in `--deps` mode)             |
+| `--query`         |         | Filter projects by query (see below)                                                                 |
+| `--targets`       | `false` | Show per-target rows (type, cache, description)                                                      |
+| `--deps`          | `false` | Render a dep-instance view (table by default; use `--format=ndjson`/`json` for jq-friendly streams)  |
+| `--dep-type`      |         | With `--deps`: restrict to specific dep blocks. Repeatable.                                          |
+| `--internal-only` | `false` | With `--deps`: only show internal/workspace deps                                                     |
+| `--external-only` | `false` | With `--deps`: only show external/registry deps                                                      |
+| `--include`       |         | With `--deps`: glob of declaring package names to keep. Repeatable.                                  |
+| `--exclude`       |         | With `--deps`: glob of declaring package names to drop. Repeatable.                                  |
 
 ## `--deps` columns
 
@@ -51,6 +55,50 @@ When `--deps` is set, the table shows one row per `(declaring package, dep block
 | `Specifier` | Verbatim version string as written in `package.json`                                 |
 | `Internal`  | `yes` when the dep resolves to another workspace package, otherwise `no`             |
 | `Path`      | Workspace-relative path of the source `package.json` (or `pnpm-workspace.yaml`)      |
+
+## `--deps --format=ndjson` record shape
+
+Each NDJSON line (or array entry under `--format=json`) has the same shape:
+
+```json
+{
+    "packageName": "@my/app",
+    "packageDir": "apps/app",
+    "packageJsonPath": "apps/app/package.json",
+    "depType": "dependencies",
+    "depName": "react",
+    "specifier": "^18.2.0",
+    "isInternal": false
+}
+```
+
+`packageJsonPath` is workspace-relative for portability across CI runners. `isInternal: true` indicates the dep name resolves to another workspace package. `pnpm-workspace.yaml#overrides` (pnpm v9+ moved `pnpm.overrides` from `package.json` into the workspace config) surfaces under `depType: "pnpm.overrides"` with `packageJsonPath` pointing at `pnpm-workspace.yaml`.
+
+### `jq` recipes
+
+Count how many packages declare each dep:
+
+```bash
+vis list --deps --format=ndjson | jq -r '.depName' | sort | uniq -c | sort -rn | head
+```
+
+List every package that pins a specific dep:
+
+```bash
+vis list --deps --format=ndjson | jq -r 'select(.depName == "react") | "\(.packageName)\t\(.specifier)"'
+```
+
+Find specifier drift for a single dep (alternative to `vis lint --workspace-versions --dep <name>`):
+
+```bash
+vis list --deps --format=ndjson | jq -r 'select(.depName == "react") | .specifier' | sort -u
+```
+
+Audit which packages still declare a banned dep before turning on `vis lint --banned-deps`:
+
+```bash
+vis list --deps --format=ndjson | jq -r 'select(.depName | IN("left-pad","request","moment")) | "\(.packageName)\t\(.depName)"'
+```
 
 ## Default columns
 

@@ -34,7 +34,6 @@ import implodeCommand from "./commands/implode";
 import infoCommand from "./commands/info";
 import initCommand from "./commands/init";
 import installCommand from "./commands/install";
-import jsonCommands from "./commands/json";
 import linkCommand from "./commands/link";
 import lintCommand from "./commands/lint";
 import listCommand from "./commands/list";
@@ -206,10 +205,6 @@ for (const command of migrateCommands) {
 }
 
 for (const command of cacheCommands) {
-    cli.addCommand(command);
-}
-
-for (const command of jsonCommands) {
     cli.addCommand(command);
 }
 
