@@ -184,7 +184,7 @@ const buildE18eEntries = (allDeps: Set<string>): OptimizeEntry[] => {
     return entries;
 };
 
-/** Scans deps against @socketregistry manifest. */
+/** Scans deps against `@socketregistry` manifest. */
 const buildSocketEntries = (allDeps: Set<string>, lockText: string, pm: PmInfo, pin: boolean): OptimizeEntry[] => {
     const manifest = (getManifestData("npm") ?? []) as ManifestEntry[];
     const entries: OptimizeEntry[] = [];
@@ -319,7 +319,7 @@ const collectSourceFiles = async (dir: string): Promise<string[]> =>
         ignore: ["**/.*/**", "**/.*", "**/node_modules/**", "**/dist/**", "**/coverage/**", "**/.git/**", "**/.next/**", "**/.nuxt/**"],
     });
 
-const execute = async ({ logger, options, workspaceRoot: wsRoot }: Toolbox<Console, OptimizeOptions>): Promise<void> => {
+const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, OptimizeOptions>): Promise<void> => {
     if (!wsRoot) {
         throw new Error("Could not determine workspace root. Run this command inside a monorepo.");
     }
@@ -435,7 +435,7 @@ const execute = async ({ logger, options, workspaceRoot: wsRoot }: Toolbox<Conso
                     return { original: e.packageName, spec: e.overrideSpec! };
                 });
 
-            const result = applyOverrides(wsRoot, join(wsRoot, "package.json"), overrideEntries, pm);
+            const result = applyOverrides(wsRoot, join(wsRoot, "package.json"), overrideEntries, pm, visConfig?.editorconfig ?? true);
 
             if (result.added.length > 0) {
                 pail.success(`\nAdded ${String(result.added.length)} override${result.added.length === 1 ? "" : "s"}.`);

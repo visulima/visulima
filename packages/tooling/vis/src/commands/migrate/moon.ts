@@ -68,7 +68,7 @@ const taskToVisTarget = (task: MoonTaskYaml): Record<string, unknown> => {
     return target;
 };
 
-const renderVisConfig = (tasks: MoonTasksYaml): string => {
+const renderVisConfig = (tasks: MoonTasksYaml, workspaceRoot: string, useEditorconfig?: boolean): string => {
     const configObject: Record<string, unknown> = {};
 
     if (tasks.fileGroups) {
@@ -89,7 +89,7 @@ const renderVisConfig = (tasks: MoonTasksYaml): string => {
         configObject.namedInputs = { default: tasks.implicitInputs };
     }
 
-    const serialised = serializeConfigObject(configObject);
+    const serialised = serializeConfigObject(configObject, join(workspaceRoot, "vis.config.ts"), useEditorconfig);
 
     return [
         "// Migrated from moon's .moon/tasks.yml by `vis migrate moon`.",
@@ -223,7 +223,7 @@ const copyMoonTemplatesToVis = (workspaceRoot: string, names: string[], dryRun: 
 
 export const migrateMoon = (
     workspaceRoot: string,
-    options: { copyTemplates?: boolean; dryRun?: boolean },
+    options: { copyTemplates?: boolean; dryRun?: boolean; useEditorconfig?: boolean },
     logger: MigrateLogger,
     report: MigrationReport,
 ): void => {
@@ -241,7 +241,7 @@ export const migrateMoon = (
     try {
         parsed = readYamlSync(tasksFile);
     } catch (error) {
-        throw new Error(`Failed to parse ${tasksFile}: ${(error as Error).message}`);
+        throw new Error(`Failed to parse ${tasksFile}: ${(error as Error).message}`, { cause: error });
     }
 
     // Warn about fields that vis does not support directly.
@@ -287,7 +287,7 @@ export const migrateMoon = (
         );
     }
 
-    const rendered = renderVisConfig(parsed);
+    const rendered = renderVisConfig(parsed, workspaceRoot, options.useEditorconfig);
 
     if (!writeVisConfig(workspaceRoot, rendered, options, logger, report)) {
         return;

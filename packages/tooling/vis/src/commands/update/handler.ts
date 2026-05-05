@@ -1,4 +1,4 @@
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 import { red, yellow } from "@visulima/colorize";
@@ -169,8 +169,9 @@ const applyCatalogAndInstall = async (
     options: Record<string, unknown>,
     logger: Console,
     npmrcConfig?: NpmrcConfig,
+    useEditorconfig?: boolean,
 ): Promise<void> => {
-    const backupPath = applyCatalogUpdates(workspaceRoot, toApply, packageManager);
+    const backupPath = applyCatalogUpdates(workspaceRoot, toApply, packageManager, true, { useEditorconfig });
     const targetFile = packageManager === "pnpm" ? "pnpm-workspace.yaml" : "package.json";
 
     logger.info(`\nUpdated ${targetFile}`);
@@ -192,24 +193,19 @@ const applyCatalogAndInstall = async (
     }
 
     if (options.install ?? true) {
-        const installCommands: Record<string, string> = {
-            bun: "bun install",
-            npm: "npm install",
-            pnpm: "pnpm install",
-            yarn: "yarn install",
-        };
-        const installCommand = installCommands[packageManager] ?? `${packageManager} install`;
+        const installBin = packageManager;
+        const installArgs = ["install"];
 
-        logger.info(`Running ${installCommand}...\n`);
+        logger.info(`Running ${installBin} ${installArgs.join(" ")}...\n`);
 
         try {
-            execSync(installCommand, {
+            execFileSync(installBin, installArgs, {
                 cwd: workspaceRoot,
                 env: process.env,
                 stdio: "inherit",
             });
         } catch {
-            logger.warn(`${installCommand} failed. You may need to run it manually.`);
+            logger.warn(`${installBin} ${installArgs.join(" ")} failed. You may need to run it manually.`);
         }
     }
 };
@@ -495,7 +491,7 @@ const executeCatalogUpdate = async (
 
             const mergedOptions = { ...options, install: options.install ?? configDefaults.install };
 
-            await applyCatalogAndInstall(workspaceRoot, packageManager, toApply, mergedOptions, logger, npmrcConfig);
+            await applyCatalogAndInstall(workspaceRoot, packageManager, toApply, mergedOptions, logger, npmrcConfig, visConfig.editorconfig ?? true);
         }
 
         return;
@@ -591,7 +587,7 @@ const executePmWrapper = (
     logger.info(`Running: ${fullCommand}`);
 
     try {
-        execSync(fullCommand, {
+        execFileSync(command.bin, command.args, {
             cwd: workspaceRoot,
             env: process.env,
             stdio: "inherit",

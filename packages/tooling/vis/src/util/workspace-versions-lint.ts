@@ -1,6 +1,7 @@
 import { readJsonSync, writeJsonSync } from "@visulima/fs";
 
 import { isNewer, parseVersion } from "./catalog";
+import { resolveIndentForExistingFile } from "./editorconfig";
 import type { DepInstance, DepType } from "./workspace-deps";
 
 /**
@@ -291,15 +292,22 @@ export const lintWorkspaceVersions = (instances: DepInstance[], options: Workspa
     return issues;
 };
 
+export interface ApplyWorkspaceVersionsFixesOptions {
+    /** Disable `.editorconfig` indent discovery; falls back to file-content sniffing. */
+    useEditorconfig?: boolean;
+}
+
 /**
  * Apply every issue to its package.json, grouped per-file so each file is
- * written at most once. Indent is preserved by `@visulima/fs`'s `detectIndent`.
+ * written at most once. Indent is sourced from `.editorconfig` first
+ * (unless `useEditorconfig` is false), then sniffed from the existing file.
  *
  * Note: `--resolve catalog` only rewrites the *consumer* package.jsons. The
  * catalog itself must be set up first (see item 7 in the syncpack roadmap —
  * `vis lint --resolve catalog --propose-min N`).
  */
-export const applyWorkspaceVersionsFixes = (issues: WorkspaceVersionDriftIssue[]): string[] => {
+export const applyWorkspaceVersionsFixes = (issues: WorkspaceVersionDriftIssue[], options: ApplyWorkspaceVersionsFixesOptions = {}): string[] => {
+    const { useEditorconfig } = options;
     const byFile = new Map<string, WorkspaceVersionDriftIssue[]>();
 
     for (const issue of issues) {
@@ -325,7 +333,7 @@ export const applyWorkspaceVersionsFixes = (issues: WorkspaceVersionDriftIssue[]
             }
         }
 
-        writeJsonSync(filePath, pkg, { detectIndent: true, overwrite: true });
+        writeJsonSync(filePath, pkg, { indent: resolveIndentForExistingFile(filePath, { useEditorconfig }), overwrite: true });
         written.push(filePath);
     }
 

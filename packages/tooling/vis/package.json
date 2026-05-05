@@ -151,6 +151,7 @@
         "ajv": "catalog:dev",
         "ajv-formats": "catalog:dev",
         "conventional-changelog-conventionalcommits": "catalog:dev",
+        "editorconfig": "^1.0.7",
         "esbuild": "catalog:build",
         "eslint": "catalog:lint",
         "eslint-plugin-jsx-a11y": "6.10.2",

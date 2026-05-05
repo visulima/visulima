@@ -1,5 +1,6 @@
 import { readJsonSync, writeJsonSync } from "@visulima/fs";
 
+import { resolveIndentForExistingFile } from "./editorconfig";
 import type { DepInstance, DepType } from "./workspace-deps";
 
 /**
@@ -91,13 +92,20 @@ const setNestedField = (object: Record<string, unknown>, dotPath: string, key: s
     (block as Record<string, string>)[key] = value;
 };
 
+export interface ApplyWorkspaceProtocolFixesOptions {
+    /** Disable `.editorconfig` indent discovery; falls back to file-content sniffing. */
+    useEditorconfig?: boolean;
+}
+
 /**
  * Apply every issue in-place to the affected package.json files. Issues are
  * grouped per file so we open + parse + write each file at most once.
  *
- * Indent is preserved via `@visulima/fs#writeJsonSync`'s `detectIndent: true`.
+ * Indent is sourced from `.editorconfig` first (unless `useEditorconfig`
+ * is false), then sniffed from the existing file.
  */
-export const applyWorkspaceProtocolFixes = (issues: WorkspaceProtocolIssue[]): string[] => {
+export const applyWorkspaceProtocolFixes = (issues: WorkspaceProtocolIssue[], options: ApplyWorkspaceProtocolFixesOptions = {}): string[] => {
+    const { useEditorconfig } = options;
     const byFile = new Map<string, WorkspaceProtocolIssue[]>();
 
     for (const issue of issues) {
@@ -127,7 +135,7 @@ export const applyWorkspaceProtocolFixes = (issues: WorkspaceProtocolIssue[]): s
             }
         }
 
-        writeJsonSync(filePath, pkg, { detectIndent: true, overwrite: true });
+        writeJsonSync(filePath, pkg, { indent: resolveIndentForExistingFile(filePath, { useEditorconfig }), overwrite: true });
         written.push(filePath);
     }
 

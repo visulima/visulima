@@ -3,6 +3,7 @@ import { unlinkSync } from "node:fs";
 import { isAccessibleSync, readFileSync, writeFileSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
+import { resolveIndentForFile } from "../../util/editorconfig";
 import { backupFile } from "./backup";
 import { readJsonFile } from "./json";
 import type { MigrateLogger, MigrationReport } from "./types";
@@ -137,7 +138,7 @@ const convertIgnoreFile = (root: string, dryRun: boolean, logger: MigrateLogger,
     }
 };
 
-const rewriteScripts = (root: string, dryRun: boolean, logger: MigrateLogger, report: MigrationReport): void => {
+const rewriteScripts = (root: string, dryRun: boolean, logger: MigrateLogger, report: MigrationReport, useEditorconfig?: boolean): void => {
     const packageJsonPath = join(root, "package.json");
 
     if (!isAccessibleSync(packageJsonPath)) {
@@ -196,8 +197,10 @@ const rewriteScripts = (root: string, dryRun: boolean, logger: MigrateLogger, re
         return;
     }
 
+    const indent = resolveIndentForFile(packageJsonPath, readFileSync(packageJsonPath), { defaultIndent: "    ", useEditorconfig });
+
     backupFile(packageJsonPath, report);
-    writeFileSync(packageJsonPath, `${JSON.stringify(pkg, null, 4)}\n`);
+    writeFileSync(packageJsonPath, `${JSON.stringify(pkg, null, indent)}\n`);
 };
 
 const rewriteHooks = (root: string, dryRun: boolean, logger: MigrateLogger, report: MigrationReport): void => {
@@ -230,7 +233,7 @@ const rewriteHooks = (root: string, dryRun: boolean, logger: MigrateLogger, repo
     }
 };
 
-const migrateSecretlint = (root: string, options: { dryRun: boolean; silent?: boolean }, logger: MigrateLogger, report: MigrationReport): boolean => {
+const migrateSecretlint = (root: string, options: { dryRun: boolean; silent?: boolean; useEditorconfig?: boolean }, logger: MigrateLogger, report: MigrationReport): boolean => {
     const configFile = detectSecretlintConfig(root);
     const ignoreFile = detectSecretlintIgnore(root);
     const hasArtifacts = Boolean(configFile ?? ignoreFile);
@@ -263,7 +266,7 @@ const migrateSecretlint = (root: string, options: { dryRun: boolean; silent?: bo
     }
 
     convertIgnoreFile(root, options.dryRun, logger, report);
-    rewriteScripts(root, options.dryRun, logger, report);
+    rewriteScripts(root, options.dryRun, logger, report, options.useEditorconfig);
     rewriteHooks(root, options.dryRun, logger, report);
     removeSecretlintConfigFiles(root, options.dryRun, logger, report);
 

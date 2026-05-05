@@ -128,7 +128,7 @@ const insertStagedIntoVisConfig = (root: string, config: Record<string, string |
 
 // Cleanup -----------------------------------------------------------
 
-const removeNanoStagedFromPackageJson = (root: string): { configRemoved: boolean; dependencyRemoved: boolean } => {
+const removeNanoStagedFromPackageJson = (root: string, useEditorconfig?: boolean): { configRemoved: boolean; dependencyRemoved: boolean } => {
     const packageJsonPath = join(root, "package.json");
     const result = { configRemoved: false, dependencyRemoved: false };
 
@@ -162,7 +162,7 @@ const removeNanoStagedFromPackageJson = (root: string): { configRemoved: boolean
     }
 
     if (modified) {
-        const indent = detectJsonIndent(content);
+        const indent = detectJsonIndent(packageJsonPath, content, { useEditorconfig });
 
         backupFile(packageJsonPath);
         writeFileSync(packageJsonPath, `${JSON.stringify(pkg, undefined, indent)}\n`, "utf8");
@@ -268,8 +268,8 @@ const extractConfig = (root: string, source: string, report: MigrationReport): R
     return parseNanoStagedJsonFile(filePath);
 };
 
-const cleanupNanoStagedArtifacts = (root: string, report: MigrationReport): void => {
-    const { configRemoved, dependencyRemoved } = removeNanoStagedFromPackageJson(root);
+const cleanupNanoStagedArtifacts = (root: string, report: MigrationReport, useEditorconfig?: boolean): void => {
+    const { configRemoved, dependencyRemoved } = removeNanoStagedFromPackageJson(root, useEditorconfig);
 
     if (configRemoved) {
         report.inlinedLintStagedConfigCount += 1;
@@ -299,7 +299,7 @@ const rewriteHooks = (root: string, options: { silent?: boolean }, logger: Migra
 const applyMigration = (
     root: string,
     config: Record<string, string | string[]>,
-    options: { silent?: boolean },
+    options: { silent?: boolean; useEditorconfig?: boolean },
     logger: MigrateLogger,
     report: MigrationReport,
 ): void => {
@@ -309,7 +309,7 @@ const applyMigration = (
         report.mergedStagedConfigCount += 1;
     }
 
-    cleanupNanoStagedArtifacts(root, report);
+    cleanupNanoStagedArtifacts(root, report, options.useEditorconfig);
     rewriteHooks(root, options, logger, report);
 };
 
@@ -321,7 +321,7 @@ const applyMigration = (
  * standalone `.nano-staged.*` files, inlines the mapping, then cleans up
  * the source, dev-dependency entry, and pre-commit hook invocations.
  */
-const migrateNanoStaged = (root: string, options: { dryRun: boolean; silent?: boolean }, logger: MigrateLogger, report: MigrationReport): boolean => {
+const migrateNanoStaged = (root: string, options: { dryRun: boolean; silent?: boolean; useEditorconfig?: boolean }, logger: MigrateLogger, report: MigrationReport): boolean => {
     const source = detectNanoStagedConfig(root);
 
     if (!source) {
@@ -345,7 +345,7 @@ const migrateNanoStaged = (root: string, options: { dryRun: boolean; silent?: bo
         }
 
         if (!options.dryRun) {
-            cleanupNanoStagedArtifacts(root, report);
+            cleanupNanoStagedArtifacts(root, report, options.useEditorconfig);
         }
 
         return true;
