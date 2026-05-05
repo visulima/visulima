@@ -70,10 +70,10 @@ import { startUpgradeCheck } from "./util/upgrade-check";
 // May re-spawn the process with tuned V8 flags and never return.
 applyHeapTuning();
 
-// Honor --no-ansi / --no-color before any colorized output is emitted.
-// We can't wait for cerebro's option parser because banner / error frames
-// that fire during plugin setup would already be colored by then.
-if (process.argv.includes("--no-ansi") || process.argv.includes("--no-color")) {
+// Honor --no-color before any colorized output is emitted. We can't wait
+// for cerebro's option parser because banner / error frames that fire
+// during plugin setup would already be colored by then.
+if (process.argv.includes("--no-color")) {
     process.env["NO_COLOR"] = "1";
     process.env["FORCE_COLOR"] = "0";
 }
@@ -130,18 +130,6 @@ cli.addGlobalOption({
     description: "Path to a vis config file (overrides discovery)",
     name: "config",
     type: String,
-});
-
-cli.addGlobalOption({
-    description: "Disable ANSI color and hyperlink escapes (also respects NO_COLOR env var)",
-    name: "no-ansi",
-    type: Boolean,
-});
-
-cli.addGlobalOption({
-    description: "Alias for --no-ansi",
-    name: "no-color",
-    type: Boolean,
 });
 
 // Plugins
