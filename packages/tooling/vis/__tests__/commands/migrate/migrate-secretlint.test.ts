@@ -7,169 +7,171 @@ import { detectSecretlintConfig, detectSecretlintIgnore, extractRuleIds, migrate
 import { createMigrationReport } from "../../../src/commands/migrate/types";
 import { cleanupTemporaryDirectory, createMockLogger, createTemporaryDirectory } from "../../test-helpers";
 
-let tmpDir: string;
+describe("migrate-secretlint", () => {
+    let tmpDir: string;
 
-beforeEach(() => {
-    tmpDir = createTemporaryDirectory("vis-migrate-secretlint-");
-});
-
-afterEach(() => {
-    cleanupTemporaryDirectory(tmpDir);
-});
-
-describe(detectSecretlintConfig, () => {
-    it("returns undefined when no config exists", () => {
-        expect.assertions(1);
-        expect(detectSecretlintConfig(tmpDir)).toBeUndefined();
+    beforeEach(() => {
+        tmpDir = createTemporaryDirectory("vis-migrate-secretlint-");
     });
 
-    it("finds .secretlintrc.json", () => {
-        expect.assertions(1);
-
-        writeFileSync(join(tmpDir, ".secretlintrc.json"), "{}");
-
-        expect(detectSecretlintConfig(tmpDir)).toBe(".secretlintrc.json");
+    afterEach(() => {
+        cleanupTemporaryDirectory(tmpDir);
     });
 
-    it("finds .secretlintrc.cjs", () => {
-        expect.assertions(1);
+    describe(detectSecretlintConfig, () => {
+        it("returns undefined when no config exists", () => {
+            expect.assertions(1);
+            expect(detectSecretlintConfig(tmpDir)).toBeUndefined();
+        });
 
-        writeFileSync(join(tmpDir, ".secretlintrc.cjs"), "module.exports = {};");
+        it("finds .secretlintrc.json", () => {
+            expect.assertions(1);
 
-        expect(detectSecretlintConfig(tmpDir)).toBe(".secretlintrc.cjs");
-    });
-});
+            writeFileSync(join(tmpDir, ".secretlintrc.json"), "{}");
 
-describe(detectSecretlintIgnore, () => {
-    it("finds .secretlintignore", () => {
-        expect.assertions(1);
+            expect(detectSecretlintConfig(tmpDir)).toBe(".secretlintrc.json");
+        });
 
-        writeFileSync(join(tmpDir, ".secretlintignore"), "dist/\n");
+        it("finds .secretlintrc.cjs", () => {
+            expect.assertions(1);
 
-        expect(detectSecretlintIgnore(tmpDir)).toBe(".secretlintignore");
-    });
-});
+            writeFileSync(join(tmpDir, ".secretlintrc.cjs"), "module.exports = {};");
 
-describe(extractRuleIds, () => {
-    it("pulls IDs out of a JSON config", () => {
-        expect.assertions(2);
-
-        writeFileSync(
-            join(tmpDir, ".secretlintrc.json"),
-            JSON.stringify({
-                rules: [{ id: "@secretlint/secretlint-rule-preset-recommend" }, { id: "@secretlint/secretlint-rule-aws" }],
-            }),
-        );
-
-        const report = createMigrationReport();
-        const ids = extractRuleIds(tmpDir, ".secretlintrc.json", report);
-
-        expect(ids).toContain("@secretlint/secretlint-rule-preset-recommend");
-        expect(ids).toContain("@secretlint/secretlint-rule-aws");
+            expect(detectSecretlintConfig(tmpDir)).toBe(".secretlintrc.cjs");
+        });
     });
 
-    it("warns when config is JS (cannot parse)", () => {
-        expect.assertions(2);
+    describe(detectSecretlintIgnore, () => {
+        it("finds .secretlintignore", () => {
+            expect.assertions(1);
 
-        writeFileSync(join(tmpDir, ".secretlintrc.cjs"), "module.exports = {};");
+            writeFileSync(join(tmpDir, ".secretlintignore"), "dist/\n");
 
-        const report = createMigrationReport();
-        const ids = extractRuleIds(tmpDir, ".secretlintrc.cjs", report);
-
-        expect(ids).toEqual([]);
-        expect(report.warnings.some((w) => w.includes(".secretlintrc.cjs"))).toBe(true);
-    });
-});
-
-describe(migrateSecretlint, () => {
-    it("returns false when nothing to migrate", () => {
-        expect.assertions(1);
-
-        const report = createMigrationReport();
-
-        expect(migrateSecretlint(tmpDir, { dryRun: false }, createMockLogger(), report)).toBe(false);
+            expect(detectSecretlintIgnore(tmpDir)).toBe(".secretlintignore");
+        });
     });
 
-    it("removes @secretlint/* devDependencies", () => {
-        expect.assertions(3);
+    describe(extractRuleIds, () => {
+        it("pulls IDs out of a JSON config", () => {
+            expect.assertions(2);
 
-        writeFileSync(join(tmpDir, ".secretlintrc.json"), JSON.stringify({ rules: [{ id: "@secretlint/secretlint-rule-aws" }] }));
-        writeFileSync(
-            join(tmpDir, "package.json"),
-            JSON.stringify({
-                devDependencies: {
-                    "@secretlint/secretlint-rule-aws": "^5.0.0",
-                    "@secretlint/secretlint-rule-preset-recommend": "^5.0.0",
-                    secretlint: "^5.0.0",
-                    typescript: "^5.0.0",
-                },
-                scripts: { "scan:secrets": "secretlint '**/*'" },
-            }),
-        );
+            writeFileSync(
+                join(tmpDir, ".secretlintrc.json"),
+                JSON.stringify({
+                    rules: [{ id: "@secretlint/secretlint-rule-preset-recommend" }, { id: "@secretlint/secretlint-rule-aws" }],
+                }),
+            );
 
-        const report = createMigrationReport();
+            const report = createMigrationReport();
+            const ids = extractRuleIds(tmpDir, ".secretlintrc.json", report);
 
-        migrateSecretlint(tmpDir, { dryRun: false }, createMockLogger(), report);
+            expect(ids).toContain("@secretlint/secretlint-rule-preset-recommend");
+            expect(ids).toContain("@secretlint/secretlint-rule-aws");
+        });
 
-        const pkg = JSON.parse(readFileSync(join(tmpDir, "package.json"), "utf8")) as {
-            devDependencies?: Record<string, string>;
-            scripts?: Record<string, string>;
-        };
+        it("warns when config is JS (cannot parse)", () => {
+            expect.assertions(2);
 
-        expect(pkg.devDependencies?.secretlint).toBeUndefined();
-        expect(pkg.devDependencies?.["@secretlint/secretlint-rule-aws"]).toBeUndefined();
-        expect(pkg.devDependencies?.typescript).toBe("^5.0.0");
+            writeFileSync(join(tmpDir, ".secretlintrc.cjs"), "module.exports = {};");
+
+            const report = createMigrationReport();
+            const ids = extractRuleIds(tmpDir, ".secretlintrc.cjs", report);
+
+            expect(ids).toStrictEqual([]);
+            expect(report.warnings.some((w) => w.includes(".secretlintrc.cjs"))).toBe(true);
+        });
     });
 
-    it("rewrites pre-commit hook", () => {
-        expect.assertions(1);
+    describe(migrateSecretlint, () => {
+        it("returns false when nothing to migrate", () => {
+            expect.assertions(1);
 
-        writeFileSync(join(tmpDir, ".secretlintrc.json"), "{}");
-        mkdirSync(join(tmpDir, ".husky"), { recursive: true });
-        writeFileSync(join(tmpDir, ".husky", "pre-commit"), "#!/bin/sh\nsecretlint --secretlintrc .secretlintrc.json '**/*'\n");
+            const report = createMigrationReport();
 
-        const report = createMigrationReport();
+            expect(migrateSecretlint(tmpDir, { dryRun: false }, createMockLogger(), report)).toBe(false);
+        });
 
-        migrateSecretlint(tmpDir, { dryRun: false }, createMockLogger(), report);
+        it("removes @secretlint/* devDependencies", () => {
+            expect.assertions(3);
 
-        const content = readFileSync(join(tmpDir, ".husky", "pre-commit"), "utf8");
+            writeFileSync(join(tmpDir, ".secretlintrc.json"), JSON.stringify({ rules: [{ id: "@secretlint/secretlint-rule-aws" }] }));
+            writeFileSync(
+                join(tmpDir, "package.json"),
+                JSON.stringify({
+                    devDependencies: {
+                        "@secretlint/secretlint-rule-aws": "^5.0.0",
+                        "@secretlint/secretlint-rule-preset-recommend": "^5.0.0",
+                        secretlint: "^5.0.0",
+                        typescript: "^5.0.0",
+                    },
+                    scripts: { "scan:secrets": "secretlint '**/*'" },
+                }),
+            );
 
-        expect(content).toContain("vis secrets --staged");
-    });
+            const report = createMigrationReport();
 
-    it("removes the config file after migration", () => {
-        expect.assertions(1);
+            migrateSecretlint(tmpDir, { dryRun: false }, createMockLogger(), report);
 
-        writeFileSync(join(tmpDir, ".secretlintrc.json"), JSON.stringify({ rules: [] }));
+            const pkg = JSON.parse(readFileSync(join(tmpDir, "package.json"), "utf8")) as {
+                devDependencies?: Record<string, string>;
+                scripts?: Record<string, string>;
+            };
 
-        const report = createMigrationReport();
+            expect(pkg.devDependencies?.secretlint).toBeUndefined();
+            expect(pkg.devDependencies?.["@secretlint/secretlint-rule-aws"]).toBeUndefined();
+            expect(pkg.devDependencies?.typescript).toBe("^5.0.0");
+        });
 
-        migrateSecretlint(tmpDir, { dryRun: false }, createMockLogger(), report);
+        it("rewrites pre-commit hook", () => {
+            expect.assertions(1);
 
-        expect(existsSync(join(tmpDir, ".secretlintrc.json"))).toBe(false);
-    });
+            writeFileSync(join(tmpDir, ".secretlintrc.json"), "{}");
+            mkdirSync(join(tmpDir, ".husky"), { recursive: true });
+            writeFileSync(join(tmpDir, ".husky", "pre-commit"), "#!/bin/sh\nsecretlint --secretlintrc .secretlintrc.json '**/*'\n");
 
-    it("dry-run leaves the config file in place", () => {
-        expect.assertions(1);
+            const report = createMigrationReport();
 
-        writeFileSync(join(tmpDir, ".secretlintrc.json"), JSON.stringify({ rules: [] }));
+            migrateSecretlint(tmpDir, { dryRun: false }, createMockLogger(), report);
 
-        const report = createMigrationReport();
+            const content = readFileSync(join(tmpDir, ".husky", "pre-commit"), "utf8");
 
-        migrateSecretlint(tmpDir, { dryRun: true }, createMockLogger(), report);
+            expect(content).toContain("vis secrets --staged");
+        });
 
-        expect(existsSync(join(tmpDir, ".secretlintrc.json"))).toBe(true);
-    });
+        it("removes the config file after migration", () => {
+            expect.assertions(1);
 
-    it("surfaces manual step listing the old rule IDs", () => {
-        expect.assertions(1);
+            writeFileSync(join(tmpDir, ".secretlintrc.json"), JSON.stringify({ rules: [] }));
 
-        writeFileSync(join(tmpDir, ".secretlintrc.json"), JSON.stringify({ rules: [{ id: "@secretlint/secretlint-rule-aws" }] }));
+            const report = createMigrationReport();
 
-        const report = createMigrationReport();
+            migrateSecretlint(tmpDir, { dryRun: false }, createMockLogger(), report);
 
-        migrateSecretlint(tmpDir, { dryRun: false }, createMockLogger(), report);
+            expect(existsSync(join(tmpDir, ".secretlintrc.json"))).toBe(false);
+        });
 
-        expect(report.manualSteps.some((s) => s.includes("@secretlint/secretlint-rule-aws"))).toBe(true);
+        it("dry-run leaves the config file in place", () => {
+            expect.assertions(1);
+
+            writeFileSync(join(tmpDir, ".secretlintrc.json"), JSON.stringify({ rules: [] }));
+
+            const report = createMigrationReport();
+
+            migrateSecretlint(tmpDir, { dryRun: true }, createMockLogger(), report);
+
+            expect(existsSync(join(tmpDir, ".secretlintrc.json"))).toBe(true);
+        });
+
+        it("surfaces manual step listing the old rule IDs", () => {
+            expect.assertions(1);
+
+            writeFileSync(join(tmpDir, ".secretlintrc.json"), JSON.stringify({ rules: [{ id: "@secretlint/secretlint-rule-aws" }] }));
+
+            const report = createMigrationReport();
+
+            migrateSecretlint(tmpDir, { dryRun: false }, createMockLogger(), report);
+
+            expect(report.manualSteps.some((s) => s.includes("@secretlint/secretlint-rule-aws"))).toBe(true);
+        });
     });
 });

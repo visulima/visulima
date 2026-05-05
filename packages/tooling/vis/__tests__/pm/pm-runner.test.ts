@@ -25,7 +25,7 @@ describe(detectPm, () => {
     it("should throw for non-existent directories", () => {
         expect.assertions(1);
 
-        expect(() => detectPm(`/tmp/nonexistent-dir-${Date.now()}`)).toThrow();
+        expect(() => detectPm(`/tmp/nonexistent-dir-${Date.now()}`)).toThrow(expect.anything());
     });
 });
 

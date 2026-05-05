@@ -129,7 +129,7 @@ describe("devcontainer-io", () => {
             const result = readDevcontainerJson(tempDir);
 
             expect(result).not.toBeNull();
-            expect(result?.config).toEqual(config);
+            expect(result?.config).toStrictEqual(config);
         });
     });
 });

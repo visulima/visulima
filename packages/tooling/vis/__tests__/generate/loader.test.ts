@@ -55,6 +55,6 @@ describe(loadNativeTemplate, () => {
     it("should reject modules without a default export", async () => {
         expect.assertions(1);
 
-        await expect(loadNativeTemplate(join(here, "../../__fixtures__/generate/native/missing.ts"))).rejects.toThrow();
+        await expect(loadNativeTemplate(join(here, "../../__fixtures__/generate/native/missing.ts"))).rejects.toThrow(expect.anything());
     });
 });

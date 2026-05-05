@@ -15,6 +15,7 @@ import { cacheListExecute, cacheSizeExecute } from "../../../src/commands/cache/
 // on the fixture's own `.git`.
 for (const key of Object.keys(process.env)) {
     if (key.startsWith("GIT_")) {
+        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- key is iterated over process.env so it must be dynamic
         delete process.env[key];
     }
 }
@@ -115,6 +116,7 @@ describe("cache --scope CLI dispatch", () => {
     it("--scope=shared reads only the main worktree's cache from a linked checkout", async () => {
         expect.assertions(3);
 
+        // eslint-disable-next-line vitest/no-conditional-in-test -- skip when git is missing
         if (!hasGit) {
             return;
         }
@@ -159,6 +161,7 @@ describe("cache --scope CLI dispatch", () => {
     it("--scope=worktree reads only the linked checkout's local cache", async () => {
         expect.assertions(3);
 
+        // eslint-disable-next-line vitest/no-conditional-in-test -- skip when git is missing
         if (!hasGit) {
             return;
         }
@@ -203,6 +206,7 @@ describe("cache --scope CLI dispatch", () => {
     it("--scope=all reads from both cache directories", async () => {
         expect.assertions(3);
 
+        // eslint-disable-next-line vitest/no-conditional-in-test -- skip when git is missing
         if (!hasGit) {
             return;
         }
@@ -249,6 +253,7 @@ describe("cache --scope CLI dispatch", () => {
     it("--scope=all dedupes when shared and worktree resolve to the same path (primary checkout)", async () => {
         expect.assertions(2);
 
+        // eslint-disable-next-line vitest/no-conditional-in-test -- skip when git is missing
         if (!hasGit) {
             return;
         }
@@ -284,6 +289,7 @@ describe("cache --scope CLI dispatch", () => {
     it("falls back to 'shared' when an unknown --scope value is passed", async () => {
         expect.assertions(2);
 
+        // eslint-disable-next-line vitest/no-conditional-in-test -- skip when git is missing
         if (!hasGit) {
             return;
         }

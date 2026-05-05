@@ -15,6 +15,7 @@ import { DEFAULT_CACHE_DIRECTORY_NAME, resolveSharedCacheDirectory } from "../..
 // on the fixture's own `.git`.
 for (const key of Object.keys(process.env)) {
     if (key.startsWith("GIT_")) {
+        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- key is iterated over process.env so it must be dynamic
         delete process.env[key];
     }
 }
@@ -73,6 +74,7 @@ describe(resolveSharedCacheDirectory, () => {
     it("returns the workspace-root cache for a primary checkout", () => {
         expect.assertions(1);
 
+        // eslint-disable-next-line vitest/no-conditional-in-test -- skip when git is missing
         if (!hasGit) {
             return;
         }
@@ -88,6 +90,7 @@ describe(resolveSharedCacheDirectory, () => {
     it("redirects a linked worktree to the main worktree's cache", () => {
         expect.assertions(2);
 
+        // eslint-disable-next-line vitest/no-conditional-in-test -- skip when git is missing
         if (!hasGit) {
             return;
         }
@@ -116,6 +119,7 @@ describe(resolveSharedCacheDirectory, () => {
     it("uses the linked checkout's cache when sharedWorktreeCache is false", () => {
         expect.assertions(1);
 
+        // eslint-disable-next-line vitest/no-conditional-in-test -- skip when git is missing
         if (!hasGit) {
             return;
         }
@@ -139,6 +143,7 @@ describe(resolveSharedCacheDirectory, () => {
     it("prefers an explicit CLI override over both worktree-share and the env var", () => {
         expect.assertions(1);
 
+        // eslint-disable-next-line vitest/no-conditional-in-test -- skip when git is missing
         if (!hasGit) {
             return;
         }
@@ -189,6 +194,7 @@ describe(resolveSharedCacheDirectory, () => {
     it("skips worktree-share remapping when VIS_CACHE_DIRECTORY is set (explicit wins)", () => {
         expect.assertions(1);
 
+        // eslint-disable-next-line vitest/no-conditional-in-test -- skip when git is missing
         if (!hasGit) {
             return;
         }

@@ -118,7 +118,7 @@ describe(buildDiscoveryPayload, () => {
         ]);
 
         expect(payload.subcommands[0]?.examples).toHaveLength(2);
-        expect(payload.subcommands[0]?.examples[0]).toEqual({
+        expect(payload.subcommands[0]?.examples[0]).toStrictEqual({
             command: "vis ai providers",
             description: "List all providers",
         });

@@ -8,10 +8,12 @@ import { isAdvisoryExcluded, isPackageExcluded, readNativeAuditExclusions, syncA
 
 let tmpDir: string;
 
+// eslint-disable-next-line vitest/require-top-level-describe -- shared between sibling describes; wrapping each independently would fragment the `tmpDir` lifecycle
 beforeEach(() => {
     tmpDir = mkdtempSync(join(tmpdir(), "vis-audit-config-"));
 });
 
+// eslint-disable-next-line vitest/require-top-level-describe -- shared between sibling describes
 afterEach(() => {
     rmSync(tmpDir, { force: true, recursive: true });
 });

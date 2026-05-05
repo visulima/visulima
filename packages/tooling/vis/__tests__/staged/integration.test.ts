@@ -58,7 +58,7 @@ describe("runStaged — integration", () => {
         });
 
         expect(result.success).toBe(true);
-        expect(touched).toEqual([join(root, "note.txt")]);
+        expect(touched).toStrictEqual([join(root, "note.txt")]);
     });
 
     it("fails the run when a task throws", async () => {
@@ -161,7 +161,7 @@ describe("runStaged — integration", () => {
 
         expect(result.success).toBe(true);
         // The task sees only the staged content — the unstaged hunk is hidden for the run.
-        expect(seenByTask).toEqual(["line-1 staged\n"]);
+        expect(seenByTask).toStrictEqual(["line-1 staged\n"]);
         // After the run, the working tree is back to staged + unstaged combined.
         expect(readFileSync(join(root, "a.txt"), "utf8")).toBe("line-1 staged\nunstaged-hunk\n");
         // No residual backup stash on success.
@@ -380,7 +380,7 @@ describe("runStaged — integration", () => {
         });
 
         expect(result.success).toBe(true);
-        expect(invokedWith).toEqual([join(root, "a.txt")]);
+        expect(invokedWith).toStrictEqual([join(root, "a.txt")]);
     });
 
     it("rejects a function config that returns a malformed mapping", async () => {
@@ -537,7 +537,7 @@ describe("runStaged — integration", () => {
         });
 
         expect(result.success).toBe(true);
-        expect(seen).toEqual([join(root, "a.txt")]);
+        expect(seen).toStrictEqual([join(root, "a.txt")]);
     });
 
     it("handles partially-staged rename entries without losing the new path", async () => {
@@ -570,7 +570,7 @@ describe("runStaged — integration", () => {
 
         expect(result.success).toBe(true);
         // The task sees only the staged content (unstaged edit hidden).
-        expect(seen).toEqual(["content\n"]);
+        expect(seen).toStrictEqual(["content\n"]);
         // After the run, working tree has staged + unstaged combined.
         expect(readFileSync(join(root, "new.txt"), "utf8")).toBe("content\nunstaged-extra\n");
     });
@@ -631,7 +631,7 @@ describe("runStaged — integration", () => {
 
         expect(result.success).toBe(true);
         // Task sees staged content only (no unstaged extras). Compare as sorted sets since git's file order is not guaranteed.
-        expect([...seenByTask].sort()).toEqual([...layout.map(([, staged]) => `${staged}// staged tweak\n`)].sort());
+        expect([...seenByTask].sort()).toStrictEqual([...layout.map(([, staged]) => `${staged}// staged tweak\n`)].sort());
 
         // Every file on disk has the combined staged+unstaged content after restore.
         for (const [relative, staged, unstagedExtra] of layout) {
@@ -674,7 +674,7 @@ describe("runStaged — integration", () => {
 
         expect(result.success).toBe(true);
         // The ignore list must drop a.test.ts even though `*.ts` would otherwise have picked it up.
-        expect(seen).toEqual(["a.ts"]);
+        expect(seen).toStrictEqual(["a.ts"]);
     });
 
     it("preserves MERGE_HEAD/MERGE_MSG/MERGE_MODE across a staged run mid-merge", async () => {
@@ -770,7 +770,7 @@ describe("runStaged — integration", () => {
 
         expect(result.success).toBe(true);
         // Only the fully-staged file reaches the task.
-        expect(seen).toEqual(["a.txt"]);
+        expect(seen).toStrictEqual(["a.txt"]);
         // Unstaged edit on a.txt survives the round trip.
         expect(readFileSync(join(root, "a.txt"), "utf8")).toBe("staged\nunstaged\n");
         // new.txt is still present on disk after the run (intent-to-add was preserved, not promoted to a real add).
@@ -1035,7 +1035,7 @@ describe("runStaged — integration", () => {
 
         expect(result.success).toBe(true);
         // During task execution the untracked file was hidden (stashed).
-        expect(sawUntrackedDuringRun).toEqual([false]);
+        expect(sawUntrackedDuringRun).toStrictEqual([false]);
         // After the run the untracked file is back.
         expect(readFileSync(join(root, "untracked.log"), "utf8")).toBe("debug log\n");
     });
@@ -1074,7 +1074,7 @@ describe("runStaged — integration", () => {
 
         expect(result.success).toBe(true);
         // Task saw the symlink as a link, not a resolved file.
-        expect(observed).toEqual([{ linkTarget: "target.txt", lstat: true }]);
+        expect(observed).toStrictEqual([{ linkTarget: "target.txt", lstat: true }]);
         // After the run the link still exists on disk.
         expect(lstatSync(join(root, "link.txt")).isSymbolicLink()).toBe(true);
         expect(readlinkSync(join(root, "link.txt"))).toBe("target.txt");
@@ -1132,7 +1132,7 @@ describe("runStaged — integration", () => {
         // No vis backup stash left behind — revert dropped it.
         expect(sh(["stash", "list"], root)).not.toMatch(/vis_staged_automatic_backup/);
         // Our SIGINT handler removed itself during cleanup.
-        expect(process.listeners("SIGINT").filter((fn) => !preListeners.has(fn))).toEqual([]);
+        expect(process.listeners("SIGINT").filter((fn) => !preListeners.has(fn))).toStrictEqual([]);
     });
 
     it("passes through staged submodule gitlinks (mode 160000) without trying to stash inside the submodule", async () => {
@@ -1183,7 +1183,7 @@ describe("runStaged — integration", () => {
 
         expect(result.success).toBe(true);
         // Task received the gitlink path (not its inner contents).
-        expect(seen).toEqual(["vendor/sub"]);
+        expect(seen).toStrictEqual(["vendor/sub"]);
         // The submodule gitlink is still staged after the run — nothing lost in the stash dance.
         expect(sh(["diff", "--cached", "--name-only", "vendor/sub"], root)).toBe("vendor/sub");
 

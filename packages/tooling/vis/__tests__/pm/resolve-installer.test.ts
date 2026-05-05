@@ -16,7 +16,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-let availableBinaries = new Set<string>();
+let availableBinaries: Set<string>;
 
 vi.mock(import("@visulima/vis/native"), async () => {
     const actual = await vi.importActual<typeof import("@visulima/vis/native")>("@visulima/vis/native");
@@ -31,20 +31,20 @@ const { resolveInstaller } = await import("../../src/pm/pm-runner");
 
 const ORIGINAL_VIS_INSTALLER = process.env.VIS_INSTALLER;
 
-beforeEach(() => {
-    availableBinaries = new Set();
-    delete process.env.VIS_INSTALLER;
-});
-
-afterEach(() => {
-    if (ORIGINAL_VIS_INSTALLER === undefined) {
-        delete process.env.VIS_INSTALLER;
-    } else {
-        process.env.VIS_INSTALLER = ORIGINAL_VIS_INSTALLER;
-    }
-});
-
 describe("resolveInstaller precedence", () => {
+    beforeEach(() => {
+        availableBinaries = new Set();
+        delete process.env.VIS_INSTALLER;
+    });
+
+    afterEach(() => {
+        if (ORIGINAL_VIS_INSTALLER === undefined) {
+            delete process.env.VIS_INSTALLER;
+        } else {
+            process.env.VIS_INSTALLER = ORIGINAL_VIS_INSTALLER;
+        }
+    });
+
     it("cLI flag wins over env var, config, and auto-detect", () => {
         expect.assertions(1);
 

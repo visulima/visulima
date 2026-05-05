@@ -67,6 +67,26 @@ const sortPackageJson: Command = {
             name: "line-ending",
             type: String,
         },
+        {
+            description: "Disable collapsing `bugs: { url }` to the bare string form (default: enabled).",
+            name: "no-format-bugs",
+            type: Boolean,
+        },
+        {
+            description: "Disable collapsing `repository: { type, url }` to the GitHub `owner/repo` shorthand (default: enabled).",
+            name: "no-format-repository",
+            type: Boolean,
+        },
+        {
+            description: "Disable canonical sorting of `exports` condition keys (default: enabled).",
+            name: "no-sort-exports",
+            type: Boolean,
+        },
+        {
+            description: "Disable .editorconfig discovery for indent / line-ending defaults (default: enabled).",
+            name: "no-editorconfig",
+            type: Boolean,
+        },
     ],
 };
 
@@ -74,10 +94,14 @@ export default sortPackageJson;
 
 export type SortPackageJsonOptions = CreateOptions<{
     check: boolean | undefined;
+    editorconfig: boolean | undefined;
     "final-newline": boolean | undefined;
+    "format-bugs": boolean | undefined;
+    "format-repository": boolean | undefined;
     ignore: string[] | undefined;
     indent: string | undefined;
     "line-ending": string | undefined;
+    "sort-exports": boolean | undefined;
     "sort-order": string[] | undefined;
     "sort-scripts": boolean | undefined;
     unsorted: string[] | undefined;

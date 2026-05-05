@@ -7,65 +7,67 @@ import { migrateNx } from "../../../src/commands/migrate/nx";
 import { createMigrationReport } from "../../../src/commands/migrate/types";
 import { cleanupTemporaryDirectory, createMockLogger, createTemporaryDirectory } from "../../test-helpers";
 
-let tmpDir: string;
+describe("migrate-nx", () => {
+    let tmpDir: string;
 
-beforeEach(() => {
-    tmpDir = createTemporaryDirectory("vis-migrate-nx-");
-});
-
-afterEach(() => {
-    cleanupTemporaryDirectory(tmpDir);
-});
-
-describe(migrateNx, () => {
-    it("should warn and skip when no nx.json exists", () => {
-        expect.assertions(1);
-
-        const report = createMigrationReport();
-
-        migrateNx(tmpDir, {}, createMockLogger(), report);
-
-        expect(report.warnings).toContain("No nx.json at workspace root.");
+    beforeEach(() => {
+        tmpDir = createTemporaryDirectory("vis-migrate-nx-");
     });
 
-    it("should generate vis.config.ts from nx.json", () => {
-        expect.assertions(3);
-
-        writeFileSync(
-            join(tmpDir, "nx.json"),
-            JSON.stringify({
-                namedInputs: { production: ["src/**"] },
-                targetDefaults: { build: { cache: true, outputs: ["dist/**"] } },
-            }),
-        );
-
-        const report = createMigrationReport();
-
-        migrateNx(tmpDir, {}, createMockLogger(), report);
-
-        const configPath = join(tmpDir, "vis.config.ts");
-
-        expect(existsSync(configPath)).toBe(true);
-
-        const content = readFileSync(configPath, "utf8");
-
-        expect(content).toContain("namedInputs");
-        expect(content).toContain("targetDefaults");
+    afterEach(() => {
+        cleanupTemporaryDirectory(tmpDir);
     });
 
-    it("should note default base branch when present", () => {
-        expect.assertions(3);
+    describe(migrateNx, () => {
+        it("should warn and skip when no nx.json exists", () => {
+            expect.assertions(1);
 
-        writeFileSync(join(tmpDir, "nx.json"), JSON.stringify({ defaultBase: "develop" }));
+            const report = createMigrationReport();
 
-        const report = createMigrationReport();
+            migrateNx(tmpDir, {}, createMockLogger(), report);
 
-        migrateNx(tmpDir, {}, createMockLogger(), report);
+            expect(report.warnings).toContain("No nx.json at workspace root.");
+        });
 
-        const baseStep = report.manualSteps.find((s) => s.includes("default base branch"));
+        it("should generate vis.config.ts from nx.json", () => {
+            expect.assertions(3);
 
-        expect(baseStep).toBeDefined();
-        expect(baseStep).toContain("develop");
-        expect(baseStep).toContain("--base");
+            writeFileSync(
+                join(tmpDir, "nx.json"),
+                JSON.stringify({
+                    namedInputs: { production: ["src/**"] },
+                    targetDefaults: { build: { cache: true, outputs: ["dist/**"] } },
+                }),
+            );
+
+            const report = createMigrationReport();
+
+            migrateNx(tmpDir, {}, createMockLogger(), report);
+
+            const configPath = join(tmpDir, "vis.config.ts");
+
+            expect(existsSync(configPath)).toBe(true);
+
+            const content = readFileSync(configPath, "utf8");
+
+            expect(content).toContain("namedInputs");
+            expect(content).toContain("targetDefaults");
+        });
+
+        it("should note default base branch when present", () => {
+            expect.assertions(3);
+
+            writeFileSync(join(tmpDir, "nx.json"), JSON.stringify({ defaultBase: "develop" }));
+
+            const report = createMigrationReport();
+
+            migrateNx(tmpDir, {}, createMockLogger(), report);
+
+            const baseStep = report.manualSteps.find((s) => s.includes("default base branch"));
+
+            expect(baseStep).toBeDefined();
+            expect(baseStep).toContain("develop");
+            expect(baseStep).toContain("--base");
+        });
     });
 });

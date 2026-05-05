@@ -46,8 +46,8 @@ describe(parseFilterPatterns, () => {
     it("returns empty list for undefined or empty", () => {
         expect.assertions(2);
 
-        expect(parseFilterPatterns(undefined)).toEqual([]);
-        expect(parseFilterPatterns("")).toEqual([]);
+        expect(parseFilterPatterns(undefined)).toStrictEqual([]);
+        expect(parseFilterPatterns("")).toStrictEqual([]);
     });
 
     it("compiles literal package names to anchored regex", () => {
@@ -101,8 +101,8 @@ describe(applyFilter, () => {
         const patterns = parseFilterPatterns("react");
         const out = applyFilter(baseResults, patterns);
 
-        expect(out.outdated.map((o) => o.packageName)).toEqual(["react"]);
-        expect(out.duplicates.map((d) => d.name)).toEqual(["react"]);
+        expect(out.outdated.map((o) => o.packageName)).toStrictEqual(["react"]);
+        expect(out.duplicates.map((d) => d.name)).toStrictEqual(["react"]);
         expect(out.optimizations).toHaveLength(0);
     });
 
@@ -112,7 +112,7 @@ describe(applyFilter, () => {
         const patterns = parseFilterPatterns("@types/*");
         const out = applyFilter(baseResults, patterns);
 
-        expect(out.outdated.map((o) => o.packageName)).toEqual(["@types/node"]);
+        expect(out.outdated.map((o) => o.packageName)).toStrictEqual(["@types/node"]);
         expect(out.duplicates).toHaveLength(0);
     });
 });
@@ -162,7 +162,7 @@ describe(filterFindingsByPattern, () => {
         const findings = [makeFinding("runtime", "node-version"), makeFinding("outdated", "lodash")];
         const out = filterFindingsByPattern(findings, parseFilterPatterns("react"));
 
-        expect(out.map((f) => f.id)).toEqual(["rt:node-version"]);
+        expect(out.map((f) => f.id)).toStrictEqual(["rt:node-version"]);
     });
 
     it("returns the input list unchanged when no patterns", () => {
@@ -171,6 +171,6 @@ describe(filterFindingsByPattern, () => {
         const findings = [makeFinding("outdated", "react"), makeFinding("duplicate", "lodash")];
         const out = filterFindingsByPattern(findings, []);
 
-        expect(out).toEqual(findings);
+        expect(out).toStrictEqual(findings);
     });
 });

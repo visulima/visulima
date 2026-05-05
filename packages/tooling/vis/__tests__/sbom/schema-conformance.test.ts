@@ -69,7 +69,7 @@ describe("cycloneDX 1.6 schema conformance", () => {
 
         const result = validateBom(buildFixtureBom());
 
-        expect(result).toEqual({ errors: [], valid: true });
+        expect(result).toStrictEqual({ errors: [], valid: true });
     });
 
     it("should accept a BOM expressed as an SPDX licence expression", () => {

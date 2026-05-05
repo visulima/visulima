@@ -1515,7 +1515,7 @@ describe(checkOutdated, () => {
 
         expect(result.outdated).toHaveLength(1);
         expect(result.ignored).toHaveLength(2);
-        expect(result.ignored).toEqual(expect.arrayContaining(["@types/node", "@types/react"]));
+        expect(result.ignored).toStrictEqual(expect.arrayContaining(["@types/node", "@types/react"]));
 
         vi.restoreAllMocks();
     });
@@ -3638,6 +3638,79 @@ describe(fetchChangelogInfo, () => {
 
         expect(result).toHaveLength(2);
         expect(result[0]?.releaseUrl).toContain("pkg-a");
+
+        vi.restoreAllMocks();
+    });
+
+    it("routes scoped packages to the configured private registry", async () => {
+        expect.assertions(3);
+
+        const requestedUrls: string[] = [];
+        const requestedAuth: (string | undefined)[] = [];
+
+        vi.spyOn(globalThis, "fetch").mockImplementation(async (input: RequestInfo | URL, init?: RequestInit) => {
+            requestedUrls.push(typeof input === "string" ? input : input.toString());
+            const authHeader = (init?.headers as Record<string, string> | undefined)?.Authorization;
+
+            requestedAuth.push(authHeader);
+
+            return {
+                json: async () => {
+                    return { repository: { url: "git+https://github.com/myorg/lib.git" } };
+                },
+                ok: true,
+            } as Response;
+        });
+
+        const config = {
+            authTokens: new Map([["npm.myorg.com", "secret-token"]]),
+            defaultRegistry: "https://registry.npmjs.org",
+            registries: new Map([["@myorg", "https://npm.myorg.com"]]),
+        };
+
+        await fetchChangelogInfo(
+            [{ catalogName: "default", currentRange: "^1.0.0", newRange: "^2.0.0", packageName: "@myorg/lib", targetVersion: "2.0.0", updateType: "major" }],
+            10_000,
+            config,
+        );
+
+        expect(requestedUrls[0]).toBe("https://npm.myorg.com/@myorg/lib");
+        expect(requestedAuth[0]).toBe("Bearer secret-token");
+        expect(requestedUrls).toHaveLength(1);
+
+        vi.restoreAllMocks();
+    });
+
+    it("falls back to the public registry for unscoped packages", async () => {
+        expect.assertions(2);
+
+        const requestedUrls: string[] = [];
+
+        vi.spyOn(globalThis, "fetch").mockImplementation(async (input: RequestInfo | URL) => {
+            requestedUrls.push(typeof input === "string" ? input : input.toString());
+
+            return {
+                json: async () => {
+                    return {};
+                },
+                ok: true,
+            } as Response;
+        });
+
+        const config = {
+            authTokens: new Map(),
+            defaultRegistry: "https://registry.npmjs.org",
+            registries: new Map([["@myorg", "https://npm.myorg.com"]]),
+        };
+
+        await fetchChangelogInfo(
+            [{ catalogName: "default", currentRange: "^1.0.0", newRange: "^2.0.0", packageName: "react", targetVersion: "19.0.0", updateType: "major" }],
+            10_000,
+            config,
+        );
+
+        expect(requestedUrls[0]).toBe("https://registry.npmjs.org/react");
+        expect(requestedUrls).toHaveLength(1);
 
         vi.restoreAllMocks();
     });

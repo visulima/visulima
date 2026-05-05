@@ -119,7 +119,7 @@ describe("services/registry", () => {
 
             await writeEntry(workspaceRoot, entry);
 
-            await expect(readEntry(workspaceRoot, "pkg:db")).resolves.toEqual(entry);
+            await expect(readEntry(workspaceRoot, "pkg:db")).resolves.toStrictEqual(entry);
         });
 
         it("returns undefined for an unknown id", async () => {
@@ -137,7 +137,7 @@ describe("services/registry", () => {
             const ids = all.map((e) => e.id).sort();
 
             expect(all).toHaveLength(2);
-            expect(ids).toEqual(["a:db", "b:cache"]);
+            expect(ids).toStrictEqual(["a:db", "b:cache"]);
         });
     });
 
@@ -185,7 +185,7 @@ describe("services/registry", () => {
 
             const { pruned, surviving } = await pruneDead(workspaceRoot);
 
-            expect(pruned).toEqual(["dead:svc"]);
+            expect(pruned).toStrictEqual(["dead:svc"]);
             expect(surviving).toHaveLength(1);
             expect(surviving[0]?.id).toBe("alive:svc");
             await expect(readEntry(workspaceRoot, "dead:svc")).resolves.toBeUndefined();
@@ -199,8 +199,8 @@ describe("services/registry", () => {
 
             const result = await pruneDead(workspaceRoot);
 
-            expect(result.pruned).toEqual([]);
-            expect(result.surviving.map((e) => e.id)).toEqual(["alive:svc"]);
+            expect(result.pruned).toStrictEqual([]);
+            expect(result.surviving.map((e) => e.id)).toStrictEqual(["alive:svc"]);
         });
     });
 

@@ -34,7 +34,9 @@ import implodeCommand from "./commands/implode";
 import infoCommand from "./commands/info";
 import initCommand from "./commands/init";
 import installCommand from "./commands/install";
+import jsonCommands from "./commands/json";
 import linkCommand from "./commands/link";
+import lintCommand from "./commands/lint";
 import listCommand from "./commands/list";
 import migrateCommands from "./commands/migrate";
 import { isBareMigrateInvocation } from "./commands/migrate/detect-bare";
@@ -137,6 +139,7 @@ cli.addCommand(replayCommand);
 cli.addCommand(ignoreCommand);
 cli.addCommand(updateCommand);
 cli.addCommand(checkCommand);
+cli.addCommand(lintCommand);
 cli.addCommand(analyzeCommand);
 cli.addCommand(sortPackageJsonCommand);
 cli.addCommand(stagedCommand);
@@ -189,6 +192,10 @@ for (const command of migrateCommands) {
 }
 
 for (const command of cacheCommands) {
+    cli.addCommand(command);
+}
+
+for (const command of jsonCommands) {
     cli.addCommand(command);
 }
 

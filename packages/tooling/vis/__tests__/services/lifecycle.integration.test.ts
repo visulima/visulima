@@ -72,7 +72,7 @@ describe("services/lifecycle — end-to-end", () => {
     let workspaceRoot: string;
     let homeOverride: string;
     let originalHome: string | undefined;
-    let toCleanup: number[] = [];
+    let toCleanup: number[];
 
     beforeEach(() => {
         workspaceRoot = createTemporaryDirectory("vis-int-lc-ws-");
@@ -169,10 +169,10 @@ describe("services/lifecycle — end-to-end", () => {
         // The db service is pruned out of the graph; the test target
         // remains and inherits db's env via the precomputed map. This
         // is the contract `runConcurrentTasks` relies on.
-        expect(attachResult.diagnostics).toEqual([]);
+        expect(attachResult.diagnostics).toStrictEqual([]);
         expect(attachResult.taskGraph.tasks[dbId]).toBeUndefined();
         expect(attachResult.taskGraph.tasks[testId]).toBeDefined();
-        expect(attachResult.serviceEnvByTaskId.get(testId)).toEqual({
+        expect(attachResult.serviceEnvByTaskId.get(testId)).toStrictEqual({
             DB_URL: `postgres://127.0.0.1:${String(port)}/app`,
         });
 
@@ -184,7 +184,7 @@ describe("services/lifecycle — end-to-end", () => {
         await sleep(150);
 
         await expect(readEntry(workspaceRoot, dbId)).resolves.toBeUndefined();
-        await expect(readAllEntries(workspaceRoot)).resolves.toEqual([]);
+        await expect(readAllEntries(workspaceRoot)).resolves.toStrictEqual([]);
 
         // 5) re-attach with the service gone — the same graph now
         //    surfaces an actionable diagnostic instead of attaching.
@@ -281,6 +281,6 @@ describe("services/lifecycle — end-to-end", () => {
         // to *start*.
         expect(attachResult.diagnostics).toHaveLength(1);
         expect(attachResult.diagnostics[0]?.message).toMatch(/vis service restart/);
-        expect(attachResult.satisfiedServices).toEqual([]);
+        expect(attachResult.satisfiedServices).toStrictEqual([]);
     });
 });

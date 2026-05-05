@@ -20,6 +20,7 @@ describe("vis generate — CLI surface", () => {
     it("exposes a stable Command shape", () => {
         expect.assertions(1);
 
+        // eslint-disable-next-line vitest/no-large-snapshots -- full surface is the point of this test; truncating would defeat the purpose
         expect(stripExecute(generateCommand as unknown as CommandLike)).toMatchInlineSnapshot(`
           {
             "argument": {

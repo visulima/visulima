@@ -235,7 +235,7 @@ describe(discoverTemplate, () => {
 
         const config = discoverTemplate("vite", ["--template", "react-ts"]);
 
-        expect(config.args).toEqual(["--template", "react-ts"]);
+        expect(config.args).toStrictEqual(["--template", "react-ts"]);
     });
 
     it("should preserve full URL as source for giget to parse", () => {

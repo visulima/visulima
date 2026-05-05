@@ -116,7 +116,7 @@ describe("moon adapter — error paths", () => {
     it("should throw when template.yml is missing", () => {
         expect.assertions(1);
 
-        expect(() => loadMoonTemplate(join(here, "../../__fixtures__/generate/does-not-exist"), "x")).toThrow();
+        expect(() => loadMoonTemplate(join(here, "../../__fixtures__/generate/does-not-exist"), "x")).toThrow(expect.anything());
     });
 });
 

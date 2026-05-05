@@ -46,7 +46,7 @@ describe("features catalog", () => {
 
         const names = FEATURE_CATALOG.map((f) => f.name);
 
-        expect(names).toEqual(expect.arrayContaining(["Node.js", "Python", "Go", "Rust", "Java"]));
+        expect(names).toStrictEqual(expect.arrayContaining(["Node.js", "Python", "Go", "Rust", "Java"]));
     });
 });
 
@@ -93,7 +93,7 @@ describe("templates", () => {
 
         const ids = TEMPLATES.map((t) => t.id);
 
-        expect(ids).toEqual(
+        expect(ids).toStrictEqual(
             expect.arrayContaining([
                 "node",
                 "node-pnpm",
@@ -132,7 +132,7 @@ describe(filterFeatures, () => {
     it("should return all features with empty search", () => {
         expect.assertions(1);
 
-        expect(filterFeatures("")).toEqual(FEATURE_CATALOG);
+        expect(filterFeatures("")).toStrictEqual(FEATURE_CATALOG);
     });
 
     it("should filter by name", () => {
@@ -160,7 +160,7 @@ describe(filterFeatures, () => {
         const upper = filterFeatures("PYTHON");
         const lower = filterFeatures("python");
 
-        expect(upper).toEqual(lower);
+        expect(upper).toStrictEqual(lower);
     });
 
     it("should return empty for non-matching query", () => {
@@ -174,7 +174,7 @@ describe(filterExtensions, () => {
     it("should return all extensions with empty search", () => {
         expect.assertions(1);
 
-        expect(filterExtensions("")).toEqual(EXTENSION_CATALOG);
+        expect(filterExtensions("")).toStrictEqual(EXTENSION_CATALOG);
     });
 
     it("should filter by name", () => {
@@ -201,7 +201,7 @@ describe("mount suggestions", () => {
         const mounts = getSuggestedMounts("pnpm", {}, []);
 
         expect(mounts.length).toBeGreaterThan(0);
-        expect(mounts).toEqual(PM_MOUNTS.pnpm);
+        expect(mounts).toStrictEqual(PM_MOUNTS.pnpm);
     });
 
     it("should suggest npm mounts for npm package manager", () => {
@@ -209,7 +209,7 @@ describe("mount suggestions", () => {
 
         const mounts = getSuggestedMounts("npm", {}, []);
 
-        expect(mounts).toEqual(PM_MOUNTS.npm);
+        expect(mounts).toStrictEqual(PM_MOUNTS.npm);
     });
 
     it("should return empty when no PM detected and no features", () => {

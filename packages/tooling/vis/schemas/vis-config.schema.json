@@ -368,6 +368,110 @@
             },
             "description": "Plugins — each plugin registers typed hooks that fire at run / task / cache boundaries. See  {@link  VisPlugin }  for the contract. Prefer plugins over per-target shell hooks when behaviour needs access to task metadata, results, or cache state."
         },
+        "policy": {
+            "type": "object",
+            "properties": {
+                "bannedDeps": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "reason": {
+                                        "type": "string"
+                                    },
+                                    "replacement": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "reason"
+                                ],
+                                "additionalProperties": false
+                            }
+                        ]
+                    },
+                    "description": "Map of dep names or globs → reason (or `{ reason, replacement }`). Internal/workspace deps are never flagged here; the workspace-protocol lint owns those."
+                },
+                "redefineRoot": {
+                    "type": "object",
+                    "properties": {
+                        "ignore": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            },
+                            "description": "Dep names that are exempt from the redefine-root rule (exact match)."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "description": "Tweak the redefine-root lint that flags non-root packages duplicating deps already pinned at the workspace root."
+                },
+                "workspaceProtocol": {
+                    "type": "object",
+                    "properties": {
+                        "autofix": {
+                            "anyOf": [
+                                {
+                                    "type": "string",
+                                    "const": "prompt"
+                                },
+                                {
+                                    "type": "boolean"
+                                }
+                            ],
+                            "description": "Three-state autofix opt-out. Some workspaces want detection without rewrite (e.g. dual-licensed packages where `workspace:*` is unsafe).\n- `true` (default): `--fix` rewrites the specifier.\n- `false`: never rewrite — report the violation only.\n- `\"prompt\"`: ask before each rewrite. Falls back to report-only   when stdin isn't a TTY (CI). Reserved; not yet implemented.\n\nNote: when `false` (or `\"prompt\"`), `--fix` still **fails CI** on detected violations — the rule is \"report only\", not \"ignore\". Drop the rule from the lint selection if you want a clean exit.",
+                            "default": true
+                        }
+                    },
+                    "additionalProperties": false,
+                    "description": "Tweak the workspace-protocol lint that flags internal deps not using the `workspace:` protocol."
+                },
+                "workspaceVersions": {
+                    "type": "object",
+                    "properties": {
+                        "autofix": {
+                            "anyOf": [
+                                {
+                                    "type": "string",
+                                    "const": "prompt"
+                                },
+                                {
+                                    "type": "boolean"
+                                }
+                            ],
+                            "description": "Three-state autofix opt-out. See `workspaceProtocol.autofix` for the contract — same semantics, applied to drift rewrites.\n\nAlso gates the `--propose-min` catalog suggestion writer: when `false` / `\"prompt\"`, `--fix --propose-min` reports the proposed catalog entries but does not write `pnpm-workspace.yaml`. Same \"report only, still fails CI\" note applies as on `workspaceProtocol.autofix`.",
+                            "default": true
+                        },
+                        "ignore": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            },
+                            "description": "Dep names exempt from the version-drift check (exact match)."
+                        },
+                        "resolve": {
+                            "type": "string",
+                            "enum": [
+                                "catalog",
+                                "highest",
+                                "lowest"
+                            ],
+                            "description": "Resolution strategy used when `--fix` runs.\n- `highest` (default): rewrite every drifting instance to the   highest sibling specifier.\n- `lowest`: rewrite to the lowest.\n- `catalog`: rewrite any dep already pinned in a workspace catalog   to `catalog:` / `catalog:&lt;name>`. Catalog must exist; this lint   does not create the catalog (see `vis lint --resolve catalog --propose`).",
+                            "default": "highest"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "description": "Tweak the workspace-versions lint that flags external deps declared at inconsistent versions across the workspace."
+                }
+            },
+            "additionalProperties": false,
+            "description": "Workspace dep-policy lints exposed via `vis lint`. Each block opts in to a single rule; the command flags (`--workspace-protocol`, `--no-redefine-root`, `--banned-deps`) toggle them per-run."
+        },
         "preflight": {
             "type": "object",
             "properties": {
@@ -647,6 +751,22 @@
         "sortPackageJson": {
             "type": "object",
             "properties": {
+                "editorconfig": {
+                    "type": "boolean",
+                    "description": "Discover `.editorconfig` for indent / line-ending defaults (default: true)."
+                },
+                "formatBugs": {
+                    "type": "boolean",
+                    "description": "Collapse `bugs: { url }` to the bare string form when `url` is the only field (default: true)."
+                },
+                "formatRepository": {
+                    "type": "boolean",
+                    "description": "Collapse `repository: { type, url }` to the GitHub `owner/repo` shorthand (default: true)."
+                },
+                "sortExports": {
+                    "type": "boolean",
+                    "description": "Sort `exports` condition keys in canonical order (default: true)."
+                },
                 "sortScripts": {
                     "type": "boolean",
                     "description": "Alphabetize script commands (default: false)"

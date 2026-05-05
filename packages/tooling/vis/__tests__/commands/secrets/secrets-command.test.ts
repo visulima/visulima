@@ -24,7 +24,7 @@ describe("secrets command", () => {
 
         const names = (secretsCommand.options ?? []).map((option) => option.name);
 
-        expect(names).toEqual(
+        expect(names).toStrictEqual(
             expect.arrayContaining(["config", "format", "baseline", "redact", "include-hidden", "no-gitignore", "max-size", "update-baseline"]),
         );
     });

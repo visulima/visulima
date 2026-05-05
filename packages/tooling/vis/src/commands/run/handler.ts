@@ -959,9 +959,7 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
         // subset. Persistent tasks and the watch-retry path also read
         // `overrides.command` directly, so doing this once at build time
         // keeps every consumer in sync.
-        const expandedCommand = visTarget.command
-            ? expandTokensInString(visTarget.command, { affectedFiles, projectRoot: project?.root })
-            : visTarget.command;
+        const expandedCommand = visTarget.command ? expandTokensInString(visTarget.command, { affectedFiles, projectRoot: project?.root }) : visTarget.command;
 
         return {
             cache: visTarget.cache,

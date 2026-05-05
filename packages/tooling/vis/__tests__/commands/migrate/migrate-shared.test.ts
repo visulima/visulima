@@ -6,55 +6,57 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { readJsonConfig, serializeConfigObject } from "../../../src/commands/migrate/shared";
 import { cleanupTemporaryDirectory, createTemporaryDirectory } from "../../test-helpers";
 
-let tmpDir: string;
+describe("migrate-shared", () => {
+    let tmpDir: string;
 
-beforeEach(() => {
-    tmpDir = createTemporaryDirectory("vis-migrate-shared-");
-});
-
-afterEach(() => {
-    cleanupTemporaryDirectory(tmpDir);
-});
-
-describe(serializeConfigObject, () => {
-    it("should unquote simple keys", () => {
-        expect.assertions(2);
-
-        const result = serializeConfigObject({ baz: 42, foo: "bar" });
-
-        expect(result).toContain("foo:");
-        expect(result).not.toContain('"foo":');
+    beforeEach(() => {
+        tmpDir = createTemporaryDirectory("vis-migrate-shared-");
     });
 
-    it("should pretty-print with 4-space indent", () => {
-        expect.assertions(1);
-
-        const result = serializeConfigObject({ nested: { a: 1 } });
-
-        expect(result).toContain("    ");
-    });
-});
-
-describe(readJsonConfig, () => {
-    it("should return undefined for nonexistent file", () => {
-        expect.assertions(1);
-
-        expect(readJsonConfig(tmpDir, "missing.json")).toBeUndefined();
+    afterEach(() => {
+        cleanupTemporaryDirectory(tmpDir);
     });
 
-    it("should parse a valid JSON file", () => {
-        expect.assertions(1);
+    describe(serializeConfigObject, () => {
+        it("should unquote simple keys", () => {
+            expect.assertions(2);
 
-        writeFileSync(join(tmpDir, "test.json"), '{"key":"value"}');
+            const result = serializeConfigObject({ baz: 42, foo: "bar" });
 
-        expect(readJsonConfig(tmpDir, "test.json")).toStrictEqual({ key: "value" });
+            expect(result).toContain("foo:");
+            expect(result).not.toContain('"foo":');
+        });
+
+        it("should pretty-print with 4-space indent", () => {
+            expect.assertions(1);
+
+            const result = serializeConfigObject({ nested: { a: 1 } });
+
+            expect(result).toContain("    ");
+        });
     });
 
-    it("should throw on invalid JSON", () => {
-        expect.assertions(1);
+    describe(readJsonConfig, () => {
+        it("should return undefined for nonexistent file", () => {
+            expect.assertions(1);
 
-        writeFileSync(join(tmpDir, "bad.json"), "{invalid");
+            expect(readJsonConfig(tmpDir, "missing.json")).toBeUndefined();
+        });
 
-        expect(() => readJsonConfig(tmpDir, "bad.json")).toThrow(/Failed to parse/);
+        it("should parse a valid JSON file", () => {
+            expect.assertions(1);
+
+            writeFileSync(join(tmpDir, "test.json"), '{"key":"value"}');
+
+            expect(readJsonConfig(tmpDir, "test.json")).toStrictEqual({ key: "value" });
+        });
+
+        it("should throw on invalid JSON", () => {
+            expect.assertions(1);
+
+            writeFileSync(join(tmpDir, "bad.json"), "{invalid");
+
+            expect(() => readJsonConfig(tmpDir, "bad.json")).toThrow(/Failed to parse/);
+        });
     });
 });

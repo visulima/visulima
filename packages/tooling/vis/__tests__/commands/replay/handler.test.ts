@@ -258,7 +258,7 @@ describe("commands/replay/handler", () => {
             const written = (stdoutSpy.mock.calls[0]?.[0] as string) ?? "";
             const parsed = JSON.parse(written) as { tasks: { taskId: string }[] };
 
-            expect(parsed.tasks.map((t) => t.taskId)).toEqual(["@app:broken"]);
+            expect(parsed.tasks.map((t) => t.taskId)).toStrictEqual(["@app:broken"]);
         });
     });
 

@@ -13,14 +13,20 @@ const ajv = new Ajv2020({ allErrors: true, strict: false });
 
 describe("published JSON schemas", () => {
     it("vis-config.schema.json is a valid JSON Schema", () => {
+        expect.assertions(1);
+
         expect(() => ajv.compile(VIS_CONFIG_SCHEMA)).not.toThrow();
     });
 
     it("project.schema.json is a valid JSON Schema", () => {
+        expect.assertions(1);
+
         expect(() => ajv.compile(PROJECT_SCHEMA)).not.toThrow();
     });
 
     it("vis-config schema accepts a fully-populated config", () => {
+        expect.assertions(2);
+
         const validate = ajv.compile(VIS_CONFIG_SCHEMA);
         const config = {
             ai: { cacheTtl: 3_600_000, provider: "claude" },
@@ -47,10 +53,12 @@ describe("published JSON schemas", () => {
         };
 
         expect(validate(config)).toBe(true);
-        expect(validate.errors ?? []).toEqual([]);
+        expect(validate.errors ?? []).toStrictEqual([]);
     });
 
     it("project schema accepts a fully-populated project.json", () => {
+        expect.assertions(2);
+
         const validate = ajv.compile(PROJECT_SCHEMA);
         const project = {
             $schema: "https://unpkg.com/@visulima/vis/schemas/project.schema.json",
@@ -69,29 +77,33 @@ describe("published JSON schemas", () => {
         };
 
         expect(validate(project)).toBe(true);
-        expect(validate.errors ?? []).toEqual([]);
+        expect(validate.errors ?? []).toStrictEqual([]);
     });
 
     it("vis-config schema rejects unknown top-level keys", () => {
+        expect.assertions(1);
+
         const validate = ajv.compile(VIS_CONFIG_SCHEMA);
 
         expect(validate({ unknownField: 1 })).toBe(false);
     });
 
     it("project schema rejects unknown top-level keys", () => {
+        expect.assertions(1);
+
         const validate = ajv.compile(PROJECT_SCHEMA);
 
         expect(validate({ unknownField: 1 })).toBe(false);
     });
 
     describe("drift guard — committed schemas match the generator output", () => {
-        for (const spec of SCHEMAS) {
-            it(`${spec.file} is up to date with src/config/types.ts`, () => {
-                const onDisk = readFileSync(schemaOutputPath(spec), "utf8");
-                const expected = buildSchema(spec);
+        it.each(SCHEMAS)("$file is up to date with src/config/types.ts", (spec) => {
+            expect.assertions(1);
 
-                expect(onDisk).toBe(expected);
-            });
-        }
+            const onDisk = readFileSync(schemaOutputPath(spec), "utf8");
+            const expected = buildSchema(spec);
+
+            expect(onDisk).toBe(expected);
+        });
     });
 });
