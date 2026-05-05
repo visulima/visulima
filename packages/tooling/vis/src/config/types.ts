@@ -440,6 +440,45 @@ export interface VisConfig {
         bannedDeps?: Record<string, string | { reason: string; replacement?: string }>;
 
         /**
+         * Tweak the custom-types lint that flags drift in `engines.{node,pnpm,...}`,
+         * `packageManager`, `volta.{node,pnpm,yarn}`, and the proposed
+         * `devEngines.{runtime,packageManager}` array form.
+         *
+         * Each (customType × name) cluster is tracked independently —
+         * `engines.node` and `volta.node` don't cross-couple here. Use a
+         * versionGroup once that lands if you need to enforce they agree.
+         */
+        customTypes?: {
+            /**
+             * Three-state autofix opt-out. See `workspaceProtocol.autofix`
+             * for the contract — same semantics, applied to drift rewrites
+             * across engines / packageManager / volta / devEngines.
+             *
+             * Note: `--fix` strips any `+sha512.&lt;hash&gt;` suffix from
+             * `packageManager` on bump — content-integrity hashes are tied
+             * to a specific package, not a version, so users must regenerate
+             * via their PM (`pnpm install` re-pins; `corepack use pnpm@X` etc.).
+             * @default true
+             */
+            autofix?: "prompt" | boolean;
+
+            /**
+             * Dep names exempt from the drift check (exact match against the
+             * field name within the block — e.g. `node`, `pnpm`).
+             */
+            ignore?: string[];
+
+            /**
+             * Resolution strategy used when `--fix` runs.
+             * - `highest` (default): align every drifting instance to the
+             *   highest declared version.
+             * - `lowest`: align to the lowest.
+             * @default "highest"
+             */
+            resolve?: "highest" | "lowest";
+        };
+
+        /**
          * Tweak the redefine-root lint that flags non-root packages duplicating
          * deps already pinned at the workspace root.
          */

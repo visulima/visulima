@@ -431,6 +431,42 @@
                     "additionalProperties": false,
                     "description": "Tweak the workspace-protocol lint that flags internal deps not using the `workspace:` protocol."
                 },
+                "customTypes": {
+                    "type": "object",
+                    "properties": {
+                        "autofix": {
+                            "anyOf": [
+                                {
+                                    "type": "string",
+                                    "const": "prompt"
+                                },
+                                {
+                                    "type": "boolean"
+                                }
+                            ],
+                            "description": "Three-state autofix opt-out. See `workspaceProtocol.autofix` for the contract — same semantics, applied to drift rewrites across engines / packageManager / volta / devEngines.\n\nNote: `--fix` strips any `+sha512.<hash>` suffix from `packageManager` on bump — content-integrity hashes are tied to a specific package, not a version, so users must regenerate via their PM (`pnpm install` re-pins; `corepack use pnpm@X` etc.).",
+                            "default": true
+                        },
+                        "ignore": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            },
+                            "description": "Dep names exempt from the drift check (exact match against the field name within the block — e.g. `node`, `pnpm`)."
+                        },
+                        "resolve": {
+                            "type": "string",
+                            "enum": [
+                                "highest",
+                                "lowest"
+                            ],
+                            "description": "Resolution strategy used when `--fix` runs.\n- `highest` (default): align every drifting instance to the   highest declared version.\n- `lowest`: align to the lowest.",
+                            "default": "highest"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "description": "Tweak the custom-types lint that flags drift in `engines.{node,pnpm,...}`, `packageManager`, `volta.{node,pnpm,yarn}`, and the proposed `devEngines.{runtime,packageManager}` array form.\n\nEach (customType × name) cluster is tracked independently — `engines.node` and `volta.node` don't cross-couple here. Use a versionGroup once that lands if you need to enforce they agree."
+                },
                 "workspaceVersions": {
                     "type": "object",
                     "properties": {

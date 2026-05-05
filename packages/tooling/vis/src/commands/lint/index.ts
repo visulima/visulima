@@ -13,6 +13,8 @@ const lint: Command = {
         ["vis lint --workspace-versions --dep react", "Limit version-drift check to a single dep"],
         ["vis lint --workspace-versions --resolve catalog --fix", "Rewrite drifting deps to catalog: when a catalog already pins them"],
         ["vis lint --workspace-versions --resolve catalog --propose-min 3", "Suggest new catalog entries for deps ≥3 packages already agree on"],
+        ["vis lint --custom-types", "Flag drift in engines.{node,pnpm}, packageManager, volta.{node,pnpm,yarn}, devEngines"],
+        ["vis lint --custom-types --fix", "Align all engines/packageManager/volta versions to the highest sibling"],
         ["vis lint --ban left-pad --ban request", "One-off ban: flag any package declaring left-pad or request"],
         ["vis lint --pin react@18.2.0", "One-off pin: flag any package declaring react at a different version"],
         ["vis lint --format json", "Emit findings as JSON for CI / editor integrations"],
@@ -43,6 +45,12 @@ const lint: Command = {
             defaultValue: false,
             description: "Lint that all packages declare external deps at the same version",
             name: "workspace-versions",
+            type: Boolean,
+        },
+        {
+            defaultValue: false,
+            description: "Lint engines.{node,pnpm}, packageManager, volta.*, devEngines.* for drift across packages",
+            name: "custom-types",
             type: Boolean,
         },
         {
@@ -102,6 +110,7 @@ export default lint;
 export type LintOptions = CreateOptions<{
     ban: string[] | undefined;
     "banned-deps": boolean | undefined;
+    "custom-types": boolean | undefined;
     dep: string | undefined;
     fix: boolean | undefined;
     "fix-specifier": string | undefined;
