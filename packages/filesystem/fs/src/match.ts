@@ -54,7 +54,7 @@ export const match = (value: string | string[], pattern: string | string[], opti
  * ["a.ts", "b.js", "c.ts"].filter(isTs); // ["a.ts", "c.ts"]
  * ```
  */
-export const matcher = (pattern: string | string[], options?: MatchOptions): (value: string) => boolean => {
+export const matcher = (pattern: string | string[], options?: MatchOptions): ((value: string) => boolean) => {
     const isMatch = picomatch(pattern, options);
 
     // Wrap so extra arguments (e.g. `(value, index, array)` from Array.prototype.filter) do not
