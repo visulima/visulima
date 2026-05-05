@@ -8,7 +8,7 @@ import { readCatalogs } from "../../util/catalog";
 import type { CatalogProposal } from "../../util/catalog-proposals";
 import { applyCatalogProposals, proposeCatalogAdditions, renderCatalogProposalsDiff } from "../../util/catalog-proposals";
 import type { CustomTypeDriftIssue } from "../../util/custom-types";
-import { applyCustomTypeFixes, iterateCustomTypeDeps, lintCustomTypes } from "../../util/custom-types";
+import { applyCustomTypeFixes, iterateCustomTypeDeps, lintCustomTypes, validateExtraTypes } from "../../util/custom-types";
 import type { RedefineRootIssue } from "../../util/redefine-root-lint";
 import { lintRedefineRoot } from "../../util/redefine-root-lint";
 import { iterateWorkspaceDeps } from "../../util/workspace-deps";
@@ -613,7 +613,20 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
     }
 
     if (selection.customTypes) {
-        const customInstances = iterateCustomTypeDeps(workspaceRoot);
+        const extraTypes = policy.customTypes?.extraTypes;
+        const extraErrors = validateExtraTypes(extraTypes);
+
+        if (extraErrors.length > 0) {
+            for (const message of extraErrors) {
+                logger.error(`policy.customTypes.${message}`);
+            }
+
+            process.exitCode = 1;
+
+            return;
+        }
+
+        const customInstances = iterateCustomTypeDeps(workspaceRoot, extraTypes);
         // Custom-type pins (engines.node, packageManager, volta.*) only ever
         // hold semver versions — `--resolve catalog` is meaningless here, so
         // fall back to highest if a workspace-versions catalog mode bled in.

@@ -272,6 +272,41 @@ describe("vis lint --custom-types", () => {
         expect(messages.some((message) => message.includes("@my/b") && message.includes("20.0.0") && message.includes("22.14.0"))).toBe(true);
     });
 
+    it("rejects malformed policy.customTypes.extraTypes with non-zero exit and aborts before iterating packages", async () => {
+        expect.assertions(4);
+
+        writeWorkspaceRoot(workspaceRoot);
+        // Real drift the run would otherwise surface — proves we aborted *before*
+        // touching the workspace, not just suppressed the output.
+        writePackage(workspaceRoot, "packages/a", { engines: { node: "22.14.0" }, name: "@my/a" });
+        writePackage(workspaceRoot, "packages/b", { engines: { node: "20.0.0" }, name: "@my/b" });
+
+        const { calls } = await callLint(
+            workspaceRoot,
+            { "custom-types": true },
+            {
+                policy: {
+                    customTypes: {
+                        extraTypes: [
+                            // strategy 'string' requires depName — missing on purpose.
+                            { name: "minNode", path: "config.minNode", strategy: "string" },
+                            // collides with the built-in `engines` family.
+                            { name: "engines", path: "wherever", strategy: "versionsByName" },
+                        ],
+                    },
+                },
+            },
+        );
+
+        const errors = calls.filter(([level]) => level === "error").map(([, message]) => String(message));
+
+        expect(process.exitCode).toBe(1);
+        expect(errors.some((message) => message.includes("strategy 'string' requires 'depName'"))).toBe(true);
+        expect(errors.some((message) => message.includes("collides with a built-in"))).toBe(true);
+        // No drift line was emitted because we returned before lintCustomTypes ran.
+        expect(errors.some((message) => message.includes("@my/b") || message.includes("drift"))).toBe(false);
+    });
+
     it("emits JSON output containing the customTypes section with a fixed flag", async () => {
         expect.assertions(2);
 

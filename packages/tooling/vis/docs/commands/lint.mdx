@@ -123,6 +123,37 @@ vis lint --custom-types --fix
 corepack use pnpm@10.32.1   # regenerate the +sha512 hash
 ```
 
+#### User-defined customTypes (`policy.customTypes.extraTypes`)
+
+When a tool stores version pins somewhere built-in customTypes don't reach (e.g. legacy `pnpm.overrides`, a private toolchain block, an in-house resolver field), declare it under `policy.customTypes.extraTypes`. Entries are layered **on top of** the built-ins — they never replace `engines`/`volta`/`packageManager` etc.
+
+Pick a `strategy` matching how the version is encoded at the path:
+
+| strategy         | Shape at `path`                                                 | When to use                                                            |
+| ---------------- | --------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `versionsByName` | `{ "<name>": "<version>", ... }`                                | A block of name → version, like `pnpm.overrides` or `engines`.         |
+| `name@version`   | `"<name>@<version>"` (string)                                   | Single-string slots like `packageManager` (`pnpm@10.32.1`).            |
+| `string`         | `"<version>"` (bare)                                            | A bare version string. Requires `depName` so we know what to call it.  |
+
+```ts
+export default {
+    policy: {
+        customTypes: {
+            extraTypes: [
+                // Legacy pnpm.overrides — versionsByName at pnpm.overrides.
+                { name: "pnpmOverridesLegacy", path: "pnpm.overrides", strategy: "versionsByName" },
+                // Private toolchain pin: { runtime: "node@22.14.0" }
+                { name: "myToolPin", path: "myTool.runtime", strategy: "name@version" },
+                // Bare version string: { minNode: "22.14.0" } — needs depName.
+                { name: "minNode", path: "config.minNode", strategy: "string", depName: "node" },
+            ],
+        },
+    },
+};
+```
+
+A `name` that collides with a built-in (`engines`, `volta`, `packageManager`, `devEngines.runtime`, `devEngines.packageManager`) is rejected with a non-zero exit — the built-in stays canonical. Missing/duplicate `name`, missing `path`, invalid `strategy`, or `strategy: "string"` without `depName` all fail validation up front before the workspace is scanned.
+
 #### Overlap with `vis doctor`
 
 - **`vis doctor`** verifies the *installed* runtime matches `engines.node` (machine-side: "is my Node binary the right version?").
@@ -152,6 +183,8 @@ export default {
             autofix: true,
             ignore: ["bun"],
             resolve: "highest",
+            // Optional — see "User-defined customTypes" above.
+            extraTypes: [{ name: "pnpmOverridesLegacy", path: "pnpm.overrides", strategy: "versionsByName" }],
         },
     },
 };

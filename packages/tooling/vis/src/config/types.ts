@@ -25,6 +25,27 @@ export interface CodeownersConfig {
     provider?: "bitbucket" | "github" | "gitlab" | "other";
 }
 
+/**
+ * One user-declared customTypes entry. See `policy.customTypes.extraTypes`
+ * for the full contract — this is just the row shape.
+ */
+export interface ExtraCustomType {
+    /**
+     * Required when `strategy === "string"`. The dep-cluster key the bare
+     * version string at `path` should be associated with.
+     */
+    depName?: string;
+    /**
+     * Display name for this customType. Used as the cluster key prefix in
+     * lint output and JSON. Must not collide with the built-in names.
+     */
+    name: string;
+    /** Dot-separated walk into package.json (e.g. `pnpm.overrides`, `myTool.runtime`). */
+    path: string;
+    /** How to interpret the JSON found at `path`. */
+    strategy: "name@version" | "string" | "versionsByName";
+}
+
 interface PackageJson {
     bin?: Record<string, string> | string;
     dependencies?: Record<string, string>;
@@ -476,6 +497,40 @@ export interface VisConfig {
              * @default "highest"
              */
             resolve?: "highest" | "lowest";
+
+            /**
+             * User-defined custom-type pin locations. Each entry tells the
+             * customTypes lint to read additional version pins from a
+             * non-standard JSON path inside every workspace package.json,
+             * cluster them by `(name × depName)` like the built-in types,
+             * and rewrite them with `--fix`.
+             *
+             * The original built-ins (`engines`, `volta`, `packageManager`,
+             * `devEngines.runtime`, `devEngines.packageManager`) keep
+             * running unconditionally — these layer on top.
+             *
+             * Strategies:
+             * - `versionsByName`: the JSON at `path` is `{ [depName]: version }`
+             *   (like `engines` or `pnpm.overrides`).
+             * - `name@version`: the JSON at `path` is a string of the form
+             *   `name@version` (like `packageManager`). The leading `name@`
+             *   is preserved; only the version segment is rewritten.
+             * - `string`: the JSON at `path` is a bare version string. The
+             *   `depName` field is required and identifies the dep cluster.
+             *
+             * `name` must not collide with a built-in type name. `path` is
+             * a dot-separated walk into the package.json (e.g. `pnpm.overrides`).
+             *
+             * @example
+             * ```ts
+             * extraTypes: [
+             *   { name: "pnpmOverridesLegacy", path: "pnpm.overrides", strategy: "versionsByName" },
+             *   { name: "myToolPin",           path: "myTool.runtime", strategy: "name@version" },
+             *   { name: "minNode",             path: "config.minNode", strategy: "string", depName: "node" },
+             * ]
+             * ```
+             */
+            extraTypes?: ExtraCustomType[];
         };
 
         /**

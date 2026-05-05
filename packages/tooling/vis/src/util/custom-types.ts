@@ -1,24 +1,52 @@
 import { writeJsonSync } from "@visulima/fs";
 import { join, relative } from "@visulima/path";
 
+import type { ExtraCustomType } from "../config/types";
 import { isNewer, parseVersion } from "./catalog";
 import { collectWorkspaceDirectories, readPkg } from "./workspace-deps";
 
 /**
- * Custom-type families ported from syncpack. Each family pins a runtime /
- * package-manager version somewhere other than a `*Dependencies` block, so
- * the workspace-versions drift check would otherwise miss it. Adopting the
- * four classic strategies — `name@version`, `versionsByName`, `string`, and
- * the `devEngines` array — but lifted to a built-in registry instead of the
- * `customTypes` string-DSL.
+ * Built-in custom-type families. Each one pins a runtime / package-manager
+ * version somewhere other than a `*Dependencies` block, so the
+ * workspace-versions drift check would otherwise miss it.
  *
  * - `engines` — `pkg.engines.{node,pnpm,yarn,npm,...}` (versionsByName).
  * - `packageManager` — `pkg.packageManager` (`name@version` or `name@version+sha512.&lt;hash&gt;`).
  * - `volta` — `pkg.volta.{node,pnpm,yarn}` (versionsByName).
  * - `devEngines.runtime` / `devEngines.packageManager` — the proposed
  *   array form (`{ name, version, onFail? }[]`).
+ *
+ * Users can layer additional locations on top via
+ * `policy.customTypes.extraTypes` — see {@link ExtraTypeMeta}.
  */
-export type CustomDepType = "devEngines.packageManager" | "devEngines.runtime" | "engines" | "packageManager" | "volta";
+export type BuiltInCustomDepType = "devEngines.packageManager" | "devEngines.runtime" | "engines" | "packageManager" | "volta";
+
+/**
+ * Either a built-in literal or a user-declared `ExtraCustomType.name`.
+ * Kept as `string` to admit user-defined names; tests can compare against
+ * {@link BUILTIN_CUSTOM_TYPES} when they need the closed set.
+ */
+export type CustomDepType = string;
+
+export const BUILTIN_CUSTOM_TYPES: ReadonlySet<BuiltInCustomDepType> = new Set([
+    "devEngines.packageManager",
+    "devEngines.runtime",
+    "engines",
+    "packageManager",
+    "volta",
+]);
+
+/**
+ * Write-back recipe for an instance produced by a user-declared customType.
+ * Built-in instances leave this undefined and the fixer dispatches on
+ * `customType` for those.
+ */
+export interface ExtraTypeMeta {
+    /** Required when `strategy === "string"`. */
+    depName?: string;
+    path: string;
+    strategy: "name@version" | "string" | "versionsByName";
+}
 
 /**
  * One concrete declaration of a custom-type version pin, parallel to the
@@ -30,6 +58,8 @@ export interface CustomDepInstance {
 
     /** `node` / `pnpm` / `yarn` / `npm` — the field name within the block. */
     depName: string;
+    /** Set only on instances produced by user-declared customTypes. */
+    extra?: ExtraTypeMeta;
     packageDir: string;
     packageJsonPath: string;
     packageName: string | undefined;
@@ -55,6 +85,8 @@ export interface CustomTypeDriftIssue {
     canonicalSource: string;
     customType: CustomDepType;
     depName: string;
+    /** Mirrored from the source instance for user-declared types. */
+    extra?: ExtraTypeMeta;
     /** What the fixer should write into `specifier`'s slot. */
     fix: string;
     packageDir: string;
@@ -109,6 +141,165 @@ interface DevEnginesEntry {
 const isDevEnginesEntry = (value: unknown): value is DevEnginesEntry =>
     typeof value === "object" && value !== null && !Array.isArray(value) && typeof (value as DevEnginesEntry).name === "string";
 
+const STRATEGIES: ReadonlySet<ExtraTypeMeta["strategy"]> = new Set(["name@version", "string", "versionsByName"]);
+
+/**
+ * Validate a `policy.customTypes.extraTypes` config block. Returns one
+ * human-readable error per offence; the caller decides whether to abort
+ * the run or warn-and-skip.
+ *
+ * Cheaper than a Zod parser and produces messages tied to the user's
+ * `name` so they can find the offender in their config.
+ */
+export const validateExtraTypes = (extraTypes: ExtraCustomType[] | undefined): string[] => {
+    const errors: string[] = [];
+
+    if (!extraTypes) {
+        return errors;
+    }
+
+    const seen = new Set<string>();
+
+    for (const entry of extraTypes) {
+        const label = typeof entry?.name === "string" && entry.name.length > 0 ? entry.name : "<unnamed>";
+
+        if (typeof entry?.name !== "string" || entry.name.length === 0) {
+            errors.push("extraTypes entry missing 'name'");
+
+            continue;
+        }
+
+        if (BUILTIN_CUSTOM_TYPES.has(entry.name as BuiltInCustomDepType)) {
+            errors.push(`extraTypes[${label}]: name collides with a built-in customType`);
+        }
+
+        if (seen.has(entry.name)) {
+            errors.push(`extraTypes[${label}]: duplicate name`);
+        }
+
+        seen.add(entry.name);
+
+        if (typeof entry.path !== "string" || entry.path.length === 0) {
+            errors.push(`extraTypes[${label}]: missing 'path'`);
+        }
+
+        if (!STRATEGIES.has(entry.strategy)) {
+            errors.push(`extraTypes[${label}]: invalid strategy "${String(entry.strategy)}" (expected name@version | string | versionsByName)`);
+        }
+
+        if (entry.strategy === "string" && (typeof entry.depName !== "string" || entry.depName.length === 0)) {
+            errors.push(`extraTypes[${label}]: strategy 'string' requires 'depName'`);
+        }
+    }
+
+    return errors;
+};
+
+/** Walk a dot-path into a JSON object. Returns `undefined` if any segment is missing or non-object. */
+const getNested = (object: unknown, dotPath: string): unknown => {
+    if (dotPath.length === 0) {
+        return undefined;
+    }
+
+    let current: unknown = object;
+
+    for (const key of dotPath.split(".")) {
+        if (typeof current !== "object" || current === null || Array.isArray(current)) {
+            return undefined;
+        }
+
+        current = (current as Record<string, unknown>)[key];
+    }
+
+    return current;
+};
+
+const iterateExtraType = (
+    extraType: ExtraCustomType,
+    pkg: Record<string, unknown>,
+    packageDir: string,
+    packageJsonPath: string,
+    packageName: string | undefined,
+): CustomDepInstance[] => {
+    const block = getNested(pkg, extraType.path);
+
+    if (block === undefined) {
+        return [];
+    }
+
+    const meta: ExtraTypeMeta = { depName: extraType.depName, path: extraType.path, strategy: extraType.strategy };
+
+    if (extraType.strategy === "versionsByName") {
+        if (!isPlainObject(block)) {
+            return [];
+        }
+
+        const out: CustomDepInstance[] = [];
+
+        for (const [depName, value] of Object.entries(block)) {
+            if (typeof value !== "string") {
+                continue;
+            }
+
+            out.push({
+                customType: extraType.name,
+                depName,
+                extra: meta,
+                packageDir,
+                packageJsonPath,
+                packageName,
+                rawValue: value,
+                specifier: value,
+            });
+        }
+
+        return out;
+    }
+
+    if (extraType.strategy === "name@version") {
+        if (typeof block !== "string") {
+            return [];
+        }
+
+        const parsed = parsePackageManager(block);
+
+        if (!parsed) {
+            return [];
+        }
+
+        return [
+            {
+                customType: extraType.name,
+                depName: parsed.name,
+                extra: meta,
+                packageDir,
+                packageJsonPath,
+                packageName,
+                rawValue: block,
+                specifier: parsed.version,
+            },
+        ];
+    }
+
+    // strategy === "string"
+    if (typeof block !== "string" || typeof extraType.depName !== "string" || extraType.depName.length === 0) {
+        return [];
+    }
+
+    return [
+        {
+            customType: extraType.name,
+            depName: extraType.depName,
+            extra: meta,
+            packageDir,
+            packageJsonPath,
+            packageName,
+            rawValue: block,
+            specifier: block,
+        },
+    ];
+};
+
 /**
  * Walk every workspace package and emit a {@link CustomDepInstance} for each
  * custom-type version pin. Missing fields are silently skipped — workspaces
@@ -117,8 +308,12 @@ const isDevEnginesEntry = (value: unknown): value is DevEnginesEntry =>
  * Malformed entries (numeric `engines.node`, `packageManager: "pnpm"` with no
  * version, etc.) are dropped — better to lint nothing than emit half-real
  * data the drift detector would report as fake violations.
+ *
+ * `extraTypes` layers user-declared locations on top of the built-ins. The
+ * caller is expected to validate it via {@link validateExtraTypes} first;
+ * malformed entries are tolerated here (they emit zero instances).
  */
-export const iterateCustomTypeDeps = (workspaceRoot: string): CustomDepInstance[] => {
+export const iterateCustomTypeDeps = (workspaceRoot: string, extraTypes?: ExtraCustomType[]): CustomDepInstance[] => {
     const directories = collectWorkspaceDirectories(workspaceRoot);
     const out: CustomDepInstance[] = [];
 
@@ -205,6 +400,22 @@ export const iterateCustomTypeDeps = (workspaceRoot: string): CustomDepInstance[
                         rawValue: entry.version,
                         specifier: entry.version,
                     });
+                }
+            }
+        }
+
+        if (extraTypes) {
+            for (const extraType of extraTypes) {
+                if (typeof extraType?.name !== "string" || extraType.name.length === 0) {
+                    continue;
+                }
+
+                if (BUILTIN_CUSTOM_TYPES.has(extraType.name as BuiltInCustomDepType)) {
+                    continue;
+                }
+
+                for (const instance of iterateExtraType(extraType, pkg, packageDir, packageJsonPath, packageName)) {
+                    out.push(instance);
                 }
             }
         }
@@ -315,6 +526,7 @@ export const lintCustomTypes = (instances: CustomDepInstance[], options: LintCus
                 canonicalSource: canonical.packageName ?? canonical.packageDir,
                 customType: instance.customType,
                 depName: instance.depName,
+                ...(instance.extra ? { extra: instance.extra } : {}),
                 fix: canonical.specifier,
                 packageDir: instance.packageDir,
                 packageJsonPath: instance.packageJsonPath,
@@ -325,6 +537,82 @@ export const lintCustomTypes = (instances: CustomDepInstance[], options: LintCus
     }
 
     return issues;
+};
+
+/**
+ * Apply a fix recorded for a user-declared customType. Mutates `pkg` in
+ * place; returns whether anything changed so the caller can decide if the
+ * file needs to be re-written.
+ *
+ * Walks `meta.path` segment by segment; never auto-creates intermediate
+ * objects (the iterator only emits when the path resolves, so the structure
+ * already exists by the time we get here).
+ */
+const applyExtraTypeFix = (pkg: Record<string, unknown>, issue: CustomTypeDriftIssue): boolean => {
+    const meta = issue.extra;
+
+    if (!meta) {
+        return false;
+    }
+
+    const segments = meta.path.split(".");
+
+    if (segments.length === 0 || segments.some((segment) => segment.length === 0)) {
+        return false;
+    }
+
+    let parent: Record<string, unknown> = pkg;
+
+    for (let index = 0; index < segments.length - 1; index += 1) {
+        const next = parent[segments[index] as string];
+
+        if (typeof next !== "object" || next === null || Array.isArray(next)) {
+            return false;
+        }
+
+        parent = next as Record<string, unknown>;
+    }
+
+    const leafKey = segments.at(-1) as string;
+
+    if (meta.strategy === "versionsByName") {
+        const block = parent[leafKey];
+
+        if (!isPlainObject(block)) {
+            return false;
+        }
+
+        block[issue.depName] = issue.fix;
+
+        return true;
+    }
+
+    if (meta.strategy === "name@version") {
+        const raw = parent[leafKey];
+
+        if (typeof raw !== "string") {
+            return false;
+        }
+
+        const parsed = parsePackageManager(raw);
+
+        if (!parsed) {
+            return false;
+        }
+
+        parent[leafKey] = `${parsed.name}@${issue.fix}`;
+
+        return true;
+    }
+
+    // strategy === "string"
+    if (typeof parent[leafKey] !== "string") {
+        return false;
+    }
+
+    parent[leafKey] = issue.fix;
+
+    return true;
 };
 
 /**
@@ -364,6 +652,14 @@ export const applyCustomTypeFixes = (issues: CustomTypeDriftIssue[]): string[] =
         let didWrite = false;
 
         for (const issue of pending) {
+            if (issue.extra) {
+                if (applyExtraTypeFix(pkg, issue)) {
+                    didWrite = true;
+                }
+
+                continue;
+            }
+
             if (issue.customType === "engines" || issue.customType === "volta") {
                 const block = pkg[issue.customType];
 
