@@ -49,8 +49,7 @@ const Overview = () => {
 
     // `getRouteApi("/blog/" as "/")` casts to root (no /blog route file yet), so
     // search params come back as `{}`. Re-type to the shape the page actually uses.
-
-    const { includeCategories, pageIndex = 1 } = routeApi.useSearch();
+    const { includeCategories, pageIndex = 1 } = routeApi.useSearch() as { includeCategories?: string[]; pageIndex?: number };
 
     // Sort blogs by publishedAt date, handling undefined dates (they go to the end)
     const sortedBlogs = allBlogs.toSorted((a, b) => {
