@@ -689,6 +689,27 @@ describe("custom-types", () => {
             expect((after.myTool as Record<string, string>).runtime).toBe("node@22.14.0");
         });
 
+        it("name@version strategy preserves a scoped package name when fixing", () => {
+            expect.assertions(2);
+
+            // Lazy-match in PACKAGE_MANAGER_REGEX must keep `@org/cli` intact —
+            // the first `@` belongs to the scope, the second to the version.
+            writeWorkspaceRoot({ myTool: { runtime: "@org/cli@1.2.3" }, name: "root", workspaces: ["packages/*"] });
+            writeJson("packages/a/package.json", { myTool: { runtime: "@org/cli@1.0.0" }, name: "@my/a" });
+
+            const extras = [{ name: "myToolPin", path: "myTool.runtime", strategy: "name@version" } as const];
+            const instances = iterateCustomTypeDeps(workspaceRoot, extras);
+
+            // The depName must be the scoped name, not "" or "/cli".
+            expect(instances.map((instance) => instance.depName)).toStrictEqual(["@org/cli", "@org/cli"]);
+
+            applyCustomTypeFixes(lintCustomTypes(instances));
+
+            const after = readJson("packages/a/package.json");
+
+            expect((after.myTool as Record<string, string>).runtime).toBe("@org/cli@1.2.3");
+        });
+
         it("string strategy replaces the bare version", () => {
             expect.assertions(1);
 
