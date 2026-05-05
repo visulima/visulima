@@ -407,7 +407,7 @@ export class Uploader {
     private generateItemId(): string {
         this.itemIdCounter += 1;
 
-        return `item-${Date.now()}-${this.itemIdCounter}`;
+        return `item-${String(Date.now())}-${String(this.itemIdCounter)}`;
     }
 
     /**
@@ -416,7 +416,7 @@ export class Uploader {
     private generateBatchId(): string {
         this.batchIdCounter += 1;
 
-        return `batch-${Date.now()}-${this.batchIdCounter}`;
+        return `batch-${String(Date.now())}-${String(this.batchIdCounter)}`;
     }
 
     /**
@@ -532,6 +532,7 @@ export class Uploader {
             this.activeUploads.set(item.id, xhr);
 
             // Update item status
+            // eslint-disable-next-line no-param-reassign -- Required to update item state
             item.status = "uploading";
             this.items.set(item.id, item);
 
@@ -572,7 +573,8 @@ export class Uploader {
 
                 if (xhr.status >= 200 && xhr.status < 300) {
                     // Parse response
-                    const responseText = xhr.responseText || xhr.response;
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- xhr.response is typed as `any` by lib.dom
+                    const responseText: string = xhr.responseText || xhr.response;
                     const fileMeta = Uploader.parseResponse(responseText, xhr);
 
                     // Update item with response
@@ -584,7 +586,7 @@ export class Uploader {
                         response: responseText,
                     };
                     // eslint-disable-next-line no-param-reassign -- Required to update item state
-                    item.url = xhr.getResponseHeader("Location") || undefined;
+                    item.url = xhr.getResponseHeader("Location") ?? undefined;
 
                     this.items.set(item.id, item);
 
@@ -599,7 +601,7 @@ export class Uploader {
                     resolve();
                 } else {
                     // Handle error response
-                    const error = new Error(`Upload failed: ${xhr.status} ${xhr.statusText}`);
+                    const error = new Error(`Upload failed: ${String(xhr.status)} ${xhr.statusText}`);
 
                     // eslint-disable-next-line no-param-reassign -- Required to update item state
                     item.status = "error";

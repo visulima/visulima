@@ -119,6 +119,7 @@ export const createMultipartAdapter = (options: MultipartAdapterOptions): Multip
                         const uploadResult = buildUploadResult(item, fileMeta);
 
                         resolved = true;
+                        // eslint-disable-next-line @typescript-eslint/no-use-before-define -- cleanup is defined later but not invoked until callback runs
                         cleanup();
                         resolve(uploadResult);
                     }
@@ -127,9 +128,10 @@ export const createMultipartAdapter = (options: MultipartAdapterOptions): Multip
                 const onError = (itemOrBatch: UploadItem | BatchState): void => {
                     if ("file" in itemOrBatch && !resolved && itemOrBatch.file.name === file.name) {
                         const item = itemOrBatch;
-                        const error = new Error(item.error || "Upload failed");
+                        const error = new Error(item.error ?? "Upload failed");
 
                         resolved = true;
+                        // eslint-disable-next-line @typescript-eslint/no-use-before-define -- cleanup is defined later but not invoked until callback runs
                         cleanup();
                         reject(error);
                     }

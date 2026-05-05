@@ -158,10 +158,10 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
         });
 
         if (!response.ok) {
-            throw new Error(`Failed to create upload session: ${response.status} ${response.statusText}`);
+            throw new Error(`Failed to create upload session: ${String(response.status)} ${response.statusText}`);
         }
 
-        const fileId = response.headers.get("X-Upload-ID") || response.headers.get("Location")?.split("/").pop();
+        const fileId = response.headers.get("X-Upload-ID") ?? response.headers.get("Location")?.split("/").pop();
 
         if (!fileId) {
             throw new Error("Failed to get upload ID from server");
@@ -181,10 +181,10 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
         });
 
         if (!response.ok) {
-            throw new Error(`Failed to get upload status: ${response.status} ${response.statusText}`);
+            throw new Error(`Failed to get upload status: ${String(response.status)} ${response.statusText}`);
         }
 
-        const offset = Number.parseInt(response.headers.get("X-Upload-Offset") || "0", 10);
+        const offset = Number.parseInt(response.headers.get("X-Upload-Offset") ?? "0", 10);
         const chunksHeader = response.headers.get("X-Received-Chunks");
 
         let chunks: { length: number; offset: number }[] = [];
@@ -230,14 +230,14 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
         });
 
         if (!response.ok) {
-            throw new Error(`Failed to upload chunk: ${response.status} ${response.statusText}`);
+            throw new Error(`Failed to upload chunk: ${String(response.status)} ${response.statusText}`);
         }
 
         // Mark chunk as uploaded
         uploadState.uploadedChunks.add(startOffset);
 
         // Update progress
-        const currentOffset = Number.parseInt(response.headers.get("X-Upload-Offset") || String(endOffset), 10);
+        const currentOffset = Number.parseInt(response.headers.get("X-Upload-Offset") ?? String(endOffset), 10);
         const progress = Math.round((currentOffset / file.size) * 100);
 
         progressCallback?.(progress, currentOffset);
@@ -294,7 +294,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
         const finalStatus = await getUploadStatus(fileId);
 
         if (finalStatus.offset < file.size) {
-            throw new Error(`Upload incomplete. Expected ${file.size} bytes, got ${finalStatus.offset}`);
+            throw new Error(`Upload incomplete. Expected ${String(file.size)} bytes, got ${String(finalStatus.offset)}`);
         }
 
         // Check if uploadedChunks set has any items
@@ -310,7 +310,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
         });
 
         if (!response.ok) {
-            throw new Error(`Failed to get upload result: ${response.status} ${response.statusText}`);
+            throw new Error(`Failed to get upload result: ${String(response.status)} ${response.statusText}`);
         }
 
         const fileMeta = (await response.json()) as {
@@ -328,16 +328,16 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
 
         // Build UploadResult
         return {
-            bytesWritten: fileMeta.bytesWritten || Math.max(file.size, 0),
-            contentType: fileMeta.contentType || file.type,
+            bytesWritten: fileMeta.bytesWritten ?? Math.max(file.size, 0),
+            contentType: fileMeta.contentType ?? file.type,
             createdAt: fileMeta.createdAt,
-            filename: fileMeta.originalName || file.name,
-            id: fileMeta.id || fileId,
+            filename: fileMeta.originalName ?? file.name,
+            id: fileMeta.id ?? fileId,
             metadata: fileMeta.metadata,
             name: fileMeta.name,
-            originalName: fileMeta.originalName || file.name,
-            size: fileMeta.size || file.size,
-            status: (fileMeta.status as UploadResult["status"]) || "completed",
+            originalName: fileMeta.originalName ?? file.name,
+            size: fileMeta.size ?? file.size,
+            status: (fileMeta.status as UploadResult["status"]) ?? "completed",
             url: fileMeta.url,
         };
     };
