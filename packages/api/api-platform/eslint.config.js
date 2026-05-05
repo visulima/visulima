@@ -39,10 +39,4 @@ export default createConfig(
             "sonarjs/no-tab": "off",
         },
     },
-    {
-        files: ["./src/**/*.ts"],
-        rules: {
-            "jsdoc/match-description": "off", // TODO: fix this later
-        },
-    },
 );

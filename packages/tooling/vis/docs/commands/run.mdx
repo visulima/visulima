@@ -62,6 +62,7 @@ vis run destroy --reverse                                 # Leaves-first (teardo
 | `--retry-budget`     |       |         | Global cap on total retries across the run (per-target `retryCount` is honored up to budget)                                                                        |
 | `--profile`          |       |         | Write a Chrome Tracing JSON of the run to this path (open in chrome://tracing or Perfetto)                                                                          |
 | `--reverse`          |       | `false` | Run the dependency graph leaves-first (dependents before deps). Use for teardown targets like `destroy`/`undeploy` — see [Reverse order](#reverse-order-teardown).  |
+| `--runner-tags`      |       |         | Comma-separated tags this runner advertises (e.g. `gpu,slow`). Tasks declaring `options.runnerTags` only run when at least one tag overlaps; untagged tasks always run. Falls back to `VIS_RUNNER_TAGS`. |
 
 ### Positional args after the target
 
@@ -147,6 +148,7 @@ Targets in `project.json` support vis-specific options:
 | `internal`             | `boolean`                               | `false`         | Hidden from CLI, only invoked as a dependency                                                                                                                                                          |
 | `pty`                  | `boolean`                               | `false`         | Run through a pseudo-terminal so colour-aware tools render as if attached to a TTY                                                                                                                     |
 | `runInCI`              | `boolean \| "affected" \| "always"`     | `true`          | Whether to run in CI environments                                                                                                                                                                      |
+| `runnerTags`           | `string[]`                              |                 | Capability tags required from the runner. Eligible iff at least one tag overlaps with `--runner-tags` / `VIS_RUNNER_TAGS`. Untagged tasks (no field or empty array) are general-purpose and always run.|
 | `retryCount`           | `number`                                | `0`             | Auto-retry on failure                                                                                                                                                                                  |
 | `retryDelay`           | `number \| "exponential"`               | `"exponential"` | Delay between retries                                                                                                                                                                                  |
 | `timeout`              | `number`                                | `0`             | Wall-clock budget in ms. `0` disables the watchdog. Exceeding it sends `SIGTERM` and marks the task as timed out (exit code 124) — see [Timeouts & Signals](#timeouts--signals)                        |

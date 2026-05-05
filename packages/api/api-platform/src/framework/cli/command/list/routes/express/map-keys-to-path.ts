@@ -1,7 +1,7 @@
 import type { ExpressRegex, Key } from "./types";
 
 /**
- * Map's the keys/path variables to the regex inside a given path
+ * Maps the keys/path variables to the regex inside a given path.
  * @param layerRegexPath The regex for a router with path parameters
  * @param keys The keys that represent the path parameters
  * @returns The regex for a path variable converted to original string on the express route

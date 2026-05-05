@@ -75,6 +75,12 @@ const affected: Command = {
             name: "reverse",
             type: Boolean,
         },
+        {
+            description:
+                "Comma-separated tags this runner advertises (e.g. 'gpu,slow'). Forwarded verbatim to the downstream `vis run` so capability-gated tasks resolve identically. Falls back to VIS_RUNNER_TAGS env var.",
+            name: "runner-tags",
+            type: String,
+        },
     ],
 };
 
@@ -90,5 +96,6 @@ export type AffectedCommandOptions = CreateOptions<{
     partition: string | undefined;
     query: string | undefined;
     reverse: boolean | undefined;
+    "runner-tags": string | undefined;
     upstream: string | undefined;
 }>;

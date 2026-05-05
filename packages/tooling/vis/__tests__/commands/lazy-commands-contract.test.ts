@@ -97,10 +97,8 @@ describe("vis lazy command contract", () => {
     it.each(ALL_COMMANDS.map((c) => [c.name, c]))("%s declares loader, not execute", (_name, command) => {
         expect.assertions(2);
 
-        // eslint-disable-next-line vitest/prefer-expect-type-of
-        expect(typeof command.execute).toBe("undefined");
-        // eslint-disable-next-line vitest/prefer-expect-type-of
-        expect(typeof command.loader).toBe("function");
+        expect(command.execute).toBeUndefined();
+        expect(command.loader).toBeTypeOf("function");
     });
 
     it.each(ALL_COMMANDS.map((c) => [c.name, c]))("%s loader resolves to a default-exported function", async (_name, command) => {
@@ -108,7 +106,6 @@ describe("vis lazy command contract", () => {
 
         const module_ = await command.loader!();
 
-        // eslint-disable-next-line vitest/prefer-expect-type-of
-        expect(typeof module_.default).toBe("function");
+        expect(module_.default).toBeTypeOf("function");
     });
 });
