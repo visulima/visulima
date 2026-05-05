@@ -177,7 +177,7 @@ describe(loadEnvFile, () => {
     it("should strip double quotes from values", () => {
         expect.assertions(1);
 
-        writeFileSync(join(tmpDir, ".env"), 'KEY="hello world"');
+        writeFileSync(join(tmpDir, ".env"), "KEY=\"hello world\"");
 
         const env = loadEnvFile(tmpDir, ".env");
 

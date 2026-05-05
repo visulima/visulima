@@ -397,7 +397,12 @@ describe("vis list", () => {
             const records = lines.map((line) => JSON.parse(line) as { depName: string; isInternal: boolean; specifier: string });
 
             expect(records.find((r) => r.depName === "@my/a")?.isInternal).toBe(true);
-            expect(records.filter((r) => r.depName === "react").map((r) => r.specifier).sort()).toStrictEqual(["^17.0.0", "^18.2.0"]);
+            expect(
+                records
+                    .filter((r) => r.depName === "react")
+                    .map((r) => r.specifier)
+                    .sort(),
+            ).toStrictEqual(["^17.0.0", "^18.2.0"]);
         });
 
         it("--format=json emits a single array; --pretty switches to indented", async () => {
@@ -419,7 +424,7 @@ describe("vis list", () => {
 
             expect(compactParsed).toHaveLength(4);
             // Compact form has no newlines between records.
-            expect(compactText.includes("\n")).toBe(false);
+            expect(compactText).not.toContain("\n");
         });
 
         it("--format=ndjson outside --deps is rejected", async () => {

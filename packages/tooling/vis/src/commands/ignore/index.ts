@@ -21,7 +21,7 @@ const ignore: Command = {
         name: "project",
         type: String,
     },
-    description: 'Exit with inverted codes for CI "Ignored Build Step" gating (Vercel/Netlify)',
+    description: "Exit with inverted codes for CI \"Ignored Build Step\" gating (Vercel/Netlify)",
     examples: [
         ["vis ignore my-app", "Check if my-app is affected and decide whether to build"],
         ["vis ignore my-app --base $VERCEL_GIT_PREVIOUS_SHA", "Explicit base ref"],
@@ -46,13 +46,13 @@ const ignore: Command = {
         },
         {
             defaultValue: "deep",
-            description: 'Downstream scope: "none", "direct", or "deep"',
+            description: "Downstream scope: \"none\", \"direct\", or \"deep\"",
             name: "downstream",
             type: String,
         },
         {
             defaultValue: "none",
-            description: 'Upstream scope: "none", "direct", or "deep"',
+            description: "Upstream scope: \"none\", \"direct\", or \"deep\"",
             name: "upstream",
             type: String,
         },

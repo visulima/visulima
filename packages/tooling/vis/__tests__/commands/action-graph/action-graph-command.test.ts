@@ -168,6 +168,6 @@ describe("vis action-graph", () => {
 
         const text = calls.map((c) => c.slice(1).join(" ")).join("\n");
 
-        expect(text).toContain('No projects have a "nonexistent" target.');
+        expect(text).toContain("No projects have a \"nonexistent\" target.");
     });
 });

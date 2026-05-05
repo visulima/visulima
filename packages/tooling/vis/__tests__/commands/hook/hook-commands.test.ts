@@ -158,7 +158,7 @@ describe(validateHooks, () => {
     it.skipIf(process.platform === "win32")("flags a missing prek-runner.mjs when a script references it", () => {
         expect.assertions(2);
 
-        writeHookScript(temporary.root, "pre-commit", '#!/usr/bin/env sh\nnode "$(dirname "$0")/.builtins/prek-runner.mjs" --builtin trailing-whitespace\n');
+        writeHookScript(temporary.root, "pre-commit", "#!/usr/bin/env sh\nnode \"$(dirname \"$0\")/.builtins/prek-runner.mjs\" --builtin trailing-whitespace\n");
         spawnSync("git", ["config", "core.hooksPath", ".vis-hooks/_"], { cwd: temporary.root });
 
         const result = validateHooks(temporary.root, ".vis-hooks");
@@ -197,7 +197,7 @@ describe(runHookStage, () => {
         writeHookScript(
             temporary.root,
             "pre-commit",
-            '#!/usr/bin/env sh\nif [ "$VIS_HOOK_FROM_REF" = "HEAD~1" ] && [ "$VIS_HOOK_TO_REF" = "HEAD" ]; then exit 7; else exit 0; fi\n',
+            "#!/usr/bin/env sh\nif [ \"$VIS_HOOK_FROM_REF\" = \"HEAD~1\" ] && [ \"$VIS_HOOK_TO_REF\" = \"HEAD\" ]; then exit 7; else exit 0; fi\n",
         );
 
         const code = runHookStage(temporary.root, ".vis-hooks", { lastCommit: true, stage: "pre-commit" }, noopLogger);
@@ -234,7 +234,7 @@ describe(runHookStage, () => {
     it.skipIf(process.platform === "win32")("forwards --all-files to the child via VIS_HOOK_ALL_FILES", () => {
         expect.assertions(1);
 
-        writeHookScript(temporary.root, "pre-commit", '#!/usr/bin/env sh\nif [ "$VIS_HOOK_ALL_FILES" = "1" ]; then exit 42; else exit 0; fi\n');
+        writeHookScript(temporary.root, "pre-commit", "#!/usr/bin/env sh\nif [ \"$VIS_HOOK_ALL_FILES\" = \"1\" ]; then exit 42; else exit 0; fi\n");
 
         // We need the hook script to actually run directly; runHookStage invokes it via `sh -e`
         const code = runHookStage(temporary.root, ".vis-hooks", { allFiles: true, stage: "pre-commit" }, noopLogger);

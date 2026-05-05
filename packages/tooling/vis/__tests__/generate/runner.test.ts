@@ -47,7 +47,7 @@ describe("runner", () => {
             const pkg = readFileSync(join(workspace, "package.json"), "utf8");
             const indexFile = readFileSync(join(workspace, "src/index.ts"), "utf8");
 
-            expect(pkg).toContain('"name": "test-pkg"');
+            expect(pkg).toContain("\"name\": \"test-pkg\"");
             expect(indexFile).toBe("export {};\n");
         });
 
@@ -93,7 +93,7 @@ describe("runner", () => {
                 workspaceRoot: workspace,
             });
 
-            expect(readFileSync(join(workspace, "package.json"), "utf8")).toContain('"name": "test-pkg"');
+            expect(readFileSync(join(workspace, "package.json"), "utf8")).toContain("\"name\": \"test-pkg\"");
         });
     });
 });

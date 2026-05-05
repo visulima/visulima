@@ -1137,10 +1137,8 @@ const resolveMinAgeMs = (maturity?: MaturityOptions): number => {
  * `includePrerelease` boolean to the new `releaseChannel` enum so callers
  * can keep passing `--prerelease` without setting `--release-channel`.
  */
-const resolveReleaseChannel = (
-    includePrerelease: boolean,
-    releaseChannel: ReleaseChannel | undefined,
-): ReleaseChannel => releaseChannel ?? (includePrerelease ? "any" : "stable");
+const resolveReleaseChannel = (includePrerelease: boolean, releaseChannel: ReleaseChannel | undefined): ReleaseChannel =>
+    releaseChannel ?? (includePrerelease ? "any" : "stable");
 
 /** Filters and sorts version candidates that are newer than `current`, optionally constrained by major/minor and maturity. */
 const filterCandidates = (
@@ -1582,13 +1580,7 @@ const checkOutdated = async (
     const uniquePackages = [...new Set(entries.map((entry) => entry.packageName))];
 
     const needPublishTimes = Boolean(options.minimumReleaseAge && options.minimumReleaseAge > 0);
-    const { failed, versionCache } = await fetchVersionsBatched(
-        uniquePackages,
-        npmrcConfig,
-        onProgress,
-        needPublishTimes,
-        options.maxConcurrentRequests,
-    );
+    const { failed, versionCache } = await fetchVersionsBatched(uniquePackages, npmrcConfig, onProgress, needPublishTimes, options.maxConcurrentRequests);
     const outdated = buildOutdatedEntries(entries, versionCache, options);
 
     // Compute packages filtered out by target constraint (have updates on "latest" but not on current target)

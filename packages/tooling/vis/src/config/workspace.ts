@@ -251,7 +251,7 @@ const readPnpmWorkspaceOverrides = (workspaceRoot: string): Record<string, strin
         return undefined;
     }
 
-    const { overrides } = (parsed as { overrides?: unknown });
+    const { overrides } = parsed as { overrides?: unknown };
 
     if (typeof overrides !== "object" || overrides === null || Array.isArray(overrides)) {
         return undefined;

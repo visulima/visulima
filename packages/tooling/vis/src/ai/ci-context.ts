@@ -109,8 +109,8 @@ const readPrNumberFromGithubEvent = async (eventPath: string | undefined): Promi
 
 const detectGithubActions = async (env: NodeJS.ProcessEnv): Promise<CiContext> => {
     const refPrNumber = parsePrNumberFromGithubRef(env.GITHUB_REF);
-    const { prNumber: payloadPrNumber, sha: payloadSha } =
-        refPrNumber === undefined ? await readPrNumberFromGithubEvent(env.GITHUB_EVENT_PATH) : { prNumber: refPrNumber, sha: undefined };
+    const { prNumber: payloadPrNumber, sha: payloadSha }
+        = refPrNumber === undefined ? await readPrNumberFromGithubEvent(env.GITHUB_EVENT_PATH) : { prNumber: refPrNumber, sha: undefined };
 
     return {
         apiBaseUrl: undefined,

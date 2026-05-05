@@ -50,8 +50,8 @@ const renderRunHeader = (summary: RunSummary, logger: Console): void => {
     logger.info(`  end:      ${summary.endTime}`);
     logger.info(`  duration: ${formatDuration(summary.duration)}`);
     logger.info(
-        `  totals:   ${String(summary.stats.total)} total · ${String(summary.stats.succeeded)} ok · ` +
-            `${String(summary.stats.cached)} cached · ${String(summary.stats.skipped)} skipped · ${String(summary.stats.failed)} failed`,
+        `  totals:   ${String(summary.stats.total)} total · ${String(summary.stats.succeeded)} ok · `
+        + `${String(summary.stats.cached)} cached · ${String(summary.stats.skipped)} skipped · ${String(summary.stats.failed)} failed`,
     );
     logger.info(`  env:      node ${summary.environment.nodeVersion} · ${summary.environment.platform}/${summary.environment.arch}`);
     logger.info("");

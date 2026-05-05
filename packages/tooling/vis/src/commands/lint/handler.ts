@@ -389,14 +389,14 @@ const resolveSelection = (options: LintOptions): LintSelection => {
     const hasPin = (options.pin?.length ?? 0) > 0;
 
     // No selectors set → run the default suite (currently every lint).
-    const anySelected =
-        (options.workspaceProtocol ?? false) ||
-        (options.redefineRoot ?? false) ||
-        (options.bannedDeps ?? false) ||
-        (options.workspaceVersions ?? false) ||
-        (options.customTypes ?? false) ||
-        hasBan ||
-        hasPin;
+    const anySelected
+        = (options.workspaceProtocol ?? false)
+            || (options.redefineRoot ?? false)
+            || (options.bannedDeps ?? false)
+            || (options.workspaceVersions ?? false)
+            || (options.customTypes ?? false)
+            || hasBan
+            || hasPin;
 
     if (!anySelected) {
         return { bannedDeps: true, customTypes: true, redefineRoot: true, workspaceProtocol: true, workspaceVersions: true };

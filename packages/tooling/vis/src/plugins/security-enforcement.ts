@@ -108,8 +108,8 @@ const securityEnforcementPlugin: Plugin = {
 
                             if (criticalHighCount > 0) {
                                 pail.warn(
-                                    `${String(criticalHighCount)} critical/high severity alert${criticalHighCount === 1 ? "" : "s"} detected. ` +
-                                        "Run 'vis check --security' for details.",
+                                    `${String(criticalHighCount)} critical/high severity alert${criticalHighCount === 1 ? "" : "s"} detected. `
+                                    + "Run 'vis check --security' for details.",
                                 );
                             }
                         }

@@ -338,15 +338,15 @@ const migrateNanoStaged = (
     }
 
     if (hasUnsupportedNanoStagedConfig(root)) {
-        addMigrationWarning(report, 'Non-JSON nano-staged config found — please migrate to "staged" in vis.config.ts manually');
+        addMigrationWarning(report, "Non-JSON nano-staged config found — please migrate to \"staged\" in vis.config.ts manually");
         addManualStep(report, "Convert your nano-staged config file to JSON format or add staged config to vis.config.ts manually");
     }
 
     if (hasStagedConfigInVisConfig(root)) {
-        addMigrationWarning(report, 'vis.config.ts already has a "staged" config — skipping nano-staged merge');
+        addMigrationWarning(report, "vis.config.ts already has a \"staged\" config — skipping nano-staged merge");
 
         if (!options.silent) {
-            logger.warn('vis.config.ts already has a "staged" config — skipping');
+            logger.warn("vis.config.ts already has a \"staged\" config — skipping");
         }
 
         if (!options.dryRun) {

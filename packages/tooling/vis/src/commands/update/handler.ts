@@ -125,9 +125,7 @@ const buildCatalogCheckOptions = (
 
     const maxConcurrentRequestsFlag = options.maxConcurrentRequests;
     const maxConcurrentRequests
-        = typeof maxConcurrentRequestsFlag === "number" && maxConcurrentRequestsFlag > 0
-            ? maxConcurrentRequestsFlag
-            : configDefaults.maxConcurrentRequests;
+        = typeof maxConcurrentRequestsFlag === "number" && maxConcurrentRequestsFlag > 0 ? maxConcurrentRequestsFlag : configDefaults.maxConcurrentRequests;
 
     const releaseChannelFlag = typeof options.releaseChannel === "string" ? options.releaseChannel.toLowerCase() : undefined;
 
