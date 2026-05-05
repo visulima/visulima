@@ -44,12 +44,20 @@ const add: Command = {
             name: "run-scripts",
             type: Boolean,
         },
+        {
+            defaultValue: false,
+            description:
+                "After adding, recursively install non-optional peer dependencies that aren't already in the workspace (matches nypm's installPeerDependencies)",
+            name: "auto-install-peers",
+            type: Boolean,
+        },
     ],
 };
 
 export default add;
 
 export type AddOptions = CreateOptions<{
+    "auto-install-peers": boolean | undefined;
     exact: boolean | undefined;
     filter: string[] | undefined;
     global: boolean | undefined;

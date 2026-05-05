@@ -1,6 +1,6 @@
 import type { MountEntry } from "../types";
 
-export type PackageManager = "bun" | "npm" | "pnpm" | "yarn";
+export type PackageManager = "bun" | "deno" | "npm" | "pnpm" | "yarn";
 
 /**
  * Suggested mounts based on detected package manager.
@@ -15,6 +15,13 @@ export const PM_MOUNTS: Record<PackageManager, MountEntry[]> = {
         {
             source: "${localWorkspaceFolderBasename}-bun-cache",
             target: "/home/node/.bun/install/cache",
+            type: "volume",
+        },
+    ],
+    deno: [
+        {
+            source: "${localWorkspaceFolderBasename}-deno-cache",
+            target: "/home/node/.cache/deno",
             type: "volume",
         },
     ],

@@ -2,7 +2,7 @@
  * Shared helper for executing package manager commands via native Rust bindings.
  */
 
-import { isAccessibleSync } from "@visulima/fs";
+import { isAccessibleSync, readFileSync } from "@visulima/fs";
 import { dirname, join, parse as parsePath } from "@visulima/path";
 import { coerce, lt } from "semver";
 
@@ -44,10 +44,10 @@ import {
  * "use aube if it is on PATH, otherwise fall back to lockfile-detected
  * PM." Any explicit name pins the choice, ignoring detection.
  */
-type InstallBackend = "aube" | "auto" | "bun" | "npm" | "pnpm" | "yarn";
+type InstallBackend = "aube" | "auto" | "bun" | "deno" | "npm" | "pnpm" | "yarn";
 
 interface PmInfo {
-    name: "bun" | "npm" | "pnpm" | "yarn";
+    name: "bun" | "deno" | "npm" | "pnpm" | "yarn";
     version: string;
 }
 
@@ -90,6 +90,7 @@ const findNonAubeLockfile = (start: string): PmInfo["name"] | undefined => {
         ["npm-shrinkwrap.json", "npm"],
         ["bun.lock", "bun"],
         ["bun.lockb", "bun"],
+        ["deno.lock", "deno"],
     ];
 
     let dir = start;
@@ -215,6 +216,14 @@ const applyPreferOffline = (resolved: ResolvedCommand, pm: InstallerInfo["name"]
         return resolved;
     }
 
+    if (pm === "deno") {
+        // Deno's equivalent (`--cached-only`) is already wired into the
+        // native install resolver when `offline` is set, so a separate
+        // post-process flag would be redundant and would error if
+        // duplicated.
+        return resolved;
+    }
+
     if (pm === "yarn") {
         // yarn classic: --prefer-offline ✓
         // yarn berry: no equivalent (network policy is configured via
@@ -258,10 +267,23 @@ const applyIgnoreScripts = (resolved: ResolvedCommand, pm: InstallerInfo["name"]
         return { ...resolved, args: [...resolved.args, "--ignore-scripts"] };
     }
 
+    if (pm === "deno") {
+        // Deno blocks lifecycle scripts by default and rejects an
+        // `--ignore-scripts` flag entirely. Skip the post-process.
+        return resolved;
+    }
+
     return { ...resolved, args: [...resolved.args, "--ignore-scripts"] };
 };
 
 interface RunAddExtras {
+    /**
+     * After a successful add, read each freshly-installed package's
+     * `peerDependencies`, drop optional peers and ones already in the
+     * workspace, and recursively add the rest. Mirrors nypm's
+     * `installPeerDependencies` (default off).
+     */
+    autoInstallPeers?: boolean;
     ignoreScripts?: boolean;
 }
 
@@ -272,7 +294,181 @@ const runAdd = (pm: InstallerInfo, options: AddOptions, cwd: string, logger: Con
         resolved = applyIgnoreScripts(resolved, pm.name);
     }
 
-    return runResolved(resolved, cwd, logger);
+    const code = runResolved(resolved, cwd, logger);
+
+    if (code === 0 && extras.autoInstallPeers) {
+        installMissingPeers(pm, options, cwd, logger, extras);
+    }
+
+    return code;
+};
+
+/**
+ * Strip the version range suffix from an add spec (`react@^18` →
+ * `react`, `@scope/pkg@1.0` → `@scope/pkg`). Aliased specs like
+ * `name@npm:other` resolve to `name` for peer-lookup purposes —
+ * we read the alias's installed package.json by alias name, since
+ * that is where node_modules places it.
+ */
+const stripVersionRange = (spec: string): string => {
+    if (spec.startsWith("@")) {
+        const slash = spec.indexOf("/");
+
+        if (slash === -1) {
+            return spec;
+        }
+
+        const at = spec.indexOf("@", slash);
+
+        return at === -1 ? spec : spec.slice(0, at);
+    }
+
+    const at = spec.indexOf("@");
+
+    return at === -1 ? spec : spec.slice(0, at);
+};
+
+interface InstalledManifest {
+    peerDependencies?: Record<string, string>;
+    peerDependenciesMeta?: Record<string, { optional?: boolean }>;
+}
+
+interface WorkspaceManifest {
+    dependencies?: Record<string, string>;
+    devDependencies?: Record<string, string>;
+    optionalDependencies?: Record<string, string>;
+    peerDependencies?: Record<string, string>;
+}
+
+const readJson = (path: string): unknown => {
+    if (!isAccessibleSync(path)) {
+        return undefined;
+    }
+
+    try {
+        return JSON.parse(readFileSync(path, { buffer: false }));
+    } catch {
+        return undefined;
+    }
+};
+
+/**
+ * Locate the installed package.json for `name` starting at `from`.
+ * Walks up `node_modules` along parent directories — covers both
+ * pnpm's symlink-into-.pnpm layout (the symlink resolves) and the
+ * hoisted layouts used by npm/yarn/bun.
+ */
+const findInstalledManifest = (from: string, name: string): InstalledManifest | undefined => {
+    let dir = from;
+
+    while (true) {
+        const candidate = join(dir, "node_modules", name, "package.json");
+        const manifest = readJson(candidate) as InstalledManifest | undefined;
+
+        if (manifest) {
+            return manifest;
+        }
+
+        const parent = dirname(dir);
+
+        if (parent === dir || parsePath(dir).root === dir) {
+            return undefined;
+        }
+
+        dir = parent;
+    }
+};
+
+const collectExistingDeps = (cwd: string): Set<string> => {
+    const manifest = readJson(join(cwd, "package.json")) as WorkspaceManifest | undefined;
+    const existing = new Set<string>();
+
+    if (!manifest) {
+        return existing;
+    }
+
+    for (const section of ["dependencies", "devDependencies", "peerDependencies", "optionalDependencies"] as const) {
+        const block = manifest[section];
+
+        if (block) {
+            for (const name of Object.keys(block)) {
+                existing.add(name);
+            }
+        }
+    }
+
+    return existing;
+};
+
+/**
+ * Walk freshly-installed packages, gather their `peerDependencies`,
+ * filter optional + already-present, and dispatch a recursive add for
+ * the rest. Failures are logged, not thrown — the primary add already
+ * succeeded and we don't want a peer-resolution glitch to flip the
+ * exit code.
+ */
+const installMissingPeers = (
+    pm: InstallerInfo,
+    options: AddOptions,
+    cwd: string,
+    logger: Console,
+    extras: RunAddExtras,
+): void => {
+    if (pm.name === "deno") {
+        // Deno doesn't model peer dependencies. Skip silently.
+        return;
+    }
+
+    const existing = collectExistingDeps(cwd);
+    const requested = new Map<string, string>();
+
+    for (const spec of options.packages) {
+        const pkgName = stripVersionRange(spec);
+        const manifest = findInstalledManifest(cwd, pkgName);
+
+        if (!manifest?.peerDependencies) {
+            continue;
+        }
+
+        const meta = manifest.peerDependenciesMeta ?? {};
+
+        for (const [peerName, peerRange] of Object.entries(manifest.peerDependencies)) {
+            if (meta[peerName]?.optional) {
+                continue;
+            }
+
+            if (existing.has(peerName) || requested.has(peerName)) {
+                continue;
+            }
+
+            requested.set(peerName, peerRange);
+        }
+    }
+
+    if (requested.size === 0) {
+        return;
+    }
+
+    const peerSpecs = [...requested.entries()].map(([name, range]) => `${name}@${range}`);
+
+    logger.log(`auto-installing peer dependencies: ${peerSpecs.join(", ")}`);
+
+    const peerOptions: AddOptions = {
+        exact: false,
+        filter: options.filter,
+        global: false,
+        optional: false,
+        packages: peerSpecs,
+        peer: false,
+        saveDev: options.saveDev,
+        workspace: false,
+        workspaceRoot: options.workspaceRoot,
+    };
+
+    // Recurse with autoInstallPeers off — we resolve one transitive
+    // layer per add, matching nypm. Multi-level peer trees can be
+    // surfaced by re-running `vis add` if needed.
+    runAdd(pm, peerOptions, cwd, logger, { ignoreScripts: extras.ignoreScripts });
 };
 
 const runRemove = (pm: InstallerInfo, options: RemoveOptions, cwd: string, logger: Console): number => {
@@ -350,6 +546,31 @@ const resolveInfo = (pm: InstallerInfo, options: InfoOptions): ResolvedCommand =
 
             if (options.json) {
                 args.push("--json");
+            }
+
+            break;
+        }
+        case "deno": {
+            // `deno info <module>` is module-rooted and prints a graph
+            // rather than registry metadata, but it's the closest thing
+            // deno ships. For npm specs prepend `npm:` so the lookup
+            // resolves through deno's npm-compat path.
+            const spec = options.package.startsWith("npm:")
+                || options.package.startsWith("jsr:")
+                || options.package.startsWith("https://")
+                || options.package.startsWith("http://")
+                || options.package.startsWith("file:")
+                ? options.package
+                : `npm:${options.package}`;
+
+            args.push("info", "--", spec);
+
+            if (options.json) {
+                args.push("--json");
+            }
+
+            if (options.fields.length > 0) {
+                warnings.push("deno info does not accept field selectors; ignoring.");
             }
 
             break;

@@ -611,7 +611,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
         },
         cwd,
         logger,
-        { ignoreScripts },
+        { autoInstallPeers: options.autoInstallPeers || false, ignoreScripts },
     );
 
     if (code !== 0) {

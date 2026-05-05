@@ -111,6 +111,7 @@ When catalogs are not available (or `--no-catalog` is used), vis wraps the nativ
 - **yarn v1** — Limited support
 - **yarn berry** — Full support
 - **bun** — Partial support
+- **deno** — Maps to `deno outdated --update`. `--latest` and `--interactive` flow through; `--filter`, `--dev` / `--prod`, `--no-optional`, and `--no-save` are not supported and emit warnings (deno's update model is governed by `deno.json`)
 
 ## Backup and Rollback
 

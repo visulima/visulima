@@ -564,7 +564,7 @@ const executeCatalogUpdate = async (
 
 const executePmWrapper = (
     workspaceRoot: string,
-    packageManager: "aube" | "bun" | "npm" | "pnpm" | "yarn",
+    packageManager: "aube" | "bun" | "deno" | "npm" | "pnpm" | "yarn",
     version: string,
     options: Record<string, unknown>,
     argument: string[],

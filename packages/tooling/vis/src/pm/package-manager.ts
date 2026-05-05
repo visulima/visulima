@@ -165,16 +165,50 @@ const resolveBun = (options: UpdateCommandOptions): ResolvedCommand => {
     return { args, bin: "bun" };
 };
 
+const resolveDeno = (options: UpdateCommandOptions, warnings: string[]): ResolvedCommand => {
+    // Deno's update path is `deno outdated --update`. The flag is the
+    // single switch that turns the report into an in-place upgrade.
+    const args: string[] = ["outdated", "--update"];
+
+    if (options.latest) {
+        args.push("--latest");
+    }
+
+    if (options.interactive) {
+        args.push("--interactive");
+    }
+
+    if (options.filters.length > 0) {
+        warnings.push("deno outdated has no --filter flag; ignoring.");
+    }
+
+    if (options.dev || options.prod) {
+        warnings.push("deno outdated has no --dev / --prod flags; dev/prod is governed by deno.json.");
+    }
+
+    if (options.noOptional) {
+        warnings.push("deno outdated has no --no-optional flag; ignoring.");
+    }
+
+    if (options.noSave) {
+        warnings.push("deno outdated has no --no-save flag; ignoring.");
+    }
+
+    args.push(...options.packages);
+
+    return { args, bin: "deno" };
+};
+
 const resolveUpdateCommand = (
-    packageManager: "aube" | "bun" | "npm" | "pnpm" | "yarn",
+    packageManager: "aube" | "bun" | "deno" | "npm" | "pnpm" | "yarn",
     version: string,
     options: UpdateCommandOptions,
 ): { command: ResolvedCommand; warnings: string[] } => {
     const warnings: string[] = [];
 
-    // Global updates always use npm — except for aube, which has its own
-    // `aube update --global` that operates on the aube global store.
-    if (options.global && packageManager !== "aube") {
+    // Global updates always use npm — except for aube and deno, which
+    // both ship their own global-update paths.
+    if (options.global && packageManager !== "aube" && packageManager !== "deno") {
         const args = ["update", "--global", ...options.packages];
 
         return { command: { args, bin: "npm" }, warnings };
@@ -197,6 +231,11 @@ const resolveUpdateCommand = (
 
         case "bun": {
             command = resolveBun(options);
+            break;
+        }
+
+        case "deno": {
+            command = resolveDeno(options, warnings);
             break;
         }
 

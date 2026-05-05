@@ -7,6 +7,8 @@ description: "Execute a local node_modules/.bin command (no remote fallback)"
 
 Run a binary from the workspace's `node_modules/.bin/` (or a project's local one). Unlike [`vis dlx`](./dlx), `exec` never falls back to fetching the package from the network — if it's not installed, it fails.
 
+On deno, `vis exec` maps to `deno task <name>` rather than the npm-style binary path. The `--filter`, `--recursive`, and topological-order flags are no-ops there.
+
 ## Usage
 
 ```bash

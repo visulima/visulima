@@ -5,7 +5,7 @@ description: "Show npm registry metadata for a package"
 
 # vis info
 
-Show registry metadata for any published package — versions, dependencies, maintainers, dist-tags, license, repository, and more. Wraps the detected package manager's native lookup (`npm view`, `pnpm view`, `yarn info`, `yarn npm info`, `bun pm view`) so the right spelling is used without having to remember each tool's quirks.
+Show registry metadata for any published package — versions, dependencies, maintainers, dist-tags, license, repository, and more. Wraps the detected package manager's native lookup (`npm view`, `pnpm view`, `yarn info`, `yarn npm info`, `bun pm view`, `deno info`) so the right spelling is used without having to remember each tool's quirks.
 
 ## Usage
 
@@ -43,21 +43,23 @@ vis view react
 
 ## How It Works
 
-`vis info` detects the active package manager (pnpm, npm, yarn v1, yarn berry, or bun) and forwards the query using the correct command shape for that tool:
+`vis info` detects the active package manager (pnpm, npm, yarn v1, yarn berry, bun, or deno) and forwards the query using the correct command shape for that tool:
 
-| Package manager | Command emitted              |
-| --------------- | ---------------------------- |
-| npm             | `npm view <pkg> [field…]`    |
-| pnpm            | `pnpm view <pkg> [field…]`   |
-| yarn v1         | `yarn info <pkg> [field]`    |
-| yarn ≥ 2        | `yarn npm info <pkg>`        |
-| bun             | `bun pm view <pkg> [field…]` |
+| Package manager | Command emitted               |
+| --------------- | ----------------------------- |
+| npm             | `npm view <pkg> [field…]`     |
+| pnpm            | `pnpm view <pkg> [field…]`    |
+| yarn v1         | `yarn info <pkg> [field]`     |
+| yarn ≥ 2        | `yarn npm info <pkg>`         |
+| bun             | `bun pm view <pkg> [field…]`  |
+| deno            | `deno info npm:<pkg>` (graph) |
 
 ### Limitations
 
 - **yarn v1** only supports a single field at a time — additional fields are dropped with a warning.
 - **yarn ≥ 2** (`yarn npm info`) does not accept positional field filters — fields are ignored with a warning; parse the full output yourself (e.g. with `--json | jq`).
 - **bun < 1.3** does not ship `bun pm view` at all — vis prints a warning pointing you at `npm view <pkg>` as a workaround, then lets bun exit with its own "unknown subcommand" error. Upgrade to bun 1.3+ for native support.
+- **deno** has no registry-info command. `deno info` is module-rooted (it prints a dependency graph) rather than registry metadata. Bare names are auto-prefixed with `npm:`; `jsr:` / `https:` / `http:` / `file:` specs are passed through unchanged. Field selectors are not supported and are dropped with a warning.
 
 ## See also
 

@@ -21,7 +21,7 @@ export interface TemplateConfig {
 export interface CreateConfig {
     auth?: string;
     defaultEditor?: "vscode";
-    defaultPm?: "bun" | "npm" | "pnpm" | "yarn";
+    defaultPm?: "bun" | "deno" | "npm" | "pnpm" | "yarn";
     defaultProvider?: "bitbucket" | "github" | "gitlab" | "sourcehut";
     gitInit?: boolean;
     install?: boolean;
@@ -45,7 +45,7 @@ export interface ExecutionContext {
     logger: Console;
 
     /** Detected package manager. */
-    pm: { name: "bun" | "npm" | "pnpm" | "yarn"; version: string };
+    pm: { name: "bun" | "deno" | "npm" | "pnpm" | "yarn"; version: string };
 
     /** The validated npm-safe project name. */
     projectName: string;

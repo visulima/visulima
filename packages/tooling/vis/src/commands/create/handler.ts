@@ -140,7 +140,7 @@ const initGitRepo = (projectDir: string): void => {
  */
 const installDependencies = (
     projectDir: string,
-    pm: { name: "bun" | "npm" | "pnpm" | "yarn"; version: string },
+    pm: { name: "bun" | "deno" | "npm" | "pnpm" | "yarn"; version: string },
     logger: Console,
     preferOffline: boolean = false,
 ): boolean => {
