@@ -74,7 +74,7 @@ const parseRelation = (
         // If we iterate over the property name, which is index 0, we parse it like a normal field
         if (index === 0) {
             // eslint-disable-next-line @typescript-eslint/no-use-before-define
-            basicParse(value, field, formatFields, manyRelations);
+            basicParse(value, field, formatFields as PrismaWhereField, manyRelations);
             // Else we format the relation filter in the prisma way
         } else {
             formatFields = {
