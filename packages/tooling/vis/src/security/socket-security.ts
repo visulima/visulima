@@ -1,7 +1,7 @@
 /**
  * Socket.dev security helpers for package security intelligence.
  *
- * Ported from @vltpkg/security-archive and adapted to use the Socket.dev
+ * Ported from `@vltpkg/security-archive` and adapted to use the Socket.dev
  * public API for fetching package security scores, alerts, and report data.
  * Uses a file-based cache (following the ai-cache.ts pattern) with a 1-hour TTL.
  * @see https://socket.dev
@@ -107,7 +107,7 @@ interface CacheEntry {
 
 const isPackageReportData = (o: unknown): o is PackageReportData =>
     typeof o === "object"
-    && o != undefined
+    && o !== null
     && "id" in o
     && "type" in o
     && "name" in o
@@ -375,14 +375,16 @@ const formatReportSummary = (report: PackageReportData): string => {
 /** Formats a detailed multi-line report for a single package. */
 const formatReportDetailed = (report: PackageReportData): string => {
     const name = getFullPackageName(report);
-    const lines: string[] = [`${name}@${report.version}`, `  License: ${report.license || "unknown"}`];
-
-    lines.push(`  Overall Score: ${String(Math.round(report.score.overall * 100))}% (${scoreLabel(report.score.overall)})`);
-    lines.push(`    Supply Chain: ${String(Math.round(report.score.supplyChain * 100))}%`);
-    lines.push(`    Quality:      ${String(Math.round(report.score.quality * 100))}%`);
-    lines.push(`    Maintenance:  ${String(Math.round(report.score.maintenance * 100))}%`);
-    lines.push(`    Vulnerability: ${String(Math.round(report.score.vulnerability * 100))}%`);
-    lines.push(`    License:      ${String(Math.round(report.score.license * 100))}%`);
+    const lines: string[] = [
+        `${name}@${report.version}`,
+        `  License: ${report.license || "unknown"}`,
+        `  Overall Score: ${String(Math.round(report.score.overall * 100))}% (${scoreLabel(report.score.overall)})`,
+        `    Supply Chain: ${String(Math.round(report.score.supplyChain * 100))}%`,
+        `    Quality:      ${String(Math.round(report.score.quality * 100))}%`,
+        `    Maintenance:  ${String(Math.round(report.score.maintenance * 100))}%`,
+        `    Vulnerability: ${String(Math.round(report.score.vulnerability * 100))}%`,
+        `    License:      ${String(Math.round(report.score.license * 100))}%`,
+    ];
 
     if (report.alerts.length > 0) {
         lines.push(`  Alerts (${String(report.alerts.length)}):`);
@@ -444,9 +446,7 @@ const formatSecurityOverview = (reports: Map<string, PackageReportData>): string
         }
     }
 
-    const lines: string[] = [];
-
-    lines.push(`Socket.dev: scanned ${String(reports.size)} package${reports.size === 1 ? "" : "s"}`);
+    const lines: string[] = [`Socket.dev: scanned ${String(reports.size)} package${reports.size === 1 ? "" : "s"}`];
 
     if (totalAlerts > 0) {
         const parts: string[] = [];

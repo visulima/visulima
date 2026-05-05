@@ -491,7 +491,15 @@ const tailLog = async (logFile: string): Promise<void> => {
     try {
         const watcher = (async () => {
             try {
-                for await (const _event of watch(logFile, { signal: controller.signal })) {
+                const iterator = watch(logFile, { signal: controller.signal });
+
+                while (true) {
+                    const next = await iterator.next();
+
+                    if (next.done) {
+                        break;
+                    }
+
                     await tickOnce();
                 }
             } catch {

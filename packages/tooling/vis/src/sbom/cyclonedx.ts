@@ -538,14 +538,14 @@ export const serializeBomToXml = (bom: CycloneDxBom): string => {
 
     if (bom.components && bom.components.length > 0) {
         content.push({
-            _content: bom.components.map(componentToXmlElement),
+            _content: bom.components.map((component) => componentToXmlElement(component)),
             _name: "components",
         });
     }
 
     if (bom.dependencies && bom.dependencies.length > 0) {
         content.push({
-            _content: bom.dependencies.map(dependencyToXmlElement),
+            _content: bom.dependencies.map((dependency) => dependencyToXmlElement(dependency)),
             _name: "dependencies",
         });
     }
@@ -600,7 +600,7 @@ const metadataToXmlElement = (metadata: NonNullable<CycloneDxBom["metadata"]>): 
         children.push({
             _content: [
                 {
-                    _content: metadata.tools.components.map(componentToXmlElement),
+                    _content: metadata.tools.components.map((component) => componentToXmlElement(component)),
                     _name: "components",
                 },
             ],

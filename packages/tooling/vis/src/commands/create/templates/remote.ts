@@ -130,8 +130,8 @@ export const executeRemoteNpm = (config: TemplateConfig, context: ExecutionConte
  * Source format follows giget conventions:
  * - `provider:owner/repo[/subpath][#ref]`
  * - `owner/repo` (defaults to GitHub)
- * - Full HTTPS URLs
- * - `git:` prefix for raw git clone
+ * - Full HTTPS URLs.
+ * - `git:` prefix for raw git clone.
  * @param config Resolved template config with giget source string and extra args.
  * @param context Runtime context with target dir and createConfig (auth, registry, etc.).
  * @returns Exit code — 0 on success, 1 on failure.

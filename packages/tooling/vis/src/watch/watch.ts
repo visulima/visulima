@@ -4,6 +4,8 @@ import { watch } from "node:fs";
 import { dirname, relative, resolve } from "@visulima/path";
 import type { TaskResults } from "@visulima/task-runner";
 
+import { pail } from "../io/logger";
+
 /**
  * Debounced multi-directory file watcher. Watches one or more project
  * roots recursively and invokes `onChange` at most once per debounce
@@ -151,7 +153,7 @@ export const startWatcher = (options: WatchOptions): WatchHandle => {
         }
 
         Promise.resolve(onChange(changes)).catch((error: unknown) => {
-            console.error("[vis watch] onChange handler failed:", error);
+            pail.error("[vis watch] onChange handler failed:", error);
         });
     };
 
@@ -181,7 +183,7 @@ export const startWatcher = (options: WatchOptions): WatchHandle => {
 
             watchers.push(watcher);
         } catch (error) {
-            console.warn(`[vis watch] unable to watch ${path}: ${(error as Error).message}`);
+            pail.warn(`[vis watch] unable to watch ${path}: ${(error as Error).message}`);
         }
     }
 

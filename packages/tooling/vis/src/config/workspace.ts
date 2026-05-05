@@ -36,6 +36,7 @@ const DOT_GIT_RE = /\.git/;
 /**
  * Reads and parses a JSON file, returning undefined on failure.
  */
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters -- T is the caller-supplied typed-cast convenience; the alternative is a verbose `as X | undefined` at every callsite
 const readJsonFileSafe = <T>(filePath: string): T | undefined => {
     try {
         return readJsonSync(filePath) as T;
@@ -633,7 +634,14 @@ const discoverWorkspace = (
         const sanitizedTargets: Record<string, TargetConfiguration> = {};
 
         for (const [targetName, target] of Object.entries(visTargets)) {
-            const { inferred: _inferred, options, preset: _preset, type: _type, ...rest } = target;
+            const { options } = target;
+            const rest: Record<string, unknown> = { ...target };
+
+            delete rest["inferred"];
+            delete rest["options"];
+            delete rest["preset"];
+            delete rest["type"];
+
             const expandedDependsOn = target.dependsOn ? expandTaskGroups(target.dependsOn, config.taskGroups) : undefined;
 
             sanitizedTargets[targetName] = {

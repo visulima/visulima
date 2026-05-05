@@ -102,6 +102,9 @@ const OptimizeListPanel = ({
                 socketCount++;
                 break;
             }
+            default: {
+                break;
+            }
         }
     }
 

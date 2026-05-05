@@ -10,13 +10,14 @@ export const CONCURRENT_ENV_VAR = "VIS_STAGED_CONCURRENT";
 
 /**
  * Parses a stringified concurrency value. Accepts the same shapes as the
- * `--concurrent` CLI flag:
+ * `--concurrent` CLI flag.
  *
- * - `"true"` or an empty string → `true` (unbounded, capped internally at CPU count)
- * - `"false"` → `false` (serial)
- * - an integer string → the parsed number
- * - anything else (including NaN) → `true`, matching the CLI-flag fallback
+ * - `"true"` or an empty string → `true` (unbounded, capped internally at CPU count).
+ * - `"false"` → `false` (serial).
+ * - An integer string → the parsed number.
+ * - Anything else (including NaN) → `true`, matching the CLI-flag fallback.
  */
+// eslint-disable-next-line sonarjs/function-return-type -- intentional union: `boolean` is the on/off marker, `number` overrides the worker count; flattening loses the distinction
 export const parseConcurrent = (value: string): boolean | number => {
     const trimmed = value.trim();
 

@@ -1,7 +1,7 @@
-import { unlinkSync, writeFileSync } from "node:fs";
+import { readdirSync, unlinkSync, writeFileSync } from "node:fs";
 
 import { isAccessibleSync, readFileSync } from "@visulima/fs";
-import { readYamlSync } from "@visulima/fs/yaml";
+import { readYamlSync, writeYamlSync } from "@visulima/fs/yaml";
 import { join } from "@visulima/path";
 
 import { findVisConfigFile } from "../../config/config";
@@ -56,8 +56,18 @@ interface SyncpackConfig {
     dependencyTypes?: string[];
     /** Filter regex over dep names — manual step (no vis equivalent today). */
     filter?: string;
+    /** package.json `bugs` field formatter — superseded by `vis sort-package-json`. */
+    formatBugs?: boolean;
+    /** package.json `repository` field formatter — superseded by `vis sort-package-json`. */
+    formatRepository?: boolean;
     /** Skipped — vis derives indent from the source file / .editorconfig. */
     indent?: string;
+    /** Toggle for syncpack's `format` command — covered by `vis lint` + `vis sort-package-json`. */
+    lintFormatting?: boolean;
+    /** Toggle for syncpack's semver-range linter — covered by `vis lint` by default. */
+    lintSemverRanges?: boolean;
+    /** Toggle for syncpack's version linter — covered by `vis lint` by default. */
+    lintVersions?: boolean;
     /** Deferred to Item 5 — surfaced as a manual step. */
     semverGroups?: ReadonlyArray<Record<string, unknown>>;
     /** package.json key sorter — superseded by `vis sort-package-json`. */
@@ -66,6 +76,10 @@ interface SyncpackConfig {
     sortExports?: string[];
     /** ditto */
     sortFirst?: string[];
+    /** Sort top-level dep blocks — superseded by `vis sort-package-json`. */
+    sortPackages?: boolean | string[];
+    /** Workspace globs — vis derives these from pnpm-workspace.yaml / package.json#workspaces. */
+    source?: string[];
     /** Filter on specifier shapes — manual step. */
     specifierTypes?: string[];
     /** Deferred to Item 5 — surfaced as a manual step. */
@@ -283,6 +297,27 @@ const noteUnsupportedKeys = (config: SyncpackConfig, report: MigrationReport): v
             "syncpack sort options (sortAz / sortFirst / sortExports) are superseded by `vis sort-package-json` — no migration needed.",
         );
     }
+
+    if (config.sortPackages !== undefined || config.formatBugs !== undefined || config.formatRepository !== undefined) {
+        addMigrationWarning(
+            report,
+            "syncpack package.json shape options (sortPackages / formatBugs / formatRepository) are superseded by `vis sort-package-json` — no migration needed.",
+        );
+    }
+
+    if (config.lintFormatting !== undefined || config.lintSemverRanges !== undefined || config.lintVersions !== undefined) {
+        addMigrationWarning(
+            report,
+            "syncpack lint toggles (lintFormatting / lintSemverRanges / lintVersions) are covered by `vis lint` by default — no migration needed.",
+        );
+    }
+
+    if (Array.isArray(config.source) && config.source.length > 0) {
+        addManualStep(
+            report,
+            `syncpack \`source\` was set to [${config.source.map((g) => JSON.stringify(g)).join(", ")}]. vis derives workspace globs from pnpm-workspace.yaml / package.json#workspaces — verify they match before relying on \`vis lint\`.`,
+        );
+    }
 };
 
 // Config writing ----------------------------------------------------
@@ -355,9 +390,14 @@ const insertPolicyIntoVisConfig = (root: string, extraTypes: ExtraCustomType[], 
 
 // Cleanup -----------------------------------------------------------
 
-const removeSyncpackFromPackageJson = (root: string, useEditorconfig?: boolean): { configRemoved: boolean; dependencyRemoved: boolean; scriptCount: number } => {
+const removeSyncpackFromPackageJson = (root: string, useEditorconfig?: boolean): {
+    catalogStripped: boolean;
+    configRemoved: boolean;
+    dependencyRemoved: boolean;
+    scriptCount: number;
+} => {
     const packageJsonPath = join(root, "package.json");
-    const result = { configRemoved: false, dependencyRemoved: false, scriptCount: 0 };
+    const result = { catalogStripped: false, configRemoved: false, dependencyRemoved: false, scriptCount: 0 };
 
     if (!isAccessibleSync(packageJsonPath)) {
         return result;
@@ -381,6 +421,40 @@ const removeSyncpackFromPackageJson = (root: string, useEditorconfig?: boolean):
             modified = true;
             result.dependencyRemoved = true;
         }
+    }
+
+    // Bun catalog protocol — `workspaces.catalog.syncpack` and `workspaces.catalogs.<name>.syncpack`.
+    const workspaces = pkg["workspaces"] as Record<string, unknown> | undefined;
+
+    if (workspaces && typeof workspaces === "object" && !Array.isArray(workspaces)) {
+        const catalog = workspaces["catalog"] as Record<string, string> | undefined;
+
+        if (catalog && typeof catalog["syncpack"] === "string") {
+            delete catalog["syncpack"];
+            modified = true;
+            result.catalogStripped = true;
+        }
+
+        const catalogs = workspaces["catalogs"] as Record<string, Record<string, string>> | undefined;
+
+        if (catalogs && typeof catalogs === "object") {
+            for (const named of Object.values(catalogs)) {
+                if (named && typeof named["syncpack"] === "string") {
+                    delete named["syncpack"];
+                    modified = true;
+                    result.catalogStripped = true;
+                }
+            }
+        }
+    }
+
+    // Top-level `catalog` (non-workspaces shape) — bun also accepts this.
+    const topLevelCatalog = pkg["catalog"] as Record<string, string> | undefined;
+
+    if (topLevelCatalog && typeof topLevelCatalog["syncpack"] === "string") {
+        delete topLevelCatalog["syncpack"];
+        modified = true;
+        result.catalogStripped = true;
     }
 
     const scripts = pkg["scripts"] as Record<string, string> | undefined;
@@ -414,6 +488,58 @@ const removeSyncpackFromPackageJson = (root: string, useEditorconfig?: boolean):
 
 const HOOK_CANDIDATES = [".husky/pre-commit", ".vis-hooks/pre-commit", ".git/hooks/pre-commit"] as const;
 
+const CI_PATH_CANDIDATES = [".github/workflows", ".gitlab-ci.yml", ".circleci/config.yml", ".woodpecker.yml", ".drone.yml"] as const;
+
+/**
+ * Heuristic CI scan for `syncpack` references. We don't try to rewrite
+ * YAML — too many shapes (run/script/cmd, multi-line `|`, conditionals)
+ * and the wrong replacement (`vis lint` vs `vis sort-package-json`)
+ * depends on the original subcommand. Just surface a manual step per
+ * file we see referencing it.
+ */
+const detectCiReferences = (root: string, report: MigrationReport): string[] => {
+    const hits: string[] = [];
+
+    const scanFile = (rel: string): void => {
+        const abs = join(root, rel);
+
+        if (!isAccessibleSync(abs)) {
+            return;
+        }
+
+        if (SYNCPACK_SCRIPT_RE.test(readFileSync(abs))) {
+            hits.push(rel);
+            addManualStep(report, `Update ${rel} — replace \`syncpack\` invocation(s) with \`vis lint\` / \`vis sort-package-json\` as appropriate.`);
+        }
+    };
+
+    for (const rel of CI_PATH_CANDIDATES) {
+        const abs = join(root, rel);
+
+        if (!isAccessibleSync(abs)) {
+            continue;
+        }
+
+        if (rel === ".github/workflows") {
+            try {
+                for (const entry of readdirSync(abs)) {
+                    if (entry.endsWith(".yml") || entry.endsWith(".yaml")) {
+                        scanFile(`.github/workflows/${entry}`);
+                    }
+                }
+            } catch {
+                // Unreadable directory — best-effort; skip.
+            }
+
+            continue;
+        }
+
+        scanFile(rel);
+    }
+
+    return hits;
+};
+
 /**
  * Scan known pre-commit hook locations for `syncpack` invocations.
  * No auto-rewrite — `syncpack lint` ≈ `vis lint`, `syncpack format` ≈
@@ -438,6 +564,59 @@ const detectHookReferences = (root: string, report: MigrationReport): string[] =
     }
 
     return hits;
+};
+
+/**
+ * Strip `syncpack` entries from pnpm-workspace.yaml's `catalog` and
+ * any named bucket under `catalogs.&lt;name>`. Round-trips through the
+ * yaml writer so comments are not preserved — but this is a one-time
+ * migration and the file is backed up first.
+ */
+const removeSyncpackFromPnpmCatalogs = (root: string): boolean => {
+    const yamlPath = join(root, "pnpm-workspace.yaml");
+
+    if (!isAccessibleSync(yamlPath)) {
+        return false;
+    }
+
+    let parsed: Record<string, unknown> | undefined;
+
+    try {
+        parsed = readYamlSync(yamlPath);
+    } catch {
+        return false;
+    }
+
+    if (!parsed || typeof parsed !== "object") {
+        return false;
+    }
+
+    let modified = false;
+
+    const catalog = parsed["catalog"] as Record<string, string> | undefined;
+
+    if (catalog && typeof catalog["syncpack"] === "string") {
+        delete catalog["syncpack"];
+        modified = true;
+    }
+
+    const catalogs = parsed["catalogs"] as Record<string, Record<string, string>> | undefined;
+
+    if (catalogs && typeof catalogs === "object") {
+        for (const named of Object.values(catalogs)) {
+            if (named && typeof named["syncpack"] === "string") {
+                delete named["syncpack"];
+                modified = true;
+            }
+        }
+    }
+
+    if (modified) {
+        backupFile(yamlPath);
+        writeYamlSync(yamlPath, parsed);
+    }
+
+    return modified;
 };
 
 const removeSyncpackConfigFiles = (root: string, report: MigrationReport): void => {
@@ -472,11 +651,17 @@ const applyMigration = (
         logger.warn(`Found syncpack reference in ${String(hookHits.length)} hook file(s) — see manualSteps for details.`);
     }
 
+    const ciHits = detectCiReferences(root, report);
+
+    if (ciHits.length > 0 && !options.silent) {
+        logger.warn(`Found syncpack reference in ${String(ciHits.length)} CI file(s) — see manualSteps for details.`);
+    }
+
     if (extraTypes.length > 0) {
         insertPolicyIntoVisConfig(root, extraTypes, logger);
     }
 
-    const { configRemoved, dependencyRemoved, scriptCount } = removeSyncpackFromPackageJson(root, options.useEditorconfig);
+    const { catalogStripped, configRemoved, dependencyRemoved, scriptCount } = removeSyncpackFromPackageJson(root, options.useEditorconfig);
 
     if (configRemoved && !options.silent) {
         logger.info("Removed `syncpack` block from package.json");
@@ -484,6 +669,12 @@ const applyMigration = (
 
     if (dependencyRemoved) {
         bumpPerMigration(report, MIGRATION_ID, "removedPackageCount");
+    }
+
+    const pnpmCatalogStripped = removeSyncpackFromPnpmCatalogs(root);
+
+    if ((catalogStripped || pnpmCatalogStripped) && !options.silent) {
+        logger.info("Stripped `syncpack` from catalog protocol entries.");
     }
 
     if (scriptCount > 0) {
@@ -547,6 +738,7 @@ const migrateSyncpack = (root: string, options: { dryRun: boolean; silent?: bool
 
         noteUnsupportedKeys(config, report);
         detectHookReferences(root, report);
+        detectCiReferences(root, report);
 
         if (!options.silent) {
             if (previewExtras.length > 0) {

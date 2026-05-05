@@ -56,10 +56,12 @@ export const resolveEditorConfigDefaults = (filePath: string): EditorConfigDefau
 };
 
 /**
- * Resolves the indent string for `filePath`. Priority:
- *   1. `.editorconfig` (when `useEditorconfig` is true)
- *   2. Sniff from `contents` (first indented line)
- *   3. `defaultIndent` (defaults to two spaces)
+ * Resolves the indent string for `filePath`.
+ *
+ * Priority order:
+ * 1. `.editorconfig` (when `useEditorconfig` is true).
+ * 2. Sniff from `contents` (first indented line).
+ * 3. `defaultIndent` (defaults to two spaces).
  */
 export const resolveIndentForFile = (filePath: string, contents?: string, options: ResolveIndentOptions = {}): string => {
     const { defaultIndent = "  ", useEditorconfig = true } = options;

@@ -140,7 +140,7 @@ describe(loadOptionalSdk, () => {
     it("should also accept the legacy `MODULE_NOT_FOUND` code (CJS error shape)", async () => {
         expect.assertions(1);
 
-        const importImpl = vi.fn(async (specifier: OptionalSdk) => {
+        const importImpl = vi.fn(async (_specifier: OptionalSdk) => {
             const error: NodeJS.ErrnoException = new Error("Cannot find module");
 
             error.code = "MODULE_NOT_FOUND";

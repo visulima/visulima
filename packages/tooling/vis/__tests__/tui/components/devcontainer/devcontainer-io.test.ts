@@ -10,6 +10,7 @@ describe("devcontainer-io", () => {
     let tempDir: string;
 
     beforeEach(() => {
+        // eslint-disable-next-line sonarjs/pseudo-random -- temp-dir suffix in tests, not security-sensitive
         tempDir = join(tmpdir(), `vis-dc-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
         mkdirSync(tempDir, { recursive: true });
     });

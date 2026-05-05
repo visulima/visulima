@@ -113,16 +113,20 @@ vis migrate syncpack --dry-run
 - Any `scripts` matching `\bsyncpack\b` are deleted.
 - `.syncpackrc{,.json,.yaml,.yml}` is backed up (`.bak`) and removed.
 - The `syncpack` block inside `package.json` is removed.
+- `syncpack` is stripped from catalog protocol locations: `pnpm-workspace.yaml#catalog`/`catalogs.<name>` and bun's `package.json#workspaces.catalog`/`workspaces.catalogs.<name>` (and the top-level `package.json#catalog`).
 
 **Routed to manual steps:**
 
 - `versionGroups` and `semverGroups` — deferred to the vis DSL tracked in [issue #622](https://github.com/visulima/visulima/issues/622).
 - `dependencyTypes`, `specifierTypes`, `filter` — no direct vis equivalent today; reviewer is prompted to recreate them with `policy.*` filters.
+- `source` (workspace globs) — vis derives these from `pnpm-workspace.yaml` / `package.json#workspaces`; reviewer is asked to verify they match.
 - Pre-commit hooks (`.husky/pre-commit`, `.vis-hooks/pre-commit`, `.git/hooks/pre-commit`) referencing `syncpack` are flagged but **not auto-rewritten** — `syncpack lint` ≈ `vis lint` and `syncpack format` ≈ `vis sort-package-json`, but `fix-mismatches` / `set-semver-ranges` have no 1:1 mapping. The reviewer makes the call.
+- CI workflow files (`.github/workflows/*.yml`, `.gitlab-ci.yml`, `.circleci/config.yml`, `.woodpecker.yml`, `.drone.yml`) referencing `syncpack` are flagged with a manual step — YAML rewriting is too brittle to automate.
 
 **Superseded (no migration needed):**
 
-- `sortAz`, `sortFirst`, `sortExports` are handled by `vis sort-package-json`.
+- `sortAz`, `sortFirst`, `sortExports`, `sortPackages`, `formatBugs`, `formatRepository` — handled by `vis sort-package-json`.
+- `lintFormatting`, `lintSemverRanges`, `lintVersions` — covered by `vis lint` by default.
 
 **Not supported in v1:**
 
@@ -130,7 +134,7 @@ TS/JS configs (`.syncpackrc.{cjs,js,mjs,ts}`, `syncpack.config.{cjs,js,mjs,ts}`)
 
 ### verify
 
-Read-only audit that exits non-zero if it finds any leftover `gitleaks`, `secretlint`, or `syncpack` references in `package.json` scripts/devDependencies, pre-commit hooks, or stale config files. Useful as a CI gate after a migration.
+Read-only audit that exits non-zero if it finds any leftover `gitleaks`, `secretlint`, or `syncpack` references. Scans `package.json` scripts/devDependencies, pre-commit hooks, stale config files, CI workflow files, and catalog protocol entries (pnpm-workspace.yaml + bun catalog). Useful as a CI gate after a migration.
 
 ```bash
 vis migrate verify

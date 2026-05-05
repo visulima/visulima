@@ -150,9 +150,7 @@ const buildHashDiffSummary = (failureContext: FailureContext): string => {
 };
 
 const buildUserPrompt = (failureContext: FailureContext): string => {
-    const lines: string[] = [];
-
-    lines.push(`Task: ${failureContext.taskId}`);
+    const lines: string[] = [`Task: ${failureContext.taskId}`];
 
     if (failureContext.project) {
         lines.push(`Project: ${failureContext.project}`);
@@ -289,7 +287,7 @@ export const runFixAnalysis = async (failureContext: FailureContext, logger: Con
     const cacheKey = buildFixCacheKey(provider.name, failureContext);
 
     if (useCache) {
-        const cached = getCachedJson<FixProposal>(cacheKey);
+        const cached = getCachedJson(cacheKey) as FixProposal | undefined;
 
         if (cached) {
             logger.info(`Using cached fix proposal from ${cached.provider}.\n`);

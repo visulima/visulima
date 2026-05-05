@@ -1437,11 +1437,11 @@ const computeCacheHash = (
     }
 
     let hash = 5381;
-    const string_ = parts.join("|");
+    const joined = parts.join("|");
 
-    for (let i = 0; i < string_.length; i++) {
+    for (let i = 0; i < joined.length; i++) {
         // eslint-disable-next-line no-bitwise, unicorn/prefer-math-trunc, unicorn/prefer-code-point -- djb2 hash: bitwise int32 truncation and code-unit iteration are required for stable cache keys
-        hash = ((hash << 5) + hash + string_.charCodeAt(i)) | 0;
+        hash = ((hash << 5) + hash + joined.charCodeAt(i)) | 0;
     }
 
     return String(hash);

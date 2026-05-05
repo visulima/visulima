@@ -94,7 +94,8 @@ export const generateVariants = (name: string): Set<string> => {
     }
 
     for (let i = 0; i < name.length; i++) {
-        const isSeparator = name[i] === "-" || name[i] === "." || name[i] === "_";
+        const char = name[i] as string;
+        const isSeparator = char === "-" || char === "." || char === "_";
 
         // Character omission (skip separators)
         if (!isSeparator) {
@@ -103,7 +104,7 @@ export const generateVariants = (name: string): Set<string> => {
 
         // Character duplication (skip separators)
         if (!isSeparator) {
-            variants.add(name.slice(0, i) + name[i] + name.slice(i));
+            variants.add(name.slice(0, i) + char + name.slice(i));
         }
 
         // Adjacent transposition (skip when either char is a separator)

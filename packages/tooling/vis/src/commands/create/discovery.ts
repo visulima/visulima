@@ -87,12 +87,13 @@ export const isGitUrl = (input: string): boolean => {
 const DIRECT_PACKAGES = new Set(["sv"]);
 
 /**
- * Expand shorthand npm create names following the `npm create` convention:
+ * Expand shorthand npm create names following the `npm create` convention.
  *
- * - `vite`       → `create-vite`
- * - `@scope/foo` → `@scope/create-foo`
- * - `create-vue` → `create-vue` (already expanded)
- * - `sv`         → `sv` (direct-package initialiser, not expanded)
+ * Mappings:
+ * - `vite`       → `create-vite`.
+ * - `@scope/foo` → `@scope/create-foo`.
+ * - `create-vue` → `create-vue` (already expanded).
+ * - `sv`         → `sv` (direct-package initialiser, not expanded).
  * @param name Bare package name or scoped package name.
  * @returns Expanded package name suitable for `dlx`.
  */

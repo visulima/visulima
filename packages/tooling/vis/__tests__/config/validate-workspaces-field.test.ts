@@ -21,24 +21,24 @@ describe(validateWorkspacesField, () => {
     it("rejects non-string entries", () => {
         expect.assertions(1);
 
-        expect(() => validateWorkspacesField([123 as any])).toThrow(/non-empty glob string/);
+        expect(() => validateWorkspacesField([123 as unknown as string])).toThrow(/non-empty glob string/);
     });
 
     it("rejects object form without packages", () => {
         expect.assertions(1);
 
-        expect(() => validateWorkspacesField({} as any)).toThrow(/requires a `packages` array/);
+        expect(() => validateWorkspacesField({})).toThrow(/requires a `packages` array/);
     });
 
     it("rejects object form with non-array packages", () => {
         expect.assertions(1);
 
-        expect(() => validateWorkspacesField({ packages: "packages/*" } as any)).toThrow(/expected an array/);
+        expect(() => validateWorkspacesField({ packages: "packages/*" } as never)).toThrow(/expected an array/);
     });
 
     it("rejects scalar workspaces value", () => {
         expect.assertions(1);
 
-        expect(() => validateWorkspacesField("packages/*" as any)).toThrow(/expected an array or/);
+        expect(() => validateWorkspacesField("packages/*" as never)).toThrow(/expected an array or/);
     });
 });

@@ -41,6 +41,8 @@ interface RunSummaryFile {
  * just to get the same data.
  * @param workspaceRoot Absolute path to the workspace root.
  * @param options Filtering options.
+ * @param options.minRuns Only include tasks with at least this many runs (default 1).
+ * @param options.since ISO date string; ignore runs older than this.
  * @returns Flakiness stats sorted by rate (most flaky first).
  */
 export const analyzeFlakiness = (
@@ -137,7 +139,11 @@ export const formatFlakinessTable = (stats: TaskFlakiness[]): string[] => {
     const rows = stats.map((s) => [s.taskId, String(s.totalRuns), String(s.failures), `${(s.flakinessRate * 100).toFixed(1)}%`, s.lastFailure ?? "—"]);
 
     const widths = header.map((h, i) => {
-        const maxDataWidth = rows.reduce((max, row) => Math.max(max, (row[i] ?? "").length), 0);
+        let maxDataWidth = 0;
+
+        for (const row of rows) {
+            maxDataWidth = Math.max(maxDataWidth, (row[i] ?? "").length);
+        }
 
         return Math.max(h.length, maxDataWidth);
     });
@@ -145,10 +151,7 @@ export const formatFlakinessTable = (stats: TaskFlakiness[]): string[] => {
     const pad = (str: string, width: number): string => str.padEnd(width);
     const separator = widths.map((w) => "─".repeat(w)).join("──");
 
-    const lines: string[] = [];
-
-    lines.push(header.map((h, i) => pad(h, widths[i]!)).join("  "));
-    lines.push(separator);
+    const lines: string[] = [header.map((h, i) => pad(h, widths[i]!)).join("  "), separator];
 
     for (const row of rows) {
         lines.push(row.map((cell, i) => pad(cell, widths[i]!)).join("  "));

@@ -29,11 +29,11 @@ const formatDisplayPath = (workspaceRoot: string, cwd: string | undefined, file:
 };
 
 const formatProposalText = (proposal: FixProposal, workspaceRoot: string, cwd: string | undefined): string => {
-    const lines: string[] = [];
-
-    lines.push(bold(`Fix proposal (${proposal.provider}, confidence: ${proposal.confidence})`));
-    lines.push("");
-    lines.push(proposal.explanation || dim("<no explanation>"));
+    const lines: string[] = [
+        bold(`Fix proposal (${proposal.provider}, confidence: ${proposal.confidence})`),
+        "",
+        proposal.explanation || dim("<no explanation>"),
+    ];
 
     if (proposal.cannotFix) {
         lines.push("");
@@ -109,14 +109,14 @@ const summarizePatchResults = (results: PatchResult[]): { applied: number; faile
 };
 
 const confirmPrompt = (question: string): Promise<boolean> =>
-    new Promise((resolvePromise) => {
+    new Promise((resolve) => {
         const rl = createInterface({ input: process.stdin, output: process.stderr });
 
         rl.question(`${question} (y/N) `, (answer) => {
             rl.close();
             const trimmed = answer.trim().toLowerCase();
 
-            resolvePromise(trimmed === "y" || trimmed === "yes");
+            resolve(trimmed === "y" || trimmed === "yes");
         });
     });
 

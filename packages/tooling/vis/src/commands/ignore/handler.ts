@@ -46,6 +46,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot }: 
             logger.info(formatDecisionLine(decision));
         }
 
+        // eslint-disable-next-line unicorn/no-process-exit -- Vercel ignore-build-step protocol requires the process to exit with a specific code (0 = build, 1 = skip)
         process.exit(exitCodeFor(decision, exitZeroOnBuild));
     };
 

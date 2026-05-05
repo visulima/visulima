@@ -106,7 +106,7 @@ describe("tui/status-utils", () => {
 
             expect(writeSpy.mock.calls.length).toBeGreaterThan(0);
 
-            const allOutput = writeSpy.mock.calls.map((c) => String(c[0])).join("");
+            const allOutput = (writeSpy.mock.calls as unknown[][]).map((c) => String(c[0])).join("");
 
             expect(strip(allOutput)).toContain("app:build");
             expect(strip(allOutput)).toContain("build output here");

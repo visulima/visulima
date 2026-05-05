@@ -357,6 +357,51 @@ describe("migrate-syncpack", () => {
             expect(report.manualSteps.some((s) => s.includes("filter"))).toBe(true);
         });
 
+        it("warns when sortPackages/formatBugs/formatRepository are present (superseded by sort-package-json)", () => {
+            expect.assertions(1);
+
+            writeFileSync(
+                join(tmpDir, ".syncpackrc.json"),
+                JSON.stringify({ formatBugs: true, formatRepository: true, sortPackages: true }),
+            );
+
+            const report = createMigrationReport();
+
+            migrateSyncpack(tmpDir, { dryRun: true }, createMockLogger(), report);
+
+            expect(report.warnings.some((w) => w.includes("sortPackages") && w.includes("sort-package-json"))).toBe(true);
+        });
+
+        it("notes that lintFormatting/lintSemverRanges/lintVersions are covered by vis lint", () => {
+            expect.assertions(1);
+
+            writeFileSync(
+                join(tmpDir, ".syncpackrc.json"),
+                JSON.stringify({ lintFormatting: false, lintSemverRanges: true, lintVersions: true }),
+            );
+
+            const report = createMigrationReport();
+
+            migrateSyncpack(tmpDir, { dryRun: true }, createMockLogger(), report);
+
+            expect(report.warnings.some((w) => w.includes("vis lint") && w.includes("lintFormatting"))).toBe(true);
+        });
+
+        it("emits a manual step when source globs are configured", () => {
+            expect.assertions(1);
+
+            writeFileSync(
+                join(tmpDir, ".syncpackrc.json"),
+                JSON.stringify({ source: ["packages/*", "apps/*"] }),
+            );
+
+            const report = createMigrationReport();
+
+            migrateSyncpack(tmpDir, { dryRun: true }, createMockLogger(), report);
+
+            expect(report.manualSteps.some((s) => s.includes("source") && s.includes("packages/*"))).toBe(true);
+        });
+
         it("warns when sortAz/sortFirst/sortExports are present (handled by sort-package-json)", () => {
             expect.assertions(1);
 
@@ -384,6 +429,68 @@ describe("migrate-syncpack", () => {
 
             expect(report.warnings.some((w) => w.includes(".syncpackrc.ts"))).toBe(true);
             expect(report.manualSteps.some((s) => s.includes(".syncpackrc.ts"))).toBe(true);
+        });
+
+        it("emits a manual step for each CI workflow file invoking syncpack", () => {
+            expect.assertions(2);
+
+            writeFileSync(join(tmpDir, ".syncpackrc.json"), "{}");
+            mkdirSync(join(tmpDir, ".github", "workflows"), { recursive: true });
+            writeFileSync(join(tmpDir, ".github", "workflows", "ci.yml"), "jobs:\n  lint:\n    steps:\n      - run: pnpm syncpack lint\n");
+            writeFileSync(join(tmpDir, ".gitlab-ci.yml"), "lint:\n  script:\n    - npx syncpack lint\n");
+
+            const report = createMigrationReport();
+
+            migrateSyncpack(tmpDir, { dryRun: true }, createMockLogger(), report);
+
+            expect(report.manualSteps.some((s) => s.includes(".github/workflows/ci.yml"))).toBe(true);
+            expect(report.manualSteps.some((s) => s.includes(".gitlab-ci.yml"))).toBe(true);
+        });
+
+        it("strips syncpack from pnpm-workspace.yaml catalog and named catalogs", () => {
+            expect.assertions(3);
+
+            writeFileSync(join(tmpDir, ".syncpackrc.json"), "{}");
+            writeFileSync(
+                join(tmpDir, "pnpm-workspace.yaml"),
+                "packages:\n  - 'packages/*'\ncatalog:\n  syncpack: ^12.0.0\n  typescript: ^5.0.0\ncatalogs:\n  lint:\n    syncpack: ^12.0.0\n    eslint: ^9.0.0\n",
+            );
+
+            const report = createMigrationReport();
+
+            migrateSyncpack(tmpDir, { dryRun: false }, createMockLogger(), report);
+
+            const yamlContent = readFileSync(join(tmpDir, "pnpm-workspace.yaml"), "utf8");
+
+            expect(yamlContent).not.toContain("syncpack:");
+            expect(yamlContent).toContain("typescript:");
+            expect(yamlContent).toContain("eslint:");
+        });
+
+        it("strips syncpack from bun's package.json#workspaces.catalog", () => {
+            expect.assertions(2);
+
+            writeFileSync(join(tmpDir, ".syncpackrc.json"), "{}");
+            writeFileSync(
+                join(tmpDir, "package.json"),
+                JSON.stringify({
+                    workspaces: {
+                        catalog: { syncpack: "^12.0.0", typescript: "^5.0.0" },
+                        packages: ["packages/*"],
+                    },
+                }),
+            );
+
+            const report = createMigrationReport();
+
+            migrateSyncpack(tmpDir, { dryRun: false }, createMockLogger(), report);
+
+            const pkg = JSON.parse(readFileSync(join(tmpDir, "package.json"), "utf8")) as {
+                workspaces?: { catalog?: Record<string, string> };
+            };
+
+            expect(pkg.workspaces?.catalog?.syncpack).toBeUndefined();
+            expect(pkg.workspaces?.catalog?.typescript).toBe("^5.0.0");
         });
 
         it("emits a manual step for each hook file invoking syncpack", () => {

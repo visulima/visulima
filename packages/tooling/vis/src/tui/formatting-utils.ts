@@ -34,9 +34,9 @@ export const formatFlags = (leftPad: string, flag: string, value: unknown): stri
  * Generates a human-readable description of the targets and projects being executed.
  *
  * Examples:
- * - "target build for project my-app"
- * - "targets build, test for 5 projects"
- * - "target build for 3 projects and 2 tasks they depend on"
+ * - "target build for project my-app".
+ * - "targets build, test for 5 projects".
+ * - "target build for 3 projects and 2 tasks they depend on".
  */
 export const formatTargetsAndProjects = (projectNames: string[], targets: string[], tasks: Task[]): string => {
     const uniqueTargets = new Set(new Set(tasks.map((t) => t.target.target)));

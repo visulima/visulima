@@ -50,8 +50,8 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
 
     let instance: Instance | undefined;
     let resolveDone: () => void;
-    const renderIsDone = new Promise<void>((r) => {
-        resolveDone = r;
+    const renderIsDone = new Promise<void>((resolve) => {
+        resolveDone = resolve;
     });
 
     // Tick interval for updating elapsed times on running tasks
@@ -82,6 +82,7 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
         // Force restore terminal: leave alternate screen, show cursor
         process.stdout.write("\u001B[?1049l\u001B[?25h");
         instance?.cleanup();
+        // eslint-disable-next-line unicorn/no-process-exit -- signal handler must terminate immediately to release the terminal; setting exitCode would let pending tasks keep running
         process.exit(1);
     };
 
@@ -117,7 +118,9 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
 
                     break;
                 }
-                // No default
+                default: {
+                    break;
+                }
             }
 
             const line = renderToString(
@@ -265,6 +268,8 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
 
                     printExitSummary();
                     resolveDone();
+
+                    return undefined;
                 })
                 .catch(() => {
                     clearKeepAlive();

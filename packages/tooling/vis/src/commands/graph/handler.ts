@@ -127,9 +127,7 @@ const projectGraphToAscii = (projectGraph: ProjectGraph, maxDepth: number): stri
     const totalPackages = apps.length + libs.length;
     const totalDeps = Object.values(projectGraph.dependencies).reduce((sum, deps) => sum + deps.length, 0);
 
-    const lines: string[] = [];
-
-    lines.push(bold("Project Dependency Graph"), "");
+    const lines: string[] = [bold("Project Dependency Graph"), ""];
 
     // Applications section
     if (apps.length > 0) {

@@ -44,7 +44,7 @@ export interface CommitFilesOptions {
      */
     gitlabClient?: GitlabRestClient;
     /** Test override for the SDK loader. */
-    loadSdk?: <T>(sdk: OptionalSdk) => Promise<{ [key: string]: unknown; default?: T }>;
+    loadSdk?: (sdk: OptionalSdk) => Promise<{ [key: string]: unknown; default?: unknown }>;
     message: string;
     /** Test override for filesystem reads. */
     readFile?: (absolutePath: string) => Promise<string>;
@@ -124,8 +124,8 @@ const loadGithubClient = async (token: string, options: CommitFilesOptions): Pro
     }
 
     const loader = options.loadSdk ?? loadOptionalSdk;
-    const module_ = await loader("@octokit/rest");
-    const OctokitCtor = (module_ as { Octokit?: new (config: { auth: string }) => GithubRestClient }).Octokit;
+    const sdk = await loader("@octokit/rest");
+    const OctokitCtor = (sdk as { Octokit?: new (config: { auth: string }) => GithubRestClient }).Octokit;
 
     if (!OctokitCtor) {
         throw new TypeError("Loaded `@octokit/rest` but no `Octokit` export was found. Reinstall the package or pin to a supported major.");
@@ -140,8 +140,8 @@ const loadGitlabClient = async (token: string, host: string, options: CommitFile
     }
 
     const loader = options.loadSdk ?? loadOptionalSdk;
-    const module_ = await loader("@gitbeaker/rest");
-    const GitlabCtor = (module_ as { Gitlab?: new (config: { host: string; token: string }) => GitlabRestClient }).Gitlab;
+    const sdk = await loader("@gitbeaker/rest");
+    const GitlabCtor = (sdk as { Gitlab?: new (config: { host: string; token: string }) => GitlabRestClient }).Gitlab;
 
     if (!GitlabCtor) {
         throw new TypeError("Loaded `@gitbeaker/rest` but no `Gitlab` export was found. Reinstall the package or pin to a supported major.");

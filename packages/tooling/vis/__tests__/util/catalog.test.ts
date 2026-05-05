@@ -40,6 +40,34 @@ import {
     restoreFromBackup,
 } from "../../src/util/catalog";
 
+// Shared registry-mock helper used across the includeLocked / includePrerelease /
+// target / catalog-update describe blocks. Extracted to avoid duplicating the
+// same fetch-spy setup four times.
+const mockFetch = (responses: Record<string, { latest: string; versions: string[] } | "error">) => {
+    vi.spyOn(globalThis, "fetch").mockImplementation(async (input: RequestInfo | URL) => {
+        const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
+        const packageName = url.replace("https://registry.npmjs.org/", "");
+        const data = responses[packageName];
+
+        if (!data || data === "error") {
+            return { ok: false, status: 404, statusText: "Not Found" } as Response;
+        }
+
+        const versionsObject: Record<string, unknown> = {};
+
+        for (const v of data.versions) {
+            versionsObject[v] = {};
+        }
+
+        return {
+            json: async () => {
+                return { "dist-tags": { latest: data.latest }, versions: versionsObject };
+            },
+            ok: true,
+        } as Response;
+    });
+};
+
 // --- parseVersion ---
 
 describe(parseVersion, () => {
@@ -826,31 +854,6 @@ describe(resolvePackageTarget, () => {
 // --- includeLocked (collectEntries via checkOutdated) ---
 
 describe("includeLocked option", () => {
-    const mockFetch = (responses: Record<string, { latest: string; versions: string[] } | "error">) => {
-        vi.spyOn(globalThis, "fetch").mockImplementation(async (input: RequestInfo | URL) => {
-            const url = typeof input === "string" ? input : input.toString();
-            const packageName = url.replace("https://registry.npmjs.org/", "");
-            const data = responses[packageName];
-
-            if (!data || data === "error") {
-                return { ok: false, status: 404, statusText: "Not Found" } as Response;
-            }
-
-            const versionsObject: Record<string, unknown> = {};
-
-            for (const v of data.versions) {
-                versionsObject[v] = {};
-            }
-
-            return {
-                json: async () => {
-                    return { "dist-tags": { latest: data.latest }, versions: versionsObject };
-                },
-                ok: true,
-            } as Response;
-        });
-    };
-
     it("should skip pinned versions by default", async () => {
         expect.assertions(1);
 
@@ -904,31 +907,6 @@ describe("includeLocked option", () => {
 // --- packageMode (via checkOutdated) ---
 
 describe("packageMode option", () => {
-    const mockFetch = (responses: Record<string, { latest: string; versions: string[] } | "error">) => {
-        vi.spyOn(globalThis, "fetch").mockImplementation(async (input: RequestInfo | URL) => {
-            const url = typeof input === "string" ? input : input.toString();
-            const packageName = url.replace("https://registry.npmjs.org/", "");
-            const data = responses[packageName];
-
-            if (!data || data === "error") {
-                return { ok: false, status: 404, statusText: "Not Found" } as Response;
-            }
-
-            const versionsObject: Record<string, unknown> = {};
-
-            for (const v of data.versions) {
-                versionsObject[v] = {};
-            }
-
-            return {
-                json: async () => {
-                    return { "dist-tags": { latest: data.latest }, versions: versionsObject };
-                },
-                ok: true,
-            } as Response;
-        });
-    };
-
     it("should use per-package target override", async () => {
         expect.assertions(2);
 
@@ -1319,31 +1297,6 @@ catalog:
 // --- checkOutdated ---
 
 describe(checkOutdated, () => {
-    const mockFetch = (responses: Record<string, { latest: string; versions: string[] } | "error">) => {
-        vi.spyOn(globalThis, "fetch").mockImplementation(async (input: RequestInfo | URL) => {
-            const url = typeof input === "string" ? input : input.toString();
-            const packageName = url.replace("https://registry.npmjs.org/", "");
-            const data = responses[packageName];
-
-            if (!data || data === "error") {
-                return { ok: false, status: 404, statusText: "Not Found" } as Response;
-            }
-
-            const versionsObject: Record<string, unknown> = {};
-
-            for (const v of data.versions) {
-                versionsObject[v] = {};
-            }
-
-            return {
-                json: async () => {
-                    return { "dist-tags": { latest: data.latest }, versions: versionsObject };
-                },
-                ok: true,
-            } as Response;
-        });
-    };
-
     it("should find outdated packages", async () => {
         expect.assertions(6);
 
@@ -1633,31 +1586,6 @@ describe(checkOutdated, () => {
 // --- checkOutdated: target and filteredByTarget ---
 
 describe("checkOutdated target behavior", () => {
-    const mockFetch = (responses: Record<string, { latest: string; versions: string[] } | "error">) => {
-        vi.spyOn(globalThis, "fetch").mockImplementation(async (input: RequestInfo | URL) => {
-            const url = typeof input === "string" ? input : input.toString();
-            const packageName = url.replace("https://registry.npmjs.org/", "");
-            const data = responses[packageName];
-
-            if (!data || data === "error") {
-                return { ok: false, status: 404, statusText: "Not Found" } as Response;
-            }
-
-            const versionsObject: Record<string, unknown> = {};
-
-            for (const v of data.versions) {
-                versionsObject[v] = {};
-            }
-
-            return {
-                json: async () => {
-                    return { "dist-tags": { latest: data.latest }, versions: versionsObject };
-                },
-                ok: true,
-            } as Response;
-        });
-    };
-
     it("should include major updates when target is latest", async () => {
         expect.assertions(3);
 
@@ -2692,7 +2620,7 @@ describe(fetchPackageVersions, () => {
         expect.assertions(2);
 
         vi.spyOn(globalThis, "fetch").mockImplementation(async (input: RequestInfo | URL) => {
-            const url = typeof input === "string" ? input : input.toString();
+            const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
 
             expect(url).toBe("https://custom.registry.com/react");
 
@@ -2763,7 +2691,7 @@ describe(fetchPackageVersions, () => {
         expect.assertions(1);
 
         vi.spyOn(globalThis, "fetch").mockImplementation(async (input: RequestInfo | URL) => {
-            const url = typeof input === "string" ? input : input.toString();
+            const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
 
             expect(url).toBe("https://custom.registry.com/react");
 
@@ -3074,7 +3002,7 @@ describe("checkOutdated with npmrcConfig", () => {
         const fetchCalls: string[] = [];
 
         vi.spyOn(globalThis, "fetch").mockImplementation(async (input: RequestInfo | URL) => {
-            const url = typeof input === "string" ? input : input.toString();
+            const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
 
             fetchCalls.push(url);
 
@@ -3107,7 +3035,7 @@ describe("checkOutdated with npmrcConfig", () => {
         const fetchCalls: string[] = [];
 
         vi.spyOn(globalThis, "fetch").mockImplementation(async (input: RequestInfo | URL) => {
-            fetchCalls.push(typeof input === "string" ? input : input.toString());
+            fetchCalls.push(typeof input === "string" ? input : input instanceof URL ? input.href : input.url);
 
             return {
                 json: async () => {
@@ -3354,7 +3282,7 @@ describe("checkOutdated with security", () => {
         let callCount = 0;
 
         vi.spyOn(globalThis, "fetch").mockImplementation(async (input: RequestInfo | URL) => {
-            const url = typeof input === "string" ? input : input.toString();
+            const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
 
             // npm registry call
             if (url.includes("registry.npmjs.org")) {
@@ -3620,7 +3548,7 @@ describe(fetchChangelogInfo, () => {
         expect.assertions(2);
 
         vi.spyOn(globalThis, "fetch").mockImplementation(async (input: RequestInfo | URL) => {
-            const url = typeof input === "string" ? input : input.toString();
+            const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
             const name = url.replace("https://registry.npmjs.org/", "");
 
             return {
@@ -3649,7 +3577,7 @@ describe(fetchChangelogInfo, () => {
         const requestedAuth: (string | undefined)[] = [];
 
         vi.spyOn(globalThis, "fetch").mockImplementation(async (input: RequestInfo | URL, init?: RequestInit) => {
-            requestedUrls.push(typeof input === "string" ? input : input.toString());
+            requestedUrls.push(typeof input === "string" ? input : input instanceof URL ? input.href : input.url);
             const authHeader = (init?.headers as Record<string, string> | undefined)?.Authorization;
 
             requestedAuth.push(authHeader);
@@ -3687,7 +3615,7 @@ describe(fetchChangelogInfo, () => {
         const requestedUrls: string[] = [];
 
         vi.spyOn(globalThis, "fetch").mockImplementation(async (input: RequestInfo | URL) => {
-            requestedUrls.push(typeof input === "string" ? input : input.toString());
+            requestedUrls.push(typeof input === "string" ? input : input instanceof URL ? input.href : input.url);
 
             return {
                 json: async () => {

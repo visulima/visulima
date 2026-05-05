@@ -6,7 +6,7 @@ const escapeRegex = (literal: string): string => literal.replaceAll(/[$()+.?[\\\
 
 const compilePattern = (pattern: string): RegExp => {
     // Convert simple `*` globs to regex; everything else is literal.
-    const segments = pattern.split("*").map(escapeRegex);
+    const segments = pattern.split("*").map((segment) => escapeRegex(segment));
 
     return new RegExp(`^${segments.join(".*")}$`, "i");
 };
@@ -20,7 +20,7 @@ export const parseFilterPatterns = (raw: string | undefined): RegExp[] => {
         .split(",")
         .map((token) => token.trim())
         .filter((token) => token.length > 0)
-        .map(compilePattern);
+        .map((pattern) => compilePattern(pattern));
 };
 
 const matchesAny = (name: string, patterns: ReadonlyArray<RegExp>): boolean => {

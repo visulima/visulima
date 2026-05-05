@@ -155,12 +155,12 @@ const pickInteractive = async (templates: DiscoveredTemplate[]): Promise<string>
             process.stderr.write(`${prefix} ${template.name} ${dim(`(${template.source})`)}\n`);
         }
 
-        return new Promise((resolveValue, reject) => {
+        return new Promise((_resolve, reject) => {
             rl.question(`\n  ${dim(`Enter choice (1-${String(templates.length)}):`)} `, (answer) => {
-                const number_ = Number.parseInt(answer.trim(), 10);
+                const picked = Number.parseInt(answer.trim(), 10);
 
-                if (Number.isInteger(number_) && number_ >= 1 && number_ <= templates.length) {
-                    resolveValue(templates[number_ - 1]!.name);
+                if (Number.isInteger(picked) && picked >= 1 && picked <= templates.length) {
+                    _resolve(templates[picked - 1]!.name);
                 } else {
                     reject(new Error("Invalid choice."));
                 }
@@ -321,7 +321,6 @@ const execute = async ({ argument, options, rawUnknown, visConfig, workspaceRoot
             templateDestination = template.destination;
         } catch (error) {
             remoteCleanup();
-            remoteCleanup = undefined;
             throw error;
         }
     } else {

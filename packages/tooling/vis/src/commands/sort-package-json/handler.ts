@@ -4,7 +4,6 @@ import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 import { isAccessibleSync, readFileSync } from "@visulima/fs";
 import { basename, join, relative, resolve } from "@visulima/path";
 import { render } from "@visulima/tui";
-import { parseSync as parseEditorConfigSync } from "editorconfig";
 import isInCi from "is-in-ci";
 import React from "react";
 import zeptomatch from "zeptomatch";
@@ -16,6 +15,8 @@ import { pail } from "../../io/logger";
 import type { SortError, SortFileEntry, SortKeyDiff } from "../../tui/components/sort-package-json/SortPackageJsonStore";
 import { SortPackageJsonStore } from "../../tui/components/sort-package-json/SortPackageJsonStore";
 import VisSortPackageJsonApp from "../../tui/components/sort-package-json/VisSortPackageJsonApp";
+import type { EditorConfigDefaults } from "../../util/editorconfig";
+import { resolveEditorConfigDefaults } from "../../util/editorconfig";
 import type { FormatPackageJsonOptions } from "../../util/format-package-json-fields";
 import { formatPackageJsonFields } from "../../util/format-package-json-fields";
 import { buildGitignoreMatcher, extractWorkspaceExcludePatterns } from "../../util/gitignore-matcher";
@@ -51,11 +52,6 @@ interface NormalizedConfig {
     sortOrder: string[];
     sortScripts: boolean;
     unsorted: string[];
-}
-
-interface EditorConfigDefaults {
-    indent?: string;
-    lineEnding?: "crlf" | "lf";
 }
 
 const PARSE_POSITION_REGEX = /at position (\d+)/;
@@ -143,37 +139,8 @@ const splitList = (raw: string | string[] | undefined): string[] => {
 
 const detectLineEnding = (contents: string): "crlf" | "lf" => (contents.includes("\r\n") ? "crlf" : "lf");
 
-const resolveEditorConfigDefaults = (filePath: string): EditorConfigDefaults => {
-    let props: Record<string, unknown>;
-
-    try {
-        props = parseEditorConfigSync(filePath);
-    } catch {
-        return {};
-    }
-
-    const defaults: EditorConfigDefaults = {};
-    const indentStyle = props["indent_style"];
-    const indentSize = props["indent_size"];
-
-    if (indentStyle === "tab") {
-        defaults.indent = "\t";
-    } else if (typeof indentSize === "number" && Number.isInteger(indentSize) && indentSize > 0) {
-        defaults.indent = " ".repeat(indentSize);
-    }
-
-    const endOfLine = props["end_of_line"];
-
-    if (endOfLine === "lf" || endOfLine === "crlf") {
-        defaults.lineEnding = endOfLine;
-    }
-
-    return defaults;
-};
-
 const ALLOWED_LINE_ENDINGS = new Set<LineEnding>(["auto", "crlf", "lf"]);
 
-// eslint-disable-next-line consistent-return
 const validateLineEnding = (raw: string | undefined): LineEnding => {
     if (raw === undefined || raw === "") {
         return "auto";
@@ -183,8 +150,7 @@ const validateLineEnding = (raw: string | undefined): LineEnding => {
         return raw as LineEnding;
     }
 
-    pail.error(`--line-ending must be one of: auto, lf, crlf (got "${raw}")`);
-    process.exit(2);
+    throw new Error(`--line-ending must be one of: auto, lf, crlf (got "${raw}")`);
 };
 
 const filterByIgnore = (files: string[], patterns: string[], cwd: string): string[] => {

@@ -114,14 +114,14 @@ export const formatAge = (mtimeMs: number, now: number = Date.now()): string => 
 };
 
 const confirmPrompt = (question: string): Promise<boolean> =>
-    new Promise((resolvePromise) => {
+    new Promise((resolve) => {
         const rl = createInterface({ input: process.stdin, output: process.stderr });
 
         rl.question(`${question} (y/N) `, (answer) => {
             rl.close();
             const trimmed = answer.trim().toLowerCase();
 
-            resolvePromise(trimmed === "y" || trimmed === "yes");
+            resolve(trimmed === "y" || trimmed === "yes");
         });
     });
 

@@ -1,3 +1,4 @@
+// eslint-disable-next-line e18e/ban-dependencies -- staged workflow port relies on execa's `input`/`reject:false`/stream-pipe semantics that tinyexec doesn't expose
 import { execa } from "execa";
 
 import { GitError } from "../errors";

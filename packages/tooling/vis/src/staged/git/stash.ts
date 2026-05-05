@@ -1,10 +1,12 @@
+import { randomBytes } from "node:crypto";
+
 import { GetBackupStashError } from "../errors";
 import { git, gitOut } from "./exec";
 
 /** Message prefix stored on the stash entry. A per-process suffix is appended at creation time so concurrent `vis staged` invocations don't collide. */
 const STASH_MESSAGE_PREFIX = "vis_staged_automatic_backup";
 
-const buildMessage = (): string => `${STASH_MESSAGE_PREFIX}-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+const buildMessage = (): string => `${STASH_MESSAGE_PREFIX}-${process.pid}-${Date.now()}-${randomBytes(3).toString("hex")}`;
 
 /**
  * Creates and stores a hidden backup stash. Uses `git stash create +

@@ -348,7 +348,7 @@ const evaluatePrimary = (token: string, scope: Record<string, unknown>, line: nu
         return stripped;
     }
 
-    if (/^-?\d+(\.\d+)?$/.test(trimmed)) {
+    if (/^-?\d+(?:\.\d+)?$/.test(trimmed)) {
         return Number(trimmed);
     }
 
@@ -377,7 +377,7 @@ const evaluateExpression = (expression: string, scope: Record<string, unknown>, 
         } catch (error_) {
             const message = error_ instanceof Error ? error_.message : String(error_);
 
-            throw new Error(`${filename}:${line}: ${message}`);
+            throw new Error(`${filename}:${line}: ${message}`, { cause: error_ });
         }
     }
 

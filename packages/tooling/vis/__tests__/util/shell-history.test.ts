@@ -13,6 +13,7 @@ describe(appendToShellHistory, () => {
     let originalVisNoHistory: string | undefined;
 
     beforeEach(async () => {
+        // eslint-disable-next-line sonarjs/pseudo-random -- temp-dir suffix in tests, not security-sensitive
         workDirectory = join(tmpdir(), `vis-history-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
 
         await mkdir(workDirectory, { recursive: true });

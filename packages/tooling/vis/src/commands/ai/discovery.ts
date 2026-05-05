@@ -97,11 +97,7 @@ export const renderDiscoveryJson = (subcommands: Command[], meta: DiscoveryMeta 
 
 export const renderDiscoveryText = (subcommands: Command[], meta: DiscoveryMeta = AI_DISCOVERY_META): string => {
     const payload = buildDiscoveryPayload(subcommands, meta);
-    const lines: string[] = [];
-
-    lines.push(bold(`vis ${payload.command} — ${payload.description}`));
-    lines.push("");
-    lines.push(dim("Subcommands:"));
+    const lines: string[] = [bold(`vis ${payload.command} — ${payload.description}`), "", dim("Subcommands:")];
 
     for (const subcommand of payload.subcommands) {
         const argumentSegment = subcommand.argument ? ` ${cyan(`<${subcommand.argument.name}>`)}` : "";

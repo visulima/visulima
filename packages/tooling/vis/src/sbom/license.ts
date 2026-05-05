@@ -151,7 +151,7 @@ export const extractLicenseChoice = (input: RawLicenseInput): LicenseChoice | un
 
     // SPDX expressions ("X OR Y", "X AND Y", parenthesised) travel as a
     // tuple with a single `expression` entry.
-    if (/[()]|\b(and|or|with)\b/i.test(trimmed)) {
+    if (/[()]|\b(?:and|or|with)\b/i.test(trimmed)) {
         return [{ expression: trimmed }];
     }
 

@@ -15,6 +15,7 @@ import { readYamlSync } from "@visulima/fs/yaml";
 import { join, relative } from "@visulima/path";
 import { parse as parseYaml } from "yaml";
 
+import { pail } from "../../io/logger";
 import type { Creation, CreationDirectory, CreationFile, FileMeta, Template, TemplateContext, Variable, VariableMap } from "../types";
 import { interpolateFilename, isPartialPath, stripRawSuffix, stripTeraSuffix } from "./filename-interp";
 import { splitFrontmatter } from "./frontmatter";
@@ -319,8 +320,8 @@ export const loadMoonTemplate = (templateDir: string, name: string): Template =>
                     // parse trees would be produced only by duplicate file
                     // reads which shouldn't happen inside a single walk.
                     if (existing !== parsed) {
-                        console.warn(
-                            `warn: partial name "${key}" is declared by multiple files — last one wins. Use distinct names or fully-qualified includes.`,
+                        pail.warn(
+                            `partial name "${key}" is declared by multiple files — last one wins. Use distinct names or fully-qualified includes.`,
                         );
                     }
                 }
@@ -428,21 +429,16 @@ export const loadMoonTemplate = (templateDir: string, name: string): Template =>
  * Produce the set of `{% include %}` keys a partial at this relative
  * path should be reachable under.
  *
- * Given `partials/_header.tera`:
- *   - `header`                  (bare basename, underscore stripped, suffix stripped)
- *   - `_header`                 (bare basename, suffix stripped)
- *   - `partials/header`         (relative path, underscore stripped)
- *   - `partials/_header`        (relative path, suffix stripped)
+ * Given `partials/_header.tera`, the following keys are produced:
+ * - `header`                  (bare basename, underscore stripped, suffix stripped).
+ * - `_header`                 (bare basename, suffix stripped).
+ * - `partials/header`         (relative path, underscore stripped).
+ * - `partials/_header`        (relative path, suffix stripped).
  */
 const partialKeys = (relativePath: string): string[] => {
     const withoutSuffix = stripTeraSuffix(relativePath);
-    const keys = new Set<string>();
-
-    keys.add(withoutSuffix);
-
     const base = basename(withoutSuffix);
-
-    keys.add(base);
+    const keys = new Set<string>([base, withoutSuffix]);
 
     if (base.startsWith("_")) {
         keys.add(base.replace(/^_+/, ""));

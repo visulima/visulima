@@ -68,7 +68,11 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
 
     const renderTable = (header: string[], rows: string[][]): void => {
         const widths = header.map((h, i) => {
-            const maxData = rows.reduce((max, row) => Math.max(max, (row[i] ?? "").length), 0);
+            let maxData = 0;
+
+            for (const row of rows) {
+                maxData = Math.max(maxData, (row[i] ?? "").length);
+            }
 
             return Math.max(h.length, maxData);
         });

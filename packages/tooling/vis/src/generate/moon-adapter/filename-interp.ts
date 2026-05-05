@@ -59,7 +59,7 @@ const parsePipe = (expr: string): ParsedPipe => {
         throw new Error(`Empty variable name in expression "${expr}"`);
     }
 
-    const filters = parts.slice(1).map(parseFilterCall);
+    const filters = parts.slice(1).map((part) => parseFilterCall(part));
 
     return { filters, name };
 };
@@ -69,7 +69,15 @@ const stringify = (value: unknown): string => {
         return "";
     }
 
-    return typeof value === "string" ? value : String(value);
+    if (typeof value === "string") {
+        return value;
+    }
+
+    if (typeof value === "number" || typeof value === "boolean" || typeof value === "bigint") {
+        return String(value);
+    }
+
+    return JSON.stringify(value);
 };
 
 /**

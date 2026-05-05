@@ -138,15 +138,18 @@ describe("tui/createDynamicOutputRenderer", () => {
         lifeCycle.endCommand!();
     });
 
-    // eslint-disable-next-line vitest/prefer-expect-assertions -- smoke test; verifies no throw
     it("should accept startTasks and endTasks without errors", () => {
+        expect.assertions(1);
+
         const tasks = [createTask("app-a", "build")];
         const { lifeCycle } = createRenderer(tasks);
 
-        lifeCycle.startCommand!();
-        lifeCycle.startTasks!(tasks);
-        lifeCycle.endTasks!([createResult(tasks[0]!, "success")]);
-        lifeCycle.endCommand!();
+        expect(() => {
+            lifeCycle.startCommand!();
+            lifeCycle.startTasks!(tasks);
+            lifeCycle.endTasks!([createResult(tasks[0]!, "success")]);
+            lifeCycle.endCommand!();
+        }).not.toThrow();
     });
 
     it("should resolve renderIsDone after app unmounts", async () => {
@@ -191,17 +194,20 @@ describe("tui/createDynamicOutputRenderer", () => {
         expect(allOutput).toContain("Successfully ran target build");
     });
 
-    // eslint-disable-next-line vitest/prefer-expect-assertions -- smoke test; verifies no throw
     it("should collect task output via printTaskTerminalOutput", () => {
+        expect.assertions(1);
+
         const tasks = [createTask("app-a", "build")];
         const { lifeCycle } = createRenderer(tasks);
 
-        lifeCycle.startCommand!();
-        lifeCycle.startTasks!(tasks);
+        expect(() => {
+            lifeCycle.startCommand!();
+            lifeCycle.startTasks!(tasks);
 
-        lifeCycle.printTaskTerminalOutput!(tasks[0]!, "failure", "Error: compilation failed");
+            lifeCycle.printTaskTerminalOutput!(tasks[0]!, "failure", "Error: compilation failed");
 
-        lifeCycle.endTasks!([createResult(tasks[0]!, "failure")]);
-        lifeCycle.endCommand!();
+            lifeCycle.endTasks!([createResult(tasks[0]!, "failure")]);
+            lifeCycle.endCommand!();
+        }).not.toThrow();
     });
 });

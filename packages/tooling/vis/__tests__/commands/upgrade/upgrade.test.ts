@@ -27,7 +27,7 @@ describe("upgrade version validation", () => {
         const valid = ["1.0.0", "2.0.0-alpha.1", "1.0.0-rc.1"];
 
         for (const v of valid) {
-            expect(/^\d+\.\d+\.\d+(-[\w.]+)?$/.test(v)).toBe(true);
+            expect(/^\d+\.\d+\.\d+(?:-[\w.]+)?$/.test(v)).toBe(true);
         }
     });
 
@@ -37,7 +37,7 @@ describe("upgrade version validation", () => {
         const invalid = ["latest", "../evil", "1.0.0; rm -rf /"];
 
         for (const v of invalid) {
-            expect(/^\d+\.\d+\.\d+(-[\w.]+)?$/.test(v)).toBe(false);
+            expect(/^\d+\.\d+\.\d+(?:-[\w.]+)?$/.test(v)).toBe(false);
         }
     });
 });

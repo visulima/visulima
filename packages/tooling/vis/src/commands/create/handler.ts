@@ -181,9 +181,11 @@ const installDependencies = (
 
 /**
  * Extract a sensible project name from a git URL or provider string.
- * e.g., "https://github.com/user/repo" → "repo"
- *       "github:user/repo/subdir#main" → "subdir"
- *       "user/repo" → "repo"
+ *
+ * Examples:
+ * - "https://github.com/user/repo" → "repo".
+ * - "github:user/repo/subdir#main" → "subdir".
+ * - "user/repo" → "repo".
  */
 const extractRepoName = (input: string): string => {
     // Strip fragment (#branch)

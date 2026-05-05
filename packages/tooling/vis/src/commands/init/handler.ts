@@ -1,4 +1,4 @@
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import { createInterface } from "node:readline";
 
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
@@ -170,13 +170,20 @@ const runInteractiveInit = async (cwd: string, pm: { name: string; version: stri
         if (shouldMigrate) {
             rl.close();
 
-            const execPrefix = pm.name === "pnpm" ? "pnpm exec" : pm.name === "yarn" ? "yarn exec" : pm.name === "bun" ? "bunx" : "npx";
+            const [execBin, ...execPrefixArgs]
+                = pm.name === "pnpm"
+                    ? ["pnpm", "exec"]
+                    : pm.name === "yarn"
+                        ? ["yarn", "exec"]
+                        : pm.name === "bun"
+                            ? ["bunx"]
+                            : ["npx"];
 
             for (const tool of existingTools) {
                 pail.info(`    Migrating from ${tool}...`);
 
                 try {
-                    execSync(`${execPrefix} vis migrate ${tool}`, {
+                    execFileSync(execBin, [...execPrefixArgs, "vis", "migrate", tool], {
                         cwd,
                         stdio: "inherit",
                     });

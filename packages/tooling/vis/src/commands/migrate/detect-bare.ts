@@ -1,7 +1,7 @@
 /**
  * Detects whether the user typed bare `vis migrate` (with only global flags,
  * no subcommand). Cerebro's nested-command parser matches shortest-prefix
- * first (see nested-command-parser.test.ts:47-60 in @visulima/cerebro), so a
+ * first (see nested-command-parser.test.ts:47-60 in `@visulima/cerebro`), so a
  * flat `migrate` command can't coexist with nested `migrate &lt;name>` entries
  * without breaking their dispatch. We detect the bare form here, before
  * `cli.run()`, and route it to the interactive TUI.
@@ -13,7 +13,7 @@
  * The parser only consumes a value after a flag when that flag is known to
  * take a string value (`--cwd`). All other flag-shaped tokens are treated as
  * boolean switches — matching cerebro's actual global-option definitions
- * (see default-options.ts in @visulima/cerebro) plus vis's only custom
+ * (see default-options.ts in `@visulima/cerebro`) plus vis's only custom
  * global, `--cwd`. Command-specific options don't apply here because they
  * only bind after a subcommand is matched.
  */

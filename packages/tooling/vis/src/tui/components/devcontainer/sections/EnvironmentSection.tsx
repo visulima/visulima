@@ -9,11 +9,13 @@ interface EnvironmentSectionProps {
 }
 
 /**
+ * Renders the environment-variable list for the devcontainer editor.
+ *
  * Layout:
- *   fieldIndex 0..containerCount-1  → containerEnv entries
- *   fieldIndex containerCount       → "+ Add container env..." row
- *   fieldIndex containerCount+1..   → remoteEnv entries
- *   fieldIndex last                 → "+ Add remote env..." row
+ * - `fieldIndex 0..containerCount-1`  → containerEnv entries.
+ * - `fieldIndex containerCount`       → "+ Add container env..." row.
+ * - `fieldIndex containerCount+1..`   → remoteEnv entries.
+ * - `fieldIndex last`                 → "+ Add remote env..." row.
  */
 const EnvironmentSection = ({ config, fieldIndex }: EnvironmentSectionProps): React.JSX.Element => {
     const containerEnv = config.containerEnv ?? {};

@@ -42,6 +42,8 @@ const readJsonSafe = (path: string): InstalledPackageMetadata | undefined => {
 };
 
 /**
+ * Validate that an npm package name can't escape the workspace root.
+ *
  * npm package names and versions can't legally contain `/` / `\`
  * (except the scope-delimiter `/` in `@scope/name`) or `..`. A
  * lockfile carrying such strings is either corrupt or hostile; in
@@ -69,6 +71,8 @@ const isSafeVersion = (version: string): boolean =>
     version.length > 0 && !version.includes("/") && !version.includes("\\") && !version.includes("..") && !version.includes("\0");
 
 /**
+ * Read package metadata from pnpm's virtual store.
+ *
  * pnpm's virtual store encodes `name@version` into the directory
  * name. For packages with resolved peer deps, a suffix is appended —
  * e.g. `foo@1.0.0_react@18.0.0`. We try the exact dir first (cheap),

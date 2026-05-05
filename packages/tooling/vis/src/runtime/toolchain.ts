@@ -10,6 +10,7 @@
  * keeps vis's binary small and avoids a parallel ~/.vis-plus directory.
  */
 import { execFileSync } from "node:child_process";
+import { randomBytes } from "node:crypto";
 import { renameSync, unlinkSync, writeFileSync as fsWriteFileSync } from "node:fs";
 
 import { isAccessibleSync, readFileSync, readJsonSync } from "@visulima/fs";
@@ -225,7 +226,7 @@ const queryManagerVersion = (binary: string, args: ReadonlyArray<string> = ["--v
             timeout: 2000,
         });
 
-        const match = /\d+\.\d+(\.\d+)?/.exec(output);
+        const match = /\d+\.\d+(?:\.\d+)?/.exec(output);
 
         return match ? match[0] : output.trim() || undefined;
     } catch {
@@ -306,6 +307,7 @@ export const clearToolchainCache = (): void => {
  * {@link clearToolchainCache} between invocations.
  * @param workspaceRoot Absolute path to the workspace root.
  * @param options `{ refresh: true }` skips the cache.
+ * @param options.refresh When true, bypass the per-`workspaceRoot` cache.
  */
 export const findInstalledManagers = (workspaceRoot: string, options?: { refresh?: boolean }): ReadonlyArray<DetectedManager> => {
     if (!options?.refresh) {
@@ -1325,7 +1327,7 @@ export const resolveToolBinary = (manager: DetectedManager, tool: RuntimeTool): 
 const atomicWrite = (path: string, body: string): void => {
     // Random suffix avoids collisions when the same workspace is
     // touched by parallel vis invocations (rare but possible in CI).
-    const tmp = `${path}.${process.pid}.${Math.random().toString(36).slice(2)}.tmp`;
+    const tmp = `${path}.${process.pid}.${randomBytes(6).toString("hex")}.tmp`;
 
     fsWriteFileSync(tmp, body);
 
@@ -1424,7 +1426,7 @@ export const writePackageManagerField = (workspaceRoot: string, spec: ToolSpec):
         // JSON.parse throws SyntaxError with a useless "Unexpected
         // token X at position Y" — prepend the file path and hint so
         // the user can act on it instead of getting a bare stack.
-        throw new Error(`${pkgPath} is not valid JSON — fix it before running \`vis toolchain use\`. Underlying error: ${(error as Error).message}`);
+        throw new Error(`${pkgPath} is not valid JSON — fix it before running \`vis toolchain use\`. Underlying error: ${(error as Error).message}`, { cause: error });
     }
 
     const value = `${spec.tool}@${spec.version}`;
@@ -1462,7 +1464,7 @@ export const updateEnginesField = (workspaceRoot: string, spec: ToolSpec): strin
     try {
         pkg = JSON.parse(raw) as typeof pkg;
     } catch (error: unknown) {
-        throw new Error(`${pkgPath} is not valid JSON — fix it before running \`vis toolchain use\`. Underlying error: ${(error as Error).message}`);
+        throw new Error(`${pkgPath} is not valid JSON — fix it before running \`vis toolchain use\`. Underlying error: ${(error as Error).message}`, { cause: error });
     }
 
     if (pkg.engines?.[spec.tool] === undefined) {
