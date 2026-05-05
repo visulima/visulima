@@ -1,0 +1,213 @@
+---
+title: "vis lint"
+description: "Lint workspace dependency policies (workspace-protocol, banned-deps, redefine-root, workspace-versions, custom-types)"
+---
+
+# vis lint
+
+Workspace-wide dependency policy linter. Reads every `package.json` in the workspace and reports drift, banned deps, and redefinitions against the root. `--fix` rewrites files in place.
+
+```bash
+vis lint
+```
+
+Running with no flags enables every check at once. Pass a specific flag to scope the run.
+
+## Usage
+
+```bash
+vis lint [options]
+```
+
+## Examples
+
+```bash
+# Run every enabled lint and exit non-zero on failures
+vis lint
+
+# Only check that internal deps use workspace:*
+vis lint --workspace-protocol
+
+# Auto-rewrite internal deps to use workspace:*
+vis lint --workspace-protocol --fix
+
+# Flag deps duplicated between root and child packages
+vis lint --redefine-root
+
+# Flag deps matching policy.bannedDeps in vis config
+vis lint --banned-deps
+
+# One-off ban: flag any package declaring left-pad or request
+vis lint --ban left-pad --ban request
+
+# Flag external deps declared at different versions across packages
+vis lint --workspace-versions
+
+# Rewrite drifting deps to the highest sibling version
+vis lint --workspace-versions --fix
+
+# One-off pin: flag any package declaring react at a different version
+vis lint --pin react@18.2.0
+
+# Rewrite drifting deps to catalog: when a catalog already pins them
+vis lint --workspace-versions --resolve catalog --fix
+
+# Suggest new catalog entries for deps ≥3 packages already agree on
+vis lint --workspace-versions --resolve catalog --propose-min 3
+
+# Flag drift in engines.{node,pnpm}, packageManager, volta.{node,pnpm,yarn}, devEngines
+vis lint --custom-types
+
+# Align all engines/packageManager/volta versions to the highest sibling
+vis lint --custom-types --fix
+
+# Emit findings as JSON for CI / editor integrations
+vis lint --format json
+```
+
+## Options
+
+| Option                  | Default | Description                                                                                         |
+| ----------------------- | ------- | --------------------------------------------------------------------------------------------------- |
+| `--workspace-protocol`  | `false` | Lint that internal deps use the `workspace:` protocol                                               |
+| `--redefine-root`       | `false` | Lint that no child re-declares a dep already pinned in the workspace root                           |
+| `--banned-deps`         | `false` | Lint deps against `policy.bannedDeps` in vis config                                                 |
+| `--workspace-versions`  | `false` | Lint that all packages declare external deps at the same version                                    |
+| `--custom-types`        | `false` | Lint `engines.{node,pnpm}`, `packageManager`, `volta.*`, `devEngines.*` for drift across packages   |
+| `--dep`                 |         | Restrict `--workspace-versions`/`--custom-types` to a single dep                                    |
+| `--ban`                 |         | Ban a dep name or glob for this run (repeatable). Auto-enables `--banned-deps`                      |
+| `--pin`                 |         | Pin a dep to an exact specifier for this run, e.g. `react@^18.2.0` (repeatable)                     |
+| `--resolve`             |         | Conflict resolution: `highest`, `lowest`, or `catalog` (default: `highest`)                         |
+| `--propose-min`         |         | Propose catalog entries for deps ≥N packages already agree on. Activates with `--resolve catalog`   |
+| `--fix`                 | `false` | Auto-fix violations in place (writes `package.json` files)                                          |
+| `--fix-specifier`       |         | Specifier used by `--fix` for workspace-protocol (default: `workspace:*`)                           |
+| `--format`              | `human` | Output format: `human`, `json`, or `minimal`                                                        |
+| `--quiet`               | `false` | Suppress all output except errors                                                                   |
+
+## Lint kinds
+
+### `--workspace-protocol`
+
+Every internal dep — one whose name matches a workspace package — must use `workspace:*` (or `workspace:^` / `workspace:~` / a workspace-relative range). Catches the case where a package was extracted from the registry to the workspace but its consumers still pin the registry version.
+
+### `--redefine-root`
+
+Flags every dep that appears in both the workspace root `package.json` and a child package's `package.json`. The root pin is canonical; redefining it in a child either masks the root version or silently drifts.
+
+### `--banned-deps`
+
+Reads `policy.bannedDeps: string[]` (or `--ban <name>` repeatable) and flags every package that declares any of them. Glob support (`legacy-*`, `**deprecated**`).
+
+### `--workspace-versions`
+
+Detects "the same dep declared at different versions across packages." Default policy is highest-semver-wins per dep across `dependencies` ∪ `devDependencies` ∪ `peerDependencies`. With `--resolve catalog`, drifting deps are rewritten to `catalog:` when a sibling catalog already pins them; with `--propose-min N`, new catalog entries are suggested for deps that ≥N packages already agree on.
+
+### `--custom-types`
+
+Detects drift in version pins that live outside `*Dependencies` blocks. Five built-in customTypes:
+
+| customType                  | Source                                                          |
+| --------------------------- | --------------------------------------------------------------- |
+| `engines`                   | `pkg.engines.{node,pnpm,yarn,npm,...}`                          |
+| `volta`                     | `pkg.volta.{node,pnpm,yarn}`                                    |
+| `packageManager`            | `pkg.packageManager` — `name@version` or `name@version+sha512.<hash>` |
+| `devEngines.runtime`        | `pkg.devEngines.runtime` (single object or `{name, version}[]`) |
+| `devEngines.packageManager` | `pkg.devEngines.packageManager` (same shape)                    |
+
+Each `(customType × depName)` cluster is tracked independently — `engines.node` and `volta.node` do **not** cross-couple. Use a versionGroup once that lands if you need to enforce they agree.
+
+`--fix` rewrites in place. The `+sha512.<hash>` integrity suffix on `packageManager` is **dropped** on bump — content-integrity hashes are tied to a specific tarball, not a version, so users must regenerate via Corepack:
+
+```bash
+vis lint --custom-types --fix
+corepack use pnpm@10.32.1   # regenerate the +sha512 hash
+```
+
+#### Overlap with `vis doctor`
+
+- **`vis doctor`** verifies the *installed* runtime matches `engines.node` (machine-side: "is my Node binary the right version?").
+- **`vis lint --custom-types`** verifies all packages *declare* the same `engines.node` (workspace-side: "do all my package.json files agree?").
+
+Both ship; both useful. Run `vis doctor` on a developer machine to catch local mismatches; run `vis lint --custom-types` in CI to catch workspace drift.
+
+## Configuration
+
+Set defaults under `policy` in your `vis.config.ts` (or `vis.json`):
+
+```ts
+export default {
+    policy: {
+        bannedDeps: ["left-pad", "request", "lodash.*"],
+        workspaceProtocol: {
+            // true | false | "prompt" — three-state autofix opt-out.
+            autofix: true,
+        },
+        workspaceVersions: {
+            autofix: true,
+            // Per-rule resolve override; CLI --resolve still wins.
+            resolve: "highest",
+            ignore: ["@types/node"],
+        },
+        customTypes: {
+            autofix: true,
+            ignore: ["bun"],
+            resolve: "highest",
+        },
+    },
+};
+```
+
+`autofix: false` denies the rewrite even when `--fix` is passed — the run still fails CI, but the file is left alone. Useful when a rule is inherently human-judgement (e.g., banning `latest` shouldn't be auto-fixed). `autofix: "prompt"` is reserved for future interactive UX; treats the run as report-only today.
+
+## Output formats
+
+### Human (default)
+
+Color-coded sections per lint kind, grouped by `${customType} ${depName}` for custom-types, and by `${depName}` for workspace-versions.
+
+### JSON
+
+Machine-readable output for CI / editor integrations:
+
+```json
+{
+    "fixed": {
+        "catalogProposals": false,
+        "customTypes": false,
+        "workspaceProtocol": false,
+        "workspaceVersions": false
+    },
+    "customTypes": {
+        "issues": [
+            {
+                "customType": "engines",
+                "depName": "node",
+                "specifier": "20.0.0",
+                "fix": "22.14.0",
+                "packageName": "@my/b",
+                "packageJsonPath": "packages/b/package.json",
+                "canonicalSource": "@my/a"
+            }
+        ],
+        "total": 1
+    }
+}
+```
+
+`packageJsonPath` is always workspace-relative for portability across CI runners.
+
+### Minimal
+
+Tab-separated lines, one per issue, suitable for `awk`/`cut` pipelines:
+
+```
+custom-types	packages/b/package.json	engines	node	20.0.0 → 22.14.0
+workspace-versions	packages/b/package.json	dependencies	react	^18.0.0 → ^18.2.0
+```
+
+## Exit codes
+
+- `0` — no issues, or all issues were auto-fixed
+- `1` — issues found and not fixed (or autofix denied by `policy.*.autofix: false`)
+
+CI typically runs `vis lint` with no `--fix` flag; the non-zero exit fails the build on drift. `--fix` is for local developer machines and pre-commit hooks.

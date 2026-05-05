@@ -31,6 +31,7 @@
                 "commands/link",
                 "commands/unlink",
                 "commands/check",
+                "commands/lint",
                 "commands/update",
                 "commands/upgrade",
                 "commands/install",
