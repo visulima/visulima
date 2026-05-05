@@ -6,9 +6,9 @@
 
     export let client: QueryClient;
     export let options: CreateDeleteFileOptions;
-    
+
     let innerResult: CreateDeleteFileReturn | undefined = undefined;
-    
+
     // Expose result for testing
     export const result = () => innerResult;
 </script>

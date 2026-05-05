@@ -1,5 +1,6 @@
 import { createConfig } from "@anolilab/eslint-config";
 import tanstackQuery from "@tanstack/eslint-plugin-query";
+import tsParser from "@typescript-eslint/parser";
 import solid from "eslint-plugin-solid";
 import svelte from "eslint-plugin-svelte";
 import vue from "eslint-plugin-vue";
@@ -30,8 +31,33 @@ export default createConfig(
     {
         files: ["__tests__/**"],
         rules: {
+            "@typescript-eslint/member-ordering": "off",
+            "@typescript-eslint/no-explicit-any": "off",
+            "@typescript-eslint/no-non-null-assertion": "off",
+            "@typescript-eslint/no-unnecessary-condition": "off",
+            "@typescript-eslint/no-unsafe-argument": "off",
+            "@typescript-eslint/no-unsafe-assignment": "off",
+            "@typescript-eslint/no-unsafe-call": "off",
+            "@typescript-eslint/no-unsafe-member-access": "off",
+            "@typescript-eslint/no-unsafe-return": "off",
+            "@typescript-eslint/prefer-nullish-coalescing": "off",
+            "@typescript-eslint/require-await": "off",
+            "@typescript-eslint/restrict-template-expressions": "off",
+            "@typescript-eslint/unbound-method": "off",
+            "jsdoc/match-description": "off",
             "max-classes-per-file": "off",
+            "no-await-in-loop": "off",
+            "no-confusing-arrow": "off",
+            "react/destructuring-assignment": "off",
+            "react/react-in-jsx-scope": "off",
+            "sonarjs/no-dead-store": "off",
+            "sonarjs/no-undefined-argument": "off",
+            "sonarjs/no-unused-vars": "off",
+            "unicorn/no-null": "off",
+            "unused-imports/no-unused-vars": "off",
+            "vitest/no-conditional-in-test": "off",
             "vitest/require-mock-type-parameters": "off",
+            "vitest/unbound-method": "off",
         },
     },
     {
@@ -77,6 +103,7 @@ export default createConfig(
             parser: svelteParser,
             parserOptions: {
                 ecmaVersion: "latest",
+                parser: tsParser,
                 sourceType: "module",
             },
         },
