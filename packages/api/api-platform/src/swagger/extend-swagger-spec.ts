@@ -265,12 +265,12 @@ const prepareResponseExamples = (
 
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- TS flow analysis cannot track mutation of `transformed` inside forEach above
         if (!transformed) {
-            transformedExamples[exampleName]
-                = spec.components?.examples?.[exampleName] === undefined
+            transformedExamples[exampleName] =
+                spec.components?.examples?.[exampleName] === undefined
                     ? example
                     : {
-                        $ref: `#/components/examples/${exampleName}`,
-                    };
+                          $ref: `#/components/examples/${exampleName}`,
+                      };
         }
     });
 

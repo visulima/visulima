@@ -18,7 +18,7 @@ const yamlAcceptRegex = /yaml|yml/u;
 
 const swaggerHandler = <M extends string, PrismaClient>(
     options: Partial<SwaggerHandlerOptions<M, PrismaClient>> = {},
-): (request: IncomingMessage, response: ServerResponse) => Promise<void> => {
+): ((request: IncomingMessage, response: ServerResponse) => Promise<void>) => {
     const {
         allowedMediaTypes = {
             "application/json": true,

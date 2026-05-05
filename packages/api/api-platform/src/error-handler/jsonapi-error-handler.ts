@@ -7,7 +7,7 @@ import { addStatusCodeToResponse, sendJson, setErrorHeaders } from "./utils";
 
 const defaultTitle = "An error occurred";
 
-const jsonapiErrorHandler: ErrorHandler = (error: Error | HttpError | tsJapi.JapiError, _request, response) => {
+const jsonapiErrorHandler: ErrorHandler = (error, _request, response) => {
     addStatusCodeToResponse(response, error);
 
     setErrorHeaders(response, error);
@@ -32,7 +32,8 @@ const jsonapiErrorHandler: ErrorHandler = (error: Error | HttpError | tsJapi.Jap
             ],
         });
     } else {
-        const { message } = error;
+        // Preserves prior behavior: detail is whatever .message property exists on the value (often undefined for non-Error inputs); JSON.stringify drops the key when undefined.
+        const { message } = error as { message?: string };
 
         sendJson(response, {
             errors: [
