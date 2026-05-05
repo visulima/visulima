@@ -51,8 +51,8 @@ const indexToLineColumn = (
     }
 
     if (
-        !skipChecks
-        && (typeof index !== "number" || (typeof input === "string" && index >= input.length) || (Array.isArray(input) && index + 1 >= (input.at(-1) as number)))
+        !skipChecks &&
+        (typeof index !== "number" || (typeof input === "string" && index >= input.length) || (Array.isArray(input) && index + 1 >= (input.at(-1) as number)))
     ) {
         return { column: 0, line: 0 };
     }

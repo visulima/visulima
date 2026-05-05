@@ -42,10 +42,10 @@ const makePropertiesEnumerable = (object: Record<string, unknown>): void => {
 
             // Recursively process nested objects (but not arrays or special types)
             if (
-                descriptor.value
-                && typeof descriptor.value === "object"
-                && !Array.isArray(descriptor.value) // Check if it's a plain object (not Error, Date, etc.)
-                && (Object.getPrototypeOf(descriptor.value) === Object.prototype || Object.getPrototypeOf(descriptor.value) === null)
+                descriptor.value &&
+                typeof descriptor.value === "object" &&
+                !Array.isArray(descriptor.value) && // Check if it's a plain object (not Error, Date, etc.)
+                (Object.getPrototypeOf(descriptor.value) === Object.prototype || Object.getPrototypeOf(descriptor.value) === null)
             ) {
                 makePropertiesEnumerable(descriptor.value as Record<string, unknown>);
             }
@@ -98,11 +98,11 @@ const serializeValue = (value: unknown, seen: Set<Error>, depth: number, options
     }
 
     if (
-        options.useToJSON
-        && value !== null
-        && typeof value === "object"
-        && "toJSON" in value
-        && typeof (value as Record<string, unknown>).toJSON === "function"
+        options.useToJSON &&
+        value !== null &&
+        typeof value === "object" &&
+        "toJSON" in value &&
+        typeof (value as Record<string, unknown>).toJSON === "function"
     ) {
         return (value as { toJSON: () => unknown }).toJSON();
     }
