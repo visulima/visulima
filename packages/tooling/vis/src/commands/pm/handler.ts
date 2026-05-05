@@ -13,7 +13,7 @@ const execute = async ({ argument, logger, visConfig, workspaceRoot: wsRoot }: T
 
     const [subcommand, ...rest] = args;
     const cwd = wsRoot ?? process.cwd();
-    const pm = resolveInstaller(cwd, { configBackend: visConfig?.install?.backend });
+    const pm = resolveInstaller(cwd, { configBackend: visConfig?.install?.backend, configCorepack: visConfig?.install?.corepack });
 
     const code = runPmSubcommand(pm, subcommand as string, rest, cwd, logger);
 

@@ -436,6 +436,21 @@ export interface VisConfig {
          * @default "auto"
          */
         backend?: "aube" | "auto" | "bun" | "npm" | "pnpm" | "yarn";
+
+        /**
+         * Whether to dispatch PM invocations through `corepack`.
+         * - `"auto"` (default): use corepack only when the workspace
+         *   pins a PM via the `packageManager` field AND `corepack` is
+         *   on PATH AND the PM is one corepack manages (pnpm/yarn/npm).
+         * - `true`: always prefix `corepack` when the binary is on PATH
+         *   and the PM is corepack-managed (errors loudly otherwise).
+         * - `false`: never go through corepack — invoke the PM directly.
+         *
+         * Mirrors nypm's `corepack: true` flag. Bun, deno, and aube are
+         * never wrapped — corepack does not manage them.
+         * @default "auto"
+         */
+        corepack?: "auto" | boolean;
     };
 
     /**

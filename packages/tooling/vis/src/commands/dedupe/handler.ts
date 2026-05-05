@@ -5,7 +5,7 @@ import type { DedupeOptions } from "./index";
 
 const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, DedupeOptions>): Promise<void> => {
     const cwd = wsRoot ?? process.cwd();
-    const pm = resolveInstaller(cwd, { configBackend: visConfig?.install?.backend });
+    const pm = resolveInstaller(cwd, { configBackend: visConfig?.install?.backend, configCorepack: visConfig?.install?.corepack });
 
     const code = runDedupe(pm, options.check || false, cwd, logger);
 

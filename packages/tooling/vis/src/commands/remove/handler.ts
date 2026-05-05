@@ -12,7 +12,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
     }
 
     const cwd = process.cwd();
-    const pm = resolveInstaller(wsRoot ?? cwd, { configBackend: visConfig?.install?.backend });
+    const pm = resolveInstaller(wsRoot ?? cwd, { configBackend: visConfig?.install?.backend, configCorepack: visConfig?.install?.corepack });
 
     const code = runRemove(
         pm,

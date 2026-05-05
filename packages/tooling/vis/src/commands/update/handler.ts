@@ -697,7 +697,7 @@ const execute = async ({ argument: rawArgument, logger, options, visConfig, work
     } else {
         // Non-catalog updates honor `install.backend` so users who opted
         // into aube get `aube update` instead of the lockfile-detected PM.
-        const installer = resolveInstaller(workspaceRoot, { configBackend: visConfig?.install?.backend });
+        const installer = resolveInstaller(workspaceRoot, { configBackend: visConfig?.install?.backend, configCorepack: visConfig?.install?.corepack });
         const installerVersion = installer.name === "aube" ? "" : getPackageManagerVersion(installer.name);
 
         executePmWrapper(workspaceRoot, installer.name, installerVersion, options, argument, logger);
