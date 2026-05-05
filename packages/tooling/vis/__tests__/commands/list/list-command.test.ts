@@ -73,7 +73,7 @@ describe("vis list", () => {
         cleanupTemporaryDirectory(workspaceRoot);
     });
 
-    it("emits a JSON document containing every project when --json is passed", async () => {
+    it("emits a JSON document containing every project when --format=json is passed", async () => {
         expect.assertions(4);
 
         const { calls, logger } = makeLogger();
@@ -81,7 +81,7 @@ describe("vis list", () => {
         await listExecute({
             argument: [],
             logger,
-            options: { json: true },
+            options: { format: "json" },
             runtime: {} as never,
             visConfig: undefined,
             workspaceRoot,
@@ -104,7 +104,7 @@ describe("vis list", () => {
         await listExecute({
             argument: [],
             logger,
-            options: { json: true, query: "tag=frontend" },
+            options: { format: "json", query: "tag=frontend" },
             runtime: {} as never,
             visConfig: undefined,
             workspaceRoot,
@@ -117,7 +117,7 @@ describe("vis list", () => {
         expect(parsed[0]!.name).toBe("@my/a");
     });
 
-    it("renders a table when --json is not passed", async () => {
+    it("renders a table when --format is not passed", async () => {
         expect.assertions(3);
 
         const { calls, logger } = makeLogger();

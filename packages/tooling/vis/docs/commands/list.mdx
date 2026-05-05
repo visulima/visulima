@@ -22,16 +22,15 @@ vis list --deps                          # human-readable dep-instance table
 vis list --deps --internal-only          # only workspace deps
 vis list --deps --format=ndjson          # stream every dep-instance as NDJSON for jq pipelines
 vis list --deps --format=json --pretty   # single pretty-printed JSON array
-vis list --json                          # machine-readable output (alias for --format=json)
+vis list --format=json                   # machine-readable project listing
 vis list --query "tag=frontend"          # filter by query
-vis list --targets --json                # per-target rows as JSON
+vis list --targets --format=json         # per-target rows as JSON
 ```
 
 ## Options
 
 | Option            | Default | Description                                                                                          |
 | ----------------- | ------- | ---------------------------------------------------------------------------------------------------- |
-| `--json`          | `false` | Emit JSON instead of a table (alias for `--format=json`)                                             |
 | `--format`        | `table` | Output format: `table`, `json` (single document), or `ndjson` (one record per line; `--deps` only)   |
 | `--pretty`        | `false` | Pretty-print with 2-space indent (only meaningful with `--format=json` in `--deps` mode)             |
 | `--query`         |         | Filter projects by query (see below)                                                                 |
