@@ -11,6 +11,8 @@ description: "Run a full project health check (dependencies, security, optimizat
 vis doctor
 ```
 
+> **Not the same as `vis lint --custom-types`.** `vis doctor` verifies the *installed* runtime matches `engines.node` on this machine. `vis lint --custom-types` verifies that every package.json in the workspace *declares* the same `engines.node`. Run doctor locally; run lint in CI. See [`vis lint`](./lint.mdx#overlap-with-vis-doctor) for the workspace-side check.
+
 ## Usage
 
 ```bash

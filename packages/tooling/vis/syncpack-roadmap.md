@@ -115,15 +115,15 @@ Defer until items 1–4 surface real demand for cases the simple defaults can't 
 
 ---
 
-### 6. Custom types — `engines.node`, `packageManager`, `devEngines.*`
+### 6. Custom types — `engines.node`, `packageManager`, `devEngines.*` ✅ shipped
 
 **Leverage:** Closes the engines-drift footgun. **Effort:** M (2–3 weeks). **Demand:** ★★
 
-Once item 3 ships sync for `engines`, the next ask is "make `engines.node` participate in `vis check --workspace-versions` so a stale 18.x in one package fails CI." Adopt syncpack's four strategies (`name@version`, `name~version`, `version`, `versionsByName`) but lift them to a typed `vis-config.ts` registry rather than a string-DSL.
+Shipped as `vis lint --custom-types` (parallel pipeline to `--workspace-versions`). Five built-in customTypes: `engines.X`, `volta.X`, `packageManager` (parses `name@version[+sha512.<hash>]`), `devEngines.runtime`, `devEngines.packageManager`. Each `(customType × depName)` cluster is tracked independently — `engines.node` and `volta.node` do not cross-couple. `--fix` rewrites in place; the `+sha512` content-integrity hash on `packageManager` is dropped on bump (it's tied to a specific package, not version, so users must regenerate via Corepack).
 
-Ship as built-in presets, not as configuration: `engines`, `packageManager` (parses `pnpm@9.x.y`), `volta.{node,pnpm,yarn}`, `devEngines.{runtime,packageManager}`. Users add custom types only for niche cases.
+Configuration lives in `policy.customTypes` with the same three-state autofix dial (`true | false | "prompt"`) as items 1, 2, and the catalog work. Users opt out at the rule level; CI still fails on drift.
 
-**Overlap with `vis doctor` (from §6):** doctor verifies the *installed* runtime matches `engines.node` (machine-side); custom types verify all packages *declare* the same `engines.node` (workspace-side). Both useful; needs a `docs/` section to disambiguate.
+**Overlap with `vis doctor`:** doctor verifies the *installed* runtime matches `engines.node` (machine-side); `vis lint --custom-types` verifies all packages *declare* the same `engines.node` (workspace-side). Both ship; documented in `docs/commands/lint.mdx`.
 
 **Sources:** syncpack `customTypes`; user-validated demand in 7.2 Theme L.
 
@@ -219,8 +219,8 @@ Single-engineer M-block. Defines the policy schema, `--fix` semantics, and the `
 **Phase 4: Power-user surface (items 7, 8)**
 ~1 week combined. Both depend on item 2's iterator. NDJSON (item 8) costs nothing on top of the iterator; catalog auto-migration (item 7) is the natural follow-up to drift detection.
 
-**Phase 5 (deferred): DSL + custom types (items 5, 6)**
-Ship only after Phase 1–4 produce real-world signal that the simple defaults can't express. If they can, items 5 and 6 stay deferred indefinitely. If demand surfaces, sequence item 6 (custom types — closes the engines-drift footgun) before item 5 (full versionGroups DSL — heavier, narrower demand).
+**Phase 5: DSL + custom types (items 5, 6)**
+Item 6 shipped early — the `policy.customTypes` configuration was cheap on top of the workspace-versions iterator and the engines-drift footgun was real enough to justify pulling it forward. Item 5 (full versionGroups DSL) remains deferred pending real-world signal that items 1–4 + customTypes can't express; the litmus test stands ("count GitHub issues filed in the year after items 1–4 ship that explicitly need a feature only the DSL can express").
 
 ---
 
