@@ -170,14 +170,8 @@ const runInteractiveInit = async (cwd: string, pm: { name: string; version: stri
         if (shouldMigrate) {
             rl.close();
 
-            const [execBin, ...execPrefixArgs]
-                = pm.name === "pnpm"
-                    ? ["pnpm", "exec"]
-                    : pm.name === "yarn"
-                        ? ["yarn", "exec"]
-                        : pm.name === "bun"
-                            ? ["bunx"]
-                            : ["npx"];
+            const [execBin, ...execPrefixArgs] =
+                pm.name === "pnpm" ? ["pnpm", "exec"] : pm.name === "yarn" ? ["yarn", "exec"] : pm.name === "bun" ? ["bunx"] : ["npx"];
 
             for (const tool of existingTools) {
                 pail.info(`    Migrating from ${tool}...`);

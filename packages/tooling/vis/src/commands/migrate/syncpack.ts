@@ -269,7 +269,7 @@ const noteUnsupportedKeys = (config: SyncpackConfig, report: MigrationReport): v
             );
             addManualStep(
                 report,
-                "Re-implement versionGroups rules using `pinVersion` / `snapTo` / `policy: \"sameRange\"` once the vis DSL ships (issue #622).",
+                'Re-implement versionGroups rules using `pinVersion` / `snapTo` / `policy: "sameRange"` once the vis DSL ships (issue #622).',
             );
         }
     }
@@ -301,9 +301,9 @@ const noteUnsupportedKeys = (config: SyncpackConfig, report: MigrationReport): v
     }
 
     if (
-        (Array.isArray(config.sortAz) && config.sortAz.length > 0)
-        || (Array.isArray(config.sortFirst) && config.sortFirst.length > 0)
-        || (Array.isArray(config.sortExports) && config.sortExports.length > 0)
+        (Array.isArray(config.sortAz) && config.sortAz.length > 0) ||
+        (Array.isArray(config.sortFirst) && config.sortFirst.length > 0) ||
+        (Array.isArray(config.sortExports) && config.sortExports.length > 0)
     ) {
         addMigrationWarning(
             report,

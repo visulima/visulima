@@ -246,11 +246,7 @@ const VisMigrateApp = ({ autoExitSeconds = 0, isDryRun, store }: VisMigrateAppPr
         return (
             <Box alignItems="center" height={rows} justifyContent="center" width={columns}>
                 <Text color="yellow">
-                    Terminal too small (
-{columns}
-x
-{rows}
-)
+                    Terminal too small ({columns}x{rows})
                 </Text>
             </Box>
         );
@@ -321,7 +317,7 @@ x
 
     const helpPopup = (
         <Dialog
-            footer={(
+            footer={
                 <Text dimColor>
                     <Text bold color="white">
                         ↑↓
@@ -336,7 +332,7 @@ x
                     </Text>
                     {" close"}
                 </Text>
-              )}
+            }
             scrollRef={helpScrollRef}
             title="KEYBOARD SHORTCUTS"
             visible={helpVisible}
@@ -447,17 +443,10 @@ x
         >
             {checkedItems.map((item) => (
                 <Box gap={1} key={item.entry.id}>
-                    <Text>
-{" "}
-{item.entry.title}
-                    </Text>
+                    <Text> {item.entry.title}</Text>
                     <Text dimColor>
-                        (
-{item.preview.length}
-{" "}
-change
-{item.preview.length === 1 ? "" : "s"}
-)
+                        ({item.preview.length} change
+                        {item.preview.length === 1 ? "" : "s"})
                     </Text>
                 </Box>
             ))}

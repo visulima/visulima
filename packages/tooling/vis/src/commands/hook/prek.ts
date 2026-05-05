@@ -286,7 +286,7 @@ const buildHookCommand = (entry: PrekHookEntry, stage: string, builtin?: string)
         }
 
         if ((entry.pass_filenames ?? true) && !entry.always_run) {
-            parts.push("\"$@\"");
+            parts.push('"$@"');
         }
 
         return parts.join(" ");
@@ -650,9 +650,9 @@ const migrateFromPrek = (root: string, hooksDirectory: string, logger: MigrateLo
 
     const { added, skipped: skippedDeps } = dryRun
         ? {
-            added: additionalDeps.map((d) => d.name),
-            skipped: [] as string[],
-        }
+              added: additionalDeps.map((d) => d.name),
+              skipped: [] as string[],
+          }
         : mergeAdditionalDependencies(root, additionalDeps, options.useEditorconfig);
 
     if (added.length > 0) {

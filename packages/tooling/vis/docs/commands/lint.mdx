@@ -67,22 +67,22 @@ vis lint --format json
 
 ## Options
 
-| Option                  | Default | Description                                                                                         |
-| ----------------------- | ------- | --------------------------------------------------------------------------------------------------- |
-| `--workspace-protocol`  | `false` | Lint that internal deps use the `workspace:` protocol                                               |
-| `--redefine-root`       | `false` | Lint that no child re-declares a dep already pinned in the workspace root                           |
-| `--banned-deps`         | `false` | Lint deps against `policy.bannedDeps` in vis config                                                 |
-| `--workspace-versions`  | `false` | Lint that all packages declare external deps at the same version                                    |
-| `--custom-types`        | `false` | Lint `engines.{node,pnpm}`, `packageManager`, `volta.*`, `devEngines.*` for drift across packages   |
-| `--dep`                 |         | Restrict `--workspace-versions`/`--custom-types` to a single dep                                    |
-| `--ban`                 |         | Ban a dep name or glob for this run (repeatable). Auto-enables `--banned-deps`                      |
-| `--pin`                 |         | Pin a dep to an exact specifier for this run, e.g. `react@^18.2.0` (repeatable)                     |
-| `--resolve`             |         | Conflict resolution: `highest`, `lowest`, or `catalog` (default: `highest`)                         |
-| `--propose-min`         |         | Propose catalog entries for deps ≥N packages already agree on. Activates with `--resolve catalog`   |
-| `--fix`                 | `false` | Auto-fix violations in place (writes `package.json` files)                                          |
-| `--fix-specifier`       |         | Specifier used by `--fix` for workspace-protocol (default: `workspace:*`)                           |
-| `--format`              | `human` | Output format: `human`, `json`, or `minimal`                                                        |
-| `--quiet`               | `false` | Suppress all output except errors                                                                   |
+| Option                 | Default | Description                                                                                       |
+| ---------------------- | ------- | ------------------------------------------------------------------------------------------------- |
+| `--workspace-protocol` | `false` | Lint that internal deps use the `workspace:` protocol                                             |
+| `--redefine-root`      | `false` | Lint that no child re-declares a dep already pinned in the workspace root                         |
+| `--banned-deps`        | `false` | Lint deps against `policy.bannedDeps` in vis config                                               |
+| `--workspace-versions` | `false` | Lint that all packages declare external deps at the same version                                  |
+| `--custom-types`       | `false` | Lint `engines.{node,pnpm}`, `packageManager`, `volta.*`, `devEngines.*` for drift across packages |
+| `--dep`                |         | Restrict `--workspace-versions`/`--custom-types` to a single dep                                  |
+| `--ban`                |         | Ban a dep name or glob for this run (repeatable). Auto-enables `--banned-deps`                    |
+| `--pin`                |         | Pin a dep to an exact specifier for this run, e.g. `react@^18.2.0` (repeatable)                   |
+| `--resolve`            |         | Conflict resolution: `highest`, `lowest`, or `catalog` (default: `highest`)                       |
+| `--propose-min`        |         | Propose catalog entries for deps ≥N packages already agree on. Activates with `--resolve catalog` |
+| `--fix`                | `false` | Auto-fix violations in place (writes `package.json` files)                                        |
+| `--fix-specifier`      |         | Specifier used by `--fix` for workspace-protocol (default: `workspace:*`)                         |
+| `--format`             | `human` | Output format: `human`, `json`, or `minimal`                                                      |
+| `--quiet`              | `false` | Suppress all output except errors                                                                 |
 
 ## Lint kinds
 
@@ -121,13 +121,13 @@ Detects "the same dep declared at different versions across packages." Default p
 
 Detects drift in version pins that live outside `*Dependencies` blocks. Five built-in customTypes:
 
-| customType                  | Source                                                          |
-| --------------------------- | --------------------------------------------------------------- |
-| `engines`                   | `pkg.engines.{node,pnpm,yarn,npm,...}`                          |
-| `volta`                     | `pkg.volta.{node,pnpm,yarn}`                                    |
+| customType                  | Source                                                                |
+| --------------------------- | --------------------------------------------------------------------- |
+| `engines`                   | `pkg.engines.{node,pnpm,yarn,npm,...}`                                |
+| `volta`                     | `pkg.volta.{node,pnpm,yarn}`                                          |
 | `packageManager`            | `pkg.packageManager` — `name@version` or `name@version+sha512.<hash>` |
-| `devEngines.runtime`        | `pkg.devEngines.runtime` (single object or `{name, version}[]`) |
-| `devEngines.packageManager` | `pkg.devEngines.packageManager` (same shape)                    |
+| `devEngines.runtime`        | `pkg.devEngines.runtime` (single object or `{name, version}[]`)       |
+| `devEngines.packageManager` | `pkg.devEngines.packageManager` (same shape)                          |
 
 Each `(customType × depName)` cluster is tracked independently — `engines.node` and `volta.node` do **not** cross-couple. Use a versionGroup once that lands if you need to enforce they agree.
 
@@ -144,11 +144,11 @@ When a tool stores version pins somewhere built-in customTypes don't reach (e.g.
 
 Pick a `strategy` matching how the version is encoded at the path:
 
-| strategy         | Shape at `path`                                                 | When to use                                                            |
-| ---------------- | --------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| `versionsByName` | `{ "<name>": "<version>", ... }`                                | A block of name → version, like `pnpm.overrides` or `engines`.         |
-| `name@version`   | `"<name>@<version>"` (string)                                   | Single-string slots like `packageManager` (`pnpm@10.32.1`).            |
-| `string`         | `"<version>"` (bare)                                            | A bare version string. Requires `depName` so we know what to call it.  |
+| strategy         | Shape at `path`                  | When to use                                                           |
+| ---------------- | -------------------------------- | --------------------------------------------------------------------- |
+| `versionsByName` | `{ "<name>": "<version>", ... }` | A block of name → version, like `pnpm.overrides` or `engines`.        |
+| `name@version`   | `"<name>@<version>"` (string)    | Single-string slots like `packageManager` (`pnpm@10.32.1`).           |
+| `string`         | `"<version>"` (bare)             | A bare version string. Requires `depName` so we know what to call it. |
 
 ```ts
 export default {
@@ -173,8 +173,8 @@ A `name` that collides with a built-in (`engines`, `volta`, `packageManager`, `d
 
 #### Overlap with `vis doctor`
 
-- **`vis doctor`** verifies the *installed* runtime matches `engines.node` (machine-side: "is my Node binary the right version?").
-- **`vis lint --custom-types`** verifies all packages *declare* the same `engines.node` (workspace-side: "do all my package.json files agree?").
+- **`vis doctor`** verifies the _installed_ runtime matches `engines.node` (machine-side: "is my Node binary the right version?").
+- **`vis lint --custom-types`** verifies all packages _declare_ the same `engines.node` (workspace-side: "do all my package.json files agree?").
 
 Both ship; both useful. Run `vis doctor` on a developer machine to catch local mismatches; run `vis lint --custom-types` in CI to catch workspace drift.
 

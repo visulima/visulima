@@ -48,13 +48,10 @@ describe(readPmNativeMinimumReleaseAge, () => {
 
             // A package.json with the field present must NOT be picked up —
             // bun never reads minimumReleaseAge from there.
-            writeFileSync(
-                join(workspaceRoot, "package.json"),
-                JSON.stringify({ minimumReleaseAge: 9999, name: "root" }, undefined, 2),
-            );
+            writeFileSync(join(workspaceRoot, "package.json"), JSON.stringify({ minimumReleaseAge: 9999, name: "root" }, undefined, 2));
             writeFileSync(
                 join(workspaceRoot, "bunfig.toml"),
-                "[install]\nminimumReleaseAge = 259200\nminimumReleaseAgeExcludes = [\"@types/bun\", \"typescript\"]\n",
+                '[install]\nminimumReleaseAge = 259200\nminimumReleaseAgeExcludes = ["@types/bun", "typescript"]\n',
             );
 
             const result = readPmNativeMinimumReleaseAge(workspaceRoot, "bun");
@@ -71,10 +68,7 @@ describe(readPmNativeMinimumReleaseAge, () => {
 
             // package.json present but bunfig.toml is not → nothing returned,
             // even if package.json happens to have a `minimumReleaseAge` key.
-            writeFileSync(
-                join(workspaceRoot, "package.json"),
-                JSON.stringify({ minimumReleaseAge: 9999, name: "root" }, undefined, 2),
-            );
+            writeFileSync(join(workspaceRoot, "package.json"), JSON.stringify({ minimumReleaseAge: 9999, name: "root" }, undefined, 2));
 
             expect(readPmNativeMinimumReleaseAge(workspaceRoot, "bun")).toStrictEqual({});
         });
@@ -82,7 +76,7 @@ describe(readPmNativeMinimumReleaseAge, () => {
         it("tolerates a bunfig.toml that omits [install]", () => {
             expect.assertions(2);
 
-            writeFileSync(join(workspaceRoot, "bunfig.toml"), "[run]\nshell = \"system\"\n");
+            writeFileSync(join(workspaceRoot, "bunfig.toml"), '[run]\nshell = "system"\n');
 
             // Both fields absent — shape may be `{}` or `{ minutes: undefined, excludes: undefined }`,
             // both equivalent at the call site (`a ?? b` flattens them).

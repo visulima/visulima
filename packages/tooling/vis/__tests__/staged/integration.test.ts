@@ -417,7 +417,7 @@ describe("runStaged — integration", () => {
         sh(["add", "a.txt"], root);
 
         // A nearby .lintstagedrc.yaml must be ignored — users go through `vis migrate` to move it into vis.config.ts.
-        writeFileSync(join(root, ".lintstagedrc.yaml"), "\"*.txt\": \"node -e 0\"\n");
+        writeFileSync(join(root, ".lintstagedrc.yaml"), '"*.txt": "node -e 0"\n');
 
         await expect(runStaged({ cwd: root, stash: false })).rejects.toBeInstanceOf(ConfigError);
         await expect(runStaged({ cwd: root, stash: false })).rejects.toThrow(/vis\.config\.ts/);
@@ -856,7 +856,7 @@ describe("runStaged — integration", () => {
         writeFileSync(
             sleeper,
             [
-                "import { writeFileSync } from \"node:fs\";",
+                'import { writeFileSync } from "node:fs";',
                 "",
                 "const [, , pidPath, trapPath] = process.argv;",
                 "",
@@ -865,8 +865,8 @@ describe("runStaged — integration", () => {
                 "}",
                 "",
                 "writeFileSync(pidPath, String(process.pid));",
-                "process.on(\"SIGTERM\", () => {",
-                "  writeFileSync(trapPath, \"SIGTERM\");",
+                'process.on("SIGTERM", () => {',
+                '  writeFileSync(trapPath, "SIGTERM");',
                 "  process.exit(0);",
                 "});",
                 "",
@@ -874,7 +874,7 @@ describe("runStaged — integration", () => {
             ].join("\n"),
         );
 
-        const quote = (value: string): string => `"${value.replaceAll("\\", String.raw`\\`).replaceAll("\"", String.raw`\"`)}"`;
+        const quote = (value: string): string => `"${value.replaceAll("\\", String.raw`\\`).replaceAll('"', String.raw`\"`)}"`;
         const waitFor = async (predicate: () => boolean, timeoutMs: number): Promise<void> => {
             const deadline = Date.now() + timeoutMs;
 
@@ -1094,7 +1094,7 @@ describe("runStaged — integration", () => {
 
         const marker = join(root, "task-started.txt");
         // Long-running node command; cancelSignal will kill it when SIGINT fires.
-        const longRunner = `${JSON.stringify(process.execPath)} -e "require('fs').writeFileSync(${JSON.stringify(marker).replaceAll("\"", String.raw`\"`)}, 'go'); setTimeout(() => process.exit(0), 60000)"`;
+        const longRunner = `${JSON.stringify(process.execPath)} -e "require('fs').writeFileSync(${JSON.stringify(marker).replaceAll('"', String.raw`\"`)}, 'go'); setTimeout(() => process.exit(0), 60000)"`;
 
         const preListeners = new Set(process.listeners("SIGINT"));
 

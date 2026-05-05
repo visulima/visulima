@@ -183,8 +183,8 @@ const writePnpmWorkspaceOverrides = (workspaceRoot: string, sorted: Record<strin
         .join("\n");
     const overridesBlock = `overrides:\n${overrideLines}\n`;
 
-    content
-        = /^overrides:\s*$/m.test(content) || /^overrides:\s*\n/m.test(content)
+    content =
+        /^overrides:\s*$/m.test(content) || /^overrides:\s*\n/m.test(content)
             ? content.replace(/^overrides:\s*\n(?:(?:[ \t].*)?\n)*/m, overridesBlock)
             : `${content.trimEnd()}\n\n${overridesBlock}`;
 
@@ -197,7 +197,13 @@ const writePnpmWorkspaceOverrides = (workspaceRoot: string, sorted: Record<strin
  * When adding a new field, it is positioned near existing dependency fields
  * rather than appended to the end of the file.
  */
-const writePkgJsonOverrides = (pkgJsonPath: string, pkgJson: Record<string, unknown>, sorted: Record<string, string>, pm: PackageManagerName, useEditorconfig?: boolean): void => {
+const writePkgJsonOverrides = (
+    pkgJsonPath: string,
+    pkgJson: Record<string, unknown>,
+    sorted: Record<string, string>,
+    pm: PackageManagerName,
+    useEditorconfig?: boolean,
+): void => {
     const raw = readFileSync(pkgJsonPath);
     const indent = resolveIndentForFile(pkgJsonPath, raw, { useEditorconfig });
 

@@ -23,7 +23,7 @@ describe(resolveIndentForFile, () => {
         writeFileSync(join(workDirectory, ".editorconfig"), "root = true\n\n[*.json]\nindent_style = space\nindent_size = 4\n", "utf8");
         const filePath = join(workDirectory, "package.json");
 
-        expect(resolveIndentForFile(filePath, "{\n  \"name\": \"x\"\n}")).toBe("    ");
+        expect(resolveIndentForFile(filePath, '{\n  "name": "x"\n}')).toBe("    ");
     });
 
     it("should return tab indent when .editorconfig declares it", () => {
@@ -32,7 +32,7 @@ describe(resolveIndentForFile, () => {
         writeFileSync(join(workDirectory, ".editorconfig"), "root = true\n\n[*.json]\nindent_style = tab\n", "utf8");
         const filePath = join(workDirectory, "package.json");
 
-        expect(resolveIndentForFile(filePath, "{\n  \"name\": \"x\"\n}")).toBe("\t");
+        expect(resolveIndentForFile(filePath, '{\n  "name": "x"\n}')).toBe("\t");
     });
 
     it("should fall back to file-content sniffing when editorconfig is disabled", () => {
@@ -41,7 +41,7 @@ describe(resolveIndentForFile, () => {
         writeFileSync(join(workDirectory, ".editorconfig"), "root = true\n\n[*.json]\nindent_style = space\nindent_size = 4\n", "utf8");
         const filePath = join(workDirectory, "package.json");
 
-        expect(resolveIndentForFile(filePath, "{\n  \"name\": \"x\"\n}", { useEditorconfig: false })).toBe("  ");
+        expect(resolveIndentForFile(filePath, '{\n  "name": "x"\n}', { useEditorconfig: false })).toBe("  ");
     });
 
     it("should fall back to file-content sniffing when no editorconfig is present", () => {
@@ -49,7 +49,7 @@ describe(resolveIndentForFile, () => {
 
         const filePath = join(workDirectory, "package.json");
 
-        expect(resolveIndentForFile(filePath, "{\n   \"name\": \"x\"\n}")).toBe("   ");
+        expect(resolveIndentForFile(filePath, '{\n   "name": "x"\n}')).toBe("   ");
     });
 
     it("should fall back to defaultIndent when nothing else matches", () => {
@@ -111,7 +111,7 @@ describe(resolveIndentForExistingFile, () => {
 
         const filePath = join(workDirectory, "package.json");
 
-        writeFileSync(filePath, "{\n   \"name\": \"x\"\n}", "utf8");
+        writeFileSync(filePath, '{\n   "name": "x"\n}', "utf8");
 
         expect(resolveIndentForExistingFile(filePath)).toBe("   ");
     });
@@ -128,7 +128,7 @@ describe(resolveIndentForExistingFile, () => {
         writeFileSync(join(workDirectory, ".editorconfig"), "root = true\n\n[*.json]\nindent_style = space\nindent_size = 4\n", "utf8");
         const filePath = join(workDirectory, "package.json");
 
-        writeFileSync(filePath, "{\n  \"name\": \"x\"\n}", "utf8");
+        writeFileSync(filePath, '{\n  "name": "x"\n}', "utf8");
 
         expect(resolveIndentForExistingFile(filePath)).toBe("    ");
     });

@@ -274,9 +274,9 @@ packages:
 
         const xml = serializeBomToXml(bom);
 
-        expect(xml.startsWith("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")).toBe(true);
+        expect(xml.startsWith('<?xml version="1.0" encoding="UTF-8"?>')).toBe(true);
         expect(xml).toContain("<name>my-app</name>");
-        expect(xml).toContain("xmlns=\"http://cyclonedx.org/schema/bom/1.6\"");
+        expect(xml).toContain('xmlns="http://cyclonedx.org/schema/bom/1.6"');
     });
 
     it("should walk the lockfile closure and emit transitive deps as components", () => {

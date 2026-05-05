@@ -167,15 +167,17 @@ const runPackageJsonFields = ({ logger, options, visConfig, workspaceRoot: wsRoo
         }
     }
 
-    const reportChanges: PackageJsonReportChange[] = writes.flatMap((write) => write.pkgChanges.map((change) => {
-        return {
-            after: change.after,
-            before: change.before,
-            field: change.field,
-            packageJsonPath: write.packageJsonPath,
-            packageName: write.packageName,
-        };
-    }));
+    const reportChanges: PackageJsonReportChange[] = writes.flatMap((write) =>
+        write.pkgChanges.map((change) => {
+            return {
+                after: change.after,
+                before: change.before,
+                field: change.field,
+                packageJsonPath: write.packageJsonPath,
+                packageName: write.packageName,
+            };
+        }),
+    );
 
     const report: PackageJsonReport = {
         changes: reportChanges,
@@ -207,7 +209,9 @@ const runPackageJsonFields = ({ logger, options, visConfig, workspaceRoot: wsRoo
             }
         }
 
-        logger.info(`Synced ${reportChanges.length} field${reportChanges.length === 1 ? "" : "s"} across ${writes.length} package${writes.length === 1 ? "" : "s"}.`);
+        logger.info(
+            `Synced ${reportChanges.length} field${reportChanges.length === 1 ? "" : "s"} across ${writes.length} package${writes.length === 1 ? "" : "s"}.`,
+        );
     }
 
     if (checkMode && reportChanges.length > 0) {

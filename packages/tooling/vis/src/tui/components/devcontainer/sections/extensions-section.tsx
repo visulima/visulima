@@ -24,20 +24,11 @@ const ExtensionsSection = ({ config, fieldIndex, scrollOffset, searchText, viewp
             {/* Header */}
             <Box flexShrink={0} gap={1} paddingX={1}>
                 <Text bold color="cyan">
-                    {enabledExtensions.size}
-{" "}
-selected
+                    {enabledExtensions.size} selected
                 </Text>
                 {searchText && (
                     <Text dimColor>
-                        — filter:
-{" "}
-<Text color="yellow">{searchText}</Text>
-{" "}
-(
-{filtered.length}
-{" "}
-results)
+                        — filter: <Text color="yellow">{searchText}</Text> ({filtered.length} results)
                     </Text>
                 )}
             </Box>
@@ -53,19 +44,11 @@ results)
                             return (
                                 <Box flexShrink={0} height={1} key={ext.id}>
                                     <Text>{isSelected ? ">" : " "}</Text>
-                                    <Text color={isEnabled ? "white" : "gray"}>
-{" "}
-{isEnabled ? "\u2611" : "\u2610"}
-{" "}
-                                    </Text>
+                                    <Text color={isEnabled ? "white" : "gray"}> {isEnabled ? "\u2611" : "\u2610"} </Text>
                                     <Box flexGrow={1}>
                                         <Text bold={isSelected} inverse={isSelected} wrap="truncate">
                                             {ext.name}
-                                            <Text dimColor>
-{" "}
--
-{ext.id}
-                                            </Text>
+                                            <Text dimColor> -{ext.id}</Text>
                                         </Text>
                                     </Box>
                                 </Box>

@@ -590,15 +590,8 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, stdinR
         return (
             <Box alignItems="center" height={rows} justifyContent="center" width={columns}>
                 <Text color="yellow">
-                    Terminal too small (
-{columns}
-x
-{rows}
-                    ). Minimum:
-{" "}
-{MIN_VIEWPORT_WIDTH}
-x
-{MIN_VIEWPORT_HEIGHT}
+                    Terminal too small ({columns}x{rows}
+                    ). Minimum: {MIN_VIEWPORT_WIDTH}x{MIN_VIEWPORT_HEIGHT}
                 </Text>
             </Box>
         );
@@ -610,37 +603,21 @@ x
         <Box gap={1}>
             {state.succeeded > 0 && (
                 <Text bold color="green">
-                    {"\u2713"}
-{" "}
-{state.succeeded}
+                    {"\u2713"} {state.succeeded}
                 </Text>
             )}
             {state.failed > 0 && (
                 <Text bold color="red">
-                    {"\u2717"}
-{" "}
-{state.failed}
+                    {"\u2717"} {state.failed}
                 </Text>
             )}
             {runningCount > 0 && (
                 <Text color="cyan">
-                    {"\u25F7"}
-{" "}
-{runningCount}
+                    {"\u25F7"} {runningCount}
                 </Text>
             )}
-            <Text dimColor>
-{state.rows.length}
-{" "}
-total
-            </Text>
-            {state.statusFilter !== "all" && (
-<Text color="yellow">
-[
-{state.statusFilter}
-]
-</Text>
-            )}
+            <Text dimColor>{state.rows.length} total</Text>
+            {state.statusFilter !== "all" && <Text color="yellow">[{state.statusFilter}]</Text>}
         </Box>
     );
 
@@ -676,7 +653,7 @@ total
                           </Text>
                           <Text dimColor>INPUT</Text>
                       </Box>,
-                ]
+                  ]
                 : []),
             <Box gap={1} key="q">
                 <Text bold color="white">
@@ -709,7 +686,7 @@ total
                           </Text>
                           <Text dimColor>RETRY</Text>
                       </Box>,
-                ]
+                  ]
                 : []),
             <Box gap={1} key="?">
                 <Text bold color="white">
@@ -764,7 +741,7 @@ total
                           </Text>
                           <Text dimColor>INPUT</Text>
                       </Box>,
-                ]
+                  ]
                 : []),
             <Box gap={1} key="enter">
                 <Text bold color="white">
@@ -831,7 +808,7 @@ total
                           </Text>
                           <Text dimColor>PANEL</Text>
                       </Box>,
-                ]
+                  ]
                 : []),
         ];
     }
@@ -852,25 +829,22 @@ total
     const helpPopup = (
         <Dialog
             backgroundColor="#1e1e1e"
-            footer={(
+            footer={
                 <Text dimColor>
                     <Text bold color="white">
                         {"\u2191\u2193"}
-                    </Text>
-{" "}
-                    scroll
-{" "}
+                    </Text>{" "}
+                    scroll{" "}
                     <Text bold color="white">
                         ?
                     </Text>
                     /
                     <Text bold color="white">
                         Esc
-                    </Text>
-{" "}
+                    </Text>{" "}
                     close
                 </Text>
-              )}
+            }
             scrollRef={helpScrollRef}
             title="KEYBOARD SHORTCUTS"
             visible={helpVisible}
@@ -940,15 +914,7 @@ total
                     </Text>
                     <Text dimColor>
                         {" "}
-                        List
-{" "}
-{"\u2192"}
-{" "}
-Split
-{" "}
-{"\u2192"}
-{" "}
-Fullscreen
+                        List {"\u2192"} Split {"\u2192"} Fullscreen
                     </Text>
                 </Text>
                 <Text>
@@ -958,15 +924,7 @@ Fullscreen
                     </Text>
                     <Text dimColor>
                         {" "}
-                        Fullscreen
-{" "}
-{"\u2192"}
-{" "}
-Split
-{" "}
-{"\u2192"}
-{" "}
-List
+                        Fullscreen {"\u2192"} Split {"\u2192"} List
                     </Text>
                 </Text>
             </Box>

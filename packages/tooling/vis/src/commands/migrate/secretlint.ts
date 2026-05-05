@@ -233,7 +233,12 @@ const rewriteHooks = (root: string, dryRun: boolean, logger: MigrateLogger, repo
     }
 };
 
-const migrateSecretlint = (root: string, options: { dryRun: boolean; silent?: boolean; useEditorconfig?: boolean }, logger: MigrateLogger, report: MigrationReport): boolean => {
+const migrateSecretlint = (
+    root: string,
+    options: { dryRun: boolean; silent?: boolean; useEditorconfig?: boolean },
+    logger: MigrateLogger,
+    report: MigrationReport,
+): boolean => {
     const configFile = detectSecretlintConfig(root);
     const ignoreFile = detectSecretlintIgnore(root);
     const hasArtifacts = Boolean(configFile ?? ignoreFile);

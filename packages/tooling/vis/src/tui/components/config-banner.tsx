@@ -48,13 +48,11 @@ const ConfigBanner = ({ children, hint, message, severity, title }: ConfigBanner
                 </Text>
             </Box>
             <Text wrap="truncate-end">{message}</Text>
-            {hint
-                ? (
+            {hint ? (
                 <Text dimColor wrap="truncate-end">
                     {hint}
                 </Text>
-                )
-                : null}
+            ) : null}
             {children}
         </Box>
     );

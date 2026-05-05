@@ -74,10 +74,7 @@ describe(readPatchedDependencies, () => {
                     2,
                 ),
             );
-            writeFileSync(
-                join(workspaceRoot, "pnpm-workspace.yaml"),
-                "patchedDependencies:\n  ghost@1.0.0: patches/should-be-ignored.patch\n",
-            );
+            writeFileSync(join(workspaceRoot, "pnpm-workspace.yaml"), "patchedDependencies:\n  ghost@1.0.0: patches/should-be-ignored.patch\n");
 
             const entries = readPatchedDependencies(workspaceRoot, "bun");
 

@@ -38,7 +38,7 @@ describe(computeLineColumn, () => {
         // line 1: "{\n" (positions 0-1)
         // line 2: '  "a": 1,\n' (positions 2-11)
         // line 3: '  "b": 2\n' (positions 12-20)
-        const source = "{\n  \"a\": 1,\n  \"b\": 2\n}";
+        const source = '{\n  "a": 1,\n  "b": 2\n}';
 
         expect(computeLineColumn(source, 14)).toStrictEqual({ column: 3, line: 3 });
     });
@@ -96,7 +96,7 @@ describe(extractParseErrorContext, () => {
     it("should extract position from JSON.parse SyntaxError", () => {
         expect.assertions(2);
 
-        const source = "{\n  \"a\": 1,\n  \"b\" 2\n}";
+        const source = '{\n  "a": 1,\n  "b" 2\n}';
         let caught: unknown;
 
         try {
@@ -131,7 +131,7 @@ describe(extractParseErrorContext, () => {
     it("should attach a snippet around the error line", () => {
         expect.assertions(1);
 
-        const source = "{\n  \"a\": 1,\n  \"b\" 2\n}";
+        const source = '{\n  "a": 1,\n  "b" 2\n}';
         let caught: unknown;
 
         try {

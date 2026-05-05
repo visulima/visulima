@@ -105,14 +105,8 @@ describe("migrate-verify", () => {
         it("flags stray syncpack catalog protocol entries", () => {
             expect.assertions(2);
 
-            writeFileSync(
-                join(tmpDir, "pnpm-workspace.yaml"),
-                "catalog:\n  syncpack: ^12.0.0\ncatalogs:\n  lint:\n    syncpack: ^12.0.0\n",
-            );
-            writeFileSync(
-                join(tmpDir, "package.json"),
-                JSON.stringify({ workspaces: { catalog: { syncpack: "^12.0.0" } } }),
-            );
+            writeFileSync(join(tmpDir, "pnpm-workspace.yaml"), "catalog:\n  syncpack: ^12.0.0\ncatalogs:\n  lint:\n    syncpack: ^12.0.0\n");
+            writeFileSync(join(tmpDir, "package.json"), JSON.stringify({ workspaces: { catalog: { syncpack: "^12.0.0" } } }));
 
             const issues = verifyMigration(tmpDir, createMockLogger());
 

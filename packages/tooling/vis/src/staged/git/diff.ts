@@ -81,8 +81,8 @@ export const getFiles = async (options: {
     readonly workTree?: string;
 }): Promise<string[]> => {
     const filter = options.diffFilter ?? DEFAULT_DIFF_FILTER;
-    const args
-        = options.diff === undefined
+    const args =
+        options.diff === undefined
             ? ["diff", "--name-only", "-z", `--diff-filter=${filter}`, "--staged"]
             : ["diff", "--name-only", "-z", `--diff-filter=${filter}`, ...options.diff.split(/\s+/).filter(Boolean)];
 

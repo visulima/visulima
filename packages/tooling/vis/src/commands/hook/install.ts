@@ -15,7 +15,7 @@ const TRAILING_SLASH_RE = /\/$/;
  * Example: depth 3 produces `dirname "$(dirname "$(dirname "$0"))"`.
  */
 const nestedDirname = (depth: number): string => {
-    let expression = "\"$0\"";
+    let expression = '"$0"';
 
     for (let index = 0; index < depth; index += 1) {
         expression = `"$(dirname ${expression})"`;
@@ -57,7 +57,7 @@ const installHooks = (directory: string = DEFAULT_HOOKS_DIRECTORY): InstallResul
     }
 
     if (directory.includes("..")) {
-        return { isError: true, message: "\"..\" is not allowed in hooks directory path" };
+        return { isError: true, message: '".." is not allowed in hooks directory path' };
     }
 
     const prefixResult = spawnSync("git", ["rev-parse", "--show-prefix"]);

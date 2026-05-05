@@ -27,7 +27,7 @@ describe("migrate-gitleaks", () => {
         it("finds gitleaks.toml", () => {
             expect.assertions(1);
 
-            writeFileSync(join(tmpDir, "gitleaks.toml"), "title = \"custom\"\n");
+            writeFileSync(join(tmpDir, "gitleaks.toml"), 'title = "custom"\n');
 
             expect(detectGitleaksConfig(tmpDir)).toBe("gitleaks.toml");
         });
@@ -35,7 +35,7 @@ describe("migrate-gitleaks", () => {
         it("finds .gitleaks.toml", () => {
             expect.assertions(1);
 
-            writeFileSync(join(tmpDir, ".gitleaks.toml"), "title = \"custom\"\n");
+            writeFileSync(join(tmpDir, ".gitleaks.toml"), 'title = "custom"\n');
 
             expect(detectGitleaksConfig(tmpDir)).toBe(".gitleaks.toml");
         });
@@ -195,7 +195,7 @@ describe("migrate-gitleaks", () => {
         it("preserves custom gitleaks.toml by appending --config to rewritten commands", () => {
             expect.assertions(2);
 
-            writeFileSync(join(tmpDir, "gitleaks.toml"), "title = \"custom\"\n");
+            writeFileSync(join(tmpDir, "gitleaks.toml"), 'title = "custom"\n');
             writeFileSync(join(tmpDir, "package.json"), JSON.stringify({ scripts: { scan: "gitleaks detect --source ." } }));
 
             const report = createMigrationReport();

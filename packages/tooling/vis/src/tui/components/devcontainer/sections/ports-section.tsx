@@ -22,13 +22,7 @@ const PortsSection = ({ addingPort, addPortValue, config, fieldIndex }: PortsSec
                 <Text bold color="cyan">
                     Forwarded Ports
                 </Text>
-                <Text dimColor>
-{" "}
-(
-{ports.length}
-{" "}
-ports)
-                </Text>
+                <Text dimColor> ({ports.length} ports)</Text>
             </Box>
             {ports.map((port, index) => {
                 const isSelected = index === fieldIndex;
@@ -45,37 +39,30 @@ ports)
             <Box marginTop={ports.length > 0 ? 1 : 0}>
                 <Text color={isAddRowSelected ? "cyan" : "gray"} inverse={isAddRowSelected}>
                     {"  "}
-                    {isAddRowSelected && addingPort
-                        ? (
+                    {isAddRowSelected && addingPort ? (
                         <Text>
-                            Enter port:
-{" "}
-<Text color="yellow">{addPortValue || "_"}</Text>
+                            Enter port: <Text color="yellow">{addPortValue || "_"}</Text>
                         </Text>
-                        )
-                        : (
-                            "+ Add port..."
-                        )}
+                    ) : (
+                        "+ Add port..."
+                    )}
                 </Text>
             </Box>
             <Box marginTop={1}>
                 <Text dimColor>
                     <Text bold color="white">
                         Enter
-                    </Text>
-{" "}
+                    </Text>{" "}
                     {isAddRowSelected ? "type port number, Enter to confirm" : "select"}
                     {"  "}
                     <Text bold color="white">
                         d
-                    </Text>
-{" "}
+                    </Text>{" "}
                     remove selected
                     {"  "}
                     <Text bold color="white">
                         {"\u2191\u2193"}
-                    </Text>
-{" "}
+                    </Text>{" "}
                     navigate
                 </Text>
             </Box>

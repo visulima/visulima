@@ -99,7 +99,7 @@ describe("migrate-kingfisher", () => {
             const yaml = [
                 "ExactFindings:",
                 "  matches:",
-                "    - filepath: \"quoted/path.ts\"",
+                '    - filepath: "quoted/path.ts"',
                 "      fingerprint: 'singlequoted0000'",
                 "      linenum: 5",
                 "",

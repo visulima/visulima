@@ -52,8 +52,8 @@ const buildAckAction = (finding: DoctorFinding): PendingAction | undefined => {
         "security: {",
         "    acceptedRisks: {",
         `        "${pkg}": {`,
-        "            reason: \"explain why this risk is acceptable\",",
-        "            expiresAt: \"YYYY-MM-DD\",",
+        '            reason: "explain why this risk is acceptable",',
+        '            expiresAt: "YYYY-MM-DD",',
         "        },",
         "    },",
         "},",
@@ -495,11 +495,7 @@ const VisDoctorApp = ({ autoExitSeconds = 0, banner, fromCache = false, startedA
         return (
             <Box alignItems="center" height={rows} justifyContent="center" width={columns}>
                 <Text color="yellow">
-                    Terminal too small (
-{columns}
-x
-{rows}
-)
+                    Terminal too small ({columns}x{rows})
                 </Text>
             </Box>
         );
@@ -526,23 +522,21 @@ x
             </Text>
             <Text dimColor>{detailFocused ? "SCROLL" : "NAV"}</Text>
         </Box>,
-        detailFocused
-            ? (
+        detailFocused ? (
             <Box gap={1} key="lr">
                 <Text bold color="white">
                     ←/Esc
                 </Text>
                 <Text dimColor>LIST</Text>
             </Box>
-            )
-            : (
+        ) : (
             <Box gap={1} key="lr">
                 <Text bold color="white">
                     ←→
                 </Text>
                 <Text dimColor>SECTION</Text>
             </Box>
-            ),
+        ),
         <Box gap={1} key="search">
             <Text bold color="white">
                 /
@@ -579,7 +573,7 @@ x
 
     const helpPopup = (
         <Dialog
-            footer={(
+            footer={
                 <Text dimColor>
                     <Text bold color="white">
                         ↑↓
@@ -594,7 +588,7 @@ x
                     </Text>
                     {" close"}
                 </Text>
-              )}
+            }
             scrollRef={helpScrollRef}
             title="DOCTOR — KEYBOARD SHORTCUTS"
             visible={helpVisible}

@@ -154,7 +154,7 @@ describe("catalog-proposals", () => {
 
             const after = readFileSync(join(workspaceRoot, "pnpm-workspace.yaml"), "utf8");
 
-            expect(after).toContain("react: \"^18.2.0\"");
+            expect(after).toContain('react: "^18.2.0"');
         });
 
         it("creates a fresh catalog block when none exists", () => {
@@ -168,13 +168,13 @@ describe("catalog-proposals", () => {
 
             const after = readFileSync(join(workspaceRoot, "pnpm-workspace.yaml"), "utf8");
 
-            expect(after).toContain("catalog:\n  react: \"^18.2.0\"");
+            expect(after).toContain('catalog:\n  react: "^18.2.0"');
         });
 
         it("doesn't duplicate entries that already exist in the catalog", () => {
             expect.assertions(2);
 
-            writeFile("pnpm-workspace.yaml", "catalog:\n  react: \"^18.0.0\"\n");
+            writeFile("pnpm-workspace.yaml", 'catalog:\n  react: "^18.0.0"\n');
 
             const written = applyCatalogProposals(workspaceRoot, [{ catalogName: "default", depName: "react", instanceCount: 3, specifier: "^18.2.0" }]);
 
@@ -184,7 +184,7 @@ describe("catalog-proposals", () => {
             const after = readFileSync(join(workspaceRoot, "pnpm-workspace.yaml"), "utf8");
 
             // Existing entry preserved verbatim.
-            expect(after).toContain("react: \"^18.0.0\"");
+            expect(after).toContain('react: "^18.0.0"');
         });
 
         it("preserves an existing pin even when the proposal differs (no overwrite)", () => {
@@ -192,7 +192,7 @@ describe("catalog-proposals", () => {
 
             // Existing catalog pins react at ^17. A drift-driven proposal asks
             // for ^18 — we should leave the pin alone and not silently change it.
-            writeFile("pnpm-workspace.yaml", "catalog:\n  react: \"^17.0.0\"\n");
+            writeFile("pnpm-workspace.yaml", 'catalog:\n  react: "^17.0.0"\n');
 
             const written = applyCatalogProposals(workspaceRoot, [{ catalogName: "default", depName: "react", instanceCount: 3, specifier: "^18.2.0" }]);
 
@@ -200,21 +200,21 @@ describe("catalog-proposals", () => {
 
             const after = readFileSync(join(workspaceRoot, "pnpm-workspace.yaml"), "utf8");
 
-            expect(after).toContain("react: \"^17.0.0\"");
+            expect(after).toContain('react: "^17.0.0"');
         });
 
         it("preserves CRLF line endings when appending to an existing block", () => {
             expect.assertions(2);
 
-            writeFile("pnpm-workspace.yaml", "catalog:\r\n  lodash: \"4.17.21\"\r\n");
+            writeFile("pnpm-workspace.yaml", 'catalog:\r\n  lodash: "4.17.21"\r\n');
 
             applyCatalogProposals(workspaceRoot, [{ catalogName: "default", depName: "react", instanceCount: 3, specifier: "^18.2.0" }]);
 
             const after = readFileSync(join(workspaceRoot, "pnpm-workspace.yaml"), "utf8");
 
-            expect(after).toContain("react: \"^18.2.0\"");
+            expect(after).toContain('react: "^18.2.0"');
             // Newly written lines must use the existing CRLF style.
-            expect(after).toContain("react: \"^18.2.0\"\r\n");
+            expect(after).toContain('react: "^18.2.0"\r\n');
         });
 
         it("appends to a tab-indented catalog block (entries still use 2-space indent)", () => {
@@ -223,13 +223,13 @@ describe("catalog-proposals", () => {
             // Some users author YAML with tabs. We don't try to match the
             // existing indent style — additions always use 2 spaces, which
             // YAML accepts as a valid block layout.
-            writeFile("pnpm-workspace.yaml", "catalog:\n\tlodash: \"4.17.21\"\n");
+            writeFile("pnpm-workspace.yaml", 'catalog:\n\tlodash: "4.17.21"\n');
 
             applyCatalogProposals(workspaceRoot, [{ catalogName: "default", depName: "react", instanceCount: 3, specifier: "^18.2.0" }]);
 
             const after = readFileSync(join(workspaceRoot, "pnpm-workspace.yaml"), "utf8");
 
-            expect(after).toContain("  react: \"^18.2.0\"");
+            expect(after).toContain('  react: "^18.2.0"');
         });
     });
 
@@ -242,17 +242,17 @@ describe("catalog-proposals", () => {
             const diff = renderCatalogProposalsDiff(workspaceRoot, [{ catalogName: "default", depName: "react", instanceCount: 3, specifier: "^18.2.0" }]);
 
             expect(diff).toContain("+catalog:");
-            expect(diff).toContain("+  react: \"^18.2.0\"");
+            expect(diff).toContain('+  react: "^18.2.0"');
         });
 
         it("renders a diff for additions to an existing catalog block", () => {
             expect.assertions(1);
 
-            writeFile("pnpm-workspace.yaml", "catalog:\n  lodash: \"4.17.21\"\n");
+            writeFile("pnpm-workspace.yaml", 'catalog:\n  lodash: "4.17.21"\n');
 
             const diff = renderCatalogProposalsDiff(workspaceRoot, [{ catalogName: "default", depName: "react", instanceCount: 3, specifier: "^18.2.0" }]);
 
-            expect(diff).toContain("+  react: \"^18.2.0\"");
+            expect(diff).toContain('+  react: "^18.2.0"');
         });
 
         it("returns empty string for empty proposals", () => {

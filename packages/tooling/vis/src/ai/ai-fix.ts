@@ -183,7 +183,7 @@ const buildUserPrompt = (failureContext: FailureContext): string => {
     } else {
         lines.push(
             "Terminal output: <no failure log was captured for this task>",
-            "Set \"cannotFix\" and tell the user to re-run with `vis run` so logs can be captured.",
+            'Set "cannotFix" and tell the user to re-run with `vis run` so logs can be captured.',
         );
     }
 

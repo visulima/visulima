@@ -53,10 +53,7 @@ describe(discoverPackageJsonFiles, () => {
 
         const result = discoverPackageJsonFiles(cwd, []);
 
-        expect(result.files.map((f) => f.replace(`${cwd}/`, ""))).toStrictEqual([
-            "package.json",
-            "packages/foo/package.json",
-        ]);
+        expect(result.files.map((f) => f.replace(`${cwd}/`, ""))).toStrictEqual(["package.json", "packages/foo/package.json"]);
         expect(result.allFiles.length).toBeGreaterThan(result.files.length);
     });
 
@@ -64,19 +61,13 @@ describe(discoverPackageJsonFiles, () => {
         expect.assertions(1);
 
         writeJson("package.json", { name: "root" });
-        writeFile(
-            "pnpm-workspace.yaml",
-            "packages:\n  - 'packages/**'\n  - '!packages/foo/__fixtures__/**'\n",
-        );
+        writeFile("pnpm-workspace.yaml", "packages:\n  - 'packages/**'\n  - '!packages/foo/__fixtures__/**'\n");
         writeJson("packages/foo/package.json", { name: "foo" });
         writeJson("packages/foo/__fixtures__/sample/package.json", { name: "fixture" });
 
         const result = discoverPackageJsonFiles(cwd, []);
 
-        expect(result.files.map((f) => f.replace(`${cwd}/`, ""))).toStrictEqual([
-            "package.json",
-            "packages/foo/package.json",
-        ]);
+        expect(result.files.map((f) => f.replace(`${cwd}/`, ""))).toStrictEqual(["package.json", "packages/foo/package.json"]);
     });
 
     it("layers --ignore on top of gitignore + workspace exclusions", () => {
@@ -90,10 +81,7 @@ describe(discoverPackageJsonFiles, () => {
 
         const result = discoverPackageJsonFiles(cwd, ["**/skip-me/**"]);
 
-        expect(result.files.map((f) => f.replace(`${cwd}/`, ""))).toStrictEqual([
-            "package.json",
-            "packages/keep/package.json",
-        ]);
+        expect(result.files.map((f) => f.replace(`${cwd}/`, ""))).toStrictEqual(["package.json", "packages/keep/package.json"]);
     });
 
     it("honors !-exclusions from npm-style package.json#workspaces", () => {
@@ -108,9 +96,6 @@ describe(discoverPackageJsonFiles, () => {
 
         const result = discoverPackageJsonFiles(cwd, []);
 
-        expect(result.files.map((f) => f.replace(`${cwd}/`, ""))).toStrictEqual([
-            "package.json",
-            "packages/foo/package.json",
-        ]);
+        expect(result.files.map((f) => f.replace(`${cwd}/`, ""))).toStrictEqual(["package.json", "packages/foo/package.json"]);
     });
 });

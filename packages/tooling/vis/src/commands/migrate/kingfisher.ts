@@ -314,7 +314,12 @@ const hasKingfisherRef = (path: string): boolean => {
     }
 };
 
-const migrateKingfisher = (root: string, options: { dryRun: boolean; silent?: boolean; useEditorconfig?: boolean }, logger: MigrateLogger, report: MigrationReport): boolean => {
+const migrateKingfisher = (
+    root: string,
+    options: { dryRun: boolean; silent?: boolean; useEditorconfig?: boolean },
+    logger: MigrateLogger,
+    report: MigrationReport,
+): boolean => {
     const baselinePath = detectKingfisherBaseline(root);
     const rulesPath = detectKingfisherRules(root);
     const hasScriptsRef = hasKingfisherRef(join(root, "package.json"));

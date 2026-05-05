@@ -216,7 +216,7 @@ describe("custom-types", () => {
             expect(issues[0]?.depName).toBe("node");
         });
 
-        it("does not flag unparseable specifiers like `engines.node: \"*\"` as drift", () => {
+        it('does not flag unparseable specifiers like `engines.node: "*"` as drift', () => {
             expect.assertions(1);
 
             writeWorkspaceRoot();
@@ -430,7 +430,7 @@ describe("custom-types", () => {
             expect(lowest[0]?.fix).toBe("10.0.0-rc.1");
         });
 
-        it("normalises packageManager: \"yarn@4.0.0\" without a +sha512 hash", () => {
+        it('normalises packageManager: "yarn@4.0.0" without a +sha512 hash', () => {
             expect.assertions(1);
 
             writeWorkspaceRoot({ name: "root", packageManager: "yarn@4.0.0", workspaces: ["packages/*"] });
@@ -499,11 +499,21 @@ describe("custom-types", () => {
 
             writeWorkspaceRoot();
             writeJson("packages/a/package.json", {
-                devEngines: { runtime: [{ name: "node", version: "22.14.0" }, { name: "bun", version: "1.0.0" }] },
+                devEngines: {
+                    runtime: [
+                        { name: "node", version: "22.14.0" },
+                        { name: "bun", version: "1.0.0" },
+                    ],
+                },
                 name: "@my/a",
             });
             writeJson("packages/b/package.json", {
-                devEngines: { runtime: [{ name: "node", version: "22.14.0" }, { name: "bun", version: "1.1.0" }] },
+                devEngines: {
+                    runtime: [
+                        { name: "node", version: "22.14.0" },
+                        { name: "bun", version: "1.1.0" },
+                    ],
+                },
                 name: "@my/b",
             });
 
@@ -587,9 +597,7 @@ describe("custom-types", () => {
             writeWorkspaceRoot({ name: "root", pnpm: { overrides: { react: "18.2.0" } }, workspaces: ["packages/*"] });
             writeJson("packages/a/package.json", { name: "@my/a", pnpm: { overrides: { react: "18.0.0" } } });
 
-            const instances = iterateCustomTypeDeps(workspaceRoot, [
-                { name: "pnpmOverridesLegacy", path: "pnpm.overrides", strategy: "versionsByName" },
-            ]);
+            const instances = iterateCustomTypeDeps(workspaceRoot, [{ name: "pnpmOverridesLegacy", path: "pnpm.overrides", strategy: "versionsByName" }]);
 
             const reactInstances = instances.filter((instance) => instance.customType === "pnpmOverridesLegacy" && instance.depName === "react");
 
@@ -616,9 +624,7 @@ describe("custom-types", () => {
             writeWorkspaceRoot({ config: { minNode: "22.14.0" }, name: "root", workspaces: ["packages/*"] });
             writeJson("packages/a/package.json", { config: { minNode: "22.10.0" }, name: "@my/a" });
 
-            const instances = iterateCustomTypeDeps(workspaceRoot, [
-                { depName: "node", name: "minNode", path: "config.minNode", strategy: "string" },
-            ]);
+            const instances = iterateCustomTypeDeps(workspaceRoot, [{ depName: "node", name: "minNode", path: "config.minNode", strategy: "string" }]);
 
             expect(instances).toHaveLength(2);
             expect(instances.every((instance) => instance.depName === "node" && instance.customType === "minNode")).toBe(true);
@@ -630,9 +636,7 @@ describe("custom-types", () => {
             writeWorkspaceRoot();
             writeJson("packages/a/package.json", { name: "@my/a" });
 
-            const instances = iterateCustomTypeDeps(workspaceRoot, [
-                { name: "pnpmOverridesLegacy", path: "pnpm.overrides", strategy: "versionsByName" },
-            ]);
+            const instances = iterateCustomTypeDeps(workspaceRoot, [{ name: "pnpmOverridesLegacy", path: "pnpm.overrides", strategy: "versionsByName" }]);
 
             expect(instances).toStrictEqual([]);
         });

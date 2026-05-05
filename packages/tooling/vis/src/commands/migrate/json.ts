@@ -57,12 +57,7 @@ const detectJsonIndent = (filePath: string, content: string, options: EditJsonFi
  * Preserves the original indentation style. When `report` is provided, a
  * `.bak` snapshot is taken before the write.
  */
-const editJsonFile = <T>(
-    filePath: string,
-    mutator: (data: T) => T | undefined,
-    report?: MigrationReport,
-    options: EditJsonFileOptions = {},
-): boolean => {
+const editJsonFile = <T>(filePath: string, mutator: (data: T) => T | undefined, report?: MigrationReport, options: EditJsonFileOptions = {}): boolean => {
     if (!isAccessibleSync(filePath)) {
         return false;
     }

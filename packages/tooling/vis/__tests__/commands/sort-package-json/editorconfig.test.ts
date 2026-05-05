@@ -73,7 +73,7 @@ describe("sort-package-json .editorconfig integration", () => {
 
         const written = readFileSync(filePath, "utf8");
 
-        expect(written).toContain("\n    \"version\"");
+        expect(written).toContain('\n    "version"');
     });
 
     it("should skip .editorconfig discovery when editorconfig is disabled", () => {
@@ -95,7 +95,7 @@ describe("sort-package-json .editorconfig integration", () => {
         const written = readFileSync(filePath, "utf8");
 
         // Falls back to file detection — input is 2-space.
-        expect(written).toContain("\n  \"version\"");
+        expect(written).toContain('\n  "version"');
     });
 
     it("should let an explicit indent override beat .editorconfig", () => {
@@ -116,7 +116,7 @@ describe("sort-package-json .editorconfig integration", () => {
 
         const written = readFileSync(filePath, "utf8");
 
-        expect(written).toContain("\n\t\"version\"");
+        expect(written).toContain('\n\t"version"');
     });
 
     it("should derive tab indent from .editorconfig indent_style", () => {
@@ -133,7 +133,7 @@ describe("sort-package-json .editorconfig integration", () => {
 
         const written = readFileSync(filePath, "utf8");
 
-        expect(written).toContain("\n\t\"version\"");
+        expect(written).toContain('\n\t"version"');
     });
 
     it("should derive crlf line endings from .editorconfig end_of_line", () => {

@@ -97,7 +97,7 @@ describe("moon-templates", () => {
 
             migrateMoon(workspace, { copyTemplates: true, dryRun: false }, noopLogger, report);
 
-            expect(report.warnings.some((w) => w.includes("Template \"shared\" already exists"))).toBe(true);
+            expect(report.warnings.some((w) => w.includes('Template "shared" already exists'))).toBe(true);
             expect(readFileSync(join(target, "existing.ts"), "utf8")).toBe("// kept\n");
             expect(existsSync(join(target, "template.yml"))).toBe(false);
         });

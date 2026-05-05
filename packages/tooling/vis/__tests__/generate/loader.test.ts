@@ -47,7 +47,7 @@ describe(loadNativeTemplate, () => {
 
         const files = flatten(creation.files ?? {});
 
-        expect(files["packages/tooling/scoop/package.json"]).toContain("\"name\": \"scoop\"");
+        expect(files["packages/tooling/scoop/package.json"]).toContain('"name": "scoop"');
         expect(files["packages/tooling/scoop/src/index.ts"]).toBe("export {};\n");
         expect(creation.suggestions).toStrictEqual(["Run pnpm install"]);
     });

@@ -38,25 +38,19 @@ const FindingRow = ({ finding, isSelected }: FindingRowProps): React.JSX.Element
     return (
         <Box flexShrink={0} height={1}>
             <Text>{isSelected ? ">" : " "}</Text>
-            <Text color={sevColor}>
-{" "}
-{SEVERITY_GLYPH[finding.severity]}
-{" "}
-            </Text>
+            <Text color={sevColor}> {SEVERITY_GLYPH[finding.severity]} </Text>
             <Box flexGrow={1}>
                 <Text bold={isSelected} inverse={isSelected} wrap="truncate">
                     {finding.title}
                 </Text>
             </Box>
             {acked ? <Text color="cyan">{" ack"}</Text> : null}
-            {finding.subtitle
-                ? (
+            {finding.subtitle ? (
                 <Text dimColor wrap="truncate">
                     {" "}
                     {finding.subtitle}
                 </Text>
-                )
-                : null}
+            ) : null}
         </Box>
     );
 };
@@ -74,8 +68,7 @@ const SectionHeader = ({ count, section }: SectionHeaderProps): React.JSX.Elemen
         </Text>
         <Text dimColor>
             {" ("}
-            {count}
-)
+            {count})
         </Text>
     </Box>
 );
@@ -94,27 +87,22 @@ const TabLabel = ({ count, label, status }: TabLabelProps): React.JSX.Element =>
     return (
         <Text>
             {label}
-            {showSpinner
-                ? (
+            {showSpinner ? (
                 <Text>
                     {" "}
                     <Spinner type="dots" />
                 </Text>
-                )
-                : null}
-            {status === "error"
-                ? (
+            ) : null}
+            {status === "error" ? (
                 <Text bold color="red">
                     {" ✖"}
                 </Text>
-                )
-                : (
+            ) : (
                 <Text dimColor>
                     {" ("}
-                    {String(count)}
-)
+                    {String(count)})
                 </Text>
-                )}
+            )}
         </Text>
     );
 };
@@ -230,24 +218,19 @@ const DoctorListPanel = ({
                     {entries.length === 1 ? "" : "s"}
                     {summary}
                 </Text>
-                {severityFilter
-                    ? (
+                {severityFilter ? (
                     <Text bold color={SEVERITY_COLORS[severityFilter]} inverse>
                         {` ${severityFilter.toUpperCase()} ONLY `}
                     </Text>
-                    )
-                    : null}
-                {fromCache
-                    ? (
+                ) : null}
+                {fromCache ? (
                     <Text bold color="cyan" inverse>
                         {" CACHED "}
                     </Text>
-                    )
-                    : null}
+                ) : null}
                 <Text dimColor>
                     {" · "}
-                    {elapsedSeconds}
-s
+                    {elapsedSeconds}s
                 </Text>
             </Box>
 
@@ -279,9 +262,7 @@ s
                 return (
                     <Box flexShrink={0} paddingX={1}>
                         <Text dimColor wrap="truncate">
-                            <Spinner type="dots" />
-{" "}
-{running.join(" · ")}
+                            <Spinner type="dots" /> {running.join(" · ")}
                         </Text>
                     </Box>
                 );
@@ -300,15 +281,13 @@ s
             <Box flexDirection="row" flexGrow={1} key={`list-${filterType}-${filterText}`} overflow="hidden" ref={contentRowRef}>
                 <Box flexDirection="column" flexGrow={1} overflow="hidden" paddingLeft={1}>
                     <Box flexDirection="column" marginTop={-scrollOffset}>
-                        {rows.length > 0
-                            ? (
-                                rows
-                            )
-                            : (
+                        {rows.length > 0 ? (
+                            rows
+                        ) : (
                             <Box marginTop={1}>
                                 <Text dimColor>No findings match the current filter.</Text>
                             </Box>
-                            )}
+                        )}
                     </Box>
                 </Box>
                 {showScrollbar && (

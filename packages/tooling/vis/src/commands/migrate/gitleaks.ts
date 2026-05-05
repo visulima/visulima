@@ -326,7 +326,12 @@ const migrateIgnoreFile = (root: string, dryRun: boolean, logger: MigrateLogger,
     bumpPerMigration(report, "gitleaks", "rewrittenScriptCount", entries.length);
 };
 
-const migrateGitleaks = (root: string, options: { dryRun: boolean; silent?: boolean; useEditorconfig?: boolean }, logger: MigrateLogger, report: MigrationReport): boolean => {
+const migrateGitleaks = (
+    root: string,
+    options: { dryRun: boolean; silent?: boolean; useEditorconfig?: boolean },
+    logger: MigrateLogger,
+    report: MigrationReport,
+): boolean => {
     const configPath = detectGitleaksConfig(root);
     const ignorePath = detectGitleaksIgnore(root);
     const hasArtifacts = Boolean(configPath ?? ignorePath ?? detectGitleaksBaseline(root));

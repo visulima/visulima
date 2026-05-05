@@ -70,32 +70,21 @@ const App = ({ state, tick: _tick, verbose }: AppProps): ReactElement => (
             <Box flexDirection="column" key={pattern.id}>
                 <Box>
                     {iconForStatus(pattern.status)}
-                    <Text>
-{" "}
-{pattern.title}
-                    </Text>
+                    <Text> {pattern.title}</Text>
                 </Box>
                 {[...pattern.commands.values()].map((command) => (
                     <Box flexDirection="column" key={command.id} marginLeft={2}>
                         <Box>
                             {iconForStatus(command.status)}
-                            <Text>
-{" "}
-{command.title}
-{" "}
-                            </Text>
-                            {command.status !== "pending" && command.status !== "running"
-                                ? (
+                            <Text> {command.title} </Text>
+                            {command.status !== "pending" && command.status !== "running" ? (
                                 <Text color="gray">
-                                    (
-{command.durationMs}
+                                    ({command.durationMs}
                                     ms)
                                 </Text>
-                                )
-                                : null}
+                            ) : null}
                         </Box>
-                        {verbose && command.output
-                            ? (
+                        {verbose && command.output ? (
                             <Box flexDirection="column" marginLeft={2}>
                                 {command.output
                                     .split(/\r?\n/)
@@ -106,15 +95,12 @@ const App = ({ state, tick: _tick, verbose }: AppProps): ReactElement => (
                                         </Text>
                                     ))}
                             </Box>
-                            )
-                            : null}
-                        {command.status === "failed" && command.error
-                            ? (
+                        ) : null}
+                        {command.status === "failed" && command.error ? (
                             <Box marginLeft={2}>
                                 <Text color="red">{command.error.message}</Text>
                             </Box>
-                            )
-                            : null}
+                        ) : null}
                     </Box>
                 ))}
             </Box>
