@@ -95,9 +95,7 @@ const PackageDetailPanel = ({ changelogUrl, entry, focused, recommendation, scro
                     <Text>{entry.newRange}</Text>
                     <Text bold color={typeColor}>
                         {" "}
-                        (
-{entry.updateType}
-)
+                        ({entry.updateType})
                     </Text>
                 </Box>
                 <Box>
@@ -145,9 +143,7 @@ const PackageDetailPanel = ({ changelogUrl, entry, focused, recommendation, scro
                             <Box flexDirection="column" key={vuln.id} marginBottom={1}>
                                 <Box gap={1}>
                                     <Text bold color={SEVERITY_COLORS[vuln.severity] ?? "gray"}>
-                                        {"\u26A0"}
-{" "}
-{vuln.severity}
+                                        {"\u26A0"} {vuln.severity}
                                     </Text>
                                     <Text bold>{vuln.id}</Text>
                                 </Box>
@@ -185,47 +181,31 @@ const PackageDetailPanel = ({ changelogUrl, entry, focused, recommendation, scro
                             <Box>
                                 <Text dimColor>Overall: </Text>
                                 <Text bold color={socketScoreColor}>
-                                    {String(Math.round(socketScore * 100))}
-%
+                                    {String(Math.round(socketScore * 100))}%
                                 </Text>
                             </Box>
                             <Box>
                                 <Text dimColor>Supply Chain: </Text>
-                                <Text>
-{String(Math.round(entry.socketReport.score.supplyChain * 100))}
-%
-                                </Text>
+                                <Text>{String(Math.round(entry.socketReport.score.supplyChain * 100))}%</Text>
                             </Box>
                             <Box>
                                 <Text dimColor>Quality: </Text>
-                                <Text>
-{String(Math.round(entry.socketReport.score.quality * 100))}
-%
-                                </Text>
+                                <Text>{String(Math.round(entry.socketReport.score.quality * 100))}%</Text>
                             </Box>
                         </Box>
                         <Box gap={2}>
                             <Box>
                                 <Text dimColor>Maintenance: </Text>
-                                <Text>
-{String(Math.round(entry.socketReport.score.maintenance * 100))}
-%
-                                </Text>
+                                <Text>{String(Math.round(entry.socketReport.score.maintenance * 100))}%</Text>
                             </Box>
                             <Box>
                                 <Text dimColor>Vulnerability: </Text>
-                                <Text>
-{String(Math.round(entry.socketReport.score.vulnerability * 100))}
-%
-                                </Text>
+                                <Text>{String(Math.round(entry.socketReport.score.vulnerability * 100))}%</Text>
                             </Box>
                             <Box>
                                 <Text dimColor>License: </Text>
                                 <Text>
-                                    {entry.socketReport.license || "unknown"}
-{" "}
-(
-{String(Math.round(entry.socketReport.score.license * 100))}
+                                    {entry.socketReport.license || "unknown"} ({String(Math.round(entry.socketReport.score.license * 100))}
                                     %)
                                 </Text>
                             </Box>
@@ -233,27 +213,16 @@ const PackageDetailPanel = ({ changelogUrl, entry, focused, recommendation, scro
                         {entry.socketReport.alerts.length > 0 && (
                             <Box flexDirection="column" marginTop={1}>
                                 <Text bold color="yellow">
-                                    {"\u26A0"}
-{" "}
-{String(entry.socketReport.alerts.length)}
-{" "}
-alert
-{entry.socketReport.alerts.length === 1 ? "" : "s"}
-:
+                                    {"\u26A0"} {String(entry.socketReport.alerts.length)} alert
+                                    {entry.socketReport.alerts.length === 1 ? "" : "s"}:
                                 </Text>
                                 {entry.socketReport.alerts.map((alert) => (
                                     <Box gap={1} key={alert.key} paddingLeft={2}>
                                         <Text bold color={SOCKET_SEVERITY_COLORS[alert.severity] ?? "gray"}>
-                                            [
-{alert.severity.toUpperCase()}
-]
+                                            [{alert.severity.toUpperCase()}]
                                         </Text>
                                         <Text>{alert.type}</Text>
-                                        <Text dimColor>
-(
-{alert.category}
-)
-                                        </Text>
+                                        <Text dimColor>({alert.category})</Text>
                                     </Box>
                                 ))}
                             </Box>
@@ -300,9 +269,7 @@ alert
                                 {recommendation.breakingChanges.map((change, i) => (
                                     <Text key={String(i)}>
                                         {" "}
-                                        {"\u2022"}
-{" "}
-{change}
+                                        {"\u2022"} {change}
                                     </Text>
                                 ))}
                             </Box>
@@ -349,32 +316,20 @@ alert
                         <Box flexDirection="column" marginTop={1} paddingLeft={2}>
                             {entry.updateType === "major" && (
                                 <>
-                                    <Text color="red">
-{"\u26A0"}
-{" "}
-Major update — likely contains breaking changes.
-                                    </Text>
+                                    <Text color="red">{"\u26A0"} Major update — likely contains breaking changes.</Text>
                                     <Text dimColor> Review the changelog before updating.</Text>
                                     <Text dimColor> Use --changelog to fetch release URLs.</Text>
                                 </>
                             )}
                             {entry.updateType === "minor" && (
                                 <>
-                                    <Text color="yellow">
-{"\u2139"}
-{" "}
-Minor update — new features, backward compatible.
-                                    </Text>
+                                    <Text color="yellow">{"\u2139"} Minor update — new features, backward compatible.</Text>
                                     <Text dimColor> Generally safe to update.</Text>
                                 </>
                             )}
                             {entry.updateType === "patch" && (
                                 <>
-                                    <Text color="green">
-{"\u2713"}
-{" "}
-Patch update — bug fixes only.
-                                    </Text>
+                                    <Text color="green">{"\u2713"} Patch update — bug fixes only.</Text>
                                     <Text dimColor> Safe to update.</Text>
                                 </>
                             )}

@@ -60,7 +60,7 @@ describe(loadMoonTemplate, () => {
 
         expect(files["Button.tsx"]).toBeDefined();
         expect(files["Button.tsx"]).toContain("export const Button: React.FC<ButtonProps>");
-        expect(files["Button.tsx"]).toContain("className=\"primary\"");
+        expect(files["Button.tsx"]).toContain('className="primary"');
     });
 
     it("should include partial output via {% include %}", async () => {

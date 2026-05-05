@@ -16,12 +16,7 @@ const PreviewPanel = ({ focused, hadComments, jsonPreview, mode, scrollRef }: Pr
             <Text bold color={focused ? "cyan" : "white"}>
                 Preview
             </Text>
-            <Text dimColor>
-{" "}
-(
-{mode === "create" ? "new" : "edit"}
-)
-            </Text>
+            <Text dimColor> ({mode === "create" ? "new" : "edit"})</Text>
         </Box>
         {hadComments && mode === "edit" && (
             <Box flexShrink={0} paddingX={1}>

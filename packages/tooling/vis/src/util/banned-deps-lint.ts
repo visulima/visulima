@@ -12,16 +12,16 @@ import type { DepInstance, DepType } from "./workspace-deps";
  * rule applies everywhere — this is the default and preserves the
  * pre-scope behaviour.
  */
-export type BannedDepRule
-    = | string
-        | {
-        /** Glob list over the declaring package's `name` (e.g. `@app/*`). */
-            packages?: string[];
-            /** Glob list over `packageDir` (workspace-relative, e.g. `apps/*`). */
-            paths?: string[];
-            reason: string;
-            replacement?: string;
-        };
+export type BannedDepRule =
+    | string
+    | {
+          /** Glob list over the declaring package's `name` (e.g. `@app/*`). */
+          packages?: string[];
+          /** Glob list over `packageDir` (workspace-relative, e.g. `apps/*`). */
+          paths?: string[];
+          reason: string;
+          replacement?: string;
+      };
 
 /**
  * Workspace-level banned-deps policy block. Parsed from

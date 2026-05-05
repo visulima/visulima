@@ -128,10 +128,7 @@ describe("migrate-syncpack", () => {
         it("returns the embedded syncpack block", () => {
             expect.assertions(1);
 
-            writeFileSync(
-                join(tmpDir, "package.json"),
-                JSON.stringify({ syncpack: { customTypes: { foo: { path: "foo", strategy: "name@version" } } } }),
-            );
+            writeFileSync(join(tmpDir, "package.json"), JSON.stringify({ syncpack: { customTypes: { foo: { path: "foo", strategy: "name@version" } } } }));
 
             expect(extractSyncpackFromPackageJson(tmpDir)?.customTypes?.foo?.strategy).toBe("name@version");
         });
@@ -285,10 +282,7 @@ describe("migrate-syncpack", () => {
                     versionGroups: [{ packages: ["**"] }],
                 }),
             );
-            writeFileSync(
-                join(tmpDir, "package.json"),
-                JSON.stringify({ devDependencies: { syncpack: "^12.0.0" } }),
-            );
+            writeFileSync(join(tmpDir, "package.json"), JSON.stringify({ devDependencies: { syncpack: "^12.0.0" } }));
 
             const report = createMigrationReport();
             const ok = migrateSyncpack(tmpDir, { dryRun: true }, createMockLogger(), report);
@@ -363,10 +357,7 @@ describe("migrate-syncpack", () => {
         it("warns when sortPackages/formatBugs/formatRepository are present (superseded by sort-package-json)", () => {
             expect.assertions(1);
 
-            writeFileSync(
-                join(tmpDir, ".syncpackrc.json"),
-                JSON.stringify({ formatBugs: true, formatRepository: true, sortPackages: true }),
-            );
+            writeFileSync(join(tmpDir, ".syncpackrc.json"), JSON.stringify({ formatBugs: true, formatRepository: true, sortPackages: true }));
 
             const report = createMigrationReport();
 
@@ -378,10 +369,7 @@ describe("migrate-syncpack", () => {
         it("notes that lintFormatting/lintSemverRanges/lintVersions are covered by vis lint", () => {
             expect.assertions(1);
 
-            writeFileSync(
-                join(tmpDir, ".syncpackrc.json"),
-                JSON.stringify({ lintFormatting: false, lintSemverRanges: true, lintVersions: true }),
-            );
+            writeFileSync(join(tmpDir, ".syncpackrc.json"), JSON.stringify({ lintFormatting: false, lintSemverRanges: true, lintVersions: true }));
 
             const report = createMigrationReport();
 
@@ -393,10 +381,7 @@ describe("migrate-syncpack", () => {
         it("emits a manual step when source globs are configured", () => {
             expect.assertions(1);
 
-            writeFileSync(
-                join(tmpDir, ".syncpackrc.json"),
-                JSON.stringify({ source: ["packages/*", "apps/*"] }),
-            );
+            writeFileSync(join(tmpDir, ".syncpackrc.json"), JSON.stringify({ source: ["packages/*", "apps/*"] }));
 
             const report = createMigrationReport();
 
@@ -408,10 +393,7 @@ describe("migrate-syncpack", () => {
         it("warns when sortAz/sortFirst/sortExports are present (handled by sort-package-json)", () => {
             expect.assertions(1);
 
-            writeFileSync(
-                join(tmpDir, ".syncpackrc.json"),
-                JSON.stringify({ sortAz: ["dependencies"], sortFirst: ["name"] }),
-            );
+            writeFileSync(join(tmpDir, ".syncpackrc.json"), JSON.stringify({ sortAz: ["dependencies"], sortFirst: ["name"] }));
 
             const report = createMigrationReport();
 
@@ -594,9 +576,7 @@ describe("migrate-syncpack", () => {
             const report = createMigrationReport();
             const result = translateBannedDeps(
                 {
-                    versionGroups: [
-                        { dependencies: ["react", "react-dom"], isBanned: true, label: "no react in legacy app", packages: ["@app/legacy"] },
-                    ],
+                    versionGroups: [{ dependencies: ["react", "react-dom"], isBanned: true, label: "no react in legacy app", packages: ["@app/legacy"] }],
                 },
                 report,
             );
@@ -609,10 +589,7 @@ describe("migrate-syncpack", () => {
             expect.assertions(1);
 
             const report = createMigrationReport();
-            const result = translateBannedDeps(
-                { versionGroups: [{ dependencies: ["request"], isBanned: true, label: "deprecated" }] },
-                report,
-            );
+            const result = translateBannedDeps({ versionGroups: [{ dependencies: ["request"], isBanned: true, label: "deprecated" }] }, report);
 
             expect(result["request"]).toBe("deprecated");
         });
@@ -621,10 +598,7 @@ describe("migrate-syncpack", () => {
             expect.assertions(1);
 
             const report = createMigrationReport();
-            const result = translateBannedDeps(
-                { versionGroups: [{ dependencies: ["lodash.foo"], isBanned: true }] },
-                report,
-            );
+            const result = translateBannedDeps({ versionGroups: [{ dependencies: ["lodash.foo"], isBanned: true }] }, report);
 
             expect(result["lodash.foo"]).toBe("banned via syncpack versionGroups");
         });
@@ -633,10 +607,7 @@ describe("migrate-syncpack", () => {
             expect.assertions(2);
 
             const report = createMigrationReport();
-            const result = translateBannedDeps(
-                { versionGroups: [{ isBanned: true, label: "blanket ban" }] },
-                report,
-            );
+            const result = translateBannedDeps({ versionGroups: [{ isBanned: true, label: "blanket ban" }] }, report);
 
             expect(result).toStrictEqual({});
             expect(report.warnings.some((w) => w.includes("isBanned") && w.includes("dependencies"))).toBe(true);
@@ -658,7 +629,7 @@ describe("migrate-syncpack", () => {
 
             expect(result["request"]).toBe("first reason");
             expect(report.warnings.some((w) => w.includes("Multiple banned versionGroups"))).toBe(true);
-            expect(report.warnings.some((w) => w.includes("\"request\""))).toBe(true);
+            expect(report.warnings.some((w) => w.includes('"request"'))).toBe(true);
         });
     });
 
@@ -666,10 +637,7 @@ describe("migrate-syncpack", () => {
         it("emits policy.bannedDeps in the generated vis.config.ts and skips the manual step for that group", () => {
             expect.assertions(5);
 
-            writeFileSync(
-                join(tmpDir, "package.json"),
-                JSON.stringify({ devDependencies: { syncpack: "^12.0.0" } }),
-            );
+            writeFileSync(join(tmpDir, "package.json"), JSON.stringify({ devDependencies: { syncpack: "^12.0.0" } }));
             writeFileSync(
                 join(tmpDir, ".syncpackrc.json"),
                 JSON.stringify({
@@ -688,8 +656,8 @@ describe("migrate-syncpack", () => {
             const visConfig = readFileSync(join(tmpDir, "vis.config.ts"), "utf8");
 
             expect(visConfig).toContain("bannedDeps:");
-            expect(visConfig).toContain("\"react\": { reason: \"no react in legacy app\", packages: [\"@app/legacy\"] }");
-            expect(visConfig).toContain("\"react-dom\": { reason: \"no react in legacy app\", packages: [\"@app/legacy\"] }");
+            expect(visConfig).toContain('"react": { reason: "no react in legacy app", packages: ["@app/legacy"] }');
+            expect(visConfig).toContain('"react-dom": { reason: "no react in legacy app", packages: ["@app/legacy"] }');
             // The manual step still fires for the remaining (non-isBanned) versionGroup entry.
             expect(report.manualSteps.some((s) => s.includes("versionGroups"))).toBe(true);
             // But not for the isBanned half — that translation succeeded.
@@ -703,9 +671,7 @@ describe("migrate-syncpack", () => {
             writeFileSync(
                 join(tmpDir, ".syncpackrc.json"),
                 JSON.stringify({
-                    versionGroups: [
-                        { dependencies: ["request"], isBanned: true, label: "deprecated" },
-                    ],
+                    versionGroups: [{ dependencies: ["request"], isBanned: true, label: "deprecated" }],
                 }),
             );
 
@@ -715,7 +681,7 @@ describe("migrate-syncpack", () => {
 
             const visConfig = readFileSync(join(tmpDir, "vis.config.ts"), "utf8");
 
-            expect(visConfig).toContain("\"request\": \"deprecated\"");
+            expect(visConfig).toContain('"request": "deprecated"');
             expect(report.manualSteps.some((s) => s.includes("versionGroups"))).toBe(false);
         });
     });

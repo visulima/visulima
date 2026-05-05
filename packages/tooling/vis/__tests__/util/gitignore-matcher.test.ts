@@ -161,12 +161,10 @@ describe(extractWorkspaceExcludePatterns, () => {
     it("extracts !-prefixed entries with the leading ! stripped", () => {
         expect.assertions(1);
 
-        expect(extractWorkspaceExcludePatterns([
-            "packages/**",
-            "!packages/foo/__fixtures__/**",
-            "apps/*",
-            "!apps/legacy",
-        ])).toStrictEqual(["packages/foo/__fixtures__/**", "apps/legacy"]);
+        expect(extractWorkspaceExcludePatterns(["packages/**", "!packages/foo/__fixtures__/**", "apps/*", "!apps/legacy"])).toStrictEqual([
+            "packages/foo/__fixtures__/**",
+            "apps/legacy",
+        ]);
     });
 
     it("strips trailing slashes and skips empty bangs", () => {

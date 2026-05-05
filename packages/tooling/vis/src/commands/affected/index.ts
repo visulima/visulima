@@ -30,13 +30,13 @@ const affected: Command = {
         },
         {
             defaultValue: "deep",
-            description: "Downstream scope: \"none\", \"direct\", or \"deep\" — controls how far to include dependents of changed projects",
+            description: 'Downstream scope: "none", "direct", or "deep" — controls how far to include dependents of changed projects',
             name: "downstream",
             type: String,
         },
         {
             defaultValue: "none",
-            description: "Upstream scope: \"none\", \"direct\", or \"deep\" — controls how far to include dependencies of changed projects",
+            description: 'Upstream scope: "none", "direct", or "deep" — controls how far to include dependencies of changed projects',
             name: "upstream",
             type: String,
         },
@@ -59,7 +59,7 @@ const affected: Command = {
             type: Boolean,
         },
         {
-            description: "Partition tasks for distributed CI (e.g., \"1/4\" for first of four runners). Falls back to VIS_PARTITION env var.",
+            description: 'Partition tasks for distributed CI (e.g., "1/4" for first of four runners). Falls back to VIS_PARTITION env var.',
             name: "partition",
             type: String,
         },

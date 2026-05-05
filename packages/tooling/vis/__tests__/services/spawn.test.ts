@@ -29,7 +29,7 @@ describe(spawnDetached, () => {
         const logFile = join(temporaryDirectory, "test.log");
 
         const { pid } = await spawnDetached({
-            command: "node -e \"setInterval(()=>{}, 1000)\"",
+            command: 'node -e "setInterval(()=>{}, 1000)"',
             cwd: temporaryDirectory,
             env: {},
             logFile,

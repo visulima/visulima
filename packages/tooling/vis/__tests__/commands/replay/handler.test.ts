@@ -133,7 +133,7 @@ describe("commands/replay/handler", () => {
             await replayExecute(buildToolbox({ options: { run: "no-such-run" }, workspaceRoot }) as never);
 
             expect(process.exitCode).toBe(1);
-            expect(pailErrorSpy).toHaveBeenCalledWith(expect.stringContaining("\"no-such-run\""));
+            expect(pailErrorSpy).toHaveBeenCalledWith(expect.stringContaining('"no-such-run"'));
         });
     });
 

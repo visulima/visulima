@@ -37,7 +37,7 @@ export const parseCommandString = (input: string): string[] => {
             const next = input[i + 1];
 
             if (next !== undefined) {
-                if (inDouble && next !== "\"" && next !== "\\") {
+                if (inDouble && next !== '"' && next !== "\\") {
                     buffer += character;
                     buffer += next;
                 } else {
@@ -50,7 +50,7 @@ export const parseCommandString = (input: string): string[] => {
             }
         }
 
-        if (character === "\"" && !inSingle) {
+        if (character === '"' && !inSingle) {
             inDouble = !inDouble;
 
             continue;
@@ -207,8 +207,8 @@ export const execCommand = async (command: string, files: ReadonlyArray<string>,
             const reason = result.isCanceled
                 ? "Task aborted by earlier failure."
                 : result.isTerminated
-                    ? `Task killed by signal ${result.signal ?? "(unknown)"}.`
-                    : merged.trim() || `Task exited without a numeric status code.`;
+                  ? `Task killed by signal ${result.signal ?? "(unknown)"}.`
+                  : merged.trim() || `Task exited without a numeric status code.`;
 
             throw new TaskError(command, reason);
         }

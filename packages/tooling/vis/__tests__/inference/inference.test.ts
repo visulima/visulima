@@ -582,7 +582,7 @@ describe("inference", () => {
 
             expect(result.targets["lint"]?.command).toBe("eslint .");
             // stylelint deliberately uses lint:css so it can coexist.
-            expect(result.targets["lint:css"]?.command).toBe("stylelint \"**/*.{css,scss,sass,less,vue,svelte,astro}\"");
+            expect(result.targets["lint:css"]?.command).toBe('stylelint "**/*.{css,scss,sass,less,vue,svelte,astro}"');
         });
 
         it("should infer rollup build from rollup.config.ts", () => {
@@ -820,7 +820,7 @@ describe("inference", () => {
         it("should infer prisma db:* targets from prisma/schema.prisma", () => {
             expect.assertions(4);
 
-            writeFile("prisma/schema.prisma", "generator client {\n  provider = \"prisma-client-js\"\n}\n");
+            writeFile("prisma/schema.prisma", 'generator client {\n  provider = "prisma-client-js"\n}\n');
 
             const result = inferProjectTargets({
                 pkg: {},

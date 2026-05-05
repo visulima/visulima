@@ -255,7 +255,7 @@ describe("vis run — `${affected.files}` token expansion", () => {
         expect(readCapture(capturePath)).toStrictEqual(["${affected.files}"]);
     });
 
-    it("coexists with `affectedFiles: \"args\"` — token wins explicit position, mode appends to the end", async () => {
+    it('coexists with `affectedFiles: "args"` — token wins explicit position, mode appends to the end', async () => {
         expect.assertions(1);
 
         const captureScript = "require('fs').appendFileSync(process.env.CAPTURE, JSON.stringify(process.argv) + String.fromCharCode(10))";
@@ -283,15 +283,15 @@ describe("vis run — `${affected.files}` token expansion", () => {
         expect(readCapture(capturePath)).toStrictEqual(["--check", "src/a.ts", "--done", "packages/lib/src/a.ts"]);
     });
 
-    it("coexists with `affectedFiles: \"env\"` — token expands at position, env var still set", async () => {
+    it('coexists with `affectedFiles: "env"` — token expands at position, env var still set', async () => {
         expect.assertions(2);
 
         // env mode injects VIS_AFFECTED_FILES without appending args, so
         // the token is the only place file paths reach the spawned argv.
         // The capture script also dumps the env var so we can assert it
         // was forwarded — the two channels are independent.
-        const captureScript
-            = "require('fs').appendFileSync(process.env.CAPTURE, JSON.stringify({ argv: process.argv, env: process.env.VIS_AFFECTED_FILES || '' }) + String.fromCharCode(10))";
+        const captureScript =
+            "require('fs').appendFileSync(process.env.CAPTURE, JSON.stringify({ argv: process.argv, env: process.env.VIS_AFFECTED_FILES || '' }) + String.fromCharCode(10))";
 
         writeCaptureProject(workspaceRoot, "lib", `node -e "${captureScript}" -- \${affected.files}`, { affectedFiles: "env" });
 

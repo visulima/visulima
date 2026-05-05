@@ -145,8 +145,8 @@ export const cacheDoctorExecute = async ({ logger, options, visConfig }: Toolbox
 
     const backend = inferBackend(url, options.backend);
 
-    const result: ProbeResult
-        = backend === "reapi" ? await probeReapi({ ...(configRemoteCache ?? { url }), backend: "reapi", url }, timeoutMs) : await probeHttp(url, timeoutMs);
+    const result: ProbeResult =
+        backend === "reapi" ? await probeReapi({ ...(configRemoteCache ?? { url }), backend: "reapi", url }, timeoutMs) : await probeHttp(url, timeoutMs);
 
     if (format === "json") {
         logger.log(JSON.stringify(result, null, 2));

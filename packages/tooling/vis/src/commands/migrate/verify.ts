@@ -215,7 +215,12 @@ const scanCatalogs = (root: string): VerificationIssue[] => {
             const catalog = parsed["catalog"] as Record<string, string> | undefined;
 
             if (catalog && typeof catalog["syncpack"] === "string") {
-                issues.push({ detail: "`syncpack` still listed in pnpm-workspace.yaml#catalog", kind: "catalog", location: "pnpm-workspace.yaml", tool: "syncpack" });
+                issues.push({
+                    detail: "`syncpack` still listed in pnpm-workspace.yaml#catalog",
+                    kind: "catalog",
+                    location: "pnpm-workspace.yaml",
+                    tool: "syncpack",
+                });
             }
 
             const catalogs = parsed["catalogs"] as Record<string, Record<string, string>> | undefined;
@@ -223,7 +228,12 @@ const scanCatalogs = (root: string): VerificationIssue[] => {
             if (catalogs && typeof catalogs === "object") {
                 for (const [name, entries] of Object.entries(catalogs)) {
                     if (entries && typeof entries["syncpack"] === "string") {
-                        issues.push({ detail: `\`syncpack\` still listed in pnpm-workspace.yaml#catalogs.${name}`, kind: "catalog", location: "pnpm-workspace.yaml", tool: "syncpack" });
+                        issues.push({
+                            detail: `\`syncpack\` still listed in pnpm-workspace.yaml#catalogs.${name}`,
+                            kind: "catalog",
+                            location: "pnpm-workspace.yaml",
+                            tool: "syncpack",
+                        });
                     }
                 }
             }
@@ -247,7 +257,12 @@ const scanCatalogs = (root: string): VerificationIssue[] => {
             const catalog = workspaces["catalog"] as Record<string, string> | undefined;
 
             if (catalog && typeof catalog["syncpack"] === "string") {
-                issues.push({ detail: "`syncpack` still listed in package.json#workspaces.catalog", kind: "catalog", location: "package.json", tool: "syncpack" });
+                issues.push({
+                    detail: "`syncpack` still listed in package.json#workspaces.catalog",
+                    kind: "catalog",
+                    location: "package.json",
+                    tool: "syncpack",
+                });
             }
 
             const catalogs = workspaces["catalogs"] as Record<string, Record<string, string>> | undefined;
@@ -255,7 +270,12 @@ const scanCatalogs = (root: string): VerificationIssue[] => {
             if (catalogs && typeof catalogs === "object") {
                 for (const [name, entries] of Object.entries(catalogs)) {
                     if (entries && typeof entries["syncpack"] === "string") {
-                        issues.push({ detail: `\`syncpack\` still listed in package.json#workspaces.catalogs.${name}`, kind: "catalog", location: "package.json", tool: "syncpack" });
+                        issues.push({
+                            detail: `\`syncpack\` still listed in package.json#workspaces.catalogs.${name}`,
+                            kind: "catalog",
+                            location: "package.json",
+                            tool: "syncpack",
+                        });
                     }
                 }
             }
@@ -276,8 +296,13 @@ const scanCatalogs = (root: string): VerificationIssue[] => {
  * surface leftover migration references without going through the
  * verify command's logger.
  */
-export const scanMigrationLeftovers = (root: string): VerificationIssue[] =>
-    [...scanPackageJson(root), ...scanHooks(root), ...scanConfigs(root), ...scanCi(root), ...scanCatalogs(root)];
+export const scanMigrationLeftovers = (root: string): VerificationIssue[] => [
+    ...scanPackageJson(root),
+    ...scanHooks(root),
+    ...scanConfigs(root),
+    ...scanCi(root),
+    ...scanCatalogs(root),
+];
 
 /**
  * Check that a prior `vis migrate gitleaks` / `secretlint` / `syncpack` run was

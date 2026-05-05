@@ -106,15 +106,15 @@ interface CacheEntry {
 // ── Type guards ─────────────────────────────────────────────────────
 
 const isPackageReportData = (o: unknown): o is PackageReportData =>
-    typeof o === "object"
-    && o !== null
-    && "id" in o
-    && "type" in o
-    && "name" in o
-    && "version" in o
-    && "alerts" in o
-    && "score" in o
-    && (o as Record<string, unknown>).type === "npm";
+    typeof o === "object" &&
+    o !== null &&
+    "id" in o &&
+    "type" in o &&
+    "name" in o &&
+    "version" in o &&
+    "alerts" in o &&
+    "score" in o &&
+    (o as Record<string, unknown>).type === "npm";
 
 // ── Cache helpers (file-based, matching ai-cache.ts pattern) ────────
 
@@ -324,7 +324,8 @@ const parseNdjsonResponse = (text: string, batch: { name: string; version: strin
 // ── Name helpers ────────────────────────────────────────────────────
 
 /** Returns the full package name including namespace scope if present. */
-const getFullPackageName = (report: Pick<PackageReportData, "name" | "namespace">): string => (report.namespace ? `${report.namespace}/${report.name}` : report.name);
+const getFullPackageName = (report: Pick<PackageReportData, "name" | "namespace">): string =>
+    report.namespace ? `${report.namespace}/${report.name}` : report.name;
 
 // ── Display helpers ─────────────────────────────────────────────────
 

@@ -153,7 +153,7 @@ describe("vis lint --custom-types", () => {
         expect(after.engines.pnpm).toBe("9.0.0");
     });
 
-    it("treats policy.customTypes.autofix === \"prompt\" as report-only", async () => {
+    it('treats policy.customTypes.autofix === "prompt" as report-only', async () => {
         expect.assertions(3);
 
         writeWorkspaceRoot(workspaceRoot);
@@ -195,11 +195,11 @@ describe("vis lint --custom-types", () => {
         const writes: string[] = [];
         const originalWrite = process.stdout.write.bind(process.stdout);
 
-        (process.stdout.write as unknown) = ((chunk: string | Uint8Array): boolean => {
+        (process.stdout.write as unknown) = (chunk: string | Uint8Array): boolean => {
             writes.push(typeof chunk === "string" ? chunk : Buffer.from(chunk).toString("utf8"));
 
             return true;
-        });
+        };
 
         try {
             await callLint(workspaceRoot, { "custom-types": true, format: "json" });
@@ -231,11 +231,11 @@ describe("vis lint --custom-types", () => {
         const writes: string[] = [];
         const originalWrite = process.stdout.write.bind(process.stdout);
 
-        (process.stdout.write as unknown) = ((chunk: string | Uint8Array): boolean => {
+        (process.stdout.write as unknown) = (chunk: string | Uint8Array): boolean => {
             writes.push(typeof chunk === "string" ? chunk : Buffer.from(chunk).toString("utf8"));
 
             return true;
-        });
+        };
 
         try {
             await callLint(workspaceRoot, { "custom-types": true, format: "minimal" });
@@ -317,11 +317,11 @@ describe("vis lint --custom-types", () => {
         const writes: string[] = [];
         const originalWrite = process.stdout.write.bind(process.stdout);
 
-        (process.stdout.write as unknown) = ((chunk: string | Uint8Array): boolean => {
+        (process.stdout.write as unknown) = (chunk: string | Uint8Array): boolean => {
             writes.push(typeof chunk === "string" ? chunk : Buffer.from(chunk).toString("utf8"));
 
             return true;
-        });
+        };
 
         try {
             await callLint(workspaceRoot, { "custom-types": true, format: "json" });

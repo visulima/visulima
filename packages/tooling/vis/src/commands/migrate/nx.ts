@@ -39,7 +39,7 @@ const renderVisConfig = (nx: NxJson, workspaceRoot: string, useEditorconfig?: bo
         "// Per-project project.json files are compatible with vis and do not need to be rewritten —",
         "// vis already reads targets, tags, implicitDependencies, and sourceRoot.",
         "",
-        "import { defineConfig } from \"@visulima/vis/config\";",
+        'import { defineConfig } from "@visulima/vis/config";',
         "",
         `export default defineConfig(${serialised});`,
         "",
@@ -56,7 +56,12 @@ const renderVisConfig = (nx: NxJson, workspaceRoot: string, useEditorconfig?: bo
  * @param logger Logger for user feedback.
  * @param report Migration report to append manual steps and warnings.
  */
-export const migrateNx = (workspaceRoot: string, options: { dryRun?: boolean; useEditorconfig?: boolean }, logger: MigrateLogger, report: MigrationReport): void => {
+export const migrateNx = (
+    workspaceRoot: string,
+    options: { dryRun?: boolean; useEditorconfig?: boolean },
+    logger: MigrateLogger,
+    report: MigrationReport,
+): void => {
     const nx = readJsonConfig<NxJson>(workspaceRoot, "nx.json");
 
     if (!nx) {

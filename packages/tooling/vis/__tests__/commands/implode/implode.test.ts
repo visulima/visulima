@@ -20,7 +20,7 @@ describe("implode shell profile cleanup", () => {
 
         const profilePath = join(tmpDir, ".zshrc");
 
-        writeFileSync(profilePath, ["# normal line", "export PATH=\"$HOME/.vis/bin:$PATH\"", "# vis setup", "alias ls='ls -la'"].join("\n"));
+        writeFileSync(profilePath, ["# normal line", 'export PATH="$HOME/.vis/bin:$PATH"', "# vis setup", "alias ls='ls -la'"].join("\n"));
 
         const content = readFileSync(profilePath, "utf8");
         const lines = content.split("\n");

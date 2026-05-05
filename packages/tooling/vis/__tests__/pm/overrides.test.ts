@@ -317,7 +317,7 @@ describe("overrides", () => {
         it("should detect npm lockfile entries", () => {
             expect.assertions(2);
 
-            const lockText = "{ \"packages\": { \"node_modules/lodash\": { \"version\": \"4.17.21\" } } }";
+            const lockText = '{ "packages": { "node_modules/lodash": { "version": "4.17.21" } } }';
 
             expect(lockfileContainsPackage(`"lodash":`, "lodash", "npm")).toBe(true);
             expect(lockfileContainsPackage(lockText, "nonexistent", "npm")).toBe(false);
@@ -340,7 +340,7 @@ describe("overrides", () => {
         it("should detect bun lockfile entries (both formats)", () => {
             expect.assertions(2);
 
-            expect(lockfileContainsPackage("\"lodash\":", "lodash", "bun")).toBe(true);
+            expect(lockfileContainsPackage('"lodash":', "lodash", "bun")).toBe(true);
             expect(lockfileContainsPackage("chalk@5.0.0:", "chalk", "bun")).toBe(true);
         });
 
@@ -357,7 +357,7 @@ describe("overrides", () => {
         it("should read npm lockfile", () => {
             expect.assertions(1);
 
-            writeFileSync(join(tmpDir, "package-lock.json"), "{\"lockfileVersion\": 3}");
+            writeFileSync(join(tmpDir, "package-lock.json"), '{"lockfileVersion": 3}');
 
             const text = readLockfileText(tmpDir, "npm");
 
@@ -393,7 +393,7 @@ describe("overrides", () => {
         it("should try bun.lock first for bun", () => {
             expect.assertions(1);
 
-            writeFileSync(join(tmpDir, "bun.lock"), "{\"packages\":{}}");
+            writeFileSync(join(tmpDir, "bun.lock"), '{"packages":{}}');
 
             expect(readLockfileText(tmpDir, "bun")).toContain("packages");
         });

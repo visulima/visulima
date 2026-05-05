@@ -104,7 +104,7 @@ describe(renderTemplate, () => {
     it("should error with file:line on unsupported {% extends %}", () => {
         expect.assertions(1);
 
-        expect(() => renderTemplate("{% extends \"base\" %}", { filename: "tpl.tera", scope: {} })).toThrow(/extends.*not supported/);
+        expect(() => renderTemplate('{% extends "base" %}', { filename: "tpl.tera", scope: {} })).toThrow(/extends.*not supported/);
     });
 
     it("should error with file:line on unsupported {% macro %}", () => {
@@ -210,8 +210,8 @@ describe(renderTemplate, () => {
         expect.assertions(2);
 
         const partials = new Map([
-            ["a", parseTemplate("hello {% include \"b\" %}", "a")],
-            ["b", parseTemplate("world {% include \"a\" %}", "b")],
+            ["a", parseTemplate('hello {% include "b" %}', "a")],
+            ["b", parseTemplate('world {% include "a" %}', "b")],
         ]);
         const template = `{% include "a" %}`;
 

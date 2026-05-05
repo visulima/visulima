@@ -121,7 +121,7 @@ describe("json utilities", () => {
 
         const filePath = join(temporary.root, "test.json");
 
-        writeFileSync(filePath, "{\"key\": \"value\"}");
+        writeFileSync(filePath, '{"key": "value"}');
 
         expect(readJsonFile(filePath)).toStrictEqual({ key: "value" });
     });
@@ -137,7 +137,7 @@ describe("json utilities", () => {
 
         const filePath = join(temporary.root, "test.json");
 
-        writeFileSync(filePath, "{\"key\": \"value\"}");
+        writeFileSync(filePath, '{"key": "value"}');
 
         expect(isJsonFile(filePath)).toBe(true);
     });
@@ -163,7 +163,7 @@ describe("json utilities", () => {
 
         const filePath = join(temporary.root, "test.json");
 
-        writeFileSync(filePath, "{\"count\": 1}");
+        writeFileSync(filePath, '{"count": 1}');
 
         editJsonFile<{ count: number }>(filePath, (data) => {
             return { count: data.count + 1 };
@@ -179,7 +179,7 @@ describe("json utilities", () => {
 
         const filePath = join(temporary.root, "test.json");
 
-        writeFileSync(filePath, "{\"count\": 1}");
+        writeFileSync(filePath, '{"count": 1}');
 
         editJsonFile<{ count: number }>(filePath, () => undefined);
 
@@ -314,7 +314,7 @@ describe(hasUnsupportedLintStagedConfig, () => {
     it("should return false for JSON .lintstagedrc", () => {
         expect.assertions(1);
 
-        writeFileSync(join(temporary.root, ".lintstagedrc"), "{\"*.ts\": \"eslint\"}");
+        writeFileSync(join(temporary.root, ".lintstagedrc"), '{"*.ts": "eslint"}');
 
         expect(hasUnsupportedLintStagedConfig(temporary.root)).toBe(false);
     });
@@ -342,7 +342,7 @@ describe(hasStagedConfigInVisConfig, () => {
     it("should return true when vis.config.ts has staged", () => {
         expect.assertions(1);
 
-        writeFileSync(join(temporary.root, "vis.config.ts"), "export default defineConfig({ staged: { \"*.ts\": \"eslint\" } });");
+        writeFileSync(join(temporary.root, "vis.config.ts"), 'export default defineConfig({ staged: { "*.ts": "eslint" } });');
 
         expect(hasStagedConfigInVisConfig(temporary.root)).toBe(true);
     });
@@ -402,7 +402,7 @@ describe(generateStagedConfigSnippet, () => {
 
         const snippet = generateStagedConfigSnippet({ "*.ts": "eslint --fix" });
 
-        expect(snippet).toContain("\"*.ts\": \"eslint --fix\"");
+        expect(snippet).toContain('"*.ts": "eslint --fix"');
         expect(snippet).toContain("staged:");
     });
 
@@ -411,8 +411,8 @@ describe(generateStagedConfigSnippet, () => {
 
         const snippet = generateStagedConfigSnippet({ "*.css": ["prettier --write", "stylelint"] });
 
-        expect(snippet).toContain("\"prettier --write\"");
-        expect(snippet).toContain("\"stylelint\"");
+        expect(snippet).toContain('"prettier --write"');
+        expect(snippet).toContain('"stylelint"');
     });
 });
 
@@ -434,7 +434,7 @@ describe(insertStagedIntoVisConfig, () => {
 
         writeFileSync(
             join(temporary.root, "vis.config.ts"),
-            "import { defineConfig } from \"@visulima/vis/config\";\n\nexport default defineConfig({\n    update: {},\n});\n",
+            'import { defineConfig } from "@visulima/vis/config";\n\nexport default defineConfig({\n    update: {},\n});\n',
         );
 
         const logger = createLogger();
@@ -1028,14 +1028,14 @@ describe(migrateLintStaged, () => {
         expect.assertions(1);
 
         writeFileSync(join(temporary.root, "package.json"), JSON.stringify({ "lint-staged": { "*.ts": "eslint" } }));
-        writeFileSync(join(temporary.root, "vis.config.ts"), "export default defineConfig({ staged: { \"*.ts\": \"eslint\" } });");
+        writeFileSync(join(temporary.root, "vis.config.ts"), 'export default defineConfig({ staged: { "*.ts": "eslint" } });');
 
         const logger = createLogger();
         const report = createMigrationReport();
 
         migrateLintStaged(temporary.root, { dryRun: false }, logger, report);
 
-        expect(report.warnings).toContain("vis.config.ts already has a \"staged\" config — skipping lint-staged merge");
+        expect(report.warnings).toContain('vis.config.ts already has a "staged" config — skipping lint-staged merge');
     });
 
     it("should return false when no lint-staged found", () => {
@@ -1354,20 +1354,20 @@ describe(updatePnpmWorkspaceCatalog, () => {
     it("should add new entries to existing catalog", () => {
         expect.assertions(2);
 
-        writeFileSync(join(temporary.root, "pnpm-workspace.yaml"), "packages:\n  - packages/*\ncatalog:\n  eslint: \"^9.0.0\"\n");
+        writeFileSync(join(temporary.root, "pnpm-workspace.yaml"), 'packages:\n  - packages/*\ncatalog:\n  eslint: "^9.0.0"\n');
 
         updatePnpmWorkspaceCatalog(temporary.root, { prettier: "^3.0.0" });
 
         const content = readFileSync(join(temporary.root, "pnpm-workspace.yaml"), "utf8");
 
-        expect(content).toContain("prettier: \"^3.0.0\"");
-        expect(content).toContain("eslint: \"^9.0.0\"");
+        expect(content).toContain('prettier: "^3.0.0"');
+        expect(content).toContain('eslint: "^9.0.0"');
     });
 
     it("should not duplicate existing catalog entries", () => {
         expect.assertions(1);
 
-        writeFileSync(join(temporary.root, "pnpm-workspace.yaml"), "packages:\n  - packages/*\ncatalog:\n  eslint: \"^9.0.0\"\n");
+        writeFileSync(join(temporary.root, "pnpm-workspace.yaml"), 'packages:\n  - packages/*\ncatalog:\n  eslint: "^9.0.0"\n');
 
         updatePnpmWorkspaceCatalog(temporary.root, { eslint: "^10.0.0" });
 
@@ -1388,7 +1388,7 @@ describe(updatePnpmWorkspaceCatalog, () => {
     it("should do nothing when overrides is empty", () => {
         expect.assertions(1);
 
-        const original = "packages:\n  - packages/*\ncatalog:\n  eslint: \"^9.0.0\"\n";
+        const original = 'packages:\n  - packages/*\ncatalog:\n  eslint: "^9.0.0"\n';
 
         writeFileSync(join(temporary.root, "pnpm-workspace.yaml"), original);
 
@@ -1406,7 +1406,7 @@ describe(updatePnpmWorkspaceCatalog, () => {
 
         const content = readFileSync(join(temporary.root, "pnpm-workspace.yaml"), "utf8");
 
-        expect(content).toContain("newpkg: \"^1.0.0\"");
+        expect(content).toContain('newpkg: "^1.0.0"');
     });
 });
 
@@ -1482,7 +1482,7 @@ describe(migrateDeps, () => {
         expect.assertions(1);
 
         writeFileSync(join(temporary.root, "package.json"), JSON.stringify({}, undefined, 4));
-        writeFileSync(join(temporary.root, "pnpm-workspace.yaml"), "packages:\n  - packages/*\ncatalog:\n  eslint: \"^9.0.0\"\n");
+        writeFileSync(join(temporary.root, "pnpm-workspace.yaml"), 'packages:\n  - packages/*\ncatalog:\n  eslint: "^9.0.0"\n');
 
         const logger = createLogger();
         const report = createMigrationReport();
@@ -1491,7 +1491,7 @@ describe(migrateDeps, () => {
 
         const content = readFileSync(join(temporary.root, "pnpm-workspace.yaml"), "utf8");
 
-        expect(content).toContain("newpkg: \"^1.0.0\"");
+        expect(content).toContain('newpkg: "^1.0.0"');
     });
 });
 
@@ -1561,7 +1561,7 @@ describe("migrateLintStaged edge cases", () => {
                 4,
             ),
         );
-        writeFileSync(join(temporary.root, "vis.config.ts"), "export default defineConfig({ staged: { \"*.ts\": \"eslint\" } });");
+        writeFileSync(join(temporary.root, "vis.config.ts"), 'export default defineConfig({ staged: { "*.ts": "eslint" } });');
 
         const logger = createLogger();
         const report = createMigrationReport();
@@ -1587,7 +1587,7 @@ describe("migrateLintStaged edge cases", () => {
                 4,
             ),
         );
-        writeFileSync(join(temporary.root, "vis.config.ts"), "export default defineConfig({ staged: { \"*.ts\": \"eslint\" } });");
+        writeFileSync(join(temporary.root, "vis.config.ts"), 'export default defineConfig({ staged: { "*.ts": "eslint" } });');
 
         const logger = createLogger();
         const report = createMigrationReport();

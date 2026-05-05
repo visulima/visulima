@@ -36,57 +36,57 @@ Sources:
 
 ### 1.3 Top-level config keys (`.syncpackrc.json`)
 
-| Key                     | Effect                                                                          |
-| ----------------------- | ------------------------------------------------------------------------------- |
-| `source`                | Globs of package.json files to discover.                                        |
-| `indent`                | JSON indentation (number / string).                                             |
-| `sortAz`                | List of fields sorted alphabetically by key.                                    |
-| `sortFirst`             | Fields hoisted above the alphabetised block.                                    |
-| `sortPackages`          | Sort top-level package.json fields (canonical schema).                          |
-| `sortExports`           | Sort the `exports` map (conditional-export ordering rules).                     |
-| `formatBugs`            | Collapse `bugs: { url: "..." }` to a string when only `url` is set.             |
-| `formatRepository`      | Collapse `repository: { type, url }` to GitHub shorthand `"user/repo"`.         |
-| `strict`                | Treat hint-level findings as errors.                                            |
-| `maxConcurrentRequests` | Cap concurrent npm registry requests.                                           |
-| `minimumReleaseAge`     | Skip versions published more recently than threshold (supply-chain mitigation). |
-| `dependencyGroups`      | Cluster deps for treat-as-one semantics.                                        |
-| `customTypes`           | Make non-dep package.json fields participate (e.g. `engines`, `packageManager`).|
-| `versionGroups`         | Multi-policy version constraints (see 1.4).                                     |
-| `semverGroups`          | Range-style policies (see 1.5).                                                 |
+| Key                     | Effect                                                                           |
+| ----------------------- | -------------------------------------------------------------------------------- |
+| `source`                | Globs of package.json files to discover.                                         |
+| `indent`                | JSON indentation (number / string).                                              |
+| `sortAz`                | List of fields sorted alphabetically by key.                                     |
+| `sortFirst`             | Fields hoisted above the alphabetised block.                                     |
+| `sortPackages`          | Sort top-level package.json fields (canonical schema).                           |
+| `sortExports`           | Sort the `exports` map (conditional-export ordering rules).                      |
+| `formatBugs`            | Collapse `bugs: { url: "..." }` to a string when only `url` is set.              |
+| `formatRepository`      | Collapse `repository: { type, url }` to GitHub shorthand `"user/repo"`.          |
+| `strict`                | Treat hint-level findings as errors.                                             |
+| `maxConcurrentRequests` | Cap concurrent npm registry requests.                                            |
+| `minimumReleaseAge`     | Skip versions published more recently than threshold (supply-chain mitigation).  |
+| `dependencyGroups`      | Cluster deps for treat-as-one semantics.                                         |
+| `customTypes`           | Make non-dep package.json fields participate (e.g. `engines`, `packageManager`). |
+| `versionGroups`         | Multi-policy version constraints (see 1.4).                                      |
+| `semverGroups`          | Range-style policies (see 1.5).                                                  |
 
 ### 1.4 Version-group types (selector field in **bold**)
 
-| Type             | Selector              | Behaviour                                                                                                                     |
-| ---------------- | --------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| Highest semver   | (default)             | Pin every instance to the highest semver across the workspace.                                                                |
-| Lowest semver    | **`isLowestSemver`**  | Pin every instance to the lowest semver across the workspace (used for "do not exceed" floors).                               |
-| Same range       | **`isSameRange`**     | Every instance must use a range that overlaps every other; rejects strict-pin in one place and `^` in another.                |
-| Same minor       | **`isSameMinor`**     | All instances must agree on `MAJOR.MINOR`; patch may drift.                                                                   |
-| Pinned           | **`pinVersion`**      | Force a literal version (e.g. `pinVersion: "18.2.0"`).                                                                        |
-| Banned           | **`isBanned`**        | Reject the dep entirely in matched scopes; `fix` removes it.                                                                  |
-| Snapped to       | **`snapTo: [pkgs]`**  | Mirror whatever version the named source-of-truth packages declare.                                                           |
-| Catalog          | **`isCatalog`**       | Migrate matched deps into pnpm/bun catalogs and rewrite specifiers to `catalog:` / `catalog:<name>`.                          |
-| Ignored          | **`isIgnored`**       | Excluded from any check.                                                                                                      |
+| Type           | Selector             | Behaviour                                                                                                      |
+| -------------- | -------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Highest semver | (default)            | Pin every instance to the highest semver across the workspace.                                                 |
+| Lowest semver  | **`isLowestSemver`** | Pin every instance to the lowest semver across the workspace (used for "do not exceed" floors).                |
+| Same range     | **`isSameRange`**    | Every instance must use a range that overlaps every other; rejects strict-pin in one place and `^` in another. |
+| Same minor     | **`isSameMinor`**    | All instances must agree on `MAJOR.MINOR`; patch may drift.                                                    |
+| Pinned         | **`pinVersion`**     | Force a literal version (e.g. `pinVersion: "18.2.0"`).                                                         |
+| Banned         | **`isBanned`**       | Reject the dep entirely in matched scopes; `fix` removes it.                                                   |
+| Snapped to     | **`snapTo: [pkgs]`** | Mirror whatever version the named source-of-truth packages declare.                                            |
+| Catalog        | **`isCatalog`**      | Migrate matched deps into pnpm/bun catalogs and rewrite specifiers to `catalog:` / `catalog:<name>`.           |
+| Ignored        | **`isIgnored`**      | Excluded from any check.                                                                                       |
 
 Common fields on every group: `dependencies`, `dependencyTypes`, `specifierTypes`, `packages`, `label`. First-match wins; declaration order matters.
 
 ### 1.5 Semver-group types
 
-| Type         | Selector       | Behaviour                                                                                                          |
-| ------------ | -------------- | ------------------------------------------------------------------------------------------------------------------ |
-| With range   | **`range`**    | Force a range character: `""` (exact), `"~"`, `"^"`, `">="`, `"<="`, `">"`, `"<"`, `"*"`. `fix` rewrites in place. |
-| Ignored      | **`isIgnored`**| Excluded from range enforcement.                                                                                   |
+| Type       | Selector        | Behaviour                                                                                                          |
+| ---------- | --------------- | ------------------------------------------------------------------------------------------------------------------ |
+| With range | **`range`**     | Force a range character: `""` (exact), `"~"`, `"^"`, `">="`, `"<="`, `">"`, `"<"`, `"*"`. `fix` rewrites in place. |
+| Ignored    | **`isIgnored`** | Excluded from range enforcement.                                                                                   |
 
 ### 1.6 Custom types (the `engines: node` story)
 
 Four strategies extend syncpack to package.json fields outside `dependencies`/`devDependencies`/`peerDependencies`/`optionalDependencies`:
 
-| Strategy        | Schema                          | Example                                                            |
-| --------------- | ------------------------------- | ------------------------------------------------------------------ |
-| `name@version`  | `{ path }` to a string          | `"packageManager": "pnpm@9.0.0"`                                   |
-| `name~version`  | `{ namePath, path }` to strings | `devEngines.runtime.{name,version}`                                |
-| `version`       | `{ path }`                      | `engines.node: "22.11.0"` — the JSON key is the implicit dep name. |
-| `versionsByName`| `{ path }` to an object         | A custom map identical in shape to `dependencies`.                 |
+| Strategy         | Schema                          | Example                                                            |
+| ---------------- | ------------------------------- | ------------------------------------------------------------------ |
+| `name@version`   | `{ path }` to a string          | `"packageManager": "pnpm@9.0.0"`                                   |
+| `name~version`   | `{ namePath, path }` to strings | `devEngines.runtime.{name,version}`                                |
+| `version`        | `{ path }`                      | `engines.node: "22.11.0"` — the JSON key is the implicit dep name. |
+| `versionsByName` | `{ path }` to an object         | A custom map identical in shape to `dependencies`.                 |
 
 Once registered, custom types appear in `--dependency-types` and in version/semver groups.
 
@@ -94,22 +94,22 @@ Once registered, custom types appear in `--dependency-types` and in version/semv
 
 ## Section 2 — vis surface (what already ships)
 
-| Capability                                  | Where it lives                                                                                                  | Notes                                                                                                                |
-| ------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| Outdated check                              | `vis check`, `src/util/catalog.ts:checkOutdated`                                                                | Catalog-aware; pnpm/bun/npm; `--target latest|minor|patch`; `--include`/`--exclude`; AI analysis behind `--ai`.        |
-| Outdated update                             | `vis update`, `src/util/catalog.ts:applyCatalogUpdates`, `src/commands/update/handler.ts`                       | Catalog mode + PM-native fallback; preserves range character; rollback flag.                                          |
-| Audit / vulnerabilities                     | `vis audit`, `src/security/dependency-scan.ts`                                                                  | OSV.dev + Socket.dev; severity gating; `--sync` writes accepted-risk decisions back to pnpm-workspace.yaml.           |
-| Doctor (multi-scan)                         | `vis doctor`, `src/commands/doctor/handler.ts`                                                                  | Outdated / security / optimization / runtime / duplicates fan-out. `--fix` autoremediation.                          |
-| Lockfile-duplicate detection                | `findDuplicateDependencies` at `src/security/dependency-scan.ts:92`                                             | Reads PM lockfile, reports packages with `>1` resolved version. **Detection only — no autofix policy.**              |
-| `add` with auto-conform to catalog/sibling  | `vis add --to <pkg>`, `src/util/conform-to-catalog.ts:131`                                                      | First catalog hit wins, else most-frequent sibling range. Single-shot at install time, not enforced after.            |
-| Catalog as version-group substitute         | pnpm/bun catalogs, also npm `workspaces.catalog`                                                                | The only declarative pin vis understands; one entry pins many dependents.                                             |
-| Minimum release age                         | `src/util/catalog.ts:1072` (`isTooNew`); `src/commands/update/handler.ts:48` (`readPmNativeMinimumReleaseAge`)  | Reads from `vis.config.yml#update.minimumReleaseAge`, falls back to pnpm-workspace.yaml or package.json. Excludes via `minimumReleaseAgeExclude`. |
-| Typosquat + Socket.dev gating on `add`      | `src/security/typosquats.ts`, `src/security/socket-security.ts`                                                 | Refuses or prompts based on Socket score / typo distance.                                                             |
-| `sort-package-json`                         | `vis sort-package-json`, native Rust binding via `#native`; handler at `src/commands/sort-package-json/handler.ts` | Field order, `--unsorted`, `--sort-order`, indent + line-ending detection. **No `formatBugs`/`formatRepository` shorthand collapse.** |
-| `sync codeowners`                           | `vis sync codeowners`, `src/commands/sync/handler.ts`                                                            | The `sync` namespace exists but currently has exactly one kind. Anything else returns `Unknown sync kind`.            |
-| `dedupe`                                    | `vis dedupe`, delegates to PM                                                                                    | No vis-side policy.                                                                                                   |
-| `outdated` / `info`                         | Thin wrappers around `pnpm outdated` / `pnpm view`                                                               | Pass-through.                                                                                                         |
-| `blockExoticSubdeps`                        | `src/config/types.ts:528`                                                                                        | Refuses git/tarball URLs in transitive deps. **Not a per-name banlist.**                                              |
+| Capability                                 | Where it lives                                                                                                     | Notes                                                                                                                                             |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- | ----- | ----------------------------------------------------------- |
+| Outdated check                             | `vis check`, `src/util/catalog.ts:checkOutdated`                                                                   | Catalog-aware; pnpm/bun/npm; `--target latest                                                                                                     | minor | patch`; `--include`/`--exclude`; AI analysis behind `--ai`. |
+| Outdated update                            | `vis update`, `src/util/catalog.ts:applyCatalogUpdates`, `src/commands/update/handler.ts`                          | Catalog mode + PM-native fallback; preserves range character; rollback flag.                                                                      |
+| Audit / vulnerabilities                    | `vis audit`, `src/security/dependency-scan.ts`                                                                     | OSV.dev + Socket.dev; severity gating; `--sync` writes accepted-risk decisions back to pnpm-workspace.yaml.                                       |
+| Doctor (multi-scan)                        | `vis doctor`, `src/commands/doctor/handler.ts`                                                                     | Outdated / security / optimization / runtime / duplicates fan-out. `--fix` autoremediation.                                                       |
+| Lockfile-duplicate detection               | `findDuplicateDependencies` at `src/security/dependency-scan.ts:92`                                                | Reads PM lockfile, reports packages with `>1` resolved version. **Detection only — no autofix policy.**                                           |
+| `add` with auto-conform to catalog/sibling | `vis add --to <pkg>`, `src/util/conform-to-catalog.ts:131`                                                         | First catalog hit wins, else most-frequent sibling range. Single-shot at install time, not enforced after.                                        |
+| Catalog as version-group substitute        | pnpm/bun catalogs, also npm `workspaces.catalog`                                                                   | The only declarative pin vis understands; one entry pins many dependents.                                                                         |
+| Minimum release age                        | `src/util/catalog.ts:1072` (`isTooNew`); `src/commands/update/handler.ts:48` (`readPmNativeMinimumReleaseAge`)     | Reads from `vis.config.yml#update.minimumReleaseAge`, falls back to pnpm-workspace.yaml or package.json. Excludes via `minimumReleaseAgeExclude`. |
+| Typosquat + Socket.dev gating on `add`     | `src/security/typosquats.ts`, `src/security/socket-security.ts`                                                    | Refuses or prompts based on Socket score / typo distance.                                                                                         |
+| `sort-package-json`                        | `vis sort-package-json`, native Rust binding via `#native`; handler at `src/commands/sort-package-json/handler.ts` | Field order, `--unsorted`, `--sort-order`, indent + line-ending detection. **No `formatBugs`/`formatRepository` shorthand collapse.**             |
+| `sync codeowners`                          | `vis sync codeowners`, `src/commands/sync/handler.ts`                                                              | The `sync` namespace exists but currently has exactly one kind. Anything else returns `Unknown sync kind`.                                        |
+| `dedupe`                                   | `vis dedupe`, delegates to PM                                                                                      | No vis-side policy.                                                                                                                               |
+| `outdated` / `info`                        | Thin wrappers around `pnpm outdated` / `pnpm view`                                                                 | Pass-through.                                                                                                                                     |
+| `blockExoticSubdeps`                       | `src/config/types.ts:528`                                                                                          | Refuses git/tarball URLs in transitive deps. **Not a per-name banlist.**                                                                          |
 
 ### 2.1 Concepts that are **absent**
 
@@ -129,30 +129,30 @@ Verified by `grep -rn "versionGroup\|semverGroup\|isPinned\|isBanned\|snappedTo"
 
 Legend: ✓ shipped · ~ partial · — absent
 
-| Capability                                         | syncpack | vis | Notes                                                                                                                                                 |
-| -------------------------------------------------- | -------- | --- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Detect "same dep, different version" across pkgs   | ✓ lint   | ~   | `vis doctor` reports it from lockfile, but only at install-time. Not lintable from package.json source-of-truth, no fix path beyond `dedupe`.         |
-| Force a specific range char by scope (`^`, `~`, `=`) | ✓ semverGroups | — | The whole "exact in deps, ^ in devDeps" idiom is unexpressible in vis.                                                                                |
-| Pin a literal version across workspace             | ~        | ~   | Both can pin via catalog; syncpack also has `pinVersion` outside catalogs.                                                                            |
-| Ban a dep by name                                  | ✓        | —   | vis can `--exclude` from reports; cannot reject install or fail CI.                                                                                   |
-| Snap-to source-of-truth package                    | ✓        | —   | "Whatever app/foo declares, every other package must match." vis has no equivalent.                                                                   |
-| Highest / lowest semver auto-converge              | ✓        | —   | `conformToCatalog` picks "first catalog else most-frequent sibling" — neither highest nor lowest, and only at `add` time.                             |
-| Catalog migration (auto-promote dep into catalog)  | ✓ via versionGroup `isCatalog` | ~ | vis honours catalogs once they exist, doesn't migrate matching deps in.                                                                               |
-| Custom types (engines, packageManager, devEngines) | ✓        | —   | None of these participate in vis consistency checks today.                                                                                            |
-| package.json field-order format                    | ✓        | ✓   | `vis sort-package-json` — Rust-native; comparable.                                                                                                    |
-| `formatBugs` / `formatRepository` shorthand        | ✓        | —   | Absent.                                                                                                                                               |
-| Sort `exports` map                                 | ✓        | —   | sort-package-json doesn't reorder `exports` conditional keys.                                                                                         |
-| Outdated bump with range preservation              | ✓        | ✓   | Parity.                                                                                                                                               |
-| `--target latest|minor|patch`                      | ✓        | ✓   | Parity.                                                                                                                                               |
-| pnpm/bun catalog awareness                         | ✓        | ✓   | Parity. vis is more catalog-native (catalog-first rather than catalog-as-an-afterthought).                                                            |
-| Minimum release age                                | ✓        | ✓   | Parity, plus vis cross-reads pnpm-workspace.yaml + bun config.                                                                                        |
-| Audit / vulnerabilities / supply chain             | —        | ✓   | vis is ahead — OSV + Socket + typosquat + accept-risk workflow.                                                                                       |
-| AI / fix-on-failure                                | —        | ✓   | vis is ahead — `vis ai heal` for failing tasks; arguably extensible to lint findings.                                                                 |
-| `vis add --to <pkg>` (syncpack#285)                | —        | ✓   | vis is ahead — already absorbed.                                                                                                                      |
-| Streaming `json` per-instance NDJSON               | ✓        | —   | `vis check --format=json` is a single object, not per-instance NDJSON.                                                                                |
-| `list --show instances/hints/statuses`             | ✓        | —   | Different model entirely; vis lists projects/targets, not dep instances.                                                                              |
+| Capability                                           | syncpack                       | vis    | Notes                                                                                                                                         |
+| ---------------------------------------------------- | ------------------------------ | ------ | --------------------------------------------------------------------------------------------------------------------------------------------- | --- | ------- |
+| Detect "same dep, different version" across pkgs     | ✓ lint                         | ~      | `vis doctor` reports it from lockfile, but only at install-time. Not lintable from package.json source-of-truth, no fix path beyond `dedupe`. |
+| Force a specific range char by scope (`^`, `~`, `=`) | ✓ semverGroups                 | —      | The whole "exact in deps, ^ in devDeps" idiom is unexpressible in vis.                                                                        |
+| Pin a literal version across workspace               | ~                              | ~      | Both can pin via catalog; syncpack also has `pinVersion` outside catalogs.                                                                    |
+| Ban a dep by name                                    | ✓                              | —      | vis can `--exclude` from reports; cannot reject install or fail CI.                                                                           |
+| Snap-to source-of-truth package                      | ✓                              | —      | "Whatever app/foo declares, every other package must match." vis has no equivalent.                                                           |
+| Highest / lowest semver auto-converge                | ✓                              | —      | `conformToCatalog` picks "first catalog else most-frequent sibling" — neither highest nor lowest, and only at `add` time.                     |
+| Catalog migration (auto-promote dep into catalog)    | ✓ via versionGroup `isCatalog` | ~      | vis honours catalogs once they exist, doesn't migrate matching deps in.                                                                       |
+| Custom types (engines, packageManager, devEngines)   | ✓                              | —      | None of these participate in vis consistency checks today.                                                                                    |
+| package.json field-order format                      | ✓                              | ✓      | `vis sort-package-json` — Rust-native; comparable.                                                                                            |
+| `formatBugs` / `formatRepository` shorthand          | ✓                              | —      | Absent.                                                                                                                                       |
+| Sort `exports` map                                   | ✓                              | —      | sort-package-json doesn't reorder `exports` conditional keys.                                                                                 |
+| Outdated bump with range preservation                | ✓                              | ✓      | Parity.                                                                                                                                       |
+| `--target latest                                     | minor                          | patch` | ✓                                                                                                                                             | ✓   | Parity. |
+| pnpm/bun catalog awareness                           | ✓                              | ✓      | Parity. vis is more catalog-native (catalog-first rather than catalog-as-an-afterthought).                                                    |
+| Minimum release age                                  | ✓                              | ✓      | Parity, plus vis cross-reads pnpm-workspace.yaml + bun config.                                                                                |
+| Audit / vulnerabilities / supply chain               | —                              | ✓      | vis is ahead — OSV + Socket + typosquat + accept-risk workflow.                                                                               |
+| AI / fix-on-failure                                  | —                              | ✓      | vis is ahead — `vis ai heal` for failing tasks; arguably extensible to lint findings.                                                         |
+| `vis add --to <pkg>` (syncpack#285)                  | —                              | ✓      | vis is ahead — already absorbed.                                                                                                              |
+| Streaming `json` per-instance NDJSON                 | ✓                              | —      | `vis check --format=json` is a single object, not per-instance NDJSON.                                                                        |
+| `list --show instances/hints/statuses`               | ✓                              | —      | Different model entirely; vis lists projects/targets, not dep instances.                                                                      |
 
-**Net:** syncpack is ahead on declarative *policy* (groups, custom types, range enforcement); vis is ahead on *security* (audit, Socket, typosquats), AI, catalog-native UX, supply-chain freshness gating. Roughly orthogonal.
+**Net:** syncpack is ahead on declarative _policy_ (groups, custom types, range enforcement); vis is ahead on _security_ (audit, Socket, typosquats), AI, catalog-native UX, supply-chain freshness gating. Roughly orthogonal.
 
 ---
 
@@ -266,15 +266,15 @@ When most siblings already use `catalog:` for a dep, rewrite the holdouts. When 
 
 ### Tier C — Don't port
 
-| Item                                                         | Why skip                                                                                                                                                                          |
-| ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `syncpack list --show instances/hints/statuses`              | vis `list` is project/target-shaped; reshaping it for dep-instances confuses the UX. NDJSON in B4 covers the scriptable cases.                                                    |
-| Standalone `.syncpackrc.json` config file                    | vis owns config via `vis-config.ts`. A separate file fragments the surface; nest under `dependencyPolicy:`.                                                                       |
-| `dependencyGroups` (cluster deps as one for reporting)       | Cosmetic in syncpack output; doesn't change behaviour. vis groups by package, not by virtual cluster.                                                                             |
-| `maxConcurrentRequests`                                      | Already covered by `vis check`'s registry pool; no new knob needed.                                                                                                               |
-| `strict` config flag                                         | vis already has `--exit-code` per command; conflating "strict warnings" with "exit non-zero" is the syncpack lesson — don't repeat.                                               |
-| Standalone `vis lint` namespace                              | Two top-level commands for the same thing (`check` + `lint`) is the trap turbo fell into. Keep policy behind `check` flags.                                                       |
-| pnpm/bun-specific overrides linting (syncpack#231 query lang)| Would need its own evaluator; pnpm.overrides is a wider problem (resolution diamonds, peer-dep coercion). Out of scope for v1.                                                    |
+| Item                                                          | Why skip                                                                                                                            |
+| ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `syncpack list --show instances/hints/statuses`               | vis `list` is project/target-shaped; reshaping it for dep-instances confuses the UX. NDJSON in B4 covers the scriptable cases.      |
+| Standalone `.syncpackrc.json` config file                     | vis owns config via `vis-config.ts`. A separate file fragments the surface; nest under `dependencyPolicy:`.                         |
+| `dependencyGroups` (cluster deps as one for reporting)        | Cosmetic in syncpack output; doesn't change behaviour. vis groups by package, not by virtual cluster.                               |
+| `maxConcurrentRequests`                                       | Already covered by `vis check`'s registry pool; no new knob needed.                                                                 |
+| `strict` config flag                                          | vis already has `--exit-code` per command; conflating "strict warnings" with "exit non-zero" is the syncpack lesson — don't repeat. |
+| Standalone `vis lint` namespace                               | Two top-level commands for the same thing (`check` + `lint`) is the trap turbo fell into. Keep policy behind `check` flags.         |
+| pnpm/bun-specific overrides linting (syncpack#231 query lang) | Would need its own evaluator; pnpm.overrides is a wider problem (resolution diamonds, peer-dep coercion). Out of scope for v1.      |
 
 ---
 
@@ -287,7 +287,7 @@ Pulling from Tier A in order, fits into the existing roadmap as one item per qua
 3. **A2 (`vis sync package-json-fields`)** — slot in next; the `vis sync` machinery is already half-built and underused. Pairs naturally with A1 since both touch package.json.
 4. **A4 (banned deps)** — trivial once A1's iterator exists; ship together if scope allows.
 
-After Tier A lands and produces real-world signal, revisit B1/B2. The order is intentionally inverted from syncpack's own (which puts version-groups front-and-centre): vis's existing catalog story already covers the 90% case, so the *secondary* features (drift detection, field sync, workspace protocol) are the actual gaps.
+After Tier A lands and produces real-world signal, revisit B1/B2. The order is intentionally inverted from syncpack's own (which puts version-groups front-and-centre): vis's existing catalog story already covers the 90% case, so the _secondary_ features (drift detection, field sync, workspace protocol) are the actual gaps.
 
 ---
 
@@ -295,9 +295,9 @@ After Tier A lands and produces real-world signal, revisit B1/B2. The order is i
 
 - **A1 default policy = highest-semver-wins.** syncpack's default. The competing pick is "catalog if one exists, else highest." Worth checking against a real failing case before settling.
 - **A2 should write to root, not project-by-project.** Assumes the root `package.json` is the source of truth for `engines`/`license`/`repository.type`. If teams already own per-package licenses (e.g. mixed-license monorepo), the default needs an opt-out per package.
-- **Reusing `vis sync` for A2 is not a new namespace.** Conflicts with reading "sync" as the syncpack verb; they don't mean the same thing. A user typing `vis sync package-json-fields` may reasonably expect *outbound* sync of their package versions, not metadata. Worth a docs callout.
+- **Reusing `vis sync` for A2 is not a new namespace.** Conflicts with reading "sync" as the syncpack verb; they don't mean the same thing. A user typing `vis sync package-json-fields` may reasonably expect _outbound_ sync of their package versions, not metadata. Worth a docs callout.
 - **A1's `--fix` is destructive.** Writing to N package.jsons should require either `--fix` explicitly or a confirmation in TTY. Match the `vis cache clean` precedent (out-of-workspace prompt).
-- **Custom types (B2) overlap with `vis doctor` runtime checks.** Doctor already verifies Node/pnpm versions match `engines.node` / `packageManager`. The overlap is that doctor is *machine-side* (does my installed Node match?) while custom types are *workspace-side* (do all packages declare the same `engines.node`?). Both useful, both should ship; needs a docs section to disambiguate.
+- **Custom types (B2) overlap with `vis doctor` runtime checks.** Doctor already verifies Node/pnpm versions match `engines.node` / `packageManager`. The overlap is that doctor is _machine-side_ (does my installed Node match?) while custom types are _workspace-side_ (do all packages declare the same `engines.node`?). Both useful, both should ship; needs a docs section to disambiguate.
 - **Banlist (A4) and `blockExoticSubdeps` are not the same thing.** Existing `blockExoticSubdeps` blocks URL-shape (`git+`, `file:`); A4 blocks by name. Both wanted.
 
 ---

@@ -320,9 +320,7 @@ export const loadMoonTemplate = (templateDir: string, name: string): Template =>
                     // parse trees would be produced only by duplicate file
                     // reads which shouldn't happen inside a single walk.
                     if (existing !== parsed) {
-                        pail.warn(
-                            `partial name "${key}" is declared by multiple files — last one wins. Use distinct names or fully-qualified includes.`,
-                        );
+                        pail.warn(`partial name "${key}" is declared by multiple files — last one wins. Use distinct names or fully-qualified includes.`);
                     }
                 }
 

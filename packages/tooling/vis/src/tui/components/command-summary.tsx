@@ -34,10 +34,8 @@ const CommandSummary = ({ cached, failed, failedIds, projectNames, skippedIds, s
                             <Text>
                                 <Text color="green">{TICK}</Text>
                                 {"  "}
-                                {succeeded + cached}
-{" "}
-tasks completed
-{cacheNote ? <Text dimColor>{cacheNote}</Text> : null}
+                                {succeeded + cached} tasks completed
+                                {cacheNote ? <Text dimColor>{cacheNote}</Text> : null}
                             </Text>
                             <Text dimColor>
                                 {"    "}
@@ -59,12 +57,8 @@ tasks completed
                         {skippedIds && skippedIds.length > 0 && (
                             <Box flexDirection="column">
                                 <Text dimColor>
-                                    {skippedIds.length}
-{" "}
-task
-{skippedIds.length === 1 ? "" : "s"}
-{" "}
-skipped (dependency failed or --bail)
+                                    {skippedIds.length} task
+                                    {skippedIds.length === 1 ? "" : "s"} skipped (dependency failed or --bail)
                                 </Text>
                                 {skippedIds.map((id) => (
                                     <Text dimColor key={id}>
@@ -78,12 +72,8 @@ skipped (dependency failed or --bail)
                         {failed > 0 && (
                             <Box flexDirection="column">
                                 <Text>
-                                    <Text color="red">{String(failed)}</Text>
-{" "}
-task
-{failed === 1 ? "" : "s"}
-{" "}
-failed:
+                                    <Text color="red">{String(failed)}</Text> task
+                                    {failed === 1 ? "" : "s"} failed:
                                 </Text>
                                 {failedIds.map((id) => (
                                     <Text key={id}>

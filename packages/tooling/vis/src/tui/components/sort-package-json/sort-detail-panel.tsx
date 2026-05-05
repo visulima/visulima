@@ -36,29 +36,23 @@ const SortDetailPanel = ({ checkMode, entry, focused, scrollRef }: SortDetailPan
                     <Box width={10}>
                         <Text dimColor>Status:</Text>
                     </Box>
-                    {entry.status === "error"
-                        ? (
+                    {entry.status === "error" ? (
                         <Text bold color="red">
                             error
                         </Text>
-                        )
-                        : entry.status === "unchanged"
-                            ? (
+                    ) : entry.status === "unchanged" ? (
                         <Text bold color="green">
                             already sorted
                         </Text>
-                            )
-                            : entry.status === "rewritten"
-                                ? (
+                    ) : entry.status === "rewritten" ? (
                         <Text bold color="yellow">
                             rewritten
                         </Text>
-                                )
-                                : (
+                    ) : (
                         <Text bold color="yellow">
                             would rewrite (--check)
                         </Text>
-                                )}
+                    )}
                 </Box>
 
                 <Box>
@@ -68,8 +62,7 @@ const SortDetailPanel = ({ checkMode, entry, focused, scrollRef }: SortDetailPan
                     <Text>{entry.filePath}</Text>
                 </Box>
 
-                {entry.error
-                    ? (
+                {entry.error ? (
                     <>
                         <Box flexDirection="column" marginTop={1}>
                             <Text dimColor>{"── "}</Text>
@@ -125,25 +118,22 @@ const SortDetailPanel = ({ checkMode, entry, focused, scrollRef }: SortDetailPan
                             </Box>
                         )}
                     </>
-                    )
-                    : (
+                ) : (
                     <Box flexDirection="column" marginTop={1}>
                         <Text dimColor>{"── "}</Text>
                         <Text bold color="white">
                             KEY DIFF
                         </Text>
                         <Box flexDirection="column" marginTop={1} paddingLeft={2}>
-                            {entry.diff.length === 0
-                                ? (
+                            {entry.diff.length === 0 ? (
                                 <Text dimColor>No top-level keys moved (sub-key reorder only).</Text>
-                                )
-                                : (
-                                    entry.diff.map((d) => {
-                                        const delta = d.toIndex - d.fromIndex;
-                                        const arrow = delta < 0 ? `↑ ${String(Math.abs(delta))}` : `↓ ${String(delta)}`;
-                                        const arrowColor = delta < 0 ? "green" : "yellow";
+                            ) : (
+                                entry.diff.map((d) => {
+                                    const delta = d.toIndex - d.fromIndex;
+                                    const arrow = delta < 0 ? `↑ ${String(Math.abs(delta))}` : `↓ ${String(delta)}`;
+                                    const arrowColor = delta < 0 ? "green" : "yellow";
 
-                                        return (
+                                    return (
                                         <Box key={d.key}>
                                             <Box width={28}>
                                                 <Text wrap="truncate">{d.key}</Text>
@@ -157,9 +147,9 @@ const SortDetailPanel = ({ checkMode, entry, focused, scrollRef }: SortDetailPan
                                             </Box>
                                             <Text color={arrowColor}>{arrow}</Text>
                                         </Box>
-                                        );
-                                    })
-                                )}
+                                    );
+                                })
+                            )}
                         </Box>
                         {checkMode && entry.status === "would-rewrite" && (
                             <Box marginTop={1} paddingLeft={2}>
@@ -167,7 +157,7 @@ const SortDetailPanel = ({ checkMode, entry, focused, scrollRef }: SortDetailPan
                             </Box>
                         )}
                     </Box>
-                    )}
+                )}
             </ScrollView>
         </Box>
     );

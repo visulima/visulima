@@ -74,7 +74,7 @@ vis sync package-json-fields --check                   # exit 1 on drift
 vis sync package-json-fields --field engines,license   # subset
 ```
 
-**Naming caveat (from §6 of the analysis):** `vis sync package-json-fields` reads ambiguously — users may expect *outbound* sync of versions, not metadata. Document the distinction in `--help`.
+**Naming caveat (from §6 of the analysis):** `vis sync package-json-fields` reads ambiguously — users may expect _outbound_ sync of versions, not metadata. Document the distinction in `--help`.
 
 **Sources:** syncpack#168 (open ask, 5+ years); manypkg metadata checks.
 
@@ -109,7 +109,7 @@ Port the whole policy DSL: highest/lowest/same-range/same-minor/pinned/banned/sn
 
 Defer until items 1–4 surface real demand for cases the simple defaults can't express. When it lands, fits into `vis-config.ts` as `dependencyPolicy: { versionGroups: [...], semverGroups: [...] }` rather than a parallel `.syncpackrc` — Zod schemas, declaration-order-wins evaluator, fix planner with overlap resolution. Cost: schema, validator, evaluator, fix-ordering, docs, tests — most of a quarter for one engineer.
 
-**Why defer:** the catalog story already covers the 90% case. Items 1–4 close the *missing 10%* with sensible defaults. Add the DSL only when users file specific issues that 1–4 can't express.
+**Why defer:** the catalog story already covers the 90% case. Items 1–4 close the _missing 10%_ with sensible defaults. Add the DSL only when users file specific issues that 1–4 can't express.
 
 **Sources:** syncpack core; `syncpack-analysis.md` §4 B1.
 
@@ -123,7 +123,7 @@ Shipped as `vis lint --custom-types` (parallel pipeline to `--workspace-versions
 
 Configuration lives in `policy.customTypes` with the same three-state autofix dial (`true | false | "prompt"`) as items 1, 2, and the catalog work. Users opt out at the rule level; CI still fails on drift.
 
-**Overlap with `vis doctor`:** doctor verifies the *installed* runtime matches `engines.node` (machine-side); `vis lint --custom-types` verifies all packages *declare* the same `engines.node` (workspace-side). Both ship; documented in `docs/commands/lint.mdx`.
+**Overlap with `vis doctor`:** doctor verifies the _installed_ runtime matches `engines.node` (machine-side); `vis lint --custom-types` verifies all packages _declare_ the same `engines.node` (workspace-side). Both ship; documented in `docs/commands/lint.mdx`.
 
 **Sources:** syncpack `customTypes`; user-validated demand in 7.2 Theme L.
 
@@ -136,7 +136,7 @@ Configuration lives in `policy.customTypes` with the same three-state autofix di
 Two-mode behaviour layered on item 2's `--resolve catalog`:
 
 - **Rewrite mode**: when ≥1 sibling already uses `catalog:` for a dep, rewrite the holdouts to match.
-- **Propose mode**: when ≥ N (configurable, default 3) packages declare the same range *outside* the catalog, propose adding a catalog entry. Outputs a unified diff against `pnpm-workspace.yaml` for human review. `--fix` applies.
+- **Propose mode**: when ≥ N (configurable, default 3) packages declare the same range _outside_ the catalog, propose adding a catalog entry. Outputs a unified diff against `pnpm-workspace.yaml` for human review. `--fix` applies.
 
 Differs from item 2 by being a migration aid rather than a drift-fix. Reuses `applyCatalogUpdates` (`src/util/catalog.ts`).
 
@@ -180,7 +180,7 @@ Extend `sort-package-json` (or its native binding under `native/`) to:
 - Collapse `repository: { type: "git", url: "..." }` → `"user/repo"` when the URL parses cleanly to a GitHub canonical (`https://github.com/user/repo` or `git+ssh://git@github.com/user/repo.git`).
 - Sort the `exports` map: `"."` first, then alphabetised; per-condition order `types > import > require > default`.
 
-Bugs/repository shorthand interacts with item 3: pick canonical *object* form for storage and render shorthand only on write. Mostly matters for npm-published packages — vis already publishes so eat your own dogfood.
+Bugs/repository shorthand interacts with item 3: pick canonical _object_ form for storage and render shorthand only on write. Mostly matters for npm-published packages — vis already publishes so eat your own dogfood.
 
 **Sources:** syncpack `formatBugs` / `formatRepository` / `sortExports`.
 
@@ -190,16 +190,16 @@ Bugs/repository shorthand interacts with item 3: pick canonical *object* form fo
 
 Not on the roadmap; either too costly or wrong product surface. Same call as `priority-roadmap.md`'s Tier C — list them so future contributors don't re-relitigate.
 
-| Item                                                  | Why skip                                                                                                                             |
-| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| Standalone `vis lint` namespace                       | Two top-level commands for the same thing (`check` + `lint`) is the trap turbo fell into. Keep policy behind `check` flags.          |
-| `.syncpackrc.json` config file                        | vis owns config via `vis-config.ts`. A separate file fragments the surface; nest under `dependencyPolicy:`.                          |
-| `dependencyGroups` (cluster deps as one for reporting)| Cosmetic in syncpack output; doesn't change behaviour. vis groups by package, not by virtual cluster.                                |
-| `maxConcurrentRequests`                               | Already covered by `vis check`'s registry pool; no new knob needed.                                                                  |
-| `strict` config flag                                  | vis already has `--exit-code` per command; conflating "strict warnings" with "exit non-zero" is the syncpack lesson — don't repeat.  |
-| `list --show instances/hints/statuses`                | vis `list` is project/target-shaped; reshaping for dep-instances confuses UX. NDJSON in item 8 covers scriptable cases.              |
-| pnpm/bun overrides query language (syncpack#231)      | Needs its own evaluator; `pnpm.overrides` is a wider problem (resolution diamonds, peer-dep coercion). Out of scope for v1.          |
-| Standalone `format` command                           | `vis sort-package-json` is the existing entry point; extend it (item 9) rather than fork.                                            |
+| Item                                                   | Why skip                                                                                                                            |
+| ------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Standalone `vis lint` namespace                        | Two top-level commands for the same thing (`check` + `lint`) is the trap turbo fell into. Keep policy behind `check` flags.         |
+| `.syncpackrc.json` config file                         | vis owns config via `vis-config.ts`. A separate file fragments the surface; nest under `dependencyPolicy:`.                         |
+| `dependencyGroups` (cluster deps as one for reporting) | Cosmetic in syncpack output; doesn't change behaviour. vis groups by package, not by virtual cluster.                               |
+| `maxConcurrentRequests`                                | Already covered by `vis check`'s registry pool; no new knob needed.                                                                 |
+| `strict` config flag                                   | vis already has `--exit-code` per command; conflating "strict warnings" with "exit non-zero" is the syncpack lesson — don't repeat. |
+| `list --show instances/hints/statuses`                 | vis `list` is project/target-shaped; reshaping for dep-instances confuses UX. NDJSON in item 8 covers scriptable cases.             |
+| pnpm/bun overrides query language (syncpack#231)       | Needs its own evaluator; `pnpm.overrides` is a wider problem (resolution diamonds, peer-dep coercion). Out of scope for v1.         |
+| Standalone `format` command                            | `vis sort-package-json` is the existing entry point; extend it (item 9) rather than fork.                                           |
 
 ---
 

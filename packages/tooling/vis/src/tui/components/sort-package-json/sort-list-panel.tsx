@@ -107,10 +107,10 @@ interface SortListPanelProps {
     viewportHeight: number;
 }
 
-type RenderRow
-    = | { color: string; count: number; kind: "header"; label: string }
-        | { entry: SortFileEntry; entryIndex: number; kind: "entry" }
-        | { kind: "spacer" };
+type RenderRow =
+    | { color: string; count: number; kind: "header"; label: string }
+    | { entry: SortFileEntry; entryIndex: number; kind: "entry" }
+    | { kind: "spacer" };
 
 const SortListPanel = ({ counts, entries, filterType, focused, selectedIndex, totalEntries, viewportHeight }: SortListPanelProps): React.JSX.Element => {
     const borderColor = focused ? "white" : "gray";
@@ -169,10 +169,8 @@ const SortListPanel = ({ counts, entries, filterType, focused, selectedIndex, to
                     {" VIS SORT "}
                 </Text>
                 <Text wrap="truncate">
-                    {totalEntries}
-{" "}
-file
-{totalEntries === 1 ? "" : "s"}
+                    {totalEntries} file
+                    {totalEntries === 1 ? "" : "s"}
                 </Text>
             </Box>
 
@@ -188,16 +186,8 @@ file
                                 {f.shortcut}
                             </Text>
                             <Text dimColor={!isActive}>]</Text>
-                            <Text color={isActive ? "white" : "gray"}>
-{" "}
-{f.label}
-                            </Text>
-                            <Text dimColor>
-{" "}
-(
-{tabCount}
-)
-                            </Text>
+                            <Text color={isActive ? "white" : "gray"}> {f.label}</Text>
+                            <Text dimColor> ({tabCount})</Text>
                         </Box>
                     );
                 })}

@@ -346,7 +346,7 @@ describe(resolveAubeOutdated, () => {
 
         const { warnings } = resolveAubeOutdated({ ...baseOutdated, format: "list" });
 
-        expect(warnings).toContain("aube outdated does not support format \"list\"; falling back to default table output.");
+        expect(warnings).toContain('aube outdated does not support format "list"; falling back to default table output.');
     });
 
     it("warns about ignored options that aube doesn't support", () => {

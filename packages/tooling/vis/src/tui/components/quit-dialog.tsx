@@ -85,23 +85,19 @@ const QuitDialog = ({ autoExitSeconds, onCancel, visible }: QuitDialogProps): Re
     return (
         <Dialog
             backgroundColor="#1e1e1e"
-            footer={(
+            footer={
                 <Text dimColor>
-                    Press
-{" "}
+                    Press{" "}
                     <Text bold color="white">
                         q
-                    </Text>
-{" "}
-                    to exit,
-{" "}
+                    </Text>{" "}
+                    to exit,{" "}
                     <Text bold color="white">
                         any key
-                    </Text>
-{" "}
+                    </Text>{" "}
                     to stay
                 </Text>
-              )}
+            }
             title={`Exiting in ${countdown}…`}
             visible={visible}
             width={50}

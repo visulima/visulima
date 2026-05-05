@@ -89,12 +89,12 @@ export const filterFindingsByPattern = (findings: ReadonlyArray<DoctorFinding>, 
             return true;
         }
 
-        const name
-            = finding.kind === "duplicate"
+        const name =
+            finding.kind === "duplicate"
                 ? finding.pkg.name
                 : finding.kind === "outdated" || finding.kind === "optimization"
-                    ? finding.entry.packageName
-                    : finding.packageName;
+                  ? finding.entry.packageName
+                  : finding.packageName;
 
         return matchesAny(name, patterns);
     });

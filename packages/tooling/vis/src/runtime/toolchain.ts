@@ -402,9 +402,9 @@ export const pickPrimaryManager = (workspaceRoot: string, config?: ToolchainConf
     }
 
     return (
-        found.find((d) => d.installed && d.configFiles.length > 0)
-        ?? found.find((d) => d.installed)
-        ?? found.find((d) => d.configFiles.length > 0) ?? { configFiles: [], installed: false, name: "none" }
+        found.find((d) => d.installed && d.configFiles.length > 0) ??
+        found.find((d) => d.installed) ??
+        found.find((d) => d.configFiles.length > 0) ?? { configFiles: [], installed: false, name: "none" }
     );
 };
 
@@ -958,10 +958,10 @@ export const resolveManagerFor = (spec: ToolSpec, detected: ReadonlyArray<Detect
         return override
             ? { installed: override.installed, name: override.name }
             : {
-                installed: false,
-                name: config.preferredManager,
-                note: `${config.preferredManager} is the preferred manager but isn't on PATH`,
-            };
+                  installed: false,
+                  name: config.preferredManager,
+                  note: `${config.preferredManager} is the preferred manager but isn't on PATH`,
+              };
     }
 
     const preference = preferenceFor(spec.source, spec.tool);
@@ -1275,12 +1275,12 @@ export const resolveToolBinary = (manager: DetectedManager, tool: RuntimeTool): 
     const aliases = TOOL_VERSION_QUERY[tool].binaries;
 
     if (
-        manager.installed
-        && manager.binPath // proto/mise/asdf expose `which`; volta has `volta which`; fnm
+        manager.installed &&
+        manager.binPath && // proto/mise/asdf expose `which`; volta has `volta which`; fnm
         // prints to stdout from `fnm which`. Try each alias in order so
         // `mise which rust` (which doesn't know "rust") falls back to
         // `mise which rustc`.
-        && (manager.name === "proto" || manager.name === "mise" || manager.name === "asdf" || manager.name === "volta" || manager.name === "fnm")
+        (manager.name === "proto" || manager.name === "mise" || manager.name === "asdf" || manager.name === "volta" || manager.name === "fnm")
     ) {
         for (const alias of aliases) {
             try {
@@ -1426,7 +1426,9 @@ export const writePackageManagerField = (workspaceRoot: string, spec: ToolSpec):
         // JSON.parse throws SyntaxError with a useless "Unexpected
         // token X at position Y" — prepend the file path and hint so
         // the user can act on it instead of getting a bare stack.
-        throw new Error(`${pkgPath} is not valid JSON — fix it before running \`vis toolchain use\`. Underlying error: ${(error as Error).message}`, { cause: error });
+        throw new Error(`${pkgPath} is not valid JSON — fix it before running \`vis toolchain use\`. Underlying error: ${(error as Error).message}`, {
+            cause: error,
+        });
     }
 
     const value = `${spec.tool}@${spec.version}`;
@@ -1464,7 +1466,9 @@ export const updateEnginesField = (workspaceRoot: string, spec: ToolSpec): strin
     try {
         pkg = JSON.parse(raw) as typeof pkg;
     } catch (error: unknown) {
-        throw new Error(`${pkgPath} is not valid JSON — fix it before running \`vis toolchain use\`. Underlying error: ${(error as Error).message}`, { cause: error });
+        throw new Error(`${pkgPath} is not valid JSON — fix it before running \`vis toolchain use\`. Underlying error: ${(error as Error).message}`, {
+            cause: error,
+        });
     }
 
     if (pkg.engines?.[spec.tool] === undefined) {

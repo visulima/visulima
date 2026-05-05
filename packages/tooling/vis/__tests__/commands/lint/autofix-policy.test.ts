@@ -109,7 +109,7 @@ describe("vis lint autofix opt-out (item 16)", () => {
             expect(calls.some(([level, message]) => level === "warn" && typeof message === "string" && message.includes("autofix = false"))).toBe(true);
         });
 
-        it("treats policy.workspaceProtocol.autofix === \"prompt\" as report-only (interactive deferred)", async () => {
+        it('treats policy.workspaceProtocol.autofix === "prompt" as report-only (interactive deferred)', async () => {
             expect.assertions(3);
 
             writeWorkspaceRoot(workspaceRoot);
@@ -185,11 +185,7 @@ describe("vis lint autofix opt-out (item 16)", () => {
             writePackage(workspaceRoot, "packages/a", { dependencies: { react: "^18.0.0" }, name: "@my/a" });
             writePackage(workspaceRoot, "packages/b", { dependencies: { react: "^18.2.0" }, name: "@my/b" });
 
-            const { calls } = await callLint(
-                workspaceRoot,
-                { "workspace-versions": true },
-                { policy: { workspaceVersions: { autofix: false } } },
-            );
+            const { calls } = await callLint(workspaceRoot, { "workspace-versions": true }, { policy: { workspaceVersions: { autofix: false } } });
 
             // The "not rewritten" warn is only relevant when --fix was actually passed.
             expect(calls.some(([level, message]) => level === "warn" && typeof message === "string" && message.includes("not rewritten"))).toBe(false);
@@ -207,18 +203,14 @@ describe("vis lint autofix opt-out (item 16)", () => {
             const writes: string[] = [];
             const originalWrite = process.stdout.write.bind(process.stdout);
 
-            (process.stdout.write as unknown) = ((chunk: string | Uint8Array): boolean => {
+            (process.stdout.write as unknown) = (chunk: string | Uint8Array): boolean => {
                 writes.push(typeof chunk === "string" ? chunk : Buffer.from(chunk).toString("utf8"));
 
                 return true;
-            });
+            };
 
             try {
-                await callLint(
-                    workspaceRoot,
-                    { fix: true, format: "json", "workspace-protocol": true },
-                    { policy: { workspaceProtocol: { autofix: false } } },
-                );
+                await callLint(workspaceRoot, { fix: true, format: "json", "workspace-protocol": true }, { policy: { workspaceProtocol: { autofix: false } } });
             } finally {
                 process.stdout.write = originalWrite;
             }

@@ -328,11 +328,7 @@ const VisGraphApp = ({ autoExitSeconds = 0, store }: VisGraphAppProps): React.JS
         return (
             <Box alignItems="center" height={rows} justifyContent="center" width={columns}>
                 <Text color="yellow">
-                    Terminal too small (
-{columns}
-x
-{rows}
-)
+                    Terminal too small ({columns}x{rows})
                 </Text>
             </Box>
         );
@@ -383,25 +379,22 @@ x
 
     const helpPopup = (
         <Dialog
-            footer={(
+            footer={
                 <Text dimColor>
                     <Text bold color="white">
                         {"\u2191\u2193"}
-                    </Text>
-{" "}
-                    scroll
-{" "}
+                    </Text>{" "}
+                    scroll{" "}
                     <Text bold color="white">
                         ?
                     </Text>
                     /
                     <Text bold color="white">
                         Esc
-                    </Text>
-{" "}
+                    </Text>{" "}
                     close
                 </Text>
-              )}
+            }
             scrollRef={helpScrollRef}
             title="KEYBOARD SHORTCUTS"
             visible={helpVisible}
@@ -444,9 +437,7 @@ x
                 <Text>
                     <Text bold color="white">
                         {" "}
-                        {"\u2192"}
-/
-{"\u2190"}
+                        {"\u2192"}/{"\u2190"}
                     </Text>
                     <Text dimColor> Focus detail/list</Text>
                 </Text>

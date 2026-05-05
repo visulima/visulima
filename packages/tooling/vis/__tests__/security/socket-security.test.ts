@@ -294,7 +294,7 @@ describe("formatAcceptedRiskSnippet", () => {
 
         const snippet = formatAcceptedRiskSnippet("lodash", "4.17.21", 0.3, "Reviewed and accepted");
 
-        expect(snippet).toContain("\"lodash\"");
+        expect(snippet).toContain('"lodash"');
         expect(snippet).toContain("Reviewed and accepted");
         expect(snippet).toContain("acceptedScore: 0.3");
     });

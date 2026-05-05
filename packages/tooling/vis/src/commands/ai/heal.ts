@@ -173,11 +173,7 @@ const renderCommentBody = (proposal: FixProposal, failureContext: FailureContext
     header.push(proposal.explanation || "_(no explanation)_");
     header.push("");
 
-    const diffSection: string[] = [
-        "### Proposed patch",
-        renderProposalDiff(proposal, workspaceRoot, failureContext.cwd),
-        "",
-    ];
+    const diffSection: string[] = ["### Proposed patch", renderProposalDiff(proposal, workspaceRoot, failureContext.cwd), ""];
 
     const footer: string[] = [
         "### Validation",
@@ -212,10 +208,7 @@ const renderCommentBody = (proposal: FixProposal, failureContext: FailureContext
 };
 
 const renderProposalForLog = (proposal: FixProposal, workspaceRoot: string, cwd: string | undefined): string => {
-    const lines: string[] = [
-        bold(`Proposal (${proposal.provider}, confidence: ${proposal.confidence})`),
-        proposal.explanation || dim("<no explanation>"),
-    ];
+    const lines: string[] = [bold(`Proposal (${proposal.provider}, confidence: ${proposal.confidence})`), proposal.explanation || dim("<no explanation>")];
 
     for (const [index, patch] of proposal.patches.entries()) {
         lines.push("");
@@ -279,11 +272,11 @@ export interface HealCandidate {
     failureContext: FailureContext;
 }
 
-export type FindHealCandidateResult
-    = | (HealCandidate & { outcome: "ready" })
-        | { failedTask: { project: string | undefined; runId: string | undefined; target: string | undefined; taskId: string }; outcome: "missing-metadata" }
-        | { failedTask: { project: string; runId: string | undefined; target: string; taskId: string }; outcome: "no-failure-context" }
-        | { outcome: "no-failed-task" };
+export type FindHealCandidateResult =
+    | (HealCandidate & { outcome: "ready" })
+    | { failedTask: { project: string | undefined; runId: string | undefined; target: string | undefined; taskId: string }; outcome: "missing-metadata" }
+    | { failedTask: { project: string; runId: string | undefined; target: string; taskId: string }; outcome: "no-failure-context" }
+    | { outcome: "no-failed-task" };
 
 const findHealCandidate = async (workspaceRoot: string, runId: string | undefined): Promise<FindHealCandidateResult> => {
     const failed = await findFirstFailedTask(workspaceRoot, runId);
@@ -578,8 +571,8 @@ const heal = async (toolbox: Toolbox<Console, AiHealOptions>, deps: HealRunDeps 
         // are scoped to a build, not a PR); GH/GitLab key off the PR/MR
         // number. `prNumber` may be undefined on Buildkite push builds,
         // which is fine — the build number always exists.
-        const identifier
-            = postResult.surface === "annotation"
+        const identifier =
+            postResult.surface === "annotation"
                 ? `build #${String(postResult.ciContext.buildNumber ?? "?")}`
                 : `${postResult.surface} #${String(postResult.ciContext.prNumber)}`;
 

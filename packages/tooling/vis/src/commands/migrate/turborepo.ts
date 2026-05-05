@@ -130,7 +130,7 @@ const renderVisConfig = (turbo: TurboJson, workspaceRoot: string, useEditorconfi
         "// Review the generated targetDefaults and move project-specific tasks",
         "// into each project's project.json.",
         "",
-        "import { defineConfig } from \"@visulima/vis/config\";",
+        'import { defineConfig } from "@visulima/vis/config";',
         "",
         `export default defineConfig(${serialised});`,
         "",
@@ -146,7 +146,12 @@ const renderVisConfig = (turbo: TurboJson, workspaceRoot: string, useEditorconfi
  * @param logger Logger for user feedback.
  * @param report Migration report to append manual steps and warnings.
  */
-export const migrateTurborepo = (workspaceRoot: string, options: { dryRun?: boolean; useEditorconfig?: boolean }, logger: MigrateLogger, report: MigrationReport): void => {
+export const migrateTurborepo = (
+    workspaceRoot: string,
+    options: { dryRun?: boolean; useEditorconfig?: boolean },
+    logger: MigrateLogger,
+    report: MigrationReport,
+): void => {
     const turbo = readJsonConfig<TurboJson>(workspaceRoot, "turbo.json");
 
     if (!turbo) {

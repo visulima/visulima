@@ -130,7 +130,7 @@ export const formatStrictEnvError = (violation: StrictEnvViolation): string => {
     const list = violation.missing.map((name) => `$${name}`).join(", ");
 
     return (
-        `Strict env: ${violation.taskId} references unset variable${violation.missing.length === 1 ? "" : "s"} ${list}. `
-        + `Set ${violation.missing.length === 1 ? "it" : "them"} in the task env, an envFile, or the parent shell — or opt out with options.strictEnv: false.`
+        `Strict env: ${violation.taskId} references unset variable${violation.missing.length === 1 ? "" : "s"} ${list}. ` +
+        `Set ${violation.missing.length === 1 ? "it" : "them"} in the task env, an envFile, or the parent shell — or opt out with options.strictEnv: false.`
     );
 };

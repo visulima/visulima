@@ -285,7 +285,7 @@ echo "hello"
         const result = transformHookScript(input);
 
         expect(result).not.toContain("common.sh");
-        expect(result).toContain("echo \"hello\"");
+        expect(result).toContain('echo "hello"');
         expect(result).toContain("#!/bin/sh");
     });
 
@@ -314,7 +314,7 @@ echo "done"
         const result = transformHookScript(input);
 
         expect(result).toContain("common.sh in a comment");
-        expect(result).not.toContain(". \"$(dirname \"$0\")/common.sh\"");
+        expect(result).not.toContain('. "$(dirname "$0")/common.sh"');
     });
 });
 
@@ -461,7 +461,7 @@ describe(cleanPackageJsonScripts, () => {
         const result = cleanPackageJsonScripts(temporary.root);
 
         expect(result.modified).toBe(true);
-        expect(result.removedScriptReferences).toContain("removed \"prepare\" script (was: \"husky\")");
+        expect(result.removedScriptReferences).toContain('removed "prepare" script (was: "husky")');
 
         const pkg = JSON.parse(readFileSync(join(temporary.root, "package.json"), "utf8"));
 

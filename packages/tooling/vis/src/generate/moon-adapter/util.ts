@@ -9,7 +9,7 @@ export const splitCommaOutsideQuotes = (input: string): string[] => {
     const parts: string[] = [];
     let depth = 0;
     let start = 0;
-    let inQuote: "\"" | "'" | undefined;
+    let inQuote: '"' | "'" | undefined;
     let index = -1;
 
     for (const character of input) {
@@ -23,7 +23,7 @@ export const splitCommaOutsideQuotes = (input: string): string[] => {
             continue;
         }
 
-        if (character === "\"" || character === "'") {
+        if (character === '"' || character === "'") {
             inQuote = character;
             continue;
         }
@@ -49,7 +49,7 @@ export const splitCommaOutsideQuotes = (input: string): string[] => {
  * variable lookup or number parsing.
  */
 export const stripQuotes = (input: string): string | undefined => {
-    if ((input.startsWith("\"") && input.endsWith("\"")) || (input.startsWith("'") && input.endsWith("'"))) {
+    if ((input.startsWith('"') && input.endsWith('"')) || (input.startsWith("'") && input.endsWith("'"))) {
         return input.slice(1, -1);
     }
 

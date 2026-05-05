@@ -16,11 +16,7 @@ const MigrationRow = ({ checked, isSelected, item }: MigrationRowProps): React.J
     return (
         <Box flexShrink={0} height={1}>
             <Text>{isSelected ? ">" : " "}</Text>
-            <Text color={checked ? "white" : "gray"}>
-{" "}
-{checkbox}
-{" "}
-            </Text>
+            <Text color={checked ? "white" : "gray"}> {checkbox} </Text>
             <Box flexGrow={1}>
                 <Text bold={isSelected} inverse={isSelected} wrap="truncate">
                     {item.entry.title}
@@ -28,11 +24,8 @@ const MigrationRow = ({ checked, isSelected, item }: MigrationRowProps): React.J
             </Box>
             <Text dimColor>
                 {" "}
-                {previewCount}
-{" "}
-change
-{previewCount === 1 ? "" : "s"}
-{" "}
+                {previewCount} change
+                {previewCount === 1 ? "" : "s"}{" "}
             </Text>
         </Box>
     );
@@ -73,11 +66,7 @@ const MigrateListPanel = ({
                 <Text bold inverse>
                     {" MIGRATE "}
                 </Text>
-                <Text wrap="truncate">
-{items.length}
-{" "}
-applicable
-                </Text>
+                <Text wrap="truncate">{items.length} applicable</Text>
                 {checkedCount > 0 && (
                     <Text dimColor>
                         {" — "}

@@ -433,11 +433,11 @@ describe("vis sync package-json-fields", () => {
         const original = process.stdout.write.bind(process.stdout);
         let captured = "";
 
-        process.stdout.write = ((chunk: string | Uint8Array): boolean => {
+        process.stdout.write = (chunk: string | Uint8Array): boolean => {
             captured += typeof chunk === "string" ? chunk : Buffer.from(chunk).toString("utf8");
 
             return true;
-        });
+        };
 
         try {
             await syncExecute({
