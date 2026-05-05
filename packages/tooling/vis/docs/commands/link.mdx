@@ -25,3 +25,7 @@ vis link react               # link a previously-registered global package into 
 ## Options
 
 This command takes no flags — its behavior is determined by the positional `target`.
+
+## Deno
+
+Deno has no `link` equivalent. `vis link` emits a warning and prints guidance: use `"imports"` in `deno.json` (or an import map) to point at a local path or a `jsr:` / `npm:` specifier instead.

@@ -27,3 +27,15 @@ vis pm whoami                 # show logged-in user
 ## Options
 
 This command takes no flags of its own — every argument is forwarded to the resolved package manager. The PM is selected via the same precedence as [`vis install`](./install) (CLI `--installer` > `VIS_INSTALLER` > `install.backend` > auto).
+
+## Deno
+
+Deno has no umbrella `pm` command, so vis maps the common subcommands to deno's nearest equivalents:
+
+| Subcommand          | Deno equivalent                                                     |
+| ------------------- | ------------------------------------------------------------------- |
+| `cache <dir>`       | `deno info` (cache management lives in `--reload` / `DENO_DIR` env) |
+| `list`              | `deno info`                                                         |
+| `pack`              | `deno publish --dry-run`                                            |
+| `view` / `info`     | `deno info npm:<pkg>`                                               |
+| `prune` / `rebuild` | unsupported — vis emits a warning                                   |

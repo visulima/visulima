@@ -26,3 +26,7 @@ vis unlink -r           # unlink in every workspace package
 | Option        | Alias | Default | Description                      |
 | ------------- | ----- | ------- | -------------------------------- |
 | `--recursive` | `-r`  | `false` | Unlink in all workspace packages |
+
+## Deno
+
+Deno has no `unlink` equivalent — vis falls back to `deno remove` for the named packages and emits a warning. To undo an import-map override, edit `deno.json` directly.

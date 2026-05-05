@@ -25,3 +25,8 @@ vis dedupe --check     # CI: exits non-zero when changes would be made
 | Option    | Default | Description                                       |
 | --------- | ------- | ------------------------------------------------- |
 | `--check` | `false` | Preview changes without modifying files (dry-run) |
+
+## Notes
+
+- **bun** and **yarn v1** have no native dedupe command — vis emits a warning and falls back to a no-op.
+- **deno** has no dedupe command. vis falls back to running `deno install` with a warning, which re-resolves the lockfile.

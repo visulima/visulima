@@ -504,16 +504,16 @@ Pin which package manager runs `vis install`, `vis add`, `vis remove`, `vis upda
 ```typescript
 export default defineConfig({
     install: {
-        backend: "auto", // "auto" | "aube" | "pnpm" | "npm" | "yarn" | "bun"
+        backend: "auto", // "auto" | "aube" | "pnpm" | "npm" | "yarn" | "bun" | "deno"
     },
 });
 ```
 
-| Value                                   | Behavior                                                                                                       |
-| --------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `"auto"` _(default)_                    | Use `aube` when it's on `PATH`, otherwise fall back to the lockfile-detected PM                                |
-| `"aube"`                                | Always use aube. Errors with an actionable message when the binary is missing instead of silently falling back |
-| `"pnpm"` / `"npm"` / `"yarn"` / `"bun"` | Pin to the named PM regardless of what's on PATH                                                               |
+| Value                                              | Behavior                                                                                                       |
+| -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `"auto"` _(default)_                               | Use `aube` when it's on `PATH`, otherwise fall back to the lockfile-detected PM                                |
+| `"aube"`                                           | Always use aube. Errors with an actionable message when the binary is missing instead of silently falling back |
+| `"pnpm"` / `"npm"` / `"yarn"` / `"bun"` / `"deno"` | Pin to the named PM regardless of what's on PATH                                                               |
 
 #### Resolution precedence
 

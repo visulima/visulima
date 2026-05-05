@@ -9,7 +9,7 @@ Add packages using the detected package manager. Before installing, vis runs a *
 
 ## Secure-by-default behavior
 
-`vis add` blocks dependency lifecycle scripts on every package manager (npm, pnpm, yarn, bun, aube) — the same pnpm v10 default applied universally. The newly-installed package's `preinstall` / `install` / `postinstall` / `prepare` scripts will not run unless:
+`vis add` blocks dependency lifecycle scripts on every package manager (npm, pnpm, yarn, bun, aube, deno) — the same pnpm v10 default applied universally. The newly-installed package's `preinstall` / `install` / `postinstall` / `prepare` scripts will not run unless:
 
 - the package is listed in `security.allowBuilds` in `vis.config.ts` (vis runs its scripts post-install), or
 - you pass `--run-scripts` to opt out for one run.
@@ -25,31 +25,35 @@ vis add <packages...> [options]
 ## Examples
 
 ```bash
-vis add react react-dom              # Add packages (scripts blocked by default)
-vis add -D typescript @types/react   # Add as dev dependencies
-vis add react --filter app           # Add to specific workspace package
-vis add -g typescript                # Add globally (uses npm)
-vis add lodash -w                    # Add to workspace root
-vis add esbuild --run-scripts        # Opt out of the universal script block for this run
-vis add lodash --no-socket-check     # Add without Socket.dev check
-vis add lodash --no-typosquat-check  # Skip typosquat name check
+vis add react react-dom                # Add packages (scripts blocked by default)
+vis add -D typescript @types/react     # Add as dev dependencies
+vis add react --filter app             # Add to specific workspace package
+vis add react --to web                 # Add to one package, conform to existing catalogs
+vis add react --auto-install-peers     # Recursively install non-optional peer deps
+vis add -g typescript                  # Add globally (uses npm)
+vis add lodash -w                      # Add to workspace root
+vis add esbuild --run-scripts          # Opt out of the universal script block for this run
+vis add lodash --no-socket-check       # Add without Socket.dev check
+vis add lodash --no-typosquat-check    # Skip typosquat name check
 ```
 
 ## Options
 
-| Option                 | Alias | Default | Description                                                                                                                          |
-| ---------------------- | ----- | ------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `--save-dev`           | `-D`  | `false` | Add as dev dependency                                                                                                                |
-| `--exact`              | `-E`  | `false` | Save exact version                                                                                                                   |
-| `--save-peer`          | `-P`  | `false` | Add as peer dependency                                                                                                               |
-| `--save-optional`      | `-O`  | `false` | Add as optional dependency                                                                                                           |
-| `--global`             | `-g`  | `false` | Install globally (uses npm)                                                                                                          |
-| `--workspace-root`     | `-w`  | `false` | Add to workspace root                                                                                                                |
-| `--workspace`          |       | `false` | Use workspace protocol (pnpm)                                                                                                        |
-| `--filter`             | `-F`  |         | Filter by workspace package name                                                                                                     |
-| `--run-scripts`        |       | `false` | Run lifecycle scripts (opts out of the universal block-by-default policy; allowlisted packages still run via `security.allowBuilds`) |
-| `--no-typosquat-check` |       | `false` | Skip typosquat name check before adding                                                                                              |
-| `--no-socket-check`    |       | `false` | Skip Socket.dev security check before adding                                                                                         |
+| Option                 | Alias | Default | Description                                                                                                                                      |
+| ---------------------- | ----- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `--save-dev`           | `-D`  | `false` | Add as dev dependency                                                                                                                            |
+| `--exact`              | `-E`  | `false` | Save exact version                                                                                                                               |
+| `--save-peer`          | `-P`  | `false` | Add as peer dependency                                                                                                                           |
+| `--save-optional`      | `-O`  | `false` | Add as optional dependency                                                                                                                       |
+| `--global`             | `-g`  | `false` | Install globally (uses npm)                                                                                                                      |
+| `--workspace-root`     | `-w`  | `false` | Add to workspace root                                                                                                                            |
+| `--workspace`          |       | `false` | Use workspace protocol (pnpm)                                                                                                                    |
+| `--filter`             | `-F`  |         | Filter by workspace package name                                                                                                                 |
+| `--to`                 |       |         | Target a single workspace package and auto-conform the version to existing catalogs / sibling deps (syncpack#285)                                |
+| `--auto-install-peers` |       | `false` | After adding, recursively install non-optional peer dependencies that aren't already in the workspace (matches nypm's `installPeerDependencies`) |
+| `--run-scripts`        |       | `false` | Run lifecycle scripts (opts out of the universal block-by-default policy; allowlisted packages still run via `security.allowBuilds`)             |
+| `--no-typosquat-check` |       | `false` | Skip typosquat name check before adding                                                                                                          |
+| `--no-socket-check`    |       | `false` | Skip Socket.dev security check before adding                                                                                                     |
 
 ## How It Works
 
@@ -69,7 +73,7 @@ flowchart TD
     E -- no --> G
     E -- yes --> F["Fetch security\nreports from Socket.dev"]
     F --> H{Score below\nthreshold?}
-    H -- no --> G["Detect package manager\n(pnpm, npm, yarn, bun)"]
+    H -- no --> G["Detect package manager\n(pnpm, npm, yarn, bun, deno)"]
     H -- yes --> I{User\nconfirms?}
     I -- yes --> G
     I -- no --> Z
@@ -103,3 +107,9 @@ In non-interactive mode (CI, piped stdin), typosquat detection always aborts to 
 When Socket.dev is configured (via `vis.config.ts`), each package is scored across multiple dimensions (license, maintenance, quality, supply chain, vulnerability). Packages scoring below the minimum threshold (default: 40%) require explicit confirmation.
 
 See [`vis init`](/docs/commands/init) to configure Socket.dev integration.
+
+## Auto-install peers
+
+`--auto-install-peers` mirrors nypm's `installPeerDependencies` behavior. After the primary `add` succeeds, vis reads each freshly-installed package's `package.json`, collects its non-optional `peerDependencies` (entries flagged `optional: true` in `peerDependenciesMeta` are skipped), and recursively adds the peers that aren't already present in the workspace.
+
+The flag is **opt-in**, matching nypm's default. Deno is excluded — it has no peer dependency concept; the recursive add is a no-op there.

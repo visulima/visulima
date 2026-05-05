@@ -46,7 +46,7 @@ describe("native addon integration", () => {
 
             expectTypeOf(result.name).toBeString();
 
-            expect(["pnpm", "npm", "yarn", "bun"]).toContain(result.name);
+            expect(["pnpm", "npm", "yarn", "bun", "deno"]).toContain(result.name);
 
             expectTypeOf(result.isWorkspace).toBeBoolean();
         });

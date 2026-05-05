@@ -23,7 +23,7 @@ import isInCi from "is-in-ci";
 import type { VisConfig } from "../config/workspace";
 import { pail } from "../io/logger";
 
-type PackageManagerName = "bun" | "npm" | "pnpm" | "yarn";
+type PackageManagerName = "bun" | "deno" | "npm" | "pnpm" | "yarn";
 
 // ── Config checking ──────────────────────────────────────────────────
 

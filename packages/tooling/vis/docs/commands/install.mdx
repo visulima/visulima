@@ -5,14 +5,14 @@ description: "Install project dependencies via the detected package manager"
 
 # vis install
 
-Install project dependencies using the detected package manager (pnpm, npm, yarn, bun, or [aube](https://github.com/endevco/aube)). Delegates to the native PM with vis's security enforcement applied.
+Install project dependencies using the detected package manager (pnpm, npm, yarn, bun, deno, or [aube](https://github.com/endevco/aube)). Delegates to the native PM with vis's security enforcement applied.
 
 ## Secure-by-default behavior
 
 `vis install` applies two universal hardening defaults across every package manager, inspired by the [`npm`'s defaults are bad](https://nesbitt.io/2026/03/31/npms-defaults-are-bad.html) write-up:
 
 1. **Frozen lockfile by default.** When a lockfile is present, `vis install` refuses to mutate it — `npm ci` semantics rather than `npm install`'s silent rewrites. Pass `--no-frozen-lockfile` to opt out (the lockfile-only and `--force` flows skip the default automatically).
-2. **Lifecycle scripts blocked by default.** Mirrors pnpm v10: every PM (npm, pnpm, yarn, bun, aube) installs with `--ignore-scripts`. Packages listed in `security.allowBuilds` (in `vis.config.ts`) get their `preinstall` / `install` / `postinstall` / `prepare` hooks executed afterwards by vis. Pass `--run-scripts` to restore the PM's native script behavior for one run.
+2. **Lifecycle scripts blocked by default.** Mirrors pnpm v10: every PM (npm, pnpm, yarn, bun, aube) installs with `--ignore-scripts`. Packages listed in `security.allowBuilds` (in `vis.config.ts`) get their `preinstall` / `install` / `postinstall` / `prepare` hooks executed afterwards by vis. Pass `--run-scripts` to restore the PM's native script behavior for one run. Deno does not run npm-style lifecycle scripts and is unaffected by these flags.
 
 To bypass both at once, combine the flags: `vis install --no-frozen-lockfile --run-scripts`.
 
@@ -72,7 +72,7 @@ vis install --no-aube
 | `--dev`                | `-D`  | `false` | Install devDependencies only                                                                                                         |
 | `--prod`               | `-P`  | `false` | Skip devDependencies                                                                                                                 |
 | `--filter`             | `-F`  |         | Filter to specific workspace packages                                                                                                |
-| `--installer`          |       | `auto`  | Pick the installer explicitly: `auto`, `aube`, `pnpm`, `npm`, `yarn`, `bun`. Overrides `VIS_INSTALLER` and `vis.config`              |
+| `--installer`          |       | `auto`  | Pick the installer explicitly: `auto`, `aube`, `pnpm`, `npm`, `yarn`, `bun`, `deno`. Overrides `VIS_INSTALLER` and `vis.config`      |
 | `--no-aube`            |       | `false` | Bypass aube and use the lockfile-detected PM. Wins over `--installer`, `VIS_INSTALLER`, and `install.backend`                        |
 
 ## Aube as an installer
@@ -93,7 +93,7 @@ Resolution precedence, highest first:
 import { defineConfig } from "@visulima/vis/config";
 
 export default defineConfig({
-    install: { backend: "aube" }, // or "auto" | "pnpm" | "npm" | "yarn" | "bun"
+    install: { backend: "aube" }, // or "auto" | "pnpm" | "npm" | "yarn" | "bun" | "deno"
 });
 ```
 
@@ -140,7 +140,7 @@ Aube already skips dependency lifecycle scripts by default — `--ignore-scripts
 
 ```mermaid
 flowchart TD
-    A["vis install [options]"] --> B["Detect package manager\n(pnpm, npm, yarn, bun)"]
+    A["vis install [options]"] --> B["Detect package manager\n(pnpm, npm, yarn, bun, deno)"]
     B --> C["Build install command\nfrom options"]
     C --> D{Frozen\nlockfile?}
     D -- yes --> E["Map to CI mode\n(npm ci / pnpm --frozen-lockfile)"]

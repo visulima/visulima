@@ -23,7 +23,7 @@ import { coerce } from "semver";
 import { resolveIndentForFile } from "../util/editorconfig";
 
 /** Supported package manager names. */
-type PackageManagerName = "bun" | "npm" | "pnpm" | "yarn";
+type PackageManagerName = "bun" | "deno" | "npm" | "pnpm" | "yarn";
 
 /** Package manager identity with version for PM-specific behavior. */
 interface PmInfo {
@@ -99,6 +99,12 @@ const readPnpmWorkspaceOverrides = (workspaceRoot: string): OverridesResult => {
  */
 const readPkgJsonOverrides = (pkgJson: Record<string, unknown>, pm: PackageManagerName): OverridesResult => {
     let overrides: Record<string, string | Record<string, string>> = {};
+
+    if (pm === "deno") {
+        // Deno has no overrides/resolutions equivalent — import map pinning
+        // is the closest thing, but it isn't structurally compatible.
+        return { overrides: {}, source: "package.json" };
+    }
 
     if (pm === "pnpm") {
         overrides = ((pkgJson.pnpm as Record<string, unknown> | undefined)?.overrides as typeof overrides) ?? {};
@@ -252,6 +258,10 @@ const writePkgJsonOverrides = (
  * @returns Lists of added and updated package names.
  */
 const applyOverrides = (workspaceRoot: string, pkgJsonPath: string, entries: OverrideEntry[], pm: PmInfo, useEditorconfig?: boolean): ApplyOverridesResult => {
+    if (pm.name === "deno") {
+        return { added: [], updated: [] };
+    }
+
     const raw = readFileSync(pkgJsonPath);
     const pkgJson = JSON.parse(raw) as Record<string, unknown>;
 
@@ -326,6 +336,7 @@ const applyOverrides = (workspaceRoot: string, pkgJsonPath: string, entries: Ove
 const readLockfileText = (workspaceRoot: string, pm: PackageManagerName): string => {
     const lockfileNames: Record<string, string[]> = {
         bun: ["bun.lock"],
+        deno: ["deno.lock"],
         npm: ["npm-shrinkwrap.json", "package-lock.json"],
         pnpm: ["pnpm-lock.yaml"],
         yarn: ["yarn.lock"],
@@ -363,6 +374,14 @@ const lockfileContainsPackage = (lockText: string, packageName: string, pm: Pack
     switch (pm) {
         case "bun": {
             return lockText.includes(`"${packageName}":`) || new RegExp(String.raw`(^|\s|[",])${escaped}@`, "m").test(lockText);
+        }
+
+        case "deno": {
+            // deno.lock is JSON; package keys appear as "<spec>" entries inside
+            // the npm/jsr maps. A bare-name substring is good enough as a
+            // presence probe, since false positives only widen the optimize
+            // candidate set rather than changing override behavior.
+            return lockText.includes(`"${packageName}"`) || lockText.includes(`"npm:${packageName}@`) || lockText.includes(`"jsr:${packageName}@`);
         }
 
         case "npm": {

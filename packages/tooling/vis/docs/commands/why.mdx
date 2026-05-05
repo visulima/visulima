@@ -36,3 +36,7 @@ vis explain react           # npm-compatible alias
 | `--global`      | `-g`  | `false` | Check globally installed packages (pnpm)      |
 | `--depth`       |       |         | Limit dependency tree depth                   |
 | `--filter`      | `-F`  |         | Filter by workspace package name (repeatable) |
+
+## Deno
+
+Deno has no `why` command. vis falls back to `deno info <module>`, which prints a forward dependency graph rather than a reverse "who depends on this" trace — close enough to be useful for tracing, but not an exact equivalent.
