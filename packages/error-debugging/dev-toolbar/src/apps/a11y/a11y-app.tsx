@@ -275,7 +275,7 @@ const A11yApp = (_props: AppComponentProps): ComponentChildren => {
                         </Button>
                         <Button
                             onClick={() => {
-                                const q = (s: string): string => `"${s.replaceAll("\"", "\"\"")}"`;
+                                const q = (s: string): string => `"${s.replaceAll('"', '""')}"`;
                                 const header = ["Rule ID", "Severity", "Message", "Selector", "HTML", "WCAG Tags"].join(",");
                                 const rows = issues.flatMap((issue) =>
                                     issue.nodes.map((node) =>

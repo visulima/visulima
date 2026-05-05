@@ -44,9 +44,9 @@ describe(annotationsToMarkdown, () => {
         it("uses elementLabel when available", () => {
             expect.assertions(1);
 
-            const md = annotationsToMarkdown([makeAnnotation({ elementLabel: "button \"Submit\"" })], "compact");
+            const md = annotationsToMarkdown([makeAnnotation({ elementLabel: 'button "Submit"' })], "compact");
 
-            expect(md).toContain("**button \"Submit\":**");
+            expect(md).toContain('**button "Submit":**');
         });
     });
 
