@@ -1002,7 +1002,7 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
     private applyTint(sharpInstance: Sharp, options: TintOptions): Sharp {
         const { rgb, ...formatOptions } = options;
 
-        let tintInstance = sharpInstance.tint(Array.isArray(rgb) ? rgb : rgb);
+        let tintInstance = sharpInstance.tint(Array.isArray(rgb) ? { r: rgb[0], g: rgb[1], b: rgb[2] } : rgb);
 
         // Apply format and quality options
         if (Object.keys(formatOptions).length > 0) {

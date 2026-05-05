@@ -110,7 +110,7 @@ export abstract class TusBase<TFile extends UploadFile> {
             "Tus-Version": TUS_VERSION_VERSION,
         };
 
-        return { headers, statusCode: 204 } as ResponseFile<TFile>;
+        return { headers, statusCode: 204 } as unknown as ResponseFile<TFile>;
     }
 
     /**
@@ -508,7 +508,7 @@ export abstract class TusBase<TFile extends UploadFile> {
             headers["Upload-Concat"] = uploadConcatValue;
         }
 
-        return { headers: headers as Record<string, string>, statusCode: 200 } as ResponseFile<TFile>;
+        return { headers: headers as Record<string, string>, statusCode: 200 } as unknown as ResponseFile<TFile>;
     }
 
     /**
