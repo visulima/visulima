@@ -99,8 +99,8 @@ describe("iTerm2 Integration", () => {
                     width: it2Pixels(100),
                 };
                 const file = new ITerm2File(properties);
-                const expectedPayload
-                    = "File=name=my file.txt;size=12345;width=100px;height=50%;preserveAspectRatio=0;inline=1;doNotMoveCursor=1:SGVsbG8gd29ybGQ=";
+                const expectedPayload =
+                    "File=name=my file.txt;size=12345;width=100px;height=50%;preserveAspectRatio=0;inline=1;doNotMoveCursor=1:SGVsbG8gd29ybGQ=";
 
                 expect(file.toString()).toBe(expectedPayload);
                 expect(indexTerm2(file)).toBe(`${OSC}1337;${expectedPayload}${BEL}`);
