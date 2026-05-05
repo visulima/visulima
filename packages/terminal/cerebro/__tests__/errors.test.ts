@@ -34,7 +34,7 @@ describe("errors", () => {
 
             const error = new CommandNotFoundError("unknown-command");
 
-            expect(error.message).toBe("Command \"unknown-command\" not found");
+            expect(error.message).toBe('Command "unknown-command" not found');
             expect(error.code).toBe("COMMAND_NOT_FOUND");
             expect(error.commandName).toBe("unknown-command");
         });
@@ -55,7 +55,7 @@ describe("errors", () => {
 
             const error = new CommandValidationError("test", ["option1", "option2"]);
 
-            expect(error.message).toBe("Command \"test\" is missing required options: option1, option2");
+            expect(error.message).toBe('Command "test" is missing required options: option1, option2');
             expect(error.code).toBe("COMMAND_VALIDATION_ERROR");
             expect(error.commandName).toBe("test");
             expect(error.missingOptions).toStrictEqual(["option1", "option2"]);
@@ -68,7 +68,7 @@ describe("errors", () => {
 
             const error = new ConflictingOptionsError("option1", "option2");
 
-            expect(error.message).toBe("Options \"option1\" and \"option2\" cannot be used together");
+            expect(error.message).toBe('Options "option1" and "option2" cannot be used together');
             expect(error.code).toBe("CONFLICTING_OPTIONS");
             expect(error.option1).toBe("option1");
             expect(error.option2).toBe("option2");
@@ -81,7 +81,7 @@ describe("errors", () => {
 
             const error = new PluginError("test-plugin", "Plugin failed");
 
-            expect(error.message).toBe("Plugin \"test-plugin\" error: Plugin failed");
+            expect(error.message).toBe('Plugin "test-plugin" error: Plugin failed');
             expect(error.code).toBe("PLUGIN_ERROR");
             expect(error.pluginName).toBe("test-plugin");
         });

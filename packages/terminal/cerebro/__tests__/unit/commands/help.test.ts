@@ -450,7 +450,7 @@ describe("command/help", () => {
 
             helpCommand.execute(toolboxMock as unknown as IToolbox);
 
-            expect(errorMock).toHaveBeenCalledWith("Command \"nonexistent\" not found");
+            expect(errorMock).toHaveBeenCalledWith('Command "nonexistent" not found');
         });
 
         it("should append a Subcommands section to a flat command's help when it has nested children", () => {
