@@ -798,6 +798,64 @@ describe(findTargetVersion, () => {
 
         expect(findTargetVersion(["1.0.0", "2.0.0"], "2.0.0", "^1.0.0", "latest", false)).toBe("2.0.0");
     });
+
+    // --- release-channel filter (issue #625) ---
+
+    describe("release-channel filter", () => {
+        const stableAndPrerelease = ["1.0.0", "1.1.0", "2.0.0", "2.1.0-rc.1", "2.1.0-beta.1", "2.1.0-alpha.1"];
+
+        it("'stable' rejects an off-channel dist-tag and falls back to the newest stable in the version list", () => {
+            expect.assertions(1);
+
+            // npm's `latest` dist-tag points at an rc, but channel=stable
+            // must scan the version list for a stable candidate instead of bailing.
+            expect(findTargetVersion(stableAndPrerelease, "2.1.0-rc.1", "^1.0.0", "latest", false, undefined, "stable")).toBe("2.0.0");
+        });
+
+        it("'any' accepts any channel (matches legacy --prerelease=true behaviour)", () => {
+            expect.assertions(1);
+
+            expect(findTargetVersion(stableAndPrerelease, "2.1.0-rc.1", "^1.0.0", "latest", false, undefined, "any")).toBe("2.1.0-rc.1");
+        });
+
+        it("'same' on a stable current behaves like 'stable' (refuses to promote to a prerelease)", () => {
+            expect.assertions(1);
+
+            expect(findTargetVersion(stableAndPrerelease, "2.1.0-rc.1", "^1.0.0", "latest", false, undefined, "same")).toBe("2.0.0");
+        });
+
+        it("'same' on an alpha current accepts only alpha candidates", () => {
+            expect.assertions(1);
+
+            const alphaCandidates = ["1.0.0-alpha.1", "1.0.0-alpha.5", "1.0.0-beta.1", "1.0.0-rc.1", "1.0.0"];
+
+            // Current is alpha.1 → only alpha.* should qualify, beta/rc/stable are out of channel.
+            expect(findTargetVersion(alphaCandidates, "1.0.0", "^1.0.0-alpha.1", "latest", true, undefined, "same")).toBe("1.0.0-alpha.5");
+        });
+
+        it("'same' on an alpha current rejects a stable bump", () => {
+            expect.assertions(1);
+
+            const alphaThenStable = ["1.0.0-alpha.1", "1.0.0"];
+
+            // includePrerelease=true so the `1.0.0` dist-tag isn't pruned upfront —
+            // the channel filter is what should reject the cross-channel bump.
+            expect(findTargetVersion(alphaThenStable, "1.0.0", "^1.0.0-alpha.1", "latest", true, undefined, "same")).toBeUndefined();
+        });
+
+        it("releaseChannel undefined + includePrerelease=true preserves legacy --prerelease semantics", () => {
+            expect.assertions(1);
+
+            // No releaseChannel passed → resolveReleaseChannel maps includePrerelease=true to "any".
+            expect(findTargetVersion(stableAndPrerelease, "2.1.0-rc.1", "^1.0.0", "latest", true)).toBe("2.1.0-rc.1");
+        });
+
+        it("releaseChannel undefined + includePrerelease=false preserves stable-only semantics", () => {
+            expect.assertions(1);
+
+            expect(findTargetVersion(stableAndPrerelease, "2.0.0", "^1.0.0", "latest", false)).toBe("2.0.0");
+        });
+    });
 });
 
 // --- resolvePackageTarget ---
@@ -1839,7 +1897,7 @@ catalog:
 
         const result = readFileSync(filePath, "utf8");
 
-        expect(result).toContain('"@types/node": ^22.0.0');
+        expect(result).toContain("\"@types/node\": ^22.0.0");
     });
 
     it("should update exact version without prefix", () => {
@@ -2001,8 +2059,8 @@ catalog:
 
         const result = readFileSync(filePath, "utf8");
 
-        expect(result).toContain('- "packages/*"');
-        expect(result).toContain('- "apps/*"');
+        expect(result).toContain("- \"packages/*\"");
+        expect(result).toContain("- \"apps/*\"");
         expect(result).toContain("react: ^19.0.0");
     });
 
@@ -2033,7 +2091,7 @@ catalog:
         const result = readFileSync(filePath, "utf8");
 
         // Quotes around version should be preserved (replace happens inside)
-        expect(result).toContain('^19.0.0"');
+        expect(result).toContain("^19.0.0\"");
     });
 });
 
@@ -2208,19 +2266,19 @@ describe(detectJsonIndent, () => {
     it("should detect 2-space indent", () => {
         expect.assertions(1);
 
-        expect(detectJsonIndent('{\n  "name": "test"\n}')).toBe(2);
+        expect(detectJsonIndent("{\n  \"name\": \"test\"\n}")).toBe(2);
     });
 
     it("should detect 4-space indent", () => {
         expect.assertions(1);
 
-        expect(detectJsonIndent('{\n    "name": "test"\n}')).toBe(4);
+        expect(detectJsonIndent("{\n    \"name\": \"test\"\n}")).toBe(4);
     });
 
     it("should default to 2 when no indentation found", () => {
         expect.assertions(1);
 
-        expect(detectJsonIndent('{"name":"test"}')).toBe(2);
+        expect(detectJsonIndent("{\"name\":\"test\"}")).toBe(2);
     });
 });
 
@@ -2344,7 +2402,7 @@ describe("applyCatalogUpdates with bun", () => {
         const content = readFileSync(filePath, "utf8");
 
         // Should use 4-space indent
-        expect(content).toContain('    "workspaces"');
+        expect(content).toContain("    \"workspaces\"");
     });
 
     it("should handle multiple updates in bun catalog", () => {
@@ -2732,7 +2790,7 @@ describe(createBackup, () => {
         const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
         const filePath = join(temporaryDirectory, "package.json");
 
-        writeFileSync(filePath, '{"workspaces":{"catalog":{"react":"^18.0.0"}}}');
+        writeFileSync(filePath, "{\"workspaces\":{\"catalog\":{\"react\":\"^18.0.0\"}}}");
 
         const backupPath = createBackup(temporaryDirectory, "bun");
 
@@ -2773,13 +2831,13 @@ describe(restoreFromBackup, () => {
         const filePath = join(temporaryDirectory, "package.json");
         const backupPath = `${filePath}.bak`;
 
-        writeFileSync(backupPath, '{"old":true}');
-        writeFileSync(filePath, '{"new":true}');
+        writeFileSync(backupPath, "{\"old\":true}");
+        writeFileSync(filePath, "{\"new\":true}");
 
         const restored = restoreFromBackup(temporaryDirectory, "bun");
 
         expect(restored).toBe(true);
-        expect(readFileSync(filePath, "utf8")).toContain('"old"');
+        expect(readFileSync(filePath, "utf8")).toContain("\"old\"");
     });
 
     it("should return false when no backup exists", () => {

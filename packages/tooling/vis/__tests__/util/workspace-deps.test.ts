@@ -195,4 +195,80 @@ describe("workspace-deps", () => {
             ).toStrictEqual(["^17", "^18"]);
         });
     });
+
+    describe("pnpm-workspace.yaml#overrides (pnpm v9+)", () => {
+        it("emits one synthetic pnpm.overrides DepInstance per entry, pointing at pnpm-workspace.yaml", () => {
+            expect.assertions(4);
+
+            writeJson("package.json", { name: "root" });
+            writeFileSync(
+                join(workspaceRoot, "pnpm-workspace.yaml"),
+                "packages:\n  - 'packages/*'\noverrides:\n  react: '18.2.0'\n  '@types/node': '22.0.0'\n",
+            );
+
+            const overrides = iterateWorkspaceDeps(workspaceRoot).filter((i) => i.depType === "pnpm.overrides");
+
+            expect(overrides).toHaveLength(2);
+
+            const react = overrides.find((i) => i.depName === "react");
+
+            expect(react).toMatchObject({
+                depType: "pnpm.overrides",
+                isInternal: false,
+                packageDir: ".",
+                packageName: undefined,
+                specifier: "18.2.0",
+            });
+            expect(react?.packageJsonPath.endsWith("pnpm-workspace.yaml")).toBe(true);
+            expect(overrides.find((i) => i.depName === "@types/node")?.specifier).toBe("22.0.0");
+        });
+
+        it("flags overrides that point at workspace packages as internal", () => {
+            expect.assertions(1);
+
+            writeJson("package.json", { name: "root" });
+            writeJson("packages/lib/package.json", { name: "@scope/lib" });
+            writeFileSync(
+                join(workspaceRoot, "pnpm-workspace.yaml"),
+                "packages:\n  - 'packages/*'\noverrides:\n  '@scope/lib': 'workspace:*'\n",
+            );
+
+            const internal = iterateWorkspaceDeps(workspaceRoot).find(
+                (i) => i.depType === "pnpm.overrides" && i.depName === "@scope/lib",
+            );
+
+            expect(internal?.isInternal).toBe(true);
+        });
+
+        it("returns no synthetic rows when pnpm-workspace.yaml has no overrides block", () => {
+            expect.assertions(1);
+
+            writeJson("package.json", { name: "root" });
+            writeFileSync(join(workspaceRoot, "pnpm-workspace.yaml"), "packages:\n  - 'packages/*'\n");
+
+            expect(iterateWorkspaceDeps(workspaceRoot).filter((i) => i.depType === "pnpm.overrides")).toStrictEqual([]);
+        });
+
+        it("silently ignores a malformed pnpm-workspace.yaml instead of throwing", () => {
+            expect.assertions(1);
+
+            writeJson("package.json", { name: "root" });
+            writeFileSync(join(workspaceRoot, "pnpm-workspace.yaml"), "packages:\n  - 'packages/*'\noverrides: : :\n");
+
+            // Best-effort parsing — drift detection should never crash
+            // a `vis lint` invocation just because the YAML is broken.
+            expect(() => iterateWorkspaceDeps(workspaceRoot)).not.toThrow();
+        });
+
+        it("skips overrides scan when depTypes filter excludes pnpm.overrides", () => {
+            expect.assertions(1);
+
+            writeJson("package.json", { dependencies: { react: "^18" }, name: "root" });
+            writeFileSync(join(workspaceRoot, "pnpm-workspace.yaml"), "overrides:\n  react: '18.2.0'\n");
+
+            const instances = iterateWorkspaceDeps(workspaceRoot, { depTypes: ["dependencies"] });
+
+            expect(instances.filter((i) => i.depType === "pnpm.overrides")).toStrictEqual([]);
+        });
+    });
 });

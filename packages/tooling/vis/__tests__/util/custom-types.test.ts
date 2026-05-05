@@ -216,7 +216,7 @@ describe("custom-types", () => {
             expect(issues[0]?.depName).toBe("node");
         });
 
-        it('does not flag unparseable specifiers like `engines.node: "*"` as drift', () => {
+        it("does not flag unparseable specifiers like `engines.node: \"*\"` as drift", () => {
             expect.assertions(1);
 
             writeWorkspaceRoot();
@@ -430,7 +430,7 @@ describe("custom-types", () => {
             expect(lowest[0]?.fix).toBe("10.0.0-rc.1");
         });
 
-        it('normalises packageManager: "yarn@4.0.0" without a +sha512 hash', () => {
+        it("normalises packageManager: \"yarn@4.0.0\" without a +sha512 hash", () => {
             expect.assertions(1);
 
             writeWorkspaceRoot({ name: "root", packageManager: "yarn@4.0.0", workspaces: ["packages/*"] });
@@ -584,9 +584,18 @@ describe("custom-types", () => {
                 validateExtraTypes([
                     { name: "pnpmOverridesLegacy", path: "pnpm.overrides", strategy: "versionsByName" },
                     { name: "myToolPin", path: "myTool.runtime", strategy: "name@version" },
+                    { name: "myToolTildePin", path: "myTool.tildeRuntime", strategy: "name~version" },
                     { depName: "node", name: "minNode", path: "config.minNode", strategy: "string" },
                 ]),
             ).toStrictEqual([]);
+        });
+
+        it("name~version is listed in the strategy error message", () => {
+            expect.assertions(1);
+
+            const errors = validateExtraTypes([{ name: "myType", path: "a.b", strategy: "tilde" as never }]);
+
+            expect(errors[0]).toContain("name~version");
         });
     });
 
@@ -728,6 +737,59 @@ describe("custom-types", () => {
             const after = readJson("packages/a/package.json");
 
             expect((after.config as Record<string, string>).minNode).toBe("22.14.0");
+        });
+
+        it("name~version splits on the first tilde and emits the version as the specifier", () => {
+            expect.assertions(3);
+
+            writeWorkspaceRoot({ myTool: { tildeRuntime: "node~22.14.0" }, name: "root", workspaces: ["packages/*"] });
+            writeJson("packages/a/package.json", { myTool: { tildeRuntime: "node~22.10.0" }, name: "@my/a" });
+
+            const extras = [{ name: "myToolTildePin", path: "myTool.tildeRuntime", strategy: "name~version" } as const];
+            const instances = iterateCustomTypeDeps(workspaceRoot, extras);
+
+            expect(instances).toHaveLength(2);
+            expect(instances.every((instance) => instance.depName === "node")).toBe(true);
+            expect(new Set(instances.map((instance) => instance.specifier))).toStrictEqual(new Set(["22.10.0", "22.14.0"]));
+        });
+
+        it("name~version preserves the leading name when fixing drift", () => {
+            expect.assertions(1);
+
+            writeWorkspaceRoot({ myTool: { tildeRuntime: "node~22.14.0" }, name: "root", workspaces: ["packages/*"] });
+            writeJson("packages/a/package.json", { myTool: { tildeRuntime: "node~22.10.0" }, name: "@my/a" });
+
+            const extras = [{ name: "myToolTildePin", path: "myTool.tildeRuntime", strategy: "name~version" } as const];
+
+            applyCustomTypeFixes(lintCustomTypes(iterateCustomTypeDeps(workspaceRoot, extras)));
+
+            const after = readJson("packages/a/package.json");
+
+            expect((after.myTool as Record<string, string>).tildeRuntime).toBe("node~22.14.0");
+        });
+
+        it("name~version splits on the first tilde so semver tilde-ranges in the version stay intact", () => {
+            expect.assertions(2);
+
+            // Specifier carries its own `~` (semver tilde range). The split
+            // must use the FIRST tilde so the version "~22.14.0" is preserved verbatim.
+            writeWorkspaceRoot({ myTool: { tildeRuntime: "node~~22.14.0" }, name: "root", workspaces: ["packages/*"] });
+
+            const extras = [{ name: "myToolTildePin", path: "myTool.tildeRuntime", strategy: "name~version" } as const];
+            const [instance] = iterateCustomTypeDeps(workspaceRoot, extras);
+
+            expect(instance?.depName).toBe("node");
+            expect(instance?.specifier).toBe("~22.14.0");
+        });
+
+        it("name~version drops malformed entries (no tilde) silently", () => {
+            expect.assertions(1);
+
+            writeWorkspaceRoot({ myTool: { tildeRuntime: "node-22.14.0" }, name: "root", workspaces: ["packages/*"] });
+
+            const extras = [{ name: "myToolTildePin", path: "myTool.tildeRuntime", strategy: "name~version" } as const];
+
+            expect(iterateCustomTypeDeps(workspaceRoot, extras)).toStrictEqual([]);
         });
     });
 });
