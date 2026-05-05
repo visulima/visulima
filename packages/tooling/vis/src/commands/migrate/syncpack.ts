@@ -6,6 +6,7 @@ import { join } from "@visulima/path";
 
 import { findVisConfigFile } from "../../config/config";
 import type { ExtraCustomType } from "../../config/types";
+import type { BannedDepRule } from "../../util/banned-deps-lint";
 import { BUILTIN_CUSTOM_TYPES } from "../../util/custom-types";
 import { backupFile } from "./backup";
 import { detectJsonIndent, isJsonFile, readJsonFile } from "./json";
@@ -340,13 +341,6 @@ const noteUnsupportedKeys = (config: SyncpackConfig, report: MigrationReport): v
     }
 };
 
-interface ScopedBannedDepRule {
-    packages?: string[];
-    reason: string;
-}
-
-type BannedDepEntry = string | ScopedBannedDepRule;
-
 /**
  * Pull every `versionGroups[].isBanned: true` entry into a vis
  * `policy.bannedDeps` map. With the new `packages` scope on
@@ -359,8 +353,8 @@ type BannedDepEntry = string | ScopedBannedDepRule;
  * keep the first entry — we surface a warning so reviewers can untangle
  * by hand if needed.
  */
-const translateBannedDeps = (config: SyncpackConfig, report: MigrationReport): Record<string, BannedDepEntry> => {
-    const out: Record<string, BannedDepEntry> = {};
+const translateBannedDeps = (config: SyncpackConfig, report: MigrationReport): Record<string, BannedDepRule> => {
+    const out: Record<string, BannedDepRule> = {};
 
     if (!Array.isArray(config.versionGroups)) {
         return out;
@@ -418,7 +412,7 @@ const formatExtraTypeLiteral = (entry: ExtraCustomType): string => {
     return `                { ${parts.join(", ")} }`;
 };
 
-const formatBannedDepEntry = (name: string, rule: BannedDepEntry): string => {
+const formatBannedDepRule = (name: string, rule: BannedDepRule): string => {
     if (typeof rule === "string") {
         return `            ${JSON.stringify(name)}: ${JSON.stringify(rule)}`;
     }
@@ -429,15 +423,23 @@ const formatBannedDepEntry = (name: string, rule: BannedDepEntry): string => {
         parts.push(`packages: [${rule.packages.map((p) => JSON.stringify(p)).join(", ")}]`);
     }
 
+    if (rule.paths && rule.paths.length > 0) {
+        parts.push(`paths: [${rule.paths.map((p) => JSON.stringify(p)).join(", ")}]`);
+    }
+
+    if (rule.replacement !== undefined) {
+        parts.push(`replacement: ${JSON.stringify(rule.replacement)}`);
+    }
+
     return `            ${JSON.stringify(name)}: { ${parts.join(", ")} }`;
 };
 
-const generatePolicySnippet = (extraTypes: ExtraCustomType[], bannedDeps: Record<string, BannedDepEntry> = {}): string => {
+const generatePolicySnippet = (extraTypes: ExtraCustomType[], bannedDeps: Record<string, BannedDepRule> = {}): string => {
     const blocks: string[] = [];
     const bannedEntries = Object.entries(bannedDeps);
 
     if (bannedEntries.length > 0) {
-        const rows = bannedEntries.map(([name, rule]) => formatBannedDepEntry(name, rule)).join(",\n");
+        const rows = bannedEntries.map(([name, rule]) => formatBannedDepRule(name, rule)).join(",\n");
 
         blocks.push(`        bannedDeps: {\n${rows},\n        }`);
     }
@@ -451,7 +453,7 @@ const generatePolicySnippet = (extraTypes: ExtraCustomType[], bannedDeps: Record
     return `    policy: {\n${blocks.join(",\n")},\n    }`;
 };
 
-const summarizePolicyContents = (extraTypes: ExtraCustomType[], bannedDeps: Record<string, BannedDepEntry>): string => {
+const summarizePolicyContents = (extraTypes: ExtraCustomType[], bannedDeps: Record<string, BannedDepRule>): string => {
     const parts: string[] = [];
     const bannedCount = Object.keys(bannedDeps).length;
 
@@ -470,7 +472,7 @@ const insertPolicyIntoVisConfig = (
     root: string,
     extraTypes: ExtraCustomType[],
     logger: MigrateLogger,
-    bannedDeps: Record<string, BannedDepEntry> = {},
+    bannedDeps: Record<string, BannedDepRule> = {},
 ): boolean => {
     const summary = summarizePolicyContents(extraTypes, bannedDeps);
 
