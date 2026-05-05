@@ -10,84 +10,84 @@ import { textErrorHandler as TextErrorHandler } from "./text-error-handler";
 import type { ErrorHandler, ErrorHandlers } from "./types";
 import { xmlErrorHandler as XmlErrorHandler } from "./xml-error-handler";
 
-const createNegotiatedErrorHandler
-    = (errorHandlers: ErrorHandlers, showTrace: boolean, defaultHtmlHandler?: ErrorHandler) =>
-        async (error: Error, request: IncomingMessage, response: ServerResponse): Promise<void> => {
-            const accept = new Accepts(request);
+const createNegotiatedErrorHandler =
+    (errorHandlers: ErrorHandlers, showTrace: boolean, defaultHtmlHandler?: ErrorHandler) =>
+    async (error: Error, request: IncomingMessage, response: ServerResponse): Promise<void> => {
+        const accept = new Accepts(request);
 
-            // Server preference order
-            const chosenType = accept.type([
-                "text/html",
-                "application/vnd.api+json",
-                "application/problem+json",
-                "application/json",
-                "text/plain",
-                "application/javascript",
-                "text/javascript",
-                "application/xml",
-                "text/xml",
-            ]) as string | false;
+        // Server preference order
+        const chosenType = accept.type([
+            "text/html",
+            "application/vnd.api+json",
+            "application/problem+json",
+            "application/json",
+            "text/plain",
+            "application/javascript",
+            "text/javascript",
+            "application/xml",
+            "text/xml",
+        ]) as string | false;
 
-            let errorHandler: ErrorHandler = defaultHtmlHandler ?? ProblemErrorHandler;
+        let errorHandler: ErrorHandler = defaultHtmlHandler ?? ProblemErrorHandler;
 
-            if (chosenType === "text/html" && defaultHtmlHandler) {
-                errorHandler = defaultHtmlHandler;
-            } else {
-                switch (chosenType) {
-                    case "application/javascript":
-                    case "text/javascript": {
-                        errorHandler = JsonpErrorHandler();
+        if (chosenType === "text/html" && defaultHtmlHandler) {
+            errorHandler = defaultHtmlHandler;
+        } else {
+            switch (chosenType) {
+                case "application/javascript":
+                case "text/javascript": {
+                    errorHandler = JsonpErrorHandler();
 
-                        break;
-                    }
-                    case "application/json": {
-                        errorHandler = JsonErrorHandler();
-
-                        break;
-                    }
-                    case "application/problem+json": {
-                        errorHandler = ProblemErrorHandler;
-
-                        break;
-                    }
-                    case "application/vnd.api+json": {
-                        errorHandler = JsonapiErrorHandler;
-
-                        break;
-                    }
-                    case "application/xml":
-                    case "text/xml": {
-                        errorHandler = XmlErrorHandler();
-
-                        break;
-                    }
-                    case "text/plain": {
-                        errorHandler = TextErrorHandler();
-
-                        break;
-                    }
-                    default: {
-                    // Use the default errorHandler already set above
-                        break;
-                    }
+                    break;
                 }
-            }
+                case "application/json": {
+                    errorHandler = JsonErrorHandler();
 
-            // Allow consumer overrides via regex
-            for (const { handler, regex } of errorHandlers) {
-                const headerValue = request.headers.accept ?? "";
-                const headerString = Array.isArray(headerValue) ? headerValue.join(",") : headerValue;
+                    break;
+                }
+                case "application/problem+json": {
+                    errorHandler = ProblemErrorHandler;
 
-                if (regex.test(headerString)) {
-                    errorHandler = handler;
+                    break;
+                }
+                case "application/vnd.api+json": {
+                    errorHandler = JsonapiErrorHandler;
+
+                    break;
+                }
+                case "application/xml":
+                case "text/xml": {
+                    errorHandler = XmlErrorHandler();
+
+                    break;
+                }
+                case "text/plain": {
+                    errorHandler = TextErrorHandler();
+
+                    break;
+                }
+                default: {
+                    // Use the default errorHandler already set above
                     break;
                 }
             }
+        }
 
-            // eslint-disable-next-line no-param-reassign
-            (error as Error & { expose: boolean }).expose = showTrace;
+        // Allow consumer overrides via regex
+        for (const { handler, regex } of errorHandlers) {
+            const headerValue = request.headers.accept ?? "";
+            const headerString = Array.isArray(headerValue) ? headerValue.join(",") : headerValue;
 
-            await errorHandler(error, request, response);
-        };
+            if (regex.test(headerString)) {
+                errorHandler = handler;
+                break;
+            }
+        }
+
+        // eslint-disable-next-line no-param-reassign
+        (error as Error & { expose: boolean }).expose = showTrace;
+
+        await errorHandler(error, request, response);
+    };
 
 export default createNegotiatedErrorHandler;
