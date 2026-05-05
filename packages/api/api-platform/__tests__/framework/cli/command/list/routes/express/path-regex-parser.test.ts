@@ -56,6 +56,11 @@ describe("path-regex-parser", () => {
     it("handles custom regex path", () => {
         expect.assertions(1);
 
-        expect(pathRegexParser(TEST_REGEX as unknown as ExpressRegex, [])).toBe("/test/");
+        const customRegex = TEST_REGEX as unknown as ExpressRegex;
+
+        customRegex.fast_slash = false;
+        customRegex.fast_star = false;
+
+        expect(pathRegexParser(customRegex, [])).toBe("/test/");
     });
 });

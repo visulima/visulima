@@ -73,7 +73,8 @@ const listCommand = async (
         if (existsSync(environmentFilePath)) {
             // Loads environment vars in the current process so application
             // that depends on them can be loaded properly below
-            // eslint-disable-next-line e18e/ban-dependencies -- dotenv is the established loader for legacy CLI integrations; --env-file requires Node 20.6+ and changes UX
+            // eslint-disable-next-line e18e/ban-dependencies -- dotenv is resolved from the user's project (optional peer); --env-file requires Node 20.6+ and changes UX
+            // @ts-expect-error -- dotenv is not declared in this package's deps; it must be installed in the consuming project
             const dotenv = (await import("dotenv")) as { config: (options: { path: string }) => unknown };
 
             dotenv.config({ path: environmentFilePath });

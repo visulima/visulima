@@ -5,7 +5,7 @@ export type ErrorHandler = <Request extends IncomingMessage, Response extends Se
     error: unknown,
     request: Request,
     response: Response,
-) => Promise<unknown>;
+) => void | Promise<unknown>;
 
 export type ErrorHandlers = {
     handler: ErrorHandler;

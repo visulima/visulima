@@ -80,7 +80,7 @@ const traverse = (routes: RouteMetaData[], path: string, layer: Layer, keys: Key
  */
 const expressPathParser = (app: Express): RouteMetaData[] => {
     // eslint-disable-next-line no-underscore-dangle, @typescript-eslint/no-unsafe-assignment -- express's internal _router is the legacy private accessor used as fallback for older versions; both sides are typed as `any` by upstream express types
-    const router: Router = (app as Express & { _router?: Router })._router ?? (app.router as Router);
+    const router: Router = (app as Express & { _router?: Router })._router ?? (app.router as unknown as Router);
     const routes: RouteMetaData[] = [];
 
     for (const layer of router.stack) {

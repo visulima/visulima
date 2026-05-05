@@ -1,10 +1,10 @@
 import type { Route } from "./types";
 
-const routesGroupBy = (list: Route[], keyGetter: (item: Route) => keyof Route): Map<string, Route[]> => {
+const routesGroupBy = (list: Route[], keyGetter: (item: Route) => string | undefined): Map<string, Route[]> => {
     const map = new Map<string, Route[]>();
 
     list.forEach((item) => {
-        const key = keyGetter(item);
+        const key = keyGetter(item) ?? "unsorted";
         const collection = map.get(key);
 
         if (collection) {
