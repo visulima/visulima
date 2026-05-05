@@ -227,7 +227,10 @@ const iterateExtraType = (
         return [];
     }
 
-    const meta: ExtraTypeMeta = { depName: extraType.depName, path: extraType.path, strategy: extraType.strategy };
+    // Frozen so the same reference can be shared across every emitted instance
+    // (see versionsByName loop below) without risk of one downstream consumer
+    // mutating it and silently corrupting siblings.
+    const meta: ExtraTypeMeta = Object.freeze({ depName: extraType.depName, path: extraType.path, strategy: extraType.strategy });
 
     if (extraType.strategy === "versionsByName") {
         if (!isPlainObject(block)) {

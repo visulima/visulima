@@ -154,6 +154,8 @@ export default {
 
 A `name` that collides with a built-in (`engines`, `volta`, `packageManager`, `devEngines.runtime`, `devEngines.packageManager`) is rejected with a non-zero exit — the built-in stays canonical. Missing/duplicate `name`, missing `path`, invalid `strategy`, or `strategy: "string"` without `depName` all fail validation up front before the workspace is scanned.
 
+`path` always splits on `.` literally — there is no escape mechanism, so a single `package.json` key that itself contains a `.` (e.g. `pkg["foo.bar"]`) cannot be reached. Use a parent-then-child layout if you control the schema.
+
 #### Overlap with `vis doctor`
 
 - **`vis doctor`** verifies the *installed* runtime matches `engines.node` (machine-side: "is my Node binary the right version?").
