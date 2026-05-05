@@ -35,6 +35,7 @@ export interface ExtraCustomType {
      * version string at `path` should be associated with.
      */
     depName?: string;
+
     /**
      * Display name for this customType. Used as the cluster key prefix in
      * lint output and JSON. Must not collide with the built-in names.
@@ -484,21 +485,6 @@ export interface VisConfig {
             autofix?: "prompt" | boolean;
 
             /**
-             * Dep names exempt from the drift check (exact match against the
-             * field name within the block — e.g. `node`, `pnpm`).
-             */
-            ignore?: string[];
-
-            /**
-             * Resolution strategy used when `--fix` runs.
-             * - `highest` (default): align every drifting instance to the
-             *   highest declared version.
-             * - `lowest`: align to the lowest.
-             * @default "highest"
-             */
-            resolve?: "highest" | "lowest";
-
-            /**
              * User-defined custom-type pin locations. Each entry tells the
              * customTypes lint to read additional version pins from a
              * non-standard JSON path inside every workspace package.json,
@@ -520,7 +506,6 @@ export interface VisConfig {
              *
              * `name` must not collide with a built-in type name. `path` is
              * a dot-separated walk into the package.json (e.g. `pnpm.overrides`).
-             *
              * @example
              * ```ts
              * extraTypes: [
@@ -531,6 +516,21 @@ export interface VisConfig {
              * ```
              */
             extraTypes?: ExtraCustomType[];
+
+            /**
+             * Dep names exempt from the drift check (exact match against the
+             * field name within the block — e.g. `node`, `pnpm`).
+             */
+            ignore?: string[];
+
+            /**
+             * Resolution strategy used when `--fix` runs.
+             * - `highest` (default): align every drifting instance to the
+             *   highest declared version.
+             * - `lowest`: align to the lowest.
+             * @default "highest"
+             */
+            resolve?: "highest" | "lowest";
         };
 
         /**
