@@ -1,7 +1,7 @@
 import { isAccessibleSync, readJsonSync } from "@visulima/fs";
 import { join, relative } from "@visulima/path";
 
-import { readPnpmWorkspacePatterns, resolveWorkspacePatterns } from "../config/workspace";
+import { readPnpmWorkspaceOverrides, readPnpmWorkspacePatterns, resolveWorkspacePatterns } from "../config/workspace";
 
 /**
  * One concrete declaration of a dependency at a single (package × depType × name) coordinate.
@@ -145,6 +145,14 @@ export const iterateWorkspaceDeps = (workspaceRoot: string, options: IterateDeps
     const internalNames = collectWorkspacePackageNames(workspaceRoot);
     const out: DepInstance[] = [];
 
+    // pnpm v9+ moved `pnpm.overrides` from package.json into
+    // pnpm-workspace.yaml#overrides. We surface those entries as if
+    // they lived on the root pnpm.overrides block so drift / banned-deps
+    // / json-deps lints see them without each grow a yaml-aware code path.
+    const wantsPnpmOverrides = depTypes.includes("pnpm.overrides");
+    const pnpmWorkspaceOverrides = wantsPnpmOverrides ? readPnpmWorkspaceOverrides(workspaceRoot) : undefined;
+    const pnpmWorkspaceYamlPath = pnpmWorkspaceOverrides ? join(workspaceRoot, "pnpm-workspace.yaml") : undefined;
+
     for (const directory of directories) {
         const packageJsonPath = join(workspaceRoot, directory, "package.json");
         const pkg = readPkg(packageJsonPath);
@@ -186,6 +194,26 @@ export const iterateWorkspaceDeps = (workspaceRoot: string, options: IterateDeps
                     specifier,
                 });
             }
+        }
+    }
+
+    if (pnpmWorkspaceOverrides && pnpmWorkspaceYamlPath) {
+        for (const [depName, specifier] of Object.entries(pnpmWorkspaceOverrides)) {
+            const isInternal = internalNames.has(depName);
+
+            if (!includeInternal && isInternal) {
+                continue;
+            }
+
+            out.push({
+                depName,
+                depType: "pnpm.overrides",
+                isInternal,
+                packageDir: ".",
+                packageJsonPath: pnpmWorkspaceYamlPath,
+                packageName: undefined,
+                specifier,
+            });
         }
     }
 

@@ -43,8 +43,15 @@ export interface ExtraCustomType {
     name: string;
     /** Dot-separated walk into package.json (e.g. `pnpm.overrides`, `myTool.runtime`). */
     path: string;
-    /** How to interpret the JSON found at `path`. */
-    strategy: "name@version" | "string" | "versionsByName";
+
+    /**
+     * How to interpret the JSON found at `path`.
+     * - `name@version` — single string `pnpm@9.0.0` (with optional `+sha512.…` hash).
+     * - `name~version` — single string `node~20.0.0`, mirrors syncpack's tilde form.
+     * - `string` — bare version literal (requires `depName`).
+     * - `versionsByName` — `{ name: version }` object such as `engines`.
+     */
+    strategy: "name@version" | "name~version" | "string" | "versionsByName";
 }
 
 interface PackageJson {
@@ -1012,6 +1019,14 @@ export interface VisConfig {
         install?: boolean;
 
         /**
+         * Maximum number of concurrent registry requests during outdated checks.
+         * Higher values speed up large workspaces but risk hitting registry rate
+         * limits or self-hosted Verdaccio caps.
+         * @default 8
+         */
+        maxConcurrentRequests?: number;
+
+        /**
          * Minimum number of minutes since a version was published before
          * vis will consider it for updates. This mirrors pnpm's
          * `minimumReleaseAge` — a single setting that applies to both
@@ -1039,6 +1054,21 @@ export interface VisConfig {
          */
         packageMode?: Record<string, "latest" | "minor" | "patch">;
         prerelease?: boolean;
+
+        /**
+         * Which release channels to consider when picking the target version.
+         * - `"stable"` (default) — only ship stable releases (no prereleases).
+         * - `"same"` — match the prerelease channel of the *current* range:
+         *   if you're on `react@19.0.0-rc.1`, only `rc.*` candidates qualify;
+         *   if you're on a stable, only stable candidates. Prevents
+         *   accidentally promoting a prerelease pin to a stable major bump.
+         * - `"any"` — equivalent to `--prerelease`. Any channel is fair game.
+         *
+         * `--release-channel` on the CLI overrides this. If `prerelease: true`
+         * is set without `releaseChannel`, vis treats it as `"any"`.
+         * @default "stable"
+         */
+        releaseChannel?: "any" | "same" | "stable";
         security?: boolean;
         target?: "latest" | "minor" | "patch";
     };

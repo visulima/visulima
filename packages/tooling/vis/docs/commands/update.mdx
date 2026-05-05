@@ -57,6 +57,8 @@ vis update --rollback               # Restore catalog from last backup
 | `--install`            |       | `true`   | Run install after catalog update (`--no-install` to skip)          |
 | `--rollback`           |       | `false`  | Restore catalog file from the last backup                          |
 | `--no-typosquat-check` |       | `false`  | Skip typosquat name check for package arguments                    |
+| `--max-concurrent-requests` |  | `8`      | Cap concurrent registry requests during outdated checks (catalog)  |
+| `--release-channel`    |       | `stable` | Channel filter: `stable`, `same` (match current's prerelease channel), or `any` |
 
 ## How It Works
 

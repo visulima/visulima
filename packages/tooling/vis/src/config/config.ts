@@ -397,10 +397,27 @@ const resolveConfigChain = async (
  *
  * Falls back to secure defaults if no config file is found.
  * @param workspaceRoot The workspace root directory to search for the config file.
+ * @param options Optional loader options.
+ * @param options.explicitConfigPath Overrides discovery — used by the
+ * global `--config` flag so users can point at any file regardless of
+ * cwd. The path must exist; otherwise an error is thrown so the
+ * config-loader plugin can surface it to the user.
  * @returns The loaded and resolved configuration with secure defaults applied.
  */
-const loadVisConfig = async (workspaceRoot: string): Promise<VisConfig> => {
-    const rootConfigPath = findVisConfigFile(workspaceRoot);
+const loadVisConfig = async (workspaceRoot: string, options?: { explicitConfigPath?: string }): Promise<VisConfig> => {
+    let rootConfigPath: string | undefined;
+
+    if (options?.explicitConfigPath) {
+        const resolved = isAbsolute(options.explicitConfigPath) ? options.explicitConfigPath : join(workspaceRoot, options.explicitConfigPath);
+
+        if (!isAccessibleSync(resolved)) {
+            throw new Error(`Cannot find config file at ${resolved}`);
+        }
+
+        rootConfigPath = resolved;
+    } else {
+        rootConfigPath = findVisConfigFile(workspaceRoot);
+    }
 
     if (!rootConfigPath) {
         return applyDefaults({});

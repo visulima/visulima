@@ -144,11 +144,12 @@ When a tool stores version pins somewhere built-in customTypes don't reach (e.g.
 
 Pick a `strategy` matching how the version is encoded at the path:
 
-| strategy         | Shape at `path`                  | When to use                                                           |
-| ---------------- | -------------------------------- | --------------------------------------------------------------------- |
-| `versionsByName` | `{ "<name>": "<version>", ... }` | A block of name → version, like `pnpm.overrides` or `engines`.        |
-| `name@version`   | `"<name>@<version>"` (string)    | Single-string slots like `packageManager` (`pnpm@10.32.1`).           |
-| `string`         | `"<version>"` (bare)             | A bare version string. Requires `depName` so we know what to call it. |
+| strategy         | Shape at `path`                  | When to use                                                                 |
+| ---------------- | -------------------------------- | --------------------------------------------------------------------------- |
+| `versionsByName` | `{ "<name>": "<version>", ... }` | A block of name → version, like `pnpm.overrides` or `engines`.              |
+| `name@version`   | `"<name>@<version>"` (string)    | Single-string slots like `packageManager` (`pnpm@10.32.1`).                 |
+| `name~version`   | `"<name>~<version>"` (string)    | Tilde-separated single-string slots (mirrors syncpack's tilde form).        |
+| `string`         | `"<version>"` (bare)             | A bare version string. Requires `depName` so we know what to call it.       |
 
 ```ts
 export default {
@@ -159,6 +160,8 @@ export default {
                 { name: "pnpmOverridesLegacy", path: "pnpm.overrides", strategy: "versionsByName" },
                 // Private toolchain pin: { runtime: "node@22.14.0" }
                 { name: "myToolPin", path: "myTool.runtime", strategy: "name@version" },
+                // Tilde-separated pin: { runtime: "node~22.14.0" }
+                { name: "myToolTildePin", path: "myTool.tildeRuntime", strategy: "name~version" },
                 // Bare version string: { minNode: "22.14.0" } — needs depName.
                 { name: "minNode", path: "config.minNode", strategy: "string", depName: "node" },
             ],
