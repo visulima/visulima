@@ -34,7 +34,7 @@ export const execScriptSync = (file: string, flags: string[] = []): string => {
  * Copyright (c) Hiroki Osame &lt;hiroki.osame@gmail.com>
  */
 export const getTscTsconfig = async (cwd: string, filePath?: string): Promise<TsConfigJson> => {
-    const output = await execa(tscPath, ["--showConfig", ...filePath ? ["--project", filePath] : []], { cwd });
+    const output = await execa(tscPath, ["--showConfig", ...(filePath ? ["--project", filePath] : [])], { cwd });
 
     return JSON.parse(output.stdout) as TsConfigJson;
 };

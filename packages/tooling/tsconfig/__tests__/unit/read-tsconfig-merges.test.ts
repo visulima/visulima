@@ -50,7 +50,7 @@ describe("parse-tsconfig merges", () => {
         it("invalid json", async () => {
             expect.assertions(1);
 
-            writeFileSync(join(distribution, "tsconfig.empty.json"), "require(\"fs\")");
+            writeFileSync(join(distribution, "tsconfig.empty.json"), 'require("fs")');
             writeJsonSync(join(distribution, "tsconfig.json"), {
                 extends: "./tsconfig.empty.json",
             });
