@@ -48,12 +48,12 @@ const getCharType = (codePoint: number): "control" | "latin" | "other" | "wide" 
 
     // Full-width and CJK characters (wide)
     if (
-        (codePoint >= 0x11_00 && codePoint <= 0x11_ff) // Hangul Jamo
-        || (codePoint >= 0x2e_80 && codePoint <= 0x9f_ff) // CJK & radicals
-        || (codePoint >= 0xac_00 && codePoint <= 0xd7_af) // Hangul Syllables
-        || (codePoint >= 0xf9_00 && codePoint <= 0xfa_ff) // CJK Compatibility Ideographs
-        || (codePoint >= 0xff_00 && codePoint <= 0xff_ef && !(codePoint >= 0xff_61 && codePoint <= 0xff_9f)) // Full-width Forms (excluding half-width katakana)
-        || (codePoint >= 0x30_40 && codePoint <= 0x30_ff) // Hiragana & Katakana
+        (codePoint >= 0x11_00 && codePoint <= 0x11_ff) || // Hangul Jamo
+        (codePoint >= 0x2e_80 && codePoint <= 0x9f_ff) || // CJK & radicals
+        (codePoint >= 0xac_00 && codePoint <= 0xd7_af) || // Hangul Syllables
+        (codePoint >= 0xf9_00 && codePoint <= 0xfa_ff) || // CJK Compatibility Ideographs
+        (codePoint >= 0xff_00 && codePoint <= 0xff_ef && !(codePoint >= 0xff_61 && codePoint <= 0xff_9f)) || // Full-width Forms (excluding half-width katakana)
+        (codePoint >= 0x30_40 && codePoint <= 0x30_ff) // Hiragana & Katakana
     ) {
         return "wide";
     }
@@ -173,11 +173,11 @@ const getCachedCharWidth = (codePoint: number, config: StringTruncatedWidthConfi
 const isCombiningCharacter = (codePoint: number): boolean => {
     // Universal combining marks
     if (
-        (codePoint >= 0x03_00 && codePoint <= 0x03_6f) // Combining Diacritical Marks
-        || (codePoint >= 0x1a_b0 && codePoint <= 0x1a_ff) // Combining Diacritical Marks Extended
-        || (codePoint >= 0x1d_c0 && codePoint <= 0x1d_ff) // Combining Diacritical Marks Supplement
-        || (codePoint >= 0x20_d0 && codePoint <= 0x20_ff) // Combining Diacritical Marks for Symbols
-        || (codePoint >= 0xfe_20 && codePoint <= 0xfe_2f)
+        (codePoint >= 0x03_00 && codePoint <= 0x03_6f) || // Combining Diacritical Marks
+        (codePoint >= 0x1a_b0 && codePoint <= 0x1a_ff) || // Combining Diacritical Marks Extended
+        (codePoint >= 0x1d_c0 && codePoint <= 0x1d_ff) || // Combining Diacritical Marks Supplement
+        (codePoint >= 0x20_d0 && codePoint <= 0x20_ff) || // Combining Diacritical Marks for Symbols
+        (codePoint >= 0xfe_20 && codePoint <= 0xfe_2f)
     ) {
         // Combining Half Marks
         return true;
@@ -185,8 +185,8 @@ const isCombiningCharacter = (codePoint: number): boolean => {
 
     // Variation and VS selectors
     if (
-        (codePoint >= 0xe_01_00 && codePoint <= 0xe_01_ef) // Variation Selectors Supplement
-        || (codePoint >= 0xfe_00 && codePoint <= 0xfe_0f)
+        (codePoint >= 0xe_01_00 && codePoint <= 0xe_01_ef) || // Variation Selectors Supplement
+        (codePoint >= 0xfe_00 && codePoint <= 0xfe_0f)
     ) {
         // Variation Selectors
         return true;
@@ -194,11 +194,11 @@ const isCombiningCharacter = (codePoint: number): boolean => {
 
     // Southeast Asian scripts
     if (
-        (codePoint >= 0x0e_31 && codePoint <= 0x0e_3a) // Thai vowel marks and tone marks
-        || (codePoint >= 0x0e_47 && codePoint <= 0x0e_4e) // Thai diacritics
-        || (codePoint >= 0x0e_b1 && codePoint <= 0x0e_b9) // Lao vowel marks
-        || (codePoint >= 0x0e_bb && codePoint <= 0x0e_bc) // Lao vowel signs
-        || (codePoint >= 0x0e_c8 && codePoint <= 0x0e_cd)
+        (codePoint >= 0x0e_31 && codePoint <= 0x0e_3a) || // Thai vowel marks and tone marks
+        (codePoint >= 0x0e_47 && codePoint <= 0x0e_4e) || // Thai diacritics
+        (codePoint >= 0x0e_b1 && codePoint <= 0x0e_b9) || // Lao vowel marks
+        (codePoint >= 0x0e_bb && codePoint <= 0x0e_bc) || // Lao vowel signs
+        (codePoint >= 0x0e_c8 && codePoint <= 0x0e_cd)
     ) {
         // Lao tone marks
         return true;
@@ -206,15 +206,15 @@ const isCombiningCharacter = (codePoint: number): boolean => {
 
     // Indic scripts
     if (
-        (codePoint >= 0x09_00 && codePoint <= 0x09_03) // Devanagari signs
-        || (codePoint >= 0x09_3a && codePoint <= 0x09_4f) // Devanagari vowel signs and virama
-        || (codePoint >= 0x09_51 && codePoint <= 0x09_57) // Devanagari stress marks
-        || (codePoint >= 0x09_62 && codePoint <= 0x09_63) // Devanagari vowel signs
-        || (codePoint >= 0x09_81 && codePoint <= 0x09_83) // Bengali signs
-        || (codePoint >= 0x09_bc && codePoint <= 0x09_c4) // Bengali vowel signs
-        || (codePoint >= 0x09_cd && codePoint <= 0x09_cd) // Bengali virama
-        || (codePoint >= 0x0a_01 && codePoint <= 0x0a_03) // Gurmukhi signs
-        || (codePoint >= 0x0a_3c && codePoint <= 0x0a_4d)
+        (codePoint >= 0x09_00 && codePoint <= 0x09_03) || // Devanagari signs
+        (codePoint >= 0x09_3a && codePoint <= 0x09_4f) || // Devanagari vowel signs and virama
+        (codePoint >= 0x09_51 && codePoint <= 0x09_57) || // Devanagari stress marks
+        (codePoint >= 0x09_62 && codePoint <= 0x09_63) || // Devanagari vowel signs
+        (codePoint >= 0x09_81 && codePoint <= 0x09_83) || // Bengali signs
+        (codePoint >= 0x09_bc && codePoint <= 0x09_c4) || // Bengali vowel signs
+        (codePoint >= 0x09_cd && codePoint <= 0x09_cd) || // Bengali virama
+        (codePoint >= 0x0a_01 && codePoint <= 0x0a_03) || // Gurmukhi signs
+        (codePoint >= 0x0a_3c && codePoint <= 0x0a_4d)
     ) {
         // Gurmukhi modifiers
         return true;
@@ -222,10 +222,10 @@ const isCombiningCharacter = (codePoint: number): boolean => {
 
     // Arabic and Persian
     if (
-        (codePoint >= 0x06_4b && codePoint <= 0x06_5f) // Arabic diacritics
-        || (codePoint >= 0x06_70 && codePoint <= 0x06_70) // Arabic letter superscript alef
-        || (codePoint >= 0x06_d6 && codePoint <= 0x06_ed) // Arabic small high signs
-        || (codePoint >= 0x08_e4 && codePoint <= 0x08_fe)
+        (codePoint >= 0x06_4b && codePoint <= 0x06_5f) || // Arabic diacritics
+        (codePoint >= 0x06_70 && codePoint <= 0x06_70) || // Arabic letter superscript alef
+        (codePoint >= 0x06_d6 && codePoint <= 0x06_ed) || // Arabic small high signs
+        (codePoint >= 0x08_e4 && codePoint <= 0x08_fe)
     ) {
         // Arabic mark extensions
         return true;
@@ -233,11 +233,11 @@ const isCombiningCharacter = (codePoint: number): boolean => {
 
     // Hebrew
     if (
-        (codePoint >= 0x05_91 && codePoint <= 0x05_bd) // Hebrew points
-        || (codePoint >= 0x05_bf && codePoint <= 0x05_bf) // Hebrew point rafe
-        || (codePoint >= 0x05_c1 && codePoint <= 0x05_c2) // Hebrew points
-        || (codePoint >= 0x05_c4 && codePoint <= 0x05_c5) // Hebrew marks
-        || (codePoint >= 0x05_c7 && codePoint <= 0x05_c7)
+        (codePoint >= 0x05_91 && codePoint <= 0x05_bd) || // Hebrew points
+        (codePoint >= 0x05_bf && codePoint <= 0x05_bf) || // Hebrew point rafe
+        (codePoint >= 0x05_c1 && codePoint <= 0x05_c2) || // Hebrew points
+        (codePoint >= 0x05_c4 && codePoint <= 0x05_c5) || // Hebrew marks
+        (codePoint >= 0x05_c7 && codePoint <= 0x05_c7)
     ) {
         // Hebrew point qamats qatan
         return true;
@@ -245,12 +245,12 @@ const isCombiningCharacter = (codePoint: number): boolean => {
 
     // Tibetan
     if (
-        (codePoint >= 0x0f_35 && codePoint <= 0x0f_35) // Tibetan mark nada
-        || (codePoint >= 0x0f_37 && codePoint <= 0x0f_37) // Tibetan mark nada
-        || (codePoint >= 0x0f_39 && codePoint <= 0x0f_39) // Tibetan mark tsa phru
-        || (codePoint >= 0x0f_71 && codePoint <= 0x0f_7e) // Tibetan vowel signs
-        || (codePoint >= 0x0f_80 && codePoint <= 0x0f_84) // Tibetan vowel signs and virama
-        || (codePoint >= 0x0f_86 && codePoint <= 0x0f_87)
+        (codePoint >= 0x0f_35 && codePoint <= 0x0f_35) || // Tibetan mark nada
+        (codePoint >= 0x0f_37 && codePoint <= 0x0f_37) || // Tibetan mark nada
+        (codePoint >= 0x0f_39 && codePoint <= 0x0f_39) || // Tibetan mark tsa phru
+        (codePoint >= 0x0f_71 && codePoint <= 0x0f_7e) || // Tibetan vowel signs
+        (codePoint >= 0x0f_80 && codePoint <= 0x0f_84) || // Tibetan vowel signs and virama
+        (codePoint >= 0x0f_86 && codePoint <= 0x0f_87)
     ) {
         // Tibetan signs
         return true;
@@ -258,8 +258,8 @@ const isCombiningCharacter = (codePoint: number): boolean => {
 
     // Vietnamese
     return (
-        (codePoint >= 0x03_00 && codePoint <= 0x03_09) // Combining diacritical marks used in Vietnamese
-        || (codePoint >= 0x03_23 && codePoint <= 0x03_23)
+        (codePoint >= 0x03_00 && codePoint <= 0x03_09) || // Combining diacritical marks used in Vietnamese
+        (codePoint >= 0x03_23 && codePoint <= 0x03_23)
     );
 };
 
@@ -463,14 +463,14 @@ export const getStringTruncatedWidth = (input: string, options: StringTruncatedW
             countAnsiEscapeCodes: options.countAnsiEscapeCodes ?? false,
             ellipsis: options.ellipsis ?? "",
             ellipsisWidth:
-                options.ellipsisWidth
-                ?? (options.ellipsis
+                options.ellipsisWidth ??
+                (options.ellipsis
                     ? getStringTruncatedWidth(options.ellipsis, {
-                        ...options,
-                        ellipsis: "",
-                        ellipsisWidth: 0,
-                        limit: Number.POSITIVE_INFINITY,
-                    }).width
+                          ...options,
+                          ellipsis: "",
+                          ellipsisWidth: 0,
+                          limit: Number.POSITIVE_INFINITY,
+                      }).width
                     : 0),
             limit: options.limit ?? Number.POSITIVE_INFINITY,
         },

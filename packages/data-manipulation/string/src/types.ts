@@ -29,8 +29,8 @@ type TupleOf<L extends number, T = unknown, Result extends any[] = []> = Result[
  * @template EndIndex - The ending index for the slice
  * @template Result - Internal accumulator for building the result string
  */
-type InternalSliceType<T extends string, StartIndex extends number, EndIndex extends number, Result extends string = "">
-    = IsNumberLiteral<EndIndex | StartIndex> extends true
+type InternalSliceType<T extends string, StartIndex extends number, EndIndex extends number, Result extends string = ""> =
+    IsNumberLiteral<EndIndex | StartIndex> extends true
         ? T extends `${infer Head}${infer Rest}`
             ? IsStringLiteral<Head> extends true
                 ? StartIndex extends 0
@@ -38,19 +38,19 @@ type InternalSliceType<T extends string, StartIndex extends number, EndIndex ext
                         ? Result
                         : InternalSliceType<Rest, 0, Math.Subtract<Math.GetPositiveIndex<T, EndIndex>, 1>, `${Result}${Head}`>
                     : InternalSliceType<
-                        Rest,
-                        Math.Subtract<Math.GetPositiveIndex<T, StartIndex>, 1>,
-                        Math.Subtract<Math.GetPositiveIndex<T, EndIndex>, 1>,
-                        Result
-                    >
+                          Rest,
+                          Math.Subtract<Math.GetPositiveIndex<T, StartIndex>, 1>,
+                          Math.Subtract<Math.GetPositiveIndex<T, EndIndex>, 1>,
+                          Result
+                      >
                 : EndIndex | StartIndex extends 0
-                    ? Result
-                    : string // Head is non-literal
+                  ? Result
+                  : string // Head is non-literal
             : IsStringLiteral<T> extends true // Couldn't be split into head/tail
-                ? Result // T ran out
-                : EndIndex | StartIndex extends 0
-                    ? Result // Eg: Slice<`abc${string}`, 1, 3> -> 'bc'
-                    : string // Head is non-literal
+              ? Result // T ran out
+              : EndIndex | StartIndex extends 0
+                ? Result // Eg: Slice<`abc${string}`, 1, 3> -> 'bc'
+                : string // Head is non-literal
         : string;
 
 /**
@@ -60,8 +60,8 @@ type InternalSliceType<T extends string, StartIndex extends number, EndIndex ext
  * @template StartIndex - The starting index for the slice
  * @template Result - Internal accumulator for building the result string
  */
-type SliceStartType<T extends string, StartIndex extends number, Result extends string = "">
-    = IsNumberLiteral<StartIndex> extends true
+type SliceStartType<T extends string, StartIndex extends number, Result extends string = ""> =
+    IsNumberLiteral<StartIndex> extends true
         ? T extends `${infer Head}${infer Rest}`
             ? IsStringLiteral<Head> extends true
                 ? StartIndex extends 0
@@ -69,14 +69,14 @@ type SliceStartType<T extends string, StartIndex extends number, Result extends 
                     : SliceStartType<Rest, Math.Subtract<Math.GetPositiveIndex<T, StartIndex>, 1>, Result>
                 : string
             : IsStringLiteral<T> extends true
+              ? Result
+              : StartIndex extends 0
                 ? Result
-                : StartIndex extends 0
-                    ? Result
-                    : string
+                : string
         : string;
 
-type InternalEndsWithType<T extends string, S extends string, P extends number>
-    = All<[IsStringLiteral<S>, IsNumberLiteral<P>]> extends true
+type InternalEndsWithType<T extends string, S extends string, P extends number> =
+    All<[IsStringLiteral<S>, IsNumberLiteral<P>]> extends true
         ? Math.IsNegative<P> extends false
             ? P extends Length<T>
                 ? IsStringLiteral<T> extends true
@@ -162,8 +162,8 @@ export type IsBooleanLiteral<T extends boolean> = [T] extends [boolean] ? ([bool
 export type Reverse<T extends string, Accumulator extends string = ""> = T extends `${infer Head}${infer Tail}`
     ? Reverse<Tail, `${Head}${Accumulator}`>
     : Accumulator extends ""
-        ? T
-        : `${T}${Accumulator}`;
+      ? T
+      : `${T}${Accumulator}`;
 
 /**
  * Type predicate that checks if any element in a boolean array type is the literal 'true'.
@@ -192,8 +192,8 @@ export type Any<BoolArray extends boolean[]> = BoolArray extends [infer Head ext
  * type NotAllTrue = All<[true, false]> // type NotAllTrue = false
  */
 
-export type All<BoolArray extends boolean[]>
-    = IsBooleanLiteral<BoolArray[number]> extends true
+export type All<BoolArray extends boolean[]> =
+    IsBooleanLiteral<BoolArray[number]> extends true
         ? BoolArray extends [infer Head extends boolean, ...infer Rest extends boolean[]]
             ? Head extends true
                 ? All<Rest>
@@ -213,10 +213,10 @@ export type IsStringLiteral<T extends string> = [T] extends [string]
     ? [string] extends [T]
         ? false
         : Uppercase<T> extends Uppercase<Lowercase<T>>
-            ? Lowercase<T> extends Lowercase<Uppercase<T>>
-                ? true
-                : false
-            : false
+          ? Lowercase<T> extends Lowercase<Uppercase<T>>
+              ? true
+              : false
+          : false
     : false;
 
 export type IsStringLiteralArray<StringArray extends ReadonlyArray<string>> = IsStringLiteral<StringArray[number]> extends true ? true : false;
@@ -270,12 +270,12 @@ export type EndsWith<T extends string, S extends string, P extends number | unde
 export type Includes<T extends string, S extends string, P extends number = 0> = string extends S | T
     ? boolean
     : Math.IsNegative<P> extends false
-        ? P extends 0
-            ? T extends `${string}${S}${string}`
-                ? true
-                : false
-            : Includes<Slice<T, P>, S> // P is >0, slice
-        : Includes<T, S>; // P is negative, ignore it
+      ? P extends 0
+          ? T extends `${string}${S}${string}`
+              ? true
+              : false
+          : Includes<Slice<T, P>, S> // P is >0, slice
+      : Includes<T, S>; // P is negative, ignore it
 
 /**
  * Type-level implementation of Array.join() functionality for string tuples.
@@ -286,8 +286,8 @@ export type Includes<T extends string, S extends string, P extends number = 0> =
  * @example
  * type Joined = Join<['a', 'b', 'c'], '.'> // type Joined = 'a.b.c'
  */
-export type Join<T extends ReadonlyArray<string>, Delimiter extends string = "">
-    = All<[IsStringLiteralArray<T>, IsStringLiteral<Delimiter>]> extends true
+export type Join<T extends ReadonlyArray<string>, Delimiter extends string = ""> =
+    All<[IsStringLiteralArray<T>, IsStringLiteral<Delimiter>]> extends true
         ? T extends readonly [infer First extends string, ...infer Rest extends string[]]
             ? Rest extends []
                 ? First
@@ -314,8 +314,8 @@ export type Length<T extends string> = IsStringLiteral<T> extends true ? Split<T
  * @example
  * type Padded = PadEnd<'hello', 7, '_'> // type Padded = 'hello__'
  */
-export type PadEnd<T extends string, Times extends number = 0, Pad extends string = " ">
-    = All<[IsStringLiteral<Pad | T>, IsNumberLiteral<Times>]> extends true
+export type PadEnd<T extends string, Times extends number = 0, Pad extends string = " "> =
+    All<[IsStringLiteral<Pad | T>, IsNumberLiteral<Times>]> extends true
         ? Math.IsNegative<Times> extends false
             ? Math.Subtract<Times, Length<T>> extends infer Missing extends number
                 ? `${T}${Slice<Repeat<Pad, Missing>, 0, Missing>}`
@@ -333,8 +333,8 @@ export type PadEnd<T extends string, Times extends number = 0, Pad extends strin
  * @example
  * type Padded = PadStart<'hello', 7, '_'> // type Padded = '__hello'
  */
-export type PadStart<T extends string, Times extends number = 0, Pad extends string = " ">
-    = All<[IsStringLiteral<Pad | T>, IsNumberLiteral<Times>]> extends true
+export type PadStart<T extends string, Times extends number = 0, Pad extends string = " "> =
+    All<[IsStringLiteral<Pad | T>, IsNumberLiteral<Times>]> extends true
         ? Math.IsNegative<Times> extends false
             ? Math.Subtract<Times, Length<T>> extends infer Missing extends number
                 ? `${Slice<Repeat<Pad, Missing>, 0, Missing>}${T}`
@@ -351,13 +351,13 @@ export type PadStart<T extends string, Times extends number = 0, Pad extends str
  * @example
  * type Repeated = Repeat<'abc', 2> // type Repeated = 'abcabc'
  */
-export type Repeat<T extends string, Times extends number = 0>
-    = All<[IsStringLiteral<T>, IsNumberLiteral<Times>]> extends true
+export type Repeat<T extends string, Times extends number = 0> =
+    All<[IsStringLiteral<T>, IsNumberLiteral<Times>]> extends true
         ? Times extends 0
             ? ""
             : Math.IsNegative<Times> extends false
-                ? Join<TupleOf<Times, T>>
-                : never
+              ? Join<TupleOf<Times, T>>
+              : never
         : string;
 
 /**
@@ -420,13 +420,13 @@ export type Slice<T extends string, StartIndex extends number = 0, EndIndex exte
  * @example
  * type Parts = Split<'a,b,c', ','> // type Parts = ['a', 'b', 'c']
  */
-export type Split<T extends string, Delimiter extends string = "">
-    = IsStringLiteral<Delimiter | T> extends true
+export type Split<T extends string, Delimiter extends string = ""> =
+    IsStringLiteral<Delimiter | T> extends true
         ? T extends `${infer First}${Delimiter}${infer Rest}`
             ? [First, ...Split<Rest, Delimiter>]
             : T extends ""
-                ? []
-                : [T]
+              ? []
+              : [T]
         : string[];
 
 /**
@@ -440,8 +440,8 @@ export type Split<T extends string, Delimiter extends string = "">
  * type StartsWithHello = StartsWith<'hello world', 'hello'> // type StartsWithHello = true
  * type DoesNotStart = StartsWith<'hello world', 'world'> // type DoesNotStart = false
  */
-export type StartsWith<T extends string, S extends string, P extends number = 0>
-    = All<[IsStringLiteral<S>, IsNumberLiteral<P>]> extends true
+export type StartsWith<T extends string, S extends string, P extends number = 0> =
+    All<[IsStringLiteral<S>, IsNumberLiteral<P>]> extends true
         ? Math.IsNegative<P> extends false
             ? P extends 0
                 ? S extends `${infer SHead}${infer SRest}`
@@ -452,8 +452,8 @@ export type StartsWith<T extends string, S extends string, P extends number = 0>
                                 : false // Heads weren't equal
                             : boolean // THead is non-literal
                         : IsStringLiteral<T> extends true // Couldn't split T
-                            ? false // T ran out, but we still have S
-                            : boolean // T (or TRest) is not a literal
+                          ? false // T ran out, but we still have S
+                          : boolean // T (or TRest) is not a literal
                     : true // Couldn't split S, we've already ruled out non-literal
                 : StartsWith<Slice<T, P>, S> // P is >0, slice
             : StartsWith<T, S> // P is negative, ignore it
@@ -489,88 +489,88 @@ export type TrimStart<T extends string> = T extends ` ${infer Rest}` ? TrimStart
  */
 export type Trim<T extends string> = TrimEnd<TrimStart<T>>;
 
-export type NodeLocale
-    = | "af" // Afrikaans
-        | "am" // Amharic
-        | "ar" // Arabic
-        | "az" // Azerbaijani
-        | "be" // Belarusian
-        | "bg" // Bulgarian
-        | "bn" // Bengali
-        | "bs" // Bosnian
-        | "ca" // Catalan
-        | "cs" // Czech
-        | "cy" // Welsh
-        | "da" // Danish
-        | "de" // German
-        | "el" // Greek
-        | "en" // English
-        | "en-AU" // English (Australia)
-        | "en-CA" // English (Canada)
-        | "en-GB" // English (United Kingdom)
-        | "en-US" // English (United States)
-        | "es" // Spanish
-        | "es-ES" // Spanish (Spain)
-        | "et" // Estonian
-        | "fa" // Persian
-        | "fi" // Finnish
-        | "fil" // Filipino
-        | "fr" // French
-        | "ga" // Irish
-        | "gl" // Galician
-        | "gu" // Gujarati
-        | "he" // Hebrew
-        | "hi" // Hindi
-        | "hr" // Croatian
-        | "hu" // Hungarian
-        | "hy" // Armenian
-        | "id" // Indonesian
-        | "is" // Icelandic
-        | "it" // Italian
-        | "ja" // Japanese
-        | "ka" // Georgian
-        | "kk" // Kazakh
-        | "km" // Khmer
-        | "kn" // Kannada
-        | "ko" // Korean
-        | "ky" // Kyrgyz
-        | "lo" // Lao
-        | "lt" // Lithuanian
-        | "lv" // Latvian
-        | "mk" // Macedonian
-        | "ml" // Malayalam
-        | "mn" // Mongolian
-        | "mr" // Marathi
-        | "ms" // Malay
-        | "mt" // Maltese
-        | "ne" // Nepali
-        | "nl" // Dutch
-        | "no" // Norwegian
-        | "pa" // Punjabi
-        | "pl" // Polish
-        | "pt" // Portuguese
-        | "pt-BR" // Portuguese (Brazil)
-        | "pt-PT" // Portuguese (Portugal)
-        | "ro" // Romanian
-        | "ru" // Russian
-        | "si" // Sinhala
-        | "sk" // Slovak
-        | "sl" // Slovenian
-        | "sq" // Albanian
-        | "sr" // Serbian
-        | "sv" // Swedish
-        | "ta" // Tamil
-        | "te" // Telugu
-        | "th" // Thai
-        | "tr" // Turkish
-        | "uk" // Ukrainian
-        | "ur" // Urdu
-        | "uz" // Uzbek
-        | "vi" // Vietnamese
-        | "zh" // Chinese
-        | "zh-CN" // Chinese (Simplified)
-        | "zh-HK" // Chinese (Hong Kong)
-        | "zh-TW"; // Chinese (Traditional)
+export type NodeLocale =
+    | "af" // Afrikaans
+    | "am" // Amharic
+    | "ar" // Arabic
+    | "az" // Azerbaijani
+    | "be" // Belarusian
+    | "bg" // Bulgarian
+    | "bn" // Bengali
+    | "bs" // Bosnian
+    | "ca" // Catalan
+    | "cs" // Czech
+    | "cy" // Welsh
+    | "da" // Danish
+    | "de" // German
+    | "el" // Greek
+    | "en" // English
+    | "en-AU" // English (Australia)
+    | "en-CA" // English (Canada)
+    | "en-GB" // English (United Kingdom)
+    | "en-US" // English (United States)
+    | "es" // Spanish
+    | "es-ES" // Spanish (Spain)
+    | "et" // Estonian
+    | "fa" // Persian
+    | "fi" // Finnish
+    | "fil" // Filipino
+    | "fr" // French
+    | "ga" // Irish
+    | "gl" // Galician
+    | "gu" // Gujarati
+    | "he" // Hebrew
+    | "hi" // Hindi
+    | "hr" // Croatian
+    | "hu" // Hungarian
+    | "hy" // Armenian
+    | "id" // Indonesian
+    | "is" // Icelandic
+    | "it" // Italian
+    | "ja" // Japanese
+    | "ka" // Georgian
+    | "kk" // Kazakh
+    | "km" // Khmer
+    | "kn" // Kannada
+    | "ko" // Korean
+    | "ky" // Kyrgyz
+    | "lo" // Lao
+    | "lt" // Lithuanian
+    | "lv" // Latvian
+    | "mk" // Macedonian
+    | "ml" // Malayalam
+    | "mn" // Mongolian
+    | "mr" // Marathi
+    | "ms" // Malay
+    | "mt" // Maltese
+    | "ne" // Nepali
+    | "nl" // Dutch
+    | "no" // Norwegian
+    | "pa" // Punjabi
+    | "pl" // Polish
+    | "pt" // Portuguese
+    | "pt-BR" // Portuguese (Brazil)
+    | "pt-PT" // Portuguese (Portugal)
+    | "ro" // Romanian
+    | "ru" // Russian
+    | "si" // Sinhala
+    | "sk" // Slovak
+    | "sl" // Slovenian
+    | "sq" // Albanian
+    | "sr" // Serbian
+    | "sv" // Swedish
+    | "ta" // Tamil
+    | "te" // Telugu
+    | "th" // Thai
+    | "tr" // Turkish
+    | "uk" // Ukrainian
+    | "ur" // Urdu
+    | "uz" // Uzbek
+    | "vi" // Vietnamese
+    | "zh" // Chinese
+    | "zh-CN" // Chinese (Simplified)
+    | "zh-HK" // Chinese (Hong Kong)
+    | "zh-TW"; // Chinese (Traditional)
 
 /**
  * Type-level implementation of string.toLowerCase() functionality.
