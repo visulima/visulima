@@ -11,6 +11,7 @@ import {
     parseSyncpackJsonFile,
     parseSyncpackYamlFile,
     removeSyncpackFromPackageJson,
+    translateBannedDeps,
     translateCustomTypes,
 } from "../../../src/commands/migrate/syncpack";
 import { createMigrationReport } from "../../../src/commands/migrate/types";
@@ -333,7 +334,7 @@ describe("migrate-syncpack", () => {
         });
 
         it("emits manual steps for versionGroups, semverGroups, dependencyTypes, specifierTypes, and filter", () => {
-            expect.assertions(5);
+            expect.assertions(6);
 
             writeFileSync(
                 join(tmpDir, ".syncpackrc.json"),
@@ -351,6 +352,8 @@ describe("migrate-syncpack", () => {
             migrateSyncpack(tmpDir, { dryRun: true }, createMockLogger(), report);
 
             expect(report.manualSteps.some((s) => s.includes("versionGroups"))).toBe(true);
+            // The manual-step copy names the deferred DSL pieces by name so reviewers know what's lost.
+            expect(report.manualSteps.some((s) => s.includes("pinVersion") && s.includes("snapTo") && s.includes("sameRange"))).toBe(true);
             expect(report.manualSteps.some((s) => s.includes("semverGroups"))).toBe(true);
             expect(report.manualSteps.some((s) => s.includes("dependencyTypes"))).toBe(true);
             expect(report.manualSteps.some((s) => s.includes("specifierTypes"))).toBe(true);
@@ -533,6 +536,187 @@ describe("migrate-syncpack", () => {
 
             expect(pkg.syncpack).toBeUndefined();
             expect(pkg.devDependencies?.syncpack).toBeUndefined();
+        });
+
+        it("preserves the full text of removed syncpack scripts via manual steps", () => {
+            expect.assertions(3);
+
+            writeFileSync(
+                join(tmpDir, "package.json"),
+                JSON.stringify({
+                    devDependencies: { syncpack: "^12.0.0" },
+                    scripts: {
+                        // Mixed command — the eslint half would silently disappear without a manual step.
+                        check: "syncpack lint && eslint .",
+                        "deps:fix": "syncpack fix-mismatches",
+                    },
+                    syncpack: {},
+                }),
+            );
+
+            const report = createMigrationReport();
+
+            migrateSyncpack(tmpDir, { dryRun: false }, createMockLogger(), report);
+
+            expect(report.manualSteps.some((s) => s.includes("check") && s.includes("syncpack lint && eslint ."))).toBe(true);
+            expect(report.manualSteps.some((s) => s.includes("deps:fix") && s.includes("syncpack fix-mismatches"))).toBe(true);
+
+            const pkg = JSON.parse(readFileSync(join(tmpDir, "package.json"), "utf8")) as { scripts?: Record<string, string> };
+
+            expect(pkg.scripts).toBeUndefined();
+        });
+
+        it("notes that syncpack `indent` is implicit because vis honors editorconfig", () => {
+            expect.assertions(1);
+
+            writeFileSync(join(tmpDir, ".syncpackrc.json"), JSON.stringify({ indent: "    " }));
+
+            const report = createMigrationReport();
+
+            migrateSyncpack(tmpDir, { dryRun: true }, createMockLogger(), report);
+
+            expect(report.warnings.some((w) => w.includes("indent") && w.includes("editorconfig"))).toBe(true);
+        });
+    });
+
+    describe(translateBannedDeps, () => {
+        it("returns an empty record when no versionGroups have isBanned", () => {
+            expect.assertions(1);
+
+            const report = createMigrationReport();
+
+            expect(translateBannedDeps({ versionGroups: [{ packages: ["**"] }] }, report)).toStrictEqual({});
+        });
+
+        it("translates a banned versionGroup with packages scope into a scoped bannedDep entry", () => {
+            expect.assertions(2);
+
+            const report = createMigrationReport();
+            const result = translateBannedDeps(
+                {
+                    versionGroups: [
+                        { dependencies: ["react", "react-dom"], isBanned: true, label: "no react in legacy app", packages: ["@app/legacy"] },
+                    ],
+                },
+                report,
+            );
+
+            expect(result["react"]).toStrictEqual({ packages: ["@app/legacy"], reason: "no react in legacy app" });
+            expect(result["react-dom"]).toStrictEqual({ packages: ["@app/legacy"], reason: "no react in legacy app" });
+        });
+
+        it("uses the string form when no packages scope is set", () => {
+            expect.assertions(1);
+
+            const report = createMigrationReport();
+            const result = translateBannedDeps(
+                { versionGroups: [{ dependencies: ["request"], isBanned: true, label: "deprecated" }] },
+                report,
+            );
+
+            expect(result["request"]).toBe("deprecated");
+        });
+
+        it("falls back to a default reason when no label is provided", () => {
+            expect.assertions(1);
+
+            const report = createMigrationReport();
+            const result = translateBannedDeps(
+                { versionGroups: [{ dependencies: ["lodash.foo"], isBanned: true }] },
+                report,
+            );
+
+            expect(result["lodash.foo"]).toBe("banned via syncpack versionGroups");
+        });
+
+        it("warns when a banned versionGroup has no dependencies", () => {
+            expect.assertions(2);
+
+            const report = createMigrationReport();
+            const result = translateBannedDeps(
+                { versionGroups: [{ isBanned: true, label: "blanket ban" }] },
+                report,
+            );
+
+            expect(result).toStrictEqual({});
+            expect(report.warnings.some((w) => w.includes("isBanned") && w.includes("dependencies"))).toBe(true);
+        });
+
+        it("warns and keeps the first match when two banned versionGroups target the same dep", () => {
+            expect.assertions(3);
+
+            const report = createMigrationReport();
+            const result = translateBannedDeps(
+                {
+                    versionGroups: [
+                        { dependencies: ["request"], isBanned: true, label: "first reason" },
+                        { dependencies: ["request"], isBanned: true, label: "second reason" },
+                    ],
+                },
+                report,
+            );
+
+            expect(result["request"]).toBe("first reason");
+            expect(report.warnings.some((w) => w.includes("Multiple banned versionGroups"))).toBe(true);
+            expect(report.warnings.some((w) => w.includes("\"request\""))).toBe(true);
+        });
+    });
+
+    describe("end-to-end bannedDeps translation", () => {
+        it("emits policy.bannedDeps in the generated vis.config.ts and skips the manual step for that group", () => {
+            expect.assertions(5);
+
+            writeFileSync(
+                join(tmpDir, "package.json"),
+                JSON.stringify({ devDependencies: { syncpack: "^12.0.0" } }),
+            );
+            writeFileSync(
+                join(tmpDir, ".syncpackrc.json"),
+                JSON.stringify({
+                    versionGroups: [
+                        { dependencies: ["react", "react-dom"], isBanned: true, label: "no react in legacy app", packages: ["@app/legacy"] },
+                        // This one has no isBanned — it should still trigger the manual step for the remainder.
+                        { dependencies: ["lodash"], pinVersion: "4.17.21" },
+                    ],
+                }),
+            );
+
+            const report = createMigrationReport();
+
+            migrateSyncpack(tmpDir, { dryRun: false }, createMockLogger(), report);
+
+            const visConfig = readFileSync(join(tmpDir, "vis.config.ts"), "utf8");
+
+            expect(visConfig).toContain("bannedDeps:");
+            expect(visConfig).toContain("\"react\": { reason: \"no react in legacy app\", packages: [\"@app/legacy\"] }");
+            expect(visConfig).toContain("\"react-dom\": { reason: \"no react in legacy app\", packages: [\"@app/legacy\"] }");
+            // The manual step still fires for the remaining (non-isBanned) versionGroup entry.
+            expect(report.manualSteps.some((s) => s.includes("versionGroups"))).toBe(true);
+            // But not for the isBanned half — that translation succeeded.
+            expect(report.manualSteps.filter((s) => s.includes("versionGroups"))).toHaveLength(1);
+        });
+
+        it("does not emit a versionGroups manual step when every versionGroup is isBanned", () => {
+            expect.assertions(2);
+
+            writeFileSync(join(tmpDir, "package.json"), "{}");
+            writeFileSync(
+                join(tmpDir, ".syncpackrc.json"),
+                JSON.stringify({
+                    versionGroups: [
+                        { dependencies: ["request"], isBanned: true, label: "deprecated" },
+                    ],
+                }),
+            );
+
+            const report = createMigrationReport();
+
+            migrateSyncpack(tmpDir, { dryRun: false }, createMockLogger(), report);
+
+            const visConfig = readFileSync(join(tmpDir, "vis.config.ts"), "utf8");
+
+            expect(visConfig).toContain("\"request\": \"deprecated\"");
+            expect(report.manualSteps.some((s) => s.includes("versionGroups"))).toBe(false);
         });
     });
 });
