@@ -252,13 +252,26 @@ const translateCustomTypes = (config: SyncpackConfig, report: MigrationReport): 
     return out;
 };
 
+const isVersionGroupBanned = (group: Record<string, unknown>): boolean => group["isBanned"] === true;
+
 const noteUnsupportedKeys = (config: SyncpackConfig, report: MigrationReport): void => {
     if (Array.isArray(config.versionGroups) && config.versionGroups.length > 0) {
-        addMigrationWarning(
-            report,
-            `${String(config.versionGroups.length)} versionGroups rule(s) cannot be migrated — versionGroups DSL is tracked in https://github.com/visulima/visulima/issues/622.`,
-        );
-        addManualStep(report, "Re-implement versionGroups rules manually once the vis DSL ships (issue #622)");
+        // `isBanned` versionGroups translate to policy.bannedDeps elsewhere
+        // (with packages scope when set). The remainder — pinVersion,
+        // snapTo, policy: "sameRange", and the rest of the DSL — has no
+        // 1:1 mapping today.
+        const remaining = config.versionGroups.filter((g) => !g || typeof g !== "object" || !isVersionGroupBanned(g as Record<string, unknown>));
+
+        if (remaining.length > 0) {
+            addMigrationWarning(
+                report,
+                `${String(remaining.length)} versionGroups rule(s) cannot be migrated — \`pinVersion\`, \`snapTo\`, and \`policy: "sameRange"\` (and other versionGroups DSL surfaces) are tracked in https://github.com/visulima/visulima/issues/622.`,
+            );
+            addManualStep(
+                report,
+                "Re-implement versionGroups rules using `pinVersion` / `snapTo` / `policy: \"sameRange\"` once the vis DSL ships (issue #622).",
+            );
+        }
     }
 
     if (Array.isArray(config.semverGroups) && config.semverGroups.length > 0) {
@@ -318,6 +331,79 @@ const noteUnsupportedKeys = (config: SyncpackConfig, report: MigrationReport): v
             `syncpack \`source\` was set to [${config.source.map((g) => JSON.stringify(g)).join(", ")}]. vis derives workspace globs from pnpm-workspace.yaml / package.json#workspaces — verify they match before relying on \`vis lint\`.`,
         );
     }
+
+    if (typeof config.indent === "string" && config.indent.length > 0) {
+        addMigrationWarning(
+            report,
+            "syncpack `indent` is implicit in vis — JSON writers honor `.editorconfig` (and the source file's existing indentation). No migration needed.",
+        );
+    }
+};
+
+interface ScopedBannedDepRule {
+    packages?: string[];
+    reason: string;
+}
+
+type BannedDepEntry = string | ScopedBannedDepRule;
+
+/**
+ * Pull every `versionGroups[].isBanned: true` entry into a vis
+ * `policy.bannedDeps` map. With the new `packages` scope on
+ * `BannedDepRule`, scoped bans translate cleanly: each banned dep
+ * becomes one entry, the syncpack `label` becomes the reason, and the
+ * group's `packages` glob list becomes the rule's scope. Rules without
+ * `packages` collapse to the simple string form.
+ *
+ * Conflicts between two banned versionGroups targeting the same dep
+ * keep the first entry — we surface a warning so reviewers can untangle
+ * by hand if needed.
+ */
+const translateBannedDeps = (config: SyncpackConfig, report: MigrationReport): Record<string, BannedDepEntry> => {
+    const out: Record<string, BannedDepEntry> = {};
+
+    if (!Array.isArray(config.versionGroups)) {
+        return out;
+    }
+
+    for (const raw of config.versionGroups) {
+        if (!raw || typeof raw !== "object") {
+            continue;
+        }
+
+        const group = raw as Record<string, unknown>;
+
+        if (!isVersionGroupBanned(group)) {
+            continue;
+        }
+
+        const deps = Array.isArray(group["dependencies"])
+            ? (group["dependencies"] as unknown[]).filter((d): d is string => typeof d === "string" && d.length > 0)
+            : [];
+
+        if (deps.length === 0) {
+            addMigrationWarning(report, "versionGroup with `isBanned: true` has no `dependencies` entries — skipped.");
+            continue;
+        }
+
+        const packages = Array.isArray(group["packages"])
+            ? (group["packages"] as unknown[]).filter((p): p is string => typeof p === "string" && p.length > 0)
+            : [];
+
+        const labelRaw = group["label"];
+        const reason = typeof labelRaw === "string" && labelRaw.length > 0 ? labelRaw : "banned via syncpack versionGroups";
+
+        for (const dep of deps) {
+            if (out[dep] !== undefined) {
+                addMigrationWarning(report, `Multiple banned versionGroups target "${dep}" — kept the first match; merge manually if needed.`);
+                continue;
+            }
+
+            out[dep] = packages.length > 0 ? { packages, reason } : reason;
+        }
+    }
+
+    return out;
 };
 
 // Config writing ----------------------------------------------------
@@ -332,14 +418,63 @@ const formatExtraTypeLiteral = (entry: ExtraCustomType): string => {
     return `                { ${parts.join(", ")} }`;
 };
 
-const generatePolicySnippet = (extraTypes: ExtraCustomType[]): string => {
-    const rows = extraTypes.map((entry) => formatExtraTypeLiteral(entry)).join(",\n");
+const formatBannedDepEntry = (name: string, rule: BannedDepEntry): string => {
+    if (typeof rule === "string") {
+        return `            ${JSON.stringify(name)}: ${JSON.stringify(rule)}`;
+    }
 
-    return `    policy: {\n        customTypes: {\n            extraTypes: [\n${rows},\n            ],\n        },\n    }`;
+    const parts = [`reason: ${JSON.stringify(rule.reason)}`];
+
+    if (rule.packages && rule.packages.length > 0) {
+        parts.push(`packages: [${rule.packages.map((p) => JSON.stringify(p)).join(", ")}]`);
+    }
+
+    return `            ${JSON.stringify(name)}: { ${parts.join(", ")} }`;
 };
 
-const insertPolicyIntoVisConfig = (root: string, extraTypes: ExtraCustomType[], logger: MigrateLogger): boolean => {
-    if (extraTypes.length === 0) {
+const generatePolicySnippet = (extraTypes: ExtraCustomType[], bannedDeps: Record<string, BannedDepEntry> = {}): string => {
+    const blocks: string[] = [];
+    const bannedEntries = Object.entries(bannedDeps);
+
+    if (bannedEntries.length > 0) {
+        const rows = bannedEntries.map(([name, rule]) => formatBannedDepEntry(name, rule)).join(",\n");
+
+        blocks.push(`        bannedDeps: {\n${rows},\n        }`);
+    }
+
+    if (extraTypes.length > 0) {
+        const rows = extraTypes.map((entry) => formatExtraTypeLiteral(entry)).join(",\n");
+
+        blocks.push(`        customTypes: {\n            extraTypes: [\n${rows},\n            ],\n        }`);
+    }
+
+    return `    policy: {\n${blocks.join(",\n")},\n    }`;
+};
+
+const summarizePolicyContents = (extraTypes: ExtraCustomType[], bannedDeps: Record<string, BannedDepEntry>): string => {
+    const parts: string[] = [];
+    const bannedCount = Object.keys(bannedDeps).length;
+
+    if (extraTypes.length > 0) {
+        parts.push(`${String(extraTypes.length)} customType(s)`);
+    }
+
+    if (bannedCount > 0) {
+        parts.push(`${String(bannedCount)} bannedDep(s)`);
+    }
+
+    return parts.join(" + ");
+};
+
+const insertPolicyIntoVisConfig = (
+    root: string,
+    extraTypes: ExtraCustomType[],
+    logger: MigrateLogger,
+    bannedDeps: Record<string, BannedDepEntry> = {},
+): boolean => {
+    const summary = summarizePolicyContents(extraTypes, bannedDeps);
+
+    if (summary === "") {
         return false;
     }
 
@@ -351,12 +486,12 @@ const insertPolicyIntoVisConfig = (root: string, extraTypes: ExtraCustomType[], 
         if (POLICY_KEY_RE.test(content)) {
             // Existing `policy:` key — too brittle to splice into without a
             // proper AST; punt to a manual step.
-            logger.warn(`vis.config.ts already has a "policy" block — please merge ${String(extraTypes.length)} extraTypes entries manually.`);
+            logger.warn(`vis.config.ts already has a "policy" block — please merge ${summary} manually.`);
 
             return false;
         }
 
-        const snippet = generatePolicySnippet(extraTypes);
+        const snippet = generatePolicySnippet(extraTypes, bannedDeps);
         let updated: string | undefined;
 
         if (DEFINE_CONFIG_RE.test(content)) {
@@ -368,22 +503,22 @@ const insertPolicyIntoVisConfig = (root: string, extraTypes: ExtraCustomType[], 
         if (updated) {
             backupFile(configPath);
             writeFileSync(configPath, updated, "utf8");
-            logger.info(`Merged ${String(extraTypes.length)} customType(s) into ${configPath}`);
+            logger.info(`Merged ${summary} into ${configPath}`);
 
             return true;
         }
 
-        logger.warn(`Could not auto-insert policy.customTypes into ${configPath} — please add manually`);
+        logger.warn(`Could not auto-insert policy block into ${configPath} — please add manually`);
 
         return false;
     }
 
     const newConfigPath = join(root, "vis.config.ts");
-    const snippet = generatePolicySnippet(extraTypes);
+    const snippet = generatePolicySnippet(extraTypes, bannedDeps);
     const content = `import { defineConfig } from "@visulima/vis/config";\n\nexport default defineConfig({\n${snippet},\n});\n`;
 
     writeFileSync(newConfigPath, content, "utf8");
-    logger.info(`Created ${newConfigPath} with ${String(extraTypes.length)} customType(s)`);
+    logger.info(`Created ${newConfigPath} with ${summary}`);
 
     return true;
 };
@@ -394,10 +529,17 @@ const removeSyncpackFromPackageJson = (root: string, useEditorconfig?: boolean):
     catalogStripped: boolean;
     configRemoved: boolean;
     dependencyRemoved: boolean;
+    removedScripts: { name: string; value: string }[];
     scriptCount: number;
 } => {
     const packageJsonPath = join(root, "package.json");
-    const result = { catalogStripped: false, configRemoved: false, dependencyRemoved: false, scriptCount: 0 };
+    const result: {
+        catalogStripped: boolean;
+        configRemoved: boolean;
+        dependencyRemoved: boolean;
+        removedScripts: { name: string; value: string }[];
+        scriptCount: number;
+    } = { catalogStripped: false, configRemoved: false, dependencyRemoved: false, removedScripts: [], scriptCount: 0 };
 
     if (!isAccessibleSync(packageJsonPath)) {
         return result;
@@ -465,6 +607,7 @@ const removeSyncpackFromPackageJson = (root: string, useEditorconfig?: boolean):
         for (const [name, value] of Object.entries(scripts)) {
             if (typeof value === "string" && SYNCPACK_SCRIPT_RE.test(value)) {
                 result.scriptCount += 1;
+                result.removedScripts.push({ name, value });
                 modified = true;
             } else {
                 kept[name] = value;
@@ -472,7 +615,11 @@ const removeSyncpackFromPackageJson = (root: string, useEditorconfig?: boolean):
         }
 
         if (result.scriptCount > 0) {
-            pkg["scripts"] = kept;
+            if (Object.keys(kept).length === 0) {
+                delete pkg["scripts"];
+            } else {
+                pkg["scripts"] = kept;
+            }
         }
     }
 
@@ -657,11 +804,13 @@ const applyMigration = (
         logger.warn(`Found syncpack reference in ${String(ciHits.length)} CI file(s) — see manualSteps for details.`);
     }
 
-    if (extraTypes.length > 0) {
-        insertPolicyIntoVisConfig(root, extraTypes, logger);
+    const bannedDeps = translateBannedDeps(config, report);
+
+    if (extraTypes.length > 0 || Object.keys(bannedDeps).length > 0) {
+        insertPolicyIntoVisConfig(root, extraTypes, logger, bannedDeps);
     }
 
-    const { catalogStripped, configRemoved, dependencyRemoved, scriptCount } = removeSyncpackFromPackageJson(root, options.useEditorconfig);
+    const { catalogStripped, configRemoved, dependencyRemoved, removedScripts, scriptCount } = removeSyncpackFromPackageJson(root, options.useEditorconfig);
 
     if (configRemoved && !options.silent) {
         logger.info("Removed `syncpack` block from package.json");
@@ -679,6 +828,18 @@ const applyMigration = (
 
     if (scriptCount > 0) {
         bumpPerMigration(report, MIGRATION_ID, "rewrittenScriptCount", scriptCount);
+
+        for (const { name, value } of removedScripts) {
+            // We strip the *whole* script entry rather than rewriting in place
+            // — `syncpack lint` ≈ `vis lint`, but `syncpack fix-mismatches` /
+            // `set-semver-ranges` have no 1:1 mapping, and chained commands
+            // (`syncpack lint && eslint .`) would lose the non-syncpack half.
+            // Surface each removed script so reviewers can recreate intentionally.
+            addManualStep(
+                report,
+                `Recreate script \`${name}\` (removed; was \`${value}\`). Replace \`syncpack\` with \`vis lint\` / \`vis sort-package-json\` as appropriate.`,
+            );
+        }
 
         if (!options.silent) {
             logger.info(`Removed ${String(scriptCount)} script(s) referencing \`syncpack\`. Replace with \`vis lint\` / \`vis sort-package-json\` as appropriate.`);
@@ -735,17 +896,20 @@ const migrateSyncpack = (root: string, options: { dryRun: boolean; silent?: bool
 
     if (options.dryRun) {
         const previewExtras = translateCustomTypes(config, report);
+        const previewBanned = translateBannedDeps(config, report);
 
         noteUnsupportedKeys(config, report);
         detectHookReferences(root, report);
         detectCiReferences(root, report);
 
+        const summary = summarizePolicyContents(previewExtras, previewBanned);
+
         if (!options.silent) {
-            if (previewExtras.length > 0) {
-                logger.info(`[dry-run] Would merge ${String(previewExtras.length)} customType(s) into vis.config.ts:`);
-                logger.info(generatePolicySnippet(previewExtras));
+            if (summary === "") {
+                logger.info("[dry-run] No policy entries to merge — manualSteps will surface the rest.");
             } else {
-                logger.info("[dry-run] No customTypes to merge — manualSteps will surface the rest.");
+                logger.info(`[dry-run] Would merge ${summary} into vis.config.ts:`);
+                logger.info(generatePolicySnippet(previewExtras, previewBanned));
             }
         }
 
@@ -773,5 +937,6 @@ export {
     SYNCPACK_JSON_CONFIG_FILES,
     SYNCPACK_UNSUPPORTED_CONFIG_FILES,
     SYNCPACK_YAML_CONFIG_FILES,
+    translateBannedDeps,
     translateCustomTypes,
 };
