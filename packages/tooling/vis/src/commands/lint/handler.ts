@@ -511,6 +511,7 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
 
     const selection = resolveSelection(options);
     const policy = visConfig?.policy ?? {};
+    const useEditorconfig = visConfig?.editorconfig ?? true;
     const pinned = parsePinFlags(options.pin);
     const bans = options.ban ?? [];
 
@@ -528,7 +529,7 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
         const autofixAllowed = isAutofixAllowed(fix, policy.workspaceProtocol?.autofix);
 
         if (autofixAllowed && issues.length > 0) {
-            applyWorkspaceProtocolFixes(issues);
+            applyWorkspaceProtocolFixes(issues, { useEditorconfig });
             fixState.workspaceProtocol = true;
         }
 
@@ -572,7 +573,7 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
         const autofixAllowed = isAutofixAllowed(fix, policy.workspaceVersions?.autofix);
 
         if (autofixAllowed && issues.length > 0) {
-            applyWorkspaceVersionsFixes(issues);
+            applyWorkspaceVersionsFixes(issues, { useEditorconfig });
             fixState.workspaceVersions = true;
         }
 
@@ -642,7 +643,7 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
         const autofixAllowed = isAutofixAllowed(fix, policy.customTypes?.autofix);
 
         if (autofixAllowed && issues.length > 0) {
-            applyCustomTypeFixes(issues);
+            applyCustomTypeFixes(issues, { useEditorconfig });
             fixState.customTypes = true;
         }
 

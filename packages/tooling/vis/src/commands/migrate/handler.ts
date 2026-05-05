@@ -12,6 +12,7 @@ import type {
     MigrateNanoStagedOptions,
     MigrateNxOptions,
     MigrateSecretlintOptions,
+    MigrateSyncpackOptions,
     MigrateTurborepoOptions,
 } from "./index";
 import { migrateKingfisher } from "./kingfisher";
@@ -22,6 +23,7 @@ import { migrateNx } from "./nx";
 import { confirm } from "./prompt";
 import { migrateSecretlint } from "./secretlint";
 import { printSummary } from "./summary";
+import { migrateSyncpack } from "./syncpack";
 import { migrateTurborepo } from "./turborepo";
 import type { MigrationReport } from "./types";
 import { createMigrationReport } from "./types";
@@ -39,6 +41,7 @@ interface MigrationContext {
     packageManager: ReturnType<typeof detectPackageManager>;
     report: MigrationReport;
     root: string;
+    useEditorconfig: boolean;
 }
 
 const buildContext = (toolbox: {
@@ -48,14 +51,16 @@ const buildContext = (toolbox: {
     workspaceRoot?: string;
 }): MigrationContext => {
     const root = toolbox.workspaceRoot ?? process.cwd();
+    const config = toolbox.visConfig ?? {};
 
     return {
-        config: toolbox.visConfig ?? {},
+        config,
         dryRun: Boolean(toolbox.options.dryRun),
         logger: toolbox.logger,
         packageManager: detectPackageManager(root),
         report: createMigrationReport(),
         root,
+        useEditorconfig: typeof config.editorconfig === "boolean" ? config.editorconfig : true,
     };
 };
 
@@ -109,7 +114,7 @@ const migrateLintStagedExecuteImpl = async ({ logger, options, visConfig, worksp
     announceDryRun(ctx);
 
     logger.info("── Migrating lint-staged ──");
-    migrateLintStaged(ctx.root, { dryRun: ctx.dryRun }, logger, ctx.report);
+    migrateLintStaged(ctx.root, { dryRun: ctx.dryRun, useEditorconfig: ctx.useEditorconfig }, logger, ctx.report);
     logger.info("");
 
     printSummary(ctx.report, logger);
@@ -125,7 +130,7 @@ const migrateNanoStagedExecuteImpl = async ({ logger, options, visConfig, worksp
     announceDryRun(ctx);
 
     logger.info("── Migrating nano-staged ──");
-    migrateNanoStaged(ctx.root, { dryRun: ctx.dryRun }, logger, ctx.report);
+    migrateNanoStaged(ctx.root, { dryRun: ctx.dryRun, useEditorconfig: ctx.useEditorconfig }, logger, ctx.report);
     logger.info("");
 
     printSummary(ctx.report, logger);
@@ -141,7 +146,7 @@ const migrateTurborepoExecuteImpl = async ({ logger, options, visConfig, workspa
     announceDryRun(ctx);
 
     logger.info("── Migrating turborepo ──");
-    migrateTurborepo(ctx.root, { dryRun: ctx.dryRun }, logger, ctx.report);
+    migrateTurborepo(ctx.root, { dryRun: ctx.dryRun, useEditorconfig: ctx.useEditorconfig }, logger, ctx.report);
     logger.info("");
 
     printSummary(ctx.report, logger);
@@ -157,7 +162,7 @@ const migrateNxExecuteImpl = async ({ logger, options, visConfig, workspaceRoot 
     announceDryRun(ctx);
 
     logger.info("── Migrating nx ──");
-    migrateNx(ctx.root, { dryRun: ctx.dryRun }, logger, ctx.report);
+    migrateNx(ctx.root, { dryRun: ctx.dryRun, useEditorconfig: ctx.useEditorconfig }, logger, ctx.report);
     logger.info("");
 
     printSummary(ctx.report, logger);
@@ -173,7 +178,7 @@ const migrateMoonExecuteImpl = async ({ logger, options, visConfig, workspaceRoo
     announceDryRun(ctx);
 
     logger.info("── Migrating moon ──");
-    migrateMoon(ctx.root, { copyTemplates: Boolean(options.copyTemplates), dryRun: ctx.dryRun }, logger, ctx.report);
+    migrateMoon(ctx.root, { copyTemplates: Boolean(options.copyTemplates), dryRun: ctx.dryRun, useEditorconfig: ctx.useEditorconfig }, logger, ctx.report);
     logger.info("");
 
     printSummary(ctx.report, logger);
@@ -189,7 +194,7 @@ const migrateGitleaksExecuteImpl = async ({ logger, options, visConfig, workspac
     announceDryRun(ctx);
 
     logger.info("── Migrating gitleaks ──");
-    migrateGitleaks(ctx.root, { dryRun: ctx.dryRun }, logger, ctx.report);
+    migrateGitleaks(ctx.root, { dryRun: ctx.dryRun, useEditorconfig: ctx.useEditorconfig }, logger, ctx.report);
     logger.info("");
 
     printSummary(ctx.report, logger);
@@ -205,7 +210,7 @@ const migrateKingfisherExecuteImpl = async ({ logger, options, visConfig, worksp
     announceDryRun(ctx);
 
     logger.info("── Migrating Kingfisher ──");
-    migrateKingfisher(ctx.root, { dryRun: ctx.dryRun }, logger, ctx.report);
+    migrateKingfisher(ctx.root, { dryRun: ctx.dryRun, useEditorconfig: ctx.useEditorconfig }, logger, ctx.report);
     logger.info("");
 
     printSummary(ctx.report, logger);
@@ -221,7 +226,23 @@ const migrateSecretlintExecuteImpl = async ({ logger, options, visConfig, worksp
     announceDryRun(ctx);
 
     logger.info("── Migrating secretlint ──");
-    migrateSecretlint(ctx.root, { dryRun: ctx.dryRun }, logger, ctx.report);
+    migrateSecretlint(ctx.root, { dryRun: ctx.dryRun, useEditorconfig: ctx.useEditorconfig }, logger, ctx.report);
+    logger.info("");
+
+    printSummary(ctx.report, logger);
+};
+
+const migrateSyncpackExecuteImpl = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Console, MigrateSyncpackOptions>): Promise<void> => {
+    if (!(await maybeConfirm("syncpack", options, logger))) {
+        return;
+    }
+
+    const ctx = buildContext({ logger, options, visConfig: visConfig as Record<string, unknown> | undefined, workspaceRoot });
+
+    announceDryRun(ctx);
+
+    logger.info("── Migrating syncpack ──");
+    migrateSyncpack(ctx.root, { dryRun: ctx.dryRun, useEditorconfig: ctx.useEditorconfig }, logger, ctx.report);
     logger.info("");
 
     printSummary(ctx.report, logger);
@@ -245,4 +266,5 @@ export const migrateMoonExecute = migrateMoonExecuteImpl as CommandExecute<Toolb
 export const migrateGitleaksExecute = migrateGitleaksExecuteImpl as CommandExecute<Toolbox>;
 export const migrateKingfisherExecute = migrateKingfisherExecuteImpl as CommandExecute<Toolbox>;
 export const migrateSecretlintExecute = migrateSecretlintExecuteImpl as CommandExecute<Toolbox>;
+export const migrateSyncpackExecute = migrateSyncpackExecuteImpl as CommandExecute<Toolbox>;
 export const migrateVerifyExecute = migrateVerifyExecuteImpl;

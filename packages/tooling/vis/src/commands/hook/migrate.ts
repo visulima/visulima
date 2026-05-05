@@ -4,6 +4,7 @@ import { readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { ensureDirSync, isAccessibleSync, readFileSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
+import { resolveIndentForFile } from "../../util/editorconfig";
 import { cleanHuskyFromScript } from "../migrate/constants";
 import type { PackageManagerType } from "../migrate/types";
 import type { InstallResult } from "./constants";
@@ -141,7 +142,7 @@ const processScript = (scripts: Record<string, string>, scriptName: string, scri
 /**
  * Cleans husky references from package.json scripts.
  */
-const cleanPackageJsonScripts = (root: string): { modified: boolean; removedScriptReferences: string[] } => {
+const cleanPackageJsonScripts = (root: string, useEditorconfig?: boolean): { modified: boolean; removedScriptReferences: string[] } => {
     const packageJsonPath = join(root, "package.json");
 
     if (!isAccessibleSync(packageJsonPath)) {
@@ -168,7 +169,9 @@ const cleanPackageJsonScripts = (root: string): { modified: boolean; removedScri
     }
 
     if (removedScriptReferences.length > 0) {
-        writeFileSync(packageJsonPath, `${JSON.stringify(packageJson, undefined, 4)}\n`, "utf8");
+        const indent = resolveIndentForFile(packageJsonPath, content, { defaultIndent: "    ", useEditorconfig });
+
+        writeFileSync(packageJsonPath, `${JSON.stringify(packageJson, undefined, indent)}\n`, "utf8");
     }
 
     return { modified: removedScriptReferences.length > 0, removedScriptReferences };
@@ -179,6 +182,7 @@ const cleanPackageJsonScripts = (root: string): { modified: boolean; removedScri
  */
 interface HuskyMigrateOptions {
     dryRun?: boolean;
+    useEditorconfig?: boolean;
 }
 
 const migrateFromHusky = (root: string, hooksDirectory: string, logger: Console, options: HuskyMigrateOptions = {}): InstallResult => {
@@ -254,7 +258,7 @@ const migrateFromHusky = (root: string, hooksDirectory: string, logger: Console,
     } else {
         uninstallHuskyPackage(root, logger);
 
-        const packageResult = cleanPackageJsonScripts(root);
+        const packageResult = cleanPackageJsonScripts(root, options.useEditorconfig);
 
         if (packageResult.modified) {
             logger.info("Updated package.json scripts:");

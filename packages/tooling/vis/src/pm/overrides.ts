@@ -20,6 +20,8 @@ import { readYamlSync } from "@visulima/fs/yaml";
 import { join } from "@visulima/path";
 import { coerce } from "semver";
 
+import { resolveIndentForFile } from "../util/editorconfig";
+
 /** Supported package manager names. */
 type PackageManagerName = "bun" | "npm" | "pnpm" | "yarn";
 
@@ -161,13 +163,6 @@ const findInsertIndex = (keys: string[], field: string): number => {
     return keys.length;
 };
 
-/** Detects the indent style used in a JSON string. */
-const detectIndent = (content: string): string => {
-    const match = /\n(\s+)/.exec(content);
-
-    return match?.[1] ?? "  ";
-};
-
 /**
  * Writes overrides to `pnpm-workspace.yaml` (pnpm v10+).
  *
@@ -202,9 +197,9 @@ const writePnpmWorkspaceOverrides = (workspaceRoot: string, sorted: Record<strin
  * When adding a new field, it is positioned near existing dependency fields
  * rather than appended to the end of the file.
  */
-const writePkgJsonOverrides = (pkgJsonPath: string, pkgJson: Record<string, unknown>, sorted: Record<string, string>, pm: PackageManagerName): void => {
+const writePkgJsonOverrides = (pkgJsonPath: string, pkgJson: Record<string, unknown>, sorted: Record<string, string>, pm: PackageManagerName, useEditorconfig?: boolean): void => {
     const raw = readFileSync(pkgJsonPath);
-    const indent = detectIndent(raw);
+    const indent = resolveIndentForFile(pkgJsonPath, raw, { useEditorconfig });
 
     if (pm === "pnpm") {
         const pnpmObject = (pkgJson.pnpm as Record<string, unknown>) ?? {};
@@ -250,7 +245,7 @@ const writePkgJsonOverrides = (pkgJsonPath: string, pkgJson: Record<string, unkn
  * @param pm Package manager name and version.
  * @returns Lists of added and updated package names.
  */
-const applyOverrides = (workspaceRoot: string, pkgJsonPath: string, entries: OverrideEntry[], pm: PmInfo): ApplyOverridesResult => {
+const applyOverrides = (workspaceRoot: string, pkgJsonPath: string, entries: OverrideEntry[], pm: PmInfo, useEditorconfig?: boolean): ApplyOverridesResult => {
     const raw = readFileSync(pkgJsonPath);
     const pkgJson = JSON.parse(raw) as Record<string, unknown>;
 
@@ -308,7 +303,7 @@ const applyOverrides = (workspaceRoot: string, pkgJsonPath: string, entries: Ove
     if (source === "pnpm-workspace.yaml") {
         writePnpmWorkspaceOverrides(workspaceRoot, sorted as Record<string, string>);
     } else {
-        writePkgJsonOverrides(pkgJsonPath, pkgJson, sorted as Record<string, string>, pm.name);
+        writePkgJsonOverrides(pkgJsonPath, pkgJson, sorted as Record<string, string>, pm.name, useEditorconfig);
     }
 
     return { added, updated };

@@ -3,6 +3,7 @@ import { unlinkSync } from "node:fs";
 import { isAccessibleSync, readFileSync, writeFileSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
+import { resolveIndentForFile } from "../../util/editorconfig";
 import { backupFile } from "./backup";
 import { readJsonFile } from "./json";
 import type { MigrateLogger, MigrationReport } from "./types";
@@ -90,7 +91,7 @@ const convertBaseline = (upstream: GitleaksUpstreamFinding[]): unknown[] =>
         };
     });
 
-const migrateBaseline = (root: string, dryRun: boolean, logger: MigrateLogger, report: MigrationReport): void => {
+const migrateBaseline = (root: string, dryRun: boolean, logger: MigrateLogger, report: MigrationReport, useEditorconfig?: boolean): void => {
     const source = detectGitleaksBaseline(root);
 
     if (!source) {
@@ -122,12 +123,12 @@ const migrateBaseline = (root: string, dryRun: boolean, logger: MigrateLogger, r
     }
 
     backupFile(source, report);
-    writeFileSync(target, `${JSON.stringify(converted, null, 4)}\n`);
+    writeFileSync(target, `${JSON.stringify(converted, null, resolveIndentForFile(target, undefined, { defaultIndent: "    ", useEditorconfig }))}\n`);
     logger.info(`Converted ${source} -> ${target} (${String(converted.length)} findings)`);
     bumpPerMigration(report, "gitleaks", "rewrittenScriptCount");
 };
 
-const rewriteScripts = (root: string, dryRun: boolean, logger: MigrateLogger, report: MigrationReport): void => {
+const rewriteScripts = (root: string, dryRun: boolean, logger: MigrateLogger, report: MigrationReport, useEditorconfig?: boolean): void => {
     const packageJsonPath = join(root, "package.json");
 
     if (!isAccessibleSync(packageJsonPath)) {
@@ -185,8 +186,10 @@ const rewriteScripts = (root: string, dryRun: boolean, logger: MigrateLogger, re
         return;
     }
 
+    const indent = resolveIndentForFile(packageJsonPath, readFileSync(packageJsonPath), { defaultIndent: "    ", useEditorconfig });
+
     backupFile(packageJsonPath, report);
-    writeFileSync(packageJsonPath, `${JSON.stringify(pkg, null, 4)}\n`);
+    writeFileSync(packageJsonPath, `${JSON.stringify(pkg, null, indent)}\n`);
 };
 
 const rewriteHooks = (root: string, dryRun: boolean, logger: MigrateLogger, report: MigrationReport): void => {
@@ -267,7 +270,7 @@ const fingerprintToBaselineEntry = (line: string): FingerprintFinding | undefine
  * `.secrets-baseline.json` used by vis secrets. We merge rather than replace so
  * users with an existing baseline don't lose prior triage decisions.
  */
-const migrateIgnoreFile = (root: string, dryRun: boolean, logger: MigrateLogger, report: MigrationReport): void => {
+const migrateIgnoreFile = (root: string, dryRun: boolean, logger: MigrateLogger, report: MigrationReport, useEditorconfig?: boolean): void => {
     const source = detectGitleaksIgnore(root);
 
     if (!source) {
@@ -308,18 +311,22 @@ const migrateIgnoreFile = (root: string, dryRun: boolean, logger: MigrateLogger,
 
     backupFile(source, report);
 
-    if (isAccessibleSync(baselinePath)) {
+    const baselineContents = isAccessibleSync(baselinePath) ? readFileSync(baselinePath) : undefined;
+
+    if (baselineContents !== undefined) {
         backupFile(baselinePath, report);
     }
 
-    writeFileSync(baselinePath, `${JSON.stringify(merged, null, 4)}\n`);
+    const indent = resolveIndentForFile(baselinePath, baselineContents, { defaultIndent: "    ", useEditorconfig });
+
+    writeFileSync(baselinePath, `${JSON.stringify(merged, null, indent)}\n`);
     unlinkSync(source);
 
     logger.info(`Merged ${String(entries.length)} fingerprint(s) from ${source} into ${baselinePath}; removed .gitleaksignore.`);
     bumpPerMigration(report, "gitleaks", "rewrittenScriptCount", entries.length);
 };
 
-const migrateGitleaks = (root: string, options: { dryRun: boolean; silent?: boolean }, logger: MigrateLogger, report: MigrationReport): boolean => {
+const migrateGitleaks = (root: string, options: { dryRun: boolean; silent?: boolean; useEditorconfig?: boolean }, logger: MigrateLogger, report: MigrationReport): boolean => {
     const configPath = detectGitleaksConfig(root);
     const ignorePath = detectGitleaksIgnore(root);
     const hasArtifacts = Boolean(configPath ?? ignorePath ?? detectGitleaksBaseline(root));
@@ -338,11 +345,11 @@ const migrateGitleaks = (root: string, options: { dryRun: boolean; silent?: bool
     }
 
     if (ignorePath) {
-        migrateIgnoreFile(root, options.dryRun, logger, report);
+        migrateIgnoreFile(root, options.dryRun, logger, report, options.useEditorconfig);
     }
 
-    migrateBaseline(root, options.dryRun, logger, report);
-    rewriteScripts(root, options.dryRun, logger, report);
+    migrateBaseline(root, options.dryRun, logger, report, options.useEditorconfig);
+    rewriteScripts(root, options.dryRun, logger, report, options.useEditorconfig);
     rewriteHooks(root, options.dryRun, logger, report);
 
     addManualStep(report, "Review CI workflows (.github/workflows/*.yml) for gitleaks-action calls — replace with `vis secrets`.");

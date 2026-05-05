@@ -358,7 +358,7 @@ const streamScans = async (context: ScanContext): Promise<Omit<DoctorResults, "e
                 if (outdatedError) {
                     store.failSection("dependencies", outdatedError);
 
-                    return;
+                    return undefined;
                 }
 
                 store.completeSection(
@@ -370,6 +370,8 @@ const streamScans = async (context: ScanContext): Promise<Omit<DoctorResults, "e
                         runtime: [],
                     }),
                 );
+
+                return undefined;
             })
             : undefined;
 
@@ -385,7 +387,7 @@ const streamScans = async (context: ScanContext): Promise<Omit<DoctorResults, "e
                 if (firstError) {
                     store.failSection("security", firstError);
 
-                    return;
+                    return undefined;
                 }
 
                 store.completeSection(
@@ -397,6 +399,8 @@ const streamScans = async (context: ScanContext): Promise<Omit<DoctorResults, "e
                         runtime: [],
                     }),
                 );
+
+                return undefined;
             })
             : undefined;
 
@@ -1046,6 +1050,7 @@ const execute = async ({ logger, options, visConfig, visConfigError, workspaceRo
             pm,
             recoverOrphans: hasOrphanWarning,
             results,
+            useEditorconfig: visConfig?.editorconfig ?? true,
             workspaceRoot: wsRoot,
         });
     } else if (!quiet) {
@@ -1085,11 +1090,12 @@ interface RunFixesOptions {
     /** When true, run {@link killOrphanedRunners} after the optimization fixes. */
     recoverOrphans: boolean;
     results: DoctorResults;
+    useEditorconfig?: boolean;
     workspaceRoot: string;
 }
 
 const runFixes = async (opts: RunFixesOptions): Promise<void> => {
-    const { force, logger, pm, recoverOrphans, results, workspaceRoot } = opts;
+    const { force, logger, pm, recoverOrphans, results, useEditorconfig, workspaceRoot } = opts;
 
     pail.log("");
     pail.log(heading("Applying fixes", "ok"));
@@ -1137,7 +1143,7 @@ const runFixes = async (opts: RunFixesOptions): Promise<void> => {
     }
 
     if (socketEntries.length > 0) {
-        const overrideResult = applyOverrides(workspaceRoot, join(workspaceRoot, "package.json"), socketEntries, pm as Parameters<typeof applyOverrides>[3]);
+        const overrideResult = applyOverrides(workspaceRoot, join(workspaceRoot, "package.json"), socketEntries, pm as Parameters<typeof applyOverrides>[3], useEditorconfig);
 
         if (overrideResult.added.length > 0) {
             pail.success(`Added ${String(overrideResult.added.length)} security override${overrideResult.added.length === 1 ? "" : "s"}.`);

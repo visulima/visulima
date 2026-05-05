@@ -1,6 +1,7 @@
 import { isAccessibleSync, readFileSync, writeFileSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
+import { resolveIndentForFile } from "../../util/editorconfig";
 import { backupFile } from "./backup";
 import { readJsonFile } from "./json";
 import type { MigrateLogger, MigrationReport } from "./types";
@@ -141,7 +142,7 @@ const toPlaceholderEntry = (record: KingfisherBaselineRecord): PlaceholderBaseli
     };
 };
 
-const migrateBaseline = (root: string, dryRun: boolean, logger: MigrateLogger, report: MigrationReport): void => {
+const migrateBaseline = (root: string, dryRun: boolean, logger: MigrateLogger, report: MigrationReport, useEditorconfig?: boolean): void => {
     const name = detectKingfisherBaseline(root);
 
     if (!name) {
@@ -188,7 +189,7 @@ const migrateBaseline = (root: string, dryRun: boolean, logger: MigrateLogger, r
     }
 
     backupFile(source, report);
-    writeFileSync(target, `${JSON.stringify(placeholders, null, 4)}\n`);
+    writeFileSync(target, `${JSON.stringify(placeholders, null, resolveIndentForFile(target, undefined, { defaultIndent: "    ", useEditorconfig }))}\n`);
     logger.info(`Converted ${name} -> .secrets-baseline.json (${String(placeholders.length)} placeholder finding(s))`);
     addManualStep(report, "Run `vis secrets --update-baseline` — the converted entries are placeholders until the scanner computes real fingerprints.");
     bumpPerMigration(report, "kingfisher", "rewrittenScriptCount");
@@ -199,7 +200,7 @@ const migrateBaseline = (root: string, dryRun: boolean, logger: MigrateLogger, r
 // only replace the kingfisher invocation, not the rest of the line.
 const KINGFISHER_INVOCATION_RE = /\bkingfisher(?:\s+(?:scan|validate|rules|update|manage-baseline|report|github|gitlab|bitbucket))?\b[^\n&|;]*/g;
 
-const rewriteScripts = (root: string, dryRun: boolean, logger: MigrateLogger, report: MigrationReport): void => {
+const rewriteScripts = (root: string, dryRun: boolean, logger: MigrateLogger, report: MigrationReport, useEditorconfig?: boolean): void => {
     const packageJsonPath = join(root, "package.json");
 
     if (!isAccessibleSync(packageJsonPath)) {
@@ -261,8 +262,10 @@ const rewriteScripts = (root: string, dryRun: boolean, logger: MigrateLogger, re
         return;
     }
 
+    const indent = resolveIndentForFile(packageJsonPath, readFileSync(packageJsonPath), { defaultIndent: "    ", useEditorconfig });
+
     backupFile(packageJsonPath, report);
-    writeFileSync(packageJsonPath, `${JSON.stringify(pkg, null, 4)}\n`);
+    writeFileSync(packageJsonPath, `${JSON.stringify(pkg, null, indent)}\n`);
 };
 
 const rewriteHooks = (root: string, dryRun: boolean, logger: MigrateLogger, report: MigrationReport): void => {
@@ -311,7 +314,7 @@ const hasKingfisherRef = (path: string): boolean => {
     }
 };
 
-const migrateKingfisher = (root: string, options: { dryRun: boolean; silent?: boolean }, logger: MigrateLogger, report: MigrationReport): boolean => {
+const migrateKingfisher = (root: string, options: { dryRun: boolean; silent?: boolean; useEditorconfig?: boolean }, logger: MigrateLogger, report: MigrationReport): boolean => {
     const baselinePath = detectKingfisherBaseline(root);
     const rulesPath = detectKingfisherRules(root);
     const hasScriptsRef = hasKingfisherRef(join(root, "package.json"));
@@ -335,10 +338,10 @@ const migrateKingfisher = (root: string, options: { dryRun: boolean; silent?: bo
     }
 
     if (baselinePath) {
-        migrateBaseline(root, options.dryRun, logger, report);
+        migrateBaseline(root, options.dryRun, logger, report, options.useEditorconfig);
     }
 
-    rewriteScripts(root, options.dryRun, logger, report);
+    rewriteScripts(root, options.dryRun, logger, report, options.useEditorconfig);
     rewriteHooks(root, options.dryRun, logger, report);
 
     addManualStep(report, "Replace `# kingfisher:ignore` markers with `# secret-scanner:allow` (or keep `# gitleaks:allow` — the scanner accepts both).");

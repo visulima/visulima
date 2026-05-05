@@ -1,3 +1,5 @@
+import { join } from "@visulima/path";
+
 import { readJsonConfig, serializeConfigObject, writeVisConfig } from "./shared";
 import type { MigrateLogger, MigrationReport } from "./types";
 
@@ -30,6 +32,7 @@ interface TurboTask {
 }
 
 const convertDependsOn = (deps: string[]): (string | { dependencies?: boolean; projects?: string | string[]; target: string })[] =>
+    // eslint-disable-next-line sonarjs/function-return-type -- vis dependsOn syntax accepts either a bare task name or a structured ref; preserving both shapes keeps the migration output minimal
     deps.map((dep) => {
         if (dep.startsWith("^")) {
             return { dependencies: true, target: dep.slice(1) };
@@ -44,7 +47,7 @@ const convertDependsOn = (deps: string[]): (string | { dependencies?: boolean; p
         return dep;
     });
 
-const renderVisConfig = (turbo: TurboJson): string => {
+const renderVisConfig = (turbo: TurboJson, workspaceRoot: string, useEditorconfig?: boolean): string => {
     const tasks = turbo.tasks ?? turbo.pipeline ?? {};
     const targetDefaults: Record<string, Record<string, unknown>> = {};
 
@@ -120,7 +123,7 @@ const renderVisConfig = (turbo: TurboJson): string => {
         configObject.taskRunnerOptions = taskRunnerOptions;
     }
 
-    const serialised = serializeConfigObject(configObject);
+    const serialised = serializeConfigObject(configObject, join(workspaceRoot, "vis.config.ts"), useEditorconfig);
 
     return [
         "// Migrated from turbo.json by `vis migrate turborepo`.",
@@ -138,10 +141,12 @@ const renderVisConfig = (turbo: TurboJson): string => {
  * Translates a `turbo.json` into a `vis.config.ts`.
  * @param workspaceRoot Absolute workspace root path.
  * @param options Migration options.
+ * @param options.dryRun When true, render the config but skip writing it to disk.
+ * @param options.useEditorconfig When false, skip `.editorconfig` discovery for indent.
  * @param logger Logger for user feedback.
  * @param report Migration report to append manual steps and warnings.
  */
-export const migrateTurborepo = (workspaceRoot: string, options: { dryRun?: boolean }, logger: MigrateLogger, report: MigrationReport): void => {
+export const migrateTurborepo = (workspaceRoot: string, options: { dryRun?: boolean; useEditorconfig?: boolean }, logger: MigrateLogger, report: MigrationReport): void => {
     const turbo = readJsonConfig<TurboJson>(workspaceRoot, "turbo.json");
 
     if (!turbo) {
@@ -151,7 +156,7 @@ export const migrateTurborepo = (workspaceRoot: string, options: { dryRun?: bool
         return;
     }
 
-    const rendered = renderVisConfig(turbo);
+    const rendered = renderVisConfig(turbo, workspaceRoot, options.useEditorconfig);
 
     if (!writeVisConfig(workspaceRoot, rendered, options, logger, report)) {
         return;

@@ -1,3 +1,5 @@
+import { join } from "@visulima/path";
+
 import { readJsonConfig, serializeConfigObject, writeVisConfig } from "./shared";
 import type { MigrateLogger, MigrationReport } from "./types";
 
@@ -19,7 +21,7 @@ interface NxJson {
     >;
 }
 
-const renderVisConfig = (nx: NxJson): string => {
+const renderVisConfig = (nx: NxJson, workspaceRoot: string, useEditorconfig?: boolean): string => {
     const configObject: Record<string, unknown> = {};
 
     if (nx.namedInputs && Object.keys(nx.namedInputs).length > 0) {
@@ -30,7 +32,7 @@ const renderVisConfig = (nx: NxJson): string => {
         configObject.targetDefaults = nx.targetDefaults;
     }
 
-    const serialised = serializeConfigObject(configObject);
+    const serialised = serializeConfigObject(configObject, join(workspaceRoot, "vis.config.ts"), useEditorconfig);
 
     return [
         "// Migrated from nx.json by `vis migrate nx`.",
@@ -49,10 +51,12 @@ const renderVisConfig = (nx: NxJson): string => {
  * `project.json` files are left untouched — vis reads them natively.
  * @param workspaceRoot Absolute workspace root path.
  * @param options Migration options.
+ * @param options.dryRun When true, render the config but skip writing it to disk.
+ * @param options.useEditorconfig When false, skip `.editorconfig` discovery for indent.
  * @param logger Logger for user feedback.
  * @param report Migration report to append manual steps and warnings.
  */
-export const migrateNx = (workspaceRoot: string, options: { dryRun?: boolean }, logger: MigrateLogger, report: MigrationReport): void => {
+export const migrateNx = (workspaceRoot: string, options: { dryRun?: boolean; useEditorconfig?: boolean }, logger: MigrateLogger, report: MigrationReport): void => {
     const nx = readJsonConfig<NxJson>(workspaceRoot, "nx.json");
 
     if (!nx) {
@@ -62,7 +66,7 @@ export const migrateNx = (workspaceRoot: string, options: { dryRun?: boolean }, 
         return;
     }
 
-    const rendered = renderVisConfig(nx);
+    const rendered = renderVisConfig(nx, workspaceRoot, options.useEditorconfig);
 
     if (!writeVisConfig(workspaceRoot, rendered, options, logger, report)) {
         return;

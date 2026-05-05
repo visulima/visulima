@@ -283,6 +283,32 @@ describe("overrides", () => {
 
             expect(raw).toContain("\t");
         });
+
+        it("should adopt indent from .editorconfig over file sniffing", () => {
+            expect.assertions(1);
+
+            writeFileSync(join(tmpDir, ".editorconfig"), "root = true\n\n[*.json]\nindent_style = space\nindent_size = 4\n", "utf8");
+            const pkgJsonPath = writePkgJson(tmpDir, { name: "test" });
+
+            applyOverrides(tmpDir, pkgJsonPath, [{ original: "foo", spec: "bar" }], { name: "npm", version: "10.0.0" });
+
+            const raw = readFileSync(pkgJsonPath, "utf8");
+
+            expect(raw).toMatch(/\n {4}"/);
+        });
+
+        it("should ignore .editorconfig when useEditorconfig is false", () => {
+            expect.assertions(1);
+
+            writeFileSync(join(tmpDir, ".editorconfig"), "root = true\n\n[*.json]\nindent_style = space\nindent_size = 4\n", "utf8");
+            const pkgJsonPath = writePkgJson(tmpDir, { name: "test" });
+
+            applyOverrides(tmpDir, pkgJsonPath, [{ original: "foo", spec: "bar" }], { name: "npm", version: "10.0.0" }, false);
+
+            const raw = readFileSync(pkgJsonPath, "utf8");
+
+            expect(raw).toMatch(/\n {2}"/);
+        });
     });
 
     // ── lockfileContainsPackage ─────────────────────────────────────────

@@ -3,6 +3,7 @@ import { join, relative } from "@visulima/path";
 
 import type { ExtraCustomType } from "../config/types";
 import { isNewer, parseVersion } from "./catalog";
+import { resolveIndentForExistingFile } from "./editorconfig";
 import { collectWorkspaceDirectories, readPkg } from "./workspace-deps";
 
 /**
@@ -630,7 +631,13 @@ const applyExtraTypeFix = (pkg: Record<string, unknown>, issue: CustomTypeDriftI
  * stays a single object after fix; an array stays an array. We mutate the
  * existing entry in place rather than normalising encodings.
  */
-export const applyCustomTypeFixes = (issues: CustomTypeDriftIssue[]): string[] => {
+export interface ApplyCustomTypeFixesOptions {
+    /** Disable `.editorconfig` indent discovery; falls back to file-content sniffing. */
+    useEditorconfig?: boolean;
+}
+
+export const applyCustomTypeFixes = (issues: CustomTypeDriftIssue[], options: ApplyCustomTypeFixesOptions = {}): string[] => {
+    const { useEditorconfig } = options;
     const byFile = new Map<string, CustomTypeDriftIssue[]>();
 
     for (const issue of issues) {
@@ -717,7 +724,7 @@ export const applyCustomTypeFixes = (issues: CustomTypeDriftIssue[]): string[] =
         }
 
         if (didWrite) {
-            writeJsonSync(filePath, pkg, { detectIndent: true, overwrite: true });
+            writeJsonSync(filePath, pkg, { indent: resolveIndentForExistingFile(filePath, { useEditorconfig }), overwrite: true });
             written.push(filePath);
         }
     }

@@ -6,6 +6,7 @@ import { readTomlSync } from "@visulima/fs/toml";
 import { join } from "@visulima/path";
 import { parse as parseYaml } from "yaml";
 
+import { resolveIndentForFile } from "../../util/editorconfig";
 import type { InstallResult } from "./constants";
 import { PREK_CONFIG_FILES, PREK_STAGE_ALIASES, PREK_STAGES_WITH_GIT_ARGS, PREK_SUPPORTED_STAGES, PREK_TRANSLATABLE_LANGUAGES } from "./constants";
 import { installHooks } from "./install";
@@ -481,7 +482,7 @@ const loadPrekConfig = (configPath: string): PrekConfig | undefined => {
  * devDependencies. Doesn't run install — just updates the manifest and asks
  * the caller to run their package manager.
  */
-const mergeAdditionalDependencies = (root: string, deps: ReadonlyArray<AdditionalDep>): { added: string[]; skipped: string[] } => {
+const mergeAdditionalDependencies = (root: string, deps: ReadonlyArray<AdditionalDep>, useEditorconfig?: boolean): { added: string[]; skipped: string[] } => {
     const packageJsonPath = join(root, "package.json");
     const added: string[] = [];
     const skipped: string[] = [];
@@ -512,9 +513,7 @@ const mergeAdditionalDependencies = (root: string, deps: ReadonlyArray<Additiona
 
     pkg["devDependencies"] = devDeps;
 
-    // Match the existing indent if detectable; default to 4 spaces (matches this monorepo).
-    const indentMatch = /^(\s+)"/m.exec(content);
-    const indent = indentMatch ? indentMatch[1] : "    ";
+    const indent = resolveIndentForFile(packageJsonPath, content, { defaultIndent: "    ", useEditorconfig });
 
     writeFileSync(packageJsonPath, `${JSON.stringify(pkg, undefined, indent)}\n`, "utf8");
 
@@ -568,6 +567,7 @@ const detachPrek = (root: string, logger: MigrateLogger): void => {
 
 interface MigrateOptions {
     dryRun?: boolean;
+    useEditorconfig?: boolean;
 }
 
 /**
@@ -653,7 +653,7 @@ const migrateFromPrek = (root: string, hooksDirectory: string, logger: MigrateLo
             added: additionalDeps.map((d) => d.name),
             skipped: [] as string[],
         }
-        : mergeAdditionalDependencies(root, additionalDeps);
+        : mergeAdditionalDependencies(root, additionalDeps, options.useEditorconfig);
 
     if (added.length > 0) {
         const verb = dryRun ? "would add" : "Added";

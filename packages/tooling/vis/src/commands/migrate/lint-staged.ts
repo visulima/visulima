@@ -163,7 +163,7 @@ const insertStagedIntoVisConfig = (root: string, config: Record<string, string |
  * Remove `lint-staged` key, config, and dependency from package.json in a single read/write.
  * Returns which removals were performed.
  */
-const removeLintStagedFromPackageJson = (root: string): { configRemoved: boolean; dependencyRemoved: boolean } => {
+const removeLintStagedFromPackageJson = (root: string, useEditorconfig?: boolean): { configRemoved: boolean; dependencyRemoved: boolean } => {
     const packageJsonPath = join(root, "package.json");
     const result = { configRemoved: false, dependencyRemoved: false };
 
@@ -199,7 +199,7 @@ const removeLintStagedFromPackageJson = (root: string): { configRemoved: boolean
     }
 
     if (modified) {
-        const indent = detectJsonIndent(content);
+        const indent = detectJsonIndent(packageJsonPath, content, { useEditorconfig });
 
         backupFile(packageJsonPath);
         writeFileSync(packageJsonPath, `${JSON.stringify(pkg, undefined, indent)}\n`, "utf8");
@@ -320,8 +320,8 @@ const extractConfig = (root: string, source: string, report: MigrationReport): R
  * Clean up old lint-staged artifacts: config key, files, and dependency.
  */
 
-const cleanupLintStagedArtifacts = (root: string, report: MigrationReport): void => {
-    const { configRemoved, dependencyRemoved } = removeLintStagedFromPackageJson(root);
+const cleanupLintStagedArtifacts = (root: string, report: MigrationReport, useEditorconfig?: boolean): void => {
+    const { configRemoved, dependencyRemoved } = removeLintStagedFromPackageJson(root, useEditorconfig);
 
     if (configRemoved) {
         report.inlinedLintStagedConfigCount += 1;
@@ -357,7 +357,7 @@ const rewriteHooks = (root: string, options: { silent?: boolean }, logger: Migra
 const applyMigration = (
     root: string,
     config: Record<string, string | string[]>,
-    options: { silent?: boolean },
+    options: { silent?: boolean; useEditorconfig?: boolean },
     logger: MigrateLogger,
     report: MigrationReport,
 ): void => {
@@ -367,7 +367,7 @@ const applyMigration = (
         report.mergedStagedConfigCount += 1;
     }
 
-    cleanupLintStagedArtifacts(root, report);
+    cleanupLintStagedArtifacts(root, report, options.useEditorconfig);
     rewriteHooks(root, options, logger, report);
 };
 
@@ -376,7 +376,7 @@ const applyMigration = (
 /**
  * Migrates lint-staged configuration to vis.config.ts staged block.
  */
-const migrateLintStaged = (root: string, options: { dryRun: boolean; silent?: boolean }, logger: MigrateLogger, report: MigrationReport): boolean => {
+const migrateLintStaged = (root: string, options: { dryRun: boolean; silent?: boolean; useEditorconfig?: boolean }, logger: MigrateLogger, report: MigrationReport): boolean => {
     const source = detectLintStagedConfig(root);
 
     if (!source) {
@@ -402,7 +402,7 @@ const migrateLintStaged = (root: string, options: { dryRun: boolean; silent?: bo
         }
 
         if (!options.dryRun) {
-            cleanupLintStagedArtifacts(root, report);
+            cleanupLintStagedArtifacts(root, report, options.useEditorconfig);
         }
 
         return true;

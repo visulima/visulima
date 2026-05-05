@@ -7,6 +7,7 @@ import zeptomatch from "zeptomatch";
 
 import { discoverWorkspace } from "../../config/workspace";
 import { buildCodeownersLines, renderCodeowners } from "../../util/codeowners";
+import { resolveIndentForExistingFile } from "../../util/editorconfig";
 import type { SyncFieldsChange } from "../../util/sync-package-json-fields";
 import { applyFieldChanges, computeFieldChanges, DEFAULT_SYNCED_FIELDS } from "../../util/sync-package-json-fields";
 import { collectWorkspaceDirectories, readPkg } from "../../util/workspace-deps";
@@ -85,9 +86,7 @@ const runCodeowners = ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
         try {
             existing = readFileSync(outPath, "utf8");
         } catch (error: unknown) {
-            if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-                existing = "";
-            } else {
+            if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
                 throw error;
             }
         }
@@ -108,8 +107,9 @@ const runCodeowners = ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
     logger.info(`Wrote ${lines.length} entries to ${outPath}`);
 };
 
-const runPackageJsonFields = ({ logger, options, workspaceRoot: wsRoot }: Toolbox<Console, SyncOptions>): void => {
+const runPackageJsonFields = ({ logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, SyncOptions>): void => {
     const root = wsRoot as string;
+    const useEditorconfig = visConfig?.editorconfig ?? true;
     const rootPkg = readPkg(join(root, "package.json"));
 
     if (!rootPkg) {
@@ -163,7 +163,7 @@ const runPackageJsonFields = ({ logger, options, workspaceRoot: wsRoot }: Toolbo
     if (!checkMode) {
         for (const write of writes) {
             applyFieldChanges(write.pkg, write.pkgChanges);
-            writeJsonSync(write.filePath, write.pkg, { detectIndent: true, overwrite: true });
+            writeJsonSync(write.filePath, write.pkg, { indent: resolveIndentForExistingFile(write.filePath, { useEditorconfig }), overwrite: true });
         }
     }
 

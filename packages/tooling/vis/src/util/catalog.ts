@@ -10,6 +10,7 @@ import { coerce, parse, rcompare } from "semver";
 import { readPnpmWorkspacePatterns, resolveWorkspacePatterns } from "../config/workspace";
 import type { AcceptedRisk, PackageReportData, SocketSecurityOptions } from "../security/socket-security";
 import { DEFAULT_LOW_SCORE_THRESHOLD, fetchSocketReports, findAcceptedRisk } from "../security/socket-security";
+import { resolveIndentForExistingFile } from "./editorconfig";
 
 // --- Module-level regex constants (e18e/prefer-static-regex) ---
 
@@ -636,7 +637,7 @@ const hasPackageJsonDeps = (workspaceRoot: string): boolean => {
     }
 };
 
-const applyPackageJsonUpdates = (workspaceRoot: string, updates: OutdatedEntry[]): void => {
+const applyPackageJsonUpdates = (workspaceRoot: string, updates: OutdatedEntry[], useEditorconfig?: boolean): void => {
     const byFile = new Map<string, { depType: string; newRange: string; packageName: string }[]>();
 
     for (const update of updates) {
@@ -670,7 +671,7 @@ const applyPackageJsonUpdates = (workspaceRoot: string, updates: OutdatedEntry[]
             }
         }
 
-        writeJsonSync(filePath, pkg, { detectIndent: true, overwrite: true });
+        writeJsonSync(filePath, pkg, { indent: resolveIndentForExistingFile(filePath, { useEditorconfig }), overwrite: true });
     }
 };
 
@@ -1951,6 +1952,7 @@ const applyPnpmCatalogUpdates = (workspaceRoot: string, updates: OutdatedEntry[]
     writeFileSync(filePath, result.join("\n"));
 };
 
+// eslint-disable-next-line sonarjs/function-return-type -- JSON.stringify's indent argument accepts either a number (space count) or a string (tab/whitespace literal); preserving both lets us round-trip tabs without dropping them
 const detectJsonIndent = (content: string): number | string => {
     const match = JSON_INDENT_REGEX.exec(content);
 
@@ -1968,7 +1970,7 @@ const detectJsonIndent = (content: string): number | string => {
     return indent.includes("\t") ? indent : indent.length;
 };
 
-const applyBunCatalogUpdates = (workspaceRoot: string, updates: OutdatedEntry[]): void => {
+const applyBunCatalogUpdates = (workspaceRoot: string, updates: OutdatedEntry[], useEditorconfig?: boolean): void => {
     const filePath = join(workspaceRoot, "package.json");
     const pkg = readJsonSync(filePath) as BunPackageJson;
 
@@ -1986,10 +1988,22 @@ const applyBunCatalogUpdates = (workspaceRoot: string, updates: OutdatedEntry[])
         }
     }
 
-    writeJsonSync(filePath, pkg, { detectIndent: true, overwrite: true });
+    writeJsonSync(filePath, pkg, { indent: resolveIndentForExistingFile(filePath, { useEditorconfig }), overwrite: true });
 };
 
-const applyCatalogUpdates = (workspaceRoot: string, updates: OutdatedEntry[], packageManager?: string, backup = true): string | undefined => {
+export interface ApplyCatalogUpdatesOptions {
+    /** Disable `.editorconfig` indent discovery; falls back to file-content sniffing. */
+    useEditorconfig?: boolean;
+}
+
+const applyCatalogUpdates = (
+    workspaceRoot: string,
+    updates: OutdatedEntry[],
+    packageManager?: string,
+    backup = true,
+    options: ApplyCatalogUpdatesOptions = {},
+): string | undefined => {
+    const { useEditorconfig } = options;
     let backupPath: string | undefined;
 
     if (backup) {
@@ -2011,9 +2025,9 @@ const applyCatalogUpdates = (workspaceRoot: string, updates: OutdatedEntry[], pa
     // Apply catalog updates via the appropriate provider
     if (catalogUpdates.length > 0) {
         if (packageManager === "npm" || packageManager === "yarn") {
-            applyPackageJsonUpdates(workspaceRoot, catalogUpdates);
+            applyPackageJsonUpdates(workspaceRoot, catalogUpdates, useEditorconfig);
         } else if (packageManager === "bun") {
-            applyBunCatalogUpdates(workspaceRoot, catalogUpdates);
+            applyBunCatalogUpdates(workspaceRoot, catalogUpdates, useEditorconfig);
         } else {
             applyPnpmCatalogUpdates(workspaceRoot, catalogUpdates);
         }
@@ -2021,7 +2035,7 @@ const applyCatalogUpdates = (workspaceRoot: string, updates: OutdatedEntry[], pa
 
     // Apply direct package.json version updates
     if (pkgJsonUpdates.length > 0) {
-        applyPackageJsonUpdates(workspaceRoot, pkgJsonUpdates);
+        applyPackageJsonUpdates(workspaceRoot, pkgJsonUpdates, useEditorconfig);
     }
 
     return backupPath;

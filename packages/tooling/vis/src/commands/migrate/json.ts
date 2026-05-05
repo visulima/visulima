@@ -2,12 +2,14 @@ import { writeFileSync } from "node:fs";
 
 import { isAccessibleSync, readFileSync } from "@visulima/fs";
 
+import { resolveIndentForFile } from "../../util/editorconfig";
 import { backupFile } from "./backup";
 import type { MigrationReport } from "./types";
 
 /**
  * Reads and parses a JSON file. Returns undefined if the file doesn't exist or isn't valid JSON.
  */
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters -- T is the caller-supplied typed-cast convenience; the alternative is a verbose `as X | undefined` at every callsite
 const readJsonFile = <T>(filePath: string): T | undefined => {
     try {
         const content = readFileSync(filePath);
@@ -35,16 +37,18 @@ const isJsonFile = (filePath: string): boolean => {
     }
 };
 
-const INDENT_RE = /\n([ \t]+)"/;
+interface EditJsonFileOptions {
+    /** Skip `.editorconfig` discovery (defaults to enabled). */
+    useEditorconfig?: boolean;
+}
 
 /**
- * Detect the indentation used in a JSON file by looking at the first indented line.
+ * Detect the indentation for a JSON file. Defers to `.editorconfig` first,
+ * then falls back to sniffing the file contents (4-space default mirrors
+ * the historical behaviour of this helper).
  */
-const detectJsonIndent = (content: string): number => {
-    const match = INDENT_RE.exec(content);
-
-    return match?.[1]?.length ?? 4;
-};
+const detectJsonIndent = (filePath: string, content: string, options: EditJsonFileOptions = {}): string =>
+    resolveIndentForFile(filePath, content, { defaultIndent: "    ", useEditorconfig: options.useEditorconfig });
 
 /**
  * Edits a JSON file in place using a mutator function.
@@ -53,7 +57,12 @@ const detectJsonIndent = (content: string): number => {
  * Preserves the original indentation style. When `report` is provided, a
  * `.bak` snapshot is taken before the write.
  */
-const editJsonFile = <T>(filePath: string, mutator: (data: T) => T | undefined, report?: MigrationReport): boolean => {
+const editJsonFile = <T>(
+    filePath: string,
+    mutator: (data: T) => T | undefined,
+    report?: MigrationReport,
+    options: EditJsonFileOptions = {},
+): boolean => {
     if (!isAccessibleSync(filePath)) {
         return false;
     }
@@ -74,7 +83,7 @@ const editJsonFile = <T>(filePath: string, mutator: (data: T) => T | undefined, 
         return false;
     }
 
-    const indent = detectJsonIndent(content);
+    const indent = detectJsonIndent(filePath, content, options);
 
     if (report) {
         backupFile(filePath, report);

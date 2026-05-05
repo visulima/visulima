@@ -44,7 +44,7 @@ const confirmPrompt = (question: string): Promise<boolean> =>
         });
     });
 
-const executeInstall = async (hooksDirectory: string, logger: HookLogger): Promise<void> => {
+const executeInstall = async (hooksDirectory: string, logger: HookLogger, useEditorconfig?: boolean): Promise<void> => {
     const root = cwd();
     const huskyDirectory = detectHuskyDirectory(root);
     const prekConfig = detectPrekConfig(root);
@@ -59,7 +59,7 @@ const executeInstall = async (hooksDirectory: string, logger: HookLogger): Promi
         const shouldMigrate = await confirmPrompt("Would you like to migrate your husky hooks to vis?");
 
         if (shouldMigrate) {
-            const migrateResult = migrateFromHusky(root, hooksDirectory, logger as Console);
+            const migrateResult = migrateFromHusky(root, hooksDirectory, logger as Console, { useEditorconfig });
 
             if (migrateResult.isError) {
                 throw new Error(migrateResult.message);
@@ -83,7 +83,7 @@ const executeInstall = async (hooksDirectory: string, logger: HookLogger): Promi
         const shouldMigrate = await confirmPrompt("Would you like to migrate your prek hooks to vis?");
 
         if (shouldMigrate) {
-            const migrateResult = migrateFromPrek(root, hooksDirectory, logger);
+            const migrateResult = migrateFromPrek(root, hooksDirectory, logger, { useEditorconfig });
 
             if (migrateResult.isError) {
                 throw new Error(migrateResult.message);
@@ -122,7 +122,7 @@ const executeInstall = async (hooksDirectory: string, logger: HookLogger): Promi
     logger.info("Git hooks installed successfully.");
 };
 
-const executeMigrate = (hooksDirectory: string, dryRun: boolean, logger: HookLogger): void => {
+const executeMigrate = (hooksDirectory: string, dryRun: boolean, logger: HookLogger, useEditorconfig?: boolean): void => {
     const root = cwd();
     const huskyDirectory = detectHuskyDirectory(root);
     const prekConfig = detectPrekConfig(root);
@@ -140,8 +140,8 @@ const executeMigrate = (hooksDirectory: string, dryRun: boolean, logger: HookLog
     }
 
     const result = huskyDirectory
-        ? migrateFromHusky(root, hooksDirectory, logger as Console, { dryRun })
-        : migrateFromPrek(root, hooksDirectory, logger, { dryRun });
+        ? migrateFromHusky(root, hooksDirectory, logger as Console, { dryRun, useEditorconfig })
+        : migrateFromPrek(root, hooksDirectory, logger, { dryRun, useEditorconfig });
 
     if (result.isError) {
         throw new Error(result.message);
@@ -217,16 +217,16 @@ const executeUninstall = (hooksDirectory: string, logger: HookLogger): void => {
     logger.info("Git hooks removed successfully.");
 };
 
-const hookInstallImpl = async ({ logger, options }: Toolbox<Console, HookInstallOptions, HookEnv>): Promise<void> => {
-    await executeInstall(resolveHooksDirectory(options), logger);
+const hookInstallImpl = async ({ logger, options, visConfig }: Toolbox<Console, HookInstallOptions, HookEnv>): Promise<void> => {
+    await executeInstall(resolveHooksDirectory(options), logger, visConfig?.editorconfig ?? true);
 };
 
 const hookUninstallImpl = ({ logger, options }: Toolbox<Console, HookUninstallOptions, HookEnv>): void => {
     executeUninstall(resolveHooksDirectory(options), logger);
 };
 
-const hookMigrateImpl = ({ logger, options }: Toolbox<Console, HookMigrateOptions, HookEnv>): void => {
-    executeMigrate(resolveHooksDirectory(options), Boolean(options.dryRun), logger);
+const hookMigrateImpl = ({ logger, options, visConfig }: Toolbox<Console, HookMigrateOptions, HookEnv>): void => {
+    executeMigrate(resolveHooksDirectory(options), Boolean(options.dryRun), logger, visConfig?.editorconfig ?? true);
 };
 
 const hookListImpl = ({ logger, options }: Toolbox<Console, HookListOptions, HookEnv>): void => {

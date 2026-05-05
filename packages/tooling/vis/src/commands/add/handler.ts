@@ -25,6 +25,7 @@ import {
 import { runTyposquatCheck } from "../../security/typosquats";
 import { readCatalogs } from "../../util/catalog";
 import { conformToCatalog } from "../../util/conform-to-catalog";
+import { resolveIndentForExistingFile } from "../../util/editorconfig";
 import { parsePackageArgument, toStringArray } from "../../util/utils";
 import type { AddOptions } from "./index";
 
@@ -446,14 +447,17 @@ const applyConformedAdd = async ({
         return 0;
     }
 
-    // Write the resolved deps into the target package.json. Reading
-    // through @visulima/fs preserves existing indentation on write
-    // (detectIndent), so the only diff in the file is the deps we touched.
+    // Write the resolved deps into the target package.json. Indent is
+    // resolved via .editorconfig (then sniffed from the file) so the only
+    // diff in the file is the deps we touched.
     const pkgJson = readJsonSync(targetPkgPath) as Record<string, unknown>;
 
     applyPlannedSpecsToPackageJson(pkgJson, planned, section, exact);
 
-    writeJsonSync(targetPkgPath, pkgJson, { detectIndent: true, overwrite: true });
+    writeJsonSync(targetPkgPath, pkgJson, {
+        indent: resolveIndentForExistingFile(targetPkgPath, { useEditorconfig: visConfig?.editorconfig ?? true }),
+        overwrite: true,
+    });
 
     // Log each resolved entry once the write has succeeded so a
     // partial-failure (e.g. read-only fs) doesn't print success lines.
