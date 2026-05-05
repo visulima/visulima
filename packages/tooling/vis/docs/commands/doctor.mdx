@@ -98,8 +98,11 @@ A static snapshot of the workspace's hardening posture, derived from `security.*
 | `blockExoticSubdeps`                    | Disallow git/tarball URLs in transitive deps.                                                      | `warn` when unset or `false`.                                                    |
 | `allowBuilds`                           | Explicit allowlist of packages permitted to run lifecycle scripts (vis blocks scripts by default). | `warn` when empty — the block-by-default still applies, but nothing runs at all. |
 | `strictDepBuilds` + empty `allowBuilds` | Active misconfiguration: every package with a build script will be blocked.                        | `error` — run `vis approve-builds` to populate the allowlist.                    |
+| `patchedDependencies`                   | Validate every entry in your PM-native patch map points at a real `.patch` file on disk.           | `error` when a referenced file is missing — the next install will fail.          |
 
 A doctor run with no `security` block at all surfaces a single warning pointing at `defineConfig()` from `@visulima/vis/config`.
+
+`patchedDependencies` is read from `pnpm-workspace.yaml` (pnpm) or `package.json` (bun); npm and yarn use different formats and are skipped silently. The check resolves each entry's path relative to the workspace root and only reports problems — when every patch file resolves, the section adds a single `ok` finding with the entry count.
 
 ### Dependencies
 
