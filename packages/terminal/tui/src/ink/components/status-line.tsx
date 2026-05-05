@@ -56,13 +56,11 @@ export default function StatusLine({ backgroundColor, center, color, left, right
             <Box flexGrow={1} flexShrink={1} minWidth={0}>
                 {renderSlot(left, color)}
             </Box>
-            {center === undefined
-                ? undefined
-                : (
+            {center === undefined ? undefined : (
                 <Box flexGrow={0} flexShrink={0} justifyContent="center">
                     {renderSlot(center, color)}
                 </Box>
-                )}
+            )}
             <Box flexGrow={1} flexShrink={1} justifyContent="flex-end" minWidth={0}>
                 {renderSlot(right, color)}
             </Box>

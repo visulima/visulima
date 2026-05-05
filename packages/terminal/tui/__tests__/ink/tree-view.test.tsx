@@ -137,10 +137,7 @@ describe(TreeView, () => {
                 data={sampleData}
                 renderNode={({ node, state }) => (
                     <Text>
-                        {"  ".repeat(state.depth)}
-[
-{node.label}
-]
+                        {"  ".repeat(state.depth)}[{node.label}]
                     </Text>
                 )}
             />,

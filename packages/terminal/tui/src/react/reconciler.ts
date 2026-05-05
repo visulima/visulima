@@ -40,10 +40,10 @@ let currentUpdatePriority = NoEventPriority;
  */
 function resolveNodeColors(props: Props): { bg: number; fg: number; styles: number } {
     // fg: explicit numeric fg > color prop > 255 (terminal default)
-    const fg = resolveColor(props.fg === undefined ? props.color === undefined ? undefined : props.color : props.fg);
+    const fg = resolveColor(props.fg === undefined ? (props.color === undefined ? undefined : props.color) : props.fg);
 
     // bg: explicit numeric bg > backgroundColor prop > 255 (terminal default)
-    const bg = resolveColor(props.bg === undefined ? props.backgroundColor === undefined ? undefined : props.backgroundColor : props.bg);
+    const bg = resolveColor(props.bg === undefined ? (props.backgroundColor === undefined ? undefined : props.backgroundColor) : props.bg);
 
     // styles bitfield — explicit number overrides, otherwise build from boolean props
     let styles: number;

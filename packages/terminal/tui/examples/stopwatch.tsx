@@ -68,9 +68,7 @@ const App = () => {
                         {sw.laps.map((lap, i) => (
                             <Text key={i}>
                                 {"  "}
-                                {i + 1}
-.
-{formatElapsed(lap)}
+                                {i + 1}.{formatElapsed(lap)}
                             </Text>
                         ))}
                     </Box>

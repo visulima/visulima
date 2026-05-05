@@ -104,33 +104,17 @@ export default function ConsoleOverlay({ dock = "bottom", filter, height = 8, ma
             flexDirection="column"
             height={height + 1}
         >
-            {visibleEntries.length === 0
-                ? (
+            {visibleEntries.length === 0 ? (
                 <Text dimColor>Console output will appear here...</Text>
-                )
-                : visibleEntries.map((entry) => (
+            ) : (
+                visibleEntries.map((entry) => (
                     <Box key={entry.id}>
-                        {showTimestamp
-                            ? (
-<Text dimColor>
-[
-{formatTimestamp(entry.timestamp)}
-]
-{" "}
-</Text>
-                            )
-                            : undefined}
-                        {showLevel
-                            ? (
-<Text color={LEVEL_COLORS[entry.level]}>
-{LEVEL_LABELS[entry.level]}
-{" "}
-</Text>
-                            )
-                            : undefined}
+                        {showTimestamp ? <Text dimColor>[{formatTimestamp(entry.timestamp)}] </Text> : undefined}
+                        {showLevel ? <Text color={LEVEL_COLORS[entry.level]}>{LEVEL_LABELS[entry.level]} </Text> : undefined}
                         <Text color={entry.level === "error" ? "red" : entry.level === "warn" ? "yellow" : undefined}>{entry.message}</Text>
                     </Box>
-                ))}
+                ))
+            )}
         </Box>
     );
 }

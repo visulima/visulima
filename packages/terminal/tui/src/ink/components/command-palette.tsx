@@ -96,7 +96,7 @@ const scoreCommand = (query: string, command: CommandEntry): number => {
         return 1;
     }
 
-    const haystacks = [command.label, command.description ?? "", ...command.keywords ?? []]
+    const haystacks = [command.label, command.description ?? "", ...(command.keywords ?? [])]
         .map((text) => text.toLowerCase())
         .filter((text) => text.length > 0);
 
@@ -245,10 +245,7 @@ export default function CommandPalette({
         <Box borderColor={accentColor} borderStyle="round" flexDirection="column" paddingX={1}>
             <Box>
                 <Text color={accentColor}>❯</Text>
-                <Text>
-{" "}
-{query.length === 0 ? <Text dimColor>{placeholder}</Text> : query}
-                </Text>
+                <Text> {query.length === 0 ? <Text dimColor>{placeholder}</Text> : query}</Text>
                 <Text inverse> </Text>
             </Box>
             <Box marginTop={1}>
@@ -259,11 +256,10 @@ export default function CommandPalette({
                 </Text>
             </Box>
             <Box flexDirection="column" marginTop={1}>
-                {filtered.length === 0
-                    ? (
+                {filtered.length === 0 ? (
                     <Text dimColor>{emptyText}</Text>
-                    )
-                    : filtered.map((command, index) => {
+                ) : (
+                    filtered.map((command, index) => {
                         const isRowFocused = index === focusedIndex;
                         const color = isRowFocused ? accentColor : undefined;
 
@@ -271,42 +267,29 @@ export default function CommandPalette({
                             <Box flexDirection="column" key={command.id}>
                                 <Box>
                                     <Text color={color}>{isRowFocused ? "▸ " : "  "}</Text>
-                                    {command.icon === undefined
-                                        ? undefined
-                                        : (
-<Text color={color}>
-{command.icon}
-{" "}
-</Text>
-                                        )}
+                                    {command.icon === undefined ? undefined : <Text color={color}>{command.icon} </Text>}
                                     <Box flexGrow={1} flexShrink={1} minWidth={0}>
                                         <Text bold={isRowFocused} color={color} wrap="truncate-end">
                                             {command.label}
                                         </Text>
                                     </Box>
-                                    {command.hotkey === undefined
-                                        ? undefined
-                                        : (
+                                    {command.hotkey === undefined ? undefined : (
                                         <Box flexShrink={0}>
-                                            <Text dimColor>
-{" "}
-{command.hotkey}
-                                            </Text>
+                                            <Text dimColor> {command.hotkey}</Text>
                                         </Box>
-                                        )}
+                                    )}
                                 </Box>
-                                {command.description === undefined
-                                    ? undefined
-                                    : (
+                                {command.description === undefined ? undefined : (
                                     <Box marginLeft={2}>
                                         <Text dimColor wrap="truncate-end">
                                             {command.description}
                                         </Text>
                                     </Box>
-                                    )}
+                                )}
                             </Box>
                         );
-                    })}
+                    })
+                )}
             </Box>
         </Box>
     );

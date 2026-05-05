@@ -98,13 +98,11 @@ export default function Collapsible({
                     {title}
                 </Text>
             </Box>
-            {open
-                ? (
+            {open ? (
                 <Box flexDirection="column" marginLeft={2}>
                     {children}
                 </Box>
-                )
-                : undefined}
+            ) : undefined}
         </Box>
     );
 }

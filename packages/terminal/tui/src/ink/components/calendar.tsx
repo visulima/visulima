@@ -258,8 +258,7 @@ export default function Calendar({
                                     color={dayColor}
                                     dimColor={outOfRange || isDisabled}
                                 >
-                                    {String(day.getDate()).padStart(2, " ")}
-{" "}
+                                    {String(day.getDate()).padStart(2, " ")}{" "}
                                 </Text>
                             </Box>
                         );

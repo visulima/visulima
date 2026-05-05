@@ -58,9 +58,7 @@ const App = () => {
                 ProgressBar demo
             </Text>
             <Text dim>
-                Space pause/resume · r reset · q quit · status
-{" "}
-<Text color={running ? "green" : "yellow"}>{running ? "running" : "paused"}</Text>
+                Space pause/resume · r reset · q quit · status <Text color={running ? "green" : "yellow"}>{running ? "running" : "paused"}</Text>
             </Text>
 
             <Box borderColor="green" borderStyle="round" flexDirection="column" gap={1} paddingX={2} paddingY={1}>
@@ -72,10 +70,7 @@ const App = () => {
                 <Box flexDirection="row" gap={1}>
                     <Text dim>Upload</Text>
                     <ProgressBar bracket={false} color="yellow" completeChar="■" incompleteChar="·" showPercentage={false} value={upload} width={28} />
-                    <Text color="yellow">
-{String(upload).padStart(3)}
-%
-                    </Text>
+                    <Text color="yellow">{String(upload).padStart(3)}%</Text>
                 </Box>
 
                 <Box flexDirection="row" gap={1}>

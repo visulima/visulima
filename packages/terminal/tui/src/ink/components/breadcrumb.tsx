@@ -43,24 +43,9 @@ export default function Breadcrumb({ currentColor = "blue", items, separator = "
 
                 return (
                     <Fragment key={item.key ?? `${index}:${item.label}`}>
-                        {index > 0
-                            ? (
-<Text dimColor>
-{" "}
-{separator}
-{" "}
-</Text>
-                            )
-                            : undefined}
+                        {index > 0 ? <Text dimColor> {separator} </Text> : undefined}
                         <Text bold={isLast} color={isLast ? currentColor : undefined} dimColor={!isLast}>
-                            {item.icon === undefined
-                                ? undefined
-                                : (
-<>
-{item.icon}
-{" "}
-</>
-                                )}
+                            {item.icon === undefined ? undefined : <>{item.icon} </>}
                             {item.label}
                         </Text>
                     </Fragment>

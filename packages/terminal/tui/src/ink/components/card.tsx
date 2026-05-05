@@ -63,34 +63,28 @@ export default function Card({ borderColor, borderStyle = "round", children, foo
 
     return (
         <Box borderColor={borderColor} borderStyle={borderStyle} flexDirection="column" paddingX={1} width={width}>
-            {hasHeader
-                ? (
+            {hasHeader ? (
                 <Box flexDirection="column" marginBottom={1}>
                     <Box justifyContent="space-between">
                         <Box>
-                            {title === undefined
-                                ? undefined
-                                : (
+                            {title === undefined ? undefined : (
                                 <Text bold color={titleColor}>
                                     {title}
                                 </Text>
-                                )}
+                            )}
                         </Box>
                         {headerRight === undefined ? undefined : <Box>{headerRight}</Box>}
                     </Box>
                     {subtitle === undefined ? undefined : <Text dimColor>{subtitle}</Text>}
                 </Box>
-                )
-                : undefined}
+            ) : undefined}
             <Box flexDirection="column">{children}</Box>
-            {footer === undefined
-                ? undefined
-                : (
+            {footer === undefined ? undefined : (
                 <Box flexDirection="column" marginTop={1}>
                     <Divider dimColor length={typeof width === "number" ? Math.max(1, width - 4) : undefined} />
                     <Box marginTop={1}>{footer}</Box>
                 </Box>
-                )}
+            )}
         </Box>
     );
 }

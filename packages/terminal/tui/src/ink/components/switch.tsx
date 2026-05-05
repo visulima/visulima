@@ -105,22 +105,18 @@ export default function Switch({
             <Box gap={0}>
                 <Text backgroundColor={current ? undefined : "gray"} color={current ? undefined : "black"} dimColor={isDisabled}>
                     {" "}
-                    {off}
-{" "}
+                    {off}{" "}
                 </Text>
                 <Text backgroundColor={current ? accentColor : undefined} color={current ? "black" : undefined} dimColor={isDisabled}>
                     {" "}
-                    {on}
-{" "}
+                    {on}{" "}
                 </Text>
             </Box>
-            {children === undefined
-                ? undefined
-                : (
+            {children === undefined ? undefined : (
                 <Text color={focusColor} dimColor={isDisabled}>
                     {children}
                 </Text>
-                )}
+            )}
         </Box>
     );
 }

@@ -134,8 +134,7 @@ const Box: ForwardRefExoticComponent<PropsWithChildren<Props> & RefAttributes<DO
                 }}
             >
                 {isScreenReaderEnabled && label ? label : children}
-                {sticky && stickyChildren && !isScreenReaderEnabled
-                    ? (
+                {sticky && stickyChildren && !isScreenReaderEnabled ? (
                     <ink-box
                         internalStickyAlternate
                         style={{
@@ -145,8 +144,7 @@ const Box: ForwardRefExoticComponent<PropsWithChildren<Props> & RefAttributes<DO
                     >
                         {stickyChildren}
                     </ink-box>
-                    )
-                    : null}
+                ) : null}
             </ink-box>
         );
 

@@ -33,8 +33,7 @@ const App = () => {
             </Text>
             <Text dim>↑/↓ navigate · Space toggle · a all · Enter submit · Esc quit</Text>
 
-            {submitted === undefined
-                ? (
+            {submitted === undefined ? (
                 <Box flexDirection="column" gap={1}>
                     <MultiSelect
                         onChange={setSelected}
@@ -54,13 +53,12 @@ const App = () => {
                         {selected.join(", ") || "(none)"}
                     </Text>
                 </Box>
-                )
-                : (
+            ) : (
                 <Text color="green">
                     Submitted:
                     {submitted.join(", ")}
                 </Text>
-                )}
+            )}
         </Box>
     );
 };

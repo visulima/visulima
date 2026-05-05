@@ -139,27 +139,17 @@ export default function ContentSwitcher({
                     return (
                         <Text backgroundColor={background} color={color} dimColor={isDisabled && !isActive} key={option.id}>
                             {" "}
-                            {option.icon === undefined
-                                ? undefined
-                                : (
-<>
-{option.icon}
-{" "}
-</>
-                                )}
-                            {option.label}
-{" "}
+                            {option.icon === undefined ? undefined : <>{option.icon} </>}
+                            {option.label}{" "}
                         </Text>
                     );
                 })}
             </Box>
-            {activeOption === undefined
-                ? undefined
-                : (
+            {activeOption === undefined ? undefined : (
                 <Box flexDirection="column" marginTop={1}>
                     {activeOption.content}
                 </Box>
-                )}
+            )}
         </Box>
     );
 }
