@@ -413,6 +413,13 @@
                             "description": "Three-state autofix opt-out. See `workspaceProtocol.autofix` for the contract — same semantics, applied to drift rewrites across engines / packageManager / volta / devEngines.\n\nNote: `--fix` strips any `+sha512.&lt;hash&gt;` suffix from `packageManager` on bump — content-integrity hashes are tied to a specific package, not a version, so users must regenerate via their PM (`pnpm install` re-pins; `corepack use pnpm@X` etc.).",
                             "default": true
                         },
+                        "extraTypes": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/$defs/ExtraCustomType"
+                            },
+                            "description": "User-defined custom-type pin locations. Each entry tells the customTypes lint to read additional version pins from a non-standard JSON path inside every workspace package.json, cluster them by `(name × depName)` like the built-in types, and rewrite them with `--fix`.\n\nThe original built-ins (`engines`, `volta`, `packageManager`, `devEngines.runtime`, `devEngines.packageManager`) keep running unconditionally — these layer on top.\n\nStrategies:\n- `versionsByName`: the JSON at `path` is `{ [depName]: version }`   (like `engines` or `pnpm.overrides`).\n- `name@version`: the JSON at `path` is a string of the form   `name@version` (like `packageManager`). The leading `name@`   is preserved; only the version segment is rewritten.\n- `string`: the JSON at `path` is a bare version string. The   `depName` field is required and identifies the dep cluster.\n\n`name` must not collide with a built-in type name. `path` is a dot-separated walk into the package.json (e.g. `pnpm.overrides`)."
+                        },
                         "ignore": {
                             "type": "array",
                             "items": {
@@ -428,13 +435,6 @@
                             ],
                             "description": "Resolution strategy used when `--fix` runs.\n- `highest` (default): align every drifting instance to the   highest declared version.\n- `lowest`: align to the lowest.",
                             "default": "highest"
-                        },
-                        "extraTypes": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/$defs/ExtraCustomType"
-                            },
-                            "description": "User-defined custom-type pin locations. Each entry tells the customTypes lint to read additional version pins from a non-standard JSON path inside every workspace package.json, cluster them by `(name × depName)` like the built-in types, and rewrite them with `--fix`.\n\nThe original built-ins (`engines`, `volta`, `packageManager`, `devEngines.runtime`, `devEngines.packageManager`) keep running unconditionally — these layer on top.\n\nStrategies:\n- `versionsByName`: the JSON at `path` is `{ [depName]: version }`   (like `engines` or `pnpm.overrides`).\n- `name@version`: the JSON at `path` is a string of the form   `name@version` (like `packageManager`). The leading `name@`   is preserved; only the version segment is rewritten.\n- `string`: the JSON at `path` is a bare version string. The   `depName` field is required and identifies the dep cluster.\n\n`name` must not collide with a built-in type name. `path` is a dot-separated walk into the package.json (e.g. `pnpm.overrides`)."
                         }
                     },
                     "additionalProperties": false,
