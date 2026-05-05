@@ -2,7 +2,8 @@ import { execSync } from "node:child_process";
 
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 import { red, yellow } from "@visulima/colorize";
-import { isAccessibleSync, readJsonSync } from "@visulima/fs";
+import { isAccessibleSync } from "@visulima/fs";
+import { readTomlSync } from "@visulima/fs/toml";
 import { readYamlSync } from "@visulima/fs/yaml";
 import { findPackageManagerSync, getPackageManagerVersion } from "@visulima/package";
 import { join } from "@visulima/path";
@@ -44,38 +45,71 @@ import type { UpdateOptions } from "./index";
 type CatalogPackageManager = "bun" | "npm" | "pnpm" | "yarn";
 type FilterOption = string | string[] | undefined;
 
+interface PmNativeMinimumReleaseAge {
+    /**
+     * Package names/patterns exempt from the minimum-release-age check.
+     * pnpm spells this `minimumReleaseAgeExclude` (singular) under
+     * `pnpm-workspace.yaml`; bun spells it `minimumReleaseAgeExcludes`
+     * (plural) under `bunfig.toml [install]`. We normalise to the
+     * vis-internal singular shape.
+     */
+    excludes?: string[];
+    /** Value in minutes; undefined when the PM-native config doesn't pin it. */
+    minutes?: number;
+}
+
 /**
- * Reads `minimumReleaseAge` from the package manager's native config.
- * Returns the value in minutes, or undefined if not set.
+ * Reads `minimumReleaseAge` (and the excludes list) from the package
+ * manager's native config. Returns an object with both fields so callers
+ * can merge them into vis-config defaults uniformly.
+ *
+ * - pnpm: `pnpm-workspace.yaml` top-level.
+ * - bun: `bunfig.toml [install]` — **not** `package.json`. Bun's installer
+ *   knobs (registry, scopes, lockfile, minimumReleaseAge, …) all live
+ *   under `[install]` per https://bun.sh/docs/runtime/bunfig#install.
  */
-const readPmNativeMinimumReleaseAge = (workspaceRoot: string, packageManager: string): number | undefined => {
+export const readPmNativeMinimumReleaseAge = (workspaceRoot: string, packageManager: string): PmNativeMinimumReleaseAge => {
     try {
         if (packageManager === "pnpm") {
             const yamlPath = join(workspaceRoot, "pnpm-workspace.yaml");
 
             if (isAccessibleSync(yamlPath)) {
-                const data = readYamlSync(yamlPath) as { minimumReleaseAge?: number } | undefined;
+                const data = readYamlSync(yamlPath) as
+                    | {
+                        minimumReleaseAge?: number;
+                        minimumReleaseAgeExclude?: string[];
+                    }
+                    | undefined;
 
-                if (typeof data?.minimumReleaseAge === "number") {
-                    return data.minimumReleaseAge;
-                }
+                return {
+                    excludes: Array.isArray(data?.minimumReleaseAgeExclude) ? data.minimumReleaseAgeExclude : undefined,
+                    minutes: typeof data?.minimumReleaseAge === "number" ? data.minimumReleaseAge : undefined,
+                };
             }
         } else if (packageManager === "bun") {
-            const pkgPath = join(workspaceRoot, "package.json");
+            const tomlPath = join(workspaceRoot, "bunfig.toml");
 
-            if (isAccessibleSync(pkgPath)) {
-                const pkg = readJsonSync(pkgPath) as { minimumReleaseAge?: number };
+            if (isAccessibleSync(tomlPath)) {
+                const data = readTomlSync(tomlPath) as
+                    | {
+                        install?: {
+                            minimumReleaseAge?: number;
+                            minimumReleaseAgeExcludes?: string[];
+                        };
+                    }
+                    | undefined;
 
-                if (typeof pkg.minimumReleaseAge === "number") {
-                    return pkg.minimumReleaseAge;
-                }
+                return {
+                    excludes: Array.isArray(data?.install?.minimumReleaseAgeExcludes) ? data.install.minimumReleaseAgeExcludes : undefined,
+                    minutes: typeof data?.install?.minimumReleaseAge === "number" ? data.install.minimumReleaseAge : undefined,
+                };
             }
         }
     } catch {
-        // Non-critical: if parsing fails, skip the sync check
+        // Non-critical: if parsing fails, skip the sync check.
     }
 
-    return undefined;
+    return {};
 };
 
 const buildCatalogCheckOptions = (
@@ -207,12 +241,13 @@ const executeCatalogUpdate = async (
     }
 
     // Resolve minimumReleaseAge: vis config → PM-native config → undefined (disabled)
-    const pmNativeAge = readPmNativeMinimumReleaseAge(workspaceRoot, packageManager);
+    const { excludes: pmNativeExcludes, minutes: pmNativeAge } = readPmNativeMinimumReleaseAge(workspaceRoot, packageManager);
     const effectiveAge = configDefaults.minimumReleaseAge ?? pmNativeAge;
+    const effectiveExcludes = configDefaults.minimumReleaseAgeExclude ?? pmNativeExcludes;
 
     // Warn if both are set but differ
     if (configDefaults.minimumReleaseAge !== undefined && pmNativeAge !== undefined && configDefaults.minimumReleaseAge !== pmNativeAge) {
-        const pmConfigFile = packageManager === "pnpm" ? "pnpm-workspace.yaml" : "package.json";
+        const pmConfigFile = packageManager === "pnpm" ? "pnpm-workspace.yaml" : "bunfig.toml";
 
         logger.warn(
             `${yellow("⚠")} minimumReleaseAge mismatch: vis config = ${String(configDefaults.minimumReleaseAge)} min, `
@@ -233,7 +268,7 @@ const executeCatalogUpdate = async (
         return;
     }
 
-    const resolvedDefaults = { ...configDefaults, minimumReleaseAge: effectiveAge };
+    const resolvedDefaults = { ...configDefaults, minimumReleaseAge: effectiveAge, minimumReleaseAgeExclude: effectiveExcludes };
     const checkOptions = buildCatalogCheckOptions(options, resolvedDefaults, argument);
 
     let totalDeps = 0;
