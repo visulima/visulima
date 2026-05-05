@@ -224,10 +224,7 @@ const translateCustomTypes = (config: SyncpackConfig, report: MigrationReport): 
             // vis covers `engines`, `volta`, `packageManager`, `devEngines.runtime`,
             // `devEngines.packageManager` natively — dropping the syncpack
             // declaration is the right move; flag for visibility.
-            addMigrationWarning(
-                report,
-                `customType "${name}" collides with a vis built-in and was dropped — vis already lints this surface.`,
-            );
+            addMigrationWarning(report, `customType "${name}" collides with a vis built-in and was dropped — vis already lints this surface.`);
             continue;
         }
 
@@ -260,8 +257,10 @@ const noteUnsupportedKeys = (config: SyncpackConfig, report: MigrationReport): v
         // `isBanned` versionGroups translate to policy.bannedDeps elsewhere
         // (with packages scope when set). The remainder — pinVersion,
         // snapTo, policy: "sameRange", and the rest of the DSL — has no
-        // 1:1 mapping today.
-        const remaining = config.versionGroups.filter((g) => !g || typeof g !== "object" || !isVersionGroupBanned(g as Record<string, unknown>));
+        // 1:1 mapping today. Malformed entries (null / non-object) are
+        // skipped here so they don't inflate the count; raw config
+        // validation is upstream.
+        const remaining = config.versionGroups.filter((g) => g && typeof g === "object" && !isVersionGroupBanned(g as Record<string, unknown>));
 
         if (remaining.length > 0) {
             addMigrationWarning(
@@ -527,7 +526,10 @@ const insertPolicyIntoVisConfig = (
 
 // Cleanup -----------------------------------------------------------
 
-const removeSyncpackFromPackageJson = (root: string, useEditorconfig?: boolean): {
+const removeSyncpackFromPackageJson = (
+    root: string,
+    useEditorconfig?: boolean,
+): {
     catalogStripped: boolean;
     configRemoved: boolean;
     dependencyRemoved: boolean;
@@ -844,7 +846,9 @@ const applyMigration = (
         }
 
         if (!options.silent) {
-            logger.info(`Removed ${String(scriptCount)} script(s) referencing \`syncpack\`. Replace with \`vis lint\` / \`vis sort-package-json\` as appropriate.`);
+            logger.info(
+                `Removed ${String(scriptCount)} script(s) referencing \`syncpack\`. Replace with \`vis lint\` / \`vis sort-package-json\` as appropriate.`,
+            );
         }
     }
 
@@ -860,7 +864,12 @@ const applyMigration = (
  * for v1 — they need a sandboxed loader the rest of vis-migrate doesn't
  * pull in.
  */
-const migrateSyncpack = (root: string, options: { dryRun: boolean; silent?: boolean; useEditorconfig?: boolean }, logger: MigrateLogger, report: MigrationReport): boolean => {
+const migrateSyncpack = (
+    root: string,
+    options: { dryRun: boolean; silent?: boolean; useEditorconfig?: boolean },
+    logger: MigrateLogger,
+    report: MigrationReport,
+): boolean => {
     const source = detectSyncpackConfig(root);
 
     if (!source) {
@@ -883,7 +892,10 @@ const migrateSyncpack = (root: string, options: { dryRun: boolean; silent?: bool
     }
 
     if (hasPolicyExtraTypesInVisConfig(root)) {
-        addMigrationWarning(report, "vis.config.ts already declares `policy.customTypes.extraTypes` — skipping syncpack customTypes merge to avoid duplicates.");
+        addMigrationWarning(
+            report,
+            "vis.config.ts already declares `policy.customTypes.extraTypes` — skipping syncpack customTypes merge to avoid duplicates.",
+        );
 
         if (!options.silent) {
             logger.warn("vis.config.ts already has policy.customTypes.extraTypes — skipping merge");
