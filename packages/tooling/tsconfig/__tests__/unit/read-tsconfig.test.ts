@@ -70,7 +70,7 @@ describe("parses tsconfig", () => {
         it("json non-object", async () => {
             expect.assertions(1);
 
-            writeFileSync(join(distribution, "tsconfig.json"), "\"asdf\"");
+            writeFileSync(join(distribution, "tsconfig.json"), '"asdf"');
 
             expect(() => readTsConfig(join(distribution, "tsconfig.json"))).toThrow("Failed to parse tsconfig at");
         });

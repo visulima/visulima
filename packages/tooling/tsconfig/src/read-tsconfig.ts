@@ -90,8 +90,8 @@ const resolveExtends = (resolvedExtendsPath: string, fromDirectoryPath: string, 
         const { outDir } = compilerOptions;
 
         if (
-            outDir // eslint-disable-next-line @typescript-eslint/no-use-before-define
-            && !outDir.startsWith(configDirectoryPlaceholder)
+            outDir && // eslint-disable-next-line @typescript-eslint/no-use-before-define
+            !outDir.startsWith(configDirectoryPlaceholder)
         ) {
             compilerOptions.outDir = resolveAndRelativize(fromDirectoryPath, extendsDirectoryPath, outDir);
         }
@@ -338,9 +338,9 @@ const internalParseTsConfig = (tsconfigPath: string, options?: Options, circular
     // eslint-disable-next-line sonarjs/deprecation -- must handle deprecated field for backwards compatibility with older tsconfigs
     if (config.compilerOptions.importsNotUsedAsValues) {
         // eslint-disable-next-line sonarjs/deprecation -- must handle deprecated field for backwards compatibility with older tsconfigs
-        config.compilerOptions.importsNotUsedAsValues
+        config.compilerOptions.importsNotUsedAsValues =
             // eslint-disable-next-line sonarjs/deprecation -- must handle deprecated field for backwards compatibility with older tsconfigs
-            = config.compilerOptions.importsNotUsedAsValues.toLowerCase() as TsConfigJson.CompilerOptions.ImportsNotUsedAsValues;
+            config.compilerOptions.importsNotUsedAsValues.toLowerCase() as TsConfigJson.CompilerOptions.ImportsNotUsedAsValues;
     }
 
     if (config.compilerOptions.newLine) {
@@ -409,21 +409,21 @@ const tsCompatibleWrapper = (config: TsConfigJsonResolved, options: Options | un
 
     if (["5.4", "5.5", "5.6", "5.7", "5.8", "5.9", "true"].includes(String(options?.tscCompatible))) {
         if (
-            config.compilerOptions.esModuleInterop === undefined
-            && (config.compilerOptions.module === "node16"
-                || config.compilerOptions.module === "node18"
-                || config.compilerOptions.module === "node20"
-                || config.compilerOptions.module === "nodenext"
-                || config.compilerOptions.module === "preserve")
+            config.compilerOptions.esModuleInterop === undefined &&
+            (config.compilerOptions.module === "node16" ||
+                config.compilerOptions.module === "node18" ||
+                config.compilerOptions.module === "node20" ||
+                config.compilerOptions.module === "nodenext" ||
+                config.compilerOptions.module === "preserve")
         ) {
             // eslint-disable-next-line no-param-reassign
             config.compilerOptions.esModuleInterop = true;
         }
 
         if (
-            config.compilerOptions.moduleDetection === undefined
-            && config.compilerOptions.module
-            && ["node16", "node18", "node20", "nodenext"].includes(config.compilerOptions.module)
+            config.compilerOptions.moduleDetection === undefined &&
+            config.compilerOptions.module &&
+            ["node16", "node18", "node20", "nodenext"].includes(config.compilerOptions.module)
         ) {
             // eslint-disable-next-line no-param-reassign
             config.compilerOptions.moduleDetection = "force";
@@ -482,8 +482,8 @@ const tsCompatibleWrapper = (config: TsConfigJsonResolved, options: Options | un
         }
 
         if (
-            (config.compilerOptions.esModuleInterop || config.compilerOptions.module === "system" || config.compilerOptions.moduleResolution === "bundler")
-            && config.compilerOptions.allowSyntheticDefaultImports === undefined
+            (config.compilerOptions.esModuleInterop || config.compilerOptions.module === "system" || config.compilerOptions.moduleResolution === "bundler") &&
+            config.compilerOptions.allowSyntheticDefaultImports === undefined
         ) {
             // eslint-disable-next-line no-param-reassign
             config.compilerOptions.allowSyntheticDefaultImports = true;
@@ -538,9 +538,9 @@ const tsCompatibleWrapper = (config: TsConfigJsonResolved, options: Options | un
         }
 
         if (
-            config.compilerOptions.useDefineForClassFields === undefined
-            && config.compilerOptions.target
-            && targetImpliesUseDefineForClassFields(config.compilerOptions.target)
+            config.compilerOptions.useDefineForClassFields === undefined &&
+            config.compilerOptions.target &&
+            targetImpliesUseDefineForClassFields(config.compilerOptions.target)
         ) {
             // eslint-disable-next-line no-param-reassign
             config.compilerOptions.useDefineForClassFields = true;
@@ -548,9 +548,9 @@ const tsCompatibleWrapper = (config: TsConfigJsonResolved, options: Options | un
     }
 
     if (
-        ["5.6", "5.7", "5.8", "5.9", "true"].includes(String(options?.tscCompatible))
-        && config.compilerOptions.strict
-        && config.compilerOptions.strictBuiltinIteratorReturn === undefined
+        ["5.6", "5.7", "5.8", "5.9", "true"].includes(String(options?.tscCompatible)) &&
+        config.compilerOptions.strict &&
+        config.compilerOptions.strictBuiltinIteratorReturn === undefined
     ) {
         // eslint-disable-next-line no-param-reassign
         config.compilerOptions.strictBuiltinIteratorReturn = true;
@@ -575,9 +575,9 @@ const tsCompatibleWrapper = (config: TsConfigJsonResolved, options: Options | un
         }
 
         if (
-            config.compilerOptions.useDefineForClassFields === undefined
-            && config.compilerOptions.target
-            && targetImpliesUseDefineForClassFields(config.compilerOptions.target)
+            config.compilerOptions.useDefineForClassFields === undefined &&
+            config.compilerOptions.target &&
+            targetImpliesUseDefineForClassFields(config.compilerOptions.target)
         ) {
             // eslint-disable-next-line no-param-reassign
             config.compilerOptions.useDefineForClassFields = true;
@@ -598,9 +598,9 @@ const tsCompatibleWrapper = (config: TsConfigJsonResolved, options: Options | un
     if (String(options?.tscCompatible) === "6.0") {
         // moduleDetection: force for node-style modules
         if (
-            config.compilerOptions.moduleDetection === undefined
-            && config.compilerOptions.module
-            && ["node16", "node18", "node20", "nodenext"].includes(config.compilerOptions.module)
+            config.compilerOptions.moduleDetection === undefined &&
+            config.compilerOptions.module &&
+            ["node16", "node18", "node20", "nodenext"].includes(config.compilerOptions.module)
         ) {
             // eslint-disable-next-line no-param-reassign
             config.compilerOptions.moduleDetection = "force";
@@ -622,11 +622,11 @@ const tsCompatibleWrapper = (config: TsConfigJsonResolved, options: Options | un
 
         // useDefineForClassFields: false when target is below ES2022 with node-style modules
         if (
-            config.compilerOptions.useDefineForClassFields === undefined
-            && config.compilerOptions.module
-            && ["node16", "node18", "node20", "nodenext"].includes(config.compilerOptions.module)
-            && config.compilerOptions.target
-            && !targetImpliesUseDefineForClassFields(config.compilerOptions.target)
+            config.compilerOptions.useDefineForClassFields === undefined &&
+            config.compilerOptions.module &&
+            ["node16", "node18", "node20", "nodenext"].includes(config.compilerOptions.module) &&
+            config.compilerOptions.target &&
+            !targetImpliesUseDefineForClassFields(config.compilerOptions.target)
         ) {
             // eslint-disable-next-line no-param-reassign
             config.compilerOptions.useDefineForClassFields = false;
