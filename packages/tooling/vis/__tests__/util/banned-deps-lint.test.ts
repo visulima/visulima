@@ -143,5 +143,128 @@ describe("banned-deps-lint", () => {
 
             expect(new Set(issues.map((i) => i.depType))).toStrictEqual(new Set(["dependencies", "devDependencies"]));
         });
+
+        it("scopes a rule to matching package names via `packages`", () => {
+            expect.assertions(1);
+
+            writeJson("package.json", { name: "root", workspaces: ["packages/*", "apps/*"] });
+            writeJson("apps/web/package.json", {
+                dependencies: { react: "^18.0.0" },
+                name: "@app/web",
+            });
+            writeJson("packages/shared/package.json", {
+                dependencies: { react: "^18.0.0" },
+                name: "@scope/shared",
+            });
+
+            const issues = lintBannedDeps(iterateWorkspaceDeps(workspaceRoot), {
+                react: { packages: ["@scope/*"], reason: "no react in shared libs" },
+            });
+
+            expect(issues.map((i) => i.packageName)).toStrictEqual(["@scope/shared"]);
+        });
+
+        it("scopes a rule to matching directories via `paths`", () => {
+            expect.assertions(1);
+
+            writeJson("package.json", { name: "root", workspaces: ["packages/*", "apps/*"] });
+            writeJson("apps/web/package.json", {
+                dependencies: { lodash: "^4.0.0" },
+                name: "@app/web",
+            });
+            writeJson("packages/shared/package.json", {
+                dependencies: { lodash: "^4.0.0" },
+                name: "@scope/shared",
+            });
+
+            const issues = lintBannedDeps(iterateWorkspaceDeps(workspaceRoot), {
+                lodash: { paths: ["packages/shared/**"], reason: "shared libs only" },
+            });
+
+            expect(issues.map((i) => i.packageDir)).toStrictEqual(["packages/shared"]);
+        });
+
+        it("matches when either `packages` or `paths` glob hits", () => {
+            expect.assertions(1);
+
+            writeJson("package.json", { name: "root", workspaces: ["apps/*", "tools/*"] });
+            // Matches via name.
+            writeJson("apps/web/package.json", {
+                dependencies: { next: "^14.0.0" },
+                name: "@app/web",
+            });
+            // Matches via path (name does not match `@app/*`).
+            writeJson("tools/cli/package.json", {
+                dependencies: { next: "^14.0.0" },
+                name: "@tools/cli",
+            });
+            // Neither match.
+            writeJson("apps/admin/package.json", {
+                dependencies: { next: "^14.0.0" },
+                name: "@admin/web",
+            });
+
+            const issues = lintBannedDeps(iterateWorkspaceDeps(workspaceRoot), {
+                next: { packages: ["@app/*"], paths: ["tools/**"], reason: "scoped" },
+            });
+
+            expect(new Set(issues.map((i) => i.packageDir))).toStrictEqual(new Set(["apps/web", "tools/cli"]));
+        });
+
+        it("falls back to no-match when scope is `packages`-only and packageName is undefined", () => {
+            expect.assertions(1);
+
+            // Root package has no `name` field — packageName is undefined there.
+            writeJson("package.json", { workspaces: ["packages/*"] });
+            writeJson("packages/app/package.json", {
+                dependencies: { rimraf: "^5.0.0" },
+                name: "@scope/app",
+            });
+
+            const issues = lintBannedDeps(iterateWorkspaceDeps(workspaceRoot), {
+                // Root would pick up `rimraf` if we banned globally; with a packages-scope
+                // it cannot — root has no name to match against.
+                rimraf: { packages: ["@scope/*"], reason: "scoped" },
+            });
+
+            expect(issues.map((i) => i.packageName)).toStrictEqual(["@scope/app"]);
+        });
+
+        it("treats empty `packages` and `paths` arrays as no-scope (apply everywhere)", () => {
+            expect.assertions(1);
+
+            writeJson("package.json", { name: "root", workspaces: ["packages/*"] });
+            writeJson("packages/app/package.json", {
+                dependencies: { request: "^2.0.0" },
+                name: "@scope/app",
+            });
+
+            const issues = lintBannedDeps(iterateWorkspaceDeps(workspaceRoot), {
+                request: { packages: [], paths: [], reason: "anywhere" },
+            });
+
+            expect(issues).toHaveLength(1);
+        });
+
+        it("skips a glob rule whose scope misses, even when an exact-name rule has no scope", () => {
+            expect.assertions(2);
+
+            writeJson("package.json", { name: "root", workspaces: ["apps/*", "packages/*"] });
+            writeJson("apps/web/package.json", {
+                dependencies: { "@radix-ui/themes": "^1.0.0" },
+                name: "@app/web",
+            });
+            writeJson("packages/shared/package.json", {
+                dependencies: { "@radix-ui/themes": "^1.0.0" },
+                name: "@scope/shared",
+            });
+
+            const issues = lintBannedDeps(iterateWorkspaceDeps(workspaceRoot), {
+                "@radix-ui/*": { packages: ["@app/*"], reason: "apps only" },
+            });
+
+            expect(issues).toHaveLength(1);
+            expect(issues[0]?.packageName).toBe("@app/web");
+        });
     });
 });

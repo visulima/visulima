@@ -455,19 +455,26 @@ export interface VisConfig {
      */
     policy?: {
         /**
-         * Map of dep names or globs → reason (or `{ reason, replacement }`).
+         * Map of dep names or globs → reason (or `{ reason, replacement, packages?, paths? }`).
          * Internal/workspace deps are never flagged here; the
          * workspace-protocol lint owns those.
+         *
+         * Optional `packages` (globs over the declaring package's `name`) and
+         * `paths` (globs over the workspace-relative `packageDir`) narrow where
+         * the rule applies. With both set, either match is enough. Omit both
+         * to ban anywhere — the default.
          * @example
          * ```
          * bannedDeps: {
          *   request: "deprecated; use undici",
          *   moment: { reason: "huge bundle, frozen upstream", replacement: "date-fns" },
          *   "@radix-ui/*": "we standardized on shadcn",
+         *   react: { reason: "no react in shared libs", paths: ["packages/shared/*"] },
+         *   "next": { reason: "apps only", packages: ["@app/*"] },
          * }
          * ```
          */
-        bannedDeps?: Record<string, string | { reason: string; replacement?: string }>;
+        bannedDeps?: Record<string, string | { packages?: string[]; paths?: string[]; reason: string; replacement?: string }>;
 
         /**
          * Tweak the custom-types lint that flags drift in `engines.{node,pnpm,...}`,

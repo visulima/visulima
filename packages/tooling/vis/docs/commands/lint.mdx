@@ -96,7 +96,22 @@ Flags every dep that appears in both the workspace root `package.json` and a chi
 
 ### `--banned-deps`
 
-Reads `policy.bannedDeps: string[]` (or `--ban <name>` repeatable) and flags every package that declares any of them. Glob support (`legacy-*`, `**deprecated**`).
+Reads `policy.bannedDeps` (or `--ban <name>` repeatable) and flags every package that declares any of them. Glob support (`legacy-*`, `**deprecated**`).
+
+Each rule is either a plain reason string or an object with `{ reason, replacement?, packages?, paths? }`. Optional `packages` (globs over the declaring package's `name`) and `paths` (globs over the workspace-relative `packageDir`) narrow where the rule applies; with both set, either match is enough. Omit both to ban anywhere — the default. Exact-name keys still beat globs, but only among rules whose scope matches the candidate dep.
+
+```ts
+policy: {
+    bannedDeps: {
+        request: "deprecated; use undici",
+        moment: { reason: "huge bundle, frozen upstream", replacement: "date-fns" },
+        // Apply only inside shared libs.
+        react: { reason: "no react in shared libs", paths: ["packages/shared/**"] },
+        // Apply only to apps.
+        next: { reason: "apps only", packages: ["@app/*"] },
+    },
+},
+```
 
 ### `--workspace-versions`
 

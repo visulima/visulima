@@ -386,6 +386,18 @@
                             {
                                 "type": "object",
                                 "properties": {
+                                    "packages": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "paths": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
                                     "reason": {
                                         "type": "string"
                                     },
@@ -400,7 +412,7 @@
                             }
                         ]
                     },
-                    "description": "Map of dep names or globs → reason (or `{ reason, replacement }`). Internal/workspace deps are never flagged here; the workspace-protocol lint owns those."
+                    "description": "Map of dep names or globs → reason (or `{ reason, replacement, packages?, paths? }`). Internal/workspace deps are never flagged here; the workspace-protocol lint owns those.\n\nOptional `packages` (globs over the declaring package's `name`) and `paths` (globs over the workspace-relative `packageDir`) narrow where the rule applies. With both set, either match is enough. Omit both to ban anywhere — the default."
                 },
                 "customTypes": {
                     "type": "object",
