@@ -18,9 +18,9 @@ export const parseApiError = async (response: Response): Promise<Error> => {
     try {
         const errorData = (await response.json()) as ApiError;
 
-        return new Error(errorData.error?.message || `Request failed: ${response.status} ${response.statusText}`);
+        return new Error(errorData.error.message || `Request failed: ${String(response.status)} ${response.statusText}`);
     } catch {
-        return new Error(`Request failed: ${response.status} ${response.statusText}`);
+        return new Error(`Request failed: ${String(response.status)} ${response.statusText}`);
     }
 };
 
@@ -33,7 +33,7 @@ export const extractFileMetaFromHeaders = (id: string, headers: Headers): FileMe
     const lastModified = headers.get("Last-Modified");
 
     const fileMeta: FileMeta = {
-        contentType: contentType || undefined,
+        contentType: contentType ?? undefined,
         id,
         size: contentLength ? Number.parseInt(contentLength, 10) : undefined,
     };
@@ -146,9 +146,9 @@ export const putFile = async (
         xhr.addEventListener("load", () => {
             if (xhr.status >= 200 && xhr.status < 300) {
                 resolve({
-                    etag: xhr.getResponseHeader("ETag") || undefined,
-                    location: xhr.getResponseHeader("Location") || undefined,
-                    uploadExpires: xhr.getResponseHeader("X-Upload-Expires") || undefined,
+                    etag: xhr.getResponseHeader("ETag") ?? undefined,
+                    location: xhr.getResponseHeader("Location") ?? undefined,
+                    uploadExpires: xhr.getResponseHeader("X-Upload-Expires") ?? undefined,
                 });
             } else {
                 parseApiError(new Response(xhr.responseText, { status: xhr.status, statusText: xhr.statusText }))
@@ -199,10 +199,10 @@ export const patchChunk = async (
     }
 
     return {
-        etag: response.headers.get("ETag") || undefined,
-        location: response.headers.get("Location") || undefined,
+        etag: response.headers.get("ETag") ?? undefined,
+        location: response.headers.get("Location") ?? undefined,
         uploadComplete: response.headers.get("X-Upload-Complete") === "true",
-        uploadExpires: response.headers.get("X-Upload-Expires") || undefined,
+        uploadExpires: response.headers.get("X-Upload-Expires") ?? undefined,
         uploadOffset: (() => {
             const offsetHeader = response.headers.get("X-Upload-Offset");
 
