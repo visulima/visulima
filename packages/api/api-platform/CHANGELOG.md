@@ -1,3 +1,19 @@
+## @visulima/api-platform [4.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/api-platform@4.0.0-alpha.13...@visulima/api-platform@4.0.0-alpha.14) (2026-05-06)
+
+### Miscellaneous Chores
+
+* **api-platform:** apply lint cleanup from agent batch ([32102f1](https://github.com/visulima/visulima/commit/32102f1b091a2c4066cabeded76d815d35125016))
+* **api-platform:** apply prettier and eslint quote-style auto-fix ([5f0b116](https://github.com/visulima/visulima/commit/5f0b1163bcc176323fc44cf2b29f5506792e9b51))
+* **api-platform:** silence vitest/no-conditional-in-test in node-version branch ([505a3cf](https://github.com/visulima/visulima/commit/505a3cfd8f471c014b79fd74299465963beff0a5))
+* re-enable jsdoc/match-description in api-platform and tighten config docs ([4ecaa31](https://github.com/visulima/visulima/commit/4ecaa315064cdd798af1ea1296be1fe52967bf9a))
+
+
+### Dependencies
+
+* **@visulima/connect:** upgraded to 4.0.0-alpha.13
+* **@visulima/fs:** upgraded to 5.0.0-alpha.14
+* **@visulima/jsdoc-open-api:** upgraded to 3.0.0-alpha.13
+
 ## @visulima/api-platform [4.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/api-platform@4.0.0-alpha.12...@visulima/api-platform@4.0.0-alpha.13) (2026-05-04)
 
 
