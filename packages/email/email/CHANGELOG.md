@@ -1,3 +1,11 @@
+## @visulima/email [1.0.0-alpha.21](https://github.com/visulima/visulima/compare/@visulima/email@1.0.0-alpha.20...@visulima/email@1.0.0-alpha.21) (2026-05-06)
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.17
+* **@visulima/fs:** upgraded to 5.0.0-alpha.15
+
 ## @visulima/email [1.0.0-alpha.20](https://github.com/visulima/visulima/compare/@visulima/email@1.0.0-alpha.19...@visulima/email@1.0.0-alpha.20) (2026-05-06)
 
 ### Miscellaneous Chores
