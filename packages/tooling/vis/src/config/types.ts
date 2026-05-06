@@ -1041,6 +1041,26 @@ export interface VisConfig {
     };
 
     /**
+     * Sponsorship notice shown after successful commands.
+     *
+     * vis prints a one-line "consider sponsoring visulima" notice at most
+     * once every 14 days (skipped in CI, non-TTY, and when
+     * `VIS_NO_SPONSOR=1` is set). Set `enabled: false` to silence it
+     * permanently for this workspace.
+     * @example
+     * ```
+     * sponsor: { enabled: false }
+     * ```
+     */
+    sponsor?: {
+        /**
+         * Show the sponsor notice on successful command completion.
+         * @default true
+         */
+        enabled?: boolean;
+    };
+
+    /**
      * Staged file patterns and commands (replaces lint-staged).
      *
      * Accepts all lint-staged config forms:
