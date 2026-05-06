@@ -39,6 +39,7 @@ import { runToolchainPreflight } from "../../runtime/toolchain";
 import { runReadiness } from "../../services/readiness";
 import { readAllEntries } from "../../services/registry";
 import { filterProjectsByQuery, resolveSelector } from "../../task/selectors";
+import { resolveSkipCachePatterns } from "../../task/skip-cache";
 import { checkStrictEnv, formatStrictEnvError } from "../../task/strict-env";
 import {
     buildAliasMap,
@@ -1036,6 +1037,40 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
         if (visTarget?.options) {
             task.overrides = { ...task.overrides, visOptions: visTarget.options };
             taskGraph.tasks[taskId] = task;
+        }
+    }
+
+    // Per-task cache bypass via --skip-cache=<patterns>. Unlike the
+    // global --no-cache (which drops the runner's `skipNxCache` switch
+    // and bypasses cache for every task), this only flips
+    // `task.cache = false` on tasks whose ID matches a user-supplied
+    // pattern. The dry-run plan printer already surfaces this as
+    // `(no-cache)` next to the matched task IDs. We skip the work
+    // entirely when --no-cache is set since the runner-level switch
+    // already disables caching for the whole run.
+    if (typeof options.skipCache === "string" && options.skipCache.trim() !== "") {
+        if (options.cache) {
+            const skipResolution = resolveSkipCachePatterns(options.skipCache, workspace, Object.keys(taskGraph.tasks));
+
+            for (const id of skipResolution.skipTaskIds) {
+                const task = taskGraph.tasks[id];
+
+                if (task !== undefined) {
+                    task.cache = false;
+                }
+            }
+
+            if (skipResolution.unmatchedPatterns.length > 0) {
+                logger.warn(
+                    `--skip-cache: no tasks matched ${skipResolution.unmatchedPatterns.map((p) => `"${p}"`).join(", ")}`,
+                );
+            }
+
+            if (skipResolution.skipTaskIds.size > 0) {
+                logger.debug?.(`--skip-cache: bypassing cache for ${String(skipResolution.skipTaskIds.size)} task(s)`);
+            }
+        } else {
+            logger.debug?.("--skip-cache ignored: --no-cache already disables caching for the whole run");
         }
     }
 
