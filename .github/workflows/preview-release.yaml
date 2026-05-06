@@ -56,23 +56,6 @@ jobs:
                   run-signatures-audit: false
                   run-npm-audit: false
 
-            # Temporary solution until Nx solve this https://github.com/nrwl/nx/issues/22259
-            #
-            # The file list is written to disk (write_output_files) instead
-            # of being read from the action output directly. On long-running
-            # branches the diff against `setSHAs.outputs.base` can grow past
-            # the bash argv+envp size limit; reading via `cat` keeps the
-            # list out of both env and the script's argv text.
-            - name: "Get changed files"
-              id: "files"
-              uses: "tj-actions/changed-files@c65cd883420fd2eb864698a825fc4162dd94482c" # v44.5.7
-              with:
-                  files_ignore_from_source_file: ".github/ignore-files-for-nx-affected.yml"
-                  base_sha: "${{ steps.setSHAs.outputs.base }}"
-                  separator: ","
-                  write_output_files: true
-                  output_dir: ".github/outputs"
-
             - name: "Wait for Build Native workflow"
               uses: "lewagon/wait-on-check-action@3603e826ee561ea102b58accb5ea55a1a7482343" # v1.4.1
               timeout-minutes: 30
@@ -114,13 +97,7 @@ jobs:
                   rm -rf artifacts/
 
             - name: "Build"
-              shell: "bash"
-              run: |
-                  files="$(tr '\\' '/' < .github/outputs/all_changed_files.txt)"
-                  pnpm run build:affected:prod:packages --files="$files"
+              run: "pnpm run build:affected:prod:packages"
 
             - name: "Preview Release"
-              shell: "bash"
               run: "node ./scripts/publish-preview-release.js"
-              env:
-                  CHANGED_FILES_PATH: ".github/outputs/all_changed_files.txt"
