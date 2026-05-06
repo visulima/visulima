@@ -58,6 +58,12 @@ const run: Command = {
             type: Boolean,
         },
         {
+            description:
+                "Comma-separated selectors of tasks to bypass cache for (e.g. 'app:test', ':e2e', '#flaky:lint'). Other tasks in the run still cache normally. --no-cache wins when both are set.",
+            name: "skip-cache",
+            type: String,
+        },
+        {
             description: "Custom cache directory",
             name: "cache-dir",
             type: String,
@@ -204,6 +210,7 @@ export type RunOptions = CreateOptions<{
     "retry-budget": number | undefined;
     reverse: boolean | undefined;
     "runner-tags": string | undefined;
+    "skip-cache": string | undefined;
     "skip-constraints": boolean | undefined;
     "skip-toolchain": boolean | undefined;
     "strict-env": boolean | undefined;
