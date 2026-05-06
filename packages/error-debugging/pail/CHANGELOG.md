@@ -1,3 +1,19 @@
+## @visulima/pail [4.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/pail@4.0.0-alpha.12...@visulima/pail@4.0.0-alpha.13) (2026-05-06)
+
+### Miscellaneous Chores
+
+* **pail:** apply prettier and eslint quote-style auto-fix ([3c15292](https://github.com/visulima/visulima/commit/3c152922610130de7728183efccfb552f2939fdf))
+* **pail:** fix lint errors ([03bcc1f](https://github.com/visulima/visulima/commit/03bcc1f2a5588f6730a71e21d56e280d8e537eca))
+
+### Continuous Integration
+
+* integrate codspeed for benchmark tracking ([e758f3d](https://github.com/visulima/visulima/commit/e758f3da491cc00d3f8bbf10d7ba3fdf8deb5325))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.16
+
 ## @visulima/pail [4.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/pail@4.0.0-alpha.11...@visulima/pail@4.0.0-alpha.12) (2026-04-28)
 
 ### Bug Fixes
