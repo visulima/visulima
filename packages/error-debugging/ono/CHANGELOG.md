@@ -1,3 +1,14 @@
+## @visulima/ono [2.0.0-alpha.19](https://github.com/visulima/visulima/compare/@visulima/ono@2.0.0-alpha.18...@visulima/ono@2.0.0-alpha.19) (2026-05-06)
+
+### Bug Fixes
+
+* **ono:** collapse stringifiedBody to a single toString() call ([1847db9](https://github.com/visulima/visulima/commit/1847db944e78349f932bb6dc51e3247c5a71b01e))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.16
+
 ## @visulima/ono [2.0.0-alpha.18](https://github.com/visulima/visulima/compare/@visulima/ono@2.0.0-alpha.17...@visulima/ono@2.0.0-alpha.18) (2026-05-04)
 
 
