@@ -1,3 +1,93 @@
+## @visulima/vis [1.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.11...@visulima/vis@1.0.0-alpha.12) (2026-05-06)
+
+### Features
+
+* **vis:** add --reverse for leaves-first task order ([9d02f37](https://github.com/visulima/visulima/commit/9d02f373ff08ed94c95055725ce43ed42ea8c9aa))
+* **vis:** add --skip-cache for selective per-task cache bypass ([28cfa7a](https://github.com/visulima/visulima/commit/28cfa7afc03ace27a4ff41746e91c70006cb9e9e))
+* **vis:** add corepack passthrough + unified dry/silent/env ([0ba38b2](https://github.com/visulima/visulima/commit/0ba38b297385497deb167efd03349f38ef1a7049)), closes [#6](https://github.com/visulima/visulima/issues/6) [#10](https://github.com/visulima/visulima/issues/10) [#11](https://github.com/visulima/visulima/issues/11)
+* **vis:** add custom-types lint for engines/packageManager/volta drift ([149455a](https://github.com/visulima/visulima/commit/149455a114b76c86ea12b7f271450297f38eeff6))
+* **vis:** add deno as first-class package manager + --auto-install-peers ([90d6d0f](https://github.com/visulima/visulima/commit/90d6d0fd98d531e1f76de42848da27605509f7d3))
+* **vis:** add sponsor notice after successful commands ([86ebd1c](https://github.com/visulima/visulima/commit/86ebd1c3270c3241c76577eae8bb889690b71e53))
+* **vis:** add syncpack migrate adapter and audit ([6e07ae8](https://github.com/visulima/visulima/commit/6e07ae86401f374d76206c81d1c6131bc08618e2))
+* **vis:** add task-level runner tags for capability-gated CI lanes ([8980e03](https://github.com/visulima/visulima/commit/8980e0319e99b4f79c5e049509d7dc2039f2092d))
+* **vis:** auto-generate JSON schemas from TypeScript types ([391a3f0](https://github.com/visulima/visulima/commit/391a3f0d253b3b55d02346bbb0dbeb061d8ec06f))
+* **vis:** close 7 syncpack-parity gaps ([85bc6b1](https://github.com/visulima/visulima/commit/85bc6b169fbc75cc4cc1b43b5bea85e673253f06)), closes [pnpm-workspace.yaml#overrides](https://github.com/visulima/pnpm-workspace.yaml/issues/overrides) [#623](https://github.com/visulima/visulima/issues/623) [#624](https://github.com/visulima/visulima/issues/624) [#625](https://github.com/visulima/visulima/issues/625) [#626](https://github.com/visulima/visulima/issues/626) [#627](https://github.com/visulima/visulima/issues/627) [#628](https://github.com/visulima/visulima/issues/628) [#629](https://github.com/visulima/visulima/issues/629)
+* **vis:** honor editorconfig in all JSON writers ([859e925](https://github.com/visulima/visulima/commit/859e92533d0349be37c1a750cb80582c14acb715))
+* **vis:** implement vis sync package-json-fields ([87e1fa1](https://github.com/visulima/visulima/commit/87e1fa11f2be741a768fe0c6c04238427823623a))
+* **vis:** port sherif lint rules and add migrate sherif command ([243324b](https://github.com/visulima/visulima/commit/243324b440a31831b6c6d93219d8cb3a3ab48495))
+* **vis:** scope banned-deps rules with packages/paths globs ([82fbaf2](https://github.com/visulima/visulima/commit/82fbaf2ffac946f032fc872ee2a428989ebf8c57))
+* **vis:** skip ignored paths in sort-package-json ([74215c0](https://github.com/visulima/visulima/commit/74215c06fd0e0f562b97e803a95b9e662e9980e2)), closes [package.json#workspaces](https://github.com/visulima/package.json/issues/workspaces)
+* **vis:** surface leftover migration references in vis doctor ([ebd3a48](https://github.com/visulima/visulima/commit/ebd3a4841a736209cdbf2641ac6e27ec2e69f886))
+* **vis:** translate syncpack isBanned versionGroups to policy.bannedDeps ([f95d01b](https://github.com/visulima/visulima/commit/f95d01bda6a5add3f7fa0d48c1c955942b5c7fc3))
+* **vis:** user-defined customTypes for vis lint ([51fa21f](https://github.com/visulima/visulima/commit/51fa21f4193913f64e4abcd1dc9f97322dd21553))
+
+### Bug Fixes
+
+* **vis:** coalesce wheel-burst input and group sort-package-json TUI ([97aa78b](https://github.com/visulima/visulima/commit/97aa78bc445fc234e1473986a867e70f8d15d7b4))
+* **vis:** declare missing editorconfig field on VisConfig type ([4a33428](https://github.com/visulima/visulima/commit/4a334285b396ee41a1dbe507eb27fb2894055463))
+* **vis:** drop duplicate --no-color global option ([c50879a](https://github.com/visulima/visulima/commit/c50879a7ab2b195b4decf81d2cca5d3a39b8f137))
+* **vis:** harden extraTypes per review ([8b56f48](https://github.com/visulima/visulima/commit/8b56f48fce55ac133bd20f181133ad17e06a9825))
+* **vis:** hash expanded command so token-driven cache keys vary per affected set ([636b1ac](https://github.com/visulima/visulima/commit/636b1ac843381cf7df3fec844431ec0123b5f565))
+* **vis:** read bun minimumReleaseAge from bunfig.toml, not package.json ([78fe9f4](https://github.com/visulima/visulima/commit/78fe9f40452ddfc93d4bd3d66ec49f269b6085e6))
+* **vis:** replace editorconfig with ec4rs binding ([3a83ed0](https://github.com/visulima/visulima/commit/3a83ed0f9de3e4202dfa51cf9bf4e6d8c3b0134d))
+* **vis:** resolve tsc errors in create handler and watch keybinds ([033760d](https://github.com/visulima/visulima/commit/033760d83c8a7252dadbd716ecd04f80f54816e9))
+
+### Documentation
+
+* **vis:** add migration sources to credits section ([2caddce](https://github.com/visulima/visulima/commit/2caddcea6755bdc73780b559243cc27d4f2d48f7))
+* **vis:** document json deps, sync fields, post-sort flags ([d244ddd](https://github.com/visulima/visulima/commit/d244ddd2b2e88d53e756fef57e4024cd46a57430))
+* **vis:** document patchedDependencies supply-chain check ([b373960](https://github.com/visulima/visulima/commit/b373960d6d7dc38db9eeb8437cec33d47f9102ab))
+* **vis:** document vis lint and mark syncpack item 6 shipped ([73cbd44](https://github.com/visulima/visulima/commit/73cbd4457810a91ecce99856522904885e80c4d6))
+* **vis:** mark `${affected.files}` token wiring as shipped ([e4d306e](https://github.com/visulima/visulima/commit/e4d306e5ddd1eba30a404bf3d03efc5d976f0e9a)), closes [#6](https://github.com/visulima/visulima/issues/6)
+* **vis:** mark syncpack ports shipped, link [#622](https://github.com/visulima/visulima/issues/622) ([2fdb8de](https://github.com/visulima/visulima/commit/2fdb8de9d1b6946208a34a4da491918820f8c815))
+
+### Miscellaneous Chores
+
+* commit pnpm-lock and vis syncpack roadmap ([5138981](https://github.com/visulima/visulima/commit/5138981ee04b45900c6cf1ba41f8e18025d4ba63))
+* re-enable antfu/if-newline in vis and secret-scanner ([bcd84de](https://github.com/visulima/visulima/commit/bcd84de019b60f6bc474852e7ae6b7da822a9185))
+* re-enable jsdoc/match-description in api-platform and tighten config docs ([4ecaa31](https://github.com/visulima/visulima/commit/4ecaa315064cdd798af1ea1296be1fe52967bf9a))
+* **vis:** apply pending eslint autofixes and regenerate bundled licenses ([742c613](https://github.com/visulima/visulima/commit/742c61358fcc6b07a62f3c4f688320335aeca27b))
+* **vis:** apply prettier and eslint quote-style auto-fix ([f477246](https://github.com/visulima/visulima/commit/f47724629e5708ca45bb7891fdc03411088f0d00))
+* **vis:** apply prettier and eslint quote-style auto-fix ([915d80b](https://github.com/visulima/visulima/commit/915d80b4eca4e8da8ca36154a994f9048d1c1e28))
+* **vis:** clear all eslint warnings across vis package ([f0c513e](https://github.com/visulima/visulima/commit/f0c513ead5761ebba35379099bcfa50ee006e44f))
+* **vis:** commit pending lint+tsc fixes ([3d7a519](https://github.com/visulima/visulima/commit/3d7a5193f729e70444bdac983afdcf39828b4ad6))
+* **vis:** destructure runtime to satisfy prefer-destructuring in custom-types tests ([4802c91](https://github.com/visulima/visulima/commit/4802c912dda97ffd04182c1d9d4169c58b3c5aac))
+* **vis:** drop stale planning doc and exclude sherif-lint fixtures ([6002fd2](https://github.com/visulima/visulima/commit/6002fd273242f357eb8884a1d3cfe2526c769d61))
+* **vis:** enforce @stylistic/quotes — auto-fix 333 single→double quote sites ([b33bdcb](https://github.com/visulima/visulima/commit/b33bdcbb52ecba14b8088053df5653adba0b5b6e))
+* **vis:** fix lint errors ([0898454](https://github.com/visulima/visulima/commit/0898454c6119b2eaf77836015bc078a8afd2a1c0))
+* **vis:** housekeeping cleanup ([59a33fb](https://github.com/visulima/visulima/commit/59a33fba3ed65ae965b227d1e860e05e1b707bfa))
+* **vis:** remove ~10 eslint disables and fix mid-tier violations ([6a8a960](https://github.com/visulima/visulima/commit/6a8a960289c31d495cd3d37d2b28022516c02cd5))
+* **vis:** remove ~10 stale-zero/trivial eslint disables ([ffda729](https://github.com/visulima/visulima/commit/ffda72972a7d44d3b6eb2d1942897ff211811172))
+* **vis:** remove ~21 eslint disables and fix the violations ([6aec6e8](https://github.com/visulima/visulima/commit/6aec6e830c6e8816036f5dce8c6f57178f1e1af6))
+* **vis:** rename PascalCase TUI components to kebab-case ([3aaa398](https://github.com/visulima/visulima/commit/3aaa398125f722770c1b44d0edb45ddfec2d0802))
+
+### Code Refactoring
+
+* **vis:** drop --json alias from vis list, use --format=json ([30251b0](https://github.com/visulima/visulima/commit/30251b016c5631bb200d580ece891ff783d67930))
+* **vis:** fold vis json deps into vis list --deps --format=ndjson ([1d0c859](https://github.com/visulima/visulima/commit/1d0c85981b9b1db1a49a6932dd4986e1862f4725))
+* **vis:** tighten verify+syncpack types from audit feedback ([277bf93](https://github.com/visulima/visulima/commit/277bf93f810e034c98b83c53a5ff09b7b4fe8688))
+* **vis:** tighten versionGroups remainder filter ([9965d34](https://github.com/visulima/visulima/commit/9965d34e5425d9307f1a2207058c3916d2b76cfb))
+
+### Tests
+
+* **vis:** bump loader-resolution timeout to 30s to survive suite contention ([17d738d](https://github.com/visulima/visulima/commit/17d738db8aee272fb9abbb40d0f2a094f16c5eae))
+* **vis:** cover custom-types format outputs ([b99ea50](https://github.com/visulima/visulima/commit/b99ea50a7b270bbc56984adf8a3f3c7b154559bb))
+* **vis:** cover syncpack-parity features and wire --query into --deps ([f913f51](https://github.com/visulima/visulima/commit/f913f51ba78e427c57099c9819f3013c5c88231d)), closes [pnpm-workspace.yaml#overrides](https://github.com/visulima/pnpm-workspace.yaml/issues/overrides)
+
+### Continuous Integration
+
+* **vis:** move schemas drift check out of vitest ([6da612b](https://github.com/visulima/visulima/commit/6da612bf459095777c163707747f6f0a29bf2fec))
+
+
+### Dependencies
+
+* **@visulima/cerebro:** upgraded to 3.0.0-alpha.15
+* **@visulima/fs:** upgraded to 5.0.0-alpha.14
+* **@visulima/package:** upgraded to 5.0.0-alpha.13
+* **@visulima/pail:** upgraded to 4.0.0-alpha.13
+* **@visulima/task-runner:** upgraded to 1.0.0-alpha.10
+* **@visulima/tui:** upgraded to 1.0.0-alpha.7
+
 ## @visulima/vis [1.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.10...@visulima/vis@1.0.0-alpha.11) (2026-05-04)
 
 ### Features
