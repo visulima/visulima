@@ -83,7 +83,7 @@
         "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
         "lint:types": "tsc --noEmit",
         "test": "vitest run",
-        "test:bench": "vitest bench",
+        "test:bench": "vitest bench -c vitest.bench.config.mts",
         "test:coverage": "vitest run --coverage",
         "test:ui": "vitest --ui --coverage.enabled=true",
         "test:watch": "vitest"
@@ -94,6 +94,7 @@
         "@anolilab/semantic-release-pnpm": "^3.0.0",
         "@anolilab/semantic-release-preset": "^12.0.0",
         "@arethetypeswrong/cli": "^0.18.2",
+        "@codspeed/vitest-plugin": "5.4.0",
         "@types/node": "24.10.1",
         "@visulima/packem": "2.0.0-alpha.37",
         "@vitest/coverage-v8": "^4.0.13",

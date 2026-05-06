@@ -6,6 +6,7 @@
         "test:bench": "vitest bench"
     },
     "dependencies": {
+        "@codspeed/vitest-plugin": "5.4.0",
         "@oclif/core": "^4.8.0",
         "@visulima/cerebro": "workspace:*",
         "cac": "^6.7.14",

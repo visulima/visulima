@@ -6,6 +6,7 @@
         "test:bench": "vitest bench"
     },
     "dependencies": {
+        "@codspeed/vitest-plugin": "5.4.0",
         "@qiwi/masker": "^2.0.1",
         "@visulima/redact": "workspace:*",
         "fast-redact": "^3.5.0",

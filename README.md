@@ -15,6 +15,7 @@
   <a aria-label="Join the community on GitHub" href="https://github.com/visulima/visulima/discussions">
     <img alt="" src="https://img.shields.io/badge/Join%20the%20community-blueviolet.svg?style=for-the-badge&labelColor=000000&logoWidth=20">
   </a>
+  <a href="https://codspeed.io/visulima/visulima?utm_source=badge"><img src="https://img.shields.io/endpoint?url=https://codspeed.io/badge.json" alt="CodSpeed"/></a>
 </p>
 
 ---

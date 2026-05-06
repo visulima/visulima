@@ -9,6 +9,7 @@
     },
     "dependencies": {
         "@bomb.sh/args": "^0.3.1",
+        "@codspeed/vitest-plugin": "5.4.0",
         "@visulima/command-line-args": "workspace:*",
         "argparse": "^2.0.1",
         "args": "^5.0.3",

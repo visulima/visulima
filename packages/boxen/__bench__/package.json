@@ -9,5 +9,8 @@
         "@visulima/boxen": "workspace:*",
         "boxen": "8.0.1",
         "vitest": "^4.0.13"
+    },
+    "dependencies": {
+        "@codspeed/vitest-plugin": "5.4.0"
     }
 }

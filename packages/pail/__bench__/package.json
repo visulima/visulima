@@ -5,6 +5,7 @@
         "test:bench": "vitest bench"
     },
     "dependencies": {
+        "@codspeed/vitest-plugin": "5.4.0",
         "@dynamicabot/signales": "^2.1.2",
         "@ogma/logger": "3.4.0",
         "@visulima/pail": "workspace:*",

@@ -1,0 +1,55 @@
+# https://codspeed.io/docs/integrations/ci/github-actions
+
+name: "CodSpeed"
+
+on: # yamllint disable-line rule:truthy
+    push:
+        branches:
+            - "main"
+    # eslint-disable-next-line yml/no-empty-mapping-value
+    pull_request: # yamllint disable-line rule:empty-values
+    # `workflow_dispatch` allows CodSpeed to trigger backtest
+    # performance analysis in order to generate initial data.
+    workflow_dispatch: # yamllint disable-line rule:empty-values
+
+concurrency:
+    group: "${{ github.workflow }}-${{ github.ref }}"
+    cancel-in-progress: true
+
+permissions:
+    contents: "read"
+    id-token: "write"
+
+jobs:
+    codspeed:
+        name: "Run benchmarks"
+        runs-on: "ubuntu-latest"
+        steps:
+            - name: "Harden Runner"
+              uses: "step-security/harden-runner@95d9a5deda9de15063e7595e9719c11c38c90ae2" # v2.13.2
+              with:
+                  egress-policy: "audit"
+
+            - name: "Git checkout"
+              uses: "actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5" # v4.3.1
+              env:
+                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
+                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
+                  EMAIL: "github-actions[bot]@users.noreply.github.com"
+
+            - name: "Setup resources and environment"
+              id: "setup"
+              uses: "anolilab/workflows/step/setup@main"
+              with:
+                  node-version: "22"
+                  cache-prefix: "codspeed"
+
+            - name: "Build packages"
+              run: "pnpm run build:packages"
+
+            - name: "Run benchmarks"
+              uses: "CodSpeedHQ/action@c381be0bfd20e844fb45594f6aa182ffcd94545c" # v4.15.0
+              with:
+                  mode: "simulation"
+                  run: |
+                      pnpm --filter "boxen-bench" --filter "cerebro-bench" --filter "@visulima/command-line-args-bench" --filter "deep-clone-bench" --filter "fs-bench" --filter "inspector-bench" --filter "pail-bench" --filter "redact-bench" --filter "string-bench" --filter "tabular-bench" --filter "@visulima/fmt" -r run test:bench

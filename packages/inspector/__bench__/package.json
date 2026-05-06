@@ -6,6 +6,7 @@
         "test:bench": "vitest bench"
     },
     "dependencies": {
+        "@codspeed/vitest-plugin": "5.4.0",
         "@visulima/inspector": "workspace:*",
         "loupe": "^3.2.1",
         "object-inspect": "^1.13.4"
