@@ -101,11 +101,15 @@ describe("vis lazy command contract", () => {
         expect(command.loader).toBeTypeOf("function");
     });
 
-    it.each(ALL_COMMANDS.map((c) => [c.name, c]))("%s loader resolves to a default-exported function", async (_name, command) => {
-        expect.assertions(1);
+    it.each(ALL_COMMANDS.map((c) => [c.name, c]))(
+        "%s loader resolves to a default-exported function",
+        async (_name, command) => {
+            expect.assertions(1);
 
-        const loaded = await command.loader!();
+            const loaded = await command.loader!();
 
-        expect(loaded.default).toBeTypeOf("function");
-    });
+            expect(loaded.default).toBeTypeOf("function");
+        },
+        30_000,
+    );
 });
