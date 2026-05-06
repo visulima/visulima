@@ -110,9 +110,34 @@ const resolveExactDirectory = (workspaceRoot: string, cleanPattern: string, resu
     }
 };
 
+const REGEX_SPECIALS_RE = /[$()+.?[\\\]^{|}]/g;
+
 /**
- * Resolves glob-like workspace patterns to actual directories.
- * Supports simple patterns like "packages/*" and "packages/**".
+ * Top-level bare globs like `@*` or `pkg-*` — pnpm allows them as
+ * shortcuts for "scope-prefixed children of the workspace root". `*` is
+ * the only meta-character supported; everything else is escaped.
+ */
+const resolveBareGlob = (workspaceRoot: string, cleanPattern: string, results: string[]): void => {
+    const escaped = cleanPattern.replaceAll(REGEX_SPECIALS_RE, "\\$&").replaceAll("*", ".*");
+    const regex = new RegExp(`^${escaped}$`);
+
+    for (const entry of walkSync(workspaceRoot, { includeFiles: false, includeSymlinks: false, maxDepth: 1, skip: [NODE_MODULES_RE, DOT_GIT_RE] })) {
+        if (entry.path === workspaceRoot) {
+            continue;
+        }
+
+        if (regex.test(entry.name) && isAccessibleSync(join(entry.path, "package.json"))) {
+            results.push(entry.name);
+        }
+    }
+};
+
+/**
+ * Resolves glob-like workspace patterns to actual directories. Supports
+ * `dir/<asterisk>`, `dir/<asterisk><asterisk>`, `dir/<asterisk>/<asterisk>`,
+ * top-level bare globs like `@<asterisk>`, and exact paths.
+ * `!`-prefixed exclusions are skipped — vis doesn't implement exclusion
+ * semantics yet.
  */
 const resolveWorkspacePatterns = (workspaceRoot: string, patterns: string[]): string[] => {
     const directories: string[] = [];
@@ -128,6 +153,8 @@ const resolveWorkspacePatterns = (workspaceRoot: string, patterns: string[]): st
             resolveSimpleGlob(workspaceRoot, cleanPattern, directories);
         } else if (cleanPattern.endsWith("/**") || cleanPattern.endsWith("/*/*")) {
             resolveDoubleGlob(workspaceRoot, cleanPattern, directories);
+        } else if (!cleanPattern.includes("/") && cleanPattern.includes("*")) {
+            resolveBareGlob(workspaceRoot, cleanPattern, directories);
         } else {
             resolveExactDirectory(workspaceRoot, cleanPattern, directories);
         }

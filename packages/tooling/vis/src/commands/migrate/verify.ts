@@ -6,7 +6,7 @@ import { join } from "@visulima/path";
 
 import type { MigrateLogger } from "./types";
 
-export type MigrationTool = "gitleaks" | "secretlint" | "syncpack";
+export type MigrationTool = "gitleaks" | "secretlint" | "sherif" | "syncpack";
 
 export interface VerificationIssue {
     detail: string;
@@ -43,6 +43,7 @@ const SYNCPACK_CONFIG_FILES = [
 interface PackageJson {
     devDependencies?: Record<string, string>;
     scripts?: Record<string, string>;
+    sherif?: unknown;
 }
 
 const scanPackageJson = (root: string): VerificationIssue[] => {
@@ -79,6 +80,10 @@ const scanPackageJson = (root: string): VerificationIssue[] => {
             if (/\bsyncpack\b/.test(value)) {
                 issues.push({ detail: `Script "${name}" still invokes syncpack: ${value}`, kind: "script", location: "package.json", tool: "syncpack" });
             }
+
+            if (/\bsherif\b/.test(value)) {
+                issues.push({ detail: `Script "${name}" still invokes sherif: ${value}`, kind: "script", location: "package.json", tool: "sherif" });
+            }
         }
     }
 
@@ -95,7 +100,15 @@ const scanPackageJson = (root: string): VerificationIssue[] => {
             if (dep === "syncpack") {
                 issues.push({ detail: `devDependency \`${dep}\` is still installed`, kind: "devDep", location: "package.json", tool: "syncpack" });
             }
+
+            if (dep === "sherif") {
+                issues.push({ detail: `devDependency \`${dep}\` is still installed`, kind: "devDep", location: "package.json", tool: "sherif" });
+            }
         }
+    }
+
+    if (pkg.sherif) {
+        issues.push({ detail: "`sherif` config block still present in package.json", kind: "config", location: "package.json", tool: "sherif" });
     }
 
     return issues;
@@ -123,6 +136,10 @@ const scanHooks = (root: string): VerificationIssue[] => {
 
         if (/\bsyncpack\b/.test(content)) {
             issues.push({ detail: "syncpack invocation still present in hook", kind: "hook", location: rel, tool: "syncpack" });
+        }
+
+        if (/\bsherif\b/.test(content)) {
+            issues.push({ detail: "sherif invocation still present in hook", kind: "hook", location: rel, tool: "sherif" });
         }
     }
 
@@ -159,8 +176,14 @@ const scanCi = (root: string): VerificationIssue[] => {
             return;
         }
 
-        if (/\bsyncpack\b/.test(readFileSync(abs))) {
+        const ciContent = readFileSync(abs);
+
+        if (/\bsyncpack\b/.test(ciContent)) {
             issues.push({ detail: "syncpack invocation still present in CI", kind: "ci", location: rel, tool: "syncpack" });
+        }
+
+        if (/\bsherif\b/.test(ciContent)) {
+            issues.push({ detail: "sherif invocation still present in CI", kind: "ci", location: rel, tool: "sherif" });
         }
     };
 
@@ -313,7 +336,7 @@ export const verifyMigration = (root: string, logger: MigrateLogger): Verificati
     const issues = scanMigrationLeftovers(root);
 
     if (issues.length === 0) {
-        logger.info("✓ No unmigrated gitleaks/secretlint/syncpack references found.");
+        logger.info("✓ No unmigrated gitleaks/secretlint/sherif/syncpack references found.");
 
         return [];
     }

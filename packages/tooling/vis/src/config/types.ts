@@ -1,5 +1,6 @@
 import type { ConstraintsConfig, NamedInputs, ProjectConfiguration, TargetConfiguration, TaskRunnerOptions } from "@visulima/task-runner";
 
+import type { SimilarDepFamily } from "../lint/similar-deps";
 import type { ToolchainConfig as InternalToolchainConfig, VersionManagerName } from "../runtime/toolchain";
 import type { StagedConfig } from "../staged";
 import type { VisTargetConfiguration } from "../task/target-options";
@@ -571,11 +572,137 @@ export interface VisConfig {
         };
 
         /**
+         * Tweak the dead-workspace-patterns lint that flags entries in
+         * `pnpm-workspace.yaml#packages` / `package.json#workspaces` which
+         * resolve to zero on-disk directories.
+         */
+        deadWorkspacePatterns?: {
+            /**
+             * Three-state autofix opt-out. See `workspaceProtocol.autofix`
+             * for the contract — applied here to dropping unmatched patterns
+             * from the workspace config file.
+             * @default true
+             */
+            autofix?: "prompt" | boolean;
+        };
+
+        /**
+         * Tweak the empty-deps lint that flags empty `dependencies` /
+         * `devDependencies` / `peerDependencies` / `optionalDependencies`
+         * blocks across the workspace.
+         */
+        emptyDeps?: {
+            /**
+             * Three-state autofix opt-out. See `workspaceProtocol.autofix`
+             * for the contract — applied here to removing the empty key.
+             * @default true
+             */
+            autofix?: "prompt" | boolean;
+
+            /**
+             * Block names exempt from the rule (e.g. `["peerDependencies"]`
+             * to keep the key around as a marker even when empty).
+             */
+            ignoreBlocks?: ("dependencies" | "devDependencies" | "optionalDependencies" | "peerDependencies")[];
+        };
+
+        /**
          * Tweak the redefine-root lint that flags non-root packages duplicating
          * deps already pinned at the workspace root.
          */
         redefineRoot?: {
             /** Dep names that are exempt from the redefine-root rule (exact match). */
+            ignore?: string[];
+        };
+
+        /**
+         * Tweak the root-deps lint that flags runtime `dependencies` declared
+         * on the private workspace root (they should live in `devDependencies`).
+         */
+        rootDeps?: {
+            /**
+             * Three-state autofix opt-out. See `workspaceProtocol.autofix`
+             * for the contract — applied here to moving entries from
+             * `dependencies` to `devDependencies` on the root package.json.
+             * @default true
+             */
+            autofix?: "prompt" | boolean;
+        };
+
+        /**
+         * Tweak the root-package-manager lint that flags a missing or
+         * malformed `packageManager` field on the workspace root.
+         */
+        rootPackageManager?: {
+            /**
+             * Three-state autofix opt-out. See `workspaceProtocol.autofix`
+             * for the contract. `--fix` only writes when `suggested` is set —
+             * a missing `packageManager` field has no canonical default.
+             * @default true
+             */
+            autofix?: "prompt" | boolean;
+
+            /**
+             * Canonical specifier (`name@version`) to write when `--fix` runs
+             * and the field is absent. Required to enable autofix —
+             * vis won't guess the workspace's preferred manager.
+             * @example "pnpm@10.32.1"
+             */
+            suggested?: string;
+        };
+
+        /**
+         * Tweak the root-private lint that flags a workspace root package.json
+         * missing `"private": true`. Only fires when the root looks like a
+         * workspace (npm/yarn/bun `workspaces` field or `pnpm-workspace.yaml`).
+         */
+        rootPrivate?: {
+            /**
+             * Three-state autofix opt-out. See `workspaceProtocol.autofix`
+             * for the contract — applied here to inserting `"private": true`.
+             * @default true
+             */
+            autofix?: "prompt" | boolean;
+        };
+
+        /**
+         * Tweak the similar-deps lint that flags drift across related dep
+         * families (e.g. `react` and `react-dom`, all of `@babel/*`).
+         *
+         * The lint is report-only — aligning a family requires picking a
+         * single canonical specifier across heterogeneous range syntaxes
+         * (`^`, `~`, exact), which is too lossy without user input.
+         */
+        similarDeps?: {
+            /**
+             * Additional families merged with the built-ins. Same `id` wins
+             * → user override fully replaces the built-in entry.
+             * @example
+             * ```
+             * extraFamilies: [
+             *   { id: "vue", label: "Vue", members: ["vue", "vue-router", "pinia"] },
+             * ]
+             * ```
+             */
+            extraFamilies?: SimilarDepFamily[];
+            /** Family ids to skip entirely (matches `SimilarDepFamily.id`). */
+            ignoreFamilies?: string[];
+        };
+
+        /**
+         * Tweak the types-in-deps lint that flags `@types/*` declared in
+         * `dependencies` on a private package (they belong in
+         * `devDependencies` since the package never ships).
+         */
+        typesInDeps?: {
+            /**
+             * Three-state autofix opt-out. See `workspaceProtocol.autofix`
+             * for the contract — applied here to moving the entry to
+             * `devDependencies`. Existing dev pins are preserved on conflict.
+             * @default true
+             */
+            autofix?: "prompt" | boolean;
+            /** Dep names exempt from the rule (exact match, e.g. `@types/node`). */
             ignore?: string[];
         };
 

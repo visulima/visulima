@@ -1,28 +1,74 @@
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 import { bold, cyan, dim, green, red, yellow } from "@visulima/colorize";
-import { relative } from "@visulima/path";
+import { isAccessibleSync, readJsonSync } from "@visulima/fs";
+import { join, relative } from "@visulima/path";
 
-import type { BannedDepIssue } from "../../util/banned-deps-lint";
-import { lintBannedDeps } from "../../util/banned-deps-lint";
+import type { BannedDepIssue } from "../../lint/banned-deps";
+import { lintBannedDeps } from "../../lint/banned-deps";
+import type { CatalogProposal } from "../../lint/catalog-proposals";
+import { applyCatalogProposals, proposeCatalogAdditions, renderCatalogProposalsDiff } from "../../lint/catalog-proposals";
+import type { CustomTypeDriftIssue } from "../../lint/custom-types";
+import { applyCustomTypeFixes, iterateCustomTypeDeps, lintCustomTypes, validateExtraTypes } from "../../lint/custom-types";
+import type { DeadWorkspacePatternIssue } from "../../lint/dead-workspace-pattern";
+import { applyDeadWorkspacePatternFixes, lintDeadWorkspacePatterns } from "../../lint/dead-workspace-pattern";
+import type { EmptyDepsIssue } from "../../lint/empty-deps";
+import { applyEmptyDepsFixes, lintEmptyDeps } from "../../lint/empty-deps";
+import type { MissingPackageJsonIssue } from "../../lint/missing-package-json";
+import { lintMissingPackageJson } from "../../lint/missing-package-json";
+import type { RedefineRootIssue } from "../../lint/redefine-root";
+import { lintRedefineRoot } from "../../lint/redefine-root";
+import type { RootDepsIssue } from "../../lint/root-deps";
+import { applyRootDepsFixes, lintRootDeps } from "../../lint/root-deps";
+import type { RootPackageManagerIssue } from "../../lint/root-package-manager";
+import { applyRootPackageManagerFixes, lintRootPackageManager } from "../../lint/root-package-manager";
+import type { RootPrivateIssue } from "../../lint/root-private";
+import { applyRootPrivateFixes, lintRootPrivate } from "../../lint/root-private";
+import type { SimilarDepsIssue } from "../../lint/similar-deps";
+import { lintSimilarDeps } from "../../lint/similar-deps";
+import type { TypesInDepsIssue } from "../../lint/types-in-deps";
+import { applyTypesInDepsFixes, lintTypesInDeps } from "../../lint/types-in-deps";
+import type { WorkspaceProtocolIssue } from "../../lint/workspace-protocol";
+import { applyWorkspaceProtocolFixes, lintWorkspaceProtocol } from "../../lint/workspace-protocol";
+import type { WorkspaceVersionDriftIssue, WorkspaceVersionsResolveStrategy } from "../../lint/workspace-versions";
+import { applyWorkspaceVersionsFixes, lintWorkspaceVersions } from "../../lint/workspace-versions";
 import { readCatalogs } from "../../util/catalog";
-import type { CatalogProposal } from "../../util/catalog-proposals";
-import { applyCatalogProposals, proposeCatalogAdditions, renderCatalogProposalsDiff } from "../../util/catalog-proposals";
-import type { CustomTypeDriftIssue } from "../../util/custom-types";
-import { applyCustomTypeFixes, iterateCustomTypeDeps, lintCustomTypes, validateExtraTypes } from "../../util/custom-types";
-import type { RedefineRootIssue } from "../../util/redefine-root-lint";
-import { lintRedefineRoot } from "../../util/redefine-root-lint";
 import { iterateWorkspaceDeps } from "../../util/workspace-deps";
-import type { WorkspaceProtocolIssue } from "../../util/workspace-protocol-lint";
-import { applyWorkspaceProtocolFixes, lintWorkspaceProtocol } from "../../util/workspace-protocol-lint";
-import type { WorkspaceVersionDriftIssue, WorkspaceVersionsResolveStrategy } from "../../util/workspace-versions-lint";
-import { applyWorkspaceVersionsFixes, lintWorkspaceVersions } from "../../util/workspace-versions-lint";
 import type { LintOptions } from "./index";
+
+/** True when the current root looks like a workspace (npm/yarn/bun `workspaces` or pnpm yaml). */
+const detectWorkspaceConfig = (workspaceRoot: string): boolean => {
+    if (isAccessibleSync(join(workspaceRoot, "pnpm-workspace.yaml"))) {
+        return true;
+    }
+
+    const pkgPath = join(workspaceRoot, "package.json");
+
+    if (!isAccessibleSync(pkgPath)) {
+        return false;
+    }
+
+    try {
+        const pkg = readJsonSync(pkgPath) as { workspaces?: unknown };
+
+        return pkg.workspaces !== undefined;
+    } catch {
+        return false;
+    }
+};
 
 interface LintReport {
     bannedDeps?: BannedDepIssue[];
     catalogProposals?: CatalogProposal[];
     customTypes?: CustomTypeDriftIssue[];
+    deadWorkspacePatterns?: DeadWorkspacePatternIssue[];
+    emptyDeps?: EmptyDepsIssue[];
+    missingPackageJson?: MissingPackageJsonIssue[];
     redefineRoot?: RedefineRootIssue[];
+    rootDeps?: RootDepsIssue[];
+    rootPackageManager?: RootPackageManagerIssue[];
+    rootPrivate?: RootPrivateIssue[];
+    similarDeps?: SimilarDepsIssue[];
+    typesInDeps?: TypesInDepsIssue[];
     workspaceProtocol?: WorkspaceProtocolIssue[];
     workspaceVersions?: WorkspaceVersionDriftIssue[];
 }
@@ -30,7 +76,15 @@ interface LintReport {
 interface LintSelection {
     bannedDeps: boolean;
     customTypes: boolean;
+    deadWorkspacePatterns: boolean;
+    emptyDeps: boolean;
+    missingPackageJson: boolean;
     redefineRoot: boolean;
+    rootDeps: boolean;
+    rootPackageManager: boolean;
+    rootPrivate: boolean;
+    similarDeps: boolean;
+    typesInDeps: boolean;
     workspaceProtocol: boolean;
     workspaceVersions: boolean;
 }
@@ -44,6 +98,12 @@ interface LintSelection {
 interface FixState {
     catalogProposals: boolean;
     customTypes: boolean;
+    deadWorkspacePatterns: boolean;
+    emptyDeps: boolean;
+    rootDeps: boolean;
+    rootPackageManager: boolean;
+    rootPrivate: boolean;
+    typesInDeps: boolean;
     workspaceProtocol: boolean;
     workspaceVersions: boolean;
 }
@@ -247,6 +307,201 @@ const printCustomTypesHuman = (issues: CustomTypeDriftIssue[], workspaceRoot: st
     }
 };
 
+const printEmptyDepsHuman = (issues: EmptyDepsIssue[], workspaceRoot: string, didFix: boolean, logger: Toolbox["logger"]): void => {
+    if (issues.length === 0) {
+        logger.info(green("✓ empty-deps: no empty dependency blocks"));
+
+        return;
+    }
+
+    const verb = didFix ? "Removed" : "Found";
+    const colour = didFix ? cyan : yellow;
+
+    logger.info(colour(bold(`${verb} ${String(issues.length)} empty dependency block${issues.length === 1 ? "" : "s"}`)));
+
+    for (const [packageKey, packageIssues] of groupBy(issues, (i) => i.packageName ?? i.packageJsonPath)) {
+        const path = relative(workspaceRoot, (packageIssues[0] as EmptyDepsIssue).packageJsonPath);
+
+        logger.info(`  ${bold(packageKey)} ${dim(`(${path})`)}`);
+
+        for (const issue of packageIssues) {
+            logger.info(`    ${dim(issue.depType)}: ${red("{}")}`);
+        }
+    }
+
+    if (!didFix) {
+        logger.info(dim("  Run with --fix to drop empty blocks."));
+    }
+};
+
+const printRootPrivateHuman = (issues: RootPrivateIssue[], workspaceRoot: string, didFix: boolean, logger: Toolbox["logger"]): void => {
+    if (issues.length === 0) {
+        logger.info(green("✓ root-private: root package.json is \"private\": true"));
+
+        return;
+    }
+
+    const verb = didFix ? "Set" : "Missing";
+    const colour = didFix ? cyan : red;
+
+    for (const issue of issues) {
+        const path = relative(workspaceRoot, issue.packageJsonPath);
+
+        logger.info(colour(bold(`${verb} "private": true on root ${dim(`(${path})`)}`)));
+
+        if (!didFix) {
+            const seen = issue.rawValue === undefined ? "absent" : JSON.stringify(issue.rawValue);
+
+            logger.info(`    ${dim("current:")} ${red(seen)}`);
+        }
+    }
+
+    if (!didFix) {
+        logger.info(dim("  Run with --fix to set \"private\": true."));
+    }
+};
+
+const printRootPackageManagerHuman = (issues: RootPackageManagerIssue[], workspaceRoot: string, didFix: boolean, logger: Toolbox["logger"]): void => {
+    if (issues.length === 0) {
+        logger.info(green("✓ root-package-manager: packageManager field present"));
+
+        return;
+    }
+
+    const verb = didFix ? "Set" : "Missing";
+    const colour = didFix ? cyan : red;
+
+    for (const issue of issues) {
+        const path = relative(workspaceRoot, issue.packageJsonPath);
+
+        logger.info(colour(bold(`${verb} packageManager on root ${dim(`(${path})`)}`)));
+
+        if (!didFix && !issue.suggested) {
+            logger.info(dim("    no canonical specifier configured (set policy.rootPackageManager.suggested to enable --fix)"));
+        }
+    }
+
+    if (!didFix) {
+        logger.info(dim("  e.g. \"packageManager\": \"pnpm@10.32.1\""));
+    }
+};
+
+const printRootDepsHuman = (issues: RootDepsIssue[], workspaceRoot: string, didFix: boolean, logger: Toolbox["logger"]): void => {
+    if (issues.length === 0) {
+        logger.info(green("✓ root-deps: no runtime dependencies on private root"));
+
+        return;
+    }
+
+    const verb = didFix ? "Moved" : "Found";
+    const colour = didFix ? cyan : yellow;
+
+    for (const issue of issues) {
+        const path = relative(workspaceRoot, issue.packageJsonPath);
+
+        logger.info(colour(bold(`${verb} ${String(issue.depNames.length)} runtime dep${issue.depNames.length === 1 ? "" : "s"} on private root ${dim(`(${path})`)}`)));
+
+        for (const name of issue.depNames) {
+            logger.info(`    ${red(name)}`);
+        }
+    }
+
+    if (!didFix) {
+        logger.info(dim("  Run with --fix to move them to devDependencies."));
+    }
+};
+
+const printMissingPackageJsonHuman = (issues: MissingPackageJsonIssue[], logger: Toolbox["logger"]): void => {
+    if (issues.length === 0) {
+        logger.info(green("✓ missing-package-json: every workspace dir has a package.json"));
+
+        return;
+    }
+
+    logger.info(yellow(bold(`Found ${String(issues.length)} workspace dir${issues.length === 1 ? "" : "s"} without a package.json`)));
+
+    for (const issue of issues) {
+        logger.info(`    ${red(issue.packageDir)}`);
+    }
+
+    logger.info(dim("  Either delete the directory or scaffold a package.json (vis create)."));
+};
+
+const printDeadWorkspacePatternsHuman = (issues: DeadWorkspacePatternIssue[], didFix: boolean, logger: Toolbox["logger"]): void => {
+    if (issues.length === 0) {
+        logger.info(green("✓ dead-workspace-pattern: every workspace pattern matches at least one package"));
+
+        return;
+    }
+
+    const verb = didFix ? "Removed" : "Found";
+    const colour = didFix ? cyan : yellow;
+
+    logger.info(colour(bold(`${verb} ${String(issues.length)} unmatched workspace pattern${issues.length === 1 ? "" : "s"}`)));
+
+    for (const [source, group] of groupBy(issues, (i) => i.source)) {
+        logger.info(`  ${bold(source)}`);
+
+        for (const issue of group) {
+            logger.info(`    ${red(issue.pattern)}`);
+        }
+    }
+
+    if (!didFix) {
+        logger.info(dim("  Run with --fix to drop dead patterns."));
+    }
+};
+
+const printTypesInDepsHuman = (issues: TypesInDepsIssue[], workspaceRoot: string, didFix: boolean, logger: Toolbox["logger"]): void => {
+    if (issues.length === 0) {
+        logger.info(green("✓ types-in-deps: no @types/* in dependencies of private packages"));
+
+        return;
+    }
+
+    const verb = didFix ? "Moved" : "Found";
+    const colour = didFix ? cyan : yellow;
+
+    logger.info(colour(bold(`${verb} ${String(issues.length)} @types/* dep${issues.length === 1 ? "" : "s"} in dependencies`)));
+
+    for (const [packageKey, packageIssues] of groupBy(issues, (i) => i.packageName ?? i.packageJsonPath)) {
+        const path = relative(workspaceRoot, (packageIssues[0] as TypesInDepsIssue).packageJsonPath);
+
+        logger.info(`  ${bold(packageKey)} ${dim(`(${path})`)}`);
+
+        for (const issue of packageIssues) {
+            logger.info(`    ${red(issue.depName)} ${dim(issue.childSpecifier)}`);
+        }
+    }
+
+    if (!didFix) {
+        logger.info(dim("  Run with --fix to move them to devDependencies."));
+    }
+};
+
+const printSimilarDepsHuman = (issues: SimilarDepsIssue[], workspaceRoot: string, logger: Toolbox["logger"]): void => {
+    if (issues.length === 0) {
+        logger.info(green("✓ similar-deps: every related dep family is in sync"));
+
+        return;
+    }
+
+    logger.info(yellow(bold(`Found ${String(issues.length)} family${issues.length === 1 ? "" : " families"} with version drift`)));
+
+    for (const issue of issues) {
+        logger.info(`  ${bold(issue.familyLabel)} ${dim(`(${issue.specifiers.join(", ")})`)}`);
+
+        for (const member of issue.members) {
+            const path = relative(workspaceRoot, member.packageJsonPath);
+            const packageKey = member.packageName ?? path;
+
+            logger.info(`    ${packageKey} ${dim(`(${path})`)} ${dim(member.depType)}: ${red(member.depName)}@${yellow(member.specifier)}`);
+        }
+    }
+
+    logger.info(dim("  Pick a single specifier per family and align by hand — auto-fix is unsafe across name boundaries."));
+};
+
 const printHuman = (report: LintReport, workspaceRoot: string, fixState: FixState, selection: LintSelection, logger: Toolbox["logger"]): void => {
     let firstSection = true;
 
@@ -294,6 +549,54 @@ const printHuman = (report: LintReport, workspaceRoot: string, fixState: FixStat
             printBannedDepsHuman(report.bannedDeps ?? [], workspaceRoot, logger);
         });
     }
+
+    if (selection.emptyDeps) {
+        section(() => {
+            printEmptyDepsHuman(report.emptyDeps ?? [], workspaceRoot, fixState.emptyDeps, logger);
+        });
+    }
+
+    if (selection.rootPrivate) {
+        section(() => {
+            printRootPrivateHuman(report.rootPrivate ?? [], workspaceRoot, fixState.rootPrivate, logger);
+        });
+    }
+
+    if (selection.rootPackageManager) {
+        section(() => {
+            printRootPackageManagerHuman(report.rootPackageManager ?? [], workspaceRoot, fixState.rootPackageManager, logger);
+        });
+    }
+
+    if (selection.rootDeps) {
+        section(() => {
+            printRootDepsHuman(report.rootDeps ?? [], workspaceRoot, fixState.rootDeps, logger);
+        });
+    }
+
+    if (selection.missingPackageJson) {
+        section(() => {
+            printMissingPackageJsonHuman(report.missingPackageJson ?? [], logger);
+        });
+    }
+
+    if (selection.deadWorkspacePatterns) {
+        section(() => {
+            printDeadWorkspacePatternsHuman(report.deadWorkspacePatterns ?? [], fixState.deadWorkspacePatterns, logger);
+        });
+    }
+
+    if (selection.typesInDeps) {
+        section(() => {
+            printTypesInDepsHuman(report.typesInDeps ?? [], workspaceRoot, fixState.typesInDeps, logger);
+        });
+    }
+
+    if (selection.similarDeps) {
+        section(() => {
+            printSimilarDepsHuman(report.similarDeps ?? [], workspaceRoot, logger);
+        });
+    }
 };
 
 const printMinimal = (report: LintReport, workspaceRoot: string): void => {
@@ -329,6 +632,54 @@ const printMinimal = (report: LintReport, workspaceRoot: string): void => {
 
     for (const proposal of report.catalogProposals ?? []) {
         process.stdout.write(`catalog-proposal\t${proposal.catalogName}\t${proposal.depName}\t${proposal.specifier}\t${String(proposal.instanceCount)}\n`);
+    }
+
+    for (const issue of report.emptyDeps ?? []) {
+        const path = relative(workspaceRoot, issue.packageJsonPath);
+
+        process.stdout.write(`empty-deps\t${path}\t${issue.depType}\n`);
+    }
+
+    for (const issue of report.rootPrivate ?? []) {
+        const path = relative(workspaceRoot, issue.packageJsonPath);
+
+        process.stdout.write(`root-private\t${path}\n`);
+    }
+
+    for (const issue of report.rootPackageManager ?? []) {
+        const path = relative(workspaceRoot, issue.packageJsonPath);
+
+        process.stdout.write(`root-package-manager\t${path}\t${issue.suggested ?? ""}\n`);
+    }
+
+    for (const issue of report.rootDeps ?? []) {
+        const path = relative(workspaceRoot, issue.packageJsonPath);
+
+        for (const name of issue.depNames) {
+            process.stdout.write(`root-deps\t${path}\t${name}\n`);
+        }
+    }
+
+    for (const issue of report.missingPackageJson ?? []) {
+        process.stdout.write(`missing-package-json\t${issue.packageDir}\n`);
+    }
+
+    for (const issue of report.deadWorkspacePatterns ?? []) {
+        process.stdout.write(`dead-workspace-pattern\t${issue.source}\t${issue.pattern}\n`);
+    }
+
+    for (const issue of report.typesInDeps ?? []) {
+        const path = relative(workspaceRoot, issue.packageJsonPath);
+
+        process.stdout.write(`types-in-deps\t${path}\t${issue.depName}\t${issue.childSpecifier}\n`);
+    }
+
+    for (const issue of report.similarDeps ?? []) {
+        for (const member of issue.members) {
+            const path = relative(workspaceRoot, member.packageJsonPath);
+
+            process.stdout.write(`similar-deps\t${issue.family}\t${path}\t${member.depType}\t${member.depName}\t${member.specifier}\n`);
+        }
     }
 };
 
@@ -378,36 +729,149 @@ const printJson = (report: LintReport, workspaceRoot: string, fixState: FixState
         out.catalogProposals = { proposals, total: proposals.length };
     }
 
+    if (selection.emptyDeps) {
+        const issues = (report.emptyDeps ?? []).map((i) => relativize(i));
+
+        out.emptyDeps = { issues, total: issues.length };
+    }
+
+    if (selection.rootPrivate) {
+        const issues = (report.rootPrivate ?? []).map((i) => relativize(i));
+
+        out.rootPrivate = { issues, total: issues.length };
+    }
+
+    if (selection.rootPackageManager) {
+        const issues = (report.rootPackageManager ?? []).map((i) => relativize(i));
+
+        out.rootPackageManager = { issues, total: issues.length };
+    }
+
+    if (selection.rootDeps) {
+        const issues = (report.rootDeps ?? []).map((i) => relativize(i));
+
+        out.rootDeps = { issues, total: issues.length };
+    }
+
+    if (selection.missingPackageJson) {
+        const issues = report.missingPackageJson ?? [];
+
+        out.missingPackageJson = { issues, total: issues.length };
+    }
+
+    if (selection.deadWorkspacePatterns) {
+        const issues = report.deadWorkspacePatterns ?? [];
+
+        out.deadWorkspacePatterns = { issues, total: issues.length };
+    }
+
+    if (selection.typesInDeps) {
+        const issues = (report.typesInDeps ?? []).map((i) => relativize(i));
+
+        out.typesInDeps = { issues, total: issues.length };
+    }
+
+    if (selection.similarDeps) {
+        const issues = (report.similarDeps ?? []).map((issue) => {
+            return {
+                ...issue,
+                members: issue.members.map((member) => { return { ...member, packageJsonPath: relative(workspaceRoot, member.packageJsonPath) }; }),
+            };
+        });
+
+        out.similarDeps = { issues, total: issues.length };
+    }
+
     process.stdout.write(`${JSON.stringify(out, undefined, 2)}\n`);
 };
 
+/**
+ * Cerebro converts `--workspace-protocol` to `options.workspaceProtocol`,
+ * but unit tests sometimes hand the handler raw kebab-case keys to avoid
+ * round-tripping through the CLI parser. Read both forms so neither
+ * caller pays a translation tax.
+ */
+const flag = (options: Record<string, unknown>, camel: string, kebab: string): boolean => {
+    const fromCamel = options[camel];
+
+    if (typeof fromCamel === "boolean") {
+        return fromCamel;
+    }
+
+    return options[kebab] === true;
+};
+
 const resolveSelection = (options: LintOptions): LintSelection => {
+    const raw = options as unknown as Record<string, unknown>;
     // `--ban` / `--pin` implicitly target their respective lints, so users
     // can run a one-off check without also passing `--banned-deps` /
     // `--workspace-versions`.
     const hasBan = (options.ban?.length ?? 0) > 0;
     const hasPin = (options.pin?.length ?? 0) > 0;
 
-    // No selectors set → run the default suite (currently every lint).
+    const workspaceProtocol = flag(raw, "workspaceProtocol", "workspace-protocol");
+    const redefineRoot = flag(raw, "redefineRoot", "redefine-root");
+    const bannedDeps = flag(raw, "bannedDeps", "banned-deps");
+    const workspaceVersions = flag(raw, "workspaceVersions", "workspace-versions");
+    const customTypes = flag(raw, "customTypes", "custom-types");
+    const emptyDeps = flag(raw, "emptyDeps", "empty-deps");
+    const rootPrivate = flag(raw, "rootPrivate", "root-private");
+    const rootPackageManager = flag(raw, "rootPackageManager", "root-package-manager");
+    const rootDeps = flag(raw, "rootDeps", "root-deps");
+    const missingPackageJson = flag(raw, "missingPackageJson", "missing-package-json");
+    const deadWorkspacePatterns = flag(raw, "deadWorkspacePatterns", "dead-workspace-patterns");
+    const typesInDeps = flag(raw, "typesInDeps", "types-in-deps");
+    const similarDeps = flag(raw, "similarDeps", "similar-deps");
+
     const anySelected
-        = (options.workspaceProtocol ?? false)
-            || (options.redefineRoot ?? false)
-            || (options.bannedDeps ?? false)
-            || (options.workspaceVersions ?? false)
-            || (options.customTypes ?? false)
+        = workspaceProtocol
+            || redefineRoot
+            || bannedDeps
+            || workspaceVersions
+            || customTypes
+            || emptyDeps
+            || rootPrivate
+            || rootPackageManager
+            || rootDeps
+            || missingPackageJson
+            || deadWorkspacePatterns
+            || typesInDeps
+            || similarDeps
             || hasBan
             || hasPin;
 
     if (!anySelected) {
-        return { bannedDeps: true, customTypes: true, redefineRoot: true, workspaceProtocol: true, workspaceVersions: true };
+        return {
+            bannedDeps: true,
+            customTypes: true,
+            deadWorkspacePatterns: true,
+            emptyDeps: true,
+            missingPackageJson: true,
+            redefineRoot: true,
+            rootDeps: true,
+            rootPackageManager: true,
+            rootPrivate: true,
+            similarDeps: true,
+            typesInDeps: true,
+            workspaceProtocol: true,
+            workspaceVersions: true,
+        };
     }
 
     return {
-        bannedDeps: (options.bannedDeps ?? false) || hasBan,
-        customTypes: options.customTypes ?? false,
-        redefineRoot: options.redefineRoot ?? false,
-        workspaceProtocol: options.workspaceProtocol ?? false,
-        workspaceVersions: (options.workspaceVersions ?? false) || hasPin,
+        bannedDeps: bannedDeps || hasBan,
+        customTypes,
+        deadWorkspacePatterns,
+        emptyDeps,
+        missingPackageJson,
+        redefineRoot,
+        rootDeps,
+        rootPackageManager,
+        rootPrivate,
+        similarDeps,
+        typesInDeps,
+        workspaceProtocol,
+        workspaceVersions: workspaceVersions || hasPin,
     };
 };
 
@@ -519,7 +983,19 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
 
     const instances = iterateWorkspaceDeps(workspaceRoot);
     const report: LintReport = {};
-    const fixState: FixState = { catalogProposals: false, customTypes: false, workspaceProtocol: false, workspaceVersions: false };
+    const fixState: FixState = {
+        catalogProposals: false,
+        customTypes: false,
+        deadWorkspacePatterns: false,
+        emptyDeps: false,
+        rootDeps: false,
+        rootPackageManager: false,
+        rootPrivate: false,
+        typesInDeps: false,
+        workspaceProtocol: false,
+        workspaceVersions: false,
+    };
+    const hasWorkspaceConfig = detectWorkspaceConfig(workspaceRoot);
     let totalIssues = 0;
 
     if (selection.workspaceProtocol) {
@@ -672,6 +1148,120 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
         const issues = lintBannedDeps(instances, config);
 
         report.bannedDeps = issues;
+        totalIssues += issues.length;
+    }
+
+    if (selection.emptyDeps) {
+        const issues = lintEmptyDeps(workspaceRoot, { ignoreBlocks: policy.emptyDeps?.ignoreBlocks });
+        const autofixAllowed = isAutofixAllowed(fix, policy.emptyDeps?.autofix);
+
+        if (autofixAllowed && issues.length > 0) {
+            applyEmptyDepsFixes(issues, { useEditorconfig });
+            fixState.emptyDeps = true;
+        }
+
+        report.emptyDeps = issues;
+
+        if (!autofixAllowed) {
+            totalIssues += issues.length;
+        }
+    }
+
+    if (selection.rootPrivate) {
+        const issues = lintRootPrivate(workspaceRoot, hasWorkspaceConfig);
+        const autofixAllowed = isAutofixAllowed(fix, policy.rootPrivate?.autofix);
+
+        if (autofixAllowed && issues.length > 0) {
+            applyRootPrivateFixes(issues, { useEditorconfig });
+            fixState.rootPrivate = true;
+        }
+
+        report.rootPrivate = issues;
+
+        if (!autofixAllowed) {
+            totalIssues += issues.length;
+        }
+    }
+
+    if (selection.rootPackageManager) {
+        const issues = lintRootPackageManager(workspaceRoot, hasWorkspaceConfig, { suggested: policy.rootPackageManager?.suggested });
+        const autofixAllowed = isAutofixAllowed(fix, policy.rootPackageManager?.autofix);
+
+        if (autofixAllowed && issues.some((i) => i.suggested !== undefined)) {
+            applyRootPackageManagerFixes(issues, { useEditorconfig });
+            fixState.rootPackageManager = true;
+        }
+
+        report.rootPackageManager = issues;
+
+        // Only the unfixable issues fail CI when fix ran — fixed ones already wrote.
+        if (!autofixAllowed || !fixState.rootPackageManager) {
+            totalIssues += issues.filter((i) => i.suggested === undefined || !fixState.rootPackageManager).length;
+        }
+    }
+
+    if (selection.rootDeps) {
+        const issues = lintRootDeps(workspaceRoot, hasWorkspaceConfig);
+        const autofixAllowed = isAutofixAllowed(fix, policy.rootDeps?.autofix);
+
+        if (autofixAllowed && issues.length > 0) {
+            applyRootDepsFixes(issues, { useEditorconfig });
+            fixState.rootDeps = true;
+        }
+
+        report.rootDeps = issues;
+
+        if (!autofixAllowed) {
+            totalIssues += issues.length;
+        }
+    }
+
+    if (selection.missingPackageJson) {
+        const issues = lintMissingPackageJson(workspaceRoot);
+
+        report.missingPackageJson = issues;
+        totalIssues += issues.length;
+    }
+
+    if (selection.deadWorkspacePatterns) {
+        const issues = lintDeadWorkspacePatterns(workspaceRoot);
+        const autofixAllowed = isAutofixAllowed(fix, policy.deadWorkspacePatterns?.autofix);
+
+        if (autofixAllowed && issues.length > 0) {
+            applyDeadWorkspacePatternFixes(issues, { useEditorconfig });
+            fixState.deadWorkspacePatterns = true;
+        }
+
+        report.deadWorkspacePatterns = issues;
+
+        if (!autofixAllowed) {
+            totalIssues += issues.length;
+        }
+    }
+
+    if (selection.typesInDeps) {
+        const issues = lintTypesInDeps(instances, { ignoreDeps: policy.typesInDeps?.ignore });
+        const autofixAllowed = isAutofixAllowed(fix, policy.typesInDeps?.autofix);
+
+        if (autofixAllowed && issues.length > 0) {
+            applyTypesInDepsFixes(issues, { useEditorconfig });
+            fixState.typesInDeps = true;
+        }
+
+        report.typesInDeps = issues;
+
+        if (!autofixAllowed) {
+            totalIssues += issues.length;
+        }
+    }
+
+    if (selection.similarDeps) {
+        const issues = lintSimilarDeps(instances, {
+            extraFamilies: policy.similarDeps?.extraFamilies,
+            ignoreFamilies: policy.similarDeps?.ignoreFamilies,
+        });
+
+        report.similarDeps = issues;
         totalIssues += issues.length;
     }
 

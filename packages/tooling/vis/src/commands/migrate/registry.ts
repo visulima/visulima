@@ -12,6 +12,7 @@ import { migrateMoon } from "./moon";
 import { detectNanoStagedConfig, migrateNanoStaged } from "./nano-staged";
 import { migrateNx } from "./nx";
 import { detectSecretlintConfig, detectSecretlintIgnore, migrateSecretlint } from "./secretlint";
+import { detectSherifConfig, detectSherifInstallation, migrateSherif } from "./sherif";
 import { detectSyncpackConfig, migrateSyncpack } from "./syncpack";
 import { migrateTurborepo } from "./turborepo";
 import type { MigrateLogger, MigrationReport, PackageManagerType } from "./types";
@@ -278,6 +279,23 @@ const MIGRATIONS: MigrationEntry[] = [
             return lines;
         },
         title: "Syncpack",
+    },
+    {
+        apply: ({ root }, report, logger) => {
+            migrateSherif(root, { dryRun: false }, logger, report);
+        },
+        description: "Strip sherif config/dep/scripts and surface ignore-rules as a positive `vis lint --<rule>` command.",
+        detect: ({ root }) => Boolean(detectSherifConfig(root)) || detectSherifInstallation(root),
+        id: "sherif",
+        probe: ({ root }) => {
+            const { lines, logger } = createCapturingLogger();
+            const report = createMigrationReport();
+
+            migrateSherif(root, { dryRun: true }, logger, report);
+
+            return lines;
+        },
+        title: "Sherif",
     },
 ];
 
