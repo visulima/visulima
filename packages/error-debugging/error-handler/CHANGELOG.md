@@ -1,3 +1,15 @@
+## @visulima/error-handler [2.0.0-alpha.15](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.0-alpha.14...@visulima/error-handler@2.0.0-alpha.15) (2026-05-06)
+
+### Miscellaneous Chores
+
+* **error-handler:** apply prettier and eslint quote-style auto-fix ([27f45d8](https://github.com/visulima/visulima/commit/27f45d8686fefcf9a6ca8519d4199150617dbd9a))
+* **error-handler:** housekeeping cleanup ([ea3f457](https://github.com/visulima/visulima/commit/ea3f457736922835b42e3b46aa83c575e76c4864))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.16
+
 ## @visulima/error-handler [2.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.0-alpha.13...@visulima/error-handler@2.0.0-alpha.14) (2026-05-04)
 
 
