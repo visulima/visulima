@@ -192,7 +192,7 @@ const defaultTaskRunner = async (_tasks: Task[], options: TaskRunnerOptions, con
     const maxParallel = resolveParallel(options.parallel);
 
     // Create the scheduler
-    const scheduler = new TaskScheduler(scheduledGraph, projectGraph, maxParallel);
+    const scheduler = new TaskScheduler(scheduledGraph, projectGraph, maxParallel, options.concurrencyGroups);
 
     // Build command resolver for auto-fingerprint mode
     const resolveCommand = (task: Task): string | undefined => {

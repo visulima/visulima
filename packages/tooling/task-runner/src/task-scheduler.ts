@@ -1,4 +1,4 @@
-import type { ProjectGraph, Task, TaskGraph, TaskPriority } from "./types";
+import type { ConcurrencyGroups, ProjectGraph, Task, TaskGraph, TaskPriority } from "./types";
 
 /**
  * Numeric weight for a `TaskPriority` value. `"normal"` is the anchor;
@@ -96,6 +96,72 @@ const calculateProjectDepths = (projectGraph: ProjectGraph): Map<string, number>
 };
 
 /**
+ * Builds a Map of target-name → cap by walking the task graph and
+ * taking the smallest declared `maxConcurrent` for each target name.
+ * Values `<= 0` are ignored (treated as "no cap"). Multiple projects
+ * declaring different caps for the same target name reduce to the min,
+ * so a single project pinning `test:e2e` to 1 takes effect even if
+ * other projects don't declare a cap.
+ */
+const buildTargetCaps = (taskGraph: TaskGraph): Map<string, number> => {
+    const caps = new Map<string, number>();
+
+    for (const task of Object.values(taskGraph.tasks)) {
+        const cap = task.maxConcurrent;
+
+        if (typeof cap !== "number" || cap <= 0 || !Number.isFinite(cap)) {
+            continue;
+        }
+
+        const targetName = task.target.target;
+        const previous = caps.get(targetName);
+
+        if (previous === undefined || cap < previous) {
+            caps.set(targetName, cap);
+        }
+    }
+
+    return caps;
+};
+
+const buildGroupCaps = (raw: ConcurrencyGroups | undefined): Map<string, number> => {
+    const caps = new Map<string, number>();
+
+    if (raw === undefined) {
+        return caps;
+    }
+
+    for (const [name, cap] of Object.entries(raw)) {
+        if (typeof cap === "number" && cap > 0 && Number.isFinite(cap)) {
+            caps.set(name, cap);
+        }
+    }
+
+    return caps;
+};
+
+/**
+ * Computes the concurrency keys a task holds, in priority-stable
+ * order. Each key is `target:<name>` for the per-target cap, or
+ * `group:<name>` for a workspace-level cap. Returns an empty array
+ * when the task has neither cap, so the hot path stays allocation-free
+ * for the common uncapped case.
+ */
+const computeTaskKeys = (task: Task, targetCaps: Map<string, number>, groupCaps: Map<string, number>): string[] => {
+    const keys: string[] = [];
+
+    if (targetCaps.has(task.target.target)) {
+        keys.push(`target:${task.target.target}`);
+    }
+
+    if (task.concurrencyGroup !== undefined && groupCaps.has(task.concurrencyGroup)) {
+        keys.push(`group:${task.concurrencyGroup}`);
+    }
+
+    return keys;
+};
+
+/**
  * Manages the scheduling order of tasks based on dependencies,
  * parallelism constraints, and estimated execution times.
  */
@@ -114,6 +180,18 @@ export class TaskScheduler {
     readonly #dependentCounts: Map<string, number>;
 
     readonly #projectDepths: Map<string, number>;
+
+    /** target-name → cap (smallest declared). Empty when no caps. */
+    readonly #targetCaps: Map<string, number>;
+
+    /** group-name → cap (from workspace options). Empty when no caps. */
+    readonly #groupCaps: Map<string, number>;
+
+    /** Per-task list of capped keys; cached so the slot-fill loop is O(running) per candidate. */
+    readonly #taskKeys: Map<string, string[]>;
+
+    /** Live count of running tasks per capped key. */
+    readonly #runningPerKey = new Map<string, number>();
 
     /**
      * Partitions a list of tasks for distributed CI execution.
@@ -146,12 +224,31 @@ export class TaskScheduler {
         return sorted.slice(start, end);
     }
 
-    public constructor(taskGraph: TaskGraph, projectGraph: ProjectGraph, maxParallel: number = 3) {
+    public constructor(taskGraph: TaskGraph, projectGraph: ProjectGraph, maxParallel: number = 3, concurrencyGroups?: ConcurrencyGroups) {
         this.#taskGraph = taskGraph;
         this.#maxParallel = maxParallel;
         this.#totalTasks = Object.keys(taskGraph.tasks).length;
         this.#dependentCounts = this.#calculateDependentCounts();
         this.#projectDepths = calculateProjectDepths(projectGraph);
+        this.#targetCaps = buildTargetCaps(taskGraph);
+        this.#groupCaps = buildGroupCaps(concurrencyGroups);
+        this.#taskKeys = new Map();
+
+        // Pre-compute every task's keys once so the slot-fill loop
+        // doesn't re-derive them per tick. The common case (no caps
+        // anywhere) yields an empty array via the early-out in
+        // computeTaskKeys, so the loop stays effectively no-op.
+        const hasAnyCap = this.#targetCaps.size > 0 || this.#groupCaps.size > 0;
+
+        if (hasAnyCap) {
+            for (const [taskId, task] of Object.entries(taskGraph.tasks)) {
+                const keys = computeTaskKeys(task, this.#targetCaps, this.#groupCaps);
+
+                if (keys.length > 0) {
+                    this.#taskKeys.set(taskId, keys);
+                }
+            }
+        }
     }
 
     /**
@@ -167,16 +264,112 @@ export class TaskScheduler {
         const readyTasks = this.#getReadyTasks();
         const sortedTasks = this.#sortByPriority(readyTasks);
 
-        return sortedTasks.slice(0, availableSlots);
+        // Fast path: no caps configured, original slice behavior.
+        if (this.#taskKeys.size === 0) {
+            return sortedTasks.slice(0, availableSlots);
+        }
+
+        // Cap-aware fill. Walk in priority order and skip any task
+        // whose start would push a per-target or per-group key over
+        // its declared cap. Skipped tasks aren't dropped — they stay
+        // in the ready queue for the next tick (a running task with
+        // the same key will eventually complete and free the slot).
+        // We also accumulate hypothetical key counts within this pass
+        // so the cap holds even when the same batch contains multiple
+        // candidates sharing a key.
+        const batch: Task[] = [];
+        const projectedPerKey = new Map<string, number>(this.#runningPerKey);
+
+        for (const task of sortedTasks) {
+            if (batch.length >= availableSlots) {
+                break;
+            }
+
+            const keys = this.#taskKeys.get(task.id);
+
+            if (keys === undefined) {
+                batch.push(task);
+                continue;
+            }
+
+            const wouldExceed = keys.some((key) => {
+                const cap = this.#capForKey(key);
+                const projected = (projectedPerKey.get(key) ?? 0) + 1;
+
+                return cap !== undefined && projected > cap;
+            });
+
+            if (wouldExceed) {
+                continue;
+            }
+
+            for (const key of keys) {
+                projectedPerKey.set(key, (projectedPerKey.get(key) ?? 0) + 1);
+            }
+
+            batch.push(task);
+        }
+
+        return batch;
     }
 
     public startTask(taskId: string): void {
+        // Idempotent: a double-start would over-count the per-key
+        // running totals and the cap would never recover. Bail before
+        // mutating any state.
+        if (this.#runningTasks.has(taskId)) {
+            return;
+        }
+
         this.#runningTasks.add(taskId);
+
+        const keys = this.#taskKeys.get(taskId);
+
+        if (keys !== undefined) {
+            for (const key of keys) {
+                this.#runningPerKey.set(key, (this.#runningPerKey.get(key) ?? 0) + 1);
+            }
+        }
     }
 
     public completeTask(taskId: string): void {
-        this.#runningTasks.delete(taskId);
+        // Only decrement per-key counts when this id was actually
+        // marked running. Without this guard a double-complete (or a
+        // complete on an id that never started) would underflow and
+        // delete the key, silently freeing a slot the cap was holding.
+        const wasRunning = this.#runningTasks.delete(taskId);
+
         this.#completedTasks.add(taskId);
+
+        if (!wasRunning) {
+            return;
+        }
+
+        const keys = this.#taskKeys.get(taskId);
+
+        if (keys !== undefined) {
+            for (const key of keys) {
+                const next = (this.#runningPerKey.get(key) ?? 0) - 1;
+
+                if (next <= 0) {
+                    this.#runningPerKey.delete(key);
+                } else {
+                    this.#runningPerKey.set(key, next);
+                }
+            }
+        }
+    }
+
+    #capForKey(key: string): number | undefined {
+        if (key.startsWith("target:")) {
+            return this.#targetCaps.get(key.slice("target:".length));
+        }
+
+        if (key.startsWith("group:")) {
+            return this.#groupCaps.get(key.slice("group:".length));
+        }
+
+        return undefined;
     }
 
     public isComplete(): boolean {

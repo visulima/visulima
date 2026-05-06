@@ -188,6 +188,400 @@ describe(TaskScheduler, () => {
     });
 });
 
+const buildSiblingGraph = (
+    targetName: string,
+    projects: string[],
+    overrides: (project: string) => Partial<Task> = () => ({}),
+): { projectGraph: ProjectGraph; taskGraph: TaskGraph } => {
+    const tasks: Record<string, Task> = {};
+    const dependencies: Record<string, string[]> = {};
+
+    for (const project of projects) {
+        const id = `${project}:${targetName}`;
+
+        tasks[id] = {
+            id,
+            outputs: [],
+            overrides: {},
+            target: { project, target: targetName },
+            ...overrides(project),
+        };
+        dependencies[id] = [];
+    }
+
+    const projectGraph: ProjectGraph = {
+        dependencies: Object.fromEntries(projects.map((p) => [p, []])),
+        nodes: Object.fromEntries(projects.map((p) => [p, { data: { root: `packages/${p}` }, name: p, type: "library" }])),
+    };
+
+    return {
+        projectGraph,
+        taskGraph: { dependencies, roots: Object.keys(tasks), tasks },
+    };
+};
+
+describe("TaskScheduler concurrency caps", () => {
+    it("should serialize tasks of the same target when maxConcurrent=1", () => {
+        expect.assertions(4);
+
+        const { projectGraph, taskGraph } = buildSiblingGraph("e2e", ["a", "b", "c"], () => ({ maxConcurrent: 1 }));
+        const scheduler = new TaskScheduler(taskGraph, projectGraph, 8);
+
+        // Even with 8 parallel slots, only one e2e task may start at a time.
+        const batch1 = scheduler.getNextBatch();
+
+        expect(batch1).toHaveLength(1);
+
+        scheduler.startTask((batch1[0] as Task).id);
+
+        const batch2 = scheduler.getNextBatch();
+
+        expect(batch2).toHaveLength(0);
+
+        scheduler.completeTask((batch1[0] as Task).id);
+
+        const batch3 = scheduler.getNextBatch();
+
+        expect(batch3).toHaveLength(1);
+        expect(batch3[0]?.id).not.toBe(batch1[0]?.id);
+    });
+
+    it("should allow up to maxConcurrent tasks of the same target in one batch", () => {
+        expect.assertions(2);
+
+        const { projectGraph, taskGraph } = buildSiblingGraph("test", ["a", "b", "c", "d"], () => ({ maxConcurrent: 2 }));
+        const scheduler = new TaskScheduler(taskGraph, projectGraph, 8);
+
+        const batch = scheduler.getNextBatch();
+
+        expect(batch).toHaveLength(2);
+
+        for (const t of batch) {
+            scheduler.startTask(t.id);
+        }
+
+        const batch2 = scheduler.getNextBatch();
+
+        expect(batch2).toHaveLength(0);
+    });
+
+    it("should pick the smallest cap when projects declare different maxConcurrent for the same target", () => {
+        expect.assertions(2);
+
+        // Four sibling tasks; only `b` declares the limiting cap. If
+        // the min logic broke and the runner used `a`'s cap of 4 (or
+        // ignored `b` because it was the second project), the batch
+        // would have 4 entries. The single entry proves `b`'s cap of 1
+        // is what binds the whole target name.
+        const caps: Record<string, number | undefined> = { a: 4, b: 1, c: 2, d: undefined };
+        const { projectGraph, taskGraph } = buildSiblingGraph("test", ["a", "b", "c", "d"], (project) => {
+            const cap = caps[project];
+
+            return cap === undefined ? {} : { maxConcurrent: cap };
+        });
+        const scheduler = new TaskScheduler(taskGraph, projectGraph, 8);
+
+        const batch = scheduler.getNextBatch();
+
+        expect(batch).toHaveLength(1);
+
+        // After completing the first one, exactly one new task starts.
+        scheduler.startTask((batch[0] as Task).id);
+        scheduler.completeTask((batch[0] as Task).id);
+
+        const batch2 = scheduler.getNextBatch();
+
+        expect(batch2).toHaveLength(1);
+    });
+
+    it("should ignore non-finite maxConcurrent values (NaN, Infinity)", () => {
+        expect.assertions(1);
+
+        const caps: Record<string, number> = { a: Number.NaN, b: Number.POSITIVE_INFINITY, c: -1 };
+        const { projectGraph, taskGraph } = buildSiblingGraph("test", ["a", "b", "c"], (project) => ({
+            maxConcurrent: caps[project] as number,
+        }));
+        const scheduler = new TaskScheduler(taskGraph, projectGraph, 8);
+
+        const batch = scheduler.getNextBatch();
+
+        // No valid cap survived — all three tasks fill the batch.
+        expect(batch).toHaveLength(3);
+    });
+
+    it("should also ignore non-finite group cap values", () => {
+        expect.assertions(1);
+
+        const tasks: Record<string, Task> = {
+            "a:test": {
+                concurrencyGroup: "db",
+                id: "a:test",
+                outputs: [],
+                overrides: {},
+                target: { project: "a", target: "test" },
+            },
+            "b:test": {
+                concurrencyGroup: "db",
+                id: "b:test",
+                outputs: [],
+                overrides: {},
+                target: { project: "b", target: "test" },
+            },
+        };
+        const taskGraph: TaskGraph = {
+            dependencies: { "a:test": [], "b:test": [] },
+            roots: Object.keys(tasks),
+            tasks,
+        };
+        const projectGraph: ProjectGraph = {
+            dependencies: { a: [], b: [] },
+            nodes: {
+                a: { data: { root: "a" }, name: "a", type: "library" },
+                b: { data: { root: "b" }, name: "b", type: "library" },
+            },
+        };
+        const scheduler = new TaskScheduler(taskGraph, projectGraph, 8, { db: Number.NaN });
+
+        // NaN cap is dropped → effectively no group cap; both run.
+        expect(scheduler.getNextBatch()).toHaveLength(2);
+    });
+
+    it("should let the smaller cap bind when a task carries both a target cap and a group cap", () => {
+        expect.assertions(1);
+
+        // Three sibling tasks: target cap is 2, but they all share a
+        // db-bound group capped at 1. The group cap is smaller, so only
+        // one starts.
+        const tasks: Record<string, Task> = {
+            "a:test": {
+                concurrencyGroup: "db",
+                id: "a:test",
+                maxConcurrent: 2,
+                outputs: [],
+                overrides: {},
+                target: { project: "a", target: "test" },
+            },
+            "b:test": {
+                concurrencyGroup: "db",
+                id: "b:test",
+                maxConcurrent: 2,
+                outputs: [],
+                overrides: {},
+                target: { project: "b", target: "test" },
+            },
+            "c:test": {
+                concurrencyGroup: "db",
+                id: "c:test",
+                maxConcurrent: 2,
+                outputs: [],
+                overrides: {},
+                target: { project: "c", target: "test" },
+            },
+        };
+        const taskGraph: TaskGraph = {
+            dependencies: { "a:test": [], "b:test": [], "c:test": [] },
+            roots: Object.keys(tasks),
+            tasks,
+        };
+        const projectGraph: ProjectGraph = {
+            dependencies: { a: [], b: [], c: [] },
+            nodes: {
+                a: { data: { root: "a" }, name: "a", type: "library" },
+                b: { data: { root: "b" }, name: "b", type: "library" },
+                c: { data: { root: "c" }, name: "c", type: "library" },
+            },
+        };
+        const scheduler = new TaskScheduler(taskGraph, projectGraph, 8, { db: 1 });
+
+        expect(scheduler.getNextBatch()).toHaveLength(1);
+    });
+
+    it("should be idempotent on double startTask / completeTask", () => {
+        expect.assertions(3);
+
+        const { projectGraph, taskGraph } = buildSiblingGraph("e2e", ["a", "b"], () => ({ maxConcurrent: 1 }));
+        const scheduler = new TaskScheduler(taskGraph, projectGraph, 8);
+
+        const batch1 = scheduler.getNextBatch();
+        const first = batch1[0] as Task;
+
+        scheduler.startTask(first.id);
+        // Second start is a no-op — must not double-count the per-key total
+        // or the cap would never recover.
+        scheduler.startTask(first.id);
+
+        scheduler.completeTask(first.id);
+        // Completing twice must not over-decrement and free a slot the cap
+        // is holding for some other key.
+        scheduler.completeTask(first.id);
+
+        const batch2 = scheduler.getNextBatch();
+
+        expect(batch2).toHaveLength(1);
+        expect(batch2[0]?.id).not.toBe(first.id);
+
+        scheduler.startTask((batch2[0] as Task).id);
+
+        // With both still-uncompleted task slot accounting honest, no
+        // further work is releasable.
+        expect(scheduler.getNextBatch()).toHaveLength(0);
+    });
+
+    it("should ignore maxConcurrent values <= 0", () => {
+        expect.assertions(1);
+
+        const { projectGraph, taskGraph } = buildSiblingGraph("test", ["a", "b", "c"], () => ({ maxConcurrent: 0 }));
+        const scheduler = new TaskScheduler(taskGraph, projectGraph, 8);
+
+        const batch = scheduler.getNextBatch();
+
+        // 0 cap means "no cap" — all three siblings should fill the slots.
+        expect(batch).toHaveLength(3);
+    });
+
+    it("should fill remaining slots with uncapped tasks when capped target is saturated", () => {
+        expect.assertions(2);
+
+        // Two `e2e` tasks (capped at 1) + two uncapped `lint` tasks. With
+        // 4 parallel slots, the first batch should be: 1 e2e + 2 lint = 3 tasks.
+        const tasks: Record<string, Task> = {
+            "a:e2e": { id: "a:e2e", maxConcurrent: 1, outputs: [], overrides: {}, target: { project: "a", target: "e2e" } },
+            "a:lint": { id: "a:lint", outputs: [], overrides: {}, target: { project: "a", target: "lint" } },
+            "b:e2e": { id: "b:e2e", maxConcurrent: 1, outputs: [], overrides: {}, target: { project: "b", target: "e2e" } },
+            "b:lint": { id: "b:lint", outputs: [], overrides: {}, target: { project: "b", target: "lint" } },
+        };
+        const taskGraph: TaskGraph = {
+            dependencies: { "a:e2e": [], "a:lint": [], "b:e2e": [], "b:lint": [] },
+            roots: Object.keys(tasks),
+            tasks,
+        };
+        const projectGraph: ProjectGraph = {
+            dependencies: { a: [], b: [] },
+            nodes: {
+                a: { data: { root: "a" }, name: "a", type: "library" },
+                b: { data: { root: "b" }, name: "b", type: "library" },
+            },
+        };
+        const scheduler = new TaskScheduler(taskGraph, projectGraph, 4);
+
+        const batch = scheduler.getNextBatch();
+
+        const e2eCount = batch.filter((t) => t.target.target === "e2e").length;
+        const lintCount = batch.filter((t) => t.target.target === "lint").length;
+
+        expect(e2eCount).toBe(1);
+        expect(lintCount).toBe(2);
+    });
+
+    it("should enforce a workspace-level concurrency group across heterogeneous targets", () => {
+        expect.assertions(2);
+
+        // Two different targets share concurrencyGroup="db" with cap 1.
+        const tasks: Record<string, Task> = {
+            "a:test": {
+                concurrencyGroup: "db",
+                id: "a:test",
+                outputs: [],
+                overrides: {},
+                target: { project: "a", target: "test" },
+            },
+            "b:integration": {
+                concurrencyGroup: "db",
+                id: "b:integration",
+                outputs: [],
+                overrides: {},
+                target: { project: "b", target: "integration" },
+            },
+            "c:lint": { id: "c:lint", outputs: [], overrides: {}, target: { project: "c", target: "lint" } },
+        };
+        const taskGraph: TaskGraph = {
+            dependencies: { "a:test": [], "b:integration": [], "c:lint": [] },
+            roots: Object.keys(tasks),
+            tasks,
+        };
+        const projectGraph: ProjectGraph = {
+            dependencies: { a: [], b: [], c: [] },
+            nodes: {
+                a: { data: { root: "a" }, name: "a", type: "library" },
+                b: { data: { root: "b" }, name: "b", type: "library" },
+                c: { data: { root: "c" }, name: "c", type: "library" },
+            },
+        };
+        const scheduler = new TaskScheduler(taskGraph, projectGraph, 8, { db: 1 });
+
+        const batch = scheduler.getNextBatch();
+        const dbCount = batch.filter((t) => t.concurrencyGroup === "db").length;
+
+        // Only one db-group task may start; lint is unrelated and runs alongside.
+        expect(dbCount).toBe(1);
+        expect(batch.some((t) => t.id === "c:lint")).toBe(true);
+    });
+
+    it("should free the cap slot when a task completes", () => {
+        expect.assertions(2);
+
+        const { projectGraph, taskGraph } = buildSiblingGraph("e2e", ["a", "b"], () => ({ maxConcurrent: 1 }));
+        const scheduler = new TaskScheduler(taskGraph, projectGraph, 8);
+
+        const batch1 = scheduler.getNextBatch();
+
+        expect(batch1).toHaveLength(1);
+
+        scheduler.startTask((batch1[0] as Task).id);
+        scheduler.completeTask((batch1[0] as Task).id);
+
+        const batch2 = scheduler.getNextBatch();
+
+        expect(batch2).toHaveLength(1);
+    });
+
+    it("should not deadlock when a capped task is blocked but uncapped tasks remain", () => {
+        expect.assertions(3);
+
+        const tasks: Record<string, Task> = {
+            "a:e2e": { id: "a:e2e", maxConcurrent: 1, outputs: [], overrides: {}, target: { project: "a", target: "e2e" } },
+            "a:lint": { id: "a:lint", outputs: [], overrides: {}, target: { project: "a", target: "lint" } },
+            "b:e2e": { id: "b:e2e", maxConcurrent: 1, outputs: [], overrides: {}, target: { project: "b", target: "e2e" } },
+        };
+        const taskGraph: TaskGraph = {
+            dependencies: { "a:e2e": [], "a:lint": [], "b:e2e": [] },
+            roots: Object.keys(tasks),
+            tasks,
+        };
+        const projectGraph: ProjectGraph = {
+            dependencies: { a: [], b: [] },
+            nodes: {
+                a: { data: { root: "a" }, name: "a", type: "library" },
+                b: { data: { root: "b" }, name: "b", type: "library" },
+            },
+        };
+        const scheduler = new TaskScheduler(taskGraph, projectGraph, 8);
+
+        const batch1 = scheduler.getNextBatch();
+
+        // First batch: 1 e2e + 1 lint (b:e2e blocked by cap)
+        expect(batch1).toHaveLength(2);
+
+        for (const t of batch1) {
+            scheduler.startTask(t.id);
+        }
+
+        // While e2e is running, b:e2e is held back; ready queue has nothing else.
+        const batch2 = scheduler.getNextBatch();
+
+        expect(batch2).toHaveLength(0);
+
+        // After the first e2e finishes, the second one may start.
+        const e2eFirst = batch1.find((t) => t.target.target === "e2e") as Task;
+
+        scheduler.completeTask(e2eFirst.id);
+
+        const batch3 = scheduler.getNextBatch();
+
+        expect(batch3.map((t) => t.id)).toStrictEqual([e2eFirst.id === "a:e2e" ? "b:e2e" : "a:e2e"]);
+    });
+});
+
 const makeTask = (id: string): Task => {
     return {
         id,
