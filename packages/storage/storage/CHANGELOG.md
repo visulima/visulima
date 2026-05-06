@@ -1,3 +1,17 @@
+## @visulima/storage [1.0.0-alpha.19](https://github.com/visulima/visulima/compare/@visulima/storage@1.0.0-alpha.18...@visulima/storage@1.0.0-alpha.19) (2026-05-06)
+
+### Miscellaneous Chores
+
+* re-enable jsdoc/match-description in api-platform and tighten config docs ([4ecaa31](https://github.com/visulima/visulima/commit/4ecaa315064cdd798af1ea1296be1fe52967bf9a))
+* **storage:** apply partial lint cleanup from agent batch ([ffcbea2](https://github.com/visulima/visulima/commit/ffcbea2a738fd2a116b26e58eda433109a944d85))
+* **storage:** apply prettier and eslint quote-style auto-fix ([437aab6](https://github.com/visulima/visulima/commit/437aab6dc248a8ac058c2af3832bd898a2c51053))
+* **storage:** clear lint and prettier diagnostics ([d6c05b1](https://github.com/visulima/visulima/commit/d6c05b11d278d844c872a6cd3364f95778381003))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.14
+
 ## @visulima/storage [1.0.0-alpha.18](https://github.com/visulima/visulima/compare/@visulima/storage@1.0.0-alpha.17...@visulima/storage@1.0.0-alpha.18) (2026-05-04)
 
 
