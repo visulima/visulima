@@ -1,3 +1,16 @@
+## @visulima/email [1.0.0-alpha.20](https://github.com/visulima/visulima/compare/@visulima/email@1.0.0-alpha.19...@visulima/email@1.0.0-alpha.20) (2026-05-06)
+
+### Miscellaneous Chores
+
+* **email:** apply prettier and eslint quote-style auto-fix ([ba38e00](https://github.com/visulima/visulima/commit/ba38e009085d304e7810ee9dd63bc1fd22b53ae8))
+* **email:** housekeeping cleanup ([fac388e](https://github.com/visulima/visulima/commit/fac388edbb3073d912b65c6ad1716dc57257dccf))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.16
+* **@visulima/fs:** upgraded to 5.0.0-alpha.14
+
 ## @visulima/email [1.0.0-alpha.19](https://github.com/visulima/visulima/compare/@visulima/email@1.0.0-alpha.18...@visulima/email@1.0.0-alpha.19) (2026-05-04)
 
 
