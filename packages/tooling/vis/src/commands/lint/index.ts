@@ -1,7 +1,7 @@
 import type { Command, CreateOptions } from "@visulima/cerebro";
 
 const lint: Command = {
-    description: "Lint workspace dependency policies (workspace-protocol, banned-deps, redefine-root, workspace-versions)",
+    description: "Lint workspace dependency policies (workspace-protocol, banned-deps, redefine-root, workspace-versions, custom-types, empty-deps, root-private, root-package-manager, root-deps, missing-package-json, dead-workspace-patterns, types-in-deps, similar-deps)",
     examples: [
         ["vis lint", "Run every enabled lint and exit non-zero on failures"],
         ["vis lint --workspace-protocol", "Only check that internal deps use workspace:*"],
@@ -15,6 +15,14 @@ const lint: Command = {
         ["vis lint --workspace-versions --resolve catalog --propose-min 3", "Suggest new catalog entries for deps ≥3 packages already agree on"],
         ["vis lint --custom-types", "Flag drift in engines.{node,pnpm}, packageManager, volta.{node,pnpm,yarn}, devEngines"],
         ["vis lint --custom-types --fix", "Align all engines/packageManager/volta versions to the highest sibling"],
+        ["vis lint --empty-deps --fix", "Drop empty `dependencies` / `devDependencies` / etc. blocks across the workspace"],
+        ["vis lint --root-private --fix", "Ensure the workspace root package.json has \"private\": true"],
+        ["vis lint --root-package-manager", "Ensure the root package.json declares a `packageManager` field"],
+        ["vis lint --root-deps --fix", "Move runtime deps off the private workspace root into devDependencies"],
+        ["vis lint --missing-package-json", "Flag workspace dirs that don't contain a package.json"],
+        ["vis lint --dead-workspace-patterns --fix", "Drop workspace patterns that match zero packages"],
+        ["vis lint --types-in-deps --fix", "Move @types/* out of dependencies on private packages"],
+        ["vis lint --similar-deps", "Flag drift across related dep families (react+react-dom, @babel/*, …)"],
         ["vis lint --ban left-pad --ban request", "One-off ban: flag any package declaring left-pad or request"],
         ["vis lint --pin react@18.2.0", "One-off pin: flag any package declaring react at a different version"],
         ["vis lint --format json", "Emit findings as JSON for CI / editor integrations"],
@@ -51,6 +59,54 @@ const lint: Command = {
             defaultValue: false,
             description: "Lint engines.{node,pnpm}, packageManager, volta.*, devEngines.* for drift across packages",
             name: "custom-types",
+            type: Boolean,
+        },
+        {
+            defaultValue: false,
+            description: "Flag empty dependency blocks (`dependencies: {}`, `devDependencies: {}`, …) across the workspace",
+            name: "empty-deps",
+            type: Boolean,
+        },
+        {
+            defaultValue: false,
+            description: "Ensure the workspace root package.json sets `\"private\": true`",
+            name: "root-private",
+            type: Boolean,
+        },
+        {
+            defaultValue: false,
+            description: "Ensure the workspace root package.json declares a `packageManager` field",
+            name: "root-package-manager",
+            type: Boolean,
+        },
+        {
+            defaultValue: false,
+            description: "Flag runtime dependencies on the private workspace root (move them to devDependencies)",
+            name: "root-deps",
+            type: Boolean,
+        },
+        {
+            defaultValue: false,
+            description: "Flag workspace directories that lack a package.json",
+            name: "missing-package-json",
+            type: Boolean,
+        },
+        {
+            defaultValue: false,
+            description: "Flag workspace patterns (in `pnpm-workspace.yaml` / `package.json#workspaces`) that match zero packages",
+            name: "dead-workspace-patterns",
+            type: Boolean,
+        },
+        {
+            defaultValue: false,
+            description: "Flag `@types/*` declared in `dependencies` on a private package (should be in devDependencies)",
+            name: "types-in-deps",
+            type: Boolean,
+        },
+        {
+            defaultValue: false,
+            description: "Flag version drift across related dep families (react+react-dom, @babel/*, @storybook/*, …)",
+            name: "similar-deps",
             type: Boolean,
         },
         {
@@ -111,15 +167,23 @@ export type LintOptions = CreateOptions<{
     ban: string[] | undefined;
     "banned-deps": boolean | undefined;
     "custom-types": boolean | undefined;
+    "dead-workspace-patterns": boolean | undefined;
     dep: string | undefined;
+    "empty-deps": boolean | undefined;
     fix: boolean | undefined;
     "fix-specifier": string | undefined;
     format: string | undefined;
+    "missing-package-json": boolean | undefined;
     pin: string[] | undefined;
     "propose-min": number | undefined;
     quiet: boolean | undefined;
     "redefine-root": boolean | undefined;
     resolve: string | undefined;
+    "root-deps": boolean | undefined;
+    "root-package-manager": boolean | undefined;
+    "root-private": boolean | undefined;
+    "similar-deps": boolean | undefined;
+    "types-in-deps": boolean | undefined;
     "workspace-protocol": boolean | undefined;
     "workspace-versions": boolean | undefined;
 }>;

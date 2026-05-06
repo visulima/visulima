@@ -54,7 +54,11 @@ const STALE_NANO_STAGED_PATTERNS: ReadonlyArray<RegExp> = [
     /^((?:[A-Z_][A-Z0-9_]*(?:=\S*)?\s+)*)nano-staged\b/,
 ];
 
-// Packages removed during migration
+// Packages removed during the `migrate deps` pass.
+// Strictly hook/orchestrator tools that vis natively replaces (vis hook / vis staged).
+// Tools with their own dedicated `vis migrate <tool>` command (e.g. sherif, syncpack,
+// gitleaks, secretlint) are intentionally NOT listed here — they would otherwise be
+// stripped from devDependencies without their scripts/configs being rewritten.
 const REPLACED_PACKAGES = ["husky", "lint-staged", "nano-staged"] as const;
 
 // Husky script patterns — shared between hook/migrate and migrate/deps

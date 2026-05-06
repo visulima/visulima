@@ -137,10 +137,23 @@ const migrateSyncpackCmd: Command = {
     options: [...sharedMigrateOptions],
 };
 
+const migrateSherifCmd: Command = {
+    commandPath: ["migrate"],
+    description: "Strip sherif config/dep/scripts and surface ignore-rules as a positive `vis lint --<rule>` command",
+    examples: [["vis migrate sherif", "Strip sherif config/dep/scripts and surface ignore-rules as a positive `vis lint --<rule>` command"]],
+    group: "Scaffold & Config",
+    loader: () =>
+        import("./handler").then((m) => {
+            return { default: m.migrateSherifExecute };
+        }),
+    name: "sherif",
+    options: [...sharedMigrateOptions],
+};
+
 const migrateVerify: Command = {
     commandPath: ["migrate"],
-    description: "Audit the workspace for stray gitleaks/secretlint/syncpack references (exit 1 on issues)",
-    examples: [["vis migrate verify", "Audit the workspace for stray gitleaks/secretlint/syncpack references (exit 1 on issues)"]],
+    description: "Audit the workspace for stray gitleaks/secretlint/sherif/syncpack references (exit 1 on issues)",
+    examples: [["vis migrate verify", "Audit the workspace for stray gitleaks/secretlint/sherif/syncpack references (exit 1 on issues)"]],
     group: "Scaffold & Config",
     loader: () =>
         import("./handler").then((m) => {
@@ -161,6 +174,7 @@ const migrateCommands: Command[] = [
     migrateKingfisherCmd,
     migrateSecretlintCmd,
     migrateSyncpackCmd,
+    migrateSherifCmd,
     migrateVerify,
 ];
 
@@ -185,3 +199,4 @@ export type MigrateGitleaksOptions = CreateOptions<SharedMigrateOptions>;
 export type MigrateKingfisherOptions = CreateOptions<SharedMigrateOptions>;
 export type MigrateSecretlintOptions = CreateOptions<SharedMigrateOptions>;
 export type MigrateSyncpackOptions = CreateOptions<SharedMigrateOptions>;
+export type MigrateSherifOptions = CreateOptions<SharedMigrateOptions>;

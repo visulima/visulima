@@ -6,8 +6,8 @@ import { join } from "@visulima/path";
 
 import { findVisConfigFile } from "../../config/config";
 import type { ExtraCustomType } from "../../config/types";
-import type { BannedDepRule } from "../../util/banned-deps-lint";
-import { BUILTIN_CUSTOM_TYPES } from "../../util/custom-types";
+import type { BannedDepRule } from "../../lint/banned-deps";
+import { BUILTIN_CUSTOM_TYPES } from "../../lint/custom-types";
 import { backupFile } from "./backup";
 import { detectJsonIndent, isJsonFile, readJsonFile } from "./json";
 import type { MigrationReport } from "./types";

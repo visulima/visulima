@@ -1,6 +1,6 @@
 ---
 title: "vis migrate"
-description: "Migrate from other tools (turborepo, nx, moon, husky, lint-staged) to vis"
+description: "Migrate from other tools (turborepo, nx, moon, husky, lint-staged, nano-staged, gitleaks, kingfisher, secretlint, syncpack, sherif) to vis"
 ---
 
 # vis migrate
@@ -90,6 +90,97 @@ Merges lint-staged config into `vis.config.ts` staged block:
 vis migrate lint-staged
 ```
 
+### nano-staged
+
+Same surface as `lint-staged` but for [nano-staged](https://github.com/usmanyunusov/nano-staged). Detects any of `.nano-staged.json`, `.nanostagedrc`, `.nano-staged.{js,cjs,mjs}`, `nano-staged.config.{js,cjs,mjs,ts,cts,mts}`, or a `nano-staged` block in `package.json`, and inlines the patterns into the `staged` field of `vis.config.ts`:
+
+```bash
+vis migrate nano-staged
+vis migrate nano-staged --dry-run
+```
+
+JSON-format configs and `package.json#nano-staged` are auto-migrated; TS/JS configs are flagged with a manual step (no sandboxed evaluator). The `nano-staged` dependency and any `\bnano-staged\b` scripts are stripped (the latter is folded into `vis staged` by `vis migrate deps`).
+
+### gitleaks
+
+Converts a [gitleaks](https://github.com/gitleaks/gitleaks) setup into `vis secrets`:
+
+```bash
+vis migrate gitleaks
+vis migrate gitleaks --dry-run
+```
+
+**Detects:**
+
+- Config: `gitleaks.toml` / `.gitleaks.toml`
+- Ignore file: `.gitleaksignore`
+- Baseline: `gitleaks-report.json` / `.gitleaks-report.json` / `baseline.json`
+
+**Auto-migrated:**
+
+- The baseline JSON is converted to vis's allowlist shape and written into `vis.config.ts` (`secrets.allowlist`).
+- `.gitleaksignore` fingerprints (`file:rule:line`) are translated to allowlist entries.
+- Scripts matching `\bgitleaks\b` are rewritten to `vis secrets` invocations (with the original line preserved as a manual step when the mapping is ambiguous).
+- Pre-commit hooks (`.husky/pre-commit`, `.vis-hooks/pre-commit`, `.git/hooks/pre-commit`) referencing `gitleaks` are rewritten to call `vis secrets`.
+
+**Routed to manual steps:**
+
+- `gitleaks.toml` (the rule definitions) is left in place — vis ships its own rule set, so the original config is preserved for reviewer comparison rather than translated.
+- Custom regex rules: review and re-add them via `secrets.extraRules` in `vis.config.ts` if needed.
+
+### kingfisher
+
+Converts a [Kingfisher](https://github.com/mongodb/kingfisher) (MongoDB's secret scanner) setup into `vis secrets`:
+
+```bash
+vis migrate kingfisher
+vis migrate kingfisher --dry-run
+```
+
+**Detects:**
+
+- Baseline: `kingfisher-baseline.{yaml,yml}` / `.kingfisher-baseline.{yaml,yml}`
+- Custom rules: `kingfisher-rules.{yaml,yml}` / `.kingfisher-rules.{yaml,yml}`
+
+**Auto-migrated:**
+
+- The YAML baseline is parsed and converted to vis allowlist entries (one per finding); each entry is annotated with a placeholder so reviewers can fill in the matched rule's vis equivalent.
+- Scripts matching `kingfisher (scan|validate|rules|update|manage-baseline|report|github|gitlab|bitbucket)` are rewritten to `vis secrets` invocations.
+- Pre-commit hooks referencing `kingfisher` are rewritten.
+
+**Routed to manual steps:**
+
+- `kingfisher-rules.{yaml,yml}` is flagged but **not auto-translated** — Kingfisher's rule DSL doesn't have a direct vis equivalent. Review the rules and add the ones you still need to `secrets.extraRules`.
+- Baseline entries that the migrator can't map cleanly include a placeholder `// TODO: review` comment.
+
+### secretlint
+
+Replaces a [secretlint](https://github.com/secretlint/secretlint) setup with `vis secrets`:
+
+```bash
+vis migrate secretlint
+vis migrate secretlint --dry-run
+```
+
+**Detects:**
+
+- Config: `.secretlintrc[.{json,js,mjs,cjs,yml,yaml}]`
+- Ignore file: `.secretlintignore`
+
+**Auto-migrated:**
+
+- Active rule IDs are extracted from JSON/YAML configs and surfaced in the migration report so reviewers see what they had enabled.
+- Scripts matching `\bsecretlint\b` are rewritten to `vis secrets` invocations.
+- Pre-commit hooks referencing `secretlint` are rewritten.
+- `.secretlintignore` is converted to vis allowlist entries.
+- `secretlint` and `@secretlint/*` are removed from `dependencies` / `devDependencies`.
+- `.secretlintrc.{json,yml,yaml}` is backed up (`.bak`) and removed.
+
+**Routed to manual steps:**
+
+- `.secretlintrc.{js,mjs,cjs}` configs are flagged but not auto-removed — `vis migrate` does not load executable config (no sandboxed evaluator). Convert to JSON or YAML first, or apply manually.
+- Custom rule packages (`@secretlint/secretlint-rule-*`) are listed for the reviewer; vis bundles its own rule set, so the user decides whether each upstream rule is still needed.
+
 ### syncpack
 
 Translates the parts of a [syncpack](https://jamiemason.github.io/syncpack/) config that vis can act on today, strips the `syncpack` dependency / scripts, and routes the rest into `manualSteps` so reviewers see what's still pending:
@@ -135,9 +226,53 @@ vis migrate syncpack --dry-run
 
 TS/JS configs (`.syncpackrc.{cjs,js,mjs,ts}`, `syncpack.config.{cjs,js,mjs,ts}`) are flagged with a manual step — `vis migrate` does not load executable config (no sandboxed evaluator). Convert them to `.syncpackrc.json` first, then re-run. Tracked in [#622](https://github.com/visulima/visulima/issues/622).
 
+### sherif
+
+Strips the `sherif` dep / scripts / `package.json#sherif` block and surfaces a positive `vis lint --<rule>` command suggestion (vis has no global rule-disable, so the migration translates sherif's `ignore-rules` into the explicit "rules to keep enabled" form):
+
+```bash
+vis migrate sherif
+vis migrate sherif --dry-run
+```
+
+**Detects:**
+
+- `package.json#sherif`
+- `sherif` in `dependencies` / `devDependencies`
+- Any `scripts` matching `\bsherif\b`
+
+**Auto-migrated:**
+
+- `sherif` removed from `dependencies` / `devDependencies`.
+- Any `scripts` matching `\bsherif\b` are deleted (raw text preserved as a manual step so mixed commands aren't lost silently).
+- The `sherif` block inside `package.json` is removed.
+- A `.bak` of `package.json` is created before mutation.
+
+**Sherif → vis lint mapping:**
+
+| Sherif rule (in `ignore-rules`)   | vis lint flag                |
+| --------------------------------- | ---------------------------- |
+| `empty-dependencies`              | `--empty-deps`               |
+| `multiple-dependency-versions`    | `--workspace-versions`       |
+| `non-existant-packages`           | `--dead-workspace-patterns`  |
+| `packages-without-package-json`   | `--missing-package-json`     |
+| `root-package-dependencies`       | `--root-deps`                |
+| `root-package-manager-field`      | `--root-package-manager`     |
+| `root-package-private-field`      | `--root-private`             |
+| `types-in-dependencies`           | `--types-in-deps`            |
+| `unsync-similar-dependencies`     | `--similar-deps`             |
+| `unordered-dependencies`          | _no equivalent_ — covered by `vis sort-package-json` |
+
+**Routed to manual steps:**
+
+- `ignore-rules` (when set) → suggested replacement script: `vis lint --<rule> --<rule> ...` listing every covered rule _except_ the disabled ones.
+- `ignore-dependencies` → mirror in `vis.config.ts` under `policy.workspaceVersions.ignore`, `policy.customTypes.ignore`, `policy.typesInDeps.ignore`, `policy.redefineRoot.ignore` (per-rule scoping in vis vs. global in sherif).
+- `ignore-packages` / `ignore-paths` → flagged for review; vis has no global package/path-skip yet (only per-rule scoping via `policy.bannedDeps.{packages,paths}`).
+- Pre-commit hooks and CI workflows referencing `sherif` are flagged but not auto-rewritten — the reviewer chooses the right `vis lint` flag set.
+
 ### verify
 
-Read-only audit that exits non-zero if it finds any leftover `gitleaks`, `secretlint`, or `syncpack` references. Scans `package.json` scripts/devDependencies, pre-commit hooks, stale config files, CI workflow files, and catalog protocol entries (pnpm-workspace.yaml + bun catalog). Useful as a CI gate after a migration.
+Read-only audit that exits non-zero if it finds any leftover `gitleaks`, `secretlint`, `sherif`, or `syncpack` references. Scans `package.json` scripts/devDependencies/`#sherif` block, pre-commit hooks, stale config files, CI workflow files, and catalog protocol entries (pnpm-workspace.yaml + bun catalog). Useful as a CI gate after a migration.
 
 ```bash
 vis migrate verify

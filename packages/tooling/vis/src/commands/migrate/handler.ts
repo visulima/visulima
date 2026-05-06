@@ -12,6 +12,7 @@ import type {
     MigrateNanoStagedOptions,
     MigrateNxOptions,
     MigrateSecretlintOptions,
+    MigrateSherifOptions,
     MigrateSyncpackOptions,
     MigrateTurborepoOptions,
 } from "./index";
@@ -22,6 +23,7 @@ import { migrateNanoStaged } from "./nano-staged";
 import { migrateNx } from "./nx";
 import { confirm } from "./prompt";
 import { migrateSecretlint } from "./secretlint";
+import { migrateSherif } from "./sherif";
 import { printSummary } from "./summary";
 import { migrateSyncpack } from "./syncpack";
 import { migrateTurborepo } from "./turborepo";
@@ -248,6 +250,22 @@ const migrateSyncpackExecuteImpl = async ({ logger, options, visConfig, workspac
     printSummary(ctx.report, logger);
 };
 
+const migrateSherifExecuteImpl = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Console, MigrateSherifOptions>): Promise<void> => {
+    if (!(await maybeConfirm("sherif", options, logger))) {
+        return;
+    }
+
+    const ctx = buildContext({ logger, options, visConfig: visConfig as Record<string, unknown> | undefined, workspaceRoot });
+
+    announceDryRun(ctx);
+
+    logger.info("── Migrating sherif ──");
+    migrateSherif(ctx.root, { dryRun: ctx.dryRun, useEditorconfig: ctx.useEditorconfig }, logger, ctx.report);
+    logger.info("");
+
+    printSummary(ctx.report, logger);
+};
+
 const migrateVerifyExecuteImpl = ({ logger, workspaceRoot }: Toolbox): void => {
     const root = workspaceRoot ?? process.cwd();
     const issues = verifyMigration(root, logger);
@@ -267,4 +285,5 @@ export const migrateGitleaksExecute = migrateGitleaksExecuteImpl as CommandExecu
 export const migrateKingfisherExecute = migrateKingfisherExecuteImpl as CommandExecute<Toolbox>;
 export const migrateSecretlintExecute = migrateSecretlintExecuteImpl as CommandExecute<Toolbox>;
 export const migrateSyncpackExecute = migrateSyncpackExecuteImpl as CommandExecute<Toolbox>;
+export const migrateSherifExecute = migrateSherifExecuteImpl as CommandExecute<Toolbox>;
 export const migrateVerifyExecute = migrateVerifyExecuteImpl;

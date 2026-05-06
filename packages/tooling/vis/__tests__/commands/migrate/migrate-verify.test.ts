@@ -102,6 +102,31 @@ describe("migrate-verify", () => {
             expect(issues.some((issue) => issue.kind === "ci" && issue.location === ".gitlab-ci.yml")).toBe(true);
         });
 
+        it("flags sherif devDependency, script, package.json#sherif config, hook, and CI invocation", () => {
+            expect.assertions(5);
+
+            writeFileSync(
+                join(tmpDir, "package.json"),
+                JSON.stringify({
+                    devDependencies: { sherif: "^1.0.0" },
+                    scripts: { "lint:deps": "sherif" },
+                    sherif: { "ignore-rules": ["root-package-private-field"] },
+                }),
+            );
+            mkdirSync(join(tmpDir, ".husky"), { recursive: true });
+            writeFileSync(join(tmpDir, ".husky", "pre-commit"), "#!/bin/sh\nsherif\n");
+            mkdirSync(join(tmpDir, ".github", "workflows"), { recursive: true });
+            writeFileSync(join(tmpDir, ".github", "workflows", "lint.yml"), "jobs:\n  lint:\n    steps:\n      - run: pnpm sherif\n");
+
+            const issues = verifyMigration(tmpDir, createMockLogger());
+
+            expect(issues.some((issue) => issue.kind === "devDep" && issue.detail.includes("sherif"))).toBe(true);
+            expect(issues.some((issue) => issue.kind === "script" && issue.detail.includes("sherif"))).toBe(true);
+            expect(issues.some((issue) => issue.kind === "config" && issue.detail.includes("sherif"))).toBe(true);
+            expect(issues.some((issue) => issue.kind === "hook" && issue.detail.includes("sherif"))).toBe(true);
+            expect(issues.some((issue) => issue.kind === "ci" && issue.detail.includes("sherif"))).toBe(true);
+        });
+
         it("flags stray syncpack catalog protocol entries", () => {
             expect.assertions(2);
 
