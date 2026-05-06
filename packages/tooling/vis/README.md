@@ -362,6 +362,24 @@ If you would like to help take a look at the [list of issues](https://github.com
 - [Daniel Bannert](https://github.com/prisis)
 - [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
 
+### Migration sources
+
+`vis migrate` ports configuration, scripts, and hooks from the following projects. Huge thanks to their authors and maintainers for the prior art that shaped vis's surface area.
+
+| Project                                                              | Migrates with         | Replaces                          |
+| -------------------------------------------------------------------- | --------------------- | --------------------------------- |
+| [Husky](https://github.com/typicode/husky)                           | `vis hook migrate`    | Git hook manager                  |
+| [lint-staged](https://github.com/lint-staged/lint-staged)            | `vis migrate lint-staged` | Pre-commit task runner        |
+| [nano-staged](https://github.com/usmanyunusov/nano-staged)           | `vis migrate nano-staged` | Pre-commit task runner        |
+| [Turborepo](https://github.com/vercel/turborepo)                     | `vis migrate turborepo` | Monorepo task runner            |
+| [Nx](https://github.com/nrwl/nx)                                     | `vis migrate nx`      | Monorepo task runner              |
+| [Moon](https://github.com/moonrepo/moon)                             | `vis migrate moon`    | Monorepo task runner              |
+| [Gitleaks](https://github.com/gitleaks/gitleaks)                     | `vis migrate gitleaks` | Secret scanner                   |
+| [Kingfisher](https://github.com/mongodb/kingfisher)                  | `vis migrate kingfisher` | Secret scanner (MongoDB)       |
+| [Secretlint](https://github.com/secretlint/secretlint)               | `vis migrate secretlint` | Secret linter                  |
+| [Syncpack](https://github.com/JamieMason/syncpack)                   | `vis migrate syncpack` | Workspace dependency policy      |
+| [Sherif](https://github.com/QuiiBz/sherif)                           | `vis migrate sherif`  | Monorepo linter                   |
+
 ## Made with ❤️ at Anolilab
 
 This is an open source project and will always remain free to use. If you think it's cool, please star it 🌟. [Anolilab](https://www.anolilab.com/open-source) is a Development and AI Studio. Contact us at [hello@anolilab.com](mailto:hello@anolilab.com) if you need any help with these technologies or just want to say hi!
