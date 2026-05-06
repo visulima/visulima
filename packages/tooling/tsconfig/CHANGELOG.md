@@ -1,3 +1,15 @@
+## @visulima/tsconfig [3.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.0.0-alpha.13...@visulima/tsconfig@3.0.0-alpha.14) (2026-05-06)
+
+### Miscellaneous Chores
+
+* **tsconfig:** apply prettier and eslint quote-style auto-fix ([e184ae4](https://github.com/visulima/visulima/commit/e184ae4c162360c743428361d9be977bad555854))
+* **tsconfig:** housekeeping cleanup ([081acf1](https://github.com/visulima/visulima/commit/081acf12b3853d85b233412493b48061d4f0dbf3))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.14
+
 ## @visulima/tsconfig [3.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.0.0-alpha.12...@visulima/tsconfig@3.0.0-alpha.13) (2026-05-04)
 
 
