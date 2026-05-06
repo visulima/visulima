@@ -1,3 +1,15 @@
+## @visulima/package [5.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/package@5.0.0-alpha.12...@visulima/package@5.0.0-alpha.13) (2026-05-06)
+
+### Miscellaneous Chores
+
+* **package:** apply prettier and eslint quote-style auto-fix ([0316bca](https://github.com/visulima/visulima/commit/0316bca0deca444ff12675bc760c7091ce243d31))
+* **package:** housekeeping cleanup ([113978b](https://github.com/visulima/visulima/commit/113978b0babcfc7879514aec076f6e2d5e7afab0))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.14
+
 ## @visulima/package [5.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/package@5.0.0-alpha.11...@visulima/package@5.0.0-alpha.12) (2026-05-04)
 
 ### Miscellaneous Chores
