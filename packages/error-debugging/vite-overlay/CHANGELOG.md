@@ -1,3 +1,15 @@
+## @visulima/vite-overlay [2.0.0-alpha.18](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.0-alpha.17...@visulima/vite-overlay@2.0.0-alpha.18) (2026-05-06)
+
+### Miscellaneous Chores
+
+* **vite-overlay:** apply prettier and eslint quote-style auto-fix ([9778781](https://github.com/visulima/visulima/commit/9778781ec8e1542860cded3e7c05a3269345f5a3))
+* **vite-overlay:** housekeeping cleanup ([de2491d](https://github.com/visulima/visulima/commit/de2491d209965aa66c0752a2f55263f0d335eadd))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.16
+
 ## @visulima/vite-overlay [2.0.0-alpha.17](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.0-alpha.16...@visulima/vite-overlay@2.0.0-alpha.17) (2026-05-04)
 
 
