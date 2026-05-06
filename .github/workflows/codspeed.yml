@@ -40,7 +40,7 @@ jobs:
                   wait-interval: 30 # seconds
                   running-workflow-name: "Run benchmarks" # wait for all other checks (incl. Build Native) to complete
                   allowed-conclusions: "success,skipped,neutral"
-                  ignore-checks: "lock-closed / lock-closed, Socket Security: Pull Request Alerts, Dependabot"
+                  ignore-checks: "lock-closed / lock-closed, Socket Security: Pull Request Alerts, Dependabot, Semantic Release"
 
             - name: "Git checkout"
               uses: "actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5" # v4.3.1
