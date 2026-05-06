@@ -164,6 +164,12 @@ jobs:
                   rm -rf artifacts/
 
             # Temporary solution until Nx solve this https://github.com/nrwl/nx/issues/22259
+            #
+            # The file list is written to disk (write_output_files) instead
+            # of being read from the action output directly. On long-running
+            # branches the diff against `setSHAs.outputs.base` can grow past
+            # the bash argv+envp size limit; reading via `cat` keeps the
+            # list out of both env and the script's argv text.
             - name: "Get changed files"
               id: "files"
               uses: "tj-actions/changed-files@c65cd883420fd2eb864698a825fc4162dd94482c" # v44.5.7
@@ -171,22 +177,24 @@ jobs:
                   files_ignore_from_source_file: ".github/ignore-files-for-nx-affected.yml"
                   base_sha: "${{ steps.setSHAs.outputs.base }}"
                   separator: ","
+                  write_output_files: true
+                  output_dir: ".github/outputs"
 
             - name: "Build"
               shell: "bash"
               run: |
-                  files="${{ steps.files.outputs.all_changed_files }}";
-                  pnpm run build:affected:packages --files=${files//\\/\/}
+                  files="$(tr '\\' '/' < .github/outputs/all_changed_files.txt)"
+                  pnpm run build:affected:packages --files="$files"
 
             - name: "Run tests"
               shell: "bash"
               run: |
-                  files="${{ steps.files.outputs.all_changed_files }}";
+                  files="$(tr '\\' '/' < .github/outputs/all_changed_files.txt)"
 
                   if [[ ${{ matrix.os }} == "ubuntu-latest" && ${{ matrix.node_version }} == 22 && ${{ !matrix.deno_version }} && ${{ !matrix.bun_version }} ]]; then
-                      pnpm run test:affected:coverage --files=${files//\\/\/}
+                      pnpm run test:affected:coverage --files="$files"
                   else
-                      pnpm run test:affected --files=${files//\\/\/}
+                      pnpm run test:affected --files="$files"
                   fi
 
             - name: "Upload code coverage to codecov"
@@ -289,6 +297,12 @@ jobs:
                   rm -rf artifacts/
 
             # Temporary solution until Nx solve this https://github.com/nrwl/nx/issues/22259
+            #
+            # The file list is written to disk (write_output_files) instead
+            # of being read from the action output directly. On long-running
+            # branches the diff against `setSHAs.outputs.base` can grow past
+            # the bash argv+envp size limit; reading via `cat` keeps the
+            # list out of both env and the script's argv text.
             - name: "Get changed files"
               id: "files"
               uses: "tj-actions/changed-files@c65cd883420fd2eb864698a825fc4162dd94482c" # v44.5.7
@@ -296,12 +310,14 @@ jobs:
                   files_ignore_from_source_file: ".github/ignore-files-for-nx-affected.yml"
                   base_sha: "${{ steps.setSHAs.outputs.base }}"
                   separator: ","
+                  write_output_files: true
+                  output_dir: ".github/outputs"
 
             - name: "Build"
               shell: "bash"
               run: |
-                  files="${{ steps.files.outputs.all_changed_files }}";
-                  pnpm run build:affected:packages --files=${files//\\/\/}
+                  files="$(tr '\\' '/' < .github/outputs/all_changed_files.txt)"
+                  pnpm run build:affected:packages --files="$files"
 
             - name: "Install playwright"
               shell: "bash"
@@ -310,8 +326,8 @@ jobs:
             - name: "Run ${{ matrix.browser }} browser tests"
               shell: "bash"
               run: |
-                  files="${{ steps.files.outputs.all_changed_files }}";
-                  pnpm run test:affected:browser:${{ matrix.browser }} --files=${files//\\/\/}
+                  files="$(tr '\\' '/' < .github/outputs/all_changed_files.txt)"
+                  pnpm run test:affected:browser:${{ matrix.browser }} --files="$files"
 
     # This check runs once all dependant jobs have passed
     # It symbolizes that all required checks have successfully passed (Or skipped)
