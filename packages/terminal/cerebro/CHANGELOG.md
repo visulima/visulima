@@ -1,3 +1,21 @@
+## @visulima/cerebro [3.0.0-alpha.15](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.14...@visulima/cerebro@3.0.0-alpha.15) (2026-05-06)
+
+### Miscellaneous Chores
+
+* **cerebro:** apply prettier and eslint quote-style auto-fix ([31132ae](https://github.com/visulima/visulima/commit/31132aeab40b3f6fa920a37635813e14d7e8b17e))
+* **cerebro:** fix lint errors ([87649b0](https://github.com/visulima/visulima/commit/87649b0408ce3667bf1be9be795321851e6e8f15))
+* **cerebro:** housekeeping cleanup ([643b7d9](https://github.com/visulima/visulima/commit/643b7d9e268dca11544f0b9476b011a8620c04c8))
+
+### Continuous Integration
+
+* integrate codspeed for benchmark tracking ([e758f3d](https://github.com/visulima/visulima/commit/e758f3da491cc00d3f8bbf10d7ba3fdf8deb5325))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.16
+* **@visulima/pail:** upgraded to 4.0.0-alpha.13
+
 ## @visulima/cerebro [3.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.13...@visulima/cerebro@3.0.0-alpha.14) (2026-05-04)
 
 
