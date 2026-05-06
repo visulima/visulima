@@ -30,6 +30,16 @@ export interface TaskTarget {
 export type TaskPriority = "high" | "low" | "normal";
 
 /**
+ * Workspace-level concurrency caps. Maps a group name to the maximum
+ * number of in-flight tasks across every target that opts into the
+ * group via {@link TargetConfiguration.concurrencyGroup}. Independent
+ * of `--parallel`: the global cap still bounds total in-flight tasks,
+ * and group caps further bound the named subset. Values `<= 0` are
+ * ignored.
+ */
+export type ConcurrencyGroups = Record<string, number>;
+
+/**
  * A single entry in a task's `outputs` list.
  *
  * - `string` — a literal path *or* a glob pattern relative to the
@@ -77,6 +87,20 @@ export interface Task {
     hashDetails?: TaskHashDetails;
     /** Unique identifier for the task, typically "project:target:configuration" */
     id: string;
+
+    /**
+     * Maximum in-flight instances allowed for this task's target name.
+     * Carried over from {@link TargetConfiguration.maxConcurrent}.
+     */
+    maxConcurrent?: number;
+
+    /**
+     * Workspace-level concurrency group. Carried over from
+     * {@link TargetConfiguration.concurrencyGroup}; the scheduler maps
+     * the name to a numeric cap via
+     * {@link TaskRunnerOptions.concurrencyGroups}.
+     */
+    concurrencyGroup?: string;
 
     /**
      * Output patterns this task produces. Each entry is either a
@@ -288,6 +312,22 @@ export interface TargetConfiguration {
     command?: string;
     /** Named configurations (e.g., "production", "development") */
     configurations?: Record<string, Record<string, unknown>>;
+
+    /**
+     * Workspace-level concurrency group this target opts into. The
+     * scheduler caps the *combined* in-flight count of every task whose
+     * target carries the same group name to the value declared in
+     * {@link TaskRunnerOptions.concurrencyGroups}. Use this when several
+     * targets share an external resource (a single Postgres,
+     * a developer's Docker daemon, an account-wide deploy lock) so the
+     * cap follows the resource, not any single target name.
+     *
+     * Targets that name a group not declared in `concurrencyGroups` run
+     * uncapped — a typo shouldn't deadlock the graph. Caps don't apply
+     * to tasks marked `always: true`; those run in a separate
+     * finalisation phase outside the scheduler.
+     */
+    concurrencyGroup?: string;
     /** Other targets this target depends on */
     dependsOn?: (string | TargetDependencyConfig)[];
     /** The executor/command to run */
@@ -296,6 +336,23 @@ export interface TargetConfiguration {
     inputs?: (string | InputDefinition)[];
     /** Options passed to the executor */
     options?: Record<string, unknown>;
+    /**
+     * Maximum number of in-flight instances of this target across the
+     * whole graph. When set, the scheduler refuses to start an
+     * additional task whose `target.target` equals this target's name
+     * once the running count reaches `maxConcurrent`. Independent of
+     * `--parallel`: the global cap still bounds total in-flight tasks,
+     * and `maxConcurrent` further bounds the per-target subset.
+     *
+     * Use for tests/deploys that share an external resource (DB, port,
+     * mock server). Set to `1` to serialize. Values `<= 0` are ignored.
+     *
+     * If multiple projects declare different values for the same
+     * target name, the runner uses the smallest declared cap. Caps
+     * don't apply to tasks marked `always: true`; those run in a
+     * separate finalisation phase outside the scheduler.
+     */
+    maxConcurrent?: number;
     /** Output patterns produced by this target */
     outputs?: string[];
     /** Whether this target supports parallel execution */
@@ -648,6 +705,26 @@ export interface TaskRunnerOptions {
      */
     incrementalFileHashing?: boolean;
 
+    /**
+     * Workspace-level concurrency group caps. Maps a group name to the
+     * maximum number of in-flight tasks across every target whose
+     * `concurrencyGroup` field equals the same name. Independent of
+     * `parallel`: the global cap still bounds total tasks, and group
+     * caps further bound the named subset.
+     *
+     * Common shape — one cap per shared resource:
+     *
+     *   ```ts
+     *   concurrencyGroups: {
+     *     "db-bound": 2,    // any target hitting the local Postgres
+     *     "deploy-lock": 1, // any deploy target
+     *   }
+     *   ```
+     *
+     * Targets opt in via {@link TargetConfiguration.concurrencyGroup}.
+     * Values `<= 0` are ignored.
+     */
+    concurrencyGroups?: ConcurrencyGroups;
     /** Maximum age of cache entries in milliseconds */
     maxCacheAge?: number;
     /** Maximum cache size (e.g., "1GB") */

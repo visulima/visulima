@@ -118,6 +118,7 @@ export { TrackedTaskExecutor } from "./tracked-executor";
 export type {
     AffectedScope,
     CacheRestoreOptions,
+    ConcurrencyGroups,
     ConcurrentCloseEvent,
     ConcurrentCommandConfig,
     ConcurrentCommandInput,
