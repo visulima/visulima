@@ -1,3 +1,20 @@
+## @visulima/task-runner [1.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/task-runner@1.0.0-alpha.9...@visulima/task-runner@1.0.0-alpha.10) (2026-05-06)
+
+### Features
+
+* **task-runner:** add per-target maxConcurrent and workspace concurrencyGroups ([985d5d1](https://github.com/visulima/visulima/commit/985d5d1d3a594f3b42cfa3f7735bc1bb8055563e))
+
+### Miscellaneous Chores
+
+* **task-runner:** clear lint warnings ([05fa2b6](https://github.com/visulima/visulima/commit/05fa2b6fa259607933fc709dc871b5ef52294721))
+* **task-runner:** fix lint errors ([0f5a6d0](https://github.com/visulima/visulima/commit/0f5a6d00bd321b98f9b4289923e151c59a5b7e58))
+* **task-runner:** fix lint errors in test files ([5e7dc4f](https://github.com/visulima/visulima/commit/5e7dc4fcee277691034666a252d97503aa7be0a4))
+* **task-runner:** housekeeping cleanup ([e837f11](https://github.com/visulima/visulima/commit/e837f1166b43bcfbccfdffe693248db498c0fe1d))
+
+### Continuous Integration
+
+* integrate codspeed for benchmark tracking ([e758f3d](https://github.com/visulima/visulima/commit/e758f3da491cc00d3f8bbf10d7ba3fdf8deb5325))
+
 ## @visulima/task-runner [1.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/task-runner@1.0.0-alpha.8...@visulima/task-runner@1.0.0-alpha.9) (2026-05-04)
 
 ### Features
