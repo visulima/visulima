@@ -102,4 +102,5 @@ jobs:
               uses: "CodSpeedHQ/action@2ade0611822d252f376309654583b75b6984f318" # v4.15.0
               with:
                   token: "${{ secrets.CODSPEED_TOKEN }}"
+                  mode: "simulation"
                   run: "pnpm exec nx affected --target=test:bench --parallel=1"
