@@ -92,46 +92,17 @@ jobs:
                   # TODO: re-enable once pnpm/npm audit works with unpublished @visulima/task-runner-binding-* packages and pnpm registry config
                   run-npm-audit: false
 
-            # Temporary solution until Nx solve this https://github.com/nrwl/nx/issues/22259
-            #
-            # The file list is written to disk (write_output_files) instead
-            # of being read from the action output directly. On long-running
-            # branches the diff against `setSHAs.outputs.base` can grow past
-            # the bash argv+envp size limit; reading via `cat` keeps the
-            # list out of both env and the script's argv text.
-            - name: "Get changed files"
-              id: "files"
-              uses: "tj-actions/changed-files@c65cd883420fd2eb864698a825fc4162dd94482c" # v44.5.7
-              with:
-                  files_ignore_from_source_file: ".github/ignore-files-for-nx-affected.yml"
-                  base_sha: "${{ steps.setSHAs.outputs.base }}"
-                  separator: ","
-                  write_output_files: true
-                  output_dir: ".github/outputs"
-
             - name: "Build"
-              shell: "bash"
-              run: |
-                  files="$(tr '\\' '/' < .github/outputs/all_changed_files.txt)"
-                  pnpm run build:affected:packages --files="$files"
+              run: "pnpm run build:affected:packages"
 
             - name: "lint eslint"
-              shell: "bash"
-              run: |
-                  files="$(tr '\\' '/' < .github/outputs/all_changed_files.txt)"
-                  pnpm run lint:affected:eslint --files="$files"
+              run: "pnpm run lint:affected:eslint"
 
             - name: "lint typescript types"
-              shell: "bash"
-              run: |
-                  files="$(tr '\\' '/' < .github/outputs/all_changed_files.txt)"
-                  pnpm run lint:affected:types --files="$files"
+              run: "pnpm run lint:affected:types"
 
             - name: "lint attw"
-              shell: "bash"
-              run: |
-                  files="$(tr '\\' '/' < .github/outputs/all_changed_files.txt)"
-                  pnpm run lint:affected:attw --files="$files"
+              run: "pnpm run lint:affected:attw"
 
     package-json-lint:
         if: "needs.files-changed.outputs.package_json_lintable == 'true'"
@@ -169,34 +140,11 @@ jobs:
                   # TODO: re-enable once pnpm/npm audit works with unpublished @visulima/task-runner-binding-* packages and pnpm registry config
                   run-npm-audit: false
 
-            # Temporary solution until Nx solve this https://github.com/nrwl/nx/issues/22259
-            #
-            # The file list is written to disk (write_output_files) instead
-            # of being read from the action output directly. On long-running
-            # branches the diff against `setSHAs.outputs.base` can grow past
-            # the bash argv+envp size limit; reading via `cat` keeps the
-            # list out of both env and the script's argv text.
-            - name: "Get changed files"
-              id: "files"
-              uses: "tj-actions/changed-files@c65cd883420fd2eb864698a825fc4162dd94482c" # v44.5.7
-              with:
-                  files_ignore_from_source_file: ".github/ignore-files-for-nx-affected.yml"
-                  base_sha: "${{ steps.setSHAs.outputs.base }}"
-                  separator: ","
-                  write_output_files: true
-                  output_dir: ".github/outputs"
-
             - name: "Build"
-              shell: "bash"
-              run: |
-                  files="$(tr '\\' '/' < .github/outputs/all_changed_files.txt)"
-                  pnpm run build:affected:packages --files="$files"
+              run: "pnpm run build:affected:packages"
 
             - name: "lint package.json"
-              shell: "bash"
-              run: |
-                  files="$(tr '\\' '/' < .github/outputs/all_changed_files.txt)"
-                  pnpm run lint:affected:package-json --files="$files"
+              run: "pnpm run lint:affected:package-json"
 
     vis-schemas-drift:
         if: "needs.files-changed.outputs.vis_schemas_lintable == 'true'"

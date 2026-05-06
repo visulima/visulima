@@ -3,29 +3,15 @@
 // @ts-check
 import { execSync } from "node:child_process";
 import { join, dirname } from "node:path";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { env, exit } from "node:process";
+import { exit } from "node:process";
 
-// Prefer reading the file list from disk (CHANGED_FILES_PATH) to avoid the
-// argv+envp size limit on long-running branches; fall back to CHANGED_FILES
-// for backwards compatibility.
-let changedFiles = "";
-
-if (env.CHANGED_FILES_PATH && existsSync(env.CHANGED_FILES_PATH)) {
-    changedFiles = readFileSync(env.CHANGED_FILES_PATH, "utf8").trim().replace(/\\/g, "/");
-} else if (env.CHANGED_FILES) {
-    changedFiles = env.CHANGED_FILES;
-}
-
-if (!changedFiles) {
-    console.log("No changed files found");
-
-    exit(0);
-}
-
+// `nx affected` reads NX_BASE / NX_HEAD from the env (set by nrwl/nx-set-shas
+// in the workflow). Don't pass --files=<huge list> — that hits the kernel
+// argv size limit on long diffs.
 const json = execSync(
-    `pnpm exec nx show projects --affected --exclude=*-bench,docs,storybook,shared-utils --files=${changedFiles} --json`,
+    `pnpm exec nx show projects --affected --exclude=*-bench,docs,storybook,shared-utils --json`,
 ).toString("utf8");
 
 /** @type {string[]} */
