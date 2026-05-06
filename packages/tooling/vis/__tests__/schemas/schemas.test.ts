@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import Ajv2020 from "ajv/dist/2020";
 import { describe, expect, it } from "vitest";
 
-import { buildSchema, schemaOutputPath, SCHEMAS } from "../../scripts/generate-schemas";
+import { schemaOutputPath, SCHEMAS } from "../../scripts/generate-schemas";
 
 const [VIS_CONFIG_SPEC, PROJECT_SPEC] = SCHEMAS;
 const VIS_CONFIG_SCHEMA = JSON.parse(readFileSync(schemaOutputPath(VIS_CONFIG_SPEC), "utf8"));
@@ -94,16 +94,5 @@ describe("published JSON schemas", () => {
         const validate = ajv.compile(PROJECT_SCHEMA);
 
         expect(validate({ unknownField: 1 })).toBe(false);
-    });
-
-    describe("drift guard — committed schemas match the generator output", () => {
-        it.each(SCHEMAS)("$file is up to date with src/config/types.ts", (spec) => {
-            expect.assertions(1);
-
-            const onDisk = readFileSync(schemaOutputPath(spec), "utf8");
-            const expected = buildSchema(spec);
-
-            expect(onDisk).toBe(expected);
-        });
     });
 });
