@@ -2,6 +2,7 @@
     "name": "deep-clone-bench",
     "version": "0.0.0",
     "private": true,
+    "type": "module",
     "scripts": {
         "test:bench": "vitest bench"
     },
@@ -20,6 +21,7 @@
         "rfdc": "catalog:prod"
     },
     "devDependencies": {
+        "@codspeed/vitest-plugin": "catalog:test",
         "@types/lodash.clonedeep": "catalog:types",
         "typescript": "catalog:tsc",
         "vitest": "catalog:test"

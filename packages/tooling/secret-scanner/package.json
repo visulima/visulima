@@ -19,11 +19,6 @@
     "bugs": {
         "url": "https://github.com/visulima/visulima/issues"
     },
-    "license": "MIT",
-    "author": {
-        "name": "Daniel Bannert",
-        "email": "d.bannert@anolilab.de"
-    },
     "repository": {
         "type": "git",
         "url": "git+https://github.com/visulima/visulima.git",
@@ -39,6 +34,20 @@
             "url": "https://anolilab.com/support"
         }
     ],
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "sideEffects": false,
+    "type": "module",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        },
+        "./package.json": "./package.json"
+    },
     "files": [
         "data/ruleset.json",
         "data/LICENSE-GITLEAKS",
@@ -50,19 +59,6 @@
         "CHANGELOG.md",
         "LICENSE.md"
     ],
-    "type": "module",
-    "sideEffects": false,
-    "exports": {
-        ".": {
-            "types": "./dist/index.d.ts",
-            "default": "./dist/index.js"
-        },
-        "./package.json": "./package.json"
-    },
-    "publishConfig": {
-        "access": "public",
-        "provenance": true
-    },
     "scripts": {
         "build": "pnpm run build:rules && packem build --development",
         "build:native": "pnpm run build:rules:prod && napi build --platform --release --esm --manifest-path native/Cargo.toml --output-dir . --js index.js",
@@ -80,7 +76,6 @@
         "lint:prettier:fix": "prettier --config=prettier.config.js --write .",
         "lint:types": "tsc --noEmit",
         "test": "vitest run",
-        "test:bench": "vitest bench",
         "test:coverage": "vitest run --coverage",
         "test:parity": "SECRET_SCANNER_PARITY=1 vitest run __tests__/parity.test.ts",
         "test:ui": "vitest --ui --coverage.enabled=true",
@@ -168,6 +163,13 @@
         "@visulima/secret-scanner-binding-win32-arm64-msvc": "workspace:*",
         "@visulima/secret-scanner-binding-win32-x64-msvc": "workspace:*"
     },
+    "engines": {
+        "node": "^22.14.0 || >=24.10.0"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    },
     "napi": {
         "binaryName": "secret-scanner-native",
         "packageName": "@visulima/secret-scanner-binding",
@@ -181,8 +183,5 @@
             "x86_64-pc-windows-msvc",
             "aarch64-pc-windows-msvc"
         ]
-    },
-    "engines": {
-        "node": "^22.14.0 || >=24.10.0"
     }
 }

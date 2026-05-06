@@ -52,6 +52,11 @@
             "outputs": ["{projectRoot}/coverage"],
             "cache": true
         },
+        "test:bench": {
+            "dependsOn": ["^build"],
+            "inputs": ["default", "^production", "{projectRoot}/vitest.config.ts"],
+            "cache": true
+        },
         "build-storybook": {
             "dependsOn": ["^build", "^build-storybook"],
             "inputs": [

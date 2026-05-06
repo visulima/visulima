@@ -1,0 +1,122 @@
+# https://help.github.com/en/categories/automating-your-workflow-with-github-actions
+
+name: "CodSpeed"
+
+on: # yamllint disable-line rule:truthy
+    push:
+        branches: ["main", "alpha"]
+    pull_request: # yamllint disable-line rule:empty-values
+        types: ["opened", "synchronize", "reopened"]
+    workflow_dispatch: # yamllint disable-line rule:empty-values
+
+concurrency:
+    group: "${{ github.workflow }}-${{ github.ref }}"
+    cancel-in-progress: true
+
+permissions:
+    contents: "read"
+
+env:
+    NX_BRANCH: "${{ github.event.number || github.ref_name }}"
+    NX_RUN_GROUP: "${{ github.run_id }}"
+
+jobs:
+    benchmarks:
+        name: "Run benchmarks"
+        runs-on: "ubuntu-latest"
+        timeout-minutes: 30
+        steps:
+            - name: "Harden Runner"
+              uses: "step-security/harden-runner@95d9a5deda9de15063e7595e9719c11c38c90ae2" # v2.13.2
+              with:
+                  egress-policy: "audit"
+
+            - name: "Git checkout"
+              uses: "actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5" # v4.3.1
+              env:
+                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
+                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
+                  EMAIL: "github-actions[bot]@users.noreply.github.com"
+              with:
+                  # Pulls all commits (needed for NX affected)
+                  fetch-depth: 0
+
+            - name: "Derive appropriate SHAs for base and head for `nx affected` commands"
+              id: "setSHAs"
+              uses: "nrwl/nx-set-shas@3e9ad7370203c1e93d109be57f3b72eb0eb511b1" # v4
+
+            - name: "Setup resources and environment"
+              id: "setup"
+              uses: "anolilab/workflows/step/setup@main"
+              with:
+                  node-version: "22"
+                  install-node-gyp: "true"
+                  skip-playwright: "true"
+                  # TODO: re-enable once pnpm/npm audit works with unpublished @visulima/task-runner-binding-* packages and pnpm registry config
+                  run-signatures-audit: false
+                  run-npm-audit: false
+
+            - name: "Wait for Build Native workflow"
+              uses: "lewagon/wait-on-check-action@3603e826ee561ea102b58accb5ea55a1a7482343" # v1.4.1
+              timeout-minutes: 30
+              with:
+                  ref: "${{ github.event.pull_request.head.sha || github.sha }}"
+                  repo-token: "${{ secrets.GITHUB_TOKEN }}"
+                  wait-interval: 15
+                  check-name: "Check Native Build"
+                  allowed-conclusions: "success,skipped,neutral"
+
+            # Pull the host-matching binaries produced by build-native.yml so benches that require
+            # a compiled native binding (e.g. @visulima/tui, @visulima/task-runner) can load it.
+            - name: "Download native build artifacts"
+              uses: "dawidd6/action-download-artifact@8a338493df3d275e4a7a63bcff3b8fe97e51a927" # v19
+              with:
+                  workflow: "build-native.yml"
+                  commit: "${{ github.event.pull_request.head.sha || github.sha }}"
+                  name: "bindings-(.+)"
+                  name_is_regexp: true
+                  path: "artifacts"
+                  if_no_artifact_found: "warn"
+                  allow_forks: false
+
+            - name: "Distribute native artifacts to package roots"
+              shell: "bash"
+              run: |
+                  if [ ! -d artifacts ]; then
+                    echo "no native artifacts downloaded, skipping distribution"
+                    exit 0
+                  fi
+
+                  find artifacts -name "task-runner-native.*.node" -exec mv {} packages/tooling/task-runner/ \; 2>/dev/null || true
+                  find artifacts -name "tui-native.*.node" -exec mv {} packages/terminal/tui/ \; 2>/dev/null || true
+                  find artifacts -name "vis-native.*.node" -exec mv {} packages/tooling/vis/ \; 2>/dev/null || true
+                  find artifacts -name "secret-scanner-native.*.node" -exec mv {} packages/tooling/secret-scanner/ \; 2>/dev/null || true
+
+                  rm -rf artifacts/
+
+            # Temporary solution until Nx solve this https://github.com/nrwl/nx/issues/22259
+            - name: "Get changed files"
+              id: "files"
+              uses: "tj-actions/changed-files@c65cd883420fd2eb864698a825fc4162dd94482c" # v44.5.7
+              with:
+                  files_ignore_from_source_file: ".github/ignore-files-for-nx-affected.yml"
+                  base_sha: "${{ steps.setSHAs.outputs.base }}"
+                  separator: ","
+
+            - name: "Build affected packages"
+              shell: "bash"
+              env:
+                  CHANGED_FILES: "${{ steps.files.outputs.all_changed_files }}"
+              run: |
+                  files="${CHANGED_FILES//\\//}"
+                  pnpm run build:affected:prod:packages --files="$files"
+
+            - name: "Run benchmarks"
+              uses: "CodSpeedHQ/action@2ade0611822d252f376309654583b75b6984f318" # v4.15.0
+              env:
+                  CHANGED_FILES: "${{ steps.files.outputs.all_changed_files }}"
+              with:
+                  token: "${{ secrets.CODSPEED_TOKEN }}"
+                  run: |
+                      files="${CHANGED_FILES//\\//}"
+                      pnpm exec nx affected --target=test:bench --parallel=1 --files="$files"

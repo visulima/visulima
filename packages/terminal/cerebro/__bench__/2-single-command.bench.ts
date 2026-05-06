@@ -27,7 +27,7 @@ describe("2. Single Command Registration", () => {
         cli.dispose();
     });
 
-    bench("Commander - Register command with 3 options", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("Commander - Register command with 3 options", () => {
         const program = new Command();
 
         program
@@ -42,7 +42,7 @@ describe("2. Single Command Registration", () => {
             });
     });
 
-    bench("Yargs - Register command with 3 options", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("Yargs - Register command with 3 options", () => {
         yargs(hideBin(["node", "script.js"]))
             .scriptName("test-cli")
             .command("build", "Build the project", (yargsBuilder) =>
@@ -65,7 +65,7 @@ describe("2. Single Command Registration", () => {
             );
     });
 
-    bench("Meow - Define flags for command", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("Meow - Define flags for command", () => {
         meow("Build the project", {
             flags: {
                 output: {
@@ -85,7 +85,7 @@ describe("2. Single Command Registration", () => {
         });
     });
 
-    bench("CAC - Register command with 3 options", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("CAC - Register command with 3 options", () => {
         const cli = cac("test-cli");
 
         cli.command("build", "Build the project")
@@ -97,7 +97,7 @@ describe("2. Single Command Registration", () => {
             });
     });
 
-    bench("Cleye - Define flags (no command)", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("Cleye - Define flags (no command)", () => {
         cleye({
             flags: {
                 output: {

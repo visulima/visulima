@@ -17,19 +17,19 @@ describe("1. Cold Start / Initialization (Critical for CLI tools)", () => {
         return cerebroCli;
     });
 
-    bench("Commander - Initialize program", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("Commander - Initialize program", () => {
         const program = new Command();
 
         program.name("test-cli").description("Test CLI");
     });
 
-    bench("Yargs - Initialize parser", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("Yargs - Initialize parser", () => {
         yargs(hideBin(["node", "script.js"]))
             .scriptName("test-cli")
             .usage("Test CLI");
     });
 
-    bench("Oclif - Define command class", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("Oclif - Define command class", () => {
         class TestCommand extends OclifCommand {
             // eslint-disable-next-line class-methods-use-this
             public async run() {
@@ -39,7 +39,7 @@ describe("1. Cold Start / Initialization (Critical for CLI tools)", () => {
         TestCommand.description = "Test CLI";
     });
 
-    bench("Gunshi - Define command object", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("Gunshi - Define command object", () => {
         // Define command structure
         const description = "Test CLI";
         const name = "test";
@@ -47,17 +47,17 @@ describe("1. Cold Start / Initialization (Critical for CLI tools)", () => {
         return { description, name };
     });
 
-    bench("Meow - Initialize CLI", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("Meow - Initialize CLI", () => {
         meow("Test CLI", {
             importMeta: import.meta,
         });
     });
 
-    bench("CAC - Initialize CLI", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("CAC - Initialize CLI", () => {
         cac("test-cli");
     });
 
-    bench("Cleye - Initialize CLI", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("Cleye - Initialize CLI", () => {
         cleye({
             name: "test-cli",
         });

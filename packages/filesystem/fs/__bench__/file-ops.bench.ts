@@ -41,7 +41,7 @@ describe("ensureFile (async)", () => {
         await cleanup();
     });
 
-    bench("fs-extra", async () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("fs-extra", async () => {
         await ensureFile(testFile);
     });
 
@@ -59,7 +59,7 @@ describe("ensureFile (sync)", () => {
         cleanup();
     });
 
-    bench("fs-extra (sync)", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("fs-extra (sync)", () => {
         ensureFileSync(testFile);
     });
 
@@ -67,7 +67,7 @@ describe("ensureFile (sync)", () => {
         visulimaEnsureFileSync(testFile);
     });
 
-    bench("node:fs (sync)", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("node:fs (sync)", () => {
         nodeWriteFileSync(testFile, "");
     });
 });
@@ -81,11 +81,11 @@ describe("writeFile (async)", () => {
         await cleanup();
     });
 
-    bench("node:fs/promises", async () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("node:fs/promises", async () => {
         await nodeWriteFile(testFile, testData);
     });
 
-    bench("fs-extra", async () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("fs-extra", async () => {
         await writeFile(testFile, testData);
     });
 
@@ -103,7 +103,7 @@ describe("writeFile (sync)", () => {
         cleanup();
     });
 
-    bench("fs-extra (sync)", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("fs-extra (sync)", () => {
         writeFileSync(testFile, testData);
     });
 
@@ -111,7 +111,7 @@ describe("writeFile (sync)", () => {
         visulimaWriteFileSync(testFile, testData);
     });
 
-    bench("node:fs (sync)", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("node:fs (sync)", () => {
         nodeWriteFileSync(testFile, testData);
     });
 });
@@ -124,11 +124,11 @@ describe("readFile (async)", () => {
         await cleanup();
     });
 
-    bench("node:fs/promises", async () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("node:fs/promises", async () => {
         await nodeReadFile(testFile);
     });
 
-    bench("fs-extra", async () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("fs-extra", async () => {
         await readFile(testFile);
     });
 
@@ -146,7 +146,7 @@ describe("readFile (sync)", () => {
         cleanup();
     });
 
-    bench("fs-extra (sync)", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("fs-extra (sync)", () => {
         readFileSync(testFile);
     });
 
@@ -154,7 +154,7 @@ describe("readFile (sync)", () => {
         visulimaReadFileSync(testFile);
     });
 
-    bench("node:fs (sync)", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("node:fs (sync)", () => {
         nodeReadFileSync(testFile);
     });
 });
@@ -169,12 +169,12 @@ describe("move (async)", () => {
         await cleanup();
     });
 
-    bench("node:fs/promises", async () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("node:fs/promises", async () => {
         await nodeRename(testFile, testFile2);
         await nodeRename(testFile2, testFile);
     });
 
-    bench("fs-extra", async () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("fs-extra", async () => {
         await move(testFile, testFile2, { overwrite: true });
         await move(testFile2, testFile, { overwrite: true });
     });
@@ -195,7 +195,7 @@ describe("move (sync)", () => {
         cleanup();
     });
 
-    bench("fs-extra (sync)", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("fs-extra (sync)", () => {
         moveSync(testFile, testFile2, { overwrite: true });
         moveSync(testFile2, testFile, { overwrite: true });
     });
@@ -205,7 +205,7 @@ describe("move (sync)", () => {
         visulimaMoveSync(testFile2, testFile, { overwrite: true });
     });
 
-    bench("node:fs (sync)", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("node:fs (sync)", () => {
         nodeRenameSync(testFile, testFile2);
         nodeRenameSync(testFile2, testFile);
     });
@@ -222,7 +222,7 @@ describe("remove (async)", () => {
         await cleanup();
     });
 
-    bench("fs-extra", async () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("fs-extra", async () => {
         await remove(testFile);
     });
 
@@ -230,7 +230,7 @@ describe("remove (async)", () => {
         await visulimaRemove(testFile);
     });
 
-    bench("node:fs", async () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("node:fs", async () => {
         await nodeRm(testFile, { force: true });
     });
 });
@@ -246,7 +246,7 @@ describe("remove (sync)", () => {
         cleanup();
     });
 
-    bench("fs-extra (sync)", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("fs-extra (sync)", () => {
         removeSync(testFile);
     });
 
@@ -254,7 +254,7 @@ describe("remove (sync)", () => {
         visulimaRemoveSync(testFile);
     });
 
-    bench("node:fs (sync)", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("node:fs (sync)", () => {
         nodeRmSync(testFile, { force: true });
     });
 });

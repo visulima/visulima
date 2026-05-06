@@ -36,7 +36,7 @@ describe("Command Line Args Benchmark", () => {
             commandLineArgs(optionDefinitions, { argv: simpleArgs });
         });
 
-        bench("command-line-args", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("command-line-args", () => {
             const optionDefinitions = [
                 { name: "verbose", type: Boolean },
                 { name: "count", type: Number },
@@ -46,7 +46,7 @@ describe("Command Line Args Benchmark", () => {
             commandLineArgsOriginal(optionDefinitions, { argv: simpleArgs });
         });
 
-        bench("jackspeak", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("jackspeak", () => {
             const parser = jackspeakParseArgs()
                 .opt({ name: { type: "string" } })
                 .flag({ verbose: { type: "boolean" } })
@@ -55,7 +55,7 @@ describe("Command Line Args Benchmark", () => {
             parser.parse(simpleArgs);
         });
 
-        bench("node:util.parseArgs", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("node:util.parseArgs", () => {
             nodeParseArgs({
                 args: simpleArgs,
                 options: {
@@ -66,13 +66,13 @@ describe("Command Line Args Benchmark", () => {
             });
         });
 
-        bench("args", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("args", () => {
             const parser = new args.Args().option("verbose", "Enable verbose output").option("count", "Count value", 0).option("name", "Name value", "");
 
             parser.parse(argsSimpleArgs);
         });
 
-        bench("args-tokens", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("args-tokens", () => {
             parseArgsTokens(simpleArgs, {
                 options: {
                     count: { type: "number" },
@@ -82,7 +82,7 @@ describe("Command Line Args Benchmark", () => {
             });
         });
 
-        bench("yargs-parser", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("yargs-parser", () => {
             yargsParser(simpleArgs, {
                 boolean: ["verbose"],
                 number: ["count"],
@@ -90,7 +90,7 @@ describe("Command Line Args Benchmark", () => {
             });
         });
 
-        bench("argparse", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("argparse", () => {
             const parser = new ArgumentParser({ prog: "test" });
 
             parser.add_argument("-v", "--verbose", { action: "store_true" });
@@ -99,14 +99,14 @@ describe("Command Line Args Benchmark", () => {
             parser.parse_args(simpleArgs);
         });
 
-        bench("mri", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("mri", () => {
             mri(simpleArgs, {
                 boolean: ["verbose"],
                 string: ["name"],
             });
         });
 
-        bench("@bomb.sh/args", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("@bomb.sh/args", () => {
             bombArgsParse(simpleArgs, {
                 count: Number,
                 name: String,
@@ -114,7 +114,7 @@ describe("Command Line Args Benchmark", () => {
             });
         });
 
-        bench("minimist", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("minimist", () => {
             minimist(simpleArgs, {
                 boolean: ["verbose"],
                 string: ["name"],
@@ -134,7 +134,7 @@ describe("Command Line Args Benchmark", () => {
             commandLineArgs(optionDefinitions, { argv: booleanArgs });
         });
 
-        bench("command-line-args", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("command-line-args", () => {
             const optionDefinitions = [
                 { name: "verbose", type: Boolean },
                 { name: "quiet", type: Boolean },
@@ -145,7 +145,7 @@ describe("Command Line Args Benchmark", () => {
             commandLineArgsOriginal(optionDefinitions, { argv: booleanArgs });
         });
 
-        bench("jackspeak", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("jackspeak", () => {
             const parser = jackspeakParseArgs()
                 .flag({ verbose: { type: "boolean" } })
                 .flag({ quiet: { type: "boolean" } })
@@ -155,7 +155,7 @@ describe("Command Line Args Benchmark", () => {
             parser.parse(booleanArgs);
         });
 
-        bench("node:util.parseArgs", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("node:util.parseArgs", () => {
             nodeParseArgs({
                 args: booleanArgs,
                 options: {
@@ -167,7 +167,7 @@ describe("Command Line Args Benchmark", () => {
             });
         });
 
-        bench("args", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("args", () => {
             const parser = new args.Args()
                 .option("verbose", "Enable verbose output")
                 .option("quiet", "Enable quiet mode")
@@ -177,7 +177,7 @@ describe("Command Line Args Benchmark", () => {
             parser.parse(argsBooleanArgs);
         });
 
-        bench("args-tokens", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("args-tokens", () => {
             parseArgsTokens(booleanArgs, {
                 options: {
                     color: { type: "boolean" },
@@ -188,13 +188,13 @@ describe("Command Line Args Benchmark", () => {
             });
         });
 
-        bench("yargs-parser", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("yargs-parser", () => {
             yargsParser(booleanArgs, {
                 boolean: ["verbose", "quiet", "debug", "color"],
             });
         });
 
-        bench("argparse", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("argparse", () => {
             const parser = new ArgumentParser({ prog: "test" });
 
             parser.add_argument("-v", "--verbose", { action: "store_true" });
@@ -204,13 +204,13 @@ describe("Command Line Args Benchmark", () => {
             parser.parse_args(booleanArgs);
         });
 
-        bench("mri", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("mri", () => {
             mri(booleanArgs, {
                 boolean: ["verbose", "quiet", "debug", "color"],
             });
         });
 
-        bench("@bomb.sh/args", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("@bomb.sh/args", () => {
             bombArgsParse(booleanArgs, {
                 color: Boolean,
                 debug: Boolean,
@@ -219,7 +219,7 @@ describe("Command Line Args Benchmark", () => {
             });
         });
 
-        bench("minimist", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("minimist", () => {
             minimist(booleanArgs, {
                 boolean: ["verbose", "quiet", "debug", "color"],
             });

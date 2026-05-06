@@ -124,7 +124,7 @@ rslogLogger.override({
 });
 
 describe("basic", async () => {
-    bench(
+    bench.skipIf(process.env.CODSPEED_ENV)(
         "signale",
         async () => {
             signale.info("hello world");
@@ -154,7 +154,7 @@ describe("basic", async () => {
         },
     );
 
-    bench(
+    bench.skipIf(process.env.CODSPEED_ENV)(
         "consola server",
         async () => {
             serverConsola.info("hello world");
@@ -164,7 +164,7 @@ describe("basic", async () => {
         },
     );
 
-    bench(
+    bench.skipIf(process.env.CODSPEED_ENV)(
         "consola browser",
         async () => {
             browserConsola.info("hello world");
@@ -174,7 +174,7 @@ describe("basic", async () => {
         },
     );
 
-    bench(
+    bench.skipIf(process.env.CODSPEED_ENV)(
         "tslog",
         async () => {
             tsLog.info("hello world");
@@ -184,7 +184,7 @@ describe("basic", async () => {
         },
     );
 
-    bench(
+    bench.skipIf(process.env.CODSPEED_ENV)(
         "bunyan node stream",
         async () => {
             bunyanNodeStream.info("hello world");
@@ -194,7 +194,7 @@ describe("basic", async () => {
         },
     );
 
-    bench(
+    bench.skipIf(process.env.CODSPEED_ENV)(
         "winston node stream",
         async () => {
             winstonNodeStream.info("hello world");
@@ -204,7 +204,7 @@ describe("basic", async () => {
         },
     );
 
-    bench(
+    bench.skipIf(process.env.CODSPEED_ENV)(
         "pino destination",
         async () => {
             pinoDestination.info("hello world");
@@ -214,7 +214,7 @@ describe("basic", async () => {
         },
     );
 
-    bench(
+    bench.skipIf(process.env.CODSPEED_ENV)(
         "pino node stream",
         async () => {
             pinoNodeStream.info("hello world");
@@ -224,7 +224,7 @@ describe("basic", async () => {
         },
     );
 
-    bench(
+    bench.skipIf(process.env.CODSPEED_ENV)(
         "pino min length",
         async () => {
             pinoMinLength.info("hello world");
@@ -234,7 +234,7 @@ describe("basic", async () => {
         },
     );
 
-    bench(
+    bench.skipIf(process.env.CODSPEED_ENV)(
         "ogma logger",
         async () => {
             ogmaLogger.log("hello world");
@@ -244,7 +244,7 @@ describe("basic", async () => {
         },
     );
 
-    bench(
+    bench.skipIf(process.env.CODSPEED_ENV)(
         "ogma json logger",
         async () => {
             ogmaJsonLogger.log("hello world");
@@ -254,7 +254,7 @@ describe("basic", async () => {
         },
     );
 
-    bench(
+    bench.skipIf(process.env.CODSPEED_ENV)(
         "diary",
         async () => {
             diaryLogger.info("info message");
@@ -264,7 +264,7 @@ describe("basic", async () => {
         },
     );
 
-    bench(
+    bench.skipIf(process.env.CODSPEED_ENV)(
         "roarr",
         async () => {
             log.info("hello world");
@@ -274,7 +274,7 @@ describe("basic", async () => {
         },
     );
 
-    bench(
+    bench.skipIf(process.env.CODSPEED_ENV)(
         "rslog",
         async () => {
             rslogLogger.info("hello world");

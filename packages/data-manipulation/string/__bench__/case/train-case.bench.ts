@@ -18,13 +18,13 @@ describe("trainCase", () => {
         }
     });
 
-    bench("case-anything trainCase", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("case-anything trainCase", () => {
         for (const stringValue of TEST_STRINGS) {
             caseAnythingTrainCase(stringValue);
         }
     });
 
-    bench("scule trainCase", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("scule trainCase", () => {
         for (const stringValue of TEST_STRINGS) {
             sculeTrainCase(stringValue);
         }
@@ -37,13 +37,13 @@ describe("trainCase", () => {
             }
         });
 
-        bench("case-anything trainCase", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("case-anything trainCase", () => {
             for (const stringValue of SPECIAL_STRINGS) {
                 caseAnythingTrainCase(stringValue);
             }
         });
 
-        bench("scule trainCase", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("scule trainCase", () => {
             for (const stringValue of SPECIAL_STRINGS) {
                 sculeTrainCase(stringValue);
             }
@@ -57,13 +57,13 @@ describe("trainCase", () => {
             }
         });
 
-        bench("case-anything trainCase", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("case-anything trainCase", () => {
             for (const stringValue of ACRONYM_STRINGS) {
                 caseAnythingTrainCase(stringValue);
             }
         });
 
-        bench("scule trainCase", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("scule trainCase", () => {
             for (const stringValue of ACRONYM_STRINGS) {
                 sculeTrainCase(stringValue);
             }

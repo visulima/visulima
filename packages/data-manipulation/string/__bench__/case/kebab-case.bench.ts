@@ -22,31 +22,31 @@ describe("kebabCase", () => {
         }
     });
 
-    bench("lodash kebabCase", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("lodash kebabCase", () => {
         for (const stringValue of TEST_STRINGS) {
             lodashKebabCase(stringValue);
         }
     });
 
-    bench("case-anything kebabCase", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("case-anything kebabCase", () => {
         for (const stringValue of TEST_STRINGS) {
             caseAnythingKebabCase(stringValue);
         }
     });
 
-    bench("string-ts kebabCase", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("string-ts kebabCase", () => {
         for (const stringValue of TEST_STRINGS) {
             stringTsKebabCase(stringValue);
         }
     });
 
-    bench("scule kebabCase", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("scule kebabCase", () => {
         for (const stringValue of TEST_STRINGS) {
             sculeKebabCase(stringValue);
         }
     });
 
-    bench("change-case kebabCase", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("change-case kebabCase", () => {
         for (const stringValue of TEST_STRINGS) {
             changeCaseKebab(stringValue);
         }
@@ -59,31 +59,31 @@ describe("kebabCase", () => {
             }
         });
 
-        bench("lodash kebabCase", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("lodash kebabCase", () => {
             for (const stringValue of SPECIAL_STRINGS) {
                 lodashKebabCase(stringValue);
             }
         });
 
-        bench("case-anything kebabCase", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("case-anything kebabCase", () => {
             for (const stringValue of SPECIAL_STRINGS) {
                 caseAnythingKebabCase(stringValue);
             }
         });
 
-        bench("scule kebabCase", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("scule kebabCase", () => {
             for (const stringValue of SPECIAL_STRINGS) {
                 sculeKebabCase(stringValue);
             }
         });
 
-        bench("change-case kebabCase", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("change-case kebabCase", () => {
             for (const stringValue of SPECIAL_STRINGS) {
                 changeCaseKebab(stringValue);
             }
         });
 
-        bench("string-ts kebabCase", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("string-ts kebabCase", () => {
             for (const stringValue of SPECIAL_STRINGS) {
                 stringTsKebabCase(stringValue);
             }
@@ -97,31 +97,31 @@ describe("kebabCase", () => {
             }
         });
 
-        bench("lodash kebabCase", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("lodash kebabCase", () => {
             for (const stringValue of ACRONYM_STRINGS) {
                 lodashKebabCase(stringValue);
             }
         });
 
-        bench("case-anything kebabCase", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("case-anything kebabCase", () => {
             for (const stringValue of ACRONYM_STRINGS) {
                 caseAnythingKebabCase(stringValue);
             }
         });
 
-        bench("scule kebabCase", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("scule kebabCase", () => {
             for (const stringValue of ACRONYM_STRINGS) {
                 sculeKebabCase(stringValue);
             }
         });
 
-        bench("change-case kebabCase", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("change-case kebabCase", () => {
             for (const stringValue of ACRONYM_STRINGS) {
                 changeCaseKebab(stringValue);
             }
         });
 
-        bench("string-ts kebabCase", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("string-ts kebabCase", () => {
             for (const stringValue of ACRONYM_STRINGS) {
                 stringTsKebabCase(stringValue);
             }

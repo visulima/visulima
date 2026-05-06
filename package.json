@@ -3,23 +3,27 @@
     "version": "0.0.0",
     "private": true,
     "license": "MIT",
+    "sideEffects": false,
+    "type": "module",
     "workspaces": [
         "packages/*/*",
         "apps/*",
         "shared/*"
     ],
-    "type": "module",
-    "sideEffects": false,
     "scripts": {
+        "bench": "nx graph --file=/tmp/discardgraph.json 2>/dev/null && nx run-many --target=test:bench --parallel",
+        "bench:affected": "nx affected --target=test:bench --parallel --nxBail",
         "bench:cerebro": "pnpm --filter \"cerebro-bench\" run test:bench",
         "bench:colorize": "pnpm --filter \"colorize-bench\" run test:bench",
-        "bench:deep-clone": "pnpm --filter \"deep-clone\" run test:bench",
-        "bench:fmt": "pnpm --filter \"fmt\" run test:bench",
+        "bench:deep-clone": "pnpm --filter \"deep-clone-bench\" run test:bench",
+        "bench:fmt": "pnpm --filter \"fmt-bench\" run test:bench",
         "bench:inspector": "pnpm --filter \"inspector-bench\" run test:bench",
         "bench:pail": "pnpm --filter \"pail-bench\" run test:bench",
         "bench:redact": "pnpm --filter \"redact-bench\" run test:bench",
         "bench:string": "pnpm --filter \"string-bench\" run test:bench",
-        "bench:tabular": "pnpm --filter \"tabular\" run test:bench",
+        "bench:tabular": "pnpm --filter \"tabular-bench\" run test:bench",
+        "bench:task-runner": "pnpm --filter \"task-runner-bench\" run test:bench",
+        "bench:tui": "pnpm --filter \"tui-bench\" run test:bench",
         "build": "nx graph --file=/tmp/discardgraph.json 2>/dev/null && nx run-many --target=build --all --parallel",
         "build:affected:packages": "nx affected --target=build --exclude=*-bench,storybook,shared-utils --nxBail",
         "build:affected:prod:packages": "nx affected --target=build:prod --exclude=*-bench,storybook,shared-utils --nxBail",
@@ -300,6 +304,9 @@
         "test:vite-overlay": "pnpm --filter \"vite-overlay\" run test",
         "test:web": "pnpm --filter \"www\" run test"
     },
+    "browserslist": [
+        "extends browserslist-config-anolilab"
+    ],
     "dependencies": {
         "@anolilab/commitlint-config": "catalog:prod",
         "@anolilab/lint-staged-config": "catalog:lint",
@@ -331,11 +338,8 @@
         "typescript": "catalog:tsc",
         "vitest": "catalog:test"
     },
-    "browserslist": [
-        "extends browserslist-config-anolilab"
-    ],
+    "packageManager": "pnpm@10.33.2",
     "engines": {
         "node": "^22.14.0 || >=24.10.0"
-    },
-    "packageManager": "pnpm@10.33.2"
+    }
 }

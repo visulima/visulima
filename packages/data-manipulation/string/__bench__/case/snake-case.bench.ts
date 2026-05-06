@@ -22,31 +22,31 @@ describe("snakeCase", () => {
         }
     });
 
-    bench("lodash snakeCase", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("lodash snakeCase", () => {
         for (const stringValue of TEST_STRINGS) {
             lodashSnakeCase(stringValue);
         }
     });
 
-    bench("case-anything snakeCase", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("case-anything snakeCase", () => {
         for (const stringValue of TEST_STRINGS) {
             caseAnythingSnakeCase(stringValue);
         }
     });
 
-    bench("string-ts snakeCase", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("string-ts snakeCase", () => {
         for (const stringValue of TEST_STRINGS) {
             stringTsSnakeCase(stringValue);
         }
     });
 
-    bench("scule snakeCase", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("scule snakeCase", () => {
         for (const stringValue of TEST_STRINGS) {
             sculeSnakeCase(stringValue);
         }
     });
 
-    bench("change-case snakeCase", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("change-case snakeCase", () => {
         for (const stringValue of TEST_STRINGS) {
             changeCaseSnake(stringValue);
         }
@@ -59,31 +59,31 @@ describe("snakeCase", () => {
             }
         });
 
-        bench("lodash snakeCase", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("lodash snakeCase", () => {
             for (const stringValue of SPECIAL_STRINGS) {
                 lodashSnakeCase(stringValue);
             }
         });
 
-        bench("case-anything snakeCase", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("case-anything snakeCase", () => {
             for (const stringValue of SPECIAL_STRINGS) {
                 caseAnythingSnakeCase(stringValue);
             }
         });
 
-        bench("scule snakeCase", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("scule snakeCase", () => {
             for (const stringValue of SPECIAL_STRINGS) {
                 sculeSnakeCase(stringValue);
             }
         });
 
-        bench("change-case snakeCase", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("change-case snakeCase", () => {
             for (const stringValue of SPECIAL_STRINGS) {
                 changeCaseSnake(stringValue);
             }
         });
 
-        bench("string-ts snakeCase", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("string-ts snakeCase", () => {
             for (const stringValue of SPECIAL_STRINGS) {
                 stringTsSnakeCase(stringValue);
             }
@@ -97,31 +97,31 @@ describe("snakeCase", () => {
             }
         });
 
-        bench("lodash snakeCase", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("lodash snakeCase", () => {
             for (const stringValue of ACRONYM_STRINGS) {
                 lodashSnakeCase(stringValue);
             }
         });
 
-        bench("case-anything snakeCase", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("case-anything snakeCase", () => {
             for (const stringValue of ACRONYM_STRINGS) {
                 caseAnythingSnakeCase(stringValue);
             }
         });
 
-        bench("scule snakeCase", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("scule snakeCase", () => {
             for (const stringValue of ACRONYM_STRINGS) {
                 sculeSnakeCase(stringValue);
             }
         });
 
-        bench("change-case snakeCase", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("change-case snakeCase", () => {
             for (const stringValue of ACRONYM_STRINGS) {
                 changeCaseSnake(stringValue);
             }
         });
 
-        bench("string-ts snakeCase", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("string-ts snakeCase", () => {
             for (const stringValue of ACRONYM_STRINGS) {
                 stringTsSnakeCase(stringValue);
             }

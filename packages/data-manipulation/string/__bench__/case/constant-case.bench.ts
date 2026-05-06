@@ -17,7 +17,7 @@ describe("constantCase", () => {
         }
     });
 
-    bench("string-ts constantCase", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("string-ts constantCase", () => {
         for (const stringValue of TEST_STRINGS) {
             stringTsConstantCase(stringValue);
         }
@@ -36,7 +36,7 @@ describe("constantCase", () => {
             }
         });
 
-        bench("string-ts constantCase", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("string-ts constantCase", () => {
             for (const stringValue of SPECIAL_STRINGS) {
                 stringTsConstantCase(stringValue);
             }
@@ -56,7 +56,7 @@ describe("constantCase", () => {
             }
         });
 
-        bench("string-ts constantCase", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("string-ts constantCase", () => {
             for (const stringValue of ACRONYM_STRINGS) {
                 stringTsConstantCase(stringValue);
             }

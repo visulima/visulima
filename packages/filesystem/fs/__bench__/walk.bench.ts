@@ -88,7 +88,7 @@ const split4 = (input: string): string[] => {
 };
 
 describe("walk.up and split variants", () => {
-    bench("empathic/walk.up (no options)", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("empathic/walk.up (no options)", () => {
         let total = 0;
 
         for (const _ of alt1(start)) {
@@ -96,7 +96,7 @@ describe("walk.up and split variants", () => {
         }
     });
 
-    bench("empathic/walk.up", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("empathic/walk.up", () => {
         let total = 0;
 
         for (const _ of up(start)) {
@@ -120,7 +120,7 @@ describe("walk.up and split variants", () => {
         }
     });
 
-    bench("split1", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("split1", () => {
         let total = 0;
 
         for (const _ of split1(start)) {
@@ -128,7 +128,7 @@ describe("walk.up and split variants", () => {
         }
     });
 
-    bench("split2", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("split2", () => {
         let total = 0;
 
         for (const _ of split2(start)) {
@@ -136,7 +136,7 @@ describe("walk.up and split variants", () => {
         }
     });
 
-    bench("split3", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("split3", () => {
         let total = 0;
 
         for (const _ of split3(start)) {
@@ -144,7 +144,7 @@ describe("walk.up and split variants", () => {
         }
     });
 
-    bench("split4", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("split4", () => {
         let total = 0;
 
         for (const _ of split4(start)) {

@@ -83,7 +83,7 @@ describe("splitByCase", () => {
         }
     });
 
-    bench("scule splitByCase", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("scule splitByCase", () => {
         for (const stringValue of TEST_STRINGS) {
             sculeSplitByCase(stringValue);
         }
@@ -96,7 +96,7 @@ describe("splitByCase", () => {
             }
         });
 
-        bench("scule splitByCase", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("scule splitByCase", () => {
             for (const stringValue of SPECIAL_STRINGS) {
                 sculeSplitByCase(stringValue);
             }
@@ -110,7 +110,7 @@ describe("splitByCase", () => {
             }
         });
 
-        bench("scule splitByCase", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("scule splitByCase", () => {
             for (const stringValue of ACRONYM_STRINGS) {
                 sculeSplitByCase(stringValue);
             }

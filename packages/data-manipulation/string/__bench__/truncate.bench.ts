@@ -15,11 +15,11 @@ describe("truncate", () => {
             truncate(simpleString, 20);
         });
 
-        bench("cli-truncate", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("cli-truncate", () => {
             cliTruncate(simpleString, 20);
         });
 
-        bench("ansi-truncate", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("ansi-truncate", () => {
             ansiTruncate(simpleString, 20);
         });
     });
@@ -29,11 +29,11 @@ describe("truncate", () => {
             truncate(ansiString, 20);
         });
 
-        bench("cli-truncate", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("cli-truncate", () => {
             cliTruncate(ansiString, 20);
         });
 
-        bench("ansi-truncate", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("ansi-truncate", () => {
             ansiTruncate(ansiString, 20);
         });
     });
@@ -43,11 +43,11 @@ describe("truncate", () => {
             truncate(unicodeString, 20, { width: { emojiWidth: 2, fullWidth: 2 } });
         });
 
-        bench("cli-truncate", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("cli-truncate", () => {
             cliTruncate(unicodeString, 20);
         });
 
-        bench("ansi-truncate", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("ansi-truncate", () => {
             ansiTruncate(unicodeString, 20);
         });
     });
@@ -57,11 +57,11 @@ describe("truncate", () => {
             truncate(mixedString, 20, { width: { emojiWidth: 2, fullWidth: 2 } });
         });
 
-        bench("cli-truncate", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("cli-truncate", () => {
             cliTruncate(mixedString, 20);
         });
 
-        bench("ansi-truncate", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("ansi-truncate", () => {
             ansiTruncate(mixedString, 20);
         });
     });
@@ -71,7 +71,7 @@ describe("truncate", () => {
             truncate(simpleString, 20, { position: "start" });
         });
 
-        bench("cli-truncate - start", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("cli-truncate - start", () => {
             cliTruncate(simpleString, 20, { position: "start" });
         });
 
@@ -79,7 +79,7 @@ describe("truncate", () => {
             truncate(simpleString, 20, { position: "middle" });
         });
 
-        bench("cli-truncate - middle", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("cli-truncate - middle", () => {
             cliTruncate(simpleString, 20, { position: "middle" });
         });
     });
@@ -89,7 +89,7 @@ describe("truncate", () => {
             truncate(simpleString, 20, { preferTruncationOnSpace: true });
         });
 
-        bench("cli-truncate", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("cli-truncate", () => {
             cliTruncate(simpleString, 20, { space: true });
         });
     });
@@ -99,11 +99,11 @@ describe("truncate", () => {
             truncate(simpleString, 20, { ellipsis: "..." });
         });
 
-        bench("cli-truncate", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("cli-truncate", () => {
             cliTruncate(simpleString, 20, { truncationCharacter: "..." });
         });
 
-        bench("ansi-truncate", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("ansi-truncate", () => {
             ansiTruncate(simpleString, 20, { ellipsis: "..." });
         });
     });

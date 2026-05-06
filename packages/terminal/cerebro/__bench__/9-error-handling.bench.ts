@@ -28,7 +28,7 @@ describe("9. Error Handling Performance", () => {
         }
     });
 
-    bench("Commander - Handle unknown command", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("Commander - Handle unknown command", () => {
         try {
             suppressOutput(() => {
                 const program = new Command();
@@ -47,7 +47,7 @@ describe("9. Error Handling Performance", () => {
         }
     });
 
-    bench("Yargs - Handle unknown command", async () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("Yargs - Handle unknown command", async () => {
         try {
             await suppressOutput(async () => {
                 const parser = yargs(hideBin(["node", "script.js"]))
@@ -62,7 +62,7 @@ describe("9. Error Handling Performance", () => {
         }
     });
 
-    bench("Meow - Handle invalid input", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("Meow - Handle invalid input", () => {
         try {
             suppressOutput(() => {
                 meow("Test CLI", {
@@ -80,7 +80,7 @@ describe("9. Error Handling Performance", () => {
         }
     });
 
-    bench("CAC - Handle unknown command", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("CAC - Handle unknown command", () => {
         try {
             suppressOutput(() => {
                 const cli = cac("test-cli");
@@ -96,7 +96,7 @@ describe("9. Error Handling Performance", () => {
         }
     });
 
-    bench("Cleye - Handle invalid flags", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("Cleye - Handle invalid flags", () => {
         try {
             suppressOutput(() => {
                 cleye(

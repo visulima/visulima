@@ -13,7 +13,7 @@ describe("Boxen Benchmark", () => {
             visulimaBoxen(simpleText, { borderStyle: "round", margin: 1, padding: 1 });
         });
 
-        bench("original boxen", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("original boxen", () => {
             originalBoxen(simpleText, { borderStyle: "round", margin: 1, padding: 1 });
         });
     });
@@ -23,7 +23,7 @@ describe("Boxen Benchmark", () => {
             visulimaBoxen(textWithNewlines, { borderStyle: "double", margin: 1, padding: 1 });
         });
 
-        bench("original boxen", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("original boxen", () => {
             originalBoxen(textWithNewlines, { borderStyle: "double", margin: 1, padding: 1 });
         });
     });
@@ -42,7 +42,7 @@ describe("Boxen Benchmark", () => {
             });
         });
 
-        bench("original boxen", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("original boxen", () => {
             originalBoxen(textWithNewlines, {
                 borderStyle: "round",
                 margin: {

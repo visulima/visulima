@@ -20,6 +20,7 @@
         "yargs-parser": "catalog:prod"
     },
     "devDependencies": {
+        "@codspeed/vitest-plugin": "catalog:test",
         "@types/argparse": "catalog:types",
         "@types/command-line-args": "catalog:types",
         "@types/minimist": "catalog:types",

@@ -84,15 +84,15 @@ function section${i + 1}() {
 ).join("\n");
 
 describe("Markdown Lexer.lex()", () => {
-    bench("small (~50 chars)", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("small (~50 chars)", () => {
         Lexer.lex(SMALL_MD);
     });
 
-    bench("medium (~700 chars)", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("medium (~700 chars)", () => {
         Lexer.lex(MEDIUM_MD);
     });
 
-    bench("large (~4000 chars, 20 sections)", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("large (~4000 chars, 20 sections)", () => {
         Lexer.lex(LARGE_MD);
     });
 });
@@ -100,7 +100,7 @@ describe("Markdown Lexer.lex()", () => {
 describe("Markdown streaming (incremental re-lex)", () => {
     const chunks = MEDIUM_MD.split("\n");
 
-    bench("incremental lex (line-by-line on medium doc)", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("incremental lex (line-by-line on medium doc)", () => {
         let accumulated = "";
 
         for (const chunk of chunks) {

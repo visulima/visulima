@@ -12,6 +12,7 @@
         "object-inspect": "catalog:prod"
     },
     "devDependencies": {
+        "@codspeed/vitest-plugin": "catalog:test",
         "@types/object-inspect": "catalog:types",
         "typescript": "catalog:tsc",
         "vitest": "catalog:test"

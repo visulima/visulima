@@ -22,31 +22,31 @@ describe("camelCase", () => {
         }
     });
 
-    bench("lodash camelCase", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("lodash camelCase", () => {
         for (const stringValue of TEST_STRINGS) {
             lodashCamelCase(stringValue);
         }
     });
 
-    bench("case-anything camelCase", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("case-anything camelCase", () => {
         for (const stringValue of TEST_STRINGS) {
             caseAnythingCamelCase(stringValue);
         }
     });
 
-    bench("string-ts camelCase", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("string-ts camelCase", () => {
         for (const stringValue of TEST_STRINGS) {
             stringTsCamelCase(stringValue);
         }
     });
 
-    bench("scule camelCase", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("scule camelCase", () => {
         for (const stringValue of TEST_STRINGS) {
             sculeCamelCase(stringValue);
         }
     });
 
-    bench("change-case camelCase", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("change-case camelCase", () => {
         for (const stringValue of TEST_STRINGS) {
             changeCaseCamel(stringValue);
         }
@@ -65,31 +65,31 @@ describe("camelCase", () => {
             }
         });
 
-        bench("lodash camelCase", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("lodash camelCase", () => {
             for (const stringValue of SPECIAL_STRINGS) {
                 lodashCamelCase(stringValue);
             }
         });
 
-        bench("case-anything camelCase", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("case-anything camelCase", () => {
             for (const stringValue of SPECIAL_STRINGS) {
                 caseAnythingCamelCase(stringValue);
             }
         });
 
-        bench("scule camelCase", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("scule camelCase", () => {
             for (const stringValue of SPECIAL_STRINGS) {
                 sculeCamelCase(stringValue);
             }
         });
 
-        bench("change-case camelCase", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("change-case camelCase", () => {
             for (const stringValue of SPECIAL_STRINGS) {
                 changeCaseCamel(stringValue);
             }
         });
 
-        bench("string-ts camelCase", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("string-ts camelCase", () => {
             for (const stringValue of SPECIAL_STRINGS) {
                 stringTsCamelCase(stringValue);
             }
@@ -109,31 +109,31 @@ describe("camelCase", () => {
             }
         });
 
-        bench("lodash camelCase", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("lodash camelCase", () => {
             for (const stringValue of ACRONYM_STRINGS) {
                 lodashCamelCase(stringValue);
             }
         });
 
-        bench("case-anything camelCase", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("case-anything camelCase", () => {
             for (const stringValue of ACRONYM_STRINGS) {
                 caseAnythingCamelCase(stringValue);
             }
         });
 
-        bench("scule camelCase", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("scule camelCase", () => {
             for (const stringValue of ACRONYM_STRINGS) {
                 sculeCamelCase(stringValue);
             }
         });
 
-        bench("change-case camelCase", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("change-case camelCase", () => {
             for (const stringValue of ACRONYM_STRINGS) {
                 changeCaseCamel(stringValue);
             }
         });
 
-        bench("string-ts camelCase", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("string-ts camelCase", () => {
             for (const stringValue of ACRONYM_STRINGS) {
                 stringTsCamelCase(stringValue);
             }

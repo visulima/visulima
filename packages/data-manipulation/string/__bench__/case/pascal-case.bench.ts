@@ -17,7 +17,7 @@ describe("pascalCase", () => {
         }
     });
 
-    bench("string-ts pascalCase", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("string-ts pascalCase", () => {
         for (const stringValue of TEST_STRINGS) {
             stringTsPascalCase(stringValue);
         }
@@ -30,7 +30,7 @@ describe("pascalCase", () => {
             }
         });
 
-        bench("string-ts pascalCase", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("string-ts pascalCase", () => {
             for (const stringValue of SPECIAL_STRINGS) {
                 stringTsPascalCase(stringValue);
             }
@@ -44,7 +44,7 @@ describe("pascalCase", () => {
             }
         });
 
-        bench("string-ts pascalCase", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("string-ts pascalCase", () => {
             for (const stringValue of ACRONYM_STRINGS) {
                 stringTsPascalCase(stringValue);
             }
