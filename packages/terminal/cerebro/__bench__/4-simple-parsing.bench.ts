@@ -26,7 +26,7 @@ describe("4. Simple Argument Parsing", () => {
         await cerebroCli.run({ shouldExitProcess: false });
     });
 
-    bench("Commander - Parse simple command", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("Commander - Parse simple command", () => {
         const program = new Command();
 
         program
@@ -40,7 +40,7 @@ describe("4. Simple Argument Parsing", () => {
         program.parse(simpleCommand);
     });
 
-    bench("Yargs - Parse simple command", async () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("Yargs - Parse simple command", async () => {
         const parser = yargs(hideBin(["node", "script.js"]))
             .scriptName("test-cli")
             .command("build", "Build command", (yargsBuilder) =>
@@ -53,7 +53,7 @@ describe("4. Simple Argument Parsing", () => {
         await parser.parseAsync(simpleCommand.slice(2));
     });
 
-    bench("Meow - Parse simple flags", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("Meow - Parse simple flags", () => {
         meow("Build command", {
             argv: simpleCommand.slice(2),
             flags: {
@@ -66,7 +66,7 @@ describe("4. Simple Argument Parsing", () => {
         });
     });
 
-    bench("Gunshi - Parse simple command", async () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("Gunshi - Parse simple command", async () => {
         const command = {
             args: {
                 verbose: {
@@ -88,7 +88,7 @@ describe("4. Simple Argument Parsing", () => {
         });
     });
 
-    bench("CAC - Parse simple command", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("CAC - Parse simple command", () => {
         const cacCli = cac("test-cli");
 
         cacCli
@@ -101,7 +101,7 @@ describe("4. Simple Argument Parsing", () => {
         cacCli.parse(simpleCommand, { run: false });
     });
 
-    bench("Cleye - Parse simple flags", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("Cleye - Parse simple flags", () => {
         cleye(
             {
                 flags: {

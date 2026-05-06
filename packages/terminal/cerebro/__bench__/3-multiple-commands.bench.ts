@@ -29,7 +29,7 @@ describe("3. Multiple Command Registration (Realistic CLI)", () => {
         cli.dispose();
     });
 
-    bench("Commander - Register 5 commands", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("Commander - Register 5 commands", () => {
         const program = new Command();
 
         program.name("test-cli");
@@ -48,7 +48,7 @@ describe("3. Multiple Command Registration (Realistic CLI)", () => {
         });
     });
 
-    bench("Yargs - Register 5 commands", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("Yargs - Register 5 commands", () => {
         let parser = yargs(hideBin(["node", "script.js"])).scriptName("test-cli");
 
         const commands = ["build", "test", "deploy", "clean", "init"];
@@ -70,7 +70,7 @@ describe("3. Multiple Command Registration (Realistic CLI)", () => {
         });
     });
 
-    bench("CAC - Register 5 commands", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("CAC - Register 5 commands", () => {
         const cli = cac("test-cli");
 
         const commands = ["build", "test", "deploy", "clean", "init"];
@@ -85,7 +85,7 @@ describe("3. Multiple Command Registration (Realistic CLI)", () => {
         });
     });
 
-    bench("Cleye - Register 5 commands", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("Cleye - Register 5 commands", () => {
         const commands = ["build", "test", "deploy", "clean", "init"];
         const cleyeCommands = commands.map((cmdName) =>
             cleyeCommand({

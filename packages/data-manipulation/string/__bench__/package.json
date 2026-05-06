@@ -25,9 +25,11 @@
         "string-ts": "catalog:prod",
         "string-width": "catalog:prod",
         "transliteration": "catalog:prod",
-        "typescript": "catalog:tsc",
-        "vitest": "catalog:test",
         "wrap-ansi": "catalog:prod"
     },
-    "devDependencies": {}
+    "devDependencies": {
+        "@codspeed/vitest-plugin": "catalog:test",
+        "typescript": "catalog:tsc",
+        "vitest": "catalog:test"
+    }
 }

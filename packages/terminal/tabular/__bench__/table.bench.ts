@@ -63,7 +63,7 @@ describe("Table Rendering 1763 rows (5 columns)", () => {
         table.toString();
     });
 
-    bench("cli-table3", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("cli-table3", () => {
         const table = new Table3({
             head: ["ID", "Name", "Email", "Status", "Created At"],
             style: {
@@ -87,7 +87,7 @@ describe("Table Rendering 1763 rows (5 columns)", () => {
         table.toString();
     });
 
-    bench("table", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("table", () => {
         const data = [["ID", "Name", "Email", "Status", "Created At"]];
 
         // Generate 1763 rows of mock data
@@ -105,7 +105,7 @@ describe("Table Rendering 1763 rows (5 columns)", () => {
         table(data);
     });
 
-    bench("cli-table", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("cli-table", () => {
         const table = new Table({
             head: ["ID", "Name", "Email", "Status", "Created At"],
             style: {
@@ -150,11 +150,11 @@ describe("Table Rendering basic table (100x10)", () => {
         table.toString();
     });
 
-    bench("cli-table3", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("cli-table3", () => {
         generateBasicTable(100, 10, Table3).toString();
     });
 
-    bench("table", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("table", () => {
         const data = [];
 
         // Generate 100x10 table
@@ -171,7 +171,7 @@ describe("Table Rendering basic table (100x10)", () => {
         table(data);
     });
 
-    bench("cli-table", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("cli-table", () => {
         generateBasicTable(100, 10, Table).toString();
     });
 });
@@ -199,7 +199,7 @@ describe("Table Rendering with word wrap", () => {
         table.toString();
     });
 
-    bench("cli-table3", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("cli-table3", () => {
         const table = new Table3({
             colWidths: [40, 30, 40],
             head: wrapHeaders,
@@ -214,7 +214,7 @@ describe("Table Rendering with word wrap", () => {
         table.toString();
     });
 
-    bench("table", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("table", () => {
         const data = [wrapHeaders];
 
         // eslint-disable-next-line unicorn/no-immediate-mutation
@@ -248,7 +248,7 @@ describe("Table Rendering with spanning cells", () => {
         table.toString();
     });
 
-    bench("cli-table3", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("cli-table3", () => {
         const table = new Table3({
             style: {
                 border: [],
@@ -268,7 +268,7 @@ describe("Table Rendering with spanning cells", () => {
         table.toString();
     });
 
-    bench("table", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("table", () => {
         // Note: table package doesn't support column spans directly
         // We'll simulate it by using spaces to achieve similar visual effect
         const data = [
@@ -301,7 +301,7 @@ describe("Table Rendering with truncation", () => {
         table.toString();
     });
 
-    bench("cli-table3", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("cli-table3", () => {
         const table = new Table3({
             colWidths: [20, 10],
             head: [longText, "Normal"],
@@ -316,7 +316,7 @@ describe("Table Rendering with truncation", () => {
         table.toString();
     });
 
-    bench("table", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("table", () => {
         const data = [
             [longText, "Normal"],
             [longText, "Short"],
@@ -327,7 +327,7 @@ describe("Table Rendering with truncation", () => {
         });
     });
 
-    bench("cli-table", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("cli-table", () => {
         const table = new Table({
             colWidths: [20, 10],
             head: [longText, "Normal"],

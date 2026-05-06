@@ -17,7 +17,7 @@ describe("lowerFirst", () => {
         }
     });
 
-    bench("scule lowerFirst", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("scule lowerFirst", () => {
         for (const stringValue of TEST_STRINGS) {
             sculeLowerFirst(stringValue);
         }
@@ -30,7 +30,7 @@ describe("lowerFirst", () => {
             }
         });
 
-        bench("scule lowerFirst", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("scule lowerFirst", () => {
             for (const stringValue of SPECIAL_STRINGS) {
                 sculeLowerFirst(stringValue);
             }
@@ -44,7 +44,7 @@ describe("lowerFirst", () => {
             }
         });
 
-        bench("scule lowerFirst", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("scule lowerFirst", () => {
             for (const stringValue of ACRONYM_STRINGS) {
                 sculeLowerFirst(stringValue);
             }

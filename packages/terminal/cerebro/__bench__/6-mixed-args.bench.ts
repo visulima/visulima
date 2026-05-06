@@ -29,7 +29,7 @@ describe("6. Mixed Positional + Flag Arguments", () => {
         await cli.run({ shouldExitProcess: false });
     });
 
-    bench("Commander - Parse mixed args", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("Commander - Parse mixed args", () => {
         const program = new Command();
 
         program
@@ -45,7 +45,7 @@ describe("6. Mixed Positional + Flag Arguments", () => {
         program.parse(mixedArgs);
     });
 
-    bench("Yargs - Parse mixed args", async () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("Yargs - Parse mixed args", async () => {
         const parser = yargs(hideBin(["node", "script.js"]))
             .scriptName("test-cli")
             .command("process <files..>", "Process files", (yargsBuilder) =>
@@ -58,7 +58,7 @@ describe("6. Mixed Positional + Flag Arguments", () => {
         await parser.parseAsync(mixedArgs.slice(2));
     });
 
-    bench("Meow - Parse mixed args", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("Meow - Parse mixed args", () => {
         meow("Process files", {
             argv: mixedArgs.slice(2),
             flags: {
@@ -70,7 +70,7 @@ describe("6. Mixed Positional + Flag Arguments", () => {
         });
     });
 
-    bench("CAC - Parse mixed args", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("CAC - Parse mixed args", () => {
         const cli = cac("test-cli");
 
         cli.command("process <files...>", "Process files")
@@ -84,7 +84,7 @@ describe("6. Mixed Positional + Flag Arguments", () => {
         cli.parse(mixedArgs, { run: false });
     });
 
-    bench("Cleye - Parse mixed args", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("Cleye - Parse mixed args", () => {
         cleye(
             {
                 flags: {

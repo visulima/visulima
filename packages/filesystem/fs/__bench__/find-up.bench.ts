@@ -21,10 +21,10 @@ describe("find-up", () => {
             bench("@visulima/fs find-up", async () => {
                 await visulimaFindUp(level6, { cwd: start });
             });
-            bench("find-up", async () => {
+            bench.skipIf(process.env.CODSPEED_ENV)("find-up", async () => {
                 await findUp(level6, { cwd: start });
             });
-            bench("find-up-simple", async () => {
+            bench.skipIf(process.env.CODSPEED_ENV)("find-up-simple", async () => {
                 await findUpSimple(level6, { cwd: start });
             });
         });
@@ -33,10 +33,10 @@ describe("find-up", () => {
             bench("@visulima/fs find-up (sync)", () => {
                 visulimaFindUpSync(level6, { cwd: start });
             });
-            bench("find-up-simple (sync)", () => {
+            bench.skipIf(process.env.CODSPEED_ENV)("find-up-simple (sync)", () => {
                 findUpSimpleSync(level6, { cwd: start });
             });
-            bench("empathic find.up (sync)", () => {
+            bench.skipIf(process.env.CODSPEED_ENV)("empathic find.up (sync)", () => {
                 up(level6, { cwd: start });
             });
         });
@@ -47,10 +47,10 @@ describe("find-up", () => {
             bench("@visulima/fs find-up", async () => {
                 await visulimaFindUp(level10, { cwd: start });
             });
-            bench("find-up", async () => {
+            bench.skipIf(process.env.CODSPEED_ENV)("find-up", async () => {
                 await findUp(level10, { cwd: start });
             });
-            bench("find-up-simple", async () => {
+            bench.skipIf(process.env.CODSPEED_ENV)("find-up-simple", async () => {
                 await findUpSimple(level10, { cwd: start });
             });
         });
@@ -59,10 +59,10 @@ describe("find-up", () => {
             bench("@visulima/fs find-up (sync)", () => {
                 visulimaFindUpSync(level10, { cwd: start });
             });
-            bench("find-up-simple (sync)", () => {
+            bench.skipIf(process.env.CODSPEED_ENV)("find-up-simple (sync)", () => {
                 findUpSimpleSync(level10, { cwd: start });
             });
-            bench("empathic find.up (sync)", () => {
+            bench.skipIf(process.env.CODSPEED_ENV)("empathic find.up (sync)", () => {
                 up(level10, { cwd: start });
             });
         });
@@ -73,10 +73,10 @@ describe("find-up", () => {
             bench("@visulima/fs find-up", async () => {
                 await visulimaFindUp(other, { cwd: start });
             });
-            bench("find-up", async () => {
+            bench.skipIf(process.env.CODSPEED_ENV)("find-up", async () => {
                 await findUp(other, { cwd: start });
             });
-            bench("find-up-simple", async () => {
+            bench.skipIf(process.env.CODSPEED_ENV)("find-up-simple", async () => {
                 await findUpSimple(other, { cwd: start });
             });
         });
@@ -85,10 +85,10 @@ describe("find-up", () => {
             bench("@visulima/fs find-up (sync)", () => {
                 visulimaFindUpSync(other, { cwd: start });
             });
-            bench("find-up-simple (sync)", () => {
+            bench.skipIf(process.env.CODSPEED_ENV)("find-up-simple (sync)", () => {
                 findUpSimpleSync(other, { cwd: start });
             });
-            bench("empathic find.up (sync)", () => {
+            bench.skipIf(process.env.CODSPEED_ENV)("empathic find.up (sync)", () => {
                 up(other, { cwd: start });
             });
         });

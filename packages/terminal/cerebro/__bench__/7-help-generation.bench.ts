@@ -29,7 +29,7 @@ describe("7. Help Text Generation", () => {
         await cli.run({ shouldExitProcess: false });
     });
 
-    bench("Commander - Generate help", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("Commander - Generate help", () => {
         suppressOutput(() => {
             const program = new Command();
 
@@ -51,7 +51,7 @@ describe("7. Help Text Generation", () => {
         });
     });
 
-    bench("Yargs - Generate help", async () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("Yargs - Generate help", async () => {
         await suppressOutput(async () => {
             const parser = yargs(hideBin(["node", "script.js"]))
                 .scriptName("test-cli")
@@ -80,7 +80,7 @@ describe("7. Help Text Generation", () => {
         });
     });
 
-    bench("Meow - Generate help", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("Meow - Generate help", () => {
         suppressOutput(() => {
             meow("Test command with detailed help", {
                 argv: helpArgs.slice(2),
@@ -103,7 +103,7 @@ describe("7. Help Text Generation", () => {
         });
     });
 
-    bench("CAC - Generate help", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("CAC - Generate help", () => {
         suppressOutput(() => {
             const cli = cac("test-cli");
 
@@ -123,7 +123,7 @@ describe("7. Help Text Generation", () => {
         });
     });
 
-    bench("Cleye - Generate help", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("Cleye - Generate help", () => {
         suppressOutput(() => {
             cleye(
                 {

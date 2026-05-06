@@ -32,7 +32,7 @@ describe("8. Version Display", () => {
         });
     });
 
-    bench("Commander - Display version", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("Commander - Display version", () => {
         try {
             suppressOutput(() => {
                 mockProcessExit(() => {
@@ -48,7 +48,7 @@ describe("8. Version Display", () => {
         }
     });
 
-    bench("Yargs - Display version", async () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("Yargs - Display version", async () => {
         await suppressOutput(async () => {
             const parser = yargs(hideBin(versionArgs)).scriptName("test-cli").version("1.0.0");
 
@@ -56,7 +56,7 @@ describe("8. Version Display", () => {
         });
     });
 
-    bench("Meow - Display version", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("Meow - Display version", () => {
         try {
             suppressOutput(() => {
                 mockProcessExit(() => {
@@ -72,7 +72,7 @@ describe("8. Version Display", () => {
         }
     });
 
-    bench("CAC - Display version", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("CAC - Display version", () => {
         suppressOutput(() => {
             const cli = cac("test-cli");
 
@@ -82,7 +82,7 @@ describe("8. Version Display", () => {
         });
     });
 
-    bench("Cleye - Display version", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("Cleye - Display version", () => {
         try {
             suppressOutput(() => {
                 mockProcessExit(() => {

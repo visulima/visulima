@@ -48,15 +48,15 @@ describe.each(casses)("inspect %s", (_, caseValue) => {
         inspect(caseValue);
     });
 
-    bench("loupe", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("loupe", () => {
         loupeInspect(caseValue);
     });
 
-    bench("objectInspect", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("objectInspect", () => {
         objectInspect(caseValue);
     });
 
-    bench("node util.inspect", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("node util.inspect", () => {
         nodeInspect(caseValue);
     });
 });

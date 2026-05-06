@@ -17,6 +17,7 @@
         "yargs": "catalog:prod"
     },
     "devDependencies": {
+        "@codspeed/vitest-plugin": "catalog:test",
         "@types/yargs": "catalog:types",
         "typescript": "catalog:tsc",
         "vitest": "catalog:test"

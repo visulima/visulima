@@ -19,7 +19,7 @@ describe("string width", () => {
             getStringWidth(simpleString);
         });
 
-        bench("string-width", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("string-width", () => {
             stringWidth(simpleString);
         });
     });
@@ -29,7 +29,7 @@ describe("string width", () => {
             getStringWidth(ansiString);
         });
 
-        bench("string-width", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("string-width", () => {
             stringWidth(ansiString);
         });
 
@@ -43,7 +43,7 @@ describe("string width", () => {
             getStringWidth(unicodeString);
         });
 
-        bench("string-width", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("string-width", () => {
             stringWidth(unicodeString);
         });
     });
@@ -53,7 +53,7 @@ describe("string width", () => {
             getStringWidth(mixedString);
         });
 
-        bench("string-width", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("string-width", () => {
             stringWidth(mixedString);
         });
     });
@@ -67,7 +67,7 @@ describe("string width", () => {
             getStringWidth(ambiguousString, { ambiguousIsNarrow: true });
         });
 
-        bench("string-width", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("string-width", () => {
             stringWidth(ambiguousString);
         });
     });
@@ -77,7 +77,7 @@ describe("string width", () => {
             getStringWidth(controlString);
         });
 
-        bench("string-width", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("string-width", () => {
             stringWidth(controlString);
         });
     });
@@ -92,7 +92,7 @@ describe("string width", () => {
             });
         });
 
-        bench("string-width", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("string-width", () => {
             stringWidth(mixedString);
         });
     });
@@ -102,7 +102,7 @@ describe("string width", () => {
             getStringWidth(katakanaString);
         });
 
-        bench("string-width", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("string-width", () => {
             stringWidth(katakanaString);
         });
     });
@@ -112,7 +112,7 @@ describe("string width", () => {
             getStringWidth(longString);
         });
 
-        bench("string-width", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("string-width", () => {
             stringWidth(longString);
         });
     });

@@ -16,7 +16,7 @@ describe("string truncated width", () => {
             getStringTruncatedWidth(simpleString, { limit: 20 });
         });
 
-        bench("fast-string-truncated-width", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("fast-string-truncated-width", () => {
             fastStringTruncatedWidth(simpleString, { limit: 20 });
         });
     });
@@ -26,7 +26,7 @@ describe("string truncated width", () => {
             getStringTruncatedWidth(ansiString, { limit: 20 });
         });
 
-        bench("fast-string-truncated-width", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("fast-string-truncated-width", () => {
             fastStringTruncatedWidth(ansiString, { limit: 20 });
         });
 
@@ -34,7 +34,7 @@ describe("string truncated width", () => {
             getStringTruncatedWidth(ansiString, { countAnsiEscapeCodes: true, limit: 20 });
         });
 
-        bench("fast-string-truncated-width (count ANSI)", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("fast-string-truncated-width (count ANSI)", () => {
             fastStringTruncatedWidth(ansiString, { countAnsiEscapeCodes: true, limit: 20 });
         });
     });
@@ -44,7 +44,7 @@ describe("string truncated width", () => {
             getStringTruncatedWidth(unicodeString, { limit: 20 });
         });
 
-        bench("fast-string-truncated-width", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("fast-string-truncated-width", () => {
             fastStringTruncatedWidth(unicodeString, { limit: 20 });
         });
     });
@@ -54,7 +54,7 @@ describe("string truncated width", () => {
             getStringTruncatedWidth(mixedString, { limit: 20 });
         });
 
-        bench("fast-string-truncated-width", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("fast-string-truncated-width", () => {
             fastStringTruncatedWidth(mixedString, { limit: 20 });
         });
     });
@@ -64,7 +64,7 @@ describe("string truncated width", () => {
             getStringTruncatedWidth(ambiguousString, { limit: 20 });
         });
 
-        bench("fast-string-truncated-width (default)", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("fast-string-truncated-width (default)", () => {
             fastStringTruncatedWidth(ambiguousString, { limit: 20 });
         });
     });
@@ -74,7 +74,7 @@ describe("string truncated width", () => {
             getStringTruncatedWidth(ambiguousString, { ambiguousIsNarrow: true, limit: 20 });
         });
 
-        bench("fast-string-truncated-width (narrow)", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("fast-string-truncated-width (narrow)", () => {
             fastStringTruncatedWidth(ambiguousString, { ambiguousIsNarrow: true, limit: 20 });
         });
     });
@@ -84,7 +84,7 @@ describe("string truncated width", () => {
             getStringTruncatedWidth(controlString, { limit: 20 });
         });
 
-        bench("fast-string-truncated-width", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("fast-string-truncated-width", () => {
             fastStringTruncatedWidth(controlString, { limit: 20 });
         });
     });
@@ -100,7 +100,7 @@ describe("string truncated width", () => {
             });
         });
 
-        bench("fast-string-truncated-width (custom widths)", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("fast-string-truncated-width (custom widths)", () => {
             fastStringTruncatedWidth(mixedString, {
                 emojiWidth: 2,
                 fullWidth: 2,
@@ -116,7 +116,7 @@ describe("string truncated width", () => {
             getStringTruncatedWidth(simpleString, { ellipsis: "…", limit: 20 });
         });
 
-        bench("fast-string-truncated-width (default ellipsis)", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("fast-string-truncated-width (default ellipsis)", () => {
             fastStringTruncatedWidth(simpleString, { ellipsis: "…", limit: 20 });
         });
 
@@ -124,7 +124,7 @@ describe("string truncated width", () => {
             getStringTruncatedWidth(simpleString, { ellipsis: "...", limit: 20 });
         });
 
-        bench("fast-string-truncated-width (custom ellipsis)", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("fast-string-truncated-width (custom ellipsis)", () => {
             fastStringTruncatedWidth(simpleString, { ellipsis: "...", limit: 20 });
         });
 
@@ -132,7 +132,7 @@ describe("string truncated width", () => {
             getStringTruncatedWidth(simpleString, { ellipsis: "\u001B[31m...\u001B[39m", limit: 20 });
         });
 
-        bench("fast-string-truncated-width (ANSI ellipsis)", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("fast-string-truncated-width (ANSI ellipsis)", () => {
             fastStringTruncatedWidth(simpleString, { ellipsis: "\u001B[31m...\u001B[39m", limit: 20 });
         });
     });

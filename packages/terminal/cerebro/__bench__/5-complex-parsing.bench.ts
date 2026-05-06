@@ -34,7 +34,7 @@ describe("5. Complex Argument Parsing (Many flags)", () => {
         await cli.run({ shouldExitProcess: false });
     });
 
-    bench("Commander - Parse 8 flags", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("Commander - Parse 8 flags", () => {
         suppressOutput(() => {
             const program = new Command();
 
@@ -57,7 +57,7 @@ describe("5. Complex Argument Parsing (Many flags)", () => {
         });
     });
 
-    bench("Yargs - Parse 8 flags", async () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("Yargs - Parse 8 flags", async () => {
         await suppressOutput(async () => {
             const parser = yargs(hideBin(["node", "script.js"]))
                 .scriptName("test-cli")
@@ -77,7 +77,7 @@ describe("5. Complex Argument Parsing (Many flags)", () => {
         });
     });
 
-    bench("Meow - Parse 8 flags", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("Meow - Parse 8 flags", () => {
         suppressOutput(() => {
             meow("Deploy command", {
                 argv: complexArgs.slice(2),
@@ -96,7 +96,7 @@ describe("5. Complex Argument Parsing (Many flags)", () => {
         });
     });
 
-    bench("CAC - Parse 8 flags", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("CAC - Parse 8 flags", () => {
         suppressOutput(() => {
             const cli = cac("test-cli");
 
@@ -117,7 +117,7 @@ describe("5. Complex Argument Parsing (Many flags)", () => {
         });
     });
 
-    bench("Cleye - Parse 8 flags", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("Cleye - Parse 8 flags", () => {
         suppressOutput(() => {
             const deployCommand = cleyeCommand({
                 flags: {

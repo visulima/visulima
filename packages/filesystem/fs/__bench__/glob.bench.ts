@@ -71,27 +71,27 @@ for (const [label, pattern] of Object.entries(patterns)) {
             await visulimaGlob(pattern, { cwd: fixtures });
         });
 
-        bench("node:fs/promises glob", async () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("node:fs/promises glob", async () => {
             await collectAsyncIter(nodeGlobAsync(pattern, { cwd: fixtures }));
         });
 
-        bench("node:fs glob (callback)", async () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("node:fs glob (callback)", async () => {
             await nodeGlobCallback(pattern);
         });
 
-        bench("fast-glob", async () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("fast-glob", async () => {
             await fastGlob(pattern, { cwd: fixtures });
         });
 
-        bench("tinyglobby", async () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("tinyglobby", async () => {
             await tinyGlob(pattern, { cwd: fixtures });
         });
 
-        bench("globby", async () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("globby", async () => {
             await globby(pattern, { cwd: fixtures });
         });
 
-        bench("glob (node-glob)", async () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("glob (node-glob)", async () => {
             await nativeGlob(pattern, { cwd: fixtures });
         });
     });
@@ -101,23 +101,23 @@ for (const [label, pattern] of Object.entries(patterns)) {
             visulimaGlobSync(pattern, { cwd: fixtures });
         });
 
-        bench("node:fs globSync", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("node:fs globSync", () => {
             collectIter(nodeGlobSync(pattern, { cwd: fixtures }) as unknown as Iterable<string>);
         });
 
-        bench("fast-glob.sync", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("fast-glob.sync", () => {
             fastGlob.sync(pattern, { cwd: fixtures });
         });
 
-        bench("tinyglobby.globSync", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("tinyglobby.globSync", () => {
             tinyGlobSync(pattern, { cwd: fixtures });
         });
 
-        bench("globby.sync", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("globby.sync", () => {
             globbySync(pattern, { cwd: fixtures });
         });
 
-        bench("glob.sync (node-glob)", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("glob.sync (node-glob)", () => {
             nativeGlobSync(pattern, { cwd: fixtures });
         });
     });

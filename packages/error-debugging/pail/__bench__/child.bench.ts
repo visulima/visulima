@@ -78,7 +78,7 @@ describe("child creation", async () => {
         },
     );
 
-    bench(
+    bench.skipIf(process.env.CODSPEED_ENV)(
         "bunyan node stream",
         async () => {
             const child = bunyanNodeStream.child({ component: "test" });
@@ -90,7 +90,7 @@ describe("child creation", async () => {
         },
     );
 
-    bench(
+    bench.skipIf(process.env.CODSPEED_ENV)(
         "winston node stream",
         async () => {
             const child = winstonNodeStream.child({ component: "test" });
@@ -102,7 +102,7 @@ describe("child creation", async () => {
         },
     );
 
-    bench(
+    bench.skipIf(process.env.CODSPEED_ENV)(
         "pino destination",
         async () => {
             const child = pinoDestination.child({ component: "test" });
@@ -114,7 +114,7 @@ describe("child creation", async () => {
         },
     );
 
-    bench(
+    bench.skipIf(process.env.CODSPEED_ENV)(
         "pino node stream",
         async () => {
             const child = pinoNodeStream.child({ component: "test" });
@@ -126,7 +126,7 @@ describe("child creation", async () => {
         },
     );
 
-    bench(
+    bench.skipIf(process.env.CODSPEED_ENV)(
         "pino min length",
         async () => {
             const child = pinoMinLength.child({ component: "test" });
@@ -138,7 +138,7 @@ describe("child creation", async () => {
         },
     );
 
-    bench(
+    bench.skipIf(process.env.CODSPEED_ENV)(
         "roarr",
         async () => {
             const child = log.child({ component: "test" });
@@ -178,7 +178,7 @@ describe("child child creation", async () => {
         },
     );
 
-    bench(
+    bench.skipIf(process.env.CODSPEED_ENV)(
         "bunyan node stream",
         async () => {
             const child = bunyanNodeStream.child({ component: "api" });
@@ -191,7 +191,7 @@ describe("child child creation", async () => {
         },
     );
 
-    bench(
+    bench.skipIf(process.env.CODSPEED_ENV)(
         "winston node stream",
         async () => {
             const child = winstonNodeStream.child({ component: "api" });
@@ -204,7 +204,7 @@ describe("child child creation", async () => {
         },
     );
 
-    bench(
+    bench.skipIf(process.env.CODSPEED_ENV)(
         "pino destination",
         async () => {
             const child = pinoDestination.child({ component: "api" });
@@ -217,7 +217,7 @@ describe("child child creation", async () => {
         },
     );
 
-    bench(
+    bench.skipIf(process.env.CODSPEED_ENV)(
         "pino node stream",
         async () => {
             const child = pinoNodeStream.child({ component: "api" });
@@ -230,7 +230,7 @@ describe("child child creation", async () => {
         },
     );
 
-    bench(
+    bench.skipIf(process.env.CODSPEED_ENV)(
         "pino min length",
         async () => {
             const child = pinoMinLength.child({ component: "api" });
@@ -243,7 +243,7 @@ describe("child child creation", async () => {
         },
     );
 
-    bench(
+    bench.skipIf(process.env.CODSPEED_ENV)(
         "roarr",
         async () => {
             const child = log.child({ component: "api" });
@@ -282,7 +282,7 @@ describe("child with overrides", async () => {
         },
     );
 
-    bench(
+    bench.skipIf(process.env.CODSPEED_ENV)(
         "bunyan node stream",
         async () => {
             const child = bunyanNodeStream.child({ component: "test" });
@@ -294,7 +294,7 @@ describe("child with overrides", async () => {
         },
     );
 
-    bench(
+    bench.skipIf(process.env.CODSPEED_ENV)(
         "winston node stream",
         async () => {
             const child = winstonNodeStream.child({ component: "test" });
@@ -306,7 +306,7 @@ describe("child with overrides", async () => {
         },
     );
 
-    bench(
+    bench.skipIf(process.env.CODSPEED_ENV)(
         "pino destination",
         async () => {
             const child = pinoDestination.child({ component: "test" });
@@ -318,7 +318,7 @@ describe("child with overrides", async () => {
         },
     );
 
-    bench(
+    bench.skipIf(process.env.CODSPEED_ENV)(
         "pino node stream",
         async () => {
             const child = pinoNodeStream.child({ component: "test" });
@@ -330,7 +330,7 @@ describe("child with overrides", async () => {
         },
     );
 
-    bench(
+    bench.skipIf(process.env.CODSPEED_ENV)(
         "pino min length",
         async () => {
             const child = pinoMinLength.child({ component: "test" });
@@ -342,7 +342,7 @@ describe("child with overrides", async () => {
         },
     );
 
-    bench(
+    bench.skipIf(process.env.CODSPEED_ENV)(
         "roarr",
         async () => {
             const child = log.child({ component: "test" });

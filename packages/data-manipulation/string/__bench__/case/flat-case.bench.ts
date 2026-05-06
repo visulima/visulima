@@ -17,7 +17,7 @@ describe("flatCase", () => {
         }
     });
 
-    bench("scule flatCase", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("scule flatCase", () => {
         for (const stringValue of TEST_STRINGS) {
             sculeFlatCase(stringValue);
         }
@@ -30,7 +30,7 @@ describe("flatCase", () => {
             }
         });
 
-        bench("scule flatCase", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("scule flatCase", () => {
             for (const stringValue of SPECIAL_STRINGS) {
                 sculeFlatCase(stringValue);
             }
@@ -44,7 +44,7 @@ describe("flatCase", () => {
             }
         });
 
-        bench("scule flatCase", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("scule flatCase", () => {
             for (const stringValue of ACRONYM_STRINGS) {
                 sculeFlatCase(stringValue);
             }

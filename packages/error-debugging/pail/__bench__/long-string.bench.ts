@@ -132,7 +132,7 @@ describe("long-string", async () => {
         },
     );
 
-    bench(
+    bench.skipIf(process.env.CODSPEED_ENV)(
         "consola server",
         async () => {
             serverConsola.info(longString);
@@ -142,7 +142,7 @@ describe("long-string", async () => {
         },
     );
 
-    bench(
+    bench.skipIf(process.env.CODSPEED_ENV)(
         "consola browser",
         async () => {
             browserConsola.info(longString);
@@ -152,7 +152,7 @@ describe("long-string", async () => {
         },
     );
 
-    bench(
+    bench.skipIf(process.env.CODSPEED_ENV)(
         "tslog",
         async () => {
             tsLog.info(longString);
@@ -162,7 +162,7 @@ describe("long-string", async () => {
         },
     );
 
-    bench(
+    bench.skipIf(process.env.CODSPEED_ENV)(
         "bunyan node stream",
         async () => {
             bunyanNodeStream.info(longString);
@@ -172,7 +172,7 @@ describe("long-string", async () => {
         },
     );
 
-    bench(
+    bench.skipIf(process.env.CODSPEED_ENV)(
         "winston node stream",
         async () => {
             winstonNodeStream.info(longString);
@@ -182,7 +182,7 @@ describe("long-string", async () => {
         },
     );
 
-    bench(
+    bench.skipIf(process.env.CODSPEED_ENV)(
         "pino destination",
         async () => {
             pinoDestination.info(longString);
@@ -192,7 +192,7 @@ describe("long-string", async () => {
         },
     );
 
-    bench(
+    bench.skipIf(process.env.CODSPEED_ENV)(
         "pino node stream",
         async () => {
             pinoNodeStream.info(longString);
@@ -202,7 +202,7 @@ describe("long-string", async () => {
         },
     );
 
-    bench(
+    bench.skipIf(process.env.CODSPEED_ENV)(
         "pino min length",
         async () => {
             pinoMinLength.info(longString);
@@ -212,7 +212,7 @@ describe("long-string", async () => {
         },
     );
 
-    bench(
+    bench.skipIf(process.env.CODSPEED_ENV)(
         "ogma logger",
         async () => {
             ogmaLogger.log(longString);
@@ -222,7 +222,7 @@ describe("long-string", async () => {
         },
     );
 
-    bench(
+    bench.skipIf(process.env.CODSPEED_ENV)(
         "ogma json logger",
         async () => {
             ogmaJsonLogger.log(longString);
@@ -232,7 +232,7 @@ describe("long-string", async () => {
         },
     );
 
-    bench(
+    bench.skipIf(process.env.CODSPEED_ENV)(
         "diary",
         async () => {
             diaryLogger.info("info message");
@@ -242,7 +242,7 @@ describe("long-string", async () => {
         },
     );
 
-    bench(
+    bench.skipIf(process.env.CODSPEED_ENV)(
         "roarr",
         async () => {
             log.info(longString);
@@ -252,7 +252,7 @@ describe("long-string", async () => {
         },
     );
 
-    bench(
+    bench.skipIf(process.env.CODSPEED_ENV)(
         "rslog",
         async () => {
             rslogLogger.info(longString);

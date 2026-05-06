@@ -16,11 +16,6 @@
     "bugs": {
         "url": "https://github.com/visulima/visulima/issues"
     },
-    "license": "MIT",
-    "author": {
-        "name": "Daniel Bannert",
-        "email": "d.bannert@anolilab.de"
-    },
     "repository": {
         "type": "git",
         "url": "git+https://github.com/visulima/visulima.git",
@@ -36,19 +31,17 @@
             "url": "https://anolilab.com/support"
         }
     ],
-    "files": [
-        "dist/**",
-        "index.js",
-        "README.md",
-        "CHANGELOG.md",
-        "LICENSE.md"
-    ],
-    "type": "module",
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
     "sideEffects": [
         "./dist/ink/**",
         "./dist/react/**",
         "./index.js"
     ],
+    "type": "module",
     "exports": {
         ".": {
             "types": "./dist/ink/index.d.ts",
@@ -68,10 +61,13 @@
         },
         "./package.json": "./package.json"
     },
-    "publishConfig": {
-        "access": "public",
-        "provenance": true
-    },
+    "files": [
+        "dist/**",
+        "index.js",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE.md"
+    ],
     "scripts": {
         "build": "packem build --development",
         "build:native": "napi build --platform --release --esm --manifest-path native/Cargo.toml --output-dir . --js index.js",
@@ -88,7 +84,6 @@
         "lint:prettier:fix": "prettier --config=prettier.config.js --write .",
         "lint:types": "tsc --noEmit",
         "test": "vitest run",
-        "test:bench": "vitest bench",
         "test:coverage": "vitest run --coverage",
         "test:ui": "vitest --ui --coverage.enabled=true",
         "test:watch": "vitest"
@@ -118,7 +113,6 @@
         "@anolilab/semantic-release-preset": "catalog:dev",
         "@arethetypeswrong/cli": "catalog:dev",
         "@eslint-react/eslint-plugin": "catalog:lint",
-        "@jrichman/ink": "npm:@jrichman/ink@6.6.3",
         "@napi-rs/cli": "catalog:dev",
         "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
         "@semantic-release/exec": "catalog:dev",
@@ -150,7 +144,6 @@
         "eslint-plugin-react-refresh": "catalog:lint",
         "eslint-plugin-react-you-might-not-need-an-effect": "catalog:lint",
         "eslint-plugin-validate-jsx-nesting": "catalog:lint",
-        "ink": "6.8.0",
         "is-in-ci": "catalog:prod",
         "node-pty": "catalog:dev",
         "prettier": "catalog:lint",
@@ -189,6 +182,13 @@
         "@visulima/tui-binding-win32-arm64-msvc": "workspace:*",
         "@visulima/tui-binding-win32-x64-msvc": "workspace:*"
     },
+    "engines": {
+        "node": "^22.14.0 || >=24.10.0"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    },
     "napi": {
         "binaryName": "tui-native",
         "packageName": "@visulima/tui-binding",
@@ -202,8 +202,5 @@
             "x86_64-pc-windows-msvc",
             "aarch64-pc-windows-msvc"
         ]
-    },
-    "engines": {
-        "node": "^22.14.0 || >=24.10.0"
     }
 }

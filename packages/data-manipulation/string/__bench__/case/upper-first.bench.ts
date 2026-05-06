@@ -11,7 +11,7 @@ describe("upperFirst", () => {
         }
     });
 
-    bench("scule upperFirst", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("scule upperFirst", () => {
         for (const stringValue of TEST_STRINGS) {
             sculeUpperFirst(stringValue);
         }
@@ -24,7 +24,7 @@ describe("upperFirst", () => {
             }
         });
 
-        bench("scule upperFirst", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("scule upperFirst", () => {
             for (const stringValue of SPECIAL_STRINGS) {
                 sculeUpperFirst(stringValue);
             }
@@ -38,7 +38,7 @@ describe("upperFirst", () => {
             }
         });
 
-        bench("scule upperFirst", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("scule upperFirst", () => {
             for (const stringValue of ACRONYM_STRINGS) {
                 sculeUpperFirst(stringValue);
             }

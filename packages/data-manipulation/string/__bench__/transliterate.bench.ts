@@ -33,13 +33,13 @@ describe("Transliterate Function Benchmark", () => {
         }
     });
 
-    bench("'transliteration' package transliterate", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("'transliteration' package transliterate", () => {
         for (const item of testStrings) {
             externalTransliterate(item, externalTranslitOptions);
         }
     });
 
-    bench("@sindresorhus/transliterate", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("@sindresorhus/transliterate", () => {
         for (const item of testStrings) {
             sindresorhusTransliterate(item, sindresorhusTranslitOptions);
         }

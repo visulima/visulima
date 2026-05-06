@@ -29,7 +29,7 @@ describe("10. Full Lifecycle (Init + Register + Parse)", () => {
         await cerebroCli.run({ shouldExitProcess: false });
     });
 
-    bench("Commander - Complete flow", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("Commander - Complete flow", () => {
         const program = new Command();
 
         program
@@ -44,7 +44,7 @@ describe("10. Full Lifecycle (Init + Register + Parse)", () => {
         program.parse(simpleCommand);
     });
 
-    bench("Yargs - Complete flow", async () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("Yargs - Complete flow", async () => {
         const parser = yargs(hideBin(["node", "script.js"]))
             .scriptName("test-cli")
             .command("build", "Build command", (yargsBuilder) =>
@@ -54,7 +54,7 @@ describe("10. Full Lifecycle (Init + Register + Parse)", () => {
         await parser.parseAsync(simpleCommand.slice(2));
     });
 
-    bench("Meow - Complete flow", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("Meow - Complete flow", () => {
         meow("Build command", {
             argv: simpleCommand.slice(2),
             flags: {
@@ -65,7 +65,7 @@ describe("10. Full Lifecycle (Init + Register + Parse)", () => {
         });
     });
 
-    bench("Gunshi - Complete flow", async () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("Gunshi - Complete flow", async () => {
         const command = {
             args: {
                 output: {
@@ -92,7 +92,7 @@ describe("10. Full Lifecycle (Init + Register + Parse)", () => {
         });
     });
 
-    bench("CAC - Complete flow", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("CAC - Complete flow", () => {
         const cacCli = cac("test-cli");
 
         cacCli
@@ -106,7 +106,7 @@ describe("10. Full Lifecycle (Init + Register + Parse)", () => {
         cacCli.parse(simpleCommand, { run: false });
     });
 
-    bench("Cleye - Complete flow", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("Cleye - Complete flow", () => {
         cleye(
             {
                 flags: {

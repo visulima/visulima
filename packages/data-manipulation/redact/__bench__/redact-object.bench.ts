@@ -33,7 +33,7 @@ describe("object", () => {
         }
     });
 
-    bench("fast-redact", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("fast-redact", () => {
         const object = {
             a: {
                 b: {
@@ -49,7 +49,7 @@ describe("object", () => {
         }
     });
 
-    bench("unset-value", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("unset-value", () => {
         const object = {
             a: {
                 b: {
@@ -65,7 +65,7 @@ describe("object", () => {
         }
     });
 
-    bench("fast-unset (copy)", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("fast-unset (copy)", () => {
         const object = {
             a: {
                 b: {
@@ -87,7 +87,7 @@ describe("object", () => {
         }
     });
 
-    bench("fast-unset", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("fast-unset", () => {
         const object = {
             a: {
                 b: {
@@ -105,7 +105,7 @@ describe("object", () => {
         }
     });
 
-    bench("fast-unset (bare)", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("fast-unset (bare)", () => {
         const object = {
             a: {
                 b: {
@@ -141,7 +141,7 @@ describe("deep object", () => {
         }
     });
 
-    bench("@qiwi/masker", async () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("@qiwi/masker", async () => {
         const object = {
             a: {
                 b: {
@@ -157,7 +157,7 @@ describe("deep object", () => {
         }
     });
 
-    bench("fast-redact", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("fast-redact", () => {
         const object = {
             a: {
                 b: {
@@ -173,7 +173,7 @@ describe("deep object", () => {
         }
     });
 
-    bench("unset-value", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("unset-value", () => {
         const object = {
             a: {
                 b: {
@@ -189,7 +189,7 @@ describe("deep object", () => {
         }
     });
 
-    bench("fast-unset (copy)", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("fast-unset (copy)", () => {
         const object = {
             a: {
                 b: {
@@ -211,7 +211,7 @@ describe("deep object", () => {
         }
     });
 
-    bench("fast-unset", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("fast-unset", () => {
         const object = {
             a: {
                 b: {
@@ -229,7 +229,7 @@ describe("deep object", () => {
         }
     });
 
-    bench("fast-unset (bare)", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("fast-unset (bare)", () => {
         const object = {
             a: {
                 b: {

@@ -14,6 +14,7 @@
         "unset-value": "catalog:prod"
     },
     "devDependencies": {
+        "@codspeed/vitest-plugin": "catalog:test",
         "typescript": "catalog:tsc",
         "vitest": "catalog:test"
     }

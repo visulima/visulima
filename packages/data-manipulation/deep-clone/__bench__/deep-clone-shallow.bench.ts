@@ -31,7 +31,7 @@ describe("shallow clone", () => {
             throw new Error("Clone is the same as the original");
         }
     });
-    bench("deep-copy", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("deep-copy", () => {
         const cloneData = deepCopy(data);
 
         if (cloneData === data) {
@@ -39,7 +39,7 @@ describe("shallow clone", () => {
         }
     });
 
-    bench("lodash.clonedeep", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("lodash.clonedeep", () => {
         const cloneData = lodashCloneDeep(data);
 
         if (cloneData === data) {
@@ -47,7 +47,7 @@ describe("shallow clone", () => {
         }
     });
 
-    bench("clone-deep", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("clone-deep", () => {
         const cloneData = cloneDeep(data);
 
         if (cloneData === data) {
@@ -55,7 +55,7 @@ describe("shallow clone", () => {
         }
     });
 
-    bench("fast-copy", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("fast-copy", () => {
         const cloneData = fastCopy(data);
 
         if (cloneData === data) {
@@ -63,7 +63,7 @@ describe("shallow clone", () => {
         }
     });
 
-    bench("fast-copy strict", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("fast-copy strict", () => {
         const cloneData = fastCopyStrict(data);
 
         if (cloneData === data) {
@@ -71,7 +71,7 @@ describe("shallow clone", () => {
         }
     });
 
-    bench("plain-object-clone", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("plain-object-clone", () => {
         const cloneData = plainObjectClone(data);
 
         if (cloneData === data) {
@@ -79,7 +79,7 @@ describe("shallow clone", () => {
         }
     });
 
-    bench("nano-copy", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("nano-copy", () => {
         const cloneData = nanoCopy(data);
 
         if (cloneData === data) {
@@ -87,7 +87,7 @@ describe("shallow clone", () => {
         }
     });
 
-    bench("ramda.clone", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("ramda.clone", () => {
         const cloneData = ramdaClone(data);
 
         if (cloneData === data) {
@@ -95,7 +95,7 @@ describe("shallow clone", () => {
         }
     });
 
-    bench("nanoclone", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("nanoclone", () => {
         const cloneData = nanoclone(data);
 
         if (cloneData === data) {
@@ -103,7 +103,7 @@ describe("shallow clone", () => {
         }
     });
 
-    bench("@mfederczuk/deeptools copy", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("@mfederczuk/deeptools copy", () => {
         const cloneData = mfederczukClone(data);
 
         if (cloneData === data) {
@@ -111,7 +111,7 @@ describe("shallow clone", () => {
         }
     });
 
-    bench("rfdc - default", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("rfdc - default", () => {
         const cloneData = rfdc()(data);
 
         if (cloneData === data) {
@@ -119,7 +119,7 @@ describe("shallow clone", () => {
         }
     });
 
-    bench("rfdc - proto", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("rfdc - proto", () => {
         const cloneData = rfdc({ proto: true })(data);
 
         if (cloneData === data) {
@@ -127,7 +127,7 @@ describe("shallow clone", () => {
         }
     });
 
-    bench("rfdc - circles", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("rfdc - circles", () => {
         const cloneData = rfdc({ circles: true })(data);
 
         if (cloneData === data) {
@@ -135,7 +135,7 @@ describe("shallow clone", () => {
         }
     });
 
-    bench("rfdc - circles and proto", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("rfdc - circles and proto", () => {
         const cloneData = rfdc({ circles: true, proto: true })(data);
 
         if (cloneData === data) {
@@ -143,7 +143,7 @@ describe("shallow clone", () => {
         }
     });
 
-    bench("@ungap/structured-clone clone", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("@ungap/structured-clone clone", () => {
         const cloneData = ungapStructuredClone(data);
 
         if (cloneData === data) {
@@ -151,7 +151,7 @@ describe("shallow clone", () => {
         }
     });
 
-    bench("structured-clone clone", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("structured-clone clone", () => {
         const cloneData = structuredClone(data);
 
         if (cloneData === data) {

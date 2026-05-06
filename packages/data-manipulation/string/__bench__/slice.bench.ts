@@ -57,13 +57,13 @@ describe("slice", () => {
             }
         });
 
-        bench("slice-ansi", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("slice-ansi", () => {
             for (const testCase of sliceTestCases) {
                 sliceAnsi(testCase.str, testCase.begin, testCase.end);
             }
         });
 
-        bench("@arcanis/slice-ansi", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("@arcanis/slice-ansi", () => {
             for (const testCase of sliceTestCases) {
                 arcanisSliceAnsi(testCase.str, testCase.begin, testCase.end);
             }
@@ -77,13 +77,13 @@ describe("slice", () => {
             }
         });
 
-        bench("slice-ansi", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("slice-ansi", () => {
             for (const testCase of beginOnlyTestCases) {
                 sliceAnsi(testCase.str, testCase.begin);
             }
         });
 
-        bench("@arcanis/slice-ansi", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("@arcanis/slice-ansi", () => {
             for (const testCase of beginOnlyTestCases) {
                 arcanisSliceAnsi(testCase.str, testCase.begin);
             }
@@ -98,14 +98,14 @@ describe("slice", () => {
             }
         });
 
-        bench("slice-ansi", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("slice-ansi", () => {
             for (const input of TEST_STRINGS) {
                 sliceAnsi(input, 0, Math.floor(input.length / 2));
                 sliceAnsi(input, Math.floor(input.length / 3), Math.floor((input.length * 2) / 3));
             }
         });
 
-        bench("@arcanis/slice-ansi", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("@arcanis/slice-ansi", () => {
             for (const input of TEST_STRINGS) {
                 arcanisSliceAnsi(input, 0, Math.floor(input.length / 2));
                 arcanisSliceAnsi(input, Math.floor(input.length / 3), Math.floor((input.length * 2) / 3));
@@ -121,14 +121,14 @@ describe("slice", () => {
             }
         });
 
-        bench("slice-ansi", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("slice-ansi", () => {
             for (const input of SPECIAL_STRINGS) {
                 sliceAnsi(input, 0, Math.floor(input.length / 2));
                 sliceAnsi(input, Math.floor(input.length / 3), Math.floor((input.length * 2) / 3));
             }
         });
 
-        bench("@arcanis/slice-ansi", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("@arcanis/slice-ansi", () => {
             for (const input of SPECIAL_STRINGS) {
                 arcanisSliceAnsi(input, 0, Math.floor(input.length / 2));
                 arcanisSliceAnsi(input, Math.floor(input.length / 3), Math.floor((input.length * 2) / 3));
@@ -153,13 +153,13 @@ describe("slice", () => {
             }
         });
 
-        bench("slice-ansi", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("slice-ansi", () => {
             for (const testCase of edgeCases) {
                 sliceAnsi(testCase.str, testCase.begin, testCase.end);
             }
         });
 
-        bench("@arcanis/slice-ansi", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("@arcanis/slice-ansi", () => {
             for (const testCase of edgeCases) {
                 arcanisSliceAnsi(testCase.str, testCase.begin, testCase.end);
             }
@@ -176,7 +176,7 @@ describe("slice", () => {
             }
         });
 
-        bench("slice-ansi output correctness", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("slice-ansi output correctness", () => {
             for (const testCase of sliceTestCases) {
                 const result = sliceAnsi(testCase.str, testCase.begin, testCase.end);
 
@@ -185,7 +185,7 @@ describe("slice", () => {
             }
         });
 
-        bench("@arcanis/slice-ansi output correctness", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("@arcanis/slice-ansi output correctness", () => {
             for (const testCase of sliceTestCases) {
                 const result = arcanisSliceAnsi(testCase.str, testCase.begin, testCase.end);
 

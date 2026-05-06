@@ -31,42 +31,42 @@ const MEDIUM_PATCH = createPatch("file", MEDIUM_OLD, MEDIUM_NEW, "old", "new", {
 const LARGE_PATCH = createPatch("file", LARGE_OLD, LARGE_NEW, "old", "new", { context: 3 });
 
 describe("createPatch", () => {
-    bench("small (1 line change)", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("small (1 line change)", () => {
         createPatch("file", SMALL_OLD, SMALL_NEW, "old", "new", { context: 3 });
     });
 
-    bench("medium (50 lines, ~5 changes)", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("medium (50 lines, ~5 changes)", () => {
         createPatch("file", MEDIUM_OLD, MEDIUM_NEW, "old", "new", { context: 3 });
     });
 
-    bench("large (500 lines, ~10 changes)", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("large (500 lines, ~10 changes)", () => {
         createPatch("file", LARGE_OLD, LARGE_NEW, "old", "new", { context: 3 });
     });
 });
 
 describe("parsePatch", () => {
-    bench("medium patch", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("medium patch", () => {
         parsePatch(MEDIUM_PATCH);
     });
 
-    bench("large patch", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("large patch", () => {
         parsePatch(LARGE_PATCH);
     });
 });
 
 describe("diffChars (inline highlighting)", () => {
-    bench("small line pair", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("small line pair", () => {
         diffChars("const x = 'old';", "const x = 'new';");
     });
 
-    bench("medium line pair (100 chars)", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("medium line pair (100 chars)", () => {
         diffChars(
             "export function processData(input: DataInput, options: ProcessOptions): ProcessResult {",
             "export async function processData(input: DataInput, options?: ProcessOptions): Promise<ProcessResult> {",
         );
     });
 
-    bench("long line pair (500 chars)", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("long line pair (500 chars)", () => {
         const longOld = `${"a".repeat(250)}OLD${"b".repeat(247)}`;
         const longNew = `${"a".repeat(250)}NEW${"b".repeat(247)}`;
 
@@ -75,11 +75,11 @@ describe("diffChars (inline highlighting)", () => {
 });
 
 describe("diffWords (prose highlighting)", () => {
-    bench("sentence pair", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("sentence pair", () => {
         diffWords("The quick brown fox jumps over the lazy dog", "The fast brown fox leaps over the sleepy dog");
     });
 
-    bench("paragraph pair", () => {
+    bench.skipIf(process.env.CODSPEED_ENV)("paragraph pair", () => {
         diffWords(
             "This is the first version of the paragraph. It contains several sentences. Each sentence has some important words.",
             "This is the second version of the paragraph. It contains many sentences. Each sentence has some modified words.",

@@ -1484,6 +1484,9 @@ catalogs:
       specifier: 4.0.2
       version: 4.0.2
   test:
+    '@codspeed/vitest-plugin':
+      specifier: 5.4.0
+      version: 5.4.0
     '@playwright/test':
       specifier: ^1.59.1
       version: 1.59.1
@@ -3357,6 +3360,9 @@ importers:
         specifier: catalog:prod
         version: 1.4.1
     devDependencies:
+      '@codspeed/vitest-plugin':
+        specifier: catalog:test
+        version: 5.4.0(tinybench@2.9.0)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))(vitest@4.1.5)
       '@types/lodash.clonedeep':
         specifier: catalog:types
         version: 4.5.9
@@ -3774,6 +3780,9 @@ importers:
         specifier: catalog:prod
         version: 2.0.1
     devDependencies:
+      '@codspeed/vitest-plugin':
+        specifier: catalog:test
+        version: 5.4.0(tinybench@2.9.0)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))(vitest@4.1.5)
       typescript:
         specifier: catalog:tsc
         version: 6.0.3
@@ -3939,15 +3948,19 @@ importers:
       transliteration:
         specifier: catalog:prod
         version: 2.6.1
+      wrap-ansi:
+        specifier: catalog:prod
+        version: 10.0.0
+    devDependencies:
+      '@codspeed/vitest-plugin':
+        specifier: catalog:test
+        version: 5.4.0(tinybench@2.9.0)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))(vitest@4.1.5)
       typescript:
         specifier: catalog:tsc
         version: 6.0.3
       vitest:
         specifier: catalog:test
         version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.2(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))
-      wrap-ansi:
-        specifier: catalog:prod
-        version: 10.0.0
 
   packages/email/disposable-email-domains:
     devDependencies:
@@ -4987,6 +5000,9 @@ importers:
         specifier: catalog:prod
         version: 1.13.4
     devDependencies:
+      '@codspeed/vitest-plugin':
+        specifier: catalog:test
+        version: 5.4.0(tinybench@2.9.0)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))(vitest@4.1.5)
       '@types/object-inspect':
         specifier: catalog:types
         version: 1.13.0
@@ -5333,6 +5349,9 @@ importers:
         specifier: catalog:prod
         version: 3.19.0
     devDependencies:
+      '@codspeed/vitest-plugin':
+        specifier: catalog:test
+        version: 5.4.0(tinybench@2.9.0)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))(vitest@4.1.5)
       typescript:
         specifier: catalog:tsc
         version: 6.0.3
@@ -6241,6 +6260,9 @@ importers:
         specifier: catalog:prod
         version: 2.3.15
     devDependencies:
+      '@codspeed/vitest-plugin':
+        specifier: catalog:test
+        version: 5.4.0(tinybench@2.9.0)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))(vitest@4.1.5)
       '@types/fs-extra':
         specifier: catalog:types
         version: 11.0.4
@@ -7607,6 +7629,9 @@ importers:
 
   packages/terminal/boxen/__bench__:
     devDependencies:
+      '@codspeed/vitest-plugin':
+        specifier: catalog:test
+        version: 5.4.0(tinybench@2.9.0)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))(vitest@4.1.5)
       '@visulima/boxen':
         specifier: workspace:*
         version: link:..
@@ -7756,6 +7781,9 @@ importers:
         specifier: catalog:prod
         version: 18.0.0
     devDependencies:
+      '@codspeed/vitest-plugin':
+        specifier: catalog:test
+        version: 5.4.0(tinybench@2.9.0)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))(vitest@4.1.5)
       '@types/yargs':
         specifier: catalog:types
         version: 17.0.35
@@ -8115,6 +8143,9 @@ importers:
         specifier: catalog:prod
         version: 22.0.0
     devDependencies:
+      '@codspeed/vitest-plugin':
+        specifier: catalog:test
+        version: 5.4.0(tinybench@2.9.0)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))(vitest@4.1.5)
       '@types/argparse':
         specifier: catalog:types
         version: 2.0.17
@@ -8178,9 +8209,6 @@ importers:
       publint:
         specifier: catalog:dev
         version: 0.3.18
-      quick-format-unescaped:
-        specifier: catalog:dev
-        version: 4.0.4
       rimraf:
         specifier: catalog:node
         version: 6.1.3
@@ -8193,6 +8221,25 @@ importers:
       vitest:
         specifier: catalog:test
         version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.2(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+
+  packages/terminal/fmt/__bench__:
+    dependencies:
+      '@visulima/fmt':
+        specifier: workspace:*
+        version: link:..
+      quick-format-unescaped:
+        specifier: catalog:dev
+        version: 4.0.4
+    devDependencies:
+      '@codspeed/vitest-plugin':
+        specifier: catalog:test
+        version: 5.4.0(tinybench@2.9.0)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))(vitest@4.1.5)
+      typescript:
+        specifier: catalog:tsc
+        version: 6.0.3
+      vitest:
+        specifier: catalog:test
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.2(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))
 
   packages/terminal/interactive-manager:
     devDependencies:
@@ -8555,6 +8602,9 @@ importers:
 
   packages/terminal/tabular/__bench__:
     devDependencies:
+      '@codspeed/vitest-plugin':
+        specifier: catalog:test
+        version: 5.4.0(tinybench@2.9.0)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))(vitest@4.1.5)
       '@types/cli-table':
         specifier: catalog:types
         version: 0.3.4
@@ -8570,6 +8620,9 @@ importers:
       table:
         specifier: catalog:dev
         version: 6.9.0
+      typescript:
+        specifier: catalog:tsc
+        version: 6.0.3
       vitest:
         specifier: catalog:test
         version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.2(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))
@@ -8652,9 +8705,6 @@ importers:
       '@eslint-react/eslint-plugin':
         specifier: catalog:lint
         version: 5.7.1(eslint@10.3.0(jiti@2.6.1))(typescript@6.0.3)
-      '@jrichman/ink':
-        specifier: npm:@jrichman/ink@6.6.3
-        version: 6.6.3(@types/react@19.2.14)(react-devtools-core@7.0.1)(react@19.2.5)
       '@napi-rs/cli':
         specifier: catalog:dev
         version: 3.6.2(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@types/node@25.6.0)(node-addon-api@8.7.0)
@@ -8748,9 +8798,6 @@ importers:
       eslint-plugin-validate-jsx-nesting:
         specifier: catalog:lint
         version: 0.1.1(eslint@10.3.0(jiti@2.6.1))
-      ink:
-        specifier: 6.8.0
-        version: 6.8.0(@types/react@19.2.14)(react-devtools-core@7.0.1)(react@19.2.5)
       is-in-ci:
         specifier: catalog:prod
         version: 2.0.0
@@ -8818,6 +8865,40 @@ importers:
       '@visulima/tui-binding-win32-x64-msvc':
         specifier: workspace:*
         version: link:npm/win32-x64-msvc
+
+  packages/terminal/tui/__bench__:
+    dependencies:
+      '@jrichman/ink':
+        specifier: npm:@jrichman/ink@6.6.3
+        version: 6.6.3(@types/react@19.2.14)(react@19.2.5)
+      '@visulima/tui':
+        specifier: workspace:*
+        version: link:..
+      diff:
+        specifier: catalog:prod
+        version: 9.0.0
+      ink:
+        specifier: 6.8.0
+        version: 6.8.0(@types/react@19.2.14)(react@19.2.5)
+      marked:
+        specifier: catalog:dev
+        version: 18.0.3
+      react:
+        specifier: catalog:frontend
+        version: 19.2.5
+    devDependencies:
+      '@codspeed/vitest-plugin':
+        specifier: catalog:test
+        version: 5.4.0(tinybench@2.9.0)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))(vitest@4.1.5)
+      '@types/react':
+        specifier: catalog:types
+        version: 19.2.14
+      typescript:
+        specifier: catalog:tsc
+        version: 6.0.3
+      vitest:
+        specifier: catalog:test
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.2(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))
 
   packages/terminal/tui/npm/darwin-arm64: {}
 
@@ -9382,6 +9463,25 @@ importers:
         specifier: workspace:*
         version: link:npm/win32-x64-msvc
 
+  packages/tooling/task-runner/__bench__:
+    dependencies:
+      '@visulima/task-runner':
+        specifier: workspace:*
+        version: link:..
+    devDependencies:
+      '@codspeed/vitest-plugin':
+        specifier: catalog:test
+        version: 5.4.0(tinybench@2.9.0)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))(vitest@4.1.5)
+      '@types/node':
+        specifier: catalog:types
+        version: 25.6.0
+      typescript:
+        specifier: catalog:tsc
+        version: 6.0.3
+      vitest:
+        specifier: catalog:test
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.2(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))
+
   packages/tooling/task-runner/npm/darwin-arm64: {}
 
   packages/tooling/task-runner/npm/darwin-x64: {}
@@ -9585,7 +9685,7 @@ importers:
         specifier: catalog:frontend
         version: 19.2.5
       react-reconciler:
-        specifier: '>=0.33.0'
+        specifier: ^0.33.0
         version: 0.33.0(react@19.2.5)
     devDependencies:
       '@anolilab/eslint-config':
@@ -10996,7 +11096,7 @@ packages:
   '@cloudflare/vite-plugin@1.35.0':
     resolution: {integrity: sha512-TtyBYqeIcRrbEAShwnNOyaMHA8SnwIFQ5h9OtMF3mr0xEF9XHqnICkZqMLGOFSP9INrjtJKUBIDlWbK+fjSBmA==}
     peerDependencies:
-      vite: '>=6.4.2'
+      vite: '>=7.1.11'
       wrangler: ^4.87.0
 
   '@cloudflare/workerd-darwin-64@1.20260430.1':
@@ -11031,6 +11131,16 @@ packages:
 
   '@cloudflare/workers-types@4.20260504.1':
     resolution: {integrity: sha512-x/7BzBXSGBQS0wHdaY0/1bcaRszkkhCjTc5maQvNSHu/pTVdBF2f/L41W8pRSJJSbLL80ynW7O923O7v3PaLtg==}
+
+  '@codspeed/core@5.4.0':
+    resolution: {integrity: sha512-SwGjXDixN/zX1awBR95LzS0KxIs931qwf7Hbk7BRWv1jAdlMYf9o9GlSnWER4zGBHz941BvzFQJ1O2RIofW3cg==}
+
+  '@codspeed/vitest-plugin@5.4.0':
+    resolution: {integrity: sha512-Xa9HaZHUjYXn1T39bTipV5hmguk1vIuDZs3Gc5OYA8X4ohftYbKfyoFtBqVFfB/ii/p1ihuwt+tltraKMcRDsA==}
+    peerDependencies:
+      tinybench: '>=2.9.0'
+      vite: '>=7.3.2'
+      vitest: ^3.2 || ^4
 
   '@colordx/core@5.4.3':
     resolution: {integrity: sha512-kIxYSfA5T8HXjav55UaaH/o/cKivF6jCCGIb8eqtcsfI46wsvlSiT8jMDyrl779qLec3c2c2oHBZo4oAhvbjrQ==}
@@ -12244,7 +12354,7 @@ packages:
     resolution: {integrity: sha512-jI9yMDyFpqBeSighf/zlXnQG/nl9AyBc6aAgy4XtxJMyt/CNyJpvPfzDD+bCc2zAOmhhqtF6TnmIaY+xV4mIrw==}
     engines: {node: '>=20'}
     peerDependencies:
-      hono: '>=4.10.2'
+      hono: '>=4.12.4'
 
   '@hono/swagger-ui@0.6.1':
     resolution: {integrity: sha512-sJTvldu1GPeEPfyeLG7gRj+W4vEuD+JDi+JjJ3TJs/DvMUtBLs0KJO5yokGegWWdy5qrbdnQGekbhgNRmPmYKQ==}
@@ -17210,7 +17320,7 @@ packages:
       esbuild: '>=0.25.11'
       rollup: '>=4.59.0'
       storybook: ^10.3.6
-      vite: '>=7.1.11'
+      vite: '>=7.3.2'
       webpack: '*'
     peerDependenciesMeta:
       esbuild:
@@ -17322,9 +17432,9 @@ packages:
     peerDependencies:
       '@opentelemetry/api': ^1.0.0
       '@sveltejs/vite-plugin-svelte': ^3.0.0 || ^4.0.0-next.1 || ^5.0.0 || ^6.0.0-next.0 || ^7.0.0
-      svelte: '>=5.51.5'
+      svelte: '>=5.53.5'
       typescript: ^5.3.3 || ^6.0.0
-      vite: '>=7.1.11'
+      vite: '>=7.3.2'
     peerDependenciesMeta:
       '@opentelemetry/api':
         optional: true
@@ -17335,7 +17445,7 @@ packages:
     resolution: {integrity: sha512-ILXmxC7HAsnkK2eslgPetrqqW1BKSL7LktsFgqzNj83MaivMGZzluWq32m25j2mDOjmSKX7GGWahePhuEs7P/g==}
     engines: {node: ^20.19 || ^22.12 || >=24}
     peerDependencies:
-      svelte: '>=5.51.5'
+      svelte: '>=5.53.5'
       vite: ^8.0.0-beta.7 || ^8.0.0
 
   '@svgr/babel-plugin-add-jsx-attribute@8.0.0':
@@ -17822,7 +17932,7 @@ packages:
   '@tailwindcss/vite@4.2.4':
     resolution: {integrity: sha512-pCvohwOCspk3ZFn6eJzrrX3g4n2JY73H6MmYC87XfGPyTty4YsCjYTMArRZm/zOI8dIt3+EcrLHAFPe5A4bgtw==}
     peerDependencies:
-      vite: '>=7.1.11'
+      vite: '>=7.3.2'
 
   '@tanstack/devtools-client@0.0.6':
     resolution: {integrity: sha512-f85ZJXJnDIFOoykG/BFIixuAevJovCvJF391LPs6YjBAPhGYC50NWlx1y4iF/UmK5/cCMx+/JqI5SBOz7FanQQ==}
@@ -17941,7 +18051,7 @@ packages:
       '@vitejs/plugin-rsc': '*'
       react: '>=18.0.0 || >=19.0.0'
       react-dom: '>=18.0.0 || >=19.0.0'
-      vite: '>=7.1.11'
+      vite: '>=7.3.2'
     peerDependenciesMeta:
       '@rsbuild/core':
         optional: true
@@ -17988,7 +18098,7 @@ packages:
     peerDependencies:
       '@rsbuild/core': '>=1.0.2 || ^2.0.0'
       '@tanstack/react-router': ^1.169.1
-      vite: '>=7.1.11'
+      vite: '>=7.3.2'
       vite-plugin-solid: ^2.11.10 || ^3.0.0-0
       webpack: '>=5.92.0'
     peerDependenciesMeta:
@@ -19670,7 +19780,7 @@ packages:
     resolution: {integrity: sha512-mOkXCII839dHyAt/gpoSlm28JIVDwhZ6tnG6wJxUy2bmOx7UaPjvOyIDf3SFv5s7Eo7HVaq6kRcu6YMEzt5Z7w==}
     engines: {node: ^20.19.0 || >=22.12.0}
     peerDependencies:
-      vite: '>=7.1.11'
+      vite: '>=7.3.2'
 
   '@vitejs/plugin-react@6.0.1':
     resolution: {integrity: sha512-l9X/E3cDb+xY3SWzlG1MOGt2usfEHGMNIaegaUGFsLkb3RCn/k8/TOXBcab+OndDI4TBtktT8/9BwwW8Vi9KUQ==}
@@ -19696,7 +19806,7 @@ packages:
     resolution: {integrity: sha512-u9HHgfrq3AjXlysn0eINFnWQOJQLO9WN6VprZ8FXl7A2bYisv3Hui9Ij+7QZ41F/WYWarHjwBbXtD7dKg3uxbg==}
     engines: {node: ^20.19.0 || >=22.12.0}
     peerDependencies:
-      vite: '>=7.1.11'
+      vite: '>=7.3.2'
       vue: ^3.2.25
 
   '@vitest/browser@4.1.5':
@@ -19742,7 +19852,7 @@ packages:
     resolution: {integrity: sha512-/x2EmFC4mT4NNzqvC3fmesuV97w5FC903KPmey4gsnJiMQ3Be1IlDKVaDaG8iqaLFHqJ2FVEkxZk5VmeLjIItw==}
     peerDependencies:
       msw: ^2.4.9
-      vite: '>=6.4.2'
+      vite: '>=7.1.11'
     peerDependenciesMeta:
       msw:
         optional: true
@@ -27241,7 +27351,7 @@ packages:
     resolution: {integrity: sha512-ku6YBjF8s4kbDMO7t9vM8dOAj7jJ1tTCHNY6hnBRgx5TvUYqrppZ7RWQIywMyVSntX9UaFGDH5/KFNDEr9zRvw==}
     engines: {node: ^20.18.0 || >=22.12.0}
     peerDependencies:
-      next: '>=16.0.7'
+      next: '>=16.0.9'
 
   next-themes@0.4.6:
     resolution: {integrity: sha512-pZvgD5L0IEvX5/9GWyHMf3m8BKiVQwsCMHfoFosXtXBMnaS0ZnIJ9ST4b4NqLVKDEm8QBxoNNGNaBv2JNF6XNA==}
@@ -30638,7 +30748,7 @@ packages:
     engines: {node: '>= 18.0.0'}
     hasBin: true
     peerDependencies:
-      svelte: '>=5.51.5'
+      svelte: '>=5.53.5'
       typescript: '>=5.0.0'
 
   svelte-eslint-parser@1.6.0:
@@ -32144,7 +32254,7 @@ packages:
     peerDependencies:
       '@testing-library/jest-dom': ^5.16.6 || ^5.17.0 || ^6.*
       solid-js: ^1.7.2
-      vite: '>=7.1.11'
+      vite: '>=7.3.2'
     peerDependenciesMeta:
       '@testing-library/jest-dom':
         optional: true
@@ -32283,7 +32393,7 @@ packages:
       '@vitest/ui': 4.1.5
       happy-dom: '>=20.8.8'
       jsdom: '*'
-      vite: '>=6.4.2'
+      vite: '>=7.3.2'
     peerDependenciesMeta:
       '@edge-runtime/vm':
         optional: true
@@ -35038,6 +35148,24 @@ snapshots:
 
   '@cloudflare/workers-types@4.20260504.1': {}
 
+  '@codspeed/core@5.4.0':
+    dependencies:
+      axios: 1.15.0(debug@4.4.3)
+      find-up: 6.3.0
+      form-data: 4.0.5
+      node-gyp-build: 4.8.4
+    transitivePeerDependencies:
+      - debug
+
+  '@codspeed/vitest-plugin@5.4.0(tinybench@2.9.0)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))(vitest@4.1.5)':
+    dependencies:
+      '@codspeed/core': 5.4.0
+      tinybench: 2.9.0
+      vite: 8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4)
+      vitest: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.2(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))
+    transitivePeerDependencies:
+      - debug
+
   '@colordx/core@5.4.3': {}
 
   '@colors/colors@1.5.0':
@@ -36827,7 +36955,7 @@ snapshots:
     optionalDependencies:
       typescript: 6.0.3
 
-  '@jrichman/ink@6.6.3(@types/react@19.2.14)(react-devtools-core@7.0.1)(react@19.2.5)':
+  '@jrichman/ink@6.6.3(@types/react@19.2.14)(react@19.2.5)':
     dependencies:
       ansi-escapes: 7.3.0
       ansi-styles: 6.2.3
@@ -36856,7 +36984,6 @@ snapshots:
       yoga-layout: 3.2.1
     optionalDependencies:
       '@types/react': 19.2.14
-      react-devtools-core: 7.0.1
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
@@ -49084,7 +49211,7 @@ snapshots:
       eslint: 8.57.1
       eslint-plugin-react: 7.37.5(eslint@8.57.1)
 
-  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.1(eslint@10.3.0(jiti@2.6.1))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@10.3.0(jiti@2.6.1)))(eslint-plugin-promise@6.6.0(eslint@10.3.0(jiti@2.6.1)))(eslint@8.57.1):
+  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.1(eslint@10.3.0(jiti@2.6.1))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1):
     dependencies:
       eslint: 8.57.1
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.59.1(eslint@10.3.0(jiti@2.6.1))(typescript@6.0.3))(eslint@10.3.0(jiti@2.6.1))
@@ -51830,7 +51957,7 @@ snapshots:
 
   ini@6.0.0: {}
 
-  ink@6.8.0(@types/react@19.2.14)(react-devtools-core@7.0.1)(react@19.2.5):
+  ink@6.8.0(@types/react@19.2.14)(react@19.2.5):
     dependencies:
       '@alcalzone/ansi-tokenize': 0.2.5
       ansi-escapes: 7.3.0
@@ -51860,7 +51987,6 @@ snapshots:
       yoga-layout: 3.2.1
     optionalDependencies:
       '@types/react': 19.2.14
-      react-devtools-core: 7.0.1
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
@@ -59843,7 +59969,7 @@ snapshots:
   standard@17.1.2(@typescript-eslint/parser@8.59.1(eslint@10.3.0(jiti@2.6.1))(typescript@6.0.3)):
     dependencies:
       eslint: 8.57.1
-      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.1(eslint@10.3.0(jiti@2.6.1))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@10.3.0(jiti@2.6.1)))(eslint-plugin-promise@6.6.0(eslint@10.3.0(jiti@2.6.1)))(eslint@8.57.1)
+      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.1(eslint@10.3.0(jiti@2.6.1))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)
       eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@10.3.0(jiti@2.6.1)))(eslint@8.57.1)
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.59.1(eslint@10.3.0(jiti@2.6.1))(typescript@6.0.3))(eslint@10.3.0(jiti@2.6.1))
       eslint-plugin-n: 15.7.0(eslint@8.57.1)

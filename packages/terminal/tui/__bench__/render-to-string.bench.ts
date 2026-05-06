@@ -141,7 +141,7 @@ describe("renderToString", () => {
             renderToString(React.createElement(TuiSimpleApp));
         });
 
-        bench("ink", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("ink", () => {
             inkRenderToString(React.createElement(InkSimpleApp));
         });
     });
@@ -151,7 +151,7 @@ describe("renderToString", () => {
             renderToString(React.createElement(TuiStyledApp));
         });
 
-        bench("ink", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("ink", () => {
             inkRenderToString(React.createElement(InkStyledApp));
         });
     });
@@ -161,7 +161,7 @@ describe("renderToString", () => {
             renderToString(React.createElement(TuiDashboardApp), { columns: 80, rows: 24 });
         });
 
-        bench("ink", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("ink", () => {
             inkRenderToString(React.createElement(InkDashboardApp), { columns: 80 });
         });
     });

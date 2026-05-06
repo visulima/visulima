@@ -159,14 +159,14 @@ describe("render (mount + first paint)", () => {
             inst.unmount();
         });
 
-        bench("ink", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("ink", () => {
             const stdout = createMockStdout();
             const inst = inkRender(React.createElement(InkSimpleApp), { ...renderOptions, stdout });
 
             inst.unmount();
         });
 
-        bench("@jrichman/ink", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("@jrichman/ink", () => {
             const stdout = createMockStdout();
             const inst = jrInkRender(React.createElement(JrInkSimpleApp), { ...renderOptions, stdout });
 
@@ -182,14 +182,14 @@ describe("render (mount + first paint)", () => {
             inst.unmount();
         });
 
-        bench("ink", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("ink", () => {
             const stdout = createMockStdout();
             const inst = inkRender(React.createElement(InkDashboardApp), { ...renderOptions, stdout });
 
             inst.unmount();
         });
 
-        bench("@jrichman/ink", () => {
+        bench.skipIf(process.env.CODSPEED_ENV)("@jrichman/ink", () => {
             const stdout = createMockStdout();
             const inst = jrInkRender(React.createElement(JrInkDashboardApp), { ...renderOptions, stdout });
 
@@ -223,7 +223,7 @@ describe("render (rerender)", () => {
         const inkInst = inkRender(React.createElement(InkSimpleApp), { ...renderOptions, stdout: inkStdout });
         let inkFrame = 0;
 
-        bench(
+        bench.skipIf(process.env.CODSPEED_ENV)(
             "ink",
             () => {
                 inkInst.rerender(
@@ -246,7 +246,7 @@ describe("render (rerender)", () => {
         const jrInst = jrInkRender(React.createElement(JrInkSimpleApp), { ...renderOptions, stdout: jrStdout });
         let jrFrame = 0;
 
-        bench(
+        bench.skipIf(process.env.CODSPEED_ENV)(
             "@jrichman/ink",
             () => {
                 jrInst.rerender(
