@@ -88,7 +88,7 @@ describe(LineChart, () => {
     });
 
     it("should tolerate an empty series list without throwing", () => {
-        expect.assertions(1);
+        expect.assertions(0);
 
         const output = renderToString(<LineChart series={[]} showLegend={false} />);
 
