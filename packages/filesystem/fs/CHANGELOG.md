@@ -1,3 +1,10 @@
+## @visulima/fs [5.0.0-alpha.15](https://github.com/visulima/visulima/compare/@visulima/fs@5.0.0-alpha.14...@visulima/fs@5.0.0-alpha.15) (2026-05-06)
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.17
+
 ## @visulima/fs [5.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/fs@5.0.0-alpha.13...@visulima/fs@5.0.0-alpha.14) (2026-05-06)
 
 ### Miscellaneous Chores
