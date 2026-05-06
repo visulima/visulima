@@ -1,3 +1,10 @@
+## @visulima/pail [4.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/pail@4.0.0-alpha.13...@visulima/pail@4.0.0-alpha.14) (2026-05-06)
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.17
+
 ## @visulima/pail [4.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/pail@4.0.0-alpha.12...@visulima/pail@4.0.0-alpha.13) (2026-05-06)
 
 ### Miscellaneous Chores
