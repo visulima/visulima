@@ -1,3 +1,10 @@
+## @visulima/error [6.0.0-alpha.16](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.15...@visulima/error@6.0.0-alpha.16) (2026-05-06)
+
+### Miscellaneous Chores
+
+* **error:** apply prettier and eslint quote-style auto-fix ([7f4ffa8](https://github.com/visulima/visulima/commit/7f4ffa839a9d1f47e2b3fa98e97aca199e1c6f34))
+* **error:** fix lint errors ([4ccd46c](https://github.com/visulima/visulima/commit/4ccd46c3b9d962b9aaf2f8968e6ae75676e2027a))
+
 ## @visulima/error [6.0.0-alpha.15](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.14...@visulima/error@6.0.0-alpha.15) (2026-05-04)
 
 ## @visulima/error [6.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.13...@visulima/error@6.0.0-alpha.14) (2026-04-30)
