@@ -1,3 +1,5 @@
+## @visulima/connect [4.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/connect@4.0.0-alpha.13...@visulima/connect@4.0.0-alpha.14) (2026-05-06)
+
 ## @visulima/connect [4.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/connect@4.0.0-alpha.12...@visulima/connect@4.0.0-alpha.13) (2026-05-06)
 
 ### Miscellaneous Chores
