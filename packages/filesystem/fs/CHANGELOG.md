@@ -1,3 +1,19 @@
+## @visulima/fs [5.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/fs@5.0.0-alpha.13...@visulima/fs@5.0.0-alpha.14) (2026-05-06)
+
+### Miscellaneous Chores
+
+* **fs:** apply prettier and eslint quote-style auto-fix ([cc5525e](https://github.com/visulima/visulima/commit/cc5525e0d5fe37f689ca7357cf274b88b604aba0))
+* **fs:** housekeeping cleanup ([95e8643](https://github.com/visulima/visulima/commit/95e8643922856fa21bd7b6830ff0e94e29c1b783))
+
+### Continuous Integration
+
+* integrate codspeed for benchmark tracking ([e758f3d](https://github.com/visulima/visulima/commit/e758f3da491cc00d3f8bbf10d7ba3fdf8deb5325))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.16
+
 ## @visulima/fs [5.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/fs@5.0.0-alpha.12...@visulima/fs@5.0.0-alpha.13) (2026-05-04)
 
 ### Miscellaneous Chores
