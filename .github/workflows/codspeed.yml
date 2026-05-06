@@ -31,6 +31,17 @@ jobs:
               with:
                   egress-policy: "audit"
 
+            - name: "Wait for other checks to succeed"
+              uses: "lewagon/wait-on-check-action@3603e826ee561ea102b58accb5ea55a1a7482343" # v1.4.1
+              timeout-minutes: 30
+              with:
+                  ref: "${{ github.event.pull_request.head.sha || github.sha }}"
+                  repo-token: "${{ secrets.GITHUB_TOKEN }}"
+                  wait-interval: 30 # seconds
+                  running-workflow-name: "Run benchmarks" # wait for all other checks (incl. Build Native) to complete
+                  allowed-conclusions: "success,skipped,neutral"
+                  ignore-checks: "lock-closed / lock-closed, Socket Security: Pull Request Alerts, Dependabot"
+
             - name: "Git checkout"
               uses: "actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5" # v4.3.1
               env:
@@ -55,16 +66,6 @@ jobs:
                   # TODO: re-enable once pnpm/npm audit works with unpublished @visulima/task-runner-binding-* packages and pnpm registry config
                   run-signatures-audit: false
                   run-npm-audit: false
-
-            - name: "Wait for Build Native workflow"
-              uses: "lewagon/wait-on-check-action@3603e826ee561ea102b58accb5ea55a1a7482343" # v1.4.1
-              timeout-minutes: 30
-              with:
-                  ref: "${{ github.event.pull_request.head.sha || github.sha }}"
-                  repo-token: "${{ secrets.GITHUB_TOKEN }}"
-                  wait-interval: 15
-                  check-name: "Check Native Build"
-                  allowed-conclusions: "success,skipped,neutral"
 
             # Pull the host-matching binaries produced by build-native.yml so benches that require
             # a compiled native binding (e.g. @visulima/tui, @visulima/task-runner) can load it.
