@@ -1,3 +1,5 @@
+## @visulima/tui [1.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/tui@1.0.0-alpha.7...@visulima/tui@1.0.0-alpha.8) (2026-05-06)
+
 ## @visulima/tui [1.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/tui@1.0.0-alpha.6...@visulima/tui@1.0.0-alpha.7) (2026-05-06)
 
 ### Miscellaneous Chores
