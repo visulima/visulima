@@ -1,3 +1,14 @@
+## @visulima/vis [1.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.12...@visulima/vis@1.0.0-alpha.13) (2026-05-06)
+
+
+### Dependencies
+
+* **@visulima/cerebro:** upgraded to 3.0.0-alpha.16
+* **@visulima/fs:** upgraded to 5.0.0-alpha.15
+* **@visulima/package:** upgraded to 5.0.0-alpha.14
+* **@visulima/pail:** upgraded to 4.0.0-alpha.14
+* **@visulima/tui:** upgraded to 1.0.0-alpha.8
+
 ## @visulima/vis [1.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.11...@visulima/vis@1.0.0-alpha.12) (2026-05-06)
 
 ### Features
