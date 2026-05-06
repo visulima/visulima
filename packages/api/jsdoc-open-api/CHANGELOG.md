@@ -1,3 +1,15 @@
+## @visulima/jsdoc-open-api [3.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.12...@visulima/jsdoc-open-api@3.0.0-alpha.13) (2026-05-06)
+
+### Miscellaneous Chores
+
+* **jsdoc-open-api:** apply prettier and eslint quote-style auto-fix ([2e9b8d0](https://github.com/visulima/visulima/commit/2e9b8d0cdccaa94f22627e5e5f11153c71b689bd))
+* **jsdoc-open-api:** housekeeping cleanup ([de52abe](https://github.com/visulima/visulima/commit/de52abea6d81abc06a8afc14c70ea2a5aabcd30e))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.14
+
 ## @visulima/jsdoc-open-api [3.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.11...@visulima/jsdoc-open-api@3.0.0-alpha.12) (2026-05-04)
 
 ### Miscellaneous Chores
