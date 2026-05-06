@@ -28,6 +28,12 @@ rust_lintable:
     - "rustfmt.toml"
     - "rust-toolchain.toml"
 
+vis_schemas_lintable:
+    - "packages/tooling/vis/src/config/**"
+    - "packages/tooling/vis/scripts/generate-schemas.ts"
+    - "packages/tooling/vis/schemas/**"
+    - "packages/tooling/vis/tsconfig.json"
+
 packages: &packages
     - "**/tsconfig*.json"
     - "pnpm-lock.yaml"

@@ -80,6 +80,7 @@
         "build:native": "napi build --platform --release --esm --manifest-path native/Cargo.toml --output-dir . --js index.js",
         "build:native:debug": "napi build --platform --esm --manifest-path native/Cargo.toml --output-dir . --js index.js",
         "build:prod": "packem build --production",
+        "check:schemas-drift": "node scripts/generate-schemas.ts && git diff --exit-code -- schemas",
         "clean": "rimraf node_modules dist .eslintcache *.node",
         "dev": "pnpm run build --watch",
         "generate:schemas": "node scripts/generate-schemas.ts",

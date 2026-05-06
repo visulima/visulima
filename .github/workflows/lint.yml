@@ -34,6 +34,7 @@ jobs:
             yaml_lintable: "${{ steps.changes.outputs.yaml_lintable }}"
             package_json_lintable: "${{ steps.changes.outputs.package_json_lintable }}"
             rust_lintable: "${{ steps.changes.outputs.rust_lintable }}"
+            vis_schemas_lintable: "${{ steps.changes.outputs.vis_schemas_lintable }}"
         steps:
             - name: "Harden Runner"
               uses: "step-security/harden-runner@95d9a5deda9de15063e7595e9719c11c38c90ae2" # v2.13.2
@@ -162,6 +163,40 @@ jobs:
 
             - name: "lint package.json"
               run: "pnpm run lint:affected:package-json --files=${{ steps.files.outputs.all_changed_files }}"
+
+    vis-schemas-drift:
+        if: "needs.files-changed.outputs.vis_schemas_lintable == 'true'"
+        needs: "files-changed"
+        name: "Lint (vis schemas drift)"
+        runs-on: "ubuntu-latest"
+        steps:
+            - name: "Harden Runner"
+              uses: "step-security/harden-runner@95d9a5deda9de15063e7595e9719c11c38c90ae2" # v2.13.2
+              with:
+                  egress-policy: "audit"
+
+            - name: "Git checkout ${{ env.HEAD_REPOSITORY }}:${{ env.HEAD_REF }}"
+              uses: "actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5" # v4.3.1
+              env:
+                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
+                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
+                  EMAIL: "github-actions[bot]@users.noreply.github.com"
+
+            - name: "Setup resources and environment"
+              uses: "anolilab/workflows/step/setup@main"
+              with:
+                  node-version: "22"
+                  install-node-gyp: "true"
+                  cache-prefix: "lint"
+                  # TODO: re-enable once pnpm/npm audit works with unpublished @visulima/task-runner-binding-* packages and pnpm registry config
+                  run-npm-audit: false
+
+            - name: "Regenerate vis schemas and fail on drift"
+              run: |
+                  pnpm --filter @visulima/vis run check:schemas-drift || {
+                      echo "::error::vis schemas are out of sync with src/config/types.ts. Run: pnpm --filter @visulima/vis run generate:schemas, then commit the changes under packages/tooling/vis/schemas/."
+                      exit 1
+                  }
 
     yaml-lint:
         if: "needs.files-changed.outputs.yaml_lintable == 'true'"
