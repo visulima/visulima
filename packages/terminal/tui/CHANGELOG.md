@@ -1,3 +1,22 @@
+## @visulima/tui [1.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/tui@1.0.0-alpha.6...@visulima/tui@1.0.0-alpha.7) (2026-05-06)
+
+### Miscellaneous Chores
+
+* re-enable jsdoc/match-description in api-platform and tighten config docs ([4ecaa31](https://github.com/visulima/visulima/commit/4ecaa315064cdd798af1ea1296be1fe52967bf9a))
+* **tui:** align jsx ternaries with prettier formatting ([3ed06fa](https://github.com/visulima/visulima/commit/3ed06fa1979e8c5be29948a4793580e516b1c370))
+* **tui:** apply prettier and eslint quote-style auto-fix ([a815954](https://github.com/visulima/visulima/commit/a8159542aa6fcef2060bf69d6a9fd4fe8a034ec2))
+* **tui:** clear lint warnings ([74a3679](https://github.com/visulima/visulima/commit/74a36798eb1768dad01bcc14e1ba25079ada25d5))
+* **tui:** fix lint errors ([ca7d9ff](https://github.com/visulima/visulima/commit/ca7d9ff9b1abe21a660b71897d33ff6c9c0446c7))
+* **tui:** housekeeping cleanup ([b79b801](https://github.com/visulima/visulima/commit/b79b801b28d4a56171581ebcebb8fd0d75e89ac7))
+
+### Tests
+
+* **tui:** use assertions(0) so empty-series test allows expectTypeOf-only ([7c728dd](https://github.com/visulima/visulima/commit/7c728dddcb1f0a1751924e2585eb03c60d31132e))
+
+### Continuous Integration
+
+* integrate codspeed for benchmark tracking ([e758f3d](https://github.com/visulima/visulima/commit/e758f3da491cc00d3f8bbf10d7ba3fdf8deb5325))
+
 ## @visulima/tui [1.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/tui@1.0.0-alpha.5...@visulima/tui@1.0.0-alpha.6) (2026-05-04)
 
 ### Bug Fixes
