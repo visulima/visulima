@@ -1,3 +1,10 @@
+## @visulima/dev-toolbar [1.0.0-alpha.16](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.0-alpha.15...@visulima/dev-toolbar@1.0.0-alpha.16) (2026-05-06)
+
+### Miscellaneous Chores
+
+* **dev-toolbar:** apply prettier and eslint quote-style auto-fix ([3bb9b50](https://github.com/visulima/visulima/commit/3bb9b50337d5bbc0e3a1bd372a69ceebad1fb188))
+* **dev-toolbar:** housekeeping cleanup ([d7c5ed5](https://github.com/visulima/visulima/commit/d7c5ed5518069405476212d8a9814af50cf2ef15))
+
 ## @visulima/dev-toolbar [1.0.0-alpha.15](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.0-alpha.14...@visulima/dev-toolbar@1.0.0-alpha.15) (2026-05-04)
 
 ### Miscellaneous Chores
