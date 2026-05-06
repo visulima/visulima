@@ -1,3 +1,9 @@
+## @visulima/connect [4.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/connect@4.0.0-alpha.12...@visulima/connect@4.0.0-alpha.13) (2026-05-06)
+
+### Miscellaneous Chores
+
+* **connect:** apply lint cleanup from agent batch ([cad7f98](https://github.com/visulima/visulima/commit/cad7f9857c6c86b0d196e9353f094bdc93594f22))
+
 ## @visulima/connect [4.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/connect@4.0.0-alpha.11...@visulima/connect@4.0.0-alpha.12) (2026-05-04)
 
 ## @visulima/connect [4.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/connect@4.0.0-alpha.10...@visulima/connect@4.0.0-alpha.11) (2026-04-30)
