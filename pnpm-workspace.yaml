@@ -12,6 +12,7 @@ packages:
   - "!packages/tooling/package/__fixtures__/workspaces/**"
   - "!packages/storage/storage/src/adapter/nuxt"
   - "!packages/tooling/vis/examples/sample-workspace/**"
+  - "!packages/tooling/vis/__fixtures__/sherif-lint/**"
 
 allowBuilds:
   '@parcel/watcher': true
