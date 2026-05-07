@@ -14,8 +14,8 @@
         "find-up": "catalog:prod",
         "find-up-simple": "catalog:prod",
         "fs-extra": "catalog:prod",
-        "glob": "^11.1.0",
-        "globby": "^14.1.0",
+        "glob": "^13.0.6",
+        "globby": "^16.2.0",
         "tinyglobby": "^0.2.16",
         "walk": "catalog:prod"
     },
