@@ -1,3 +1,15 @@
+## @visulima/tui [1.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/tui@1.0.0-alpha.9...@visulima/tui@1.0.0-alpha.10) (2026-05-07)
+
+### Tests
+
+* **tui:** de-flake form-controls autoFocus race ([d787b44](https://github.com/visulima/visulima/commit/d787b44a8dc6147c780632ac6b2879b675382d84))
+* **tui:** de-flake radio-group commit-on-space test ([7b9b9e8](https://github.com/visulima/visulima/commit/7b9b9e8dbc43919116ecf6c26e62515c10789ab2))
+
+
+### Dependencies
+
+* **@visulima/string:** upgraded to 3.0.0-alpha.12
+
 ## @visulima/tui [1.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/tui@1.0.0-alpha.8...@visulima/tui@1.0.0-alpha.9) (2026-05-07)
 
 ### Miscellaneous Chores
