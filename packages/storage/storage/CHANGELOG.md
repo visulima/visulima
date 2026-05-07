@@ -1,3 +1,14 @@
+## @visulima/storage [1.0.0-alpha.21](https://github.com/visulima/visulima/compare/@visulima/storage@1.0.0-alpha.20...@visulima/storage@1.0.0-alpha.21) (2026-05-07)
+
+### Miscellaneous Chores
+
+* **storage:** bump sharp peer to >=0.34.5 ([2a40154](https://github.com/visulima/visulima/commit/2a401542f3a02c21e441fa97c196785d9f9276c8))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.16
+
 ## @visulima/storage [1.0.0-alpha.20](https://github.com/visulima/visulima/compare/@visulima/storage@1.0.0-alpha.19...@visulima/storage@1.0.0-alpha.20) (2026-05-06)
 
 
