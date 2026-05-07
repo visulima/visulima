@@ -2339,13 +2339,13 @@ importers:
   packages/api/api-platform:
     dependencies:
       '@visulima/connect':
-        specifier: 4.0.0-alpha.13
+        specifier: 4.0.0-alpha.14
         version: link:../connect
       '@visulima/fs':
-        specifier: 5.0.0-alpha.14
+        specifier: 5.0.0-alpha.15
         version: link:../../filesystem/fs
       '@visulima/jsdoc-open-api':
-        specifier: 3.0.0-alpha.13
+        specifier: 3.0.0-alpha.14
         version: link:../jsdoc-open-api
       '@visulima/path':
         specifier: 3.0.0-alpha.10
@@ -2968,7 +2968,7 @@ importers:
         specifier: catalog:prod
         version: 12.1.0(openapi-types@12.1.3)
       '@visulima/fs':
-        specifier: 5.0.0-alpha.14
+        specifier: 5.0.0-alpha.15
         version: link:../../filesystem/fs
       comment-parser:
         specifier: catalog:prod
@@ -4085,10 +4085,10 @@ importers:
         specifier: catalog:types
         version: 8.0.0
       '@visulima/error':
-        specifier: 6.0.0-alpha.16
+        specifier: 6.0.0-alpha.17
         version: link:../../error-debugging/error
       '@visulima/fs':
-        specifier: 5.0.0-alpha.14
+        specifier: 5.0.0-alpha.15
         version: link:../../filesystem/fs
       '@visulima/packem':
         specifier: catalog:dev
@@ -4788,7 +4788,7 @@ importers:
         specifier: 3.0.0-alpha.10
         version: link:../../terminal/boxen
       '@visulima/error':
-        specifier: 6.0.0-alpha.16
+        specifier: 6.0.0-alpha.17
         version: link:../error
       http-errors:
         specifier: catalog:prod
@@ -5030,7 +5030,7 @@ importers:
         specifier: catalog:prod
         version: 4.0.2
       '@visulima/error':
-        specifier: 6.0.0-alpha.16
+        specifier: 6.0.0-alpha.17
         version: link:../error
       ai:
         specifier: ^6.0.175
@@ -5243,7 +5243,7 @@ importers:
         specifier: 4.0.0-alpha.13
         version: link:../../terminal/ansi
       '@visulima/error':
-        specifier: 6.0.0-alpha.16
+        specifier: 6.0.0-alpha.17
         version: link:../error
       '@visulima/fmt':
         specifier: 2.0.0-alpha.10
@@ -5498,7 +5498,7 @@ importers:
         specifier: catalog:prod
         version: 4.0.2
       '@visulima/error':
-        specifier: 6.0.0-alpha.16
+        specifier: 6.0.0-alpha.17
         version: link:../error
       fastest-levenshtein:
         specifier: catalog:prod
@@ -6028,16 +6028,16 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 27.0.2(4f5b546ca030f9e73033295d414e60ec)
+        version: 27.0.2(2d9f742f18fba162bf1fd11a43331ac2)
       '@anolilab/prettier-config':
         specifier: catalog:lint
         version: 10.0.1(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.9(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.9(@types/node@25.6.0)(yaml@2.8.4)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.10(@anolilab/semantic-release-pnpm@8.1.9(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.10(@anolilab/semantic-release-pnpm@8.1.9(@types/node@25.6.0)(yaml@2.8.4))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.4)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -6052,10 +6052,10 @@ importers:
         version: 25.6.0
       '@visulima/fs':
         specifier: 5.0.0-alpha.14
-        version: link:../fs
+        version: 5.0.0-alpha.14(ini@6.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(smol-toml@1.6.1)(yaml@2.8.4)
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.77(acfc8cccf6c0caf0f546e9558a22b8b2)
+        version: 2.0.0-alpha.77(94ae07bbaf9b5f68895c85ac6fdec0b7)
       '@visulima/path':
         specifier: 3.0.0-alpha.10
         version: link:../path
@@ -6097,7 +6097,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.3(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.3(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))
 
   packages/filesystem/fs:
     dependencies:
@@ -6136,7 +6136,7 @@ importers:
         specifier: ^4.0.3
         version: 4.0.3
       '@visulima/error':
-        specifier: 6.0.0-alpha.16
+        specifier: 6.0.0-alpha.17
         version: link:../../error-debugging/error
       '@visulima/packem':
         specifier: catalog:dev
@@ -6466,7 +6466,7 @@ importers:
         specifier: catalog:dev
         version: 2.3.3
       '@visulima/fs':
-        specifier: 5.0.0-alpha.14
+        specifier: 5.0.0-alpha.15
         version: link:../../filesystem/fs
       '@visulima/humanizer':
         specifier: 3.0.0-alpha.11
@@ -7693,7 +7693,7 @@ importers:
         specifier: 2.0.0-alpha.9
         version: link:../command-line-args
       '@visulima/error':
-        specifier: 6.0.0-alpha.16
+        specifier: 6.0.0-alpha.17
         version: link:../../error-debugging/error
       '@visulima/find-cache-dir':
         specifier: 3.0.0-alpha.9
@@ -7702,7 +7702,7 @@ importers:
         specifier: catalog:dev
         version: 2.0.0-alpha.77(7bd4f106fe89a0e4a50be29d6da81e11)
       '@visulima/pail':
-        specifier: 4.0.0-alpha.13
+        specifier: 4.0.0-alpha.14
         version: link:../../error-debugging/pail
       '@visulima/path':
         specifier: 3.0.0-alpha.10
@@ -8062,7 +8062,7 @@ importers:
         version: 25.6.0
       '@visulima/error':
         specifier: 6.0.0-alpha.16
-        version: link:../../error-debugging/error
+        version: 6.0.0-alpha.16
       '@visulima/packem':
         specifier: catalog:dev
         version: 2.0.0-alpha.77(acfc8cccf6c0caf0f546e9558a22b8b2)
@@ -8981,7 +8981,7 @@ importers:
         specifier: catalog:prod
         version: 1.1.0
       '@visulima/fs':
-        specifier: 5.0.0-alpha.14
+        specifier: 5.0.0-alpha.15
         version: link:../../filesystem/fs
       '@visulima/path':
         specifier: 3.0.0-alpha.10
@@ -9234,7 +9234,7 @@ importers:
         version: link:../../filesystem/find-cache-dir
       '@visulima/fs':
         specifier: 5.0.0-alpha.14
-        version: link:../../filesystem/fs
+        version: 5.0.0-alpha.14(ini@6.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(smol-toml@1.6.1)(yaml@2.8.4)
       '@visulima/packem':
         specifier: catalog:dev
         version: 2.0.0-alpha.77(94ae07bbaf9b5f68895c85ac6fdec0b7)
@@ -9497,7 +9497,7 @@ importers:
   packages/tooling/tsconfig:
     dependencies:
       '@visulima/fs':
-        specifier: 5.0.0-alpha.14
+        specifier: 5.0.0-alpha.15
         version: link:../../filesystem/fs
       '@visulima/path':
         specifier: 3.0.0-alpha.10
@@ -9609,7 +9609,7 @@ importers:
         specifier: 3.0.0-alpha.9
         version: link:../../filesystem/find-cache-dir
       '@visulima/fs':
-        specifier: 5.0.0-alpha.14
+        specifier: 5.0.0-alpha.15
         version: link:../../filesystem/fs
       '@visulima/secret-scanner':
         specifier: 1.0.0-alpha.1
@@ -9712,7 +9712,7 @@ importers:
         specifier: 4.0.0-alpha.13
         version: link:../../terminal/ansi
       '@visulima/cerebro':
-        specifier: 3.0.0-alpha.15
+        specifier: 3.0.0-alpha.16
         version: link:../../terminal/cerebro
       '@visulima/colorize':
         specifier: 2.0.0-alpha.10
@@ -9727,13 +9727,13 @@ importers:
         specifier: 1.0.0-alpha.2
         version: link:../../terminal/interactive-manager
       '@visulima/package':
-        specifier: 5.0.0-alpha.13
+        specifier: 5.0.0-alpha.14
         version: link:../package
       '@visulima/packem':
         specifier: catalog:dev
         version: 2.0.0-alpha.77(5e50d986dc226c354399378d48970432)
       '@visulima/pail':
-        specifier: 4.0.0-alpha.13
+        specifier: 4.0.0-alpha.14
         version: link:../../error-debugging/pail
       '@visulima/path':
         specifier: 3.0.0-alpha.10
@@ -9875,13 +9875,13 @@ importers:
         specifier: ^1.29.0
         version: 1.29.0(zod@4.4.3)
       '@visulima/fs':
-        specifier: 5.0.0-alpha.14
+        specifier: 5.0.0-alpha.15
         version: link:../../filesystem/fs
       '@visulima/path':
         specifier: 3.0.0-alpha.10
         version: link:../../filesystem/path
       '@visulima/vis':
-        specifier: 1.0.0-alpha.12
+        specifier: 1.0.0-alpha.13
         version: link:../vis
       zod:
         specifier: catalog:utils
@@ -17763,9 +17763,9 @@ packages:
     peerDependencies:
       '@opentelemetry/api': ^1.0.0
       '@sveltejs/vite-plugin-svelte': ^3.0.0 || ^4.0.0-next.1 || ^5.0.0 || ^6.0.0-next.0 || ^7.0.0
-      svelte: '>=5.51.5'
+      svelte: '>=5.53.5'
       typescript: ^5.3.3 || ^6.0.0
-      vite: '>=7.1.11'
+      vite: '>=7.3.2'
     peerDependenciesMeta:
       '@opentelemetry/api':
         optional: true
@@ -19779,6 +19779,16 @@ packages:
     resolution: {integrity: sha512-BsCKXf26Cyhz3Il2ZycZRHJmUUykk3PETkmowsOgWjCgnkAmv6OyWnrIrEaREFHkg+CnpTOZb/SizjkvT6vd/Q==}
     engines: {node: '>=20.19 <=25.*'}
 
+  '@visulima/error@6.0.0-alpha.16':
+    resolution: {integrity: sha512-xyYNb1bT4LM2fgto7iXb+mIn7KmyIQjPoK9JcZ40sm23wJut/sowmHdGq/ueCNSCNnCsvmj+DjL4+B7l4HaXGw==}
+    engines: {node: ^22.14.0 || >=24.10.0}
+    os: [darwin, linux, win32]
+    peerDependencies:
+      ai: 6.0.174
+    peerDependenciesMeta:
+      ai:
+        optional: true
+
   '@visulima/find-cache-dir@3.0.0-alpha.9':
     resolution: {integrity: sha512-fp4h/pUodZWV64gLLriyEi6iZpkOO3+TCQHore8PPJC9ldVUgvOfFQ2Vb+Y92cFBQ7h24lDpQa/Tgjxr0oNA0w==}
     engines: {node: ^22.14.0 || >=24.10.0}
@@ -19803,6 +19813,28 @@ packages:
       jsonc-parser: ^3.3.1
       smol-toml: ^1.6.1
       yaml: 2.8.3
+    peerDependenciesMeta:
+      ini:
+        optional: true
+      json5:
+        optional: true
+      jsonc-parser:
+        optional: true
+      smol-toml:
+        optional: true
+      yaml:
+        optional: true
+
+  '@visulima/fs@5.0.0-alpha.14':
+    resolution: {integrity: sha512-Kw8Vx+VToV+GykdSR6cNombZyyaM2m7iMN8bthACotS/KCJ7SRlWAGf+kY7wiJDx9pL3rEzVdZMvCN3+wgA/rg==}
+    engines: {node: ^22.14.0 || >=24.10.0}
+    os: [darwin, linux, win32]
+    peerDependencies:
+      ini: ^6.0.0
+      json5: ^2.2.3
+      jsonc-parser: ^3.3.1
+      smol-toml: ^1.6.1
+      yaml: 2.8.4
     peerDependenciesMeta:
       ini:
         optional: true
@@ -46405,6 +46437,8 @@ snapshots:
 
   '@visulima/css-style-inject@1.0.0-alpha.15': {}
 
+  '@visulima/error@6.0.0-alpha.16': {}
+
   '@visulima/find-cache-dir@3.0.0-alpha.9': {}
 
   '@visulima/fs@4.1.0(yaml@2.8.3)':
@@ -46436,6 +46470,16 @@ snapshots:
     dependencies:
       '@visulima/path': 3.0.0-alpha.10
       type-fest: 5.6.0
+    optionalDependencies:
+      ini: 6.0.0
+      json5: 2.2.3
+      jsonc-parser: 3.3.1
+      smol-toml: 1.6.1
+      yaml: 2.8.4
+
+  '@visulima/fs@5.0.0-alpha.14(ini@6.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(smol-toml@1.6.1)(yaml@2.8.4)':
+    dependencies:
+      '@visulima/path': 3.0.0-alpha.10
     optionalDependencies:
       ini: 6.0.0
       json5: 2.2.3
@@ -51292,7 +51336,7 @@ snapshots:
       eslint: 8.57.1
       eslint-plugin-react: 7.37.5(eslint@8.57.1)
 
-  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.2(eslint@10.3.0(jiti@2.7.0))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1):
+  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.2(eslint@10.3.0(jiti@2.7.0))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@10.3.0(jiti@2.7.0)))(eslint@8.57.1):
     dependencies:
       eslint: 8.57.1
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.59.2(eslint@10.3.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.3.0(jiti@2.7.0))
@@ -62709,7 +62753,7 @@ snapshots:
   standard@17.1.2(@typescript-eslint/parser@8.59.2(eslint@10.3.0(jiti@2.7.0))(typescript@6.0.3)):
     dependencies:
       eslint: 8.57.1
-      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.2(eslint@10.3.0(jiti@2.7.0))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)
+      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.2(eslint@10.3.0(jiti@2.7.0))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@10.3.0(jiti@2.7.0)))(eslint@8.57.1)
       eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@10.3.0(jiti@2.7.0)))(eslint@8.57.1)
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.59.2(eslint@10.3.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.3.0(jiti@2.7.0))
       eslint-plugin-n: 15.7.0(eslint@8.57.1)
