@@ -1,4 +1,4 @@
-import { trainCase } from "@visulima/string/case/train-case";
+import { trainCase } from "@visulima/string/case";
 import { trainCase as caseAnythingTrainCase } from "case-anything";
 import { trainCase as sculeTrainCase } from "scule";
 import { bench, describe } from "vitest";

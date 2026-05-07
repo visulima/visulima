@@ -1,4 +1,4 @@
-import { sentenceCase } from "@visulima/string/case/sentence-case";
+import { sentenceCase } from "@visulima/string/case";
 import { bench, describe } from "vitest";
 
 import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "../../__fixtures__/test-strings";

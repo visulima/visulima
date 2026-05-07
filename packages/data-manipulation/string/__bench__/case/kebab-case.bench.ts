@@ -1,5 +1,5 @@
 /* eslint-disable e18e/ban-dependencies */
-import { kebabCase } from "@visulima/string/case/kebab-case";
+import { kebabCase } from "@visulima/string/case";
 import { kebabCase as caseAnythingKebabCase } from "case-anything";
 import { kebabCase as changeCaseKebab } from "change-case";
 import { kebabCase as lodashKebabCase } from "lodash";

@@ -1,4 +1,4 @@
-import { pascalCase } from "@visulima/string/case/pascal-case";
+import { pascalCase } from "@visulima/string/case";
 import { pascalCase as stringTsPascalCase } from "string-ts";
 import { bench, describe } from "vitest";
 
