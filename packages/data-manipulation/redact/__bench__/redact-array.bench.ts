@@ -1,4 +1,4 @@
-import { redact } from "@visulima/redact/dist/dist";
+import { redact } from "@visulima/redact";
 import { bench, describe } from "vitest";
 
 const input = [

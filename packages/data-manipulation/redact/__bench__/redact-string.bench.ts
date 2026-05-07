@@ -1,4 +1,4 @@
-import { redact, standardRules, stringAnonymize } from "@visulima/redact/dist/dist";
+import { redact, standardRules, stringAnonymize } from "@visulima/redact";
 import { bench, describe } from "vitest";
 
 const simpleInput = "John Doe will be 30 on 2024-06-10.";

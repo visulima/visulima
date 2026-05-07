@@ -1,5 +1,5 @@
 import { masker } from "@qiwi/masker";
-import { redact } from "@visulima/redact/dist/dist";
+import { redact } from "@visulima/redact";
 import fastRedact from "fast-redact";
 import fastUnset from "fast-unset";
 import { core } from "fast-unset/dist/core";
