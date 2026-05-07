@@ -1,6 +1,6 @@
 {
     "name": "@visulima/pail",
-    "version": "4.0.0-alpha.14",
+    "version": "4.0.0-alpha.15",
     "description": "Highly configurable Logger for Node.js, Edge and Browser.",
     "keywords": [
         "anolilab",
@@ -271,12 +271,12 @@
         "@total-typescript/ts-reset": "catalog:dev",
         "@types/node": "catalog:types",
         "@visulima/ansi": "4.0.0-alpha.13",
-        "@visulima/error": "6.0.0-alpha.17",
+        "@visulima/error": "6.0.0-alpha.19",
         "@visulima/fmt": "2.0.0-alpha.10",
         "@visulima/inspector": "2.0.0-alpha.10",
         "@visulima/packem": "catalog:dev",
-        "@visulima/redact": "3.0.0-alpha.10",
-        "@visulima/string": "3.0.0-alpha.11",
+        "@visulima/redact": "3.0.0-alpha.11",
+        "@visulima/string": "3.0.0-alpha.12",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
         "conventional-changelog-conventionalcommits": "catalog:dev",
@@ -297,7 +297,7 @@
     "peerDependencies": {
         "@opentelemetry/api": "catalog:peer",
         "@sveltejs/kit": ">=2.0",
-        "@visulima/redact": "3.0.0-alpha.10",
+        "@visulima/redact": "3.0.0-alpha.11",
         "elysia": ">=1.0",
         "express": ">=4.0",
         "fastify": ">=4.0",
