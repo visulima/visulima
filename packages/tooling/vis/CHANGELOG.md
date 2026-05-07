@@ -1,3 +1,20 @@
+## @visulima/vis [1.0.0-alpha.15](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.14...@visulima/vis@1.0.0-alpha.15) (2026-05-07)
+
+### Bug Fixes
+
+* moved deps to dev dep ([62a47f2](https://github.com/visulima/visulima/commit/62a47f29b182b202c9956819f3b4a32da38c14cd))
+
+
+### Dependencies
+
+* **@visulima/tui:** upgraded to 1.0.0-alpha.10
+* **@visulima/cerebro:** upgraded to 3.0.0-alpha.18
+* **@visulima/fs:** upgraded to 5.0.0-alpha.17
+* **@visulima/package:** upgraded to 5.0.0-alpha.16
+* **@visulima/pail:** upgraded to 4.0.0-alpha.15
+* **@visulima/redact:** upgraded to 3.0.0-alpha.11
+* **@visulima/string:** upgraded to 3.0.0-alpha.12
+
 ## @visulima/vis [1.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.13...@visulima/vis@1.0.0-alpha.14) (2026-05-07)
 
 ### Features
