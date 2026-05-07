@@ -1,3 +1,15 @@
+## @visulima/vis-mcp [1.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/vis-mcp@1.0.0-alpha.3...@visulima/vis-mcp@1.0.0-alpha.4) (2026-05-07)
+
+### Miscellaneous Chores
+
+* **vis-mcp:** bump eslint-plugin-zod and sort package.json keys ([787abc4](https://github.com/visulima/visulima/commit/787abc46e1b637fdb8968a492cd923537e404fbe))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.16
+* **@visulima/vis:** upgraded to 1.0.0-alpha.14
+
 ## @visulima/vis-mcp [1.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/vis-mcp@1.0.0-alpha.2...@visulima/vis-mcp@1.0.0-alpha.3) (2026-05-06)
 
 
