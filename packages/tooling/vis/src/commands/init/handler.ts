@@ -272,7 +272,7 @@ const execute = async ({ options, workspaceRoot: wsRoot }: Toolbox<Console, Init
     const configPath = existingConfig ?? join(cwd, "vis.config.ts");
     const isTTY = Boolean(process.stdin.isTTY) && (options as Record<string, unknown>).interactive !== false;
 
-    if (isTTY && !options.noInteractive) {
+    if (isTTY) {
         await runInteractiveInit(cwd, pm, configPath);
     } else {
         runStaticInit(cwd, pm, options, configPath);

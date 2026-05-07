@@ -23,7 +23,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
             global: options.global || false,
             json: options.json || false,
             long: options.long || false,
-            noOptional: options.noOptional || false,
+            noOptional: (options as Record<string, unknown>).optional === false,
             packages,
             parseable: options.parseable || false,
             prod: options.prod || false,

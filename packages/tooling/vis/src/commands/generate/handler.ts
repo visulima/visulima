@@ -340,7 +340,7 @@ const execute = async ({ argument, options, rawUnknown, visConfig, workspaceRoot
 
         if (input) {
             wanted = input;
-        } else if (options.noInteractive || !process.stdin.isTTY) {
+        } else if ((options as Record<string, unknown>).interactive === false || !process.stdin.isTTY) {
             throw new Error("No template specified. Pass a template name (see `vis generate --list`) or run interactively in a terminal.");
         } else {
             wanted = await pickInteractive(discovered);
@@ -363,7 +363,7 @@ const execute = async ({ argument, options, rawUnknown, visConfig, workspaceRoot
     const force = Boolean(options.force);
     const useDefaults = Boolean(options.defaults);
     const skipScripts = Boolean(options.skipScripts);
-    const isInteractive = !options.noInteractive && Boolean(process.stdin.isTTY) && !useDefaults;
+    const isInteractive = (options as Record<string, unknown>).interactive !== false && Boolean(process.stdin.isTTY) && !useDefaults;
 
     let destinationInput: string;
 

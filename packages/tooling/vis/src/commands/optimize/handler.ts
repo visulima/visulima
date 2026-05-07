@@ -447,7 +447,7 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
         }
 
         // Run install
-        if (selectedSocket.length > 0 && !options.noInstall) {
+        if (selectedSocket.length > 0 && (options as Record<string, unknown>).install !== false) {
             pail.info(`\nRunning ${pm.name} install to update lockfile...`);
 
             const installOptions = {

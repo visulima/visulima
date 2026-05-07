@@ -34,8 +34,8 @@ interface SecretsFlags {
     listValidators?: boolean;
     maxSize?: number;
     minConfidence?: string;
-    noExtendBundled?: boolean;
-    noGitignore?: boolean;
+    extendBundled?: boolean;
+    gitignore?: boolean;
     onlyVerified?: boolean;
     quiet?: boolean;
     redact?: boolean;
@@ -206,7 +206,7 @@ const resolveScanOptions = (flags: SecretsFlags, visSecrets: VisSecretsConfig | 
         baseline: baselinePath,
         concurrency: flags.concurrency,
         config: {
-            extendBundled: flags.noExtendBundled ? false : cfg.config?.extendBundled,
+            extendBundled: flags.extendBundled === false ? false : cfg.config?.extendBundled,
             inline: cfg.config?.inline,
             minConfidence,
             onlyVerified: flags.onlyVerified ?? cfg.config?.onlyVerified ?? false,
@@ -219,7 +219,7 @@ const resolveScanOptions = (flags: SecretsFlags, visSecrets: VisSecretsConfig | 
         walk: {
             excludeFromFiles,
             excludePatterns,
-            gitignore: flags.noGitignore ? false : (cfg.walk?.gitignore ?? true),
+            gitignore: flags.gitignore === false ? false : (cfg.walk?.gitignore ?? true),
             includeHidden: flags.includeHidden ?? cfg.walk?.includeHidden,
             maxFileSize: flags.maxSize ?? cfg.walk?.maxFileSize,
         },

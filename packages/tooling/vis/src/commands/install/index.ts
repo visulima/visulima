@@ -22,8 +22,8 @@ const install: Command = {
     loader: () => import("./handler"),
     name: "install",
     options: [
-        { alias: "P", defaultValue: false, description: "Skip devDependencies", name: "prod", type: Boolean },
-        { alias: "D", defaultValue: false, description: "Install devDependencies only", name: "dev", type: Boolean },
+        { alias: "P", conflicts: "dev", description: "Skip devDependencies", name: "prod", type: Boolean },
+        { alias: "D", conflicts: "prod", description: "Install devDependencies only", name: "dev", type: Boolean },
         { defaultValue: false, description: "Use frozen lockfile (CI mode, maps to npm ci)", name: "frozen-lockfile", type: Boolean },
         {
             defaultValue: false,

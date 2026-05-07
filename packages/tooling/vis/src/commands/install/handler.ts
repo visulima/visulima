@@ -44,7 +44,7 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
     const cwd = wsRoot ?? process.cwd();
 
     // Scan package.json deps for typosquats (unless disabled)
-    if (!options.noTyposquatCheck) {
+    if ((options as Record<string, unknown>).typosquatCheck !== false) {
         const shouldContinue = await scanDepsForTyposquats(cwd, visConfig?.security?.typosquatAllowlist);
 
         if (!shouldContinue) {
@@ -64,7 +64,7 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
     }
 
     const flagBackend = flagBackendRaw as InstallBackend | undefined;
-    const noAube = options.noAube || false;
+    const noAube = (options as Record<string, unknown>).aube === false;
 
     // `--no-aube` is the user's explicit escape hatch: ignore CLI flag,
     // env, and config; go straight to lockfile detection. Otherwise,
@@ -100,7 +100,7 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
     // silent lockfile rewrites. Greenfield workspaces (no lockfile) skip
     // the default — there's nothing to freeze yet.
     const explicitFrozen = options.frozenLockfile || ciMode;
-    const optedOutOfFrozen = options.noFrozenLockfile || options.force || options.lockfileOnly;
+    const optedOutOfFrozen = options.frozenLockfile === false || options.force || options.lockfileOnly;
     const lockfilePresent = hasLockfile(cwd);
     const shouldFreeze = explicitFrozen || (!optedOutOfFrozen && lockfilePresent);
 
@@ -139,7 +139,7 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
             // is `--run-scripts`, which restores the PM's native behavior.
             ignoreScripts: !options.runScripts,
             lockfileOnly: options.lockfileOnly || false,
-            noOptional: options.noOptional || false,
+            noOptional: (options as Record<string, unknown>).optional === false,
             offline: options.offline || false,
             prod: options.prod || false,
             recursive: options.recursive || false,

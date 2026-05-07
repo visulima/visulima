@@ -851,7 +851,7 @@ const execute = async ({ logger, options, visConfig, visConfigError, workspaceRo
     const isJson = options.format === "json" || options.json === true;
     const sections = resolveSections(options.only, options.skip);
     const quiet = Boolean(options.quiet);
-    const noProgress = Boolean(options.noProgress);
+    const noProgress = (options as Record<string, unknown>).progress === false;
     const filterPatterns = parseFilterPatterns(options.filter);
 
     if (sections.size === 0) {
@@ -926,7 +926,7 @@ const execute = async ({ logger, options, visConfig, visConfigError, workspaceRo
     const lockfileFile = lockfileNameByPm[pm.name];
     const lockfilePath = lockfileFile ? join(wsRoot, lockfileFile) : undefined;
     const configFilePath = findVisConfigFile(wsRoot);
-    const cacheEnabled = !options.noCache && !options.fix;
+    const cacheEnabled = (options as Record<string, unknown>).cache !== false && !options.fix;
     const cacheKey = cacheEnabled
         ? buildDoctorCacheKey({
             configPath: configFilePath,

@@ -345,7 +345,7 @@ const proposeAndApply = async (toolbox: ProposeAndApplyToolbox, candidate: HealC
 
     const aiConfig: AiConfig | undefined = visConfig?.ai;
     const proposal = await runFixAnalysis(candidate.failureContext, logger, {
-        cache: options.noCache !== true,
+        cache: (options as Record<string, unknown>).cache !== false,
         config: aiConfig,
     });
 
