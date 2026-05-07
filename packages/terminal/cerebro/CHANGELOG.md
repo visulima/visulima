@@ -1,3 +1,14 @@
+## @visulima/cerebro [3.0.0-alpha.17](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.16...@visulima/cerebro@3.0.0-alpha.17) (2026-05-07)
+
+### Bug Fixes
+
+* **cerebro:** catch and report errors thrown from [#execute](https://github.com/visulima/visulima/issues/execute)CommandInternal ([1580aa0](https://github.com/visulima/visulima/commit/1580aa081152052010e0458f6c38bbc0cf6bfa57)), closes [#executeCommandInternal](https://github.com/visulima/visulima/issues/executeCommandInternal)
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.18
+
 ## @visulima/cerebro [3.0.0-alpha.16](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.15...@visulima/cerebro@3.0.0-alpha.16) (2026-05-06)
 
 
