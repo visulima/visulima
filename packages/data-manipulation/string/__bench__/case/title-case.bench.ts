@@ -1,4 +1,4 @@
-import { titleCase } from "@visulima/string/dist/case/case";
+import { titleCase } from "@visulima/string/case/title-case";
 import { titleCase as sculeTitleCase } from "scule";
 import { titleCase as stringTsTitleCase } from "string-ts";
 import { bench, describe } from "vitest";

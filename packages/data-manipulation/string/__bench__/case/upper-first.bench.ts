@@ -1,4 +1,4 @@
-import { upperFirst } from "@visulima/string/dist/case/case";
+import { upperFirst } from "@visulima/string/case/upper-first";
 import { upperFirst as sculeUpperFirst } from "scule";
 import { bench, describe } from "vitest";
 

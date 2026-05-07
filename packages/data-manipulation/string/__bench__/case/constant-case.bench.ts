@@ -1,4 +1,4 @@
-import { constantCase } from "@visulima/string/dist/case/case";
+import { constantCase } from "@visulima/string/case/constant-case";
 import { constantCase as stringTsConstantCase } from "string-ts";
 import { bench, describe } from "vitest";
 
