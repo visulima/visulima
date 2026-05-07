@@ -1,3 +1,9 @@
+## @visulima/dev-toolbar [1.0.0-alpha.18](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.0-alpha.17...@visulima/dev-toolbar@1.0.0-alpha.18) (2026-05-07)
+
+### Miscellaneous Chores
+
+* **dev-toolbar:** bump peer ranges for @modelcontextprotocol/sdk and vite ([b6bbb40](https://github.com/visulima/visulima/commit/b6bbb406766e74f822ffe9956e85acf5feaa1ded))
+
 ## @visulima/dev-toolbar [1.0.0-alpha.17](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.0-alpha.16...@visulima/dev-toolbar@1.0.0-alpha.17) (2026-05-06)
 
 ## @visulima/dev-toolbar [1.0.0-alpha.16](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.0-alpha.15...@visulima/dev-toolbar@1.0.0-alpha.16) (2026-05-06)
