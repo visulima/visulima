@@ -87,16 +87,28 @@ const check: Command = {
         },
         {
             alias: "D",
-            defaultValue: false,
+            conflicts: "prod",
             description: "Check only devDependencies (npm/yarn mode)",
             name: "dev",
             type: Boolean,
         },
         {
             alias: "P",
-            defaultValue: false,
+            conflicts: "dev",
             description: "Check only dependencies (npm/yarn mode)",
             name: "prod",
+            type: Boolean,
+        },
+        {
+            defaultValue: false,
+            description: "Include peerDependencies in outdated checks",
+            name: "peer",
+            type: Boolean,
+        },
+        {
+            defaultValue: false,
+            description: "Also check workspace-owned package names against the registry",
+            name: "include-internal",
             type: Boolean,
         },
     ],
@@ -113,6 +125,8 @@ export type CheckOptions = CreateOptions<{
     format: string | undefined;
     include: string[] | undefined;
     "no-security": boolean | undefined;
+    peer: boolean | undefined;
+    "include-internal": boolean | undefined;
     prerelease: boolean | undefined;
     prod: boolean | undefined;
     "security-config": boolean | undefined;

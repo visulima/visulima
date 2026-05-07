@@ -2,7 +2,7 @@ import { createInterface } from "node:readline";
 
 import { findCacheDirSync } from "@visulima/find-cache-dir";
 import { ensureDirSync, isAccessibleSync, readFileSync, readJsonSync, removeSync, walkSync, writeFileSync, writeJsonSync } from "@visulima/fs";
-import { dirname, join } from "@visulima/path";
+import { basename, dirname, join } from "@visulima/path";
 import { Box, renderToString, Table, Text } from "@visulima/tui";
 import React from "react";
 import { coerce, parse, rcompare } from "semver";
@@ -30,8 +30,8 @@ const REGISTRY_PROTOCOL_REGEX = /^https?:\/\//;
 const TRAILING_SLASH_REGEX = /\/$/;
 const JSON_INDENT_REGEX = /\n(\s+)/;
 
-const DEFAULT_DEP_TYPES = ["dependencies", "devDependencies", "optionalDependencies", "peerDependencies"];
-const VALID_DEP_TYPES = new Set([...DEFAULT_DEP_TYPES, "overrides", "pnpm.overrides", "resolutions"]);
+const DEFAULT_DEP_TYPES = ["dependencies", "devDependencies", "optionalDependencies"];
+const VALID_DEP_TYPES = new Set([...DEFAULT_DEP_TYPES, "peerDependencies", "overrides", "pnpm.overrides", "resolutions"]);
 
 /**
  * Returns the backup directory inside node_modules/.cache/vis/backup.
@@ -102,6 +102,14 @@ interface CatalogCheckOptions {
 interface ReadCatalogOptions {
     depFields?: string[];
     dev?: boolean;
+    /**
+     * Skip the workspace-internal-name filter so the registry pass also
+     * queries packages whose names are owned by the local monorepo.
+     * Useful when the registry has fresher prereleases than what's pinned.
+     */
+    includeInternal?: boolean;
+    /** Include `peerDependencies` in addition to runtime/dev/optional. */
+    peer?: boolean;
     prod?: boolean;
 }
 
@@ -486,7 +494,10 @@ const getDepTypesToInclude = (options?: ReadCatalogOptions): string[] => {
         return options.depFields;
     }
 
-    return DEFAULT_DEP_TYPES;
+    // peerDependencies are opt-in: bumping a peer is a behavior change for
+    // every consumer of the package, so the user has to ask for it via
+    // `--peer` rather than getting it silently merged into every update run.
+    return options?.peer ? [...DEFAULT_DEP_TYPES, "peerDependencies"] : DEFAULT_DEP_TYPES;
 };
 
 const collectInternalPackageNames = (workspaceRoot: string, rootName: string | undefined, workspaceDirectories: string[]): Set<string> => {
@@ -623,27 +634,36 @@ const readPackageJsonDeps = (workspaceRoot: string, options?: ReadCatalogOptions
         workspaces?: string[] | { catalog?: Record<string, string>; packages?: string[] };
     };
 
+    // Prefer pnpm-workspace.yaml when present — pnpm exclusions (`!dir/**`)
+    // only live there, and reading package.json#workspaces first would lose
+    // them for monorepos that ship both files (the npm field is kept for
+    // editor / Yarn Berry / npm-classic compatibility, not as the source of
+    // truth). Mirrors the order used in sort-package-json/handler.ts.
     let workspaceDirectories: string[] = [];
-    const workspacesField = rootPkg.workspaces;
+    const pnpmPatterns = readPnpmWorkspacePatterns(workspaceRoot);
 
-    if (workspacesField) {
-        const patterns = Array.isArray(workspacesField) ? workspacesField : workspacesField.packages;
+    if (pnpmPatterns) {
+        workspaceDirectories = resolveWorkspacePatterns(workspaceRoot, pnpmPatterns);
+    } else {
+        const workspacesField = rootPkg.workspaces;
 
-        if (patterns) {
-            workspaceDirectories = resolveWorkspacePatterns(workspaceRoot, patterns);
+        if (workspacesField) {
+            const patterns = Array.isArray(workspacesField) ? workspacesField : workspacesField.packages;
+
+            if (patterns) {
+                workspaceDirectories = resolveWorkspacePatterns(workspaceRoot, patterns);
+            }
         }
     }
 
-    // Also check pnpm-workspace.yaml for workspace patterns
-    if (workspaceDirectories.length === 0) {
-        const pnpmPatterns = readPnpmWorkspacePatterns(workspaceRoot);
-
-        if (pnpmPatterns) {
-            workspaceDirectories = resolveWorkspacePatterns(workspaceRoot, pnpmPatterns);
-        }
-    }
-
-    const internalNames = collectInternalPackageNames(workspaceRoot, rootPkg.name, workspaceDirectories);
+    // When `--include-internal` is on, treat workspace-owned names as if
+    // they were external — the registry pass will then check them like any
+    // other dep. The non-protocol filter inside `filterExternalDeps`
+    // (workspace:/file:/link:/catalog:) still applies, so live workspace
+    // links don't leak in.
+    const internalNames = options?.includeInternal
+        ? new Set<string>()
+        : collectInternalPackageNames(workspaceRoot, rootPkg.name, workspaceDirectories);
     const depTypes = getDepTypesToInclude(options);
     const directoriesToScan = [".", ...workspaceDirectories];
 
@@ -755,6 +775,188 @@ const readCatalogs = (workspaceRoot: string, packageManager?: string, options?: 
     }
 
     return catalogs;
+};
+
+// --- Internal workspace dep checking ---
+
+const collectInternalPackageVersions = (workspaceRoot: string, workspaceDirectories: string[]): Map<string, string> => {
+    const versions = new Map<string, string>();
+
+    for (const directory of workspaceDirectories) {
+        const pkgPath = join(workspaceRoot, directory, "package.json");
+
+        if (!isAccessibleSync(pkgPath)) {
+            continue;
+        }
+
+        try {
+            const pkg = readJsonSync(pkgPath) as { name?: string; version?: string };
+
+            if (pkg.name && pkg.version) {
+                versions.set(pkg.name, pkg.version);
+            }
+        } catch {
+            // skip invalid package.json
+        }
+    }
+
+    return versions;
+};
+
+interface InternalOutdatedOptions {
+    depFields?: string[];
+    dev?: boolean;
+    exclude?: string[];
+    ignore?: string[];
+    include?: string[];
+    packageMode?: Record<string, UpdateTarget>;
+    /** Include `peerDependencies` in the internal-drift pass. Default: false. */
+    peer?: boolean;
+    prod?: boolean;
+    target?: UpdateTarget;
+}
+
+/**
+ * Find workspace-internal dependencies whose declared version range lags
+ * behind the latest local workspace version. Used by `vis update` to bump
+ * cross-package version pins (e.g. `"@visulima/fs": "5.0.0-alpha.13"`) to
+ * match a freshly-released local version without waiting for the npm
+ * registry to reflect the publish.
+ *
+ * Skips deps using non-version protocols (`workspace:`, `file:`, `link:`,
+ * `catalog:`, `*`) since those resolve dynamically. Returns
+ * {@link OutdatedEntry}s with composite catalog names (`{path}:{depType}`)
+ * so {@link applyCatalogUpdates} routes them to per-package writes via
+ * {@link applyPackageJsonUpdates}.
+ */
+const collectInternalOutdated = (workspaceRoot: string, options?: InternalOutdatedOptions): { ignored: string[]; outdated: OutdatedEntry[] } => {
+    const rootPkgPath = join(workspaceRoot, "package.json");
+
+    if (!isAccessibleSync(rootPkgPath)) {
+        return { ignored: [], outdated: [] };
+    }
+
+    const rootPkg = readJsonSync(rootPkgPath) as {
+        name?: string;
+        workspaces?: string[] | { packages?: string[] };
+    };
+
+    let workspaceDirectories: string[] = [];
+    const pnpmPatterns = readPnpmWorkspacePatterns(workspaceRoot);
+
+    if (pnpmPatterns) {
+        workspaceDirectories = resolveWorkspacePatterns(workspaceRoot, pnpmPatterns);
+    } else {
+        const workspacesField = rootPkg.workspaces;
+
+        if (workspacesField) {
+            const patterns = Array.isArray(workspacesField) ? workspacesField : workspacesField.packages;
+
+            if (patterns) {
+                workspaceDirectories = resolveWorkspacePatterns(workspaceRoot, patterns);
+            }
+        }
+    }
+
+    const internalVersions = collectInternalPackageVersions(workspaceRoot, workspaceDirectories);
+
+    if (internalVersions.size === 0) {
+        return { ignored: [], outdated: [] };
+    }
+
+    const depTypes = getDepTypesToInclude(options);
+    const directoriesToScan = [".", ...workspaceDirectories];
+    const include = options?.include ?? [];
+    const exclude = options?.exclude ?? [];
+    const ignore = options?.ignore ?? [];
+    const target: UpdateTarget = options?.target ?? "latest";
+    const ignoredSet = new Set<string>();
+    const outdated: OutdatedEntry[] = [];
+
+    for (const directory of directoriesToScan) {
+        const pkgPath = directory === "." ? rootPkgPath : join(workspaceRoot, directory, "package.json");
+
+        if (!isAccessibleSync(pkgPath)) {
+            continue;
+        }
+
+        let pkg: Record<string, unknown>;
+
+        try {
+            pkg = readJsonSync(pkgPath) as Record<string, unknown>;
+        } catch {
+            continue;
+        }
+
+        for (const depType of depTypes) {
+            const deps = depType.includes(".") ? getNestedField(pkg, depType) : (pkg[depType] as Record<string, string> | undefined);
+
+            if (!deps || typeof deps !== "object") {
+                continue;
+            }
+
+            for (const [name, range] of Object.entries(deps)) {
+                const targetVersion = internalVersions.get(name);
+
+                if (!targetVersion) {
+                    continue;
+                }
+
+                if (range.startsWith("workspace:") || range.startsWith("file:") || range.startsWith("link:") || range.startsWith("catalog:") || range.startsWith("$") || range === "*") {
+                    continue;
+                }
+
+                if (ignore.some((p) => matchesPattern(name, p))) {
+                    ignoredSet.add(name);
+                    continue;
+                }
+
+                if (!matchesFilters(name, include, exclude)) {
+                    continue;
+                }
+
+                const currentParsed = parseVersion(range);
+                const targetParsed = parseVersion(targetVersion);
+
+                if (!currentParsed || !targetParsed) {
+                    continue;
+                }
+
+                if (!isNewer(currentParsed, targetParsed)) {
+                    continue;
+                }
+
+                const updateType = getUpdateType(currentParsed, targetParsed);
+
+                if (updateType === "none") {
+                    continue;
+                }
+
+                const effectiveTarget = resolvePackageTarget(name, target, options?.packageMode);
+
+                if (effectiveTarget === "patch" && updateType !== "patch") {
+                    continue;
+                }
+
+                if (effectiveTarget === "minor" && updateType === "major") {
+                    continue;
+                }
+
+                const prefix = extractPrefix(range);
+
+                outdated.push({
+                    catalogName: `${directory}:${depType}`,
+                    currentRange: range,
+                    newRange: `${prefix}${targetVersion}`,
+                    packageName: name,
+                    targetVersion,
+                    updateType,
+                });
+            }
+        }
+    }
+
+    return { ignored: [...ignoredSet], outdated };
 };
 
 // --- .npmrc support ---
@@ -1650,6 +1852,18 @@ const createPackageJsonBackup = (workspaceRoot: string, updates: OutdatedEntry[]
     return backupDirectory;
 };
 
+/**
+ * Returns the cached backup path for the catalog source file (pnpm/bun).
+ * The .bak lives inside node_modules/.cache/vis/backup/ so it's already
+ * gitignored alongside the per-package backups.
+ */
+const getCatalogBackupPath = (workspaceRoot: string, packageManager?: string): string => {
+    const filePath = getCatalogFilePath(workspaceRoot, packageManager);
+    const backupDirectory = getBackupDir(workspaceRoot);
+
+    return join(backupDirectory, `${basename(filePath)}.bak`);
+};
+
 const createBackup = (workspaceRoot: string, packageManager?: string, updates?: OutdatedEntry[]): string | undefined => {
     if ((packageManager === "npm" || packageManager === "yarn") && updates) {
         return createPackageJsonBackup(workspaceRoot, updates);
@@ -1660,7 +1874,8 @@ const createBackup = (workspaceRoot: string, packageManager?: string, updates?: 
     const filePath = getCatalogFilePath(workspaceRoot, packageManager);
 
     if (isAccessibleSync(filePath)) {
-        catalogBackupPath = `${filePath}.bak`;
+        catalogBackupPath = getCatalogBackupPath(workspaceRoot, packageManager);
+        ensureDirSync(dirname(catalogBackupPath));
         writeFileSync(catalogBackupPath, readFileSync(filePath));
     }
 
@@ -1701,7 +1916,7 @@ const restoreFromBackup = (workspaceRoot: string, packageManager?: string): bool
     }
 
     const filePath = getCatalogFilePath(workspaceRoot, packageManager);
-    const backupPath = `${filePath}.bak`;
+    const backupPath = getCatalogBackupPath(workspaceRoot, packageManager);
 
     if (!isAccessibleSync(backupPath)) {
         return false;
@@ -1725,9 +1940,11 @@ const hasBackup = (workspaceRoot: string, packageManager?: string): boolean => {
         }
     }
 
-    const filePath = getCatalogFilePath(workspaceRoot, packageManager);
-
-    return isAccessibleSync(`${filePath}.bak`);
+    try {
+        return isAccessibleSync(getCatalogBackupPath(workspaceRoot, packageManager));
+    } catch {
+        return false;
+    }
 };
 
 // --- Output formatting ---
@@ -2260,6 +2477,7 @@ export {
     applyCatalogUpdates,
     applyPackageJsonUpdates,
     checkOutdated,
+    collectInternalOutdated,
     createBackup,
     detectJsonIndent,
     extractPrefix,

@@ -27,13 +27,14 @@ const update: Command = {
     options: [
         {
             alias: "L",
-            defaultValue: false,
-            description: "Update to latest version (ignore semver range)",
+            conflicts: "target",
+            description: "Update to latest version (ignore semver range; equivalent to --target latest)",
             name: "latest",
             type: Boolean,
         },
         {
             alias: "t",
+            conflicts: "latest",
             description: "Update target: latest, minor, or patch (default: latest, catalog mode)",
             name: "target",
             type: String,
@@ -60,7 +61,7 @@ const update: Command = {
             type: Boolean,
         },
         {
-            description: "Filter packages in monorepo",
+            description: "Filter packages in monorepo (pm-wrapper mode; catalog mode uses --include/--exclude)",
             name: "filter",
             type: String,
         },
@@ -73,14 +74,14 @@ const update: Command = {
         },
         {
             alias: "D",
-            defaultValue: false,
+            conflicts: "prod",
             description: "Update only devDependencies",
             name: "dev",
             type: Boolean,
         },
         {
             alias: "P",
-            defaultValue: false,
+            conflicts: "dev",
             description: "Update only dependencies",
             name: "prod",
             type: Boolean,
@@ -99,9 +100,21 @@ const update: Command = {
             type: Boolean,
         },
         {
+            defaultValue: false,
+            description: "Include peerDependencies in update checks",
+            name: "peer",
+            type: Boolean,
+        },
+        {
+            defaultValue: false,
+            description: "Also check workspace-owned package names against the registry (catalog mode)",
+            name: "include-internal",
+            type: Boolean,
+        },
+        {
             alias: "l",
             defaultValue: false,
-            description: "Include packages with pinned/exact versions (no ^ or ~ prefix)",
+            description: "Include packages with pinned/exact versions (no ^ or ~ prefix; catalog mode)",
             name: "include-locked",
             type: Boolean,
         },
@@ -215,6 +228,8 @@ export type UpdateOptions = CreateOptions<{
     "no-optional": boolean | undefined;
     "no-save": boolean | undefined;
     "no-typosquat-check": boolean | undefined;
+    peer: boolean | undefined;
+    "include-internal": boolean | undefined;
     prerelease: boolean | undefined;
     prod: boolean | undefined;
     recursive: boolean | undefined;

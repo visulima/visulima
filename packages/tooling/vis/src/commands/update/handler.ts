@@ -26,6 +26,7 @@ import type { CatalogCheckOptions, NpmrcConfig, OutdatedEntry, UpdateTarget } fr
 import {
     applyCatalogUpdates,
     checkOutdated,
+    collectInternalOutdated,
     fetchChangelogInfo,
     formatOutdatedJson,
     formatOutdatedMinimal,
@@ -266,9 +267,13 @@ const executeCatalogUpdate = async (
     }
 
     const npmrcConfig = loadNpmrc(workspaceRoot);
+    const includeInternal = options["include-internal"] as boolean | undefined;
+    const includePeer = options.peer as boolean | undefined;
     const catalogs = readCatalogs(workspaceRoot, packageManager, {
         depFields: configDefaults.depFields,
         dev: options.dev as boolean | undefined,
+        includeInternal,
+        peer: includePeer,
         prod: options.prod as boolean | undefined,
     });
 
@@ -327,6 +332,47 @@ const executeCatalogUpdate = async (
     if (progressInstance) {
         progressInstance.clear();
         progressInstance.unmount();
+    }
+
+    // Internal workspace deps lag behind their local source-of-truth versions
+    // when one workspace package bumps but consumers still pin the previous
+    // alpha/rc. `checkOutdated` filters internal names out (the registry
+    // doesn't host them yet), so we resolve them here against the local
+    // package.json versions and merge into `outdated` for the same apply path.
+    //
+    // Skipped when `--include-internal` is on: that flag routes those names
+    // through the registry pass, and running both produces duplicates where
+    // the dedup below would silently prefer whichever pass landed first.
+    const internal = includeInternal
+        ? { ignored: [] as string[], outdated: [] as typeof outdated }
+        : collectInternalOutdated(workspaceRoot, {
+            depFields: configDefaults.depFields,
+            dev: options.dev as boolean | undefined,
+            exclude: checkOptions.exclude,
+            ignore: checkOptions.ignore,
+            include: checkOptions.include,
+            packageMode: checkOptions.packageMode,
+            peer: includePeer,
+            prod: options.prod as boolean | undefined,
+            target: checkOptions.target,
+        });
+
+    if (internal.outdated.length > 0) {
+        const existingKeys = new Set(outdated.map((e) => `${e.catalogName}|${e.packageName}`));
+
+        for (const entry of internal.outdated) {
+            if (!existingKeys.has(`${entry.catalogName}|${entry.packageName}`)) {
+                outdated.push(entry);
+            }
+        }
+    }
+
+    if (internal.ignored.length > 0) {
+        for (const name of internal.ignored) {
+            if (!ignored.includes(name)) {
+                ignored.push(name);
+            }
+        }
     }
 
     const upToDate = checkedCount - outdated.length - failed.length;
@@ -576,8 +622,8 @@ const executePmWrapper = (
         global: options.global as boolean,
         interactive: options.interactive as boolean,
         latest: (options.latest as boolean) || options.target === "latest",
-        noOptional: options.noOptional as boolean,
-        noSave: options.noSave as boolean,
+        noOptional: options.optional === false,
+        noSave: options.save === false,
         packages: argument,
         prod: options.prod as boolean,
         recursive: options.recursive as boolean,
@@ -629,7 +675,7 @@ const execute = async ({ argument: rawArgument, logger, options, visConfig, work
     const { packageManager } = findPackageManagerSync(workspaceRoot);
 
     // Typosquat check
-    if (!options.noTyposquatCheck) {
+    if ((options as Record<string, unknown>).typosquatCheck !== false) {
         if (argument.length > 0) {
             // Explicit package arguments: offer name correction
             const parsed = argument.map((a: string) => parsePackageArgument(a));
@@ -690,7 +736,7 @@ const execute = async ({ argument: rawArgument, logger, options, visConfig, work
     // Catalog work always uses the lockfile-detected PM (pnpm/bun) because
     // catalog manipulation is PM-format-specific. Aube cannot host catalogs
     // on its own — it inherits whatever pnpm-workspace.yaml the project has.
-    const useCatalogMode = !options.noCatalog && hasCatalogs(workspaceRoot, packageManager);
+    const useCatalogMode = (options as Record<string, unknown>).catalog !== false && hasCatalogs(workspaceRoot, packageManager);
 
     if (useCatalogMode) {
         await executeCatalogUpdate(workspaceRoot, packageManager, visConfig ?? {}, options, argument, logger);
