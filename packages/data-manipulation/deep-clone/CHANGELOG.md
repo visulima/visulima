@@ -1,3 +1,19 @@
+## @visulima/deep-clone [4.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/deep-clone@4.0.0-alpha.11...@visulima/deep-clone@4.0.0-alpha.12) (2026-05-07)
+
+### Bug Fixes
+
+* **data-manipulation:** repair broken bench imports ([79ddd8f](https://github.com/visulima/visulima/commit/79ddd8f6892cd34ae12018f98afb826bcaaffb3e))
+
+### Miscellaneous Chores
+
+* **deep-clone:** housekeeping cleanup ([c7cfcdc](https://github.com/visulima/visulima/commit/c7cfcdc1b136007e5bd9e070def83e6bd1cdd3f4))
+* **deep-clone:** upgrade packem to 2.0.0-alpha.76 ([44cf737](https://github.com/visulima/visulima/commit/44cf73796d2f9e82341a77e1050291f0e292a9e5))
+* simplify pnpm-workspace packages list ([7cab221](https://github.com/visulima/visulima/commit/7cab221163632d9b7aa044a6f88c49083103a869))
+
+### Continuous Integration
+
+* integrate codspeed for benchmark tracking ([e758f3d](https://github.com/visulima/visulima/commit/e758f3da491cc00d3f8bbf10d7ba3fdf8deb5325))
+
 ## @visulima/deep-clone [4.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/deep-clone@4.0.0-alpha.10...@visulima/deep-clone@4.0.0-alpha.11) (2026-04-22)
 
 ### Bug Fixes
