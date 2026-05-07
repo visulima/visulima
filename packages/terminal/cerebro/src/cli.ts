@@ -872,7 +872,24 @@ export class Cli<T extends Console = Console> implements ICli<T> {
 
         const commandArguments = remainingArgv;
 
-        const { commandArgs, toolbox } = this.#executeCommandInternal(command, commandArguments, otherExtraOptions, pathKey);
+        let commandArgs: CommandLineOptions;
+        let toolbox: IToolbox<T>;
+
+        try {
+            ({ commandArgs, toolbox } = this.#executeCommandInternal(command, commandArguments, otherExtraOptions, pathKey));
+        } catch (error) {
+            // Conflict / required-option / negation errors are thrown from
+            // #executeCommandInternal before the plugin manager's try/catch
+            // below can pick them up. Render them through the logger and
+            // re-throw so the caller sees a non-zero exit code.
+            this.#logger.error(error as Error);
+
+            if (shouldExitProcess) {
+                return exitProcess(1);
+            }
+
+            throw error;
+        }
 
         const pluginManager = this.getPluginManager();
 
