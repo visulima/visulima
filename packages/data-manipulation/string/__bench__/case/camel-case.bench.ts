@@ -1,5 +1,5 @@
 /* eslint-disable e18e/ban-dependencies */
-import { camelCase } from "@visulima/string/dist/case/case";
+import { camelCase } from "@visulima/string/case/camel-case";
 import { camelCase as caseAnythingCamelCase } from "case-anything";
 import { camelCase as changeCaseCamel } from "change-case";
 import { camelCase as lodashCamelCase } from "lodash";

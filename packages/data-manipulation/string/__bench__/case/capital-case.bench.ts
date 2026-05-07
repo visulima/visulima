@@ -1,4 +1,4 @@
-import { capitalCase } from "@visulima/string/dist/case/case";
+import { capitalCase } from "@visulima/string/case/capital-case";
 import { bench, describe } from "vitest";
 
 import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "../../__fixtures__/test-strings";

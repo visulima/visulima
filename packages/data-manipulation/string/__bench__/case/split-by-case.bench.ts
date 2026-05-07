@@ -1,4 +1,4 @@
-import { splitByCase } from "@visulima/string/dist/case/case";
+import { splitByCase } from "@visulima/string/case/split-by-case";
 import { splitByCase as sculeSplitByCase } from "scule";
 import { bench, describe } from "vitest";
 

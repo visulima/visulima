@@ -1,4 +1,4 @@
-import { flatCase } from "@visulima/string/dist/case/case";
+import { flatCase } from "@visulima/string/case/flat-case";
 import { flatCase as sculeFlatCase } from "scule";
 import { bench, describe } from "vitest";
 
