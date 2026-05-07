@@ -1,3 +1,20 @@
+## @visulima/redact [3.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/redact@3.0.0-alpha.10...@visulima/redact@3.0.0-alpha.11) (2026-05-07)
+
+### Bug Fixes
+
+* **data-manipulation:** repair broken bench imports ([79ddd8f](https://github.com/visulima/visulima/commit/79ddd8f6892cd34ae12018f98afb826bcaaffb3e))
+
+### Miscellaneous Chores
+
+* re-sort workspace package.json files via vis sort-package-json ([f625696](https://github.com/visulima/visulima/commit/f625696cfac974325774b3243e1a83c3d23acbd7))
+* **redact:** housekeeping cleanup ([025056d](https://github.com/visulima/visulima/commit/025056dd2781def823056a2a46b42114b9276792))
+* **redact:** upgrade packem to 2.0.0-alpha.76 ([b8477f3](https://github.com/visulima/visulima/commit/b8477f3d0763e8b588b17159e7ebd3b521aea1d6))
+* simplify pnpm-workspace packages list ([7cab221](https://github.com/visulima/visulima/commit/7cab221163632d9b7aa044a6f88c49083103a869))
+
+### Continuous Integration
+
+* integrate codspeed for benchmark tracking ([e758f3d](https://github.com/visulima/visulima/commit/e758f3da491cc00d3f8bbf10d7ba3fdf8deb5325))
+
 ## @visulima/redact [3.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/redact@3.0.0-alpha.9...@visulima/redact@3.0.0-alpha.10) (2026-04-22)
 
 ### Bug Fixes
