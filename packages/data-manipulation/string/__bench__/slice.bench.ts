@@ -144,7 +144,9 @@ describe("slice", () => {
             { begin: coloredString.length, end: coloredString.length + 10, str: coloredString },
             { begin: unicodeString.length, end: undefined, str: unicodeString },
             { begin: 100, end: 200, str: emojiString },
-            { begin: -100, end: -50, str: mixedString },
+            // Negative indices are intentionally rejected by `slice` — kept a
+            // positive-range case on `mixedString` so we still cover that input.
+            { begin: 0, end: 50, str: mixedString },
         ];
 
         bench("visulima/string slice", () => {

@@ -1,4 +1,4 @@
-import { lowerFirst } from "@visulima/string/case/lower-first";
+import { lowerFirst } from "@visulima/string/case";
 import { lowerFirst as sculeLowerFirst } from "scule";
 import { bench, describe } from "vitest";
 

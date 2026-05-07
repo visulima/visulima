@@ -1,4 +1,4 @@
-import { pascalSnakeCase } from "@visulima/string/case/pascal-snake-case";
+import { pascalSnakeCase } from "@visulima/string/case";
 import { bench, describe } from "vitest";
 
 import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "../../__fixtures__/test-strings";
