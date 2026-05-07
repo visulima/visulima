@@ -58,11 +58,6 @@
         "visulima"
     ],
     "homepage": "https://visulima.com/packages/uploads",
-    "license": "MIT",
-    "author": {
-        "name": "Daniel Bannert",
-        "email": "d.bannert@anolilab.de"
-    },
     "repository": {
         "type": "git",
         "url": "https://github.com/visulima/visulima.git",
@@ -78,14 +73,13 @@
             "url": "https://anolilab.com/support"
         }
     ],
-    "files": [
-        "dist/**",
-        "README.md",
-        "CHANGELOG.md",
-        "LICENSE.md"
-    ],
-    "type": "module",
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
     "sideEffects": false,
+    "type": "module",
     "exports": {
         ".": {
             "types": "./dist/index.d.ts",
@@ -185,10 +179,12 @@
         },
         "./package.json": "./package.json"
     },
-    "publishConfig": {
-        "access": "public",
-        "provenance": true
-    },
+    "files": [
+        "dist/**",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE.md"
+    ],
     "scripts": {
         "build": "packem build --development",
         "build:prod": "packem build --production",
@@ -292,7 +288,7 @@
         "hono": ">=4.0.0",
         "mediabunny": ">=1.23.0",
         "next": ">=15",
-        "sharp": ">=0.33.5"
+        "sharp": ">=0.34.5"
     },
     "peerDependenciesMeta": {
         "@aws-sdk/client-s3": {
@@ -355,5 +351,9 @@
     },
     "engines": {
         "node": "^22.14.0 || >=24.10.0"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
     }
 }
