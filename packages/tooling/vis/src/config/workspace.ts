@@ -16,6 +16,7 @@ import { BUILT_IN_DETECTORS, inferProjectTargets } from "../inference";
 import { mergeTargetWithInherit } from "../task/target-merge";
 import type { VisTargetConfiguration } from "../task/target-options";
 import { applyPreset, defaultCacheForType } from "../task/target-options";
+import { buildGitignoreMatcher } from "../util/gitignore-matcher";
 import type {
     PackageJson,
     PackageJsonIndex,
@@ -136,23 +137,48 @@ const resolveBareGlob = (workspaceRoot: string, cleanPattern: string, results: s
  * Resolves glob-like workspace patterns to actual directories. Supports
  * `dir/<asterisk>`, `dir/<asterisk><asterisk>`, `dir/<asterisk>/<asterisk>`,
  * top-level bare globs like `@<asterisk>`, and exact paths.
- * `!`-prefixed exclusions are skipped — vis doesn't implement exclusion
- * semantics yet.
+ *
+ * `!`-prefixed entries are exclusion patterns (pnpm semantics): a
+ * resolved directory matching any of them is dropped from the result.
+ * The workspace root's `.gitignore` is also applied so packages living
+ * inside ignored directories (generated apps, scratch checkouts) don't
+ * sneak into update / outdated runs.
  */
 const resolveWorkspacePatterns = (workspaceRoot: string, patterns: string[]): string[] => {
-    const directories: string[] = [];
+    const positives: string[] = [];
+    const negatives: string[] = [];
 
     for (const pattern of patterns) {
         const cleanPattern = pattern.replace(TRAILING_SLASH_RE, "");
 
         if (cleanPattern.startsWith("!")) {
+            const stripped = cleanPattern.slice(1);
+
+            if (stripped.length > 0) {
+                negatives.push(stripped);
+
+                // pnpm treats `!dir/**` as "exclude dir and everything under
+                // it"; gitignore's `dir/**` matches only descendants. Add a
+                // companion `dir/` pattern so the directory itself is also
+                // dropped from workspace candidates.
+                if (stripped.endsWith("/**")) {
+                    negatives.push(`${stripped.slice(0, -3)}/`);
+                }
+            }
+
             continue;
         }
 
-        if (cleanPattern.endsWith("/*")) {
-            resolveSimpleGlob(workspaceRoot, cleanPattern, directories);
-        } else if (cleanPattern.endsWith("/**") || cleanPattern.endsWith("/*/*")) {
+        positives.push(cleanPattern);
+    }
+
+    const directories: string[] = [];
+
+    for (const cleanPattern of positives) {
+        if (cleanPattern.endsWith("/**") || cleanPattern.endsWith("/*/*")) {
             resolveDoubleGlob(workspaceRoot, cleanPattern, directories);
+        } else if (cleanPattern.endsWith("/*")) {
+            resolveSimpleGlob(workspaceRoot, cleanPattern, directories);
         } else if (!cleanPattern.includes("/") && cleanPattern.includes("*")) {
             resolveBareGlob(workspaceRoot, cleanPattern, directories);
         } else {
@@ -160,7 +186,13 @@ const resolveWorkspacePatterns = (workspaceRoot: string, patterns: string[]): st
         }
     }
 
-    return directories;
+    if (directories.length === 0) {
+        return directories;
+    }
+
+    const matcher = buildGitignoreMatcher({ cwd: workspaceRoot, extraPatterns: negatives });
+
+    return matcher.filterDirectories(directories);
 };
 
 /**

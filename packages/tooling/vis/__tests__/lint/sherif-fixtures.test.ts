@@ -269,23 +269,18 @@ describe("sherif-fixtures", () => {
     describe("ignore-paths (`!` excludes + re-includes)", () => {
         const root = fixturePath("ignore-paths");
 
-        it("resolves the positive patterns; `!` excludes are not currently honored", () => {
+        it("honors `!` excludes through the gitignore matcher", () => {
             expect.assertions(1);
 
-            // Sherif honors `!packages/abc`, `!packages/d*`, `!packages/a/*`
-            // and ends up with [docs, ghi, a/b/d, a/b/e]. vis's pattern
-            // resolver ignores `!` entries, so abc and def stay in. The
-            // README documents this divergence; this test pins current
-            // behavior so a future change doesn't silently regress.
-            expect(collectWorkspaceDirectories(root).sort()).toStrictEqual([
-                ".",
-                "docs",
-                "packages/a/b/d",
-                "packages/a/b/e",
-                "packages/abc",
-                "packages/def",
-                "packages/ghi",
-            ]);
+            // pnpm-workspace.yaml lists `packages/*`, `docs`, `!packages/abc`,
+            // `!packages/d*`, `!packages/a/*`, `packages/a/b/*`. vis treats
+            // `!` entries as gitignore patterns layered over the positives,
+            // so abc/def are dropped. The `!packages/a/*` exclusion uses
+            // gitignore semantics — once a parent directory is excluded,
+            // its descendants follow, so `packages/a/b/*` cannot re-include
+            // `packages/a/b/d`. This is a known divergence from Sherif's
+            // ordered glob semantics, documented in the README.
+            expect(collectWorkspaceDirectories(root).sort()).toStrictEqual([".", "docs", "packages/ghi"]);
         });
     });
 

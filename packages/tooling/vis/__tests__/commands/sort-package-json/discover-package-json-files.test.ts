@@ -43,7 +43,7 @@ describe(discoverPackageJsonFiles, () => {
     });
 
     it("skips package.json files inside .gitignored directories", () => {
-        expect.assertions(2);
+        expect.assertions(1);
 
         writeJson("package.json", { name: "root" });
         writeFile(".gitignore", "dist/\n");
@@ -53,8 +53,14 @@ describe(discoverPackageJsonFiles, () => {
 
         const result = discoverPackageJsonFiles(cwd, []);
 
+        // The workspace pattern resolver itself now honors the root
+        // `.gitignore`, so `packages/foo/dist/` never makes it into the
+        // candidate list — `allFiles`, `afterGitignore`, and `files` are
+        // all the same length here. Earlier this assertion compared
+        // `allFiles > files` to prove the per-file gitignore filter was
+        // doing work; with the resolver-level filter that's no longer
+        // a meaningful invariant.
         expect(result.files.map((f) => f.replace(`${cwd}/`, ""))).toStrictEqual(["package.json", "packages/foo/package.json"]);
-        expect(result.allFiles.length).toBeGreaterThan(result.files.length);
     });
 
     it("skips package.json files inside workspace !-exclusions", () => {
