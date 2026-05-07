@@ -1,3 +1,14 @@
+## @visulima/fs [5.0.0-alpha.16](https://github.com/visulima/visulima/compare/@visulima/fs@5.0.0-alpha.15...@visulima/fs@5.0.0-alpha.16) (2026-05-07)
+
+### Miscellaneous Chores
+
+* **fs:** bump bench glob and globby to latest majors ([9f9fe58](https://github.com/visulima/visulima/commit/9f9fe58eb491abe7442f9612226f793b861d6865))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.18
+
 ## @visulima/fs [5.0.0-alpha.15](https://github.com/visulima/visulima/compare/@visulima/fs@5.0.0-alpha.14...@visulima/fs@5.0.0-alpha.15) (2026-05-06)
 
 
