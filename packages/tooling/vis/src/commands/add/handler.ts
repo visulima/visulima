@@ -502,7 +502,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
     }
 
     // Typosquat check (unless disabled)
-    if (!options.noTyposquatCheck) {
+    if ((options as Record<string, unknown>).typosquatCheck !== false) {
         const parsed = packages.map((p: string) => parsePackageArgument(p));
         const result = await runTyposquatCheck(
             parsed.map((p) => p.name),
@@ -528,7 +528,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
     }
 
     // Socket.dev pre-add check (unless disabled)
-    if (!options.noSocketCheck) {
+    if ((options as Record<string, unknown>).socketCheck !== false) {
         const socketOptions = buildSocketOptions(visConfig?.security?.socket);
 
         if (socketOptions) {

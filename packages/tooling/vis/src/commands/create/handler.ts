@@ -286,7 +286,7 @@ const execute = async ({ argument, logger, options, rawUnknown, visConfig, works
     // Tracks whether the user already confirmed overwriting a non-empty directory
     let userConfirmedOverwrite = false;
 
-    if (args.length === 0 && isTTY && !options.noInteractive) {
+    if (args.length === 0 && isTTY && (options as Record<string, unknown>).interactive !== false) {
         // ── Interactive mode ──────────────────────────────────
         const answers = await runInteractivePrompts({
             cwd,

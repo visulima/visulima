@@ -18,7 +18,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
             format: options.format || "table",
             global: options.global || false,
             long: options.long || false,
-            noOptional: options.noOptional || false,
+            noOptional: (options as Record<string, unknown>).optional === false,
             packages,
             prod: options.prod || false,
             recursive: options.recursive || false,

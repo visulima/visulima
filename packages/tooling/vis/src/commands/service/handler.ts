@@ -143,7 +143,7 @@ export const serviceStartExecute = async ({ argument, options, visConfig, worksp
             env: resolved.env,
             id: targetId,
             readinessTimeoutMs: options.timeout,
-            skipReadiness: options.noReadiness === true,
+            skipReadiness: (options as Record<string, unknown>).readiness === false,
             workspaceRoot,
         });
 
@@ -384,7 +384,7 @@ export const serviceRestartExecute = async ({
             env: resolved.env,
             id: targetId,
             readinessTimeoutMs: options.timeout,
-            skipReadiness: options.noReadiness === true,
+            skipReadiness: (options as Record<string, unknown>).readiness === false,
             workspaceRoot,
         });
 
