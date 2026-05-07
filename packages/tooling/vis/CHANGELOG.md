@@ -1,3 +1,31 @@
+## @visulima/vis [1.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.13...@visulima/vis@1.0.0-alpha.14) (2026-05-07)
+
+### Features
+
+* **vis:** add --peer and --include-internal flags to update and check ([900bbbe](https://github.com/visulima/visulima/commit/900bbbed6ec3611e993cf4fcc929c8b9b7cc7d60)), closes [package.json#workspaces](https://github.com/visulima/package.json/issues/workspaces)
+
+### Bug Fixes
+
+* **vis:** apply pnpm !-exclusions and root .gitignore in workspace resolver ([b08a1be](https://github.com/visulima/visulima/commit/b08a1be4391e362dca4f935541362bae01b859d9)), closes [package.json#workspaces](https://github.com/visulima/package.json/issues/workspaces)
+
+### Miscellaneous Chores
+
+* **vis:** bump example setup-wizard @inquirer/prompts to v8 ([1974734](https://github.com/visulima/visulima/commit/1974734c34d49c61ce62b663a999a6161e679251))
+* **vis:** bundle internal deps as devDeps and extend packem hoisted exclude ([9cd6cba](https://github.com/visulima/visulima/commit/9cd6cba0ed89e26b6def141433d024c7a5851578))
+
+### Code Refactoring
+
+* **vis:** centralize per-user filesystem layout in vis-paths helpers ([9a06751](https://github.com/visulima/visulima/commit/9a0675131e7da5bc338bcaf438574a4a5930d239))
+* **vis:** read negative flags via cerebro's options.X === false idiom ([c52f39f](https://github.com/visulima/visulima/commit/c52f39f9294c42e69be2e4e3c327330875aef37b))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.16
+* **@visulima/tui:** upgraded to 1.0.0-alpha.9
+* **@visulima/cerebro:** upgraded to 3.0.0-alpha.17
+* **@visulima/package:** upgraded to 5.0.0-alpha.15
+
 ## @visulima/vis [1.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.12...@visulima/vis@1.0.0-alpha.13) (2026-05-06)
 
 
