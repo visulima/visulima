@@ -1,3 +1,9 @@
+## @visulima/tui [1.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/tui@1.0.0-alpha.8...@visulima/tui@1.0.0-alpha.9) (2026-05-07)
+
+### Miscellaneous Chores
+
+* **tui:** bump react peer to >=19.2.6 and bench ink to v7 ([4c97b71](https://github.com/visulima/visulima/commit/4c97b71fa229bf4d03e585fbdbb962795a3e4adc))
+
 ## @visulima/tui [1.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/tui@1.0.0-alpha.7...@visulima/tui@1.0.0-alpha.8) (2026-05-06)
 
 ## @visulima/tui [1.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/tui@1.0.0-alpha.6...@visulima/tui@1.0.0-alpha.7) (2026-05-06)
