@@ -6,18 +6,17 @@
  * config (`sponsor.enabled = false`) or env (`VIS_NO_SPONSOR=1`).
  */
 
-import { homedir } from "node:os";
-
 import { bold, dim, magenta } from "@visulima/colorize";
 import { ensureDirSync, isAccessibleSync, readJsonSync, writeFileSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 import isInCi from "is-in-ci";
 
 import type { VisConfig } from "../config/types";
+import { getVisStateDir } from "./vis-paths";
 
 const SPONSOR_INTERVAL_MS = 14 * 24 * 60 * 60 * 1000;
 const SPONSOR_URL = "https://github.com/sponsors/prisis";
-const STATE_FILE = join(homedir(), ".vis", ".sponsor-state.json");
+const STATE_FILE = join(getVisStateDir(), "sponsor.json");
 
 interface SponsorContext {
     success: boolean;
@@ -42,7 +41,7 @@ const readState = (): SponsorState => {
 
 const writeState = (state: SponsorState): void => {
     try {
-        ensureDirSync(join(homedir(), ".vis"));
+        ensureDirSync(getVisStateDir());
         writeFileSync(STATE_FILE, JSON.stringify(state));
     } catch {
         // Non-critical

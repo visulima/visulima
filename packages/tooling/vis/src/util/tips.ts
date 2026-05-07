@@ -10,11 +10,11 @@
  * - Dimmed styling to avoid being intrusive
  */
 
-import { homedir } from "node:os";
-
 import { ensureDirSync, isAccessibleSync, readJsonSync, writeFileSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 import isInCi from "is-in-ci";
+
+import { getVisStateDir } from "./vis-paths";
 
 interface TipContext {
     args: string[];
@@ -35,7 +35,7 @@ interface Tip {
 }
 
 const GLOBAL_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
-const STATE_FILE = join(homedir(), ".vis", ".tip-state.json");
+const STATE_FILE = join(getVisStateDir(), "tips.json");
 
 interface TipState {
     /** Last time any tip was shown (global rate limit) */
@@ -58,7 +58,7 @@ const readState = (): TipState => {
 
 const writeState = (state: TipState): void => {
     try {
-        ensureDirSync(join(homedir(), ".vis"));
+        ensureDirSync(getVisStateDir());
         writeFileSync(STATE_FILE, JSON.stringify(state));
     } catch {
         // Non-critical, skip

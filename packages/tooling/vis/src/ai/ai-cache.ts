@@ -1,16 +1,16 @@
 import { readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
-import { homedir } from "node:os";
 
 import { xxh3Hash } from "@shared/xxh3";
 import { ensureDirSync, isAccessibleSync, readJsonSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
 import type { OutdatedEntry } from "../util/catalog";
+import { getVisCacheDir } from "../util/vis-paths";
 import type { AiAnalysisResult, AnalysisType } from "./types";
 
 // --- Constants ---
 
-const getCacheDirectory = (): string => join(homedir(), ".vis", "cache", "ai");
+const getCacheDirectory = (): string => join(getVisCacheDir(), "ai");
 const DEFAULT_TTL_MS = 60 * 60 * 1000; // 1 hour
 const SECURITY_TTL_MS = 30 * 60 * 1000; // 30 minutes
 
