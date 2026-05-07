@@ -204,13 +204,22 @@ describe(RadioGroup, () => {
     });
 
     it("should commit on Space when commitOnNavigate is false", async () => {
-        expect.assertions(1);
-
         const onChange = vi.fn();
-        const { stdin } = await setup(<RadioGroup autoFocus commitOnNavigate={false} defaultValue="a" onChange={onChange} options={options} />);
+        const { stdin, stdout } = await setup(
+            <RadioGroup autoFocus commitOnNavigate={false} defaultValue="a" onChange={onChange} options={options} />,
+        );
+
+        const writes = (stdout.write as ReturnType<typeof vi.fn>).mock.calls;
+        const initialWriteCount = writes.length;
 
         emitReadable(stdin, "j");
-        await delay(100);
+        // Wait for the focus update to actually be applied: in debug mode Ink
+        // writes unconditionally on every render, so a new write means the "j"
+        // keypress has been processed and focus has advanced to "Option B".
+        // Avoids a race where Space is sent before React applies the focus
+        // update on slow CI runners.
+        await vi.waitFor(() => expect(writes.length).toBeGreaterThan(initialWriteCount));
+
         emitReadable(stdin, " ");
         await vi.waitFor(() => expect(onChange).toHaveBeenCalledWith("b"));
     });
