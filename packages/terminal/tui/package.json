@@ -160,15 +160,12 @@
         "vitest": "catalog:test"
     },
     "peerDependencies": {
-        "react": ">=19.2.0",
-        "react-devtools-core": ">=6.1.2",
+        "react": ">=19.2.6",
+        "react-devtools-core": ">=7.0.1",
         "react-reconciler": ">=0.33.0"
     },
     "peerDependenciesMeta": {
         "react-devtools-core": {
-            "optional": true
-        },
-        "react-reconciler": {
             "optional": true
         }
     },
