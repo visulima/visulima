@@ -1,3 +1,30 @@
+## @visulima/storage-client [1.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/storage-client@1.0.0-alpha.12...@visulima/storage-client@1.0.0-alpha.13) (2026-05-07)
+
+### Bug Fixes
+
+* **storage-client:** guard chunked upload interval against post-teardown ticks ([25e42f7](https://github.com/visulima/visulima/commit/25e42f79184e079b26c0cd49662794f13d4157e4))
+
+### Miscellaneous Chores
+
+* re-sort workspace package.json files via vis sort-package-json ([f625696](https://github.com/visulima/visulima/commit/f625696cfac974325774b3243e1a83c3d23acbd7))
+* simplify pnpm-workspace packages list ([7cab221](https://github.com/visulima/visulima/commit/7cab221163632d9b7aa044a6f88c49083103a869))
+* **storage-client:** apply error/template fixes to svelte primitives ([2d67f0f](https://github.com/visulima/visulima/commit/2d67f0fd678f9504ddab68544ed759564f9fd95f))
+* **storage-client:** apply partial lint cleanup from agent batch ([cea27fc](https://github.com/visulima/visulima/commit/cea27fc10dd09bcf9ce1089d4f70a0305b52afb1))
+* **storage-client:** apply prettier and eslint quote-style auto-fix ([bbbe262](https://github.com/visulima/visulima/commit/bbbe262f98472b84b7e43f0d17ce7b5bc8e4bfb4))
+* **storage-client:** bump @tanstack/* and solid-js peer ranges ([5669c5d](https://github.com/visulima/visulima/commit/5669c5d37640441a685f177613e3a396675ff59d))
+* **storage-client:** clean up lint errors in core adapters ([7b50237](https://github.com/visulima/visulima/commit/7b5023727639bb65f2fc0f36cdd447345ab70fbd))
+* **storage-client:** clean up svelte primitive lint warnings ([0dd6fd5](https://github.com/visulima/visulima/commit/0dd6fd56b68b62496b9ee50e55bc9df9ddcde7ef))
+* **storage-client:** clear remaining lint errors in tests ([edda1fa](https://github.com/visulima/visulima/commit/edda1faf39234dad14e86683236d7473820f111c))
+* **storage-client:** clear remaining solid lint warnings ([23620d6](https://github.com/visulima/visulima/commit/23620d6610cc51a911ae0be2f1f84b460db1492c))
+* **storage-client:** finish lint cleanup across framework hooks ([fc2c2bf](https://github.com/visulima/visulima/commit/fc2c2bf66191083cc401fd896a99af2ec61589d3))
+* **storage-client:** fix lint in react query hooks ([d471f00](https://github.com/visulima/visulima/commit/d471f00eccaec04d0a5b103958d0965ca008747a))
+* **storage-client:** fix lint in solid query primitives ([15f094d](https://github.com/visulima/visulima/commit/15f094d038f9fdcf666e436c58a22ad6ef0b7c7b))
+* **storage-client:** fix lint in use-batch-delete-files ([d212548](https://github.com/visulima/visulima/commit/d212548838e006864d2af0083950d8b63a618f73))
+* **storage-client:** fix lint in vue query composables ([e39d6d3](https://github.com/visulima/visulima/commit/e39d6d30eca3e4daef6d6b3fad975bc333561be6))
+* **storage-client:** refactor svelte create-upload picker logic ([ccd096b](https://github.com/visulima/visulima/commit/ccd096b18a821a2b0589e9d56b1802e202056cd2))
+* **storage-client:** simplify svelte error/data store derivations ([ee6dcbf](https://github.com/visulima/visulima/commit/ee6dcbf53d692d183b3f6a41d2d69065d6112159))
+* **storage-client:** upgrade packem to 2.0.0-alpha.76 ([4963a7d](https://github.com/visulima/visulima/commit/4963a7d640d82f8733fb54a947fcf3e7395b5bbf))
+
 ## @visulima/storage-client [1.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/storage-client@1.0.0-alpha.11...@visulima/storage-client@1.0.0-alpha.12) (2026-04-22)
 
 ### Bug Fixes
