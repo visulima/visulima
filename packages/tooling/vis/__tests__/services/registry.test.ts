@@ -41,7 +41,7 @@ describe("services/registry", () => {
 
     beforeEach(() => {
         // Per-test HOME so each registry directory lives under a fresh
-        // tmp tree — keeps the user's real ~/.vis-services untouched.
+        // tmp tree — keeps the user's real ~/.vis untouched.
         workspaceRoot = createTemporaryDirectory("vis-test-ws-");
         homeOverride = createTemporaryDirectory("vis-test-home-");
         originalHome = process.env["HOME"];
@@ -83,7 +83,7 @@ describe("services/registry", () => {
             const directory = await getRegistryDir(workspaceRoot);
 
             expect(directory.startsWith(homeOverride)).toBe(true);
-            expect(directory).toContain(".vis-services");
+            expect(directory).toMatch(/[\\/]\.vis[\\/]workspaces[\\/][a-f0-9]{12}[\\/]services$/);
         });
 
         it("returns the same directory for the same workspace", async () => {

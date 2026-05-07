@@ -4,12 +4,10 @@
  * Per vite-plus upgrade-check RFC:
  * - Spawns async registry check while command runs (no latency impact)
  * - Shows single-line notice at most once per 24 hours
- * - Cached at ~/.vis/.upgrade-check.json
+ * - Cached at ~/.vis/state/upgrade-check.json
  * - Skipped in CI, test, quiet, non-TTY, and excluded commands
  * - 500ms timeout prevents network from delaying exit
  */
-
-import { homedir } from "node:os";
 
 import { bold, cyan, dim, green, yellow } from "@visulima/colorize";
 import { ensureDirSync, isAccessibleSync, readJsonSync, writeFileSync } from "@visulima/fs";
@@ -18,9 +16,9 @@ import isInCi from "is-in-ci";
 import { gt } from "semver";
 
 import { SYMBOLS } from "../io/symbols";
+import { getVisStateDir } from "./vis-paths";
 
-const VIS_HOME = join(homedir(), ".vis");
-const CACHE_FILE = join(VIS_HOME, ".upgrade-check.json");
+const CACHE_FILE = join(getVisStateDir(), "upgrade-check.json");
 const CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24 hours
 const NOTICE_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24 hours
 const REGISTRY_TIMEOUT_MS = 500;
@@ -51,7 +49,7 @@ const readCache = (): UpgradeCheckCache | undefined => {
 
 const writeCache = (cache: UpgradeCheckCache): void => {
     try {
-        ensureDirSync(VIS_HOME);
+        ensureDirSync(getVisStateDir());
 
         writeFileSync(CACHE_FILE, JSON.stringify(cache));
     } catch {

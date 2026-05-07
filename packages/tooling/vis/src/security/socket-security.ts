@@ -9,16 +9,17 @@
  */
 
 import { readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
-import { homedir } from "node:os";
 
 import { ensureDirSync, isAccessibleSync, readJsonSync } from "@visulima/fs";
 import { join } from "@visulima/path";
+
+import { getVisCacheDir } from "../util/vis-paths";
 
 // ── Constants ───────────────────────────────────────────────────────
 
 const SOCKET_API_V0_URL = "https://api.socket.dev/v0/purl?alerts=true";
 
-const getCacheDirectory = (): string => join(homedir(), ".vis", "cache", "socket-security");
+const getCacheDirectory = (): string => join(getVisCacheDir(), "socket-security");
 const DEFAULT_TTL_MS = 60 * 60 * 1000; // 1 hour
 const DEFAULT_LOW_SCORE_THRESHOLD = 0.4;
 const MAX_BATCH_SIZE = 100;

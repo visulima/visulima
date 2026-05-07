@@ -1,13 +1,11 @@
-import { createHash, randomBytes } from "node:crypto";
+import { randomBytes } from "node:crypto";
 import { open, readdir, readFile, rename, rm, stat, unlink, writeFile } from "node:fs/promises";
-import { homedir } from "node:os";
 
 import { ensureDir, isAccessible, readJson } from "@visulima/fs";
 import { join } from "@visulima/path";
 
+import { getVisWorkspaceDir } from "../util/vis-paths";
 import type { ServiceEntry } from "./types";
-
-const REGISTRY_ROOT_DIRNAME = ".vis-services";
 
 /**
  * Mode for entry JSON files and log files: 0o600 (owner-read/write).
@@ -24,13 +22,6 @@ const LOCK_POLL_MS = 50;
 const LOCK_STALE_MS = 30_000;
 
 /**
- * Hash the workspace root into a short, filesystem-safe directory name.
- * Per-workspace scoping means a `db` service in repo A is invisible to
- * repo B, even when they live on the same machine.
- */
-const hashWorkspace = (workspaceRoot: string): string => createHash("sha256").update(workspaceRoot).digest("hex").slice(0, 12);
-
-/**
  * Returns the registry directory for a workspace. Creates it on demand.
  * Lives outside the workspace tree because writing PID files into the
  * workspace would dirty `affected` detection.
@@ -43,7 +34,7 @@ const hashWorkspace = (workspaceRoot: string): string => createHash("sha256").up
  * "exists but not a directory" would be misleading.
  */
 export const getRegistryDir = async (workspaceRoot: string): Promise<string> => {
-    const directory = join(homedir(), REGISTRY_ROOT_DIRNAME, hashWorkspace(workspaceRoot));
+    const directory = join(getVisWorkspaceDir(workspaceRoot), "services");
 
     try {
         await ensureDir(directory);

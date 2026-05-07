@@ -6,9 +6,10 @@ import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 import { isAccessibleSync, readFileSync, writeFileSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
+import { getVisHomeDir } from "../../util/vis-paths";
 import type { ImplodeOptions } from "./index";
 
-const VIS_HOME = join(homedir(), ".vis");
+const VIS_HOME = getVisHomeDir();
 
 const SHELL_PROFILES = [
     join(homedir(), ".zshrc"),

@@ -1,13 +1,13 @@
 import { rmSync, statSync, writeFileSync } from "node:fs";
-import { homedir } from "node:os";
 
 import { xxh3Hash } from "@shared/xxh3";
 import { ensureDirSync, isAccessibleSync, readJsonSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
 import type { DoctorResults, SectionId } from "../commands/doctor/sections";
+import { getVisCacheDir } from "../util/vis-paths";
 
-const getCacheDirectory = (): string => join(homedir(), ".vis", "cache", "doctor");
+const getCacheDirectory = (): string => join(getVisCacheDir(), "doctor");
 const DEFAULT_TTL_MS = 30 * 60 * 1000;
 
 interface CacheKeyInput {
