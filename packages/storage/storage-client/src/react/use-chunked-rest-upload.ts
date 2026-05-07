@@ -123,13 +123,17 @@ export const useChunkedRestUpload = (options: UseChunkedRestUploadOptions): UseC
         // Sync state with adapter periodically
         let mounted = true;
         const checkInterval = setInterval(() => {
-            if (!mounted) {
+            if (!mounted || typeof window === "undefined") {
                 return;
             }
 
             adapterInstance
                 .getOffset()
                 .then((value) => {
+                    if (!mounted || typeof window === "undefined") {
+                        return value;
+                    }
+
                     setOffset(value);
 
                     return value;
