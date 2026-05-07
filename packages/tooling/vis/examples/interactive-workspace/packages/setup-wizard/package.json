@@ -6,6 +6,6 @@
         "deploy": "node ./setup.mjs"
     },
     "dependencies": {
-        "@inquirer/prompts": "^7.0.0"
+        "@inquirer/prompts": "^8.4.2"
     }
 }
