@@ -14,7 +14,25 @@ const setup = async (jsx: React.JSX.Element) => {
     const { unmount } = render(jsx, { debug: true, stdin, stdout });
 
     currentUnmount = unmount;
-    await delay(50);
+
+    // Wait for initial render + autoFocus to apply. autoFocus runs in a
+    // useEffect, which produces a second render after the mount commit.
+    // A fixed delay is racy on slow CI runners, so poll until stdout writes
+    // stop coming for ~50ms — that means React and Ink have gone idle.
+    // Note: avoid `expect()` here so we don't pollute `expect.assertions(N)`.
+    const writes = (stdout.write as ReturnType<typeof vi.fn>).mock.calls;
+    const start = Date.now();
+
+    while (writes.length === 0 && Date.now() - start < 2000) {
+        await delay(10);
+    }
+
+    let previousCount = -1;
+
+    while (writes.length !== previousCount) {
+        previousCount = writes.length;
+        await delay(50);
+    }
 
     const getOutput = () => {
         const { calls } = (stdout.write as ReturnType<typeof vi.fn>).mock;
