@@ -52,9 +52,19 @@ interface GitignoreMatcher {
     filter: (files: string[]) => string[];
 
     /**
+     * Drop ignored entries from `directories`. Use this instead of `filter`
+     * when the inputs are known to be directory paths — the underlying
+     * `ignore` package needs a trailing slash to match `dir/` gitignore
+     * entries, which this method appends and strips internally.
+     */
+    filterDirectories: (directories: string[]) => string[];
+
+    /**
      * Returns `true` when the given path is ignored. Absolute paths are
      * accepted and re-based against `cwd`; paths outside the workspace
-     * are never reported as ignored.
+     * are never reported as ignored. Append a trailing slash to the input
+     * when the path refers to a directory so `dir/` gitignore patterns
+     * match correctly.
      */
     ignores: (filePath: string) => boolean;
 }
@@ -139,6 +149,11 @@ const buildGitignoreMatcher = (options: GitignoreMatcherOptions): GitignoreMatch
     }
 
     const ignores = (filePath: string): boolean => {
+        // The `ignore` package needs a trailing slash to match a `dir/`
+        // gitignore entry against a directory path. `resolve` strips
+        // trailing slashes so we re-attach explicitly when the caller
+        // marked the path as a directory by passing one in.
+        const isDirectory = filePath.endsWith("/") || filePath.endsWith("\\");
         const absolute = isAbsolute(filePath) ? filePath : resolve(cwd, filePath);
         const relativePath = toForwardSlashes(relative(cwd, absolute));
 
@@ -146,7 +161,7 @@ const buildGitignoreMatcher = (options: GitignoreMatcherOptions): GitignoreMatch
             return false;
         }
 
-        return instance.ignores(relativePath);
+        return instance.ignores(isDirectory ? `${relativePath}/` : relativePath);
     };
 
     const matcher: GitignoreMatcher = {
@@ -156,6 +171,7 @@ const buildGitignoreMatcher = (options: GitignoreMatcherOptions): GitignoreMatch
             return matcher;
         },
         filter: (files) => files.filter((file) => !ignores(file)),
+        filterDirectories: (directories) => directories.filter((d) => !ignores(d.endsWith("/") || d.endsWith("\\") ? d : `${d}/`)),
         ignores,
     };
 
