@@ -9,6 +9,7 @@ import {
     applyCatalogUpdates,
     applyPackageJsonUpdates,
     checkOutdated,
+    collectInternalOutdated,
     createBackup,
     detectJsonIndent,
     extractPrefix,
@@ -1750,6 +1751,9 @@ describe(applyCatalogUpdates, () => {
         expect.assertions(2);
 
         const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
+
+        writeFileSync(join(temporaryDirectory, "package.json"), "{\"name\":\"root\"}");
+
         const filePath = join(temporaryDirectory, "pnpm-workspace.yaml");
 
         writeFileSync(
@@ -1783,6 +1787,9 @@ catalog:
         expect.assertions(2);
 
         const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
+
+        writeFileSync(join(temporaryDirectory, "package.json"), "{\"name\":\"root\"}");
+
         const filePath = join(temporaryDirectory, "pnpm-workspace.yaml");
 
         writeFileSync(
@@ -1815,6 +1822,9 @@ catalog:
         expect.assertions(2);
 
         const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
+
+        writeFileSync(join(temporaryDirectory, "package.json"), "{\"name\":\"root\"}");
+
         const filePath = join(temporaryDirectory, "pnpm-workspace.yaml");
 
         writeFileSync(
@@ -1846,6 +1856,9 @@ catalog:
         expect.assertions(1);
 
         const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
+
+        writeFileSync(join(temporaryDirectory, "package.json"), "{\"name\":\"root\"}");
+
         const filePath = join(temporaryDirectory, "pnpm-workspace.yaml");
 
         writeFileSync(
@@ -1875,6 +1888,9 @@ catalog:
         expect.assertions(1);
 
         const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
+
+        writeFileSync(join(temporaryDirectory, "package.json"), "{\"name\":\"root\"}");
+
         const filePath = join(temporaryDirectory, "pnpm-workspace.yaml");
 
         writeFileSync(
@@ -1904,6 +1920,9 @@ catalog:
         expect.assertions(1);
 
         const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
+
+        writeFileSync(join(temporaryDirectory, "package.json"), "{\"name\":\"root\"}");
+
         const filePath = join(temporaryDirectory, "pnpm-workspace.yaml");
 
         writeFileSync(
@@ -1934,6 +1953,9 @@ catalog:
         expect.assertions(2);
 
         const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
+
+        writeFileSync(join(temporaryDirectory, "package.json"), "{\"name\":\"root\"}");
+
         const filePath = join(temporaryDirectory, "pnpm-workspace.yaml");
 
         writeFileSync(
@@ -1976,6 +1998,9 @@ catalogs:
         expect.assertions(3);
 
         const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
+
+        writeFileSync(join(temporaryDirectory, "package.json"), "{\"name\":\"root\"}");
+
         const filePath = join(temporaryDirectory, "pnpm-workspace.yaml");
 
         writeFileSync(
@@ -2017,6 +2042,9 @@ catalogs:
         expect.assertions(1);
 
         const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
+
+        writeFileSync(join(temporaryDirectory, "package.json"), "{\"name\":\"root\"}");
+
         const filePath = join(temporaryDirectory, "pnpm-workspace.yaml");
         const original = `catalog:
   react: ^18.2.0
@@ -2034,6 +2062,9 @@ catalogs:
         expect.assertions(3);
 
         const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
+
+        writeFileSync(join(temporaryDirectory, "package.json"), "{\"name\":\"root\"}");
+
         const filePath = join(temporaryDirectory, "pnpm-workspace.yaml");
 
         writeFileSync(
@@ -2068,6 +2099,9 @@ catalog:
         expect.assertions(1);
 
         const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
+
+        writeFileSync(join(temporaryDirectory, "package.json"), "{\"name\":\"root\"}");
+
         const filePath = join(temporaryDirectory, "pnpm-workspace.yaml");
 
         writeFileSync(
@@ -2769,18 +2803,26 @@ describe(fetchPackageVersions, () => {
 
 // --- Backup & Rollback ---
 
+// Catalog backups live inside `<workspace>/node_modules/.cache/vis/backup/`
+// so `findCacheDirSync` (which walks up looking for a package.json anchor)
+// can resolve a writable cache directory. Each test root therefore needs a
+// stub package.json even when the test only cares about the catalog file.
+const CACHED_BACKUP_DIR = join("node_modules", ".cache", "vis", "backup");
+
 describe(createBackup, () => {
     it("should create pnpm backup", () => {
         expect.assertions(2);
 
         const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
+
+        writeFileSync(join(temporaryDirectory, "package.json"), "{\"name\":\"root\"}");
         const filePath = join(temporaryDirectory, "pnpm-workspace.yaml");
 
         writeFileSync(filePath, "catalog:\n  react: ^18.0.0\n");
 
         const backupPath = createBackup(temporaryDirectory);
 
-        expect(backupPath).toBe(`${filePath}.bak`);
+        expect(backupPath).toBe(join(temporaryDirectory, CACHED_BACKUP_DIR, "pnpm-workspace.yaml.bak"));
         expect(readFileSync(backupPath as string, "utf8")).toBe("catalog:\n  react: ^18.0.0\n");
     });
 
@@ -2794,7 +2836,7 @@ describe(createBackup, () => {
 
         const backupPath = createBackup(temporaryDirectory, "bun");
 
-        expect(backupPath).toBe(`${filePath}.bak`);
+        expect(backupPath).toBe(join(temporaryDirectory, CACHED_BACKUP_DIR, "package.json.bak"));
         expect(readFileSync(backupPath as string, "utf8")).toContain("react");
     });
 
@@ -2812,10 +2854,13 @@ describe(restoreFromBackup, () => {
         expect.assertions(2);
 
         const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
-        const filePath = join(temporaryDirectory, "pnpm-workspace.yaml");
-        const backupPath = `${filePath}.bak`;
 
-        writeFileSync(backupPath, "catalog:\n  react: ^18.0.0\n");
+        writeFileSync(join(temporaryDirectory, "package.json"), "{\"name\":\"root\"}");
+
+        const filePath = join(temporaryDirectory, "pnpm-workspace.yaml");
+
+        mkdirSync(join(temporaryDirectory, CACHED_BACKUP_DIR), { recursive: true });
+        writeFileSync(join(temporaryDirectory, CACHED_BACKUP_DIR, "pnpm-workspace.yaml.bak"), "catalog:\n  react: ^18.0.0\n");
         writeFileSync(filePath, "catalog:\n  react: ^19.0.0\n");
 
         const restored = restoreFromBackup(temporaryDirectory);
@@ -2829,10 +2874,10 @@ describe(restoreFromBackup, () => {
 
         const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
         const filePath = join(temporaryDirectory, "package.json");
-        const backupPath = `${filePath}.bak`;
 
-        writeFileSync(backupPath, "{\"old\":true}");
         writeFileSync(filePath, "{\"new\":true}");
+        mkdirSync(join(temporaryDirectory, CACHED_BACKUP_DIR), { recursive: true });
+        writeFileSync(join(temporaryDirectory, CACHED_BACKUP_DIR, "package.json.bak"), "{\"old\":true}");
 
         const restored = restoreFromBackup(temporaryDirectory, "bun");
 
@@ -2845,6 +2890,8 @@ describe(restoreFromBackup, () => {
 
         const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
 
+        writeFileSync(join(temporaryDirectory, "package.json"), "{\"name\":\"root\"}");
+
         expect(restoreFromBackup(temporaryDirectory)).toBe(false);
     });
 });
@@ -2855,7 +2902,9 @@ describe(hasBackup, () => {
 
         const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
 
-        writeFileSync(join(temporaryDirectory, "pnpm-workspace.yaml.bak"), "backup");
+        writeFileSync(join(temporaryDirectory, "package.json"), "{\"name\":\"root\"}");
+        mkdirSync(join(temporaryDirectory, CACHED_BACKUP_DIR), { recursive: true });
+        writeFileSync(join(temporaryDirectory, CACHED_BACKUP_DIR, "pnpm-workspace.yaml.bak"), "backup");
 
         expect(hasBackup(temporaryDirectory)).toBe(true);
     });
@@ -2865,6 +2914,8 @@ describe(hasBackup, () => {
 
         const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
 
+        writeFileSync(join(temporaryDirectory, "package.json"), "{\"name\":\"root\"}");
+
         expect(hasBackup(temporaryDirectory)).toBe(false);
     });
 
@@ -2873,7 +2924,9 @@ describe(hasBackup, () => {
 
         const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
 
-        writeFileSync(join(temporaryDirectory, "package.json.bak"), "backup");
+        writeFileSync(join(temporaryDirectory, "package.json"), "{\"name\":\"root\"}");
+        mkdirSync(join(temporaryDirectory, CACHED_BACKUP_DIR), { recursive: true });
+        writeFileSync(join(temporaryDirectory, CACHED_BACKUP_DIR, "package.json.bak"), "backup");
 
         expect(hasBackup(temporaryDirectory, "bun")).toBe(true);
         expect(hasBackup(temporaryDirectory, "pnpm")).toBe(false);
@@ -2963,6 +3016,9 @@ describe("applyCatalogUpdates with backup", () => {
         expect.assertions(3);
 
         const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
+
+        writeFileSync(join(temporaryDirectory, "package.json"), "{\"name\":\"root\"}");
+
         const filePath = join(temporaryDirectory, "pnpm-workspace.yaml");
 
         writeFileSync(filePath, "catalog:\n  react: ^18.0.0\n");
@@ -2978,7 +3034,7 @@ describe("applyCatalogUpdates with backup", () => {
             },
         ]);
 
-        expect(backupPath).toBe(`${filePath}.bak`);
+        expect(backupPath).toBe(join(temporaryDirectory, CACHED_BACKUP_DIR, "pnpm-workspace.yaml.bak"));
         // Backup should contain the OLD content
         expect(readFileSync(backupPath as string, "utf8")).toContain("^18.0.0");
         // File should contain the NEW content
@@ -2989,6 +3045,9 @@ describe("applyCatalogUpdates with backup", () => {
         expect.assertions(2);
 
         const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
+
+        writeFileSync(join(temporaryDirectory, "package.json"), "{\"name\":\"root\"}");
+
         const filePath = join(temporaryDirectory, "pnpm-workspace.yaml");
 
         writeFileSync(filePath, "catalog:\n  react: ^18.0.0\n");
@@ -3045,7 +3104,7 @@ describe("applyCatalogUpdates with backup", () => {
             "bun",
         );
 
-        expect(backupPath).toBe(`${filePath}.bak`);
+        expect(backupPath).toBe(join(temporaryDirectory, CACHED_BACKUP_DIR, "package.json.bak"));
         expect(JSON.parse(readFileSync(backupPath as string, "utf8")).workspaces.catalog.react).toBe("^18.0.0");
         expect(JSON.parse(readFileSync(filePath, "utf8")).workspaces.catalog.react).toBe("^19.0.0");
     });
@@ -3916,6 +3975,78 @@ describe(readPackageJsonDeps, () => {
 
         expect(readPackageJsonDeps(root).size).toBe(0);
     });
+
+    it("should exclude peerDependencies by default", () => {
+        expect.assertions(2);
+
+        const root = createTemporaryWorkspace();
+
+        writeFileSync(
+            join(root, "package.json"),
+            JSON.stringify({
+                dependencies: { react: "^18.0.0" },
+                name: "my-app",
+                peerDependencies: { "react-dom": "^18.0.0" },
+            }),
+        );
+
+        const result = readPackageJsonDeps(root);
+
+        expect(result.has(".:dependencies")).toBe(true);
+        expect(result.has(".:peerDependencies")).toBe(false);
+    });
+
+    it("should include peerDependencies when peer:true", () => {
+        expect.assertions(2);
+
+        const root = createTemporaryWorkspace();
+
+        writeFileSync(
+            join(root, "package.json"),
+            JSON.stringify({
+                dependencies: { react: "^18.0.0" },
+                name: "my-app",
+                peerDependencies: { "react-dom": "^18.0.0" },
+            }),
+        );
+
+        const result = readPackageJsonDeps(root, { peer: true });
+
+        expect(result.has(".:dependencies")).toBe(true);
+        expect(result.get(".:peerDependencies")).toStrictEqual(new Map([["react-dom", "^18.0.0"]]));
+    });
+
+    it("should keep workspace-internal names when includeInternal:true", () => {
+        expect.assertions(2);
+
+        const root = createTemporaryWorkspace();
+
+        writeFileSync(
+            join(root, "package.json"),
+            JSON.stringify({
+                name: "my-monorepo",
+                workspaces: ["packages/*"],
+            }),
+        );
+
+        mkdirSync(join(root, "packages", "core"), { recursive: true });
+        writeFileSync(join(root, "packages", "core", "package.json"), JSON.stringify({ name: "@my/core", version: "1.0.0" }));
+
+        mkdirSync(join(root, "packages", "app"), { recursive: true });
+        writeFileSync(
+            join(root, "packages", "app", "package.json"),
+            JSON.stringify({
+                dependencies: { "@my/core": "1.0.0", react: "^18.0.0" },
+                name: "@my/app",
+            }),
+        );
+
+        const defaultResult = readPackageJsonDeps(root);
+        const includedResult = readPackageJsonDeps(root, { includeInternal: true });
+
+        expect(defaultResult.get("packages/app:dependencies")?.has("@my/core")).toBe(false);
+        expect(includedResult.get("packages/app:dependencies")?.has("@my/core")).toBe(true);
+    });
 });
 
 // --- hasPackageJsonDeps ---
@@ -4261,5 +4392,228 @@ describe("readCatalogs for npm/yarn", () => {
 
         expect(catalogs.size).toBeGreaterThan(0);
         expect(catalogs.has(".:dependencies")).toBe(true);
+    });
+});
+
+// --- collectInternalOutdated ---
+
+const writeRoot = (root: string, body: Record<string, unknown>): void => {
+    writeFileSync(join(root, "package.json"), JSON.stringify(body));
+};
+
+const writeChild = (root: string, relativeDirectory: string, body: Record<string, unknown>): void => {
+    const directory = join(root, relativeDirectory);
+
+    mkdirSync(directory, { recursive: true });
+    writeFileSync(join(directory, "package.json"), JSON.stringify(body));
+};
+
+describe(collectInternalOutdated, () => {
+    it("should return empty when the workspace root has no package.json", () => {
+        expect.assertions(1);
+
+        const root = mkdtempSync(join(tmpdir(), "vis-internal-empty-"));
+
+        expect(collectInternalOutdated(root)).toStrictEqual({ ignored: [], outdated: [] });
+    });
+
+    it("should return empty when no internal packages are declared", () => {
+        expect.assertions(1);
+
+        const root = mkdtempSync(join(tmpdir(), "vis-internal-none-"));
+
+        writeRoot(root, { name: "monorepo", workspaces: ["packages/*"] });
+
+        expect(collectInternalOutdated(root)).toStrictEqual({ ignored: [], outdated: [] });
+    });
+
+    it("should return empty when consumer pin matches the local source-of-truth version", () => {
+        expect.assertions(1);
+
+        const root = mkdtempSync(join(tmpdir(), "vis-internal-uptodate-"));
+
+        writeRoot(root, { name: "monorepo", workspaces: ["packages/*"] });
+        writeChild(root, "packages/fs", { name: "@visulima/fs", version: "5.0.0" });
+        writeChild(root, "packages/consumer", {
+            dependencies: { "@visulima/fs": "5.0.0" },
+            name: "@visulima/consumer",
+            version: "1.0.0",
+        });
+
+        expect(collectInternalOutdated(root).outdated).toStrictEqual([]);
+    });
+
+    it("should detect a stale internal pin and emit a composite catalogName matching applyPackageJsonUpdates", () => {
+        expect.assertions(5);
+
+        const root = mkdtempSync(join(tmpdir(), "vis-internal-stale-"));
+
+        writeRoot(root, { name: "monorepo", workspaces: ["packages/*"] });
+        writeChild(root, "packages/fs", { name: "@visulima/fs", version: "5.0.0-alpha.14" });
+        writeChild(root, "packages/consumer", {
+            dependencies: { "@visulima/fs": "5.0.0-alpha.10" },
+            name: "@visulima/consumer",
+            version: "1.0.0",
+        });
+
+        const result = collectInternalOutdated(root);
+
+        expect(result.outdated).toHaveLength(1);
+
+        const [entry] = result.outdated;
+
+        expect(entry?.packageName).toBe("@visulima/fs");
+        expect(entry?.catalogName).toBe("packages/consumer:dependencies");
+        expect(entry?.currentRange).toBe("5.0.0-alpha.10");
+        expect(entry?.newRange).toBe("5.0.0-alpha.14");
+    });
+
+    it("should preserve a caret prefix on the bumped range", () => {
+        expect.assertions(1);
+
+        const root = mkdtempSync(join(tmpdir(), "vis-internal-caret-"));
+
+        writeRoot(root, { name: "monorepo", workspaces: ["packages/*"] });
+        writeChild(root, "packages/fs", { name: "@visulima/fs", version: "5.1.0" });
+        writeChild(root, "packages/consumer", {
+            dependencies: { "@visulima/fs": "^5.0.0" },
+            name: "@visulima/consumer",
+            version: "1.0.0",
+        });
+
+        expect(collectInternalOutdated(root).outdated[0]?.newRange).toBe("^5.1.0");
+    });
+
+    it("should skip workspace:/file:/link:/catalog:/* protocols", () => {
+        expect.assertions(1);
+
+        const root = mkdtempSync(join(tmpdir(), "vis-internal-protocols-"));
+
+        writeRoot(root, { name: "monorepo", workspaces: ["packages/*"] });
+        writeChild(root, "packages/fs", { name: "@visulima/fs", version: "5.0.0-alpha.14" });
+        writeChild(root, "packages/c1", {
+            dependencies: { "@visulima/fs": "workspace:^" },
+            name: "c1",
+        });
+        writeChild(root, "packages/c2", {
+            dependencies: { "@visulima/fs": "catalog:" },
+            name: "c2",
+        });
+        writeChild(root, "packages/c3", {
+            dependencies: { "@visulima/fs": "*" },
+            name: "c3",
+        });
+        writeChild(root, "packages/c4", {
+            dependencies: { "@visulima/fs": "file:../fs" },
+            name: "c4",
+        });
+        writeChild(root, "packages/c5", {
+            dependencies: { "@visulima/fs": "link:../fs" },
+            name: "c5",
+        });
+
+        expect(collectInternalOutdated(root).outdated).toStrictEqual([]);
+    });
+
+    it("should honor an ignore pattern and surface the matched name in `ignored`", () => {
+        expect.assertions(2);
+
+        const root = mkdtempSync(join(tmpdir(), "vis-internal-ignore-"));
+
+        writeRoot(root, { name: "monorepo", workspaces: ["packages/*"] });
+        writeChild(root, "packages/fs", { name: "@visulima/fs", version: "5.0.0-alpha.14" });
+        writeChild(root, "packages/consumer", {
+            dependencies: { "@visulima/fs": "5.0.0-alpha.10" },
+            name: "consumer",
+        });
+
+        const result = collectInternalOutdated(root, { ignore: ["@visulima/fs"] });
+
+        expect(result.outdated).toStrictEqual([]);
+        expect(result.ignored).toStrictEqual(["@visulima/fs"]);
+    });
+
+    it("should drop entries that exceed the patch target (a major bump is not patch)", () => {
+        expect.assertions(1);
+
+        const root = mkdtempSync(join(tmpdir(), "vis-internal-target-patch-"));
+
+        writeRoot(root, { name: "monorepo", workspaces: ["packages/*"] });
+        // major bump: 5 → 6
+        writeChild(root, "packages/fs", { name: "@visulima/fs", version: "6.0.0" });
+        writeChild(root, "packages/consumer", {
+            dependencies: { "@visulima/fs": "5.0.0" },
+            name: "consumer",
+        });
+
+        expect(collectInternalOutdated(root, { target: "patch" }).outdated).toStrictEqual([]);
+    });
+
+    it("should drop entries that exceed the minor target (a major bump is not minor)", () => {
+        expect.assertions(1);
+
+        const root = mkdtempSync(join(tmpdir(), "vis-internal-target-minor-"));
+
+        writeRoot(root, { name: "monorepo", workspaces: ["packages/*"] });
+        writeChild(root, "packages/fs", { name: "@visulima/fs", version: "6.0.0" });
+        writeChild(root, "packages/consumer", {
+            dependencies: { "@visulima/fs": "5.0.0" },
+            name: "consumer",
+        });
+
+        expect(collectInternalOutdated(root, { target: "minor" }).outdated).toStrictEqual([]);
+    });
+
+    it("should detect stale internal deps in the workspace root package.json (catalogName `.:dependencies`)", () => {
+        expect.assertions(2);
+
+        const root = mkdtempSync(join(tmpdir(), "vis-internal-root-"));
+
+        writeRoot(root, {
+            dependencies: { "@visulima/fs": "5.0.0-alpha.10" },
+            name: "monorepo",
+            workspaces: ["packages/*"],
+        });
+        writeChild(root, "packages/fs", { name: "@visulima/fs", version: "5.0.0-alpha.14" });
+
+        const result = collectInternalOutdated(root);
+
+        expect(result.outdated).toHaveLength(1);
+        expect(result.outdated[0]?.catalogName).toBe(".:dependencies");
+    });
+
+    it("should fall back to pnpm-workspace.yaml patterns when the root package.json has no `workspaces` field", () => {
+        expect.assertions(1);
+
+        const root = mkdtempSync(join(tmpdir(), "vis-internal-pnpm-"));
+
+        writeRoot(root, { name: "monorepo" });
+        writeFileSync(join(root, "pnpm-workspace.yaml"), 'packages:\n  - "packages/*"\n');
+        writeChild(root, "packages/fs", { name: "@visulima/fs", version: "5.0.0-alpha.14" });
+        writeChild(root, "packages/consumer", {
+            dependencies: { "@visulima/fs": "5.0.0-alpha.10" },
+            name: "consumer",
+        });
+
+        expect(collectInternalOutdated(root).outdated).toHaveLength(1);
+    });
+
+    it("should respect dev/prod scoping by skipping the opposite dep field", () => {
+        expect.assertions(2);
+
+        const root = mkdtempSync(join(tmpdir(), "vis-internal-scope-"));
+
+        writeRoot(root, { name: "monorepo", workspaces: ["packages/*"] });
+        writeChild(root, "packages/fs", { name: "@visulima/fs", version: "5.0.0-alpha.14" });
+        writeChild(root, "packages/consumer", {
+            devDependencies: { "@visulima/fs": "5.0.0-alpha.10" },
+            name: "consumer",
+        });
+
+        // prod-only ignores devDependencies
+        expect(collectInternalOutdated(root, { prod: true }).outdated).toStrictEqual([]);
+
+        // dev-only finds it
+        expect(collectInternalOutdated(root, { dev: true }).outdated).toHaveLength(1);
     });
 });

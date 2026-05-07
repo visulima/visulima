@@ -59,6 +59,8 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
     const configDefaults = visConfig?.update ?? {};
     const catalogs = readCatalogs(workspaceRoot, packageManager, {
         dev: options.dev,
+        includeInternal: (options as Record<string, unknown>)["include-internal"] as boolean | undefined,
+        peer: options.peer,
         prod: options.prod,
     });
 
@@ -80,7 +82,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
         include: [...toFilterArray(options.include), ...toFilterArray(configDefaults.include), ...argument],
         includeLocked: Boolean((options as Record<string, unknown>).includeLocked),
         includePrerelease: options.prerelease || configDefaults.prerelease || false,
-        security: !options.noSecurity,
+        security: (options as Record<string, unknown>).security !== false,
         target: target as UpdateTarget,
     };
 
