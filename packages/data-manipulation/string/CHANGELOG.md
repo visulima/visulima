@@ -1,3 +1,21 @@
+## @visulima/string [3.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/string@3.0.0-alpha.11...@visulima/string@3.0.0-alpha.12) (2026-05-07)
+
+### Bug Fixes
+
+* **string:** repair broken bench imports ([f077356](https://github.com/visulima/visulima/commit/f077356139dc4745c59ac286f5a0681918fbb366))
+
+### Miscellaneous Chores
+
+* re-sort workspace package.json files via vis sort-package-json ([f625696](https://github.com/visulima/visulima/commit/f625696cfac974325774b3243e1a83c3d23acbd7))
+* simplify pnpm-workspace packages list ([7cab221](https://github.com/visulima/visulima/commit/7cab221163632d9b7aa044a6f88c49083103a869))
+* **string:** apply prettier and eslint quote-style auto-fix ([db1d161](https://github.com/visulima/visulima/commit/db1d1615c7614fb537d53c458bdef3c38c6aab98))
+* **string:** housekeeping cleanup ([ecb3058](https://github.com/visulima/visulima/commit/ecb3058b68c2ffae62d9b1d685fe606a605861cd))
+* **string:** upgrade packem to 2.0.0-alpha.76 ([bcac381](https://github.com/visulima/visulima/commit/bcac381ead9c22befbc54cbd7ad67764e22140af))
+
+### Continuous Integration
+
+* integrate codspeed for benchmark tracking ([e758f3d](https://github.com/visulima/visulima/commit/e758f3da491cc00d3f8bbf10d7ba3fdf8deb5325))
+
 ## @visulima/string [3.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/string@3.0.0-alpha.10...@visulima/string@3.0.0-alpha.11) (2026-04-22)
 
 ### Bug Fixes
