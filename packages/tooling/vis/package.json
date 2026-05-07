@@ -97,8 +97,6 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/find-cache-dir": "3.0.0-alpha.9",
-        "@visulima/fs": "5.0.0-alpha.16",
         "@visulima/secret-scanner": "1.0.0-alpha.1",
         "@visulima/task-runner": "1.0.0-alpha.10",
         "@visulima/tui": "1.0.0-alpha.9",
@@ -137,6 +135,8 @@
         "@visulima/cerebro": "3.0.0-alpha.17",
         "@visulima/colorize": "2.0.0-alpha.10",
         "@visulima/find-ai-runner": "1.0.0-alpha.5",
+        "@visulima/find-cache-dir": "workspace:*",
+        "@visulima/fs": "workspace:*",
         "@visulima/humanizer": "3.0.0-alpha.11",
         "@visulima/interactive-manager": "1.0.0-alpha.2",
         "@visulima/package": "5.0.0-alpha.15",
