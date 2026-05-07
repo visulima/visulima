@@ -76,9 +76,11 @@ import { camelCase, slugify, truncate, wordWrap } from "@visulima/string";
 Import specific modules for better tree-shaking:
 
 ```typescript
-// Case conversion
-import { camelCase } from "@visulima/string/case/camel-case";
-import { pascalCase } from "@visulima/string/case/pascal-case";
+// Case conversion (most per-file modules use default exports)
+import camelCase from "@visulima/string/case/camel-case";
+import pascalCase from "@visulima/string/case/pascal-case";
+// A few use named exports (kebab-case, flip-case, split-by-case)
+import { kebabCase } from "@visulima/string/case/kebab-case";
 
 // String utilities
 import { slugify } from "@visulima/string/slugify";
@@ -162,7 +164,7 @@ Use subpath imports to include only what you need:
 
 ```typescript
 // Only imports camelCase function and its dependencies
-import { camelCase } from "@visulima/string/case/camel-case";
+import camelCase from "@visulima/string/case/camel-case";
 ```
 
 ## Browser Compatibility

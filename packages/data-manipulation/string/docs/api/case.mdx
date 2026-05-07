@@ -19,8 +19,8 @@ function camelCase<T extends string = string>(value?: T, options?: CaseOptions):
 
 ```typescript
 import { camelCase } from "@visulima/string/case";
-// or
-import { camelCase } from "@visulima/string/case/camel-case";
+// or (default export from per-file subpath)
+import camelCase from "@visulima/string/case/camel-case";
 ```
 
 **Parameters:**
@@ -58,8 +58,8 @@ function pascalCase<T extends string = string>(value?: T, options?: CaseOptions)
 
 ```typescript
 import { pascalCase } from "@visulima/string/case";
-// or
-import { pascalCase } from "@visulima/string/case/pascal-case";
+// or (default export from per-file subpath)
+import pascalCase from "@visulima/string/case/pascal-case";
 ```
 
 **Parameters:**
@@ -94,8 +94,8 @@ function snakeCase<T extends string = string>(value?: T, options?: CaseOptions):
 
 ```typescript
 import { snakeCase } from "@visulima/string/case";
-// or
-import { snakeCase } from "@visulima/string/case/snake-case";
+// or (default export from per-file subpath)
+import snakeCase from "@visulima/string/case/snake-case";
 ```
 
 **Parameters:**
@@ -130,7 +130,7 @@ function kebabCase<T extends string = string>(value?: T, options?: KebabCaseOpti
 
 ```typescript
 import { kebabCase } from "@visulima/string/case";
-// or
+// or (named export from per-file subpath)
 import { kebabCase } from "@visulima/string/case/kebab-case";
 ```
 
@@ -180,8 +180,8 @@ function constantCase<T extends string = string>(value?: T, options?: CaseOption
 
 ```typescript
 import { constantCase } from "@visulima/string/case";
-// or
-import { constantCase } from "@visulima/string/case/constant-case";
+// or (default export from per-file subpath)
+import constantCase from "@visulima/string/case/constant-case";
 ```
 
 **Parameters:**
@@ -215,8 +215,8 @@ function dotCase<T extends string = string>(value?: T, options?: CaseOptions): D
 
 ```typescript
 import { dotCase } from "@visulima/string/case";
-// or
-import { dotCase } from "@visulima/string/case/dot-case";
+// or (default export from per-file subpath)
+import dotCase from "@visulima/string/case/dot-case";
 ```
 
 **Examples:**
@@ -240,8 +240,8 @@ function pathCase<T extends string = string>(value?: T, options?: CaseOptions): 
 
 ```typescript
 import { pathCase } from "@visulima/string/case";
-// or
-import { pathCase } from "@visulima/string/case/path-case";
+// or (default export from per-file subpath)
+import pathCase from "@visulima/string/case/path-case";
 ```
 
 **Examples:**
@@ -265,8 +265,8 @@ function titleCase<T extends string = string>(value?: T, options?: CaseOptions):
 
 ```typescript
 import { titleCase } from "@visulima/string/case";
-// or
-import { titleCase } from "@visulima/string/case/title-case";
+// or (default export from per-file subpath)
+import titleCase from "@visulima/string/case/title-case";
 ```
 
 **Examples:**
@@ -290,8 +290,8 @@ function sentenceCase<T extends string = string>(value?: T, options?: CaseOption
 
 ```typescript
 import { sentenceCase } from "@visulima/string/case";
-// or
-import { sentenceCase } from "@visulima/string/case/sentence-case";
+// or (default export from per-file subpath)
+import sentenceCase from "@visulima/string/case/sentence-case";
 ```
 
 **Examples:**
@@ -315,8 +315,8 @@ function capitalCase<T extends string = string>(value?: T, options?: CaseOptions
 
 ```typescript
 import { capitalCase } from "@visulima/string/case";
-// or
-import { capitalCase } from "@visulima/string/case/capital-case";
+// or (default export from per-file subpath)
+import capitalCase from "@visulima/string/case/capital-case";
 ```
 
 **Examples:**
@@ -340,8 +340,8 @@ function flatCase<T extends string = string>(value?: T, options?: CaseOptions): 
 
 ```typescript
 import { flatCase } from "@visulima/string/case";
-// or
-import { flatCase } from "@visulima/string/case/flat-case";
+// or (default export from per-file subpath)
+import flatCase from "@visulima/string/case/flat-case";
 ```
 
 **Examples:**
@@ -365,8 +365,8 @@ function trainCase<T extends string = string>(value?: T, options?: CaseOptions):
 
 ```typescript
 import { trainCase } from "@visulima/string/case";
-// or
-import { trainCase } from "@visulima/string/case/train-case";
+// or (default export from per-file subpath)
+import trainCase from "@visulima/string/case/train-case";
 ```
 
 **Examples:**
@@ -390,8 +390,8 @@ function pascalSnakeCase<T extends string = string>(value?: T, options?: CaseOpt
 
 ```typescript
 import { pascalSnakeCase } from "@visulima/string/case";
-// or
-import { pascalSnakeCase } from "@visulima/string/case/pascal-snake-case";
+// or (default export from per-file subpath)
+import pascalSnakeCase from "@visulima/string/case/pascal-snake-case";
 ```
 
 **Examples:**
@@ -415,8 +415,8 @@ function noCase<T extends string = string>(value?: T, options?: CaseOptions): No
 
 ```typescript
 import { noCase } from "@visulima/string/case";
-// or
-import { noCase } from "@visulima/string/case/no-case";
+// or (default export from per-file subpath)
+import noCase from "@visulima/string/case/no-case";
 ```
 
 **Examples:**
@@ -441,7 +441,7 @@ function flipCase<T extends string = string>(value?: T, options?: FlipOptions): 
 
 ```typescript
 import { flipCase } from "@visulima/string/case";
-// or
+// or (named export from per-file subpath)
 import { flipCase } from "@visulima/string/case/flip-case";
 ```
 
@@ -484,8 +484,8 @@ function upperFirst<T extends string = string>(value?: T, options?: LocaleOption
 
 ```typescript
 import { upperFirst } from "@visulima/string/case";
-// or
-import { upperFirst } from "@visulima/string/case/upper-first";
+// or (default export from per-file subpath)
+import upperFirst from "@visulima/string/case/upper-first";
 ```
 
 **Examples:**
@@ -509,8 +509,8 @@ function lowerFirst<T extends string = string>(value?: T, options?: LocaleOption
 
 ```typescript
 import { lowerFirst } from "@visulima/string/case";
-// or
-import { lowerFirst } from "@visulima/string/case/lower-first";
+// or (default export from per-file subpath)
+import lowerFirst from "@visulima/string/case/lower-first";
 ```
 
 **Examples:**
@@ -534,8 +534,8 @@ function identifyCase<T extends string = string>(value?: T): IdentifyCase<T>;
 
 ```typescript
 import { identifyCase } from "@visulima/string/case";
-// or
-import { identifyCase } from "@visulima/string/case/identify-case";
+// or (default export from per-file subpath)
+import identifyCase from "@visulima/string/case/identify-case";
 ```
 
 **Parameters:**
@@ -579,7 +579,7 @@ function splitByCase<T extends string = string>(input: T, options?: SplitOptions
 
 ```typescript
 import { splitByCase } from "@visulima/string/case";
-// or
+// or (named export from per-file subpath)
 import { splitByCase } from "@visulima/string/case/split-by-case";
 ```
 
