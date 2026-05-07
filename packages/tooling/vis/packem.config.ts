@@ -40,7 +40,16 @@ export default defineConfig({
                 ],
             },
             hoisted: {
-                exclude: ["@antfu/install-pkg", "json5", "normalize-package-data", "@visulima/is-ansi-color-supported", "compromise"],
+                exclude: [
+                    "@antfu/install-pkg",
+                    "json5",
+                    "normalize-package-data",
+                    "@visulima/is-ansi-color-supported",
+                    "compromise",
+                    "v8-compile-cache",
+                    "fastest-levenshtein",
+                    "@visulima/tabular",
+                ],
             },
         },
     },
