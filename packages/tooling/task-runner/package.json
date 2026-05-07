@@ -97,7 +97,7 @@
         "esbuild": "catalog:build",
         "eslint": "catalog:lint",
         "prettier": "catalog:lint",
-        "protobufjs": "8.0.1",
+        "protobufjs": "8.0.3",
         "publint": "catalog:dev",
         "rimraf": "catalog:node",
         "secretlint": "catalog:lint",
