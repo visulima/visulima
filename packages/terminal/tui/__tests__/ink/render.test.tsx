@@ -12,7 +12,9 @@ import type { ReactElement } from "react";
 import { PureComponent, useEffect, useState } from "react";
 import { describe, expect, it } from "vitest";
 
-import { Box, render, Text, useApp } from "../../src/ink/index";
+import { Box, Text } from "../../src/components/index";
+import { useApp } from "../../src/ink/hooks/use-app";
+import { render } from "../../src/ink/index";
 import createStdout from "../helpers/ink-create-stdout";
 import { run } from "../helpers/ink-run";
 import waitFor from "../helpers/wait-for";

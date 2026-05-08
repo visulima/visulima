@@ -3,7 +3,8 @@ import React from "react";
 import type { vi } from "vitest";
 import { afterEach, describe, expect, it } from "vitest";
 
-import { DiffView, render } from "../../src/ink/index";
+import { DiffView } from "../../src/components/diff-view";
+import { render } from "../../src/ink/index";
 import { createStdin } from "../helpers/ink-create-stdin";
 import createStdout from "../helpers/ink-create-stdout";
 

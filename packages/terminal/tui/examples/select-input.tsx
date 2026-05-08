@@ -11,7 +11,12 @@
  * Run: node --import @oxc-node/core/register examples/select-input.tsx
  */
 
-import { Box, render, SelectInput, Text, useApp, useInput } from "@visulima/tui";
+import { render } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { SelectInput } from "@visulima/tui/components/select-input";
+import { Text } from "@visulima/tui/components/text";
+import { useApp } from "@visulima/tui/hooks/use-app";
+import { useInput } from "@visulima/tui/hooks/use-input";
 import React, { useState } from "react";
 
 const App = () => {
@@ -48,7 +53,8 @@ const App = () => {
 
             {selected && (
                 <Text>
-                    Selected:{" "}
+                    Selected:
+{" "}
                     <Text bold color="yellow">
                         {selected}
                     </Text>

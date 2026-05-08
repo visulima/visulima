@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { Box, Text } from "../../src/ink/index";
+import { Box, Text } from "../../src/components/index";
 import { renderToString, renderToStringAsync } from "../helpers/ink-render";
 
 describe("flex-direction", () => {

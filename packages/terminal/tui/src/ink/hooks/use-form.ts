@@ -202,3 +202,5 @@ const useForm = <S extends Readonly<Record<string, FieldConfig>>>(options: UseFo
 };
 
 export default useForm;
+
+export { useForm };

@@ -1,7 +1,7 @@
 import type { RefObject } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import type { ScrollViewRef } from "../components/scroll/scroll-view";
+import type { ScrollViewRef } from "../../components/scroll/scroll-view";
 
 export type UseLinkedScrollReturn = {
     /**
@@ -102,3 +102,5 @@ const createLinkedScrollGroup = (): LinkedScrollGroup => {
 };
 
 export default createLinkedScrollGroup;
+
+export { createLinkedScrollGroup };

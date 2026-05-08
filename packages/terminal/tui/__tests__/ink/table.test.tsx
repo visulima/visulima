@@ -2,7 +2,7 @@ import { strip } from "@visulima/ansi";
 import React from "react";
 import { describe, expect, it } from "vitest";
 
-import { Table } from "../../src/ink/index";
+import { Table } from "../../src/components/table";
 import { renderToString } from "../helpers/ink-render";
 
 describe(Table, () => {

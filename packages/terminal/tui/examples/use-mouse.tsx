@@ -14,7 +14,8 @@
  * - Enter to submit, Ctrl+C to quit
  */
 
-import { Box, Text } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { Text } from "@visulima/tui/components/text";
 import { render, useApp, useMouse, useScrollable, useTextInput, useWindowSize } from "@visulima/tui/react";
 import React, { useCallback, useState } from "react";
 
@@ -116,7 +117,13 @@ const App = () => {
             {log.length > logViewport && (
                 <Box justifyContent="flex-end" paddingRight={1}>
                     <Text dim>
-                        {scroll.offset + 1}–{Math.min(scroll.offset + logViewport, log.length)}/{log.length} ↑↓ scroll
+                        {scroll.offset + 1}
+–
+{Math.min(scroll.offset + logViewport, log.length)}
+/
+{log.length}
+{" "}
+↑↓ scroll
                     </Text>
                 </Box>
             )}

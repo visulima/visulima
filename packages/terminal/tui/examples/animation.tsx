@@ -9,7 +9,13 @@
  *
  * Run: node --import @oxc-node/core/register examples/animation.tsx
  */
-import { AnimatePresence, Box, render, Text, Transition, useApp, useInput } from "@visulima/tui";
+import { render } from "@visulima/tui";
+import { AnimatePresence } from "@visulima/tui/components/animate-presence";
+import { Box } from "@visulima/tui/components/box";
+import { Text } from "@visulima/tui/components/text";
+import { Transition } from "@visulima/tui/components/transition";
+import { useApp } from "@visulima/tui/hooks/use-app";
+import { useInput } from "@visulima/tui/hooks/use-input";
 import React, { useState } from "react";
 
 const App = () => {

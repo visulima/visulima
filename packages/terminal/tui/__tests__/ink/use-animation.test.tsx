@@ -8,7 +8,9 @@ import delay from "delay";
 import React, { act, startTransition, Suspense } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { render, Text, useAnimation } from "../../src/ink/index";
+import { Text } from "../../src/components/index";
+import { useAnimation } from "../../src/ink/hooks/use-animation";
+import { render } from "../../src/ink/index";
 import createStdout from "../helpers/ink-create-stdout";
 import mockTimerCalls from "../helpers/mock-timer-calls";
 
@@ -88,7 +90,9 @@ describe(useAnimation, () => {
 
             return (
                 <Text>
-                    {String(frame1)},{String(frame2)}
+                    {String(frame1)}
+,
+{String(frame2)}
                 </Text>
             );
         };
@@ -135,7 +139,9 @@ describe(useAnimation, () => {
 
                     return (
                         <Text>
-                            {String(frame1)},{String(frame2)}
+                            {String(frame1)}
+,
+{String(frame2)}
                         </Text>
                     );
                 };
@@ -174,7 +180,9 @@ describe(useAnimation, () => {
 
                     return (
                         <Text>
-                            {String(fastFrame)},{String(slowFrame)}
+                            {String(fastFrame)}
+,
+{String(slowFrame)}
                         </Text>
                     );
                 };
@@ -356,7 +364,9 @@ describe(useAnimation, () => {
 
                     return (
                         <Text>
-                            {String(firstFrame)},{String(secondFrame)}
+                            {String(firstFrame)}
+,
+{String(secondFrame)}
                         </Text>
                     );
                 };
@@ -961,7 +971,11 @@ describe(useAnimation, () => {
 
                 return (
                     <Text>
-                        {String(frame)},{String(Math.round(time))},{String(Math.round(delta))}
+                        {String(frame)}
+,
+{String(Math.round(time))}
+,
+{String(Math.round(delta))}
                     </Text>
                 );
             };
@@ -995,7 +1009,11 @@ describe(useAnimation, () => {
 
                 return (
                     <Text>
-                        {String(frame)},{String(Math.round(time))},{String(Math.round(delta))}
+                        {String(frame)}
+,
+{String(Math.round(time))}
+,
+{String(Math.round(delta))}
                     </Text>
                 );
             };
@@ -1034,7 +1052,11 @@ describe(useAnimation, () => {
 
                 return (
                     <Text>
-                        {String(frame)},{String(Math.round(time))},{String(Math.round(delta))}
+                        {String(frame)}
+,
+{String(Math.round(time))}
+,
+{String(Math.round(delta))}
                     </Text>
                 );
             };
@@ -1372,7 +1394,9 @@ describe(useAnimation, () => {
 
             return (
                 <Text>
-                    {String(fast)},{String(slow)}
+                    {String(fast)}
+,
+{String(slow)}
                 </Text>
             );
         };

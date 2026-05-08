@@ -12,7 +12,12 @@
  * Run: node --import @oxc-node/core/register examples/slider.tsx
  */
 
-import { Box, render, Slider, Text, useApp, useInput } from "@visulima/tui";
+import { render } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { Slider } from "@visulima/tui/components/slider";
+import { Text } from "@visulima/tui/components/text";
+import { useApp } from "@visulima/tui/hooks/use-app";
+import { useInput } from "@visulima/tui/hooks/use-input";
 import React, { useState } from "react";
 
 const SLIDERS = ["Volume", "Brightness", "Temperature"] as const;
@@ -50,7 +55,10 @@ const App = () => {
                         </Text>
                     </Box>
                     <Slider accentColor="green" defaultValue={volume} isFocused={activeIndex === 0} onChange={setVolume} width={30} />
-                    <Text color="green">{String(volume).padStart(3)}%</Text>
+                    <Text color="green">
+{String(volume).padStart(3)}
+%
+                    </Text>
                 </Box>
 
                 <Box gap={1}>
@@ -61,7 +69,10 @@ const App = () => {
                         </Text>
                     </Box>
                     <Slider accentColor="yellow" defaultValue={brightness} isFocused={activeIndex === 1} onChange={setBrightness} width={30} />
-                    <Text color="yellow">{String(brightness).padStart(3)}%</Text>
+                    <Text color="yellow">
+{String(brightness).padStart(3)}
+%
+                    </Text>
                 </Box>
 
                 <Box gap={1}>
@@ -84,7 +95,10 @@ const App = () => {
                         thumbCharacter="O"
                         width={30}
                     />
-                    <Text color="red">{temperature}C</Text>
+                    <Text color="red">
+{temperature}
+C
+                    </Text>
                 </Box>
             </Box>
 

@@ -20,8 +20,9 @@
 import { useEffect, useRef, useState } from "react";
 import { describe, expect, it, vi } from "vitest";
 
-import type { ScrollListRef } from "../../../src/ink/index";
-import { Box, render, ScrollList, Text } from "../../../src/ink/index";
+import type { ScrollListRef } from "../../../src/components/index";
+import { Box, ScrollList, Text } from "../../../src/components/index";
+import { render } from "../../../src/ink/index";
 
 /**
  * Helper function to introduce artificial delays in tests.

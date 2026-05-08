@@ -10,7 +10,12 @@
  * Run: node --import @oxc-node/core/register examples/text-input.tsx
  */
 
-import { Box, render, Text, TextInput, useApp, useInput } from "@visulima/tui";
+import { render } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { Text } from "@visulima/tui/components/text";
+import { TextInput } from "@visulima/tui/components/text-input";
+import { useApp } from "@visulima/tui/hooks/use-app";
+import { useInput } from "@visulima/tui/hooks/use-input";
 import React, { useState } from "react";
 
 const App = () => {
@@ -33,7 +38,9 @@ const App = () => {
             <Box flexDirection="column" gap={1}>
                 <TextInput onChange={setValue} onSubmit={(v) => setSubmitted(v)} placeholder="Start typing..." />
                 <Text>
-                    Input value: "<Text color="green">{value}</Text>"
+                    Input value: "
+<Text color="green">{value}</Text>
+"
                 </Text>
                 {submitted !== undefined && (
                     <Text>

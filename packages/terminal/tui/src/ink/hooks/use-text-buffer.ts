@@ -587,3 +587,5 @@ const useTextBuffer = (initialValue = ""): UseTextBufferResult => {
 };
 
 export default useTextBuffer;
+
+export { useTextBuffer };

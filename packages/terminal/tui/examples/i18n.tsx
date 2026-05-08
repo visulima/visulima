@@ -15,7 +15,9 @@
  *   LANG=fr_FR.UTF-8 pnpm tsx packages/terminal/tui/examples/i18n.tsx
  *   LANG=de_DE.UTF-8 pnpm tsx packages/terminal/tui/examples/i18n.tsx
  */
-import { Box, Text, useInput } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { Text } from "@visulima/tui/components/text";
+import { useInput } from "@visulima/tui/hooks/use-input";
 import { render } from "@visulima/tui/react";
 import i18next from "i18next";
 import React, { useState } from "react";
@@ -109,7 +111,11 @@ function LocaleSwitcher({ current }: { current: string }) {
                 return (
                     <Box key={language.code}>
                         <Text color={isActive ? "cyan" : undefined} dimColor={!isActive}>
-                            [{language.hotkey}] {language.name}
+                            [
+{language.hotkey}
+]
+{" "}
+{language.name}
                         </Text>
                     </Box>
                 );

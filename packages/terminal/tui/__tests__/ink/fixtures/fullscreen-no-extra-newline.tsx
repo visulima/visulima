@@ -2,7 +2,9 @@ import process from "node:process";
 
 import React, { useEffect } from "react";
 
-import { Box, render, Text, useApp } from "../../../src/ink/index";
+import { Box, Text } from "../../../src/components/index";
+import { useApp } from "../../../src/ink/hooks/use-app";
+import { render } from "../../../src/ink/index";
 
 const Fullscreen = () => {
     const { exit } = useApp();

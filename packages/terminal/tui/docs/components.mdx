@@ -8,26 +8,42 @@ description: "Reference for all React components in @visulima/tui: Alert, Badge,
 `@visulima/tui` exposes Ink-compatible core components plus native renderer additions.
 
 ```tsx
-import { Box, Cursor, Newline, Spacer, Static, Text, Transform } from "@visulima/tui";
-import {
-    BigText,
-    ConfirmInput,
-    FilePicker,
-    Gradient,
-    Help,
-    MultiSelect,
-    Paginator,
-    ProgressBar,
-    SelectInput,
-    Spinner,
-    Stopwatch,
-    Tab,
-    Table,
-    Tabs,
-    TextInput,
-    Timer,
-} from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { Cursor } from "@visulima/tui/components/cursor";
+import { Newline } from "@visulima/tui/components/newline";
+import { Spacer } from "@visulima/tui/components/spacer";
+import { Static } from "@visulima/tui/components/static";
+import { Text } from "@visulima/tui/components/text";
+import { Transform } from "@visulima/tui/components/transform";
+import { ConfirmInput } from "@visulima/tui/components/confirm-input";
+import { FilePicker } from "@visulima/tui/components/file-picker";
+import { Gradient } from "@visulima/tui/components/gradient";
+import { Help } from "@visulima/tui/components/help";
+import { MultiSelect } from "@visulima/tui/components/multi-select";
+import { Paginator } from "@visulima/tui/components/paginator";
+import { ProgressBar } from "@visulima/tui/components/progress-bar";
+import { SelectInput } from "@visulima/tui/components/select-input";
+import { Spinner } from "@visulima/tui/components/spinner";
+import { Stopwatch } from "@visulima/tui/components/stopwatch";
+import { Tab } from "@visulima/tui/components/tab";
+import { Tabs } from "@visulima/tui/components/tabs";
+import { TextInput } from "@visulima/tui/components/text-input";
+import { Timer } from "@visulima/tui/components/timer";
 ```
+
+### Heavy components (subpath imports)
+
+`BigText`, `Code`, `DiffView`, `Markdown` and `Table` each ship with at least one heavy optional peer dependency. They are exported from per-component subpaths so the optional deps are only loaded when you actually import the component.
+
+```tsx
+import { BigText } from "@visulima/tui/components/big-text"; // requires: cfonts
+import { Code } from "@visulima/tui/components/code"; // requires: shiki, @shikijs/langs, @shikijs/themes
+import { DiffView } from "@visulima/tui/components/diff-view"; // requires: diff (+ shiki for syntax highlighting)
+import { Markdown } from "@visulima/tui/components/markdown"; // requires: marked (+ shiki for code blocks)
+import { Table } from "@visulima/tui/components/table"; // requires: @visulima/tabular
+```
+
+See the [Package Map › Heavy component subpaths](./package-map.mdx#heavy-component-subpaths) table for a full peer-dep matrix and `npm install` commands.
 
 ## `Box`
 
@@ -190,8 +206,14 @@ Notes:
 
 Syntax-highlighted code display using [Shiki](https://shiki.style/). Supports 25+ languages with lazy loading and VS Code-quality tokenization.
 
+> **Subpath import.** Imported from `@visulima/tui/components/code`. Requires the optional peers `shiki`, `@shikijs/langs`, `@shikijs/themes`.
+>
+> ```bash npm2yarn
+> npm install shiki @shikijs/langs @shikijs/themes
+> ```
+
 ```tsx
-import { Code } from "@visulima/tui";
+import { Code } from "@visulima/tui/components/code";
 
 <Code code='const x = "hello";' language="javascript" />
 <Code code={source} language="python" showLineNumbers startLine={10} />
@@ -214,8 +236,16 @@ The highlighter loads asynchronously — the first render shows plain text, then
 
 Display file differences with colored additions/deletions. Supports unified and split (side-by-side) views with optional inline character-level diff highlighting.
 
+> **Subpath import.** Imported from `@visulima/tui/components/diff-view`. Requires the optional peer `diff`. To enable syntax highlighting via the `language` prop, also install `shiki`, `@shikijs/langs`, and `@shikijs/themes`.
+>
+> ```bash npm2yarn
+> npm install diff
+> # optional, for syntax highlighting:
+> npm install shiki @shikijs/langs @shikijs/themes
+> ```
+
 ```tsx
-import { DiffView } from "@visulima/tui";
+import { DiffView } from "@visulima/tui/components/diff-view";
 
 <DiffView oldText={original} newText={modified} />
 <DiffView diff={unifiedDiffString} mode="split" />
@@ -251,8 +281,7 @@ Colors: additions in green (`+`), deletions in red (`-`), context lines dimmed. 
 A file system browser for picking files and navigating directories in the terminal.
 
 ```tsx
-import { FilePicker } from "@visulima/tui";
-
+import { FilePicker } from "@visulima/tui/components/file-picker";
 <FilePicker
     onSelect={(entry) => console.log("Selected:", entry.path)}
     filter={{ extensions: [".ts", ".tsx"] }}
@@ -318,8 +347,14 @@ type FileEntry = {
 
 Render large ASCII art text using [CFonts](https://github.com/dominikwilkowski/cfonts). Ported from [`ink-big-text`](https://github.com/sindresorhus/ink-big-text).
 
+> **Subpath import.** Imported from `@visulima/tui/components/big-text`. Requires the optional peer `cfonts`.
+>
+> ```bash npm2yarn
+> npm install cfonts
+> ```
+
 ```tsx
-import { BigText } from "@visulima/tui";
+import { BigText } from "@visulima/tui/components/big-text";
 
 <BigText text="Hello" />
 <BigText text="Cool" font="chrome" colors={["red", "blue"]} />
@@ -344,8 +379,8 @@ Available fonts: `block`, `slick`, `tiny`, `grid`, `pallet`, `shade`, `simple`, 
 Apply a terminal color gradient to child text. Ported from [`ink-gradient`](https://github.com/sindresorhus/ink-gradient), uses `@visulima/colorize` internally.
 
 ```tsx
-import { Gradient, Text } from "@visulima/tui";
-
+import { Gradient } from "@visulima/tui/components/gradient";
+import { Text } from "@visulima/tui/components/text";
 <Gradient name="rainbow">
     <Text>Hello, World!</Text>
 </Gradient>
@@ -369,8 +404,8 @@ Built-in presets: `rainbow`, `cristal`, `teen`, `mind`, `morning`, `vice`, `pass
 Auto-generated keybinding help bar. Renders key-description pairs from an array of `KeyBinding` definitions (typically returned by `useKeyBindings`).
 
 ```tsx
-import { Help, useKeyBindings } from "@visulima/tui";
-
+import { Help } from "@visulima/tui/components/help";
+import { useKeyBindings } from "@visulima/tui/hooks/use-key-bindings";
 const { bindings } = useKeyBindings([
     { binding: { key: "q", description: "Quit" }, handler: () => exit() },
     { binding: { key: ["↑", "k"], description: "Up", group: "Navigation" }, handler: () => moveUp() },
@@ -414,8 +449,8 @@ Key names are automatically humanized: `"upArrow"` → `"↑"`, `"return"` → `
 Create clickable hyperlinks in the terminal using OSC 8 sequences. Ported from [`ink-link`](https://github.com/sindresorhus/ink-link).
 
 ```tsx
-import { Link, Text } from "@visulima/tui";
-
+import { Link } from "@visulima/tui/components/link";
+import { Text } from "@visulima/tui/components/text";
 <Link url="https://example.com">
     <Text color="cyan">My Website</Text>
 </Link>
@@ -440,8 +475,18 @@ When `fallback` is `true`, unsupported terminals show: `My Website https://examp
 
 Render Markdown content as terminal UI elements. Parses with [marked](https://marked.js.org/) and maps tokens to Ink components. Code blocks are syntax-highlighted via the `Code` component.
 
+> **Subpath import.** Imported from `@visulima/tui/components/markdown`. Requires the optional peer `marked`. Code blocks pull in `shiki`, `@shikijs/langs`, `@shikijs/themes`; tables pull in `@visulima/tabular` — install whichever your content needs.
+>
+> ```bash npm2yarn
+> npm install marked
+> # for code-block highlighting:
+> npm install shiki @shikijs/langs @shikijs/themes
+> # for table rendering inside markdown:
+> npm install @visulima/tabular
+> ```
+
 ````tsx
-import { Markdown } from "@visulima/tui";
+import { Markdown } from "@visulima/tui/components/markdown";
 
 <Markdown>{"# Hello World\n\nThis is **bold** and *italic*."}</Markdown>
 <Markdown codeTheme="github-dark-default">{"```js\nconst x = 1;\n```"}</Markdown>
@@ -542,7 +587,7 @@ Available presets include `dots`, `breathe`, `cascade`, `checkerboard`, `columns
 A count-up elapsed time display. Exposes `start`, `stop`, `toggle`, `reset`, and `lap` controls via ref.
 
 ```tsx
-import { Stopwatch } from "@visulima/tui";
+import { Stopwatch } from "@visulima/tui/components/stopwatch";
 import { useRef } from "react";
 
 const ref = useRef(null);
@@ -577,7 +622,7 @@ For headless usage, use the [`useStopwatch`](./hooks#usestopwatch) hook directly
 A countdown timer display. Exposes `start`, `stop`, `toggle`, and `reset` controls via ref.
 
 ```tsx
-import { Timer } from "@visulima/tui";
+import { Timer } from "@visulima/tui/components/timer";
 import { useRef } from "react";
 
 const ref = useRef(null);
@@ -612,8 +657,7 @@ For headless usage, use the [`useTimer`](./hooks#usetimer) hook directly.
 A terminal progress bar that fills proportionally to a percentage value. Ported from [`ink-progress-bar`](https://github.com/brigand/ink-progress-bar).
 
 ```tsx
-import { ProgressBar } from "@visulima/tui";
-
+import { ProgressBar } from "@visulima/tui/components/progress-bar";
 <ProgressBar percent={0.5} />
 <ProgressBar percent={0.75} color="green" left={10} right={5} />
 <ProgressBar percent={1} character="▓" rightPad />
@@ -645,8 +689,7 @@ Example with labels:
 A keyboard-driven range input for selecting numeric values. Supports horizontal and vertical orientations.
 
 ```tsx
-import { Slider } from "@visulima/tui";
-
+import { Slider } from "@visulima/tui/components/slider";
 <Slider defaultValue={50} onChange={(v) => console.log(v)} />
 <Slider defaultValue={22} min={10} max={40} step={1} accentColor="red" width={30} />
 <Slider defaultValue={60} orientation="vertical" width={8} />
@@ -689,8 +732,8 @@ const [value, setValue] = useState(50);
 A dockable panel that captures `console.log`/`warn`/`error`/`debug` output and displays it within the TUI. Similar to browser devtools console.
 
 ```tsx
-import { Box, ConsoleOverlay } from "@visulima/tui";
-
+import { Box } from "@visulima/tui/components/box";
+import { ConsoleOverlay } from "@visulima/tui/components/console-overlay";
 <Box flexDirection="column" height="100%">
     <Box flexGrow={1}>{/* main app content */}</Box>
     <ConsoleOverlay dock="bottom" height={6} />
@@ -715,8 +758,8 @@ A Y/N confirmation prompt. Inspired by [ink-ui](https://github.com/vadimdemedes/
 <img src="./media/ink-ui/confirm-input.png" width="200" alt="ConfirmInput demo" />
 
 ```tsx
-import { ConfirmInput, Text } from "@visulima/tui";
-
+import { ConfirmInput } from "@visulima/tui/components/confirm-input";
+import { Text } from "@visulima/tui/components/text";
 <Text>Do you want to continue? </Text>
 <ConfirmInput
     onConfirm={() => console.log("Confirmed!")}
@@ -741,8 +784,7 @@ Multi-choice selection component with checkboxes and keyboard navigation. Inspir
 <img src="./media/ink-ui/multi-select.gif" width="400" alt="MultiSelect demo" />
 
 ```tsx
-import { MultiSelect } from "@visulima/tui";
-
+import { MultiSelect } from "@visulima/tui/components/multi-select";
 const options = [
     { label: "TypeScript", value: "ts" },
     { label: "JavaScript", value: "js" },
@@ -773,8 +815,7 @@ Single-line text input with cursor navigation, autocomplete suggestions, and opt
 <img src="./media/ink-ui/text-input.gif" width="400" alt="TextInput demo" />
 
 ```tsx
-import { TextInput } from "@visulima/tui";
-
+import { TextInput } from "@visulima/tui/components/text-input";
 <TextInput placeholder="Enter your name..." onSubmit={(value) => console.log("Name:", value)} />;
 ```
 
@@ -809,8 +850,7 @@ The first matching suggestion is shown dimmed after the cursor. Press right arro
 Multi-line text input with cursor navigation, selection, clipboard copy (OSC 52), undo/redo, paste support, and viewport scrolling.
 
 ```tsx
-import { Textarea } from "@visulima/tui";
-
+import { Textarea } from "@visulima/tui/components/textarea";
 <Textarea
     placeholder="Write something..."
     rows={8}
@@ -876,8 +916,7 @@ Interactive select input for choosing from a list of options. Ported from [`ink-
 <img src="./media/ink-ui/select.gif" width="400" alt="SelectInput demo" />
 
 ```tsx
-import { SelectInput } from "@visulima/tui";
-
+import { SelectInput } from "@visulima/tui/components/select-input";
 const items = [
     { label: "TypeScript", value: "ts" },
     { label: "JavaScript", value: "js" },
@@ -949,8 +988,7 @@ A separator renders as `───` by default. Pass a custom `label` to change t
 The `SeparatorItem` type is exported for use in typed item arrays:
 
 ```tsx
-import type { SelectInputEntry, SelectInputSeparator } from "@visulima/tui";
-
+import type { SelectInputEntry, SelectInputSeparator } from "@visulima/tui/components/select-input";
 const items: SelectInputEntry<string>[] = [{ label: "Option A", value: "a" }, { isSeparator: true }, { label: "Option B", value: "b" }];
 ```
 
@@ -1023,8 +1061,8 @@ The `isFocused` prop is passed through to both `indicatorComponent` and `itemCom
 Replace the default indicator or item rendering:
 
 ```tsx
-import { Box, Text } from "@visulima/tui";
-
+import { Box } from "@visulima/tui/components/box";
+import { Text } from "@visulima/tui/components/text";
 const CustomIndicator = ({ isSelected, isFocused, accentColor }) => (
     <Box marginRight={1}>
         <Text color={isSelected ? accentColor : undefined} dimColor={!isFocused}>
@@ -1049,8 +1087,8 @@ Custom components receive `isSelected`, `isFocused`, `accentColor`, and (for ite
 Tabbed navigation component with keyboard support. Inspired by [`ink-tab`](https://github.com/jdeniau/ink-tab).
 
 ```tsx
-import { Tab, Tabs } from "@visulima/tui";
-
+import { Tab } from "@visulima/tui/components/tab";
+import { Tabs } from "@visulima/tui/components/tabs";
 <Tabs onChange={(name, tab) => console.log("Active:", name)}>
     <Tab name="files">Files</Tab>
     <Tab name="search">Search</Tab>
@@ -1119,8 +1157,14 @@ const [active, setActive] = useState("files");
 
 Render data as a formatted table in the terminal. Uses [`@visulima/tabular`](https://visulima.com/packages/tabular) as the rendering engine, supporting multiple border styles, column configuration, cell formatting, and word wrap. Ported from [`ink-table`](https://github.com/maticzav/ink-table).
 
+> **Subpath import.** Imported from `@visulima/tui/components/table`. Requires the optional peer `@visulima/tabular`.
+>
+> ```bash npm2yarn
+> npm install @visulima/tabular
+> ```
+
 ```tsx
-import { Table } from "@visulima/tui";
+import { Table } from "@visulima/tui/components/table";
 
 const data = [
     { name: "Alice", age: 30, city: "NYC" },
@@ -1196,8 +1240,7 @@ Uppercase colored label badge for status indicators. Inspired by [ink-ui](https:
 <img src="./media/ink-ui/badge.png" width="400" alt="Badge demo" />
 
 ```tsx
-import { Badge } from "@visulima/tui";
-
+import { Badge } from "@visulima/tui/components/badge";
 <Badge>new</Badge>
 <Badge color="red">error</Badge>
 <Badge color="green">success</Badge>
@@ -1215,8 +1258,7 @@ Status notification with a colored variant icon. Inspired by [ink-ui](https://gi
 <img src="./media/ink-ui/status-message.png" width="400" alt="StatusMessage demo" />
 
 ```tsx
-import { StatusMessage } from "@visulima/tui";
-
+import { StatusMessage } from "@visulima/tui/components/status-message";
 <StatusMessage variant="success">Build completed</StatusMessage>
 <StatusMessage variant="error">Connection failed</StatusMessage>
 <StatusMessage variant="warning">Disk space low</StatusMessage>
@@ -1237,8 +1279,7 @@ Bordered alert box with a variant-specific icon and optional title. Inspired by 
 <img src="./media/ink-ui/alert.png" width="600" alt="Alert demo" />
 
 ```tsx
-import { Alert } from "@visulima/tui";
-
+import { Alert } from "@visulima/tui/components/alert";
 <Alert variant="info">Check the docs for details.</Alert>
 <Alert variant="warning" title="Deprecation Notice">
     This API will be removed in v3.
@@ -1258,8 +1299,7 @@ Bullet list with nesting support and customizable markers. Inspired by [ink-ui](
 <img src="./media/ink-ui/unordered-list.png" width="400" alt="UnorderedList demo" />
 
 ```tsx
-import { UnorderedList } from "@visulima/tui";
-
+import { UnorderedList } from "@visulima/tui/components/unordered-list";
 <UnorderedList items={[{ label: "TypeScript" }, { label: "JavaScript" }, { label: "Python", children: [{ label: "Django" }, { label: "Flask" }] }]} />;
 ```
 
@@ -1277,8 +1317,7 @@ Numbered list with hierarchical nesting and auto-padded markers. Inspired by [in
 <img src="./media/ink-ui/ordered-list.png" width="400" alt="OrderedList demo" />
 
 ```tsx
-import { OrderedList } from "@visulima/tui";
-
+import { OrderedList } from "@visulima/tui/components/ordered-list";
 <OrderedList
     items={[
         { label: "Install dependencies" },
@@ -1299,8 +1338,9 @@ Numbers are right-padded for alignment (e.g., ` 1.`, ` 2.`, `10.`). Nested lists
 A pagination component with a render-prop pattern and configurable page indicators. Handles keyboard navigation and slices items by page.
 
 ```tsx
-import { Paginator, Text, Box } from "@visulima/tui";
-
+import { Box } from "@visulima/tui/components/box";
+import { Paginator } from "@visulima/tui/components/paginator";
+import { Text } from "@visulima/tui/components/text";
 <Paginator items={allItems} pageSize={5}>
     {(pageItems, meta) => (
         <Box flexDirection="column">
@@ -1368,9 +1408,8 @@ const [page, setPage] = useState(0);
 Interactive tree view with keyboard navigation, expand/collapse, single/multi selection, async lazy-loading, and viewport virtualization. Ported from [ink-tree-view](https://github.com/costajohnt/ink-tree-view).
 
 ```tsx
-import { TreeView } from "@visulima/tui";
-import type { TreeNode } from "@visulima/tui";
-
+import { TreeView } from "@visulima/tui/components/tree-view";
+import type { TreeNode } from "@visulima/tui/components/tree-view";
 const data: TreeNode[] = [
     {
         id: "src",
@@ -1485,8 +1524,7 @@ Scroll indicators (`↑ N more above` / `↓ N more below`) appear automatically
 For full control, use the hooks directly instead of the `<TreeView>` component:
 
 ```tsx
-import { useTreeViewState, useTreeView } from "@visulima/tui";
-
+import { useTreeView, useTreeViewState } from "@visulima/tui/components/tree-view";
 function CustomTree({ data }) {
     const state = useTreeViewState({ data, selectionMode: "single" });
     useTreeView({ state, selectionMode: "single" });
@@ -1509,8 +1547,7 @@ function CustomTree({ data }) {
 The default theme can be imported and inspected:
 
 ```tsx
-import { treeViewTheme } from "@visulima/tui";
-
+import { treeViewTheme } from "@visulima/tui/components/tree-view";
 // treeViewTheme.styles.label({ isFocused: true, isSelected: false })
 // => { color: "blue" }
 ```

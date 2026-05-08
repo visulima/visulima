@@ -16,7 +16,8 @@
  *   q / Esc / Ctrl+C   quit
  */
 // @ts-nocheck
-import { Box, Text } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { Text } from "@visulima/tui/components/text";
 import { render, useApp, useInput, useWindowSize } from "@visulima/tui/react";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 
@@ -89,16 +90,25 @@ const StatsBar = ({ cols, fps, frame, rows }: { cols: number; fps: number; frame
                 {"  "}
             </Text>
             <Text>
-                {String(fps).padStart(3)} updates/sec
+                {String(fps).padStart(3)}
+{" "}
+updates/sec
+{"  "}
+                Frame:
+{" "}
+<Text color="white">{String(frame).padStart(7)}</Text>
                 {"  "}
-                Frame: <Text color="white">{String(frame).padStart(7)}</Text>
-                {"  "}
-                Terminal:{" "}
+                Terminal:
+{" "}
                 <Text color="white">
-                    {cols}×{rows}
+                    {cols}
+×
+{rows}
                 </Text>
                 {"  "}
-                Cells/frame: <Text color="white">{(gridCols * gridRows).toLocaleString()}</Text>
+                Cells/frame:
+{" "}
+<Text color="white">{(gridCols * gridRows).toLocaleString()}</Text>
                 {"  "}
                 <Text dim>q / Esc / Ctrl+C to exit</Text>
             </Text>

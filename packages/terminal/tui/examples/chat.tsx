@@ -1,7 +1,8 @@
 /* eslint-disable sonarjs/different-types-comparison */
 // @ts-nocheck
 // Ratatat port of ink/examples/chat
-import { Box, Text } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { Text } from "@visulima/tui/components/text";
 import { render, useInput } from "@visulima/tui/react";
 import React, { useState } from "react";
 
@@ -50,7 +51,8 @@ const ChatApp = () => {
             <Box marginTop={1}>
                 <Text color="yellow">
                     Enter your message:
-                    {input}█
+                    {input}
+█
                 </Text>
             </Box>
         </Box>

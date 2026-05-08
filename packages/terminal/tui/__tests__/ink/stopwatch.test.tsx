@@ -3,7 +3,9 @@ import delay from "delay";
 import React from "react";
 import { afterEach, describe, expect, it } from "vitest";
 
-import { render, Stopwatch, Text, useStopwatch } from "../../src/ink/index";
+import { Stopwatch, Text } from "../../src/components/index";
+import { useStopwatch } from "../../src/ink/hooks/use-stopwatch";
+import { render } from "../../src/ink/index";
 import createStdout from "../helpers/ink-create-stdout";
 import { renderToString } from "../helpers/ink-render";
 

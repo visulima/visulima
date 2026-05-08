@@ -15,8 +15,12 @@
  * Run: node --import @oxc-node/core/register examples/use-clipboard.tsx
  */
 
-import { Box, Text } from "@visulima/tui";
-import { render, useApp, useClipboard, useInput } from "@visulima/tui/react";
+import { render } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { Text } from "@visulima/tui/components/text";
+import { useApp } from "@visulima/tui/hooks/use-app";
+import { useClipboard } from "@visulima/tui/hooks/use-clipboard";
+import { useInput } from "@visulima/tui/hooks/use-input";
 import React, { useState } from "react";
 
 const App = () => {
@@ -64,7 +68,8 @@ const App = () => {
             </Text>
 
             <Text>
-                OSC 52 support:{" "}
+                OSC 52 support:
+{" "}
                 <Text bold color={isSupported ? "green" : "red"}>
                     {isSupported ? "yes" : "no"}
                 </Text>
@@ -75,7 +80,8 @@ const App = () => {
 
             <Box borderColor="gray" borderStyle="round" flexDirection="column" paddingX={2} paddingY={1}>
                 <Text bold>Last copied:</Text>
-                {lastCopied ? (
+                {lastCopied
+                    ? (
                     <Box flexDirection="column">
                         {lastCopied.split("\n").map((line, index) => (
                             <Text color="green" key={index}>
@@ -83,9 +89,10 @@ const App = () => {
                             </Text>
                         ))}
                     </Box>
-                ) : (
+                    )
+                    : (
                     <Text dimColor>(nothing copied yet — press 1, 2, or 3)</Text>
-                )}
+                    )}
             </Box>
 
             {lastCopied && <Text dimColor>Try pasting (Ctrl+V / Cmd+V) in another application to verify!</Text>}

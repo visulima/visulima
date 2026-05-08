@@ -1,8 +1,8 @@
 import React from "react";
 import { describe, expect, it, vi } from "vitest";
 
+import { BarChart, Canvas } from "../../src/components/index";
 import { createCanvasBuffer, serializeRow } from "../../src/ink/canvas/buffer";
-import { BarChart, Canvas } from "../../src/ink/index";
 import { renderToString } from "../helpers/ink-render";
 
 describe(createCanvasBuffer, () => {

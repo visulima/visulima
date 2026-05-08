@@ -1,7 +1,8 @@
 /* eslint-disable sonarjs/different-types-comparison */
 // @ts-nocheck
 // Ratatat port of ink/examples/use-input
-import { Box, Text } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { Text } from "@visulima/tui/components/text";
 import { render, useApp, useInput } from "@visulima/tui/react";
 import React from "react";
 

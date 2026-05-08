@@ -2,7 +2,8 @@ import EventEmitter from "node:events";
 
 import { describe, expect, it, vi } from "vitest";
 
-import { render, Text } from "../../src/ink/index";
+import { Text } from "../../src/components/index";
+import { render } from "../../src/ink/index";
 import parseKeypress from "../../src/ink/parse-keypress";
 
 // Helper to create kitty protocol CSI u sequences

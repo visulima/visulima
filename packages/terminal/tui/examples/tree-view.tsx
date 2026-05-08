@@ -12,8 +12,13 @@
  * Run: node --import @oxc-node/core/register examples/tree-view.tsx
  */
 
-import type { TreeNode } from "@visulima/tui";
-import { Box, render, Text, TreeView, useApp, useInput } from "@visulima/tui";
+import { render } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { Text } from "@visulima/tui/components/text";
+import type { TreeNode } from "@visulima/tui/components/tree-view";
+import { TreeView } from "@visulima/tui/components/tree-view";
+import { useApp } from "@visulima/tui/hooks/use-app";
+import { useInput } from "@visulima/tui/hooks/use-input";
 import React, { useState } from "react";
 
 const fileTree: TreeNode[] = [
@@ -87,13 +92,16 @@ const App = () => {
                     <Text bold>Info</Text>
                     {focusedId && (
                         <Text>
-                            Focused: <Text color="blue">{focusedId}</Text>
+                            Focused:
+{" "}
+<Text color="blue">{focusedId}</Text>
                         </Text>
                     )}
                     {selectedIds.size > 0 && (
                         <Box flexDirection="column" marginTop={1}>
                             <Text bold>
-                                Selected ({selectedIds.size}
+                                Selected (
+{selectedIds.size}
                                 ):
                             </Text>
                             {[...selectedIds].map((id) => (

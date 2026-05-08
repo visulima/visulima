@@ -1,7 +1,7 @@
 import { strip } from "@visulima/ansi";
 import { describe, expect, it } from "vitest";
 
-import { Box, Dialog, Text } from "../../src/ink/index";
+import { Box, Dialog, Text } from "../../src/components/index";
 import { renderToString } from "../helpers/ink-render";
 
 describe(Dialog, () => {

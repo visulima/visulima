@@ -61,3 +61,5 @@ const useClipboard = (options: UseClipboardOptions = {}): UseClipboardResult => 
 };
 
 export default useClipboard;
+
+export { useClipboard };

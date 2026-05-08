@@ -33,7 +33,11 @@ description: "ScrollView, ScrollBar, ScrollBarBox, and ScrollList for building s
 Ported from the [ByteLand](https://github.com/ByteLandTechnology) scroll ecosystem. Import from `@visulima/tui`.
 
 ```tsx
-import { ControlledScrollView, ScrollBar, ScrollBarBox, ScrollList, ScrollView } from "@visulima/tui";
+import { ControlledScrollView } from "@visulima/tui/components/controlled-scroll-view";
+import { ScrollBar } from "@visulima/tui/components/scroll-bar";
+import { ScrollBarBox } from "@visulima/tui/components/scroll-bar-box";
+import { ScrollList } from "@visulima/tui/components/scroll-list";
+import { ScrollView } from "@visulima/tui/components/scroll-view";
 ```
 
 ## `ScrollView`
@@ -44,9 +48,11 @@ A scrollable viewport that manages its own scroll state. Control it imperatively
 
 ```tsx
 import { useRef } from "react";
-import { Box, ScrollView, Text, useInput } from "@visulima/tui";
-import type { ScrollViewRef } from "@visulima/tui";
-
+import { Box } from "@visulima/tui/components/box";
+import { ScrollView } from "@visulima/tui/components/scroll-view";
+import { Text } from "@visulima/tui/components/text";
+import { useInput } from "@visulima/tui/hooks/use-input";
+import type { ScrollViewRef } from "@visulima/tui/components/scroll-view";
 const Demo = () => {
     const scrollRef = useRef<ScrollViewRef>(null);
 
@@ -129,8 +135,10 @@ Lower-level variant where the parent owns the `scrollOffset` state.
 
 ```tsx
 import { useState } from "react";
-import { Box, ControlledScrollView, Text, useInput } from "@visulima/tui";
-
+import { Box } from "@visulima/tui/components/box";
+import { ControlledScrollView } from "@visulima/tui/components/controlled-scroll-view";
+import { Text } from "@visulima/tui/components/text";
+import { useInput } from "@visulima/tui/hooks/use-input";
 const Demo = () => {
     const [offset, setOffset] = useState(0);
 
@@ -171,8 +179,9 @@ A visual scroll position indicator. Works in two placement modes:
 ![Auto Hide Demo](./media/scroll/scrollbar-autohide.svg)
 
 ```tsx
-import { Box, ScrollBar, Text } from "@visulima/tui";
-
+import { Box } from "@visulima/tui/components/box";
+import { ScrollBar } from "@visulima/tui/components/scroll-bar";
+import { Text } from "@visulima/tui/components/text";
 <Box flexDirection="row">
     <Box borderStyle="single" borderRight={false} height={10}>
         <Text>Content here</Text>
@@ -201,8 +210,8 @@ import { Box, ScrollBar, Text } from "@visulima/tui";
 A `Box` with a built-in scroll bar on one border.
 
 ```tsx
-import { ScrollBarBox, Text } from "@visulima/tui";
-
+import { ScrollBarBox } from "@visulima/tui/components/scroll-bar-box";
+import { Text } from "@visulima/tui/components/text";
 <ScrollBarBox height={12} borderStyle="single" contentHeight={50} viewportHeight={10} scrollOffset={scrollOffset}>
     {visibleItems.map((item) => (
         <Text key={item.id}>{item.label}</Text>
@@ -245,8 +254,10 @@ A `ScrollView` with externally controlled selection and automatic scroll-into-vi
 
 ```tsx
 import { useRef, useState } from "react";
-import { Box, ScrollList, Text, useInput } from "@visulima/tui";
-
+import { Box } from "@visulima/tui/components/box";
+import { ScrollList } from "@visulima/tui/components/scroll-list";
+import { Text } from "@visulima/tui/components/text";
+import { useInput } from "@visulima/tui/hooks/use-input";
 const Demo = () => {
     const [selected, setSelected] = useState(0);
     const items = ["Apple", "Banana", "Cherry", "Date", "Elderberry"];
@@ -326,8 +337,7 @@ Enable built-in keyboard controls on any `ScrollView` or `ScrollList` with the `
 The `useScrollInput` hook is also available for custom scroll containers:
 
 ```tsx
-import { useScrollInput } from "@visulima/tui";
-
+import { useScrollInput } from "@visulima/tui/hooks/use-scroll-input";
 useScrollInput({
     scrollBy: (delta) => ref.current?.scrollBy(delta),
     scrollToTop: () => ref.current?.scrollToTop(),
@@ -376,8 +386,9 @@ Callbacks fire once per entry into the threshold zone and don't re-fire until th
 Synchronize scroll position across multiple ScrollView instances (e.g., diff viewers, multi-pane layouts):
 
 ```tsx
-import { createLinkedScrollGroup, ScrollView, Text } from "@visulima/tui";
-
+import { ScrollView } from "@visulima/tui/components/scroll-view";
+import { Text } from "@visulima/tui/components/text";
+import { createLinkedScrollGroup } from "@visulima/tui/hooks/use-linked-scroll";
 const group = createLinkedScrollGroup();
 
 const LeftPane = () => {

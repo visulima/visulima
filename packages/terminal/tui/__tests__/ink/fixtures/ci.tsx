@@ -1,6 +1,7 @@
 import React from "react";
 
-import { render, Static, Text } from "../../../src/ink/index";
+import { Static, Text } from "../../../src/components/index";
+import { render } from "../../../src/ink/index";
 
 type TestState = {
     counter: number;

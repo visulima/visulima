@@ -1,5 +1,10 @@
-import type { TimerRef } from "@visulima/tui";
-import { Box, render, Text, Timer, useApp, useInput } from "@visulima/tui";
+import { render } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { Text } from "@visulima/tui/components/text";
+import type { TimerRef } from "@visulima/tui/components/timer";
+import { Timer } from "@visulima/tui/components/timer";
+import { useApp } from "@visulima/tui/hooks/use-app";
+import { useInput } from "@visulima/tui/hooks/use-input";
 import React, { useRef, useState } from "react";
 
 const App = () => {
@@ -59,7 +64,8 @@ const App = () => {
                 </Box>
                 <Text dimColor>
                     Duration:
-                    {duration / 1000}s
+                    {duration / 1000}
+s
                 </Text>
             </Box>
             <Box flexDirection="column">

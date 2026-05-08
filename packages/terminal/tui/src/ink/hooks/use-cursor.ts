@@ -1,6 +1,6 @@
 import { useCallback, useContext, useInsertionEffect, useRef } from "react";
 
-import CursorContext from "../components/cursor-context";
+import CursorContext from "../../components/cursor-context";
 import type { CursorPosition } from "../log-update";
 
 /**
@@ -34,3 +34,5 @@ const useCursor = (): { setCursorPosition: (position: CursorPosition | undefined
 };
 
 export default useCursor;
+
+export { useCursor };

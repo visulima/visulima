@@ -48,7 +48,7 @@ describe("hooks-use-input", () => {
             ps.write("\r");
             await ps.waitForExit();
 
-            expect(ps.output).toContain('FINAL query:"" deferred:""');
+            expect(ps.output).toContain("FINAL query:\"\" deferred:\"\"");
         },
         60_000,
     );

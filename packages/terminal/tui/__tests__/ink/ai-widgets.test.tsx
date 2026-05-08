@@ -10,12 +10,12 @@ import {
     MessageBubble,
     ModelBadge,
     OperationTree,
-    render,
     ShimmerText,
     StatusLine,
     StreamingText,
     Text,
-} from "../../src/ink/index";
+} from "../../src/components/index";
+import { render } from "../../src/ink/index";
 import { createStdin, emitReadable } from "../helpers/ink-create-stdin";
 import createStdout from "../helpers/ink-create-stdout";
 import { renderToString } from "../helpers/ink-render";

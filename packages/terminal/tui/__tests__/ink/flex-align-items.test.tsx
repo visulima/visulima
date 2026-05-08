@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { Box, Newline, Text } from "../../src/ink/index";
+import { Box, Newline, Text } from "../../src/components/index";
 import { renderToString } from "../helpers/ink-render";
 
 describe("flex-align-items", () => {
@@ -113,7 +113,8 @@ describe("flex-align-items", () => {
             <Box alignItems="baseline" height={3}>
                 <Text>
                     A
-                    <Newline />B
+                    <Newline />
+B
                 </Text>
                 <Text>X</Text>
             </Box>,

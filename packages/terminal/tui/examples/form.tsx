@@ -12,8 +12,19 @@
  *
  * Run: node --import @oxc-node/core/register examples/form.tsx
  */
-import type { FieldConfig } from "@visulima/tui";
-import { Box, Button, ConfirmDialog, Form, FormField, MaskedInput, render, SearchInput, Text, TextInput, useApp, useForm, useInput } from "@visulima/tui";
+import { render } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { Button } from "@visulima/tui/components/button";
+import { ConfirmDialog } from "@visulima/tui/components/confirm-dialog";
+import { Form, FormField } from "@visulima/tui/components/form";
+import { MaskedInput } from "@visulima/tui/components/masked-input";
+import { SearchInput } from "@visulima/tui/components/search-input";
+import { Text } from "@visulima/tui/components/text";
+import { TextInput } from "@visulima/tui/components/text-input";
+import { useApp } from "@visulima/tui/hooks/use-app";
+import type { FieldConfig } from "@visulima/tui/hooks/use-form";
+import { useForm } from "@visulima/tui/hooks/use-form";
+import { useInput } from "@visulima/tui/hooks/use-input";
 import React, { useState } from "react";
 
 const App = () => {
@@ -65,8 +76,12 @@ const App = () => {
                 <ConfirmDialog onCancel={() => setShowConfirm(false)} onConfirm={exit} title="All set?" tone="info">
                     <Box flexDirection="column">
                         <Text>
-                            Submit as <Text bold>{submitted?.name ?? ""}</Text> &lt;
-                            {submitted?.email ?? ""}
+                            Submit as
+{" "}
+<Text bold>{submitted?.name ?? ""}</Text>
+{" "}
+&lt;
+{submitted?.email ?? ""}
                             &gt;?
                         </Text>
                     </Box>

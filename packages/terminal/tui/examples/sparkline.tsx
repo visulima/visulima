@@ -5,7 +5,13 @@
  *
  * Run: node --import @oxc-node/core/register examples/sparkline.tsx
  */
-import { Box, render, Sparkline, Text, useApp, useInput, useInterval } from "@visulima/tui";
+import { render } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { Sparkline } from "@visulima/tui/components/sparkline";
+import { Text } from "@visulima/tui/components/text";
+import { useApp } from "@visulima/tui/hooks/use-app";
+import { useInput } from "@visulima/tui/hooks/use-input";
+import { useInterval } from "@visulima/tui/hooks/use-interval";
 import React, { useState } from "react";
 
 const MAX_SAMPLES = 30;

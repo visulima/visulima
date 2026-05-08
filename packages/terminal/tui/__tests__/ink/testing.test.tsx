@@ -1,8 +1,8 @@
 import React from "react";
 import { afterEach, describe, expect, expectTypeOf, it } from "vitest";
 
-import Box from "../../src/ink/components/box";
-import Text from "../../src/ink/components/text";
+import Box from "../../src/components/box";
+import Text from "../../src/components/text";
 import { cleanup, render } from "../../src/testing/index";
 
 afterEach(() => {

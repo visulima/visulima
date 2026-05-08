@@ -64,3 +64,5 @@ const useInterval = (callback: () => void, interval: number, options?: UseInterv
 };
 
 export default useInterval;
+
+export { useInterval };

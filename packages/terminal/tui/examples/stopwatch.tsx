@@ -1,4 +1,9 @@
-import { Box, render, Text, useApp, useInput, useStopwatch } from "@visulima/tui";
+import { render } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { Text } from "@visulima/tui/components/text";
+import { useApp } from "@visulima/tui/hooks/use-app";
+import { useInput } from "@visulima/tui/hooks/use-input";
+import { useStopwatch } from "@visulima/tui/hooks/use-stopwatch";
 import React from "react";
 
 const App = () => {
@@ -68,7 +73,9 @@ const App = () => {
                         {sw.laps.map((lap, i) => (
                             <Text key={i}>
                                 {"  "}
-                                {i + 1}.{formatElapsed(lap)}
+                                {i + 1}
+.
+{formatElapsed(lap)}
                             </Text>
                         ))}
                     </Box>

@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-confusing-void-expression, func-style, no-empty, sonarjs/different-types-comparison */
 // @ts-nocheck
 // Ratatat port of ink/examples/use-transition
-import { Box, Text } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { Text } from "@visulima/tui/components/text";
 import { render, useInput } from "@visulima/tui/react";
 import React, { useState, useTransition } from "react";
 
@@ -59,7 +60,9 @@ const SearchApp = () => {
     return (
         <Box flexDirection="column" padding={1}>
             <Text>
-                Search: {query}
+                Search:
+{" "}
+{query}
                 {isPending ? <Text color="yellow"> (filtering...)</Text> : null}
             </Text>
             <Box flexDirection="column" marginTop={1}>

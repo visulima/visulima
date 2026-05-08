@@ -7,7 +7,12 @@
  *
  * Run: node --import @oxc-node/core/register examples/canvas.tsx
  */
-import { Box, Canvas, render, Text, useApp, useInput } from "@visulima/tui";
+import { render } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { Canvas } from "@visulima/tui/components/canvas";
+import { Text } from "@visulima/tui/components/text";
+import { useApp } from "@visulima/tui/hooks/use-app";
+import { useInput } from "@visulima/tui/hooks/use-input";
 import React, { useState } from "react";
 
 const App = () => {

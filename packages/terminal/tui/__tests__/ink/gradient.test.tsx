@@ -1,7 +1,8 @@
 import { strip as stripAnsi } from "@visulima/ansi";
 import { describe, expect, it } from "vitest";
 
-import { Box, Gradient, renderToString, Text } from "../../src/ink/index";
+import { Box, Gradient, Text } from "../../src/components/index";
+import { renderToString } from "../../src/ink/index";
 
 describe("gradient", () => {
     // ── Prop validation ────────────────────────────────────

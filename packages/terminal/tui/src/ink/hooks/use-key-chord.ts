@@ -189,3 +189,5 @@ const useKeyChord = (sequence: ReadonlyArray<KeyChordStep>, callback: () => void
 };
 
 export default useKeyChord;
+
+export { useKeyChord };

@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import Box from "../../../src/ink/components/box";
-import type { ScrollViewRef } from "../../../src/ink/components/scroll/scroll-view";
-import { ScrollView } from "../../../src/ink/components/scroll/scroll-view";
-import Text from "../../../src/ink/components/text";
+import Box from "../../../src/components/box";
+import type { ScrollViewRef } from "../../../src/components/scroll/scroll-view";
+import { ScrollView } from "../../../src/components/scroll/scroll-view";
+import Text from "../../../src/components/text";
 import { cleanup, render } from "../../../src/testing/index";
 
 afterEach(() => {

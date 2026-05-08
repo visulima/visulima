@@ -13,7 +13,12 @@
  *
  * Run: node --import @oxc-node/core/register examples/use-persistent-state.tsx
  */
-import { Box, createMemoryStorage, render, Text, useApp, useInput, usePersistentState } from "@visulima/tui";
+import { render } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { Text } from "@visulima/tui/components/text";
+import { useApp } from "@visulima/tui/hooks/use-app";
+import { useInput } from "@visulima/tui/hooks/use-input";
+import { createMemoryStorage, usePersistentState } from "@visulima/tui/hooks/use-persistent-state";
 import React, { useMemo } from "react";
 
 const THEMES = ["light", "dark", "solarized"] as const;
@@ -51,10 +56,14 @@ const App = () => {
                 usePersistentState
             </Text>
             <Text>
-                counter: <Text bold>{count}</Text>
+                counter:
+{" "}
+<Text bold>{count}</Text>
             </Text>
             <Text>
-                theme: <Text bold>{theme}</Text>
+                theme:
+{" "}
+<Text bold>{theme}</Text>
             </Text>
             <Text dimColor>Values survive remount; the in-memory store keeps them alive this session.</Text>
         </Box>

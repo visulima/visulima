@@ -1,9 +1,9 @@
 import React from "react";
 import { describe, expect, expectTypeOf, it } from "vitest";
 
+import { AreaChart, Heatmap, Histogram, LineChart, ScatterPlot } from "../../src/components/index";
 import { createBrailleGrid } from "../../src/ink/canvas/braille";
 import { createCanvasBuffer } from "../../src/ink/canvas/buffer";
-import { AreaChart, Heatmap, Histogram, LineChart, ScatterPlot } from "../../src/ink/index";
 import { renderToString } from "../helpers/ink-render";
 
 describe(createBrailleGrid, () => {

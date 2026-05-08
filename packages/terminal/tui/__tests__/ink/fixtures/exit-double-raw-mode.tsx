@@ -2,7 +2,9 @@ import process from "node:process";
 
 import React from "react";
 
-import { render, Text, useStdin } from "../../../src/ink/index";
+import { Text } from "../../../src/components/index";
+import { useStdin } from "../../../src/ink/hooks/use-stdin";
+import { render } from "../../../src/ink/index";
 
 class ExitDoubleRawMode extends React.Component<{
     setRawMode: (value: boolean) => void;

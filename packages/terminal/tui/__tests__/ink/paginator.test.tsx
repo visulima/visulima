@@ -2,7 +2,7 @@ import { strip as stripAnsi } from "@visulima/ansi";
 import React from "react";
 import { describe, expect, it, vi } from "vitest";
 
-import { Box, Paginator, Text } from "../../src/ink/index";
+import { Box, Paginator, Text } from "../../src/components/index";
 import { renderToString } from "../helpers/ink-render";
 
 const items = Array.from({ length: 20 }, (_, i) => `Item ${i + 1}`);

@@ -362,3 +362,5 @@ const useInput = (inputHandler: Handler, options: Options = {}): void => {
 };
 
 export default useInput;
+
+export { useInput };

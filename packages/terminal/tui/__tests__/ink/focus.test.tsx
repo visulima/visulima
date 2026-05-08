@@ -2,7 +2,10 @@ import delay from "delay";
 import { useEffect } from "react";
 import { afterEach, describe, expect, it } from "vitest";
 
-import { Box, render, Text, useFocus, useFocusManager } from "../../src/ink/index";
+import { Box, Text } from "../../src/components/index";
+import { useFocus } from "../../src/ink/hooks/use-focus";
+import { useFocusManager } from "../../src/ink/hooks/use-focus-manager";
+import { render } from "../../src/ink/index";
 import { createStdin, emitReadable } from "../helpers/ink-create-stdin";
 import createStdout from "../helpers/ink-create-stdout";
 
@@ -20,7 +23,9 @@ const Item = ({ autoFocus, disabled = false, label }: ItemProps) => {
 
     return (
         <Text>
-            {label} {isFocused ? "✔" : null}
+            {label}
+{" "}
+{isFocused ? "✔" : null}
         </Text>
     );
 };
@@ -499,7 +504,9 @@ describe("focus", () => {
 
         return (
             <Text>
-                {label} {isFocused ? "✔" : null}
+                {label}
+{" "}
+{isFocused ? "✔" : null}
             </Text>
         );
     };

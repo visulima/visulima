@@ -92,3 +92,5 @@ const usePaste = (handler: (text: string) => void, options: Options = {}): void 
 };
 
 export default usePaste;
+
+export { usePaste };

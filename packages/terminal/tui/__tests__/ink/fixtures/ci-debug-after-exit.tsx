@@ -2,7 +2,8 @@ import process from "node:process";
 
 import React from "react";
 
-import { render, Text } from "../../../src/ink/index";
+import { Text } from "../../../src/components/index";
+import { render } from "../../../src/ink/index";
 
 const app = render(<Text>Hello</Text>, { debug: true });
 

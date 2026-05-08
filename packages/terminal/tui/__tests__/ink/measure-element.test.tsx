@@ -3,8 +3,9 @@ import delay from "delay";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { afterEach, describe, expect, it } from "vitest";
 
+import { Box, Text } from "../../src/components/index";
 import type { DOMElement } from "../../src/ink/index";
-import { Box, measureElement, render, Text } from "../../src/ink/index";
+import { measureElement, render } from "../../src/ink/index";
 import createStdout from "../helpers/ink-create-stdout";
 
 describe("measure-element", () => {

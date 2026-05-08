@@ -10,7 +10,12 @@
  * Run: node --import @oxc-node/core/register examples/diff-view.tsx
  */
 
-import { Box, DiffView, render, Text, useApp, useInput } from "@visulima/tui";
+import { render } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { DiffView } from "@visulima/tui/components/diff-view";
+import { Text } from "@visulima/tui/components/text";
+import { useApp } from "@visulima/tui/hooks/use-app";
+import { useInput } from "@visulima/tui/hooks/use-input";
 import React, { useState } from "react";
 
 const oldCode = `function greet(name) {
@@ -62,12 +67,14 @@ const App = () => {
             </Text>
             <Text dimColor>s toggle split/unified · i toggle inline diff · q quit</Text>
             <Text>
-                Mode:{" "}
+                Mode:
+{" "}
                 <Text bold color="yellow">
                     {mode}
                 </Text>
                 {" · "}
-                Inline diff:{" "}
+                Inline diff:
+{" "}
                 <Text bold color={inlineDiff ? "green" : "red"}>
                     {inlineDiff ? "on" : "off"}
                 </Text>

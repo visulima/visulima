@@ -1,6 +1,8 @@
 import React, { useEffect } from "react";
 
-import { render, Text, useStdout } from "../../../src/ink/index";
+import { Text } from "../../../src/components/index";
+import { useStdout } from "../../../src/ink/hooks/use-stdout";
+import { render } from "../../../src/ink/index";
 
 const WriteToStdout = () => {
     const { write } = useStdout();

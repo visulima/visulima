@@ -20,7 +20,8 @@
  * Run: node --import @oxc-node/core/register examples/sierpinski.tsx
  */
 // @ts-nocheck
-import { Box, Text } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { Text } from "@visulima/tui/components/text";
 import { render, useApp, useFocus, useFocusManager, useInput, useWindowSize } from "@visulima/tui/react";
 import React, { memo, useCallback, useEffect, useRef, useState } from "react";
 
@@ -156,18 +157,29 @@ const StatsBar = ({
 }) => (
     <Box borderColor="cyan" borderStyle="round" flexShrink={0} paddingX={2}>
         <Text bold color="cyan">
-            Sierpinski{" "}
+            Sierpinski
+{" "}
         </Text>
         <Text>
-            {String(fps).padStart(3)} fps
+            {String(fps).padStart(3)}
+{" "}
+fps
+{"  "}
+            frame:
+{" "}
+<Text color="white">{String(frame).padStart(6)}</Text>
             {"  "}
-            frame: <Text color="white">{String(frame).padStart(6)}</Text>
+            counter:
+{" "}
+<Text color="yellow">{counter}</Text>
             {"  "}
-            counter: <Text color="yellow">{counter}</Text>
+            nodes:
+{" "}
+<Text color="white">{DOT_COUNT}</Text>
             {"  "}
-            nodes: <Text color="white">{DOT_COUNT}</Text>
-            {"  "}
-            width: <Text color="white">{pulseWidth}</Text>
+            width:
+{" "}
+<Text color="white">{pulseWidth}</Text>
             {"  "}
             <Text dim>Tab · Ctrl+C</Text>
         </Text>

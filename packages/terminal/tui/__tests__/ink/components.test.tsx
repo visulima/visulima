@@ -6,7 +6,10 @@ import { green, red } from "@visulima/colorize";
 import React, { Component, useEffect, useState } from "react";
 import { describe, expect, it, vi } from "vitest";
 
-import { Box, Newline, render, Spacer, Static, Text, Transform, useInput, useStdin } from "../../src/ink/index";
+import { Box, Newline, Spacer, Static, Text, Transform } from "../../src/components/index";
+import { useInput } from "../../src/ink/hooks/use-input";
+import { useStdin } from "../../src/ink/hooks/use-stdin";
+import { render } from "../../src/ink/index";
 import { emitReadable } from "../helpers/ink-create-stdin";
 import createStdout from "../helpers/ink-create-stdout";
 import { renderToString, renderToStringAsync } from "../helpers/ink-render";

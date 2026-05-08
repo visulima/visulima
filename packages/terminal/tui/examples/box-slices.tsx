@@ -11,7 +11,11 @@
  * Run: node --import @oxc-node/core/register examples/box-slices.tsx
  */
 
-import { Box, render, Text, useApp, useInput } from "@visulima/tui";
+import { render } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { Text } from "@visulima/tui/components/text";
+import { useApp } from "@visulima/tui/hooks/use-app";
+import { useInput } from "@visulima/tui/hooks/use-input";
 import React from "react";
 
 /**

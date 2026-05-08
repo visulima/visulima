@@ -3,7 +3,9 @@ import React, { useEffect } from "react";
 import type { vi } from "vitest";
 import { afterEach, describe, expect, expectTypeOf, it } from "vitest";
 
-import { Box, render, Text, useClipboard } from "../../src/ink/index";
+import { Box, Text } from "../../src/components/index";
+import { useClipboard } from "../../src/ink/hooks/use-clipboard";
+import { render } from "../../src/ink/index";
 import { createStdin } from "../helpers/ink-create-stdin";
 import createStdout from "../helpers/ink-create-stdout";
 

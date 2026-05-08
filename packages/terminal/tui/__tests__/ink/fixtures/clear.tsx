@@ -1,6 +1,7 @@
 import React from "react";
 
-import { Box, render, Text } from "../../../src/ink/index";
+import { Box, Text } from "../../../src/components/index";
+import { render } from "../../../src/ink/index";
 
 const Clear = () => (
     <Box flexDirection="column">

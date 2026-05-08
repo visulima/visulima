@@ -7,8 +7,9 @@
  */
 import React, { forwardRef, useEffect, useRef, useState } from "react";
 
+import { Box, Text } from "../src/components/index";
 import type { DOMElement } from "../src/ink/index";
-import { Box, render, ResizeObserver, Text } from "../src/ink/index";
+import { render, ResizeObserver } from "../src/ink/index";
 
 const ObservedBox = forwardRef<DOMElement, { label: string }>(({ label }, ref) => (
     <Box borderStyle="single" flexGrow={1} padding={1} ref={ref}>
@@ -46,7 +47,11 @@ const ResizeObserverDemo = () => {
             <ObservedBox label="Resize your terminal to see this update" ref={ref} />
             <Text>
                 {" "}
-                Observed size: {size.width}x{size.height}
+                Observed size:
+{" "}
+{size.width}
+x
+{size.height}
             </Text>
         </Box>
     );

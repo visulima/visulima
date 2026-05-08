@@ -1,6 +1,6 @@
 import { useCallback, useContext, useLayoutEffect, useRef, useState } from "react";
 
-import AnimationContext from "../components/animation-context";
+import AnimationContext from "../../components/animation-context";
 
 const defaultAnimationInterval = 100;
 const maximumTimerInterval = 2_147_483_647;
@@ -138,3 +138,5 @@ function normalizeAnimationInterval(interval: number): number {
 
     return Math.min(maximumTimerInterval, Math.max(1, interval));
 }
+
+export { useAnimation };

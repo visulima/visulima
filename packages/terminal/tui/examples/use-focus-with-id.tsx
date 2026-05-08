@@ -4,7 +4,8 @@
  * Press 1/2/3 to focus by ID, Tab/Shift+Tab to cycle, Esc to quit.
  * Run: node --import @oxc-node/core/register examples/use-focus-with-id.tsx
  */
-import { Box, Text } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { Text } from "@visulima/tui/components/text";
 import { render, useApp, useFocus, useFocusManager, useInput } from "@visulima/tui/react";
 import React from "react";
 
@@ -47,7 +48,9 @@ const Item = ({ id, label }: { id: string; label: string }) => {
 
     return (
         <Text>
-            {label} {isFocused ? <Text color="green">(focused)</Text> : ""}
+            {label}
+{" "}
+{isFocused ? <Text color="green">(focused)</Text> : ""}
         </Text>
     );
 };

@@ -1,7 +1,7 @@
 import { useContext } from "react";
 
-import type { Props } from "../components/app-context";
-import AppContext from "../components/app-context";
+import type { Props } from "../../components/app-context";
+import AppContext from "../../components/app-context";
 
 /**
  * A React hook that returns app lifecycle methods like `exit()` and `waitUntilRenderFlush()`.
@@ -9,3 +9,5 @@ import AppContext from "../components/app-context";
 const useApp = (): Props => useContext(AppContext);
 
 export default useApp;
+
+export { useApp };

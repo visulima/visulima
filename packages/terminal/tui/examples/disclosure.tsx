@@ -10,7 +10,13 @@
  *
  * Run: node --import @oxc-node/core/register examples/disclosure.tsx
  */
-import { Accordion, Box, Collapsible, render, Text, useApp, useInput } from "@visulima/tui";
+import { render } from "@visulima/tui";
+import { Accordion } from "@visulima/tui/components/accordion";
+import { Box } from "@visulima/tui/components/box";
+import { Collapsible } from "@visulima/tui/components/collapsible";
+import { Text } from "@visulima/tui/components/text";
+import { useApp } from "@visulima/tui/hooks/use-app";
+import { useInput } from "@visulima/tui/hooks/use-input";
 import React from "react";
 
 const App = () => {

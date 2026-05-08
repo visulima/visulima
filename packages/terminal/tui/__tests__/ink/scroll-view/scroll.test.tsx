@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { describe, expect, it } from "vitest";
 
-import type { ScrollViewRef } from "../../../src/ink/index";
-import { Box, render, ScrollView, Text } from "../../../src/ink/index";
+import type { ScrollViewRef } from "../../../src/components/index";
+import { Box, ScrollView, Text } from "../../../src/components/index";
+import { render } from "../../../src/ink/index";
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 

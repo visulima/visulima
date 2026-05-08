@@ -11,7 +11,16 @@
  *
  * Run: node --import @oxc-node/core/register examples/form-controls.tsx
  */
-import { Box, Button, Checkbox, Divider, RadioGroup, render, Switch, Text, useApp, useInput } from "@visulima/tui";
+import { render } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { Button } from "@visulima/tui/components/button";
+import { Checkbox } from "@visulima/tui/components/checkbox";
+import { Divider } from "@visulima/tui/components/divider";
+import { RadioGroup } from "@visulima/tui/components/radio-group";
+import { Switch } from "@visulima/tui/components/switch";
+import { Text } from "@visulima/tui/components/text";
+import { useApp } from "@visulima/tui/hooks/use-app";
+import { useInput } from "@visulima/tui/hooks/use-input";
 import React, { useState } from "react";
 
 const App = () => {
@@ -34,7 +43,9 @@ const App = () => {
             </Text>
             <Divider label="Button" length={40} />
             <Button autoFocus onPress={() => setPressed((n) => n + 1)}>
-                Click me ({pressed})
+                Click me (
+{pressed}
+)
             </Button>
             <Divider label="Checkbox & Switch" length={40} />
             <Box gap={2}>

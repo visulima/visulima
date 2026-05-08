@@ -2,7 +2,9 @@ import delay from "delay";
 import React, { useRef } from "react";
 import { afterEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 
-import { Box, render, Text, useTextSelection } from "../../src/ink/index";
+import { Box, Text } from "../../src/components/index";
+import { useTextSelection } from "../../src/ink/hooks/use-text-selection";
+import { render } from "../../src/ink/index";
 import { Range, Selection } from "../../src/ink/selection";
 import { createStdin } from "../helpers/ink-create-stdin";
 import createStdout from "../helpers/ink-create-stdout";

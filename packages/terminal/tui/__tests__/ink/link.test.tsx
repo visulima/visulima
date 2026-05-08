@@ -1,7 +1,7 @@
 import React from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { Link, Text } from "../../src/ink/index";
+import { Link, Text } from "../../src/components/index";
 import { renderToString } from "../helpers/ink-render";
 
 describe(Link, () => {

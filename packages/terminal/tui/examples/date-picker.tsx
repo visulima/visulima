@@ -10,7 +10,13 @@
  *
  * Run: node --import @oxc-node/core/register examples/date-picker.tsx
  */
-import { Box, Calendar, DatePicker, render, Text, useApp, useInput } from "@visulima/tui";
+import { render } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { Calendar } from "@visulima/tui/components/calendar";
+import { DatePicker } from "@visulima/tui/components/date-picker";
+import { Text } from "@visulima/tui/components/text";
+import { useApp } from "@visulima/tui/hooks/use-app";
+import { useInput } from "@visulima/tui/hooks/use-input";
 import React, { useState } from "react";
 
 const App = () => {

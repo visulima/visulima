@@ -12,7 +12,8 @@
  *   node --import @oxc-node/core/register examples/logo.tsx --speed 3 --once   # 3s, one pass
  */
 // @ts-nocheck
-import { Box, Text } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { Text } from "@visulima/tui/components/text";
 import { render, useApp, useInput, useWindowSize } from "@visulima/tui/react";
 import React, { useEffect, useRef } from "react";
 

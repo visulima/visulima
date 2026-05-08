@@ -26,12 +26,14 @@ Wrap your app with `<MouseProvider>` and use the hooks inside child components.
 > **Note:** You must also use `useInput` to prevent raw escape sequences from being printed to the terminal during mouse movements.
 
 ```tsx
-import { Box, Text, render, useInput } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { Text } from "@visulima/tui/components/text";
+import { useInput } from "@visulima/tui/hooks/use-input";
+import { render } from "@visulima/tui";
 import { Fullscreen, MouseProvider, useMousePosition, useOnMouseClick, useOnMouseHover, useOnMouseState } from "@visulima/tui";
 import React, { useMemo, useRef, useState } from "react";
 import type { ComponentProps, RefObject } from "react";
 import type { DOMElement } from "@visulima/tui";
-
 function App() {
     return (
         <MouseProvider>
@@ -250,7 +252,6 @@ Hit-test utility. Returns `true` if the mouse position falls within the element 
 
 ```tsx
 import { isIntersecting } from "@visulima/tui";
-
 const hit = isIntersecting({
     mouse: { x: 10, y: 5 },
     element: { left: 8, top: 3, width: 20, height: 10 },
@@ -321,7 +322,6 @@ Low-level utility to parse an SGR 1006 mouse escape sequence. Returns a discrimi
 
 ```tsx
 import { parseSgrMouse } from "@visulima/tui";
-
 const event = parseSgrMouse("\x1b[<0;10;20M");
 // { type: "click", button: "left", action: "press", x: 10, y: 20 }
 ```

@@ -8,8 +8,10 @@
  */
 import React, { useLayoutEffect, useMemo, useRef, useState } from "react";
 
+import { Box, Text } from "../src/components/index";
+import { useInput } from "../src/ink/hooks/use-input";
 import type { DOMElement } from "../src/ink/index";
-import { Box, getInnerHeight, getScrollHeight, render, Text, useInput } from "../src/ink/index";
+import { getInnerHeight, getScrollHeight, render } from "../src/ink/index";
 
 const ScrollDemo = () => {
     const [scrollTop, setScrollTop] = useState(0);
@@ -79,9 +81,13 @@ const ScrollDemo = () => {
             <Text dimColor>
                 {" "}
                 scrollTop=
-                {scrollTop} innerHeight=
-                {metrics.innerHeight} scrollHeight=
-                {metrics.scrollHeight}
+                {scrollTop}
+{" "}
+innerHeight=
+{metrics.innerHeight}
+{" "}
+scrollHeight=
+{metrics.scrollHeight}
             </Text>
         </Box>
     );
