@@ -70,16 +70,13 @@ describe("toast auto-dismiss", () => {
 
 describe("streamingText typewriter", () => {
     it("should reveal the full text over time and fire onComplete exactly once", async () => {
-        expect.assertions(2);
-
         const onComplete = vi.fn();
         const text = "Hi";
         const { getOutput } = mount(<StreamingText interval={10} onComplete={onComplete} text={text} />);
 
-        // Wait for enough intervals to reveal the full string
-        await delay(text.length * 10 + 50);
-
-        expect(getOutput()).toContain(text);
-        expect(onComplete).toHaveBeenCalledTimes(1);
+        await vi.waitFor(() => {
+            expect(getOutput()).toContain(text);
+            expect(onComplete).toHaveBeenCalledTimes(1);
+        });
     });
 });
