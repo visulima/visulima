@@ -141,7 +141,6 @@ export const complexArgs = [
     "--verbose",
     "--force",
     "--dry-run",
-    "false",
     "--workers",
     "4",
     "--timeout",

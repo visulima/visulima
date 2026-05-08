@@ -14,6 +14,7 @@ describe("6. Mixed Positional + Flag Arguments", () => {
         const cli = new Cerebro("test-cli", { argv: mixedArgs.slice(2) });
 
         cli.addCommand({
+            argument: { description: "Files to process", name: "files", type: String },
             description: "Process files",
             execute: () => {
                 // Empty execute function
