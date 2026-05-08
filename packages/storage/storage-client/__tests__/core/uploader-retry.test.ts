@@ -252,13 +252,8 @@ describe("uploader Retry Operations", () => {
 
         uploader.retryBatch(batchId!);
 
-        // Wait a bit
-        await new Promise<void>((resolve) => {
-            setTimeout(() => {
-                resolve();
-            }, 5);
-        });
-
+        // retryBatch sets batch.status synchronously; checking immediately avoids
+        // racing the mock's 10ms error timer that re-flips the status back to "error".
         const batch = uploader.getBatch(batchId!);
 
         expect(batch?.status).toBe("uploading");
