@@ -30,6 +30,15 @@ type Listener = () => void;
 
 // ── Helpers ─────────────────────────────────────────────────────────────
 
+const TYPE_PRIORITY: Record<string, number> = {
+    application: 0,
+    service: 1,
+    tool: 2,
+    library: 3,
+};
+
+const typeRank = (type: string): number => TYPE_PRIORITY[type] ?? Number.MAX_SAFE_INTEGER;
+
 const buildNodes = (projectGraph: ProjectGraph): GraphNode[] => {
     const reverseDeps = new Map<string, string[]>();
 
@@ -52,9 +61,9 @@ const buildNodes = (projectGraph: ProjectGraph): GraphNode[] => {
             };
         })
         .sort((a, b) => {
-            // Apps first, then libs, alphabetical within each group
+            // application > service > tool > library, alphabetical within each group
             if (a.type !== b.type) {
-                return a.type === "application" ? -1 : 1;
+                return typeRank(a.type) - typeRank(b.type);
             }
 
             return a.name.localeCompare(b.name);

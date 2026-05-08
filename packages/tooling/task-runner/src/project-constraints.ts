@@ -6,6 +6,9 @@ import type { ConstraintsConfig, ConstraintViolation, ProjectConfiguration, Proj
  */
 const LAYER_ORDER: NonNullable<ProjectConfiguration["layer"]>[] = ["configuration", "library", "scaffolding", "tool", "automation", "application"];
 
+/** projectTypes that represent deployment targets — should not be depended upon. */
+const DEPLOYMENT_TARGET_TYPES = new Set<NonNullable<ProjectConfiguration["projectType"]>>(["application", "service", "tool"]);
+
 const layerIndex = (layer: ProjectConfiguration["layer"]): number | undefined => {
     if (!layer) {
         return undefined;
@@ -58,14 +61,14 @@ const enforceProjectConstraints = (projectGraph: ProjectGraph, constraints: Cons
             const depTags = depNode.data.tags ?? [];
             const depType = depNode.type;
 
-            // Type boundary: application projects should not be depended upon
+            // Type boundary: deployment targets (application, service, tool) should not be depended upon
             let appBoundaryViolated = false;
 
-            if (hasTypeBoundaries && enforceAppBoundary && depType === "application") {
+            if (hasTypeBoundaries && enforceAppBoundary && DEPLOYMENT_TARGET_TYPES.has(depType)) {
                 appBoundaryViolated = true;
                 violations.push({
                     dependencyProject: dep.target,
-                    message: `Project "${projectName}" depends on "${dep.target}", which is an application. Applications should not be depended upon by other projects.`,
+                    message: `Project "${projectName}" depends on "${dep.target}", which is a ${depType}. ${depType.charAt(0).toUpperCase() + depType.slice(1)}s are deployment targets and should not be depended upon by other projects.`,
                     rule: "type-boundary",
                     sourceProject: projectName,
                 });
@@ -111,11 +114,11 @@ const enforceProjectConstraints = (projectGraph: ProjectGraph, constraints: Cons
 
             // Dependency kind rules
             if (hasKindRules && dependencyKindRules) {
-                // Production dependencies must not point to application projects
-                if (dependencyKindRules.noProductionDependencyOnApplication && dep.type === "static" && depType === "application") {
+                // Production dependencies must not point to deployment targets (application, service, tool)
+                if (dependencyKindRules.noProductionDependencyOnApplication && dep.type === "static" && DEPLOYMENT_TARGET_TYPES.has(depType)) {
                     violations.push({
                         dependencyProject: dep.target,
-                        message: `Project "${projectName}" has a production dependency on "${dep.target}", which is an application. Production dependencies on applications are not allowed. Use devDependencies instead if needed for testing.`,
+                        message: `Project "${projectName}" has a production dependency on "${dep.target}", which is a ${depType}. Production dependencies on ${depType}s are not allowed. Use devDependencies instead if needed for testing.`,
                         rule: "dependency-kind",
                         sourceProject: projectName,
                     });

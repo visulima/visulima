@@ -64,9 +64,11 @@
             "type": "string",
             "enum": [
                 "application",
-                "library"
+                "library",
+                "service",
+                "tool"
             ],
-            "description": "Project type — library or application."
+            "description": "Project type — `library`, `application`, `service`, or `tool`.\n\n- `library` — reusable code consumed by other workspace projects.\n- `application` — end-user-facing build target (web app, mobile app).\n- `service` — long-running HTTP / worker process deployed independently.\n- `tool` — CLI or developer tooling shipped as an executable."
         },
         "sourceRoot": {
             "type": "string",
@@ -171,6 +173,10 @@
                         "additionalProperties": {}
                     },
                     "description": "Named configurations (e.g., \"production\", \"development\")"
+                },
+                "concurrencyGroup": {
+                    "type": "string",
+                    "description": "Workspace-level concurrency group this target opts into. The scheduler caps the *combined* in-flight count of every task whose target carries the same group name to the value declared in  {@link  TaskRunnerOptions.concurrencyGroups } . Use this when several targets share an external resource (a single Postgres, a developer's Docker daemon, an account-wide deploy lock) so the cap follows the resource, not any single target name.\n\nTargets that name a group not declared in `concurrencyGroups` run uncapped — a typo shouldn't deadlock the graph. Caps don't apply to tasks marked `always: true`; those run in a separate finalisation phase outside the scheduler."
                 },
                 "dependsOn": {
                     "type": "array",
@@ -324,6 +330,10 @@
                         ]
                     },
                     "description": "Input patterns for cache invalidation"
+                },
+                "maxConcurrent": {
+                    "type": "number",
+                    "description": "Maximum number of in-flight instances of this target across the whole graph. When set, the scheduler refuses to start an additional task whose `target.target` equals this target's name once the running count reaches `maxConcurrent`. Independent of `--parallel`: the global cap still bounds total in-flight tasks, and `maxConcurrent` further bounds the per-target subset.\n\nUse for tests/deploys that share an external resource (DB, port, mock server). Set to `1` to serialize. Values `<= 0` are ignored.\n\nIf multiple projects declare different values for the same target name, the runner uses the smallest declared cap. Caps don't apply to tasks marked `always: true`; those run in a separate finalisation phase outside the scheduler."
                 },
                 "outputs": {
                     "type": "array",

@@ -49,7 +49,7 @@
                         },
                         "noProductionDependencyOnApplication": {
                             "type": "boolean",
-                            "description": "When true, production `dependencies` must not point to \"application\" type projects. devDependencies on applications are allowed (e.g., for testing).",
+                            "description": "When true, production `dependencies` must not point to deployment-target projects — `application`, `service`, or `tool`. devDependencies on those are allowed (e.g., for testing).",
                             "default": false
                         }
                     },
@@ -86,7 +86,7 @@
                         },
                         "enforceApplicationBoundary": {
                             "type": "boolean",
-                            "description": "When true, no project may depend on an \"application\" type project. Applications are typically deployment targets, not libraries.",
+                            "description": "When true, no project may depend on a deployment target — projects of type `application`, `service`, or `tool`. Deployment targets are standalone artefacts, not reusable libraries.",
                             "default": true
                         }
                     },
@@ -470,6 +470,59 @@
                     "additionalProperties": false,
                     "description": "Tweak the custom-types lint that flags drift in `engines.{node,pnpm,...}`, `packageManager`, `volta.{node,pnpm,yarn}`, and the proposed `devEngines.{runtime,packageManager}` array form.\n\nEach (customType × name) cluster is tracked independently — `engines.node` and `volta.node` don't cross-couple here. Use a versionGroup once that lands if you need to enforce they agree."
                 },
+                "deadWorkspacePatterns": {
+                    "type": "object",
+                    "properties": {
+                        "autofix": {
+                            "anyOf": [
+                                {
+                                    "type": "string",
+                                    "const": "prompt"
+                                },
+                                {
+                                    "type": "boolean"
+                                }
+                            ],
+                            "description": "Three-state autofix opt-out. See `workspaceProtocol.autofix` for the contract — applied here to dropping unmatched patterns from the workspace config file.",
+                            "default": true
+                        }
+                    },
+                    "additionalProperties": false,
+                    "description": "Tweak the dead-workspace-patterns lint that flags entries in `pnpm-workspace.yaml#packages` / `package.json#workspaces` which resolve to zero on-disk directories."
+                },
+                "emptyDeps": {
+                    "type": "object",
+                    "properties": {
+                        "autofix": {
+                            "anyOf": [
+                                {
+                                    "type": "string",
+                                    "const": "prompt"
+                                },
+                                {
+                                    "type": "boolean"
+                                }
+                            ],
+                            "description": "Three-state autofix opt-out. See `workspaceProtocol.autofix` for the contract — applied here to removing the empty key.",
+                            "default": true
+                        },
+                        "ignoreBlocks": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "dependencies",
+                                    "devDependencies",
+                                    "optionalDependencies",
+                                    "peerDependencies"
+                                ]
+                            },
+                            "description": "Block names exempt from the rule (e.g. `[\"peerDependencies\"]` to keep the key around as a marker even when empty)."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "description": "Tweak the empty-deps lint that flags empty `dependencies` / `devDependencies` / `peerDependencies` / `optionalDependencies` blocks across the workspace."
+                },
                 "redefineRoot": {
                     "type": "object",
                     "properties": {
@@ -483,6 +536,121 @@
                     },
                     "additionalProperties": false,
                     "description": "Tweak the redefine-root lint that flags non-root packages duplicating deps already pinned at the workspace root."
+                },
+                "rootDeps": {
+                    "type": "object",
+                    "properties": {
+                        "autofix": {
+                            "anyOf": [
+                                {
+                                    "type": "string",
+                                    "const": "prompt"
+                                },
+                                {
+                                    "type": "boolean"
+                                }
+                            ],
+                            "description": "Three-state autofix opt-out. See `workspaceProtocol.autofix` for the contract — applied here to moving entries from `dependencies` to `devDependencies` on the root package.json.",
+                            "default": true
+                        }
+                    },
+                    "additionalProperties": false,
+                    "description": "Tweak the root-deps lint that flags runtime `dependencies` declared on the private workspace root (they should live in `devDependencies`)."
+                },
+                "rootPackageManager": {
+                    "type": "object",
+                    "properties": {
+                        "autofix": {
+                            "anyOf": [
+                                {
+                                    "type": "string",
+                                    "const": "prompt"
+                                },
+                                {
+                                    "type": "boolean"
+                                }
+                            ],
+                            "description": "Three-state autofix opt-out. See `workspaceProtocol.autofix` for the contract. `--fix` only writes when `suggested` is set — a missing `packageManager` field has no canonical default.",
+                            "default": true
+                        },
+                        "suggested": {
+                            "type": "string",
+                            "description": "Canonical specifier (`name@version`) to write when `--fix` runs and the field is absent. Required to enable autofix — vis won't guess the workspace's preferred manager.",
+                            "examples": [
+                                "pnpm@10.32.1"
+                            ]
+                        }
+                    },
+                    "additionalProperties": false,
+                    "description": "Tweak the root-package-manager lint that flags a missing or malformed `packageManager` field on the workspace root."
+                },
+                "rootPrivate": {
+                    "type": "object",
+                    "properties": {
+                        "autofix": {
+                            "anyOf": [
+                                {
+                                    "type": "string",
+                                    "const": "prompt"
+                                },
+                                {
+                                    "type": "boolean"
+                                }
+                            ],
+                            "description": "Three-state autofix opt-out. See `workspaceProtocol.autofix` for the contract — applied here to inserting `\"private\": true`.",
+                            "default": true
+                        }
+                    },
+                    "additionalProperties": false,
+                    "description": "Tweak the root-private lint that flags a workspace root package.json missing `\"private\": true`. Only fires when the root looks like a workspace (npm/yarn/bun `workspaces` field or `pnpm-workspace.yaml`)."
+                },
+                "similarDeps": {
+                    "type": "object",
+                    "properties": {
+                        "extraFamilies": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/$defs/SimilarDepFamily"
+                            },
+                            "description": "Additional families merged with the built-ins. Same `id` wins → user override fully replaces the built-in entry."
+                        },
+                        "ignoreFamilies": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            },
+                            "description": "Family ids to skip entirely (matches `SimilarDepFamily.id`)."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "description": "Tweak the similar-deps lint that flags drift across related dep families (e.g. `react` and `react-dom`, all of `@babel/*`).\n\nThe lint is report-only — aligning a family requires picking a single canonical specifier across heterogeneous range syntaxes (`^`, `~`, exact), which is too lossy without user input."
+                },
+                "typesInDeps": {
+                    "type": "object",
+                    "properties": {
+                        "autofix": {
+                            "anyOf": [
+                                {
+                                    "type": "string",
+                                    "const": "prompt"
+                                },
+                                {
+                                    "type": "boolean"
+                                }
+                            ],
+                            "description": "Three-state autofix opt-out. See `workspaceProtocol.autofix` for the contract — applied here to moving the entry to `devDependencies`. Existing dev pins are preserved on conflict.",
+                            "default": true
+                        },
+                        "ignore": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            },
+                            "description": "Dep names exempt from the rule (exact match, e.g. `@types/node`)."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "description": "Tweak the types-in-deps lint that flags `@types/*` declared in `dependencies` on a private package (they belong in `devDependencies` since the package never ships)."
                 },
                 "workspaceProtocol": {
                     "type": "object",
@@ -848,6 +1016,18 @@
             "additionalProperties": false,
             "description": "sort-package-json command defaults"
         },
+        "sponsor": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "description": "Show the sponsor notice on successful command completion.",
+                    "default": true
+                }
+            },
+            "additionalProperties": false,
+            "description": "Sponsorship notice shown after successful commands.\n\nvis prints a one-line \"consider sponsoring visulima\" notice at most once every 14 days (skipped in CI, non-TTY, and when `VIS_NO_SPONSOR=1` is set). Set `enabled: false` to silence it permanently for this workspace."
+        },
         "staged": {
             "$ref": "#/$defs/StagedConfig",
             "description": "Staged file patterns and commands (replaces lint-staged).\n\nAccepts all lint-staged config forms:\n- `string` or `string[]` commands\n- Sync/async functions returning `string | string[]`\n- `{ title, task }` objects for named side-effect tasks\n- Mixed arrays of strings and functions\n- A top-level generate-task function"
@@ -928,6 +1108,10 @@
                             "additionalProperties": {}
                         },
                         "description": "Named configurations (e.g., \"production\", \"development\")"
+                    },
+                    "concurrencyGroup": {
+                        "type": "string",
+                        "description": "Workspace-level concurrency group this target opts into. The scheduler caps the *combined* in-flight count of every task whose target carries the same group name to the value declared in  {@link  TaskRunnerOptions.concurrencyGroups } . Use this when several targets share an external resource (a single Postgres, a developer's Docker daemon, an account-wide deploy lock) so the cap follows the resource, not any single target name.\n\nTargets that name a group not declared in `concurrencyGroups` run uncapped — a typo shouldn't deadlock the graph. Caps don't apply to tasks marked `always: true`; those run in a separate finalisation phase outside the scheduler."
                     },
                     "dependsOn": {
                         "type": "array",
@@ -1081,6 +1265,10 @@
                             ]
                         },
                         "description": "Input patterns for cache invalidation"
+                    },
+                    "maxConcurrent": {
+                        "type": "number",
+                        "description": "Maximum number of in-flight instances of this target across the whole graph. When set, the scheduler refuses to start an additional task whose `target.target` equals this target's name once the running count reaches `maxConcurrent`. Independent of `--parallel`: the global cap still bounds total in-flight tasks, and `maxConcurrent` further bounds the per-target subset.\n\nUse for tests/deploys that share an external resource (DB, port, mock server). Set to `1` to serialize. Values `<= 0` are ignored.\n\nIf multiple projects declare different values for the same target name, the runner uses the smallest declared cap. Caps don't apply to tasks marked `always: true`; those run in a separate finalisation phase outside the scheduler."
                     },
                     "outputs": {
                         "type": "array",
@@ -1488,6 +1676,13 @@
                     "description": "When `true`, file hashes are cached in a persistent mtime+size indexed snapshot under `node_modules/.cache/task-runner/`. On subsequent runs, unchanged files skip content re-reads — cuts cold-cache fingerprint time dramatically on large workspaces.\n\nChanged or new files still get full content hashing. Safe to leave on by default; overhead when nothing matches is a single `stat` call per file.",
                     "default": false
                 },
+                "concurrencyGroups": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "number"
+                    },
+                    "description": "Workspace-level concurrency group caps. Maps a group name to the maximum number of in-flight tasks across every target whose `concurrencyGroup` field equals the same name. Independent of `parallel`: the global cap still bounds total tasks, and group caps further bound the named subset.\n\nCommon shape — one cap per shared resource:\n\n  ```ts   concurrencyGroups: {     \"db-bound\": 2,    // any target hitting the local Postgres     \"deploy-lock\": 1, // any deploy target   }   ```\n\nTargets opt in via  {@link  TargetConfiguration.concurrencyGroup } . Values `<= 0` are ignored."
+                },
                 "maxCacheAge": {
                     "type": "number",
                     "description": "Maximum age of cache entries in milliseconds"
@@ -1757,6 +1952,10 @@
                                 },
                                 "description": "Named configurations (e.g., \"production\", \"development\")"
                             },
+                            "concurrencyGroup": {
+                                "type": "string",
+                                "description": "Workspace-level concurrency group this target opts into. The scheduler caps the *combined* in-flight count of every task whose target carries the same group name to the value declared in  {@link  TaskRunnerOptions.concurrencyGroups } . Use this when several targets share an external resource (a single Postgres, a developer's Docker daemon, an account-wide deploy lock) so the cap follows the resource, not any single target name.\n\nTargets that name a group not declared in `concurrencyGroups` run uncapped — a typo shouldn't deadlock the graph. Caps don't apply to tasks marked `always: true`; those run in a separate finalisation phase outside the scheduler."
+                            },
                             "dependsOn": {
                                 "type": "array",
                                 "items": {
@@ -1914,6 +2113,10 @@
                                 "type": "object",
                                 "additionalProperties": {},
                                 "description": "Options passed to the executor"
+                            },
+                            "maxConcurrent": {
+                                "type": "number",
+                                "description": "Maximum number of in-flight instances of this target across the whole graph. When set, the scheduler refuses to start an additional task whose `target.target` equals this target's name once the running count reaches `maxConcurrent`. Independent of `--parallel`: the global cap still bounds total in-flight tasks, and `maxConcurrent` further bounds the per-target subset.\n\nUse for tests/deploys that share an external resource (DB, port, mock server). Set to `1` to serialize. Values `<= 0` are ignored.\n\nIf multiple projects declare different values for the same target name, the runner uses the smallest declared cap. Caps don't apply to tasks marked `always: true`; those run in a separate finalisation phase outside the scheduler."
                             },
                             "outputs": {
                                 "type": "array",
@@ -2571,6 +2774,38 @@
             "additionalProperties": false,
             "description": "One user-declared customTypes entry. See `policy.customTypes.extraTypes` for the full contract — this is just the row shape."
         },
+        "SimilarDepFamily": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Stable id; used in report output and config overrides."
+                },
+                "label": {
+                    "type": "string",
+                    "description": "Pretty label for the report. Defaults to `id` when omitted."
+                },
+                "members": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Dep names that belong to this family verbatim."
+                },
+                "prefixes": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Dep-name prefixes (literal, no glob). Match if `depName.startsWith(prefix)`."
+                }
+            },
+            "required": [
+                "id"
+            ],
+            "additionalProperties": false,
+            "description": "One family of upstream-coupled packages.\n\n`members` is an exact-match list. `prefixes` accept any dep whose name starts with the prefix — useful for monorepos that ship many subpackages under one scope (e.g. `@babel/`, `@storybook/`, `@nx/`). A family can use either or both; a dep matching either list belongs to the family."
+        },
         "StagedConfig": {
             "type": "object",
             "additionalProperties": {
@@ -2903,6 +3138,10 @@
                                 },
                                 "description": "Named configurations (e.g., \"production\", \"development\")"
                             },
+                            "concurrencyGroup": {
+                                "type": "string",
+                                "description": "Workspace-level concurrency group this target opts into. The scheduler caps the *combined* in-flight count of every task whose target carries the same group name to the value declared in  {@link  TaskRunnerOptions.concurrencyGroups } . Use this when several targets share an external resource (a single Postgres, a developer's Docker daemon, an account-wide deploy lock) so the cap follows the resource, not any single target name.\n\nTargets that name a group not declared in `concurrencyGroups` run uncapped — a typo shouldn't deadlock the graph. Caps don't apply to tasks marked `always: true`; those run in a separate finalisation phase outside the scheduler."
+                            },
                             "dependsOn": {
                                 "type": "array",
                                 "items": {
@@ -3055,6 +3294,10 @@
                                     ]
                                 },
                                 "description": "Input patterns for cache invalidation"
+                            },
+                            "maxConcurrent": {
+                                "type": "number",
+                                "description": "Maximum number of in-flight instances of this target across the whole graph. When set, the scheduler refuses to start an additional task whose `target.target` equals this target's name once the running count reaches `maxConcurrent`. Independent of `--parallel`: the global cap still bounds total in-flight tasks, and `maxConcurrent` further bounds the per-target subset.\n\nUse for tests/deploys that share an external resource (DB, port, mock server). Set to `1` to serialize. Values `<= 0` are ignored.\n\nIf multiple projects declare different values for the same target name, the runner uses the smallest declared cap. Caps don't apply to tasks marked `always: true`; those run in a separate finalisation phase outside the scheduler."
                             },
                             "outputs": {
                                 "type": "array",
@@ -3416,7 +3659,9 @@
                     "type": "string",
                     "enum": [
                         "application",
-                        "library"
+                        "library",
+                        "service",
+                        "tool"
                     ],
                     "description": "Match on project type."
                 },
