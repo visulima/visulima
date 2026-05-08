@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import { readJsonSync } from "@visulima/fs";
 import { join } from "@visulima/path";
-import type { ProjectGraph, WorkspaceConfiguration } from "@visulima/task-runner";
+import type { ProjectConfiguration, ProjectGraph, WorkspaceConfiguration } from "@visulima/task-runner";
 import type { XmlElement } from "jstoxml";
 import { toXML } from "jstoxml";
 
@@ -145,6 +145,10 @@ const buildExternalReferences = (pkg: BuilderPackageJson): ExternalReference[] |
     return references.length > 0 ? references : undefined;
 };
 
+// Services and CLI tools are deployable executables — CycloneDX models them as `application`.
+const toCycloneDxComponentType = (projectType: ProjectConfiguration["projectType"]): "application" | "library" =>
+    projectType === "application" || projectType === "service" || projectType === "tool" ? "application" : "library";
+
 /** Assemble the required parts of a component from a parsed package.json. */
 const decoratePackageComponent = (component: Component, pkg: BuilderPackageJson | undefined): void => {
     if (!pkg) {
@@ -216,7 +220,7 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
             "bom-ref": bomRef,
             name,
             purl: bomRef,
-            type: projectConfig.projectType === "application" ? "application" : "library",
+            type: toCycloneDxComponentType(projectConfig.projectType),
             version,
         };
 

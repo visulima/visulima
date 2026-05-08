@@ -447,7 +447,8 @@ const projectGraphToDot = (projectGraph: ProjectGraph): string => {
     const lines: string[] = ["digraph ProjectGraph {", "  rankdir=LR;", '  node [shape=box, style=filled, fillcolor="#87CEEB", fontname="monospace"];'];
 
     for (const node of Object.values(projectGraph.nodes)) {
-        const color = node.type === "application" ? "#FFD700" : "#87CEEB";
+        // application = gold, service = light green, tool = orange, library/default = blue
+        const color = node.type === "application" ? "#FFD700" : node.type === "service" ? "#90EE90" : node.type === "tool" ? "#FFB347" : "#87CEEB";
 
         lines.push(`  "${node.name}" [fillcolor="${color}"];`);
     }

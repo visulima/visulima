@@ -240,6 +240,35 @@ describe(enforceProjectConstraints, () => {
             expect(violations).toHaveLength(0);
         });
 
+        it("should treat service and tool projects as deployment targets under enforceApplicationBoundary", () => {
+            expect.assertions(4);
+
+            const graph: ProjectGraph = {
+                dependencies: {
+                    "lib-a": [{ source: "lib-a", target: "svc", type: "static" }],
+                    "lib-b": [{ source: "lib-b", target: "cli", type: "static" }],
+                    cli: [],
+                    svc: [],
+                },
+                nodes: {
+                    cli: { data: { root: "tools/cli" }, name: "cli", type: "tool" },
+                    "lib-a": { data: { root: "packages/lib-a" }, name: "lib-a", type: "library" },
+                    "lib-b": { data: { root: "packages/lib-b" }, name: "lib-b", type: "library" },
+                    svc: { data: { root: "services/svc" }, name: "svc", type: "service" },
+                },
+            };
+
+            const violations = enforceProjectConstraints(graph, {
+                typeBoundaries: { enforceApplicationBoundary: true },
+            });
+
+            expect(violations).toHaveLength(2);
+            expect(violations.map((v) => v.dependencyProject).sort()).toStrictEqual(["cli", "svc"]);
+            expect(violations.every((v) => v.rule === "type-boundary")).toBe(true);
+            // Message references the actual deployment-target type, not just "application".
+            expect(violations.find((v) => v.dependencyProject === "svc")?.message).toContain("service");
+        });
+
         it("should enforce custom allowedDependencyTypes", () => {
             expect.assertions(1);
 

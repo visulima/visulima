@@ -16,7 +16,7 @@ interface FixtureInput {
         homepage?: string;
         license?: string;
         name: string;
-        type?: "application" | "library";
+        type?: "application" | "library" | "service" | "tool";
         version: string;
     }[];
     rootName?: string;
@@ -100,6 +100,34 @@ describe(buildCycloneDxBom, () => {
 
     afterEach(() => {
         cleanupTemporaryDirectory(tmpDir);
+    });
+
+    it("should map service and tool projectTypes to CycloneDX 'application' components", () => {
+        expect.assertions(4);
+
+        const { projectGraph, workspace, workspaceRoot } = buildFixture(tmpDir, {
+            projects: [
+                { license: "MIT", name: "my-app", type: "application", version: "1.0.0" },
+                { license: "MIT", name: "my-svc", type: "service", version: "1.0.0" },
+                { license: "MIT", name: "my-cli", type: "tool", version: "1.0.0" },
+                { license: "MIT", name: "my-lib", type: "library", version: "1.0.0" },
+            ],
+        });
+
+        const bom = buildCycloneDxBom({
+            now: new Date("2026-04-13T00:00:00Z"),
+            projectGraph,
+            serialNumber: "urn:uuid:00000000-0000-4000-8000-00000000ff21",
+            workspace,
+            workspaceRoot,
+        });
+
+        const byName = (name: string) => bom.components?.find((c) => c.name === name);
+
+        expect(byName("my-app")?.type).toBe("application");
+        expect(byName("my-svc")?.type).toBe("application");
+        expect(byName("my-cli")?.type).toBe("application");
+        expect(byName("my-lib")?.type).toBe("library");
     });
 
     it("should emit a schema-valid BOM for a single-project workspace with one registry dep", () => {

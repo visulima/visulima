@@ -118,8 +118,15 @@ export interface ProjectJson {
         owner?: string;
         title?: string;
     };
-    /** Project type — library or application. */
-    projectType?: "application" | "library";
+    /**
+     * Project type — `library`, `application`, `service`, or `tool`.
+     *
+     * - `library` — reusable code consumed by other workspace projects.
+     * - `application` — end-user-facing build target (web app, mobile app).
+     * - `service` — long-running HTTP / worker process deployed independently.
+     * - `tool` — CLI or developer tooling shipped as an executable.
+     */
+    projectType?: "application" | "library" | "service" | "tool";
     /** Source root, used for display and language inference. */
     sourceRoot?: string;
     /** Tech stack. */
@@ -140,7 +147,7 @@ export interface TaskDefaultsScope {
     /** Match on project layer. */
     layer?: ProjectJson["layer"] | ProjectJson["layer"][];
     /** Match on project type. */
-    projectType?: "application" | "library";
+    projectType?: "application" | "library" | "service" | "tool";
     /** Match on project stack. */
     stack?: ProjectJson["stack"] | ProjectJson["stack"][];
     /** Match projects tagged with any of these tags. */

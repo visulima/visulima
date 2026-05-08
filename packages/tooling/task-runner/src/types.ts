@@ -239,7 +239,7 @@ export interface ProjectConfiguration {
      */
     layer?: "application" | "automation" | "configuration" | "library" | "scaffolding" | "tool";
     /** The project type */
-    projectType?: "library" | "application";
+    projectType?: "application" | "library" | "service" | "tool";
     /** The root directory of the project, relative to workspace root */
     root: string;
     /** The source root directory */
@@ -477,8 +477,9 @@ export interface TypeBoundaries {
     allowedDependencyTypes?: Record<string, string[]>;
 
     /**
-     * When true, no project may depend on an "application" type project.
-     * Applications are typically deployment targets, not libraries.
+     * When true, no project may depend on a deployment target — projects of
+     * type `application`, `service`, or `tool`. Deployment targets are
+     * standalone artefacts, not reusable libraries.
      * @default true
      */
     enforceApplicationBoundary?: boolean;
@@ -497,8 +498,9 @@ export interface DependencyKindRules {
     noDevDependencyOnProductionDep?: boolean;
 
     /**
-     * When true, production `dependencies` must not point to "application" type projects.
-     * devDependencies on applications are allowed (e.g., for testing).
+     * When true, production `dependencies` must not point to deployment-target
+     * projects — `application`, `service`, or `tool`. devDependencies on those
+     * are allowed (e.g., for testing).
      * @default false
      */
     noProductionDependencyOnApplication?: boolean;
@@ -588,7 +590,7 @@ export interface ProjectGraphProjectNode {
     /** The project name */
     name: string;
     /** The type of project */
-    type: "library" | "application";
+    type: "application" | "library" | "service" | "tool";
 }
 
 /**

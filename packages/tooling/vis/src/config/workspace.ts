@@ -395,11 +395,13 @@ const readWorkspacePatterns = (workspaceRoot: string): string[] | undefined => {
 
 const FILE_GROUP_PREFIX = "@filegroup:";
 
+type ProjectType = NonNullable<ProjectJson["projectType"]>;
+
 /**
  * Returns true if the named `TaskDefaultsBlock` scope matches the
  * given project metadata. Missing scope fields are treated as "any".
  */
-const scopeMatches = (scope: TaskDefaultsScope | undefined, projectJson: ProjectJson | undefined, projectType: "application" | "library"): boolean => {
+const scopeMatches = (scope: TaskDefaultsScope | undefined, projectJson: ProjectJson | undefined, projectType: ProjectType): boolean => {
     if (!scope) {
         return true;
     }
@@ -452,7 +454,7 @@ const scopeMatches = (scope: TaskDefaultsScope | undefined, projectJson: Project
 const collectTargetDefaults = (
     config: VisConfig,
     projectJson: ProjectJson | undefined,
-    projectType: "application" | "library",
+    projectType: ProjectType,
 ): Record<string, Partial<VisTargetConfiguration>> => {
     const merged: Record<string, Partial<VisTargetConfiguration>> = {};
 
@@ -696,7 +698,7 @@ const discoverWorkspace = (
         const projectJsonPath = join(workspaceRoot, projectDirectory, "project.json");
         const projectJson = readJsonFileSafe<ProjectJson>(projectJsonPath);
 
-        let projectType: "application" | "library" = "library";
+        let projectType: ProjectType = "library";
 
         if (projectJson?.projectType) {
             projectType = projectJson.projectType;
