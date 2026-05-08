@@ -11,3 +11,4 @@ const useApp = (): Props => useContext(AppContext);
 export default useApp;
 
 export { useApp };
+export type { Props as AppProps } from "../../components/app-context";
