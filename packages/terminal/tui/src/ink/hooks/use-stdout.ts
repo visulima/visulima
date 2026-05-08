@@ -11,3 +11,4 @@ const useStdout = (): Props => useContext(StdoutContext);
 export default useStdout;
 
 export { useStdout };
+export type { Props as StdoutProps } from "../../components/stdout-context";

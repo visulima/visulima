@@ -11,3 +11,4 @@ const useStderr = (): Props => useContext(StderrContext);
 export default useStderr;
 
 export { useStderr };
+export type { Props as StderrProps } from "../../components/stderr-context";

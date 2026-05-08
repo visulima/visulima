@@ -13,3 +13,4 @@ export const useStdinContext = (): Props => useContext(StdinContext);
 export default useStdin;
 
 export { useStdin };
+export type { PublicProps as StdinProps } from "../../components/stdin-context";
