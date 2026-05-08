@@ -1297,11 +1297,17 @@ describe(useAnimation, () => {
                 suspendWithNewInterval();
             });
 
-            expect(stdout.get()).toBe(String(frameBeforeSuspend));
+            // The committed animation must not reset to 0 when the transition suspends.
+            // It is allowed to advance past frameBeforeSuspend because the old interval
+            // keeps ticking during the act() flush; the failure mode this guards against
+            // is a regression that drops the visible frame back to 0.
+            const frameAfterSuspend = Number.parseInt(stdout.get(), 10);
+
+            expect(frameAfterSuspend).toBeGreaterThanOrEqual(frameBeforeSuspend);
 
             await delay(120);
 
-            expect(Number.parseInt(stdout.get(), 10)).toBeGreaterThan(frameBeforeSuspend);
+            expect(Number.parseInt(stdout.get(), 10)).toBeGreaterThan(frameAfterSuspend);
         } finally {
             resolveSuspense();
             instance?.unmount();
