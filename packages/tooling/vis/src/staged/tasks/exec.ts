@@ -1,5 +1,4 @@
-// eslint-disable-next-line e18e/ban-dependencies -- staged workflow port relies on execa's `input`/`reject:false`/stream-pipe semantics that tinyexec doesn't expose
-import { execa } from "execa";
+import { x } from "tinyexec";
 
 import { ConfigError, TaskError } from "../errors";
 
@@ -176,38 +175,38 @@ export const execCommand = async (command: string, files: ReadonlyArray<string>,
             throw new TaskError(command, "Task aborted by earlier failure.");
         }
 
-        const result = await execa(program, [...baseArgs, ...chunk], {
-            cancelSignal: options.signal,
-            cwd: options.cwd,
-            // Pipe stdout/stderr so we can capture task output for the renderer, but forward `FORCE_COLOR=1`
-            // unless the user has already set it — tools like eslint / prettier check isTTY, which is false
-            // when piped, and drop ANSI styling without this hint. Matches lint-staged / nano-staged behavior.
-            env: buildTaskEnv(options.env),
-            // Signal delivered to the child when `cancelSignal` aborts. Defaults to SIGTERM for graceful
-            // shutdown; callers can set SIGKILL via `killSignal` for fast-fail runs.
-            killSignal: options.killSignal ?? "SIGTERM",
-            reject: false,
-            stderr: "pipe",
-            stdout: "pipe",
+        const proc = x(program, [...baseArgs, ...chunk], {
+            nodeOptions: {
+                cwd: options.cwd,
+                // Pipe stdout/stderr so we can capture task output for the renderer, but forward `FORCE_COLOR=1`
+                // unless the user has already set it — tools like eslint / prettier check isTTY, which is false
+                // when piped, and drop ANSI styling without this hint. Matches lint-staged / nano-staged behavior.
+                env: buildTaskEnv(options.env),
+                // Signal delivered to the child when `signal` aborts. Defaults to SIGTERM for graceful
+                // shutdown; callers can set SIGKILL via `killSignal` for fast-fail runs.
+                killSignal: options.killSignal ?? "SIGTERM",
+                stdio: ["ignore", "pipe", "pipe"],
+            },
+            ...(options.signal === undefined ? {} : { signal: options.signal }),
         });
 
-        const stdout = typeof result.stdout === "string" ? result.stdout : "";
-        const stderr = typeof result.stderr === "string" ? result.stderr : "";
-        const merged = [stdout, stderr].filter((s) => s.length > 0).join("\n");
+        const result = await proc;
+        const merged = [result.stdout, result.stderr].filter((s) => s.length > 0).join("\n");
 
         if (merged.length > 0) {
             outputs.push(merged);
         }
 
-        // Treat signal termination and cancellation as failures even though
-        // execa may report `exitCode: undefined` (child killed by signal) or
-        // leave an `isCanceled`/`isTerminated` flag. Without this guard, a
-        // SIGTERM'd child under `cancelSignal` falls through as success.
-        if (result.isCanceled || result.isTerminated || typeof result.exitCode !== "number") {
-            const reason = result.isCanceled
+        // Treat signal termination and cancellation as failures even though tinyexec
+        // reports `exitCode: undefined` when the child was killed by a signal. Without
+        // this guard, a SIGTERM'd child under `signal` falls through as success.
+        const signalCode = proc.process?.signalCode ?? null;
+
+        if (proc.aborted || signalCode !== null || result.exitCode === undefined) {
+            const reason = proc.aborted
                 ? "Task aborted by earlier failure."
-                : result.isTerminated
-                    ? `Task killed by signal ${result.signal ?? "(unknown)"}.`
+                : signalCode !== null
+                    ? `Task killed by signal ${signalCode}.`
                     : merged.trim() || `Task exited without a numeric status code.`;
 
             throw new TaskError(command, reason);

@@ -2,8 +2,7 @@ import { platform } from "node:os";
 import { fileURLToPath } from "node:url";
 
 import { dirname, join } from "@visulima/path";
-// eslint-disable-next-line e18e/ban-dependencies -- execa is needed because node:child_process is mocked in this file
-import { execa } from "execa";
+import { x } from "tinyexec";
 import { describe, expect, it, vi } from "vitest";
 
 import package_ from "../../package.json";
@@ -130,7 +129,7 @@ describe("package-manager", () => {
         it.skipIf(platform() === "win32" || package_.devDependencies.bun === undefined)("should detect bun", async () => {
             expect.assertions(1);
 
-            const { stdout } = await execa("bun", ["install"], { cwd: join(whichPMFixturePath, "bun") });
+            const { stdout } = await x("bun", ["install"], { nodeOptions: { cwd: join(whichPMFixturePath, "bun") } });
 
             expect(stdout).toBeDefined();
         });
@@ -138,7 +137,7 @@ describe("package-manager", () => {
         it("should detect npm", async () => {
             expect.assertions(1);
 
-            const { stdout } = await execa("npm", ["install"], { cwd: join(whichPMFixturePath, "npm") });
+            const { stdout } = await x("npm", ["install"], { nodeOptions: { cwd: join(whichPMFixturePath, "npm") } });
 
             expect(stdout).toBeDefined();
         });
@@ -146,7 +145,7 @@ describe("package-manager", () => {
         it("should detect pnpm", async () => {
             expect.assertions(1);
 
-            const { stdout } = await execa("pnpm", ["install"], { cwd: join(whichPMFixturePath, "pnpm") });
+            const { stdout } = await x("pnpm", ["install"], { nodeOptions: { cwd: join(whichPMFixturePath, "pnpm") } });
 
             expect(stdout).toBeDefined();
         });

@@ -26,7 +26,7 @@ export interface RunTasksResult {
  * serial execution. Emits lifecycle events through the renderer.
  *
  * When a command fails and `continueOnError` is off, the shared
- * `AbortController` is aborted so any execa children currently running
+ * `AbortController` is aborted so any child processes currently running
  * in other workers exit promptly rather than running to completion on
  * a doomed run.
  */
@@ -212,7 +212,7 @@ const concurrencyLimit = (concurrent: boolean | number, patternCount: number): n
     }
 
     if (concurrent === true) {
-        // Cap at available CPU parallelism to avoid spawning hundreds of concurrent execa processes on pattern-heavy configs.
+        // Cap at available CPU parallelism to avoid spawning hundreds of concurrent child processes on pattern-heavy configs.
         const reasonable = Math.max(1, typeof availableParallelism === "function" ? availableParallelism() : 4);
 
         return Math.min(Math.max(1, patternCount), reasonable);
