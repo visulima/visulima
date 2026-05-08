@@ -32,6 +32,16 @@ const cleanup = async (): Promise<void> => {
     }
 };
 
+const cleanupSync = (): void => {
+    if (existsSync(testFile)) {
+        nodeRmSync(testFile, { force: true });
+    }
+
+    if (existsSync(testFile2)) {
+        nodeRmSync(testFile2, { force: true });
+    }
+};
+
 describe("ensureFile (async)", () => {
     beforeEach(async () => {
         await cleanup();
@@ -52,11 +62,11 @@ describe("ensureFile (async)", () => {
 
 describe("ensureFile (sync)", () => {
     beforeEach(() => {
-        cleanup();
+        cleanupSync();
     });
 
     afterEach(() => {
-        cleanup();
+        cleanupSync();
     });
 
     bench.skipIf(process.env.CODSPEED_ENV)("fs-extra (sync)", () => {
@@ -96,11 +106,11 @@ describe("writeFile (async)", () => {
 
 describe("writeFile (sync)", () => {
     beforeEach(() => {
-        cleanup();
+        cleanupSync();
     });
 
     afterEach(() => {
-        cleanup();
+        cleanupSync();
     });
 
     bench.skipIf(process.env.CODSPEED_ENV)("fs-extra (sync)", () => {
@@ -143,7 +153,7 @@ describe("readFile (sync)", () => {
     });
 
     afterEach(() => {
-        cleanup();
+        cleanupSync();
     });
 
     bench.skipIf(process.env.CODSPEED_ENV)("fs-extra (sync)", () => {
@@ -192,7 +202,7 @@ describe("move (sync)", () => {
     });
 
     afterEach(() => {
-        cleanup();
+        cleanupSync();
     });
 
     bench.skipIf(process.env.CODSPEED_ENV)("fs-extra (sync)", () => {
@@ -243,7 +253,7 @@ describe("remove (sync)", () => {
     });
 
     afterEach(() => {
-        cleanup();
+        cleanupSync();
     });
 
     bench.skipIf(process.env.CODSPEED_ENV)("fs-extra (sync)", () => {

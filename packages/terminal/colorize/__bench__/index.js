@@ -40,9 +40,9 @@ import * as kleurColors from "kleur/colors";
 import { bgWhite, bold, red as kolorist_red, underline } from "kolorist";
 import picocolors from "picocolors";
 
-import Bench from "./lib/bench";
-import { createFixture } from "./lib/utils";
-import packages from "./packages";
+import Bench from "./lib/bench.js";
+import { createFixture } from "./lib/utils.js";
+import packages from "./packages.js";
 
 // Check Node.js version for styleText support (Node.js 22+)
 const nodeMajorVersion = Number.parseInt(process.version.split(".")[0].replace("v", ""), 10);
