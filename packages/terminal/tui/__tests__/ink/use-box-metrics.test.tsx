@@ -3,8 +3,10 @@ import delay from "delay";
 import { useRef, useState } from "react";
 import { describe, expect, it } from "vitest";
 
+import { Box, Text } from "../../src/components/index";
+import { useBoxMetrics } from "../../src/ink/hooks/use-box-metrics";
 import type { DOMElement } from "../../src/ink/index";
-import { Box, render, Text, useBoxMetrics } from "../../src/ink/index";
+import { render } from "../../src/ink/index";
 import createStdout from "../helpers/ink-create-stdout";
 import waitFor from "../helpers/wait-for";
 

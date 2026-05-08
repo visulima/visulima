@@ -1,6 +1,9 @@
+import { render } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { Cursor } from "@visulima/tui/components/cursor";
+import { Text } from "@visulima/tui/components/text";
+import { useInput } from "@visulima/tui/hooks/use-input";
 import React, { useState } from "react";
-
-import { Box, Cursor, render, Text, useInput } from "../../src/ink/index";
 
 const CursorTextInputExample = () => {
     const [value, setValue] = useState("");

@@ -113,3 +113,5 @@ const useTextSelection = (ref: RefObject<DOMElement | null>, options: UseTextSel
 };
 
 export default useTextSelection;
+
+export { useTextSelection };

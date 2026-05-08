@@ -1,6 +1,6 @@
 import { useContext } from "react";
 
-import { accessibilityContext } from "../components/accessibility-context";
+import { accessibilityContext } from "../../components/accessibility-context";
 
 /**
  * A React hook that returns whether a screen reader is enabled.
@@ -13,3 +13,5 @@ const useIsScreenReaderEnabled = (): boolean => {
 };
 
 export default useIsScreenReaderEnabled;
+
+export { useIsScreenReaderEnabled };

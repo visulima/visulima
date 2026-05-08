@@ -9,7 +9,11 @@
  *
  * Run: node --import @oxc-node/core/register examples/command-palette.tsx
  */
-import { Box, CommandPalette, render, Text, useApp } from "@visulima/tui";
+import { render } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { CommandPalette } from "@visulima/tui/components/command-palette";
+import { Text } from "@visulima/tui/components/text";
+import { useApp } from "@visulima/tui/hooks/use-app";
 import React, { useEffect, useState } from "react";
 
 const COMMANDS = [

@@ -76,3 +76,5 @@ const useColorBlindness = (options: UseColorBlindnessOptions = {}): UseColorBlin
 };
 
 export default useColorBlindness;
+
+export { useColorBlindness };

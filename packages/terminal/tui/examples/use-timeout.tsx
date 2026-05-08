@@ -8,7 +8,12 @@
  *
  * Run: node --import @oxc-node/core/register examples/use-timeout.tsx
  */
-import { Box, render, Text, useApp, useInput, useTimeout } from "@visulima/tui";
+import { render } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { Text } from "@visulima/tui/components/text";
+import { useApp } from "@visulima/tui/hooks/use-app";
+import { useInput } from "@visulima/tui/hooks/use-input";
+import { useTimeout } from "@visulima/tui/hooks/use-timeout";
 import React, { useState } from "react";
 
 const App = () => {

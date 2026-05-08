@@ -2,7 +2,8 @@ import delay from "delay";
 import React from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { Accordion, Button, Checkbox, Collapsible, RadioGroup, render, Switch, Text } from "../../src/ink/index";
+import { Accordion, Button, Checkbox, Collapsible, RadioGroup, Switch, Text } from "../../src/components/index";
+import { render } from "../../src/ink/index";
 import { createStdin, emitReadable } from "../helpers/ink-create-stdin";
 import createStdout from "../helpers/ink-create-stdout";
 
@@ -223,9 +224,7 @@ describe(RadioGroup, () => {
 
     it("should commit on Space when commitOnNavigate is false", async () => {
         const onChange = vi.fn();
-        const { stdin, stdout } = await setup(
-            <RadioGroup autoFocus commitOnNavigate={false} defaultValue="a" onChange={onChange} options={options} />,
-        );
+        const { stdin, stdout } = await setup(<RadioGroup autoFocus commitOnNavigate={false} defaultValue="a" onChange={onChange} options={options} />);
 
         const writes = (stdout.write as ReturnType<typeof vi.fn>).mock.calls;
         const initialWriteCount = writes.length;

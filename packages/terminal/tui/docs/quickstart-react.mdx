@@ -14,7 +14,8 @@ npm install @visulima/tui react
 ## Minimal Example
 
 ```tsx
-import { Box, Text } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { Text } from "@visulima/tui/components/text";
 import { render, useInput } from "@visulima/tui/react";
 import React, { useState } from "react";
 
@@ -99,7 +100,7 @@ See [Hooks: useInput](/hooks#useinput) for the full key map.
 ## App Lifecycle
 
 ```tsx
-import { Text } from "@visulima/tui";
+import { Text } from "@visulima/tui/components/text";
 import { useApp, useInput } from "@visulima/tui/react";
 
 function App() {
@@ -130,7 +131,8 @@ await waitUntilExit();
 ## `renderToString` for Tests
 
 ```tsx
-import { Box, Text } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { Text } from "@visulima/tui/components/text";
 import { renderToString } from "@visulima/tui/react";
 import React from "react";
 

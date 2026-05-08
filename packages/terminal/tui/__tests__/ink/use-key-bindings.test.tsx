@@ -3,7 +3,9 @@ import delay from "delay";
 import React, { useState } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { render, Text, useKeyBindings } from "../../src/ink/index";
+import { Text } from "../../src/components/index";
+import { useKeyBindings } from "../../src/ink/hooks/use-key-bindings";
+import { render } from "../../src/ink/index";
 import { createStdin, emitReadable } from "../helpers/ink-create-stdin";
 import createStdout from "../helpers/ink-create-stdout";
 

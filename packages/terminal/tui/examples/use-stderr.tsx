@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-confusing-void-expression, sonarjs/different-types-comparison */
 // @ts-nocheck
 // Ratatat port of ink/examples/use-stderr
-import { Text } from "@visulima/tui";
+import { Text } from "@visulima/tui/components/text";
 import { render, useStderr } from "@visulima/tui/react";
 import React from "react";
 

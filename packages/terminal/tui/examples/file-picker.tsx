@@ -1,4 +1,8 @@
-import { Box, FilePicker, render, Text, useApp } from "@visulima/tui";
+import { render } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { FilePicker } from "@visulima/tui/components/file-picker";
+import { Text } from "@visulima/tui/components/text";
+import { useApp } from "@visulima/tui/hooks/use-app";
 import React, { useState } from "react";
 
 const App = () => {
@@ -22,7 +26,8 @@ const App = () => {
             />
             {selectedPath && (
                 <Text>
-                    Selected:{" "}
+                    Selected:
+{" "}
                     <Text bold color="green">
                         {selectedPath}
                     </Text>

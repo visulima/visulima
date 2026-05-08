@@ -2,7 +2,7 @@ import { strip as stripAnsi } from "@visulima/ansi";
 import { getStringWidth } from "@visulima/string";
 import { describe, expect, it } from "vitest";
 
-import { Box, Text } from "../../src/ink/index";
+import { Box, Text } from "../../src/components/index";
 import { renderToString } from "../helpers/ink-render";
 
 describe("text-width", () => {

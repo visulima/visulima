@@ -1,7 +1,8 @@
 import { bgAnsi256, bgBlue, bgGreen, bgHex, bgRed, bgRgb, bgYellow } from "@visulima/colorize";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { Box, render, Text } from "../../src/ink/index";
+import { Box, Text } from "../../src/components/index";
+import { render } from "../../src/ink/index";
 import createStdout from "../helpers/ink-create-stdout";
 import { disableTestColors, enableTestColors } from "../helpers/ink-force-colors";
 import { renderToString, renderToStringAsync } from "../helpers/ink-render";

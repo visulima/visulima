@@ -8,22 +8,20 @@
  *
  * Run: node --import @oxc-node/core/register examples/ai-widgets.tsx
  */
-import {
-    ApprovalPrompt,
-    BlinkDot,
-    Box,
-    CommandBlock,
-    MessageBubble,
-    ModelBadge,
-    OperationTree,
-    render,
-    ShimmerText,
-    StatusLine,
-    StreamingText,
-    Text,
-    useApp,
-    useInput,
-} from "@visulima/tui";
+import { render } from "@visulima/tui";
+import { ApprovalPrompt } from "@visulima/tui/components/approval-prompt";
+import { BlinkDot } from "@visulima/tui/components/blink-dot";
+import { Box } from "@visulima/tui/components/box";
+import { CommandBlock } from "@visulima/tui/components/command-block";
+import { MessageBubble } from "@visulima/tui/components/message-bubble";
+import { ModelBadge } from "@visulima/tui/components/model-badge";
+import { OperationTree } from "@visulima/tui/components/operation-tree";
+import { ShimmerText } from "@visulima/tui/components/shimmer-text";
+import { StatusLine } from "@visulima/tui/components/status-line";
+import { StreamingText } from "@visulima/tui/components/streaming-text";
+import { Text } from "@visulima/tui/components/text";
+import { useApp } from "@visulima/tui/hooks/use-app";
+import { useInput } from "@visulima/tui/hooks/use-input";
 import React, { useState } from "react";
 
 const App = () => {
@@ -74,7 +72,8 @@ const App = () => {
                 status="success"
             />
             <ShimmerText text="Generating response…" />
-            {decision === undefined ? (
+            {decision === undefined
+                ? (
                 <ApprovalPrompt
                     description="Claude wants to modify auth.ts"
                     onDecision={setDecision}
@@ -82,12 +81,13 @@ const App = () => {
                     risk="medium"
                     tool="writeFile"
                 />
-            ) : (
+                )
+                : (
                 <Text color="green">
                     decision:
                     {decision}
                 </Text>
-            )}
+                )}
             <StatusLine center={<Text dimColor>Esc to quit</Text>} left={<Text>tokens: 1.2k / 200k</Text>} right={<Text dimColor>cost: $0.003</Text>} />
         </Box>
     );

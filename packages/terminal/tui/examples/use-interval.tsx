@@ -8,7 +8,12 @@
  *
  * Run: node --import @oxc-node/core/register examples/use-interval.tsx
  */
-import { Box, render, Text, useApp, useInput, useInterval } from "@visulima/tui";
+import { render } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { Text } from "@visulima/tui/components/text";
+import { useApp } from "@visulima/tui/hooks/use-app";
+import { useInput } from "@visulima/tui/hooks/use-input";
+import { useInterval } from "@visulima/tui/hooks/use-interval";
 import React, { useState } from "react";
 
 const App = () => {
@@ -42,11 +47,15 @@ const App = () => {
                 useInterval
             </Text>
             <Text>
-                tick: <Text bold>{count}</Text>
+                tick:
+{" "}
+<Text bold>{count}</Text>
             </Text>
             <Text dimColor>
                 status:
-                {running ? "running" : "paused"} — press Space to toggle, r to reset
+                {running ? "running" : "paused"}
+{" "}
+— press Space to toggle, r to reset
             </Text>
         </Box>
     );

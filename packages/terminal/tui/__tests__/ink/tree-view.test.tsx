@@ -3,8 +3,9 @@ import delay from "delay";
 import React from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import type { TreeNode } from "../../src/ink/index";
-import { render, Text, TreeView } from "../../src/ink/index";
+import type { TreeNode } from "../../src/components/index";
+import { Text, TreeView } from "../../src/components/index";
+import { render } from "../../src/ink/index";
 import { createStdin, emitReadable } from "../helpers/ink-create-stdin";
 import createStdout from "../helpers/ink-create-stdout";
 
@@ -137,7 +138,10 @@ describe(TreeView, () => {
                 data={sampleData}
                 renderNode={({ node, state }) => (
                     <Text>
-                        {"  ".repeat(state.depth)}[{node.label}]
+                        {"  ".repeat(state.depth)}
+[
+{node.label}
+]
                     </Text>
                 )}
             />,

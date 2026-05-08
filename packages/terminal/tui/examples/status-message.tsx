@@ -5,7 +5,10 @@
  * Run: node --import @oxc-node/core/register examples/status-message.tsx
  */
 
-import { Box, render, StatusMessage, Text } from "@visulima/tui";
+import { render } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { StatusMessage } from "@visulima/tui/components/status-message";
+import { Text } from "@visulima/tui/components/text";
 import React from "react";
 
 const App = () => (

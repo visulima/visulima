@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { Box, Text } from "../../src/ink/index";
+import { Box, Text } from "../../src/components/index";
 import { renderToString } from "../helpers/ink-render";
 
 describe("flex", () => {
@@ -74,7 +74,7 @@ describe("flex", () => {
         expect(output).toBe("A    B   C");
     });
 
-    it('set flex basis with flexDirection="row" container', () => {
+    it("set flex basis with flexDirection=\"row\" container", () => {
         expect.assertions(1);
 
         const output = renderToString(
@@ -89,7 +89,7 @@ describe("flex", () => {
         expect(output).toBe("A  B");
     });
 
-    it('set flex basis in percent with flexDirection="row" container', () => {
+    it("set flex basis in percent with flexDirection=\"row\" container", () => {
         expect.assertions(1);
 
         const output = renderToString(
@@ -104,7 +104,7 @@ describe("flex", () => {
         expect(output).toBe("A  B");
     });
 
-    it('set flex basis with flexDirection="column" container', () => {
+    it("set flex basis with flexDirection=\"column\" container", () => {
         expect.assertions(1);
 
         const output = renderToString(
@@ -119,7 +119,7 @@ describe("flex", () => {
         expect(output).toBe("A\n\n\nB\n\n");
     });
 
-    it('set flex basis in percent with flexDirection="column" container', () => {
+    it("set flex basis in percent with flexDirection=\"column\" container", () => {
         expect.assertions(1);
 
         const output = renderToString(

@@ -143,3 +143,5 @@ const useScrollInput = (options: UseScrollInputOptions): UseScrollInputReturn =>
 };
 
 export default useScrollInput;
+
+export { useScrollInput };

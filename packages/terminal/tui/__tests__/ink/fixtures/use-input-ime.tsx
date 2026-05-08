@@ -2,7 +2,10 @@ import process from "node:process";
 
 import React from "react";
 
-import { render, Text, useApp, useInput } from "../../../src/ink/index";
+import { Text } from "../../../src/components/index";
+import { useApp } from "../../../src/ink/hooks/use-app";
+import { useInput } from "../../../src/ink/hooks/use-input";
+import { render } from "../../../src/ink/index";
 
 const IMEInput = ({ test }: { readonly test: string | undefined }) => {
     const { exit } = useApp();

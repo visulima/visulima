@@ -12,7 +12,12 @@
  * Run: node --import @oxc-node/core/register examples/multi-select.tsx
  */
 
-import { Box, MultiSelect, render, Text, useApp, useInput } from "@visulima/tui";
+import { render } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { MultiSelect } from "@visulima/tui/components/multi-select";
+import { Text } from "@visulima/tui/components/text";
+import { useApp } from "@visulima/tui/hooks/use-app";
+import { useInput } from "@visulima/tui/hooks/use-input";
 import React, { useState } from "react";
 
 const App = () => {
@@ -33,7 +38,8 @@ const App = () => {
             </Text>
             <Text dim>↑/↓ navigate · Space toggle · a all · Enter submit · Esc quit</Text>
 
-            {submitted === undefined ? (
+            {submitted === undefined
+                ? (
                 <Box flexDirection="column" gap={1}>
                     <MultiSelect
                         onChange={setSelected}
@@ -53,12 +59,13 @@ const App = () => {
                         {selected.join(", ") || "(none)"}
                     </Text>
                 </Box>
-            ) : (
+                )
+                : (
                 <Text color="green">
                     Submitted:
                     {submitted.join(", ")}
                 </Text>
-            )}
+                )}
         </Box>
     );
 };

@@ -89,3 +89,5 @@ export default function useStopwatch(options?: UseStopwatchOptions): UseStopwatc
 
     return { elapsed, isRunning: running, lap, laps, reset, start, stop, toggle };
 }
+
+export { useStopwatch };

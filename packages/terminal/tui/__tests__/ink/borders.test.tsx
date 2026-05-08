@@ -5,7 +5,8 @@ import { indent as indentString } from "@visulima/string";
 import cliBoxes from "cli-boxes";
 import { describe, expect, it } from "vitest";
 
-import { Box, render, Text } from "../../src/ink/index";
+import { Box, Text } from "../../src/components/index";
+import { render } from "../../src/ink/index";
 import createStdout from "../helpers/ink-create-stdout";
 import { renderToString, renderToStringAsync } from "../helpers/ink-render";
 import { renderAsync } from "../helpers/ink-test-renderer";

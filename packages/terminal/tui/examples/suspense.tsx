@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-floating-promises, no-promise-executor-return, sonarjs/different-types-comparison */
 // @ts-nocheck
 // Ratatat port of ink/examples/suspense
-import { Text } from "@visulima/tui";
+import { Text } from "@visulima/tui/components/text";
 import { render } from "@visulima/tui/react";
 import React, { Suspense } from "react";
 

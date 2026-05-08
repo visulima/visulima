@@ -38,7 +38,7 @@ export default defineConfig({
                 ],
             },
             hoisted: {
-                exclude: ["@visulima/interactive-manager"],
+                exclude: ["@visulima/interactive-manager", "@visulima/is-ansi-color-supported"],
             },
         },
     },

@@ -11,7 +11,19 @@
  *
  * Run: node --import @oxc-node/core/register examples/charts.tsx
  */
-import { AreaChart, BarChart, Box, Gauge, Heatmap, Histogram, LineChart, render, ScatterPlot, Sparkline, Text, useApp, useInput } from "@visulima/tui";
+import { render } from "@visulima/tui";
+import { AreaChart } from "@visulima/tui/components/area-chart";
+import { BarChart } from "@visulima/tui/components/bar-chart";
+import { Box } from "@visulima/tui/components/box";
+import { Gauge } from "@visulima/tui/components/gauge";
+import { Heatmap } from "@visulima/tui/components/heatmap";
+import { Histogram } from "@visulima/tui/components/histogram";
+import { LineChart } from "@visulima/tui/components/line-chart";
+import { ScatterPlot } from "@visulima/tui/components/scatter-plot";
+import { Sparkline } from "@visulima/tui/components/sparkline";
+import { Text } from "@visulima/tui/components/text";
+import { useApp } from "@visulima/tui/hooks/use-app";
+import { useInput } from "@visulima/tui/hooks/use-input";
 import React, { useState } from "react";
 
 const randomSeries = (length: number, max = 100): ReadonlyArray<number> => Array.from({ length }, () => Math.round(Math.random() * max));

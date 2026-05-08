@@ -1,6 +1,9 @@
 import React, { useRef, useState } from "react";
 
-import { Box, render, Text, useAnimation, useInput } from "../src/ink/index";
+import { Box, Text } from "../src/components/index";
+import { useAnimation } from "../src/ink/hooks/use-animation";
+import { useInput } from "../src/ink/hooks/use-input";
+import { render } from "../src/ink/index";
 
 const rainbowColors = ["red", "yellow", "green", "cyan", "blue", "magenta"] as const;
 const sparkleChars = ["\u2726", "\u2727", "\u00B7", "\u22C6"];
@@ -70,8 +73,7 @@ const UseAnimationDemo = () => {
     // Sparkle line
     const sparkleLine = (seed: number) =>
         Array.from({ length: trackWidth + 4 }, (_, index) =>
-            (index * 7 + seed * 13) % 19 < 3 ? sparkleChars[(frame.slow + index + seed) % sparkleChars.length]! : " ",
-        ).join("");
+            (index * 7 + seed * 13) % 19 < 3 ? sparkleChars[(frame.slow + index + seed) % sparkleChars.length]! : " ").join("");
 
     const title = "Unicorns are magical!";
     const spinner = spinnerFrames[frame.fast % spinnerFrames.length]!;
@@ -110,7 +112,9 @@ const UseAnimationDemo = () => {
             <Text />
             <Text color="cyan">
                 {"  "}
-                {spinner} Loading more unicorns...
+                {spinner}
+{" "}
+Loading more unicorns...
             </Text>
             <Text />
             <Text dimColor>
@@ -118,8 +122,10 @@ const UseAnimationDemo = () => {
                 Press
                 {"<"}
                 space
-                {">"} to
-                {paused ? "resume" : "pause"}
+                {">"}
+{" "}
+to
+{paused ? "resume" : "pause"}
             </Text>
         </Box>
     );

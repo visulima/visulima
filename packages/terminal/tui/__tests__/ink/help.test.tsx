@@ -2,8 +2,8 @@ import { strip as stripAnsi } from "@visulima/ansi";
 import React from "react";
 import { describe, expect, it } from "vitest";
 
-import type { KeyBinding } from "../../src/ink/index";
-import { Help } from "../../src/ink/index";
+import { Help } from "../../src/components/index";
+import type { KeyBinding } from "../../src/ink/hooks/use-key-bindings";
 import { renderToString } from "../helpers/ink-render";
 
 const bindings: KeyBinding[] = [

@@ -6,7 +6,7 @@
 import type { PropsWithChildren } from "react";
 import React from "react";
 
-import Box from "../components/box";
+import Box from "../../components/box";
 import useWindowSize from "../hooks/use-window-size";
 
 const Fullscreen = ({ children }: PropsWithChildren): React.JSX.Element => {

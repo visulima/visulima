@@ -11,7 +11,11 @@
  *
  * Run: node --import @oxc-node/core/register examples/use-hotkey.tsx
  */
-import { Box, render, Text, useApp, useHotkey } from "@visulima/tui";
+import { render } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { Text } from "@visulima/tui/components/text";
+import { useApp } from "@visulima/tui/hooks/use-app";
+import { useHotkey } from "@visulima/tui/hooks/use-hotkey";
 import React, { useState } from "react";
 
 const App = () => {

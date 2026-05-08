@@ -5,7 +5,10 @@
  * Run: node --import @oxc-node/core/register examples/ordered-list.tsx
  */
 
-import { Box, OrderedList, render, Text } from "@visulima/tui";
+import { render } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { OrderedList } from "@visulima/tui/components/ordered-list";
+import { Text } from "@visulima/tui/components/text";
 import React from "react";
 
 const App = () => (

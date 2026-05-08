@@ -1,7 +1,7 @@
 import { useContext } from "react";
 
-import type { Props } from "../components/focus-context";
-import FocusContext from "../components/focus-context";
+import type { Props } from "../../components/focus-context";
+import FocusContext from "../../components/focus-context";
 
 type Output = {
     /**
@@ -62,3 +62,5 @@ const useFocusManager = (): Output => {
 };
 
 export default useFocusManager;
+
+export { useFocusManager };

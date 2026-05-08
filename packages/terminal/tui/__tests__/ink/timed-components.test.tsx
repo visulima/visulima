@@ -2,7 +2,8 @@ import delay from "delay";
 import React from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { render, StreamingText, Toast } from "../../src/ink/index";
+import { StreamingText, Toast } from "../../src/components/index";
+import { render } from "../../src/ink/index";
 import createStdout from "../helpers/ink-create-stdout";
 
 let currentUnmount: (() => void) | undefined;

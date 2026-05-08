@@ -8,7 +8,12 @@
  * Run: node --import @oxc-node/core/register examples/code.tsx
  */
 
-import { Box, Code, render, Text, useApp, useInput } from "@visulima/tui";
+import { render } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { Code } from "@visulima/tui/components/code";
+import { Text } from "@visulima/tui/components/text";
+import { useApp } from "@visulima/tui/hooks/use-app";
+import { useInput } from "@visulima/tui/hooks/use-input";
 import React from "react";
 
 const tsCode = `interface User {

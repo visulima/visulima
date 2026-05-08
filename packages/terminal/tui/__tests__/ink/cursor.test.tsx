@@ -3,7 +3,11 @@ import delay from "delay";
 import { act, Suspense, useEffect, useState } from "react";
 import { afterEach, describe, expect, it } from "vitest";
 
-import { Box, Cursor, render, Text, useCursor, useInput, useStdout } from "../../src/ink/index";
+import { Box, Cursor, Text } from "../../src/components/index";
+import { useCursor } from "../../src/ink/hooks/use-cursor";
+import { useInput } from "../../src/ink/hooks/use-input";
+import { useStdout } from "../../src/ink/hooks/use-stdout";
+import { render } from "../../src/ink/index";
 import { createStdin, emitReadable } from "../helpers/ink-create-stdin";
 import createStdout from "../helpers/ink-create-stdout";
 import waitFor from "../helpers/wait-for";

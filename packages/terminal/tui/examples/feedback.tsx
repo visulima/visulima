@@ -11,7 +11,14 @@
  *
  * Run: node --import @oxc-node/core/register examples/feedback.tsx
  */
-import { Box, Placeholder, render, Stepper, Text, Toast, useApp, useInput } from "@visulima/tui";
+import { render } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { Placeholder } from "@visulima/tui/components/placeholder";
+import { Stepper } from "@visulima/tui/components/stepper";
+import { Text } from "@visulima/tui/components/text";
+import { Toast } from "@visulima/tui/components/toast";
+import { useApp } from "@visulima/tui/hooks/use-app";
+import { useInput } from "@visulima/tui/hooks/use-input";
 import React, { useRef, useState } from "react";
 
 const STEPS = [{ label: "Download" }, { label: "Compile" }, { label: "Test" }, { label: "Deploy" }];

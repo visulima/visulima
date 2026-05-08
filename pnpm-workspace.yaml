@@ -606,6 +606,7 @@ catalogs:
     string-width: 8.2.1
     swagger-jsdoc: ^6.2.8
     tailwind-merge: 3.5.0
+    terminal-size: ^4.0.1
     textlint: ^15.6.0
     transliteration: 2.6.1
     ts-japi: ^1.12.3

@@ -17,8 +17,8 @@ import { ConcurrentRoot, LegacyRoot } from "react-reconciler/constants";
 import { onExit as signalExit } from "signal-exit";
 import Yoga from "yoga-layout";
 
-import { accessibilityContext as AccessibilityContext } from "./components/accessibility-context";
-import App from "./components/app";
+import { accessibilityContext as AccessibilityContext } from "../components/accessibility-context";
+import App from "../components/app";
 import * as dom from "./dom";
 import instances from "./instances";
 import type { KittyFlagName, KittyKeyboardOptions } from "./kitty-keyboard";

@@ -10,7 +10,15 @@
  *
  * Run: node --import @oxc-node/core/register examples/navigation.tsx
  */
-import { Box, ContentSwitcher, Menu, OptionList, render, Text, Tooltip, useApp, useInput } from "@visulima/tui";
+import { render } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { ContentSwitcher } from "@visulima/tui/components/content-switcher";
+import { Menu } from "@visulima/tui/components/menu";
+import { OptionList } from "@visulima/tui/components/option-list";
+import { Text } from "@visulima/tui/components/text";
+import { Tooltip } from "@visulima/tui/components/tooltip";
+import { useApp } from "@visulima/tui/hooks/use-app";
+import { useInput } from "@visulima/tui/hooks/use-input";
 import React, { useState } from "react";
 
 const App = () => {
@@ -57,12 +65,14 @@ const App = () => {
                 ]}
                 title="Application"
             />
-            {lastPicked === undefined ? undefined : (
+            {lastPicked === undefined
+                ? undefined
+                : (
                 <Text dimColor>
                     last picked:
                     {lastPicked}
                 </Text>
-            )}
+                )}
             <Text bold color="cyan">
                 Tooltip (press `h` to toggle)
             </Text>

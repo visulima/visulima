@@ -4,7 +4,8 @@
  * Minimal renderInline test — exits after 1 second, preserve mode.
  * If scrollback is wiped after this exits, the bug is structural in renderInline.
  */
-import { Box, Text } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { Text } from "@visulima/tui/components/text";
 import { renderInline, useApp } from "@visulima/tui/react";
 import React from "react";
 

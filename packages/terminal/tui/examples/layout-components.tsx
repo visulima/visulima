@@ -3,7 +3,18 @@
  *
  * Run: node --import @oxc-node/core/register examples/layout-components.tsx
  */
-import { Box, Breadcrumb, Card, Heading, Kbd, LoadingIndicator, Paragraph, render, Tag, Text, useApp, useInput } from "@visulima/tui";
+import { render } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { Breadcrumb } from "@visulima/tui/components/breadcrumb";
+import { Card } from "@visulima/tui/components/card";
+import { Heading } from "@visulima/tui/components/heading";
+import { Kbd } from "@visulima/tui/components/kbd";
+import { LoadingIndicator } from "@visulima/tui/components/loading-indicator";
+import { Paragraph } from "@visulima/tui/components/paragraph";
+import { Tag } from "@visulima/tui/components/tag";
+import { Text } from "@visulima/tui/components/text";
+import { useApp } from "@visulima/tui/hooks/use-app";
+import { useInput } from "@visulima/tui/hooks/use-input";
 import React from "react";
 
 const App = () => {
@@ -21,17 +32,21 @@ const App = () => {
             <Heading level={3}>Cards, tags, keys</Heading>
             <Breadcrumb items={[{ label: "Home" }, { label: "Docs" }, { label: "Components" }, { label: "Layout" }]} />
             <Card
-                headerRight={
+                headerRight={(
                     <Tag icon="✨" variant="solid">
                         new
                     </Tag>
-                }
+                  )}
                 subtitle="A bordered container with title and optional footer"
                 title="Card component"
                 width={60}
             >
                 <Paragraph>
-                    Cards group related content. They accept a title, subtitle, right-aligned header content, and a footer. Press <Kbd>Esc</Kbd> to quit.
+                    Cards group related content. They accept a title, subtitle, right-aligned header content, and a footer. Press
+{" "}
+<Kbd>Esc</Kbd>
+{" "}
+to quit.
                 </Paragraph>
                 <Box gap={1}>
                     <Tag color="green">stable</Tag>

@@ -2,7 +2,9 @@ import { strip as stripAnsi } from "@visulima/ansi";
 import delay from "delay";
 import { describe, expect, it } from "vitest";
 
-import { Box, render, Text, useWindowSize } from "../../src/ink/index";
+import { Box, Text } from "../../src/components/index";
+import { useWindowSize } from "../../src/ink/hooks/use-window-size";
+import { render } from "../../src/ink/index";
 import type { FakeStdout } from "../helpers/ink-create-stdout";
 import createStdout from "../helpers/ink-create-stdout";
 import waitFor from "../helpers/wait-for";
@@ -22,7 +24,9 @@ describe("terminal-resize", () => {
 
             return (
                 <Text>
-                    {columns}x{rows}
+                    {columns}
+x
+{rows}
                 </Text>
             );
         };
@@ -53,7 +57,9 @@ describe("terminal-resize", () => {
 
             return (
                 <Text>
-                    {columns}x{rows}
+                    {columns}
+x
+{rows}
                 </Text>
             );
         };
@@ -82,7 +88,9 @@ describe("terminal-resize", () => {
 
             return (
                 <Text>
-                    {columns}x{rows}
+                    {columns}
+x
+{rows}
                 </Text>
             );
         };

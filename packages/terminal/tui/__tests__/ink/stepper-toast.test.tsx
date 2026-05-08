@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, expect, it } from "vitest";
 
-import { Stepper, Toast } from "../../src/ink/index";
+import { Stepper, Toast } from "../../src/components/index";
 import { renderToString } from "../helpers/ink-render";
 
 describe(Stepper, () => {

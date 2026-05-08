@@ -17,7 +17,12 @@
  * Run: node --import @oxc-node/core/register examples/textarea.tsx
  */
 
-import { Box, render, Text, Textarea, useApp, useInput } from "@visulima/tui";
+import { render } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { Text } from "@visulima/tui/components/text";
+import { Textarea } from "@visulima/tui/components/textarea";
+import { useApp } from "@visulima/tui/hooks/use-app";
+import { useInput } from "@visulima/tui/hooks/use-input";
 import React, { useState } from "react";
 
 const App = () => {
@@ -55,9 +60,16 @@ const App = () => {
             </Box>
 
             <Text dimColor>
-                {lineCount} line
-                {lineCount === 1 ? "" : "s"} ·{charCount} char
-                {charCount === 1 ? "" : "s"}
+                {lineCount}
+{" "}
+line
+{lineCount === 1 ? "" : "s"}
+{" "}
+·
+{charCount}
+{" "}
+char
+{charCount === 1 ? "" : "s"}
             </Text>
 
             {submitted !== undefined && (

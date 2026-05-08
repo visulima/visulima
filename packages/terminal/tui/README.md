@@ -65,11 +65,39 @@ yarn add @visulima/tui react react-reconciler
 pnpm add @visulima/tui react react-reconciler
 ```
 
+### Component imports
+
+Every component lives at its own subpath under `@visulima/tui/components/<kebab-name>`. Hooks, `render`, and primitives stay on the bare `@visulima/tui` entry. This keeps the import graph small — you only pull in what you use, and heavy peer dependencies are loaded only when their component is imported.
+
+```tsx
+import { Box } from "@visulima/tui/components/box";
+import { Text } from "@visulima/tui/components/text";
+import { Spinner } from "@visulima/tui/components/spinner";
+import { useApp } from "@visulima/tui/hooks/use-app";
+import { useInput } from "@visulima/tui/hooks/use-input";
+import { render } from "@visulima/tui";
+```
+
+### Optional peer dependencies
+
+A few components have heavy peer dependencies. Install only the peers for the components you use:
+
+| Component  | Subpath                              | Required peers                                                                                            |
+| ---------- | ------------------------------------ | --------------------------------------------------------------------------------------------------------- |
+| `BigText`  | `@visulima/tui/components/big-text`  | `cfonts`                                                                                                  |
+| `Code`     | `@visulima/tui/components/code`      | `shiki`, `@shikijs/langs`, `@shikijs/themes`                                                              |
+| `DiffView` | `@visulima/tui/components/diff-view` | `diff` (+ `shiki`, `@shikijs/langs`, `@shikijs/themes` for syntax highlighting)                           |
+| `Markdown` | `@visulima/tui/components/markdown`  | `marked` (+ `shiki`, `@shikijs/langs`, `@shikijs/themes` for code blocks; `@visulima/tabular` for tables) |
+| `Table`    | `@visulima/tui/components/table`     | `@visulima/tabular`                                                                                       |
+
+To enable the in-app React DevTools overlay (`DEV=true`), install `react-devtools-core` and `ws`.
+
 ## Quick Start
 
 ```tsx
-import { render, Box, Text } from "@visulima/tui";
-
+import { Box } from "@visulima/tui/components/box";
+import { Text } from "@visulima/tui/components/text";
+import { render } from "@visulima/tui";
 const App = () => (
     <Box flexDirection="column" padding={1}>
         <Text bold>Hello, world!</Text>
@@ -87,8 +115,8 @@ render(<App />);
 Drive frame-based or time-based animations with a shared timer. Multiple `useAnimation` calls consolidate into one render cycle.
 
 ```tsx
-import { Text, useAnimation } from "@visulima/tui";
-
+import { Text } from "@visulima/tui/components/text";
+import { useAnimation } from "@visulima/tui/hooks/use-animation";
 const Spinner = () => {
     const { frame } = useAnimation({ interval: 80 });
     const characters = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];

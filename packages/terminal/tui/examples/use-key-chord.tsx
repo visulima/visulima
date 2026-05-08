@@ -11,7 +11,12 @@
  *
  * Run: node --import @oxc-node/core/register examples/use-key-chord.tsx
  */
-import { Box, render, Text, useApp, useHotkey, useKeyChord } from "@visulima/tui";
+import { render } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { Text } from "@visulima/tui/components/text";
+import { useApp } from "@visulima/tui/hooks/use-app";
+import { useHotkey } from "@visulima/tui/hooks/use-hotkey";
+import { useKeyChord } from "@visulima/tui/hooks/use-key-chord";
 import React, { useState } from "react";
 
 const App = () => {

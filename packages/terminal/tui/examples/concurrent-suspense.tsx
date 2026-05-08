@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/only-throw-error, func-style, sonarjs/different-types-comparison */
 // @ts-nocheck
 // Ratatat port of ink/examples/concurrent-suspense
-import { Box, Text } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { Text } from "@visulima/tui/components/text";
 import { render, useInput } from "@visulima/tui/react";
 import React, { Suspense, useState } from "react";
 
@@ -48,7 +49,12 @@ function fetchData(key, delay) {
 const DataComponent = ({ delay, id }) => {
     const data = fetchData(id, delay);
 
-    return <Text color="green">✓{data}</Text>;
+    return (
+<Text color="green">
+✓
+{data}
+</Text>
+    );
 };
 
 const App = () => {

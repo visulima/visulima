@@ -173,3 +173,5 @@ const usePersistentState = <T>(key: string, initialValue: T, options?: UsePersis
 };
 
 export default usePersistentState;
+
+export { usePersistentState };

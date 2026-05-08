@@ -5,7 +5,9 @@ import patchConsole from "patch-console";
 import { useEffect } from "react";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { render, Text, useStdin } from "../../src/ink/index";
+import { Text } from "../../src/components/index";
+import { useStdin } from "../../src/ink/hooks/use-stdin";
+import { render } from "../../src/ink/index";
 import createStdout from "../helpers/ink-create-stdout";
 
 const ERROR_LOCATION_RE = /errors\.test\.tsx:\d+:\d+/u;
@@ -33,9 +35,7 @@ describe("errors", () => {
 
         render(<Test />, { stdout });
 
-        const writes: string[] = (stdout.write as any).mock.calls
-            .map((c: any) => c[0] as string)
-            .filter((w: string) => !w.startsWith("\u001B[?25") && !w.startsWith("\u001B[?2026"));
+        const writes: string[] = (stdout.write as any).mock.calls.map((c: any) => c[0] as string).filter((w: string) => !w.startsWith("\u001B[?25") && !w.startsWith("\u001B[?2026"));
         const lastContentWrite = writes.at(-1)!;
 
         const lines = stripAnsi(lastContentWrite).split("\n");
@@ -95,9 +95,7 @@ describe("errors", () => {
 
         render(<Parent />, { stdout });
 
-        const writes: string[] = (stdout.write as any).mock.calls
-            .map((c: any) => c[0] as string)
-            .filter((w: string) => !w.startsWith("\u001B[?25") && !w.startsWith("\u001B[?2026"));
+        const writes: string[] = (stdout.write as any).mock.calls.map((c: any) => c[0] as string).filter((w: string) => !w.startsWith("\u001B[?25") && !w.startsWith("\u001B[?2026"));
         const lastContentWrite = writes.at(-1)!;
         const output = stripAnsi(lastContentWrite);
 

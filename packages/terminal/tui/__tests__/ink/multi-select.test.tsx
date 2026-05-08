@@ -2,7 +2,8 @@ import delay from "delay";
 import React from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { MultiSelect, render } from "../../src/ink/index";
+import { MultiSelect } from "../../src/components/index";
+import { render } from "../../src/ink/index";
 import { createStdin, emitReadable } from "../helpers/ink-create-stdin";
 import createStdout from "../helpers/ink-create-stdout";
 

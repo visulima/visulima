@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, expect, it } from "vitest";
 
-import { ProgressBar } from "../../src/ink/index";
+import { ProgressBar } from "../../src/components/index";
 import { renderToString } from "../helpers/ink-render";
 
 describe(ProgressBar, () => {

@@ -1,6 +1,9 @@
 import React from "react";
 
-import { render, Text, useAnimation, useApp } from "../../../src/ink/index";
+import { Text } from "../../../src/components/index";
+import { useAnimation } from "../../../src/ink/hooks/use-animation";
+import { useApp } from "../../../src/ink/hooks/use-app";
+import { render } from "../../../src/ink/index";
 
 function Spinner() {
     const { frame } = useAnimation({ interval: 8 });

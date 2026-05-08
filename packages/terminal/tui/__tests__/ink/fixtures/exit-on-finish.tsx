@@ -1,6 +1,7 @@
 import React from "react";
 
-import { render, Text } from "../../../src/ink/index";
+import { Text } from "../../../src/components/index";
+import { render } from "../../../src/ink/index";
 
 class Test extends React.Component<Record<string, unknown>, { counter: number }> {
     timer?: NodeJS.Timeout;

@@ -68,3 +68,5 @@ const useTerminalPalette = (): UseTerminalPaletteResult => {
 };
 
 export default useTerminalPalette;
+
+export { useTerminalPalette };

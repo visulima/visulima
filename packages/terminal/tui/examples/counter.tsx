@@ -2,7 +2,7 @@
 // @ts-nocheck
 // Ratatat port of ink/examples/counter
 // Original: https://github.com/vadimdemedes/ink/tree/master/examples/counter
-import { Text } from "@visulima/tui";
+import { Text } from "@visulima/tui/components/text";
 import { render } from "@visulima/tui/react";
 import React from "react";
 
@@ -34,7 +34,13 @@ const Counter = () => {
         return () => clearInterval(timer);
     }, []);
 
-    return <Text color="green">{counter} tests passed</Text>;
+    return (
+<Text color="green">
+{counter}
+{" "}
+tests passed
+</Text>
+    );
 };
 
 render(<Counter />);

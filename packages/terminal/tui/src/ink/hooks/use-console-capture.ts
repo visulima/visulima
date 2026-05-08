@@ -134,3 +134,5 @@ const useConsoleCapture = (options: UseConsoleCaptureOptions = {}): UseConsoleCa
 };
 
 export default useConsoleCapture;
+
+export { useConsoleCapture };

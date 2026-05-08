@@ -6,7 +6,8 @@
  */
 import { describe, expect, it } from "vitest";
 
-import { Box, render, Text } from "../../src/ink/index";
+import { Box, Text } from "../../src/components/index";
+import { render } from "../../src/ink/index";
 import createStdout from "../helpers/ink-create-stdout";
 import { renderToString } from "../helpers/ink-render";
 

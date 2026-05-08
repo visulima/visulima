@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, expect, it } from "vitest";
 
-import { Alert, Badge, OrderedList, StatusMessage, Text, UnorderedList } from "../../src/ink/index";
+import { Alert, Badge, OrderedList, StatusMessage, Text, UnorderedList } from "../../src/components/index";
 import { renderToString } from "../helpers/ink-render";
 
 describe(Badge, () => {

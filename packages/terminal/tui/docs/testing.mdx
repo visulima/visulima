@@ -22,8 +22,7 @@ npm install @visulima/tui react
 ```tsx
 import { afterEach, describe, expect, it } from "vitest";
 import { cleanup, render } from "@visulima/tui/test";
-import { Text } from "@visulima/tui";
-
+import { Text } from "@visulima/tui/components/text";
 afterEach(() => {
     cleanup();
 });
@@ -104,8 +103,8 @@ The `screen` property on a test instance provides query helpers that automatical
 ```tsx
 import { afterEach, expect, it } from "vitest";
 import { cleanup, render } from "@visulima/tui/test";
-import { Box, Text } from "@visulima/tui";
-
+import { Box } from "@visulima/tui/components/box";
+import { Text } from "@visulima/tui/components/text";
 afterEach(() => {
     cleanup();
 });
@@ -163,8 +162,8 @@ The `keys` property provides named methods for simulating keyboard input — no 
 import React, { useState } from "react";
 import { afterEach, expect, it } from "vitest";
 import { cleanup, render } from "@visulima/tui/test";
-import { Text, useInput } from "@visulima/tui";
-
+import { Text } from "@visulima/tui/components/text";
+import { useInput } from "@visulima/tui/hooks/use-input";
 afterEach(() => {
     cleanup();
 });
@@ -243,8 +242,7 @@ If `condition` is a **string**, waits until the screen contains it. If `conditio
 import React, { useEffect, useState } from "react";
 import { afterEach, expect, it } from "vitest";
 import { cleanup, render } from "@visulima/tui/test";
-import { Text } from "@visulima/tui";
-
+import { Text } from "@visulima/tui/components/text";
 afterEach(() => {
     cleanup();
 });
@@ -308,8 +306,8 @@ The simplest use case — render a component and check its output:
 ```tsx
 import { afterEach, expect, it } from "vitest";
 import { cleanup, render } from "@visulima/tui/test";
-import { Box, Text } from "@visulima/tui";
-
+import { Box } from "@visulima/tui/components/box";
+import { Text } from "@visulima/tui/components/text";
 afterEach(() => {
     cleanup();
 });
@@ -340,8 +338,7 @@ Use `rerender()` to update the component with new props and verify the output ch
 ```tsx
 import { afterEach, expect, it } from "vitest";
 import { cleanup, render } from "@visulima/tui/test";
-import { Text } from "@visulima/tui";
-
+import { Text } from "@visulima/tui/components/text";
 afterEach(() => {
     cleanup();
 });
@@ -370,8 +367,7 @@ Every render produces a frame. Use `frames` to inspect the full render history:
 ```tsx
 import { afterEach, expect, it } from "vitest";
 import { cleanup, render } from "@visulima/tui/test";
-import { Text } from "@visulima/tui";
-
+import { Text } from "@visulima/tui/components/text";
 afterEach(() => {
     cleanup();
 });
@@ -396,8 +392,8 @@ Use `stdin.write()` to simulate user input. This works with components that use 
 import React, { useState } from "react";
 import { afterEach, expect, it } from "vitest";
 import { cleanup, render } from "@visulima/tui/test";
-import { Text, useInput } from "@visulima/tui";
-
+import { Text } from "@visulima/tui/components/text";
+import { useInput } from "@visulima/tui/hooks/use-input";
 afterEach(() => {
     cleanup();
 });
@@ -432,8 +428,8 @@ Use the `keys` helper for named key methods — no escape sequences to remember:
 import React, { useState } from "react";
 import { afterEach, expect, it } from "vitest";
 import { cleanup, render } from "@visulima/tui/test";
-import { Text, useInput } from "@visulima/tui";
-
+import { Text } from "@visulima/tui/components/text";
+import { useInput } from "@visulima/tui/hooks/use-input";
 afterEach(() => {
     cleanup();
 });
@@ -485,8 +481,8 @@ Components that call `useApp().exit()` can be tested by awaiting `waitUntilExit`
 import React, { useEffect } from "react";
 import { afterEach, expect, it } from "vitest";
 import { cleanup, render } from "@visulima/tui/test";
-import { Text, useApp } from "@visulima/tui";
-
+import { Text } from "@visulima/tui/components/text";
+import { useApp } from "@visulima/tui/hooks/use-app";
 afterEach(() => {
     cleanup();
 });
@@ -516,8 +512,8 @@ Components that write to stderr (via `useStderr`) have their output captured in 
 import React, { useEffect } from "react";
 import { afterEach, expect, it } from "vitest";
 import { cleanup, render } from "@visulima/tui/test";
-import { Text, useStderr } from "@visulima/tui";
-
+import { Text } from "@visulima/tui/components/text";
+import { useStderr } from "@visulima/tui/hooks/use-stderr";
 afterEach(() => {
     cleanup();
 });
@@ -547,8 +543,7 @@ When components use colors or styles, the output contains ANSI escape sequences.
 ```tsx
 import { afterEach, expect, it } from "vitest";
 import { cleanup, render } from "@visulima/tui/test";
-import { Text } from "@visulima/tui";
-
+import { Text } from "@visulima/tui/components/text";
 afterEach(() => {
     cleanup();
 });
@@ -580,8 +575,8 @@ Pass `columns` to control the virtual terminal width. This affects text wrapping
 ```tsx
 import { afterEach, expect, it } from "vitest";
 import { cleanup, render } from "@visulima/tui/test";
-import { Box, Text } from "@visulima/tui";
-
+import { Box } from "@visulima/tui/components/box";
+import { Text } from "@visulima/tui/components/text";
 afterEach(() => {
     cleanup();
 });
@@ -608,8 +603,7 @@ Each `render()` call creates an isolated instance with its own streams:
 ```tsx
 import { afterEach, expect, it } from "vitest";
 import { cleanup, render } from "@visulima/tui/test";
-import { Text } from "@visulima/tui";
-
+import { Text } from "@visulima/tui/components/text";
 afterEach(() => {
     cleanup();
 });
@@ -636,8 +630,7 @@ Use `unmount()` for a single instance or `cleanup()` for all instances:
 ```tsx
 import { afterEach, expect, it } from "vitest";
 import { cleanup, render } from "@visulima/tui/test";
-import { Text } from "@visulima/tui";
-
+import { Text } from "@visulima/tui/components/text";
 afterEach(() => {
     cleanup();
 });

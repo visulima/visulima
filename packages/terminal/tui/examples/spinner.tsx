@@ -10,7 +10,12 @@
  * Run: node --import @oxc-node/core/register examples/spinner.tsx
  */
 
-import { Box, render, Spinner, Text, useApp, useInput } from "@visulima/tui";
+import { render } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { Spinner } from "@visulima/tui/components/spinner";
+import { Text } from "@visulima/tui/components/text";
+import { useApp } from "@visulima/tui/hooks/use-app";
+import { useInput } from "@visulima/tui/hooks/use-input";
 import React, { useEffect, useState } from "react";
 
 const App = () => {
@@ -46,11 +51,13 @@ const App = () => {
                 Spinner demo
             </Text>
             <Text dim>
-                +/= faster · - slower · current interval{" "}
+                +/= faster · - slower · current interval
+{" "}
                 <Text color="yellow">
                     {intervalMs}
                     ms
-                </Text>{" "}
+                </Text>
+{" "}
                 · q quit
             </Text>
 
@@ -72,7 +79,12 @@ const App = () => {
             </Box>
 
             <Text>
-                uptime: <Text color="green">{seconds}s</Text>
+                uptime:
+{" "}
+<Text color="green">
+{seconds}
+s
+</Text>
             </Text>
         </Box>
     );

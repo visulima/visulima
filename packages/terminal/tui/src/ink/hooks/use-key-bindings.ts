@@ -156,3 +156,5 @@ export default function useKeyBindings(handlers: ReadonlyArray<KeyBindingHandler
 
     return { bindings };
 }
+
+export { useKeyBindings };

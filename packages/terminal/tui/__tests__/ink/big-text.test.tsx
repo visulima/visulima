@@ -1,7 +1,9 @@
 import { strip as stripAnsi } from "@visulima/ansi";
 import { describe, expect, it } from "vitest";
 
-import { BigText, Box, renderToString } from "../../src/ink/index";
+import { BigText } from "../../src/components/big-text";
+import { Box } from "../../src/components/index";
+import { renderToString } from "../../src/ink/index";
 
 describe("big-text", () => {
     // ── Basic rendering ────────────────────────────────────

@@ -1,7 +1,8 @@
 import type { vi } from "vitest";
 import { describe, expect, it } from "vitest";
 
-import { render, Text } from "../../src/ink/index";
+import { Text } from "../../src/components/index";
+import { render } from "../../src/ink/index";
 import createStdout from "../helpers/ink-create-stdout";
 import waitFor from "../helpers/wait-for";
 

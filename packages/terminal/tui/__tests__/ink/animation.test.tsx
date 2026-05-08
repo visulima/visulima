@@ -2,7 +2,8 @@ import delay from "delay";
 import React from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { AnimatePresence, render, Text, Transition } from "../../src/ink/index";
+import { AnimatePresence, Text, Transition } from "../../src/components/index";
+import { render } from "../../src/ink/index";
 import createStdout from "../helpers/ink-create-stdout";
 import { renderToString } from "../helpers/ink-render";
 
@@ -91,11 +92,13 @@ describe(AnimatePresence, () => {
 
         const Harness = ({ visible }: { visible: boolean }) => (
             <AnimatePresence>
-                {visible ? (
+                {visible
+                    ? (
                     <Transition duration={30} key="panel" preset="fade" tickInterval={5}>
                         <Text>panel-body</Text>
                     </Transition>
-                ) : null}
+                    )
+                    : null}
             </AnimatePresence>
         );
 

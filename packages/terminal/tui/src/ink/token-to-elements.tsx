@@ -6,8 +6,8 @@
 import type { ReactElement } from "react";
 import type { ThemedToken } from "shiki";
 
-import Box from "./components/box";
-import Text from "./components/text";
+import Box from "../components/box";
+import Text from "../components/text";
 
 // FontStyle bitmask values from @shikijs/vscode-textmate
 const FONT_STYLE_ITALIC = 1;

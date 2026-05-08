@@ -1,4 +1,9 @@
-import { Box, Help, render, Text, useApp, useKeyBindings } from "@visulima/tui";
+import { render } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { Help } from "@visulima/tui/components/help";
+import { Text } from "@visulima/tui/components/text";
+import { useApp } from "@visulima/tui/hooks/use-app";
+import { useKeyBindings } from "@visulima/tui/hooks/use-key-bindings";
 import React, { useState } from "react";
 
 const App = () => {

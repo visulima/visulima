@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 
-import { render, Text } from "../../../src/ink/index";
+import { Text } from "../../../src/components/index";
+import { render } from "../../../src/ink/index";
 
 const App = () => {
     useEffect(() => {

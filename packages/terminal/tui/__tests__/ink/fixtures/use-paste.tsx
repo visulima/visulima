@@ -2,7 +2,10 @@ import process from "node:process";
 
 import React from "react";
 
-import { render, useApp, useInput, usePaste } from "../../../src/ink/index";
+import { useApp } from "../../../src/ink/hooks/use-app";
+import { useInput } from "../../../src/ink/hooks/use-input";
+import { usePaste } from "../../../src/ink/hooks/use-paste";
+import { render } from "../../../src/ink/index";
 
 const PasteDemo = ({ test }: { readonly test: string | undefined }) => {
     const { exit } = useApp();

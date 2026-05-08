@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, expect, it } from "vitest";
 
-import { Spinner } from "../../src/ink/index";
+import { Spinner } from "../../src/components/index";
 import { renderToString } from "../helpers/ink-render";
 
 describe(Spinner, () => {

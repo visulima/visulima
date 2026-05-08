@@ -1,6 +1,8 @@
 import React from "react";
 
-import { render, Text, useStdin } from "../../../src/ink/index";
+import { Text } from "../../../src/components/index";
+import { useStdin } from "../../../src/ink/hooks/use-stdin";
+import { render } from "../../../src/ink/index";
 
 const App = () => {
     const { isRawModeSupported } = useStdin();

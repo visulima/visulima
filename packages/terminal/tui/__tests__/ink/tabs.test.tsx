@@ -2,7 +2,8 @@ import delay from "delay";
 import React from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { render, Tab, Tabs } from "../../src/ink/index";
+import { Tab, Tabs } from "../../src/components/index";
+import { render } from "../../src/ink/index";
 import { createStdin, emitReadable } from "../helpers/ink-create-stdin";
 import createStdout from "../helpers/ink-create-stdout";
 

@@ -65,3 +65,5 @@ const useTimeout = (callback: () => void, delay: number, options?: UseTimeoutOpt
 };
 
 export default useTimeout;
+
+export { useTimeout };

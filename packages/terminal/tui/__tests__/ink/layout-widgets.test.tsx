@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, expect, it } from "vitest";
 
-import { Breadcrumb, Card, DefinitionList, Divider, Heading, Kbd, LoadingIndicator, Paragraph, Sparkline, Tag, Text } from "../../src/ink/index";
+import { Breadcrumb, Card, DefinitionList, Divider, Heading, Kbd, LoadingIndicator, Paragraph, Sparkline, Tag, Text } from "../../src/components/index";
 import { renderToString } from "../helpers/ink-render";
 
 describe(Divider, () => {

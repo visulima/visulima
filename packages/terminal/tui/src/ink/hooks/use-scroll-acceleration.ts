@@ -162,3 +162,5 @@ const useScrollAcceleration = (options: UseScrollAccelerationOptions = {}): UseS
 };
 
 export default useScrollAcceleration;
+
+export { useScrollAcceleration };

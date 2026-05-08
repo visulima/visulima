@@ -10,7 +10,12 @@
  * Run: node --import @oxc-node/core/register examples/progress-bar.tsx
  */
 
-import { Box, ProgressBar, render, Text, useApp, useInput } from "@visulima/tui";
+import { render } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { ProgressBar } from "@visulima/tui/components/progress-bar";
+import { Text } from "@visulima/tui/components/text";
+import { useApp } from "@visulima/tui/hooks/use-app";
+import { useInput } from "@visulima/tui/hooks/use-input";
 import React, { useEffect, useState } from "react";
 
 const App = () => {
@@ -58,7 +63,9 @@ const App = () => {
                 ProgressBar demo
             </Text>
             <Text dim>
-                Space pause/resume · r reset · q quit · status <Text color={running ? "green" : "yellow"}>{running ? "running" : "paused"}</Text>
+                Space pause/resume · r reset · q quit · status
+{" "}
+<Text color={running ? "green" : "yellow"}>{running ? "running" : "paused"}</Text>
             </Text>
 
             <Box borderColor="green" borderStyle="round" flexDirection="column" gap={1} paddingX={2} paddingY={1}>
@@ -70,7 +77,10 @@ const App = () => {
                 <Box flexDirection="row" gap={1}>
                     <Text dim>Upload</Text>
                     <ProgressBar bracket={false} color="yellow" completeChar="■" incompleteChar="·" showPercentage={false} value={upload} width={28} />
-                    <Text color="yellow">{String(upload).padStart(3)}%</Text>
+                    <Text color="yellow">
+{String(upload).padStart(3)}
+%
+                    </Text>
                 </Box>
 
                 <Box flexDirection="row" gap={1}>

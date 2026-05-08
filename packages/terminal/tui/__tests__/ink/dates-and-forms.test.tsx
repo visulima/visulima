@@ -2,7 +2,9 @@ import delay from "delay";
 import React, { act } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { Calendar, ConfirmDialog, DatePicker, Form, Placeholder, render, Text, useForm } from "../../src/ink/index";
+import { Calendar, ConfirmDialog, DatePicker, Form, Placeholder, Text } from "../../src/components/index";
+import { useForm } from "../../src/ink/hooks/use-form";
+import { render } from "../../src/ink/index";
 import { createStdin, emitReadable } from "../helpers/ink-create-stdin";
 import createStdout from "../helpers/ink-create-stdout";
 import { renderToString } from "../helpers/ink-render";

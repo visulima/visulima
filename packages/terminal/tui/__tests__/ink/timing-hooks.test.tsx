@@ -2,7 +2,13 @@ import delay from "delay";
 import React from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { createMemoryStorage, render, Text, useHotkey, useInterval, useKeyChord, usePersistentState, useTimeout } from "../../src/ink/index";
+import { Text } from "../../src/components/index";
+import { useHotkey } from "../../src/ink/hooks/use-hotkey";
+import { useInterval } from "../../src/ink/hooks/use-interval";
+import { useKeyChord } from "../../src/ink/hooks/use-key-chord";
+import { createMemoryStorage, usePersistentState } from "../../src/ink/hooks/use-persistent-state";
+import { useTimeout } from "../../src/ink/hooks/use-timeout";
+import { render } from "../../src/ink/index";
 import { createStdin, emitReadable } from "../helpers/ink-create-stdin";
 import createStdout from "../helpers/ink-create-stdout";
 

@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-confusing-void-expression, sonarjs/different-types-comparison */
 // @ts-nocheck
 // Ratatat port of ink/examples/use-stdout
-import { Box, Text } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { Text } from "@visulima/tui/components/text";
 import { render, useStdout } from "@visulima/tui/react";
 import React from "react";
 

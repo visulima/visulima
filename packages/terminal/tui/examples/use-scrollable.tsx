@@ -8,7 +8,8 @@
  *
  * Run: node --import @oxc-node/core/register examples/scroll-test.tsx
  */
-import { Box, Text } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { Text } from "@visulima/tui/components/text";
 import { render, useApp, useInput, useScrollable } from "@visulima/tui/react";
 import React, { useCallback } from "react";
 
@@ -67,7 +68,8 @@ const App = () => {
             {/* title */}
             <Box paddingX={1}>
                 <Text bold color="cyan">
-                    scroll-test{" "}
+                    scroll-test
+{" "}
                 </Text>
                 <Text color="blackBright">↑↓ scroll · PgUp/PgDn jump 5 · q quit</Text>
             </Box>
@@ -90,7 +92,9 @@ const App = () => {
             {/* scroll position readout */}
             <Box flexDirection="row" gap={2} paddingX={1}>
                 <Text color="blackBright">
-                    offset <Text color="white">{scroll.offset}</Text>
+                    offset
+{" "}
+<Text color="white">{scroll.offset}</Text>
                     {" / "}
                     <Text color="white">{ITEMS.length - VIEWPORT_H}</Text>
                 </Text>

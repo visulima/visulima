@@ -115,3 +115,5 @@ export default function useTimer(options: UseTimerOptions): UseTimerResult {
 
     return { isFinished, isRunning: running, remaining, reset, start, stop, toggle };
 }
+
+export { useTimer };

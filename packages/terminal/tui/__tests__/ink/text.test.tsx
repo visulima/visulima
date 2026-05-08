@@ -2,7 +2,8 @@ import { strip as stripAnsi } from "@visulima/ansi";
 import { ansi256, bgAnsi256, bgGreen, bgHex, bgRgb, green, hex, inverse, rgb } from "@visulima/colorize";
 import { describe, expect, it } from "vitest";
 
-import { Box, render, Text } from "../../src/ink/index";
+import { Box, Text } from "../../src/components/index";
+import { render } from "../../src/ink/index";
 import createStdout from "../helpers/ink-create-stdout";
 import { renderToString, renderToStringAsync } from "../helpers/ink-render";
 import { renderAsync } from "../helpers/ink-test-renderer";
@@ -196,7 +197,7 @@ describe("text", () => {
         expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("abcx");
     });
 
-    it('text with content "constructor" wraps correctly', () => {
+    it("text with content \"constructor\" wraps correctly", () => {
         expect.assertions(1);
 
         const output = renderToString(<Text>constructor</Text>);

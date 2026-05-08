@@ -144,3 +144,5 @@ const useBoxMetrics = (ref: RefObject<DOMElement>): UseBoxMetricsResult => {
 };
 
 export default useBoxMetrics;
+
+export { useBoxMetrics };

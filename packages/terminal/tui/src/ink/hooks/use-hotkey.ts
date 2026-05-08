@@ -180,3 +180,5 @@ const useHotkey = (shortcut: HotkeyDescriptor | string, callback: () => void, op
 };
 
 export default useHotkey;
+
+export { useHotkey };
