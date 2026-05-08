@@ -31,10 +31,16 @@ export const getVitestConfig = (options: ViteUserConfig = {}) => {
                 ],
             },
             environment: "node",
-            reporters: process.env.CI_PREFLIGHT ? ["default", "github-actions"] : ["default"],
+            hideSkippedTests: true,
+            reporters: process.env.CI
+                ? process.env.CI_PREFLIGHT
+                    ? ["dot", "github-actions"]
+                    : ["dot"]
+                : ["default"],
             sequence: {
                 seed: VITEST_SEQUENCE_SEED,
             },
+            silent: process.env.CI ? "passed-only" : false,
             typecheck: {
                 enabled: false,
             },
