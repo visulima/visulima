@@ -1,5 +1,6 @@
 import type { TaskStatus } from "@visulima/task-runner";
-import { renderToString, Text } from "@visulima/tui";
+import { renderToString } from "@visulima/tui";
+import { Text } from "@visulima/tui/components/text";
 import React from "react";
 
 import { CROSS, DASH, TICK } from "./symbols";

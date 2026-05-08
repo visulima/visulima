@@ -1,4 +1,7 @@
-import { Dialog, Text, useApp, useInput } from "@visulima/tui";
+import { Dialog } from "@visulima/tui/components/dialog";
+import { Text } from "@visulima/tui/components/text";
+import { useApp } from "@visulima/tui/hooks/use-app";
+import { useInput } from "@visulima/tui/hooks/use-input";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 interface QuitDialogProps {

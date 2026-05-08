@@ -1,6 +1,7 @@
 import type { LifeCycleInterface, Task, TaskResult, TaskStatus } from "@visulima/task-runner";
 import type { Instance } from "@visulima/tui";
-import { render, renderToString, Text } from "@visulima/tui";
+import { render, renderToString } from "@visulima/tui";
+import { Text } from "@visulima/tui/components/text";
 import React from "react";
 
 import CommandSummary from "./components/command-summary";

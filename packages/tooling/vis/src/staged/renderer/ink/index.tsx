@@ -1,4 +1,7 @@
-import { Box, render, Spinner, Text } from "@visulima/tui";
+import { render } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { Spinner } from "@visulima/tui/components/spinner";
+import { Text } from "@visulima/tui/components/text";
 import type { ReactElement } from "react";
 
 import { CROSS, DASH, TICK } from "../../../tui/symbols";

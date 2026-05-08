@@ -1,5 +1,7 @@
 import type { Task } from "@visulima/task-runner";
-import { Box, StaticRender, Text } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { StaticRender } from "@visulima/tui/components/static-render";
+import { Text } from "@visulima/tui/components/text";
 
 import { formatTargetsAndProjects } from "../formatting-utils";
 import { CROSS, TICK } from "../symbols";

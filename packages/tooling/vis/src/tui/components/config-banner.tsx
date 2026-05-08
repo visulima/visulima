@@ -1,4 +1,5 @@
-import { Box, Text } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { Text } from "@visulima/tui/components/text";
 import type { ReactNode } from "react";
 
 export type ConfigBannerSeverity = "error" | "warn";

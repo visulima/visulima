@@ -146,6 +146,7 @@
         "@visulima/redact": "3.0.0-alpha.11",
         "@visulima/spinner": "1.0.0-alpha.1",
         "@visulima/string": "3.0.0-alpha.12",
+        "@visulima/tabular": "4.0.0-alpha.11",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
         "ajv": "catalog:dev",

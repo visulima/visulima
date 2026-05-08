@@ -1,6 +1,9 @@
 import type { AiProviderInfo, AiProviderName } from "@visulima/find-ai-runner";
 import { detectAvailableProviders, detectProvider, PROVIDER_NAMES } from "@visulima/find-ai-runner";
-import { Box, renderToString, Table, Text } from "@visulima/tui";
+import { renderToString } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { Table } from "@visulima/tui/components/table";
+import { Text } from "@visulima/tui/components/text";
 import React from "react";
 
 import type { OutdatedEntry } from "../util/catalog";

@@ -1,6 +1,7 @@
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 import { findPackageManagerSync } from "@visulima/package";
-import { render, renderToString, Text } from "@visulima/tui";
+import { render, renderToString } from "@visulima/tui";
+import { Text } from "@visulima/tui/components/text";
 import isInCi from "is-in-ci";
 import React from "react";
 

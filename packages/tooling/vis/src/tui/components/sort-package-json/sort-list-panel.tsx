@@ -1,4 +1,6 @@
-import { Box, ScrollBar, Text } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { ScrollBar } from "@visulima/tui/components/scroll-bar";
+import { Text } from "@visulima/tui/components/text";
 
 import type { FilterType, SortFileEntry, SortFileStatus } from "./sort-package-json-store";
 

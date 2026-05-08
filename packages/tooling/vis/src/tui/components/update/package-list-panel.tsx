@@ -1,4 +1,8 @@
-import { Box, ScrollBar, Tab, Tabs, Text } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { ScrollBar } from "@visulima/tui/components/scroll-bar";
+import { Tab } from "@visulima/tui/components/tab";
+import { Tabs } from "@visulima/tui/components/tabs";
+import { Text } from "@visulima/tui/components/text";
 
 import { scoreColor } from "../../../security/socket-security";
 import type { OutdatedEntry } from "../../../util/catalog";
