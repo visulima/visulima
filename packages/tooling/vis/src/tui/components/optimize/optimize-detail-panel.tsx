@@ -1,5 +1,7 @@
-import type { ScrollViewRef } from "@visulima/tui";
-import { Box, ScrollView, Text } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import type { ScrollViewRef } from "@visulima/tui/components/scroll-view";
+import { ScrollView } from "@visulima/tui/components/scroll-view";
+import { Text } from "@visulima/tui/components/text";
 
 import { CATEGORY_COLORS, CATEGORY_DESCRIPTIONS } from "./constants";
 import type { OptimizeEntry } from "./optimize-store";

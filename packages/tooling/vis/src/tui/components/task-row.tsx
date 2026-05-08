@@ -1,5 +1,7 @@
 import type { TaskStatus } from "@visulima/task-runner";
-import { Box, Spinner, Text } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { Spinner } from "@visulima/tui/components/spinner";
+import { Text } from "@visulima/tui/components/text";
 
 import { formatMs } from "../pretty-time";
 import { isCacheStatus } from "../status-utils";

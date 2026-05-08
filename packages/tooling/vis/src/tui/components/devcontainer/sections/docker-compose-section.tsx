@@ -1,4 +1,6 @@
-import { Box, Text, TextInput } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { Text } from "@visulima/tui/components/text";
+import { TextInput } from "@visulima/tui/components/text-input";
 import React from "react";
 
 import type { DevcontainerConfig } from "../types";

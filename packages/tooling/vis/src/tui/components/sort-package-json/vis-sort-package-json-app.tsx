@@ -1,5 +1,9 @@
-import type { ScrollViewRef } from "@visulima/tui";
-import { Box, Text, useApp, useInput, useWindowSize } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import type { ScrollViewRef } from "@visulima/tui/components/scroll-view";
+import { Text } from "@visulima/tui/components/text";
+import { useApp } from "@visulima/tui/hooks/use-app";
+import { useInput } from "@visulima/tui/hooks/use-input";
+import { useWindowSize } from "@visulima/tui/hooks/use-window-size";
 import React, { useCallback, useRef, useSyncExternalStore } from "react";
 
 import SortDetailPanel from "./sort-detail-panel";

@@ -7,7 +7,8 @@ import { readTomlSync } from "@visulima/fs/toml";
 import { readYamlSync } from "@visulima/fs/yaml";
 import { findPackageManagerSync, getPackageManagerVersion } from "@visulima/package";
 import { join } from "@visulima/path";
-import { render, renderToString, Text } from "@visulima/tui";
+import { render, renderToString } from "@visulima/tui";
+import { Text } from "@visulima/tui/components/text";
 import isInCi from "is-in-ci";
 import React from "react";
 

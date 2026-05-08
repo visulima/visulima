@@ -1,6 +1,7 @@
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 import { detectAllProviders, runProvider } from "@visulima/find-ai-runner";
-import { renderToString, Table } from "@visulima/tui";
+import { renderToString } from "@visulima/tui";
+import { Table } from "@visulima/tui/components/table";
 import React from "react";
 
 import type { AiConfig } from "../../ai/ai-analysis";

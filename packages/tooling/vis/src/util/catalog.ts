@@ -3,7 +3,10 @@ import { createInterface } from "node:readline";
 import { findCacheDirSync } from "@visulima/find-cache-dir";
 import { ensureDirSync, isAccessibleSync, readFileSync, readJsonSync, removeSync, walkSync, writeFileSync, writeJsonSync } from "@visulima/fs";
 import { basename, dirname, join } from "@visulima/path";
-import { Box, renderToString, Table, Text } from "@visulima/tui";
+import { renderToString } from "@visulima/tui";
+import { Box } from "@visulima/tui/components/box";
+import { Table } from "@visulima/tui/components/table";
+import { Text } from "@visulima/tui/components/text";
 import React from "react";
 import { coerce, parse, rcompare } from "semver";
 
