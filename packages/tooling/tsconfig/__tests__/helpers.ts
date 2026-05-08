@@ -1,7 +1,6 @@
-import { execSync } from "node:child_process";
-import { resolve } from "node:path";
+import { dirname, resolve } from "node:path";
 
-import { execa } from "execa";
+import { x, xSync } from "tinyexec";
 import type { TsConfigJson } from "type-fest";
 
 import type { Options } from "../src/read-tsconfig";
@@ -20,11 +19,13 @@ export const esc = (string_: string): string => string_.replaceAll("", String.r
  * Return output of javascript file.
  */
 export const execScriptSync = (file: string, flags: string[] = []): string => {
-    const cmd = `node "${file}" ${flags.join(" ")}`;
-    const result = execSync(cmd);
+    // Anchor cwd to the script's directory so callers like `findTsConfigSync()` walk up
+    // from inside the package fixtures rather than from the parent process's cwd (which
+    // may be the repo root when invoked via lint-staged).
+    const result = xSync(process.execPath, [file, ...flags], { nodeOptions: { cwd: dirname(file) } });
 
     // replace last newline in result
-    return result.toString().replace(TRAILING_NEWLINE_REGEX, "");
+    return result.stdout.replace(TRAILING_NEWLINE_REGEX, "");
 };
 
 /**
@@ -34,7 +35,13 @@ export const execScriptSync = (file: string, flags: string[] = []): string => {
  * Copyright (c) Hiroki Osame &lt;hiroki.osame@gmail.com>
  */
 export const getTscTsconfig = async (cwd: string, filePath?: string): Promise<TsConfigJson> => {
-    const output = await execa(tscPath, ["--showConfig", ...(filePath ? ["--project", filePath] : [])], { cwd });
+    const output = await x(tscPath, ["--showConfig", ...(filePath ? ["--project", filePath] : [])], { nodeOptions: { cwd } });
+
+    // tsc emits diagnostic text on stdout when --showConfig fails (e.g., circular extends, unresolved files).
+    // Mirror execa's default `reject: true` by surfacing that text as the error message — tests pattern-match it.
+    if (output.exitCode !== 0) {
+        throw new Error(output.stdout.trim() || output.stderr.trim() || `tsc exited with code ${output.exitCode}`);
+    }
 
     return JSON.parse(output.stdout) as TsConfigJson;
 };

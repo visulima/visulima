@@ -1,5 +1,4 @@
-// eslint-disable-next-line e18e/ban-dependencies -- staged workflow port relies on execa's `input`/`reject:false`/stream-pipe semantics that tinyexec doesn't expose
-import { execa } from "execa";
+import { x } from "tinyexec";
 
 import { GitError } from "../errors";
 
@@ -23,20 +22,24 @@ const MAX_STDERR_PREVIEW = 2048;
 
 /** Runs `git` with the given args. Throws `GitError` on non-zero unless `lenient`. */
 export const git = async (args: ReadonlyArray<string>, options: GitExecOptions): Promise<GitExecResult> => {
-    const result = await execa("git", [...args], {
-        cwd: options.cwd,
-        env: options.env ? { ...process.env, ...options.env } : undefined,
-        input: options.input,
-        reject: false,
-        stderr: "pipe",
-        stdin: options.input === undefined ? "ignore" : "pipe",
-        stdout: "pipe",
+    // tinyexec only supports a string `stdin`, but the patch buffer is created via `Buffer.from(patch, "utf8")`,
+    // so the round-trip is lossless even for binary patches (which use base85-encoded ASCII inside).
+    const stdin = options.input === undefined ? undefined : typeof options.input === "string" ? options.input : options.input.toString("utf8");
+
+    const result = await x("git", [...args], {
+        nodeOptions: {
+            cwd: options.cwd,
+            env: options.env ? { ...process.env, ...options.env } : undefined,
+            // No input → don't open a stdin pipe so git can't accidentally block waiting on it.
+            stdio: stdin === undefined ? ["ignore", "pipe", "pipe"] : ["pipe", "pipe", "pipe"],
+        },
+        stdin,
     });
 
     const exitCode = typeof result.exitCode === "number" ? result.exitCode : 1;
 
     if (exitCode !== 0 && !options.lenient) {
-        const stderr = typeof result.stderr === "string" ? result.stderr : "";
+        const { stderr } = result;
         const preview = stderr.length > MAX_STDERR_PREVIEW ? `${stderr.slice(0, MAX_STDERR_PREVIEW)}…` : stderr;
 
         throw new GitError(`git ${args.join(" ")} failed with exit code ${exitCode}: ${preview.trim()}`, stderr);
@@ -44,8 +47,8 @@ export const git = async (args: ReadonlyArray<string>, options: GitExecOptions):
 
     return {
         exitCode,
-        stderr: typeof result.stderr === "string" ? result.stderr : "",
-        stdout: typeof result.stdout === "string" ? result.stdout : "",
+        stderr: result.stderr,
+        stdout: result.stdout,
     };
 };
 

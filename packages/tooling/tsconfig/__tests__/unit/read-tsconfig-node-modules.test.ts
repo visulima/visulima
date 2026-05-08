@@ -12,7 +12,7 @@ import { stripVTControlCharacters } from "node:util";
 
 import { writeFileSync, writeJsonSync } from "@visulima/fs";
 import { dirname, join } from "@visulima/path";
-import { execaNode } from "execa";
+import { x } from "tinyexec";
 import { temporaryDirectory } from "tempy";
 import { version as tsVersion } from "typescript";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -480,10 +480,10 @@ describe("node_modules", () => {
     it.todo("yarn pnp", async () => {
         expect.assertions(1);
 
-        const { stdout } = await execaNode("./index.js", [], {
-            cwd: join(dirname(fileURLToPath(import.meta.url)), "..", "..", "__fixtures__", "read-tsconfig", "yarn-pnp"),
-            nodeOptions: ["--require", "./.pnp.cjs"],
-            reject: false,
+        const { stdout } = await x(process.execPath, ["--require", "./.pnp.cjs", "./index.js"], {
+            nodeOptions: {
+                cwd: join(dirname(fileURLToPath(import.meta.url)), "..", "..", "__fixtures__", "read-tsconfig", "yarn-pnp"),
+            },
         });
 
         expect(esc(stripVTControlCharacters(stdout))).toBe(
