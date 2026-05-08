@@ -46,7 +46,7 @@ jobs:
                   wait-interval: 30 # seconds
                   running-workflow-name: "Semantic Release" # wait for all other checks to complete
                   allowed-conclusions: "success,skipped,neutral" # all other checks must pass, being skipped or cancelled is not sufficient
-                  ignore-checks: "lock-closed / lock-closed, Socket Security: Pull Request Alerts, Dependabot, Run benchmarks"
+                  ignore-checks: "lock-closed / lock-closed, Socket Security: Pull Request Alerts, Dependabot, Discover affected benches, Bench: boxen-bench, Bench: cerebro-bench, Bench: colorize-bench, Bench: command-line-args-bench, Bench: deep-clone-bench, Bench: fmt-bench, Bench: fs-bench, Bench: inspector-bench, Bench: pail-bench, Bench: redact-bench, Bench: string-bench, Bench: tabular-bench, Bench: task-runner-bench, Bench: tui-bench"
 
             - name: "Git checkout"
               uses: "actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5" # v4.3.1

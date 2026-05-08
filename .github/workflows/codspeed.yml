@@ -15,17 +15,20 @@ concurrency:
 
 permissions:
     contents: "read"
-    id-token: write # required for OIDC authentication with CodSpeed
+    id-token: "write" # required for OIDC authentication with CodSpeed
 
 env:
     NX_BRANCH: "${{ github.event.number || github.ref_name }}"
     NX_RUN_GROUP: "${{ github.run_id }}"
 
 jobs:
-    benchmarks:
-        name: "Run benchmarks"
+    discover:
+        name: "Discover affected benches"
         runs-on: "ubuntu-latest"
-        timeout-minutes: 60
+        timeout-minutes: 30
+        outputs:
+            matrix: "${{ steps.affected.outputs.matrix }}"
+            has-benches: "${{ steps.affected.outputs.has-benches }}"
         steps:
             - name: "Harden Runner"
               uses: "step-security/harden-runner@95d9a5deda9de15063e7595e9719c11c38c90ae2" # v2.13.2
@@ -39,7 +42,7 @@ jobs:
                   ref: "${{ github.event.pull_request.head.sha || github.sha }}"
                   repo-token: "${{ secrets.GITHUB_TOKEN }}"
                   wait-interval: 30 # seconds
-                  running-workflow-name: "Run benchmarks" # wait for all other checks (incl. Build Native) to complete
+                  running-workflow-name: "Discover affected benches" # wait for all other checks (incl. Build Native) to complete
                   allowed-conclusions: "success,skipped,neutral"
                   ignore-checks: "lock-closed / lock-closed, Socket Security: Pull Request Alerts, Dependabot, Semantic Release"
 
@@ -58,7 +61,57 @@ jobs:
               uses: "nrwl/nx-set-shas@3e9ad7370203c1e93d109be57f3b72eb0eb511b1" # v4
 
             - name: "Setup resources and environment"
-              id: "setup"
+              uses: "anolilab/workflows/step/setup@main"
+              with:
+                  node-version: "22"
+                  install-node-gyp: "true"
+                  skip-playwright: "true"
+                  # TODO: re-enable once pnpm/npm audit works with unpublished @visulima/task-runner-binding-* packages and pnpm registry config
+                  run-signatures-audit: false
+                  run-npm-audit: false
+
+            - name: "Compute affected bench projects"
+              id: "affected"
+              shell: "bash"
+              run: |
+                  affected=$(pnpm exec nx show projects --affected --withTarget=test:bench --json 2>/dev/null || echo '[]')
+
+                  if [ -z "$affected" ] || [ "$affected" = "[]" ]; then
+                    echo "No affected bench projects."
+                    echo "has-benches=false" >> "$GITHUB_OUTPUT"
+                    echo "matrix={\"include\":[]}" >> "$GITHUB_OUTPUT"
+                    exit 0
+                  fi
+
+                  matrix=$(echo "$affected" | jq -c '{include: [.[] | {project: .}]}')
+
+                  echo "Affected bench projects: $affected"
+                  echo "has-benches=true" >> "$GITHUB_OUTPUT"
+                  echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+
+    benchmark:
+        name: "Bench: ${{ matrix.project }}"
+        needs: "discover"
+        if: "${{ needs.discover.outputs.has-benches == 'true' }}"
+        runs-on: "ubuntu-latest"
+        timeout-minutes: 30
+        strategy:
+            fail-fast: false
+            matrix: "${{ fromJSON(needs.discover.outputs.matrix) }}"
+        steps:
+            - name: "Harden Runner"
+              uses: "step-security/harden-runner@95d9a5deda9de15063e7595e9719c11c38c90ae2" # v2.13.2
+              with:
+                  egress-policy: "audit"
+
+            - name: "Git checkout"
+              uses: "actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5" # v4.3.1
+              env:
+                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
+                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
+                  EMAIL: "github-actions[bot]@users.noreply.github.com"
+
+            - name: "Setup resources and environment"
               uses: "anolilab/workflows/step/setup@main"
               with:
                   node-version: "22"
@@ -96,11 +149,28 @@ jobs:
 
                   rm -rf artifacts/
 
-            - name: "Build affected packages"
-              run: "pnpm run build:affected:prod:packages"
+            - name: "Build only this bench's library dependencies"
+              env:
+                  BENCH_PROJECT: "${{ matrix.project }}"
+              shell: "bash"
+              run: |
+                  pnpm exec nx graph --focus="$BENCH_PROJECT" --file=/tmp/bench-graph.json >/dev/null
+                  focused=$(jq -r '.graph.nodes | keys[]' /tmp/bench-graph.json | sort -u)
+                  buildable=$(pnpm exec nx show projects --withTarget=build:prod --json | jq -r '.[]' | sort -u)
+                  deps=$(comm -12 <(echo "$focused") <(echo "$buildable") | paste -sd, -)
 
-            - name: "Run benchmarks"
+                  if [ -z "$deps" ]; then
+                    echo "No buildable deps for $BENCH_PROJECT, skipping build."
+                    exit 0
+                  fi
+
+                  echo "Building deps for $BENCH_PROJECT: $deps"
+                  pnpm exec nx run-many --target=build:prod --projects="$deps" --nxBail
+
+            - name: "Run benchmark"
+              env:
+                  BENCH_PROJECT: "${{ matrix.project }}"
               uses: "CodSpeedHQ/action@2ade0611822d252f376309654583b75b6984f318" # v4.15.0
               with:
                   mode: "simulation"
-                  run: "pnpm exec nx affected --target=test:bench --parallel=1"
+                  run: "pnpm exec nx run \"$BENCH_PROJECT\":test:bench"
