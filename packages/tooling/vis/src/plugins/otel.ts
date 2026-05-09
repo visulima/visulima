@@ -2,7 +2,7 @@ import type { Span, Tracer } from "@opentelemetry/api";
 import { SpanStatusCode } from "@opentelemetry/api";
 import type { Task } from "@visulima/task-runner";
 
-import { definePlugin } from "../config/config";
+import { definePlugin } from "../config/define-plugin";
 import type { VisPlugin } from "../util/hooks";
 
 export interface OtelPluginOptions {
