@@ -1,0 +1,8 @@
+{
+    "name": "web",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "test": "node -e \"console.log('web tests OK against DB=' + (process.env.DATABASE_URL ?? 'unset') + ' REDIS=' + (process.env.REDIS_URL ?? 'unset'))\""
+    }
+}

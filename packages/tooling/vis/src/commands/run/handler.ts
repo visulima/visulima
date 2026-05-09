@@ -1,4 +1,5 @@
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
+import { readFileSync, removeSync } from "@visulima/fs";
 import type {
     ConcurrentCommandInput,
     LifeCycleInterface,
@@ -18,6 +19,7 @@ import {
     enforceProjectConstraints,
     expandTokensInString,
     generateRunSummary,
+    getLastRunSummaryPath,
     parsePartition,
     readLastRunSummary,
     reverseTaskGraph,
@@ -37,7 +39,8 @@ import { analyzeFlakiness, formatFlakinessTable } from "../../report/flakiness";
 import { compareDuration, formatTimingSummary, loadRunSummaries } from "../../report/run-report";
 import { runToolchainPreflight } from "../../runtime/toolchain";
 import { runReadiness } from "../../services/readiness";
-import { readAllEntries } from "../../services/registry";
+import { deleteEntry, readAllEntries } from "../../services/registry";
+import type { ServiceEntry } from "../../services/types";
 import { filterProjectsByQuery, resolveSelector } from "../../task/selectors";
 import { resolveSkipCachePatterns } from "../../task/skip-cache";
 import { checkStrictEnv, formatStrictEnvError } from "../../task/strict-env";
@@ -50,19 +53,25 @@ import {
     suggestTargets,
 } from "../../task/target-discovery";
 import type { VisTargetConfiguration, VisTargetOptions } from "../../task/target-options";
-import { detectCurrentOs, loadEnvFile, matchesRunnerTags, resolveTargetShell, shouldRunInCI } from "../../task/target-options";
+import { detectCurrentOs, loadEnvFile, matchesRunnerTags, resolveTargetShell, resolveTaskCwd, shouldRunInCI } from "../../task/target-options";
+import { ServiceDockStore } from "../../tui/components/service-dock/service-dock-store";
+import type { TaskStore } from "../../tui/components/task-store";
 import { createDynamicOutputRenderer } from "../../tui/dynamic-life-cycle";
 import { parseOutputStyle, StaticOutputLifeCycle } from "../../tui/static-life-cycle";
 import type { StdinEntry } from "../../tui/types";
 import { createVisHooks, HookableLifeCycle, registerPlugins } from "../../util/hooks";
 import { appendToShellHistory } from "../../util/shell-history";
 import { scheduleTimeoutKill } from "../../util/signal-escalation";
+import { cleanupLegacyTaskRunnerLayout, getVisWorkspaceDataDir } from "../../util/vis-paths";
 import { collectTrackedWatchTargets, createTrackedFileFilter, startWatcher } from "../../watch/watch";
 import { applyProjectFilter } from "../../watch/watch-filter";
 import type { KeybindHandle } from "../../watch/watch-keybinds";
 import { installKeybinds, writeHelp } from "../../watch/watch-keybinds";
 import { applyServiceRegistry } from "./apply-service-registry";
 import type { RunOptions } from "./index";
+import type { ServiceBridgeEntry } from "./service-event-bridge";
+import { ServiceEventBridge } from "./service-event-bridge";
+import { buildBootstrapPaths, extractPreflightTasks, injectServiceTasks, resolveServicesPolicy } from "./service-preflight";
 
 const AFFECTED_FILES_ENV = "VIS_AFFECTED_FILES";
 
@@ -75,34 +84,34 @@ const AFFECTED_FILES_ENV = "VIS_AFFECTED_FILES";
  */
 const SERVICE_PROBE_TIMEOUT_MS = 2000;
 
-/**
- * Resolves a task's effective working directory. Returns the workspace
- * root when `runFromWorkspaceRoot` is set, otherwise resolves
- * `projectRoot` — keeping absolute paths as-is and prefixing relative
- * ones with the workspace root.
- */
-const resolveCwd = (workspaceRoot: string, projectRoot: string | undefined, runFromWorkspaceRoot: boolean): string => {
-    if (runFromWorkspaceRoot) {
-        return workspaceRoot;
-    }
-
-    if (!projectRoot) {
-        return workspaceRoot;
-    }
-
-    return projectRoot.startsWith("/") ? projectRoot : `${workspaceRoot}/${projectRoot}`;
-};
+interface PersistentTasksLifecycleHooks {
+    /** Resolves when the TUI exits (user pressed `q`/Ctrl+C); triggers an abort. */
+    abortSignal?: Promise<void>;
+    lifeCycle: LifeCycleInterface;
+    store: TaskStore;
+}
 
 /**
  * Runs persistent tasks (dev servers, watch mode) as a concurrent batch.
  * Persistent tasks never cache and never return a "result" — they run
  * until interrupted or until all of them exit.
+ *
+ * When invoked from the TTY path, `lifecycleHooks` is supplied so output
+ * streams into the dynamic TUI store and the `done` state is suspended
+ * until the persistent tasks exit. Without it, an `onEvent` no-op still
+ * forces the JS fallback in `runConcurrently` (the variant with
+ * hardened SIGINT/SIGTERM/exit cleanup).
  */
-const runPersistentTasks = async (tasks: Task[], workspaceRoot: string, affectedFiles: string[] | undefined, initCwd: string): Promise<void> => {
+const runPersistentTasks = async (
+    tasks: Task[],
+    workspaceRoot: string,
+    affectedFiles: string[] | undefined,
+    initCwd: string,
+    lifecycleHooks?: PersistentTasksLifecycleHooks,
+    serviceEnvByTaskId?: ReadonlyMap<string, Record<string, string>>,
+): Promise<void> => {
     const commands = tasks
         .map((task) => {
-            // `overrides.command` is already token-expanded — see the
-            // build site in `execute()` for why expansion lives there.
             const command = task.overrides["command"] as string | undefined;
 
             if (!command) {
@@ -110,18 +119,19 @@ const runPersistentTasks = async (tasks: Task[], workspaceRoot: string, affected
             }
 
             const visOptions = task.overrides["visOptions"] as VisTargetOptions | undefined;
-            const cwd = resolveCwd(workspaceRoot, task.projectRoot, Boolean(visOptions?.runFromWorkspaceRoot));
+            const cwd = resolveTaskCwd(workspaceRoot, task.projectRoot, Boolean(visOptions?.runFromWorkspaceRoot));
 
             const envFileVars = visOptions?.envFile ? loadEnvFile(cwd, visOptions.envFile) : {};
             const affectedEnv
                 = affectedFiles && (visOptions?.affectedFiles === "env" || visOptions?.affectedFiles === "both")
                     ? { [AFFECTED_FILES_ENV]: affectedFiles.join("\n") }
                     : {};
+            const serviceEnv = serviceEnvByTaskId?.get(task.id) ?? {};
 
             return {
                 command,
                 cwd,
-                env: { INIT_CWD: initCwd, ...envFileVars, ...affectedEnv },
+                env: { INIT_CWD: initCwd, ...envFileVars, ...serviceEnv, ...affectedEnv },
                 name: task.id,
             };
         })
@@ -131,7 +141,297 @@ const runPersistentTasks = async (tasks: Task[], workspaceRoot: string, affected
         return;
     }
 
-    await runConcurrently(commands as ConcurrentCommandInput[], { killOthers: ["failure"] });
+    if (!lifecycleHooks) {
+        await runConcurrently(commands as ConcurrentCommandInput[], {
+            killOthers: ["failure"],
+            onEvent: () => {
+                // No-op — presence forces the JS fallback path, which is
+                // the one with the hardened signal cleanup.
+            },
+        });
+
+        return;
+    }
+
+    const { abortSignal, lifeCycle, store } = lifecycleHooks;
+    // Map runConcurrently's positional `index` back to the originating
+    // Task — runConcurrently doesn't echo `name` on stdout/stderr/started
+    // events, only on `close`. Keeping a parallel array preserves the
+    // ordering invariant without trusting per-event metadata.
+    const runnableTasks = commands.map((c) => tasks.find((t) => t.id === c.name)!).filter(Boolean);
+
+    // The orchestrator already called endCommand() → markDone() on the
+    // store; reverse it so the TUI keeps the task table visible while
+    // the persistent tasks run. markDone() runs again in the finally
+    // block so the post-exit summary surfaces normally.
+    store.unmarkDone();
+    lifeCycle.startTasks?.(runnableTasks);
+
+    const startTimeById = new Map<string, number>();
+    const killHandles = new Map<number, (signal?: string) => void>();
+    let escalationTimer: ReturnType<typeof setTimeout> | undefined;
+
+    const killAll = (): void => {
+        for (const kill of killHandles.values()) {
+            try {
+                kill("SIGTERM");
+            } catch {
+                // Process already gone.
+            }
+        }
+
+        // Some dev servers ignore SIGTERM (or have child workers that
+        // outlive the parent). Escalate to SIGKILL after a grace period
+        // so `q` actually exits without forcing the user to Ctrl+C.
+        // Don't clear handles synchronously — we still need them for the
+        // SIGKILL pass.
+        if (!escalationTimer) {
+            escalationTimer = setTimeout(() => {
+                for (const kill of killHandles.values()) {
+                    try {
+                        kill("SIGKILL");
+                    } catch {
+                        // Process already gone.
+                    }
+                }
+
+                killHandles.clear();
+            }, 2000);
+            escalationTimer.unref?.();
+        }
+    };
+
+    // When the TUI unmounts (`q` or Ctrl+C inside the React app), the
+    // promise resolves before runConcurrently's signal handlers fire —
+    // explicitly kill so the persistent run doesn't outlive the UI.
+    let abortListener: (() => void) | undefined;
+
+    if (abortSignal) {
+        abortListener = (): void => {
+            killAll();
+        };
+
+        abortSignal
+            .then(() => {
+                abortListener?.();
+
+                return undefined;
+            })
+            .catch(() => {
+                abortListener?.();
+            });
+    }
+
+    try {
+        await runConcurrently(commands as ConcurrentCommandInput[], {
+            killOthers: ["failure"],
+            onEvent: (event: ProcessEvent) => {
+                const task = runnableTasks[event.index];
+
+                if (!task) {
+                    return;
+                }
+
+                switch (event.kind) {
+                    case "close": {
+                        const startTime = startTimeById.get(task.id) ?? Date.now();
+                        // A killed persistent task (Ctrl+C, `q`, killOthers
+                        // cascade) is the expected exit path — render it
+                        // as `success` so the row shows a tick instead of
+                        // a misleading red cross.
+                        const status = event.killed || event.exitCode === 0 ? "success" : "failure";
+
+                        lifeCycle.endTasks?.([
+                            {
+                                code: event.exitCode ?? 0,
+                                endTime: Date.now(),
+                                startTime,
+                                status,
+                                task,
+                                terminalOutput: store.getSnapshot().outputs.get(task.id) ?? "",
+                            },
+                        ]);
+                        killHandles.delete(event.index);
+                        break;
+                    }
+                    case "error": {
+                        if (event.message) {
+                            store.addOutput(task.id, `${event.message}\n`);
+                        }
+
+                        break;
+                    }
+                    case "started": {
+                        startTimeById.set(task.id, Date.now());
+
+                        if (event.kill) {
+                            killHandles.set(event.index, event.kill);
+                        }
+
+                        break;
+                    }
+                    case "stderr":
+                    case "stdout": {
+                        if (event.text) {
+                            store.addOutput(task.id, `${event.text}\n`);
+                        }
+
+                        break;
+                    }
+                    default:
+                        // ignore
+                }
+            },
+        });
+    } finally {
+        if (escalationTimer) {
+            clearTimeout(escalationTimer);
+            escalationTimer = undefined;
+        }
+
+        store.markDone();
+    }
+};
+
+/** Liveness check: true if the pid (or its group) is still in the process table. */
+const isPidAlive = (pid: number): boolean => {
+    try {
+        process.kill(-pid, 0);
+
+        return true;
+    } catch {
+        try {
+            process.kill(pid, 0);
+
+            return true;
+        } catch {
+            return false;
+        }
+    }
+};
+
+/** Synchronous sleep using Atomics.wait on a private SharedArrayBuffer. */
+const sleepSyncMs = (ms: number): void => {
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+};
+
+/**
+ * Run-end cleanup for ephemeral services started via `injectServiceTasks`,
+ * and (when `--stop-services` is set) registry-mode services this run
+ * started. Each ephemeral pid file holds the pid of a process group
+ * leader the bootstrap spawned and `unref`d. We SIGTERM the whole group
+ * (so the shell wrapper AND the actual server die) and then drop the
+ * scratch directory. Any file/process that's already gone is silently
+ * ignored — the goal is to leave nothing behind, not to assert what we
+ * found.
+ *
+ * Synchronous on purpose: a SIGINT handler can call this inline before
+ * the process exits. The SIGKILL escalation polls liveness with
+ * `Atomics.wait` so it actually fires on the exit path — an unref'd
+ * timer would be cancelled when `process.exit` runs immediately after.
+ *
+ * Registry entries for `extraPids` are NOT removed here (sync FS work in
+ * a signal handler is risky); `vis service list --prune` and `pruneDead`
+ * tidy them up. The entries point at dead pids by then so subsequent
+ * runs treat them as missing.
+ */
+const cleanupEphemeralServices = (params: { extraPids?: ReadonlyArray<number>; pidFiles: string[]; runDir: string | undefined }): void => {
+    const { extraPids = [], pidFiles, runDir } = params;
+    const pids: number[] = [];
+
+    const sendSigterm = (pid: number): void => {
+        try {
+            // The bootstrap spawned with `detached: true`, so the child
+            // is its own process-group leader. Negate the pid to signal
+            // the whole group — kills both the shell wrapper and the
+            // service binary it forked.
+            process.kill(-pid, "SIGTERM");
+        } catch {
+            try {
+                process.kill(pid, "SIGTERM");
+            } catch {
+                // Already gone.
+            }
+        }
+    };
+
+    for (const pidFile of pidFiles) {
+        let pid: number | undefined;
+
+        try {
+            const text = readFileSync(pidFile);
+            const parsed = Number.parseInt(text.trim(), 10);
+
+            pid = Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
+        } catch {
+            continue;
+        }
+
+        if (pid === undefined) {
+            continue;
+        }
+
+        pids.push(pid);
+        sendSigterm(pid);
+    }
+
+    for (const pid of extraPids) {
+        if (!Number.isFinite(pid) || pid <= 0) {
+            continue;
+        }
+
+        pids.push(pid);
+        sendSigterm(pid);
+    }
+
+    // Some services (postgres, custom node servers) ignore SIGTERM until
+    // they finish in-flight work. Poll liveness for up to ~1.5s — most
+    // well-behaved services exit within a few hundred ms — and SIGKILL
+    // anything still standing. Synchronous waits are required: this can
+    // be invoked from a signal handler immediately followed by
+    // `process.exit`, which would cancel any unref'd timer.
+    if (pids.length > 0) {
+        const grace = 1500;
+        const step = 100;
+        const deadline = Date.now() + grace;
+
+        while (Date.now() < deadline) {
+            let allDead = true;
+
+            for (const pid of pids) {
+                if (isPidAlive(pid)) {
+                    allDead = false;
+                    break;
+                }
+            }
+
+            if (allDead) {
+                break;
+            }
+
+            sleepSyncMs(step);
+        }
+
+        for (const pid of pids) {
+            if (!isPidAlive(pid)) {
+                continue;
+            }
+
+            try {
+                process.kill(-pid, "SIGKILL");
+            } catch {
+                try {
+                    process.kill(pid, "SIGKILL");
+                } catch {
+                    // Already gone.
+                }
+            }
+        }
+    }
+
+    if (runDir) {
+        removeSync(runDir);
+    }
 };
 
 /**
@@ -334,6 +634,16 @@ interface ExecutorDependencies {
      * the post-prune graph to find what env to merge.
      */
     serviceEnvByTaskId?: Map<string, Record<string, string>>;
+
+    /**
+     * Set when auto-start is active. The executor calls
+     * `onRegistryTaskStarted` / `onRegistryTaskClosed` on the bridge for
+     * any task that was injected as a service so the dock can transition
+     * from `starting → ready` (or `failed`) using the wrapper's lifecycle
+     * events. Ephemeral entries are no-ops in those calls — they get
+     * boot-phase events through the stdout marker channel instead.
+     */
+    serviceEventBridge?: ServiceEventBridge;
     stdinRegistry?: Map<string, StdinEntry>;
 
     /**
@@ -397,6 +707,7 @@ const createConcurrentExecutor = (deps: ExecutorDependencies) => {
             onOutputReplace,
             retryBudget,
             serviceEnvByTaskId,
+            serviceEventBridge: bridge,
             stdinRegistry,
             strictEnv: workspaceStrictEnv,
             workspaceRoot,
@@ -404,7 +715,7 @@ const createConcurrentExecutor = (deps: ExecutorDependencies) => {
 
         const visOptions = getTaskOptions(task);
 
-        const resolvedCwd = resolveCwd(workspaceRoot, execOptions.cwd ?? task.projectRoot, visOptions?.runFromWorkspaceRoot === true);
+        const resolvedCwd = resolveTaskCwd(workspaceRoot, execOptions.cwd ?? task.projectRoot, visOptions?.runFromWorkspaceRoot === true);
 
         // `overrides.command` is already token-expanded at the build
         // site so the cache hasher sees the resolved form. Forwarded
@@ -492,6 +803,12 @@ const createConcurrentExecutor = (deps: ExecutorDependencies) => {
                 if (event.write && stdinRegistry) {
                     stdinRegistry.set(task.id, { kill: event.kill, resize: event.resize, write: event.write });
                 }
+
+                // Registry-mode service tasks: the wrapper (`vis service
+                // start <id>`) just spawned. The bridge transitions the
+                // dock row to `starting`. Ephemeral entries no-op here —
+                // they receive boot events from the stdout marker channel.
+                bridge?.onRegistryTaskStarted(task.id);
             }
 
             if ((event.kind === "stdout" || event.kind === "stderr") && event.text !== undefined) {
@@ -514,6 +831,15 @@ const createConcurrentExecutor = (deps: ExecutorDependencies) => {
                     if (ptyInteractive) {
                         onOutputReplace?.(task.id, termBuf.toString());
                     }
+
+                    // Service-task wrappers run in PTY mode like everything
+                    // else, but their `[[VIS_BOOT]]…` markers must also reach
+                    // the bridge's parser — without this, the dock stays on
+                    // "booting…" while the wrapper completes happily and the
+                    // regular task list shows the row as ✓.
+                    if (bridge) {
+                        bridge.onTaskOutput(task.id, event.text);
+                    }
                 } else {
                     const line = `${event.text}\n`;
 
@@ -522,8 +848,21 @@ const createConcurrentExecutor = (deps: ExecutorDependencies) => {
                 }
             }
 
-            if (event.kind === "close" && stdinRegistry) {
-                stdinRegistry.delete(task.id);
+            if (event.kind === "close") {
+                if (stdinRegistry) {
+                    stdinRegistry.delete(task.id);
+                }
+
+                // Registry-mode: the wrapper exited. On success, the
+                // bridge reads the registry entry to surface pid/logFile,
+                // then transitions the dock to `ready` and starts the
+                // running-phase log tail. On non-zero exit, transitions
+                // to `failed`. Awaiting isn't needed here — the call is
+                // fire-and-forget; the dock updates asynchronously via
+                // its store.
+                if (bridge) {
+                    bridge.onRegistryTaskClosed(task.id, event.exitCode ?? 0, Boolean(event.killed)).catch(() => {});
+                }
             }
         };
 
@@ -627,20 +966,20 @@ const parseEnvConcurrency = (raw: string | undefined): { invalid: string } | { v
 };
 
 /**
- * Renders `.task-runner/last-summary.json` as a compact stats block.
+ * Renders `.vis/last-summary.json` as a compact stats block.
  *
  * Keeps the format simple on purpose — users who want the full JSON
- * can `cat .task-runner/last-summary.json` directly. This view is the
+ * can `cat .vis/last-summary.json` directly. This view is the
  * "glance at what happened" companion to `vis run --last-details`.
  */
 const renderLastRunSummary = async (
     workspaceRoot: string,
     logger: { info: (...args: unknown[]) => void; warn: (...args: unknown[]) => void },
 ): Promise<void> => {
-    const summary = await readLastRunSummary(workspaceRoot);
+    const summary = await readLastRunSummary(workspaceRoot, { dataDirectory: getVisWorkspaceDataDir(workspaceRoot) });
 
     if (!summary) {
-        logger.warn("No previous run recorded yet. Run a task at least once to populate .task-runner/last-summary.json.");
+        logger.warn(`No previous run recorded yet. Run a task at least once to populate ${getLastRunSummaryPath(workspaceRoot, { dataDirectory: getVisWorkspaceDataDir(workspaceRoot) })}.`);
 
         return;
     }
@@ -718,6 +1057,11 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
     }
 
     const workspaceRoot = wsRoot;
+
+    // Vis used to write its run state under `.task-runner/` and the cache
+    // under `.task-runner-cache/`. After the cutover to `.vis/` those paths
+    // are no longer read, so silently sweep them away on the next run.
+    cleanupLegacyTaskRunnerLayout(workspaceRoot);
 
     // `--last-details` short-circuits execution: render the
     // persisted last-run summary and exit. Handles the common
@@ -1011,7 +1355,14 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
         }
     }
 
-    let taskGraph = createTaskGraph(initialTasks, {
+    // Include persistent tasks in the graph so their `dependsOn` chain
+    // (especially service deps like `web:serve → api:db`) is walked by
+    // `applyServiceRegistry`. Without this, persistent tasks are split
+    // out before graph construction and their service deps go undiscovered,
+    // so preflight never auto-starts them. The persistent task ids are
+    // stripped from the graph again after preflight injection so the
+    // regular runner doesn't execute them — they run via `runPersistentTasks`.
+    let taskGraph = createTaskGraph([...initialTasks, ...persistentTasks], {
         projectGraph,
         targetDefaults: config.targetDefaults as unknown as Record<string, Partial<TargetConfiguration>>,
         workspace,
@@ -1019,23 +1370,39 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
 
     // task-runner's createTaskGraph copies overrides only from the
     // user-invoked `initialTasks`, so dep tasks added via `dependsOn`
-    // arrive without `visOptions`. That hides every vis-specific
-    // option on dep tasks — most importantly `options.service`, which
-    // applyServiceRegistry needs to detect a service dependency it
-    // should auto-attach to. Re-hydrate visOptions for every task in
-    // the graph from `projectOptions` so the registry pass below sees
-    // the same target metadata that user-invoked tasks already carry.
+    // arrive without `visOptions` and without `command`. That hides
+    // every vis-specific option on dep tasks — most importantly
+    // `options.service`, which applyServiceRegistry needs to detect a
+    // service dependency it should auto-attach to — and leaves the
+    // service-preflight injector with no command to wrap. Re-hydrate
+    // both fields for every task in the graph from `projectOptions`
+    // so dep tasks carry the same target metadata that user-invoked
+    // tasks already carry.
     for (const [taskId, task] of Object.entries(taskGraph.tasks)) {
-        if (task.overrides["visOptions"] !== undefined) {
-            continue;
-        }
-
         const projectName = task.target.project;
         const targetName = task.target.target;
         const visTarget = projectOptions.get(projectName)?.[targetName];
 
-        if (visTarget?.options) {
-            task.overrides = { ...task.overrides, visOptions: visTarget.options };
+        if (!visTarget) {
+            continue;
+        }
+
+        const project = workspace.projects[projectName];
+        let mutated = false;
+        const nextOverrides = { ...task.overrides };
+
+        if (nextOverrides["visOptions"] === undefined && visTarget.options) {
+            nextOverrides["visOptions"] = visTarget.options;
+            mutated = true;
+        }
+
+        if (nextOverrides["command"] === undefined && visTarget.command) {
+            nextOverrides["command"] = expandTokensInString(visTarget.command, { affectedFiles, projectRoot: project?.root });
+            mutated = true;
+        }
+
+        if (mutated) {
+            task.overrides = nextOverrides;
             taskGraph.tasks[taskId] = task;
         }
     }
@@ -1137,35 +1504,274 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
     // a plan print never executes the dependent task, so probing risks
     // a misleading "service down" diagnostic for what is really a
     // planning-only invocation.
-    const registeredEntries = await readAllEntries(workspaceRoot);
-    const serviceResult = await applyServiceRegistry({
-        initialTasks,
-        probe: options.dryRun
-            ? undefined
-            : async (entry) => {
-                try {
-                    await runReadiness(entry.config, { timeoutMs: SERVICE_PROBE_TIMEOUT_MS });
+    const visVersion = process.env["VIS_VERSION"] ?? "0.0.0";
+    const probe = options.dryRun
+        ? undefined
+        : async (entry: ServiceEntry): Promise<boolean> => {
+            try {
+                await runReadiness(entry.config, { timeoutMs: SERVICE_PROBE_TIMEOUT_MS });
 
-                    return true;
-                } catch {
-                    return false;
-                }
-            },
+                return true;
+            } catch {
+                return false;
+            }
+        };
+
+    const registeredEntries = await readAllEntries(workspaceRoot);
+    // User-invoked tasks for `applyServiceRegistry`'s "is this user-asked-for?"
+    // check — includes persistent ones so a user running `vis run dev` (where
+    // `dev` is persistent) doesn't get a confusing "service deps missing"
+    // diagnostic for the persistent task itself.
+    const serviceResult = await applyServiceRegistry({
+        initialTasks: [...initialTasks, ...persistentTasks],
+        probe,
         registeredEntries,
         taskGraph,
-        visVersion: process.env["VIS_VERSION"] ?? "0.0.0",
+        visVersion,
     });
 
+    /**
+     * Ephemeral pid files written by the bootstrap wrapper at service
+     * boot. Read at run end + SIGTERM the recorded pids so a failed run
+     * never leaves orphan children. Registry-mode services are NOT
+     * tracked here — they persist by design.
+     */
+    const ephemeralPidFiles: string[] = [];
+    /** Per-run scratch directory holding the bootstrap script + pid/config files. Removed at run end. */
+    let serviceRunDir: string | undefined;
+    /** Registry-mode services started this run; surfaced in a one-line cleanup hint after the run completes. */
+    let registryStartedCount = 0;
+    /** Ids of registry-mode services this run started — used by `--stop-services` to clean only its own. */
+    const registryStartedIds: string[] = [];
+    /** id → pid for registry-mode services this run started, captured in the bridge `started` sink. Used by the sync signal-path cleanup. */
+    const registryStartedPids = new Map<string, number>();
+
+    /**
+     * Service ids injected as regular dep nodes for this run. The dynamic
+     * TUI's `TaskStore` only renders rows for tasks it knows about at
+     * construction time — top-level `initialTasks` alone would hide the
+     * service rows. We prepend these task objects to `initialTasks` after
+     * the 2nd-pass `applyServiceRegistry` so the renderer makes rows for
+     * them and live boot logs land somewhere visible.
+     */
+    let injectedServiceIds: string[] = [];
+    /** Set form of `injectedServiceIds` used by the executor's onOutput hook to route per-task chunks. */
+    const injectedServiceIdSet = new Set<string>();
+    /** Service dock store + event bridge (ephemeral mode only in v1). Constructed alongside successful injection. */
+    let serviceDockStore: ServiceDockStore | null = null;
+    let serviceEventBridge: ServiceEventBridge | null = null;
+
     if (serviceResult.diagnostics.length > 0) {
-        for (const diagnostic of serviceResult.diagnostics) {
-            logger.error(diagnostic.message);
+        const isTty = Boolean(process.stdout.isTTY && process.stdin.isTTY);
+        const decision = options.dryRun
+            ? "off"
+            : resolveServicesPolicy({
+                cli: options.services,
+                config: config.run?.services,
+                isCi: Boolean(isInCi),
+                isPersistentTarget: persistentTasks.length > 0,
+                isTty,
+                target,
+            });
+
+        if (decision === "off") {
+            for (const diagnostic of serviceResult.diagnostics) {
+                logger.error(diagnostic.message);
+            }
+
+            throw new Error(`${serviceResult.diagnostics.length} service dependency error(s) — start the missing services or invoke them directly.`);
         }
 
-        throw new Error(`${serviceResult.diagnostics.length} service dependency error(s) — start the missing services or invoke them directly.`);
+        const missingIds = serviceResult.diagnostics.map((d) => d.targetId);
+        const mode = decision;
+
+        // Capture the original (pre-injection) per-service config so the
+        // bridge's registry entries hold the actual service command —
+        // `injectServiceTasks` rewrites `task.overrides.command` to the
+        // `vis service start <id>` wrapper, which is the wrong thing to
+        // re-spawn from `#retryRegistry`.
+        const preInjectionExtracted = mode === "registry" ? extractPreflightTasks(workspaceRoot, missingIds, taskGraph) : undefined;
+
+        // Inject the missing services as regular task graph nodes —
+        // they'll render as rows in the run TUI with live boot logs,
+        // execute strictly sequentially (artificial deps chain them),
+        // and exit 0 the moment readiness passes. The synthesized env
+        // map below mirrors apply-service-registry's prune-time logic
+        // without actually pruning the graph.
+        const visBin = process.argv[1] ?? "vis";
+        const injection = injectServiceTasks({
+            missingServiceIds: missingIds,
+            mode,
+            taskGraph,
+            visBin,
+            workspaceRoot,
+        });
+
+        if (injection.skipped.length > 0) {
+            for (const { id, reason } of injection.skipped) {
+                logger.error(`Cannot auto-start ${id}: ${reason}`);
+            }
+
+            throw new Error(`${injection.skipped.length} service(s) cannot be auto-started — invoke them directly or add a service config.`);
+        }
+
+        ephemeralPidFiles.push(...injection.ephemeralPidFiles);
+        serviceRunDir = injection.runDir;
+        injectedServiceIds = injection.chain;
+
+        for (const id of injection.chain) {
+            injectedServiceIdSet.add(id);
+        }
+
+        if (mode === "registry") {
+            registryStartedCount = injection.chain.length;
+            registryStartedIds.push(...injection.chain);
+        }
+
+        // Stand up the dock + bridge for both modes. Ephemeral surfaces
+        // boot events through the bootstrap's stdout marker channel and
+        // running-phase log via fs.watch. Registry surfaces them through
+        // the wrapper task's `started`/`close` lifecycle events emitted
+        // by the executor — see the bridge wiring in `onEvent`.
+        if (injection.chain.length > 0) {
+            const dock = new ServiceDockStore(injection.chain);
+            const bridgeEntries = new Map<string, ServiceBridgeEntry>();
+
+            if (mode === "ephemeral" && injection.runDir) {
+                for (const id of injection.chain) {
+                    const paths = buildBootstrapPaths(injection.runDir, `${injection.runDir}/bootstrap.mjs`, id);
+
+                    bridgeEntries.set(id, {
+                        ephemeral: {
+                            configFile: paths.configFile,
+                            cwd: workspaceRoot,
+                            logFile: paths.logFile,
+                            pidFile: paths.pidFile,
+                            scriptPath: paths.scriptPath,
+                        },
+                        mode: "ephemeral",
+                    });
+                }
+            } else if (mode === "registry" && preInjectionExtracted) {
+                for (const svc of preInjectionExtracted.services) {
+                    bridgeEntries.set(svc.id, {
+                        mode: "registry",
+                        registry: {
+                            command: svc.command,
+                            config: svc.config,
+                            cwd: svc.cwd,
+                            env: svc.env,
+                        },
+                    });
+                }
+            }
+
+            if (bridgeEntries.size > 0) {
+                const bridge = new ServiceEventBridge({
+                    indexToId: new Map(),
+                    services: bridgeEntries,
+                    sink: {
+                        crashed: (id, tail) => { dock.markCrashed(id, tail); },
+                        failed: (id, reason, detail) => { dock.markFailed(id, reason, detail); },
+                        log: (id, chunk) => { dock.appendLog(id, chunk); },
+                        ready: (id, info) => { dock.markReady(id, info); },
+                        started: (id, pid) => {
+                            dock.markStarted(id, pid);
+
+                            // Capture registry-mode pids for the optional
+                            // --stop-services cleanup. Ephemeral pids are
+                            // already tracked via `ephemeralPidFiles`, so
+                            // skip those to keep the two cleanup paths
+                            // from doubly-killing the same pid.
+                            if (mode === "registry" && pid !== null) {
+                                registryStartedPids.set(id, pid);
+                            }
+                        },
+                        starting: (id) => { dock.markStarting(id); },
+                    },
+                    workspaceRoot,
+                });
+
+                serviceDockStore = dock;
+                serviceEventBridge = bridge;
+            }
+        }
+
+        // Merge synthesized env on top of the 1st pass's env map.
+        // 1st-pass entries cover already-running registered services;
+        // injection covers services we're about to boot.
+        for (const [taskId, env] of injection.serviceEnvByTaskId) {
+            const existing = serviceResult.serviceEnvByTaskId.get(taskId) ?? {};
+
+            serviceResult.serviceEnvByTaskId.set(taskId, { ...existing, ...env });
+        }
     }
 
-    initialTasks = serviceResult.initialTasks;
+    // applyServiceRegistry was called with `[...initialTasks, ...persistentTasks]`
+    // so its "is this user-asked-for?" check covers persistent targets like
+    // `vis run dev`. Its returned `initialTasks` therefore *also* contains
+    // the persistent ones (minus any satisfied services). Strip them back
+    // out — `runPersistentTasks` runs them; the regular runner must not.
+    // Without this filter, `web:serve` is fed to *both* pipelines and the
+    // TUI renders the row twice.
+    const persistentIdSet = new Set(persistentTasks.map((task) => task.id));
+
+    initialTasks = serviceResult.initialTasks.filter((task) => !persistentIdSet.has(task.id));
     taskGraph = serviceResult.taskGraph;
+
+    if (injectedServiceIds.length > 0) {
+        const serviceTasks = injectedServiceIds
+            .map((id) => taskGraph.tasks[id])
+            .filter((t): t is Task => t !== undefined);
+
+        initialTasks = [...serviceTasks, ...initialTasks];
+    }
+
+    // Persistent tasks were folded into the graph above so their service
+    // deps could be walked. Strip them now so the regular task runner
+    // doesn't try to execute them — they have their own runner pipeline
+    // via `runPersistentTasks`. Their dep edges are removed too; the
+    // service tasks they pointed at become roots and run on their own.
+    if (persistentTasks.length > 0) {
+        const persistentIds = new Set(persistentTasks.map((task) => task.id));
+
+        const filteredTasks: Record<string, Task> = {};
+
+        for (const [id, task] of Object.entries(taskGraph.tasks)) {
+            if (!persistentIds.has(id)) {
+                filteredTasks[id] = task;
+            }
+        }
+
+        const filteredDependencies: Record<string, string[]> = {};
+
+        for (const [id, deps] of Object.entries(taskGraph.dependencies)) {
+            if (persistentIds.has(id)) {
+                continue;
+            }
+
+            filteredDependencies[id] = deps.filter((depId) => !persistentIds.has(depId));
+        }
+
+        // Recompute roots from the trimmed graph: anything no remaining
+        // task depends on. Service tasks orphaned by removing their
+        // dependent persistent task become roots here.
+        const dependedOn = new Set<string>();
+
+        for (const deps of Object.values(filteredDependencies)) {
+            for (const depId of deps) {
+                dependedOn.add(depId);
+            }
+        }
+
+        const filteredRoots = Object.keys(filteredTasks).filter((id) => !dependedOn.has(id));
+
+        taskGraph = {
+            dependencies: filteredDependencies,
+            roots: filteredRoots,
+            tasks: filteredTasks,
+        };
+    }
 
     // Service env precedence: the executor merges these on top of
     // process.env when running each dependent task. See
@@ -1177,6 +1783,25 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
         const names = serviceResult.satisfiedServices.map((s) => s.id).join(", ");
 
         logger.debug?.(`Auto-attached to running services: ${names}`);
+
+        // Surface attached services in the dock so a second `vis run dev`
+        // (where the registry already holds api:db, api:redis, …) still
+        // shows the green pill. Without this, the dock is empty on rerun
+        // and the user can't tell whether their deps are wired.
+        if (!serviceDockStore) {
+            serviceDockStore = new ServiceDockStore(serviceResult.satisfiedServices.map((s) => s.id));
+        } else {
+            for (const entry of serviceResult.satisfiedServices) {
+                serviceDockStore.registerService(entry.id);
+            }
+        }
+
+        for (const entry of serviceResult.satisfiedServices) {
+            const readinessPort = entry.config.readiness?.tcp?.port ?? entry.config.port ?? 0;
+            const readinessHost = entry.config.readiness?.tcp?.host ?? "127.0.0.1";
+
+            serviceDockStore.markReady(entry.id, { host: readinessHost, port: readinessPort });
+        }
     }
 
     // Flip the task graph for teardown targets (CDK/Pulumi `destroy`,
@@ -1321,6 +1946,13 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
         // wins over a config value and relative paths are normalized
         // against `workspaceRoot` via `resolveCacheDirectory()`.
         cacheDirectory: resolvedCacheDirectory,
+        // Forward the vis-owned data directory so run summaries land in
+        // `<workspaceRoot>/.vis/` rather than the task-runner default
+        // `<workspaceRoot>/.task-runner/`. The config-supplied value
+        // (if any) is honoured because the spread above can carry it
+        // through; the explicit assignment here guarantees vis-driven
+        // runs always co-locate their state under `.vis/`.
+        dataDirectory: configTaskRunnerOptions.dataDirectory ?? getVisWorkspaceDataDir(workspaceRoot),
     };
 
     // Layer the CLI cache-mode/backend flags onto the resolved remoteCache
@@ -1344,11 +1976,15 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
 
     const isTTY = process.stdout.isTTY && !isInCi;
     const autoExitConfig = config.tui?.autoExit ?? false;
+    // Include persistent tasks in the lifecycle's view so the header
+    // ("Running targets serve for 1 project") and summary count them
+    // even when the regular task graph is empty (e.g. `vis run serve`
+    // for a project whose `serve` target has `preset: "server"`).
     const lifecycleOptions = {
         args: { parallel: runnerOptions.parallel, targets: [target] },
         autoExit: autoExitConfig,
         projectNames: projectsWithTarget,
-        tasks: initialTasks,
+        tasks: [...initialTasks, ...persistentTasks],
     };
 
     const retryBudgetLimit = typeof options.retryBudget === "number" ? options.retryBudget : undefined;
@@ -1361,442 +1997,570 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
 
     await hooks.callHook("run:before", { tasks: initialTasks, workspaceRoot });
 
-    if (isTTY) {
-        const stdinRegistry = new Map<string, StdinEntry>();
-        const dynamic = createDynamicOutputRenderer({ ...lifecycleOptions, outputStyle, stdinRegistry });
-        const { lifeCycle: uiLifeCycle, store } = dynamic;
-        // Fan lifecycle events out to both the UI renderer and the
-        // plugin hook layer so subscribers see the same events
-        // without adding another renderer.
-        const lifeCycle = new CompositeLifeCycle([uiLifeCycle, hookLifeCycle, failureLogLifeCycle]);
-        const mutexPool: MutexPool = new Map();
-        const taskExecutor = createConcurrentExecutor({
-            affectedFiles,
-            currentOs,
-            initCwd: invocationCwd,
-            lifeCycle,
-            mutexPool,
-            onOutput: (taskId, text) => {
-                store.addOutput(taskId, text);
-            },
-            onOutputReplace: (taskId, fullContent) => {
-                store.setOutput(taskId, fullContent);
-            },
-            retryBudget: sharedRetryBudget,
-            serviceEnvByTaskId,
-            stdinRegistry,
-            strictEnv: resolvedStrictEnv,
-            workspaceRoot,
-        });
+    /**
+     * SIGTERM the ephemeral service group + drop the scratch dir exactly
+     * once. Run from the run-block's `finally`, AND from a Ctrl+C/SIGTERM
+     * listener so children don't outlive the run when the dynamic TUI's
+     * own `process.exit(1)` short-circuits the normal exit path.
+     */
+    const stopServicesOnExit = options.stopServices === true;
+    let cleanupRan = false;
+    const runCleanupOnce = (): void => {
+        if (cleanupRan) {
+            return;
+        }
 
-        let loopAction: "quit" | "rerun" | "retry" = "rerun";
-        let retryTaskId: string | null = null;
+        cleanupRan = true;
 
-        let lastResults: TaskResults = new Map();
+        if (serviceEventBridge) {
+            serviceEventBridge.dispose().catch(() => {});
+        }
 
-        while (loopAction !== "quit") {
-            if (loopAction === "rerun") {
-                lastResults = await defaultTaskRunner(initialTasks, runnerOptions, {
+        // When --stop-services is set, also kill the registry-mode services
+        // this run started. Their pids are captured by the bridge `started`
+        // sink. Registry entries point at dead pids after this; `vis
+        // service list` / `pruneDead` cleans them up later.
+        const extraPids = stopServicesOnExit ? [...registryStartedPids.values()] : undefined;
+
+        cleanupEphemeralServices({ extraPids, pidFiles: ephemeralPidFiles, runDir: serviceRunDir });
+    };
+    const onCleanupSignal = (): void => {
+        runCleanupOnce();
+    };
+    const hasCleanupWork = ephemeralPidFiles.length > 0 || serviceRunDir !== undefined || (stopServicesOnExit && registryStartedIds.length > 0);
+
+    if (hasCleanupWork) {
+        process.on("SIGINT", onCleanupSignal);
+        process.on("SIGTERM", onCleanupSignal);
+    }
+
+    try {
+        if (isTTY) {
+            const stdinRegistry = new Map<string, StdinEntry>();
+            const dynamic = createDynamicOutputRenderer({
+                ...lifecycleOptions,
+                onRetryService: serviceEventBridge ? (id) => serviceEventBridge.retry(id) : undefined,
+                outputStyle,
+                serviceDockStore,
+                stdinRegistry,
+            });
+            const { lifeCycle: uiLifeCycle, store } = dynamic;
+            // Fan lifecycle events out to both the UI renderer and the
+            // plugin hook layer so subscribers see the same events
+            // without adding another renderer.
+            const lifeCycle = new CompositeLifeCycle([uiLifeCycle, hookLifeCycle, failureLogLifeCycle]);
+            const mutexPool: MutexPool = new Map();
+            const taskExecutor = createConcurrentExecutor({
+                affectedFiles,
+                currentOs,
+                initCwd: invocationCwd,
+                lifeCycle,
+                mutexPool,
+                onOutput: (taskId, text) => {
+                    if (serviceEventBridge && injectedServiceIdSet.has(taskId)) {
+                        serviceEventBridge.onTaskOutput(taskId, text);
+                    } else {
+                        store.addOutput(taskId, text);
+                    }
+                },
+                onOutputReplace: (taskId, fullContent) => {
+                    store.setOutput(taskId, fullContent);
+                },
+                retryBudget: sharedRetryBudget,
+                serviceEnvByTaskId,
+                serviceEventBridge: serviceEventBridge ?? undefined,
+                stdinRegistry,
+                strictEnv: resolvedStrictEnv,
+                workspaceRoot,
+            });
+
+            let loopAction: "quit" | "rerun" | "retry" = "rerun";
+            let retryTaskId: string | null = null;
+
+            let lastResults: TaskResults = new Map();
+
+            while (loopAction !== "quit") {
+                if (loopAction === "rerun") {
+                    lastResults = await defaultTaskRunner(initialTasks, runnerOptions, {
+                        lifeCycle,
+                        projectGraph,
+                        taskExecutor,
+                        taskGraph,
+                        workspaceRoot,
+                    });
+
+                    // Persistent tasks (servers, watchers) start AFTER the
+                    // regular graph completes but BEFORE the loop awaits
+                    // user input — that's the only way the dynamic TUI
+                    // can show their spinners and stream their output.
+                    // The abortSignal kills them when the user signals
+                    // rerun/retry/quit so the outer loop can react.
+                    if (persistentTasks.length > 0 && !options.failFast) {
+                        const abortSignal = new Promise<void>((resolve) => {
+                            const unsubscribe = store.subscribe(() => {
+                                const s = store.getSnapshot();
+
+                                if (s.rerunRequested || s.retryTaskId) {
+                                    unsubscribe();
+                                    resolve();
+                                }
+                            });
+
+                            dynamic.renderIsDone
+                                .then(() => {
+                                    unsubscribe();
+                                    resolve();
+
+                                    return undefined;
+                                })
+                                .catch(() => {
+                                    unsubscribe();
+                                    resolve();
+                                });
+                        });
+
+                        await runPersistentTasks(persistentTasks, workspaceRoot, affectedFiles, invocationCwd, {
+                            abortSignal,
+                            lifeCycle,
+                            store,
+                        }, serviceEnvByTaskId);
+                    }
+                } else if (loopAction === "retry" && retryTaskId) {
+                    const task = initialTasks.find((t) => t.id === retryTaskId);
+                    const command = task?.overrides["command"] as string | undefined;
+
+                    if (task && command) {
+                        const taskCwd = task.projectRoot ?? workspaceRoot;
+                        const resolvedCwd = taskCwd.startsWith("/") ? taskCwd : `${workspaceRoot}/${taskCwd}`;
+
+                        lifeCycle.startTasks?.([task]);
+
+                        const retryTermBuf = new TerminalBuffer(MAX_OUTPUT_BYTES);
+
+                        const retryResult = await runConcurrently(
+                            [
+                                {
+                                    command,
+                                    cwd: resolvedCwd,
+                                    name: task.id,
+                                    ptySize: { cols: process.stdout.columns ?? 80, rows: process.stdout.rows ?? 24 },
+                                    stdin: "pty",
+                                },
+                            ],
+                            {
+                                onEvent: (event: ProcessEvent) => {
+                                    if (event.kind === "started" && event.write) {
+                                        stdinRegistry.set(task.id, { kill: event.kill, resize: event.resize, write: event.write });
+                                    }
+
+                                    if ((event.kind === "stdout" || event.kind === "stderr") && event.text) {
+                                        retryTermBuf.write(event.text);
+                                        store.setOutput(task.id, retryTermBuf.toString());
+                                    }
+
+                                    if (event.kind === "close") {
+                                        stdinRegistry.delete(task.id);
+                                    }
+                                },
+                            },
+                        );
+
+                        const closeEvent = retryResult.closeEvents[0];
+
+                        lifeCycle.endTasks?.([
+                            {
+                                code: closeEvent?.exitCode ?? 1,
+                                status: closeEvent?.exitCode === 0 ? "success" : "failure",
+                                task,
+                                terminalOutput: store.getSnapshot().outputs.get(task.id),
+                            },
+                        ]);
+                    } else if (task) {
+                        lifeCycle.endTasks?.([
+                            {
+                                code: 1,
+                                status: "failure",
+                                task,
+                                terminalOutput: `No command configured for ${task.id}`,
+                            },
+                        ]);
+                    }
+
+                    retryTaskId = null;
+
+                    // Mark done after retry so user can rerun/retry again
+                    store.markDone();
+                }
+
+                loopAction = await new Promise<"quit" | "rerun" | "retry">((resolve) => {
+                    const unsubscribe = store.subscribe(() => {
+                        const s = store.getSnapshot();
+
+                        if (s.rerunRequested) {
+                            store.acknowledgeRerun();
+                            unsubscribe();
+                            resolve("rerun");
+                        }
+
+                        if (s.retryTaskId) {
+                            retryTaskId = store.acknowledgeRetry();
+                            unsubscribe();
+                            resolve("retry");
+                        }
+                    });
+
+                    dynamic.renderIsDone
+                        .then(() => {
+                            unsubscribe();
+                            resolve("quit");
+
+                            return undefined;
+                        })
+                        .catch(() => {
+                            unsubscribe();
+                            resolve("quit");
+                        });
+                });
+            }
+
+            await dynamic.renderIsDone;
+            await hooks.callHook("run:after", lastResults);
+            await maybeWriteProfile(lastResults);
+
+            if (registryStartedCount > 0) {
+                logger.info("");
+
+                if (stopServicesOnExit) {
+                    logger.info(`${String(registryStartedCount)} service(s) stopped (--stop-services).`);
+                } else {
+                    logger.info(`${String(registryStartedCount)} service(s) started in the background. Run \`vis service stop --all\` to clean up.`);
+                }
+            }
+        } else {
+            const mutexPool: MutexPool = new Map();
+            const logModeOption = typeof options.log === "string" ? options.log.toLowerCase() : "";
+            const logMode: LogMode | undefined
+                = logModeOption === "labeled" || logModeOption === "grouped" || logModeOption === "interleaved" ? logModeOption : undefined;
+            const logReporter = logMode ? createLogReporter(logMode) : undefined;
+            // Composite so plugin hooks see every task boundary event in
+            // addition to the CI-style static renderer. Build the
+            // lifecycle first so the executor can forward streaming
+            // stdout/stderr chunks into it.
+            const lifeCycle = new CompositeLifeCycle([
+                new StaticOutputLifeCycle({ ...lifecycleOptions, logReporter, outputStyle }),
+                hookLifeCycle,
+                failureLogLifeCycle,
+            ]);
+
+            const taskExecutor = createConcurrentExecutor({
+                affectedFiles,
+                currentOs,
+                initCwd: invocationCwd,
+                lifeCycle,
+                mutexPool,
+                retryBudget: sharedRetryBudget,
+                serviceEnvByTaskId,
+                serviceEventBridge: serviceEventBridge ?? undefined,
+                strictEnv: resolvedStrictEnv,
+                workspaceRoot,
+            });
+
+            const runOnce = async (): Promise<{ hasFailure: boolean; results: TaskResults; runHistory: Awaited<ReturnType<typeof loadRunSummaries>> }> => {
+                const runStart = Date.now();
+
+                const results = await defaultTaskRunner(initialTasks, runnerOptions, {
                     lifeCycle,
                     projectGraph,
                     taskExecutor,
                     taskGraph,
                     workspaceRoot,
                 });
-            } else if (loopAction === "retry" && retryTaskId) {
-                const task = initialTasks.find((t) => t.id === retryTaskId);
-                const command = task?.overrides["command"] as string | undefined;
 
-                if (task && command) {
-                    const taskCwd = task.projectRoot ?? workspaceRoot;
-                    const resolvedCwd = taskCwd.startsWith("/") ? taskCwd : `${workspaceRoot}/${taskCwd}`;
+                const durationMs = Date.now() - runStart;
 
-                    lifeCycle.startTasks?.([task]);
+                if (options.summarize) {
+                    const summary = generateRunSummary(results, taskGraph, startTime);
 
-                    const retryTermBuf = new TerminalBuffer(MAX_OUTPUT_BYTES);
-
-                    const retryResult = await runConcurrently(
-                        [
-                            {
-                                command,
-                                cwd: resolvedCwd,
-                                name: task.id,
-                                ptySize: { cols: process.stdout.columns ?? 80, rows: process.stdout.rows ?? 24 },
-                                stdin: "pty",
-                            },
-                        ],
-                        {
-                            onEvent: (event: ProcessEvent) => {
-                                if (event.kind === "started" && event.write) {
-                                    stdinRegistry.set(task.id, { kill: event.kill, resize: event.resize, write: event.write });
-                                }
-
-                                if ((event.kind === "stdout" || event.kind === "stderr") && event.text) {
-                                    retryTermBuf.write(event.text);
-                                    store.setOutput(task.id, retryTermBuf.toString());
-                                }
-
-                                if (event.kind === "close") {
-                                    stdinRegistry.delete(task.id);
-                                }
-                            },
-                        },
-                    );
-
-                    const closeEvent = retryResult.closeEvents[0];
-
-                    lifeCycle.endTasks?.([
-                        {
-                            code: closeEvent?.exitCode ?? 1,
-                            status: closeEvent?.exitCode === 0 ? "success" : "failure",
-                            task,
-                            terminalOutput: store.getSnapshot().outputs.get(task.id),
-                        },
-                    ]);
-                } else if (task) {
-                    lifeCycle.endTasks?.([
-                        {
-                            code: 1,
-                            status: "failure",
-                            task,
-                            terminalOutput: `No command configured for ${task.id}`,
-                        },
-                    ]);
+                    await writeRunSummary(summary, workspaceRoot, { dataDirectory: getVisWorkspaceDataDir(workspaceRoot) });
                 }
 
-                retryTaskId = null;
+                let hasFailure = false;
 
-                // Mark done after retry so user can rerun/retry again
-                store.markDone();
-            }
-
-            loopAction = await new Promise<"quit" | "rerun" | "retry">((resolve) => {
-                const unsubscribe = store.subscribe(() => {
-                    const s = store.getSnapshot();
-
-                    if (s.rerunRequested) {
-                        store.acknowledgeRerun();
-                        unsubscribe();
-                        resolve("rerun");
+                for (const [, result] of results) {
+                    if (result.status === "failure") {
+                        hasFailure = true;
                     }
-
-                    if (s.retryTaskId) {
-                        retryTaskId = store.acknowledgeRetry();
-                        unsubscribe();
-                        resolve("retry");
-                    }
-                });
-
-                dynamic.renderIsDone
-                    .then(() => {
-                        unsubscribe();
-                        resolve("quit");
-
-                        return undefined;
-                    })
-                    .catch(() => {
-                        unsubscribe();
-                        resolve("quit");
-                    });
-            });
-        }
-
-        await dynamic.renderIsDone;
-        await hooks.callHook("run:after", lastResults);
-        await maybeWriteProfile(lastResults);
-
-        if (persistentTasks.length > 0 && !options.failFast) {
-            await runPersistentTasks(persistentTasks, workspaceRoot, affectedFiles, invocationCwd);
-        }
-    } else {
-        const mutexPool: MutexPool = new Map();
-        const logModeOption = typeof options.log === "string" ? options.log.toLowerCase() : "";
-        const logMode: LogMode | undefined
-            = logModeOption === "labeled" || logModeOption === "grouped" || logModeOption === "interleaved" ? logModeOption : undefined;
-        const logReporter = logMode ? createLogReporter(logMode) : undefined;
-        // Composite so plugin hooks see every task boundary event in
-        // addition to the CI-style static renderer. Build the
-        // lifecycle first so the executor can forward streaming
-        // stdout/stderr chunks into it.
-        const lifeCycle = new CompositeLifeCycle([
-            new StaticOutputLifeCycle({ ...lifecycleOptions, logReporter, outputStyle }),
-            hookLifeCycle,
-            failureLogLifeCycle,
-        ]);
-
-        const taskExecutor = createConcurrentExecutor({
-            affectedFiles,
-            currentOs,
-            initCwd: invocationCwd,
-            lifeCycle,
-            mutexPool,
-            retryBudget: sharedRetryBudget,
-            serviceEnvByTaskId,
-            strictEnv: resolvedStrictEnv,
-            workspaceRoot,
-        });
-
-        const runOnce = async (): Promise<{ hasFailure: boolean; results: TaskResults; runHistory: Awaited<ReturnType<typeof loadRunSummaries>> }> => {
-            const runStart = Date.now();
-
-            const results = await defaultTaskRunner(initialTasks, runnerOptions, {
-                lifeCycle,
-                projectGraph,
-                taskExecutor,
-                taskGraph,
-                workspaceRoot,
-            });
-
-            const durationMs = Date.now() - runStart;
-
-            if (options.summarize) {
-                const summary = generateRunSummary(results, taskGraph, startTime);
-
-                await writeRunSummary(summary, workspaceRoot);
-            }
-
-            let hasFailure = false;
-
-            for (const [, result] of results) {
-                if (result.status === "failure") {
-                    hasFailure = true;
                 }
-            }
 
-            const timingLine = formatTimingSummary(results, durationMs);
+                const timingLine = formatTimingSummary(results, durationMs);
 
-            // Load historical summaries once here and share with
-            // the flakiness analyzer below — both consumers need
-            // the same files and duplicate reads dominate when
-            // the runs/ dir has accumulated hundreds of entries.
-            const runHistory = loadRunSummaries(workspaceRoot);
-            const durationComparison = compareDuration(workspaceRoot, durationMs, runHistory);
+                // Load historical summaries once here and share with
+                // the flakiness analyzer below — both consumers need
+                // the same files and duplicate reads dominate when
+                // the runs/ dir has accumulated hundreds of entries.
+                const runHistory = loadRunSummaries(workspaceRoot);
+                const durationComparison = compareDuration(workspaceRoot, durationMs, runHistory);
 
-            logger.info("");
-            logger.info(`  ${timingLine}${durationComparison ? ` ${durationComparison}` : ""}`);
+                logger.info("");
+                logger.info(`  ${timingLine}${durationComparison ? ` ${durationComparison}` : ""}`);
 
-            return { hasFailure, results, runHistory };
-        };
-
-        const firstRun = await runOnce();
-
-        await hooks.callHook("run:after", firstRun.results);
-        await maybeWriteProfile(firstRun.results);
-
-        const { hasFailure } = firstRun;
-
-        if (options.watch) {
-            const absoluteRoots = projectsWithTarget
-                .map((name) => {
-                    const project = workspace.projects[name];
-                    const root = project?.root;
-
-                    if (!root) {
-                        return undefined;
-                    }
-
-                    return root.startsWith("/") ? root : `${workspaceRoot}/${root}`;
-                })
-                .filter((p): p is string => p !== undefined);
-
-            // Snapshot the post-partition task set so `a` (clear filter)
-            // can return to it after `p` narrowed the run.
-            const baseTasks = initialTasks;
-            let projectFilter: string | undefined;
-
-            const applyFilter = (filter: string | undefined): number => {
-                const result = applyProjectFilter(baseTasks, filter);
-
-                projectFilter = result.filter;
-                initialTasks = result.tasks;
-
-                return result.tasks.length;
+                return { hasFailure, results, runHistory };
             };
 
-            let running = false;
-            let lastResults = firstRun.results;
+            const firstRun = await runOnce();
 
-            // Builds a fresh watcher after each run so the watch set
-            // reflects the files the latest run actually touched.
-            // Falls back to project roots on the first invocation
-            // (no prior results) or when no task carries hashDetails.
-            const buildHandle = (): { handle: ReturnType<typeof startWatcher>; mode: "tracked" | "roots" } => {
-                const targets = collectTrackedWatchTargets(lastResults, workspaceRoot);
+            await hooks.callHook("run:after", firstRun.results);
+            await maybeWriteProfile(firstRun.results);
 
-                if (targets.directories.length > 0 && targets.files.size > 0) {
-                    const filter = createTrackedFileFilter(targets.files, workspaceRoot, targets.directories);
+            const { hasFailure } = firstRun;
+
+            if (options.watch) {
+                const absoluteRoots = projectsWithTarget
+                    .map((name) => {
+                        const project = workspace.projects[name];
+                        const root = project?.root;
+
+                        if (!root) {
+                            return undefined;
+                        }
+
+                        return root.startsWith("/") ? root : `${workspaceRoot}/${root}`;
+                    })
+                    .filter((p): p is string => p !== undefined);
+
+                // Snapshot the post-partition task set so `a` (clear filter)
+                // can return to it after `p` narrowed the run.
+                const baseTasks = initialTasks;
+                let projectFilter: string | undefined;
+
+                const applyFilter = (filter: string | undefined): number => {
+                    const result = applyProjectFilter(baseTasks, filter);
+
+                    projectFilter = result.filter;
+                    initialTasks = result.tasks;
+
+                    return result.tasks.length;
+                };
+
+                let running = false;
+                let lastResults = firstRun.results;
+
+                // Builds a fresh watcher after each run so the watch set
+                // reflects the files the latest run actually touched.
+                // Falls back to project roots on the first invocation
+                // (no prior results) or when no task carries hashDetails.
+                const buildHandle = (): { handle: ReturnType<typeof startWatcher>; mode: "tracked" | "roots" } => {
+                    const targets = collectTrackedWatchTargets(lastResults, workspaceRoot);
+
+                    if (targets.directories.length > 0 && targets.files.size > 0) {
+                        const filter = createTrackedFileFilter(targets.files, workspaceRoot, targets.directories);
+
+                        return {
+                            handle: startWatcher({
+                                filter,
+                                onChange: onChangeHandler,
+                                paths: targets.directories,
+                            }),
+                            mode: "tracked",
+                        };
+                    }
 
                     return {
-                        handle: startWatcher({
-                            filter,
-                            onChange: onChangeHandler,
-                            paths: targets.directories,
-                        }),
-                        mode: "tracked",
+                        handle: startWatcher({ onChange: onChangeHandler, paths: absoluteRoots }),
+                        mode: "roots",
                     };
-                }
-
-                return {
-                    handle: startWatcher({ onChange: onChangeHandler, paths: absoluteRoots }),
-                    mode: "roots",
                 };
-            };
 
-            let currentHandle: ReturnType<typeof startWatcher> | undefined;
+                let currentHandle: ReturnType<typeof startWatcher> | undefined;
 
-            const onChangeHandler = async (paths: string[]): Promise<void> => {
-                if (running) {
-                    return;
-                }
-
-                running = true;
-
-                try {
-                    logger.info(`Change detected in ${paths.length} file(s), rerunning…`);
-
-                    const nextRun = await runOnce();
-
-                    lastResults = nextRun.results;
-
-                    // Rebuild the watcher so the next event only
-                    // fires for files the newest run still cares
-                    // about. Cheap — under 100ms on typical graphs.
-                    currentHandle?.close();
-
-                    const rebuilt = buildHandle();
-
-                    currentHandle = rebuilt.handle;
-                } finally {
-                    running = false;
-                }
-            };
-
-            const initial = buildHandle();
-
-            currentHandle = initial.handle;
-
-            const scope
-                = initial.mode === "tracked"
-                    ? `Watching ${String(collectTrackedWatchTargets(lastResults, workspaceRoot).files.size)} tracked file(s)`
-                    : `Watching ${String(absoluteRoots.length)} project root(s)`;
-
-            logger.info(`${scope} — edit a file to rerun, press h for keybinds, q to quit.`);
-
-            const triggerRerun = async (): Promise<void> => {
-                if (running) {
-                    return;
-                }
-
-                running = true;
-
-                try {
-                    if (initialTasks.length === 0) {
-                        logger.info("No tasks match the active filter — press a to clear it.");
-
+                const onChangeHandler = async (paths: string[]): Promise<void> => {
+                    if (running) {
                         return;
                     }
 
-                    const nextRun = await runOnce();
+                    running = true;
 
-                    lastResults = nextRun.results;
-                    currentHandle?.close();
+                    try {
+                        logger.info(`Change detected in ${paths.length} file(s), rerunning…`);
 
-                    const rebuilt = buildHandle();
+                        const nextRun = await runOnce();
 
-                    currentHandle = rebuilt.handle;
-                } finally {
-                    running = false;
-                }
-            };
+                        lastResults = nextRun.results;
 
-            await new Promise<void>((resolve) => {
-                let exited = false;
-                // Forward declarations so `exit()` can reference both the
-                // SIGINT listener and the keybind handle without hitting
-                // a TDZ if a future refactor calls exit() synchronously.
-                let keybinds: KeybindHandle | undefined;
-                const onSigint = (): void => {
-                    exit();
+                        // Rebuild the watcher so the next event only
+                        // fires for files the newest run still cares
+                        // about. Cheap — under 100ms on typical graphs.
+                        currentHandle?.close();
+
+                        const rebuilt = buildHandle();
+
+                        currentHandle = rebuilt.handle;
+                    } finally {
+                        running = false;
+                    }
                 };
 
-                const exit = (): void => {
-                    if (exited) {
+                const initial = buildHandle();
+
+                currentHandle = initial.handle;
+
+                const scope
+                    = initial.mode === "tracked"
+                        ? `Watching ${String(collectTrackedWatchTargets(lastResults, workspaceRoot).files.size)} tracked file(s)`
+                        : `Watching ${String(absoluteRoots.length)} project root(s)`;
+
+                logger.info(`${scope} — edit a file to rerun, press h for keybinds, q to quit.`);
+
+                const triggerRerun = async (): Promise<void> => {
+                    if (running) {
                         return;
                     }
 
-                    exited = true;
-                    keybinds?.close();
-                    process.off("SIGINT", onSigint);
-                    currentHandle?.close();
-                    resolve();
+                    running = true;
+
+                    try {
+                        if (initialTasks.length === 0) {
+                            logger.info("No tasks match the active filter — press a to clear it.");
+
+                            return;
+                        }
+
+                        const nextRun = await runOnce();
+
+                        lastResults = nextRun.results;
+                        currentHandle?.close();
+
+                        const rebuilt = buildHandle();
+
+                        currentHandle = rebuilt.handle;
+                    } finally {
+                        running = false;
+                    }
                 };
 
-                process.on("SIGINT", onSigint);
+                await new Promise<void>((resolve) => {
+                    let exited = false;
+                    // Forward declarations so `exit()` can reference both the
+                    // SIGINT listener and the keybind handle without hitting
+                    // a TDZ if a future refactor calls exit() synchronously.
+                    let keybinds: KeybindHandle | undefined;
+                    const onSigint = (): void => {
+                        exit();
+                    };
 
-                keybinds = installKeybinds({
-                    handlers: {
-                        onClearFilter: async () => {
-                            const total = applyFilter(undefined);
+                    const exit = (): void => {
+                        if (exited) {
+                            return;
+                        }
 
-                            logger.info(`Filter cleared — running ${String(total)} task(s).`);
-                            await triggerRerun();
-                        },
-                        onFilter: async (pattern) => {
+                        exited = true;
+                        keybinds?.close();
+                        process.off("SIGINT", onSigint);
+                        currentHandle?.close();
+                        resolve();
+                    };
+
+                    process.on("SIGINT", onSigint);
+
+                    keybinds = installKeybinds({
+                        handlers: {
+                            onClearFilter: async () => {
+                                const total = applyFilter(undefined);
+
+                                logger.info(`Filter cleared — running ${String(total)} task(s).`);
+                                await triggerRerun();
+                            },
+                            onFilter: async (pattern) => {
                             // Capture before mutating — applyFilter() overwrites
                             // projectFilter, so we'd lose the rollback target
                             // otherwise.
-                            const previousFilter = projectFilter;
-                            const matching = applyFilter(pattern);
+                                const previousFilter = projectFilter;
+                                const matching = applyFilter(pattern);
 
-                            if (matching === 0) {
-                                logger.info(`Filter "${pattern}" matched no projects — keeping previous filter.`);
-                                applyFilter(previousFilter);
+                                if (matching === 0) {
+                                    logger.info(`Filter "${pattern}" matched no projects — keeping previous filter.`);
+                                    applyFilter(previousFilter);
 
-                                return;
-                            }
+                                    return;
+                                }
 
-                            logger.info(`Filter "${pattern}" matched ${String(matching)} task(s).`);
-                            await triggerRerun();
+                                logger.info(`Filter "${pattern}" matched ${String(matching)} task(s).`);
+                                await triggerRerun();
+                            },
+                            onHelp: () => {
+                                writeHelp(process.stdout);
+                            },
+                            onQuit: () => {
+                                exit();
+                            },
+                            onRerun: triggerRerun,
                         },
-                        onHelp: () => {
-                            writeHelp(process.stdout);
-                        },
-                        onQuit: () => {
-                            exit();
-                        },
-                        onRerun: triggerRerun,
-                    },
+                    });
                 });
-            });
 
-            return;
-        }
+                return;
+            }
 
-        if (hasFailure) {
-            if (options.flaky !== false) {
+            if (hasFailure) {
+                if (options.flaky !== false) {
                 // Reuse the history already loaded for the timing
                 // comparison above — the runs/ directory hasn't
                 // changed since this turn of the loop started.
-                const flakyStats = analyzeFlakiness(workspaceRoot, { minRuns: 2 }, firstRun.runHistory);
+                    const flakyStats = analyzeFlakiness(workspaceRoot, { minRuns: 2 }, firstRun.runHistory);
 
-                if (flakyStats.length > 0) {
-                    logger.info("");
-                    logger.info("Flaky tasks (based on historical runs):");
-                    logger.info("");
+                    if (flakyStats.length > 0) {
+                        logger.info("");
+                        logger.info("Flaky tasks (based on historical runs):");
+                        logger.info("");
 
-                    for (const line of formatFlakinessTable(flakyStats)) {
-                        logger.info(`  ${line}`);
+                        for (const line of formatFlakinessTable(flakyStats)) {
+                            logger.info(`  ${line}`);
+                        }
+
+                        logger.info("");
                     }
-
-                    logger.info("");
                 }
+
+                throw new Error("Some tasks failed.");
             }
 
-            throw new Error("Some tasks failed.");
+            if (persistentTasks.length > 0 && !options.failFast) {
+                await runPersistentTasks(persistentTasks, workspaceRoot, affectedFiles, invocationCwd, undefined, serviceEnvByTaskId);
+            }
+
+            if (registryStartedCount > 0) {
+                logger.info("");
+
+                if (stopServicesOnExit) {
+                    logger.info(`${String(registryStartedCount)} service(s) stopped (--stop-services).`);
+                } else {
+                    logger.info(`${String(registryStartedCount)} service(s) started in the background. Run \`vis service stop --all\` to clean up.`);
+                }
+            }
+        }
+    } finally {
+        runCleanupOnce();
+
+        if (hasCleanupWork) {
+            process.off("SIGINT", onCleanupSignal);
+            process.off("SIGTERM", onCleanupSignal);
         }
 
-        if (persistentTasks.length > 0 && !options.failFast) {
-            await runPersistentTasks(persistentTasks, workspaceRoot, affectedFiles, invocationCwd);
+        // Clean exit path: also delete the registry entries for services
+        // we just stopped so `vis service list` doesn't show stale rows.
+        // The signal-handler path skips this — sync FS work in a SIGINT
+        // handler is risky, and `pruneDead` reconciles dead entries on
+        // demand anyway.
+        if (stopServicesOnExit && registryStartedIds.length > 0) {
+            await Promise.all(
+                registryStartedIds.map(async (id) => {
+                    try {
+                        await deleteEntry(workspaceRoot, id);
+                    } catch {
+                        // Best-effort — entry may already be gone.
+                    }
+                }),
+            );
         }
     }
 };

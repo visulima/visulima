@@ -14,6 +14,8 @@ import { isCacheStatus } from "../status-utils";
 import type { StdinEntry } from "../types";
 import OutputPanel from "./output-panel";
 import QuitDialog from "./quit-dialog";
+import ServiceDock from "./service-dock/service-dock";
+import type { ServiceDockStore } from "./service-dock/service-dock-store";
 import TaskListPanel from "./task-list-panel";
 import type { TaskStore } from "./task-store";
 
@@ -23,13 +25,22 @@ const MIN_VIEWPORT_WIDTH = 40;
 const MIN_VIEWPORT_HEIGHT = 10;
 const MIN_HORIZONTAL_WIDTH = 100;
 
+// Stable empty fallback so `dockIds` references compare equal between
+// renders when no dock store is present — keeps the filteredRows memo
+// from invalidating on every render in the common no-services case.
+const EMPTY_IDS: ReadonlyArray<string> = Object.freeze([]);
+
 // ── Component ───────────────────────────────────────────────────────────
 
 interface VisTaskRunnerAppProps {
     /** 0 = no auto-exit (default), >0 = countdown seconds */
     autoExitSeconds: number;
+    /** Optional callback fired when the user presses R on a crashed/failed service in the dock. */
+    onRetryService?: (id: string) => Promise<void> | void;
     parallelSlots: number;
     projectNames: string[];
+    /** Optional dock store; when provided and non-empty, the service dock is rendered. */
+    serviceDockStore?: ServiceDockStore | null;
     /** Registry of stdin entries keyed by task ID, for interactive input. */
     stdinRegistry: Map<string, StdinEntry>;
     store: TaskStore;
@@ -37,16 +48,57 @@ interface VisTaskRunnerAppProps {
     tasks: Task[];
 }
 
-const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, stdinRegistry, store, targets, tasks }: VisTaskRunnerAppProps): React.JSX.Element => {
+const VisTaskRunnerApp = ({
+    autoExitSeconds,
+    onRetryService,
+    parallelSlots,
+    projectNames,
+    serviceDockStore,
+    stdinRegistry,
+    store,
+    targets,
+    tasks,
+}: VisTaskRunnerAppProps): React.JSX.Element => {
     const { exit } = useApp();
     const { columns, rows } = useWindowSize();
     const state = useSyncExternalStore(store.subscribe, store.getSnapshot);
+
+    const dockSubscribe = useCallback(
+        (listener: () => void): (() => void) => (serviceDockStore ? serviceDockStore.subscribe(listener) : () => {}),
+        [serviceDockStore],
+    );
+
+    // Re-renders the parent whenever the dock state transitions (boot ↔ ready ↔ crash)
+    // so footer hints and Tab-skip behavior stay accurate. ServiceDock has its own
+    // subscription for the row-level details.
+    useSyncExternalStore(dockSubscribe, () => (serviceDockStore ? serviceDockStore.getDockState() : "ready"));
+    const dockIds = serviceDockStore ? serviceDockStore.getIds() : EMPTY_IDS;
+    const hasDock = dockIds.length > 0;
+    const [dockActiveIndex, setDockActiveIndex] = useState(0);
+    const [outputServiceId, setOutputServiceId] = useState<string | null>(null);
+
+    // Subscribe to the *watched* service so each appended log line forces
+    // a parent re-render — without this, new lines pile up in the store
+    // but the OutputPanel never receives them and `followOutput` has
+    // nothing to auto-scroll to. Updates for non-watched services are
+    // already covered by ServiceDock's own subscription, so we don't
+    // pay for them here.
+    const watchedServiceState = useSyncExternalStore(
+        dockSubscribe,
+        () => (outputServiceId && serviceDockStore ? serviceDockStore.getState(outputServiceId) : undefined),
+    );
 
     const [helpVisible, setHelpVisible] = useState(false);
     const helpScrollRef = useRef<ScrollViewRef>(null);
     const listScrollRef = useRef<ScrollViewRef>(null);
     const outputScrollRef = useRef<ScrollViewRef>(null);
     const [quitDialogVisible, setQuitDialogVisible] = useState(false);
+    // Auto-scroll for the output panel. ScrollView's `followOutput` already
+    // pauses when the user is not at the bottom, but it auto-resumes the
+    // moment they scroll back. Keeping our own bit lets `f` explicitly
+    // toggle and lets manual scroll keys disable following until the user
+    // opts back in (via `f` or End), which matches `tail -f` / less +F.
+    const [autoScroll, setAutoScroll] = useState(true);
 
     // Save scroll positions per view mode so transitions don't lose the user's place
     const savedScrollRef = useRef({
@@ -108,48 +160,72 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, stdinR
         }
     }, [state.done, autoExitSeconds]);
 
-    // Filter rows by status and text
+    // Filter rows by status and text. Service rows are hidden from the
+    // task list because the dock already shows them with richer state
+    // (live boot output, port, retry hotkey) — no need to duplicate them
+    // and crowd a column the user mostly skims for *their* tasks.
     const filteredRows = useMemo(() => {
-        let filtered = state.rows;
+        const serviceIdSet = dockIds.length > 0 ? new Set(dockIds) : null;
+        const lower = state.filterText ? state.filterText.toLowerCase() : null;
+        const filtered: typeof state.rows = [];
 
-        if (state.statusFilter !== "all") {
-            filtered = filtered.filter((r) => {
-                if (state.statusFilter === "failed") {
-                    return r.status === "failure";
-                }
+        for (const row of state.rows) {
+            if (serviceIdSet?.has(row.taskId)) {
+                continue;
+            }
 
-                if (state.statusFilter === "running") {
-                    return r.status === "running" || r.status === "pending";
-                }
+            if (state.statusFilter === "failed" && row.status !== "failure") {
+                continue;
+            }
 
-                if (state.statusFilter === "passed") {
-                    return r.status === "success" || isCacheStatus(r.status);
-                }
+            if (state.statusFilter === "running" && row.status !== "running" && row.status !== "pending") {
+                continue;
+            }
 
-                return true;
-            });
-        }
+            if (state.statusFilter === "passed" && row.status !== "success" && !isCacheStatus(row.status)) {
+                continue;
+            }
 
-        if (state.filterText) {
-            const lower = state.filterText.toLowerCase();
+            if (lower && !row.taskId.toLowerCase().includes(lower)) {
+                continue;
+            }
 
-            filtered = filtered.filter((r) => r.taskId.toLowerCase().includes(lower));
+            filtered.push(row);
         }
 
         return filtered;
-    }, [state.rows, state.filterText, state.statusFilter]);
+    }, [state.rows, state.filterText, state.statusFilter, dockIds]);
 
     // Count running tasks for status bar
-    const runningCount = useMemo(() => state.rows.filter((r) => r.status === "running").length, [state.rows]);
+    const runningCount = useMemo(() => {
+        let count = 0;
+
+        for (const row of state.rows) {
+            if (row.status === "running") {
+                count += 1;
+            }
+        }
+
+        return count;
+    }, [state.rows]);
 
     // Get selected task
     const selectedRow = filteredRows[state.selectedIndex] ?? null;
     const selectedTaskId = selectedRow?.taskId ?? null;
 
-    // Output shows selected task content
-    const outputTaskId = state.pinnedTaskIds[0] ?? selectedTaskId;
+    // Output shows selected task content unless a service log stream is pinned.
+    const outputTaskId = outputServiceId ? null : (state.pinnedTaskIds[0] ?? selectedTaskId);
     const outputTask = outputTaskId ? state.rows.find((r) => r.taskId === outputTaskId) : null;
-    const outputContent = outputTaskId ? (state.outputs.get(outputTaskId) ?? "") : "";
+    const outputServiceState = watchedServiceState ?? null;
+    const outputContent = outputServiceId
+        ? (outputServiceState?.tailLines ?? []).join("\n")
+        : (outputTaskId ? (state.outputs.get(outputTaskId) ?? "") : "");
+    const outputDisplayId = outputServiceId ?? outputTaskId;
+    const outputDisplayStatus = outputServiceId
+        ? outputServiceState?.status === "crashed" || outputServiceState?.status === "failed"
+            ? ("failure" as const)
+            : ("running" as const)
+        : outputTask?.status;
 
     // Header title and status
     const description = formatTargetsAndProjects(projectNames, targets, tasks);
@@ -395,39 +471,133 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, stdinR
                     return;
                 }
 
-                // Scroll output
+                // Toggle auto-scroll. Re-enabling jumps to the latest output
+                // so the user sees what they were missing. The scroll side
+                // effect lives outside the updater so strict-mode re-runs
+                // don't double-call the imperative ref.
+                if (input === "f") {
+                    const willEnable = !autoScroll;
+
+                    setAutoScroll(willEnable);
+
+                    if (willEnable) {
+                        outputScrollRef.current?.scrollToBottom();
+                    }
+
+                    return;
+                }
+
+                // Scroll output — manual movement opts out of auto-scroll
                 if (key.downArrow || input === "j") {
+                    setAutoScroll(false);
                     outputScrollRef.current?.scrollBy(1);
 
                     return;
                 }
 
                 if (key.upArrow || input === "k") {
+                    setAutoScroll(false);
                     outputScrollRef.current?.scrollBy(-1);
 
                     return;
                 }
 
                 if (key.pageDown || (key.ctrl && input === "d")) {
+                    setAutoScroll(false);
                     outputScrollRef.current?.scrollBy(12);
 
                     return;
                 }
 
                 if (key.pageUp || (key.ctrl && input === "u")) {
+                    setAutoScroll(false);
                     outputScrollRef.current?.scrollBy(-12);
 
                     return;
                 }
 
                 if (key.home) {
+                    setAutoScroll(false);
                     outputScrollRef.current?.scrollToTop();
 
                     return;
                 }
 
                 if (key.end) {
+                    setAutoScroll(true);
                     outputScrollRef.current?.scrollToBottom();
+
+                    return;
+                }
+
+                return;
+            }
+
+            // ── Service dock focus ─────────────────────────────────
+            if (state.focusedPanel === "dock" && hasDock && serviceDockStore) {
+                if (key.tab) {
+                    // Leaving the dock for the task list: drop any
+                    // service-log binding so the right pane reverts to
+                    // the selected task instead of staying stuck on the
+                    // service the user was previously inspecting.
+                    setOutputServiceId(null);
+                    store.setFocusedPanel("tasks");
+
+                    return;
+                }
+
+                if (key.escape) {
+                    store.setFocusedPanel("tasks");
+                    setOutputServiceId(null);
+
+                    if (state.viewMode === "split") {
+                        store.setViewMode("list");
+                        restoreScrollPositions("list");
+                    }
+
+                    return;
+                }
+
+                if (key.downArrow || input === "j") {
+                    setDockActiveIndex((current) => Math.min(current + 1, dockIds.length - 1));
+
+                    return;
+                }
+
+                if (key.upArrow || input === "k") {
+                    setDockActiveIndex((current) => Math.max(current - 1, 0));
+
+                    return;
+                }
+
+                if (key.return) {
+                    const id = dockIds[dockActiveIndex];
+
+                    if (id) {
+                        setOutputServiceId(id);
+                        setAutoScroll(true);
+                        saveScrollPositions();
+                        savedScrollRef.current.splitList = 0;
+                        savedScrollRef.current.splitOutput = 0;
+                        store.setViewMode("split");
+                        store.setFocusedPanel("output");
+                        restoreScrollPositions("split");
+                    }
+
+                    return;
+                }
+
+                if ((input === "r" || input === "R") && onRetryService) {
+                    const id = dockIds[dockActiveIndex];
+                    const status = id ? serviceDockStore.getState(id)?.status : undefined;
+
+                    if (id && (status === "crashed" || status === "failed")) {
+                        const result = onRetryService(id);
+
+                        if (result instanceof Promise) {
+                            result.catch(() => {});
+                        }
+                    }
 
                     return;
                 }
@@ -439,15 +609,39 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, stdinR
             if (state.viewMode === "split") {
                 // Tab switches focus between panels
                 if (key.tab) {
-                    const nextPanel = state.focusedPanel === "tasks" ? "output" : "tasks";
-
-                    store.setFocusedPanel(nextPanel);
+                    if (state.focusedPanel === "tasks") {
+                        store.setFocusedPanel("output");
+                    } else if (hasDock) {
+                        store.setFocusedPanel("dock");
+                    } else {
+                        // No dock to detour through; output → tasks. Clear
+                        // any service binding so output follows the task.
+                        setOutputServiceId(null);
+                        store.setFocusedPanel("tasks");
+                    }
 
                     return;
                 }
 
                 if (state.focusedPanel === "output") {
                     if (key.escape) {
+                        // Returning to where the user came from: a service
+                        // log split was opened from the dock, so Esc takes
+                        // them back to the dock (not the task list, which
+                        // they never visited). Other splits keep the
+                        // existing tasks-focus fallback.
+                        if (outputServiceId && hasDock) {
+                            setOutputServiceId(null);
+                            store.setViewMode("list");
+                            store.setFocusedPanel("dock");
+                            restoreScrollPositions("list");
+
+                            return;
+                        }
+
+                        // Esc into the task list — also drop the service
+                        // binding so the user lands on a task-driven split.
+                        setOutputServiceId(null);
                         store.setFocusedPanel("tasks");
 
                         return;
@@ -461,38 +655,60 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, stdinR
                         return;
                     }
 
-                    // Scroll output
+                    // Toggle auto-scroll. Re-enabling jumps to the latest
+                    // output. Side effect lives outside the updater so
+                    // strict-mode re-runs don't double-call the imperative
+                    // ref.
+                    if (input === "f") {
+                        const willEnable = !autoScroll;
+
+                        setAutoScroll(willEnable);
+
+                        if (willEnable) {
+                            outputScrollRef.current?.scrollToBottom();
+                        }
+
+                        return;
+                    }
+
+                    // Scroll output — manual movement opts out of auto-scroll
                     if (key.downArrow || input === "j") {
+                        setAutoScroll(false);
                         outputScrollRef.current?.scrollBy(1);
 
                         return;
                     }
 
                     if (key.upArrow || input === "k") {
+                        setAutoScroll(false);
                         outputScrollRef.current?.scrollBy(-1);
 
                         return;
                     }
 
                     if (key.pageDown || (key.ctrl && input === "d")) {
+                        setAutoScroll(false);
                         outputScrollRef.current?.scrollBy(12);
 
                         return;
                     }
 
                     if (key.pageUp || (key.ctrl && input === "u")) {
+                        setAutoScroll(false);
                         outputScrollRef.current?.scrollBy(-12);
 
                         return;
                     }
 
                     if (key.home) {
+                        setAutoScroll(false);
                         outputScrollRef.current?.scrollToTop();
 
                         return;
                     }
 
                     if (key.end) {
+                        setAutoScroll(true);
                         outputScrollRef.current?.scrollToBottom();
 
                         return;
@@ -519,6 +735,13 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, stdinR
 
             // ── List view / task list navigation (list + split task-focused) ──
             if (state.viewMode === "list" || (state.viewMode === "split" && state.focusedPanel === "tasks")) {
+                // In list view, Tab into the dock when present.
+                if (key.tab && state.viewMode === "list" && hasDock) {
+                    store.setFocusedPanel("dock");
+
+                    return;
+                }
+
                 // Navigation
                 if (key.downArrow || input === "j") {
                     const next = Math.min(state.selectedIndex + 1, Math.max(0, filteredRows.length - 1));
@@ -540,6 +763,7 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, stdinR
 
                 // Enter in list view → switch to split view with output focused
                 if (key.return && state.viewMode === "list") {
+                    setAutoScroll(true);
                     saveScrollPositions();
                     // Reset split scroll so it scrolls to selected item
                     savedScrollRef.current.splitList = 0;
@@ -1111,9 +1335,16 @@ List
                             {" "}
                             End
                         </Text>
-                        <Text dimColor> Bottom</Text>
+                        <Text dimColor> Bottom (resume follow)</Text>
                     </Text>
                 </Box>
+                <Text>
+                    <Text bold color="white">
+                        {" "}
+                        f
+                    </Text>
+                    <Text dimColor> Toggle auto-scroll (tail mode)</Text>
+                </Text>
             </Box>
 
             <Box flexDirection="column">
@@ -1159,20 +1390,29 @@ List
 
     // ── FULLSCREEN OUTPUT VIEW ──────────────────────────────────────
 
+    const dockElement = hasDock && serviceDockStore
+        ? (
+        <ServiceDock activeIndex={dockActiveIndex} focused={state.focusedPanel === "dock"} store={serviceDockStore} />
+        )
+        : null;
+
     if (state.viewMode === "fullscreen") {
         return (
             <Box flexDirection="column" height={rows} width={columns}>
                 <Box flexGrow={1}>
                     <OutputPanel
+                        autoScroll={autoScroll}
                         duration={outputTask?.duration ?? outputTask?.elapsed}
                         focused
                         interactiveMode={state.interactiveMode}
                         output={outputContent}
                         scrollRef={outputScrollRef}
-                        status={outputTask?.status}
-                        taskId={outputTaskId}
+                        status={outputDisplayStatus}
+                        supportsInteractive={!outputServiceId}
+                        taskId={outputDisplayId}
                     />
                 </Box>
+                {dockElement}
                 {footer}
                 {quitDialog}
                 {helpPopup}
@@ -1203,14 +1443,16 @@ List
 
         const outputPanel = (
             <OutputPanel
+                autoScroll={autoScroll}
                 duration={outputTask?.duration ?? outputTask?.elapsed}
                 focused={state.focusedPanel === "output"}
                 interactiveMode={state.interactiveMode}
                 output={outputContent}
                 scrollRef={outputScrollRef}
                 showFullscreenHint
-                status={outputTask?.status}
-                taskId={outputTaskId}
+                status={outputDisplayStatus}
+                supportsInteractive={!outputServiceId}
+                taskId={outputDisplayId}
             />
         );
 
@@ -1223,6 +1465,7 @@ List
                         <Box width={taskListWidth}>{taskListPanel}</Box>
                         <Box flexGrow={1}>{outputPanel}</Box>
                     </Box>
+                    {dockElement}
                     {footer}
                     {quitDialog}
                     {helpPopup}
@@ -1237,6 +1480,7 @@ List
             <Box flexDirection="column" height={rows} width={columns}>
                 <Box height={listHeight}>{taskListPanel}</Box>
                 <Box flexGrow={1}>{outputPanel}</Box>
+                {dockElement}
                 {footer}
                 {quitDialog}
                 {helpPopup}
@@ -1252,7 +1496,7 @@ List
                 <TaskListPanel
                     filterActive={state.filterActive}
                     filterText={state.filterText}
-                    focused
+                    focused={state.focusedPanel !== "dock"}
                     headerStatus={headerStatus}
                     parallelSlots={parallelSlots}
                     pinnedTaskIds={state.pinnedTaskIds}
@@ -1262,6 +1506,7 @@ List
                     title={headerTitle}
                 />
             </Box>
+            {dockElement}
             {footer}
             {quitDialog}
             {helpPopup}

@@ -794,6 +794,23 @@ export interface VisConfig {
     };
 
     /**
+     * Behavior of `vis run` when invoked tasks declare service dependencies
+     * that aren't running in the workspace registry. CLI `--services=<mode>`
+     * overrides this block.
+     */
+    run?: {
+        /**
+         * One knob controlling auto-start of missing service deps.
+         * - `auto` (default in TTY): pick by task — `dev` → ephemeral,
+         *   others → persistent.
+         * - `ephemeral`: services die with the run (no registry entry).
+         * - `persistent`: services persist across runs in the registry.
+         * - `off` (default in CI / non-TTY): print diagnostics and abort.
+         */
+        services?: "auto" | "ephemeral" | "off" | "persistent";
+    };
+
+    /**
      * Default options for `vis secrets`. CLI flags always take precedence;
      * this block provides workspace-wide defaults so teams can commit config
      * once and every invocation picks it up.
@@ -1020,8 +1037,8 @@ export interface VisConfig {
     /**
      * Share the cache between sibling git worktrees. When the workspace is a
      * linked worktree (created with `git worktree add`), the cache root is
-     * relocated from `&lt;linkedRoot>/.task-runner-cache` to the *main*
-     * worktree's `.task-runner-cache`. Multiple parallel agents working in
+     * relocated from `&lt;linkedRoot>/.vis/cache` to the *main*
+     * worktree's `.vis/cache`. Multiple parallel agents working in
      * sibling worktrees then share a single cache instead of rebuilding the
      * same hash N times.
      *

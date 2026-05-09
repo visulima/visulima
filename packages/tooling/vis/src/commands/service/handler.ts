@@ -10,7 +10,7 @@ import { startService, stopService } from "../../services/lifecycle";
 import { runReadiness, ServiceReadinessError } from "../../services/readiness";
 import { isAlive, pruneDead, readAllEntries, readEntry } from "../../services/registry";
 import type { ServiceEntry } from "../../services/types";
-import { loadEnvFile } from "../../task/target-options";
+import { loadEnvFile, resolveTaskCwd } from "../../task/target-options";
 import type { ServiceConfig, VisTargetConfiguration } from "../../task/types";
 import { formatAge } from "../cache/handler";
 import type { ServiceListOptions, ServiceLogsOptions, ServiceRestartOptions, ServiceStartOptions, ServiceStatusOptions, ServiceStopOptions } from "./index";
@@ -44,14 +44,6 @@ const splitTargetId = (raw: string): { project: string; target: string } | undef
     }
 
     return { project: id.slice(0, idx), target: id.slice(idx + 1) };
-};
-
-const resolveCwd = (workspaceRoot: string, projectRoot: string | undefined, runFromWorkspaceRoot: boolean): string => {
-    if (runFromWorkspaceRoot || !projectRoot) {
-        return workspaceRoot;
-    }
-
-    return projectRoot.startsWith("/") ? projectRoot : `${workspaceRoot}/${projectRoot}`;
 };
 
 /**
@@ -95,7 +87,7 @@ const resolveTarget = async (workspaceRoot: string, visConfig: VisConfig | undef
         return undefined;
     }
 
-    const cwd = resolveCwd(workspaceRoot, project.root, target.options?.runFromWorkspaceRoot === true);
+    const cwd = resolveTaskCwd(workspaceRoot, project.root, target.options?.runFromWorkspaceRoot === true);
     const envFromFiles = target.options?.envFile ? loadEnvFile(cwd, target.options.envFile) : {};
 
     return {

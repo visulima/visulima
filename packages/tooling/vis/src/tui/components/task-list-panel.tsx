@@ -13,7 +13,7 @@ import type { TaskRowData } from "./task-row";
 
 const STATUS_ICON_WIDTH = 6;
 const CACHE_COLUMN_WIDTH = 8;
-const DURATION_COLUMN_WIDTH = 10;
+const DURATION_COLUMN_WIDTH = 12;
 
 // ── Helpers ─────────────────────────────────────────────────────────────
 
@@ -49,19 +49,28 @@ const getPinLabel = (taskId: string, pinnedTaskIds: [string | null, string | nul
 
 interface TaskListRowProps {
     compact?: boolean;
+    focused: boolean;
     isSelected: boolean;
     pinLabel: string;
     row: TaskRowData;
 }
 
-const TaskListRow = ({ compact, isSelected, pinLabel, row }: TaskListRowProps): React.JSX.Element => {
-    const { status, taskId } = row;
+const TaskListRow = ({ compact, focused, isSelected, pinLabel, row }: TaskListRowProps): React.JSX.Element => {
+    const { persistent, status, taskId } = row;
 
-    const selectChar = isSelected ? ">" : " ";
+    const isActiveRow = focused && isSelected;
+    const selectChar = isActiveRow ? ">" : " ";
+    const isPersistentRunning = status === "running" && persistent === true;
 
     let statusIcon: React.JSX.Element;
 
-    if (status === "running") {
+    if (isPersistentRunning) {
+        statusIcon = (
+            <Text bold color="green">
+                {"  \u25CF  "}
+            </Text>
+        );
+    } else if (status === "running") {
         statusIcon = (
             <Text bold color="white">
                 {"  "}
@@ -89,7 +98,9 @@ const TaskListRow = ({ compact, isSelected, pinLabel, row }: TaskListRowProps): 
 
     let durationText = ELLIPSIS;
 
-    if (status !== "running" && status !== "pending") {
+    if (isPersistentRunning) {
+        durationText = "running";
+    } else if (status !== "running" && status !== "pending") {
         durationText = row.duration === undefined ? DASH : formatMs(row.duration);
     } else if (status === "running" && row.elapsed !== undefined) {
         durationText = formatMs(row.elapsed);
@@ -100,7 +111,7 @@ const TaskListRow = ({ compact, isSelected, pinLabel, row }: TaskListRowProps): 
             <Text>{selectChar}</Text>
             <Box width={STATUS_ICON_WIDTH}>{statusIcon}</Box>
             <Box flexGrow={1}>
-                <Text bold={isSelected} inverse={isSelected}>
+                <Text bold={isActiveRow} inverse={isActiveRow}>
                     {taskId}
                 </Text>
                 {pinLabel ? <Text dimColor>{` ${pinLabel}`}</Text> : null}
@@ -112,7 +123,9 @@ const TaskListRow = ({ compact, isSelected, pinLabel, row }: TaskListRowProps): 
             )}
             {!compact && (
                 <Box justifyContent="flex-end" width={DURATION_COLUMN_WIDTH}>
-                    <Text dimColor={status === "pending"}>{durationText}</Text>
+                    <Text color={isPersistentRunning ? "green" : undefined} dimColor={status === "pending" || isPersistentRunning}>
+                        {durationText}
+                    </Text>
                 </Box>
             )}
         </Box>
@@ -165,20 +178,38 @@ const TaskListPanel = ({
     const selectedTaskId = rows[selectedIndex]?.taskId;
 
     // All rows in original order in scrollable area (no reordering = no jumping)
-    const runningRows = rows.filter((r) => r.status === "running");
-    const hasActiveWork = runningRows.length > 0 || rows.some((r) => r.status === "pending");
+    const runningRows: TaskRowData[] = [];
+    let pendingCount = 0;
 
-    // Build parallel section slots
+    for (const row of rows) {
+        if (row.status === "running") {
+            runningRows.push(row);
+        } else if (row.status === "pending") {
+            pendingCount += 1;
+        }
+    }
+    // Cap displayed slots at the actual amount of in-flight work. Without
+    // this, a single persistent task (e.g. `web:serve`) renders one row
+    // here AND `parallelSlots - 1` "Waiting for task..." placeholders
+    // that have nothing to fill them \u2014 pure visual noise that duplicates
+    // the row already visible in the scroll list above.
+    const slotCount = Math.min(parallelSlots, runningRows.length + pendingCount);
+    // Only show the bottom panel when there's real contention \u2014 more
+    // than one slot's worth of work, or anything pending. A lone running
+    // task is already visible above; the panel just doubles it.
+    const showParallelPanel = slotCount > 1;
+
     const parallelElements: React.JSX.Element[] = [];
 
-    if (hasActiveWork) {
-        for (let i = 0; i < parallelSlots; i++) {
+    if (showParallelPanel) {
+        for (let i = 0; i < slotCount; i++) {
             const row = runningRows[i];
 
             if (row) {
                 parallelElements.push(
                     <TaskListRow
                         compact={compact}
+                        focused={focused}
                         isSelected={row.taskId === selectedTaskId}
                         key={`par-${row.taskId}`}
                         pinLabel={getPinLabel(row.taskId, pinnedTaskIds)}
@@ -204,11 +235,11 @@ const TaskListPanel = ({
     return (
         <Box borderColor={borderColor} borderStyle="single" flexDirection="column" flexGrow={1}>
             {/* Header */}
-            <Box flexShrink={0} gap={1} paddingX={1}>
+            <Box flexShrink={0} paddingX={1}>
                 <Text bold inverse>
                     {" VIS "}
                 </Text>
-                <Text>{title}</Text>
+                <Text>{` ${title}`}</Text>
                 {/* Column headers aligned right (hidden in compact/split mode) */}
                 {!compact && (
                     <Box flexGrow={1} gap={0} justifyContent="flex-end">
@@ -223,10 +254,11 @@ const TaskListPanel = ({
             </Box>
 
             {/* Scrollable completed task list */}
-            <ScrollView flexGrow={1} flexShrink={1} paddingLeft={1} paddingY={1} ref={scrollRef} scrollbar scrollbarColor="gray" scrollbarStyle="block">
+            <ScrollView flexGrow={1} flexShrink={1} paddingX={1} paddingY={1} ref={scrollRef} scrollbar scrollbarColor="gray" scrollbarStyle="block">
                 {rows.map((row) => (
                     <TaskListRow
                         compact={compact}
+                        focused={focused}
                         isSelected={row.taskId === selectedTaskId}
                         key={row.taskId}
                         pinLabel={getPinLabel(row.taskId, pinnedTaskIds)}
@@ -236,7 +268,7 @@ const TaskListPanel = ({
             </ScrollView>
 
             {/* Fixed parallel slots at bottom (only while tasks active) */}
-            {hasActiveWork && (
+            {showParallelPanel && (
                 <Box
                     borderBottom={false}
                     borderColor="gray"
@@ -246,7 +278,7 @@ const TaskListPanel = ({
                     borderTop
                     flexDirection="column"
                     flexShrink={0}
-                    paddingLeft={1}
+                    paddingX={1}
                     paddingY={1}
                 >
                     {parallelElements}

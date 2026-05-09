@@ -1,5 +1,6 @@
 import type { Task, TaskResult } from "@visulima/task-runner";
 
+import type { VisTargetOptions } from "../../task/target-options";
 import type { TaskRowData } from "./task-row";
 
 // ── State Shape ─────────────────────────────────────────────────────────
@@ -22,7 +23,7 @@ export interface TaskState {
     /** Current filter text (empty = no filter). */
     filterText: string;
     /** Which panel currently has keyboard focus. */
-    focusedPanel: "output" | "tasks";
+    focusedPanel: "dock" | "output" | "tasks";
     /** Whether interactive input mode is active for the current task. */
     interactiveMode: boolean;
     /** Accumulated terminal output per task. */
@@ -75,7 +76,9 @@ export class TaskStore {
             rerunRequested: false,
             retryTaskId: null,
             rows: tasks.map((t) => {
-                return { status: "pending" as const, taskId: t.id };
+                const visOptions = t.overrides["visOptions"] as VisTargetOptions | undefined;
+
+                return { persistent: Boolean(visOptions?.persistent), status: "pending" as const, taskId: t.id };
             }),
             selectedIndex: 0,
             startTime: Date.now(),
@@ -203,6 +206,16 @@ export class TaskStore {
         this.#emit({ ...this.#state, done: true, endTime: Date.now() });
     }
 
+    /**
+     * Reverse a prior {@link markDone} so the UI keeps showing the task
+     * table instead of the summary. Used when persistent tasks (servers,
+     * watchers) start running after the regular task graph completes —
+     * the run isn't really "done" until they exit too.
+     */
+    public unmarkDone(): void {
+        this.#emit({ ...this.#state, autoExitCountdown: null, done: false, endTime: null });
+    }
+
     /** Update elapsed times for running tasks. Called every 100ms. */
     public tick(): void {
         if (this.#hrtimeStarts.size === 0) {
@@ -241,7 +254,7 @@ export class TaskStore {
         }
     }
 
-    public setFocusedPanel(panel: "output" | "tasks"): void {
+    public setFocusedPanel(panel: "dock" | "output" | "tasks"): void {
         if (panel !== this.#state.focusedPanel) {
             this.#emit({ ...this.#state, focusedPanel: panel });
         }
@@ -354,7 +367,7 @@ export class TaskStore {
             outputs: new Map(),
             rerunRequested: true,
             rows: this.#state.rows.map((r) => {
-                return { status: "pending" as const, taskId: r.taskId };
+                return { persistent: r.persistent, status: "pending" as const, taskId: r.taskId };
             }),
             startTime: Date.now(),
             succeeded: 0,

@@ -37,6 +37,7 @@ vis run build --parallel=5                                # Concurrency
 vis run build --no-cache                                  # Skip cache
 vis run test --watch                                      # Rerun on file change
 vis run destroy --reverse                                 # Leaves-first (teardown order)
+vis run dev --services=persistent --stop-services         # Boot service deps + clean them up on exit
 ```
 
 ## Options
@@ -53,7 +54,7 @@ vis run destroy --reverse                                 # Leaves-first (teardo
 | `--cache-mode`       |       |                | Remote cache mode: `read`, `write`, or `readwrite` (overrides `remoteCache.mode` from config)                                                                                                            |
 | `--cache-backend`    |       |                | Remote cache wire backend: `http` (Turborepo-compatible) or `reapi` (Bazel REAPI gRPC)                                                                                                                   |
 | `--dry-run`          |       | `false`        | Show what would run without executing                                                                                                                                                                    |
-| `--summarize`        |       | `false`        | Generate a JSON run summary at `.task-runner/runs/<id>.json` (also enables historical diffs for `vis cache why` / `vis replay`)                                                                          |
+| `--summarize`        |       | `false`        | Generate a JSON run summary at `.vis/runs/<id>.json` (also enables historical diffs for `vis cache why` / `vis replay`)                                                                                  |
 | `--fail-fast`        |       | `false`        | Stop all tasks on first failure                                                                                                                                                                          |
 | `--partition`        |       |                | Partition for distributed CI (e.g. `1/4`). Falls back to `VIS_PARTITION`.                                                                                                                                |
 | `--skip-constraints` |       | `false`        | Skip project constraint validation                                                                                                                                                                       |
@@ -61,13 +62,14 @@ vis run destroy --reverse                                 # Leaves-first (teardo
 | `--strict-env`       |       | config (`off`) | Fail a task whose command references an unset env var (no silent empty-string substitution). `--no-strict-env` disables when set in `vis.config.ts`. POSIX specials (`$1`, `$#`) and `${VAR:-fallback}` defaults are skipped. |
 | `--watch`            |       | `false`        | Rerun on file change (Ctrl+C to exit)                                                                                                                                                                    |
 | `--services`         |       | TTY: `auto`    | Auto-start service deps. `auto` (per-task: `dev` → ephemeral, others → persistent), `ephemeral` (die with the run), `persistent` (registered for future runs), `off` (skip and abort with the diagnostic). Default is `auto` in a TTY, `off` in CI / pipes. Workspace pin via `run.services` in `vis.config.ts`. |
+| `--stop-services`    |       | `false`        | Stop services this run auto-started in registry mode when the run exits (clean finish, `q`, or Ctrl+C). Pre-existing services and ephemeral services are unaffected — ephemeral already die with the run; only services this invocation booted via `--services=persistent` or the `auto` registry path are stopped. |
 | `--flaky`            |       | `true`         | Show flaky report on failure (`--no-flaky` to suppress)                                                                                                                                                  |
 | `--log`              |       |                | Output mode: `interleaved`, `labeled` (`[pkg#task]` prefixes), or `grouped` (buffered block)                                                                                                             |
 | `--output-style`     |       |                | `normal` (default) prints every task; `quiet` skips output for successful and cached tasks (failures still print). Per-target `options.outputStyle` overrides this.                                      |
 | `--pty`              |       | `false`        | Run every task through a PTY so color-aware tools render as if attached to a TTY (disables caching)                                                                                                      |
 | `--retry-budget`     |       |                | Global cap on total retries across the run (per-target `retryCount` is honored up to budget)                                                                                                             |
 | `--profile`          |       |                | Write a Chrome Tracing JSON of the run to this path (open in chrome://tracing or Perfetto)                                                                                                               |
-| `--last-details`     |       | `false`        | Render the most-recent run's saved summary (`.task-runner/last-summary.json`) and exit without executing any tasks. Use for "what happened in the last build?" without re-running.                       |
+| `--last-details`     |       | `false`        | Render the most-recent run's saved summary (`.vis/last-summary.json`) and exit without executing any tasks. Use for "what happened in the last build?" without re-running.                               |
 | `--reverse`          |       | `false`        | Run the dependency graph leaves-first (dependents before deps). Use for teardown targets like `destroy`/`undeploy` — see [Reverse order](#reverse-order-teardown).                                       |
 | `--runner-tags`      |       |                | Comma-separated tags this runner advertises (e.g. `gpu,slow`). Tasks declaring `options.runnerTags` only run when at least one tag overlaps; untagged tasks always run. Falls back to `VIS_RUNNER_TAGS`. |
 
@@ -348,6 +350,12 @@ Set `killGracePeriodMs: 0` to disable the escalation entirely (SIGTERM only). Se
 The escalation matters on Windows and for tasks that swallow `SIGTERM` (test runners holding open child processes, deep child trees) — without it, a single hung task can outlive its budget indefinitely.
 
 On Windows the underlying task-runner spawns each child in its own process group (`CREATE_NEW_PROCESS_GROUP`) so SIGINT / `Ctrl+C` is delivered as `CTRL_BREAK_EVENT` first, with a Job Object `TerminateJobObject` as the hard backstop after the grace window. This mirrors the Unix `setsid` + `killpg(SIGTERM)` → `SIGKILL` flow and means well-behaved CLIs (Node, Python, Go) get a chance to clean up before being force-killed. Tools that ignore Ctrl+Break are still terminated by the Job Object.
+
+### Persistent task quit (`q` / Ctrl+C)
+
+Persistent tasks (`dev`, `serve`, `watch`, anything with `persistent: true`) are sent `SIGTERM` when you press `q` in the TUI or `Ctrl+C`. After a 2-second grace window, anything still alive gets `SIGKILL`. This catches dev servers and watchers that ignore `SIGTERM` — without the escalation, `q` would hang and force the user to send a second `Ctrl+C`.
+
+Auto-started ephemeral services follow the same SIGTERM → 1.5s wait → SIGKILL pattern at run-end (whether the run finishes cleanly or is interrupted), so detached service children never outlive the run. Registry-mode services this run started survive by default; pass `--stop-services` to extend the same cleanup to them, or run `vis service stop --all` afterwards.
 
 ## Reverse order (teardown)
 
