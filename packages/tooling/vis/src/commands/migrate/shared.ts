@@ -2,6 +2,7 @@ import { isAccessibleSync, readFileSync, writeFileSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
 import { resolveIndentForFile } from "../../util/editorconfig";
+import { backupFile } from "./backup";
 import type { MigrateLogger, MigrationReport } from "./types";
 
 /**
@@ -25,8 +26,9 @@ export const serializeConfigObject = (obj: Record<string, unknown>, filePath?: s
  * overwriting an existing file and logs the outcome.
  * @param workspaceRoot Absolute workspace root path.
  * @param rendered The full file content to write.
- * @param options Migration options (`dryRun` controls preview mode).
+ * @param options Migration options.
  * @param options.dryRun When true, log the would-be file contents instead of writing.
+ * @param options.force When true, overwrite an existing file (a `.bak` is taken first).
  * @param logger Logger for user feedback.
  * @param report Migration report to append warnings to.
  * @returns `true` if written (or previewed in dry-run), `false` if skipped.
@@ -34,15 +36,16 @@ export const serializeConfigObject = (obj: Record<string, unknown>, filePath?: s
 export const writeVisConfig = (
     workspaceRoot: string,
     rendered: string,
-    options: { dryRun?: boolean },
+    options: { dryRun?: boolean; force?: boolean },
     logger: MigrateLogger,
     report: MigrationReport,
 ): boolean => {
     const visConfigPath = join(workspaceRoot, "vis.config.ts");
+    const exists = isAccessibleSync(visConfigPath);
 
-    if (isAccessibleSync(visConfigPath) && !options.dryRun) {
-        logger.warn("vis.config.ts already exists — refusing to overwrite. Remove it first or run with --dry-run.");
-        report.warnings.push("vis.config.ts already exists; migration skipped writing the file.");
+    if (exists && !options.dryRun && !options.force) {
+        logger.warn("vis.config.ts already exists — refusing to overwrite. Re-run with --force to replace it (a .bak is taken first), or run with --dry-run to preview.");
+        report.warnings.push("vis.config.ts already exists; migration skipped writing the file. Re-run with --force to overwrite.");
 
         return false;
     }
@@ -52,6 +55,11 @@ export const writeVisConfig = (
         logger.info(rendered);
         logger.info("── end preview ──");
     } else {
+        if (exists && options.force) {
+            backupFile(visConfigPath, report);
+            logger.info(`Replacing ${visConfigPath} (backup at ${visConfigPath}.bak)`);
+        }
+
         writeFileSync(visConfigPath, rendered);
         logger.info(`Wrote ${visConfigPath}`);
     }
