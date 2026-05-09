@@ -91,7 +91,7 @@ describe("vis run end-to-end cache hit", () => {
             workspaceRoot,
         } as never);
 
-        const firstSummary = JSON.parse(readFileSync(join(workspaceRoot, ".task-runner", "last-summary.json"), "utf8")) as LastRunSummary;
+        const firstSummary = JSON.parse(readFileSync(join(workspaceRoot, ".vis", "last-summary.json"), "utf8")) as LastRunSummary;
 
         expect(firstSummary.stats.total).toBe(1);
         expect(firstSummary.tasks[0]!.cacheStatus).toBe("MISS");
@@ -105,7 +105,7 @@ describe("vis run end-to-end cache hit", () => {
             workspaceRoot,
         } as never);
 
-        const secondSummary = JSON.parse(readFileSync(join(workspaceRoot, ".task-runner", "last-summary.json"), "utf8")) as LastRunSummary;
+        const secondSummary = JSON.parse(readFileSync(join(workspaceRoot, ".vis", "last-summary.json"), "utf8")) as LastRunSummary;
 
         expect(secondSummary.stats.cached).toBeGreaterThanOrEqual(1);
         expect(secondSummary.tasks[0]!.cacheStatus).toBe("HIT");

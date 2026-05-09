@@ -410,7 +410,7 @@ describe("vis run — `${affected.files}` token expansion", () => {
             workspaceRoot,
         } as never);
 
-        const first = JSON.parse(readFileSync(join(workspaceRoot, ".task-runner", "last-summary.json"), "utf8")) as {
+        const first = JSON.parse(readFileSync(join(workspaceRoot, ".vis", "last-summary.json"), "utf8")) as {
             tasks: { cacheStatus: string; taskId: string }[];
         };
 
@@ -430,7 +430,7 @@ describe("vis run — `${affected.files}` token expansion", () => {
             workspaceRoot,
         } as never);
 
-        const second = JSON.parse(readFileSync(join(workspaceRoot, ".task-runner", "last-summary.json"), "utf8")) as {
+        const second = JSON.parse(readFileSync(join(workspaceRoot, ".vis", "last-summary.json"), "utf8")) as {
             tasks: { cacheStatus: string; taskId: string }[];
         };
 
