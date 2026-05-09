@@ -1,10 +1,12 @@
-import { cpSync, lstatSync, readdirSync, rmSync } from "node:fs";
+import { cpSync, existsSync, lstatSync, readdirSync, readFileSync, rmSync } from "node:fs";
 
 import { ensureDirSync, isAccessibleSync, readJsonSync, writeFileSync } from "@visulima/fs";
 import { dirname, join, relative } from "@visulima/path";
 import type { ProjectGraph, WorkspaceConfiguration } from "@visulima/task-runner";
 
+import type { LockfilePackageManager } from "../preflight/lockfile";
 import type { VisProjectConfiguration } from "../config/workspace";
+import { type FocusProject, LockfilePruneError, pruneLockfile } from "./docker-lockfile";
 
 /**
  * BFS the project graph to collect every project reachable from
@@ -50,14 +52,26 @@ export const DOCKER_MANIFEST_FILENAME = "vis-docker-manifest.json";
 
 const MANIFEST_FILES = ["package.json", "project.json"] as const;
 
+/**
+ * Map of lockfile filenames to the package manager that owns them. Drives
+ * pruning routing — when a file under this map is found at workspace
+ * root we route it through `pruneLockfile` instead of copying verbatim.
+ *
+ * Entry order doubles as cross-PM precedence on the rare workspace that
+ * has multiple managers' lockfiles coexisting (mid-migration). Mirrors
+ * `LOCKFILE_FILES_BY_MANAGER` in `src/preflight/lockfile.ts`.
+ */
+const LOCKFILE_FILES: { file: string; manager: LockfilePackageManager }[] = [
+    { file: "bun.lock", manager: "bun" },
+    { file: "bun.lockb", manager: "bun" },
+    { file: "package-lock.json", manager: "npm" },
+    { file: "pnpm-lock.yaml", manager: "pnpm" },
+    { file: "yarn.lock", manager: "yarn" },
+];
+
 const ROOT_MANIFEST_FILES = [
     "package.json",
     "pnpm-workspace.yaml",
-    "pnpm-lock.yaml",
-    "package-lock.json",
-    "yarn.lock",
-    "bun.lock",
-    "bun.lockb",
     ".npmrc",
     "vis.config.ts",
     "vis.config.mts",
@@ -77,8 +91,20 @@ export interface ScaffoldOptions {
      * are installed.
      */
     includeSources?: boolean;
+    /**
+     * Logger for the per-lockfile pruning summary line (one per detected
+     * lockfile). Defaults to `console.log` when omitted; pass `() => {}`
+     * to silence.
+     */
+    log?: (message: string) => void;
     /** Output directory, typically `.vis/docker/workspace`. */
     outDir: string;
+    /**
+     * Skip lockfile pruning and copy lockfiles verbatim. Defaults to
+     * `false`. Useful when the user has hit a parser edge case or is
+     * intentionally shipping the full lockfile.
+     */
+    pruneLockfile?: boolean;
     /** Project graph used to compute the transitive dependency closure. */
     projectGraph: ProjectGraph;
     /** Workspace configuration with resolved project roots. */
@@ -161,6 +187,51 @@ const copyTreeExcludingNodeModules = (src: string, dest: string): void => {
 };
 
 /**
+ * Reads a project's `package.json` and returns its `name` plus the union
+ * of every dep map (`dependencies` + `devDependencies` + `optionalDependencies`
+ * + `peerDependencies`). Used to seed yarn-classic pruning, which has no
+ * workspace info inside the lockfile itself.
+ *
+ * Returns `undefined` if the file is missing or unparseable — callers
+ * pass an empty closure entry instead, and pruners that don't need
+ * `deps` (pnpm/npm/yarn-berry/bun) keep working.
+ */
+const readProjectInfo = (packageJsonPath: string): { deps: Record<string, string>; name: string | undefined } | undefined => {
+    if (!existsSync(packageJsonPath)) {
+        return undefined;
+    }
+
+    let pkg: Record<string, unknown>;
+
+    try {
+        pkg = readJsonSync(packageJsonPath) as Record<string, unknown>;
+    } catch {
+        return undefined;
+    }
+
+    const deps: Record<string, string> = {};
+
+    for (const key of ["dependencies", "devDependencies", "optionalDependencies", "peerDependencies"] as const) {
+        const map = pkg[key];
+
+        if (map === null || typeof map !== "object" || Array.isArray(map)) {
+            continue;
+        }
+
+        for (const [name, spec] of Object.entries(map as Record<string, unknown>)) {
+            if (typeof spec === "string") {
+                deps[name] = spec;
+            }
+        }
+    }
+
+    return {
+        deps,
+        name: typeof pkg.name === "string" ? pkg.name : undefined,
+    };
+};
+
+/**
  * Build a minimal Docker context at {@link ScaffoldOptions.outDir}.
  *
  * Creates two directories:
@@ -172,7 +243,16 @@ const copyTreeExcludingNodeModules = (src: string, dest: string): void => {
  * @returns The list of project names included in the scaffold.
  */
 export const scaffoldDockerContext = (options: ScaffoldOptions): { projects: string[] } => {
-    const { focus, includeSources = false, outDir, projectGraph, workspace, workspaceRoot } = options;
+    const {
+        focus,
+        includeSources = false,
+        log = (message: string) => console.log(message),
+        outDir,
+        projectGraph,
+        pruneLockfile: shouldPruneLockfile = true,
+        workspace,
+        workspaceRoot,
+    } = options;
 
     const unknown = focus.filter((name) => workspace.projects[name] === undefined);
 
@@ -194,6 +274,19 @@ export const scaffoldDockerContext = (options: ScaffoldOptions): { projects: str
         copyFileIfExists(join(workspaceRoot, manifest), join(workspaceDir, manifest));
     }
 
+    // Build the closure FocusProject[] alongside copying per-project manifests
+    // so we only walk `projects` once. The workspace root entry (relativeRoot: "")
+    // carries hoisted devDependencies that lockfiles may reference even when no
+    // focus project depends on them directly.
+    const rootInfo = readProjectInfo(join(workspaceRoot, "package.json"));
+    const closure: FocusProject[] = [
+        {
+            deps: rootInfo?.deps,
+            name: rootInfo?.name,
+            relativeRoot: "",
+        },
+    ];
+
     for (const name of projects) {
         const project = workspace.projects[name];
 
@@ -203,6 +296,57 @@ export const scaffoldDockerContext = (options: ScaffoldOptions): { projects: str
 
         for (const manifest of MANIFEST_FILES) {
             copyFileIfExists(join(workspaceRoot, project.root, manifest), join(workspaceDir, project.root, manifest));
+        }
+
+        const info = readProjectInfo(join(workspaceRoot, project.root, "package.json"));
+
+        closure.push({
+            deps: info?.deps,
+            name: info?.name,
+            relativeRoot: project.root,
+        });
+    }
+
+    for (const { file, manager } of LOCKFILE_FILES) {
+        const source = join(workspaceRoot, file);
+
+        if (!existsSync(source)) {
+            continue;
+        }
+
+        const dest = join(workspaceDir, file);
+
+        if (!shouldPruneLockfile) {
+            copyFileIfExists(source, dest);
+            continue;
+        }
+
+        // bun.lockb is binary; everything else is UTF-8 text. The pruner
+        // routes binary input to a `skipped` result with a migration hint.
+        const lockfileContent: Buffer | string = file.endsWith(".lockb") ? readFileSync(source) : readFileSync(source, "utf8");
+
+        try {
+            const result = pruneLockfile({
+                closure,
+                lockfileContent,
+                packageManager: manager,
+            });
+
+            if (result.status === "pruned" && result.content !== undefined) {
+                ensureDir(dirname(dest));
+                writeFileSync(dest, result.content);
+            } else {
+                copyFileIfExists(source, dest);
+            }
+
+            log(result.message);
+        } catch (error) {
+            if (error instanceof LockfilePruneError) {
+                log(`${file}: pruning failed (${error.message}); copying verbatim`);
+                copyFileIfExists(source, dest);
+            } else {
+                throw error;
+            }
         }
     }
 

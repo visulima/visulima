@@ -101,11 +101,11 @@
         "@visulima/task-runner": "1.0.0-alpha.10",
         "@visulima/tui": "1.0.0-alpha.10",
         "jiti": "catalog:dev",
-        "tinyexec": "catalog:dev",
         "module-replacements": "^2.11.0",
         "module-replacements-codemods": "^1.2.1",
         "react": "catalog:frontend",
-        "react-reconciler": ">=0.33.0"
+        "react-reconciler": ">=0.33.0",
+        "tinyexec": "catalog:dev"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",
@@ -149,6 +149,7 @@
         "@visulima/tabular": "4.0.0-alpha.11",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
+        "@yarnpkg/parsers": "^3.0.3",
         "ajv": "catalog:dev",
         "ajv-formats": "catalog:dev",
         "conventional-changelog-conventionalcommits": "catalog:dev",

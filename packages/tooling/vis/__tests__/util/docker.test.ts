@@ -149,6 +149,126 @@ describe(scaffoldDockerContext, () => {
         expect(manifest.focus).toStrictEqual(["a"]);
         expect(manifest.projects).toStrictEqual(["a"]);
     });
+
+    it("prunes pnpm-lock.yaml down to the focus closure", () => {
+        expect.assertions(3);
+
+        const workspaceRoot = join(tmpDir, "repo");
+
+        mkdirSync(workspaceRoot, { recursive: true });
+        writeFileSync(join(workspaceRoot, "package.json"), JSON.stringify({ name: "root" }));
+        writeFileSync(
+            join(workspaceRoot, "pnpm-lock.yaml"),
+            `lockfileVersion: '9.0'
+importers:
+  .: {}
+  packages/a:
+    dependencies:
+      lodash:
+        specifier: ^4.17.21
+        version: 4.17.21
+  packages/b:
+    dependencies:
+      chalk:
+        specifier: ^5.3.0
+        version: 5.3.0
+packages:
+  lodash@4.17.21:
+    resolution: {integrity: sha512-fake}
+  chalk@5.3.0:
+    resolution: {integrity: sha512-fake}
+snapshots:
+  lodash@4.17.21: {}
+  chalk@5.3.0: {}
+`,
+        );
+
+        const projectADir = join(workspaceRoot, "packages", "a");
+        const projectBDir = join(workspaceRoot, "packages", "b");
+
+        mkdirSync(projectADir, { recursive: true });
+        mkdirSync(projectBDir, { recursive: true });
+        writeFileSync(join(projectADir, "package.json"), JSON.stringify({ dependencies: { lodash: "^4.17.21" }, name: "a" }));
+        writeFileSync(join(projectBDir, "package.json"), JSON.stringify({ dependencies: { chalk: "^5.3.0" }, name: "b" }));
+
+        const outDir = join(tmpDir, "out");
+        const messages: string[] = [];
+
+        scaffoldDockerContext({
+            focus: ["a"],
+            log: (message) => messages.push(message),
+            outDir,
+            projectGraph: { dependencies: { a: [], b: [] }, nodes: {} },
+            workspace: { projects: { a: { root: "packages/a" }, b: { root: "packages/b" } } },
+            workspaceRoot,
+        });
+
+        const pruned = readFileSync(join(outDir, "workspace", "pnpm-lock.yaml"), "utf8");
+
+        expect(pruned).toContain("lodash@4.17.21");
+        expect(pruned).not.toContain("chalk@5.3.0");
+        expect(messages.some((m) => m.startsWith("pnpm-lock.yaml:"))).toBe(true);
+    });
+
+    it("copies the lockfile verbatim when pruneLockfile is false", () => {
+        expect.assertions(1);
+
+        const workspaceRoot = join(tmpDir, "repo");
+        const verbatim = "lockfileVersion: '9.0'\nimporters:\n  .: {}\n  packages/b:\n    dependencies:\n      chalk:\n        specifier: ^5.3.0\n        version: 5.3.0\n";
+
+        mkdirSync(workspaceRoot, { recursive: true });
+        writeFileSync(join(workspaceRoot, "package.json"), JSON.stringify({ name: "root" }));
+        writeFileSync(join(workspaceRoot, "pnpm-lock.yaml"), verbatim);
+
+        mkdirSync(join(workspaceRoot, "packages", "a"), { recursive: true });
+        writeFileSync(join(workspaceRoot, "packages", "a", "package.json"), JSON.stringify({ name: "a" }));
+
+        const outDir = join(tmpDir, "out");
+
+        scaffoldDockerContext({
+            focus: ["a"],
+            log: () => {},
+            outDir,
+            projectGraph: { dependencies: { a: [] }, nodes: {} },
+            pruneLockfile: false,
+            workspace: { projects: { a: { root: "packages/a" } } },
+            workspaceRoot,
+        });
+
+        expect(readFileSync(join(outDir, "workspace", "pnpm-lock.yaml"), "utf8")).toBe(verbatim);
+    });
+
+    it("falls back to verbatim copy when the lockfile is unparseable", () => {
+        expect.assertions(2);
+
+        const workspaceRoot = join(tmpDir, "repo");
+        // Invalid JSON breaks the npm pruner — the scaffold must keep going,
+        // log a warning, and copy the original file so the Docker build
+        // still has *something* to install from.
+        const broken = "{ this is not json";
+
+        mkdirSync(workspaceRoot, { recursive: true });
+        writeFileSync(join(workspaceRoot, "package.json"), JSON.stringify({ name: "root" }));
+        writeFileSync(join(workspaceRoot, "package-lock.json"), broken);
+
+        mkdirSync(join(workspaceRoot, "packages", "a"), { recursive: true });
+        writeFileSync(join(workspaceRoot, "packages", "a", "package.json"), JSON.stringify({ name: "a" }));
+
+        const outDir = join(tmpDir, "out");
+        const messages: string[] = [];
+
+        scaffoldDockerContext({
+            focus: ["a"],
+            log: (message) => messages.push(message),
+            outDir,
+            projectGraph: { dependencies: { a: [] }, nodes: {} },
+            workspace: { projects: { a: { root: "packages/a" } } },
+            workspaceRoot,
+        });
+
+        expect(readFileSync(join(outDir, "workspace", "package-lock.json"), "utf8")).toBe(broken);
+        expect(messages.some((m) => m.includes("pruning failed") && m.includes("copying verbatim"))).toBe(true);
+    });
 });
 
 describe(pruneDockerContext, () => {
