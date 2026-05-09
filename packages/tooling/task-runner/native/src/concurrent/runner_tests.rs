@@ -61,6 +61,45 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn test_started_event_carries_pid() {
+        // Single command -- we expect exactly one "started" event with a
+        // populated pid before any close event arrives.
+        let commands = vec![make_config("echo hello", Some("greeter"))];
+        let runner = ConcurrentRunner::new(commands, &default_options());
+
+        let (event_tx, mut event_rx) = mpsc::unbounded_channel::<ProcessEvent>();
+        let _ = runner.run(event_tx).await;
+
+        let mut started: Vec<ProcessEvent> = Vec::new();
+        let mut close_seen_before_started = false;
+        let mut close_seen = false;
+        while let Ok(event) = event_rx.try_recv() {
+            match event.kind.as_str() {
+                "started" => {
+                    if close_seen {
+                        close_seen_before_started = true;
+                    }
+                    started.push(event);
+                }
+                "close" => close_seen = true,
+                _ => {}
+            }
+        }
+
+        assert_eq!(started.len(), 1, "expected exactly one started event");
+        assert_eq!(started[0].index, 0);
+        assert!(started[0].pid.is_some(), "started event should carry a pid");
+        assert!(
+            started[0].pid.unwrap() > 0,
+            "pid should be a positive integer"
+        );
+        assert!(
+            !close_seen_before_started,
+            "started event must arrive before close event"
+        );
+    }
+
+    #[tokio::test]
     async fn test_multiple_commands() {
         let commands = vec![
             make_config("echo one", Some("first")),

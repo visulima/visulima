@@ -31,6 +31,11 @@ pub fn spawn_process(
 
     let pid = child.id();
 
+    // Surface the pid to the consumer before any output streams,
+    // so JS-side signal handlers can register the child for cleanup
+    // before it has a chance to emit anything.
+    let _ = event_tx.send(ProcessEvent::started(index, pid));
+
     // Spawn stdout reader -- returns JoinHandle so we can wait for it
     let stdout_handle: Option<JoinHandle<()>> = child.stdout.take().map(|stdout| {
         let tx = event_tx.clone();

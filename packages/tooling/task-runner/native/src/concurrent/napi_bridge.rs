@@ -40,17 +40,54 @@ pub async fn run_concurrent(
     Ok(result)
 }
 
-/// Run commands concurrently without event streaming.
+/// Run commands concurrently without per-line event streaming.
 ///
-/// Collects all output internally and returns the final result.
-/// Useful for non-interactive contexts where real-time output is not needed.
+/// Collects all output internally and returns the final result. The
+/// optional `on_lifecycle` callback receives only low-frequency
+/// lifecycle events ("started", "close", "error") — never per-line
+/// stdout/stderr — so callers can track child PIDs for SIGINT cleanup
+/// without paying the throughput cost (and platform flakiness) of
+/// streaming every output line back through NAPI.
 ///
 /// Commands originate from package.json scripts (trusted input).
 #[napi]
 pub async fn run_concurrent_batch(
     commands: Vec<ConcurrentCommandConfig>,
     options: ConcurrentRunnerOptions,
+    #[napi(ts_arg_type = "((event: ProcessEvent) => void) | undefined | null")]
+    on_lifecycle: Option<ThreadsafeFunction<ProcessEvent>>,
 ) -> Result<ConcurrentRunResult> {
     let runner = ConcurrentRunner::new(commands, &options);
-    Ok(runner.run_batch().await)
+
+    let (event_tx, mut event_rx) = mpsc::unbounded_channel::<ProcessEvent>();
+
+    // Drain (and optionally forward) events on a background task so the
+    // runner's unbounded channel never backs up. We always drain — even
+    // without a callback — because the runner itself sends every event
+    // (including stdout/stderr) into this channel.
+    let forward_handle = tokio::spawn(async move {
+        match on_lifecycle {
+            Some(cb) => {
+                while let Some(event) = event_rx.recv().await {
+                    // Filter to lifecycle-only. stdout/stderr are
+                    // intentionally dropped here — batch mode doesn't
+                    // expose them, and callers that need them should
+                    // use `runConcurrent` instead.
+                    let kind = event.kind.as_str();
+                    if kind == "started" || kind == "close" || kind == "error" {
+                        cb.call(Ok(event), ThreadsafeFunctionCallMode::NonBlocking);
+                    }
+                }
+            }
+            None => {
+                while event_rx.recv().await.is_some() {}
+            }
+        }
+    });
+
+    let result = runner.run(event_tx).await;
+
+    let _ = forward_handle.await;
+
+    Ok(result)
 }

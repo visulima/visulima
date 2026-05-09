@@ -938,6 +938,12 @@ export interface ProcessEvent {
     kind: "close" | "error" | "started" | "stderr" | "stdout";
     /** Error message (for error events). */
     message?: string;
+
+    /**
+     * OS pid of the freshly spawned child. Only present on "started"
+     * events; absent when the platform could not provide one.
+     */
+    pid?: number;
     /** Resize the child's PTY. Only present on "started" events with stdin "pty". */
     resize?: (cols: number, rows: number) => void;
     /** Text content (for stdout/stderr events). */

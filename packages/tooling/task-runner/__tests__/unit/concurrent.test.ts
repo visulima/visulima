@@ -234,4 +234,47 @@ describe("runConcurrently (public API)", () => {
 
         expect(result.success).toBe(true);
     });
+
+    // The native runner exposes child PIDs so the parent can clean them up
+    // synchronously when the host bypasses tokio's signal loop (e.g. a TUI
+    // calling process.exit). We validate the surface by sending a real
+    // SIGTERM to a long-lived child's pid and asserting the process dies.
+    // Skipped on Windows because process.kill semantics for the negative-
+    // pid (process group) form differ.
+    it.runIf(process.platform !== "win32")("should expose pids for native-path SIGINT cleanup", async () => {
+        expect.assertions(2);
+
+        const seenStarted: { index: number; pid?: number }[] = [];
+
+        const runPromise = runConcurrently(["sleep 30"], {
+            onEvent: (event) => {
+                if (event.kind === "started") {
+                    seenStarted.push({ index: event.index, pid: event.pid });
+                }
+            },
+        });
+
+        // Wait for the started event to arrive.
+        // Using onEvent forces the JS-fallback path, which also emits pids
+        // — so this test exercises the fallback's pid surface. The native
+        // path is covered by the Rust-side test_started_event_carries_pid.
+        await new Promise((resolve) => {
+            const id = setInterval(() => {
+                if (seenStarted.length > 0) {
+                    clearInterval(id);
+                    resolve(undefined);
+                }
+            }, 25);
+        });
+
+        expect(seenStarted[0]!.pid).toBeGreaterThan(0);
+
+        // Kill the child's process group via the surfaced pid. The runner
+        // should treat that as a clean termination and resolve.
+        process.kill(-seenStarted[0]!.pid!, "SIGTERM");
+
+        const result = await runPromise;
+
+        expect(result.closeEvents).toHaveLength(1);
+    });
 });

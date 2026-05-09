@@ -47,7 +47,7 @@ pub struct ConcurrentRunnerOptions {
 #[napi(object)]
 #[derive(Debug, Clone)]
 pub struct ProcessEvent {
-    /// Event type: "stdout", "stderr", "close", "error".
+    /// Event type: "started", "stdout", "stderr", "close", "error".
     pub kind: String,
     /// Index of the command that produced this event.
     pub index: u32,
@@ -63,6 +63,9 @@ pub struct ProcessEvent {
     pub command_name: Option<String>,
     /// Duration in milliseconds (for close events).
     pub duration_ms: Option<f64>,
+    /// OS process id (for started events). `None` when the platform
+    /// could not provide a pid for the freshly spawned child.
+    pub pid: Option<u32>,
 }
 
 /// Result of a close event for a single command.
@@ -94,6 +97,24 @@ pub struct ConcurrentRunResult {
 }
 
 impl ProcessEvent {
+    /// Emitted exactly once per command, immediately after the child
+    /// process has been spawned. `pid` is the OS pid (or `None` if the
+    /// platform could not return one). Consumers use this to register
+    /// children for SIGINT/SIGTERM cleanup at the JS layer.
+    pub fn started(index: u32, pid: Option<u32>) -> Self {
+        Self {
+            kind: "started".to_string(),
+            index,
+            text: None,
+            exit_code: None,
+            killed: None,
+            message: None,
+            command_name: None,
+            duration_ms: None,
+            pid,
+        }
+    }
+
     pub fn stdout(index: u32, text: String) -> Self {
         Self {
             kind: "stdout".to_string(),
@@ -104,6 +125,7 @@ impl ProcessEvent {
             message: None,
             command_name: None,
             duration_ms: None,
+            pid: None,
         }
     }
 
@@ -117,6 +139,7 @@ impl ProcessEvent {
             message: None,
             command_name: None,
             duration_ms: None,
+            pid: None,
         }
     }
 
@@ -130,6 +153,7 @@ impl ProcessEvent {
             message: None,
             command_name: name,
             duration_ms: Some(duration_ms),
+            pid: None,
         }
     }
 
@@ -143,6 +167,7 @@ impl ProcessEvent {
             message: Some(message),
             command_name: None,
             duration_ms: None,
+            pid: None,
         }
     }
 }
