@@ -225,6 +225,7 @@ const defaultTaskRunner = async (_tasks: Task[], options: TaskRunnerOptions, con
         cache,
         cacheDiagnostics: options.cacheDiagnostics,
         captureOutput: true,
+        dataDirectory: options.dataDirectory,
         dryRun: options.dryRun,
         fingerprintEnvPatterns,
         lifeCycle,

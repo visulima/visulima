@@ -80,7 +80,7 @@ export { INPUT_URI_SCHEMES, InvalidInputUriError, looksLikeInputUri, parseInputU
 export { enforceProjectConstraints } from "./project-constraints";
 
 // Run summary (--summarize and --last-details)
-export type { RunSummary, TaskSummary } from "./run-summary";
+export type { RunSummary, RunSummaryPathOptions, TaskSummary } from "./run-summary";
 export { generateRunSummary, getLastRunSummaryPath, readLastRunSummary, writeLastRunSummary, writeRunSummary } from "./run-summary";
 
 // Task graph
