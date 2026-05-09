@@ -1,3 +1,6 @@
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+
 import { parse as parseYaml } from "yaml";
 import { describe, expect, it } from "vitest";
 import { parseSyml } from "@yarnpkg/parsers";
@@ -418,5 +421,63 @@ describe("pruneLockfile (dispatcher)", () => {
                 packageManager: "bogus" as any,
             }),
         ).toThrow();
+    });
+});
+
+/**
+ * Smoke test against the visulima monorepo's own pnpm-lock.yaml. Catches
+ * regressions that the synthetic fixtures miss (large `snapshots` blocks,
+ * unusual peer dep graphs, catalog importers, etc).
+ *
+ * Skipped automatically when the lockfile isn't reachable — keeps the
+ * suite green in detached / sandboxed runs that don't ship the workspace
+ * root alongside the package.
+ */
+const workspaceRoot = join(__dirname, "..", "..", "..", "..", "..");
+const repoLockfile = join(workspaceRoot, "pnpm-lock.yaml");
+const repoLockfileAvailable = existsSync(repoLockfile) && existsSync(join(workspaceRoot, "packages", "tooling", "vis", "package.json"));
+
+describe.skipIf(!repoLockfileAvailable)("pruneLockfile (visulima monorepo fixture)", () => {
+    it("prunes the workspace lockfile down to the @visulima/vis closure", () => {
+        expect.assertions(5);
+
+        const lockfileContent = readFileSync(repoLockfile, "utf8");
+        const visPkg = JSON.parse(readFileSync(join(workspaceRoot, "packages", "tooling", "vis", "package.json"), "utf8")) as {
+            dependencies?: Record<string, string>;
+            devDependencies?: Record<string, string>;
+            name: string;
+            optionalDependencies?: Record<string, string>;
+            peerDependencies?: Record<string, string>;
+        };
+        const deps: Record<string, string> = {};
+
+        for (const block of [visPkg.dependencies, visPkg.devDependencies, visPkg.optionalDependencies, visPkg.peerDependencies]) {
+            if (block) {
+                Object.assign(deps, block);
+            }
+        }
+
+        const result = pruneLockfile({
+            closure: closure({ deps, name: visPkg.name, relativeRoot: "packages/tooling/vis" }),
+            lockfileContent,
+            packageManager: "pnpm",
+        });
+
+        expect(result.status).toBe("pruned");
+        expect(result.content).toBeDefined();
+
+        const parsed = parseYaml(result.content!) as { importers: Record<string, unknown>; packages?: Record<string, unknown> };
+        const original = parseYaml(lockfileContent) as { importers: Record<string, unknown>; packages?: Record<string, unknown> };
+
+        // Workspace root + the vis importer must survive.
+        expect(parsed.importers["."]).toBeDefined();
+        expect(parsed.importers["packages/tooling/vis"]).toBeDefined();
+
+        // Pruning must drop *something* — the vis closure is a small slice
+        // of a 194-importer graph, so we expect a meaningful reduction.
+        const originalImporters = Object.keys(original.importers).length;
+        const prunedImporters = Object.keys(parsed.importers).length;
+
+        expect(prunedImporters).toBeLessThan(originalImporters);
     });
 });
