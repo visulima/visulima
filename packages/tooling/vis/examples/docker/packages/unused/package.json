@@ -1,0 +1,11 @@
+{
+    "name": "unused",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "build": "echo 'unused — should be pruned out of the docker context'"
+    },
+    "dependencies": {
+        "lodash": "^4.17.21"
+    }
+}
