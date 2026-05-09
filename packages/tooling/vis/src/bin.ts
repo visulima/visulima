@@ -259,6 +259,15 @@ if (isBareMigrateInvocation(process.argv.slice(2))) {
         } catch {
             // errorHandlerPlugin already rendered the error
             process.exitCode = process.exitCode || 1;
+        } finally {
+            // Force an explicit exit once the command settles. Interactive
+            // commands (the dynamic TUI run path in particular) can leave
+            // stray refs on stdin or Ink internals that prevent the event
+            // loop from draining naturally — chasing every one is fragile,
+            // so we exit deliberately with whatever exitCode the command
+            // (or errorHandlerPlugin) recorded.
+            // eslint-disable-next-line unicorn/no-process-exit -- explicit exit is the reliable termination path for TUI commands
+            process.exit(process.exitCode ?? 0);
         }
     })();
 }
