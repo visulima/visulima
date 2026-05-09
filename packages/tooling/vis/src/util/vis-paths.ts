@@ -1,25 +1,36 @@
 /**
- * Centralized layout for vis's per-user filesystem state.
+ * Centralized layout for vis's filesystem state — both per-user and
+ * per-workspace.
  *
- *   ~/.vis/
- *     cache/                  # ephemeral caches; safe to delete anytime
+ *   ~/.vis/                              # per-user (lives in $HOME)
+ *     cache/                             # ephemeral caches; safe to delete anytime
  *       ai/, doctor/, socket-security/
- *     state/                  # durable state across vis runs
+ *     state/                             # durable state across vis runs
  *       sponsor.json, tips.json, upgrade-check.json
- *     workspaces/<hash>/      # per-workspace bucket, keyed by workspace path
- *       services/             # running-service registry (PIDs, ports, logs)
+ *     workspaces/{hash}/                 # per-workspace bucket, keyed by workspace path
+ *       services/                        # running-service registry (PIDs, ports, logs)
+ *
+ *   {workspaceRoot}/.vis/                # per-workspace (lives in the repo)
+ *     cache/                             # task-runner cache (was .task-runner-cache/)
+ *     runs/                              # run summaries (was .task-runner/runs/)
+ *     last-summary.json                  # most-recent run (was .task-runner/last-summary.json)
+ *     last-failures/                     # per-task failure logs (was .task-runner/last-failures/)
+ *     docker/                            # `vis docker scaffold` output
+ *     templates/                         # user-vendored generator templates
  *
  * Per-workspace data is keyed by a 12-char sha256 prefix of the absolute
  * workspace root, so multiple git worktrees of the same repo each get
  * their own bucket and never collide.
  *
  * Per-package-manager workspace caches stay where they are (under
- * `<workspace>/node_modules/.cache/vis/`) — those die with `node_modules`
+ * `{workspace}/node_modules/.cache/vis/`) — those die with `node_modules`
  * and that's the desired lifecycle.
  */
 
+import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
-import { homedir } from "node:os";
+import { existsSync } from "node:fs";
+import { homedir, platform } from "node:os";
 
 import { join } from "@visulima/path";
 
@@ -37,3 +48,57 @@ export const getVisStateDir = (): string => join(getVisHomeDir(), "state");
 export const hashWorkspace = (workspaceRoot: string): string => createHash("sha256").update(workspaceRoot).digest("hex").slice(0, 12);
 
 export const getVisWorkspaceDir = (workspaceRoot: string): string => join(getVisHomeDir(), "workspaces", hashWorkspace(workspaceRoot));
+
+/**
+ * Top-level workspace-local data directory (`{workspaceRoot}/.vis`). All
+ * per-workspace state vis writes — cache, run summaries, failure logs,
+ * docker scaffold output, generator templates — sits under this root.
+ */
+export const VIS_WORKSPACE_DIR_NAME = ".vis";
+
+export const getVisWorkspaceDataDir = (workspaceRoot: string): string => join(workspaceRoot, VIS_WORKSPACE_DIR_NAME);
+
+/** Default cache directory name for `vis run` (relative to workspace root). */
+export const DEFAULT_WORKSPACE_CACHE_DIRECTORY = `${VIS_WORKSPACE_DIR_NAME}/cache`;
+
+export const getVisWorkspaceCacheDir = (workspaceRoot: string): string => join(getVisWorkspaceDataDir(workspaceRoot), "cache");
+
+export const getVisRunsDir = (workspaceRoot: string): string => join(getVisWorkspaceDataDir(workspaceRoot), "runs");
+
+export const getVisLastSummaryPath = (workspaceRoot: string): string => join(getVisWorkspaceDataDir(workspaceRoot), "last-summary.json");
+
+export const getVisLastFailuresDir = (workspaceRoot: string): string => join(getVisWorkspaceDataDir(workspaceRoot), "last-failures");
+
+/**
+ * Removes the legacy task-runner state directories (`.task-runner/` and
+ * `.task-runner-cache/`) from `workspaceRoot` in the background. Vis used
+ * to write run summaries and the cache there before the cutover to `.vis/`;
+ * the new code never reads those paths, so leaving them around just wastes
+ * disk. Fires off a detached native `rm -rf` (or `rmdir /s /q` on Windows)
+ * — a multi-GB `.task-runner-cache/` shouldn't block `vis run` startup, and
+ * native delete is markedly faster than `fs.rm` on large trees.
+ */
+export const cleanupLegacyTaskRunnerLayout = (workspaceRoot: string): void => {
+    const isWindows = platform() === "win32";
+
+    for (const name of [".task-runner", ".task-runner-cache"]) {
+        const path = join(workspaceRoot, name);
+
+        if (!existsSync(path)) {
+            continue;
+        }
+
+        try {
+            const child = isWindows
+                ? spawn("cmd.exe", ["/c", "rmdir", "/s", "/q", path], { detached: true, stdio: "ignore" })
+                : spawn("rm", ["-rf", path], { detached: true, stdio: "ignore" });
+
+            child.on("error", () => {
+                // Best-effort cleanup — silent on failure.
+            });
+            child.unref();
+        } catch {
+            // Best-effort cleanup — silent on failure.
+        }
+    }
+};

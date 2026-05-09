@@ -1,9 +1,10 @@
 import type { Toolbox } from "@visulima/cerebro";
 import type { RunSummary, TaskSummary } from "@visulima/task-runner";
-import { readLastRunSummary } from "@visulima/task-runner";
+import { getLastRunSummaryPath, readLastRunSummary } from "@visulima/task-runner";
 
 import { pail } from "../../io/logger";
 import { listRunSummaries, readRunSummaryById } from "../../report/run-summary-utils";
+import { getVisRunsDir, getVisWorkspaceDataDir } from "../../util/vis-paths";
 import type { ReplayOptions } from "./index";
 
 const VALID_FORMATS = new Set(["json", "table"]);
@@ -127,9 +128,9 @@ const renderListJson = (entries: { id: string; mtimeMs: number; path: string }[]
     );
 };
 
-const renderListTable = (entries: { id: string; mtimeMs: number }[], logger: Console): void => {
+const renderListTable = (entries: { id: string; mtimeMs: number }[], workspaceRoot: string, logger: Console): void => {
     if (entries.length === 0) {
-        pail.info("No recorded runs found in .task-runner/runs/. Run with --summarize to record a run.");
+        pail.info(`No recorded runs found in ${getVisRunsDir(workspaceRoot)}/. Run with --summarize to record a run.`);
 
         return;
     }
@@ -172,7 +173,10 @@ interface RunReplayOptions {
 export const runReplay = async (options: RunReplayOptions, logger: Console): Promise<void> => {
     const { failed, format, runId, task: taskFilter, workspaceRoot } = options;
 
-    const summary = runId === undefined ? await readLastRunSummary(workspaceRoot) : await readRunSummaryById(workspaceRoot, runId);
+    const summary
+        = runId === undefined
+            ? await readLastRunSummary(workspaceRoot, { dataDirectory: getVisWorkspaceDataDir(workspaceRoot) })
+            : await readRunSummaryById(workspaceRoot, runId);
 
     if (!summary) {
         if (format === "json") {
@@ -183,9 +187,9 @@ export const runReplay = async (options: RunReplayOptions, logger: Console): Pro
         }
 
         if (runId === undefined) {
-            pail.error("No previous run summary found. Run a task first to populate `.task-runner/last-summary.json`.");
+            pail.error(`No previous run summary found. Run a task first to populate \`${getLastRunSummaryPath(workspaceRoot, { dataDirectory: getVisWorkspaceDataDir(workspaceRoot) })}\`.`);
         } else {
-            pail.error(`Run summary "${runId}" not found in .task-runner/runs/.`);
+            pail.error(`Run summary "${runId}" not found in ${getVisRunsDir(workspaceRoot)}/.`);
         }
 
         process.exitCode = 1;
@@ -276,7 +280,7 @@ const replayExecute = async ({ logger, options, workspaceRoot: wsRoot }: Toolbox
             return;
         }
 
-        renderListTable(entries, logger);
+        renderListTable(entries, workspaceRoot, logger);
 
         return;
     }

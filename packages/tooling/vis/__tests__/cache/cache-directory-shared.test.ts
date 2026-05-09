@@ -6,7 +6,7 @@ import { join, resolve } from "node:path";
 import { resetWorktreeCache } from "@visulima/task-runner";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { DEFAULT_CACHE_DIRECTORY_NAME, resolveSharedCacheDirectory } from "../../src/cache/cache-directory";
+import { DEFAULT_WORKSPACE_CACHE_DIRECTORY, resolveSharedCacheDirectory } from "../../src/cache/cache-directory";
 
 // When this test file runs inside a git pre-commit hook, git exports
 // GIT_DIR / GIT_INDEX_FILE / GIT_WORK_TREE pointing at the hook-running
@@ -68,7 +68,7 @@ describe(resolveSharedCacheDirectory, () => {
 
         const ws = realpathSync(scratch);
 
-        expect(resolveSharedCacheDirectory(ws, undefined, undefined, true)).toBe(resolve(ws, DEFAULT_CACHE_DIRECTORY_NAME));
+        expect(resolveSharedCacheDirectory(ws, undefined, undefined, true)).toBe(resolve(ws, DEFAULT_WORKSPACE_CACHE_DIRECTORY));
     });
 
     it("returns the workspace-root cache for a primary checkout", () => {
@@ -84,7 +84,7 @@ describe(resolveSharedCacheDirectory, () => {
         mkdirSync(ws);
         initRepo(ws);
 
-        expect(resolveSharedCacheDirectory(ws, undefined, undefined, true)).toBe(resolve(ws, DEFAULT_CACHE_DIRECTORY_NAME));
+        expect(resolveSharedCacheDirectory(ws, undefined, undefined, true)).toBe(resolve(ws, DEFAULT_WORKSPACE_CACHE_DIRECTORY));
     });
 
     it("redirects a linked worktree to the main worktree's cache", () => {
@@ -107,7 +107,7 @@ describe(resolveSharedCacheDirectory, () => {
         try {
             const fromLinked = resolveSharedCacheDirectory(linked, undefined, undefined, true);
 
-            expect(fromLinked).toBe(resolve(main, DEFAULT_CACHE_DIRECTORY_NAME));
+            expect(fromLinked).toBe(resolve(main, DEFAULT_WORKSPACE_CACHE_DIRECTORY));
 
             // Sanity: from the main checkout, the same path is returned.
             expect(resolveSharedCacheDirectory(main, undefined, undefined, true)).toBe(fromLinked);
@@ -134,7 +134,7 @@ describe(resolveSharedCacheDirectory, () => {
         execFileSync("git", ["worktree", "add", "-b", "feat", linked], { cwd: main, stdio: "ignore" });
 
         try {
-            expect(resolveSharedCacheDirectory(linked, undefined, undefined, false)).toBe(resolve(linked, DEFAULT_CACHE_DIRECTORY_NAME));
+            expect(resolveSharedCacheDirectory(linked, undefined, undefined, false)).toBe(resolve(linked, DEFAULT_WORKSPACE_CACHE_DIRECTORY));
         } finally {
             execFileSync("git", ["worktree", "remove", "--force", linked], { cwd: main, stdio: "ignore" });
         }

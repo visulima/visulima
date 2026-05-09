@@ -201,7 +201,7 @@ describe("cache sharing across git worktrees", () => {
         mkdirSync(ws);
         initRepo(ws);
 
-        const expected = resolve(ws, ".task-runner-cache");
+        const expected = resolve(ws, ".vis/cache");
 
         expect(resolveSharedCacheDirectory(ws, undefined, undefined, true)).toBe(expected);
         expect(resolveSharedCacheDirectory(ws, undefined, undefined, false)).toBe(expected);

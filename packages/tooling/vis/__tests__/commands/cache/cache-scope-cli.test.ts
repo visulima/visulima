@@ -130,8 +130,8 @@ describe("cache --scope CLI dispatch", () => {
 
         execFileSync("git", ["worktree", "add", "-b", "feat", linked], { cwd: main, stdio: "ignore" });
 
-        const sharedCache = resolve(main, ".task-runner-cache");
-        const linkedCache = resolve(linked, ".task-runner-cache");
+        const sharedCache = resolve(main, ".vis/cache");
+        const linkedCache = resolve(linked, ".vis/cache");
 
         seedEntry(sharedCache, "shared-only-hash");
         seedEntry(linkedCache, "linked-only-hash");
@@ -175,8 +175,8 @@ describe("cache --scope CLI dispatch", () => {
 
         execFileSync("git", ["worktree", "add", "-b", "feat", linked], { cwd: main, stdio: "ignore" });
 
-        const sharedCache = resolve(main, ".task-runner-cache");
-        const linkedCache = resolve(linked, ".task-runner-cache");
+        const sharedCache = resolve(main, ".vis/cache");
+        const linkedCache = resolve(linked, ".vis/cache");
 
         seedEntry(sharedCache, "shared-only-hash");
         seedEntry(linkedCache, "linked-only-hash");
@@ -220,8 +220,8 @@ describe("cache --scope CLI dispatch", () => {
 
         execFileSync("git", ["worktree", "add", "-b", "feat", linked], { cwd: main, stdio: "ignore" });
 
-        const sharedCache = resolve(main, ".task-runner-cache");
-        const linkedCache = resolve(linked, ".task-runner-cache");
+        const sharedCache = resolve(main, ".vis/cache");
+        const linkedCache = resolve(linked, ".vis/cache");
 
         seedEntry(sharedCache, "shared-only-hash");
         seedEntry(linkedCache, "linked-only-hash");
@@ -263,7 +263,7 @@ describe("cache --scope CLI dispatch", () => {
         mkdirSync(main);
         initRepo(main);
 
-        const sharedCache = resolve(main, ".task-runner-cache");
+        const sharedCache = resolve(main, ".vis/cache");
 
         seedEntry(sharedCache, "primary-hash");
 
@@ -303,7 +303,7 @@ describe("cache --scope CLI dispatch", () => {
 
         execFileSync("git", ["worktree", "add", "-b", "feat", linked], { cwd: main, stdio: "ignore" });
 
-        const sharedCache = resolve(main, ".task-runner-cache");
+        const sharedCache = resolve(main, ".vis/cache");
 
         seedEntry(sharedCache, "shared-only-hash");
 

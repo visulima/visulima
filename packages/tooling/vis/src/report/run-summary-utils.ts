@@ -3,6 +3,7 @@ import { readdir, readFile, stat } from "node:fs/promises";
 import { join } from "@visulima/path";
 import type { RunSummary, TaskHashDetails, TaskSummary } from "@visulima/task-runner";
 
+import { getVisRunsDir } from "../util/vis-paths";
 import type { HashBucketDiff, HashDetailsDiff } from "./types";
 
 export const findTaskInSummary = (summary: RunSummary, taskId: string): TaskSummary | undefined => summary.tasks.find((task) => task.taskId === taskId);
@@ -47,11 +48,11 @@ export const diffHashDetails = (current: TaskHashDetails | undefined, previous: 
 
 /**
  * Loads a single run summary by ID (the file basename without `.json`)
- * from `.task-runner/runs/`. Returns `undefined` when missing or
+ * from `.vis/runs/`. Returns `undefined` when missing or
  * unparseable so callers can render a friendly error rather than crash.
  */
 export const readRunSummaryById = async (workspaceRoot: string, runId: string): Promise<RunSummary | undefined> => {
-    const path = join(workspaceRoot, ".task-runner", "runs", `${runId}.json`);
+    const path = join(getVisRunsDir(workspaceRoot), `${runId}.json`);
 
     try {
         const content = await readFile(path, "utf8");
@@ -64,12 +65,12 @@ export const readRunSummaryById = async (workspaceRoot: string, runId: string): 
 
 /**
  * Returns the previous run summary — the second-most-recent file in
- * `.task-runner/runs/`. Excludes the currently-loaded summary by `id`
+ * `.vis/runs/`. Excludes the currently-loaded summary by `id`
  * so callers passing a specific run via `--run` get *that run's*
  * prior, not just "the one before now".
  */
 export const readPreviousRunSummary = async (workspaceRoot: string, currentId: string | undefined): Promise<RunSummary | undefined> => {
-    const runsDirectory = join(workspaceRoot, ".task-runner", "runs");
+    const runsDirectory = getVisRunsDir(workspaceRoot);
 
     let dirents: string[];
 
@@ -119,12 +120,12 @@ export const readPreviousRunSummary = async (workspaceRoot: string, currentId: s
 };
 
 /**
- * Lists every run summary recorded under `.task-runner/runs/`, sorted
+ * Lists every run summary recorded under `.vis/runs/`, sorted
  * newest-first by mtime. The id is the file basename without `.json`,
  * matching what {@link readRunSummaryById} expects.
  */
 export const listRunSummaries = async (workspaceRoot: string): Promise<{ id: string; mtimeMs: number; path: string }[]> => {
-    const runsDirectory = join(workspaceRoot, ".task-runner", "runs");
+    const runsDirectory = getVisRunsDir(workspaceRoot);
 
     let dirents: string[];
 

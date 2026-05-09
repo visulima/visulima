@@ -33,7 +33,7 @@ interface RunSummaryFile {
 }
 
 /**
- * Reads all run summary files from `.task-runner/runs/` and computes
+ * Reads all run summary files from `.vis/runs/` and computes
  * per-task flakiness statistics.
  *
  * Pass `summaries` (from {@link loadRunSummaries}) when the caller

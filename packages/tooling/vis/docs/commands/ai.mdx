@@ -64,7 +64,7 @@ Read the latest run summary, find the requested failed task, and ask the AI to p
 | Option       | Default | Description                                                                                  |
 | ------------ | ------- | -------------------------------------------------------------------------------------------- |
 | `--format`   | `table` | Output format: `table` or `json`                                                             |
-| `--run`      |         | Use a specific run ID from `.task-runner/runs/` instead of the latest run                    |
+| `--run`      |         | Use a specific run ID from `.vis/runs/` instead of the latest run                    |
 | `--apply`    | `false` | Apply the proposed patch to disk after printing it (prompts for confirmation unless `--yes`) |
 | `--no-cache` | `false` | Bypass the AI response cache                                                                 |
 | `--yes`      | `false` | Skip the confirmation prompt before applying                                                 |
@@ -88,7 +88,7 @@ The CI surface is auto-detected:
 
 | Option                 | Default | Description                                                               |
 | ---------------------- | ------- | ------------------------------------------------------------------------- |
-| `--run`                |         | Use a specific run ID from `.task-runner/runs/` instead of the latest run |
+| `--run`                |         | Use a specific run ID from `.vis/runs/` instead of the latest run |
 | `--dry-run`            | `false` | Print the proposal but skip apply, validation, and PR/MR comment          |
 | `--no-cache`           | `false` | Bypass the AI response cache                                              |
 | `--validation-timeout` | `1800`  | Validation re-run timeout in seconds (default 30 min)                     |
@@ -113,7 +113,7 @@ Re-derives the latest heal proposal, re-validates it with the same `--no-cache -
 
 | Option                 | Default | Description                                                               |
 | ---------------------- | ------- | ------------------------------------------------------------------------- |
-| `--run`                |         | Use a specific run ID from `.task-runner/runs/` instead of the latest run |
+| `--run`                |         | Use a specific run ID from `.vis/runs/` instead of the latest run |
 | `--validation-timeout` | `1800`  | Validation re-run timeout in seconds (default 30 min)                     |
 
 `heal accept` refuses to run when:

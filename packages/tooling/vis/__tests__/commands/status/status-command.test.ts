@@ -91,7 +91,7 @@ describe("vis status", () => {
     it("computes cache hit rate when run summaries are present", async () => {
         expect.assertions(1);
 
-        const runsDir = join(workspaceRoot, ".task-runner", "runs");
+        const runsDir = join(workspaceRoot, ".vis", "runs");
 
         mkdirSync(runsDir, { recursive: true });
 

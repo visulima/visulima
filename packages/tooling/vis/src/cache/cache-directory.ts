@@ -1,7 +1,9 @@
 import { execFileSync } from "node:child_process";
 
 import { isAbsolute, relative, resolve } from "@visulima/path";
-import { DEFAULT_CACHE_DIRECTORY_NAME, getMainWorktreeRoot } from "@visulima/task-runner";
+import { getMainWorktreeRoot } from "@visulima/task-runner";
+
+import { DEFAULT_WORKSPACE_CACHE_DIRECTORY } from "../util/vis-paths";
 
 /**
  * Shared helpers for resolving the task runner's cache directory.
@@ -10,7 +12,7 @@ import { DEFAULT_CACHE_DIRECTORY_NAME, getMainWorktreeRoot } from "@visulima/tas
  * cache from the outside) so both commands agree on:
  *
  * - the resolution order: `--cache-dir` flag > vis.config.ts
- *   `taskRunnerOptions.cacheDirectory` > `{workspaceRoot}/.task-runner-cache`
+ *   `taskRunnerOptions.cacheDirectory` > `{workspaceRoot}/.vis/cache`
  * - relative-path normalization against `workspaceRoot`
  * - containment checks (used to decide whether a destructive operation is
  *   safe to perform without confirmation)
@@ -24,7 +26,7 @@ import { DEFAULT_CACHE_DIRECTORY_NAME, getMainWorktreeRoot } from "@visulima/tas
  * matter what `process.cwd()` happens to be when the command runs.
  *
  * Precedence: `optionsCacheDir` > `configCacheDir` > `VIS_CACHE_DIRECTORY` env >
- * `{workspaceRoot}/{@link DEFAULT_CACHE_DIRECTORY_NAME}`.
+ * `{workspaceRoot}/{@link DEFAULT_WORKSPACE_CACHE_DIRECTORY}`.
  *
  * The env-var fallback exists for parity with Nx (`NX_CACHE_DIRECTORY`) so CI
  * runners can pin the cache root without rewriting `vis.config.ts`.
@@ -50,7 +52,7 @@ const resolveCacheDirectory = (workspaceRoot: string, optionsCacheDir: string | 
         return normalize(envOverride);
     }
 
-    return resolve(workspaceRoot, DEFAULT_CACHE_DIRECTORY_NAME);
+    return resolve(workspaceRoot, DEFAULT_WORKSPACE_CACHE_DIRECTORY);
 };
 
 /**
@@ -83,7 +85,7 @@ export const resolveSharedCacheRoot = (workspaceRoot: string, enabled: boolean |
  * Same precedence as {@link resolveCacheDirectory}, but when no explicit
  * path is supplied the workspace anchor is the *main* worktree root rather
  * than the linked checkout. Used by `vis run` and `vis cache` so parallel
- * agents in sibling worktrees share `&lt;mainWorktreeRoot>/.task-runner-cache`.
+ * agents in sibling worktrees share `&lt;mainWorktreeRoot>/.vis/cache`.
  * @param workspaceRoot Absolute path of the current workspace (linked or primary).
  * @param optionsCacheDir CLI `--cache-dir` value (may be relative or absolute).
  * @param configCacheDir `taskRunnerOptions.cacheDirectory` from vis.config.ts.
@@ -107,7 +109,7 @@ const resolveSharedCacheDirectory = (
 
     const anchor = resolveSharedCacheRoot(workspaceRoot, sharedWorktreeCache);
 
-    return resolve(anchor, DEFAULT_CACHE_DIRECTORY_NAME);
+    return resolve(anchor, DEFAULT_WORKSPACE_CACHE_DIRECTORY);
 };
 
 const BRANCH_SLUG_RE = /[^\w.-]+/g;
@@ -217,4 +219,4 @@ const isCacheDirectoryInsideWorkspace = (cacheDirectory: string, workspaceRoot: 
 
 export { isCacheDirectoryInsideWorkspace, resolveCacheDirectory, resolveSharedCacheDirectory };
 
-export { DEFAULT_CACHE_DIRECTORY_NAME } from "@visulima/task-runner";
+export { DEFAULT_WORKSPACE_CACHE_DIRECTORY } from "../util/vis-paths";

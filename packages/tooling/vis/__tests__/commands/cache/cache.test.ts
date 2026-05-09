@@ -175,8 +175,8 @@ describe(runClean, () => {
 
     beforeEach(() => {
         workspaceRoot = mkdtempSync(join(tmpdir(), "vis-cache-clean-ws-"));
-        cacheDirectory = join(workspaceRoot, ".task-runner-cache");
-        mkdirSync(cacheDirectory);
+        cacheDirectory = join(workspaceRoot, ".vis/cache");
+        mkdirSync(cacheDirectory, { recursive: true });
         writeCacheEntry(cacheDirectory, "hash1");
         writeCacheEntry(cacheDirectory, "hash2");
     });
@@ -287,8 +287,8 @@ describe(runPrune, () => {
 
     beforeEach(() => {
         workspaceRoot = mkdtempSync(join(tmpdir(), "vis-cache-prune-ws-"));
-        cacheDirectory = join(workspaceRoot, ".task-runner-cache");
-        mkdirSync(cacheDirectory);
+        cacheDirectory = join(workspaceRoot, ".vis/cache");
+        mkdirSync(cacheDirectory, { recursive: true });
     });
 
     afterEach(() => {
@@ -540,7 +540,7 @@ const writeRunSummary = (
         tasks: unknown[];
     },
 ): void => {
-    const runsDir = join(workspaceRoot, ".task-runner", "runs");
+    const runsDir = join(workspaceRoot, ".vis", "runs");
 
     mkdirSync(runsDir, { recursive: true });
 
@@ -558,7 +558,7 @@ const writeRunSummary = (
 };
 
 const writeLastSummary = (workspaceRoot: string, summary: Parameters<typeof writeRunSummary>[1]): void => {
-    const dir = join(workspaceRoot, ".task-runner");
+    const dir = join(workspaceRoot, ".vis");
 
     mkdirSync(dir, { recursive: true });
 
@@ -689,7 +689,7 @@ describe(runWhy, () => {
         // Sleep tiny bit to ensure mtime ordering between run files.
         const now = Date.now();
 
-        utimesSync(join(workspaceRoot, ".task-runner", "runs", "run-old.json"), new Date(now - 60 * 1000), new Date(now - 60 * 1000));
+        utimesSync(join(workspaceRoot, ".vis", "runs", "run-old.json"), new Date(now - 60 * 1000), new Date(now - 60 * 1000));
 
         // Current run: command changed, node value rotated, new node added
         writeLastSummary(workspaceRoot, {
@@ -1000,7 +1000,7 @@ describe(cacheVerifyExecute, () => {
 
     beforeEach(() => {
         workspaceRoot = mkdtempSync(join(tmpdir(), "vis-cache-verify-exec-"));
-        cacheDirectory = join(workspaceRoot, ".task-runner-cache");
+        cacheDirectory = join(workspaceRoot, ".vis/cache");
         mkdirSync(cacheDirectory, { recursive: true });
         stdoutSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
     });
