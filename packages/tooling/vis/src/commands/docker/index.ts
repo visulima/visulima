@@ -57,6 +57,12 @@ const docker: Command = {
             name: "context",
             type: String,
         },
+        {
+            defaultValue: true,
+            description: "Rewrite the workspace lockfile to drop unfocused projects (use --no-prune-lockfile to copy verbatim)",
+            name: "prune-lockfile",
+            type: Boolean,
+        },
     ],
 };
 
@@ -67,4 +73,5 @@ export type DockerOptions = CreateOptions<{
     focus: string | undefined;
     "include-sources": boolean | undefined;
     out: string | undefined;
+    "prune-lockfile": boolean | undefined;
 }>;

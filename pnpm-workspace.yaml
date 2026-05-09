@@ -746,6 +746,9 @@ overrides:
   '@modelcontextprotocol/sdk@>=1.10.0 <=1.25.3': '>=1.26.0'
   '@sveltejs/kit@<=2.57.0': '>=2.57.1'
   '@sveltejs/kit@>=2.49.0 <=2.52.1': '>=2.52.2'
+  # @yarnpkg/parsers@3.x calls js-yaml.safeLoad (a v3 API removed in v4); pin
+  # its nested js-yaml back to v3 so it actually loads at runtime.
+  '@yarnpkg/parsers>js-yaml': ^3.14.1
   ajv@>=6.0.0 <6.14.0: '>=6.14.0 <7.0.0'
   ajv@>=7.0.0-alpha.0 <8.18.0: '>=8.18.0'
   axios@<1.12.0: '>=1.12.2'

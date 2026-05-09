@@ -1705,6 +1705,7 @@ overrides:
   '@modelcontextprotocol/sdk@>=1.10.0 <=1.25.3': '>=1.26.0'
   '@sveltejs/kit@<=2.57.0': '>=2.57.1'
   '@sveltejs/kit@>=2.49.0 <=2.52.1': '>=2.52.2'
+  '@yarnpkg/parsers>js-yaml': ^3.14.1
   ajv@>=6.0.0 <6.14.0: '>=6.14.0 <7.0.0'
   ajv@>=7.0.0-alpha.0 <8.18.0: '>=8.18.0'
   axios@<1.12.0: '>=1.12.2'
@@ -9759,6 +9760,9 @@ importers:
       '@vitest/ui':
         specifier: catalog:test
         version: 4.1.5(vitest@4.1.5)
+      '@yarnpkg/parsers':
+        specifier: ^3.0.3
+        version: 3.0.3
       ajv:
         specifier: catalog:dev
         version: 8.20.0
@@ -20179,6 +20183,10 @@ packages:
   '@yarnpkg/lockfile@1.1.0':
     resolution: {integrity: sha512-GpSwvyXOcOOlV70vbnzjj4fW5xW/FdUF6nQEt1ENy7m4ZCczi1+/buVUPAqmGfqznsORNFzUMjctTIp8a9tuCQ==}
 
+  '@yarnpkg/parsers@3.0.3':
+    resolution: {integrity: sha512-mQZgUSgFurUtA07ceMjxrWkYz8QtDuYkvPlu0ZqncgjopQ0t6CNEo/OSealkmnagSUx8ZD5ewvezUwUuMqutQg==}
+    engines: {node: '>=18.12.0'}
+
   '@yarnpkg/pnp@4.1.5':
     resolution: {integrity: sha512-hDqB3Kke873wdx3rip1zlblfBIx2sGJH0BoNPh435A5rSEVT1sDKuCykLxNlLUnGhIZc83FXLGDGZJn23ggAQg==}
     engines: {node: '>=18.12.0'}
@@ -25703,6 +25711,10 @@ packages:
 
   js-tokens@9.0.1:
     resolution: {integrity: sha512-mxa9E9ITFOt0ban3j6L5MpjwegGz6lBQmM1IJkWeBZGcMxto50+eWdjC/52xDbS2vy0k7vIMK0Fe2wfL9OQSpQ==}
+
+  js-yaml@3.14.2:
+    resolution: {integrity: sha512-PMSmkqxr106Xa156c2M265Z+FTrPl+oxd/rgOQy2tijQeK5TxQ43psO1ZCwhVOSdnn+RzkzlRz/eY4BgJBYVpg==}
+    hasBin: true
 
   js-yaml@4.1.1:
     resolution: {integrity: sha512-qQKT4zQxXl8lLwBtHMWwaTcGfFOZviOJet3Oy/xmGk2gZH677CJM9EvtfdSkgWcATZhj/55JZ0rmy3myCT5lsA==}
@@ -47343,6 +47355,11 @@ snapshots:
 
   '@yarnpkg/lockfile@1.1.0': {}
 
+  '@yarnpkg/parsers@3.0.3':
+    dependencies:
+      js-yaml: 3.14.2
+      tslib: 2.8.1
+
   '@yarnpkg/pnp@4.1.5':
     dependencies:
       '@types/node': 18.19.130
@@ -54082,6 +54099,11 @@ snapshots:
   js-tokens@4.0.0: {}
 
   js-tokens@9.0.1: {}
+
+  js-yaml@3.14.2:
+    dependencies:
+      argparse: 1.0.10
+      esprima: 4.0.1
 
   js-yaml@4.1.1:
     dependencies:
