@@ -258,13 +258,9 @@ const findFirstFailedTask = async (
 
 const DEFAULT_VALIDATION_TIMEOUT_MS = 30 * 60 * 1000;
 
-// ----------------------------------------------------------------------
-// Phase 1: discover what to heal
-//
 // Pulled out of `heal()` so `vis ai heal accept` (which receives a
 // trigger comment from a webhook payload) can run the same precondition
 // checks before re-deriving the proposal.
-// ----------------------------------------------------------------------
 
 /** Failed task with the metadata required to validate a fix. */
 export interface HealCandidate {
@@ -302,13 +298,9 @@ const findHealCandidate = async (workspaceRoot: string, runId: string | undefine
     };
 };
 
-// ----------------------------------------------------------------------
-// Phase 2: AI proposes a fix and we apply it to disk
-//
 // `accept` reuses this verbatim — same options, same proposal flow —
 // so a comment posted by `heal` and a commit landed by `accept` both
 // derive from the same prompt + same patcher.
-// ----------------------------------------------------------------------
 
 export type ProposeAndApplyOutcome = "applied" | "cannot-fix" | "dry-run" | "empty-patches" | "no-patches-applied" | "no-proposal";
 
@@ -375,10 +367,6 @@ const proposeAndApply = async (toolbox: ProposeAndApplyToolbox, candidate: HealC
     return { applyResults, outcome: "applied", proposal };
 };
 
-// ----------------------------------------------------------------------
-// Phase 3: re-run the failing task to confirm the patch fixed it
-// ----------------------------------------------------------------------
-
 export interface ValidateAppliedFixDeps {
     /** Inject a fake validator for tests. Defaults to spawning `vis run`. */
     validate?: (project: string, target: string) => Promise<ValidationResult>;
@@ -393,12 +381,8 @@ const validateAppliedFix = async (toolbox: ProposeAndApplyToolbox, candidate: He
     return await validate(candidate.failedTask.project, candidate.failedTask.target);
 };
 
-// ----------------------------------------------------------------------
-// Phase 4: post the proposal as a PR/MR comment
-//
 // Heal-specific: `accept` does NOT call this — it commits via the SDK
 // and posts a different "committed at <sha>" confirmation comment.
-// ----------------------------------------------------------------------
 
 export type PostHealCommentOutcome = "no-ci" | "no-pr" | "post-failed" | "posted";
 
@@ -451,10 +435,6 @@ const postHealComment = async (
 
     return { ciContext, error: postResult.error, method: postResult.method, outcome: "post-failed", surface };
 };
-
-// ----------------------------------------------------------------------
-// Orchestrator: ties the four phases together with user-facing logging
-// ----------------------------------------------------------------------
 
 interface HealRunDeps extends PostHealCommentDeps, ValidateAppliedFixDeps {}
 

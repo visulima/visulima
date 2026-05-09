@@ -1,6 +1,3 @@
-/**
- * Represents a writable stdin entry for interactive PTY input.
- */
 export interface StdinEntry {
     /** Kill the child process/PTY. */
     kill?: (signal?: string) => void;

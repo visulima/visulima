@@ -11,8 +11,6 @@ import { buildCacheKey, getCachedAnalysis, getTtlForAnalysisType, setCachedAnaly
 import { runWithRetry } from "./ai-runner";
 import type { AiAnalysisResult, AiRecommendation, AnalysisType } from "./types";
 
-// --- Provider selection (vis-specific) ---
-
 interface AiHealConfig {
     /**
      * Usernames allowed to trigger `vis ai heal accept`. Empty list (the
@@ -70,17 +68,11 @@ const resolveProvider = (config?: AiConfig): AiProviderInfo | undefined => {
     return available.toSorted((a, b) => (priority[b.name] ?? 0) - (priority[a.name] ?? 0))[0];
 };
 
-// --- Types ---
-
-// --- Constants ---
-
 const VALID_ACTIONS = new Set(["defer", "review", "skip", "update"]);
 const VALID_RISK_LEVELS = new Set(["critical", "high", "low", "medium"]);
 const VALID_EFFORTS = new Set(["high", "low", "medium"]);
 const CHUNK_THRESHOLD = 50;
 const CHUNK_SIZE = 30;
-
-// --- Prompts per analysis type ---
 
 const buildPackageList = (outdated: OutdatedEntry[]): string =>
     outdated
@@ -207,8 +199,6 @@ const buildAnalysisPrompt = (outdated: OutdatedEntry[], analysisType: AnalysisTy
     return PROMPTS[analysisType](packageList);
 };
 
-// --- Response parsing ---
-
 const JSON_BLOCK_REGEX = /```(?:json)?\s*([\s\S]*?)```/;
 
 const JSON_OBJECT_REGEX = /\{[\s\S]*\}/;
@@ -273,8 +263,6 @@ const parseAiResponse = (text: string, provider: string, analysisType: AnalysisT
     };
 };
 
-// --- Rule-based fallback ---
-
 const KNOWN_BREAKING: Record<string, string[]> = {
     eslint: ["ESLint 9.0: Flat config required", "ESLint 8.0+: New rule formats"],
     next: ["Next.js 13+: App router changes", "Next.js 14+: Server components default"],
@@ -335,8 +323,6 @@ const ruleBasedAnalysis = (outdated: OutdatedEntry[], analysisType: AnalysisType
     };
 };
 
-// --- Chunking ---
-
 const analyzeChunk = async (provider: AiProviderInfo, chunk: OutdatedEntry[], analysisType: AnalysisType): Promise<AiAnalysisResult> => {
     const prompt = buildAnalysisPrompt(chunk, analysisType);
     const stdout = await runWithRetry(provider, prompt);
@@ -366,8 +352,6 @@ const mergeResults = (results: AiAnalysisResult[], provider: string, analysisTyp
         warnings: [...new Set(warnings)],
     };
 };
-
-// --- Output formatting ---
 
 const ANALYSIS_TYPE_LABELS: Record<AnalysisType, string> = {
     compatibility: "Compatibility",
@@ -415,8 +399,6 @@ const formatAiAnalysis = (result: AiAnalysisResult): string => {
 };
 
 const formatAiAnalysisJson = (result: AiAnalysisResult): string => JSON.stringify(result, undefined, 2);
-
-// --- Public API ---
 
 const runAiAnalysis = async (
     outdated: OutdatedEntry[],
