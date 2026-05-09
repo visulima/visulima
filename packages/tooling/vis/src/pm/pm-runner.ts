@@ -40,6 +40,7 @@ import {
     resolveAubeUnlink,
     resolveAubeWhy,
 } from "../util/aube-resolver";
+import { dispatchSubcommand } from "./pm-subcommand-dispatch";
 
 /**
  * Allowed `install.backend` values in `vis.config.ts`. `auto` means
@@ -307,7 +308,15 @@ const detectPm = (cwd: string): PmInfo => {
  * already wrapped (defensive — keeps the helper idempotent).
  */
 const applyCorepack = (resolved: ResolvedCommand, pm: InstallerInfo): ResolvedCommand => {
-    if (pm.useCorepack !== true || !COREPACK_MANAGED.has(pm.name) || resolved.bin === "corepack") {
+    // Skip wrapping when:
+    //   - corepack is disabled for this installer,
+    //   - the resolved PM is not corepack-managed (bun, deno, aube),
+    //   - the command is already corepack-wrapped (idempotency), or
+    //   - the resolved bin diverges from the installer's PM (e.g. the
+    //     subcommand dispatcher rewrote `pnpm whoami` → `npm whoami` for
+    //     pnpm 11). Wrapping a foreign bin under `corepack pnpm` would
+    //     re-route the call through the wrong tool.
+    if (pm.useCorepack !== true || !COREPACK_MANAGED.has(pm.name) || resolved.bin === "corepack" || resolved.bin !== pm.name) {
         return resolved;
     }
 
@@ -930,6 +939,28 @@ const runPmSubcommand = (
 ): number => {
     if (pm.name === "aube") {
         return runResolved(pm, resolveAubePmCommand(subcommand, args), cwd, logger, extras);
+    }
+
+    // Cross-PM differences the native resolver doesn't model: pnpm 11
+    // removals (whoami/owner/ping/search/token), yarn berry's `yarn npm`
+    // namespace, bun's `bun pm` namespace, and subcommands that have no
+    // analogue on a given PM (e.g. `plugin` on npm).
+    const action = dispatchSubcommand(pm, subcommand, args);
+
+    if (action.kind === "skip") {
+        logger.warn(`warning: ${action.warning}`);
+
+        return 0;
+    }
+
+    if (action.kind === "rewrite") {
+        return runResolved(
+            pm,
+            { args: action.args, bin: action.bin, warnings: action.warning ? [action.warning] : [] },
+            cwd,
+            logger,
+            extras,
+        );
     }
 
     return resolveAndRun(pm, () => resolvePmCommand(pm.name, pm.version, subcommand, args), cwd, logger, extras);
