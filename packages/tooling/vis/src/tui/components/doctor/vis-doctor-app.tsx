@@ -173,10 +173,7 @@ const VisDoctorApp = ({ autoExitSeconds = 0, banner, fromCache = false, startedA
     // from it (they live above/below in the column flex).
     const isHorizontal = columns >= MIN_HORIZONTAL_WIDTH;
     const listPanelHeight = isHorizontal ? Math.max(1, rows - bannerHeight - 2) : Math.floor(rows * 0.55);
-    const estimatedViewportHeight = useMemo(
-        () => Math.max(1, listPanelHeight - 6 - activityLineHeight - (state.filterActive ? 1 : 0)),
-        [listPanelHeight, activityLineHeight, state.filterActive],
-    );
+    const estimatedViewportHeight = Math.max(1, listPanelHeight - 6 - activityLineHeight - (state.filterActive ? 1 : 0));
 
     // The list panel reports its actual measured content-row height via
     // `onViewportHeightChange`. Use it for scroll math so navigation
@@ -204,11 +201,7 @@ const VisDoctorApp = ({ autoExitSeconds = 0, banner, fromCache = false, startedA
     }, [state.grouped]);
 
     const maxScrollOffset = Math.max(0, contentHeight - listViewportHeight);
-
-    useEffect(() => {
-        // eslint-disable-next-line react-you-might-not-need-an-effect/no-derived-state -- clamp must run as a side effect when content/viewport change; using useMemo would re-render with stale offset
-        setListScrollOffset((current) => Math.min(current, maxScrollOffset));
-    }, [maxScrollOffset]);
+    const clampedListScrollOffset = Math.min(listScrollOffset, maxScrollOffset);
 
     // Each section header = 2 rows (marginTop + text), each finding = 1 row.
     const getRowForIndex = useCallback(
@@ -765,7 +758,7 @@ x
             fromCache={fromCache}
             grouped={state.grouped}
             onViewportHeightChange={setMeasuredViewportHeight}
-            scrollOffset={listScrollOffset}
+            scrollOffset={clampedListScrollOffset}
             sectionCounts={sectionCounts}
             sectionMessage={state.sectionMessage}
             sectionStatus={state.sectionStatus}

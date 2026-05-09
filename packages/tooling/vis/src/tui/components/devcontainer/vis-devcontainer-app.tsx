@@ -43,6 +43,8 @@ const EDITOR_SECTIONS: ReadonlyArray<{ description: string; id: SectionId; label
     { description: "Docker Compose integration for multi-container setups", id: "compose", label: "Compose" },
 ] as const;
 
+const SECTION_DESCRIPTIONS: ReadonlyMap<SectionId, string> = new Map(EDITOR_SECTIONS.map((s) => [s.id, s.description]));
+
 // ── Field count helper ──────────────────────────────────────────────────
 
 const getFieldCount = (section: SectionId, config: DevcontainerConfig, featureSearch: string, extensionSearch: string): number => {
@@ -1304,7 +1306,7 @@ devcontainer
             {/* Section description */}
             <Box flexShrink={0} paddingRight={2}>
                 <Text dimColor wrap="truncate">
-                    {EDITOR_SECTIONS.find((s) => s.id === state.section)?.description ?? ""}
+                    {SECTION_DESCRIPTIONS.get(state.section) ?? ""}
                 </Text>
             </Box>
 
