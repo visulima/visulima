@@ -35,7 +35,7 @@ export interface WatchOptions {
     paths: string[];
 }
 
-const IGNORE_PATTERNS = [/node_modules(?:\/|$)/, /\.git(?:\/|$)/, /\.vis(?:\/|$)/, /\.task-runner(?:\/|$)/];
+const IGNORE_PATTERNS = [/node_modules(?:\/|$)/, /\.git(?:\/|$)/, /\.vis(?:\/|$)/];
 
 /**
  * The set of workspace-relative paths that a run actually read, plus
