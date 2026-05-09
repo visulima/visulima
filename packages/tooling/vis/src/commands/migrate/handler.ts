@@ -164,7 +164,7 @@ const migrateNxExecuteImpl = async ({ logger, options, visConfig, workspaceRoot 
     announceDryRun(ctx);
 
     logger.info("── Migrating nx ──");
-    migrateNx(ctx.root, { dryRun: ctx.dryRun, useEditorconfig: ctx.useEditorconfig }, logger, ctx.report);
+    migrateNx(ctx.root, { dryRun: ctx.dryRun, force: Boolean(options.force), useEditorconfig: ctx.useEditorconfig }, logger, ctx.report);
     logger.info("");
 
     printSummary(ctx.report, logger);

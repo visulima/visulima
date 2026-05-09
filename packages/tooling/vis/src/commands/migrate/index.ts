@@ -62,7 +62,10 @@ const migrateNxCmd: Command = {
             return { default: m.migrateNxExecute };
         }),
     name: "nx",
-    options: [...sharedMigrateOptions],
+    options: [
+        ...sharedMigrateOptions,
+        { defaultValue: false, description: "Overwrite an existing vis.config.ts (a .bak is taken first)", name: "force", type: Boolean },
+    ],
 };
 
 const migrateMoonCmd: Command = {
@@ -189,7 +192,11 @@ export type MigrateDepsOptions = CreateOptions<SharedMigrateOptions>;
 export type MigrateLintStagedOptions = CreateOptions<SharedMigrateOptions>;
 export type MigrateNanoStagedOptions = CreateOptions<SharedMigrateOptions>;
 export type MigrateTurborepoOptions = CreateOptions<SharedMigrateOptions>;
-export type MigrateNxOptions = CreateOptions<SharedMigrateOptions>;
+export type MigrateNxOptions = CreateOptions<
+    SharedMigrateOptions & {
+        force: boolean | undefined;
+    }
+>;
 export type MigrateMoonOptions = CreateOptions<
     SharedMigrateOptions & {
         "copy-templates": boolean | undefined;
