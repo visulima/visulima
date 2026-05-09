@@ -645,6 +645,16 @@ export interface TaskRunnerOptions {
     cacheDirectory?: string;
 
     /**
+     * Directory used to persist run summaries (`runs/`),
+     * `last-summary.json`, and other run-scoped state. Defaults to
+     * `{workspaceRoot}/.task-runner` when omitted so standalone
+     * task-runner consumers keep their existing layout. Vis sets this
+     * to `{workspaceRoot}/.vis` so all per-workspace state lives under
+     * a single directory.
+     */
+    dataDirectory?: string;
+
+    /**
      * Dry-run mode: compute hashes and check cache but don't execute tasks.
      * Useful for debugging cache hits/misses.
      * @default false

@@ -34,7 +34,7 @@ interface IncrementalHasherOptions {
     workspaceRoot: string;
 }
 
-const DEFAULT_IGNORED_DIRS = new Set([".cache", ".git", ".task-runner-cache", "coverage", "dist", "node_modules"]);
+const DEFAULT_IGNORED_DIRS = new Set([".cache", ".git", ".task-runner", ".task-runner-cache", ".vis", "coverage", "dist", "node_modules"]);
 
 class IncrementalFileHasher {
     readonly #workspaceRoot: string;

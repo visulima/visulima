@@ -33,6 +33,14 @@ interface TaskOrchestratorOptions {
     cache: Cache;
     cacheDiagnostics?: boolean;
     captureOutput?: boolean;
+
+    /**
+     * Directory used to persist run summaries. Forwarded to
+     * {@link writeRunSummary} / {@link writeLastRunSummary} so
+     * embedders (vis) can redirect run-scoped state away from the
+     * default `{workspaceRoot}/.task-runner`.
+     */
+    dataDirectory?: string;
     dryRun?: boolean;
     fingerprintEnvPatterns?: string[];
     lifeCycle: LifeCycleInterface;
@@ -168,6 +176,8 @@ class TaskOrchestrator {
 
     readonly #summarize: boolean;
 
+    readonly #dataDirectory: string | undefined;
+
     readonly #taskGraph: TaskGraph | undefined;
 
     readonly #results: TaskResults = new Map();
@@ -204,6 +214,7 @@ class TaskOrchestrator {
         this.#onRemoteUploadError = options.onRemoteUploadError ?? undefined;
         this.#dryRun = options.dryRun ?? false;
         this.#summarize = options.summarize ?? false;
+        this.#dataDirectory = options.dataDirectory;
         this.#taskGraph = options.taskGraph ?? undefined;
         this.#startTime = Date.now();
         this.#alwaysTasks = options.alwaysTasks ?? [];
@@ -252,10 +263,10 @@ class TaskOrchestrator {
 
             // Always persist the "last run" snapshot so CLIs can replay it
             // (interrupted runs are skipped — they'd cache incomplete output).
-            await writeLastRunSummary(summary, this.#workspaceRoot);
+            await writeLastRunSummary(summary, this.#workspaceRoot, { dataDirectory: this.#dataDirectory });
 
             if (this.#summarize) {
-                await writeRunSummary(summary, this.#workspaceRoot);
+                await writeRunSummary(summary, this.#workspaceRoot, { dataDirectory: this.#dataDirectory });
             }
         }
 

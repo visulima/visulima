@@ -108,7 +108,7 @@ interface TaskHasherOptions {
 
 const DEFAULT_GLOBAL_INPUTS = ["package-lock.json", "pnpm-lock.yaml", "yarn.lock", "tsconfig.base.json", "tsconfig.json", ".env"];
 
-const IGNORED_DIRS = new Set([".git", "coverage", "dist", "node_modules"]);
+const IGNORED_DIRS = new Set([".git", ".task-runner", ".task-runner-cache", ".vis", "coverage", "dist", "node_modules"]);
 
 const LOCKFILE_NAMES = new Set(["package-lock.json", "pnpm-lock.yaml", "yarn.lock"]);
 

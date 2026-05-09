@@ -203,14 +203,38 @@ const generateRunSummary = (results: TaskResults, taskGraph: TaskGraph, startTim
     };
 };
 
+const DEFAULT_DATA_DIRECTORY_NAME = ".task-runner";
+const LAST_SUMMARY_FILE = "last-summary.json";
+
 /**
- * Writes the run summary to a JSON file in the `.task-runner/runs/` directory.
+ * Resolves the directory that holds run summaries (`runs/`) and
+ * `last-summary.json`. Defaults to `{workspaceRoot}/.task-runner` when no
+ * override is supplied so standalone task-runner consumers keep their
+ * existing layout; vis injects `{workspaceRoot}/.vis` to share the
+ * top-level vis data directory.
+ */
+const resolveDataDirectory = (workspaceRoot: string, override: string | undefined): string =>
+    override && override.length > 0 ? override : join(workspaceRoot, DEFAULT_DATA_DIRECTORY_NAME);
+
+interface RunSummaryPathOptions {
+    /**
+     * Absolute path to the directory that holds `runs/` and
+     * `last-summary.json`. When omitted, falls back to
+     * `{workspaceRoot}/.task-runner`.
+     */
+    dataDirectory?: string;
+}
+
+/**
+ * Writes the run summary to a JSON file in the `runs/` subdirectory of the
+ * resolved data directory (defaults to `.task-runner/runs/`).
  * @param summary The run summary to write
  * @param workspaceRoot The workspace root directory
+ * @param options Optional overrides — pass `dataDirectory` to redirect away from `.task-runner/`
  * @returns The path to the written summary file
  */
-const writeRunSummary = async (summary: RunSummary, workspaceRoot: string): Promise<string> => {
-    const runsDirectory = join(workspaceRoot, ".task-runner", "runs");
+const writeRunSummary = async (summary: RunSummary, workspaceRoot: string, options: RunSummaryPathOptions = {}): Promise<string> => {
+    const runsDirectory = join(resolveDataDirectory(workspaceRoot, options.dataDirectory), "runs");
 
     await mkdir(runsDirectory, { recursive: true });
 
@@ -222,29 +246,28 @@ const writeRunSummary = async (summary: RunSummary, workspaceRoot: string): Prom
     return filePath;
 };
 
-const LAST_SUMMARY_FILE = "last-summary.json";
-
 /**
  * Path where the most-recent run summary is persisted.
  * Consumers (e.g. CLIs exposing `--last-details`) read this file
  * to replay or render the previous run without re-executing.
  */
-const getLastRunSummaryPath = (workspaceRoot: string): string => join(workspaceRoot, ".task-runner", LAST_SUMMARY_FILE);
+const getLastRunSummaryPath = (workspaceRoot: string, options: RunSummaryPathOptions = {}): string =>
+    join(resolveDataDirectory(workspaceRoot, options.dataDirectory), LAST_SUMMARY_FILE);
 
 /**
  * Persists `summary` as the most-recent run summary at
- * `.task-runner/last-summary.json`, overwriting any previous entry.
+ * `{dataDirectory}/last-summary.json`, overwriting any previous entry.
  *
  * This is the companion to {@link readLastRunSummary} and powers
  * CLI surfaces that display "last run" details without re-running tasks.
  * @returns The path to the written summary file
  */
-const writeLastRunSummary = async (summary: RunSummary, workspaceRoot: string): Promise<string> => {
-    const cacheDirectory = join(workspaceRoot, ".task-runner");
+const writeLastRunSummary = async (summary: RunSummary, workspaceRoot: string, options: RunSummaryPathOptions = {}): Promise<string> => {
+    const dataDirectory = resolveDataDirectory(workspaceRoot, options.dataDirectory);
 
-    await mkdir(cacheDirectory, { recursive: true });
+    await mkdir(dataDirectory, { recursive: true });
 
-    const filePath = getLastRunSummaryPath(workspaceRoot);
+    const filePath = getLastRunSummaryPath(workspaceRoot, options);
 
     await writeFile(filePath, JSON.stringify(summary, undefined, 2));
 
@@ -257,9 +280,9 @@ const writeLastRunSummary = async (summary: RunSummary, workspaceRoot: string): 
  * cannot be parsed — callers should render an informational message
  * instead of treating this as an error.
  */
-const readLastRunSummary = async (workspaceRoot: string): Promise<RunSummary | undefined> => {
+const readLastRunSummary = async (workspaceRoot: string, options: RunSummaryPathOptions = {}): Promise<RunSummary | undefined> => {
     try {
-        const content = await readFile(getLastRunSummaryPath(workspaceRoot), "utf8");
+        const content = await readFile(getLastRunSummaryPath(workspaceRoot, options), "utf8");
 
         return JSON.parse(content) as RunSummary;
     } catch {
@@ -267,5 +290,5 @@ const readLastRunSummary = async (workspaceRoot: string): Promise<RunSummary | u
     }
 };
 
-export type { RunSummary, TaskSummary };
+export type { RunSummary, RunSummaryPathOptions, TaskSummary };
 export { generateRunSummary, getLastRunSummaryPath, readLastRunSummary, writeLastRunSummary, writeRunSummary };
