@@ -7,7 +7,7 @@ const execute = async ({ argument, logger, visConfig, workspaceRoot: wsRoot }: T
 
     if (!args || args.length === 0) {
         throw new Error(
-            "No subcommand specified. Available: cache, publish, audit, list, view, config, whoami, login, logout, pack, owner, dist-tag, search, fund, ping, token, deprecate, rebuild, prune",
+            "No subcommand specified. Available: cache, publish, audit, list, view, config, whoami, login, logout, pack, owner, dist-tag, search, fund, ping, token, deprecate, rebuild, prune, plugin",
         );
     }
 

@@ -69,6 +69,20 @@ describe(applyCorepack, () => {
         expect(result.bin).toBe("corepack");
         expect(result.args).toStrictEqual(["pnpm", "install"]);
     });
+
+    it("does not wrap a foreign bin (e.g. dispatcher rewrote pnpm 11 whoami → npm whoami)", () => {
+        expect.assertions(2);
+
+        // The subcommand dispatcher can rewrite to a different PM (npm
+        // owner / npm whoami for pnpm 11). Wrapping that as
+        // `corepack pnpm npm whoami` would re-route the call back through
+        // pnpm — exactly what the rewrite was trying to avoid.
+        const rewritten = RESOLVED("npm", ["whoami"]);
+        const result = applyCorepack(rewritten, { name: "pnpm", useCorepack: true, version: "11.0.0" });
+
+        expect(result.bin).toBe("npm");
+        expect(result.args).toStrictEqual(["whoami"]);
+    });
 });
 
 describe(shouldUseCorepack, () => {
