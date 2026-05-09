@@ -160,6 +160,7 @@ const spawnCommand = (
             }
             : undefined,
         kind: "started",
+        pid: child.pid,
         write: child.stdin ? (data: string) => child.stdin!.write(data) : undefined,
     });
 
@@ -335,6 +336,7 @@ const spawnCommandPty = (
             ptyInstance.kill(signal);
         },
         kind: "started",
+        pid: ptyInstance.pid,
         resize: (cols: number, rows: number) => {
             ptyInstance.resize(cols, rows);
         },
@@ -486,7 +488,18 @@ export const runConcurrentFallback = (commands: ConcurrentCommandConfig[], optio
             }
         };
 
-        const handleSigterm = (): void => {
+        // SIGTERM and the "exit" safety net share a body — both want
+        // a non-cancelling teardown. SIGINT is separate because Ctrl+C
+        // gets the conventional "exit code 0" translation via sigintAbort.
+        //
+        // The "exit" listener is critical: it fires synchronously even
+        // when another listener calls `process.exit()` first (e.g. a
+        // TUI's own SIGINT handler). Without it, a racing exit-on-signal
+        // handler can short-circuit the chain and leave our children
+        // orphaned. `process.kill` is sync, so the kernel receives the
+        // signal before the parent dies even though the children may
+        // not have finished tearing down.
+        const handleNonInteractiveAbort = (): void => {
             if (!aborting) {
                 aborting = true;
                 killAll();
@@ -494,13 +507,15 @@ export const runConcurrentFallback = (commands: ConcurrentCommandConfig[], optio
         };
 
         process.on("SIGINT", handleSigint);
-        process.on("SIGTERM", handleSigterm);
+        process.on("SIGTERM", handleNonInteractiveAbort);
+        process.on("exit", handleNonInteractiveAbort);
 
         const originalResolve = resolve;
 
         resolve = ((result: ConcurrentRunResult) => {
             process.removeListener("SIGINT", handleSigint);
-            process.removeListener("SIGTERM", handleSigterm);
+            process.removeListener("SIGTERM", handleNonInteractiveAbort);
+            process.removeListener("exit", handleNonInteractiveAbort);
             originalResolve(result);
         }) as typeof resolve;
 

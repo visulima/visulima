@@ -63,6 +63,7 @@ interface NativeProcessEvent {
     killed?: boolean;
     kind: string;
     message?: string;
+    pid?: number;
     text?: string;
 }
 
@@ -112,7 +113,11 @@ interface NativeBindings {
         options: NativeConcurrentRunnerOptions,
         onEvent: (event: NativeProcessEvent) => void,
     ) => Promise<NativeConcurrentRunResult>;
-    runConcurrentBatch: (commands: NativeConcurrentCommandConfig[], options: NativeConcurrentRunnerOptions) => Promise<NativeConcurrentRunResult>;
+    runConcurrentBatch: (
+        commands: NativeConcurrentCommandConfig[],
+        options: NativeConcurrentRunnerOptions,
+        onLifecycle?: ((event: NativeProcessEvent) => void) | null,
+    ) => Promise<NativeConcurrentRunResult>;
     topologicalSort: (graph: NativeTaskGraph) => string[];
 }
 
