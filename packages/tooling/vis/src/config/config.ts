@@ -1,7 +1,6 @@
 import { createHash } from "node:crypto";
 import { copyFileSync, readdirSync, readFileSync as fsReadFileSync, unlinkSync } from "node:fs";
 import { createRequire } from "node:module";
-import { tmpdir } from "node:os";
 
 import { findCacheDirSync } from "@visulima/find-cache-dir";
 import { ensureDirSync, isAccessibleSync, readJsonSync, writeJsonSync } from "@visulima/fs";
@@ -10,7 +9,6 @@ import { createJiti } from "jiti";
 
 import { VisConfigCycleError, VisConfigLoadError, VisConfigNotFoundError } from "../errors";
 import { mergeTargetWithInherit } from "../task/target-merge";
-import type { VisPlugin } from "../util/hooks";
 import type { VisConfig, VisTaskConfig } from "./types";
 
 /** Supported config file names, checked in priority order. */
@@ -265,7 +263,11 @@ const loadRawConfig = async (jiti: ReturnType<typeof createJiti>, configPath: st
     const extension = configPath.slice(configPath.lastIndexOf("."));
     // Copy to a unique temp file to bypass jiti's internal module cache
     // (jiti caches by file path and ignores moduleCache: false for ESM).
-    const temporaryConfigPath = join(tmpdir(), `vis-config-${hash}${extension}`);
+    // The temp file lives next to the original config so Node's module
+    // resolution chain still reaches the workspace's node_modules — required
+    // when pnpm hoists `@visulima/vis/config` to the workspace root and
+    // /tmp can't see it.
+    const temporaryConfigPath = join(dirname(configPath), `.vis-config-tmp-${hash}${extension}`);
 
     copyFileSync(configPath, temporaryConfigPath);
 
@@ -610,25 +612,18 @@ const defineTaskConfig = (config: VisTaskConfig): VisTaskConfig => config;
  */
 const defineConfig = (config: VisConfig): VisConfig => applyDefaults(config);
 
-/**
- * Type-safe helper for defining a vis plugin. Pure identity — exists
- * only so plugin authors get inference from the `VisPlugin` contract
- * without needing a `satisfies` annotation.
- */
-const definePlugin = (plugin: VisPlugin): VisPlugin => plugin;
-
 // Ship the OTel plugin from the `/config` subpath so users can
 // `import { otelPlugin } from "@visulima/vis/config"` — same module
 // they already import `defineConfig`/`definePlugin` from.
 export type { OtelPluginOptions } from "../plugins/otel";
 export { otelPlugin } from "../plugins/otel";
 export type { VisHooks, VisPlugin } from "../util/hooks";
+export { definePlugin } from "./define-plugin";
 export type { VisConfig, VisTaskConfig } from "./types";
 export {
     applyDefaults,
     CONFIG_FILES,
     defineConfig,
-    definePlugin,
     defineTaskConfig,
     findVisConfigFile,
     findVisTaskConfigFile,
