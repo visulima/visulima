@@ -1,11 +1,5 @@
-/**
- * Core type definitions for the `vis create` scaffolding system.
- */
-
-/** The kind of template being scaffolded. */
 export type TemplateType = "builtin:app" | "builtin:generator" | "builtin:library" | "builtin:monorepo" | "remote:git" | "remote:npm";
 
-/** Resolved information about a template after discovery. */
 export interface TemplateConfig {
     /** Extra CLI arguments forwarded to the template runner. */
     args: string[];

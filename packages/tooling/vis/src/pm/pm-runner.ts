@@ -1,7 +1,3 @@
-/**
- * Shared helper for executing package manager commands via native Rust bindings.
- */
-
 import { spawnSync } from "node:child_process";
 
 import { isAccessibleSync, readFileSync } from "@visulima/fs";

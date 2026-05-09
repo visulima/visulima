@@ -1,7 +1,3 @@
-/**
- * Unicode symbols for TUI output with ASCII fallbacks.
- */
-
 const isUnicodeSupported = (): boolean => {
     if (process.platform === "win32") {
         return Boolean(process.env["WT_SESSION"]) || process.env["TERM_PROGRAM"] === "vscode" || process.env["TERM"] === "xterm-256color";

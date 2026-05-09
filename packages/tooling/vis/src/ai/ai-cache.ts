@@ -8,13 +8,9 @@ import type { OutdatedEntry } from "../util/catalog";
 import { getVisCacheDir } from "../util/vis-paths";
 import type { AiAnalysisResult, AnalysisType } from "./types";
 
-// --- Constants ---
-
 const getCacheDirectory = (): string => join(getVisCacheDir(), "ai");
 const DEFAULT_TTL_MS = 60 * 60 * 1000; // 1 hour
 const SECURITY_TTL_MS = 30 * 60 * 1000; // 30 minutes
-
-// --- Types ---
 
 interface CacheEntry<T = AiAnalysisResult> {
     createdAt: number;
@@ -29,13 +25,9 @@ interface CacheStats {
     totalSizeBytes: number;
 }
 
-// --- Helpers ---
-
 const ensureCacheDirectory = (): void => {
     ensureDirSync(getCacheDirectory());
 };
-
-// --- Public API ---
 
 const buildCacheKey = (provider: string, analysisType: string, outdated: Pick<OutdatedEntry, "currentRange" | "packageName" | "targetVersion">[]): string => {
     const packages = outdated

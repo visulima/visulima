@@ -15,8 +15,6 @@ import type { AcceptedRisk, PackageReportData, SocketSecurityOptions } from "../
 import { DEFAULT_LOW_SCORE_THRESHOLD, fetchSocketReports, findAcceptedRisk } from "../security/socket-security";
 import { resolveIndentForExistingFile } from "./editorconfig";
 
-// --- Module-level regex constants (e18e/prefer-static-regex) ---
-
 const PREFIX_REGEX = /^([\^~]|>=|<=|[><=])/;
 // sonarjs/regex-complexity -- cannot simplify without breaking YAML key:value parsing
 // eslint-disable-next-line sonarjs/regex-complexity
@@ -34,7 +32,7 @@ const TRAILING_SLASH_REGEX = /\/$/;
 const JSON_INDENT_REGEX = /\n(\s+)/;
 
 const DEFAULT_DEP_TYPES = ["dependencies", "devDependencies", "optionalDependencies"];
-const VALID_DEP_TYPES = new Set([...DEFAULT_DEP_TYPES, "peerDependencies", "overrides", "pnpm.overrides", "resolutions"]);
+const VALID_DEP_TYPES = new Set([...DEFAULT_DEP_TYPES, "overrides", "peerDependencies", "pnpm.overrides", "resolutions"]);
 
 /**
  * Returns the backup directory inside node_modules/.cache/vis/backup.
@@ -49,8 +47,6 @@ const getBackupDir = (workspaceRoot: string): string => {
 
     return join(cacheDir, "backup");
 };
-
-// --- Types ---
 
 type UpdateTarget = "latest" | "minor" | "patch";
 
@@ -105,6 +101,7 @@ interface CatalogCheckOptions {
 interface ReadCatalogOptions {
     depFields?: string[];
     dev?: boolean;
+
     /**
      * Skip the workspace-internal-name filter so the registry pass also
      * queries packages whose names are owned by the local monorepo.
@@ -115,8 +112,6 @@ interface ReadCatalogOptions {
     peer?: boolean;
     prod?: boolean;
 }
-
-// --- Version utilities (backed by `semver` package) ---
 
 interface ParsedVersion {
     major: number;
@@ -249,8 +244,6 @@ const compareVersions = (a: ParsedVersion, b: ParsedVersion): number => {
 
 const isNewer = (current: ParsedVersion, target: ParsedVersion): boolean => compareVersions(target, current) > 0;
 
-// --- Glob matching ---
-
 const matchesPattern = (name: string, pattern: string): boolean => {
     // Collapse consecutive wildcards to prevent ReDoS, then convert glob to regex
     const collapsed = pattern.replaceAll(CONSECUTIVE_WILDCARDS_REGEX, "*");
@@ -272,8 +265,6 @@ const matchesFilters = (name: string, include: string[], exclude: string[]): boo
     return true;
 };
 
-// --- YAML parsing ---
-
 const parseYamlEntry = (trimmed: string): [string, string] | undefined => {
     const match = YAML_ENTRY_REGEX.exec(trimmed);
 
@@ -290,8 +281,6 @@ const parseYamlEntry = (trimmed: string): [string, string] | undefined => {
 
     return [key, value];
 };
-
-// --- parseCatalogsFromYaml helpers (sonarjs/cognitive-complexity) ---
 
 const setCatalogEntry = (catalogs: Map<string, Map<string, string>>, catalogName: string, key: string, value: string): void => {
     if (!catalogs.has(catalogName)) {
@@ -384,8 +373,6 @@ const parseCatalogsFromYaml = (content: string): Map<string, Map<string, string>
     return catalogs;
 };
 
-// --- Catalog reading: pnpm ---
-
 const hasPnpmCatalogs = (workspaceRoot: string): boolean => {
     const filePath = join(workspaceRoot, "pnpm-workspace.yaml");
 
@@ -409,8 +396,6 @@ const readPnpmCatalogs = (workspaceRoot: string): Map<string, Map<string, string
 
     return parseCatalogsFromYaml(content);
 };
-
-// --- Catalog reading: bun ---
 
 interface BunPackageJson {
     workspaces?: {
@@ -465,8 +450,6 @@ const readBunCatalogs = (workspaceRoot: string): Map<string, Map<string, string>
 
     return parseBunCatalogs(pkg);
 };
-
-// --- Catalog reading: npm/yarn (package.json deps) ---
 
 const parseCompositeCatalogName = (name: string): { depType: string; relativePath: string } | undefined => {
     const colonIndex = name.lastIndexOf(":");
@@ -739,8 +722,6 @@ const applyPackageJsonUpdates = (workspaceRoot: string, updates: OutdatedEntry[]
     }
 };
 
-// --- Unified catalog API ---
-
 type CatalogProvider = "bun" | "pnpm";
 
 const hasCatalogs = (workspaceRoot: string, packageManager?: string): boolean => {
@@ -779,8 +760,6 @@ const readCatalogs = (workspaceRoot: string, packageManager?: string, options?: 
 
     return catalogs;
 };
-
-// --- Internal workspace dep checking ---
 
 const collectInternalPackageVersions = (workspaceRoot: string, workspaceDirectories: string[]): Map<string, string> => {
     const versions = new Map<string, string>();
@@ -962,8 +941,6 @@ const collectInternalOutdated = (workspaceRoot: string, options?: InternalOutdat
     return { ignored: [...ignoredSet], outdated };
 };
 
-// --- .npmrc support ---
-
 interface NpmrcConfig {
     authTokens: Map<string, string>;
     defaultRegistry: string;
@@ -1066,8 +1043,6 @@ const getRegistryForPackage = (packageName: string, config: NpmrcConfig): { toke
     return { token, url: registryUrl };
 };
 
-// --- Registry ---
-
 interface RegistryVersionInfo {
     latest: string;
     /** Map of version string to ISO publish time (populated when minimumReleaseAge is set). */
@@ -1125,8 +1100,6 @@ const fetchPackageVersions = async (
         clearTimeout(timeout);
     }
 };
-
-// --- Security: OSV.dev API ---
 
 interface OsvVuln {
     affected?: {
@@ -1265,8 +1238,6 @@ const fetchVulnerabilities = async (
     }
 };
 
-// --- Per-package target resolution ---
-
 const packageModeRegexCache = new Map<string, RegExp>();
 
 const resolvePackageTarget = (packageName: string, globalTarget: UpdateTarget, packageMode?: Record<string, UpdateTarget>): UpdateTarget => {
@@ -1305,8 +1276,6 @@ const resolvePackageTarget = (packageName: string, globalTarget: UpdateTarget, p
 
     return globalTarget;
 };
-
-// --- Target version resolution ---
 
 interface MaturityOptions {
     minimumReleaseAge?: number;
@@ -1437,8 +1406,6 @@ const findTargetVersion = (
     return filterCandidates(versions, current, includePrerelease, minAgeMs, maturity?.publishTimes, constraint, channel);
 };
 
-// --- Check outdated ---
-
 interface CheckOutdatedResult {
     /** Total number of unique packages checked (after filtering). */
     checkedCount: number;
@@ -1448,8 +1415,6 @@ interface CheckOutdatedResult {
     ignored: string[];
     outdated: OutdatedEntry[];
 }
-
-// --- checkOutdated helpers (sonarjs/cognitive-complexity) ---
 
 const collectEntries = (
     catalogs: Map<string, Map<string, string>>,
@@ -1812,8 +1777,6 @@ const checkOutdated = async (
     return result;
 };
 
-// --- Backup & Rollback ---
-
 const getCatalogFilePath = (workspaceRoot: string, packageManager?: string): string => {
     if (packageManager === "bun") {
         return join(workspaceRoot, "package.json");
@@ -1949,8 +1912,6 @@ const hasBackup = (workspaceRoot: string, packageManager?: string): boolean => {
         return false;
     }
 };
-
-// --- Output formatting ---
 
 type OutputFormat = "json" | "minimal" | "table";
 
@@ -2133,8 +2094,6 @@ const formatSummary = (outdated: OutdatedEntry[]): string => {
     return renderToString(React.createElement(Box, { flexDirection: "column", paddingX: 1 }, ...children), { columns });
 };
 
-// --- Apply updates ---
-
 const buildLineMatchRegex = (packageName: string, range: string): RegExp => {
     const escapedName = packageName.replaceAll(REGEX_SPECIAL_CHARS_REGEX, String.raw`\$&`);
     const escapedRange = range.replaceAll(REGEX_SPECIAL_CHARS_REGEX, String.raw`\$&`);
@@ -2147,8 +2106,6 @@ const lineMatchesPackage = (trimmed: string, packageName: string, range: string)
 
     return regex.test(trimmed);
 };
-
-// --- applyPnpmCatalogUpdates helpers (sonarjs/cognitive-complexity) ---
 
 const buildUpdateMap = (updates: OutdatedEntry[]): Map<string, Map<string, { newRange: string; oldRange: string }>> => {
     const updateMap = new Map<string, Map<string, { newRange: string; oldRange: string }>>();
@@ -2330,8 +2287,6 @@ const applyCatalogUpdates = (
     return backupPath;
 };
 
-// --- Interactive selection ---
-
 const promptPackageSelection = async (outdated: OutdatedEntry[]): Promise<OutdatedEntry[]> => {
     const rl = createInterface({ input: process.stdin, output: process.stdout });
 
@@ -2386,8 +2341,6 @@ const promptPackageSelection = async (outdated: OutdatedEntry[]): Promise<Outdat
 
     return [];
 };
-
-// --- Changelog ---
 
 const GITHUB_REPO_REGEX = /github\.com[/:]([\w.-]+)\/([\w.-]+?)(?:\.git|\/|$)/;
 
@@ -2458,8 +2411,6 @@ const fetchChangelogInfo = async (packages: OutdatedEntry[], timeoutMs: number =
 
     return results;
 };
-
-// --- All exports at end of file (import/exports-last) ---
 
 export type {
     CatalogCheckOptions,
