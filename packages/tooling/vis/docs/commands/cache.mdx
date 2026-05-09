@@ -9,14 +9,16 @@ Manage the local task cache: list entries, prune old ones, print sizes, and diag
 
 ## Subcommands
 
-| Command                 | Description                                                            |
-| ----------------------- | ---------------------------------------------------------------------- |
-| `vis cache list`        | List every cache entry                                                 |
-| `vis cache size`        | Print on-disk footprint                                                |
-| `vis cache clean`       | Remove every cache entry                                               |
-| `vis cache prune`       | Evict by age, size, or count                                           |
-| `vis cache hash <task>` | Print the recorded hash + per-bucket breakdown                         |
-| `vis cache why <task>`  | Diff the task's hash inputs against the previous run to explain a miss |
+| Command                   | Description                                                            |
+| ------------------------- | ---------------------------------------------------------------------- |
+| `vis cache list`          | List every cache entry                                                 |
+| `vis cache size`          | Print on-disk footprint                                                |
+| `vis cache clean`         | Remove every cache entry                                               |
+| `vis cache prune`         | Evict by age, size, or count                                           |
+| `vis cache hash <task>`   | Print the recorded hash + per-bucket breakdown                         |
+| `vis cache why <task>`    | Diff the task's hash inputs against the previous run to explain a miss |
+| `vis cache verify <task>` | Diff the cached entry against the live workspace to detect drift       |
+| `vis cache doctor`        | Probe the configured remote cache (HTTP / REAPI) and report capability |
 
 All subcommands accept `--cache-dir <path>` to point at a non-default cache location.
 
@@ -103,3 +105,31 @@ vis cache size --format=json    # { totalBytes, entryCount }
 ## `vis cache clean`
 
 Removes every entry. Prompts for confirmation when the cache directory is outside the workspace; pass `--force` to skip the prompt (useful in CI). `--dry-run` previews without deleting.
+
+`--type` scopes the wipe: `task` (the workspace task cache), `ai` (AI-response cache used by `vis ai`), `socket` (Socket.dev report cache used by `vis audit`), or `all` (default).
+
+## `vis cache verify <task>`
+
+Catches the "cache restored, but the workspace doesn't match" class of bugs. Extracts the cached entry into a tmp directory and diffs each output file's content, mode, and mtime against the live workspace.
+
+```bash
+vis cache verify @myorg/app:build
+vis cache verify @myorg/app:build --format=json     # { status: "ok" | "drift", entries: [...] }
+vis cache verify @myorg/app:build --cache-dir=.alt  # verify against a non-default cache
+vis cache verify @myorg/app:build --scope=all       # search shared + worktree caches
+```
+
+Exits 1 on any drift (changed content, mode, or mtime) or if a cached output is missing from the workspace. Pairs with the cache-restoration fidelity work (timestamps, permissions, deterministic ordering) — use this in CI on a hot path to catch regressions in the archive layer.
+
+## `vis cache doctor`
+
+Probe the configured remote cache and report reachability, latency, and negotiated capabilities. HTTP backends get a HEAD probe; REAPI backends get a `Capabilities` RPC and report digests + max batch size.
+
+```bash
+vis cache doctor                                                # uses remoteCache from vis.config.ts
+vis cache doctor --url=grpcs://cache.example.com:443 --backend=reapi  # ad-hoc override
+vis cache doctor --json                                         # machine-readable for CI gating
+vis cache doctor --timeout=10000                                # bump probe timeout (default 5s)
+```
+
+Useful as a CI step before relying on a remote cache: a non-zero exit means the run will silently fall back to local-only caching, so failing fast is usually cheaper than a slow build.
