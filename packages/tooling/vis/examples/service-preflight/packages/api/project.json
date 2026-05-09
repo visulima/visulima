@@ -1,0 +1,42 @@
+{
+    "projectType": "library",
+    "tags": ["category:service"],
+    "targets": {
+        "db": {
+            "command": "node scripts/tcp-server.mjs 5432 db",
+            "preset": "server",
+            "options": {
+                "service": {
+                    "port": 5432,
+                    "env": { "DATABASE_URL": "postgres://127.0.0.1:5432/app" },
+                    "readiness": { "tcp": { "port": 5432, "timeoutMs": 10000 } }
+                }
+            }
+        },
+        "redis": {
+            "command": "node scripts/tcp-server.mjs 6379 redis",
+            "preset": "server",
+            "options": {
+                "service": {
+                    "port": 6379,
+                    "env": { "REDIS_URL": "redis://127.0.0.1:6379" },
+                    "readiness": { "tcp": { "port": 6379, "timeoutMs": 10000 } }
+                }
+            }
+        },
+        "queue": {
+            "command": "node scripts/tcp-server.mjs 6633 queue",
+            "preset": "server",
+            "dependsOn": [
+                { "target": "db" }
+            ],
+            "options": {
+                "service": {
+                    "port": 6633,
+                    "env": { "QUEUE_URL": "amqp://127.0.0.1:6633" },
+                    "readiness": { "tcp": { "port": 6633, "timeoutMs": 10000 } }
+                }
+            }
+        }
+    }
+}

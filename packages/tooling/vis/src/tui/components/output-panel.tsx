@@ -20,9 +20,65 @@ const getDisplayInfo = (status: TaskRowData["status"]): { color: string; icon: s
     return getStatusInfo(status);
 };
 
+export interface DeriveBottomTitleInput {
+    autoScroll: boolean;
+    focused: boolean;
+    interactiveMode: boolean;
+    showFullscreenHint: boolean;
+    statusValue: TaskRowData["status"];
+    supportsInteractive: boolean;
+    taskId: string | null;
+}
+
+/**
+ * Pure derivation of the panel's bottom-border hint. Extracted so the
+ * keyboard-discoverable surface (`f FOLLOW`, `PAUSED`, `i INPUT`) can be
+ * unit-tested without mounting the component.
+ */
+export const deriveBottomTitle = ({
+    autoScroll,
+    focused,
+    interactiveMode,
+    showFullscreenHint,
+    statusValue,
+    supportsInteractive,
+    taskId,
+}: DeriveBottomTitleInput): string | undefined => {
+    if (!taskId) {
+        return undefined;
+    }
+
+    if (interactiveMode) {
+        return "Esc cancel | Enter send";
+    }
+
+    const followHint = autoScroll ? "" : "  PAUSED (f resume)";
+    const inputHint = supportsInteractive ? "  i INPUT" : "";
+
+    if (focused && statusValue === "running" && showFullscreenHint) {
+        return `\u23CE FULLSCREEN${inputHint}  f FOLLOW${followHint}`;
+    }
+
+    if (focused && statusValue === "running") {
+        return `f FOLLOW${inputHint}${followHint}`;
+    }
+
+    if (focused && showFullscreenHint) {
+        return `<enter> full screen${followHint}`;
+    }
+
+    if (focused) {
+        return followHint || undefined;
+    }
+
+    return "<tab> or <enter> to focus";
+};
+
 // ── Component ───────────────────────────────────────────────────────────
 
 interface OutputPanelProps {
+    /** Auto-follow output as new lines arrive. Defaults to true. */
+    autoScroll?: boolean;
     /** Duration in ms (for top-right border display). */
     duration?: number;
     focused: boolean;
@@ -33,10 +89,26 @@ interface OutputPanelProps {
     /** Whether to show "&lt;enter> full screen" hint in bottom border. */
     showFullscreenHint?: boolean;
     status: TaskRowData["status"] | undefined;
+    /**
+     * Whether the rendered stream supports `i` interactive input.
+     * False for service log views (no PTY behind them). Defaults to true.
+     */
+    supportsInteractive?: boolean;
     taskId: string | null;
 }
 
-const OutputPanel = ({ duration, focused, interactiveMode, output, scrollRef, showFullscreenHint, status, taskId }: OutputPanelProps): React.JSX.Element => {
+const OutputPanel = ({
+    autoScroll = true,
+    duration,
+    focused,
+    interactiveMode,
+    output,
+    scrollRef,
+    showFullscreenHint,
+    status,
+    supportsInteractive = true,
+    taskId,
+}: OutputPanelProps): React.JSX.Element => {
     const statusValue = status ?? "pending";
     const { icon: statusIcon } = getDisplayInfo(statusValue);
 
@@ -58,25 +130,20 @@ const OutputPanel = ({ duration, focused, interactiveMode, output, scrollRef, sh
     })();
 
     // Build border title: "✓ task-name" on top-left (always short)
-    const topTitle = taskId ? `${statusIcon}  ${taskId}` : undefined;
+    const topTitle = taskId ? `${statusIcon} ${taskId}` : undefined;
 
     // Duration on top-right
     const topRightTitle = duration === undefined ? undefined : formatMs(duration);
 
-    // Bottom hint: context-dependent
-    const bottomTitle = taskId
-        ? interactiveMode
-            ? "Esc cancel | Enter send"
-            : focused && statusValue === "running" && showFullscreenHint
-                ? "\u23CE FULLSCREEN  i INPUT"
-                : focused && statusValue === "running"
-                    ? "i INPUT"
-                    : focused && showFullscreenHint
-                        ? "<enter> full screen"
-                        : focused
-                            ? undefined
-                            : "<tab> or <enter> to focus"
-        : undefined;
+    const bottomTitle = deriveBottomTitle({
+        autoScroll,
+        focused,
+        interactiveMode: interactiveMode ?? false,
+        showFullscreenHint: showFullscreenHint ?? false,
+        statusValue,
+        supportsInteractive,
+        taskId,
+    });
 
     // Empty state
     if (!taskId) {
@@ -98,7 +165,13 @@ const OutputPanel = ({ duration, focused, interactiveMode, output, scrollRef, sh
     }
 
     // Split output into lines for scrolling
-    const lines = output ? output.split("\n").map((l) => l.replace(/\r$/, "")) : [];
+    const lines: string[] = [];
+
+    if (output) {
+        for (const segment of output.split("\n")) {
+            lines.push(segment.endsWith("\r") ? segment.slice(0, -1) : segment);
+        }
+    }
 
     // Waiting state
     if (!output && (statusValue === "running" || statusValue === "pending")) {
@@ -115,7 +188,7 @@ const OutputPanel = ({ duration, focused, interactiveMode, output, scrollRef, sh
                 paddingY={1}
             >
                 <Box alignItems="center" flexGrow={1} justifyContent="center">
-                    <Text dimColor>Waiting for task output...</Text>
+                    <Text dimColor>Waiting for task output…</Text>
                 </Box>
             </Box>
         );
@@ -131,19 +204,22 @@ const OutputPanel = ({ duration, focused, interactiveMode, output, scrollRef, sh
             flexDirection="column"
             flexGrow={1}
         >
-            {/* Output content — scrollable */}
+            {/* Output content (scrollable). Rendered as a single Text
+                node so we don't need per-line keys: log content is
+                append-only and any content/index-based key would either
+                collide on duplicate blank lines or be a synthetic stable
+                id with no semantic meaning. ScrollView measures the
+                resulting block as N lines for follow/scrollbar purposes. */}
             <Box flexGrow={1} flexShrink={1} paddingY={1}>
-                <ScrollView flexGrow={1} followOutput paddingX={2} ref={scrollRef} scrollbar scrollbarColor="gray" scrollbarStyle="block">
-                    {lines.map((line, i) => (
-                        <Text key={String(i)}>{line}</Text>
-                    ))}
+                <ScrollView flexGrow={1} followOutput={autoScroll} paddingX={2} ref={scrollRef} scrollbar scrollbarColor="gray" scrollbarStyle="block">
+                    <Text>{lines.join("\n")}</Text>
                 </ScrollView>
             </Box>
-            {/* Interactive mode indicator — keystrokes are forwarded to the PTY */}
+            {/* Interactive mode indicator: keystrokes are forwarded to the PTY */}
             {interactiveMode && (
                 <Box flexShrink={0} justifyContent="center" paddingX={1}>
                     <Text bold color="yellow">
-                        INTERACTIVE — keystrokes forwarded to task — Esc to exit
+                        INTERACTIVE | keystrokes forwarded to task | Esc to exit
                     </Text>
                 </Box>
             )}

@@ -18,9 +18,19 @@ interface TaskTableProps {
  * completed tasks with status icons, and a pending task preview.
  */
 const TaskTable = ({ parallelSlots, rows, totalCompleted, totalRows }: TaskTableProps): React.JSX.Element => {
-    const running = rows.filter((r) => r.status === "running");
-    const done = rows.filter((r) => r.status !== "pending" && r.status !== "running");
-    const pending = rows.filter((r) => r.status === "pending");
+    const running: TaskRowData[] = [];
+    const done: TaskRowData[] = [];
+    const pending: TaskRowData[] = [];
+
+    for (const row of rows) {
+        if (row.status === "running") {
+            running.push(row);
+        } else if (row.status === "pending") {
+            pending.push(row);
+        } else {
+            done.push(row);
+        }
+    }
 
     // Calculate padding rows to prevent layout jumping
     const paddingCount

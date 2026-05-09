@@ -120,6 +120,20 @@ export const shouldRunInCI = (options: VisTargetOptions | undefined, isCi: boole
 };
 
 /**
+ * Resolves a task's effective working directory. Returns the workspace
+ * root when `runFromWorkspaceRoot` is set, otherwise resolves
+ * `projectRoot` — keeping absolute paths as-is and prefixing relative
+ * ones with the workspace root.
+ */
+export const resolveTaskCwd = (workspaceRoot: string, projectRoot: string | undefined, runFromWorkspaceRoot: boolean): string => {
+    if (runFromWorkspaceRoot || !projectRoot) {
+        return workspaceRoot;
+    }
+
+    return projectRoot.startsWith("/") ? projectRoot : `${workspaceRoot}/${projectRoot}`;
+};
+
+/**
  * Resolves the `envFile` target option into a merged env map.
  *
  * - `string` → load that single file

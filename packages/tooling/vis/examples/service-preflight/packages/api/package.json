@@ -1,0 +1,10 @@
+{
+    "name": "api",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "db": "node scripts/tcp-server.mjs 5432 db",
+        "queue": "node scripts/tcp-server.mjs 6633 queue",
+        "redis": "node scripts/tcp-server.mjs 6379 redis"
+    }
+}

@@ -74,6 +74,8 @@ When `vis run` builds the task graph, it walks every task whose target carries `
 
 Multiple services contributing env to the same dependent are merged in deterministic alphabetical order — last writer wins, so `@app/cache` overrides `@app/api`.
 
+Auto-started registry-mode services persist past the run by design (so the next `vis run` reuses them). Pass `vis run --stop-services` to extend the run's clean/`q`/Ctrl+C cleanup to those services for the duration of a single run — handy when you want a fully ephemeral inner loop without giving up the registry's cross-run sharing.
+
 ## Registry layout
 
 Per-workspace registry directory: `~/.vis-services/<sha256(workspaceRoot)[:12]>/`. Each entry is a 0o600 JSON file named after the slugified target id (`@app/api:db` → `@app_api__db.json`). Atomic writes (temp-then-rename) guard against half-written files; an exclusive-create file lock serializes concurrent `start`/`stop` for the same id.

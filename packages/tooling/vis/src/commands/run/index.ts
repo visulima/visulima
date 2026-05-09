@@ -160,7 +160,7 @@ const run: Command = {
         },
         {
             defaultValue: false,
-            description: "Render the most-recent run's saved summary (from .task-runner/last-summary.json) and exit without executing any tasks",
+            description: "Render the most-recent run's saved summary (from .vis/last-summary.json) and exit without executing any tasks",
             name: "last-details",
             type: Boolean,
         },
@@ -182,6 +182,30 @@ const run: Command = {
                 "Comma-separated tags this runner advertises (e.g. 'gpu,slow'). Tasks declaring `options.runnerTags` only run when at least one tag overlaps. Untagged tasks always run. Falls back to VIS_RUNNER_TAGS env var.",
             name: "runner-tags",
             type: String,
+        },
+        {
+            // One knob for the service-preflight feature. Falls back to
+            // `vis.config.ts → run.services` and finally to a TTY-aware
+            // default (auto-pick mode in a terminal, off in CI / pipes).
+            // Values:
+            //   auto       — pick by task: `dev` → ephemeral, others → persistent
+            //   ephemeral  — services die with the run (no registry entry)
+            //   persistent — services persist in the registry across runs
+            //   off        — skip auto-start; print today's diagnostic and abort
+            description: "Auto-start service deps. One of: auto | ephemeral | persistent | off. Defaults to `auto` in TTY, `off` in CI.",
+            name: "services",
+            type: String,
+        },
+        {
+            // Opt-in cleanup for registry-mode services this run started.
+            // Ephemeral services already die with the run; this only
+            // affects services that would otherwise persist (the ones
+            // surfaced by today's "N service(s) started in the background"
+            // hint). Applies on every exit path: clean finish, `q`, Ctrl+C.
+            defaultValue: false,
+            description: "Stop services this run auto-started in registry mode when the run exits (clean, q, or Ctrl+C). Ephemeral services already die with the run.",
+            name: "stop-services",
+            type: Boolean,
         },
     ],
 };
@@ -210,9 +234,11 @@ export type RunOptions = CreateOptions<{
     "retry-budget": number | undefined;
     reverse: boolean | undefined;
     "runner-tags": string | undefined;
+    services: string | undefined;
     "skip-cache": string | undefined;
     "skip-constraints": boolean | undefined;
     "skip-toolchain": boolean | undefined;
+    "stop-services": boolean | undefined;
     "strict-env": boolean | undefined;
     summarize: boolean | undefined;
     watch: boolean | undefined;

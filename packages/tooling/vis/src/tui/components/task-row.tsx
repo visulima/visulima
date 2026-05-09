@@ -10,6 +10,8 @@ import { CROSS, DASH, ELLIPSIS, TICK } from "../symbols";
 export interface TaskRowData {
     duration?: number;
     elapsed?: number;
+    /** True for long-running tasks (dev/serve/watch). Rendered like a ready service: green dot + "running". */
+    persistent?: boolean;
     status: "pending" | "running" | TaskStatus;
     taskId: string;
 }
