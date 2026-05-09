@@ -65,7 +65,7 @@ describe(compareDuration, () => {
     it("should report faster than average when current run is quicker", () => {
         expect.assertions(1);
 
-        const runsDir = join(tmpDir, ".task-runner", "runs");
+        const runsDir = join(tmpDir, ".vis", "runs");
 
         mkdirSync(runsDir, { recursive: true });
 

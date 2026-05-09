@@ -13,6 +13,7 @@ import { isCacheDirectoryInsideWorkspace, resolveSharedCacheDirectory } from "..
 import { pail } from "../../io/logger";
 import { diffHashDetails, findTaskInSummary, readPreviousRunSummary, readRunSummaryById } from "../../report/run-summary-utils";
 import { clearSocketCache, getSocketCacheStats } from "../../security/socket-security";
+import { getVisRunsDir, getVisWorkspaceDataDir } from "../../util/vis-paths";
 import type { CacheCleanOptions, CacheHashOptions, CacheListOptions, CachePruneOptions, CacheSizeOptions, CacheVerifyOptions, CacheWhyOptions } from "./index";
 
 /**
@@ -416,7 +417,10 @@ interface RunWhyOptions {
 export const runWhy = async (taskId: string, options: RunWhyOptions, logger: Console): Promise<void> => {
     const { format, runId, workspaceRoot } = options;
 
-    const summary = runId === undefined ? await readLastRunSummary(workspaceRoot) : await readRunSummaryById(workspaceRoot, runId);
+    const summary
+        = runId === undefined
+            ? await readLastRunSummary(workspaceRoot, { dataDirectory: getVisWorkspaceDataDir(workspaceRoot) })
+            : await readRunSummaryById(workspaceRoot, runId);
 
     if (!summary) {
         if (format === "json") {
@@ -427,9 +431,9 @@ export const runWhy = async (taskId: string, options: RunWhyOptions, logger: Con
         }
 
         if (runId === undefined) {
-            pail.error("No previous run summary found. Run a task first to populate `.task-runner/last-summary.json`.");
+            pail.error(`No previous run summary found. Run a task first to populate \`${getLastRunSummaryPath(workspaceRoot, { dataDirectory: getVisWorkspaceDataDir(workspaceRoot) })}\`.`);
         } else {
-            pail.error(`Run summary "${runId}" not found in .task-runner/runs/.`);
+            pail.error(`Run summary "${runId}" not found in ${getVisRunsDir(workspaceRoot)}/.`);
         }
 
         process.exitCode = 1;
@@ -554,7 +558,7 @@ export const runWhy = async (taskId: string, options: RunWhyOptions, logger: Con
     }
 
     logger.info("");
-    pail.info(`Last summary file: ${getLastRunSummaryPath(workspaceRoot)}`);
+    pail.info(`Last summary file: ${getLastRunSummaryPath(workspaceRoot, { dataDirectory: getVisWorkspaceDataDir(workspaceRoot) })}`);
 };
 
 interface RunHashOptions {
@@ -566,7 +570,10 @@ interface RunHashOptions {
 export const runHash = async (taskId: string, options: RunHashOptions, logger: Console): Promise<void> => {
     const { format, runId, workspaceRoot } = options;
 
-    const summary = runId === undefined ? await readLastRunSummary(workspaceRoot) : await readRunSummaryById(workspaceRoot, runId);
+    const summary
+        = runId === undefined
+            ? await readLastRunSummary(workspaceRoot, { dataDirectory: getVisWorkspaceDataDir(workspaceRoot) })
+            : await readRunSummaryById(workspaceRoot, runId);
 
     if (!summary) {
         if (format === "json") {
@@ -577,9 +584,9 @@ export const runHash = async (taskId: string, options: RunHashOptions, logger: C
         }
 
         if (runId === undefined) {
-            pail.error("No previous run summary found. Run a task first to populate `.task-runner/last-summary.json`.");
+            pail.error(`No previous run summary found. Run a task first to populate \`${getLastRunSummaryPath(workspaceRoot, { dataDirectory: getVisWorkspaceDataDir(workspaceRoot) })}\`.`);
         } else {
-            pail.error(`Run summary "${runId}" not found in .task-runner/runs/.`);
+            pail.error(`Run summary "${runId}" not found in ${getVisRunsDir(workspaceRoot)}/.`);
         }
 
         process.exitCode = 1;
@@ -1023,7 +1030,7 @@ const resolveCacheDirectoryFromContext = (
     const scope = parseScope(options.scope as string | undefined);
     const optionsCacheDir = options.cacheDir as string | undefined;
 
-    // Worktree-local: this checkout's `.task-runner-cache`. Disable
+    // Worktree-local: this checkout's `.vis/cache`. Disable
     // worktree-share by passing `sharedWorktreeCache: false` so the
     // resolver returns the literal workspace_root path.
     const worktreeDirectory = resolveSharedCacheDirectory(resolvedWorkspaceRoot, optionsCacheDir, taskRunnerOptions.cacheDirectory, false);

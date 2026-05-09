@@ -1,6 +1,6 @@
 ---
 title: "vis replay"
-description: "Replay a previous task run from .task-runner/runs/ — show task results without re-executing"
+description: "Replay a previous task run from .vis/runs/ — show task results without re-executing"
 ---
 
 # vis replay
@@ -18,7 +18,7 @@ vis replay --format=json                    # machine-readable
 
 ## Where summaries come from
 
-Each `vis run --summarize` writes a JSON summary into `.task-runner/runs/<id>.json` and overwrites `.task-runner/last-summary.json`. `vis replay` reads from those files only — it never re-executes tasks. To make a run replayable later, pass `--summarize` (or set it as a default in CI). The most recent run is always available without `--summarize` because `last-summary.json` is written for every run.
+Each `vis run --summarize` writes a JSON summary into `.vis/runs/<id>.json` and overwrites `.vis/last-summary.json`. `vis replay` reads from those files only — it never re-executes tasks. To make a run replayable later, pass `--summarize` (or set it as a default in CI). The most recent run is always available without `--summarize` because `last-summary.json` is written for every run.
 
 ## Loading a specific run
 

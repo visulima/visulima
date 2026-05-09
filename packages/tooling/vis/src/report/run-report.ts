@@ -4,6 +4,7 @@ import { isAccessibleSync, readJsonSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 import type { TaskResults } from "@visulima/task-runner";
 
+import { getVisRunsDir } from "../util/vis-paths";
 import type { LoadedRunSummary } from "./types";
 
 /**
@@ -64,7 +65,7 @@ export const formatTimingSummary = (results: TaskResults, durationMs: number): s
 };
 
 /**
- * Reads every `.task-runner/runs/*.json` once and returns the parsed
+ * Reads every `.vis/runs/*.json` once and returns the parsed
  * array. Callers that need to iterate historical runs (timing average,
  * flakiness analysis) should call this once per command and feed the
  * result into the downstream helpers rather than re-reading the
@@ -74,7 +75,7 @@ export const formatTimingSummary = (results: TaskResults, durationMs: number): s
  * summary shouldn't take down the whole analysis.
  */
 export const loadRunSummaries = (workspaceRoot: string): LoadedRunSummary[] => {
-    const runsDir = join(workspaceRoot, ".task-runner", "runs");
+    const runsDir = getVisRunsDir(workspaceRoot);
 
     if (!isAccessibleSync(runsDir)) {
         return [];

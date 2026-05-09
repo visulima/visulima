@@ -24,7 +24,7 @@ All subcommands accept `--cache-dir <path>` to point at a non-default cache loca
 
 ## Cache scope and worktrees
 
-When the workspace is a linked git worktree (created with `git worktree add`), vis defaults to a **shared** cache at `<mainWorktreeRoot>/.task-runner-cache`. Sibling worktrees driven by parallel agents then share one cache instead of rebuilding the same hash N times. Single-checkout repos behave exactly as before.
+When the workspace is a linked git worktree (created with `git worktree add`), vis defaults to a **shared** cache at `<mainWorktreeRoot>/.vis/cache`. Sibling worktrees driven by parallel agents then share one cache instead of rebuilding the same hash N times. Single-checkout repos behave exactly as before.
 
 Toggle the behaviour from `vis.config.ts`:
 
@@ -39,7 +39,7 @@ export default {
 | Value              | Cache directory                                                             |
 | ------------------ | --------------------------------------------------------------------------- |
 | `shared` (default) | The main worktree's cache (or this checkout when not in a linked worktree). |
-| `worktree`         | This checkout's local `.task-runner-cache`, never the main one.             |
+| `worktree`         | This checkout's local `.vis/cache`, never the main one.                     |
 | `all`              | Operate on both directories (skipped when they resolve to the same path).   |
 
 ```bash
@@ -60,14 +60,14 @@ When a task you expected to be cached re-ran, ask vis what changed:
 vis cache why @myorg/app:build
 ```
 
-Reads `.task-runner/last-summary.json` (always written after each non-aborted run), finds the task, and diffs its `hashDetails` (`command`, `nodes`, `runtime`, `implicitDeps`) against the previous run. Output highlights which bucket rotated and which keys inside it were added, changed, or removed.
+Reads `.vis/last-summary.json` (always written after each non-aborted run), finds the task, and diffs its `hashDetails` (`command`, `nodes`, `runtime`, `implicitDeps`) against the previous run. Output highlights which bucket rotated and which keys inside it were added, changed, or removed.
 
 ```bash
 vis cache why @myorg/app:build --json     # machine-readable, stable shape for CI
 vis cache why @myorg/app:build --run <id> # diff against a specific historical run
 ```
 
-Diff requires a prior run to compare against. Past runs only land in `.task-runner/runs/` when invoked with `--summarize`, so for reliable diffs add `--summarize` to the runs you might want to inspect later (or set it as a default in CI).
+Diff requires a prior run to compare against. Past runs only land in `.vis/runs/` when invoked with `--summarize`, so for reliable diffs add `--summarize` to the runs you might want to inspect later (or set it as a default in CI).
 
 ## `vis cache hash <task>`
 

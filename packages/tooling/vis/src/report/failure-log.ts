@@ -4,11 +4,10 @@ import { readFile } from "node:fs/promises";
 import { join } from "@visulima/path";
 import type { LifeCycleInterface, Task, TaskStatus } from "@visulima/task-runner";
 
+import { getVisLastFailuresDir } from "../util/vis-paths";
 import type { FailureLogEntry } from "./types";
 
-const FAILURE_LOG_DIRNAME = "last-failures";
-
-export const getFailureLogDirectory = (workspaceRoot: string): string => join(workspaceRoot, ".task-runner", FAILURE_LOG_DIRNAME);
+export const getFailureLogDirectory = (workspaceRoot: string): string => getVisLastFailuresDir(workspaceRoot);
 
 export const getFailureLogPath = (workspaceRoot: string, taskId: string): string =>
     join(getFailureLogDirectory(workspaceRoot), `${encodeURIComponent(taskId)}.json`);
@@ -20,7 +19,7 @@ export const getFailureLogPath = (workspaceRoot: string, taskId: string): string
  * terminal output is dropped between runs. The AI-fix pipeline needs
  * the failure logs after the run is over (especially in CI where the
  * scrollback is on a different machine), so this lifecycle writes one
- * file per failing task to `.task-runner/last-failures/`.
+ * file per failing task to `.vis/last-failures/`.
  *
  * Files are overwritten on each new failure of the same task so the
  * directory stays bounded — there's only ever one entry per task ID.

@@ -2,7 +2,7 @@ import { resolve } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { DEFAULT_CACHE_DIRECTORY_NAME, isCacheDirectoryInsideWorkspace, resolveCacheDirectory } from "../../src/cache/cache-directory";
+import { DEFAULT_WORKSPACE_CACHE_DIRECTORY, isCacheDirectoryInsideWorkspace, resolveCacheDirectory } from "../../src/cache/cache-directory";
 
 // Use a non-relative POSIX-ish workspace root for the tests. `resolve()` on
 // both POSIX and Windows treats `/ws` as absolute enough to build reproducible
@@ -29,13 +29,13 @@ describe(resolveCacheDirectory, () => {
 
     it("falls back to the workspace default when neither is set", () => {
         expect.assertions(1);
-        expect(resolveCacheDirectory(WS, undefined, undefined)).toBe(resolve(WS, DEFAULT_CACHE_DIRECTORY_NAME));
+        expect(resolveCacheDirectory(WS, undefined, undefined)).toBe(resolve(WS, DEFAULT_WORKSPACE_CACHE_DIRECTORY));
     });
 
     it("treats empty strings as unset", () => {
         expect.assertions(2);
 
-        const expected = resolve(WS, DEFAULT_CACHE_DIRECTORY_NAME);
+        const expected = resolve(WS, DEFAULT_WORKSPACE_CACHE_DIRECTORY);
 
         expect(resolveCacheDirectory(WS, "", undefined)).toBe(expected);
         expect(resolveCacheDirectory(WS, undefined, "")).toBe(expected);
@@ -109,7 +109,7 @@ describe(resolveCacheDirectory, () => {
 
             process.env["VIS_CACHE_DIRECTORY"] = "";
 
-            expect(resolveCacheDirectory(WS, undefined, undefined)).toBe(resolve(WS, DEFAULT_CACHE_DIRECTORY_NAME));
+            expect(resolveCacheDirectory(WS, undefined, undefined)).toBe(resolve(WS, DEFAULT_WORKSPACE_CACHE_DIRECTORY));
         });
 
         it("resolves a relative env value against the workspace root", () => {
@@ -125,7 +125,7 @@ describe(resolveCacheDirectory, () => {
 describe(isCacheDirectoryInsideWorkspace, () => {
     it("returns true for a direct child of the workspace", () => {
         expect.assertions(1);
-        expect(isCacheDirectoryInsideWorkspace(resolve(WS, ".task-runner-cache"), WS)).toBe(true);
+        expect(isCacheDirectoryInsideWorkspace(resolve(WS, ".vis/cache"), WS)).toBe(true);
     });
 
     it("returns true for a deeply nested child", () => {

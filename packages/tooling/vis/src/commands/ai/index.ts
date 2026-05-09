@@ -50,7 +50,7 @@ const aiFix: Command = {
     options: [
         formatOption,
         {
-            description: "Use a specific run ID from .task-runner/runs/ instead of the latest run",
+            description: "Use a specific run ID from .vis/runs/ instead of the latest run",
             name: "run",
             type: String,
         },
@@ -125,7 +125,7 @@ const aiHeal: Command = {
             type: Boolean,
         },
         {
-            description: "Use a specific run ID from .task-runner/runs/ instead of the latest run",
+            description: "Use a specific run ID from .vis/runs/ instead of the latest run",
             name: "run",
             type: String,
         },
@@ -146,7 +146,7 @@ const aiHealAccept: Command = {
     name: "accept",
     options: [
         {
-            description: "Use a specific run ID from .task-runner/runs/ instead of the latest run",
+            description: "Use a specific run ID from .vis/runs/ instead of the latest run",
             name: "run",
             type: String,
         },

@@ -10,7 +10,7 @@ export type ReplayOptions = CreateOptions<{
 }>;
 
 const replay: Command = {
-    description: "Replay a previous task run from .task-runner/runs/ — show task results without re-executing",
+    description: "Replay a previous task run from .vis/runs/ — show task results without re-executing",
     examples: [
         ["vis replay", "Show the most recent run summary"],
         ["vis replay --run 2026-04-28T12-34-56_ab12", "Inspect a specific historical run"],

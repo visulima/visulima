@@ -57,7 +57,7 @@ const buildSummary = (overrides: Partial<RunSummary> = {}): RunSummary => {
 };
 
 const writeSummary = async (workspaceRoot: string, summary: RunSummary, kind: "last" | "run" = "run"): Promise<void> => {
-    const directory = kind === "last" ? join(workspaceRoot, ".task-runner") : join(workspaceRoot, ".task-runner", "runs");
+    const directory = kind === "last" ? join(workspaceRoot, ".vis") : join(workspaceRoot, ".vis", "runs");
 
     await mkdir(directory, { recursive: true });
 
@@ -113,7 +113,7 @@ describe("commands/replay/handler", () => {
             expect(toolbox.logger.info).toHaveBeenCalledWith(expect.stringContaining(summary.id));
         });
 
-        it("loads a specific run id from .task-runner/runs/", async () => {
+        it("loads a specific run id from .vis/runs/", async () => {
             expect.assertions(1);
 
             const summary = buildSummary({ id: "specific-run-id" });

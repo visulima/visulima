@@ -85,7 +85,7 @@ Cache task runner artifacts between CI runs:
 - name: Cache vis task runner
   uses: actions/cache@v4
   with:
-      path: .task-runner-cache
+      path: .vis/cache
       key: vis-cache-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
       restore-keys: |
           vis-cache-${{ runner.os }}-

@@ -4,6 +4,7 @@ import { readLastRunSummary } from "@visulima/task-runner";
 import { loadFailureLog } from "../report/failure-log";
 import type { HashDetailsDiff } from "../report/run-summary-utils";
 import { diffHashDetails, findTaskInSummary, readPreviousRunSummary, readRunSummaryById } from "../report/run-summary-utils";
+import { getVisWorkspaceDataDir } from "../util/vis-paths";
 
 /**
  * The single struct passed to the AI fix-proposal flow.
@@ -44,7 +45,7 @@ export interface FailureContext {
 
 export interface AggregateFailureContextOptions {
     /**
-     * Specific run ID from `.task-runner/runs/` to use instead of the
+     * Specific run ID from `.vis/runs/` to use instead of the
      * latest. Mirrors the `--run` flag on `vis cache why`.
      */
     runId?: string;
@@ -74,7 +75,7 @@ const truncateHead = (output: string, limit: number): string => {
 
 const loadSummary = async (workspaceRoot: string, runId: string | undefined): Promise<RunSummary | undefined> => {
     if (runId === undefined) {
-        return readLastRunSummary(workspaceRoot);
+        return readLastRunSummary(workspaceRoot, { dataDirectory: getVisWorkspaceDataDir(workspaceRoot) });
     }
 
     return readRunSummaryById(workspaceRoot, runId);

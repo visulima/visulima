@@ -129,7 +129,7 @@ const formatOption = {
 } as const;
 
 const runOption = {
-    description: "Use a specific run ID from .task-runner/runs/ instead of the latest run",
+    description: "Use a specific run ID from .vis/runs/ instead of the latest run",
     name: "run",
     type: String,
 } as const;

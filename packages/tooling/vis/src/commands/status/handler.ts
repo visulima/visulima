@@ -9,6 +9,7 @@ import { enforceProjectConstraints } from "@visulima/task-runner";
 import { buildProjectGraph, discoverWorkspace } from "../../config/workspace";
 import { analyzeFlakiness } from "../../report/flakiness";
 import { checkRuntimeVersions } from "../../runtime/runtime-check";
+import { getVisRunsDir } from "../../util/vis-paths";
 import type { StatusOptions } from "./index";
 
 const icon = (ok: boolean): string => (ok ? green("✓") : red("✗"));
@@ -34,7 +35,7 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
     const flakyStats = analyzeFlakiness(wsRoot, { minRuns: 2 });
 
     let cacheHitRate: string | undefined;
-    const runsDir = join(wsRoot, ".task-runner", "runs");
+    const runsDir = getVisRunsDir(wsRoot);
 
     if (isAccessibleSync(runsDir)) {
         const files = readdirSync(runsDir)

@@ -20,7 +20,7 @@ describe(analyzeFlakiness, () => {
     it("should return empty array for empty runs directory", () => {
         expect.assertions(1);
 
-        mkdirSync(join(tmpDir, ".task-runner", "runs"), { recursive: true });
+        mkdirSync(join(tmpDir, ".vis", "runs"), { recursive: true });
 
         expect(analyzeFlakiness(tmpDir)).toStrictEqual([]);
     });
@@ -34,7 +34,7 @@ describe(analyzeFlakiness, () => {
     it("should compute correct flakiness stats from multiple runs", () => {
         expect.assertions(7);
 
-        const runsDir = join(tmpDir, ".task-runner", "runs");
+        const runsDir = join(tmpDir, ".vis", "runs");
 
         mkdirSync(runsDir, { recursive: true });
 
@@ -89,7 +89,7 @@ describe(analyzeFlakiness, () => {
     it("should exclude tasks below the default minRuns threshold", () => {
         expect.assertions(1);
 
-        const runsDir = join(tmpDir, ".task-runner", "runs");
+        const runsDir = join(tmpDir, ".vis", "runs");
 
         mkdirSync(runsDir, { recursive: true });
 
@@ -109,7 +109,7 @@ describe(analyzeFlakiness, () => {
     it("should exclude runs older than the since filter", () => {
         expect.assertions(2);
 
-        const runsDir = join(tmpDir, ".task-runner", "runs");
+        const runsDir = join(tmpDir, ".vis", "runs");
 
         mkdirSync(runsDir, { recursive: true });
 

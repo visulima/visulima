@@ -178,7 +178,7 @@ Returns: `description`, `destination` (default target dir), and `variables[]` wi
 
 ### `get_run_logs`
 
-Read the run summary from `.task-runner/`. Defaults to `last-summary.json`.
+Read the run summary from `.vis/`. Defaults to `last-summary.json`.
 
 | Argument | Type      | Description                          |
 | -------- | --------- | ------------------------------------ |
@@ -211,7 +211,7 @@ If you want the assistant to actually run something for you, paste the suggested
 
 ## Self-healing CI
 
-`vis ai heal` ([command reference](/commands/ai#heal)) closes the loop on a failed CI run: it reads the latest failed task from `.task-runner/runs/`, asks the configured AI provider for a structured patch, applies it, validates the fix by re-running the failing target with `--no-cache --summarize --fail-fast`, and — when validation passes — posts the proposal back to the PR/MR.
+`vis ai heal` ([command reference](/commands/ai#heal)) closes the loop on a failed CI run: it reads the latest failed task from `.vis/runs/`, asks the configured AI provider for a structured patch, applies it, validates the fix by re-running the failing target with `--no-cache --summarize --fail-fast`, and — when validation passes — posts the proposal back to the PR/MR.
 
 CI surface detection lives in [`src/ai/ci-context.ts`](https://github.com/visulima/visulima/blob/main/packages/tooling/vis/src/ai/ci-context.ts):
 
