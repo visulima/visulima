@@ -9,7 +9,7 @@
         "start": "node src/index.js"
     },
     "dependencies": {
-        "shared": "workspace:*",
-        "fastify": "^4.28.1"
+        "fastify": "^4.28.1",
+        "shared": "workspace:*"
     }
 }
