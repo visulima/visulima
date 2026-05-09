@@ -23,7 +23,13 @@ const DynamicTaskRunner = ({ parallelSlots, projectNames, store, targets, tasks 
 
     if (state.done) {
         const took = formatMs(Date.now() - state.startTime);
-        const failedIds = state.rows.filter((r: TaskRowData) => r.status === "failure").map((r: TaskRowData) => r.taskId);
+        const failedIds: string[] = [];
+
+        for (const row of state.rows as TaskRowData[]) {
+            if (row.status === "failure") {
+                failedIds.push(row.taskId);
+            }
+        }
 
         return (
             <CommandSummary

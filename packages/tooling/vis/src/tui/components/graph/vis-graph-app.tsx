@@ -46,44 +46,40 @@ const VisGraphApp = ({ autoExitSeconds = 0, store }: VisGraphAppProps): React.JS
     const stats = useMemo(() => store.getStats(), [state.allNodes]);
     const selectedNode = filteredNodes[state.selectedIndex] ?? null;
 
-    // Compute the row position for a given entry index
+    // Partition once per filteredNodes change instead of twice per scroll.
+    const partitionedNodes = useMemo(() => {
+        let appsCount = 0;
+        let libsCount = 0;
+
+        for (const node of filteredNodes) {
+            if (node.type === "application") {
+                appsCount += 1;
+            } else {
+                libsCount += 1;
+            }
+        }
+
+        return { appsCount, libsCount };
+    }, [filteredNodes]);
+
+    // Compute the row position for a given entry index. The visible list
+    // is `[appsHeader?, ...apps, libsHeader?, ...libs]`; index addresses
+    // entries (apps come first in `filteredNodes`), so the row position
+    // is offset by the section header(s) we'd cross to reach `index`.
     const getRowForIndex = useCallback(
         (index: number): number => {
-            const apps = filteredNodes.filter((n) => n.type === "application");
-            const libs = filteredNodes.filter((n) => n.type !== "application");
+            const { appsCount, libsCount } = partitionedNodes;
 
-            let row = 0;
-            let count = 0;
-
-            if (apps.length > 0) {
-                row += 2; // type header
-
-                for (let i = 0; i < apps.length; i++) {
-                    if (count === index) {
-                        return row;
-                    }
-
-                    row += 1;
-                    count++;
-                }
+            if (index < appsCount) {
+                return (appsCount > 0 ? 2 : 0) + index;
             }
 
-            if (libs.length > 0) {
-                row += 2; // type header
+            const appsRows = appsCount > 0 ? 2 + appsCount : 0;
+            const libsHeader = libsCount > 0 ? 2 : 0;
 
-                for (let i = 0; i < libs.length; i++) {
-                    if (count === index) {
-                        return row;
-                    }
-
-                    row += 1;
-                    count++;
-                }
-            }
-
-            return row;
+            return appsRows + libsHeader + (index - appsCount);
         },
-        [filteredNodes],
+        [partitionedNodes],
     );
 
     // Viewport height for list: total rows - border(2) - header(1) - filter bar(3) - footer(2)

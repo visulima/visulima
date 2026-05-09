@@ -19,6 +19,7 @@ const MIN_HORIZONTAL_WIDTH = 100;
 const MIN_VIEWPORT_WIDTH = 40;
 const MIN_VIEWPORT_HEIGHT = 10;
 const EMPTY_ENTRIES: OutdatedEntry[] = [];
+const FILTER_TABS: FilterType[] = ["all", "major", "minor", "patch", "security"];
 
 // ── Component ───────────────────────────────────────────────────────────
 
@@ -214,13 +215,14 @@ const VisUpdateApp = ({
 
             // Filter tab navigation (left/right arrows when list is focused)
             if (state.focusedPanel === "list" && (key.leftArrow || key.rightArrow)) {
-                const tabs: FilterType[] = ["all", "major", "minor", "patch", "security"];
-                const currentIndex = tabs.indexOf(state.filterType);
-                const nextIndex = key.rightArrow ? (currentIndex + 1) % tabs.length : (currentIndex - 1 + tabs.length) % tabs.length;
+                const currentIndex = FILTER_TABS.indexOf(state.filterType);
+                const nextIndex = key.rightArrow
+                    ? (currentIndex + 1) % FILTER_TABS.length
+                    : (currentIndex - 1 + FILTER_TABS.length) % FILTER_TABS.length;
 
                 setListScrollOffset(0);
                 detailScrollRef.current?.scrollToTop();
-                store.setFilterType(tabs[nextIndex]!);
+                store.setFilterType(FILTER_TABS[nextIndex]!);
 
                 return;
             }
