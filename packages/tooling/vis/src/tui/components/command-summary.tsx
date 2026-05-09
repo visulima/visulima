@@ -32,19 +32,14 @@ const CommandSummary = ({ cached, failed, failedIds, projectNames, skippedIds, s
             <StaticRender>
                 {() => (
                     <Header title={`Successfully ran ${description}`} variant="success">
-                        <Box flexDirection="column" paddingLeft={2}>
+                        <Box marginTop={1} paddingLeft={3}>
                             <Text>
                                 <Text color="green">{TICK}</Text>
                                 {"  "}
                                 {succeeded + cached}
-{" "}
-tasks completed
-{cacheNote ? <Text dimColor>{cacheNote}</Text> : null}
-                            </Text>
-                            <Text dimColor>
-                                {"    "}
-                                Took
-                                {took}
+                                {" tasks completed"}
+                                {cacheNote ? <Text dimColor>{cacheNote}</Text> : null}
+                                <Text dimColor>{`  ·  Took ${took}`}</Text>
                             </Text>
                         </Box>
                     </Header>
@@ -57,7 +52,7 @@ tasks completed
         <StaticRender>
             {() => (
                 <Header title={`Ran ${description}`} variant="error">
-                    <Box flexDirection="column" paddingLeft={2}>
+                    <Box flexDirection="column" marginTop={1} paddingLeft={3}>
                         {skippedIds && skippedIds.length > 0 && (
                             <Box flexDirection="column">
                                 <Text dimColor>
@@ -99,9 +94,7 @@ failed:
                             </Box>
                         )}
                         <Text dimColor>
-                            {"    "}
-                            Took
-                            {took}
+                            {`    Took ${took}`}
                         </Text>
                     </Box>
                 </Header>

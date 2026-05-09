@@ -5,6 +5,7 @@ import { Text } from "@visulima/tui/components/text";
 import React from "react";
 
 import CommandSummary from "./components/command-summary";
+import type { ServiceDockStore } from "./components/service-dock/service-dock-store";
 import { TaskStore } from "./components/task-store";
 import VisTaskRunnerApp from "./components/vis-task-runner-app";
 import { formatMs } from "./pretty-time";
@@ -21,6 +22,9 @@ interface DynamicOutputOptions {
     /** Auto-exit config: false = stay open, true = 3s countdown, number = custom seconds */
     autoExit?: boolean | number;
 
+    /** Optional retry callback for the service dock. Fires on R against a crashed/failed row. */
+    onRetryService?: (id: string) => Promise<void> | void;
+
     /**
      * Mirrors the static lifecycle's `outputStyle`. Dynamic mode already
      * buffers all output into the TUI (the user inspects logs via panel
@@ -31,6 +35,8 @@ interface DynamicOutputOptions {
      */
     outputStyle?: OutputStyle;
     projectNames: string[];
+    /** Optional dock store; when provided and non-empty, the service dock is rendered. */
+    serviceDockStore?: ServiceDockStore | null;
     /** Registry of writable stdin entries keyed by task ID, for interactive input. */
     stdinRegistry?: Map<string, StdinEntry>;
     tasks: Task[];
@@ -43,7 +49,7 @@ interface DynamicOutputResult {
 }
 
 export const createDynamicOutputRenderer = (options: DynamicOutputOptions): DynamicOutputResult => {
-    const { args, autoExit = false, outputStyle = "normal", projectNames, stdinRegistry, tasks } = options;
+    const { args, autoExit = false, onRetryService, outputStyle = "normal", projectNames, serviceDockStore, stdinRegistry, tasks } = options;
 
     const store = new TaskStore(tasks);
     const parallelSlots = typeof args.parallel === "number" ? args.parallel : 3;
@@ -65,6 +71,27 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
         }
     };
 
+    /**
+     * Reverse the explicit `process.stdin.ref()` / `setRawMode(true)` /
+     * `resume()` we did in `startCommand`. Without this the event loop
+     * stays alive after the TUI unmounts and the `vis` CLI hangs at
+     * "tasks complete" without returning to the shell prompt — Ink's own
+     * unmount restores some stdin state but does not undo our `ref()`.
+     */
+    const releaseStdin = (): void => {
+        if (process.stdin.isTTY && typeof process.stdin.setRawMode === "function") {
+            try {
+                process.stdin.setRawMode(false);
+            } catch {
+                // setRawMode can throw on a stdin that's already been
+                // reset — ignore, the goal is just to release the loop.
+            }
+        }
+
+        process.stdin.pause();
+        process.stdin.unref();
+    };
+
     const killAllPtyProcesses = (): void => {
         if (stdinRegistry) {
             for (const entry of stdinRegistry.values()) {
@@ -79,6 +106,7 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
         cleanup();
         clearKeepAlive();
         killAllPtyProcesses();
+        releaseStdin();
 
         // Force restore terminal: leave alternate screen, show cursor
         process.stdout.write("\u001B[?1049l\u001B[?25h");
@@ -97,8 +125,16 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
         process.stdout.write("\n");
 
         for (const row of state.rows) {
-            const { status, taskId } = row;
+            const { persistent, status, taskId } = row;
+            const isInFlight = status === "running" || status === "pending";
+
+            // Persistent tasks (dev/serve/watch) that were still running
+            // when the user quit aren't "incomplete" — they were alive and
+            // healthy, then asked to stop. Render that as `■ (stopped)`
+            // instead of the default `?` for unknown status.
             const info = getStatusInfo(status as TaskStatus);
+            const icon = isInFlight && persistent ? "■" : info.icon;
+            const color = isInFlight && persistent ? "gray" : info.color;
 
             let cacheLabel = "";
 
@@ -120,6 +156,12 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
                     break;
                 }
                 default: {
+                    if (isInFlight && persistent) {
+                        cacheLabel = " [stopped]";
+                    } else if (isInFlight) {
+                        cacheLabel = " [skipped]";
+                    }
+
                     break;
                 }
             }
@@ -129,7 +171,7 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
                     Text,
                     null,
                     "   ",
-                    React.createElement(Text, { color: info.color }, info.icon),
+                    React.createElement(Text, { color }, icon),
                     `  vis run ${taskId}`,
                     cacheLabel ? React.createElement(Text, { dimColor: true }, `  ${cacheLabel}`) : null,
                 ),
@@ -200,15 +242,15 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
             cleanup();
             store.markDone();
 
-            // Keep event loop alive + ensure stdin stays in raw mode for keyboard input
+            // The keepAliveTimer (already set by startCommand) is what holds
+            // the loop open until the user quits. We deliberately do NOT
+            // re-ref stdin here — Ink's `useInput` already maintains raw
+            // mode and a stdin ref while the React tree is mounted, and
+            // any extra `process.stdin.ref()` calls leak past Ink's
+            // single `disableRawMode` unref on exit, hanging the CLI
+            // after the TUI unmounts.
             if (!keepAliveTimer) {
                 keepAliveTimer = setInterval(() => {}, 1000);
-            }
-
-            if (process.stdin.isTTY && typeof process.stdin.setRawMode === "function") {
-                process.stdin.setRawMode(true);
-                process.stdin.ref();
-                process.stdin.resume();
             }
         },
 
@@ -228,24 +270,22 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
             process.on("SIGTERM", onSignal);
 
             // Keep event loop alive from the start to prevent beforeExit
-            // from unmounting the TUI before tasks begin
+            // from unmounting the TUI before tasks begin. Ink's `useInput`
+            // owns stdin raw-mode + ref counting; do not duplicate it here
+            // — extra refs would outlive Ink's single unref on exit and
+            // hang the CLI when the user quits.
             if (!keepAliveTimer) {
                 keepAliveTimer = setInterval(() => {}, 1000);
-            }
-
-            // Ensure stdin stays in raw mode for keyboard interaction
-            if (process.stdin.isTTY && typeof process.stdin.setRawMode === "function") {
-                process.stdin.setRawMode(true);
-                process.stdin.ref();
-                process.stdin.resume();
             }
 
             // Start the full-screen interactive TUI
             instance = render(
                 React.createElement(VisTaskRunnerApp, {
                     autoExitSeconds,
+                    onRetryService,
                     parallelSlots,
                     projectNames,
+                    serviceDockStore,
                     stdinRegistry: stdinRegistry ?? new Map(),
                     store,
                     targets: args.targets,
@@ -264,6 +304,7 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
                 .then(() => {
                     clearKeepAlive();
                     killAllPtyProcesses();
+                    releaseStdin();
                     process.removeListener("SIGINT", onSignal);
                     process.removeListener("SIGTERM", onSignal);
 
@@ -275,6 +316,7 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
                 .catch(() => {
                     clearKeepAlive();
                     killAllPtyProcesses();
+                    releaseStdin();
                     process.removeListener("SIGINT", onSignal);
                     process.removeListener("SIGTERM", onSignal);
                     resolveDone();
