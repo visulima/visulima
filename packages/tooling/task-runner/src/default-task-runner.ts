@@ -178,6 +178,7 @@ const defaultTaskRunner = async (_tasks: Task[], options: TaskRunnerOptions, con
         globalInputs: options.globalInputs,
         incrementalHasher,
         namedInputs: options.namedInputs,
+        onFingerprint: options.onFingerprint,
         projects,
         smartLockfileHashing: options.smartLockfileHashing,
         targetDefaults: options.targetDefaults,

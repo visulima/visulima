@@ -757,6 +757,21 @@ export interface TaskRunnerOptions {
      * @default false
      */
     namespaceByGlobalEnv?: boolean;
+    /**
+     * Plugin extension point invoked during task fingerprinting. Fires
+     * once per task after the built-in inputs (filesets, runtime, env)
+     * have been gathered and before the hash is sealed. Contributions
+     * made through the supplied {@link FingerprintContributor} are mixed
+     * deterministically into the final hash.
+     *
+     * Throwing aborts fingerprinting for that task — the task fails
+     * before any cache lookup runs, so a buggy plugin can't silently
+     * corrupt cache state.
+     *
+     * Wired by `vis` to bridge into the `task:fingerprint` hook;
+     * standalone task-runner consumers can pass a callback directly.
+     */
+    onFingerprint?: FingerprintHook;
     /** Maximum number of parallel tasks */
     parallel?: number | boolean;
 
@@ -799,6 +814,36 @@ export interface TaskRunnerOptions {
      */
     untrackedEnvVars?: string[];
 }
+
+/**
+ * Handle handed to plugin fingerprint hooks. Plugins call
+ * `contribute(key, value)` to mix extra strings into the task hash —
+ * the hasher merges contributions into a deterministic, sorted bucket
+ * so registration order doesn't change the resulting hash.
+ *
+ * Re-contributing the same key overwrites the previous value (last
+ * write wins). Plugins that need isolation should namespace their
+ * keys (e.g. `my-plugin:setting`).
+ */
+export interface FingerprintContributor {
+    /**
+     * Mix `value` into the task fingerprint under `key`. Both are
+     * arbitrary strings; the hasher runs them through xxh3 alongside
+     * the built-in inputs.
+     */
+    contribute: (key: string, value: string) => void;
+}
+
+/**
+ * Plugin callback fired during fingerprint construction, after all
+ * built-in inputs (filesets, runtime, env) have been gathered and
+ * before the final hash is sealed. Contributions made via the supplied
+ * {@link FingerprintContributor} are mixed into the hash.
+ *
+ * Throwing aborts hashing for that task — the task fails before any
+ * cache lookup, so a buggy plugin doesn't quietly corrupt cache state.
+ */
+export type FingerprintHook = (task: Task, contributor: FingerprintContributor) => Promise<void> | void;
 
 /**
  * Options for executing a task.
@@ -908,6 +953,13 @@ export interface ConcurrentRunnerOptions {
     restart?: {
         /** Delay between restarts in ms. "exponential" for 2^attempt * 1000ms. */
         delay?: number | "exponential";
+        /**
+         * Optional pre-restart callback. Fires once per scheduled retry,
+         * after the failed attempt is detected and before the restart
+         * delay sleeps. `attempt` is 1-indexed and counts the retry that's
+         * about to start. Throwing aborts the entire restart batch.
+         */
+        onRetry?: (attempt: number, commandIndex: number, prevExitCode: number) => Promise<void> | void;
         /** Maximum restart attempts per command. 0 = no restarts. -1 = infinite. */
         tries: number;
     };

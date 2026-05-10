@@ -10,6 +10,22 @@ import type { ConcurrentCloseEvent, ConcurrentCommandConfig, ConcurrentRunnerOpt
 export interface RestartOptions {
     /** Delay between restarts in milliseconds. "exponential" for 2^attempt * 1000ms. */
     delay: number | "exponential";
+    /**
+     * Optional pre-restart callback. Fires once per scheduled retry,
+     * **after** the failed attempt is detected and **before** the restart
+     * delay sleeps — giving callers a chance to log, emit metrics, or
+     * abort the retry by throwing.
+     *
+     * `attempt` is 1-indexed and counts the retry that's about to start
+     * (the original failed run was attempt 0). `commandIndex` matches
+     * the position of the failing command in the input array.
+     *
+     * Throwing aborts the entire `withRestart` batch — the rejection
+     * surfaces from `runConcurrently` to the caller, mirroring the
+     * existing error path. Use this to gate retries on external state
+     * (budget exhaustion, circuit breakers).
+     */
+    onRetry?: (attempt: number, commandIndex: number, prevExitCode: number) => Promise<void> | void;
     /** Maximum number of restart attempts per command. 0 = no restarts. -1 = infinite. */
     tries: number;
 }
@@ -32,7 +48,7 @@ export const withRestart = async (
     options: ConcurrentRunnerOptions,
     restartOptions: RestartOptions,
 ): Promise<ConcurrentRunResult> => {
-    const { delay, tries } = restartOptions;
+    const { delay, onRetry, tries } = restartOptions;
 
     if (tries === 0) {
         return runFunction(commands, options);
@@ -69,6 +85,14 @@ export const withRestart = async (
                 const shouldRestart = tries === -1 || cmdState.attempts <= tries;
 
                 if (shouldRestart) {
+                    if (onRetry) {
+                        // Fire before the delay so subscribers can mutate
+                        // external state (budget, breakers) and abort by
+                        // throwing — saving us a sleep we'd never use.
+                        // eslint-disable-next-line no-await-in-loop -- intentional sequential ordering with delay below
+                        await onRetry(cmdState.attempts, closeEvent.index, closeEvent.exitCode ?? 1);
+                    }
+
                     const delayMs = delay === "exponential" ? Math.min(2 ** (cmdState.attempts - 1) * 1000, 30_000) : delay;
 
                     if (delayMs > 0) {

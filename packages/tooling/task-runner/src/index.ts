@@ -133,6 +133,8 @@ export type {
     FileSetBase,
     FileSetInput,
     FileSetPattern,
+    FingerprintContributor,
+    FingerprintHook,
     InputDefinition,
     LifeCycleInterface,
     NamedInputs,

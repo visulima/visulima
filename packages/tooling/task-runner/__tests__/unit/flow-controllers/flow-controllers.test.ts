@@ -245,6 +245,62 @@ describe(withRestart, () => {
         expect(callCount).toBe(1);
         expect(result.success).toBe(true);
     });
+
+    it("should invoke onRetry before each scheduled restart with attempt + exit code", async () => {
+        expect.assertions(2);
+
+        const calls: { attempt: number; commandIndex: number; prevExitCode: number }[] = [];
+
+        await withRestart(
+            (commands, options) => runConcurrentFallback(commands, options),
+            [{ command: "exit 7" }],
+            {},
+            {
+                delay: 0,
+                onRetry: (attempt, commandIndex, prevExitCode) => {
+                    calls.push({ attempt, commandIndex, prevExitCode });
+                },
+                tries: 2,
+            },
+        );
+
+        // tries=2 → original failure + 2 retries → onRetry fires twice (1, 2)
+        expect(calls).toStrictEqual([
+            { attempt: 1, commandIndex: 0, prevExitCode: 7 },
+            { attempt: 2, commandIndex: 0, prevExitCode: 7 },
+        ]);
+        // Throwing inside onRetry must propagate; verified separately below.
+        expect(calls).toHaveLength(2);
+    });
+
+    it("should propagate onRetry throws and abort the restart batch", async () => {
+        expect.assertions(2);
+
+        let runCalls = 0;
+
+        await expect(
+            withRestart(
+                (commands, options) => {
+                    runCalls++;
+
+                    return runConcurrentFallback(commands, options);
+                },
+                [{ command: "exit 1" }],
+                {},
+                {
+                    delay: 1000,
+                    onRetry: () => {
+                        throw new Error("budget exhausted");
+                    },
+                    tries: 5,
+                },
+            ),
+        ).rejects.toThrow("budget exhausted");
+
+        // The original run completed (1 call); onRetry threw before sleep,
+        // so no retry was scheduled.
+        expect(runCalls).toBe(1);
+    });
 });
 
 describe(runTeardown, () => {
