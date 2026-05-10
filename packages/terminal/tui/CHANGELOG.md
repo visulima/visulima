@@ -1,3 +1,36 @@
+## @visulima/tui [1.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/tui@1.0.0-alpha.10...@visulima/tui@1.0.0-alpha.11) (2026-05-10)
+
+### ⚠ BREAKING CHANGES
+
+* **tui:** Components and hooks are no longer re-exported from the
+bare `@visulima/tui` entry. Import each from its dedicated subpath:
+
+  - import { Box } from "@visulima/tui/components/box";
+  - import { useInput } from "@visulima/tui/hooks/use-input";
+
+The bare entry now exposes only `render`, `renderToString`, and
+lower-level primitives (mouse, layout, OSC52, terminal palette).
+Heavy peer dependencies (cfonts, shiki, marked, diff, @visulima/tabular)
+are loaded only when their component subpath is imported, keeping the
+import graph small and making peer requirements explicit per component.
+
+Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>
+
+### Features
+
+* **tui:** re-export AppProps/StdinProps/StdoutProps/StderrProps from hook subpaths ([bc8306c](https://github.com/visulima/visulima/commit/bc8306cb1ed52dccd6316009ca1e3c2f497fac35))
+* **tui:** split components and hooks into per-symbol subpaths ([8a04b3c](https://github.com/visulima/visulima/commit/8a04b3c17ed3cbe54894b5f117db29e34ee7b144))
+
+### Tests
+
+* **tui:** de-flake streamingText typewriter onComplete assertion ([2e02f04](https://github.com/visulima/visulima/commit/2e02f047665eab077b966788c45c0a43092bf631))
+* **tui:** relax flaky suspended-animation frame assertion ([d68ba4e](https://github.com/visulima/visulima/commit/d68ba4ee482534613e6b34045721115cc7890c58))
+
+
+### Dependencies
+
+* **@visulima/string:** upgraded to 3.0.0-alpha.13
+
 ## @visulima/tui [1.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/tui@1.0.0-alpha.9...@visulima/tui@1.0.0-alpha.10) (2026-05-07)
 
 ### Tests

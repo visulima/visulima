@@ -1,6 +1,6 @@
 {
     "name": "@visulima/tui",
-    "version": "1.0.0-alpha.10",
+    "version": "1.0.0-alpha.11",
     "description": "React-based TUI library powered by a native Rust diff engine, drop-in Ink-compatible API",
     "keywords": [
         "cli",
@@ -593,7 +593,7 @@
         "@visulima/ansi": "4.0.0-alpha.13",
         "@visulima/colorize": "2.0.0-alpha.10",
         "@visulima/spinner": "1.0.0-alpha.1",
-        "@visulima/string": "3.0.0-alpha.12",
+        "@visulima/string": "3.0.0-alpha.13",
         "cli-boxes": "catalog:prod",
         "code-excerpt": "catalog:prod",
         "es-toolkit": "catalog:prod",
@@ -609,11 +609,6 @@
         "yoga-layout-prebuilt": "catalog:prod"
     },
     "devDependencies": {
-        "marked": "catalog:dev",
-        "ws": "catalog:prod",
-        "@shikijs/langs": "catalog:prod",
-        "@shikijs/themes": "catalog:dev",
-        "shiki": "catalog:syntax",
         "@anolilab/eslint-config": "catalog:lint",
         "@anolilab/prettier-config": "catalog:lint",
         "@anolilab/semantic-release-pnpm": "catalog:dev",
@@ -623,6 +618,8 @@
         "@napi-rs/cli": "catalog:dev",
         "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
         "@semantic-release/exec": "catalog:dev",
+        "@shikijs/langs": "catalog:prod",
+        "@shikijs/themes": "catalog:dev",
         "@total-typescript/ts-reset": "catalog:dev",
         "@types/node": "catalog:types",
         "@types/react": "catalog:types",
@@ -647,28 +644,31 @@
         "eslint-plugin-react-refresh": "catalog:lint",
         "eslint-plugin-react-you-might-not-need-an-effect": "catalog:lint",
         "eslint-plugin-validate-jsx-nesting": "catalog:lint",
+        "marked": "catalog:dev",
         "node-pty": "catalog:dev",
         "prettier": "catalog:lint",
         "publint": "catalog:dev",
         "rimraf": "catalog:node",
         "secretlint": "catalog:lint",
         "semantic-release": "catalog:cli",
+        "shiki": "catalog:syntax",
         "tsx": "catalog:dev",
         "typescript": "catalog:tsc",
-        "vitest": "catalog:test"
+        "vitest": "catalog:test",
+        "ws": "catalog:prod"
     },
     "peerDependencies": {
-        "marked": "catalog:dev",
-        "ws": "catalog:prod",
         "@shikijs/langs": "catalog:prod",
         "@shikijs/themes": "catalog:dev",
-        "shiki": "catalog:syntax",
+        "@visulima/tabular": "4.0.0-alpha.11",
         "cfonts": "3.3.1",
         "diff": "catalog:prod",
-        "@visulima/tabular": "4.0.0-alpha.11",
+        "marked": "catalog:dev",
         "react": ">=19.2.6",
         "react-devtools-core": ">=7.0.1",
-        "react-reconciler": ">=0.33.0"
+        "react-reconciler": ">=0.33.0",
+        "shiki": "catalog:syntax",
+        "ws": "catalog:prod"
     },
     "peerDependenciesMeta": {
         "ws": {
