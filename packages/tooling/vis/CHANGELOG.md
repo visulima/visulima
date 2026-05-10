@@ -1,3 +1,18 @@
+## @visulima/vis [1.0.0-alpha.17](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.16...@visulima/vis@1.0.0-alpha.17) (2026-05-10)
+
+### Features
+
+* **vis:** expand typed plugin hook surface ([d0784df](https://github.com/visulima/visulima/commit/d0784df2b0c422002ec21c3c8da0002e0ff70dee))
+
+
+### Dependencies
+
+* **@visulima/task-runner:** upgraded to 1.0.0-alpha.12
+* **@visulima/tui:** upgraded to 1.0.0-alpha.12
+* **@visulima/cerebro:** upgraded to 3.0.0-alpha.20
+* **@visulima/fs:** upgraded to 5.0.0-alpha.19
+* **@visulima/package:** upgraded to 5.0.0-alpha.18
+
 ## @visulima/vis [1.0.0-alpha.16](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.15...@visulima/vis@1.0.0-alpha.16) (2026-05-10)
 
 ### Features
