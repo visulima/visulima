@@ -1,8 +1,24 @@
 import type { Task, TaskResult } from "@visulima/task-runner";
 import { describe, expect, it, vi } from "vitest";
 
+import type { ServiceEntry } from "../../src/services/types";
 import type { VisPlugin } from "../../src/util/hooks";
 import { createVisHooks, HookableLifeCycle, registerPlugins } from "../../src/util/hooks";
+
+const makeServiceEntry = (id: string): ServiceEntry => {
+    return {
+        command: "node server.js",
+        config: { port: 5432 },
+        cwd: "/tmp/workspace",
+        env: { DB_URL: "postgres://localhost" },
+        id,
+        logFile: `/tmp/${id}.log`,
+        pid: 12345,
+        slug: id.replace(/[/:]/g, "_"),
+        startedAt: new Date().toISOString(),
+        visVersion: "1.0.0",
+    };
+};
 
 const makeTask = (id: string): Task => {
     return {
@@ -115,6 +131,156 @@ describe(registerPlugins, () => {
 
         await expect(registerPlugins(hooks, undefined)).resolves.toBeUndefined();
         await expect(registerPlugins(hooks, [])).resolves.toBeUndefined();
+    });
+
+    it("dispatches service:start, service:stop, and service:attach", async () => {
+        expect.assertions(3);
+
+        const hooks = createVisHooks();
+        const start = vi.fn();
+        const stop = vi.fn();
+        const attach = vi.fn();
+
+        await registerPlugins(hooks, [
+            {
+                hooks: {
+                    "service:attach": attach,
+                    "service:start": start,
+                    "service:stop": stop,
+                },
+                name: "service-observer",
+            },
+        ]);
+
+        const entry = makeServiceEntry("api:db");
+
+        await hooks.callHook("service:start", entry);
+        await hooks.callHook("service:stop", entry);
+        await hooks.callHook("service:attach", entry, ["api:test", "api:web"]);
+
+        expect(start).toHaveBeenCalledWith(entry);
+        expect(stop).toHaveBeenCalledWith(entry);
+        expect(attach).toHaveBeenCalledWith(entry, ["api:test", "api:web"]);
+    });
+
+    it("dispatches task:fingerprint with a contributor that mutates the hash bucket", async () => {
+        expect.assertions(2);
+
+        const hooks = createVisHooks();
+        const seenContributions: { key: string; value: string }[] = [];
+
+        await registerPlugins(hooks, [
+            {
+                hooks: {
+                    "task:fingerprint": (_task, contributor) => {
+                        contributor.contribute("plugin-version", "1.2.3");
+                    },
+                },
+                name: "fingerprint-plugin",
+            },
+        ]);
+
+        const stubContributor = {
+            contribute: (key: string, value: string) => {
+                seenContributions.push({ key, value });
+            },
+        };
+
+        await hooks.callHook("task:fingerprint", makeTask("app:build"), stubContributor);
+
+        expect(seenContributions).toHaveLength(1);
+        expect(seenContributions[0]).toStrictEqual({ key: "plugin-version", value: "1.2.3" });
+    });
+
+    it("propagates task:fingerprint handler throws so the task fails before cache lookup", async () => {
+        expect.assertions(1);
+
+        const hooks = createVisHooks();
+
+        await registerPlugins(hooks, [
+            {
+                hooks: {
+                    "task:fingerprint": () => {
+                        throw new Error("schema mismatch");
+                    },
+                },
+                name: "abort-fingerprint",
+            },
+        ]);
+
+        const stubContributor = { contribute: () => {} };
+
+        await expect(hooks.callHook("task:fingerprint", makeTask("app:build"), stubContributor)).rejects.toThrow("schema mismatch");
+    });
+
+    it("dispatches task:retry with (task, attempt, prevExitCode)", async () => {
+        expect.assertions(2);
+
+        const hooks = createVisHooks();
+        const retry = vi.fn();
+
+        await registerPlugins(hooks, [
+            {
+                hooks: { "task:retry": retry },
+                name: "retry-observer",
+            },
+        ]);
+
+        const task = makeTask("app:build");
+
+        await hooks.callHook("task:retry", task, 1, 137);
+
+        expect(retry).toHaveBeenCalledTimes(1);
+        expect(retry).toHaveBeenCalledWith(task, 1, 137);
+    });
+
+    it("propagates task:retry handler throws so the retry can be aborted", async () => {
+        expect.assertions(1);
+
+        const hooks = createVisHooks();
+
+        await registerPlugins(hooks, [
+            {
+                hooks: {
+                    "task:retry": () => {
+                        throw new Error("budget exhausted");
+                    },
+                },
+                name: "abort-retry",
+            },
+        ]);
+
+        await expect(hooks.callHook("task:retry", makeTask("app:build"), 1, 1)).rejects.toThrow("budget exhausted");
+    });
+
+    it("awaits async service:start handlers before resolving callHook", async () => {
+        expect.assertions(1);
+
+        const hooks = createVisHooks();
+        const order: string[] = [];
+
+        await registerPlugins(hooks, [
+            {
+                hooks: {
+                    "service:start": async () => {
+                        await new Promise<void>((resolve) => {
+                            setTimeout(resolve, 5);
+                        });
+                        order.push("plugin");
+                    },
+                },
+                name: "slow",
+            },
+        ]);
+
+        const callPromise = hooks.callHook("service:start", makeServiceEntry("api:db"));
+
+        order.push("after-call");
+
+        await callPromise;
+        order.push("post-await");
+
+        expect(order).toStrictEqual(["after-call", "plugin", "post-await"]);
     });
 });
 

@@ -12,8 +12,44 @@ import { isAlive, pruneDead, readAllEntries, readEntry } from "../../services/re
 import type { ServiceEntry } from "../../services/types";
 import { loadEnvFile, resolveTaskCwd } from "../../task/target-options";
 import type { ServiceConfig, VisTargetConfiguration } from "../../task/types";
+import type { VisHooks } from "../../util/hooks";
+import { createVisHooks, registerPlugins } from "../../util/hooks";
 import { formatAge } from "../cache/handler";
 import type { ServiceListOptions, ServiceLogsOptions, ServiceRestartOptions, ServiceStartOptions, ServiceStatusOptions, ServiceStopOptions } from "./index";
+
+/**
+ * Build a fresh hook registry seeded with `visConfig.plugins`. Each
+ * service command gets its own instance so plugin handlers can be
+ * awaited inline without leaking handler state across invocations.
+ * Returns `undefined` when no plugins are configured — callers can
+ * skip the call-hook path entirely instead of spinning up a registry.
+ */
+const loadServiceHooks = async (visConfig: VisConfig | undefined): Promise<{ callHook: <K extends keyof VisHooks>(name: K, ...args: Parameters<VisHooks[K]>) => Promise<void> } | undefined> => {
+    const plugins = visConfig?.plugins;
+
+    if (!plugins || plugins.length === 0) {
+        return undefined;
+    }
+
+    const hooks = createVisHooks();
+
+    await registerPlugins(hooks, plugins);
+
+    return {
+        callHook: async <K extends keyof VisHooks>(name: K, ...args: Parameters<VisHooks[K]>): Promise<void> => {
+            try {
+                // hookable's callHook takes `(name, ...any[])`; the
+                // VisHooks-keyed wrapper here gives plugin authors a
+                // typed surface without giving up the runtime cast.
+                await (hooks.callHook as (name: K, ...arguments_: Parameters<VisHooks[K]>) => Promise<unknown>)(name, ...args);
+            } catch (error) {
+                const message = error instanceof Error ? error.message : String(error);
+
+                pail.warn(`Plugin error in ${name}: ${message}`);
+            }
+        },
+    };
+};
 
 interface ResolvedTarget {
     /** Resolved shell command. Always defined — handlers reject targets without `command`. */
@@ -139,6 +175,10 @@ export const serviceStartExecute = async ({ argument, options, visConfig, worksp
             workspaceRoot,
         });
 
+        const hookSink = await loadServiceHooks(visConfig);
+
+        await hookSink?.callHook("service:start", entry);
+
         pail.success(`Started ${targetId} (pid ${String(entry.pid)})`);
         pail.info(`  log: ${entry.logFile}`);
     } catch (error) {
@@ -154,10 +194,25 @@ export const serviceStartExecute = async ({ argument, options, visConfig, worksp
     }
 };
 
-const stopOne = async (workspaceRoot: string, id: string, graceMs: number | undefined): Promise<boolean> => {
+interface StopOneInput {
+    graceMs: number | undefined;
+    /** Optional hook sink to fire `service:stop` against on success. */
+    hookSink?: { callHook: <K extends keyof VisHooks>(name: K, ...args: Parameters<VisHooks[K]>) => Promise<void> };
+    id: string;
+    workspaceRoot: string;
+}
+
+const stopOne = async ({ graceMs, hookSink, id, workspaceRoot }: StopOneInput): Promise<boolean> => {
+    // Snapshot the entry before stopService deletes it so the
+    // service:stop hook fires with the same shape as service:start.
+    const entry = await readEntry(workspaceRoot, id);
     const { stopped } = await stopService({ graceMs, id, workspaceRoot });
 
     if (stopped) {
+        if (entry) {
+            await hookSink?.callHook("service:stop", entry);
+        }
+
         pail.success(`Stopped ${id}`);
 
         return true;
@@ -168,10 +223,11 @@ const stopOne = async (workspaceRoot: string, id: string, graceMs: number | unde
     return false;
 };
 
-export const serviceStopExecute = async ({ argument, options, workspaceRoot: wsRoot }: Toolbox<Console, ServiceStopOptions>): Promise<void> => {
+export const serviceStopExecute = async ({ argument, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, ServiceStopOptions>): Promise<void> => {
     const workspaceRoot = requireWorkspace(wsRoot);
     const { graceMs } = options;
     const targetId = argument[0]?.trim();
+    const hookSink = await loadServiceHooks(visConfig);
 
     if (options.all === true) {
         if (targetId) {
@@ -193,7 +249,7 @@ export const serviceStopExecute = async ({ argument, options, workspaceRoot: wsR
         }
 
         for (const entry of entries) {
-            await stopOne(workspaceRoot, entry.id, graceMs);
+            await stopOne({ graceMs, hookSink, id: entry.id, workspaceRoot });
         }
 
         return;
@@ -206,7 +262,7 @@ export const serviceStopExecute = async ({ argument, options, workspaceRoot: wsR
         return;
     }
 
-    const stopped = await stopOne(workspaceRoot, targetId, graceMs);
+    const stopped = await stopOne({ graceMs, hookSink, id: targetId, workspaceRoot });
 
     if (!stopped) {
         process.exitCode = 1;
@@ -358,7 +414,16 @@ export const serviceRestartExecute = async ({
         return;
     }
 
-    await stopService({ graceMs: options.graceMs, id: targetId, workspaceRoot });
+    const hookSink = await loadServiceHooks(visConfig);
+    // Snapshot the entry before stopService deletes it so we can fire
+    // service:stop with the original shape (matches the standalone stop
+    // path's contract).
+    const previousEntry = await readEntry(workspaceRoot, targetId);
+    const stopResult = await stopService({ graceMs: options.graceMs, id: targetId, workspaceRoot });
+
+    if (stopResult.stopped && previousEntry) {
+        await hookSink?.callHook("service:stop", previousEntry);
+    }
 
     const resolved = await resolveTarget(workspaceRoot, visConfig, targetId);
 
@@ -379,6 +444,8 @@ export const serviceRestartExecute = async ({
             skipReadiness: (options as Record<string, unknown>).readiness === false,
             workspaceRoot,
         });
+
+        await hookSink?.callHook("service:start", entry);
 
         pail.success(`Restarted ${targetId} (pid ${String(entry.pid)})`);
     } catch (error) {

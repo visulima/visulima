@@ -1,4 +1,4 @@
-export type { OtelPluginOptions, VisHooks, VisPlugin } from "./config";
+export type { FingerprintContributor, OtelPluginOptions, VisHooks, VisPlugin } from "./config";
 export type { VisConfig, VisTaskConfig } from "./config";
 export {
     applyDefaults,

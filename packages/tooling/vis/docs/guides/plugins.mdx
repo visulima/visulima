@@ -93,6 +93,117 @@ Fires when auto-fingerprint cache diagnostics report a miss. `reason` is a human
 
 Specialization of `task:after` — fires only when a task exited non-zero.
 
+### `task:stdout(task, chunk)` / `task:stderr(task, chunk)`
+
+Streaming hooks — fired with each output chunk as a running task emits it. Prefer these over `task:after` when shipping logs live (Slack, Datadog, S3 streaming):
+
+```typescript
+definePlugin({
+    name: "datadog-logs",
+    hooks: {
+        "task:stdout": (task, chunk) => {
+            ddLogger.info(chunk, { task: task.id, stream: "stdout" });
+        },
+        "task:stderr": (task, chunk) => {
+            ddLogger.error(chunk, { task: task.id, stream: "stderr" });
+        },
+    },
+});
+```
+
+These are fire-and-forget — handler errors are routed through the per-run error channel (warns by default) so a buggy plugin can't stall the executor's write loop.
+
+### `task:retry(task, attempt, prevExitCode)`
+
+Fires right before a failed task is re-spawned by the retry controller. `attempt` is 1-indexed and counts the retry that's about to start; `prevExitCode` is the failing exit status that triggered the retry.
+
+```typescript
+let budget = 10;
+
+definePlugin({
+    name: "retry-budget",
+    hooks: {
+        "task:retry": (task, attempt, prevExitCode) => {
+            if (--budget < 0) {
+                throw new Error(`Retry budget exhausted (last failure: ${task.id} → ${prevExitCode})`);
+            }
+        },
+    },
+});
+```
+
+The closure-scoped `budget` resets on every fresh `vis run` — for cross-invocation enforcement, persist the count to disk or a shared store inside the handler.
+
+Throwing aborts the retry — the previous failure becomes the final result. Use this to gate retries on external state (rate-limit budgets, circuit breakers, deploy windows).
+
+### `task:fingerprint(task, contributor)`
+
+Fires during fingerprint construction, after built-in inputs (filesets, runtime, env) are gathered and **before** the cache lookup runs. Use it to mix arbitrary signals into the task hash — the contributor's calls are sorted and namespaced deterministically, so registration order doesn't change the resulting hash.
+
+```typescript
+import { readFile } from "node:fs/promises";
+import { resolve } from "node:path";
+
+let workspaceRoot = process.cwd();
+
+definePlugin({
+    name: "schema-version",
+    hooks: {
+        // Cache the workspace root once; relative paths inside `task:fingerprint`
+        // would resolve against the vis invocation's cwd, not the repo root.
+        "run:before": ({ workspaceRoot: root }) => {
+            workspaceRoot = root;
+        },
+        "task:fingerprint": async (task, contributor) => {
+            // Bust cache when the GraphQL schema bumps, even though
+            // the schema file isn't an explicit `inputs` entry.
+            if (task.target.target !== "build") {
+                return;
+            }
+
+            try {
+                const schema = await readFile(resolve(workspaceRoot, "schemas/api.graphql"), "utf8");
+
+                contributor.contribute("graphql-schema", schema);
+            } catch (error) {
+                // Throwing would fail every build task; treat a missing schema
+                // as "no contribution" so unrelated tasks aren't held hostage.
+                if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
+                    throw error;
+                }
+            }
+        },
+    },
+});
+```
+
+Throwing aborts hashing for the offending task — the task fails before any cache read or write. This is intentional: a buggy plugin would otherwise silently corrupt cache state.
+
+### `service:start(entry)` / `service:stop(entry)` / `service:attach(entry, taskIds)`
+
+Fired around the long-lived service registry (`vis service start`, `vis service stop`, and the auto-attach that runs at the start of every `vis run`).
+
+- **`service:start`** fires after a successful start and readiness probe.
+- **`service:stop`** fires only when an alive entry was actually terminated (no-op stops don't fire it).
+- **`service:attach`** fires once per satisfied service during `vis run`, after plugins are registered and before `run:before`. `taskIds` lists the in-graph dependents that consumed the service's `env` block.
+
+```typescript
+definePlugin({
+    name: "service-tracker",
+    hooks: {
+        "service:start": (entry) => {
+            metrics.gauge("vis.service.up", 1, { service: entry.id, slug: entry.slug });
+        },
+        "service:stop": (entry) => {
+            metrics.gauge("vis.service.up", 0, { service: entry.id, slug: entry.slug });
+        },
+        "service:attach": (entry, taskIds) => {
+            console.log(`[${entry.id}] → ${taskIds.length} dependent task(s): ${taskIds.join(", ")}`);
+        },
+    },
+});
+```
+
 ## Patterns
 
 ### Notifier on failure

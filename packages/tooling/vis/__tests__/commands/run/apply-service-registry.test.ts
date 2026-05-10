@@ -298,6 +298,47 @@ describe(applyServiceRegistry, () => {
         expect(result.serviceEnvByTaskId.get("api:chain")).toStrictEqual({ DB_URL: "postgres://attached" });
     });
 
+    it("exposes the reverse dependents map keyed by satisfied service id", async () => {
+        expect.assertions(3);
+
+        // chain → middle → db, plus a sibling test → db. Both `chain`
+        // and `middle` should appear in db's dependents list (transitive
+        // discovery), alongside `test`. Sorted output is required so
+        // the service:attach hook fires with stable ordering.
+        const dbTask = buildTask("api:db", { service: { port: 5432 } });
+        const middleTask = buildTask("api:middle");
+        const chainTask = buildTask("api:chain");
+        const testTask = buildTask("api:test");
+        const taskGraph: TaskGraph = {
+            dependencies: {
+                "api:chain": ["api:middle"],
+                "api:db": [],
+                "api:middle": ["api:db"],
+                "api:test": ["api:db"],
+            },
+            roots: ["api:chain", "api:test"],
+            tasks: {
+                "api:chain": chainTask,
+                "api:db": dbTask,
+                "api:middle": middleTask,
+                "api:test": testTask,
+            },
+        };
+
+        const result = await applyServiceRegistry({
+            initialTasks: [chainTask, testTask],
+            registeredEntries: [buildEntry("api:db", { env: { DB_URL: "x" } })],
+            taskGraph,
+            visVersion: VIS_VERSION,
+        });
+
+        expect(result.serviceDependentsByServiceId.get("api:db")).toStrictEqual(["api:chain", "api:middle", "api:test"]);
+        expect(result.serviceDependentsByServiceId.size).toBe(1);
+        // Each dependent is processed once, so no duplicate ids can leak
+        // even across re-runs of the transitive walk for sibling tasks.
+        expect(result.serviceDependentsByServiceId.get("api:db")?.filter((id) => id === "api:chain").length).toBe(1);
+    });
+
     it("merges multi-service env in deterministic alphabetical order", async () => {
         expect.assertions(1);
 

@@ -55,6 +55,13 @@ export interface ApplyServiceRegistryResult {
      * original `middle → db` edge that pruning erases).
      */
     serviceEnvByTaskId: Map<string, Record<string, string>>;
+    /**
+     * Reverse index of `serviceEnvByTaskId`: for each satisfied service,
+     * the in-graph task ids that transitively depend on it. Surfaced for
+     * the `service:attach` plugin hook so handlers can correlate a
+     * service to the specific tasks that consumed it.
+     */
+    serviceDependentsByServiceId: Map<string, string[]>;
     taskGraph: TaskGraph;
 }
 
@@ -204,6 +211,7 @@ export const applyServiceRegistry = async (input: ApplyServiceRegistryInput): Pr
             diagnostics,
             initialTasks,
             satisfiedServices,
+            serviceDependentsByServiceId: new Map(),
             serviceEnvByTaskId: new Map(),
             taskGraph,
         };
@@ -246,6 +254,8 @@ export const applyServiceRegistry = async (input: ApplyServiceRegistryInput): Pr
         return [...found].sort();
     };
 
+    const serviceDependentsByServiceId = new Map<string, string[]>();
+
     for (const dependentId of Object.keys(taskGraph.dependencies)) {
         if (satisfied.has(dependentId)) {
             continue;
@@ -270,11 +280,27 @@ export const applyServiceRegistry = async (input: ApplyServiceRegistryInput): Pr
             // wins on key collision. Stable across runs, so a downstream
             // task can rely on which env it sees.
             Object.assign(merged, entry.env);
+
+            // Reverse index for the service:attach plugin hook.
+            const dependents = serviceDependentsByServiceId.get(serviceId);
+
+            if (dependents) {
+                dependents.push(dependentId);
+            } else {
+                serviceDependentsByServiceId.set(serviceId, [dependentId]);
+            }
         }
 
         if (Object.keys(merged).length > 0) {
             serviceEnvByTaskId.set(dependentId, merged);
         }
+    }
+
+    // Sort each dependents list so the hook receives a stable ordering
+    // across runs — handlers that compare across invocations don't have
+    // to do their own sorting.
+    for (const dependents of serviceDependentsByServiceId.values()) {
+        dependents.sort();
     }
 
     const filteredTasks: Record<string, Task> = {};
@@ -338,6 +364,7 @@ export const applyServiceRegistry = async (input: ApplyServiceRegistryInput): Pr
         diagnostics,
         initialTasks: filteredInitialTasks,
         satisfiedServices,
+        serviceDependentsByServiceId,
         serviceEnvByTaskId,
         taskGraph: {
             dependencies: filteredDependencies,

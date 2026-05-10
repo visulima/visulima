@@ -59,6 +59,9 @@ import type { TaskStore } from "../../tui/components/task-store";
 import { createDynamicOutputRenderer } from "../../tui/dynamic-life-cycle";
 import { parseOutputStyle, StaticOutputLifeCycle } from "../../tui/static-life-cycle";
 import type { StdinEntry } from "../../tui/types";
+import type { Hookable } from "hookable";
+
+import type { VisHooks } from "../../util/hooks";
 import { createVisHooks, HookableLifeCycle, registerPlugins } from "../../util/hooks";
 import { appendToShellHistory } from "../../util/shell-history";
 import { scheduleTimeoutKill } from "../../util/signal-escalation";
@@ -608,6 +611,14 @@ interface ExecutorDependencies {
     currentOs: ReturnType<typeof detectCurrentOs>;
 
     /**
+     * Plugin hook bus. Used by the executor to fire `task:retry` before
+     * each restart attempt — bridged from task-runner's per-attempt
+     * `onRetry` callback. Optional so tests that exercise the executor
+     * directly don't need to construct a hookable.
+     */
+    hooks?: Hookable<VisHooks>;
+
+    /**
      * The directory the user launched `vis` from, captured before any
      * workspace/package discovery changes cwd. Surfaced to child tasks
      * as `INIT_CWD`, matching pnpm/npm/yarn convention so scripts can
@@ -700,6 +711,7 @@ const createConcurrentExecutor = (deps: ExecutorDependencies) => {
         const {
             affectedFiles,
             currentOs,
+            hooks,
             initCwd,
             lifeCycle,
             mutexPool,
@@ -912,7 +924,23 @@ const createConcurrentExecutor = (deps: ExecutorDependencies) => {
                     {
                         killOthers: ["failure"],
                         onEvent,
-                        ...(retryCount > 0 ? { restart: { delay: retryDelay ?? "exponential", tries: retryCount } } : {}),
+                        ...(retryCount > 0
+                            ? {
+                                restart: {
+                                    delay: retryDelay ?? "exponential",
+                                    // Bridge task-runner's per-attempt callback into the
+                                    // typed task:retry hook. Throwing from a plugin
+                                    // handler aborts the retry — task-runner unwraps
+                                    // the rejection and surfaces it as a failure.
+                                    onRetry: hooks
+                                        ? async (attempt, _commandIndex, prevExitCode) => {
+                                            await hooks.callHook("task:retry", task, attempt, prevExitCode);
+                                        }
+                                        : undefined,
+                                    tries: retryCount,
+                                },
+                            }
+                            : {}),
                     },
                 );
             } finally {
@@ -1953,6 +1981,18 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
         // through; the explicit assignment here guarantees vis-driven
         // runs always co-locate their state under `.vis/`.
         dataDirectory: configTaskRunnerOptions.dataDirectory ?? getVisWorkspaceDataDir(workspaceRoot),
+        // Bridge the typed `task:fingerprint` hook into task-runner's
+        // `onFingerprint` callback. Placed after the config spread so
+        // the plugin pipeline always runs — a config-supplied
+        // `onFingerprint` would silently disable every plugin's
+        // fingerprint contributions.
+        //
+        // Errors propagate intentionally: a buggy plugin must fail the
+        // task before any cache lookup runs (per the hook's documented
+        // contract — see `VisHooks["task:fingerprint"]`).
+        onFingerprint: async (task, contributor) => {
+            await hooks.callHook("task:fingerprint", task, contributor);
+        },
     };
 
     // Layer the CLI cache-mode/backend flags onto the resolved remoteCache
@@ -1994,6 +2034,28 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
     const failureLogLifeCycle = new FailureLogLifeCycle(workspaceRoot);
 
     const outputStyle = parseOutputStyle(typeof options.outputStyle === "string" ? options.outputStyle.toLowerCase() : undefined);
+
+    // Fire service:attach for each registered service we attached to.
+    // Computed earlier in `applyServiceRegistry`; the hook fires here
+    // because `hooks` only exists post-`registerPlugins`. `taskIds` is
+    // the set of in-graph dependents that consume the service's env —
+    // empty when the service was attached but no dependent kept it.
+    //
+    // service:attach is an observation hook (see VisHooks docstring),
+    // so a buggy plugin warns through `onHookError` rather than aborting
+    // the run. Matches how the standalone `vis service` commands fire
+    // service:start/service:stop in `commands/service/handler.ts`.
+    if (serviceResult.satisfiedServices.length > 0) {
+        for (const entry of serviceResult.satisfiedServices) {
+            const taskIds = serviceResult.serviceDependentsByServiceId.get(entry.id) ?? [];
+
+            try {
+                await hooks.callHook("service:attach", entry, taskIds);
+            } catch (error) {
+                onHookError("service:attach", error);
+            }
+        }
+    }
 
     await hooks.callHook("run:before", { tasks: initialTasks, workspaceRoot });
 
@@ -2053,6 +2115,7 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
             const taskExecutor = createConcurrentExecutor({
                 affectedFiles,
                 currentOs,
+                hooks,
                 initCwd: invocationCwd,
                 lifeCycle,
                 mutexPool,
@@ -2255,6 +2318,7 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
             const taskExecutor = createConcurrentExecutor({
                 affectedFiles,
                 currentOs,
+                hooks,
                 initCwd: invocationCwd,
                 lifeCycle,
                 mutexPool,
