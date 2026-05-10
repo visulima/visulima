@@ -2343,13 +2343,13 @@ importers:
   packages/api/api-platform:
     dependencies:
       '@visulima/connect':
-        specifier: 4.0.0-alpha.17
+        specifier: 4.0.0-alpha.18
         version: link:../connect
       '@visulima/fs':
-        specifier: 5.0.0-alpha.18
+        specifier: 5.0.0-alpha.19
         version: link:../../filesystem/fs
       '@visulima/jsdoc-open-api':
-        specifier: 3.0.0-alpha.17
+        specifier: 3.0.0-alpha.18
         version: link:../jsdoc-open-api
       '@visulima/path':
         specifier: 3.0.0-alpha.10
@@ -2972,7 +2972,7 @@ importers:
         specifier: catalog:prod
         version: 12.1.0(openapi-types@12.1.3)
       '@visulima/fs':
-        specifier: 5.0.0-alpha.18
+        specifier: 5.0.0-alpha.19
         version: link:../../filesystem/fs
       comment-parser:
         specifier: catalog:prod
@@ -4089,10 +4089,10 @@ importers:
         specifier: catalog:types
         version: 8.0.0
       '@visulima/error':
-        specifier: 6.0.0-alpha.20
+        specifier: 6.0.0-alpha.21
         version: link:../../error-debugging/error
       '@visulima/fs':
-        specifier: 5.0.0-alpha.18
+        specifier: 5.0.0-alpha.19
         version: link:../../filesystem/fs
       '@visulima/packem':
         specifier: catalog:dev
@@ -4792,7 +4792,7 @@ importers:
         specifier: 3.0.0-alpha.10
         version: link:../../terminal/boxen
       '@visulima/error':
-        specifier: 6.0.0-alpha.20
+        specifier: 6.0.0-alpha.21
         version: link:../error
       http-errors:
         specifier: catalog:prod
@@ -5034,7 +5034,7 @@ importers:
         specifier: catalog:prod
         version: 4.0.2
       '@visulima/error':
-        specifier: 6.0.0-alpha.20
+        specifier: 6.0.0-alpha.21
         version: link:../error
       ai:
         specifier: ^6.0.175
@@ -5502,7 +5502,7 @@ importers:
         specifier: catalog:prod
         version: 4.0.2
       '@visulima/error':
-        specifier: 6.0.0-alpha.20
+        specifier: 6.0.0-alpha.21
         version: link:../error
       fastest-levenshtein:
         specifier: catalog:prod
@@ -6140,7 +6140,7 @@ importers:
         specifier: ^4.0.3
         version: 4.0.3
       '@visulima/error':
-        specifier: 6.0.0-alpha.20
+        specifier: 6.0.0-alpha.21
         version: link:../../error-debugging/error
       '@visulima/packem':
         specifier: catalog:dev
@@ -6470,7 +6470,7 @@ importers:
         specifier: catalog:dev
         version: 2.3.3
       '@visulima/fs':
-        specifier: 5.0.0-alpha.18
+        specifier: 5.0.0-alpha.19
         version: link:../../filesystem/fs
       '@visulima/humanizer':
         specifier: 3.0.0-alpha.11
@@ -7697,7 +7697,7 @@ importers:
         specifier: 2.0.0-alpha.9
         version: link:../command-line-args
       '@visulima/error':
-        specifier: 6.0.0-alpha.20
+        specifier: 6.0.0-alpha.21
         version: link:../../error-debugging/error
       '@visulima/find-cache-dir':
         specifier: 3.0.0-alpha.9
@@ -8985,7 +8985,7 @@ importers:
         specifier: catalog:prod
         version: 1.1.0
       '@visulima/fs':
-        specifier: 5.0.0-alpha.18
+        specifier: 5.0.0-alpha.19
         version: link:../../filesystem/fs
       '@visulima/path':
         specifier: 3.0.0-alpha.10
@@ -9501,7 +9501,7 @@ importers:
   packages/tooling/tsconfig:
     dependencies:
       '@visulima/fs':
-        specifier: 5.0.0-alpha.18
+        specifier: 5.0.0-alpha.19
         version: link:../../filesystem/fs
       '@visulima/path':
         specifier: 3.0.0-alpha.10
@@ -9613,10 +9613,10 @@ importers:
         specifier: 1.0.0-alpha.1
         version: link:../secret-scanner
       '@visulima/task-runner':
-        specifier: 1.0.0-alpha.11
+        specifier: 1.0.0-alpha.12
         version: link:../task-runner
       '@visulima/tui':
-        specifier: 1.0.0-alpha.11
+        specifier: 1.0.0-alpha.12
         version: link:../../terminal/tui
       jiti:
         specifier: catalog:dev
@@ -9710,7 +9710,7 @@ importers:
         specifier: 4.0.0-alpha.13
         version: link:../../terminal/ansi
       '@visulima/cerebro':
-        specifier: 3.0.0-alpha.19
+        specifier: 3.0.0-alpha.20
         version: link:../../terminal/cerebro
       '@visulima/colorize':
         specifier: 2.0.0-alpha.10
@@ -9722,7 +9722,7 @@ importers:
         specifier: 3.0.0-alpha.9
         version: link:../../filesystem/find-cache-dir
       '@visulima/fs':
-        specifier: 5.0.0-alpha.18
+        specifier: 5.0.0-alpha.19
         version: link:../../filesystem/fs
       '@visulima/humanizer':
         specifier: 3.0.0-alpha.11
@@ -9731,7 +9731,7 @@ importers:
         specifier: 1.0.0-alpha.2
         version: link:../../terminal/interactive-manager
       '@visulima/package':
-        specifier: 5.0.0-alpha.17
+        specifier: 5.0.0-alpha.18
         version: link:../package
       '@visulima/packem':
         specifier: catalog:dev
@@ -9885,13 +9885,13 @@ importers:
         specifier: ^1.29.0
         version: 1.29.0(zod@4.4.3)
       '@visulima/fs':
-        specifier: 5.0.0-alpha.18
+        specifier: 5.0.0-alpha.19
         version: link:../../filesystem/fs
       '@visulima/path':
         specifier: 3.0.0-alpha.10
         version: link:../../filesystem/path
       '@visulima/vis':
-        specifier: 1.0.0-alpha.16
+        specifier: 1.0.0-alpha.17
         version: link:../vis
       zod:
         specifier: catalog:utils
@@ -50179,7 +50179,7 @@ snapshots:
       eslint: 8.57.1
       eslint-plugin-react: 7.37.5(eslint@8.57.1)
 
-  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.2(eslint@10.3.0(jiti@2.7.0))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1):
+  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.2(eslint@10.3.0(jiti@2.7.0))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@10.3.0(jiti@2.7.0)))(eslint-plugin-promise@6.6.0(eslint@10.3.0(jiti@2.7.0)))(eslint@8.57.1):
     dependencies:
       eslint: 8.57.1
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.59.2(eslint@10.3.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.3.0(jiti@2.7.0))
@@ -61262,7 +61262,7 @@ snapshots:
   standard@17.1.2(@typescript-eslint/parser@8.59.2(eslint@10.3.0(jiti@2.7.0))(typescript@6.0.3)):
     dependencies:
       eslint: 8.57.1
-      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.2(eslint@10.3.0(jiti@2.7.0))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)
+      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.2(eslint@10.3.0(jiti@2.7.0))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@10.3.0(jiti@2.7.0)))(eslint-plugin-promise@6.6.0(eslint@10.3.0(jiti@2.7.0)))(eslint@8.57.1)
       eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@10.3.0(jiti@2.7.0)))(eslint@8.57.1)
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.59.2(eslint@10.3.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.3.0(jiti@2.7.0))
       eslint-plugin-n: 15.7.0(eslint@8.57.1)
