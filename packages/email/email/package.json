@@ -1,6 +1,6 @@
 {
     "name": "@visulima/email",
-    "version": "1.0.0-alpha.24",
+    "version": "1.0.0-alpha.25",
     "description": "A comprehensive email library with multi-provider support, crypto utilities, and template engines",
     "keywords": [
         "ahasend",
@@ -304,8 +304,8 @@
         "@types/mjml": "catalog:types",
         "@types/node": "catalog:types",
         "@types/nodemailer": "catalog:types",
-        "@visulima/error": "6.0.0-alpha.20",
-        "@visulima/fs": "5.0.0-alpha.18",
+        "@visulima/error": "6.0.0-alpha.21",
+        "@visulima/fs": "5.0.0-alpha.19",
         "@visulima/packem": "catalog:dev",
         "@visulima/path": "3.0.0-alpha.10",
         "@vitest/coverage-v8": "catalog:test",
