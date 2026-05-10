@@ -438,7 +438,9 @@ const repoLockfile = join(workspaceRoot, "pnpm-lock.yaml");
 const repoLockfileAvailable = existsSync(repoLockfile) && existsSync(join(workspaceRoot, "packages", "tooling", "vis", "package.json"));
 
 describe.skipIf(!repoLockfileAvailable)("pruneLockfile (visulima monorepo fixture)", () => {
-    it("prunes the workspace lockfile down to the @visulima/vis closure", () => {
+    // Parsing the full workspace lockfile (~2.3MB / 64k lines) twice + pruning
+    // takes ~2s locally but can exceed vitest's 5s default under CI parallelism.
+    it("prunes the workspace lockfile down to the @visulima/vis closure", { timeout: 30_000 }, () => {
         expect.assertions(5);
 
         const lockfileContent = readFileSync(repoLockfile, "utf8");
