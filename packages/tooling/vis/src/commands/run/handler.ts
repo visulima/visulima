@@ -2565,26 +2565,30 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
                 return;
             }
 
-            if (hasFailure) {
-                if (options.flaky !== false) {
-                // Reuse the history already loaded for the timing
-                // comparison above — the runs/ directory hasn't
-                // changed since this turn of the loop started.
-                    const flakyStats = analyzeFlakiness(workspaceRoot, { minRuns: 2 }, firstRun.runHistory);
+            // Print historical flakiness regardless of this run's outcome —
+            // a clean run that masked a flaky task via retries (or one that
+            // hasn't tripped the flake yet today) shouldn't hide history
+            // that would help the user investigate. Suppressed with
+            // `--no-flaky`. Reuses the history already loaded for the
+            // timing comparison above — the runs/ directory hasn't
+            // changed since this turn of the loop started.
+            if (options.flaky !== false) {
+                const flakyStats = analyzeFlakiness(workspaceRoot, { minRuns: 2 }, firstRun.runHistory);
 
-                    if (flakyStats.length > 0) {
-                        logger.info("");
-                        logger.info("Flaky tasks (based on historical runs):");
-                        logger.info("");
+                if (flakyStats.length > 0) {
+                    logger.info("");
+                    logger.info("Flaky tasks (based on historical runs):");
+                    logger.info("");
 
-                        for (const line of formatFlakinessTable(flakyStats)) {
-                            logger.info(`  ${line}`);
-                        }
-
-                        logger.info("");
+                    for (const line of formatFlakinessTable(flakyStats)) {
+                        logger.info(`  ${line}`);
                     }
-                }
 
+                    logger.info("");
+                }
+            }
+
+            if (hasFailure) {
                 throw new Error("Some tasks failed.");
             }
 

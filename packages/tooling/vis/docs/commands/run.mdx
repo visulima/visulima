@@ -417,7 +417,7 @@ export default defineConfig({
 
 ## Flakiness Report
 
-When tasks fail and historical run summaries exist (from prior `--summarize` runs), vis automatically shows which of the failed tasks are known to be flaky:
+When historical run summaries exist (from prior `--summarize` runs), vis automatically prints a flakiness table at the end of every run — successful or failed — so a clean run that masked a flake via retries doesn't hide history that would help you investigate. Suppress with `--no-flaky`.
 
 ```bash
 vis run :test --summarize
