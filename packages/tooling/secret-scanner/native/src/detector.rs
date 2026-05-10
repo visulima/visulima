@@ -193,8 +193,19 @@ pub fn scan_text(ruleset: &CompiledRuleset, path: &Path, content: &str) -> Vec<R
                 continue;
             }
         }
-        // Path-only rules: emit a finding for the file itself
+        // Path-only rules: emit a finding for the file itself.
+        //
+        // We still consult both rule-level and global allowlists so authors can
+        // suppress matches under specific subtrees (e.g. `paths = ['(?:^|/)test/']`).
+        // Match / secret / line are empty strings — only `paths`-style allowlists
+        // make sense for a rule that doesn't read content.
         if rule.engine.is_none() && rule.path_regex.is_some() {
+            if is_allowlisted(&rule.allowlists, &rule.id, &path_str, "", "", "")
+                || is_allowlisted(&ruleset.global_allowlists, &rule.id, &path_str, "", "", "")
+            {
+                continue;
+            }
+
             out.push(RawFinding {
                 rule_id: rule.id.clone(),
                 description: rule.description.clone(),

@@ -453,24 +453,34 @@ for (const entry of readdirSync(presetsSourceDir)) {
     }
 }
 
+// Strip preset rules from cached intermediates. When `SECRET_SCANNER_SKIP_*_FETCH=1`
+// reuses a previous build's `gitleaks.json` / `kingfisher.json`, those files already
+// have presets baked in — re-appending below would duplicate them on every rebuild.
+// Filtering by `preset:*` tag is correct because preset rules are stamped with that
+// tag in step 1 and upstream sources never carry it.
+const stripPresetRules = (rules) =>
+    (rules ?? []).filter((rule) => !Array.isArray(rule?.tags) || !rule.tags.some((tag) => typeof tag === "string" && tag.startsWith("preset:")));
+
 // 2. Gitleaks ruleset — upstream + patches + regex fixes. Local review artefact
 //    only (checked into git so ref bumps produce reviewable diffs), never shipped.
 const patchesJson = resolve(dataDir, "gitleaks.patches.json");
 const patchesOverlay = existsSync(patchesJson) ? readJson(patchesJson) : undefined;
 const gitleaksCore = buildGitleaks(patchesOverlay);
+const gitleaksCoreRules = stripPresetRules(gitleaksCore.rules);
 
 writeJson(resolve(dataDir, "gitleaks.json"), {
     ...gitleaksCore,
-    rules: [...(gitleaksCore.rules ?? []), ...presetRules],
+    rules: [...gitleaksCoreRules, ...presetRules],
 });
 
 // 3. Kingfisher ruleset (fetched + converted). Same deal — diff-review artefact.
 const kingfisherCore = buildKingfisher();
+const kingfisherCoreRules = kingfisherCore ? stripPresetRules(kingfisherCore.rules) : [];
 
 if (kingfisherCore) {
     writeJson(resolve(dataDir, "kingfisher.json"), {
         ...kingfisherCore,
-        rules: [...(kingfisherCore.rules ?? []), ...presetRules],
+        rules: [...kingfisherCoreRules, ...presetRules],
     });
 }
 
@@ -484,7 +494,7 @@ if (kingfisherCore) {
         provenance: {
             sources: [gitleaksCore.provenance, kingfisherCore.provenance].filter(Boolean),
         },
-        rules: [...(gitleaksCore.rules ?? []), ...(kingfisherCore.rules ?? []), ...presetRules],
+        rules: [...gitleaksCoreRules, ...kingfisherCoreRules, ...presetRules],
     };
 
     writeJson(resolve(dataDir, "ruleset.json"), ruleset, { minify: minifyShipped });

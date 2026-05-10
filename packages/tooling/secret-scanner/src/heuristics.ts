@@ -140,4 +140,14 @@ export const isPotentialUuid = (secret: string): boolean => UUID_PATTERN.test(se
  */
 const ALPHANUMERIC_PATTERN = /[\da-z]/i;
 
-export const isNotAlphanumericString = (secret: string): boolean => !ALPHANUMERIC_PATTERN.test(secret);
+export const isNotAlphanumericString = (secret: string): boolean => {
+    // Empty `secret` indicates a path-only rule finding (no captured content
+    // — the rule fires on filename match alone). Those must skip every
+    // content-shape heuristic, since "no capture" trivially has no
+    // alphanumeric chars and would otherwise be silently dropped here.
+    if (secret.length === 0) {
+        return false;
+    }
+
+    return !ALPHANUMERIC_PATTERN.test(secret);
+};

@@ -1,4 +1,4 @@
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 
@@ -514,8 +514,13 @@ leaked = "${secret2}"
         expect(findings).toHaveLength(0);
     });
 
-    // TODO: path-only rules (no regex/keywords) produce no findings — investigate Rust-side handling
-    it.todo("two path-only rules on the same file coexist (not collapsed by span-dedup)", async () => {
+    // Pre-fix this case silently produced zero findings: the empty `secret`
+    // string on path-only emissions was dropped by `isNotAlphanumericString`
+    // before the user ever saw it. Heuristic now short-circuits on empty
+    // secrets, and `finalize_findings` already skips span-dedup for path-only
+    // rows (offset 0/0 sentinel) — so two distinct path-only rules on the
+    // same file both surface.
+    it("two path-only rules on the same file coexist (not collapsed by span-dedup)", async () => {
         expect.assertions(2);
 
         await writeFile(resolve(tmpDir, "vault-export.kdbx"), "binary-ish-keepass-db");
@@ -536,6 +541,38 @@ leaked = "${secret2}"
 
         expect(ids.has("kdbx-a")).toBe(true);
         expect(ids.has("kdbx-b")).toBe(true);
+    });
+
+    // Path-only rules now consult both rule-level and global allowlists in the
+    // detector's path-only branch. Match / secret / line strings are empty, so
+    // only `paths`-style allowlists are meaningful — `regexes` / `stopwords`
+    // would match against empty strings and degenerate.
+    it("path-only rules honor their own `allowlists` entries", async () => {
+        expect.assertions(2);
+
+        await mkdir(resolve(tmpDir, "test/fixtures"), { recursive: true });
+        await writeFile(resolve(tmpDir, "vault-export.kdbx"), "binary");
+        await writeFile(resolve(tmpDir, "test/fixtures/vault-export.kdbx"), "binary");
+
+        const findings = await scan([tmpDir], {
+            config: {
+                extendBundled: false,
+                inline: {
+                    rules: [
+                        {
+                            allowlists: [{ paths: ["(?:^|/)test/"] }],
+                            description: "kdbx by extension",
+                            id: "kdbx-allowlist",
+                            path: String.raw`\.kdbx$`,
+                        },
+                    ],
+                },
+            },
+        });
+
+        expect(findings).toHaveLength(1);
+        // Paths are reported relative to scan root, so the unfiltered file is `vault-export.kdbx`.
+        expect(findings[0]?.file).toBe("vault-export.kdbx");
     });
 
     it("upstream true|false|null allowlist regex no longer swallows legit secrets", async () => {

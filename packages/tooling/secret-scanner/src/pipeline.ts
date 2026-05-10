@@ -44,7 +44,14 @@ const applyHeuristicFilters = (findings: Finding[], options: ScanOptions | undef
     }
 
     return findings.filter((finding) => {
-        if (skipLockFile && isLockFile(finding.file)) {
+        // Exposure-tagged rules are about file/path leakage, not the shape of
+        // a captured secret. Heuristics designed to filter content-shape FPs
+        // would silently drop legitimate exposure findings — e.g. the
+        // `lockFile` heuristic would suppress `exposed-lockfile-in-build-output`
+        // because `package-lock.json` is in the lock-file basename set.
+        const isExposureFinding = finding.tags.includes("exposure");
+
+        if (!isExposureFinding && skipLockFile && isLockFile(finding.file)) {
             return false;
         }
 
