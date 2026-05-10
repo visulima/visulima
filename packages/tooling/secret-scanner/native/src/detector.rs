@@ -195,14 +195,15 @@ pub fn scan_text(ruleset: &CompiledRuleset, path: &Path, content: &str) -> Vec<R
         }
         // Path-only rules: emit a finding for the file itself.
         //
-        // We still consult both rule-level and global allowlists so authors can
-        // suppress matches under specific subtrees (e.g. `paths = ['(?:^|/)test/']`).
-        // Match / secret / line are empty strings — only `paths`-style allowlists
-        // make sense for a rule that doesn't read content.
+        // We consult **rule-level** allowlists only so authors can suppress matches
+        // under specific subtrees (e.g. `paths = ['(?:^|/)test/']`). Global allowlists
+        // are scoped to content-shape hygiene (lockfiles, vendored bundles, binary
+        // assets) — applying them here would mask the exposure rules whose whole
+        // purpose is to flag those very files (e.g. `exposed-lockfile-in-build-output`).
+        // Match / secret / line are empty strings; only `paths`-style allowlists are
+        // meaningful for a rule that doesn't read content.
         if rule.engine.is_none() && rule.path_regex.is_some() {
-            if is_allowlisted(&rule.allowlists, &rule.id, &path_str, "", "", "")
-                || is_allowlisted(&ruleset.global_allowlists, &rule.id, &path_str, "", "", "")
-            {
+            if is_allowlisted(&rule.allowlists, &rule.id, &path_str, "", "", "") {
                 continue;
             }
 
