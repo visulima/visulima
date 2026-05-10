@@ -8,6 +8,7 @@ import CommandSummary from "./components/command-summary";
 import Header from "./components/header";
 import { formatFlags, formatTargetsAndProjects } from "./formatting-utils";
 import { formatMs } from "./pretty-time";
+import type { CiGroupingMode } from "./status-utils";
 import { getStatusIcon, isCacheStatus, logCommandOutputCI } from "./status-utils";
 
 /**
@@ -30,6 +31,13 @@ interface StaticOutputOptions {
         targets: string[];
     };
 
+    /**
+     * CI log grouping mode. `auto` (the default) detects GitHub / GitLab
+     * via env vars and emits the matching collapsible directives so the
+     * web UI can fold per-task output. `off` keeps the raw separators.
+     * Sourced from `vis-config.ts → run.ciGrouping`.
+     */
+    ciGrouping?: CiGroupingMode;
     /**
      * Optional {@link LogReporter} that takes over `printTaskTerminalOutput`
      * when the user picks a `--log` mode. Absent, the CI-style
@@ -73,11 +81,15 @@ export class StaticOutputLifeCycle implements LifeCycleInterface {
 
     readonly #cachedTasks: TaskResult[] = [];
 
+    readonly #retriedTasks: TaskResult[] = [];
+
     readonly #allCompletedTasks = new Map<string, TaskResult>();
 
     readonly #logReporter: LogReporter | undefined;
 
     readonly #outputStyle: OutputStyle;
+
+    readonly #ciGrouping: CiGroupingMode;
 
     #commandStartTime = 0;
 
@@ -87,6 +99,7 @@ export class StaticOutputLifeCycle implements LifeCycleInterface {
         this.#tasks = options.tasks;
         this.#logReporter = options.logReporter;
         this.#outputStyle = options.outputStyle ?? "normal";
+        this.#ciGrouping = options.ciGrouping ?? "auto";
     }
 
     public startCommand(): void {
@@ -136,9 +149,16 @@ export class StaticOutputLifeCycle implements LifeCycleInterface {
                 this.#cachedTasks.push(result);
             }
 
+            // Tracked separately from success/failure so the final summary
+            // can warn even on a clean run that masked a flake via retries.
+            if (result.retryAttempts && result.retryAttempts > 0) {
+                this.#retriedTasks.push(result);
+            }
+
             const icon = getStatusIcon(result.status);
             const elapsedString = result.startTime && result.endTime ? ` (${formatMs(result.endTime - result.startTime)})` : "";
             const cacheLabelString = isCacheStatus(result.status) ? " [cache]" : "";
+            const retryLabelString = result.retryAttempts && result.retryAttempts > 0 ? ` [retried ${result.retryAttempts}x]` : "";
 
             const line = renderToString(
                 React.createElement(
@@ -147,6 +167,7 @@ export class StaticOutputLifeCycle implements LifeCycleInterface {
                     icon,
                     `  ${result.task.id}`,
                     cacheLabelString ? React.createElement(Text, { color: "cyan" }, cacheLabelString) : null,
+                    retryLabelString ? React.createElement(Text, { color: "yellow" }, retryLabelString) : null,
                     elapsedString ? React.createElement(Text, { dimColor: true }, elapsedString) : null,
                 ),
                 { columns },
@@ -171,7 +192,7 @@ export class StaticOutputLifeCycle implements LifeCycleInterface {
             return;
         }
 
-        logCommandOutputCI(task.id, status, terminalOutput);
+        logCommandOutputCI(task.id, status, terminalOutput, this.#ciGrouping);
     }
 
     public endCommand(): void {
@@ -190,6 +211,7 @@ export class StaticOutputLifeCycle implements LifeCycleInterface {
                 failed: this.#failedTasks.length,
                 failedIds: this.#failedTasks.map((r) => r.task.id),
                 projectNames: this.#projectNames,
+                retriedIds: this.#retriedTasks.length > 0 ? this.#retriedTasks.map((r) => r.task.id) : undefined,
                 skippedIds: skippedIds.length > 0 ? skippedIds : undefined,
                 succeeded: this.#allCompletedTasks.size - this.#failedTasks.length - this.#cachedTasks.length,
                 targets: this.#targets,

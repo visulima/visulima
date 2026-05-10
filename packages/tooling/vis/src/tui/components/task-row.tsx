@@ -12,6 +12,14 @@ export interface TaskRowData {
     elapsed?: number;
     /** True for long-running tasks (dev/serve/watch). Rendered like a ready service: green dot + "running". */
     persistent?: boolean;
+    /**
+     * Number of times the restart controller restarted the task before it
+     * produced this final status. `undefined` (or `0`) means it passed/failed
+     * on the first attempt; `> 0` flags this row as "succeeded after retry"
+     * (or "failed after exhausting retries") so the renderer can warn even
+     * when the final status is `success`.
+     */
+    retryAttempts?: number;
     status: "pending" | "running" | TaskStatus;
     taskId: string;
 }
@@ -72,7 +80,13 @@ const TaskRow = ({ row }: TaskRowProps): React.JSX.Element => {
     // Completed states: success, failure, cache, skipped
     const icon = status === "failure" ? <Text color="red">{CROSS}</Text> : <Text color="green">{TICK}</Text>;
     const dur = row.duration === undefined ? DASH : formatMs(row.duration);
-    const cache = isCacheStatus(status) ? <Text dimColor>cached</Text> : <Text dimColor>{DASH}</Text>;
+    // Retry badge takes priority over the cache slot — a cached task can't
+    // also be retried (cache hits skip the executor entirely), so the slot
+    // is free to advertise the flake.
+    const retried = row.retryAttempts && row.retryAttempts > 0;
+    const cache = retried
+        ? <Text color="yellow">{`↻${row.retryAttempts}x`}</Text>
+        : isCacheStatus(status) ? <Text dimColor>cached</Text> : <Text dimColor>{DASH}</Text>;
 
     return (
         <Box>

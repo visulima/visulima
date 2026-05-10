@@ -878,7 +878,7 @@ const createConcurrentExecutor = (deps: ExecutorDependencies) => {
             }
         };
 
-        const runOnce = async (): Promise<{ code: number; terminalOutput: string }> => {
+        const runOnce = async (): Promise<{ code: number; retryAttempts: number; terminalOutput: string }> => {
             const requestedRetries = visOptions?.retryCount ?? 0;
             const retryDelay = visOptions?.retryDelay;
             // Global retry budget caps per-task retries from above. The budget
@@ -891,6 +891,7 @@ const createConcurrentExecutor = (deps: ExecutorDependencies) => {
             const killGracePeriodMs
                 = typeof visOptions?.killGracePeriodMs === "number" && visOptions.killGracePeriodMs >= 0 ? visOptions.killGracePeriodMs : 5000;
             let timedOut = false;
+            let retryAttempts = 0;
 
             const timeoutKill = scheduleTimeoutKill({
                 killGracePeriodMs,
@@ -932,11 +933,12 @@ const createConcurrentExecutor = (deps: ExecutorDependencies) => {
                                     // typed task:retry hook. Throwing from a plugin
                                     // handler aborts the retry — task-runner unwraps
                                     // the rejection and surfaces it as a failure.
-                                    onRetry: hooks
-                                        ? async (attempt, _commandIndex, prevExitCode) => {
+                                    onRetry: async (attempt, _commandIndex, prevExitCode) => {
+                                        retryAttempts = attempt;
+                                        if (hooks) {
                                             await hooks.callHook("task:retry", task, attempt, prevExitCode);
                                         }
-                                        : undefined,
+                                    },
                                     tries: retryCount,
                                 },
                             }
@@ -956,12 +958,14 @@ const createConcurrentExecutor = (deps: ExecutorDependencies) => {
                 // failures. Exit code 124 mirrors GNU `timeout(1)` convention.
                 return {
                     code: 124,
+                    retryAttempts,
                     terminalOutput: `${buffered}\n[timeout] Task "${task.id}" exceeded ${timeoutMs}ms budget.\n`,
                 };
             }
 
             return {
                 code: closeEvent?.exitCode ?? 1,
+                retryAttempts,
                 terminalOutput: buffered,
             };
         };
@@ -2310,7 +2314,7 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
             // lifecycle first so the executor can forward streaming
             // stdout/stderr chunks into it.
             const lifeCycle = new CompositeLifeCycle([
-                new StaticOutputLifeCycle({ ...lifecycleOptions, logReporter, outputStyle }),
+                new StaticOutputLifeCycle({ ...lifecycleOptions, ciGrouping: visConfig?.run?.ciGrouping ?? "auto", logReporter, outputStyle }),
                 hookLifeCycle,
                 failureLogLifeCycle,
             ]);
@@ -2588,8 +2592,39 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
                 }
             }
 
-            if (hasFailure) {
-                throw new Error("Some tasks failed.");
+            // `--fail-on-retry` upgrades any retried-but-passed task into a
+            // run failure. Lets CI surface flakes that retries would
+            // otherwise mask — useful as a periodic "nightly" check that
+            // disables the safety net the day-to-day workflow keeps on.
+            const retriedTaskIds: string[] = [];
+
+            for (const [taskId, result] of firstRun.results) {
+                if (result.retryAttempts && result.retryAttempts > 0) {
+                    retriedTaskIds.push(taskId);
+                }
+            }
+
+            const failOnRetry = options.failOnRetry === true && retriedTaskIds.length > 0;
+
+            if (failOnRetry) {
+                // Cap the rendered list so a wide flake (every task retried
+                // once) doesn't produce a multi-screen warn line that buries
+                // surrounding context in CI logs.
+                const MAX_LISTED = 5;
+                const listedIds = retriedTaskIds.slice(0, MAX_LISTED);
+                const remaining = retriedTaskIds.length - listedIds.length;
+                const idsRendered = remaining > 0
+                    ? `${listedIds.join(", ")}, and ${String(remaining)} more`
+                    : listedIds.join(", ");
+
+                logger.warn("");
+                logger.warn(
+                    `--fail-on-retry: ${String(retriedTaskIds.length)} task(s) succeeded only after retry: ${idsRendered}`,
+                );
+            }
+
+            if (hasFailure || failOnRetry) {
+                throw new Error(failOnRetry && !hasFailure ? "Some tasks succeeded only after retry (--fail-on-retry)." : "Some tasks failed.");
             }
 
             if (persistentTasks.length > 0 && !options.failFast) {

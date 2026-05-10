@@ -91,6 +91,32 @@ Cache task runner artifacts between CI runs:
           vis-cache-${{ runner.os }}-
 ```
 
+### Collapsible Task Output
+
+`vis run` automatically wraps each task's output in a collapsible group when it detects a supported CI runner, so the web UI shows one foldable section per task instead of a single firehose of stdout. Failed tasks are always rendered expanded so the failure is visible without an extra click.
+
+| Runner            | Detected via              | Format emitted               |
+| :---------------- | :------------------------ | :--------------------------- |
+| GitHub Actions    | `GITHUB_ACTIONS=true`     | `::group::` / `::endgroup::` |
+| GitLab CI         | `GITLAB_CI=true`          | `section_start:` ANSI lines  |
+| Buildkite         | `BUILDKITE=true`          | `--- ` collapsed headers     |
+| Azure Pipelines   | `TF_BUILD=True`           | `##[group]` / `##[endgroup]` |
+
+CircleCI is intentionally not auto-detected: its 2.0+ format has no inline grouping directive — steps auto-group in the web UI without any markup from the runner.
+
+Override the default detection in `vis.config.ts`:
+
+```ts
+export default defineConfig({
+    run: {
+        // "auto" (default) — detect via env. "off" disables grouping.
+        // "azure" / "buildkite" / "github" / "gitlab" force the format
+        // on self-hosted runners that don't set the standard env vars.
+        ciGrouping: "auto",
+    },
+});
+```
+
 ## GitLab CI
 
 `vis ci` auto-detects GitLab merge-request pipelines via `CI_MERGE_REQUEST_TARGET_BRANCH_NAME` and `CI_COMMIT_SHA`, so the affected-graph base/head are derived without manual flags.

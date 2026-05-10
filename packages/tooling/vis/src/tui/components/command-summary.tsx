@@ -12,6 +12,12 @@ interface CommandSummaryProps {
     failed: number;
     failedIds: string[];
     projectNames: string[];
+    /**
+     * IDs of tasks that ultimately succeeded but only after one or more
+     * restarts. Surfaced as a yellow "succeeded after retry" block so the
+     * run doesn't look fully clean when retries masked a flake.
+     */
+    retriedIds?: string[];
     skippedIds?: string[];
     succeeded: number;
     targets: string[];
@@ -22,8 +28,9 @@ interface CommandSummaryProps {
 /**
  * Final summary block rendered after all tasks complete.
  */
-const CommandSummary = ({ cached, failed, failedIds, projectNames, skippedIds, succeeded, targets, tasks, took }: CommandSummaryProps): React.JSX.Element => {
+const CommandSummary = ({ cached, failed, failedIds, projectNames, retriedIds, skippedIds, succeeded, targets, tasks, took }: CommandSummaryProps): React.JSX.Element => {
     const description = formatTargetsAndProjects(projectNames, targets, tasks);
+    const retried = retriedIds ?? [];
 
     if (failed === 0 && (!skippedIds || skippedIds.length === 0)) {
         const cacheNote = cached > 0 ? ` (${cached} read from cache)` : "";
@@ -32,7 +39,7 @@ const CommandSummary = ({ cached, failed, failedIds, projectNames, skippedIds, s
             <StaticRender>
                 {() => (
                     <Header title={`Successfully ran ${description}`} variant="success">
-                        <Box marginTop={1} paddingLeft={3}>
+                        <Box flexDirection="column" marginTop={1} paddingLeft={3}>
                             <Text>
                                 <Text color="green">{TICK}</Text>
                                 {"  "}
@@ -41,6 +48,26 @@ const CommandSummary = ({ cached, failed, failedIds, projectNames, skippedIds, s
                                 {cacheNote ? <Text dimColor>{cacheNote}</Text> : null}
                                 <Text dimColor>{`  ·  Took ${took}`}</Text>
                             </Text>
+                            {retried.length > 0 && (
+                                <Box flexDirection="column" marginTop={1}>
+                                    <Text>
+                                        <Text color="yellow">↻</Text>
+                                        {"  "}
+                                        <Text color="yellow">{String(retried.length)}</Text>
+                                        {" task"}
+                                        {retried.length === 1 ? "" : "s"}
+                                        {" succeeded after retry:"}
+                                    </Text>
+                                    {retried.map((id) => (
+                                        <Text key={id}>
+                                            {"   "}
+                                            <Text color="yellow">↻</Text>
+                                            {"  "}
+                                            {id}
+                                        </Text>
+                                    ))}
+                                </Box>
+                            )}
                         </Box>
                     </Header>
                 )}
@@ -86,6 +113,27 @@ failed:
                                     <Text key={id}>
                                         {"   "}
                                         <Text color="red">{CROSS}</Text>
+                                        {"  "}
+                                        {id}
+                                    </Text>
+                                ))}
+                                <Text />
+                            </Box>
+                        )}
+                        {retried.length > 0 && (
+                            <Box flexDirection="column">
+                                <Text>
+                                    <Text color="yellow">{String(retried.length)}</Text>
+{" "}
+task
+{retried.length === 1 ? "" : "s"}
+{" "}
+finished after retry:
+                                </Text>
+                                {retried.map((id) => (
+                                    <Text key={id}>
+                                        {"   "}
+                                        <Text color="yellow">↻</Text>
                                         {"  "}
                                         {id}
                                     </Text>

@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+
 import type { TaskStatus } from "@visulima/task-runner";
 import { renderToString } from "@visulima/tui";
 import { Text } from "@visulima/tui/components/text";
@@ -75,10 +77,79 @@ export const getStatusPrefix = (status: TaskStatus): string => {
 };
 
 /**
- * Logs task terminal output with formatting.
- * Uses GitHub Actions grouping when available.
+ * CI grouping mode for {@link logCommandOutputCI}. Mirrors
+ * `vis-config.ts → run.ciGrouping`. The runtime resolves `auto`
+ * to a concrete format based on env vars (or `off` when no
+ * supported runner is detected) before reaching the writer.
  */
-export const logCommandOutputCI = (taskId: string, status: TaskStatus, output: string): void => {
+export type CiGroupingMode = "auto" | "azure" | "buildkite" | "github" | "gitlab" | "off";
+
+/** Concrete grouping format actually emitted by the writer. */
+export type ResolvedCiGroupingMode = "azure" | "buildkite" | "github" | "gitlab" | "off";
+
+/**
+ * Resolves `auto` to the concrete grouping format implied by the
+ * current environment. Off when no supported runner is detected so we
+ * don't leak directive lines into a plain terminal.
+ *
+ * Detected runners (env var → mode):
+ * - `GITHUB_ACTIONS=true` → `github`
+ * - `GITLAB_CI=true` → `gitlab`
+ * - `BUILDKITE=true` → `buildkite`
+ * - `TF_BUILD=True` (Pascal-case, set by Azure Pipelines) → `azure`
+ *
+ * CircleCI is intentionally not auto-detected: its 2.0+ format has
+ * no inline grouping directive (steps auto-group in the web UI).
+ */
+export const resolveCiGroupingMode = (mode: CiGroupingMode | undefined): ResolvedCiGroupingMode => {
+    if (mode === "azure" || mode === "buildkite" || mode === "github" || mode === "gitlab" || mode === "off") {
+        return mode;
+    }
+
+    if (process.env["GITHUB_ACTIONS"] === "true") {
+        return "github";
+    }
+
+    if (process.env["GITLAB_CI"] === "true") {
+        return "gitlab";
+    }
+
+    if (process.env["BUILDKITE"] === "true") {
+        return "buildkite";
+    }
+
+    // Azure Pipelines exports TF_BUILD with a Pascal-case "True" — match
+    // case-insensitively to be safe across agents that normalise the value.
+    if (process.env["TF_BUILD"]?.toLowerCase() === "true") {
+        return "azure";
+    }
+
+    return "off";
+};
+
+/**
+ * Builds a GitLab section key safe for the section_start/section_end
+ * ANSI directives. GitLab requires `[A-Za-z0-9_]+` and uses the same
+ * key on both ends, so we slugify aggressively. A short hash of the
+ * original task id is appended so distinct ids that slugify to the
+ * same string (e.g. `app:test` and `app_test`) don't collide and
+ * collapse into one another's sections in the web UI.
+ */
+const toGitLabSectionKey = (taskId: string): string => {
+    const slug = taskId.replaceAll(/[^A-Za-z0-9_]+/g, "_");
+    const hash = createHash("sha256").update(taskId).digest("hex").slice(0, 6);
+
+    return `${slug}_${hash}`;
+};
+
+/**
+ * Logs task terminal output with formatting. Wraps the output in the
+ * appropriate CI log group when grouping is enabled — failed tasks are
+ * intentionally left expanded so the failure is visible without an
+ * extra click. Pass `mode` from `vis-config.ts → run.ciGrouping`;
+ * `auto` (the default) detects the runner via env vars.
+ */
+export const logCommandOutputCI = (taskId: string, status: TaskStatus, output: string, mode: CiGroupingMode | undefined = "auto"): void => {
     const trimmed = output.trim();
 
     if (!trimmed) {
@@ -86,22 +157,67 @@ export const logCommandOutputCI = (taskId: string, status: TaskStatus, output: s
     }
 
     const EOL = "\n";
-    const isGitHubActions = process.env["GITHUB_ACTIONS"] === "true";
+    const grouping = resolveCiGroupingMode(mode);
 
-    if (isGitHubActions) {
+    // Failed tasks shouldn't be hidden behind a collapsed group —
+    // the user came here to read the failure. Fall through to the
+    // raw-separator rendering even when grouping is on.
+    if (grouping === "github" && status !== "failure") {
         process.stdout.write(`::group::${getStatusIcon(status)} ${taskId}${EOL}`);
         process.stdout.write(trimmed + EOL);
         process.stdout.write(`::endgroup::${EOL}`);
-    } else {
-        const width = process.stdout.columns || 80;
-        const separator = renderToString(React.createElement(Text, { dimColor: true }, DASH.repeat(width)), { columns: width }).trim();
 
-        const prefix = getStatusPrefix(status);
-        const boldTaskId = renderToString(React.createElement(Text, { bold: true }, taskId), { columns: width }).trim();
-
-        process.stdout.write(`${separator}${EOL}`);
-        process.stdout.write(`${prefix} ${boldTaskId}${EOL}`);
-        process.stdout.write(trimmed + EOL);
-        process.stdout.write(`${separator}${EOL}`);
+        return;
     }
+
+    if (grouping === "gitlab" && status !== "failure") {
+        // Each directive carries its own timestamp so the GitLab UI can
+        // compute the section's runtime; reusing one timestamp would lie
+        // about how long output spent inside the block.
+        const startTs = Math.floor(Date.now() / 1000);
+        const key = toGitLabSectionKey(taskId);
+        // ANSI CSI "Erase In Line" — GitLab strips the cursor-positioning
+        // bytes from the rendered log so the directive itself stays hidden.
+        const eraseLine = "[0K";
+
+        process.stdout.write(`${eraseLine}section_start:${String(startTs)}:${key}[collapsed=true]\r${eraseLine}${getStatusIcon(status)} ${taskId}${EOL}`);
+        process.stdout.write(trimmed + EOL);
+
+        const endTs = Math.floor(Date.now() / 1000);
+
+        process.stdout.write(`${eraseLine}section_end:${String(endTs)}:${key}\r${eraseLine}${EOL}`);
+
+        return;
+    }
+
+    if (grouping === "buildkite" && status !== "failure") {
+        // Buildkite has no explicit "end group" directive — the next
+        // `---` / `+++` / `~~~` line implicitly closes the previous
+        // block. The trailing raw separator below acts as a no-op
+        // delimiter so subsequent unrelated output isn't accidentally
+        // folded into this task's collapsed group.
+        process.stdout.write(`--- ${getStatusIcon(status)} ${taskId}${EOL}`);
+        process.stdout.write(trimmed + EOL);
+
+        return;
+    }
+
+    if (grouping === "azure" && status !== "failure") {
+        process.stdout.write(`##[group]${getStatusIcon(status)} ${taskId}${EOL}`);
+        process.stdout.write(trimmed + EOL);
+        process.stdout.write(`##[endgroup]${EOL}`);
+
+        return;
+    }
+
+    const width = process.stdout.columns || 80;
+    const separator = renderToString(React.createElement(Text, { dimColor: true }, DASH.repeat(width)), { columns: width }).trim();
+
+    const prefix = getStatusPrefix(status);
+    const boldTaskId = renderToString(React.createElement(Text, { bold: true }, taskId), { columns: width }).trim();
+
+    process.stdout.write(`${separator}${EOL}`);
+    process.stdout.write(`${prefix} ${boldTaskId}${EOL}`);
+    process.stdout.write(trimmed + EOL);
+    process.stdout.write(`${separator}${EOL}`);
 };

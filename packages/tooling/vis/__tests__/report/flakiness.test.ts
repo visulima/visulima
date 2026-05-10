@@ -158,6 +158,7 @@ describe(formatFlakinessTable, () => {
                 flakinessRate: 0.3,
                 lastFailure: "2026-01-05T00:00:00Z",
                 project: "x",
+                retriedSuccesses: 0,
                 successes: 7,
                 target: "build",
                 taskId: "x:build",
@@ -169,5 +170,130 @@ describe(formatFlakinessTable, () => {
         expect(lines[0]).toContain("Task");
         expect(lines[0]).toContain("Runs");
         expect(lines[0]).toContain("Rate");
+    });
+
+    it("should include the Retried column when retriedSuccesses are present", () => {
+        expect.assertions(2);
+
+        const lines = formatFlakinessTable([
+            {
+                failures: 1,
+                flakinessRate: 0.25,
+                lastRetry: "2026-01-06T00:00:00Z",
+                project: "x",
+                retriedSuccesses: 2,
+                successes: 6,
+                target: "test",
+                taskId: "x:test",
+                totalRuns: 8,
+            },
+        ]);
+
+        expect(lines[0]).toContain("Retried");
+        expect(lines.some((line) => line.includes(" 2 "))).toBe(true);
+    });
+});
+
+describe("analyzeFlakiness with retried-but-passed runs", () => {
+    let tmpDir: string;
+
+    beforeEach(() => {
+        tmpDir = createTemporaryDirectory("vis-flakiness-retry-");
+    });
+
+    afterEach(() => {
+        cleanupTemporaryDirectory(tmpDir);
+    });
+
+    it("should flag a task as flaky when it passes only after retries", () => {
+        expect.assertions(5);
+
+        const runsDir = join(tmpDir, ".vis", "runs");
+
+        mkdirSync(runsDir, { recursive: true });
+
+        // Both runs pass cleanly from the user's perspective, but one needed
+        // a restart to get there — the report should still surface this.
+        const run1 = {
+            id: "run-1",
+            startTime: "2026-02-01T00:00:00Z",
+            tasks: [
+                {
+                    cacheStatus: "MISS",
+                    exitCode: 0,
+                    retryAttempts: 2,
+                    startTime: "2026-02-01T00:00:01Z",
+                    target: { project: "z", target: "test" },
+                    taskId: "z:test",
+                },
+            ],
+        };
+
+        const run2 = {
+            id: "run-2",
+            startTime: "2026-02-02T00:00:00Z",
+            tasks: [
+                {
+                    cacheStatus: "MISS",
+                    exitCode: 0,
+                    startTime: "2026-02-02T00:00:01Z",
+                    target: { project: "z", target: "test" },
+                    taskId: "z:test",
+                },
+            ],
+        };
+
+        writeFileSync(join(runsDir, "run-1.json"), JSON.stringify(run1));
+        writeFileSync(join(runsDir, "run-2.json"), JSON.stringify(run2));
+
+        const stats = analyzeFlakiness(tmpDir);
+
+        expect(stats).toHaveLength(1);
+        expect(stats[0]!.failures).toBe(0);
+        expect(stats[0]!.retriedSuccesses).toBe(1);
+        expect(stats[0]!.successes).toBe(2);
+        // Half-weighted: (0 failures + 0.5 * 1 retry) / 2 runs = 0.25
+        expect(stats[0]!.flakinessRate).toBeCloseTo(0.25);
+    });
+
+    it("should not flag a task with only clean (zero-retry) runs", () => {
+        expect.assertions(1);
+
+        const runsDir = join(tmpDir, ".vis", "runs");
+
+        mkdirSync(runsDir, { recursive: true });
+
+        const run1 = {
+            id: "run-1",
+            startTime: "2026-02-01T00:00:00Z",
+            tasks: [
+                {
+                    cacheStatus: "MISS",
+                    exitCode: 0,
+                    startTime: "2026-02-01T00:00:01Z",
+                    target: { project: "z", target: "test" },
+                    taskId: "z:test",
+                },
+            ],
+        };
+
+        const run2 = {
+            id: "run-2",
+            startTime: "2026-02-02T00:00:00Z",
+            tasks: [
+                {
+                    cacheStatus: "MISS",
+                    exitCode: 0,
+                    startTime: "2026-02-02T00:00:01Z",
+                    target: { project: "z", target: "test" },
+                    taskId: "z:test",
+                },
+            ],
+        };
+
+        writeFileSync(join(runsDir, "run-1.json"), JSON.stringify(run1));
+        writeFileSync(join(runsDir, "run-2.json"), JSON.stringify(run2));
+
+        expect(analyzeFlakiness(tmpDir)).toStrictEqual([]);
     });
 });

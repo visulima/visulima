@@ -171,6 +171,13 @@ const run: Command = {
             type: Boolean,
         },
         {
+            defaultValue: false,
+            description:
+                "Treat any task that needed at least one retry as a run failure (exit non-zero), even when retries eventually succeeded. Use in CI to surface flakes that retries would otherwise mask.",
+            name: "fail-on-retry",
+            type: Boolean,
+        },
+        {
             // No `defaultValue` — `undefined` means "fall back to vis.config.ts strictEnv (default off)".
             description:
                 "Fail a task if its command references an env var that is unset (no silent empty-string substitution). Use --no-strict-env to disable when set in config.",
@@ -220,6 +227,7 @@ export type RunOptions = CreateOptions<{
     "cache-mode": string | undefined;
     "dry-run": boolean | undefined;
     "fail-fast": boolean | undefined;
+    "fail-on-retry": boolean | undefined;
     flaky: boolean | undefined;
     "last-details": boolean | undefined;
     log: string | undefined;

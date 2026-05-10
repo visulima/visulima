@@ -800,6 +800,30 @@ export interface VisConfig {
      */
     run?: {
         /**
+         * Wrap each task's CI log block in collapsible groups so users
+         * can fold/unfold per-task output in the host CI's web UI.
+         * Failed tasks always render expanded so the failure is visible
+         * without an extra click.
+         *
+         * - `auto` (default): pick the format from the detected runner —
+         *   `GITHUB_ACTIONS=true` → `github` (`::group::`),
+         *   `GITLAB_CI=true` → `gitlab` (`section_start:` ANSI sequences),
+         *   `BUILDKITE=true` → `buildkite` (`---` collapsed headers),
+         *   `TF_BUILD=True` → `azure` (`##[group]`),
+         *   no grouping otherwise.
+         * - `off`: never group (raw separators only — useful when
+         *   piping through tools that mangle the directives).
+         * - `azure` / `buildkite` / `github` / `gitlab`: force the format
+         *   regardless of detected environment (useful for self-hosted
+         *   runners that don't set the standard env vars).
+         *
+         * CircleCI is intentionally not auto-detected: its 2.0+ format
+         * has no inline grouping directive — steps auto-group in the
+         * web UI without any markup from the runner.
+         */
+        ciGrouping?: "auto" | "azure" | "buildkite" | "github" | "gitlab" | "off";
+
+        /**
          * One knob controlling auto-start of missing service deps.
          * - `auto` (default in TTY): pick by task — `dev` → ephemeral,
          *   others → persistent.
