@@ -75,7 +75,9 @@ describe(isNotAlphanumericString, () => {
         ["------", true],
         ["//////", true],
         ["   ", true],
-        ["", true],
+        // Empty string is the path-only finding sentinel — must short-circuit
+        // to `false` so path-based exposure rules survive the heuristic pass.
+        ["", false],
         ["has1digit", false],
         ["has-letter", false],
         ["__foo__", false],
