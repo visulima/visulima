@@ -1,3 +1,14 @@
+## @visulima/fs [5.0.0-alpha.18](https://github.com/visulima/visulima/compare/@visulima/fs@5.0.0-alpha.17...@visulima/fs@5.0.0-alpha.18) (2026-05-10)
+
+### Tests
+
+* repair cerebro, fs, colorize bench CI runs ([03b530e](https://github.com/visulima/visulima/commit/03b530edc678ca6f5c2869ae283f0f3ca6e86c5e))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.20
+
 ## @visulima/fs [5.0.0-alpha.17](https://github.com/visulima/visulima/compare/@visulima/fs@5.0.0-alpha.16...@visulima/fs@5.0.0-alpha.17) (2026-05-07)
 
 
