@@ -1,3 +1,14 @@
+## @visulima/tsconfig [3.0.0-alpha.18](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.0.0-alpha.17...@visulima/tsconfig@3.0.0-alpha.18) (2026-05-10)
+
+### Code Refactoring
+
+* replace execa with tinyexec ([56ec776](https://github.com/visulima/visulima/commit/56ec776908fe0c068c54542f3885cb29f061fea7))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.18
+
 ## @visulima/tsconfig [3.0.0-alpha.17](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.0.0-alpha.16...@visulima/tsconfig@3.0.0-alpha.17) (2026-05-07)
 
 
