@@ -1,6 +1,6 @@
 {
     "name": "@visulima/vite-overlay",
-    "version": "2.0.0-alpha.21",
+    "version": "2.0.0-alpha.22",
     "description": "Improved vite overlay",
     "keywords": [
         "error-handling",
@@ -83,7 +83,7 @@
     "dependencies": {
         "@shikijs/cli": "catalog:prod",
         "@shikijs/langs": "catalog:prod",
-        "@visulima/error": "6.0.0-alpha.19",
+        "@visulima/error": "6.0.0-alpha.20",
         "fastest-levenshtein": "catalog:prod",
         "shiki": "catalog:syntax"
     },
