@@ -1,3 +1,13 @@
+## @visulima/string [3.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/string@3.0.0-alpha.12...@visulima/string@3.0.0-alpha.13) (2026-05-10)
+
+### Bug Fixes
+
+* **string:** use case aggregator export and drop invalid slice case ([cefe2c7](https://github.com/visulima/visulima/commit/cefe2c776eae495c0fead9214ced7e52e95e6a56))
+
+### Documentation
+
+* **string:** match per-file case subpath imports to actual exports ([1091367](https://github.com/visulima/visulima/commit/109136726458d682a9d6c276e0ce63d8fb35cf0c))
+
 ## @visulima/string [3.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/string@3.0.0-alpha.11...@visulima/string@3.0.0-alpha.12) (2026-05-07)
 
 ### Bug Fixes
