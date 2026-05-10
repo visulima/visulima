@@ -1,17 +1,14 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { parse as parseYaml } from "yaml";
-import { describe, expect, it } from "vitest";
 import { parseSyml } from "@yarnpkg/parsers";
+import { describe, expect, it } from "vitest";
+import { parse as parseYaml } from "yaml";
 
 import type { FocusProject } from "../../src/util/docker-lockfile";
 import { LockfilePruneError, pruneLockfile } from "../../src/util/docker-lockfile";
 
-const closure = (...projects: FocusProject[]): FocusProject[] => [
-    { deps: undefined, name: undefined, relativeRoot: "" },
-    ...projects,
-];
+const closure = (...projects: FocusProject[]): FocusProject[] => [{ deps: undefined, name: undefined, relativeRoot: "" }, ...projects];
 
 describe("pruneLockfile (pnpm)", () => {
     it("keeps the focused importer and drops unfocused workspace projects (v9)", () => {
@@ -55,7 +52,7 @@ snapshots:
 
         expect(result.status).toBe("pruned");
 
-        const parsed = parseYaml(result.content!);
+        const parsed = parseYaml(result.content!) as { importers: Record<string, unknown>; packages: Record<string, unknown> };
 
         expect(Object.keys(parsed.importers)).toStrictEqual([".", "packages/a"]);
         expect(Object.keys(parsed.packages)).toContain("lodash@4.17.21");
@@ -93,7 +90,7 @@ snapshots:
             packageManager: "pnpm",
         });
 
-        const parsed = parseYaml(result.content!);
+        const parsed = parseYaml(result.content!) as { packages: Record<string, unknown> };
         const packageKeys = Object.keys(parsed.packages);
 
         expect(packageKeys).toContain("bar@2.0.0");
@@ -127,7 +124,7 @@ packages:
             packageManager: "pnpm",
         });
 
-        const parsed = parseYaml(result.content!);
+        const parsed = parseYaml(result.content!) as { packages: Record<string, unknown> };
         const packageKeys = Object.keys(parsed.packages);
 
         expect(packageKeys).toContain("/bar@2.0.0");
@@ -158,8 +155,8 @@ describe("pruneLockfile (npm)", () => {
                 "": { name: "monorepo", workspaces: ["packages/*"] },
                 "node_modules/@my/a": { link: true, resolved: "packages/a" },
                 "node_modules/@my/b": { link: true, resolved: "packages/b" },
-                "node_modules/lodash": { version: "4.17.21" },
                 "node_modules/chalk": { version: "5.3.0" },
+                "node_modules/lodash": { version: "4.17.21" },
                 "packages/a": {
                     dependencies: { lodash: "^4.17.21" },
                     name: "@my/a",
@@ -420,7 +417,7 @@ describe("pruneLockfile (dispatcher)", () => {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 packageManager: "bogus" as any,
             }),
-        ).toThrow();
+        ).toThrow(/unsupported|unknown|invalid/i);
     });
 });
 

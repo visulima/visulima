@@ -1,3 +1,4 @@
+/* eslint-disable react-you-might-not-need-an-effect/no-event-handler -- false positive on useSyncExternalStore subscriptions and derived render-time values; the hook contract requires passing subscribe/getSnapshot by reference */
 import type { Task } from "@visulima/task-runner";
 import { Box } from "@visulima/tui/components/box";
 import { Dialog } from "@visulima/tui/components/dialog";
@@ -83,10 +84,8 @@ const VisTaskRunnerApp = ({
     // nothing to auto-scroll to. Updates for non-watched services are
     // already covered by ServiceDock's own subscription, so we don't
     // pay for them here.
-    const watchedServiceState = useSyncExternalStore(
-        dockSubscribe,
-        () => (outputServiceId && serviceDockStore ? serviceDockStore.getState(outputServiceId) : undefined),
-    );
+    const watchedServiceState = useSyncExternalStore(dockSubscribe, () =>
+        (outputServiceId && serviceDockStore ? serviceDockStore.getState(outputServiceId) : undefined));
 
     const [helpVisible, setHelpVisible] = useState(false);
     const helpScrollRef = useRef<ScrollViewRef>(null);
@@ -217,9 +216,7 @@ const VisTaskRunnerApp = ({
     const outputTaskId = outputServiceId ? null : (state.pinnedTaskIds[0] ?? selectedTaskId);
     const outputTask = outputTaskId ? state.rows.find((r) => r.taskId === outputTaskId) : null;
     const outputServiceState = watchedServiceState ?? null;
-    const outputContent = outputServiceId
-        ? (outputServiceState?.tailLines ?? []).join("\n")
-        : (outputTaskId ? (state.outputs.get(outputTaskId) ?? "") : "");
+    const outputContent = outputServiceId ? (outputServiceState?.tailLines ?? []).join("\n") : outputTaskId ? (state.outputs.get(outputTaskId) ?? "") : "";
     const outputDisplayId = outputServiceId ?? outputTaskId;
     const outputDisplayStatus = outputServiceId
         ? outputServiceState?.status === "crashed" || outputServiceState?.status === "failed"
@@ -270,7 +267,7 @@ const VisTaskRunnerApp = ({
         // This effect pushes imperative PTY resize events into a
         // non-React registry — not a parent component — so the
         // "don't pass data to parents" heuristic misfires here.
-        // eslint-disable-next-line react-you-might-not-need-an-effect/no-pass-data-to-parent -- imperative PTY resize, not parent state
+        // eslint-disable-next-line react-you-might-not-need-an-effect/no-pass-data-to-parent, react-you-might-not-need-an-effect/no-pass-live-state-to-parent -- imperative PTY resize, not parent state
         stdinRegistry.get(outputTaskId)?.resize?.(panelCols, panelRows);
     }, [columns, rows, state.viewMode, outputTaskId]);
 
@@ -1390,11 +1387,8 @@ List
 
     // ── FULLSCREEN OUTPUT VIEW ──────────────────────────────────────
 
-    const dockElement = hasDock && serviceDockStore
-        ? (
-        <ServiceDock activeIndex={dockActiveIndex} focused={state.focusedPanel === "dock"} store={serviceDockStore} />
-        )
-        : null;
+    const dockElement
+        = hasDock && serviceDockStore ? <ServiceDock activeIndex={dockActiveIndex} focused={state.focusedPanel === "dock"} store={serviceDockStore} /> : null;
 
     if (state.viewMode === "fullscreen") {
         return (

@@ -1,6 +1,8 @@
-import { LockfilePruneError, type PruneInput, type PruneResult } from "./types";
+import type { PruneInput, PruneResult } from "./types";
+import { LockfilePruneError } from "./types";
 
 interface NpmPackageEntry {
+    [key: string]: unknown;
     dependencies?: Record<string, string>;
     devDependencies?: Record<string, string>;
     link?: boolean;
@@ -10,16 +12,15 @@ interface NpmPackageEntry {
     resolved?: string;
     version?: string;
     workspaces?: string[];
-    [key: string]: unknown;
 }
 
 interface NpmLockfile {
+    [key: string]: unknown;
     dependencies?: Record<string, unknown>;
     lockfileVersion?: number;
     name?: string;
     packages?: Record<string, NpmPackageEntry>;
     requires?: boolean;
-    [key: string]: unknown;
 }
 
 const POSIX_NODE_MODULES = "node_modules/";
@@ -49,11 +50,7 @@ const resolveDep = (packages: Record<string, NpmPackageEntry>, fromPath: string,
         // → `packages/foo/node_modules/bar` → `packages/foo`.
         const lastNm = cursor.lastIndexOf(`/${POSIX_NODE_MODULES.slice(0, -1)}/`);
 
-        if (lastNm === -1) {
-            cursor = "";
-        } else {
-            cursor = cursor.slice(0, lastNm);
-        }
+        cursor = lastNm === -1 ? "" : cursor.slice(0, lastNm);
     }
 };
 

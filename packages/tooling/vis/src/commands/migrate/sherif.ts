@@ -346,7 +346,9 @@ const applyMigration = (
             report,
             `sherif's \`ignore-packages\` was set to [${config["ignore-packages"]
                 .map((p) => JSON.stringify(p))
-                .join(", ")}] — vis has no global package-skip yet (only per-rule scoping via policy.bannedDeps.{packages,paths}). Tracked alongside the dep filter work.`,
+                .join(
+                    ", ",
+                )}] — vis has no global package-skip yet (only per-rule scoping via policy.bannedDeps.{packages,paths}). Tracked alongside the dep filter work.`,
         );
         addManualStep(report, "Re-evaluate sherif `ignore-packages` — vis has no equivalent global filter yet.");
     }

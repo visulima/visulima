@@ -214,7 +214,8 @@ snapshots:
         expect.assertions(1);
 
         const workspaceRoot = join(tmpDir, "repo");
-        const verbatim = "lockfileVersion: '9.0'\nimporters:\n  .: {}\n  packages/b:\n    dependencies:\n      chalk:\n        specifier: ^5.3.0\n        version: 5.3.0\n";
+        const verbatim
+            = "lockfileVersion: '9.0'\nimporters:\n  .: {}\n  packages/b:\n    dependencies:\n      chalk:\n        specifier: ^5.3.0\n        version: 5.3.0\n";
 
         mkdirSync(workspaceRoot, { recursive: true });
         writeFileSync(join(workspaceRoot, "package.json"), JSON.stringify({ name: "root" }));

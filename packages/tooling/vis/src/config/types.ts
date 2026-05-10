@@ -118,6 +118,7 @@ export interface ProjectJson {
         owner?: string;
         title?: string;
     };
+
     /**
      * Project type — `library`, `application`, `service`, or `tool`.
      *
@@ -795,7 +796,7 @@ export interface VisConfig {
 
     /**
      * Behavior of `vis run` when invoked tasks declare service dependencies
-     * that aren't running in the workspace registry. CLI `--services=<mode>`
+     * that aren't running in the workspace registry. CLI `--services=&lt;mode>`
      * overrides this block.
      */
     run?: {

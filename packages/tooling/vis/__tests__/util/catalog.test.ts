@@ -4588,7 +4588,7 @@ describe(collectInternalOutdated, () => {
         const root = mkdtempSync(join(tmpdir(), "vis-internal-pnpm-"));
 
         writeRoot(root, { name: "monorepo" });
-        writeFileSync(join(root, "pnpm-workspace.yaml"), 'packages:\n  - "packages/*"\n');
+        writeFileSync(join(root, "pnpm-workspace.yaml"), "packages:\n  - \"packages/*\"\n");
         writeChild(root, "packages/fs", { name: "@visulima/fs", version: "5.0.0-alpha.14" });
         writeChild(root, "packages/consumer", {
             dependencies: { "@visulima/fs": "5.0.0-alpha.10" },

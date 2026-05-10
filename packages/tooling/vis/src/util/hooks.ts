@@ -31,6 +31,29 @@ export interface VisHooks {
     "run:before": (context: { tasks: Task[]; workspaceRoot: string }) => Promise<void> | void;
 
     /**
+     * Fired after `vis run` auto-attaches to one or more registered
+     * services. `taskIds` lists the in-graph dependents that consumed
+     * the service's `env` block; an empty array means the service was
+     * registered but no kept task depended on it.
+     */
+    "service:attach": (entry: ServiceEntry, taskIds: ReadonlyArray<string>) => Promise<void> | void;
+
+    /**
+     * Fired after a service is registered and its readiness probe
+     * succeeds. Sourced from both `vis service start` (and `restart`'s
+     * post-start phase) and any future programmatic call sites.
+     */
+    "service:start": (entry: ServiceEntry) => Promise<void> | void;
+
+    /**
+     * Fired after a registered service is stopped (SIGTERM/SIGKILL
+     * acknowledged, registry entry deleted). Not fired when stop is
+     * called against an unknown id — only when there was an alive
+     * entry to terminate.
+     */
+    "service:stop": (entry: ServiceEntry) => Promise<void> | void;
+
+    /**
      * Fired after a task completes (success, failure, or cache hit).
      * Receives the final {@link TaskResult}.
      */
@@ -41,6 +64,7 @@ export interface VisHooks {
      * the executor runs the command. Throwing aborts that single task.
      */
     "task:before": (task: Task) => Promise<void> | void;
+
     /** Fired when a task hit the local or remote cache. */
     "task:cacheHit": (task: Task, result: TaskResult) => Promise<void> | void;
 
@@ -49,21 +73,9 @@ export interface VisHooks {
      * carrying the human-readable reason string.
      */
     "task:cacheMiss": (task: Task, reasons: string) => Promise<void> | void;
+
     /** Fired when a task exits non-zero. */
     "task:failure": (task: Task, result: TaskResult) => Promise<void> | void;
-
-    /**
-     * Fired with a stderr chunk as a running task emits it. Plugins
-     * that ship logs live (Slack, Datadog) should prefer this over
-     * `task:after` so they don't wait for the full buffer.
-     */
-    "task:stderr": (task: Task, chunk: string) => Promise<void> | void;
-
-    /**
-     * Fired with a stdout chunk as a running task emits it. See
-     * `task:stderr` for semantics.
-     */
-    "task:stdout": (task: Task, chunk: string) => Promise<void> | void;
 
     /**
      * Fired during fingerprint construction, after built-in inputs are
@@ -92,27 +104,17 @@ export interface VisHooks {
     "task:retry": (task: Task, attempt: number, prevExitCode: number) => Promise<void> | void;
 
     /**
-     * Fired after `vis run` auto-attaches to one or more registered
-     * services. `taskIds` lists the in-graph dependents that consumed
-     * the service's `env` block; an empty array means the service was
-     * registered but no kept task depended on it.
+     * Fired with a stderr chunk as a running task emits it. Plugins
+     * that ship logs live (Slack, Datadog) should prefer this over
+     * `task:after` so they don't wait for the full buffer.
      */
-    "service:attach": (entry: ServiceEntry, taskIds: ReadonlyArray<string>) => Promise<void> | void;
+    "task:stderr": (task: Task, chunk: string) => Promise<void> | void;
 
     /**
-     * Fired after a service is registered and its readiness probe
-     * succeeds. Sourced from both `vis service start` (and `restart`'s
-     * post-start phase) and any future programmatic call sites.
+     * Fired with a stdout chunk as a running task emits it. See
+     * `task:stderr` for semantics.
      */
-    "service:start": (entry: ServiceEntry) => Promise<void> | void;
-
-    /**
-     * Fired after a registered service is stopped (SIGTERM/SIGKILL
-     * acknowledged, registry entry deleted). Not fired when stop is
-     * called against an unknown id — only when there was an alive
-     * entry to terminate.
-     */
-    "service:stop": (entry: ServiceEntry) => Promise<void> | void;
+    "task:stdout": (task: Task, chunk: string) => Promise<void> | void;
 }
 
 /**

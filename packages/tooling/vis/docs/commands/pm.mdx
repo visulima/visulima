@@ -33,24 +33,24 @@ This command takes no flags of its own — every argument is forwarded to the re
 
 Some subcommands move between namespaces or were removed entirely depending on the PM. `vis pm` papers over the differences when there is a sensible substitution, and warns + exits 0 when there is not.
 
-| Subcommand                                    | Substitution                                                                      |
-| --------------------------------------------- | --------------------------------------------------------------------------------- |
-| `whoami` (pnpm 11)                            | falls back to `npm whoami` (pnpm 11 removed `whoami`)                             |
-| `whoami` (yarn berry)                         | rewrites to `yarn npm whoami`                                                     |
-| `whoami` (bun)                                | rewrites to `bun pm whoami`                                                       |
-| `login` / `logout` (yarn berry)               | rewrites to `yarn npm login` / `yarn npm logout`                                  |
-| `login` / `logout` (bun)                      | falls back to `npm login` / `npm logout` (bun reads `~/.npmrc`)                   |
-| `audit` (yarn berry)                          | rewrites to `yarn npm audit`                                                      |
-| `publish` (yarn berry)                        | rewrites to `yarn npm publish`                                                    |
-| `dist-tag` (yarn 1)                           | rewrites to `yarn tag`                                                            |
-| `dist-tag` (yarn berry)                       | rewrites to `yarn npm tag` (and translates `rm` → `remove`)                       |
-| `owner` (pnpm 11 / yarn berry / bun)          | falls back to `npm owner`                                                         |
-| `ping` / `search` / `token` (pnpm 11)         | falls back to `npm <sub>` (pnpm 11 removed each)                                  |
-| `config delete` (yarn berry)                  | rewrites to `yarn config unset`                                                   |
-| `plugin` (anything but yarn berry)            | warn + exit 0                                                                     |
-| `prune` (yarn / bun / deno)                   | warn + exit 0 (pruning happens on install)                                        |
-| `rebuild` (yarn 1 / bun / deno)               | warn + exit 0                                                                     |
-| `config` (bun / deno)                         | warn + exit 0 (no config CLI; edit `bunfig.toml` / `.npmrc` / `deno.json`)        |
+| Subcommand                            | Substitution                                                               |
+| ------------------------------------- | -------------------------------------------------------------------------- |
+| `whoami` (pnpm 11)                    | falls back to `npm whoami` (pnpm 11 removed `whoami`)                      |
+| `whoami` (yarn berry)                 | rewrites to `yarn npm whoami`                                              |
+| `whoami` (bun)                        | rewrites to `bun pm whoami`                                                |
+| `login` / `logout` (yarn berry)       | rewrites to `yarn npm login` / `yarn npm logout`                           |
+| `login` / `logout` (bun)              | falls back to `npm login` / `npm logout` (bun reads `~/.npmrc`)            |
+| `audit` (yarn berry)                  | rewrites to `yarn npm audit`                                               |
+| `publish` (yarn berry)                | rewrites to `yarn npm publish`                                             |
+| `dist-tag` (yarn 1)                   | rewrites to `yarn tag`                                                     |
+| `dist-tag` (yarn berry)               | rewrites to `yarn npm tag` (and translates `rm` → `remove`)                |
+| `owner` (pnpm 11 / yarn berry / bun)  | falls back to `npm owner`                                                  |
+| `ping` / `search` / `token` (pnpm 11) | falls back to `npm <sub>` (pnpm 11 removed each)                           |
+| `config delete` (yarn berry)          | rewrites to `yarn config unset`                                            |
+| `plugin` (anything but yarn berry)    | warn + exit 0                                                              |
+| `prune` (yarn / bun / deno)           | warn + exit 0 (pruning happens on install)                                 |
+| `rebuild` (yarn 1 / bun / deno)       | warn + exit 0                                                              |
+| `config` (bun / deno)                 | warn + exit 0 (no config CLI; edit `bunfig.toml` / `.npmrc` / `deno.json`) |
 
 ## Deno
 

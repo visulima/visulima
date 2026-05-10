@@ -29,6 +29,7 @@ import {
     writeChromeTrace,
     writeRunSummary,
 } from "@visulima/task-runner";
+import type { Hookable } from "hookable";
 import isInCi from "is-in-ci";
 
 import { applyBranchScope, resolveSharedCacheDirectory } from "../../cache/cache-directory";
@@ -59,8 +60,6 @@ import type { TaskStore } from "../../tui/components/task-store";
 import { createDynamicOutputRenderer } from "../../tui/dynamic-life-cycle";
 import { parseOutputStyle, StaticOutputLifeCycle } from "../../tui/static-life-cycle";
 import type { StdinEntry } from "../../tui/types";
-import type { Hookable } from "hookable";
-
 import type { VisHooks } from "../../util/hooks";
 import { createVisHooks, HookableLifeCycle, registerPlugins } from "../../util/hooks";
 import { appendToShellHistory } from "../../util/shell-history";
@@ -282,7 +281,7 @@ const runPersistentTasks = async (
                         break;
                     }
                     default:
-                        // ignore
+                    // ignore
                 }
             },
         });
@@ -935,6 +934,7 @@ const createConcurrentExecutor = (deps: ExecutorDependencies) => {
                                     // the rejection and surfaces it as a failure.
                                     onRetry: async (attempt, _commandIndex, prevExitCode) => {
                                         retryAttempts = attempt;
+
                                         if (hooks) {
                                             await hooks.callHook("task:retry", task, attempt, prevExitCode);
                                         }
@@ -1011,7 +1011,9 @@ const renderLastRunSummary = async (
     const summary = await readLastRunSummary(workspaceRoot, { dataDirectory: getVisWorkspaceDataDir(workspaceRoot) });
 
     if (!summary) {
-        logger.warn(`No previous run recorded yet. Run a task at least once to populate ${getLastRunSummaryPath(workspaceRoot, { dataDirectory: getVisWorkspaceDataDir(workspaceRoot) })}.`);
+        logger.warn(
+            `No previous run recorded yet. Run a task at least once to populate ${getLastRunSummaryPath(workspaceRoot, { dataDirectory: getVisWorkspaceDataDir(workspaceRoot) })}.`,
+        );
 
         return;
     }
@@ -1460,9 +1462,7 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
             }
 
             if (skipResolution.unmatchedPatterns.length > 0) {
-                logger.warn(
-                    `--skip-cache: no tasks matched ${skipResolution.unmatchedPatterns.map((p) => `"${p}"`).join(", ")}`,
-                );
+                logger.warn(`--skip-cache: no tasks matched ${skipResolution.unmatchedPatterns.map((p) => `"${p}"`).join(", ")}`);
             }
 
             if (skipResolution.skipTaskIds.size > 0) {
@@ -1703,10 +1703,18 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
                     indexToId: new Map(),
                     services: bridgeEntries,
                     sink: {
-                        crashed: (id, tail) => { dock.markCrashed(id, tail); },
-                        failed: (id, reason, detail) => { dock.markFailed(id, reason, detail); },
-                        log: (id, chunk) => { dock.appendLog(id, chunk); },
-                        ready: (id, info) => { dock.markReady(id, info); },
+                        crashed: (id, tail) => {
+                            dock.markCrashed(id, tail);
+                        },
+                        failed: (id, reason, detail) => {
+                            dock.markFailed(id, reason, detail);
+                        },
+                        log: (id, chunk) => {
+                            dock.appendLog(id, chunk);
+                        },
+                        ready: (id, info) => {
+                            dock.markReady(id, info);
+                        },
                         started: (id, pid) => {
                             dock.markStarted(id, pid);
 
@@ -1719,7 +1727,9 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
                                 registryStartedPids.set(id, pid);
                             }
                         },
-                        starting: (id) => { dock.markStarting(id); },
+                        starting: (id) => {
+                            dock.markStarting(id);
+                        },
                     },
                     workspaceRoot,
                 });
@@ -1752,9 +1762,7 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
     taskGraph = serviceResult.taskGraph;
 
     if (injectedServiceIds.length > 0) {
-        const serviceTasks = injectedServiceIds
-            .map((id) => taskGraph.tasks[id])
-            .filter((t): t is Task => t !== undefined);
+        const serviceTasks = injectedServiceIds.map((id) => taskGraph.tasks[id]).filter((t): t is Task => t !== undefined);
 
         initialTasks = [...serviceTasks, ...initialTasks];
     }
@@ -1820,12 +1828,12 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
         // (where the registry already holds api:db, api:redis, …) still
         // shows the green pill. Without this, the dock is empty on rerun
         // and the user can't tell whether their deps are wired.
-        if (!serviceDockStore) {
-            serviceDockStore = new ServiceDockStore(serviceResult.satisfiedServices.map((s) => s.id));
-        } else {
+        if (serviceDockStore) {
             for (const entry of serviceResult.satisfiedServices) {
                 serviceDockStore.registerService(entry.id);
             }
+        } else {
+            serviceDockStore = new ServiceDockStore(serviceResult.satisfiedServices.map((s) => s.id));
         }
 
         for (const entry of serviceResult.satisfiedServices) {
@@ -2186,11 +2194,18 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
                                 });
                         });
 
-                        await runPersistentTasks(persistentTasks, workspaceRoot, affectedFiles, invocationCwd, {
-                            abortSignal,
-                            lifeCycle,
-                            store,
-                        }, serviceEnvByTaskId);
+                        await runPersistentTasks(
+                            persistentTasks,
+                            workspaceRoot,
+                            affectedFiles,
+                            invocationCwd,
+                            {
+                                abortSignal,
+                                lifeCycle,
+                                store,
+                            },
+                            serviceEnvByTaskId,
+                        );
                     }
                 } else if (loopAction === "retry" && retryTaskId) {
                     const task = initialTasks.find((t) => t.id === retryTaskId);
@@ -2539,9 +2554,9 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
                                 await triggerRerun();
                             },
                             onFilter: async (pattern) => {
-                            // Capture before mutating — applyFilter() overwrites
-                            // projectFilter, so we'd lose the rollback target
-                            // otherwise.
+                                // Capture before mutating — applyFilter() overwrites
+                                // projectFilter, so we'd lose the rollback target
+                                // otherwise.
                                 const previousFilter = projectFilter;
                                 const matching = applyFilter(pattern);
 
@@ -2613,14 +2628,10 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
                 const MAX_LISTED = 5;
                 const listedIds = retriedTaskIds.slice(0, MAX_LISTED);
                 const remaining = retriedTaskIds.length - listedIds.length;
-                const idsRendered = remaining > 0
-                    ? `${listedIds.join(", ")}, and ${String(remaining)} more`
-                    : listedIds.join(", ");
+                const idsRendered = remaining > 0 ? `${listedIds.join(", ")}, and ${String(remaining)} more` : listedIds.join(", ");
 
                 logger.warn("");
-                logger.warn(
-                    `--fail-on-retry: ${String(retriedTaskIds.length)} task(s) succeeded only after retry: ${idsRendered}`,
-                );
+                logger.warn(`--fail-on-retry: ${String(retriedTaskIds.length)} task(s) succeeded only after retry: ${idsRendered}`);
             }
 
             if (hasFailure || failOnRetry) {

@@ -647,9 +647,7 @@ const readPackageJsonDeps = (workspaceRoot: string, options?: ReadCatalogOptions
     // other dep. The non-protocol filter inside `filterExternalDeps`
     // (workspace:/file:/link:/catalog:) still applies, so live workspace
     // links don't leak in.
-    const internalNames = options?.includeInternal
-        ? new Set<string>()
-        : collectInternalPackageNames(workspaceRoot, rootPkg.name, workspaceDirectories);
+    const internalNames = options?.includeInternal ? new Set<string>() : collectInternalPackageNames(workspaceRoot, rootPkg.name, workspaceDirectories);
     const depTypes = getDepTypesToInclude(options);
     const directoriesToScan = [".", ...workspaceDirectories];
 
@@ -884,7 +882,14 @@ const collectInternalOutdated = (workspaceRoot: string, options?: InternalOutdat
                     continue;
                 }
 
-                if (range.startsWith("workspace:") || range.startsWith("file:") || range.startsWith("link:") || range.startsWith("catalog:") || range.startsWith("$") || range === "*") {
+                if (
+                    range.startsWith("workspace:")
+                    || range.startsWith("file:")
+                    || range.startsWith("link:")
+                    || range.startsWith("catalog:")
+                    || range.startsWith("$")
+                    || range === "*"
+                ) {
                     continue;
                 }
 

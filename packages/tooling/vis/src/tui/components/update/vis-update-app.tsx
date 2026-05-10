@@ -216,9 +216,7 @@ const VisUpdateApp = ({
             // Filter tab navigation (left/right arrows when list is focused)
             if (state.focusedPanel === "list" && (key.leftArrow || key.rightArrow)) {
                 const currentIndex = FILTER_TABS.indexOf(state.filterType);
-                const nextIndex = key.rightArrow
-                    ? (currentIndex + 1) % FILTER_TABS.length
-                    : (currentIndex - 1 + FILTER_TABS.length) % FILTER_TABS.length;
+                const nextIndex = key.rightArrow ? (currentIndex + 1) % FILTER_TABS.length : (currentIndex - 1 + FILTER_TABS.length) % FILTER_TABS.length;
 
                 setListScrollOffset(0);
                 detailScrollRef.current?.scrollToTop();

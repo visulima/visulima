@@ -24,7 +24,9 @@ import type { ServiceListOptions, ServiceLogsOptions, ServiceRestartOptions, Ser
  * Returns `undefined` when no plugins are configured — callers can
  * skip the call-hook path entirely instead of spinning up a registry.
  */
-const loadServiceHooks = async (visConfig: VisConfig | undefined): Promise<{ callHook: <K extends keyof VisHooks>(name: K, ...args: Parameters<VisHooks[K]>) => Promise<void> } | undefined> => {
+const loadServiceHooks = async (
+    visConfig: VisConfig | undefined,
+): Promise<{ callHook: <K extends keyof VisHooks>(name: K, ...args: Parameters<VisHooks[K]>) => Promise<void> } | undefined> => {
     const plugins = visConfig?.plugins;
 
     if (!plugins || plugins.length === 0) {

@@ -1,16 +1,16 @@
 /**
- * Subcommand dispatch table for `vis pm <sub>`.
+ * Subcommand dispatch table for `vis pm &lt;sub>`.
  *
  * The native (Rust) resolver handles per-PM mechanics for a small set of
  * subcommands (`cache`, `view/info`, `list/ls`, `pack`, plus the always-npm
  * group `deprecate/fund/ping/search/token`). Everything else falls through
- * to a bare `<pm> <sub> <args>` invocation, which silently mis-fires when:
+ * to a bare `&lt;pm> &lt;sub> &lt;args>` invocation, which silently mis-fires when:
  *
  *   - the subcommand was removed from a PM (pnpm 11 dropped `whoami`,
  *     `owner`, `ping`, `search`, `token`);
  *   - the PM never had it (`bun login`, `deno owner`, `yarn 1 plugin`);
  *   - the PM has it but under a different namespace (yarn berry's
- *     `yarn npm <sub>`, bun's `bun pm <sub>`).
+ *     `yarn npm &lt;sub>`, bun's `bun pm &lt;sub>`).
  *
  * This module turns a `(pm, version, subcommand, args)` tuple into one of:
  *
@@ -29,9 +29,9 @@
  *   - pnpm v11 CHANGELOG (commands removed: owner, ping, search, token,
  *     whoami; reimplemented natively: publish, login, logout, view,
  *     deprecate, dist-tag, version)
- *   - yarn berry CLI docs (registry ops live under `yarn npm <sub>`;
+ *   - yarn berry CLI docs (registry ops live under `yarn npm &lt;sub>`;
  *     `yarn npm tag` uses `remove`, not `rm`)
- *   - bun pm docs (whoami/cache/pack/ls live under `bun pm <sub>`)
+ *   - bun pm docs (whoami/cache/pack/ls live under `bun pm &lt;sub>`)
  *   - deno CLI (no registry-auth surface; JSR uses browser OAuth)
  */
 
@@ -39,10 +39,7 @@ import { coerce, gte } from "semver";
 
 import type { InstallerInfo } from "./pm-runner";
 
-export type DispatchAction =
-    | { args: string[]; bin: string; kind: "rewrite"; warning?: string }
-    | { kind: "passthrough" }
-    | { kind: "skip"; warning: string };
+export type DispatchAction = { args: string[]; bin: string; kind: "rewrite"; warning?: string } | { kind: "passthrough" } | { kind: "skip"; warning: string };
 
 const isPnpm11Plus = (version: string): boolean => {
     const coerced = coerce(version);
@@ -55,21 +52,18 @@ const isYarnBerry = (pm: Pick<InstallerInfo, "name" | "version">): boolean => pm
 const isYarn1 = (pm: Pick<InstallerInfo, "name" | "version">): boolean => pm.name === "yarn" && pm.version.startsWith("1.");
 
 /**
- * yarn berry's `yarn npm tag` uses `remove` where npm/yarn1 use `rm`.
+ * Yarn berry's `yarn npm tag` uses `remove` where npm/yarn1 use `rm`.
  * Rewrite the first arg only — leaves `add`/`list` untouched.
  */
 const rewriteRmToRemove = (args: string[]): string[] => (args[0] === "rm" ? ["remove", ...args.slice(1)] : args);
 
 /**
- * Determine how `vis pm <subcommand> <args>` should be executed for this PM.
+ * Determine how `vis pm SUB ARGS` should be executed for this PM (where
+ * `SUB` is the subcommand and `ARGS` are the trailing args).
  * Pure function — exported for unit testing. Aube is never passed in here;
  * callers short-circuit aube to its own resolver before consulting this.
  */
-export const dispatchSubcommand = (
-    pm: Pick<InstallerInfo, "name" | "version">,
-    subcommand: string,
-    args: string[],
-): DispatchAction => {
+export const dispatchSubcommand = (pm: Pick<InstallerInfo, "name" | "version">, subcommand: string, args: string[]): DispatchAction => {
     switch (subcommand) {
         case "audit": {
             // yarn berry: registry-side audit is `yarn npm audit`; bare

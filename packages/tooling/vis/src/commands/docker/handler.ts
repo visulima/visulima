@@ -40,7 +40,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
         const { projects } = scaffoldDockerContext({
             focus,
             includeSources: Boolean(options.includeSources),
-            log: (message) => logger.info(message),
+            log: (message) => { logger.info(message); },
             outDir,
             projectGraph,
             pruneLockfile: options.pruneLockfile !== false,

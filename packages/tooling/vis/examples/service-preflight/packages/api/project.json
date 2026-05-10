@@ -27,9 +27,7 @@
         "queue": {
             "command": "node scripts/tcp-server.mjs 6633 queue",
             "preset": "server",
-            "dependsOn": [
-                { "target": "db" }
-            ],
+            "dependsOn": [{ "target": "db" }],
             "options": {
                 "service": {
                     "port": 6633,

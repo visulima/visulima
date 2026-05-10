@@ -399,7 +399,9 @@ const printRootDepsHuman = (issues: RootDepsIssue[], workspaceRoot: string, didF
     for (const issue of issues) {
         const path = relative(workspaceRoot, issue.packageJsonPath);
 
-        logger.info(colour(bold(`${verb} ${String(issue.depNames.length)} runtime dep${issue.depNames.length === 1 ? "" : "s"} on private root ${dim(`(${path})`)}`)));
+        logger.info(
+            colour(bold(`${verb} ${String(issue.depNames.length)} runtime dep${issue.depNames.length === 1 ? "" : "s"} on private root ${dim(`(${path})`)}`)),
+        );
 
         for (const name of issue.depNames) {
             logger.info(`    ${red(name)}`);
@@ -775,7 +777,9 @@ const printJson = (report: LintReport, workspaceRoot: string, fixState: FixState
         const issues = (report.similarDeps ?? []).map((issue) => {
             return {
                 ...issue,
-                members: issue.members.map((member) => { return { ...member, packageJsonPath: relative(workspaceRoot, member.packageJsonPath) }; }),
+                members: issue.members.map((member) => {
+                    return { ...member, packageJsonPath: relative(workspaceRoot, member.packageJsonPath) };
+                }),
             };
         });
 

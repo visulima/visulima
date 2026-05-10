@@ -43,7 +43,21 @@ interface NxProjectTarget {
     syncGenerators?: string[];
 }
 
-const SKIP_DIRECTORIES = new Set([".cache", ".git", ".next", ".nx", ".output", ".svelte-kit", ".turbo", ".vercel", ".vis", "build", "coverage", "dist", "node_modules"]);
+const SKIP_DIRECTORIES = new Set([
+    ".cache",
+    ".git",
+    ".next",
+    ".nx",
+    ".output",
+    ".svelte-kit",
+    ".turbo",
+    ".vercel",
+    ".vis",
+    "build",
+    "coverage",
+    "dist",
+    "node_modules",
+]);
 
 /**
  * Recursively collect every `project.json` file under `root`, excluding
@@ -115,10 +129,7 @@ const NX_EXECUTOR_HINTS: Record<string, string> = {
  * vis only understands script-name targets — namespaced keys like `@nx/js:tsc`
  * pass through as broken config otherwise.
  */
-const stripNamespacedTargetDefaults = (
-    targetDefaults: Record<string, NxTargetDefault>,
-    report: MigrationReport,
-): Record<string, NxTargetDefault> => {
+const stripNamespacedTargetDefaults = (targetDefaults: Record<string, NxTargetDefault>, report: MigrationReport): Record<string, NxTargetDefault> => {
     const cleaned: Record<string, NxTargetDefault> = {};
 
     for (const [key, value] of Object.entries(targetDefaults)) {

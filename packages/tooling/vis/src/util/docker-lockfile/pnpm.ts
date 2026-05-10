@@ -1,6 +1,7 @@
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 
-import { LockfilePruneError, type PruneInput, type PruneResult } from "./types";
+import type { PruneInput, PruneResult } from "./types";
+import { LockfilePruneError } from "./types";
 
 interface PnpmImporter {
     dependencies?: Record<string, { specifier?: string; version: string }>;
@@ -9,13 +10,14 @@ interface PnpmImporter {
 }
 
 interface PnpmPackageEntry {
+    [key: string]: unknown;
     dependencies?: Record<string, string>;
     optionalDependencies?: Record<string, string>;
     peerDependencies?: Record<string, string>;
-    [key: string]: unknown;
 }
 
 interface PnpmLockfile {
+    [key: string]: unknown;
     catalogs?: Record<string, unknown>;
     importers?: Record<string, PnpmImporter>;
     lockfileVersion?: number | string;
@@ -25,7 +27,6 @@ interface PnpmLockfile {
     settings?: Record<string, unknown>;
     /** v9 split — resolved dep tree per package + peer permutation. */
     snapshots?: Record<string, PnpmPackageEntry>;
-    [key: string]: unknown;
 }
 
 /**
@@ -46,7 +47,7 @@ const canonicalKey = (key: string): string => {
 };
 
 /**
- * pnpm v9 stores dep version specs as bare versions (`1.2.3`,
+ * In pnpm v9, dep version specs are bare versions (`1.2.3`,
  * `1.2.3(react@18.0.0)`). Workspace links use `link:../foo`. We don't
  * need to follow `link:` here — closure projects are passed in
  * separately and their importers are kept independently.
@@ -213,11 +214,11 @@ export const prunePnpmLockfile = (input: PruneInput): PruneResult => {
 
             keptPackageKeys.add(key);
 
-            const package_ = parsed.packages?.[key];
+            const packageEntry = parsed.packages?.[key];
 
             // v6 packages also carry deps; v9 packages don't (deps moved to snapshots).
-            if (package_ && !parsed.snapshots) {
-                for (const dep of collectPackageDeps(package_)) {
+            if (packageEntry && !parsed.snapshots) {
+                for (const dep of collectPackageDeps(packageEntry)) {
                     queue.push(dep);
                 }
             }

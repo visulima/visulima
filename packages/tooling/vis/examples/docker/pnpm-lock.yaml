@@ -1,11 +1,10 @@
-lockfileVersion: '9.0'
+lockfileVersion: "9.0"
 
 settings:
     autoInstallPeers: true
     excludeLinksFromLockfile: false
 
 importers:
-
     .: {}
 
     packages/api:
@@ -26,15 +25,13 @@ importers:
                 version: 4.17.21
 
 packages:
-
     fastify@4.28.1:
-        resolution: {integrity: sha512-fake-fastify-hash}
+        resolution: { integrity: sha512-fake-fastify-hash }
 
     lodash@4.17.21:
-        resolution: {integrity: sha512-fake-lodash-hash}
+        resolution: { integrity: sha512-fake-lodash-hash }
 
 snapshots:
-
     fastify@4.28.1: {}
 
     lodash@4.17.21: {}

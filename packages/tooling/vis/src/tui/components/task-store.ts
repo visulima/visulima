@@ -20,12 +20,7 @@ export interface TaskState {
     failed: number;
     /** Whether the filter input bar is active. */
     filterActive: boolean;
-    /**
-     * IDs of tasks that finished after at least one retry. A task can appear
-     * here whether it ultimately succeeded or failed — any non-zero retry
-     * attempt is a flake observation worth surfacing.
-     */
-    retriedIds: string[];
+
     /** Current filter text (empty = no filter). */
     filterText: string;
     /** Which panel currently has keyboard focus. */
@@ -38,6 +33,13 @@ export interface TaskState {
     pinnedTaskIds: [string | null, string | null];
     /** Whether a rerun has been requested by the user. */
     rerunRequested: boolean;
+
+    /**
+     * IDs of tasks that finished after at least one retry. A task can appear
+     * here whether it ultimately succeeded or failed — any non-zero retry
+     * attempt is a flake observation worth surfacing.
+     */
+    retriedIds: string[];
     /** Task ID requested for single-task retry (null = none). */
     retryTaskId: string | null;
     /** All task rows with current status. */

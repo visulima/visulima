@@ -157,14 +157,13 @@ describe(ServiceDockStore, () => {
 
         const store = new ServiceDockStore(["api:db"]);
 
-        // eslint-disable-next-line no-control-regex
         const ansi = "[31m[1mrunning[0m migrations[60G";
 
         store.appendLog("api:db", `${ansi}\r\n`);
 
         expect(store.getState("api:db")?.lastLine).toBe("running migrations");
 
-        store.markCrashed("api:db", [`${ansi}`, "second\rline"]);
+        store.markCrashed("api:db", [ansi, "second\rline"]);
 
         expect(store.getState("api:db")?.tailLines).toStrictEqual(["running migrations", "secondline"]);
         expect(store.getState("api:db")?.errorMessage).toBe("secondline");

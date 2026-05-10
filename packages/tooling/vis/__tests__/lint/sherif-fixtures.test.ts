@@ -119,7 +119,11 @@ describe("sherif-fixtures", () => {
         it("flags the same dead patterns as the array form", () => {
             expect.assertions(1);
 
-            expect(lintDeadWorkspacePatterns(root).map((i) => i.pattern).sort()).toStrictEqual(["examples/*", "website"]);
+            expect(
+                lintDeadWorkspacePatterns(root)
+                    .map((i) => i.pattern)
+                    .sort(),
+            ).toStrictEqual(["examples/*", "website"]);
         });
     });
 
@@ -202,7 +206,9 @@ describe("sherif-fixtures", () => {
         it("flags react and turborepo families via similar-deps", () => {
             expect.assertions(1);
 
-            const families = lintSimilarDeps(iterateWorkspaceDeps(root)).map((i) => i.family).sort();
+            const families = lintSimilarDeps(iterateWorkspaceDeps(root))
+                .map((i) => i.family)
+                .sort();
 
             expect(families).toStrictEqual(["react", "turborepo"]);
         });
@@ -236,7 +242,11 @@ describe("sherif-fixtures", () => {
         it("flags both empty `dependencies` and `devDependencies` blocks", () => {
             expect.assertions(1);
 
-            expect(lintEmptyDeps(root).map((i) => i.depType).sort()).toStrictEqual(["dependencies", "devDependencies"]);
+            expect(
+                lintEmptyDeps(root)
+                    .map((i) => i.depType)
+                    .sort(),
+            ).toStrictEqual(["dependencies", "devDependencies"]);
         });
     });
 
@@ -260,7 +270,9 @@ describe("sherif-fixtures", () => {
         it("flags `docs` and `packages/abc` as missing", () => {
             expect.assertions(1);
 
-            const dirs = lintMissingPackageJson(root).map((i) => i.packageDir).sort();
+            const dirs = lintMissingPackageJson(root)
+                .map((i) => i.packageDir)
+                .sort();
 
             expect(dirs).toStrictEqual(["docs", "packages/abc"]);
         });

@@ -188,6 +188,7 @@ const TaskListPanel = ({
             pendingCount += 1;
         }
     }
+
     // Cap displayed slots at the actual amount of in-flight work. Without
     // this, a single persistent task (e.g. `web:serve`) renders one row
     // here AND `parallelSlots - 1` "Waiting for task..." placeholders

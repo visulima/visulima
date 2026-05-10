@@ -1,7 +1,8 @@
 import type { Command, CreateOptions } from "@visulima/cerebro";
 
 const lint: Command = {
-    description: "Lint workspace dependency policies (workspace-protocol, banned-deps, redefine-root, workspace-versions, custom-types, empty-deps, root-private, root-package-manager, root-deps, missing-package-json, dead-workspace-patterns, types-in-deps, similar-deps)",
+    description:
+        "Lint workspace dependency policies (workspace-protocol, banned-deps, redefine-root, workspace-versions, custom-types, empty-deps, root-private, root-package-manager, root-deps, missing-package-json, dead-workspace-patterns, types-in-deps, similar-deps)",
     examples: [
         ["vis lint", "Run every enabled lint and exit non-zero on failures"],
         ["vis lint --workspace-protocol", "Only check that internal deps use workspace:*"],

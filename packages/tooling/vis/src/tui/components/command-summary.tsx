@@ -12,6 +12,7 @@ interface CommandSummaryProps {
     failed: number;
     failedIds: string[];
     projectNames: string[];
+
     /**
      * IDs of tasks that ultimately succeeded but only after one or more
      * restarts. Surfaced as a yellow "succeeded after retry" block so the
@@ -28,7 +29,18 @@ interface CommandSummaryProps {
 /**
  * Final summary block rendered after all tasks complete.
  */
-const CommandSummary = ({ cached, failed, failedIds, projectNames, retriedIds, skippedIds, succeeded, targets, tasks, took }: CommandSummaryProps): React.JSX.Element => {
+const CommandSummary = ({
+    cached,
+    failed,
+    failedIds,
+    projectNames,
+    retriedIds,
+    skippedIds,
+    succeeded,
+    targets,
+    tasks,
+    took,
+}: CommandSummaryProps): React.JSX.Element => {
     const description = formatTargetsAndProjects(projectNames, targets, tasks);
     const retried = retriedIds ?? [];
 
@@ -141,9 +153,7 @@ finished after retry:
                                 <Text />
                             </Box>
                         )}
-                        <Text dimColor>
-                            {`    Took ${took}`}
-                        </Text>
+                        <Text dimColor>{`    Took ${took}`}</Text>
                     </Box>
                 </Header>
             )}

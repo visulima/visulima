@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { deriveBottomTitle } from "../../../src/tui/components/output-panel";
 
-describe("deriveBottomTitle", () => {
+describe(deriveBottomTitle, () => {
     const baseInput = {
         autoScroll: true,
         focused: true,

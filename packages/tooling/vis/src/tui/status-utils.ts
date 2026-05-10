@@ -136,7 +136,7 @@ export const resolveCiGroupingMode = (mode: CiGroupingMode | undefined): Resolve
  * collapse into one another's sections in the web UI.
  */
 const toGitLabSectionKey = (taskId: string): string => {
-    const slug = taskId.replaceAll(/[^A-Za-z0-9_]+/g, "_");
+    const slug = taskId.replaceAll(/\W+/g, "_");
     const hash = createHash("sha256").update(taskId).digest("hex").slice(0, 6);
 
     return `${slug}_${hash}`;

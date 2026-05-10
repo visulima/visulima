@@ -39,7 +39,11 @@ const PACKAGE_MANAGER_REGEX = /^[a-z][\w-]*@\S+$/i;
  * `@version`, an array, etc.) are reported as if absent — corepack
  * rejects them anyway.
  */
-export const lintRootPackageManager = (workspaceRoot: string, hasWorkspaceConfig: boolean, options: RootPackageManagerLintOptions = {}): RootPackageManagerIssue[] => {
+export const lintRootPackageManager = (
+    workspaceRoot: string,
+    hasWorkspaceConfig: boolean,
+    options: RootPackageManagerLintOptions = {},
+): RootPackageManagerIssue[] => {
     if (!hasWorkspaceConfig) {
         return [];
     }
@@ -78,10 +82,7 @@ export interface ApplyRootPackageManagerFixesOptions {
  * user can plug in `policy.rootPackageManager.suggested` (or pass it
  * explicitly) and re-run.
  */
-export const applyRootPackageManagerFixes = (
-    issues: RootPackageManagerIssue[],
-    options: ApplyRootPackageManagerFixesOptions = {},
-): string[] => {
+export const applyRootPackageManagerFixes = (issues: RootPackageManagerIssue[], options: ApplyRootPackageManagerFixesOptions = {}): string[] => {
     const { useEditorconfig } = options;
     const written: string[] = [];
 

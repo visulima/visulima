@@ -187,7 +187,9 @@ export const runReplay = async (options: RunReplayOptions, logger: Console): Pro
         }
 
         if (runId === undefined) {
-            pail.error(`No previous run summary found. Run a task first to populate \`${getLastRunSummaryPath(workspaceRoot, { dataDirectory: getVisWorkspaceDataDir(workspaceRoot) })}\`.`);
+            pail.error(
+                `No previous run summary found. Run a task first to populate \`${getLastRunSummaryPath(workspaceRoot, { dataDirectory: getVisWorkspaceDataDir(workspaceRoot) })}\`.`,
+            );
         } else {
             pail.error(`Run summary "${runId}" not found in ${getVisRunsDir(workspaceRoot)}/.`);
         }
