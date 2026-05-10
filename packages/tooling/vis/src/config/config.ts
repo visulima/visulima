@@ -617,7 +617,7 @@ const defineConfig = (config: VisConfig): VisConfig => applyDefaults(config);
 // they already import `defineConfig`/`definePlugin` from.
 export type { OtelPluginOptions } from "../plugins/otel";
 export { otelPlugin } from "../plugins/otel";
-export type { VisHooks, VisPlugin } from "../util/hooks";
+export type { FingerprintContributor, VisHooks, VisPlugin } from "../util/hooks";
 export { definePlugin } from "./define-plugin";
 export type { VisConfig, VisTaskConfig } from "./types";
 export {

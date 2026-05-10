@@ -1,6 +1,10 @@
-import type { LifeCycleInterface, Task, TaskResult, TaskStatus } from "@visulima/task-runner";
+import type { FingerprintContributor, LifeCycleInterface, Task, TaskResult, TaskStatus } from "@visulima/task-runner";
 import type { Hookable } from "hookable";
 import { createHooks } from "hookable";
+
+import type { ServiceEntry } from "../services/types";
+
+export type { FingerprintContributor } from "@visulima/task-runner";
 
 /**
  * Typed hook surface exposed to vis plugins.
@@ -60,6 +64,55 @@ export interface VisHooks {
      * `task:stderr` for semantics.
      */
     "task:stdout": (task: Task, chunk: string) => Promise<void> | void;
+
+    /**
+     * Fired during fingerprint construction, after built-in inputs are
+     * gathered and before the hash is sealed. Plugins call
+     * `contributor.contribute(key, value)` to mix arbitrary strings
+     * into the task hash — the hasher namespaces and sorts contributions
+     * deterministically so call order doesn't change the result.
+     *
+     * Throwing aborts hashing for the offending task and surfaces as a
+     * task failure before any cache lookup runs. Use this to guarantee
+     * a buggy plugin can't quietly poison cache state.
+     */
+    "task:fingerprint": (task: Task, contributor: FingerprintContributor) => Promise<void> | void;
+
+    /**
+     * Fired right before a failed task is re-spawned by the retry
+     * controller. `attempt` is 1-indexed and counts the retry that's
+     * about to start (so the original failed run was attempt 0).
+     * `prevExitCode` is the failing exit status that triggered the
+     * retry (the full TaskResult isn't materialized at the retry
+     * boundary — only the per-attempt close event is available).
+     *
+     * Throwing aborts the retry; the previous failure becomes the final
+     * result.
+     */
+    "task:retry": (task: Task, attempt: number, prevExitCode: number) => Promise<void> | void;
+
+    /**
+     * Fired after `vis run` auto-attaches to one or more registered
+     * services. `taskIds` lists the in-graph dependents that consumed
+     * the service's `env` block; an empty array means the service was
+     * registered but no kept task depended on it.
+     */
+    "service:attach": (entry: ServiceEntry, taskIds: ReadonlyArray<string>) => Promise<void> | void;
+
+    /**
+     * Fired after a service is registered and its readiness probe
+     * succeeds. Sourced from both `vis service start` (and `restart`'s
+     * post-start phase) and any future programmatic call sites.
+     */
+    "service:start": (entry: ServiceEntry) => Promise<void> | void;
+
+    /**
+     * Fired after a registered service is stopped (SIGTERM/SIGKILL
+     * acknowledged, registry entry deleted). Not fired when stop is
+     * called against an unknown id — only when there was an alive
+     * entry to terminate.
+     */
+    "service:stop": (entry: ServiceEntry) => Promise<void> | void;
 }
 
 /**
