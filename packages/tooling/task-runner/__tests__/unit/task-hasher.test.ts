@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { computeTaskHash, InProcessTaskHasher } from "../../src/task-hasher";
-import type { Task, TaskHashDetails } from "../../src/types";
+import type { FingerprintContributor, Task, TaskHashDetails } from "../../src/types";
 
 const createTemporaryDirectory = async (): Promise<string> => {
     // eslint-disable-next-line sonarjs/pseudo-random
@@ -637,6 +637,139 @@ describe(InProcessTaskHasher, () => {
         };
 
         await expect(hasher.hashTask(task)).rejects.toThrow(/Unknown input URI scheme/);
+    });
+
+    it("should mix onFingerprint contributions into the runtime bucket", async () => {
+        expect.assertions(3);
+
+        const seen: { task: string }[] = [];
+
+        const hasher = new InProcessTaskHasher({
+            onFingerprint: (task, contributor) => {
+                seen.push({ task: task.id });
+                contributor.contribute("vis-plugin", "schema-version-7");
+            },
+            projects: { "lib-a": { root: "packages/lib-a" } },
+            workspaceRoot,
+        });
+
+        const task: Task = {
+            id: "lib-a:build",
+            outputs: [],
+            overrides: {},
+            target: { project: "lib-a", target: "build" },
+        };
+
+        const details = await hasher.hashTask(task);
+
+        expect(seen).toStrictEqual([{ task: "lib-a:build" }]);
+        // Contributions are namespaced under `plugin:` so they can't
+        // collide with built-in env: / framework-env: / runtime keys.
+        expect(details.runtime?.["plugin:vis-plugin"]).toBeDefined();
+        expect(typeof details.runtime?.["plugin:vis-plugin"]).toBe("string");
+    });
+
+    it("should hash differently when contributions change value", async () => {
+        expect.assertions(1);
+
+        const makeHasher = (value: string) =>
+            new InProcessTaskHasher({
+                onFingerprint: (_task, contributor) => contributor.contribute("schema", value),
+                projects: { "lib-a": { root: "packages/lib-a" } },
+                workspaceRoot,
+            });
+
+        const task: Task = {
+            id: "lib-a:build",
+            outputs: [],
+            overrides: {},
+            target: { project: "lib-a", target: "build" },
+        };
+
+        const a = await makeHasher("v1").hashTask(task);
+        const b = await makeHasher("v2").hashTask(task);
+
+        expect(a.runtime?.["plugin:schema"]).not.toBe(b.runtime?.["plugin:schema"]);
+    });
+
+    it("should be order-independent across contribution calls", async () => {
+        expect.assertions(1);
+
+        const makeHasher = (order: ("a" | "b")[]) =>
+            new InProcessTaskHasher({
+                onFingerprint: (_task, contributor) => {
+                    for (const k of order) {
+                        contributor.contribute(k, `${k}-value`);
+                    }
+                },
+                projects: { "lib-a": { root: "packages/lib-a" } },
+                workspaceRoot,
+            });
+
+        const task: Task = {
+            id: "lib-a:build",
+            outputs: [],
+            overrides: {},
+            target: { project: "lib-a", target: "build" },
+        };
+
+        const forward = computeTaskHash(await makeHasher(["a", "b"]).hashTask(task));
+        const reverse = computeTaskHash(await makeHasher(["b", "a"]).hashTask(task));
+
+        // computeTaskHash sorts keys before mixing, so the order in
+        // which the plugin called contribute() must not matter.
+        expect(forward).toBe(reverse);
+    });
+
+    it("should reject empty / non-string keys at the contribute() boundary", async () => {
+        expect.assertions(2);
+
+        const makeHasher = (badCall: (c: FingerprintContributor) => void) =>
+            new InProcessTaskHasher({
+                onFingerprint: (_t, contributor) => {
+                    badCall(contributor);
+                },
+                projects: { "lib-a": { root: "packages/lib-a" } },
+                workspaceRoot,
+            });
+
+        const task: Task = {
+            id: "lib-a:build",
+            outputs: [],
+            overrides: {},
+            target: { project: "lib-a", target: "build" },
+        };
+
+        await expect(
+            // @ts-expect-error -- runtime check for plugins without TS
+            makeHasher((c) => c.contribute("", "v")).hashTask(task),
+        ).rejects.toThrow(/non-empty string key/);
+
+        await expect(
+            // @ts-expect-error -- runtime check for plugins without TS
+            makeHasher((c) => c.contribute("schema", undefined)).hashTask(task),
+        ).rejects.toThrow(/string value/);
+    });
+
+    it("should propagate onFingerprint throws so the task fails before cache lookup", async () => {
+        expect.assertions(1);
+
+        const hasher = new InProcessTaskHasher({
+            onFingerprint: () => {
+                throw new Error("plugin blew up");
+            },
+            projects: { "lib-a": { root: "packages/lib-a" } },
+            workspaceRoot,
+        });
+
+        const task: Task = {
+            id: "lib-a:build",
+            outputs: [],
+            overrides: {},
+            target: { project: "lib-a", target: "build" },
+        };
+
+        await expect(hasher.hashTask(task)).rejects.toThrow("plugin blew up");
     });
 });
 

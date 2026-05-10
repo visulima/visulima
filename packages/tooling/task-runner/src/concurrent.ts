@@ -206,6 +206,7 @@ export const runConcurrently = async (commands: ConcurrentCommandInput[], option
     if (options.restart && options.restart.tries !== 0) {
         result = await withRestart((cmds, options_) => coreRun(cmds, options_), configs, options, {
             delay: options.restart.delay ?? 0,
+            onRetry: options.restart.onRetry,
             tries: options.restart.tries,
         });
     } else {

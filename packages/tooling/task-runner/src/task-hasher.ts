@@ -15,6 +15,8 @@ import type {
     EnvironmentInput,
     ExternalDependencyInput,
     FileSetInput,
+    FingerprintContributor,
+    FingerprintHook,
     InputDefinition,
     NamedInputs,
     ProjectConfiguration,
@@ -87,6 +89,13 @@ interface TaskHasherOptions {
     incrementalHasher?: IncrementalFileHasher;
     /** Named input definitions */
     namedInputs?: NamedInputs;
+
+    /**
+     * Plugin hook fired during fingerprint construction. See
+     * {@link FingerprintHook} for the contract — throwing aborts
+     * hashing for the offending task.
+     */
+    onFingerprint?: FingerprintHook;
     /** Project configurations keyed by project name */
     projects: Record<string, ProjectConfiguration>;
 
@@ -283,6 +292,8 @@ class InProcessTaskHasher implements TaskHasher {
 
     readonly #incrementalHasher: IncrementalFileHasher | undefined;
 
+    readonly #onFingerprint: FingerprintHook | undefined;
+
     #globalHash: string | undefined = undefined;
 
     public constructor(options: TaskHasherOptions) {
@@ -299,6 +310,7 @@ class InProcessTaskHasher implements TaskHasher {
         this.#frameworkInference = options.frameworkInference ?? false;
         this.#autoEnvVars = options.autoEnvVars ?? false;
         this.#incrementalHasher = options.incrementalHasher;
+        this.#onFingerprint = options.onFingerprint;
     }
 
     public async hashTask(task: Task): Promise<TaskHashDetails> {
@@ -381,6 +393,43 @@ class InProcessTaskHasher implements TaskHasher {
                 for (const envName of Object.keys(frameworkEnvVariables)) {
                     runtime[`framework-env:${envName}`] = hashStrings(envName, process.env[envName] ?? "");
                 }
+            }
+        }
+
+        // Plugin extension point: fired last so plugins can mix extra
+        // signals into the fingerprint. Contributions land in `runtime`
+        // under the `plugin:` namespace; the surrounding sort in
+        // `computeTaskHash` keeps the resulting hash deterministic
+        // regardless of the order plugins call `contribute`.
+        //
+        // Errors propagate intentionally — a buggy plugin that crashes
+        // here fails the task before the cache is consulted, which is
+        // safer than silently degrading to "no contribution".
+        if (this.#onFingerprint) {
+            const contributions: Record<string, string> = {};
+            const contributor: FingerprintContributor = {
+                contribute: (key, value) => {
+                    // Validate at the boundary — plugins without TS
+                    // types can pass nonsense and we'd otherwise crash
+                    // deep inside `hashStrings` (`Buffer.from(undefined)`
+                    // throws an opaque TypeError) or silently collide
+                    // every empty-key contribution under `plugin:`.
+                    if (typeof key !== "string" || key.length === 0) {
+                        throw new TypeError(`task:fingerprint contribute() requires a non-empty string key, got ${typeof key === "string" ? "''" : typeof key}`);
+                    }
+
+                    if (typeof value !== "string") {
+                        throw new TypeError(`task:fingerprint contribute(${JSON.stringify(key)}) requires a string value, got ${typeof value}`);
+                    }
+
+                    contributions[`plugin:${key}`] = hashStrings(key, value);
+                },
+            };
+
+            await this.#onFingerprint(task, contributor);
+
+            for (const [key, value] of Object.entries(contributions)) {
+                runtime[key] = value;
             }
         }
 
