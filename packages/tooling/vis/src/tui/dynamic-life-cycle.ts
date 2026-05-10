@@ -166,6 +166,8 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
                 }
             }
 
+            const retryLabel = row.retryAttempts && row.retryAttempts > 0 ? ` [retried ${row.retryAttempts}x]` : "";
+
             const line = renderToString(
                 React.createElement(
                     Text,
@@ -174,6 +176,7 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
                     React.createElement(Text, { color }, icon),
                     `  vis run ${taskId}`,
                     cacheLabel ? React.createElement(Text, { dimColor: true }, `  ${cacheLabel}`) : null,
+                    retryLabel ? React.createElement(Text, { color: "yellow" }, retryLabel) : null,
                 ),
                 { columns },
             );
@@ -190,6 +193,7 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
                 failed: state.failed,
                 failedIds,
                 projectNames,
+                retriedIds: state.retriedIds.length > 0 ? state.retriedIds : undefined,
                 succeeded: state.succeeded,
                 targets: args.targets,
                 tasks,

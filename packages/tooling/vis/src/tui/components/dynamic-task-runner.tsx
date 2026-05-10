@@ -37,6 +37,7 @@ const DynamicTaskRunner = ({ parallelSlots, projectNames, store, targets, tasks 
                 failed={state.failed}
                 failedIds={failedIds}
                 projectNames={projectNames}
+                retriedIds={state.retriedIds.length > 0 ? state.retriedIds : undefined}
                 succeeded={state.succeeded}
                 targets={targets}
                 tasks={tasks}

@@ -20,6 +20,12 @@ export interface TaskState {
     failed: number;
     /** Whether the filter input bar is active. */
     filterActive: boolean;
+    /**
+     * IDs of tasks that finished after at least one retry. A task can appear
+     * here whether it ultimately succeeded or failed — any non-zero retry
+     * attempt is a flake observation worth surfacing.
+     */
+    retriedIds: string[];
     /** Current filter text (empty = no filter). */
     filterText: string;
     /** Which panel currently has keyboard focus. */
@@ -74,6 +80,7 @@ export class TaskStore {
             outputs: new Map(),
             pinnedTaskIds: [null, null],
             rerunRequested: false,
+            retriedIds: [],
             retryTaskId: null,
             rows: tasks.map((t) => {
                 const visOptions = t.overrides["visOptions"] as VisTargetOptions | undefined;
@@ -121,6 +128,7 @@ export class TaskStore {
         const rows = [...this.#state.rows];
         let { cached, completed, failed, succeeded } = this.#state;
         const outputs = new Map(this.#state.outputs);
+        const retriedIds = [...this.#state.retriedIds];
 
         for (const res of results) {
             const index = rows.findIndex((r) => r.taskId === res.task.id);
@@ -129,8 +137,17 @@ export class TaskStore {
                 rows[index] = {
                     ...rows[index]!,
                     duration: res.startTime && res.endTime ? res.endTime - res.startTime : undefined,
+                    retryAttempts: res.retryAttempts,
                     status: res.status,
                 };
+            }
+
+            // A task that ultimately passed but burned retries is the
+            // exact "succeeded after retry" signal we want to surface
+            // — without this, the run looks fully clean even when a
+            // flake was masked.
+            if (res.retryAttempts && res.retryAttempts > 0) {
+                retriedIds.push(res.task.id);
             }
 
             completed++;
@@ -172,7 +189,7 @@ export class TaskStore {
             }
         }
 
-        this.#emit({ ...this.#state, cached, completed, failed, outputs, rows, selectedIndex, succeeded });
+        this.#emit({ ...this.#state, cached, completed, failed, outputs, retriedIds, rows, selectedIndex, succeeded });
     }
 
     /** Maximum output stored per task (256 KB). Prevents OOM with long-running dev servers. */
@@ -305,7 +322,7 @@ export class TaskStore {
                 completed = Math.max(0, completed - 1);
             }
 
-            rows[index] = { ...rows[index]!, elapsed: 0, status: "running" };
+            rows[index] = { ...rows[index]!, elapsed: 0, retryAttempts: undefined, status: "running" };
             this.#hrtimeStarts.set(taskId, process.hrtime());
         }
 
@@ -316,6 +333,10 @@ export class TaskStore {
             endTime: null,
             failed,
             interactiveMode: false,
+            // Strip the prior run's retry observation for this task
+            // — the upcoming attempt may pass cleanly; if it doesn't,
+            // endTasks will re-record the new count.
+            retriedIds: this.#state.retriedIds.filter((id) => id !== taskId),
             retryTaskId: taskId,
             rows,
             succeeded,
@@ -366,6 +387,9 @@ export class TaskStore {
             interactiveMode: false,
             outputs: new Map(),
             rerunRequested: true,
+            // Drop retry counters from the prior run — when the user
+            // re-runs we want a fresh observation, not stacked history.
+            retriedIds: [],
             rows: this.#state.rows.map((r) => {
                 return { persistent: r.persistent, status: "pending" as const, taskId: r.taskId };
             }),

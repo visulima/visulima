@@ -64,6 +64,7 @@ vis run dev --services=persistent --stop-services         # Boot service deps + 
 | `--services`         |       | TTY: `auto`    | Auto-start service deps. `auto` (per-task: `dev` → ephemeral, others → persistent), `ephemeral` (die with the run), `persistent` (registered for future runs), `off` (skip and abort with the diagnostic). Default is `auto` in a TTY, `off` in CI / pipes. Workspace pin via `run.services` in `vis.config.ts`. |
 | `--stop-services`    |       | `false`        | Stop services this run auto-started in registry mode when the run exits (clean finish, `q`, or Ctrl+C). Pre-existing services and ephemeral services are unaffected — ephemeral already die with the run; only services this invocation booted via `--services=persistent` or the `auto` registry path are stopped. |
 | `--flaky`            |       | `true`         | Show flaky report on failure (`--no-flaky` to suppress)                                                                                                                                                  |
+| `--fail-on-retry`    |       | `false`        | Treat any task that succeeded only after one or more retries as a run failure (exit non-zero). Useful as a periodic CI check to surface flakes that retries would otherwise mask.                        |
 | `--log`              |       |                | Output mode: `interleaved`, `labeled` (`[pkg#task]` prefixes), or `grouped` (buffered block)                                                                                                             |
 | `--output-style`     |       |                | `normal` (default) prints every task; `quiet` skips output for successful and cached tasks (failures still print). Per-target `options.outputStyle` overrides this.                                      |
 | `--pty`              |       | `false`        | Run every task through a PTY so color-aware tools render as if attached to a TTY (disables caching)                                                                                                      |
@@ -419,6 +420,8 @@ export default defineConfig({
 
 When historical run summaries exist (from prior `--summarize` runs), vis automatically prints a flakiness table at the end of every run — successful or failed — so a clean run that masked a flake via retries doesn't hide history that would help you investigate. Suppress with `--no-flaky`.
 
+A retried-but-passed task counts as half a flake observation: the pipeline didn't actually break, but the restart still happened. The `Retried` column shows how many times each task needed at least one restart to finish.
+
 ```bash
 vis run :test --summarize
 ```
@@ -426,10 +429,16 @@ vis run :test --summarize
 ```
 Flaky tasks (based on historical runs):
 
-  Task              Runs  Failures  Rate   Last Failure
-  ────────────────  ────  ────────  ─────  ─────────────────────
-  @myorg/api:test   12    3         25.0%  2026-04-10T14:23:00Z
-  @myorg/web:build  8     1         12.5%  2026-04-08T09:15:00Z
+  Task              Runs  Failures  Retried  Rate   Last Failure
+  ────────────────  ────  ────────  ───────  ─────  ─────────────────────
+  @myorg/api:test   12    3         2        33.3%  2026-04-10T14:23:00Z
+  @myorg/web:build  8     1         0        12.5%  2026-04-08T09:15:00Z
+```
+
+Inline run output also flags retried tasks so you spot them as they finish:
+
+```
+✓  @myorg/api:test [retried 2x] (4.2s)
 ```
 
 To fix flaky tasks, add `retryCount` to their target options in `project.json`:
@@ -443,3 +452,30 @@ To fix flaky tasks, add `retryCount` to their target options in `project.json`:
     }
 }
 ```
+
+### `--fail-on-retry`
+
+By default, a task that succeeds after one or more retries still marks the run as a success — that's the point of the safety net. Set `--fail-on-retry` (or wire it into a periodic CI job) to flip this: any non-zero retry count fails the run, even when every task ultimately passed. Useful for nightly "health check" pipelines that want to surface masked flakes the day-to-day workflow tolerates.
+
+```bash
+vis run :test --fail-on-retry
+```
+
+## CI Log Grouping
+
+`vis run` automatically wraps each task's stdout in a collapsible group when it detects a supported CI runner — GitHub Actions (`GITHUB_ACTIONS=true`), GitLab CI (`GITLAB_CI=true`), Buildkite (`BUILDKITE=true`), or Azure Pipelines (`TF_BUILD=True`). Failed tasks render expanded so the failure is visible without an extra click. CircleCI is intentionally not auto-detected: its 2.0+ format has no inline grouping directive (steps auto-group in the web UI).
+
+Override the default detection in `vis.config.ts → run.ciGrouping`:
+
+```ts
+export default defineConfig({
+    run: {
+        // "auto" (default) — detect via env. "off" disables grouping.
+        // "azure" / "buildkite" / "github" / "gitlab" force the format
+        // on self-hosted runners that don't set the standard env vars.
+        ciGrouping: "auto",
+    },
+});
+```
+
+See the [CI/CD guide](/docs/guides/ci-cd) for the full env-var → format mapping.
