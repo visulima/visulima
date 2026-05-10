@@ -1,3 +1,52 @@
+## @visulima/vis [1.0.0-alpha.16](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.15...@visulima/vis@1.0.0-alpha.16) (2026-05-10)
+
+### Features
+
+* add service and tool projectType variants ([61858ad](https://github.com/visulima/visulima/commit/61858ad4c044b5f30318f282615c83f716667053)), closes [#21](https://github.com/visulima/visulima/issues/21)
+* **vis:** auto-start declared service deps for vis run with TUI dock ([adeb316](https://github.com/visulima/visulima/commit/adeb3164d29aec6da2eeed03d46fc0502aec5d6a))
+* **vis:** cross-PM dispatch for vis pm (yarn berry, pnpm 11, bun pm) ([fd56b86](https://github.com/visulima/visulima/commit/fd56b86317f4141227814504845f03ce777c0b88))
+* **vis:** expand nx migrator and add --force overwrite ([d6e5a91](https://github.com/visulima/visulima/commit/d6e5a91c4bc44a34dd770dd0b8298b5017bdd6df))
+* **vis:** prune workspace lockfile in docker scaffold ([d1c0904](https://github.com/visulima/visulima/commit/d1c090425d130b3e18b6e64e44fe81eb1e08b923))
+
+### Bug Fixes
+
+* **vis:** exit explicitly after cli.run settles ([2dc28e2](https://github.com/visulima/visulima/commit/2dc28e2d0d735526c9c551aeae72af63a2deee4d))
+* **vis:** release stdin and label persistent quits in dynamic TUI ([7350547](https://github.com/visulima/visulima/commit/7350547363fcbd4ec4d845d2194c22188605f34f))
+
+### Documentation
+
+* **vis:** document missing cache subcommands and run flags ([cf093a1](https://github.com/visulima/visulima/commit/cf093a1879ff414d0500ac91d76bba98352ed97e))
+
+### Miscellaneous Chores
+
+* **vis:** drop redundant section banners and pure-WHAT docblocks ([745844b](https://github.com/visulima/visulima/commit/745844b601cf111d362718611fa7021c19f2e939))
+* **vis:** finish .vis/ cutover for stragglers ([3053347](https://github.com/visulima/visulima/commit/30533478e084b9ae84aefe191d57c672ca0797fa))
+* **vis:** sort docker example api/package.json deps ([28fdbd7](https://github.com/visulima/visulima/commit/28fdbd780fb3384dcfc3f06db4145fafaeef52d2))
+
+### Code Refactoring
+
+* replace execa with tinyexec ([56ec776](https://github.com/visulima/visulima/commit/56ec776908fe0c068c54542f3885cb29f061fea7))
+* **vis:** consolidate workspace state under .vis/ ([9e89d52](https://github.com/visulima/visulima/commit/9e89d52f03cc8b3a6a51c13a2359e9b93532c1dd))
+* **vis:** extract definePlugin and fix jiti temp config path under pnpm hoisting ([8cda079](https://github.com/visulima/visulima/commit/8cda079c22686121c966befb25295bc3511bf29b))
+* **vis:** import @visulima/tui components and hooks from subpaths ([2d9245d](https://github.com/visulima/visulima/commit/2d9245d81c9555b87c3803a428b1a306ae242da0))
+* **vis:** polish derivations across vis-* TUI apps ([47a7945](https://github.com/visulima/visulima/commit/47a79456341282f945689e40c8b174e92b8dc6df))
+
+### Tests
+
+* **vis:** bump docker-lockfile prune test timeout for CI ([ef57ec2](https://github.com/visulima/visulima/commit/ef57ec21799b1158b972ff92568db111daa2e74f))
+* **vis:** cover docker scaffold with example workspace and real-lockfile fixture ([9104638](https://github.com/visulima/visulima/commit/910463861d1200773b163acdc8bff919e37d6b97))
+* **vis:** skip docker-lockfile fixture suite in CI ([af7503e](https://github.com/visulima/visulima/commit/af7503eea3d76ace9b9703332456b771bfd91380))
+
+
+### Dependencies
+
+* **@visulima/task-runner:** upgraded to 1.0.0-alpha.11
+* **@visulima/tui:** upgraded to 1.0.0-alpha.11
+* **@visulima/cerebro:** upgraded to 3.0.0-alpha.19
+* **@visulima/fs:** upgraded to 5.0.0-alpha.18
+* **@visulima/package:** upgraded to 5.0.0-alpha.17
+* **@visulima/string:** upgraded to 3.0.0-alpha.13
+
 ## @visulima/vis [1.0.0-alpha.15](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.14...@visulima/vis@1.0.0-alpha.15) (2026-05-07)
 
 ### Bug Fixes
