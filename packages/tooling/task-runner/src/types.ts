@@ -203,6 +203,16 @@ export interface TaskResult {
     hadWarnings?: boolean;
 
     /**
+     * Number of times the task was restarted by the retry controller
+     * before producing this final result. `0` (or undefined) means the
+     * task succeeded or failed on its first attempt; `> 0` means the
+     * task eventually produced this status after N restarts. Surfaced
+     * to lifecycle reporters and the run summary so a "green" build
+     * that masked a flake via retries is still visible to the user.
+     */
+    retryAttempts?: number;
+
+    /**
      * Set when the task modified one or more of its own tracked input
      * files during execution. Caching is skipped in this case — the
      * fingerprint captured before the run would mismatch the post-run
@@ -862,7 +872,10 @@ export interface TaskExecutionOptions {
 /**
  * A task executor function.
  */
-export type TaskExecutor = (task: Task, options: TaskExecutionOptions) => Promise<{ code: number; terminalOutput: string }>;
+export type TaskExecutor = (
+    task: Task,
+    options: TaskExecutionOptions,
+) => Promise<{ code: number; retryAttempts?: number; terminalOutput: string }>;
 
 /**
  * The function type for a task runner.
