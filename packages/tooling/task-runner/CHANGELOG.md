@@ -1,3 +1,9 @@
+## @visulima/task-runner [1.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/task-runner@1.0.0-alpha.11...@visulima/task-runner@1.0.0-alpha.12) (2026-05-10)
+
+### Features
+
+* **task-runner:** add onRetry + onFingerprint hooks ([7e9dadf](https://github.com/visulima/visulima/commit/7e9dadfbe7101fd9b2878eb881d16c3ff5d766ac))
+
 ## @visulima/task-runner [1.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/task-runner@1.0.0-alpha.10...@visulima/task-runner@1.0.0-alpha.11) (2026-05-10)
 
 ### Features
