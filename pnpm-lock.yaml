@@ -9967,6 +9967,25 @@ importers:
         specifier: catalog:test
         version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.3(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
+  packages/tooling/vis/examples/docker: {}
+
+  packages/tooling/vis/examples/docker/packages/api:
+    dependencies:
+      fastify:
+        specifier: '>=5.8.3'
+        version: 5.8.5
+      shared:
+        specifier: workspace:*
+        version: link:../shared
+
+  packages/tooling/vis/examples/docker/packages/shared: {}
+
+  packages/tooling/vis/examples/docker/packages/unused:
+    dependencies:
+      lodash:
+        specifier: '>=4.18.0'
+        version: 4.18.1
+
   packages/tooling/vis/examples/interactive-workspace: {}
 
   packages/tooling/vis/examples/interactive-workspace/packages/helper-lib: {}
