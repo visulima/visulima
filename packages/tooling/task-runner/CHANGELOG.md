@@ -1,3 +1,15 @@
+## @visulima/task-runner [1.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/task-runner@1.0.0-alpha.10...@visulima/task-runner@1.0.0-alpha.11) (2026-05-10)
+
+### Features
+
+* add service and tool projectType variants ([61858ad](https://github.com/visulima/visulima/commit/61858ad4c044b5f30318f282615c83f716667053)), closes [#21](https://github.com/visulima/visulima/issues/21)
+* **task-runner:** allow embedders to override the data directory ([904875a](https://github.com/visulima/visulima/commit/904875a15751c57ebafa9c137fd11c2ade1a4b6a))
+* **task-runner:** surface native child pids for sigint cleanup ([3790bbd](https://github.com/visulima/visulima/commit/3790bbd5f88485f6c67c28548faf7a2a3791216c))
+
+### Miscellaneous Chores
+
+* **task-runner:** bump protobufjs to 8.0.3 ([cfbd5e7](https://github.com/visulima/visulima/commit/cfbd5e783e8773db790223f7dd8baea56685c1ca))
+
 ## @visulima/task-runner [1.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/task-runner@1.0.0-alpha.9...@visulima/task-runner@1.0.0-alpha.10) (2026-05-06)
 
 ### Features
