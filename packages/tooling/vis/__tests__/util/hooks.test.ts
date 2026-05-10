@@ -13,8 +13,8 @@ const makeServiceEntry = (id: string): ServiceEntry => {
         env: { DB_URL: "postgres://localhost" },
         id,
         logFile: `/tmp/${id}.log`,
-        pid: 12345,
-        slug: id.replace(/[/:]/g, "_"),
+        pid: 12_345,
+        slug: id.replaceAll(/[/:]/g, "_"),
         startedAt: new Date().toISOString(),
         visVersion: "1.0.0",
     };

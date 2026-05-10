@@ -37,14 +37,14 @@ Also writes a `vis-docker-manifest.json` listing the focus closure for the prune
 
 `scaffold` rewrites the workspace lockfile so it carries only entries reachable from the focus closure. This drops dependencies that belong exclusively to unfocused projects and shrinks `pnpm install` time inside Docker accordingly. Supported package managers:
 
-| Lockfile             | Manager       | Notes                                                                                  |
-| -------------------- | ------------- | -------------------------------------------------------------------------------------- |
-| `pnpm-lock.yaml`     | pnpm          | v6 and v9 (separate `snapshots` block) supported                                       |
-| `package-lock.json`  | npm           | v3+ path-keyed `packages` map; nested `node_modules` resolution preserved              |
-| `yarn.lock`          | yarn classic  | Seeded from each project's `package.json` (no workspace block in the lockfile)         |
-| `yarn.lock`          | yarn berry    | Detected via `__metadata` block; uses `@workspace:` resolutions                        |
-| `bun.lock`           | bun           | JSONC (comments stripped); package-name-keyed graph walked from workspace deps         |
-| `bun.lockb`          | bun           | Binary; copied verbatim with a hint to run `bun install --save-text-lockfile`          |
+| Lockfile            | Manager      | Notes                                                                          |
+| ------------------- | ------------ | ------------------------------------------------------------------------------ |
+| `pnpm-lock.yaml`    | pnpm         | v6 and v9 (separate `snapshots` block) supported                               |
+| `package-lock.json` | npm          | v3+ path-keyed `packages` map; nested `node_modules` resolution preserved      |
+| `yarn.lock`         | yarn classic | Seeded from each project's `package.json` (no workspace block in the lockfile) |
+| `yarn.lock`         | yarn berry   | Detected via `__metadata` block; uses `@workspace:` resolutions                |
+| `bun.lock`          | bun          | JSONC (comments stripped); package-name-keyed graph walked from workspace deps |
+| `bun.lockb`         | bun          | Binary; copied verbatim with a hint to run `bun install --save-text-lockfile`  |
 
 Per-lockfile pruning summaries are emitted at `info` level (`pnpm-lock.yaml: kept 124/812 packages and 4 importers (dropped 688 packages, 12 importers)`). Pass `--no-prune-lockfile` to copy lockfiles verbatim instead — useful for lockfile parser edge cases or when shipping the full graph is intentional.
 
@@ -85,10 +85,10 @@ CMD ["node", "dist/index.js"]
 
 ## Options
 
-| Option                 | Default       | Description                                                       |
-| ---------------------- | ------------- | ----------------------------------------------------------------- |
-| `--focus`              | _required_    | Project name(s) to focus on, comma-separated                      |
-| `--out`                | `.vis/docker` | Output directory for scaffold                                     |
-| `--include-sources`    | `false`       | Also copy focus project source trees                              |
-| `--context`            | `.vis/docker` | Scaffold root for prune                                           |
-| `--no-prune-lockfile`  | _off_         | Copy the workspace lockfile verbatim instead of rewriting it      |
+| Option                | Default       | Description                                                  |
+| --------------------- | ------------- | ------------------------------------------------------------ |
+| `--focus`             | _required_    | Project name(s) to focus on, comma-separated                 |
+| `--out`               | `.vis/docker` | Output directory for scaffold                                |
+| `--include-sources`   | `false`       | Also copy focus project source trees                         |
+| `--context`           | `.vis/docker` | Scaffold root for prune                                      |
+| `--no-prune-lockfile` | _off_         | Copy the workspace lockfile verbatim instead of rewriting it |

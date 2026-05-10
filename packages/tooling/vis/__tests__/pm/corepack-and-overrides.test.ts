@@ -213,11 +213,7 @@ describe(spawnResolved, () => {
         // The subprocess exits with the numeric value of VIS_TEST_ENV.
         // If env injection works, exit code is 7; otherwise it would
         // be NaN → 1 (spawnSync default).
-        const code = spawnResolved(
-            RESOLVED("node", ["-e", "process.exit(parseInt(process.env.VIS_TEST_ENV, 10))"]),
-            process.cwd(),
-            { VIS_TEST_ENV: "7" },
-        );
+        const code = spawnResolved(RESOLVED("node", ["-e", "process.exit(parseInt(process.env.VIS_TEST_ENV, 10))"]), process.cwd(), { VIS_TEST_ENV: "7" });
 
         expect(code).toBe(7);
     });

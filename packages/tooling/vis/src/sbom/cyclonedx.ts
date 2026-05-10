@@ -147,7 +147,7 @@ const buildExternalReferences = (pkg: BuilderPackageJson): ExternalReference[] |
 
 // Services and CLI tools are deployable executables — CycloneDX models them as `application`.
 const toCycloneDxComponentType = (projectType: ProjectConfiguration["projectType"]): "application" | "library" =>
-    projectType === "application" || projectType === "service" || projectType === "tool" ? "application" : "library";
+    (projectType === "application" || projectType === "service" || projectType === "tool" ? "application" : "library");
 
 /** Assemble the required parts of a component from a parsed package.json. */
 const decoratePackageComponent = (component: Component, pkg: BuilderPackageJson | undefined): void => {

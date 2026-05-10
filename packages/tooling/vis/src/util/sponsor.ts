@@ -87,4 +87,4 @@ const showSponsorNotice = (context: SponsorContext): void => {
 };
 
 export type { SponsorContext };
-export { SPONSOR_INTERVAL_MS, SPONSOR_URL, showSponsorNotice };
+export { showSponsorNotice, SPONSOR_INTERVAL_MS, SPONSOR_URL };

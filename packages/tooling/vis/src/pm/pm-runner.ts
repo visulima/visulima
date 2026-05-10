@@ -380,13 +380,8 @@ const runResolved = (pm: InstallerInfo, resolved: ResolvedCommand, cwd: string, 
     return spawnResolved(final, cwd, overrides.env);
 };
 
-const resolveAndRun = (
-    pm: InstallerInfo,
-    nativeCall: () => ResolvedCommand,
-    cwd: string,
-    logger: Console,
-    overrides: RunOverrides = {},
-): number => runResolved(pm, nativeCall(), cwd, logger, overrides);
+const resolveAndRun = (pm: InstallerInfo, nativeCall: () => ResolvedCommand, cwd: string, logger: Console, overrides: RunOverrides = {}): number =>
+    runResolved(pm, nativeCall(), cwd, logger, overrides);
 
 /**
  * Append PM-specific `--prefer-offline` to a resolved install command.
@@ -492,13 +487,7 @@ const applyDryRun = (resolved: ResolvedCommand, pm: InstallerInfo["name"]): Reso
  * add / remove). Other ops (link, exec, dlx, info, …) skip via
  * {@link runResolved}'s `dry` directly.
  */
-const runWithNativeDryRun = (
-    pm: InstallerInfo,
-    resolved: ResolvedCommand,
-    cwd: string,
-    logger: Console,
-    overrides: RunOverrides,
-): number => {
+const runWithNativeDryRun = (pm: InstallerInfo, resolved: ResolvedCommand, cwd: string, logger: Console, overrides: RunOverrides): number => {
     if (overrides.dry !== true) {
         return runResolved(pm, resolved, cwd, logger, overrides);
     }
@@ -659,13 +648,7 @@ const collectExistingDeps = (cwd: string): Set<string> => {
  * succeeded and we don't want a peer-resolution glitch to flip the
  * exit code.
  */
-const installMissingPeers = (
-    pm: InstallerInfo,
-    options: AddOptions,
-    cwd: string,
-    logger: Console,
-    extras: RunAddExtras,
-): void => {
+const installMissingPeers = (pm: InstallerInfo, options: AddOptions, cwd: string, logger: Console, extras: RunAddExtras): void => {
     if (pm.name === "deno") {
         // Deno doesn't model peer dependencies. Skip silently.
         return;
@@ -813,13 +796,14 @@ const resolveInfo = (pm: InstallerInfo, options: InfoOptions): ResolvedCommand =
             // rather than registry metadata, but it's the closest thing
             // deno ships. For npm specs prepend `npm:` so the lookup
             // resolves through deno's npm-compat path.
-            const spec = options.package.startsWith("npm:")
-                || options.package.startsWith("jsr:")
-                || options.package.startsWith("https://")
-                || options.package.startsWith("http://")
-                || options.package.startsWith("file:")
-                ? options.package
-                : `npm:${options.package}`;
+            const spec
+                = options.package.startsWith("npm:")
+                    || options.package.startsWith("jsr:")
+                    || options.package.startsWith("https://")
+                    || options.package.startsWith("http://")
+                    || options.package.startsWith("file:")
+                    ? options.package
+                    : `npm:${options.package}`;
 
             args.push("info", "--", spec);
 
@@ -925,14 +909,7 @@ const runExec = (pm: InstallerInfo, options: ExecOptions, cwd: string, logger: C
     return resolveAndRun(pm, () => resolveExec(pm.name, pm.version, options), cwd, logger, extras);
 };
 
-const runPmSubcommand = (
-    pm: InstallerInfo,
-    subcommand: string,
-    args: string[],
-    cwd: string,
-    logger: Console,
-    extras: RunOverrides = {},
-): number => {
+const runPmSubcommand = (pm: InstallerInfo, subcommand: string, args: string[], cwd: string, logger: Console, extras: RunOverrides = {}): number => {
     if (pm.name === "aube") {
         return runResolved(pm, resolveAubePmCommand(subcommand, args), cwd, logger, extras);
     }
@@ -950,29 +927,13 @@ const runPmSubcommand = (
     }
 
     if (action.kind === "rewrite") {
-        return runResolved(
-            pm,
-            { args: action.args, bin: action.bin, warnings: action.warning ? [action.warning] : [] },
-            cwd,
-            logger,
-            extras,
-        );
+        return runResolved(pm, { args: action.args, bin: action.bin, warnings: action.warning ? [action.warning] : [] }, cwd, logger, extras);
     }
 
     return resolveAndRun(pm, () => resolvePmCommand(pm.name, pm.version, subcommand, args), cwd, logger, extras);
 };
 
-export type {
-    CorepackMode,
-    InfoOptions,
-    InstallBackend,
-    InstallerInfo,
-    PmInfo,
-    RunAddExtras,
-    RunInstallExtras,
-    RunOverrides,
-    RunRemoveExtras,
-};
+export type { CorepackMode, InfoOptions, InstallBackend, InstallerInfo, PmInfo, RunAddExtras, RunInstallExtras, RunOverrides, RunRemoveExtras };
 export {
     detectLockfileDrift,
     detectPm,

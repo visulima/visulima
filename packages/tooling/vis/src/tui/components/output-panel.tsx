@@ -89,6 +89,7 @@ interface OutputPanelProps {
     /** Whether to show "&lt;enter> full screen" hint in bottom border. */
     showFullscreenHint?: boolean;
     status: TaskRowData["status"] | undefined;
+
     /**
      * Whether the rendered stream supports `i` interactive input.
      * False for service log views (no PTY behind them). Defaults to true.

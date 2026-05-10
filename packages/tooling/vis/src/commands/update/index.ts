@@ -219,6 +219,7 @@ export type UpdateOptions = CreateOptions<{
     format: string | undefined;
     global: boolean | undefined;
     include: string[] | undefined;
+    "include-internal": boolean | undefined;
     "include-locked": boolean | undefined;
     install: boolean | undefined;
     interactive: boolean | undefined;
@@ -229,7 +230,6 @@ export type UpdateOptions = CreateOptions<{
     "no-save": boolean | undefined;
     "no-typosquat-check": boolean | undefined;
     peer: boolean | undefined;
-    "include-internal": boolean | undefined;
     prerelease: boolean | undefined;
     prod: boolean | undefined;
     recursive: boolean | undefined;

@@ -393,7 +393,9 @@ export class ServiceEventBridge {
         const tail: TailHandle = {
             fd,
             logFile,
-            pollTimer: setInterval(() => { this.#flushTail(id); }, TAIL_POLL_MS),
+            pollTimer: setInterval(() => {
+                this.#flushTail(id);
+            }, TAIL_POLL_MS),
             position: initialPosition,
         };
 

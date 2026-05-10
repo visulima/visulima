@@ -7,6 +7,7 @@ import type { LoadedRunSummary } from "./types";
 export interface TaskFlakiness {
     /** Number of runs where this task failed (exitCode !== 0). */
     failures: number;
+
     /**
      * Flake rate: (failures + retriedSuccesses) / totalRuns. A retried-but-passed
      * run is half-weighted relative to an outright failure since the user's
@@ -19,6 +20,7 @@ export interface TaskFlakiness {
     /** Most recent retried-success time (ISO 8601), if any. */
     lastRetry?: string;
     project: string;
+
     /**
      * Number of runs where the task ultimately passed but only after at least
      * one restart. Captures flakes that retries successfully masked.

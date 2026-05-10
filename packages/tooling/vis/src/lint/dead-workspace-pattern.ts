@@ -88,10 +88,7 @@ export interface ApplyDeadWorkspacePatternFixesOptions {
  * deletes lines whose value (after trimming `- ` and surrounding
  * quotes) exactly matches a dead pattern.
  */
-export const applyDeadWorkspacePatternFixes = (
-    issues: DeadWorkspacePatternIssue[],
-    options: ApplyDeadWorkspacePatternFixesOptions = {},
-): string[] => {
+export const applyDeadWorkspacePatternFixes = (issues: DeadWorkspacePatternIssue[], options: ApplyDeadWorkspacePatternFixesOptions = {}): string[] => {
     const { useEditorconfig } = options;
     const bySource = new Map<string, DeadWorkspacePatternIssue[]>();
 

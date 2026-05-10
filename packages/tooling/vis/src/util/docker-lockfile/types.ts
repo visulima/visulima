@@ -1,7 +1,5 @@
 import type { LockfilePackageManager } from "../../preflight/lockfile";
 
-export type { LockfilePackageManager };
-
 /** A focus-closure project the pruner needs to know about. */
 export interface FocusProject {
     /**
@@ -33,15 +31,16 @@ export interface PruneInput {
     packageManager: LockfilePackageManager;
 }
 
-export type PruneStatus =
+export type PruneStatus
     /** Lockfile was pruned and the returned `content` is the new file. */
-    | "pruned"
+    = | "pruned"
     /** Format unsupported (e.g. bun.lockb) — caller falls back to verbatim copy. */
-    | "skipped";
+        | "skipped";
 
 export interface PruneResult {
     /** Pruned lockfile contents to write. Only set when status === "pruned". */
     content?: string;
+
     /**
      * Human-readable reason. For `skipped`, explains why pruning bailed
      * (and what the user should do). For `pruned`, summarises what was
@@ -58,3 +57,5 @@ export class LockfilePruneError extends Error {
         this.name = "LockfilePruneError";
     }
 }
+
+export { type LockfilePackageManager } from "../../preflight/lockfile";

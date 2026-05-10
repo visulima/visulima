@@ -97,6 +97,7 @@ interface VisDevcontainerAppProps {
 const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.JSX.Element => {
     const { exit } = useApp();
     const { columns, rows } = useWindowSize();
+    // eslint-disable-next-line react-you-might-not-need-an-effect/no-event-handler -- useSyncExternalStore requires the store's subscribe/getSnapshot to be passed by reference
     const state = useSyncExternalStore(store.subscribe, store.getSnapshot);
 
     const [helpVisible, setHelpVisible] = useState(false);

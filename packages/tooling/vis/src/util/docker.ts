@@ -4,9 +4,10 @@ import { ensureDirSync, isAccessibleSync, readJsonSync, writeFileSync } from "@v
 import { dirname, join, relative } from "@visulima/path";
 import type { ProjectGraph, WorkspaceConfiguration } from "@visulima/task-runner";
 
-import type { LockfilePackageManager } from "../preflight/lockfile";
 import type { VisProjectConfiguration } from "../config/workspace";
-import { type FocusProject, LockfilePruneError, pruneLockfile } from "./docker-lockfile";
+import type { LockfilePackageManager } from "../preflight/lockfile";
+import type { FocusProject } from "./docker-lockfile";
+import { LockfilePruneError, pruneLockfile } from "./docker-lockfile";
 
 /**
  * BFS the project graph to collect every project reachable from
@@ -91,6 +92,7 @@ export interface ScaffoldOptions {
      * are installed.
      */
     includeSources?: boolean;
+
     /**
      * Logger for the per-lockfile pruning summary line (one per detected
      * lockfile). Defaults to `console.log` when omitted; pass `() => {}`
@@ -99,14 +101,16 @@ export interface ScaffoldOptions {
     log?: (message: string) => void;
     /** Output directory, typically `.vis/docker/workspace`. */
     outDir: string;
+
+    /** Project graph used to compute the transitive dependency closure. */
+    projectGraph: ProjectGraph;
+
     /**
      * Skip lockfile pruning and copy lockfiles verbatim. Defaults to
      * `false`. Useful when the user has hit a parser edge case or is
      * intentionally shipping the full lockfile.
      */
     pruneLockfile?: boolean;
-    /** Project graph used to compute the transitive dependency closure. */
-    projectGraph: ProjectGraph;
     /** Workspace configuration with resolved project roots. */
     workspace: WorkspaceConfiguration;
     /** Workspace root on disk. */
@@ -246,7 +250,8 @@ export const scaffoldDockerContext = (options: ScaffoldOptions): { projects: str
     const {
         focus,
         includeSources = false,
-        log = (message: string) => console.log(message),
+        // eslint-disable-next-line no-console -- default log impl writes to stdout; callers override with their own logger in production paths
+        log = (message: string) => { console.log(message); },
         outDir,
         projectGraph,
         pruneLockfile: shouldPruneLockfile = true,

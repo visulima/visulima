@@ -119,7 +119,7 @@ const REGEX_SPECIALS_RE = /[$()+.?[\\\]^{|}]/g;
  * the only meta-character supported; everything else is escaped.
  */
 const resolveBareGlob = (workspaceRoot: string, cleanPattern: string, results: string[]): void => {
-    const escaped = cleanPattern.replaceAll(REGEX_SPECIALS_RE, "\\$&").replaceAll("*", ".*");
+    const escaped = cleanPattern.replaceAll(REGEX_SPECIALS_RE, String.raw`\$&`).replaceAll("*", ".*");
     const regex = new RegExp(`^${escaped}$`);
 
     for (const entry of walkSync(workspaceRoot, { includeFiles: false, includeSymlinks: false, maxDepth: 1, skip: [NODE_MODULES_RE, DOT_GIT_RE] })) {
@@ -135,8 +135,8 @@ const resolveBareGlob = (workspaceRoot: string, cleanPattern: string, results: s
 
 /**
  * Resolves glob-like workspace patterns to actual directories. Supports
- * `dir/<asterisk>`, `dir/<asterisk><asterisk>`, `dir/<asterisk>/<asterisk>`,
- * top-level bare globs like `@<asterisk>`, and exact paths.
+ * `dir/&lt;asterisk>`, `dir/&lt;asterisk>&lt;asterisk>`, `dir/&lt;asterisk>/&lt;asterisk>`,
+ * top-level bare globs like `@&lt;asterisk>`, and exact paths.
  *
  * `!`-prefixed entries are exclusion patterns (pnpm semantics): a
  * resolved directory matching any of them is dropped from the result.

@@ -15,7 +15,7 @@ Missing services are injected as regular task-graph rows in the run TUI and boot
 > Why test targets and not a `dev` target?
 >
 > The current `vis run` handler splits persistent tasks (`preset: "server"`) out of the dep
-> graph before service discovery, so service deps declared on a *persistent* user-invoked
+> graph before service discovery, so service deps declared on a _persistent_ user-invoked
 > target don't trigger the preflight today. The example uses non-persistent `test`-style
 > targets, which exercise the full preflight + run flow end-to-end. Lifting that limitation
 > for `dev` is a follow-up.
@@ -45,6 +45,7 @@ node packages/tooling/vis/dist/bin.js run test \
 ```
 
 **Expected:**
+
 1. Run TUI shows `api:db` first. Boot logs stream in real time:
    `[db] simulated boot — running migrations…` → `[db] migrations done, opening port 5432` → `[db] listening on 127.0.0.1:5432`.
 2. The row turns green after ~1.5s (the simulated boot delay — see "Why is preflight so fast?" below) and the bootstrap exits 0 the moment the TCP probe passes.
@@ -113,6 +114,7 @@ After the run completes, services keep running. A reminder line prints:
 `2 service(s) started in the background. Run \`vis service stop --all\` to clean up.`
 
 Inspect with:
+
 ```bash
 node packages/tooling/vis/dist/bin.js service list \
   --cwd=packages/tooling/vis/examples/service-preflight
@@ -121,6 +123,7 @@ node packages/tooling/vis/dist/bin.js service list \
 Re-running `vis run test …` immediately skips the preflight (services already registered).
 
 Tear down with:
+
 ```bash
 node packages/tooling/vis/dist/bin.js service stop --all \
   --cwd=packages/tooling/vis/examples/service-preflight
@@ -139,11 +142,13 @@ CI=true node packages/tooling/vis/dist/bin.js run test \
 ### 8. Failure surface — port already taken
 
 In one terminal, occupy 5432:
+
 ```bash
 nc -l 5432
 ```
 
 …then in another:
+
 ```bash
 node packages/tooling/vis/dist/bin.js run test \
   --cwd=packages/tooling/vis/examples/service-preflight \

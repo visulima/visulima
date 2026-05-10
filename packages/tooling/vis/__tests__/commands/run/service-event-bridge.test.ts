@@ -6,9 +6,7 @@ import type { ProcessEvent } from "@visulima/task-runner";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceBridgeEntry, ServiceEventSink } from "../../../src/commands/run/service-event-bridge";
-import {
-    ServiceEventBridge,
-} from "../../../src/commands/run/service-event-bridge";
+import { ServiceEventBridge } from "../../../src/commands/run/service-event-bridge";
 import { writeEntry } from "../../../src/services/registry";
 import type { ServiceEntry } from "../../../src/services/types";
 
@@ -109,9 +107,7 @@ describe(ServiceEventBridge, () => {
                 workspaceRoot: tempRoot,
             });
 
-            bridge.onProcessEvent(
-                stdoutEvent(0, `[[VIS_BOOT]]${JSON.stringify({ event: "ready", host: "127.0.0.1", id: "api:db", port: 5432 })}\n`),
-            );
+            bridge.onProcessEvent(stdoutEvent(0, `[[VIS_BOOT]]${JSON.stringify({ event: "ready", host: "127.0.0.1", id: "api:db", port: 5432 })}\n`));
 
             expect(sink.ready).toHaveBeenCalledWith("api:db", { host: "127.0.0.1", port: 5432 });
         });
@@ -127,9 +123,7 @@ describe(ServiceEventBridge, () => {
                 workspaceRoot: tempRoot,
             });
 
-            bridge.onProcessEvent(
-                stdoutEvent(0, `[[VIS_BOOT]]${JSON.stringify({ code: 1, event: "failed", id: "api:db", reason: "exited-before-ready" })}\n`),
-            );
+            bridge.onProcessEvent(stdoutEvent(0, `[[VIS_BOOT]]${JSON.stringify({ code: 1, event: "failed", id: "api:db", reason: "exited-before-ready" })}\n`));
 
             expect(sink.failed).toHaveBeenCalledTimes(1);
             expect(sink.failed).toHaveBeenCalledWith("api:db", "exited-before-ready", { code: 1 });
@@ -261,9 +255,7 @@ describe(ServiceEventBridge, () => {
                 workspaceRoot: tempRoot,
             });
 
-            bridge.onProcessEvent(
-                stdoutEvent(0, `[[VIS_BOOT]]${JSON.stringify({ event: "ready", host: "127.0.0.1", id: "api:db", port: 5432 })}\n`),
-            );
+            bridge.onProcessEvent(stdoutEvent(0, `[[VIS_BOOT]]${JSON.stringify({ event: "ready", host: "127.0.0.1", id: "api:db", port: 5432 })}\n`));
 
             // Append data to the log; the tail should pick it up on the next poll.
             writeFileSync(logFile, "hello world\n");
@@ -274,7 +266,7 @@ describe(ServiceEventBridge, () => {
 
             await bridge.dispose();
 
-            const logCalls = sink.log.mock.calls.filter((call) => call[1].includes("hello world"));
+            const logCalls = sink.log.mock.calls.filter((call: [string, string]) => call[1].includes("hello world"));
 
             expect(logCalls.length).toBeGreaterThan(0);
         });
@@ -314,9 +306,7 @@ describe(ServiceEventBridge, () => {
             // Seed crash context with a couple of plain lines.
             bridge.onProcessEvent(stdoutEvent(0, "boot line A\nboot line B\n"));
 
-            bridge.onProcessEvent(
-                stdoutEvent(0, `[[VIS_BOOT]]${JSON.stringify({ event: "ready", host: "127.0.0.1", id: "api:db", port: 5432 })}\n`),
-            );
+            bridge.onProcessEvent(stdoutEvent(0, `[[VIS_BOOT]]${JSON.stringify({ event: "ready", host: "127.0.0.1", id: "api:db", port: 5432 })}\n`));
 
             await new Promise<void>((resolve) => {
                 setTimeout(resolve, 1300);
@@ -326,7 +316,7 @@ describe(ServiceEventBridge, () => {
 
             expect(sink.crashed).toHaveBeenCalledTimes(1);
 
-            const [crashedId, tail] = sink.crashed.mock.calls[0]!;
+            const [crashedId, tail] = sink.crashed.mock.calls[0]! as [string, string[]];
 
             expect({ crashedId, tailHasBoot: tail.some((line) => line.includes("boot line")) }).toStrictEqual({
                 crashedId: "api:db",
@@ -336,7 +326,7 @@ describe(ServiceEventBridge, () => {
     });
 
     describe("registry-mode notifications", () => {
-        it("forwards starting/started/ready/failed straight through", () => {
+        it("forwards starting/started/ready/failed straight through", async () => {
             expect.assertions(4);
 
             const sink = buildSink();
@@ -356,7 +346,7 @@ describe(ServiceEventBridge, () => {
             bridge.notifyRegistryReady("api:db", { host: "127.0.0.1", logFile, pid: 99, port: 5432 });
             bridge.notifyRegistryFailed("api:db", "boom", { code: 7 });
 
-            void bridge.dispose();
+            await bridge.dispose();
 
             expect(sink.starting).toHaveBeenCalledWith("api:db");
             expect(sink.started).toHaveBeenCalledWith("api:db", 99);

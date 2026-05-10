@@ -34,9 +34,7 @@ const server = createServer((req, res) => {
     }
 
     res.writeHead(200, { "content-type": "text/plain" });
-    res.end(
-        `web hello\n  DB=${process.env["DATABASE_URL"] ?? "unset"}\n  REDIS=${process.env["REDIS_URL"] ?? "unset"}\n  path=${req.url}\n`,
-    );
+    res.end(`web hello\n  DB=${process.env["DATABASE_URL"] ?? "unset"}\n  REDIS=${process.env["REDIS_URL"] ?? "unset"}\n  path=${req.url}\n`);
 });
 
 server.on("error", (error) => {

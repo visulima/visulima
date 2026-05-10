@@ -124,9 +124,9 @@ export type CheckOptions = CreateOptions<{
     "exit-code": boolean | undefined;
     format: string | undefined;
     include: string[] | undefined;
+    "include-internal": boolean | undefined;
     "no-security": boolean | undefined;
     peer: boolean | undefined;
-    "include-internal": boolean | undefined;
     prerelease: boolean | undefined;
     prod: boolean | undefined;
     "security-config": boolean | undefined;

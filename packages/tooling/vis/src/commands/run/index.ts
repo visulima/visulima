@@ -210,7 +210,8 @@ const run: Command = {
             // surfaced by today's "N service(s) started in the background"
             // hint). Applies on every exit path: clean finish, `q`, Ctrl+C.
             defaultValue: false,
-            description: "Stop services this run auto-started in registry mode when the run exits (clean, q, or Ctrl+C). Ephemeral services already die with the run.",
+            description:
+                "Stop services this run auto-started in registry mode when the run exits (clean, q, or Ctrl+C). Ephemeral services already die with the run.",
             name: "stop-services",
             type: Boolean,
         },

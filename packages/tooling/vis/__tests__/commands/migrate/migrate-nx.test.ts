@@ -509,10 +509,7 @@ describe("migrate-nx", () => {
             writeJson(join(tmpDir, "apps", "web", "package.json"), { name: "@acme/web" });
             writeJson(join(tmpDir, "apps", "api", "project.json"), { name: "api" });
 
-            const map = discoverPackageToProjectMapForTesting([
-                join(tmpDir, "apps", "web", "project.json"),
-                join(tmpDir, "apps", "api", "project.json"),
-            ]);
+            const map = discoverPackageToProjectMapForTesting([join(tmpDir, "apps", "web", "project.json"), join(tmpDir, "apps", "api", "project.json")]);
 
             expect(map.pkgToProject.get("@acme/web")).toBe("chat");
             expect(map.knownProjects).toStrictEqual(new Set(["api", "chat"]));

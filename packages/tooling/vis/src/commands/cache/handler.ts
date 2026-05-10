@@ -431,7 +431,9 @@ export const runWhy = async (taskId: string, options: RunWhyOptions, logger: Con
         }
 
         if (runId === undefined) {
-            pail.error(`No previous run summary found. Run a task first to populate \`${getLastRunSummaryPath(workspaceRoot, { dataDirectory: getVisWorkspaceDataDir(workspaceRoot) })}\`.`);
+            pail.error(
+                `No previous run summary found. Run a task first to populate \`${getLastRunSummaryPath(workspaceRoot, { dataDirectory: getVisWorkspaceDataDir(workspaceRoot) })}\`.`,
+            );
         } else {
             pail.error(`Run summary "${runId}" not found in ${getVisRunsDir(workspaceRoot)}/.`);
         }
@@ -584,7 +586,9 @@ export const runHash = async (taskId: string, options: RunHashOptions, logger: C
         }
 
         if (runId === undefined) {
-            pail.error(`No previous run summary found. Run a task first to populate \`${getLastRunSummaryPath(workspaceRoot, { dataDirectory: getVisWorkspaceDataDir(workspaceRoot) })}\`.`);
+            pail.error(
+                `No previous run summary found. Run a task first to populate \`${getLastRunSummaryPath(workspaceRoot, { dataDirectory: getVisWorkspaceDataDir(workspaceRoot) })}\`.`,
+            );
         } else {
             pail.error(`Run summary "${runId}" not found in ${getVisRunsDir(workspaceRoot)}/.`);
         }

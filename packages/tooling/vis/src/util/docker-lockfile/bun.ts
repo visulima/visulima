@@ -1,12 +1,13 @@
-import { LockfilePruneError, type PruneInput, type PruneResult } from "./types";
+import type { PruneInput, PruneResult } from "./types";
+import { LockfilePruneError } from "./types";
 
 /**
- * bun.lock is JSONC (JSON with `//` and `/* *\/` comments allowed). bun
- * itself round-trips comments because they're often header banners or
- * "do not edit" markers. We don't want to ship `jsonc-parser` as a dep
- * just for this — comments only ever appear at the top level (per bun's
- * format), so a regex-based stripper is enough. Falls back to plain
- * JSON.parse on the cleaned text.
+ * Bun stores its lockfile as JSONC (JSON with `//` and `/* *\/` comments
+ * allowed). Bun itself round-trips comments because they're often header
+ * banners or "do not edit" markers. We don't want to ship `jsonc-parser`
+ * as a dep just for this — comments only ever appear at the top level
+ * (per bun's format), so a regex-based stripper is enough. Falls back to
+ * plain JSON.parse on the cleaned text.
  */
 const stripJsonComments = (input: string): string => {
     let result = "";
@@ -81,12 +82,12 @@ const stripJsonComments = (input: string): string => {
 };
 
 interface BunWorkspace {
+    [key: string]: unknown;
     dependencies?: Record<string, string>;
     devDependencies?: Record<string, string>;
     name?: string;
     optionalDependencies?: Record<string, string>;
     peerDependencies?: Record<string, string>;
-    [key: string]: unknown;
 }
 
 /**
@@ -98,10 +99,10 @@ interface BunWorkspace {
 type BunPackageEntry = (Record<string, unknown> | string)[];
 
 interface BunLockfile {
+    [key: string]: unknown;
     lockfileVersion?: number;
     packages?: Record<string, BunPackageEntry>;
     workspaces?: Record<string, BunWorkspace>;
-    [key: string]: unknown;
 }
 
 const collectWorkspaceDeps = (workspace: BunWorkspace): { name: string; spec: string }[] => {
@@ -124,15 +125,15 @@ const collectWorkspaceDeps = (workspace: BunWorkspace): { name: string; spec: st
 
 /**
  * Pull the metadata object out of a bun packages-map entry. The known
- * shape is `[<name@spec>, <registry>?, <metadata>?, <integrity>?]`
+ * shape is `[&lt;name@spec>, &lt;registry>?, &lt;metadata>?, &lt;integrity>?]`
  * with the metadata being a plain object containing `dependencies`,
  * `optionalDependencies`, etc. We probe each tuple slot to find an
  * object that looks like dep metadata.
  */
 const extractMetadata = (entry: BunPackageEntry): Record<string, unknown> | undefined => {
     for (const slot of entry) {
-        if (typeof slot === "object" && slot !== null && !Array.isArray(slot)) {
-            return slot as Record<string, unknown>;
+        if (typeof slot === "object" && !Array.isArray(slot)) {
+            return slot;
         }
     }
 

@@ -1,27 +1,27 @@
 import type { WorkspaceConfiguration } from "@visulima/task-runner";
 
-import type { VisProjectConfiguration } from "../config/workspace";
 import type { ParsedSelector } from "./selectors";
 import { parseTargetSelector } from "./selectors";
 
 export interface SkipCacheResolution {
-    /** Patterns that did not match any task in the graph. */
-    unmatchedPatterns: string[];
     /**
      * The set of `project:target` task IDs whose cache should be bypassed
      * for this run. Tested against the resolved task graph, including
      * dependency tasks.
      */
     skipTaskIds: Set<string>;
+    /** Patterns that did not match any task in the graph. */
+    unmatchedPatterns: string[];
 }
 
-const splitPatterns = (raw: string): string[] => raw
-    .split(",")
-    .map((pattern) => pattern.trim())
-    .filter((pattern) => pattern !== "");
+const splitPatterns = (raw: string): string[] =>
+    raw
+        .split(",")
+        .map((pattern) => pattern.trim())
+        .filter((pattern) => pattern !== "");
 
 /**
- * Resolves `--skip-cache=<patterns>` into a Set of task IDs whose cache
+ * Resolves `--skip-cache=&lt;patterns>` into a Set of task IDs whose cache
  * should be bypassed. Reuses the run-target selector grammar so the
  * patterns the user already knows from `vis run` work here too.
  *
@@ -38,11 +38,7 @@ const splitPatterns = (raw: string): string[] => raw
  * `unmatchedPatterns` so the caller can warn (not throw — a pattern may
  * legitimately match a task pruned by `--projects` / `--query`).
  */
-export const resolveSkipCachePatterns = (
-    raw: string | undefined,
-    workspace: WorkspaceConfiguration,
-    graphTaskIds: Iterable<string>,
-): SkipCacheResolution => {
+export const resolveSkipCachePatterns = (raw: string | undefined, workspace: WorkspaceConfiguration, graphTaskIds: Iterable<string>): SkipCacheResolution => {
     const skipTaskIds = new Set<string>();
     const unmatchedPatterns: string[] = [];
 
@@ -97,39 +93,53 @@ export const resolveSkipCachePatterns = (
 
         let matchedAny = false;
 
-        if (parsed.kind === "all") {
-            const matches = idsByTarget.get(parsed.target) ?? [];
-
-            for (const id of matches) {
-                skipTaskIds.add(id);
-                matchedAny = true;
-            }
-        } else if (parsed.kind === "project") {
-            const projectName = (parsed as ParsedSelector).projects?.[0];
-
-            if (projectName !== undefined) {
-                const id = `${projectName}:${parsed.target}`;
-
-                if (taskIdSet.has(id)) {
-                    skipTaskIds.add(id);
-                    matchedAny = true;
-                }
-            }
-        } else if (parsed.kind === "tag") {
-            const tag = parsed.tag;
-
-            if (tag !== undefined) {
+        switch (parsed.kind) {
+            case "all": {
                 const matches = idsByTarget.get(parsed.target) ?? [];
 
                 for (const id of matches) {
-                    const projectName = id.slice(0, id.lastIndexOf(":"));
-                    const project = workspace.projects[projectName] as VisProjectConfiguration | undefined;
+                    skipTaskIds.add(id);
+                    matchedAny = true;
+                }
 
-                    if (project?.tags?.includes(tag) === true) {
+                break;
+            }
+            case "project": {
+                const projectName = (parsed as ParsedSelector).projects?.[0];
+
+                if (projectName !== undefined) {
+                    const id = `${projectName}:${parsed.target}`;
+
+                    if (taskIdSet.has(id)) {
                         skipTaskIds.add(id);
                         matchedAny = true;
                     }
                 }
+
+                break;
+            }
+            case "tag": {
+                const { tag } = parsed;
+
+                if (tag !== undefined) {
+                    const matches = idsByTarget.get(parsed.target) ?? [];
+
+                    for (const id of matches) {
+                        const projectName = id.slice(0, id.lastIndexOf(":"));
+                        const project = workspace.projects[projectName];
+
+                        if (project?.tags?.includes(tag) === true) {
+                            skipTaskIds.add(id);
+                            matchedAny = true;
+                        }
+                    }
+                }
+
+                break;
+            }
+            default: {
+                // Exhaustive — parseTargetSelector only emits the three kinds above.
+                break;
             }
         }
 

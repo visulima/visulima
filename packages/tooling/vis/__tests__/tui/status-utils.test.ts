@@ -6,7 +6,7 @@ const CI_ENV_KEYS = ["BUILDKITE", "GITHUB_ACTIONS", "GITLAB_CI", "TF_BUILD"] as 
 
 const clearCiEnv = (): void => {
     for (const key of CI_ENV_KEYS) {
-        delete process.env[key];
+        Reflect.deleteProperty(process.env, key);
     }
 };
 
@@ -28,34 +28,45 @@ describe(resolveCiGroupingMode, () => {
 
     it("returns 'github' when GITHUB_ACTIONS=true and mode is auto", () => {
         expect.assertions(1);
+
         process.env["GITHUB_ACTIONS"] = "true";
+
         expect(resolveCiGroupingMode("auto")).toBe("github");
     });
 
     it("returns 'gitlab' when GITLAB_CI=true and mode is auto", () => {
         expect.assertions(1);
+
         process.env["GITLAB_CI"] = "true";
+
         expect(resolveCiGroupingMode("auto")).toBe("gitlab");
     });
 
     it("returns 'buildkite' when BUILDKITE=true and mode is auto", () => {
         expect.assertions(1);
+
         process.env["BUILDKITE"] = "true";
+
         expect(resolveCiGroupingMode("auto")).toBe("buildkite");
     });
 
     it("returns 'azure' when TF_BUILD=True (Pascal-case) and mode is auto", () => {
         expect.assertions(2);
+
         process.env["TF_BUILD"] = "True";
+
         expect(resolveCiGroupingMode("auto")).toBe("azure");
 
         process.env["TF_BUILD"] = "true";
+
         expect(resolveCiGroupingMode("auto")).toBe("azure");
     });
 
     it("honors explicit overrides regardless of env", () => {
         expect.assertions(4);
+
         process.env["GITHUB_ACTIONS"] = "true";
+
         expect(resolveCiGroupingMode("gitlab")).toBe("gitlab");
         expect(resolveCiGroupingMode("off")).toBe("off");
         expect(resolveCiGroupingMode("buildkite")).toBe("buildkite");
@@ -64,7 +75,9 @@ describe(resolveCiGroupingMode, () => {
 
     it("treats undefined as auto", () => {
         expect.assertions(1);
+
         process.env["GITHUB_ACTIONS"] = "true";
+
         expect(resolveCiGroupingMode(undefined)).toBe("github");
     });
 });
@@ -125,10 +138,12 @@ describe(logCommandOutputCI, () => {
         logCommandOutputCI("app_test", "success", "hello", "gitlab");
         const secondWrites = writes.join("");
 
-        const sectionKeyOf = (output: string): string => {
-            const match = output.match(/section_start:\d+:([\w]+)\[/);
+        const sectionPattern = /section_start:\d+:(\w+)\[/;
 
-            return match ? match[1] : "";
+        const sectionKeyOf = (output: string): string => {
+            const matched = sectionPattern.exec(output);
+
+            return matched ? matched[1] ?? "" : "";
         };
 
         const firstKey = sectionKeyOf(firstWrites);
@@ -178,6 +193,7 @@ describe(logCommandOutputCI, () => {
         // Sanity check on the github branch — no group markup leaks.
         writes.length = 0;
         logCommandOutputCI("app:test", "failure", "boom", "github");
+
         expect(writes.join("")).not.toContain("::group::");
     });
 

@@ -250,18 +250,18 @@ vis migrate sherif --dry-run
 
 **Sherif → vis lint mapping:**
 
-| Sherif rule (in `ignore-rules`)   | vis lint flag                |
-| --------------------------------- | ---------------------------- |
-| `empty-dependencies`              | `--empty-deps`               |
-| `multiple-dependency-versions`    | `--workspace-versions`       |
-| `non-existant-packages`           | `--dead-workspace-patterns`  |
-| `packages-without-package-json`   | `--missing-package-json`     |
-| `root-package-dependencies`       | `--root-deps`                |
-| `root-package-manager-field`      | `--root-package-manager`     |
-| `root-package-private-field`      | `--root-private`             |
-| `types-in-dependencies`           | `--types-in-deps`            |
-| `unsync-similar-dependencies`     | `--similar-deps`             |
-| `unordered-dependencies`          | _no equivalent_ — covered by `vis sort-package-json` |
+| Sherif rule (in `ignore-rules`) | vis lint flag                                        |
+| ------------------------------- | ---------------------------------------------------- |
+| `empty-dependencies`            | `--empty-deps`                                       |
+| `multiple-dependency-versions`  | `--workspace-versions`                               |
+| `non-existant-packages`         | `--dead-workspace-patterns`                          |
+| `packages-without-package-json` | `--missing-package-json`                             |
+| `root-package-dependencies`     | `--root-deps`                                        |
+| `root-package-manager-field`    | `--root-package-manager`                             |
+| `root-package-private-field`    | `--root-private`                                     |
+| `types-in-dependencies`         | `--types-in-deps`                                    |
+| `unsync-similar-dependencies`   | `--similar-deps`                                     |
+| `unordered-dependencies`        | _no equivalent_ — covered by `vis sort-package-json` |
 
 **Routed to manual steps:**
 

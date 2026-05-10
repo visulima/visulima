@@ -337,10 +337,7 @@ export const buildBootstrapPaths = (runDir: string, scriptPath: string, id: stri
  * has no TCP readiness port — call this BEFORE creating the run scratch
  * dir to avoid orphaning a `mkdtemp` directory when validation fails.
  */
-const buildEphemeralConfig = (params: {
-    paths: Pick<BootstrapPaths, "logFile" | "pidFile">;
-    service: PreflightServiceTask;
-}): Record<string, unknown> => {
+const buildEphemeralConfig = (params: { paths: Pick<BootstrapPaths, "logFile" | "pidFile">; service: PreflightServiceTask }): Record<string, unknown> => {
     const { paths, service } = params;
     const tcpPort = service.config.readiness?.tcp?.port ?? service.config.port;
 
@@ -376,11 +373,7 @@ const buildEphemeralCommand = (paths: Pick<BootstrapPaths, "configFile" | "scrip
  * naturally into the run TUI, the registry write is handled by the
  * subcommand, and the user can `vis service stop` afterwards.
  */
-const buildRegistryCommand = (params: {
-    id: string;
-    visBin: string;
-    workspaceRoot: string;
-}): string => {
+const buildRegistryCommand = (params: { id: string; visBin: string; workspaceRoot: string }): string => {
     const { id, visBin, workspaceRoot } = params;
 
     return `node ${JSON.stringify(visBin)} service start ${JSON.stringify(id)} --cwd ${JSON.stringify(workspaceRoot)}`;
@@ -450,7 +443,10 @@ export const injectServiceTasks = (params: InjectServiceTasksParams): InjectServ
         };
     }
 
-    const chain = linearize(services.map((s) => s.id), taskGraph);
+    const chain = linearize(
+        services.map((s) => s.id),
+        taskGraph,
+    );
     const byId = new Map(services.map((service) => [service.id, service]));
     const ephemeralPidFiles: string[] = [];
 

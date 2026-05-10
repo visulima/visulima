@@ -18,12 +18,14 @@ describe(dispatchSubcommand, () => {
         });
 
         it("skips with warning for yarn 1", () => {
-            expect.assertions(2);
+            expect.assertions(1);
+
             const action = dispatchSubcommand(yarn1, "plugin", ["list"]);
-            expect(action.kind).toBe("skip");
-            if (action.kind === "skip") {
-                expect(action.warning).toMatch(/yarn-style plugins/);
-            }
+
+            expect(action).toMatchObject({
+                kind: "skip",
+                warning: expect.stringMatching(/yarn-style plugins/),
+            });
         });
 
         it.each([
@@ -33,7 +35,9 @@ describe(dispatchSubcommand, () => {
             ["deno", deno],
         ])("skips with warning for %s", (_name, pm) => {
             expect.assertions(1);
+
             const action = dispatchSubcommand(pm, "plugin", ["list"]);
+
             expect(action.kind).toBe("skip");
         });
     });
@@ -95,27 +99,29 @@ describe(dispatchSubcommand, () => {
         });
 
         it.each(["login", "logout"] as const)("rewrites bun %s to `npm <sub>` with a warning", (sub) => {
-            expect.assertions(2);
+            expect.assertions(1);
+
             const action = dispatchSubcommand(bun, sub, []);
+
+            // Single matcher checks rewrite shape AND that the warning mentions
+            // both `bun has no` and the `.npmrc` fallback.
             expect(action).toStrictEqual({
                 args: [sub],
                 bin: "npm",
                 kind: "rewrite",
-                warning: expect.stringMatching(/bun has no/),
+                warning: expect.stringMatching(/bun has no.*\.npmrc/s),
             });
-            // Sanity — confirm the warning mentions the .npmrc fallback.
-            if (action.kind === "rewrite") {
-                expect(action.warning).toMatch(/\.npmrc/);
-            }
         });
 
         it("skips deno login with browser-auth note", () => {
-            expect.assertions(2);
+            expect.assertions(1);
+
             const action = dispatchSubcommand(deno, "login", []);
-            expect(action.kind).toBe("skip");
-            if (action.kind === "skip") {
-                expect(action.warning).toMatch(/browser OAuth/);
-            }
+
+            expect(action).toMatchObject({
+                kind: "skip",
+                warning: expect.stringMatching(/browser OAuth/),
+            });
         });
 
         it.each([
@@ -132,7 +138,9 @@ describe(dispatchSubcommand, () => {
     describe("owner", () => {
         it("rewrites pnpm 11 to `npm owner`", () => {
             expect.assertions(1);
+
             const action = dispatchSubcommand(pnpm11, "owner", ["ls", "react"]);
+
             expect(action).toStrictEqual({
                 args: ["owner", "ls", "react"],
                 bin: "npm",

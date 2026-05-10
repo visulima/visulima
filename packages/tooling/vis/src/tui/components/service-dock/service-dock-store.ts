@@ -23,8 +23,8 @@ const TAIL_LINE_LIMIT = 256;
 // and shove the text into the wrong column, leaking content past the
 // dock's right border. Strip at ingest so every consumer (rows, crash
 // header, retry display) sees clean text.
-// eslint-disable-next-line no-control-regex
-const ANSI_REGEX = new RegExp("[\u001b\u009b]\\[[0-?]*[ -/]*[@-~]", "g");
+// eslint-disable-next-line no-control-regex, sonarjs/no-control-regex, regexp/no-obscure-range, prefer-regex-literals -- intentionally matches the full CSI/OSC escape ranges; the constructor form keeps the unicode escapes readable
+const ANSI_REGEX = new RegExp("[\u001B\u009B]\\[[0-?]*[ -/]*[@-~]", "g");
 
 const sanitizeLogLine = (line: string): string => line.replaceAll(ANSI_REGEX, "").replaceAll("\r", "");
 
@@ -176,7 +176,7 @@ export class ServiceDockStore {
     }
 
     public markCrashed(id: string, tail: ReadonlyArray<string>): void {
-        const cleanTail = tail.slice(-TAIL_LINE_LIMIT).map(sanitizeLogLine);
+        const cleanTail = tail.slice(-TAIL_LINE_LIMIT).map((line) => sanitizeLogLine(line));
 
         this.#updateState(id, (current) => {
             return {
@@ -191,7 +191,7 @@ export class ServiceDockStore {
     public appendLog(id: string, chunk: string): void {
         const lines = chunk
             .split("\n")
-            .map(sanitizeLogLine)
+            .map((line) => sanitizeLogLine(line))
             .filter((line) => line.length > 0);
 
         if (lines.length === 0) {

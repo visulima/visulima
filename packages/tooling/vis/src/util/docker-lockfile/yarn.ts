@@ -1,8 +1,16 @@
 import { parseSyml, stringifySyml } from "@yarnpkg/parsers";
 
-import { LockfilePruneError, type PruneInput, type PruneResult } from "./types";
+import type { PruneInput, PruneResult } from "./types";
+import { LockfilePruneError } from "./types";
+
+// Yarn berry's lockfile uses `__metadata` as the canonical key for the
+// version/cache descriptor block. We can't rename it — it's a wire format
+// constant — so a single named alias keeps the dangling-underscore lint
+// rule from firing on every access.
+const METADATA_KEY = "__metadata" as const;
 
 interface YarnEntry {
+    [key: string]: unknown;
     dependencies?: Record<string, string>;
     languageName?: string;
     linkType?: string;
@@ -10,11 +18,10 @@ interface YarnEntry {
     peerDependencies?: Record<string, string>;
     resolution?: string;
     version?: string;
-    [key: string]: unknown;
 }
 
 /**
- * yarn lockfile keys are comma-separated specifier sets:
+ * Yarn lockfile keys are comma-separated specifier sets:
  *   `"foo@npm:^1.0, foo@npm:^1.1"` (berry)
  *   `"foo@^1.0, foo@^1.1"`         (classic)
  *
@@ -40,12 +47,10 @@ const splitSpecifier = (raw: string): { name: string; spec: string } | undefined
     return { name: trimmed.slice(0, at), spec: trimmed.slice(at + 1) };
 };
 
-const parseKeySpecifiers = (key: string): { name: string; spec: string }[] => {
-    return key
-        .split(",")
-        .map((piece) => splitSpecifier(piece))
-        .filter((piece): piece is { name: string; spec: string } => piece !== undefined);
-};
+const parseKeySpecifiers = (key: string): { name: string; spec: string }[] => key
+    .split(",")
+    .map((piece) => splitSpecifier(piece))
+    .filter((piece): piece is { name: string; spec: string } => piece !== undefined);
 
 /**
  * Build a name → list-of-(spec, originalKey) index over all lockfile
@@ -97,11 +102,7 @@ const buildNameIndex = (entries: Record<string, YarnEntry>): Map<string, { key: 
  * package.json, so a request for `^4.0.0` must also match a lockfile
  * spec of `npm:^4.0.0`. Classic uses bare specs both sides.
  */
-const findKeysFor = (
-    nameIndex: Map<string, { key: string; specs: string[] }[]>,
-    name: string,
-    spec: string,
-): string[] => {
+const findKeysFor = (nameIndex: Map<string, { key: string; specs: string[] }[]>, name: string, spec: string): string[] => {
     const candidates = nameIndex.get(name);
 
     if (!candidates) {
@@ -122,16 +123,13 @@ const findKeysFor = (
 };
 
 /**
- * Workspace projects appear in berry lockfiles as `<name>@workspace:<path>`
+ * Workspace projects appear in berry lockfiles as `&lt;name>@workspace:&lt;path>`
  * resolutions. We map each closure project to the matching keys so the
  * BFS can include them and walk their deps. Classic lockfiles don't
  * record workspaces, so this returns an empty list there — closure deps
  * still pull in their installed packages directly.
  */
-const collectWorkspaceKeys = (
-    entries: Record<string, YarnEntry>,
-    closure: PruneInput["closure"],
-): Set<string> => {
+const collectWorkspaceKeys = (entries: Record<string, YarnEntry>, closure: PruneInput["closure"]): Set<string> => {
     const keys = new Set<string>();
     const closurePaths = new Set(closure.map((p) => p.relativeRoot).filter((p) => p !== ""));
 
@@ -140,7 +138,7 @@ const collectWorkspaceKeys = (
             continue;
         }
 
-        const resolution = entry.resolution;
+        const { resolution } = entry;
 
         if (typeof resolution !== "string" || !resolution.includes("@workspace:")) {
             continue;
@@ -180,7 +178,7 @@ export const pruneYarnLockfile = (input: PruneInput): PruneResult => {
     let parsed: Record<string, YarnEntry>;
 
     try {
-        parsed = parseSyml(text) as Record<string, YarnEntry>;
+        parsed = parseSyml(text);
     } catch (error) {
         throw new LockfilePruneError(`yarn.lock: parse failed — ${(error as Error).message}`);
     }
@@ -193,8 +191,8 @@ export const pruneYarnLockfile = (input: PruneInput): PruneResult => {
     const keptKeys = new Set<string>();
 
     // 1. Keep the metadata block verbatim (berry only — classic lacks it).
-    if (parsed.__metadata !== undefined) {
-        keptKeys.add("__metadata");
+    if (parsed[METADATA_KEY] !== undefined) {
+        keptKeys.add(METADATA_KEY);
     }
 
     // 2. Seed with workspace entries (berry) — closure projects already
@@ -269,10 +267,10 @@ export const pruneYarnLockfile = (input: PruneInput): PruneResult => {
         }
     }
 
-    const totalEntries = Object.keys(parsed).length - (parsed.__metadata !== undefined ? 1 : 0);
-    const keptEntries = keptKeys.size - (keptKeys.has("__metadata") ? 1 : 0);
+    const totalEntries = Object.keys(parsed).length - (parsed[METADATA_KEY] === undefined ? 0 : 1);
+    const keptEntries = keptKeys.size - (keptKeys.has(METADATA_KEY) ? 1 : 0);
     const dropped = totalEntries - keptEntries;
-    const isBerry = parsed.__metadata !== undefined;
+    const isBerry = parsed[METADATA_KEY] !== undefined;
 
     return {
         content: stringifySyml(result),

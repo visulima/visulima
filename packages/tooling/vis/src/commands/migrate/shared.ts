@@ -44,7 +44,9 @@ export const writeVisConfig = (
     const exists = isAccessibleSync(visConfigPath);
 
     if (exists && !options.dryRun && !options.force) {
-        logger.warn("vis.config.ts already exists — refusing to overwrite. Re-run with --force to replace it (a .bak is taken first), or run with --dry-run to preview.");
+        logger.warn(
+            "vis.config.ts already exists — refusing to overwrite. Re-run with --force to replace it (a .bak is taken first), or run with --dry-run to preview.",
+        );
         report.warnings.push("vis.config.ts already exists; migration skipped writing the file. Re-run with --force to overwrite.");
 
         return false;

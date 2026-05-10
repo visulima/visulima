@@ -205,9 +205,9 @@ export const execCommand = async (command: string, files: ReadonlyArray<string>,
         if (proc.aborted || signalCode !== null || result.exitCode === undefined) {
             const reason = proc.aborted
                 ? "Task aborted by earlier failure."
-                : signalCode !== null
-                    ? `Task killed by signal ${signalCode}.`
-                    : merged.trim() || `Task exited without a numeric status code.`;
+                : signalCode === null
+                    ? merged.trim() || `Task exited without a numeric status code.`
+                    : `Task killed by signal ${signalCode}.`;
 
             throw new TaskError(command, reason);
         }

@@ -12,6 +12,7 @@ export interface TaskRowData {
     elapsed?: number;
     /** True for long-running tasks (dev/serve/watch). Rendered like a ready service: green dot + "running". */
     persistent?: boolean;
+
     /**
      * Number of times the restart controller restarted the task before it
      * produced this final status. `undefined` (or `0`) means it passed/failed
@@ -85,8 +86,16 @@ const TaskRow = ({ row }: TaskRowProps): React.JSX.Element => {
     // is free to advertise the flake.
     const retried = row.retryAttempts && row.retryAttempts > 0;
     const cache = retried
-        ? <Text color="yellow">{`↻${row.retryAttempts}x`}</Text>
-        : isCacheStatus(status) ? <Text dimColor>cached</Text> : <Text dimColor>{DASH}</Text>;
+        ? (
+        <Text color="yellow">{`↻${row.retryAttempts}x`}</Text>
+        )
+        : isCacheStatus(status)
+            ? (
+        <Text dimColor>cached</Text>
+            )
+            : (
+        <Text dimColor>{DASH}</Text>
+            );
 
     return (
         <Box>

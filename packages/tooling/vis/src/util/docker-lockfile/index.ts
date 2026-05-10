@@ -1,11 +1,9 @@
 import { pruneBunLockfile } from "./bun";
 import { pruneNpmLockfile } from "./npm";
 import { prunePnpmLockfile } from "./pnpm";
-import { type FocusProject, LockfilePruneError, type PruneInput, type PruneResult } from "./types";
+import type { PruneInput, PruneResult } from "./types";
+import { LockfilePruneError } from "./types";
 import { pruneYarnLockfile } from "./yarn";
-
-export type { FocusProject, PruneInput, PruneResult };
-export { LockfilePruneError };
 
 /**
  * Per-PM lockfile pruning. Returns the new lockfile contents to write
@@ -39,3 +37,5 @@ export const pruneLockfile = (input: PruneInput): PruneResult => {
         }
     }
 };
+
+export { type FocusProject, LockfilePruneError, type PruneInput, type PruneResult } from "./types";

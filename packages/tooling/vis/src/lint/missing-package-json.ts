@@ -84,7 +84,7 @@ const collectPatternMatches = (workspaceRoot: string, pattern: string): string[]
     }
 
     if (!cleanPattern.includes("/") && cleanPattern.includes("*")) {
-        const escaped = cleanPattern.replaceAll(REGEX_SPECIALS_RE, "\\$&").replaceAll("*", ".*");
+        const escaped = cleanPattern.replaceAll(REGEX_SPECIALS_RE, String.raw`\$&`).replaceAll("*", ".*");
         const regex = new RegExp(`^${escaped}$`);
 
         for (const entry of walkSync(workspaceRoot, { includeFiles: false, includeSymlinks: false, maxDepth: 1, skip: [NODE_MODULES_RE, DOT_GIT_RE] })) {

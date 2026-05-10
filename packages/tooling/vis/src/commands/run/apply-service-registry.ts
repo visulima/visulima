@@ -46,6 +46,14 @@ export interface ApplyServiceRegistryResult {
     satisfiedServices: ServiceEntry[];
 
     /**
+     * Reverse index of `serviceEnvByTaskId`: for each satisfied service,
+     * the in-graph task ids that transitively depend on it. Surfaced for
+     * the `service:attach` plugin hook so handlers can correlate a
+     * service to the specific tasks that consumed it.
+     */
+    serviceDependentsByServiceId: Map<string, string[]>;
+
+    /**
      * Pre-computed env to merge per dependent task id. Keyed by *dependent* —
      * not by service — because the post-prune graph no longer carries the
      * `:test → :db` edge for the executor to walk.
@@ -55,13 +63,6 @@ export interface ApplyServiceRegistryResult {
      * original `middle → db` edge that pruning erases).
      */
     serviceEnvByTaskId: Map<string, Record<string, string>>;
-    /**
-     * Reverse index of `serviceEnvByTaskId`: for each satisfied service,
-     * the in-graph task ids that transitively depend on it. Surfaced for
-     * the `service:attach` plugin hook so handlers can correlate a
-     * service to the specific tasks that consumed it.
-     */
-    serviceDependentsByServiceId: Map<string, string[]>;
     taskGraph: TaskGraph;
 }
 

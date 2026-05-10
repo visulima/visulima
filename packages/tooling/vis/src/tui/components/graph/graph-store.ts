@@ -32,9 +32,9 @@ type Listener = () => void;
 
 const TYPE_PRIORITY: Record<string, number> = {
     application: 0,
+    library: 3,
     service: 1,
     tool: 2,
-    library: 3,
 };
 
 const typeRank = (type: string): number => TYPE_PRIORITY[type] ?? Number.MAX_SAFE_INTEGER;

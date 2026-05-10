@@ -465,10 +465,7 @@ describe(injectServiceTasks, () => {
             visOptions: { service: { port: 6379 } },
         });
         const webTask = buildTask("web:test", { command: "echo web", visOptions: {} });
-        const graph = buildGraph(
-            [dbTask, redisTask, webTask],
-            { "api:db": [], "api:redis": [], "web:test": ["api:db", "api:redis"] },
-        );
+        const graph = buildGraph([dbTask, redisTask, webTask], { "api:db": [], "api:redis": [], "web:test": ["api:db", "api:redis"] });
 
         const result = injectServiceTasks({
             missingServiceIds: ["api:db", "api:redis"],
@@ -508,7 +505,9 @@ describe(injectServiceTasks, () => {
         });
 
         expect(existsSync(result.runDir!)).toBe(true);
+
         rmSync(result.runDir!, { force: true, recursive: true });
+
         expect(existsSync(result.runDir!)).toBe(false);
     });
 });

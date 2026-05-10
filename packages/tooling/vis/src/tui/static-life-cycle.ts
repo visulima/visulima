@@ -38,6 +38,7 @@ interface StaticOutputOptions {
      * Sourced from `vis-config.ts → run.ciGrouping`.
      */
     ciGrouping?: CiGroupingMode;
+
     /**
      * Optional {@link LogReporter} that takes over `printTaskTerminalOutput`
      * when the user picks a `--log` mode. Absent, the CI-style

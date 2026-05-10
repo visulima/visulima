@@ -3,7 +3,6 @@ import { useSyncExternalStore } from "react";
 
 import { formatMs } from "../pretty-time";
 import CommandSummary from "./command-summary";
-import type { TaskRowData } from "./task-row";
 import type { TaskStore } from "./task-store";
 import TaskTable from "./task-table";
 
@@ -23,13 +22,7 @@ const DynamicTaskRunner = ({ parallelSlots, projectNames, store, targets, tasks 
 
     if (state.done) {
         const took = formatMs(Date.now() - state.startTime);
-        const failedIds: string[] = [];
-
-        for (const row of state.rows as TaskRowData[]) {
-            if (row.status === "failure") {
-                failedIds.push(row.taskId);
-            }
-        }
+        const failedIds: string[] = state.rows.filter((row) => row.status === "failure").map((row) => row.taskId);
 
         return (
             <CommandSummary
