@@ -27,6 +27,13 @@ interface TaskSummary {
     hashDetails: TaskHashDetails | undefined;
     /** The task's declared outputs (glob patterns, literals, or `{ auto: true }`). */
     outputs: OutputSpec[];
+    /**
+     * Number of times the task was restarted before producing this final
+     * exit code. Omitted when the task completed on its first attempt;
+     * `> 0` means the result is post-retry (a "succeeded after N retries"
+     * pass should still register as a flake observation).
+     */
+    retryAttempts: number | undefined;
     /** Start time (ISO 8601) */
     startTime: string | undefined;
     /** The task target */
@@ -129,6 +136,7 @@ const generateRunSummary = (results: TaskResults, taskGraph: TaskGraph, startTim
             hash: result.task.hash,
             hashDetails: result.task.hashDetails,
             outputs: result.task.outputs,
+            retryAttempts: result.retryAttempts,
             startTime: result.startTime ? new Date(result.startTime).toISOString() : undefined,
             target: {
                 configuration: result.task.target.configuration,

@@ -493,7 +493,7 @@ class TaskOrchestrator {
 
     async #executeTask(task: Task, startTime: number): Promise<TaskResult> {
         try {
-            const { code, terminalOutput } = await this.#taskExecutor(task, {
+            const { code, retryAttempts, terminalOutput } = await this.#taskExecutor(task, {
                 captureOutput: this.#captureOutput,
                 cwd: resolveTaskCwd(this.#workspaceRoot, task),
             });
@@ -504,6 +504,7 @@ class TaskOrchestrator {
                 code,
                 endTime: Date.now(),
                 hadWarnings: hadWarnings || undefined,
+                retryAttempts: retryAttempts && retryAttempts > 0 ? retryAttempts : undefined,
                 startTime,
                 status: code === 0 ? "success" : "failure",
                 task,
@@ -578,6 +579,10 @@ class TaskOrchestrator {
             let fingerprint: TaskFingerprint | undefined;
             let trackerAccessCount = 0;
             let usedRealTracker = false;
+            // Populated only by the non-tracked branch — the strace/preload
+            // tracker bypasses the user-supplied executor and so never goes
+            // through the restart loop.
+            let retryAttempts: number | undefined;
             // Populated only when the real file-access tracker runs.
             // Fed into `cache.put` as `autoWrites` so `{ auto: true }`
             // outputs can materialise without the user having to list
@@ -614,6 +619,7 @@ class TaskOrchestrator {
 
                 code = executionResult.code;
                 terminalOutput = executionResult.terminalOutput;
+                retryAttempts = executionResult.retryAttempts;
 
                 const hashDetails = await this.#taskHasher.hashTask(task);
                 const fileAccesses = Object.keys(hashDetails.nodes).map((filePath) => {
@@ -639,6 +645,7 @@ class TaskOrchestrator {
                 code,
                 endTime: Date.now(),
                 hadWarnings: hadWarnings || undefined,
+                retryAttempts: retryAttempts && retryAttempts > 0 ? retryAttempts : undefined,
                 startTime,
                 status: code === 0 ? "success" : "failure",
                 task,
