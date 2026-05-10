@@ -1,3 +1,12 @@
+## @visulima/api-platform [4.0.0-alpha.19](https://github.com/visulima/visulima/compare/@visulima/api-platform@4.0.0-alpha.18...@visulima/api-platform@4.0.0-alpha.19) (2026-05-10)
+
+
+### Dependencies
+
+* **@visulima/connect:** upgraded to 4.0.0-alpha.18
+* **@visulima/fs:** upgraded to 5.0.0-alpha.19
+* **@visulima/jsdoc-open-api:** upgraded to 3.0.0-alpha.18
+
 ## @visulima/api-platform [4.0.0-alpha.18](https://github.com/visulima/visulima/compare/@visulima/api-platform@4.0.0-alpha.17...@visulima/api-platform@4.0.0-alpha.18) (2026-05-10)
 
 
