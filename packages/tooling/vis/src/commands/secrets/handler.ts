@@ -16,7 +16,7 @@ import type { SecretsOptions } from "./index";
 type RepeatableString = string | string[];
 type ReportFormat = "json" | "sarif" | "text";
 
-interface SecretsFlags {
+export interface SecretsFlags {
     affected?: boolean;
     baseline?: string;
     concurrency?: number;
@@ -26,7 +26,9 @@ interface SecretsFlags {
     exclude?: RepeatableString;
     excludeFrom?: RepeatableString;
     excludeRule?: RepeatableString;
+    extendBundled?: boolean;
     format?: ReportFormat;
+    gitignore?: boolean;
     includeHidden?: boolean;
     includeRule?: RepeatableString;
     init?: boolean;
@@ -34,8 +36,6 @@ interface SecretsFlags {
     listValidators?: boolean;
     maxSize?: number;
     minConfidence?: string;
-    extendBundled?: boolean;
-    gitignore?: boolean;
     onlyVerified?: boolean;
     quiet?: boolean;
     redact?: boolean;
@@ -165,9 +165,18 @@ const runInit = async (root: string, scanOptions: ScanOptions, dryRun: boolean):
     pail.notice("Commit it. Use `vis secrets --baseline .secrets-baseline.json` in CI. Add path patterns to .gitignore to exclude directories from scanning.");
 };
 
-interface VisSecretsConfig {
+export interface VisSecretsConfig {
     baseline?: string;
-    config?: ScanOptions["config"];
+    config?: ScanOptions["config"] & {
+        /**
+         * Bundled rule-tag presets to enable in addition to the defaults.
+         * Each entry expands to a `tag:preset:&lt;name>` enable filter, so
+         * the same opt-in groups exposed by `--enable-rule` can be set
+         * once in `vis.config.ts` instead of being repeated per
+         * invocation.
+         */
+        presets?: string[];
+    };
     redact?: boolean;
     rules?: { enable?: string[]; exclude?: string[]; include?: string[] };
     walk?: {
@@ -182,8 +191,12 @@ interface VisSecretsConfig {
 /**
  * Resolve scan options by layering (high → low precedence):
  *   CLI flags > vis.config.secrets > built-in defaults.
+ *
+ * Exported for unit tests — the layering is the only place where
+ * `secrets.config.presets` and `--enable-rule` interact, and a regression
+ * here is silent (the scan still runs; it just runs the wrong rule set).
  */
-const resolveScanOptions = (flags: SecretsFlags, visSecrets: VisSecretsConfig | undefined, root: string): ScanOptions => {
+export const resolveScanOptions = (flags: SecretsFlags, visSecrets: VisSecretsConfig | undefined, root: string): ScanOptions => {
     const cfg = visSecrets ?? {};
     const resolvePath = (p: string | undefined): string | undefined => (p ? resolve(root, p) : undefined);
     const pickList = (flag: RepeatableString | undefined, fallback: string[] | undefined): string[] | undefined => {
@@ -192,7 +205,13 @@ const resolveScanOptions = (flags: SecretsFlags, visSecrets: VisSecretsConfig | 
         return fromFlag.length > 0 ? fromFlag : fallback;
     };
 
-    const enableRules = pickList(flags.enableRule, cfg.rules?.enable);
+    const presetEnableRules = (cfg.config?.presets ?? []).map((name) => `tag:preset:${name}`);
+    const baseEnableRules = pickList(flags.enableRule, cfg.rules?.enable) ?? [];
+    // Presets layer on top of the active enable list (CLI flag or rules.enable).
+    // Keep order stable + dedupe so explicit user entries win over generated
+    // preset filters when the scanner reports an unknown / collided tag.
+    const mergedEnable = [...baseEnableRules, ...presetEnableRules.filter((entry) => !baseEnableRules.includes(entry))];
+    const enableRules = mergedEnable.length > 0 ? mergedEnable : undefined;
     const excludeRules = pickList(flags.excludeRule, cfg.rules?.exclude);
     const includeRules = pickList(flags.includeRule, cfg.rules?.include);
     const excludePatterns = pickList(flags.exclude, cfg.walk?.excludePatterns);
