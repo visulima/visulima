@@ -124,10 +124,13 @@ const fixtures: Fixture[] = [
 describe("exposed-files preset", () => {
     let tmpDir: string;
 
-    // First scan compiles the full bundled ruleset (~1k regexes). One warmup keeps
-    // the per-test timeout sane.
+    // First scan compiles the bundled ruleset (~1k regexes). Warm up both the
+    // preset-filtered set (used by the positive test) and the default set (used
+    // by the negative test) so neither pays the cold-compile cost — that cost
+    // alone tips past the per-test timeout on slow CI runners.
     beforeAll(async () => {
         await scanFiles([], { rules: { enable: ["tag:preset:exposed-files"] } });
+        await scanFiles([]);
     }, 120_000);
 
     beforeEach(() => {
@@ -148,9 +151,9 @@ describe("exposed-files preset", () => {
         return absolute;
     };
 
-    // 15s timeout: scanning the full fixture set runs ~2.5s locally and tips
-    // past the 5s vitest default on slower CI runners.
-    it("flags every planted exposure and respects allowlists", { timeout: 15_000 }, async () => {
+    // 30s timeout: scanning the full fixture set runs ~2s locally but the CI
+    // runner has been observed >15s under parallel Nx load.
+    it("flags every planted exposure and respects allowlists", { timeout: 30_000 }, async () => {
         // 1 assertion per fixture.
         // eslint-disable-next-line vitest/prefer-expect-assertions -- count is derived from fixtures.length
         expect.assertions(fixtures.length);
@@ -189,7 +192,7 @@ describe("exposed-files preset", () => {
         }
     });
 
-    it("emits no exposed-* findings when the preset is not enabled", { timeout: 15_000 }, async () => {
+    it("emits no exposed-* findings when the preset is not enabled", { timeout: 30_000 }, async () => {
         expect.assertions(1);
 
         const files = fixtures.filter((fixture) => fixture.expectFinding).map((fixture) => writeFixture(fixture));
