@@ -927,6 +927,132 @@ export interface VisConfig {
      */
     security?: {
         /**
+         * Offline OSV advisory + `vis audit` configuration.
+         *
+         * Controls `vis audit --offline` and `vis advisories sync` behavior:
+         * - `audit.advisories.source` is the OSV mirror to download from. It
+         *   must be `https://` and resolve to a host in `allowedHosts` (or one
+         *   of the built-in defaults).
+         * - `audit.failOn` mirrors the `--fail-on` CLI flag so CI configs can
+         *   declare a single severity gate.
+         * - `audit.offlineByDefault` flips the default of `--offline`.
+         *
+         * Each field is independently overridable from the command line.
+         */
+        audit?: {
+            /**
+             * Offline advisory cache settings.
+             */
+            advisories?: {
+                /**
+                 * OSV mirror base URL (no trailing slash). Defaults to the
+                 * public Google Cloud Storage bucket
+                 * (`https://osv-vulnerabilities.storage.googleapis.com`).
+                 * Override to point at a corporate mirror.
+                 */
+                source?: string;
+
+                /**
+                 * Extra hosts permitted as `audit.advisories.source`. The
+                 * built-in allowlist is enforced even if this field is
+                 * omitted; entries here add to it.
+                 * @example ["mirror.corp.example.com"]
+                 */
+                allowedHosts?: string[];
+
+                /**
+                 * Number of hours after `lastSyncIso` before `vis audit`
+                 * prints a "your advisory cache may be stale" notice.
+                 * `vis audit` never auto-syncs — the user runs
+                 * `vis advisories sync` themselves.
+                 * @default 24
+                 */
+                refreshIntervalHours?: number;
+
+                /**
+                 * Sigstore signature verification for the OSV dump.
+                 * Requires the native binding to be built with the
+                 * `verify-signatures` Cargo feature (default in the release
+                 * build). Off by default — the upstream OSV bucket does not
+                 * ship signatures today.
+                 */
+                verify?: {
+                    /**
+                     * Enable signature verification. The sync flow downloads
+                     * `<eco>/all.zip.sig` next to the zip and aborts if it
+                     * cannot verify against `expectedIssuer` / `expectedSubject`.
+                     * @default false
+                     */
+                    enabled?: boolean;
+                    /** OIDC issuer that signed the bundle. */
+                    expectedIssuer?: string;
+                    /** OIDC subject (workload identity) that signed the bundle. */
+                    expectedSubject?: string;
+                };
+            };
+
+            /**
+             * Severity threshold that makes `vis audit` exit non-zero.
+             * Equivalent to the CLI `--fail-on` flag.
+             * @example "high"
+             */
+            failOn?: "critical" | "high" | "low" | "medium";
+
+            /**
+             * When true, `vis audit` skips network calls and queries the
+             * offline cache. Equivalent to the CLI `--offline` flag.
+             * @default false
+             */
+            offlineByDefault?: boolean;
+
+            /**
+             * Gates for the auto-apply flow (`vis audit --apply` /
+             * `--apply-transitive`). The CLI prompts outside CI; inside CI
+             * the flags refuse to run unless `--yes` is set and, for
+             * transitives, `apply.transitive.enabled = true`.
+             */
+            apply?: {
+                /**
+                 * Gates for `vis audit --apply-transitive`. Two-lock: the
+                 * CLI requires `--yes` AND this flag set to `true` before
+                 * it will rewrite override entries in CI.
+                 */
+                transitive?: {
+                    /**
+                     * When true, allows `--apply-transitive` to run in CI
+                     * environments. Defaults to false because rewriting
+                     * overrides is a higher blast radius than bumping a
+                     * direct dep.
+                     * @default false
+                     */
+                    enabled?: boolean;
+                };
+            };
+
+            /**
+             * Reachability filter — only report vulnerabilities in
+             * packages the workspace statically imports.
+             */
+            usage?: {
+                /**
+                 * Enable the reachability filter by default. Equivalent to
+                 * `--usage` on the CLI. Disable on the CLI via `--no-usage`.
+                 * @default false
+                 */
+                enabled?: boolean;
+
+                /**
+                 * Packages to always treat as reachable even if no static
+                 * import is found. Use for build-time loaders, plugin
+                 * chains, and other packages pulled in via runtime
+                 * resolution that the static scan can't see.
+                 * @example ["esbuild", "webpack-cli"]
+                 */
+                alwaysAssumeUsed?: string[];
+            };
+        };
+
+        /**
          * Map of package names/patterns to allow (true) or deny (false) build scripts.
          * Packages not listed are denied by default.
          * Equivalent to pnpm's `allowBuilds` setting.

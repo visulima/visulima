@@ -42,6 +42,7 @@
                 "commands/pm",
                 "commands/doctor",
                 "commands/audit",
+                "commands/advisories",
                 "commands/secrets",
                 "commands/sbom",
                 "commands/approve-builds",
@@ -66,6 +67,7 @@
                 "guides/conditional-and-finally-tasks",
                 "guides/git-hooks",
                 "guides/plugins",
+                "guides/security-audit",
                 "guides/ai-integration"
             ]
         }

@@ -8,6 +8,8 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { findUp } from "@visulima/fs";
 
 import type { ToolContext, ToolDeps } from "./response";
+import { registerAdvisoryStatus } from "./tools/advisory-status";
+import { registerAudit } from "./tools/audit";
 import { registerCacheHash } from "./tools/cache-hash";
 import { registerCacheWhy } from "./tools/cache-why";
 import { registerDescribeProject } from "./tools/describe-project";
@@ -95,6 +97,8 @@ export const registerAllTools = (deps: ToolDeps, context: ToolContext): void => 
     registerGetRunLogs(deps, context);
     registerCacheWhy(deps, context);
     registerCacheHash(deps, context);
+    registerAudit(deps, context);
+    registerAdvisoryStatus(deps, context);
 };
 
 /**

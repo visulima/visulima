@@ -10,6 +10,7 @@ import { join } from "@visulima/path";
 import pkg from "../package.json";
 import actionGraphCommand from "./commands/action-graph";
 import addCommand from "./commands/add";
+import advisoriesCommands from "./commands/advisories";
 import affectedCommand from "./commands/affected";
 import aiCommands from "./commands/ai";
 import analyzeCommand from "./commands/analyze";
@@ -205,6 +206,10 @@ for (const command of migrateCommands) {
 }
 
 for (const command of cacheCommands) {
+    cli.addCommand(command);
+}
+
+for (const command of advisoriesCommands) {
     cli.addCommand(command);
 }
 
