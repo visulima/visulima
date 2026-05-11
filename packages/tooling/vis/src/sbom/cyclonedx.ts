@@ -18,7 +18,7 @@ import { resolveSpecifier } from "./resolve-specifier";
 import type { Component, ComponentScope, CycloneDxBom, Dependency, ExternalReference, Hash, LicenseChoice } from "./types";
 
 /**
- * CycloneDX 1.6 BOM builder — bridges vis' workspace graph and the
+ * CycloneDX 1.7 BOM builder — bridges vis' workspace graph and the
  * lockfile closure parsed in `./lockfile.ts`. Output is validated by
  * `__tests__/sbom/validator.ts`.
  */
@@ -61,10 +61,10 @@ export interface BuildSbomOptions {
     workspaceRoot: string;
 }
 
-const CYCLONEDX_SPEC_VERSION = "1.6" as const;
+const CYCLONEDX_SPEC_VERSION = "1.7" as const;
 const CYCLONEDX_BOM_FORMAT = "CycloneDX" as const;
 // eslint-disable-next-line sonarjs/no-clear-text-protocols -- canonical CycloneDX $schema URI; not a fetch target
-const CYCLONEDX_SCHEMA_URL = "http://cyclonedx.org/schema/bom-1.6.schema.json";
+const CYCLONEDX_SCHEMA_URL = "http://cyclonedx.org/schema/bom-1.7.schema.json";
 const GENERATOR_NAME = "@visulima/vis";
 
 const readPackageJson = (path: string): BuilderPackageJson | undefined => {
@@ -482,7 +482,7 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
         return component;
     })();
 
-    // CycloneDX 1.6 requires unique `bom-ref`s. If the metadata component
+    // CycloneDX 1.7 requires unique `bom-ref`s. If the metadata component
     // mirrors a workspace project (focus mode), drop that project from
     // components[] to avoid a duplicate.
     const metadataRef = metadataComponent["bom-ref"];
@@ -514,7 +514,7 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
 };
 
 /**
- * Serialises a {@link CycloneDxBom} document to CycloneDX 1.6 XML.
+ * Serialises a {@link CycloneDxBom} document to CycloneDX 1.7 XML.
  *
  * Delegates all escaping, indentation, and attribute serialisation to
  * the project-standard `jstoxml` library (already used elsewhere in
@@ -527,7 +527,7 @@ export const serializeBomToXml = (bom: CycloneDxBom): string => {
     const rootAttributes: Record<string, string | number> = {
         version: bom.version ?? 1,
         // eslint-disable-next-line sonarjs/no-clear-text-protocols -- XML namespace URI fixed by the CycloneDX spec; never resolved at runtime
-        xmlns: "http://cyclonedx.org/schema/bom/1.6",
+        xmlns: "http://cyclonedx.org/schema/bom/1.7",
     };
 
     if (bom.serialNumber) {

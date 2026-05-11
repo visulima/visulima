@@ -2,7 +2,7 @@
  * Thin CycloneDX-shaped adapter over the shared lockfile parser in
  * `@visulima/package`. The cross-package parser returns a
  * package-manager-agnostic `{ name, version, integrity: { algorithm, hex } }`
- * shape; CycloneDX 1.6 expects hashes as `{ alg: "SHA-256" | …, content }`,
+ * shape; CycloneDX 1.7 expects hashes as `{ alg: "SHA-256" | …, content }`,
  * so we translate the algorithm casing here.
  */
 
@@ -36,7 +36,7 @@ const SRI_TO_CYCLONEDX_ALG: Record<LockFileIntegrityAlgorithm, HashAlgorithm> = 
     sha512: "SHA-512",
 };
 
-// Expected digest length in hex characters for each algorithm. CycloneDX 1.6's
+// Expected digest length in hex characters for each algorithm. CycloneDX 1.7's
 // hash content schema enforces these exact lengths — emitting a partial digest
 // (e.g. a fixture's truncated `sha512-aGVsbG8=` that decodes to 10 hex chars)
 // makes the entire BOM fail schema validation.

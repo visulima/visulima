@@ -22,6 +22,9 @@ export default createConfig(
             // blocks into virtual `<file>.md/<n>_<m>.ts` paths that aren't in
             // tsconfig.eslint.json, which turns every snippet into a parse error.
             "**/*.md",
+            // Vendored CycloneDX schemas — kept verbatim per Apache-2.0 §4.2, so
+            // project formatting rules don't apply. See __tests__/sbom/schemas/README.md.
+            "__tests__/sbom/schemas/*.json",
         ],
         typescript: {
             tsconfigPath: "./tsconfig.eslint.json",

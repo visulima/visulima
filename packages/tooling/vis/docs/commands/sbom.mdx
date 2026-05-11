@@ -1,11 +1,11 @@
 ---
 title: "vis sbom"
-description: "Generate a CycloneDX 1.6 Software Bill of Materials for the workspace"
+description: "Generate a CycloneDX 1.7 Software Bill of Materials for the workspace"
 ---
 
 # vis sbom
 
-Generates a CycloneDX 1.6 Software Bill of Materials (SBOM) for the current workspace, capturing every workspace project, every reachable registry dependency, per-version licenses, and the dependency graph.
+Generates a CycloneDX 1.7 Software Bill of Materials (SBOM) for the current workspace, capturing every workspace project, every reachable registry dependency, per-version licenses, and the dependency graph.
 
 The generator walks the workspace project graph plus the lockfile closure, so the emitted BOM includes both direct and transitive dependencies — the same closure that is actually installed in `node_modules`.
 
@@ -42,13 +42,13 @@ vis sbom --output=-
 | Option          | Default         | Description                                                                                       |
 | --------------- | --------------- | ------------------------------------------------------------------------------------------------- |
 | `--focus`       |                 | Project name(s) to focus on — comma-separated. Scopes the BOM to the transitive closure.          |
-| `--format`      | `json`          | Output format: `json` (CycloneDX 1.6 JSON) or `xml`.                                              |
+| `--format`      | `json`          | Output format: `json` (CycloneDX 1.7 JSON) or `xml`.                                              |
 | `--output`      | `sbom.cdx.json` | Output file path (resolved against the workspace root). Use `-` to write to stdout.               |
 | `--include-dev` | `false`         | Include `devDependencies` in the closure walk. Default is production-only, per industry practice. |
 
 ## What's in the BOM
 
-Every emitted BOM passes the vendored CycloneDX 1.6 JSON Schema (`bom-1.6.schema.json`). Each `components[]` entry carries:
+Every emitted BOM passes the vendored CycloneDX 1.7 JSON Schema (`bom-1.7.schema.json`). Each `components[]` entry carries:
 
 - `name` + `version` + `purl` (`pkg:npm/…` Package URL)
 - `bom-ref` (unique per component)
@@ -67,7 +67,7 @@ Every emitted BOM passes the vendored CycloneDX 1.6 JSON Schema (`bom-1.6.schema
 | pnpm            | `pnpm-lock.yaml`              | ✅ Full                                                                                                                                                                                                                                           |
 | npm             | `package-lock.json` (v2 / v3) | ✅ Full                                                                                                                                                                                                                                           |
 | Yarn Classic    | `yarn.lock` (v1)              | ✅ Full                                                                                                                                                                                                                                           |
-| Yarn Berry      | `yarn.lock` (v2+)             | ✅ Full except integrity hashes — Berry uses XXH64 (`checksum:`), which is not a cryptographic hash and is outside CycloneDX 1.6's `HashAlgorithm` enum. Berry components emit without a `hashes` entry; all other fields are populated normally. |
+| Yarn Berry      | `yarn.lock` (v2+)             | ✅ Full except integrity hashes — Berry uses XXH64 (`checksum:`), which is not a cryptographic hash and is outside CycloneDX 1.7's `HashAlgorithm` enum. Berry components emit without a `hashes` entry; all other fields are populated normally. |
 | Bun             | `bun.lock` (1.1+)             | ✅ Full                                                                                                                                                                                                                                           |
 
 Binary `bun.lockb` is not supported.
