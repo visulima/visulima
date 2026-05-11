@@ -22,6 +22,7 @@ import {
     getLastRunSummaryPath,
     parsePartition,
     readLastRunSummary,
+    resolveTurboEnvCompat,
     reverseTaskGraph,
     runConcurrently,
     TaskScheduler,
@@ -2007,23 +2008,25 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
         },
     };
 
-    // Layer the CLI cache-mode/backend flags onto the resolved remoteCache
-    // config (CLI > vis.config.ts > env). Rejects malformed values up
-    // front so a typo in `--cache-mode=eread` doesn't silently fall
+    // Resolve the remote-cache config in three layers (CLI > vis.config.ts
+    // > Turbo env-var compat). Fill missing HTTP fields from TURBO_API /
+    // TURBO_TOKEN / TURBO_TEAM so a workspace migrating from Turbo keeps
+    // working without rewriting CI secrets. Rejects malformed CLI values
+    // up front so a typo in `--cache-mode=eread` doesn't silently fall
     // through to the runner and surface as "no cache hits".
-    if (configTaskRunnerOptions.remoteCache) {
+    const envCompatRemoteCache = resolveTurboEnvCompat(configTaskRunnerOptions.remoteCache);
+
+    if (envCompatRemoteCache) {
         const cliMode = parseCacheMode(options.cacheMode);
         const cliBackend = parseCacheBackend(options.cacheBackend);
 
-        if (cliMode || cliBackend) {
-            runnerOptions.remoteCache = {
-                ...configTaskRunnerOptions.remoteCache,
-                ...(cliMode ? { mode: cliMode } : {}),
-                ...(cliBackend ? { backend: cliBackend } : {}),
-            };
-        }
+        runnerOptions.remoteCache = {
+            ...envCompatRemoteCache,
+            ...(cliMode ? { mode: cliMode } : {}),
+            ...(cliBackend ? { backend: cliBackend } : {}),
+        };
     } else if (options.cacheMode || options.cacheBackend) {
-        logger.warn("[vis run] --cache-mode and --cache-backend require a `remoteCache` block in vis.config.ts; ignoring.");
+        logger.warn("[vis run] --cache-mode and --cache-backend require a `remoteCache` block in vis.config.ts (or TURBO_API env); ignoring.");
     }
 
     const isTTY = process.stdout.isTTY && !isInCi;
