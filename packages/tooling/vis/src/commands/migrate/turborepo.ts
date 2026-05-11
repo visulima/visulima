@@ -184,7 +184,7 @@ export const migrateTurborepo = (
 
     if (turbo.remoteCache?.enabled) {
         report.manualSteps.push(
-            "turbo remote cache detected. vis speaks the same HTTP protocol — set taskRunnerOptions.remoteCache { url, token, teamId } in vis.config.ts.",
+            "turbo remote cache detected. vis speaks the same HTTP protocol — set taskRunnerOptions.remoteCache { url, token, teamId } in vis.config.ts, or keep your TURBO_API / TURBO_TOKEN / TURBO_TEAM env vars (vis honours them as fallbacks).",
         );
     }
 };

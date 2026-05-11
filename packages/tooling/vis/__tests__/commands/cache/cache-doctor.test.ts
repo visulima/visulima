@@ -126,6 +126,24 @@ describe("cacheDoctorExecute", () => {
             expect(fetchMock.mock.calls[0]?.[0]).toBe("https://override.example.com");
         });
 
+        it("falls back to TURBO_API env var when no config and no --url", async () => {
+            expect.assertions(2);
+
+            const fetchMock = vi.fn().mockResolvedValue({ status: 401 });
+
+            globalThis.fetch = fetchMock;
+            process.env.TURBO_API = "https://turbo-env.example.com";
+
+            try {
+                await cacheDoctorExecute(buildToolbox({}) as never);
+            } finally {
+                delete process.env.TURBO_API;
+            }
+
+            expect(fetchMock).toHaveBeenCalledTimes(1);
+            expect(fetchMock.mock.calls[0]?.[0]).toBe("https://turbo-env.example.com");
+        });
+
         it("--format=json emits parseable JSON", async () => {
             expect.assertions(3);
 
