@@ -1,3 +1,5 @@
+## @visulima/tui [1.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/tui@1.0.0-alpha.12...@visulima/tui@1.0.0-alpha.13) (2026-05-11)
+
 ## @visulima/tui [1.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/tui@1.0.0-alpha.11...@visulima/tui@1.0.0-alpha.12) (2026-05-10)
 
 ## @visulima/tui [1.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/tui@1.0.0-alpha.10...@visulima/tui@1.0.0-alpha.11) (2026-05-10)
