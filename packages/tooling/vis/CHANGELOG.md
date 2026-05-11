@@ -1,3 +1,38 @@
+## @visulima/vis [1.0.0-alpha.18](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.17...@visulima/vis@1.0.0-alpha.18) (2026-05-11)
+
+### Features
+
+* **task-runner:** add resolveTurboEnvCompat helper ([a8e73ef](https://github.com/visulima/visulima/commit/a8e73ef324dd8d1bc1f1f471f59f9292f9f01745))
+* **vis:** add vis-mcp post-command promotion nudge ([9244fad](https://github.com/visulima/visulima/commit/9244fad8a8f9164ce99b2ab3cb771d53f926e788))
+* **vis:** expand secrets.config.presets to tag selectors ([77b8d2b](https://github.com/visulima/visulima/commit/77b8d2bbc951d5180753f37a45d2313c01fcf47f))
+* **vis:** honour TURBO_API/TURBO_TOKEN/TURBO_TEAM env vars ([0d4fc8c](https://github.com/visulima/visulima/commit/0d4fc8c1ad617ba27c436e40e520ddcbb19ebeca))
+* **vis:** show flakiness table on successful runs too ([085b219](https://github.com/visulima/visulima/commit/085b219a4472ceb0fd2f507c7bc3b3b1780a014a))
+* **vis:** surface retried-but-passed tasks and add CI log grouping ([2bdceaa](https://github.com/visulima/visulima/commit/2bdceaacf3f69c99a08c9e1b3b6eda0ee3528cd2))
+
+### Bug Fixes
+
+* **vis:** raise timeout for exposed-files preset tests to 15s ([433db73](https://github.com/visulima/visulima/commit/433db7319ecf4720664bc199582d571ea6a3630b))
+* **vis:** warm default ruleset for exposed-files preset tests ([9c76250](https://github.com/visulima/visulima/commit/9c76250d2ee6e8e2be878e5dcfb149d38126d60d))
+
+### Documentation
+
+* **vis:** mention TURBO_API fallback in help text and migrate hint ([f9bd7ac](https://github.com/visulima/visulima/commit/f9bd7acd7a53837e40376f9b0dcf54040bbc50a1))
+
+### Miscellaneous Chores
+
+* added fixtures to prettier ignore ([13bda29](https://github.com/visulima/visulima/commit/13bda2942d5d95fedeec7c07937fdfc37cf960c7))
+* **vis:** apply eslint and formatter sweep ([d3a48c5](https://github.com/visulima/visulima/commit/d3a48c577a77864b1aae52e6061a8aad1554f273))
+
+
+### Dependencies
+
+* **@visulima/secret-scanner:** upgraded to 1.0.0-alpha.2
+* **@visulima/task-runner:** upgraded to 1.0.0-alpha.13
+* **@visulima/tui:** upgraded to 1.0.0-alpha.13
+* **@visulima/cerebro:** upgraded to 3.0.0-alpha.21
+* **@visulima/fs:** upgraded to 5.0.0-alpha.20
+* **@visulima/package:** upgraded to 5.0.0-alpha.19
+
 ## @visulima/vis [1.0.0-alpha.17](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.16...@visulima/vis@1.0.0-alpha.17) (2026-05-10)
 
 ### Features
