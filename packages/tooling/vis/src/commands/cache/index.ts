@@ -205,7 +205,7 @@ const cacheDoctor: Command = {
     name: "doctor",
     options: [
         {
-            description: "Override remote cache URL (otherwise read from vis.config.ts remoteCache.url)",
+            description: "Override remote cache URL (otherwise read from vis.config.ts remoteCache.url, or TURBO_API env var)",
             name: "url",
             type: String,
         },
