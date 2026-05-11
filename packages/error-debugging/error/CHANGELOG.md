@@ -1,3 +1,5 @@
+## @visulima/error [6.0.0-alpha.22](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.21...@visulima/error@6.0.0-alpha.22) (2026-05-11)
+
 ## @visulima/error [6.0.0-alpha.21](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.20...@visulima/error@6.0.0-alpha.21) (2026-05-10)
 
 ## @visulima/error [6.0.0-alpha.20](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.19...@visulima/error@6.0.0-alpha.20) (2026-05-10)
