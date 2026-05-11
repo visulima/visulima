@@ -11,6 +11,7 @@ crate-type = [ "cdylib" ]
 ec4rs = "1"
 napi = "3"
 napi-derive = "3"
+prek-identify = "0.3.13"
 serde_json = "1"
 sort-package-json = "0.0.12"
 which = "8"

@@ -242,6 +242,7 @@ const hookRunImpl = ({ argument, logger, options }: Toolbox<Console, HookRunOpti
         resolveHooksDirectory(options),
         {
             allFiles: Boolean(options.allFiles),
+            extraArgs: argument.slice(1),
             fromRef: options.fromRef,
             lastCommit: Boolean(options.lastCommit),
             stage: argument[0],

@@ -1,10 +1,12 @@
 import { spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
+import type { HookConfig } from "../../../src/commands/hook/config";
+import { HOOK_CONFIG_VERSION, writeHookConfig } from "../../../src/commands/hook/config";
 import { formatListResult, listHooks, parseStageScript } from "../../../src/commands/hook/list";
 import { runHookStage } from "../../../src/commands/hook/run";
 import { validateHooks } from "../../../src/commands/hook/validate";
@@ -38,7 +40,7 @@ const writeHookScript = (root: string, stage: string, body: string): void => {
     writeFileSync(join(dispatcherDirectory, stage), `#!/usr/bin/env sh\n. "$(dirname "$0")/h"\n`, { mode: 0o755 });
 };
 
-const noopLogger = { info: (): void => undefined, warn: (): void => undefined };
+const noopLogger = { error: (): void => undefined, info: (): void => undefined, warn: (): void => undefined };
 
 // ─── parseStageScript ───────────────────────────────────────────────
 
@@ -135,6 +137,10 @@ describe(validateHooks, () => {
         expect.assertions(2);
 
         writeHookScript(temporary.root, "pre-commit", "#!/usr/bin/env sh\necho hi\n");
+        writeHookConfig(temporary.root, ".vis-hooks", {
+            stages: { "pre-commit": [{ entry: "echo hi", id: "noop" }] },
+            version: HOOK_CONFIG_VERSION,
+        });
         spawnSync("git", ["config", "core.hooksPath", ".vis-hooks/_"], { cwd: temporary.root });
 
         const result = validateHooks(temporary.root, ".vis-hooks");
@@ -155,20 +161,25 @@ describe(validateHooks, () => {
         expect(result.issues.some((i) => i.kind === "error" && i.message.includes("syntax"))).toBe(true);
     });
 
-    it.skipIf(process.platform === "win32")("flags a missing prek-runner.mjs when a script references it", () => {
+    it.skipIf(process.platform === "win32")("flags a missing config.json when stage scripts are present", () => {
         expect.assertions(2);
 
-        writeHookScript(temporary.root, "pre-commit", "#!/usr/bin/env sh\nnode \"$(dirname \"$0\")/.builtins/prek-runner.mjs\" --builtin trailing-whitespace\n");
+        writeHookScript(temporary.root, "pre-commit", "#!/usr/bin/env sh\nexec vis hook run pre-commit \"$@\"\n");
         spawnSync("git", ["config", "core.hooksPath", ".vis-hooks/_"], { cwd: temporary.root });
 
         const result = validateHooks(temporary.root, ".vis-hooks");
 
         expect(result.ok).toBe(false);
-        expect(result.issues.some((i) => i.message.includes("prek-runner.mjs"))).toBe(true);
+        expect(result.issues.some((i) => i.message.includes("config.json"))).toBe(true);
     });
 });
 
 // ─── runHookStage ───────────────────────────────────────────────────
+
+const writeConfig = (root: string, stages: HookConfig["stages"]): void => {
+    mkdirSync(join(root, ".vis-hooks"), { recursive: true });
+    writeHookConfig(root, ".vis-hooks", { stages, version: HOOK_CONFIG_VERSION });
+};
 
 describe(runHookStage, () => {
     let temporary: { cleanup: () => void; root: string };
@@ -184,103 +195,124 @@ describe(runHookStage, () => {
     it.skipIf(process.platform === "win32")("rejects --from-ref without --to-ref", () => {
         expect.assertions(1);
 
-        writeHookScript(temporary.root, "pre-commit", "#!/usr/bin/env sh\nexit 0\n");
+        writeConfig(temporary.root, { "pre-commit": [{ entry: "true", id: "noop" }] });
 
         expect(() => runHookStage(temporary.root, ".vis-hooks", { fromRef: "HEAD~1", stage: "pre-commit" }, noopLogger)).toThrow(
-            /--from-ref requires --to-ref/,
+            /--from-ref and --to-ref must be specified together/,
         );
-    });
-
-    it.skipIf(process.platform === "win32")("translates --last-commit into HEAD~1..HEAD env vars", () => {
-        expect.assertions(1);
-
-        writeHookScript(
-            temporary.root,
-            "pre-commit",
-            "#!/usr/bin/env sh\nif [ \"$VIS_HOOK_FROM_REF\" = \"HEAD~1\" ] && [ \"$VIS_HOOK_TO_REF\" = \"HEAD\" ]; then exit 7; else exit 0; fi\n",
-        );
-
-        const code = runHookStage(temporary.root, ".vis-hooks", { lastCommit: true, stage: "pre-commit" }, noopLogger);
-
-        expect(code).toBe(7);
     });
 
     it.skipIf(process.platform === "win32")("rejects --last-commit combined with explicit refs", () => {
         expect.assertions(1);
 
-        writeHookScript(temporary.root, "pre-commit", "#!/usr/bin/env sh\nexit 0\n");
+        writeConfig(temporary.root, { "pre-commit": [{ entry: "true", id: "noop" }] });
 
         expect(() => runHookStage(temporary.root, ".vis-hooks", { fromRef: "main", lastCommit: true, stage: "pre-commit", toRef: "HEAD" }, noopLogger)).toThrow(
             /--last-commit cannot be combined/,
         );
     });
 
-    it.skipIf(process.platform === "win32")("runs the named stage script and returns its exit code", () => {
+    it.skipIf(process.platform === "win32")("returns 0 when the configured stage has no matching files (no alwaysRun)", () => {
         expect.assertions(1);
 
-        writeHookScript(temporary.root, "pre-commit", "#!/usr/bin/env sh\nexit 0\n");
+        // Entry only runs against staged files; with nothing staged, dispatcher skips it.
+        writeConfig(temporary.root, { "pre-commit": [{ entry: "exit 1", id: "would-fail" }] });
 
         const code = runHookStage(temporary.root, ".vis-hooks", { stage: "pre-commit" }, noopLogger);
 
         expect(code).toBe(0);
     });
 
-    it.skipIf(process.platform === "win32")("errors when the script is missing", () => {
+    it.skipIf(process.platform === "win32")("runs an alwaysRun entry and propagates its exit code", () => {
         expect.assertions(1);
 
-        expect(() => runHookStage(temporary.root, ".vis-hooks", { stage: "pre-commit" }, noopLogger)).toThrow(/No script found/);
+        writeConfig(temporary.root, { "pre-commit": [{ alwaysRun: true, entry: "exit 7", id: "noop", passFilenames: false }] });
+
+        const code = runHookStage(temporary.root, ".vis-hooks", { stage: "pre-commit" }, noopLogger);
+
+        expect(code).toBe(7);
     });
 
-    it.skipIf(process.platform === "win32")("forwards --all-files to the child via VIS_HOOK_ALL_FILES", () => {
+    it.skipIf(process.platform === "win32")("errors when config.json is missing", () => {
         expect.assertions(1);
 
-        writeHookScript(temporary.root, "pre-commit", "#!/usr/bin/env sh\nif [ \"$VIS_HOOK_ALL_FILES\" = \"1\" ]; then exit 42; else exit 0; fi\n");
+        expect(() => runHookStage(temporary.root, ".vis-hooks", { stage: "pre-commit" }, noopLogger)).toThrow(/No hook config found/);
+    });
 
-        // We need the hook script to actually run directly; runHookStage invokes it via `sh -e`
+    it.skipIf(process.platform === "win32")("returns 0 when the stage has no configured hooks", () => {
+        expect.assertions(1);
+
+        writeConfig(temporary.root, { "commit-msg": [{ entry: "true", id: "x" }] });
+
+        const code = runHookStage(temporary.root, ".vis-hooks", { stage: "pre-commit" }, noopLogger);
+
+        expect(code).toBe(0);
+    });
+
+    it.skipIf(process.platform === "win32")("runs `fail` entries when files match the filter (--all-files)", () => {
+        expect.assertions(1);
+
+        writeFileSync(join(temporary.root, "blocked.txt"), "content");
+        spawnSync("git", ["add", "blocked.txt"], { cwd: temporary.root });
+        spawnSync("git", ["commit", "-m", "init"], { cwd: temporary.root });
+
+        writeConfig(temporary.root, { "pre-commit": [{ fail: "do not commit txt files", id: "no-txt" }] });
+
         const code = runHookStage(temporary.root, ".vis-hooks", { allFiles: true, stage: "pre-commit" }, noopLogger);
 
-        expect(code).toBe(42);
-    });
-});
-
-// ─── runner integration: --all-files + --builtin ─────────────────────
-
-describe("prek-runner --all-files", () => {
-    let temporary: { cleanup: () => void; root: string };
-
-    beforeEach(() => {
-        temporary = createTemporaryGitRepo();
+        expect(code).toBe(1);
     });
 
-    afterEach(() => {
-        temporary.cleanup();
+    it.skipIf(process.platform === "win32")("dispatches `check-json` builtin and surfaces duplicate-key failures", () => {
+        expect.assertions(1);
+
+        const filePath = join(temporary.root, "pkg.json");
+
+        writeFileSync(filePath, "{\"a\": 1, \"a\": 2}\n");
+        spawnSync("git", ["add", "pkg.json"], { cwd: temporary.root });
+
+        writeConfig(temporary.root, {
+            "pre-commit": [{ builtin: "check-json", files: "\\.json$", id: "check-json" }],
+        });
+
+        const code = runHookStage(temporary.root, ".vis-hooks", { stage: "pre-commit" }, noopLogger);
+
+        expect(code).toBe(1);
     });
 
-    it.skipIf(process.platform === "win32")("runs the builtin against all tracked files, not only staged", async () => {
-        expect.assertions(3);
+    it.skipIf(process.platform === "win32")("dispatches `trailing-whitespace` builtin and rewrites offending files", () => {
+        expect.assertions(2);
 
-        // Write a runner to disk and call it directly, mirroring what a migrated hook does.
-        const { PREK_RUNNER_FILENAME, PREK_RUNNER_SOURCE } = await import("../../../src/commands/hook/prek-builtins");
+        const filePath = join(temporary.root, "notes.txt");
 
-        mkdirSync(join(temporary.root, ".vis-hooks", ".builtins"), { recursive: true });
-        writeFileSync(join(temporary.root, ".vis-hooks", ".builtins", PREK_RUNNER_FILENAME), PREK_RUNNER_SOURCE, { mode: 0o755 });
+        writeFileSync(filePath, "hello   \nworld\n");
+        spawnSync("git", ["add", "notes.txt"], { cwd: temporary.root });
 
-        // Commit one file so it's tracked but not staged when we run the hook.
-        // A .txt file so the trailing-whitespace builtin doesn't apply the
-        // markdown hard-break preservation rule.
-        writeFileSync(join(temporary.root, "tracked.txt"), "some text   \n");
-        spawnSync("git", ["add", "tracked.txt"], { cwd: temporary.root });
-        const commit = spawnSync("git", ["commit", "-m", "init"], { cwd: temporary.root, encoding: "utf8" });
+        writeConfig(temporary.root, {
+            "pre-commit": [{ builtin: "trailing-whitespace", files: "\\.txt$", id: "trailing-whitespace" }],
+        });
 
-        expect(commit.status, `git commit failed: ${commit.stderr}`).toBe(0);
+        const code = runHookStage(temporary.root, ".vis-hooks", { stage: "pre-commit" }, noopLogger);
 
-        const runnerPath = join(temporary.root, ".vis-hooks", ".builtins", PREK_RUNNER_FILENAME);
-        const defaultRun = spawnSync("node", [runnerPath, "--builtin", "trailing-whitespace"], { cwd: temporary.root, encoding: "utf8" });
+        expect(code).toBe(1);
+        expect(readFileSync(filePath, "utf8")).toBe("hello\nworld\n");
+    });
 
-        expect(defaultRun.status).toBe(0); // nothing staged → no-op
+    it.skipIf(process.platform === "win32")("propagates invalid-regex filter errors per-hook without aborting the stage", () => {
+        expect.assertions(1);
 
-        const allFilesRun = spawnSync("node", [runnerPath, "--all-files", "--builtin", "trailing-whitespace"], { cwd: temporary.root, encoding: "utf8" });
+        writeFileSync(join(temporary.root, "a.txt"), "x");
+        spawnSync("git", ["add", "a.txt"], { cwd: temporary.root });
 
-        expect(allFilesRun.status).toBe(1); // trailing-whitespace fixed the file
+        writeConfig(temporary.root, {
+            "pre-commit": [
+                { entry: "true", files: "(", id: "broken-regex" },
+                { alwaysRun: true, entry: "exit 0", id: "ok", passFilenames: false },
+            ],
+        });
+
+        const code = runHookStage(temporary.root, ".vis-hooks", { stage: "pre-commit" }, noopLogger);
+
+        expect(code).toBe(2);
     });
 });
