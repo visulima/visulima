@@ -2,11 +2,12 @@ import { spawnSync } from "node:child_process";
 import { readdirSync, statSync } from "node:fs";
 import { cwd } from "node:process";
 
-import { isAccessibleSync, readFileSync } from "@visulima/fs";
+import { isAccessibleSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
+import { loadHookConfig } from "./config";
+import { HOOK_CONFIG_FILENAME } from "./config";
 import { HOOKS } from "./constants";
-import { PREK_RUNNER_FILENAME } from "./prek-builtins";
 
 /* eslint-disable no-bitwise -- Unix mode bits need bit-level masking. */
 interface ValidationIssue {
@@ -31,20 +32,6 @@ const runSyntaxCheck = (scriptPath: string): string | undefined => {
 
     if (result.status !== 0) {
         return result.stderr.trim() || `sh -n exited with ${result.status}`;
-    }
-
-    return undefined;
-};
-
-const runNodeCheck = (scriptPath: string): string | undefined => {
-    const result = spawnSync("node", ["--check", scriptPath], { encoding: "utf8" });
-
-    if (result.status === null) {
-        return `failed to run "node --check" (${result.error?.message ?? "unknown error"})`;
-    }
-
-    if (result.status !== 0) {
-        return result.stderr.trim() || `node --check exited with ${result.status}`;
     }
 
     return undefined;
@@ -79,10 +66,10 @@ const validateHooks = (root: string, hooksDirectory: string): ValidationResult =
         return { issues, ok: false };
     }
 
-    let referencesRunner = false;
+    let sawStageScript = false;
 
     for (const entry of readdirSync(directory)) {
-        if (entry.startsWith(".") || entry === "_") {
+        if (entry.startsWith(".") || entry === "_" || entry === HOOK_CONFIG_FILENAME || entry === "README.md") {
             continue;
         }
 
@@ -97,6 +84,7 @@ const validateHooks = (root: string, hooksDirectory: string): ValidationResult =
             continue;
         }
 
+        sawStageScript = true;
         const mode = statSync(stagePath).mode & 0o777;
 
         if ((mode & 0o100) === 0) {
@@ -108,33 +96,27 @@ const validateHooks = (root: string, hooksDirectory: string): ValidationResult =
         if (syntaxError) {
             issues.push({ kind: "error", message: `Shell syntax error: ${syntaxError}`, path: join(hooksDirectory, entry) });
         }
-
-        const content: string = readFileSync(stagePath);
-
-        if (content.includes(`/.builtins/${PREK_RUNNER_FILENAME}`)) {
-            referencesRunner = true;
-        }
     }
 
-    // prek-runner.mjs existence + syntax when referenced
-    if (referencesRunner) {
-        const runnerPath = join(directory, ".builtins", PREK_RUNNER_FILENAME);
+    // config.json existence + schema sanity when stage scripts are present.
+    if (sawStageScript) {
+        const configPath = join(directory, HOOK_CONFIG_FILENAME);
 
-        if (isAccessibleSync(runnerPath)) {
-            const runnerError = runNodeCheck(runnerPath);
-
-            if (runnerError) {
-                issues.push({
-                    kind: "error",
-                    message: `prek-runner.mjs has a syntax error: ${runnerError}`,
-                    path: join(hooksDirectory, ".builtins", PREK_RUNNER_FILENAME),
-                });
-            }
-        } else {
+        if (!isAccessibleSync(configPath)) {
             issues.push({
                 kind: "error",
-                message: `Hook scripts reference ${hooksDirectory}/.builtins/${PREK_RUNNER_FILENAME} but the file is missing. Re-run \`vis hook migrate\`.`,
+                message: `Stage scripts are present but ${hooksDirectory}/${HOOK_CONFIG_FILENAME} is missing. Re-run \`vis hook migrate\`.`,
             });
+        } else {
+            try {
+                loadHookConfig(root, hooksDirectory);
+            } catch (error) {
+                issues.push({
+                    kind: "error",
+                    message: `${HOOK_CONFIG_FILENAME} is malformed: ${error instanceof Error ? error.message : String(error)}`,
+                    path: join(hooksDirectory, HOOK_CONFIG_FILENAME),
+                });
+            }
         }
     }
 

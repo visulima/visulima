@@ -33,7 +33,7 @@ describe("native addon integration", () => {
 
             // If this fails, bump NATIVE_BINDING_VERSION in native/src/lib.rs
             // together with this test.
-            expect(NATIVE_BINDING_VERSION).toBe(2);
+            expect(NATIVE_BINDING_VERSION).toBe(3);
         });
     });
 

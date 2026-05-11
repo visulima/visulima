@@ -7,8 +7,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import type { PrekConfig } from "../../../src/commands/hook/prek";
 import {
-    buildHookCommand,
-    buildRunnerInvocation,
+    buildHookEntry,
     convertPrekConfig,
     detectPrekConfig,
     loadPrekConfig,
@@ -19,6 +18,7 @@ import {
     parseAdditionalDep,
     parsePrekConfig,
     resolveStages,
+    stageScriptBody,
 } from "../../../src/commands/hook/prek";
 
 // ─── Helpers ────────────────────────────────────────────────────────
@@ -174,76 +174,79 @@ describe(resolveStages, () => {
     });
 });
 
-// ─── buildHookCommand ───────────────────────────────────────────────
+// ─── buildHookEntry ─────────────────────────────────────────────────
 
-describe(buildHookCommand, () => {
-    it("routes pre-commit hooks through the runner with entry + args passed via argv", () => {
+describe(buildHookEntry, () => {
+    it("converts a local system hook into an entry with raw values preserved", () => {
+        expect.assertions(4);
+
+        const entry = buildHookEntry({ args: ["--foo", "bar baz"], entry: "pnpm exec lint-staged", id: "lint" }, "pre-commit");
+
+        expect(entry.entry).toBe("pnpm exec lint-staged");
+        expect(entry.args).toStrictEqual(["--foo", "bar baz"]);
+        expect(entry.builtin).toBeUndefined();
+        expect(entry.fail).toBeUndefined();
+    });
+
+    it("marks commit-msg entries alwaysRun and drops filters (git supplies argv)", () => {
+        expect.assertions(4);
+
+        const entry = buildHookEntry({ entry: "pnpm exec commitlint --edit", files: String.raw`\.md$`, id: "commitlint", types: ["text"] }, "commit-msg");
+
+        expect(entry.alwaysRun).toBe(true);
+        expect(entry.passFilenames).toBe(false);
+        expect(entry.files).toBeUndefined();
+        expect(entry.types).toBeUndefined();
+    });
+
+    it("translates language: fail into a `fail` entry", () => {
         expect.assertions(3);
 
-        const command = buildHookCommand({ args: ["--foo", "bar baz"], entry: "pnpm exec lint-staged" }, "pre-commit");
+        const entry = buildHookEntry({ entry: "do not use console.log", id: "no-console", language: "fail" }, "pre-commit");
 
-        expect(command).toContain("node \"$(dirname \"$0\")/.builtins/prek-runner.mjs\"");
-        expect(command).toContain("-- pnpm exec lint-staged");
-        expect(command).toContain("'--foo' 'bar baz'");
+        expect(entry.fail).toBe("do not use console.log");
+        expect(entry.entry).toBeUndefined();
+        expect(entry.builtin).toBeUndefined();
     });
 
-    it("forwards \"$@\" for commit-msg stage with pass_filenames default", () => {
-        expect.assertions(1);
-
-        const command = buildHookCommand({ entry: "pnpm exec commitlint --edit" }, "commit-msg");
-
-        expect(command).toBe("pnpm exec commitlint --edit \"$@\"");
-    });
-
-    it("omits \"$@\" when pass_filenames is false even for commit-msg", () => {
-        expect.assertions(1);
-
-        const command = buildHookCommand({ entry: "bash scripts/verify.sh", pass_filenames: false }, "commit-msg");
-
-        expect(command).toBe("bash scripts/verify.sh");
-    });
-
-    it("translates language: fail into echo + exit 1", () => {
-        expect.assertions(1);
-
-        const command = buildHookCommand({ entry: "do not use console.log", id: "no-console", language: "fail" }, "pre-commit");
-
-        expect(command).toBe("echo 'do not use console.log'; exit 1");
-    });
-
-    it("escapes embedded single quotes in args when routed via the runner", () => {
-        expect.assertions(1);
-
-        const command = buildHookCommand({ args: ["it's fine"], entry: "echo" }, "pre-commit");
-
-        expect(command).toContain(String.raw`'it'\''s fine'`);
-    });
-
-    it("emits a --builtin dispatch when a builtin id is supplied", () => {
+    it("sets `builtin` when a bundled hook id is supplied", () => {
         expect.assertions(2);
 
-        const command = buildHookCommand({ args: ["--fix=lf"], id: "mixed-line-ending" }, "pre-commit", "mixed-line-ending");
+        const entry = buildHookEntry({ args: ["--fix=lf"], id: "mixed-line-ending" }, "pre-commit", "mixed-line-ending");
 
-        expect(command).toContain("--builtin mixed-line-ending");
-        expect(command).toContain("-- '--fix=lf'");
+        expect(entry.builtin).toBe("mixed-line-ending");
+        expect(entry.args).toStrictEqual(["--fix=lf"]);
     });
 
-    it("emits filter flags with single-quoted regex to prevent shell injection", () => {
+    it("preserves regex / type filters verbatim (no shell quoting required)", () => {
         expect.assertions(2);
 
-        const command = buildRunnerInvocation({ exclude: "'; rm -rf /", files: String.raw`\.ts$` });
+        const entry = buildHookEntry({ entry: "echo", exclude: "'; rm -rf /", files: String.raw`\.ts$`, id: "exotic" }, "pre-commit");
 
-        expect(command).toContain(String.raw`--files '\.ts$'`);
-        // Embedded single quote is escaped via '\'' — never breaks out of the quoted string.
-        expect(command).toContain(String.raw`--exclude ''\''; rm -rf /'`);
+        expect(entry.files).toBe(String.raw`\.ts$`);
+        // Stored verbatim; the dispatcher passes via argv, never shell.
+        expect(entry.exclude).toBe("'; rm -rf /");
+    });
+});
+
+// ─── stageScriptBody ────────────────────────────────────────────────
+
+describe(stageScriptBody, () => {
+    it("emits a thin shim that defers to vis hook run", () => {
+        expect.assertions(2);
+
+        const body = stageScriptBody("pre-commit");
+
+        expect(body).toContain("exec vis hook run pre-commit \"$@\"");
+        expect(body).toMatch(/^#!\/usr\/bin\/env sh/);
     });
 });
 
 // ─── convertPrekConfig ──────────────────────────────────────────────
 
 describe(convertPrekConfig, () => {
-    it("converts a local system hook into a pre-commit script", () => {
-        expect.assertions(3);
+    it("converts a local system hook into a pre-commit entry", () => {
+        expect.assertions(4);
 
         const config: PrekConfig = {
             repos: [
@@ -264,9 +267,11 @@ describe(convertPrekConfig, () => {
         };
 
         const result = convertPrekConfig(config);
+        const entries = result.config.stages["pre-commit"];
 
-        expect(result.scripts.has("pre-commit")).toBe(true);
-        expect(result.scripts.get("pre-commit")).toContain("pnpm exec lint-staged");
+        expect(entries).toHaveLength(1);
+        expect(entries?.[0]?.entry).toBe("pnpm exec lint-staged");
+        expect(entries?.[0]?.passFilenames).toBe(false);
         expect(result.skippedHooks).toHaveLength(0);
     });
 
@@ -285,7 +290,7 @@ describe(convertPrekConfig, () => {
 
         const result = convertPrekConfig(config);
 
-        expect(result.scripts.size).toBe(0);
+        expect(Object.keys(result.config.stages)).toHaveLength(0);
         expect(result.skippedHooks).toHaveLength(1);
         expect(result.skippedHooks[0]?.reason).toContain("has no bundled equivalent");
     });
@@ -304,10 +309,11 @@ describe(convertPrekConfig, () => {
         };
 
         const result = convertPrekConfig(config);
+        const entries = result.config.stages["pre-commit"];
 
         expect(result.skippedHooks).toHaveLength(0);
-        expect(result.scripts.get("pre-commit")).toContain("--builtin trailing-whitespace");
-        expect(result.scripts.get("pre-commit")).toContain("--builtin end-of-file-fixer");
+        expect(entries?.[0]?.builtin).toBe("trailing-whitespace");
+        expect(entries?.[1]?.builtin).toBe("end-of-file-fixer");
     });
 
     it("skips local hooks with non-translatable languages", () => {
@@ -388,7 +394,7 @@ describe(convertPrekConfig, () => {
         expect(result.manualSteps[0]).toContain("pip-style");
     });
 
-    it("preserves file filters via the runner invocation", () => {
+    it("preserves file filters on the converted entry", () => {
         expect.assertions(3);
 
         const config: PrekConfig = {
@@ -409,16 +415,19 @@ describe(convertPrekConfig, () => {
         };
 
         const result = convertPrekConfig(config);
-        const script = result.scripts.get("pre-commit") ?? "";
+        const entry = result.config.stages["pre-commit"]?.[0];
 
-        expect(script).toContain(String.raw`--files '\.ts$'`);
-        expect(script).toContain("--types 'typescript'");
-        expect(script).toContain("-- pnpm exec eslint");
+        expect(entry?.files).toBe(String.raw`\.ts$`);
+        expect(entry?.types).toStrictEqual(["typescript"]);
+        expect(entry?.entry).toBe("pnpm exec eslint");
     });
 
     it("warns on unsupported types without suppressing the hook", () => {
         expect.assertions(2);
 
+        // Use genuinely unknown tag names — prek-identify covers ~311 real
+        // tags (haskell, ocaml, etc. all included), so the "unknown" warning
+        // only fires for typos or made-up names.
         const config: PrekConfig = {
             repos: [
                 {
@@ -427,7 +436,7 @@ describe(convertPrekConfig, () => {
                             entry: "echo",
                             id: "exotic",
                             language: "system",
-                            types: ["haskell", "ocaml"],
+                            types: ["totally-fake-tag-zzz", "another-bogus-tag"],
                         },
                     ],
                     repo: "local",
@@ -437,12 +446,12 @@ describe(convertPrekConfig, () => {
 
         const result = convertPrekConfig(config);
 
-        expect(result.droppedFilters.some((note) => note.includes("haskell"))).toBe(true);
-        expect(result.scripts.has("pre-commit")).toBe(true);
+        expect(result.droppedFilters.some((note) => note.includes("totally-fake-tag-zzz"))).toBe(true);
+        expect(result.config.stages["pre-commit"]).toBeDefined();
     });
 
-    it("merges multiple hooks into the same stage script in declaration order", () => {
-        expect.assertions(2);
+    it("merges multiple hooks into the same stage entry list in declaration order", () => {
+        expect.assertions(3);
 
         const config: PrekConfig = {
             repos: [
@@ -457,10 +466,11 @@ describe(convertPrekConfig, () => {
         };
 
         const result = convertPrekConfig(config);
-        const script = result.scripts.get("pre-commit") ?? "";
+        const entries = result.config.stages["pre-commit"];
 
-        expect(script.indexOf("echo first")).toBeGreaterThan(-1);
-        expect(script.indexOf("echo first")).toBeLessThan(script.indexOf("echo second"));
+        expect(entries).toHaveLength(2);
+        expect(entries?.[0]?.entry).toBe("echo first");
+        expect(entries?.[1]?.entry).toBe("echo second");
     });
 
     it("honors default_stages when hook omits stages", () => {
@@ -478,8 +488,8 @@ describe(convertPrekConfig, () => {
 
         const result = convertPrekConfig(config);
 
-        expect(result.scripts.has("pre-push")).toBe(true);
-        expect(result.scripts.has("pre-commit")).toBe(false);
+        expect(result.config.stages["pre-push"]).toBeDefined();
+        expect(result.config.stages["pre-commit"]).toBeUndefined();
     });
 
     it("skips manual stage entries silently", () => {
@@ -503,11 +513,11 @@ describe(convertPrekConfig, () => {
 
         const result = convertPrekConfig(config);
 
-        expect(result.scripts.size).toBe(0);
+        expect(Object.keys(result.config.stages)).toHaveLength(0);
         expect(result.skippedHooks).toHaveLength(0);
     });
 
-    it("prepends `set -e` when fail_fast is true", () => {
+    it("sets failFast on the config when fail_fast is true", () => {
         expect.assertions(1);
 
         const config: PrekConfig = {
@@ -522,7 +532,7 @@ describe(convertPrekConfig, () => {
 
         const result = convertPrekConfig(config);
 
-        expect(result.scripts.get("pre-commit")).toContain("set -e");
+        expect(result.config.failFast).toBe(true);
     });
 
     it("maps legacy stage aliases into canonical hook names", () => {
@@ -539,11 +549,11 @@ describe(convertPrekConfig, () => {
 
         const result = convertPrekConfig(config);
 
-        expect(result.scripts.has("pre-commit")).toBe(true);
-        expect(result.scripts.has("pre-push")).toBe(true);
+        expect(result.config.stages["pre-commit"]).toBeDefined();
+        expect(result.config.stages["pre-push"]).toBeDefined();
     });
 
-    it("wraps the emitted command in `set -x` when verbose is true", () => {
+    it("marks the entry verbose when prek hook sets verbose: true", () => {
         expect.assertions(2);
 
         const config: PrekConfig = {
@@ -556,10 +566,10 @@ describe(convertPrekConfig, () => {
         };
 
         const result = convertPrekConfig(config);
-        const script = result.scripts.get("pre-commit") ?? "";
+        const entry = result.config.stages["pre-commit"]?.[0];
 
-        expect(script).toContain("(set -x;");
-        expect(script).toContain("echo hi");
+        expect(entry?.verbose).toBe(true);
+        expect(entry?.entry).toBe("echo hi");
     });
 });
 
@@ -593,7 +603,7 @@ describe(parsePrekConfig, () => {
 
 describe(migrateFromPrek, () => {
     it.skipIf(process.platform === "win32")("performs a full local-hook migration", () => {
-        expect.assertions(6);
+        expect.assertions(8);
 
         const { cleanup, root } = createTemporaryGitRepo();
 
@@ -623,8 +633,16 @@ describe(migrateFromPrek, () => {
             expect(result.isError).toBe(false);
             expect(result.message).toContain("Migration complete");
 
-            expect(readFileSync(join(root, ".vis-hooks", "pre-commit"), "utf8")).toContain("pnpm exec lint-staged");
-            expect(readFileSync(join(root, ".vis-hooks", "commit-msg"), "utf8")).toContain("pnpm exec commitlint --edit");
+            const preCommit = readFileSync(join(root, ".vis-hooks", "pre-commit"), "utf8");
+            const commitMsg = readFileSync(join(root, ".vis-hooks", "commit-msg"), "utf8");
+
+            expect(preCommit).toContain("exec vis hook run pre-commit \"$@\"");
+            expect(commitMsg).toContain("exec vis hook run commit-msg \"$@\"");
+
+            const hookConfig = JSON.parse(readFileSync(join(root, ".vis-hooks", "config.json"), "utf8"));
+
+            expect(hookConfig.stages["pre-commit"][0].entry).toBe("pnpm exec lint-staged");
+            expect(hookConfig.stages["commit-msg"][0].entry).toBe("pnpm exec commitlint --edit");
 
             expect(existsSync(join(root, ".pre-commit-config.yaml"))).toBe(false);
             expect(existsSync(join(root, ".pre-commit-config.yaml.bak"))).toBe(true);
@@ -665,8 +683,8 @@ describe(migrateFromPrek, () => {
         }
     });
 
-    it.skipIf(process.platform === "win32")("writes the prek-runner when a translated hook uses it", () => {
-        expect.assertions(3);
+    it.skipIf(process.platform === "win32")("records translated remote hooks as builtin entries in config.json", () => {
+        expect.assertions(4);
 
         const { cleanup, root } = createTemporaryGitRepo();
 
@@ -685,8 +703,13 @@ describe(migrateFromPrek, () => {
             const result = migrateFromPrek(root, ".vis-hooks", noopLogger);
 
             expect(result.isError).toBe(false);
-            expect(existsSync(join(root, ".vis-hooks", ".builtins", "prek-runner.mjs"))).toBe(true);
-            expect(readFileSync(join(root, ".vis-hooks", "pre-commit"), "utf8")).toContain("--builtin trailing-whitespace");
+            expect(readFileSync(join(root, ".vis-hooks", "pre-commit"), "utf8")).toContain("exec vis hook run pre-commit \"$@\"");
+
+            const hookConfig = JSON.parse(readFileSync(join(root, ".vis-hooks", "config.json"), "utf8"));
+            const entries = hookConfig.stages["pre-commit"];
+
+            expect(entries[0].builtin).toBe("trailing-whitespace");
+            expect(entries[1].builtin).toBe("check-json");
         } finally {
             cleanup();
         }
@@ -882,7 +905,7 @@ describe(mergeAdditionalDependencies, () => {
     });
 
     it.skipIf(process.platform === "win32")("migrates a prek.toml config end-to-end", () => {
-        expect.assertions(4);
+        expect.assertions(5);
 
         const { cleanup, root } = createTemporaryGitRepo();
 
@@ -905,7 +928,12 @@ stages = ["pre-commit"]
             const result = migrateFromPrek(root, ".vis-hooks", noopLogger);
 
             expect(result.isError).toBe(false);
-            expect(readFileSync(join(root, ".vis-hooks", "pre-commit"), "utf8")).toContain("pnpm exec lint-staged");
+            expect(readFileSync(join(root, ".vis-hooks", "pre-commit"), "utf8")).toContain("exec vis hook run pre-commit \"$@\"");
+
+            const hookConfig = JSON.parse(readFileSync(join(root, ".vis-hooks", "config.json"), "utf8"));
+
+            expect(hookConfig.stages["pre-commit"][0].entry).toBe("pnpm exec lint-staged");
+
             expect(existsSync(join(root, "prek.toml"))).toBe(false);
             expect(existsSync(join(root, "prek.toml.bak"))).toBe(true);
         } finally {
