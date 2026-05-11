@@ -1,3 +1,10 @@
+## @visulima/error-handler [2.0.0-alpha.21](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.0-alpha.20...@visulima/error-handler@2.0.0-alpha.21) (2026-05-11)
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.22
+
 ## @visulima/error-handler [2.0.0-alpha.20](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.0-alpha.19...@visulima/error-handler@2.0.0-alpha.20) (2026-05-10)
 
 
