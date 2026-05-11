@@ -11,7 +11,7 @@ import { validateBom } from "./validator";
 const buildFixtureBom = (): CycloneDxBom => {
     return {
         // eslint-disable-next-line sonarjs/no-clear-text-protocols -- canonical CycloneDX schema $id, not a fetch target
-        $schema: "http://cyclonedx.org/schema/bom-1.6.schema.json",
+        $schema: "http://cyclonedx.org/schema/bom-1.7.schema.json",
         bomFormat: "CycloneDX",
         components: [
             {
@@ -59,12 +59,12 @@ const buildFixtureBom = (): CycloneDxBom => {
             },
         },
         serialNumber: "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
-        specVersion: "1.6",
+        specVersion: "1.7",
         version: 1,
     };
 };
 
-describe("cycloneDX 1.6 schema conformance", () => {
+describe("cycloneDX 1.7 schema conformance", () => {
     it("should accept a minimal BOM with a single component", () => {
         expect.assertions(1);
 
@@ -128,7 +128,7 @@ describe("cycloneDX 1.6 schema conformance", () => {
             dependencies: [],
             metadata: { timestamp: "2026-04-13T00:00:00Z" },
             serialNumber: "urn:uuid:00000000-0000-4000-8000-000000000000",
-            specVersion: "1.6",
+            specVersion: "1.7",
             version: 1,
         };
 

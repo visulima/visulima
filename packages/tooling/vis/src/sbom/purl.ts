@@ -1,6 +1,6 @@
 /**
  * Zero-dependency implementation of the Package URL (PURL) spec, scoped
- * to the `pkg:npm/…` type — the only scheme CycloneDX 1.6 needs for
+ * to the `pkg:npm/…` type — the only scheme CycloneDX 1.7 needs for
  * npm-ecosystem SBOMs.
  *
  * Reference: https://github.com/package-url/purl-spec/blob/master/PURL-TYPES.rst#npm

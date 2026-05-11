@@ -161,7 +161,7 @@ packages:
         });
 
         // Route through the real ajv validator — the builder is correct only
-        // if the vendored 1.6 schema accepts every document it produces.
+        // if the vendored 1.7 schema accepts every document it produces.
         assertValidBom(bom);
 
         // Components: 1 workspace project + 1 registry library.
@@ -304,7 +304,7 @@ packages:
 
         expect(xml.startsWith("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")).toBe(true);
         expect(xml).toContain("<name>my-app</name>");
-        expect(xml).toContain("xmlns=\"http://cyclonedx.org/schema/bom/1.6\"");
+        expect(xml).toContain("xmlns=\"http://cyclonedx.org/schema/bom/1.7\"");
     });
 
     it("should walk the lockfile closure and emit transitive deps as components", () => {
@@ -458,7 +458,7 @@ packages:
         const somePkg = bom.components!.find((c) => c.name === "some-pkg");
 
         expect(somePkg).toBeDefined();
-        // No `hashes` — Berry's XXH64 isn't in CycloneDX 1.6's HashAlgorithm enum.
+        // No `hashes` — Berry's XXH64 isn't in CycloneDX 1.7's HashAlgorithm enum.
         expect(somePkg?.hashes).toBeUndefined();
     });
 

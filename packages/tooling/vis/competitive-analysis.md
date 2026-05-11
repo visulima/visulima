@@ -271,7 +271,7 @@ These are first-class in vis today and broader than every competitor except Nx:
 - Generators (`vis generate` — native TS templates **and** moon-format Tera with frontmatter)
 - Remote project scaffolding (`vis create` via giget)
 - Toolchain delegation (`vis toolchain` — proto/mise/fnm/volta/asdf/nvm)
-- SBOM (`vis sbom` — CycloneDX 1.6 JSON/XML, full lockfile closure)
+- SBOM (`vis sbom` — CycloneDX 1.7 JSON/XML, full lockfile closure)
 - Secret scanning (`vis secrets` — Rust port of gitleaks engine)
 - `vis staged` (lint-staged replacement, no peer dep)
 - Audit/check (`vis audit`, `vis check`, OSV.dev)

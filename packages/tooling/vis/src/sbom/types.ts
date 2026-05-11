@@ -1,19 +1,19 @@
 /**
- * TypeScript types for the subset of CycloneDX 1.6 that `vis sbom` emits.
+ * TypeScript types for the subset of CycloneDX 1.7 that `vis sbom` emits.
  *
  * These types are hand-maintained against the vendored schema at
- * `__tests__/sbom/schemas/bom-1.6.schema.json` (upstream tag 1.6.1). They
+ * `__tests__/sbom/schemas/bom-1.7.schema.json` (upstream tag 1.7). They
  * intentionally cover only the shapes the SBOM generator produces —
  * `services`, `vulnerabilities`, `compositions`, `annotations`,
  * `formulation`, `declarations`, `signature`, `pedigree`, `evidence`,
- * `modelCard`, and crypto-asset fields are omitted.
+ * `modelCard`, `citations`, `patents`, and crypto-asset fields are omitted.
  *
  * The schema is still the source of truth: see
  * `__tests__/sbom/schema-conformance.test.ts` for the ajv-backed validator
  * that runs on every emitted BOM.
  */
 
-/** Hash algorithms permitted by CycloneDX 1.6. */
+/** Hash algorithms permitted by CycloneDX 1.7. */
 export type HashAlgorithm
     = | "BLAKE2b-256"
         | "BLAKE2b-384"
@@ -26,7 +26,9 @@ export type HashAlgorithm
         | "SHA-512"
         | "SHA3-256"
         | "SHA3-384"
-        | "SHA3-512";
+        | "SHA3-512"
+        | "Streebog-256"
+        | "Streebog-512";
 
 /** A single hash entry on a component. */
 export interface Hash {
@@ -141,8 +143,9 @@ export interface OrganizationalEntity {
 }
 
 /**
- * All 43 values from the CycloneDX 1.6 `externalReferenceType` enum. Kept
- * exhaustive so any spec-legal reference type type-checks.
+ * All 47 values from the CycloneDX 1.7 `externalReferenceType` enum. Kept
+ * exhaustive so any spec-legal reference type type-checks. The 1.7 additions
+ * over 1.6 are: `citation`, `patent`, `patent-assertion`, `patent-family`.
  */
 export type ExternalReferenceType
     = | "adversary-model"
@@ -153,6 +156,7 @@ export type ExternalReferenceType
         | "build-system"
         | "certification-report"
         | "chat"
+        | "citation"
         | "codified-infrastructure"
         | "component-analysis-report"
         | "configuration"
@@ -172,6 +176,9 @@ export type ExternalReferenceType
         | "maturity-report"
         | "model-card"
         | "other"
+        | "patent"
+        | "patent-assertion"
+        | "patent-family"
         | "pentest-report"
         | "poam"
         | "quality-metrics"
@@ -273,7 +280,7 @@ export interface Dependency {
     ref: string;
 }
 
-/** The root CycloneDX 1.6 BOM document. */
+/** The root CycloneDX 1.7 BOM document. */
 export interface CycloneDxBom {
     $schema?: string;
     bomFormat: "CycloneDX";
@@ -284,7 +291,7 @@ export interface CycloneDxBom {
     properties?: Property[];
     /** `urn:uuid:&lt;rfc-4122>` — unique identifier for this specific BOM revision. */
     serialNumber?: string;
-    specVersion: "1.6";
+    specVersion: "1.7";
     /** Monotonically increasing integer for BOM revisions (starts at 1). */
     version?: number;
 }

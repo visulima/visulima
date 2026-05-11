@@ -5,15 +5,16 @@
  *
  * Usage:
  *   npx tsx scripts/update-cyclonedx-schemas.ts          # refresh current tag
- *   npx tsx scripts/update-cyclonedx-schemas.ts 1.6.1    # pin to a tag
- *   npx tsx scripts/update-cyclonedx-schemas.ts 1.7      # upgrade spec version
+ *   npx tsx scripts/update-cyclonedx-schemas.ts 1.7      # pin to a tag
+ *   npx tsx scripts/update-cyclonedx-schemas.ts 1.8      # upgrade spec version
  *
- * The script writes four files into `__tests__/sbom/schemas/`:
+ * The script writes five files into `__tests__/sbom/schemas/`:
  *
- *   - `bom-<version>.schema.json`  — main CycloneDX JSON Schema
- *   - `spdx.schema.json`           — SPDX licence-id enum ($ref'd by bom)
- *   - `jsf-0.82.schema.json`       — JSON Signature Format ($ref'd by bom)
- *   - `LICENSE`                    — upstream Apache-2.0 licence text
+ *   - `bom-<version>.schema.json`         — main CycloneDX JSON Schema
+ *   - `spdx.schema.json`                  — SPDX licence-id enum ($ref'd by bom)
+ *   - `jsf-0.82.schema.json`              — JSON Signature Format ($ref'd by bom)
+ *   - `cryptography-defs.schema.json`     — CBOM algorithm families ($ref'd by bom; 1.7+)
+ *   - `LICENSE`                           — upstream Apache-2.0 licence text
  *
  * The upstream CycloneDX specification is published by OWASP under the
  * Apache-2.0 licence. Vendoring the LICENSE file alongside the schemas
@@ -34,7 +35,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const SCHEMAS_DIR = resolve(__dirname, "../__tests__/sbom/schemas");
 
 /** Default CycloneDX spec tag when no argument is provided. */
-const DEFAULT_TAG = "1.6.1";
+const DEFAULT_TAG = "1.7";
 
 /** Accepts `MAJOR.MINOR` or `MAJOR.MINOR.PATCH`, each component a non-empty run of digits. */
 const TAG_PATTERN = /^(\d+)\.(\d+)(?:\.\d+)?$/;
@@ -49,7 +50,7 @@ const majorMinor = (tag: string): string => {
     const match = TAG_PATTERN.exec(tag);
 
     if (!match) {
-        throw new Error(`Invalid tag "${tag}" — expected MAJOR.MINOR or MAJOR.MINOR.PATCH with numeric components (e.g. 1.6 or 1.6.1)`);
+        throw new Error(`Invalid tag "${tag}" — expected MAJOR.MINOR or MAJOR.MINOR.PATCH with numeric components (e.g. 1.7 or 1.7.1)`);
     }
 
     return `${match[1]}.${match[2]}`;
@@ -112,6 +113,7 @@ const buildAssetList = (tag: string, mm: string): Asset[] => {
         { filename: `bom-${mm}.schema.json`, url: `${base}/schema/bom-${mm}.schema.json` },
         { filename: "spdx.schema.json", url: `${base}/schema/spdx.schema.json` },
         { filename: "jsf-0.82.schema.json", url: `${base}/schema/jsf-0.82.schema.json` },
+        { filename: "cryptography-defs.schema.json", url: `${base}/schema/cryptography-defs.schema.json` },
         { filename: "LICENSE", url: `${base}/LICENSE` },
     ];
 };

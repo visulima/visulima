@@ -1,14 +1,14 @@
 import type { Command, CreateOptions } from "@visulima/cerebro";
 
 /**
- * `vis sbom` — CycloneDX 1.6 Software Bill of Materials generator.
+ * `vis sbom` — CycloneDX 1.7 Software Bill of Materials generator.
  *
  * Mirrors `vis docker scaffold` in shape: accepts an optional `--focus`
  * list, walks the workspace graph, and writes the result to disk
  * (or stdout).
  */
 const sbom: Command = {
-    description: "Generate a CycloneDX 1.6 Software Bill of Materials for the workspace",
+    description: "Generate a CycloneDX 1.7 Software Bill of Materials for the workspace",
     examples: [
         ["vis sbom", "Write the full-workspace SBOM to sbom.cdx.json"],
         ["vis sbom --focus=my-app", "Scope the SBOM to my-app's transitive closure"],

@@ -124,7 +124,7 @@ interface LockFileEntry {
 | Yarn Berry (v2+)  | `yarn.lock`                   | ✅             | ❌ see below  | ✅              |
 | Bun               | `bun.lock`                    | ✅             | ✅            | ✅              |
 
-**Yarn Berry integrity is not supported.** Berry records `checksum: 10c0/…` (XXH64), which is not a cryptographic hash and is outside the CycloneDX 1.6 `HashAlgorithm` enum. Berry entries come out of the parser with `integrity: undefined`. Callers that need Berry integrity must read `yarn.lock` directly.
+**Yarn Berry integrity is not supported.** Berry records `checksum: 10c0/…` (XXH64), which is not a cryptographic hash and is outside the CycloneDX 1.7 `HashAlgorithm` enum. Berry entries come out of the parser with `integrity: undefined`. Callers that need Berry integrity must read `yarn.lock` directly.
 
 **Binary `bun.lockb`** (Bun ≤ 1.0) is also unsupported; only the text `bun.lock` (Bun 1.1+) is recognised.
 
