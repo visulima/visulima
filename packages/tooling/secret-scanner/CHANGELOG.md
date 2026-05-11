@@ -1,3 +1,32 @@
+## @visulima/secret-scanner [1.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/secret-scanner@1.0.0-alpha.1...@visulima/secret-scanner@1.0.0-alpha.2) (2026-05-11)
+
+### Features
+
+* **secret-scanner:** add exposed-files preset and path-only allowlist eval ([8e5372d](https://github.com/visulima/visulima/commit/8e5372dfb9db9da9d49d26b8d31ba7b0ef23399c))
+
+### Bug Fixes
+
+* **secret-scanner:** scope path-only allowlist eval to rule-level only ([3a4475e](https://github.com/visulima/visulima/commit/3a4475ee15d190b304da17d7cb318ee503418b0f))
+
+### Miscellaneous Chores
+
+* **deps:** bump rust crates to current majors ([3a1d9bb](https://github.com/visulima/visulima/commit/3a1d9bb7f6e2c6b2d3862e212ae62707d60815cc))
+* re-enable antfu/if-newline in vis and secret-scanner ([bcd84de](https://github.com/visulima/visulima/commit/bcd84de019b60f6bc474852e7ae6b7da822a9185))
+* re-sort workspace package.json files via vis sort-package-json ([f625696](https://github.com/visulima/visulima/commit/f625696cfac974325774b3243e1a83c3d23acbd7))
+* **secret-scanner:** bump devDependencies for cloud SDKs and TOML parser ([fec96dc](https://github.com/visulima/visulima/commit/fec96dc1449dc54ac6c5bb95e795ec7cdd4d00a7))
+* **secret-scanner:** housekeeping cleanup ([274305a](https://github.com/visulima/visulima/commit/274305aa286658d9526b0d10cc3ec680eb2583b5))
+* **secret-scanner:** sort native package.json keys ([7be87af](https://github.com/visulima/visulima/commit/7be87af3229d903808d9a2f59f275496173a3200))
+* **secret-scanner:** upgrade packem to 2.0.0-alpha.76 and refresh ruleset ([21c6796](https://github.com/visulima/visulima/commit/21c67964de2aa6c094969d0aa28f32280bbef69e))
+
+### Continuous Integration
+
+* integrate codspeed for benchmark tracking ([e758f3d](https://github.com/visulima/visulima/commit/e758f3da491cc00d3f8bbf10d7ba3fdf8deb5325))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.20
+
 ## @visulima/secret-scanner 1.0.0-alpha.1 (2026-04-22)
 
 ### Features

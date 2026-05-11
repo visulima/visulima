@@ -1,6 +1,6 @@
 {
     "name": "@visulima/secret-scanner",
-    "version": "1.0.0-alpha.1",
+    "version": "1.0.0-alpha.2",
     "description": "Fast secret and credential scanner — a Rust port of gitleaks detection, exposed via NAPI",
     "keywords": [
         "credentials",
@@ -99,7 +99,7 @@
         "@total-typescript/ts-reset": "catalog:dev",
         "@types/node": "catalog:types",
         "@visulima/find-cache-dir": "3.0.0-alpha.9",
-        "@visulima/fs": "5.0.0-alpha.14",
+        "@visulima/fs": "5.0.0-alpha.20",
         "@visulima/packem": "catalog:dev",
         "@visulima/path": "3.0.0-alpha.10",
         "@vitest/coverage-v8": "catalog:test",
