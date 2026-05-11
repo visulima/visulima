@@ -1,7 +1,7 @@
 import type { Toolbox } from "@visulima/cerebro";
 import { bold, cyan, dim, green, red, yellow } from "@visulima/colorize";
 import type { RemoteCacheOptions } from "@visulima/task-runner";
-import { ReapiRemoteCache } from "@visulima/task-runner";
+import { ReapiRemoteCache, resolveTurboEnvCompat } from "@visulima/task-runner";
 
 import { pail } from "../../io/logger";
 import type { CacheDoctorOptions } from "./index";
@@ -130,14 +130,17 @@ const formatTable = (result: ProbeResult): string => {
 
 export const cacheDoctorExecute = async ({ logger, options, visConfig }: Toolbox<Console, CacheDoctorOptions>): Promise<void> => {
     const cfg = (visConfig ?? {}) as { taskRunnerOptions?: { remoteCache?: RemoteCacheOptions } };
-    const configRemoteCache = cfg.taskRunnerOptions?.remoteCache;
+    // Fill missing fields from TURBO_API / TURBO_TOKEN / TURBO_TEAM so
+    // `vis cache doctor` works on a Turbo-shaped CI environment with no
+    // vis.config.ts changes.
+    const configRemoteCache = resolveTurboEnvCompat(cfg.taskRunnerOptions?.remoteCache);
     const cliUrl = options.url;
     const url = cliUrl ?? configRemoteCache?.url;
     const format = options.format ?? "table";
     const timeoutMs = options.timeout ?? 5000;
 
     if (!url) {
-        pail.error("No remote cache configured. Set taskRunnerOptions.remoteCache.url in vis.config.ts or pass --url=...");
+        pail.error("No remote cache configured. Set taskRunnerOptions.remoteCache.url in vis.config.ts, pass --url=..., or export TURBO_API.");
         process.exitCode = 1;
 
         return;
