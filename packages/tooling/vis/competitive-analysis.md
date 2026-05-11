@@ -1,8 +1,8 @@
 # vis — Competitive Feature Gap Analysis
 
-Analysis date: 2026-04-28
-Subject: `@visulima/vis` v1.0.0-alpha.9
-Compared against: Nx 21, Turborepo 2.6, moon 2.0 "Phobos", Vite+ alpha (VoidZero, Oct 2025), Lage, Rush, Lerna 9, Bazel/Buck2/Pants/Please/Please, Bit, plus point-tools (Knip, syncpack, sherif, manypkg, Wireit, Preconstruct).
+Analysis date: 2026-04-28 (Vite+ §1.4 refreshed 2026-05-10)
+Subject: `@visulima/vis` v1.0.0-alpha.17
+Compared against: Nx 21, Turborepo 2.6, moon 2.0 "Phobos", Vite+ alpha + Vite Task (VoidZero, Mar 13 2026), Lage, Rush, Lerna 9, Bazel/Buck2/Pants/Please/Please, Bit, plus point-tools (Knip, syncpack, sherif, manypkg, Wireit, Preconstruct).
 
 ---
 
@@ -67,20 +67,53 @@ Sources: turborepo.dev/blog/turbo-2-5, turborepo.dev/blog/turbo-2-6, turborepo.d
 
 Sources: moonrepo.dev/blog/moon-v2.0, moonrepo.dev/blog/moon-v1.30, moonrepo.dev/blog/moonbase-sunset, moonrepo.dev/docs/guides/remote-cache, moonrepo.dev/docs/concepts/query-lang, moonrepo.dev/docs/guides/codeowners.
 
-### 1.4 Vite+ / VoidZero (announced ViteConf, Oct 13 2025; alpha)
+### 1.4 Vite+ alpha + Vite Task (VoidZero, shipped Mar 13 2026)
 
-- Unified CLI: `vite new`, `vite test`, `vite lint`, `vite fmt`, `vite lib`, `vite run`, `vite ui`. All zero-config.
-- **`vite run`** — Turbo-style task runner with intelligent input inference. Claims to require less explicit `inputs`/`outputs` config than turbo.
-- **`vite lint`** = Oxlint (600+ ESLint-compat rules, ~100× faster); type-aware rules via plugin API.
-- **`vite fmt`** = Oxfmt (≥99% Prettier compatible).
-- **`vite lib`** = tsdown + Rolldown + isolatedDeclarations DTS bundling.
-- **`vite test`** = Vitest with shards, browser mode, visual regression.
-- **`vite ui`** = devtools GUI for module resolution, transforms, bundle analysis.
-- Manages runtime + package manager (one CLI bootstraps Node/Bun versions).
-- All underlying pieces (Vite, Vitest, Rolldown, OXC) stay MIT; Vite+ itself is the commercial bundle.
-- Differentiator: Rust core (parser/resolver/transformer/minifier/bundler) shared across all subcommands.
+The Oct 2025 ViteConf announcement landed as a public alpha on Mar 13 2026. The task runner was extracted as `voidzero-dev/vite-task` (separate MIT Rust repo, ~415 stars at refresh time, 17 open issues). Pricing changed from "commercial bundle" to **fully MIT** — the company monetises through the companion `Void` deployment platform, not the CLI. The Vite+ binary is `vp` (alias `vpr` for `vp run`).
 
-Sources: voidzero.dev/posts/announcing-vite-plus, voidzero.dev/posts/announcing-vite-plus-alpha, infoq.com/news/2025/10/vite-plus-unveiled.
+**Single `vite.config.ts` covers everything** — Vite + Vitest + Oxlint + Oxfmt + Rolldown + tsdown + Vite Task + `vp staged` (lint-staged-equivalent) all configure under one file. `vp migrate` collapses `.oxlintrc*`, `.oxfmtrc*`, lint-staged config into it.
+
+**Subcommand surface (alpha, May 2026):**
+
+- **Lifecycle:** `vp create`, `vp migrate`, `vp config`, `vp upgrade`, `vp implode`
+- **Toolchain:** `vp env` (Node version mgr), `vp install`/`add`/`remove`/`update`/`dedupe`/`outdated`/`list`/`why`/`info`/`link`/`pm` (wraps detected pnpm/npm/yarn)
+- **Develop:** `vp dev`, `vp check`, `vp lint`, `vp fmt`, `vp test`, `vp staged`
+- **Execute:** `vp run`, `vp exec`, `vp dlx`, `vp cache`
+- **Build:** `vp build`, `vp pack` (libraries + standalone app binaries), `vp preview`
+
+**`vp run` (Vite Task) — what actually shipped:**
+
+- Tasks defined under `run.tasks` in `vite.config.ts`: `command`, `dependsOn`, `cache`, `envs`. `dependsOn` supports `taskName` and `package#taskName`.
+- pnpm-style `--filter` (name/glob/dir, `...` for deps/dependents, `!` exclusions). `-r` recursive, `-t` transitive, `-w` workspace root, `--parallel`, `--concurrency-limit` (default 4).
+- **Auto-input tracking via syscall tracing (fspy).** Records reads, *missing-file probes*, and *directory listings* — caching needs zero declared `inputs`. Adding a file to a probed directory or creating a previously-missing file invalidates the cache. (Open issues #353/#354 expose a SIGBUS edge on `/dev/shm`-constrained hosts — implementation is real, still rough.)
+- **Compound-command sub-task splitting.** `a && b` and nested `vp run` calls are split into independent cached tasks. Granular cache hits, but the model has ordering bugs in flight (issue #364).
+- `-v` summary, `--last-details` to replay prior run summary, cache stored at `node_modules/.vite/task-cache`.
+- Args after the task name pass through to the underlying command (`vp run test --reporter verbose`).
+
+**Notable open-issue gaps (May 2026):**
+
+| Gap | Issue | Status in vis |
+|---|---|---|
+| Remote cache | not on roadmap | ✅ HTTP + REAPI gRPC, `vis cache doctor` |
+| Affected detection | not on roadmap | ✅ `vis affected`, `${affected.files}` token |
+| Watch mode | #276 | ✅ Vitest-style keybinds |
+| Cache eviction | #251, #315 | ✅ `vis cache prune --keep-last/--max-age-days/--max-size` |
+| Output preserves colors / globs / mtime | #358, #321, #375 | ✅ archive preserves mtime+mode; `vis cache verify` |
+| Cache why / hash debugging | hinted #311 | ✅ `vis cache why`, `vis cache hash` |
+| Task aliases / groups / discoverability | #277 | ✅ `vis list --targets` + tag selectors |
+| First-class task arg schema | #274 | ✅ via `vis.task.ts` |
+| Per-task shell selection | #275 | partial |
+| Dependency on a group of tasks | #272 | ✅ tag overlay |
+| RFC for richer `dependsOn` syntax | #322 | ✅ `WhenCondition` |
+| Self-hosting Vite Task in own repo | #256 | n/a (vis already self-hosts) |
+
+**Underlying toolchain advantage** (still strong): Vite 8, Vitest 4.1, Oxlint 1.52 (~50–100× ESLint), Oxfmt beta (~30× Prettier), Rolldown (1.6–7.7× Vite 7), tsgo, tsdown. Shared Rust core across subcommands.
+
+**`setup-vp` GitHub Action** (`voidzero-dev/setup-vp@v1`) is the official CI on-ramp; `namespace.so` provides CI infra for the vite-task repo itself.
+
+**Differentiation read:** Vite+ is the "Vite ecosystem grew a task runner"; vis is the "task runner that grew adjacent tooling." Vite-task's syscall-traced inputs and compound-splitting are qualitatively different from declared-inputs hashing and worth borrowing as opt-in hash modes (see priority-roadmap items 32 + 33). vis's REAPI / MCP / self-heal / sidecar / signed-cache stack is well outside Vite-Task's near roadmap based on open issues — that's the moat to lead with.
+
+Sources: [voidzero.dev/posts/announcing-vite-plus-alpha](https://voidzero.dev/posts/announcing-vite-plus-alpha), [voidzero.dev/posts/whats-new-march-launch-week-2026](https://voidzero.dev/posts/whats-new-march-launch-week-2026), [github.com/voidzero-dev/vite-plus](https://github.com/voidzero-dev/vite-plus), [github.com/voidzero-dev/vite-task](https://github.com/voidzero-dev/vite-task) (issues #251, #256, #272, #274–#277, #311, #315, #321, #322, #353/#354, #358, #364, #375), [viteplus.dev/guide/run](https://viteplus.dev/guide/run), [viteplus.dev/guide/cache](https://viteplus.dev/guide/cache).
 
 ### 1.5 Lage (Microsoft)
 

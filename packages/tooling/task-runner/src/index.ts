@@ -3,7 +3,7 @@ export type { AffectedOptions, AffectedResult } from "./affected";
 export { buildForwardDependencyMap, buildReverseDependencyMap, expandAffected, filterAffectedTasks, getAffectedProjects, getChangedFiles } from "./affected";
 
 // Remote cache backend factory + cache-mode resolver
-export { createRemoteCacheBackend, resolveCacheMode } from "./backends/factory";
+export { createRemoteCacheBackend, resolveCacheMode, resolveTurboEnvCompat } from "./backends/factory";
 // Hash bridge: orchestrator's task-hash-keyed flow over the
 // action-digest-keyed `RemoteCacheBackend` API.
 export { actionDigestForTaskHash, containsByTaskHash, retrieveByTaskHash, storeByTaskHash } from "./backends/hash-bridge";

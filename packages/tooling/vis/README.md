@@ -36,19 +36,59 @@
 
 ## Features
 
-- **Workspace-aware**: Automatically discovers projects from `pnpm-workspace.yaml` or `package.json` workspaces
-- **Task caching**: Powered by `@visulima/task-runner` with local and remote caching support
-- **Dependency-aware scheduling**: Runs tasks in topological order with configurable parallelism
-- **Affected detection**: Only runs tasks for projects changed since a given git ref
-- **Pluggable installer**: Defaults to the lockfile-detected PM (pnpm/npm/yarn/bun); auto-uses [aube](https://github.com/endevco/aube) when on `PATH`, with a single switch (`install.backend` / `--installer` / `--no-aube`) to pin or bypass it
-- **Catalog management**: Check and update dependencies in pnpm/bun workspace catalogs
-- **Security scanning**: Check for known vulnerabilities via OSV.dev
-- **Graph visualization**: View your project dependency graph in ASCII, DOT, JSON, or HTML
-- **Git hooks**: Install, manage, and migrate git hooks (husky migration supported)
-- **Configurable**: `vis.json` for target defaults, cache settings, and task runner options
-- **Inferred targets**: Optional Project Crystal-style synthesis of `build`/`test`/`dev`/`lint`/`format` from 36 tools (Vite, Vitest, Next, Nuxt, packem, ESLint, Biome, Prisma, …). Opt in with `inferTargets: true`; explicit scripts and `project.json`/`vis.task.ts` overrides always win
-- **URI-based input format**: `inputs` accepts `file://`, `glob://`, `env://`, `func://`, `dep://` strings as forward-compat sugar for the structured object form
-- **Built on Cerebro**: Uses `@visulima/cerebro` for a robust CLI experience with built-in help, version, and completion
+### Built for AI agents
+
+- **MCP server** — `@visulima/vis-mcp` exposes 8 read-only introspection tools to Claude / Cursor / Copilot (project graph, target list, run logs, cache-why, template schema), plus a paired Claude Skill that documents optimal usage
+- **`vis ai heal`** — reads failing tasks, asks the configured AI provider for a structured patch, validates by re-running, posts a markdown comment to the PR/MR. `/vis heal accept` from an allow-listed maintainer lands the fix as a signed commit (GitHub Actions, GitLab CI, Buildkite)
+- **Worktree-aware shared cache** — N parallel agents in N sibling git worktrees automatically share one cache instead of rebuilding the same hash N times
+
+### Production-grade caching
+
+- **REAPI gRPC + HTTP backends** — drop-in support for [bazel-remote](https://github.com/buchgr/bazel-remote), BuildBuddy, BuildBarn, EngFlow alongside Turbo-compatible HTTP. `vis cache doctor` probes reachability, capabilities, and latency for CI gating
+- **`vis cache why <task>`** — diff hash buckets (`command`, `nodes`, `runtime`, `implicitDeps`) against the previous run to pinpoint exactly what rotated the hash
+- **HMAC-SHA256 signed artifacts** — `verifyOnDownload` locks production caches against tampering with constant-time comparison
+- **Cache restoration fidelity** — preserves mtime + permission bits + colorized output; `vis cache verify <task>` flags drift between cached archive and live workspace
+- **Retention controls** — `vis cache prune --keep-last/--max-age-days/--max-size`
+
+### Cross-invocation devloop
+
+- **`vis service start|stop|list`** — long-lived DB / mock / devserver lifecycle that survives across `vis run` calls within a shell session; auto-attached when targets declare `service:` in their config (no more "I keep restarting Postgres between every test run")
+- **`vis run --watch`** — Vitest-style keybinds (`r/Enter/a/p/q/Ctrl+C/h/?`), Windows-clean SIGINT
+- **`vis run --output-style=quiet`** — swallow stdout from successful and cached tasks, keep failures fully visible
+
+### Workspace orchestration
+
+- **Workspace-aware** — discovers projects from `pnpm-workspace.yaml`, `package.json` workspaces, and bun
+- **Topological scheduling** with configurable parallelism and runner-tag filtering
+- **Affected detection** — `vis affected <target>`, plus `${affected.files}` / `$AFFECTED_FILES` token forwarding to the underlying script
+- **Conditional + finally tasks** — `when:` (os/env/branch/ci) and top-level `always: true`
+- **Per-package overlay + extends chain** — root `vis-config.ts` + per-project `vis.task.ts`, with bare-specifier preset resolution
+- **Inferred targets** (Project Crystal-style) — optional synthesis of `build`/`test`/`dev`/`lint`/`format` from 36 tools (Vite, Vitest, Next, Nuxt, packem, ESLint, Biome, Prisma, …). Opt in with `inferTargets: true`; explicit scripts and `project.json`/`vis.task.ts` overrides always win
+- **URI-based input format** — `inputs` accepts `file://`, `glob://`, `env://`, `func://`, `dep://` strings as forward-compat sugar
+- **Plugin / fingerprint hooks** — 14 typed hooks via `definePlugin` (lifecycle, streaming, retry, fingerprint, services), built on `hookable`
+- **Strict env mode** — `--strict-env` extracts `${VAR}` references from each command and fails the task if any are unset
+- **Lockfile preflight** — warns in TTY, hard-fails in CI when the lockfile is newer than the install marker
+- **Project graph** — view dependencies in ASCII, DOT, JSON, or HTML
+
+### Adjacent tooling that ships in-box
+
+- **`vis catalog check / update`** — pnpm + bun workspace catalog management
+- **`vis secrets`** — Rust-native secret scanning (gitleaks detection engine)
+- **`vis audit`** — OSV.dev vulnerability scanning
+- **`vis docker scaffold`** — lockfile pruning for pnpm / npm / yarn classic + berry / bun, matching turbo's killer Docker-cache feature
+- **`vis hook install / migrate`** — git hooks (husky migration supported)
+- **`vis staged`** — built-in `lint-staged` replacement, no peer dependency
+- **`vis migrate gitleaks|secretlint`** — incremental migration paths
+- **`vis replay <runId>`** — re-render any past run summary without re-execution
+
+### Toolchain & runtime
+
+- **Pluggable installer** — defaults to the lockfile-detected PM (pnpm/npm/yarn/bun); auto-uses [aube](https://github.com/endevco/aube) when on `PATH`, with a single switch (`install.backend` / `--installer` / `--no-aube`) to pin or bypass it
+- **Cold-start one-liner** — `curl -fsSL https://visulima.com/install.sh | bash` (Linux/macOS/WSL) or PowerShell equivalent installs a version manager, Node LTS, and `vis`
+- **`vis toolchain`** — delegates to proto / mise / fnm / volta
+- **Built on Cerebro** — robust CLI with built-in help, version, and shell completion
+
+> **New to vis?** See [Why vis vs. Vite Task / Turbo / Nx / moon](./docs/guides/why-vis.mdx) for the side-by-side capability matrix.
 
 ## Install
 
