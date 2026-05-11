@@ -148,7 +148,9 @@ describe("exposed-files preset", () => {
         return absolute;
     };
 
-    it("flags every planted exposure and respects allowlists", async () => {
+    // 15s timeout: scanning the full fixture set runs ~2.5s locally and tips
+    // past the 5s vitest default on slower CI runners.
+    it("flags every planted exposure and respects allowlists", { timeout: 15_000 }, async () => {
         // 1 assertion per fixture.
         // eslint-disable-next-line vitest/prefer-expect-assertions -- count is derived from fixtures.length
         expect.assertions(fixtures.length);
@@ -187,7 +189,7 @@ describe("exposed-files preset", () => {
         }
     });
 
-    it("emits no exposed-* findings when the preset is not enabled", async () => {
+    it("emits no exposed-* findings when the preset is not enabled", { timeout: 15_000 }, async () => {
         expect.assertions(1);
 
         const files = fixtures.filter((fixture) => fixture.expectFinding).map((fixture) => writeFixture(fixture));
