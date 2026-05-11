@@ -60,6 +60,7 @@
         {
             "title": "Guides",
             "pages": [
+                "guides/why-vis",
                 "guides/best-practices",
                 "guides/ci-cd",
                 "guides/conditional-and-finally-tasks",
