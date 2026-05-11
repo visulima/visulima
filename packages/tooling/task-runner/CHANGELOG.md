@@ -1,3 +1,10 @@
+## @visulima/task-runner [1.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/task-runner@1.0.0-alpha.12...@visulima/task-runner@1.0.0-alpha.13) (2026-05-11)
+
+### Features
+
+* **task-runner:** add resolveTurboEnvCompat helper ([a8e73ef](https://github.com/visulima/visulima/commit/a8e73ef324dd8d1bc1f1f471f59f9292f9f01745))
+* **task-runner:** surface retryAttempts on TaskResult and TaskSummary ([f74e278](https://github.com/visulima/visulima/commit/f74e278fc98052398d46a064ad11e1c9956c9cfd))
+
 ## @visulima/task-runner [1.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/task-runner@1.0.0-alpha.11...@visulima/task-runner@1.0.0-alpha.12) (2026-05-10)
 
 ### Features
