@@ -271,6 +271,18 @@
             "additionalProperties": false,
             "description": "Installer backend selection for `vis install` / `vis add` / `vis remove` / `vis update` / `vis ci`.\n\nLets users opt into [aube](https://github.com/endevco/aube) — a Rust-native package manager that reads/writes pnpm/npm/yarn/bun lockfiles in place — as the default installer, while keeping a single switch to fall back to the conventional PM detected from the lockfile.\n\nResolution precedence (highest first): 1. CLI flag (`--installer &lt;name>` / `--no-aube`) 2. Env var `VIS_INSTALLER` 3. This config field 4. Auto-detect (the default)\n\nAube must be installed separately — `vis` does not bundle it. Install via npm (`@endevco/aube`), `mise use -g aube`, or `brew install endevco/tap/aube`."
         },
+        "mcpPromote": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "description": "Show the vis-mcp promotion notice on successful command completion.",
+                    "default": true
+                }
+            },
+            "additionalProperties": false,
+            "description": "`vis-mcp` promotion notice shown after successful commands when an AI CLI (Claude Code, Cursor, Windsurf, Continue, Zed, Cline) is installed but `@visulima/vis-mcp` is not wired into its config.\n\nShown at most once every 14 days; skipped in CI, non-TTY shells, during `--help`/`--version`/`ai`/`mcp` invocations, and when `VIS_NO_MCP_PROMOTE=1` is set. Set `enabled: false` to silence permanently for this workspace."
+        },
         "namedInputs": {
             "type": "object",
             "additionalProperties": {
@@ -725,6 +737,35 @@
             "additionalProperties": false,
             "description": "Pre-flight checks fired before `vis run` starts the orchestrator. Each check is opt-out (`false`) — defaults are sensible for the common monorepo case."
         },
+        "run": {
+            "type": "object",
+            "properties": {
+                "ciGrouping": {
+                    "type": "string",
+                    "enum": [
+                        "auto",
+                        "azure",
+                        "buildkite",
+                        "github",
+                        "gitlab",
+                        "off"
+                    ],
+                    "description": "Wrap each task's CI log block in collapsible groups so users can fold/unfold per-task output in the host CI's web UI. Failed tasks always render expanded so the failure is visible without an extra click.\n\n- `auto` (default): pick the format from the detected runner —   `GITHUB_ACTIONS=true` → `github` (`::group::`),   `GITLAB_CI=true` → `gitlab` (`section_start:` ANSI sequences),   `BUILDKITE=true` → `buildkite` (`---` collapsed headers),   `TF_BUILD=True` → `azure` (`##[group]`),   no grouping otherwise.\n- `off`: never group (raw separators only — useful when   piping through tools that mangle the directives).\n- `azure` / `buildkite` / `github` / `gitlab`: force the format   regardless of detected environment (useful for self-hosted   runners that don't set the standard env vars).\n\nCircleCI is intentionally not auto-detected: its 2.0+ format has no inline grouping directive — steps auto-group in the web UI without any markup from the runner."
+                },
+                "services": {
+                    "type": "string",
+                    "enum": [
+                        "auto",
+                        "ephemeral",
+                        "off",
+                        "persistent"
+                    ],
+                    "description": "One knob controlling auto-start of missing service deps.\n- `auto` (default in TTY): pick by task — `dev` → ephemeral,   others → persistent.\n- `ephemeral`: services die with the run (no registry entry).\n- `persistent`: services persist across runs in the registry.\n- `off` (default in CI / non-TTY): print diagnostics and abort."
+                }
+            },
+            "additionalProperties": false,
+            "description": "Behavior of `vis run` when invoked tasks declare service dependencies that aren't running in the workspace registry. CLI `--services=&lt;mode>` overrides this block."
+        },
         "secrets": {
             "type": "object",
             "properties": {
@@ -986,7 +1027,7 @@
         },
         "sharedWorktreeCache": {
             "type": "boolean",
-            "description": "Share the cache between sibling git worktrees. When the workspace is a linked worktree (created with `git worktree add`), the cache root is relocated from `&lt;linkedRoot>/.task-runner-cache` to the *main* worktree's `.task-runner-cache`. Multiple parallel agents working in sibling worktrees then share a single cache instead of rebuilding the same hash N times.\n\nSingle-checkout repos (where `.git` is a directory) are unaffected.\n\nSet to `false` to opt out — useful when worktrees deliberately need independent caches, e.g. for hermetic experiments.",
+            "description": "Share the cache between sibling git worktrees. When the workspace is a linked worktree (created with `git worktree add`), the cache root is relocated from `&lt;linkedRoot>/.vis/cache` to the *main* worktree's `.vis/cache`. Multiple parallel agents working in sibling worktrees then share a single cache instead of rebuilding the same hash N times.\n\nSingle-checkout repos (where `.git` is a directory) are unaffected.\n\nSet to `false` to opt out — useful when worktrees deliberately need independent caches, e.g. for hermetic experiments.",
             "default": true
         },
         "sortPackageJson": {
@@ -1633,6 +1674,10 @@
                     "type": "string",
                     "description": "Directory for storing cache"
                 },
+                "dataDirectory": {
+                    "type": "string",
+                    "description": "Directory used to persist run summaries (`runs/`), `last-summary.json`, and other run-scoped state. Defaults to `{workspaceRoot}/.task-runner` when omitted so standalone task-runner consumers keep their existing layout. Vis sets this to `{workspaceRoot}/.vis` so all per-workspace state lives under a single directory."
+                },
                 "dryRun": {
                     "type": "boolean",
                     "description": "Dry-run mode: compute hashes and check cache but don't execute tasks. Useful for debugging cache hits/misses.",
@@ -1796,6 +1841,10 @@
                     "type": "boolean",
                     "description": "When `true`, the cache directory is partitioned by a hash of the resolved `globalEnv` values. Changing a globalEnv var moves cache writes into a new namespace; rolling it back reuses the old namespace and its hits. Without this option, any globalEnv change silently busts every cached entry.\n\nKeep disabled when globalEnv is stable across runs — the extra path depth offers no value, and misconfigured namespaces can hide stale hits.",
                     "default": false
+                },
+                "onFingerprint": {
+                    "not": {},
+                    "description": "Plugin extension point invoked during task fingerprinting. Fires once per task after the built-in inputs (filesets, runtime, env) have been gathered and before the hash is sealed. Contributions made through the supplied  {@link  FingerprintContributor }  are mixed deterministically into the final hash.\n\nThrowing aborts fingerprinting for that task — the task fails before any cache lookup runs, so a buggy plugin can't silently corrupt cache state.\n\nWired by `vis` to bridge into the `task:fingerprint` hook; standalone task-runner consumers can pass a callback directly."
                 },
                 "parallel": {
                     "type": [
@@ -2676,6 +2725,27 @@
                                 "description": "Fired once before any task in the graph starts, after workspace discovery and graph construction. Throwing aborts the run."
                             }
                         },
+                        "service:attach": {
+                            "type": "array",
+                            "items": {
+                                "not": {},
+                                "description": "Fired after `vis run` auto-attaches to one or more registered services. `taskIds` lists the in-graph dependents that consumed the service's `env` block; an empty array means the service was registered but no kept task depended on it."
+                            }
+                        },
+                        "service:start": {
+                            "type": "array",
+                            "items": {
+                                "not": {},
+                                "description": "Fired after a service is registered and its readiness probe succeeds. Sourced from both `vis service start` (and `restart`'s post-start phase) and any future programmatic call sites."
+                            }
+                        },
+                        "service:stop": {
+                            "type": "array",
+                            "items": {
+                                "not": {},
+                                "description": "Fired after a registered service is stopped (SIGTERM/SIGKILL acknowledged, registry entry deleted). Not fired when stop is called against an unknown id — only when there was an alive entry to terminate."
+                            }
+                        },
                         "task:after": {
                             "type": "array",
                             "items": {
@@ -2709,6 +2779,20 @@
                             "items": {
                                 "not": {},
                                 "description": "Fired when a task exits non-zero."
+                            }
+                        },
+                        "task:fingerprint": {
+                            "type": "array",
+                            "items": {
+                                "not": {},
+                                "description": "Fired during fingerprint construction, after built-in inputs are gathered and before the hash is sealed. Plugins call `contributor.contribute(key, value)` to mix arbitrary strings into the task hash — the hasher namespaces and sorts contributions deterministically so call order doesn't change the result.\n\nThrowing aborts hashing for the offending task and surfaces as a task failure before any cache lookup runs. Use this to guarantee a buggy plugin can't quietly poison cache state."
+                            }
+                        },
+                        "task:retry": {
+                            "type": "array",
+                            "items": {
+                                "not": {},
+                                "description": "Fired right before a failed task is re-spawned by the retry controller. `attempt` is 1-indexed and counts the retry that's about to start (so the original failed run was attempt 0). `prevExitCode` is the failing exit status that triggered the retry (the full TaskResult isn't materialized at the retry boundary — only the per-attempt close event is available).\n\nThrowing aborts the retry; the previous failure becomes the final result."
                             }
                         },
                         "task:stderr": {

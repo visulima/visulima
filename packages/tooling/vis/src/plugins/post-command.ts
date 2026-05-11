@@ -1,5 +1,6 @@
 import type { Plugin } from "@visulima/cerebro";
 
+import { showMcpPromote } from "../util/mcp-promote";
 import { showSponsorNotice } from "../util/sponsor";
 import { showTip } from "../util/tips";
 
@@ -22,6 +23,7 @@ const postCommandPlugin = (upgradeCheckCallback?: () => void): Plugin => {
             });
 
             showSponsorNotice({ success, visConfig: toolbox.visConfig });
+            showMcpPromote({ command, success, visConfig: toolbox.visConfig });
         },
         name: "post-command",
     };

@@ -463,6 +463,28 @@ export interface VisConfig {
     };
 
     /**
+     * `vis-mcp` promotion notice shown after successful commands when an
+     * AI CLI (Claude Code, Cursor, Windsurf, Continue, Zed, Cline) is
+     * installed but `@visulima/vis-mcp` is not wired into its config.
+     *
+     * Shown at most once every 14 days; skipped in CI, non-TTY shells,
+     * during `--help`/`--version`/`ai`/`mcp` invocations, and when
+     * `VIS_NO_MCP_PROMOTE=1` is set. Set `enabled: false` to silence
+     * permanently for this workspace.
+     * @example
+     * ```
+     * mcpPromote: { enabled: false }
+     * ```
+     */
+    mcpPromote?: {
+        /**
+         * Show the vis-mcp promotion notice on successful command completion.
+         * @default true
+         */
+        enabled?: boolean;
+    };
+
+    /**
      * Named input patterns inherited by every project target. Equivalent
      * to task-runner's `namedInputs` but configurable from the vis config.
      */
