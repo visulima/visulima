@@ -53,6 +53,10 @@ class GCStorage extends BaseStorage<GCSFile> {
 
     public override checksumTypes: string[] = ["md5", "crc32c"];
 
+    public override get raw(): GoogleAuth {
+        return this.authClient;
+    }
+
     protected meta: MetaStorage;
 
     private readonly bucket: string;
@@ -260,7 +264,7 @@ class GCStorage extends BaseStorage<GCSFile> {
                 return throwErrorCode(ERRORS.FILE_CONFLICT);
             }
 
-            await this.lock(part.id);
+            const lockToken = await this.lock(part.id);
 
             try {
                 // Detect file type from stream if contentType is not set or is default
@@ -297,7 +301,7 @@ class GCStorage extends BaseStorage<GCSFile> {
                     await this.internalOnComplete(file);
                 }
             } finally {
-                await this.unlock(part.id);
+                await this.unlock(part.id, lockToken);
             }
 
             return file;
@@ -321,7 +325,10 @@ class GCStorage extends BaseStorage<GCSFile> {
 
             file.status = "deleted";
 
-            await Promise.all([this.makeRequest({ method: "DELETE", url: file.uri, validateStatus }), this.deleteMeta(file.id)]);
+            // Sequence the blob delete before the metadata delete so a partial failure leaves a recoverable
+            // metadata orphan instead of an unreachable resumable upload that keeps consuming quota.
+            await this.makeRequest({ method: "DELETE", url: file.uri, validateStatus });
+            await this.deleteMeta(file.id);
 
             const deletedFile = { ...file };
 
@@ -474,30 +481,42 @@ class GCStorage extends BaseStorage<GCSFile> {
             "list",
             async () => {
                 const items: GCSFile[] = [];
+                const pageSize = Math.min(limit, 1000);
 
                 // Declare truncated as a flag that the while loop is based on.
                 let truncated = true;
-                let parameters: GaxiosOptions = { params: { maxResults: limit }, url: this.storageBaseURI };
+                let parameters: GaxiosOptions = { params: { maxResults: pageSize }, url: this.storageBaseURI };
 
-                while (truncated) {
+                while (truncated && items.length < limit) {
                     try {
                         const { data } = await this.makeRequest<{
                             items: { metadata?: GCSFile; name: string; timeCreated: string; updated: string }[];
                             nextPageToken?: string;
                         }>(parameters);
 
-                        (data?.items || []).forEach(({ name, timeCreated, updated }) => {
+                        for (const { name, timeCreated, updated } of data?.items || []) {
+                            if (items.length >= limit) {
+                                break;
+                            }
+
                             items.push({
                                 createdAt: timeCreated,
                                 id: name,
                                 modifiedAt: updated,
                             } as GCSFile);
-                        });
+                        }
 
                         truncated = data?.nextPageToken !== undefined;
 
-                        if (truncated) {
-                            parameters = { ...parameters, params: { ...parameters.params, pageToken: data.nextPageToken } };
+                        if (truncated && items.length < limit) {
+                            parameters = {
+                                ...parameters,
+                                params: {
+                                    ...parameters.params,
+                                    maxResults: Math.min(pageSize, limit - items.length),
+                                    pageToken: data.nextPageToken,
+                                },
+                            };
                         }
                     } catch (error) {
                         const httpError = this.normalizeError((error instanceof Error ? error : new Error(String(error))) as ClientError);
@@ -574,14 +593,19 @@ class GCStorage extends BaseStorage<GCSFile> {
                 .replaceAll("/:", ":");
         }
 
+        // Merge caller-supplied headers/params with our defaults instead of
+        // overwriting them — otherwise paginated calls (list pageToken,
+        // upload range/content-length, etc.) silently drop everything.
         data = {
             ...data,
             headers: {
                 "User-Agent": `${package_.name}/${package_.version}`,
                 "x-goog-api-client": `gl-node/${process.versions.node} gccl/${package_.version} gccl-invocation-id/${randomUUID()}`,
+                ...data.headers,
             },
             params: {
                 ...(this.userProject === undefined ? {} : { userProject: this.userProject }),
+                ...data.params,
             },
             retry: true,
             retryConfig: this.retryOptions,

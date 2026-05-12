@@ -24,6 +24,30 @@ import type { File, FileInit, FilePart, FileQuery } from "./utils/file";
 import { isExpired, updateMetadata } from "./utils/file";
 import type { FileReturn } from "./utils/file/types";
 
+const SECRET_KEY_PATTERN = /(secret|password|passwd|pwd|token|apikey|api[_-]?key|credential|authorization|sas|signature|sessiontoken|connectionstring)/i;
+
+/**
+ * Returns a shallow copy of `config` with any credential-bearing fields
+ * replaced by `"[REDACTED]"`. Used for the constructor debug log so adapter
+ * configs (S3 keys, Vercel tokens, Azure SAS, Netlify tokens, etc.) never
+ * end up in plaintext log output.
+ */
+const redactSecrets = (config: Record<string, unknown>): Record<string, unknown> => {
+    const out: Record<string, unknown> = {};
+
+    for (const [key, value] of Object.entries(config)) {
+        if (typeof value === "string" && SECRET_KEY_PATTERN.test(key)) {
+            out[key] = "[REDACTED]";
+        } else if (value && typeof value === "object" && !Array.isArray(value) && value.constructor === Object) {
+            out[key] = redactSecrets(value as Record<string, unknown>);
+        } else {
+            out[key] = value;
+        }
+    }
+
+    return out;
+};
+
 const defaults: BaseStorageOptions = {
     allowMIME: ["*/*"],
     filename: ({ id }: File): string => id,
@@ -229,7 +253,7 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
 
         this.logger = options.logger;
         this.metrics = options.metrics ?? new NoOpMetrics();
-        this.logger?.debug(`${this.constructor.name} config: ${inspect({ ...config, logger: this.logger.constructor })}`);
+        this.logger?.debug(`${this.constructor.name} config: ${inspect(redactSecrets({ ...config, logger: this.logger.constructor }))}`);
 
         const purgeInterval = toMilliseconds(options.expiration?.purgeInterval);
 
@@ -286,6 +310,39 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
 
         this.validation.add({ filename, mime, size });
         this.validation.add({ ...options.validation });
+    }
+
+    /**
+     * Escape hatch returning the underlying native client (S3Client, BlobServiceClient, etc.)
+     * for provider-specific operations not covered by the unified API.
+     * Returns `undefined` when no native client is available (e.g. DiskStorage).
+     */
+    // eslint-disable-next-line class-methods-use-this
+    public get raw(): unknown {
+        return undefined;
+    }
+
+    /**
+     * Returns a presigned URL for downloading the object at `key`.
+     * Throws `ERRORS.METHOD_NOT_ALLOWED` when the adapter has no native presign support.
+     * @param _key Storage key.
+     * @param _options Optional expiry and response overrides.
+     */
+    public async getReadUrl(
+        _key: string,
+        _options?: { expiresIn?: number; responseContentDisposition?: string; responseContentType?: string },
+    ): Promise<string> {
+        return throwErrorCode(ERRORS.METHOD_NOT_ALLOWED, `${this.constructor.name} does not implement getReadUrl()`);
+    }
+
+    /**
+     * Returns a presigned URL for uploading a single object to `key`.
+     * Throws `ERRORS.METHOD_NOT_ALLOWED` when the adapter has no native presign support.
+     * @param _key Storage key.
+     * @param _options Optional content type, expiry, and content length hints.
+     */
+    public async getUploadUrl(_key: string, _options?: { contentLength?: number; contentType?: string; expiresIn?: number }): Promise<string> {
+        return throwErrorCode(ERRORS.METHOD_NOT_ALLOWED, `${this.constructor.name} does not implement getUploadUrl()`);
     }
 
     public get tusExtension(): string[] {
@@ -362,13 +419,40 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
      * @param file File object containing metadata to save.
      * @returns Promise resolving to the saved file object.
      * @remarks Updates timestamps and caches the file metadata.
+     * @throws {UploadError} If `file.id` contains path-traversal sequences, null bytes, or is an absolute path — patterns that could let a local MetaStorage implementation write outside its directory.
      */
     public async saveMeta(file: TFile): Promise<TFile> {
+        BaseStorage.assertSafeId(file.id);
         this.updateTimestamps(file);
 
         this.cache.set(file.id, file);
 
         return this.meta.save(file.id, file);
+    }
+
+    /**
+     * Rejects ids containing `..` segments, null bytes, or absolute paths — defense-in-depth
+     * so any MetaStorage / facade / handler that uses `id` as part of a filesystem path or
+     * cross-bucket lookup can't be escaped. Public so the `Files` facade and Fetch handlers
+     * can validate user-supplied keys before any adapter call.
+     */
+    public static assertSafeId(id: string): void {
+        // Reject Windows-style drive letters explicitly — node:path's isAbsolute is platform-aware
+        // and won't catch "C:\\foo" when this process is running on Linux.
+        if (
+            !id
+            || typeof id !== "string"
+            || id.includes("\0")
+            || id.includes("../")
+            || id.includes("..\\")
+            || id === ".."
+            || id.startsWith("../")
+            || id.startsWith("..\\")
+            || isAbsolute(id)
+            || /^[A-Z]:[/\\]/i.test(id)
+        ) {
+            throwErrorCode(ERRORS.INVALID_FILE_NAME, `Invalid file id: "${id}"`);
+        }
     }
 
     /**
@@ -855,7 +939,9 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
     }
 
     /**
-     * Prevent upload from being accessed by multiple requests
+     * Prevent upload from being accessed by multiple requests.
+     * Returns a unique token that must be passed back to `unlock()` so a caller whose lock TTL'd
+     * out cannot accidentally release a newly-acquired lock held by another request.
      */
 
     protected async lock(key: string): Promise<string> {
@@ -869,13 +955,34 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
             return throwErrorCode(ERRORS.STORAGE_BUSY);
         }
 
-        this.locker.set(key, key);
-
-        return key;
+        return this.locker.lock(key);
     }
 
-    protected async unlock(key: string): Promise<void> {
-        this.locker.unlock(key);
+    protected async unlock(key: string, token?: string): Promise<void> {
+        if (token === undefined) {
+            // Legacy path: delete unconditionally. Newer callers should pass the token returned by lock().
+            this.locker.delete(key);
+
+            return;
+        }
+
+        this.locker.unlock(key, token);
+    }
+
+    /**
+     * Run a function while holding the lock for `key`. The lock is released even if `fn` throws,
+     * and only released when the caller still owns the lock (token-verified). Public so that
+     * handlers can serialize cross-call read-modify-write sequences on the same upload (e.g.
+     * appending to `_chunks` during chunked PATCH).
+     */
+    public async withLock<R>(key: string, fn: () => Promise<R>): Promise<R> {
+        const token = await this.lock(key);
+
+        try {
+            return await fn();
+        } finally {
+            await this.unlock(key, token);
+        }
     }
 
     protected isUnsupportedChecksum(algorithm = ""): boolean {

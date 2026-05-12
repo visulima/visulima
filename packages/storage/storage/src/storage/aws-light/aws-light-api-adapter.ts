@@ -64,7 +64,7 @@ const parseXml = (text: string): Record<string, unknown> => {
  * Adapter that uses aws4fetch to implement S3ApiOperations interface.
  */
 class AwsLightApiAdapter implements S3ApiOperations {
-    private aws: AwsClient;
+    public aws: AwsClient;
 
     private readonly bucket: string;
 

@@ -504,52 +504,17 @@ describe(AwsLightStorage, () => {
             expect(result.name).toBe("new name");
         });
 
-        it("absolute", async () => {
-            expect.assertions(2);
+        it("rejects absolute destination paths to prevent cross-bucket targeting", async () => {
+            // Previously a leading-slash destination like "/otherBucket/key" was
+            // silently parsed and used to re-target a different bucket. That is
+            // now blocked: callers must use the native S3 copy APIs for cross-bucket copies.
+            expect.assertions(1);
 
-            // Mock bucket access check (called during AwsLightMetaStorage constructor)
             mockBucketAccessCheck();
 
-            // Create storage instance (this triggers bucket access check)
             storage = new AwsLightStorage(options);
 
-            // Mock HEAD request for getMeta (AwsLightMetaStorage uses HEAD to get existing file)
-            getMockFetch().mockResolvedValueOnce(
-                createMetaHeadResponse({
-                    ...metafile,
-                    bytesWritten: 64,
-                    id: "name",
-                    name: "name",
-                    status: "completed",
-                }),
-            );
-
-            // Mock PUT request for saveMeta (copy updates metadata)
-            getMockFetch().mockResolvedValueOnce({
-                ok: true,
-                status: 200,
-                text: async () => "",
-            });
-
-            // Mock COPY request (copyObject)
-            getMockFetch().mockResolvedValueOnce({
-                ok: true,
-                status: 200,
-                text: async () => "",
-            });
-
-            const result = await storage.copy("name", "/otherBucket/new name");
-
-            expect(mockStore.fetch).toHaveBeenCalledWith(
-                expect.stringContaining("otherBucket"),
-                expect.objectContaining({
-                    headers: expect.objectContaining({
-                        "x-amz-copy-source": expect.stringContaining("bucket/name"),
-                    }),
-                    method: "PUT",
-                }),
-            );
-            expect(result.name).toBe("new name");
+            await expect(storage.copy("name", "/otherBucket/new name")).rejects.toThrow(/Invalid file id/);
         });
     });
 

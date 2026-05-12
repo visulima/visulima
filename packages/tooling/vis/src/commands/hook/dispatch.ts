@@ -57,8 +57,12 @@ export interface DispatchLogger {
 
 const builtinLoggerFor = (parent: DispatchLogger): BuiltinLogger => {
     return {
-        error: (message) => { parent.error(message); },
-        info: (message) => { parent.info(message); },
+        error: (message) => {
+            parent.error(message);
+        },
+        info: (message) => {
+            parent.info(message);
+        },
     };
 };
 
@@ -139,9 +143,11 @@ const runShellCommand = (
 
         if (result.status === null) {
             context.logger.error(`hook command failed: ${describeSpawnFailure(result.status, result.signal, result.error)}`);
-            rc ||= 1;
+            // eslint-disable-next-line no-bitwise -- OR-fold exit codes to match upstream pre-commit (`rc |= …`)
+            rc |= 1;
         } else {
-            rc ||= result.status;
+            // eslint-disable-next-line no-bitwise -- OR-fold exit codes to match upstream pre-commit (`rc |= …`)
+            rc |= result.status;
         }
     }
 
@@ -243,7 +249,8 @@ export const runStage = (config: HookConfig, stage: string, candidateFiles: Read
         const code = runHookEntry(hook, candidateFiles, context);
 
         if (code !== 0) {
-            rc ||= code;
+            // eslint-disable-next-line no-bitwise -- OR-fold exit codes to match upstream pre-commit (`rc |= …`)
+            rc |= code;
 
             if (config.failFast) {
                 return rc;

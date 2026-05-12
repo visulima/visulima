@@ -804,8 +804,16 @@ export interface MediaTransformQuery {
  * Image transformer configuration
  */
 export interface ImageTransformerConfig extends BaseTransformerConfig {
+    /** Sharp `failOn` setting controlling which libvips warnings abort decoding. Defaults to `"warning"`. */
+    failOn?: "error" | "none" | "truncated" | "warning";
+    /** Maximum total pixels (width * height) Sharp will decode. Defaults to 268435456 (16k x 16k). */
+    limitInputPixels?: false | number;
+    /** Reject images taller than this many pixels (post-decode metadata check). */
+    maxImageHeight?: number;
     /** Maximum image size to process (in bytes) */
     maxImageSize?: number;
+    /** Reject images wider than this many pixels (post-decode metadata check). */
+    maxImageWidth?: number;
 }
 
 /**

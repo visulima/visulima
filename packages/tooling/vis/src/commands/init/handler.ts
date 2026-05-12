@@ -5,11 +5,11 @@ import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 import { isAccessibleSync, writeFileSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
-import { findVisConfigFile } from "../../config/config";
+import { DEFAULT_MIN_RELEASE_AGE_MINUTES, findVisConfigFile } from "../../config/config";
 import { pail } from "../../io/logger";
 import { detectPm } from "../../pm/pm-runner";
 import type { PackageManagerName } from "../../security/security";
-import { scanUnapprovedBuildScripts, syncAllowBuildsToNativeConfig } from "../../security/security";
+import { scanUnapprovedBuildScripts, syncAllowBuildsToNativeConfig, syncMinimumReleaseAgeToNativeConfig } from "../../security/security";
 import type { InitOptions } from "./index";
 
 /**
@@ -56,6 +56,7 @@ const confirm = async (rl: ReturnType<typeof createInterface>, question: string,
 interface ConfigInitOptions {
     allowBuilds: Record<string, boolean>;
     enableSocket: boolean;
+    minimumReleaseAge?: number;
     staged: boolean;
 }
 
@@ -70,7 +71,13 @@ const generateConfigContent = (_pm: string, options: ConfigInitOptions): string 
 
     const allowBlock = allowEntries ? `{\n${allowEntries}\n                }` : "{}";
 
-    let securityBlock = `        policies: {\n            install_scripts: {\n                allow: ${allowBlock},\n            },\n        },`;
+    const policySections: string[] = [`            install_scripts: {\n                allow: ${allowBlock},\n            },`];
+
+    if (options.minimumReleaseAge !== undefined) {
+        policySections.push(`            first_seen: {\n                minutes: ${String(options.minimumReleaseAge)},\n            },`);
+    }
+
+    let securityBlock = `        policies: {\n${policySections.join("\n")}\n        },`;
 
     if (options.enableSocket) {
         securityBlock += `\n        socket: { enabled: true },`;
@@ -141,11 +148,24 @@ const runInteractiveInit = async (cwd: string, pm: { name: string; version: stri
         }
     }
 
-    // Step 3: Git hooks
+    // Step 3: Minimum release age
+    pail.info("");
+    const wantMinReleaseAge = await confirm(rl, "  Enforce a minimum release age (block freshly-published versions)?");
+    let minimumReleaseAge: number | undefined;
+
+    if (wantMinReleaseAge) {
+        const raw = await ask(rl, `    Minimum age in minutes (default ${String(DEFAULT_MIN_RELEASE_AGE_MINUTES)} = 2 days): `);
+        const parsed = raw === "" ? DEFAULT_MIN_RELEASE_AGE_MINUTES : Number.parseInt(raw, 10);
+
+        minimumReleaseAge = Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_MIN_RELEASE_AGE_MINUTES;
+        pail.success(`    minimumReleaseAge: ${String(minimumReleaseAge)} minutes`);
+    }
+
+    // Step 4: Git hooks
     pail.info("");
     const setupStaged = await confirm(rl, "  Set up pre-commit hooks (lint-staged)?", false);
 
-    // Step 4: Sync to native PM config
+    // Step 5: Sync to native PM config
     let syncNative = false;
 
     if (pm.name === "pnpm" || pm.name === "yarn" || pm.name === "npm" || pm.name === "bun") {
@@ -153,7 +173,7 @@ const runInteractiveInit = async (cwd: string, pm: { name: string; version: stri
         syncNative = await confirm(rl, `  Sync security settings to ${pm.name} config?`);
     }
 
-    // Step 5: Detect competing tools and offer migration
+    // Step 6: Detect competing tools and offer migration
     const existingTools = detectExistingTools(cwd);
 
     if (existingTools.length > 0) {
@@ -184,7 +204,7 @@ const runInteractiveInit = async (cwd: string, pm: { name: string; version: stri
             if (isAccessibleSync(configPath)) {
                 pail.success(`Migrated config written to ${configPath}`);
             } else {
-                const content = generateConfigContent(pm.name, { allowBuilds, enableSocket, staged: setupStaged });
+                const content = generateConfigContent(pm.name, { allowBuilds, enableSocket, minimumReleaseAge, staged: setupStaged });
 
                 writeFileSync(configPath, content);
                 pail.success(`Created ${configPath}`);
@@ -200,7 +220,7 @@ const runInteractiveInit = async (cwd: string, pm: { name: string; version: stri
 
     pail.info("");
 
-    const content = generateConfigContent(pm.name, { allowBuilds, enableSocket, staged: setupStaged });
+    const content = generateConfigContent(pm.name, { allowBuilds, enableSocket, minimumReleaseAge, staged: setupStaged });
 
     writeFileSync(configPath, content);
     pail.success(`Created ${configPath}`);
@@ -208,9 +228,12 @@ const runInteractiveInit = async (cwd: string, pm: { name: string; version: stri
     // Sync to native PM config
     if (syncNative) {
         const approvedBuilds = Object.fromEntries(Object.entries(allowBuilds).filter(([, v]) => v));
-        const actions = syncAllowBuildsToNativeConfig(pm.name as PackageManagerName, cwd, approvedBuilds);
 
-        for (const action of actions) {
+        for (const action of syncAllowBuildsToNativeConfig(pm.name as PackageManagerName, cwd, approvedBuilds)) {
+            pail.success(`  ${action}`);
+        }
+
+        for (const action of syncMinimumReleaseAgeToNativeConfig(pm.name as PackageManagerName, cwd, minimumReleaseAge)) {
             pail.success(`  ${action}`);
         }
     }
@@ -218,10 +241,11 @@ const runInteractiveInit = async (cwd: string, pm: { name: string; version: stri
     // Summary
     pail.info("");
     pail.info("  Setup complete. Your config:");
-    pail.info(`    Security:     ${enableSocket ? "Socket.dev enabled" : "defaults only"}`);
+    pail.info(`    Security:      ${enableSocket ? "Socket.dev enabled" : "defaults only"}`);
     pail.info(`    Build scripts: ${Object.values(allowBuilds).filter(Boolean).length} approved`);
-    pail.info(`    Git hooks:    ${setupStaged ? "lint-staged configured" : "not configured"}`);
-    pail.info(`    PM sync:      ${syncNative ? "done" : "skipped"}`);
+    pail.info(`    Min age:       ${minimumReleaseAge === undefined ? "not enforced" : `${String(minimumReleaseAge)} minutes`}`);
+    pail.info(`    Git hooks:     ${setupStaged ? "lint-staged configured" : "not configured"}`);
+    pail.info(`    PM sync:       ${syncNative ? "done" : "skipped"}`);
 
     pail.info("");
     pail.notice("  Run 'vis doctor' to see your project's full health status.");
@@ -230,16 +254,23 @@ const runInteractiveInit = async (cwd: string, pm: { name: string; version: stri
 
 /** Creates a minimal config file with secure defaults (no prompts). */
 const runStaticInit = (cwd: string, pm: { name: string; version: string }, options: Record<string, unknown>, configPath: string): void => {
-    const content = generateConfigContent(pm.name, { allowBuilds: {}, enableSocket: false, staged: false });
+    const content = generateConfigContent(pm.name, {
+        allowBuilds: {},
+        enableSocket: false,
+        minimumReleaseAge: DEFAULT_MIN_RELEASE_AGE_MINUTES,
+        staged: false,
+    });
 
     writeFileSync(configPath, content);
     pail.success(`Created ${configPath}`);
     pail.info("  Secure defaults applied automatically by defineConfig().");
 
     if (options.syncNative) {
-        const actions = syncAllowBuildsToNativeConfig(pm.name as PackageManagerName, cwd, {});
+        for (const action of syncAllowBuildsToNativeConfig(pm.name as PackageManagerName, cwd, {})) {
+            pail.success(`  ${action}`);
+        }
 
-        for (const action of actions) {
+        for (const action of syncMinimumReleaseAgeToNativeConfig(pm.name as PackageManagerName, cwd, DEFAULT_MIN_RELEASE_AGE_MINUTES)) {
             pail.success(`  ${action}`);
         }
     }

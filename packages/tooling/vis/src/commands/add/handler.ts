@@ -550,7 +550,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
 
     // Secure-by-default: lifecycle scripts are off unless the user opts in
     // with --run-scripts. Mirrors pnpm v10's universal block-then-allowlist
-    // model — packages listed in security.allowBuilds get their scripts
+    // model — packages listed in security.policies.install_scripts.allow get their scripts
     // run after install via the security-enforcement plugin's
     // `runApprovedScripts` hook (afterCommand). This applies to every PM:
     // pnpm/bun/aube already block by default, npm/yarn need the explicit

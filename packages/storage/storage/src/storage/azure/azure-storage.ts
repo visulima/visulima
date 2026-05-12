@@ -34,6 +34,10 @@ class AzureStorage extends BaseStorage {
 
     public override checksumTypes: string[] = ["md5"];
 
+    public override get raw(): BlobServiceClient {
+        return this.client;
+    }
+
     protected meta: MetaStorage;
 
     private client: BlobServiceClient;
@@ -226,10 +230,10 @@ class AzureStorage extends BaseStorage {
 
             file.status = "deleted";
 
-            await Promise.all([
-                this.deleteMeta(file.id),
-                this.retry(() => this.containerClient.getBlockBlobClient(this.getFullPath(file.name)).deleteIfExists()),
-            ]);
+            // Sequence the blob delete before the metadata delete so a partial failure leaves a recoverable
+            // metadata orphan instead of an unreachable block blob that keeps consuming storage.
+            await this.retry(() => this.containerClient.getBlockBlobClient(this.getFullPath(file.name)).deleteIfExists());
+            await this.deleteMeta(file.id);
 
             const deletedFile = { ...file };
 
@@ -279,7 +283,7 @@ class AzureStorage extends BaseStorage {
                 return throwErrorCode(ERRORS.FILE_CONFLICT);
             }
 
-            await this.lock(part.id);
+            const lockToken = await this.lock(part.id);
 
             try {
                 if (hasContent(part)) {
@@ -340,7 +344,7 @@ class AzureStorage extends BaseStorage {
                     }
                 }
             } finally {
-                await this.unlock(part.id);
+                await this.unlock(part.id, lockToken);
             }
 
             return file;
@@ -454,28 +458,35 @@ class AzureStorage extends BaseStorage {
                 let truncated = true;
                 let token: string | undefined;
 
-                while (truncated) {
+                while (truncated && files.length < limit) {
                     try {
+                        const pageSize = Math.min(limit - files.length, 1000);
                         const iterator = this.containerClient
                             .listBlobsFlat({
                                 includeMetadata: true,
                                 prefix: this.root,
                             })
-                            .byPage({ continuationToken: token, maxPageSize: limit });
+                            .byPage({ continuationToken: token, maxPageSize: pageSize });
 
                         const next = await this.retry(() => iterator.next());
                         const response = next.value;
 
                         if (response !== undefined && "segment" in response) {
-                            response.segment.blobItems.forEach((blob: BlobItem) => {
-                                if (!blob.deleted) {
-                                    files.push({
-                                        createdAt: blob.properties.createdOn,
-                                        id: blob.name,
-                                        modifiedAt: blob.properties.lastModified,
-                                    } as AzureFile);
+                            for (const blob of response.segment.blobItems as BlobItem[]) {
+                                if (blob.deleted) {
+                                    continue;
                                 }
-                            });
+
+                                files.push({
+                                    createdAt: blob.properties.createdOn,
+                                    id: blob.name,
+                                    modifiedAt: blob.properties.lastModified,
+                                } as AzureFile);
+
+                                if (files.length >= limit) {
+                                    break;
+                                }
+                            }
                         }
 
                         truncated = response?.continuationToken !== undefined;

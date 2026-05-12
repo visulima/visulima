@@ -37,11 +37,17 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
 
     public override checksumTypes: string[] = ["md5"];
 
+    public override get raw(): { copy: typeof copy; del: typeof del; list: typeof list; put: typeof put; token: string } {
+        return { copy, del, list, put, token: this.token };
+    }
+
     protected meta: MetaStorage;
 
     private readonly token: string;
 
     private readonly multipart: boolean | number;
+
+    private readonly access: "public";
 
     public constructor(config: VercelBlobStorageOptions) {
         super(config);
@@ -53,6 +59,7 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
         }
 
         this.multipart = config.multipart ?? false;
+        this.access = config.access ?? "public";
 
         const { metaStorage, metaStorageConfig } = config;
 
@@ -127,7 +134,7 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
                 throw new Error("File part does not match");
             }
 
-            await this.lock(part.id);
+            const lockToken = await this.lock(part.id);
 
             try {
                 if (hasContent(part)) {
@@ -168,7 +175,7 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
 
                     // Upload to Vercel Blob
                     const result = await put(file.name, blob, {
-                        access: "public",
+                        access: this.access,
                         multipart: this.shouldUseMultipart(file),
                     });
 
@@ -188,7 +195,7 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
 
                 return file;
             } finally {
-                await this.unlock(part.id);
+                await this.unlock(part.id, lockToken);
             }
         });
     }

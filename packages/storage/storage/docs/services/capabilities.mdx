@@ -1,0 +1,112 @@
+# Adapter Capabilities
+
+Different storage backends expose different primitives. This page enumerates which features each adapter implements natively, simulates, or rejects — so you can choose the right adapter for your use case without reading source.
+
+Legend:
+
+- ✅ **native** — the underlying SDK / API provides this directly
+- 🟡 **partial** — supported with caveats (documented in the adapter's page)
+- ❌ **not supported** — the adapter throws `METHOD_NOT_ALLOWED` or `STORAGE_ERROR`
+- 🔁 **simulated** — implemented via `download` + reupload or similar fallback
+
+## Read & write URLs
+
+| Adapter        | `getReadUrl()`                                          | `getUploadUrl()`                       |
+| -------------- | ------------------------------------------------------- | -------------------------------------- |
+| S3 / R2 / etc. | ✅ presigned `GET`                                      | ✅ presigned `PUT`                     |
+| S3 (light)     | 🟡 limited (aws4fetch signing)                          | 🟡 limited (aws4fetch signing)         |
+| Azure Blob     | ✅ SAS                                                  | ❌                                     |
+| GCS            | ✅ V4 signed URL                                        | ❌ (resumable URLs handled internally) |
+| Vercel Blob    | ✅ public URL                                           | ❌ (use Vercel client tokens)          |
+| Netlify Blobs  | ✅ signed URL                                           | ❌                                     |
+| Local (disk)   | 🟡 path-based URL                                       | ❌                                     |
+| Dropbox        | ✅ temporary link (≤ 4 h) or public shared link         | ❌                                     |
+| Google Drive   | 🟡 only when `publicByDefault: true`                    | ✅ resumable session URL               |
+| OneDrive       | ✅ `@microsoft.graph.downloadUrl` or `createLink`       | ✅ `createUploadSession`               |
+| Box            | ✅ shared download link                                 | ❌                                     |
+| Supabase       | ✅ `createSignedUrl` (≤ 7 d)                            | ✅ `createSignedUploadUrl`             |
+| UploadThing    | ✅ CDN URL (public ACL) or `generateSignedURL` (private) | ❌                                     |
+| Bunny Storage  | 🟡 via `publicBaseUrl` (Pull Zone)                      | ❌                                     |
+
+## URL options
+
+| Adapter        | `expiresIn` cap | `responseContentDisposition`                                                |
+| -------------- | --------------- | --------------------------------------------------------------------------- |
+| S3 / R2 / etc. | 7 d (SigV4 max) | ✅ forwarded as `ResponseContentDisposition`                                |
+| Azure Blob     | none (SAS)      | ✅ via SAS query                                                            |
+| GCS            | 7 d             | ✅ `response-content-disposition`                                           |
+| Vercel Blob    | n/a (public)    | ❌                                                                          |
+| Netlify Blobs  | varies          | ❌                                                                          |
+| Local (disk)   | n/a             | ❌                                                                          |
+| Dropbox        | 4 h             | ❌ — temporary links have no override                                       |
+| Google Drive   | n/a             | ❌ — `webContentLink` has no override                                       |
+| OneDrive       | n/a             | ❌ — Graph download URLs have no overrides                                  |
+| Box            | n/a             | ❌ — shared-link URLs have no overrides                                     |
+| Supabase       | 7 d             | 🟡 mapped to Supabase `download` option (filename round-trips when present) |
+| UploadThing    | 7 d             | ❌ — no override on UFS/CDN URLs                                            |
+| Bunny Storage  | n/a (public)    | ❌ — no override on Storage / Pull Zone URLs                                |
+
+## Server-side operations
+
+| Adapter        | `copy()`          | `move()`             | `list()` prefix filter           |
+| -------------- | ----------------- | -------------------- | -------------------------------- |
+| S3 / R2 / etc. | ✅ CopyObject     | 🔁 copy + delete     | ✅ `Prefix`                      |
+| Azure Blob     | ✅ Copy Blob      | 🔁 copy + delete     | ✅ `prefix`                      |
+| GCS            | ✅ copy           | 🔁 copy + delete     | ✅ `prefix`                      |
+| Vercel Blob    | ✅ copy           | 🔁 copy + delete     | ✅ `prefix`                      |
+| Netlify Blobs  | 🔁 copy + delete  | 🔁 copy + delete     | ✅ `prefix`                      |
+| Local (disk)   | ✅ fs.copyFile    | ✅ fs.rename         | ✅ recursive scan                |
+| Dropbox        | ✅ filesCopyV2    | ✅ filesMoveV2       | 🟡 recursive listing of root    |
+| Google Drive   | ✅ files.copy     | 🔁 copy + delete     | 🟡 virtual-key + appProperties  |
+| OneDrive       | ✅ async copy     | ✅ patch parent      | 🟡 folder root, paginated        |
+| Box            | ✅ copyFile       | ✅ updateFile parent | 🟡 folder root, cached IDs       |
+| Supabase       | ✅ bucket.copy    | ✅ bucket.move       | ❌ root only (per page limit)    |
+| UploadThing    | 🔁 download + reupload | 🔁 copy + delete | 🟡 client-side prefix filter    |
+| Bunny Storage  | 🔁 download + reupload | 🔁 copy + delete | 🟡 root listing, client-side    |
+
+## Auth model
+
+| Adapter        | Auth shapes                                                                                                                              |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| S3 / R2 / etc. | static / SSO / EC2 / env (AWS SDK credential chain)                                                                                       |
+| Azure Blob     | connection string, account key, SAS token, AAD                                                                                            |
+| GCS            | service-account JSON, ADC, key file, OAuth                                                                                                |
+| Vercel Blob    | `BLOB_READ_WRITE_TOKEN`                                                                                                                   |
+| Netlify Blobs  | env-injected on Netlify, explicit token otherwise                                                                                         |
+| Local (disk)   | filesystem permissions                                                                                                                    |
+| Dropbox        | access token, refresh token + app key (+ secret), pre-built `Dropbox`                                                                     |
+| Google Drive   | service-account JSON, key file, OAuth (refresh token), JWT, env (`GOOGLE_APPLICATION_CREDENTIALS`)                                        |
+| OneDrive       | static access token, client-credentials (app-only), refresh token + redirect, pre-built Graph client                                       |
+| Box            | developer token, OAuth, CCG (enterprise / user), JWT, env                                                                                  |
+| Supabase       | service-role key (env or explicit), pre-built `StorageClient`                                                                              |
+| UploadThing    | dashboard token (base64 JSON with `apiKey` + `appId`)                                                                                      |
+| Bunny Storage  | zone + access key + region (env or explicit), pre-built `StorageZone`                                                                      |
+
+## Error normalization
+
+All consumer adapters propagate adapter-native errors today, but the package ships `wrapStorageError` (in `@visulima/storage` → `utils/errors`) to normalize them into a canonical `UploadError` with a stable `ERRORS` code. Wired into HTTP-fetch throws on Google Drive (resumable session) and OneDrive (copy, createUploadSession, monitor, upload-session chunks).
+
+Mapping rule of thumb:
+
+| HTTP status | `ERRORS` code            |
+| ----------- | ------------------------ |
+| 400         | `BAD_REQUEST`            |
+| 401 / 403   | `FORBIDDEN`              |
+| 404         | `FILE_NOT_FOUND`         |
+| 405         | `METHOD_NOT_ALLOWED`     |
+| 409         | `FILE_CONFLICT`          |
+| 410         | `GONE`                   |
+| 413         | `REQUEST_ENTITY_TOO_LARGE` |
+| 415         | `UNSUPPORTED_MEDIA_TYPE` |
+| 422         | `UNPROCESSABLE_ENTITY`   |
+| 423         | `FILE_LOCKED`            |
+| 429         | `TOO_MANY_REQUESTS`      |
+| 503         | `STORAGE_BUSY`           |
+| other 5xx   | `STORAGE_ERROR`          |
+| other 4xx   | `BAD_REQUEST`            |
+
+The native error is preserved on `UploadError.detail` for callers that need provider-specific shapes.
+
+## When in doubt
+
+Drop down to the native client via `storage.raw` — every adapter exposes the underlying SDK instance there, so you can bypass the unified contract when a feature isn't in the table above.

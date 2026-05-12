@@ -1,8 +1,9 @@
 import { execFileSync } from "node:child_process";
+import { createInterface } from "node:readline";
 
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 import { red, yellow } from "@visulima/colorize";
-import { isAccessibleSync } from "@visulima/fs";
+import { isAccessibleSync, readFileSync } from "@visulima/fs";
 import { readTomlSync } from "@visulima/fs/toml";
 import { readYamlSync } from "@visulima/fs/yaml";
 import { findPackageManagerSync, getPackageManagerVersion } from "@visulima/package";
@@ -61,50 +62,175 @@ interface PmNativeMinimumReleaseAge {
 }
 
 /**
+ * Parses a time string (e.g. `"2d"`, `"48h"`, `"15m"`, `"1w"`) into minutes.
+ * Supports `m` (minutes), `h` (hours), `d` (days), `w` (weeks). Bare numbers
+ * fall back to minutes for forgiving config (e.g. `min-release-age=2880`).
+ * Returns `undefined` for malformed input so callers can ignore corrupt config.
+ */
+export const parseTimeStringToMinutes = (input: string): number | undefined => {
+    const trimmed = input.trim();
+
+    if (trimmed === "") {
+        return undefined;
+    }
+
+    const match = /^(\d+(?:\.\d+)?)\s*([mhdw])?$/i.exec(trimmed);
+
+    if (!match) {
+        return undefined;
+    }
+
+    const value = Number.parseFloat(match[1]!);
+
+    if (!Number.isFinite(value) || value < 0) {
+        return undefined;
+    }
+
+    switch ((match[2] ?? "m").toLowerCase()) {
+        case "d": {
+            return value * 60 * 24;
+        }
+        case "h": {
+            return value * 60;
+        }
+        case "m": {
+            return value;
+        }
+        case "w": {
+            return value * 60 * 24 * 7;
+        }
+        default: {
+            return undefined;
+        }
+    }
+};
+
+/**
+ * Inverse of `parseTimeStringToMinutes`: renders a minutes count as the
+ * largest whole-unit time string (`Nd`/`Nh`/`Nm`). Used when writing to npm /
+ * yarn configs that expect duration strings.
+ */
+export const formatMinutesAsTimeString = (minutes: number): string => {
+    if (!Number.isFinite(minutes) || minutes <= 0) {
+        return "0m";
+    }
+
+    if (minutes % (60 * 24) === 0) {
+        return `${String(minutes / (60 * 24))}d`;
+    }
+
+    if (minutes % 60 === 0) {
+        return `${String(minutes / 60)}h`;
+    }
+
+    return `${String(minutes)}m`;
+};
+
+/**
  * Reads `minimumReleaseAge` (and the excludes list) from the package
  * manager's native config. Returns an object with both fields so callers
  * can merge them into vis-config defaults uniformly.
  *
- * - pnpm: `pnpm-workspace.yaml` top-level.
- * - bun: `bunfig.toml [install]` — **not** `package.json`. Bun's installer
- *   knobs (registry, scopes, lockfile, minimumReleaseAge, …) all live
- *   under `[install]` per https://bun.sh/docs/runtime/bunfig#install.
+ * Per-PM mapping (all returned values normalised to **minutes** — the
+ * vis-internal canonical unit):
+ *
+ * - pnpm: `pnpm-workspace.yaml` top-level — value already in minutes.
+ * - bun: `bunfig.toml [install]` — value in **seconds**, divided by 60.
+ *   Bun's installer knobs (registry, scopes, lockfile, minimumReleaseAge, …)
+ *   all live under `[install]` per https://bun.sh/docs/runtime/bunfig#install.
+ * - npm: `.npmrc` `min-release-age=&lt;duration>` — time-string parsed via
+ *   `parseTimeStringToMinutes` (e.g. `2d`, `48h`, `15m`).
+ * - yarn: `.yarnrc.yml` `npmMinimalAgeGate: "&lt;duration>"` — same time-string
+ *   syntax as npm.
  */
 export const readPmNativeMinimumReleaseAge = (workspaceRoot: string, packageManager: string): PmNativeMinimumReleaseAge => {
     try {
-        if (packageManager === "pnpm") {
-            const yamlPath = join(workspaceRoot, "pnpm-workspace.yaml");
+        switch (packageManager) {
+            case "bun": {
+                const tomlPath = join(workspaceRoot, "bunfig.toml");
 
-            if (isAccessibleSync(yamlPath)) {
-                const data = readYamlSync(yamlPath) as
-                    | {
-                        minimumReleaseAge?: number;
-                        minimumReleaseAgeExclude?: string[];
-                    }
-                    | undefined;
+                if (isAccessibleSync(tomlPath)) {
+                    const data = readTomlSync(tomlPath) as
+                        | {
+                            install?: {
+                                minimumReleaseAge?: number;
+                                minimumReleaseAgeExcludes?: string[];
+                            };
+                        }
+                        | undefined;
+                    const rawSeconds = data?.install?.minimumReleaseAge;
 
-                return {
-                    excludes: Array.isArray(data?.minimumReleaseAgeExclude) ? data.minimumReleaseAgeExclude : undefined,
-                    minutes: typeof data?.minimumReleaseAge === "number" ? data.minimumReleaseAge : undefined,
-                };
+                    return {
+                        excludes: Array.isArray(data?.install?.minimumReleaseAgeExcludes) ? data.install.minimumReleaseAgeExcludes : undefined,
+                        // Bun stores seconds; vis canonicalises on minutes.
+                        minutes: typeof rawSeconds === "number" ? Math.round(rawSeconds / 60) : undefined,
+                    };
+                }
+
+                break;
             }
-        } else if (packageManager === "bun") {
-            const tomlPath = join(workspaceRoot, "bunfig.toml");
 
-            if (isAccessibleSync(tomlPath)) {
-                const data = readTomlSync(tomlPath) as
-                    | {
-                        install?: {
+            case "npm": {
+                const npmrcPath = join(workspaceRoot, ".npmrc");
+
+                if (isAccessibleSync(npmrcPath)) {
+                    const content = readFileSync(npmrcPath);
+                    const match = /^\s*min-release-age\s*=\s*([^\s#;]+)/m.exec(content);
+
+                    return { minutes: match ? parseTimeStringToMinutes(match[1]!) : undefined };
+                }
+
+                break;
+            }
+
+            case "pnpm": {
+                const yamlPath = join(workspaceRoot, "pnpm-workspace.yaml");
+
+                if (isAccessibleSync(yamlPath)) {
+                    const data = readYamlSync(yamlPath) as
+                        | {
                             minimumReleaseAge?: number;
-                            minimumReleaseAgeExcludes?: string[];
-                        };
-                    }
-                    | undefined;
+                            minimumReleaseAgeExclude?: string[];
+                        }
+                        | undefined;
 
-                return {
-                    excludes: Array.isArray(data?.install?.minimumReleaseAgeExcludes) ? data.install.minimumReleaseAgeExcludes : undefined,
-                    minutes: typeof data?.install?.minimumReleaseAge === "number" ? data.install.minimumReleaseAge : undefined,
-                };
+                    return {
+                        excludes: Array.isArray(data?.minimumReleaseAgeExclude) ? data.minimumReleaseAgeExclude : undefined,
+                        minutes: typeof data?.minimumReleaseAge === "number" ? data.minimumReleaseAge : undefined,
+                    };
+                }
+
+                break;
+            }
+
+            case "yarn": {
+                const yarnrcPath = join(workspaceRoot, ".yarnrc.yml");
+
+                if (isAccessibleSync(yarnrcPath)) {
+                    const data = readYamlSync(yarnrcPath) as
+                        | {
+                            npmMinimalAgeGate?: number | string;
+                        }
+                        | undefined;
+                    const raw = data?.npmMinimalAgeGate;
+
+                    if (typeof raw === "string") {
+                        return { minutes: parseTimeStringToMinutes(raw) };
+                    }
+
+                    if (typeof raw === "number") {
+                        // Bare numeric value in .yarnrc.yml — yarn's docs use a
+                        // string like "48h", but a teammate may have written a
+                        // raw number. Treat it as minutes for symmetry with pnpm.
+                        return { minutes: raw };
+                    }
+                }
+
+                break;
+            }
+
+            default: {
+                break;
             }
         }
     } catch {
@@ -665,6 +791,72 @@ const executePmWrapper = (
     }
 };
 
+/**
+ * Gate blanket `--latest` updates behind an explicit confirmation. Fires when
+ * no package args were given AND the user asked for latest. On a TTY we prompt
+ * via readline; in CI / non-TTY contexts we refuse and demand `--yes` (or
+ * `--dry-run`, or explicit package names) so a stray `vis update --latest` in
+ * a pipeline can't blanket-bump every dependency unattended.
+ *
+ * Returns `true` to continue, `false` to abort (with `process.exitCode` set
+ * when the abort represents a hard failure).
+ */
+export const requireBlanketUpdateConfirmation = async (options: Partial<UpdateOptions>, hasPackageArgs: boolean, logger: Console): Promise<boolean> => {
+    const isLatest = options.latest === true || options.target === "latest";
+
+    if (hasPackageArgs || !isLatest) {
+        return true;
+    }
+
+    if (options.dryRun === true) {
+        return true;
+    }
+
+    if (options.yes === true) {
+        return true;
+    }
+
+    // Interactive mode has its own curated selection step, so the gate would
+    // be redundant. Let the user pick their packages in the TUI instead.
+    if (options.interactive === true) {
+        return true;
+    }
+
+    const isTTY = Boolean(process.stdout.isTTY) && !isInCi;
+
+    if (!isTTY) {
+        logger.error(`${red("✖")} Refusing to run blanket --latest update in a non-interactive context.`);
+        logger.error("  Re-run with --yes to confirm, --dry-run to preview, or pass explicit package names.");
+        process.exitCode = 1;
+
+        return false;
+    }
+
+    const rl = createInterface({ input: process.stdin, output: process.stdout });
+
+    try {
+        const answer = await new Promise<string>((resolve) => {
+            rl.question(
+                `${yellow("⚠")} About to upgrade ALL dependencies to their latest versions. This may include breaking changes.\n  Continue? [y/N] `,
+                resolve,
+            );
+        });
+
+        const normalized = answer.trim().toLowerCase();
+        const accepted = normalized === "y" || normalized === "yes";
+
+        if (!accepted) {
+            logger.info("Aborted.");
+
+            return false;
+        }
+
+        return true;
+    } finally {
+        rl.close();
+    }
+};
+
 const execute = async ({ argument: rawArgument, logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, UpdateOptions>): Promise<void> => {
     if (!wsRoot) {
         throw new Error("Could not determine workspace root. Run this command inside a monorepo.");
@@ -730,6 +922,17 @@ const execute = async ({ argument: rawArgument, logger, options, visConfig, work
             throw new Error("Failed to restore from backup.");
         }
 
+        return;
+    }
+
+    // Blanket --latest gate: confirm before upgrading everything to latest.
+    // TUI/interactive paths already have their own selection step, so the gate
+    // only matters for non-interactive blanket updates. We still fire it here
+    // unconditionally because both catalog-non-TTY and pm-wrapper paths apply
+    // blindly otherwise.
+    const proceed = await requireBlanketUpdateConfirmation(options, argument.length > 0, logger);
+
+    if (!proceed) {
         return;
     }
 

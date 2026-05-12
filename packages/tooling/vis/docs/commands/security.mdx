@@ -1,0 +1,139 @@
+---
+title: "vis security"
+description: "Inspect and sync vis-config security settings to the native package-manager config"
+---
+
+# vis security
+
+Inspect the build-script triage and push `vis.config` security settings to the active package manager's native config files. The two subcommands replace ad-hoc one-off commands by giving the same view that the post-install drift report uses.
+
+## Usage
+
+```bash
+vis security <action> [options]
+```
+
+## Actions
+
+### list
+
+Show the full build-script triage report:
+
+```bash
+vis security list
+vis security list --json
+```
+
+#### What it reports
+
+- **Approved** — installed packages with lifecycle scripts that match an entry in `security.allowBuilds`. Wildcard (`@scope/*`, `name@*`) and version-pinned (`name@1.2.3`, requires `pinVersions: true`) patterns are honored.
+- **Unapproved** — installed packages with lifecycle scripts that have **no** matching entry. Includes the synthetic `install (binding.gyp)` hook for packages that ship a `binding.gyp` but no explicit install script — npm runs `node-gyp rebuild` for them implicitly.
+- **Stale allowlist entries** — `security.allowBuilds` keys that don't match anything installed. Safe to prune.
+- **Version drift** — only emitted when `security.pinVersions: true`. Entries pointing at a version that is no longer installed, with a `from  →  to` migration suggestion.
+- **Native-config drift** — when `vis.config` and the PM's own config files (`pnpm-workspace.yaml`, `bunfig.toml`, `.npmrc`, `.yarnrc.yml`) disagree on `allowBuilds`, `minimumReleaseAge`, or `minimumReleaseAgeExclude`.
+
+#### `--json` output shape
+
+```json
+{
+    "packageManager": "pnpm",
+    "pinVersions": false,
+    "installed": [{ "name": "esbuild", "version": "0.20.0", "hooks": ["postinstall"] }],
+    "unapproved": [{ "name": "sharp", "version": "0.32.6", "hooks": ["install"] }],
+    "excess": ["removed-pkg"],
+    "versionDrift": [{ "from": "esbuild@0.19.0", "to": "esbuild@0.20.0" }],
+    "drift": { "hasDrift": false, "packageManager": "pnpm" }
+}
+```
+
+### sync
+
+Push `security.allowBuilds`, `minimumReleaseAge`, and `minimumReleaseAgeExclude` from `vis.config` into the active package manager's native config files:
+
+```bash
+vis security sync
+vis security sync --skip-allow-builds       # only sync minimumReleaseAge
+vis security sync --skip-min-release-age    # only sync allowBuilds
+```
+
+### run
+
+LavaMoat `allow-scripts run` parity — execute the lifecycle scripts for every package in `security.allowBuilds` **without reinstalling** the dependency tree. Use this after installing with `ignore-scripts=true` and triaging via `vis approve-builds`.
+
+```bash
+vis security run                # run preinstall/install/postinstall for every approved package
+vis security run --with-root    # also run the workspace root's prepublish + prepare hooks
+vis security run --root-only    # skip dependency scripts; run only root prepublish + prepare
+```
+
+Wildcards (`@scope/*`, `name@*`) and version-pinned patterns (`name@1.2.3`, requires `pinVersions: true`) are honored — the runner expands them against installed packages before invoking each hook. Unapproved packages are skipped silently.
+
+### tripwire
+
+Install `@lavamoat/preinstall-always-fail` as a `devDependency`. Its preinstall script always fails, but is masked by `ignore-scripts=true`. If somebody removes that gate, the next install fails loudly instead of silently running every dependency's lifecycle scripts.
+
+```bash
+vis security tripwire             # install the tripwire devDependency via the detected PM
+vis security tripwire --status    # report whether the tripwire is currently installed
+vis security tripwire --remove    # delete the tripwire entry from package.json
+```
+
+The installer uses the detected PM's idiomatic `add -D` invocation (pnpm `add -D -w`, bun `add -d`, npm `install --save-dev`, yarn `add -D`). `--remove` only edits `package.json` — run your PM's install afterwards to clean `node_modules`.
+
+#### Per-PM targets
+
+| PM   | `allowBuilds` target                                                   | `minimumReleaseAge` target                                   | Excludes target                      |
+| ---- | ---------------------------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------ |
+| pnpm | `pnpm-workspace.yaml` `allowBuilds` map + `onlyBuiltDependencies` list | `pnpm-workspace.yaml` `minimumReleaseAge` (minutes)          | `minimumReleaseAgeExclude` list      |
+| bun  | `package.json` `trustedDependencies`                                   | `bunfig.toml` `[install]` `minimumReleaseAge` (**seconds**)  | `minimumReleaseAgeExcludes` (plural) |
+| npm  | _(no native allowlist)_                                                | `.npmrc` `min-release-age=<duration>` (e.g. `2d`, `48h`)     | _(npm has no native excludes list)_  |
+| yarn | _(no native allowlist)_                                                | `.yarnrc.yml` `npmMinimalAgeGate: "<duration>"` (berry only) | _(yarn has no native excludes list)_ |
+
+Vis canonicalises all durations to **minutes**. The syncer rounds sub-minute fractional values up to whole minutes before writing so that the same vis-config value round-trips identically across PMs.
+
+Yarn classic (no `.yarnrc.yml`) is silently skipped because it has no equivalent native setting.
+
+## Options
+
+### `vis security list`
+
+| Option   | Default | Description                                            |
+| -------- | ------- | ------------------------------------------------------ |
+| `--json` | `false` | Emit the report as JSON instead of human-readable text |
+
+### `vis security sync`
+
+| Option                   | Default | Description                                                                       |
+| ------------------------ | ------- | --------------------------------------------------------------------------------- |
+| `--skip-allow-builds`    | `false` | Skip syncing `allowBuilds` (`trustedDependencies` / `onlyBuiltDependencies` etc.) |
+| `--skip-min-release-age` | `false` | Skip syncing `minimumReleaseAge` and its excludes                                 |
+
+### `vis security run`
+
+| Option        | Default | Description                                                                    |
+| ------------- | ------- | ------------------------------------------------------------------------------ |
+| `--with-root` | `false` | After dependency scripts, also run the workspace root's prepublish + prepare   |
+| `--root-only` | `false` | Skip dependency scripts and only run the workspace root's prepublish + prepare |
+
+### `vis security tripwire`
+
+| Option     | Default | Description                                                    |
+| ---------- | ------- | -------------------------------------------------------------- |
+| `--status` | `false` | Report whether `@lavamoat/preinstall-always-fail` is installed |
+| `--remove` | `false` | Strip `@lavamoat/preinstall-always-fail` from `package.json`   |
+
+## Drift report (post-install)
+
+After `vis install` / `vis update` / `vis add`, vis automatically runs the drift check and prints a one-line nudge per drifted field. The hint suggests `vis security sync` as the remediation:
+
+```
+vis.config and pnpm-native config disagree on security settings:
+  allowBuilds — only in vis.config: sharp
+  minimumReleaseAge — vis.config: 2880 min, pnpm: unset
+  Run 'vis security sync' to push vis.config values to the native config.
+```
+
+## Related
+
+- `vis approve-builds` — interactive review of unapproved build scripts.
+- `vis init` — bootstrap a `vis.config.ts` with secure defaults and an optional `--sync-native` step.

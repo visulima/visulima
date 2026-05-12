@@ -366,12 +366,30 @@ export default defineConfig({
         strictDepBuilds: true,
         trustPolicy: "no-downgrade",
         blockExoticSubdeps: true,
-        minimumReleaseAge: 1440, // 24 hours
+        minimumReleaseAge: 1440, // 24 hours; `vis init` writes 2880 by default
+        minimumReleaseAgeExclude: ["@types/node"],
         socket: { enabled: true, minimumScore: 0.4 },
         allowBuilds: { esbuild: true, "@prisma/client": true },
+        // Optional: match allowBuilds keys as `name@version`. A version bump
+        // drops the entry until you re-approve it. See `vis security list`
+        // or `vis approve-builds` for the "Version drift" suggestions.
+        pinVersions: false,
+        // Silence bin-name conflicts (two packages exposing the same bin).
+        // Bare names bless every package owning the bin; `pkg#bin` targets one.
+        allowBins: { tsc: true, "left#eslint": true },
     },
 });
 ```
+
+Key knobs introduced with the build-script triage and drift checker:
+
+- `allowBuilds` — the canonical allowlist. Wildcards (`@scope/*`, `name@*`) and version pins (`name@1.2.3`, requires `pinVersions: true`) are accepted.
+- `minimumReleaseAge` — gating window in **minutes**. `vis init` writes `2880` (2 days) by default; `vis security sync` mirrors the value into the PM's native config (pnpm `minimumReleaseAge`, bun seconds, npm `min-release-age`, yarn `npmMinimalAgeGate`).
+- `minimumReleaseAgeExclude` — package names exempt from the gate. Synced into pnpm and bun (the only PMs with a native excludes list).
+- `pinVersions` — opt-in version-aware allowlist matching, ported from LavaMoat allow-scripts.
+- `allowBins` — opt-in suppression for bin-name shadowing (LavaMoat allow-scripts parity). `vis security list` flags collisions when two or more installed packages declare the same bin name (e.g. both `typescript` and `competitor-ts` shipping `tsc`). Bare keys (`tsc: true`) silence every package owning that bin; qualified keys (`typescript#tsc: true`) only bless one — every other owner must also be blessed, or the conflict still surfaces.
+
+After install/update commands vis automatically prints a **drift report** when `vis.config` and the PM-native config disagree. Run `vis security sync` to push vis-config values to the native config; run `vis security list` to inspect the full triage (approved / unapproved / stale / version-drift).
 
 ### Task Runner Options
 

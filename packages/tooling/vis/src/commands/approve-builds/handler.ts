@@ -2,9 +2,10 @@ import { spawnSync } from "node:child_process";
 
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 
+import { writeApprovedBuildsToVisConfig } from "../../config/config-writer";
 import { pail } from "../../io/logger";
 import { detectPm } from "../../pm/pm-runner";
-import { scanUnapprovedBuildScripts, syncAllowBuildsToNativeConfig } from "../../security/security";
+import { scanBuildScriptStatus, syncAllowBuildsToNativeConfig } from "../../security/security";
 import type { ApproveBuildsOptions } from "./index";
 
 const execute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, ApproveBuildsOptions>): Promise<void> => {
@@ -46,15 +47,21 @@ const execute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Co
     } else {
         // For other PMs (or --scan flag), do our own scanning
         const allowBuilds = visConfig?.security?.policies?.install_scripts?.allow ?? {};
-        const unapproved = scanUnapprovedBuildScripts(cwd, allowBuilds);
+        const pinVersions = visConfig?.security?.pinVersions === true;
+        const status = scanBuildScriptStatus(cwd, allowBuilds, { pinVersions });
 
-        if (unapproved.length === 0) {
+        if (status.unapproved.length === 0) {
             pail.success("No unapproved build scripts found.");
-        } else {
-            pail.warn(`Found ${unapproved.length} package${unapproved.length === 1 ? "" : "s"} with unapproved build scripts:\n`);
 
-            for (const pkg of unapproved) {
-                pail.info(`  ${pkg}`);
+            if (options.write) {
+                pail.info("");
+                pail.info("Nothing to write — there are no unapproved build scripts.");
+            }
+        } else {
+            pail.warn(`Found ${status.unapproved.length} package${status.unapproved.length === 1 ? "" : "s"} with unapproved build scripts:\n`);
+
+            for (const entry of status.unapproved) {
+                pail.info(`  ${entry.name} (${entry.hooks.join(", ")})`);
             }
 
             pail.notice("");
@@ -65,10 +72,10 @@ const execute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Co
             pail.notice("      install_scripts: {");
             pail.notice("        allow: {");
 
-            for (const pkg of unapproved) {
-                const name = pkg.split(" (")[0];
+            for (const entry of status.unapproved) {
+                const key = pinVersions && entry.version ? `${entry.name}@${entry.version}` : entry.name;
 
-                pail.notice(`          "${name}": true,`);
+                pail.notice(`          "${key}": true,`);
             }
 
             pail.notice("        },");
@@ -80,6 +87,68 @@ const execute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Co
                 pail.notice("");
                 pail.notice("Or run 'pnpm approve-builds' to update pnpm-workspace.yaml directly.");
             }
+
+            // LavaMoat-style 'auto' writer: mutate vis.config.ts in place.
+            if (options.write) {
+                const pinVersionsActive = visConfig?.security?.pinVersions === true;
+                const entries = status.unapproved.map((entry) => (pinVersionsActive && entry.version ? `${entry.name}@${entry.version}` : entry.name));
+                const result = writeApprovedBuildsToVisConfig(cwd, entries);
+
+                pail.info("");
+
+                switch (result.status) {
+                    case "missing-anchor": {
+                        pail.warn(`Could not locate 'defineConfig({' or 'export default {' in ${String(result.configPath)} — please add entries manually.`);
+                        break;
+                    }
+                    case "no-config": {
+                        pail.warn("No vis.config.ts found. Run 'vis init' first, then re-run with --write.");
+                        break;
+                    }
+                    case "noop": {
+                        pail.info(
+                            `All ${String(entries.length)} entr${entries.length === 1 ? "y" : "ies"} were already present in vis.config.ts security.policies.install_scripts.allow.`,
+                        );
+                        break;
+                    }
+                    default: {
+                        pail.success(`Wrote ${String(result.added.length)} entr${result.added.length === 1 ? "y" : "ies"} to ${String(result.configPath)}.`);
+
+                        if (result.skipped.length > 0) {
+                            pail.info(`Skipped ${String(result.skipped.length)} already-present entr${result.skipped.length === 1 ? "y" : "ies"}.`);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Excess / stale allowlist entries — port of LavaMoat's
+        // missingPolicies+excessPolicies idea. Helps users prune entries
+        // for packages that have since been removed.
+        if (status.excess.length > 0) {
+            pail.notice("");
+            pail.warn(
+                `Stale install_scripts.allow entries — ${String(status.excess.length)} pattern${status.excess.length === 1 ? "" : "s"} no longer match any installed package:`,
+            );
+
+            for (const pattern of status.excess) {
+                pail.info(`  ${pattern}`);
+            }
+
+            pail.notice("Consider removing these entries from vis.config.ts security.policies.install_scripts.allow.");
+        }
+
+        if (status.versionDrift.length > 0) {
+            pail.notice("");
+            pail.warn(
+                `Version drift — ${String(status.versionDrift.length)} entr${status.versionDrift.length === 1 ? "y" : "ies"} pinned to an outdated version:`,
+            );
+
+            for (const { from, to } of status.versionDrift) {
+                pail.info(`  ${from}  →  ${to}`);
+            }
+
+            pail.notice("Rename the keys in vis.config.ts security.policies.install_scripts.allow to migrate.");
         }
     }
 

@@ -9,7 +9,7 @@ import { getBaseUrl, getHeader, getIdFromRequest, getRequestStream } from "../..
 import type { UploadResponse } from "../../utils/types";
 import BaseHandlerNode from "../base/base-handler-node";
 import type { Handlers, ResponseFile, UploadOptions } from "../types";
-import { TusBase } from "./tus-base";
+import { TUS_RESUMABLE, TusBase } from "./tus-base";
 
 export { TUS_RESUMABLE, TUS_VERSION } from "./tus-base";
 
@@ -242,7 +242,7 @@ export class Tus<
                 ...headers,
                 "Access-Control-Expose-Headers":
                     "location,upload-expires,upload-offset,upload-length,upload-metadata,upload-defer-length,tus-resumable,tus-extension,tus-max-size,tus-version,tus-checksum-algorithm,cache-control",
-                "Tus-Resumable": "1.0.0",
+                "Tus-Resumable": TUS_RESUMABLE,
             },
             statusCode: statusCode || 200,
         };

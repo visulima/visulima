@@ -219,22 +219,26 @@ abstract class RestBase<TFile extends UploadFile> {
             );
         }
 
-        // Track chunks in metadata (for status checking)
-        const existingChunks = Array.isArray(metadata._chunks) ? (metadata._chunks as ChunkInfo[]) : [];
-        const chunkInfo: ChunkInfo = {
-            checksum: chunkChecksum,
-            length: contentLength,
-            offset: chunkOffset,
-        };
-        const chunks = trackChunk(existingChunks, chunkInfo);
+        // Track chunks in metadata (for status checking). The read-modify-write of `_chunks` must
+        // be serialized: two concurrent PATCHes for the same file would otherwise each read the
+        // same `existingChunks`, append their own entry, and the second write would overwrite the
+        // first — silently losing a chunk record. A distinct `chunks:` namespace avoids conflict
+        // with the adapter's internal write lock keyed on the file id.
+        const chunks = await this.storage.withLock(`chunks:${id}`, async () => {
+            const current = await this.storage.getMeta(id);
+            const currentMetadata = current.metadata ?? {};
+            const existingChunks = Array.isArray(currentMetadata._chunks) ? (currentMetadata._chunks as ChunkInfo[]) : [];
+            const chunkInfo: ChunkInfo = {
+                checksum: chunkChecksum,
+                length: contentLength,
+                offset: chunkOffset,
+            };
+            const merged = trackChunk(existingChunks, chunkInfo);
 
-        // Update metadata with chunk info
-        const updatedMetadata = {
-            ...metadata,
-            _chunks: chunks,
-        };
+            await this.storage.update({ id }, { metadata: { ...currentMetadata, _chunks: merged } });
 
-        await this.storage.update({ id }, { metadata: updatedMetadata });
+            return merged;
+        });
 
         // Write chunk data using start offset (handles out-of-order chunks)
         let updatedFile = await this.storage.write({
@@ -380,6 +384,7 @@ abstract class RestBase<TFile extends UploadFile> {
         getMeta: (id: string) => Promise<TFile>;
         maxUploadSize: number;
         update: (options: { id: string }, updates: { metadata?: Record<string, unknown>; status?: string }) => Promise<void>;
+        withLock: <R>(key: string, fn: () => Promise<R>) => Promise<R>;
         write: (options: { body: unknown; contentLength: number; id: string; start: number }) => Promise<TFile>;
     } {
         // This will be overridden by subclasses

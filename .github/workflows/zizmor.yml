@@ -4,15 +4,14 @@ name: "Zizmor"
 
 on: # yamllint disable-line rule:truthy
     workflow_dispatch: # yamllint disable-line rule:empty-values
+    # Runs on every PR so it can be wired up as a required status check.
+    # Path-filtered triggers are skipped — and "skipped" required checks block merges.
     pull_request:
-        types: ["opened", "synchronize"]
-        paths:
-            - ".github/workflows/**"
+        types: ["opened", "synchronize", "reopened"]
     push:
         branches:
             - "main"
-        paths:
-            - ".github/workflows/**"
+            - "alpha"
 
 concurrency:
     group: "${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}"
@@ -28,27 +27,30 @@ jobs:
             security-events: "write"
         steps:
             - name: "Harden Runner"
-              uses: "step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594" # v2.16.0
+              uses: "step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450" # v2.19.1
               with:
                   egress-policy: "audit"
 
             - name: "Git checkout"
-              uses: "actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5" # v4.3.1
+              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
               with:
                   persist-credentials: false
 
             - name: "Install zizmor"
-              uses: "taiki-e/install-action@06203676c62f0d3c765be3f2fcfbebbcb02d09f5" # v2.69.6
+              uses: "taiki-e/install-action@c070f87102a1c75b3183910f391c1cb887fe13c8" # v2.77.6
               with:
                   tool: "zizmor"
 
+            # `tee` keeps the exit code from zizmor (vs `>` which always returns 0),
+            # so a finding at or above --min-severity fails the PR check.
             - name: "Run zizmor"
-              run: "zizmor --format sarif . > results.sarif"
+              run: "zizmor --min-severity medium --format sarif . | tee results.sarif"
               env:
                   GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 
             - name: "Upload SARIF file"
-              uses: "github/codeql-action/upload-sarif@ebcb5b36ded6beda4ceefea6a8bc4cc885255bb3" # v3.34.1
+              if: "always()"
+              uses: "github/codeql-action/upload-sarif@7fd177fa680c9881b53cdab4d346d32574c9f7f4" # v3.35.4
               with:
                   sarif_file: "results.sarif"
                   category: "zizmor"

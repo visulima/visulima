@@ -103,7 +103,13 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
         logger.info("▸ Installing dependencies");
 
         await runtime.runCommand("install", {
-            argv: ["--frozen-lockfile"],
+            // `--ci` mirrors `npm ci`: wipes node_modules and triggers
+            // CI-grade lockfile enforcement (e.g. yarn berry's
+            // `--immutable-cache` on top of `--immutable`). Implies
+            // `--frozen-lockfile` via the install handler, but we keep
+            // the explicit flag so a future `--ci` refactor cannot
+            // silently downgrade vis ci to a mutating install.
+            argv: ["--ci", "--frozen-lockfile"],
         });
     }
 

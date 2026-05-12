@@ -1080,12 +1080,45 @@ export interface VisConfig {
         };
 
         /**
+         * Map of bin names (or `pkg#bin` qualifiers) blessed for shadowing.
+         * When two installed packages expose the same bin name, vis flags
+         * the collision in `vis security list` and the post-install drift
+         * report — set the bin (or `pkg#bin`) to `true` here to suppress
+         * the warning once you've reviewed the conflict.
+         *
+         * Port of LavaMoat allow-scripts' experimental `allowBins`.
+         * Bare names match any conflicting bin with that name; the
+         * `pkg#bin` form scopes the approval to a single package's bin.
+         * @example
+         * ```
+         * allowBins: {
+         *   tsc: true,                // bless any 'tsc' bin
+         *   "typescript#tsc": true,   // bless only typescript's 'tsc'
+         * }
+         * ```
+         */
+        allowBins?: Record<string, boolean>;
+
+        /**
          * When true, prevents transitive dependencies from using exotic sources
          * (git repositories, direct tarball URLs). Only direct dependencies may
          * use such sources. Equivalent to pnpm's `blockExoticSubdeps`.
          * @default false
          */
         blockExoticSubdeps?: boolean;
+
+        /**
+         * When true, `security.policies.install_scripts.allow` keys are matched
+         * as `name@version`. A version bump on an approved package drops it from
+         * the allowlist until the new version is explicitly re-approved (port
+         * of LavaMoat allow-scripts' version-aware policy matcher).
+         *
+         * After a version bump, run `vis approve-builds` or `vis security list`
+         * — both surface a "Version drift" block with the suggested new key
+         * (`old-key  →  new-key`) so you can update `vis.config.ts` by hand.
+         * @default false
+         */
+        pinVersions?: boolean;
 
         /**
          * Supply-chain policy gates. Each sub-block enables one policy and

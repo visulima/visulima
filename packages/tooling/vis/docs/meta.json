@@ -46,6 +46,7 @@
                 "commands/secrets",
                 "commands/sbom",
                 "commands/approve-builds",
+                "commands/security",
                 "commands/optimize",
                 "commands/analyze",
                 "commands/ai",

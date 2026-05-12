@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { Readable } from "node:stream";
 
 import mime from "mime";
 
@@ -689,7 +690,10 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
             .join("|");
 
         const hashInput = `${originalFileId}|${mediaType}|${transformParameters}`;
-        const hash = createHash("sha256").update(hashInput).digest("hex").slice(0, 16);
+        // 64 bits of cache-key entropy gave a 50% collision chance at ~5B entries (birthday bound) but
+        // — more importantly — under attacker-controlled inputs a 64-bit prefix is well within
+        // brute-force reach. 128 bits is comfortably collision-resistant while keeping the file id short.
+        const hash = createHash("sha256").update(hashInput).digest("hex").slice(0, 32);
 
         return `${originalFileId}_transformed_${hash}`;
     }
@@ -814,13 +818,23 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
                 metadata.bitrate = result.bitrate;
             }
 
-            // Create a mock request object for storage.create
-            // Save to storage
-            await this.storage.create({
+            // Create the file record, then stream the buffer body in. Without the
+            // subsequent `write`, the metadata is saved but the actual bytes never
+            // land on disk / in the bucket and the cache lookup later sees a
+            // zero-byte object.
+            const created = await this.storage.create({
                 contentType: mime.getType(result.format) ?? undefined,
+                id: transformedFileId,
                 metadata,
                 originalName: `${transformedFileId}.${result.format}`,
                 size: result.size,
+            });
+
+            await this.storage.write({
+                body: Readable.from(result.buffer),
+                contentLength: result.size,
+                id: created.id,
+                start: 0,
             });
 
             this.logger?.debug?.(`Saved transformed file: ${transformedFileId}`);

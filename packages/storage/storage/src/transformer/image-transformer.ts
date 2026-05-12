@@ -95,6 +95,11 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
 
         const transformerConfig = {
             cacheTtl: 3600, // 1 hour
+            // Sharp's default `limitInputPixels` is 268M (16k x 16k). Keep that as the explicit default so
+            // a `decompression bomb` (very small file expanding to enormous pixel dimensions) does not
+            // exhaust memory. Callers can opt out by passing `false`.
+            failOn: "warning" as const,
+            limitInputPixels: 268_435_456,
             maxCacheSize: 100, // Max 100 transformed images in cache
             maxImageSize: 50 * 1024 * 1024, // 50MB
             supportedFormats: ["jpeg", "png", "webp", "avif", "tiff", "gif", "svg"],
@@ -102,6 +107,16 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
         } satisfies ImageTransformerConfig;
 
         super(storage, transformerConfig, logger);
+    }
+
+    /**
+     * Returns a sharp() invocation that applies the transformer's configured decompression-bomb defenses.
+     */
+    private openImage(input: Buffer): Sharp {
+        return sharp(input, {
+            failOn: this.config?.failOn ?? "warning",
+            limitInputPixels: this.config?.limitInputPixels ?? 268_435_456,
+        });
     }
 
     /**
@@ -526,7 +541,7 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
      * @private
      */
     private async applyTransformations(buffer: Buffer, steps: TransformationStep[]): Promise<Buffer> {
-        let sharpInstance: Sharp = sharp(buffer);
+        let sharpInstance: Sharp = this.openImage(buffer);
 
         for (const step of steps) {
             switch (step.type) {
@@ -1352,10 +1367,20 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
 
         // Additional validation with Sharp
         try {
-            const metadata = await sharp(file.content).metadata();
+            const metadata = await this.openImage(file.content).metadata();
 
             if (!metadata.width || !metadata.height) {
                 throw new Error("Invalid image: missing dimensions");
+            }
+
+            const { maxImageHeight, maxImageWidth } = this.config ?? {};
+
+            if (maxImageWidth !== undefined && metadata.width > maxImageWidth) {
+                throw new Error(`Image width ${metadata.width}px exceeds maximum ${maxImageWidth}px`);
+            }
+
+            if (maxImageHeight !== undefined && metadata.height > maxImageHeight) {
+                throw new Error(`Image height ${metadata.height}px exceeds maximum ${maxImageHeight}px`);
             }
         } catch (error) {
             throw new Error(`Invalid image file: ${error}`);

@@ -340,11 +340,90 @@ describe(syncAllowBuildsToNativeConfig, () => {
         it("should be a no-op when all entries already present", () => {
             expect.assertions(1);
 
-            writeFileSync(join(tmpDir, "pnpm-workspace.yaml"), "packages:\n  - 'packages/*'\n\nallowBuilds:\n  esbuild: true\n");
+            writeFileSync(
+                join(tmpDir, "pnpm-workspace.yaml"),
+                "packages:\n  - 'packages/*'\n\nallowBuilds:\n  esbuild: true\n\nonlyBuiltDependencies:\n  - esbuild\n",
+            );
 
             const actions = syncAllowBuildsToNativeConfig("pnpm", tmpDir, { esbuild: true });
 
             expect(actions[0]).toContain("already present");
+        });
+
+        it("should also mirror approved packages into pnpm v10 onlyBuiltDependencies list", () => {
+            expect.assertions(5);
+
+            writeFileSync(join(tmpDir, "pnpm-workspace.yaml"), "packages:\n  - 'packages/*'\n");
+
+            const actions = syncAllowBuildsToNativeConfig("pnpm", tmpDir, {
+                "blocked-pkg": false,
+                esbuild: true,
+                sharp: true,
+            });
+
+            const content = readFileSync(join(tmpDir, "pnpm-workspace.yaml"), "utf8");
+
+            expect(content).toContain("onlyBuiltDependencies:");
+            expect(content).toContain("- esbuild");
+            expect(content).toContain("- sharp");
+            // Only approved (value === true) names land in the v10 list.
+            expect(content).not.toContain("- blocked-pkg");
+            expect(actions.some((a) => a.includes("onlyBuiltDependencies"))).toBe(true);
+        });
+
+        it("should merge with existing onlyBuiltDependencies list and preserve sort order", () => {
+            expect.assertions(3);
+
+            writeFileSync(join(tmpDir, "pnpm-workspace.yaml"), "packages:\n  - 'packages/*'\n\nonlyBuiltDependencies:\n  - prisma\n");
+
+            syncAllowBuildsToNativeConfig("pnpm", tmpDir, { esbuild: true });
+
+            const content = readFileSync(join(tmpDir, "pnpm-workspace.yaml"), "utf8");
+
+            // Both entries present, alphabetically sorted (esbuild < prisma).
+            expect(content).toContain("- esbuild");
+            expect(content).toContain("- prisma");
+            expect(content.indexOf("- esbuild")).toBeLessThan(content.indexOf("- prisma"));
+        });
+
+        it("should write pnpm.onlyBuiltDependencies to package.json when present", () => {
+            expect.assertions(4);
+
+            writeFileSync(join(tmpDir, "pnpm-workspace.yaml"), "packages:\n  - 'packages/*'\n");
+            writeFileSync(join(tmpDir, "package.json"), JSON.stringify({ name: "root" }));
+
+            const actions = syncAllowBuildsToNativeConfig("pnpm", tmpDir, {
+                esbuild: true,
+                sharp: true,
+            });
+
+            const pkg = JSON.parse(readFileSync(join(tmpDir, "package.json"), "utf8")) as {
+                pnpm?: { onlyBuiltDependencies?: string[] };
+            };
+
+            // Sanity: pnpm-workspace.yaml block also got the list.
+            const content = readFileSync(join(tmpDir, "pnpm-workspace.yaml"), "utf8");
+
+            expect(pkg.pnpm?.onlyBuiltDependencies).toStrictEqual(["esbuild", "sharp"]);
+            expect(actions.some((a) => a.includes("package.json pnpm.onlyBuiltDependencies"))).toBe(true);
+            expect(content).toContain("- esbuild");
+            expect(content).toContain("- sharp");
+        });
+
+        it("should leave package.json untouched when there are no approved packages", () => {
+            expect.assertions(1);
+
+            writeFileSync(join(tmpDir, "pnpm-workspace.yaml"), "packages:\n  - 'packages/*'\n");
+            writeFileSync(join(tmpDir, "package.json"), JSON.stringify({ name: "root" }));
+
+            syncAllowBuildsToNativeConfig("pnpm", tmpDir, { "blocked-pkg": false });
+
+            const pkg = JSON.parse(readFileSync(join(tmpDir, "package.json"), "utf8")) as {
+                pnpm?: unknown;
+            };
+
+            // Nothing approved → don't add a pnpm key with empty list.
+            expect(pkg.pnpm).toBeUndefined();
         });
 
         it("should quote scoped package keys", () => {
