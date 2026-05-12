@@ -7,15 +7,12 @@ const compileRegex = (pattern: string, label: string): RegExp => {
     } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
 
-        throw new Error(`invalid ${label} regex ${JSON.stringify(pattern)}: ${message}`);
+        throw new Error(`invalid ${label} regex ${JSON.stringify(pattern)}: ${message}`, { cause: error });
     }
 };
 
 const hasTagFilters = (entry: HookEntry): boolean =>
-    (entry.types && entry.types.length > 0)
-    || (entry.typesOr && entry.typesOr.length > 0)
-    || (entry.excludeTypes && entry.excludeTypes.length > 0)
-    || false;
+    (entry.types && entry.types.length > 0) || (entry.typesOr && entry.typesOr.length > 0) || (entry.excludeTypes && entry.excludeTypes.length > 0) || false;
 
 /**
  * Apply pre-commit-style `files` / `exclude` / `types` / `types_or` /

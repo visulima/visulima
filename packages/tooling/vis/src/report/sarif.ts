@@ -20,25 +20,27 @@ import { join, relative } from "node:path";
 import type { SecurityVulnerability } from "../security/advisories";
 
 export interface SarifFinding {
+    acknowledged: boolean;
     packageName: string;
     packageVersion: string;
     vulnerability: SecurityVulnerability;
-    acknowledged: boolean;
 }
 
 export interface SarifEmitOptions {
-    workspaceRoot: string;
-    tool: { name: string; version: string; informationUri: string };
-    findings: SarifFinding[];
     /** Optional explicit lockfile path. Defaults to "package.json" relative to the workspace root. */
     artifactUri?: string;
+    findings: SarifFinding[];
+    tool: { informationUri: string; name: string; version: string };
+    workspaceRoot: string;
 }
 
-const SEVERITY_TO_LEVEL: Record<string, "error" | "warning" | "note" | "none"> = {
+type SarifLevel = "error" | "warning" | "note" | "none";
+
+const SEVERITY_TO_LEVEL: Record<string, SarifLevel> = {
     CRITICAL: "error",
     HIGH: "error",
-    MODERATE: "warning",
     LOW: "note",
+    MODERATE: "warning",
     UNKNOWN: "none",
 };
 
@@ -50,63 +52,62 @@ const SEVERITY_TO_LEVEL: Record<string, "error" | "warning" | "note" | "none"> =
 const SEVERITY_TO_SECURITY_SEVERITY: Record<string, string> = {
     CRITICAL: "9.5",
     HIGH: "8.0",
-    MODERATE: "5.5",
     LOW: "2.5",
+    MODERATE: "5.5",
     UNKNOWN: "0.0",
 };
 
 const SEVERITY_TO_LABEL: Record<string, string> = {
     CRITICAL: "critical",
     HIGH: "high",
-    MODERATE: "medium",
     LOW: "low",
+    MODERATE: "medium",
     UNKNOWN: "none",
 };
 
 export interface SarifLog {
     $schema: string;
-    version: "2.1.0";
     runs: SarifRun[];
+    version: "2.1.0";
 }
 
 interface SarifRun {
+    results: SarifResult[];
     tool: {
         driver: {
+            informationUri: string;
             name: string;
+            rules: SarifRule[];
             semanticVersion?: string;
             version: string;
-            informationUri: string;
-            rules: SarifRule[];
         };
     };
-    results: SarifResult[];
 }
 
 interface SarifRule {
-    id: string;
-    name: string;
-    shortDescription: { text: string };
+    defaultConfiguration: { level: SarifLevel };
     fullDescription: { text: string };
     helpUri?: string;
-    defaultConfiguration: { level: "error" | "warning" | "note" | "none" };
+    id: string;
+    name: string;
     properties: {
+        precision?: "very-high" | "high" | "medium" | "low";
         "security-severity": string;
         "severity-label": string;
         tags: string[];
-        precision?: "very-high" | "high" | "medium" | "low";
     };
+    shortDescription: { text: string };
 }
 
 interface SarifResult {
-    ruleId: string;
-    level: "error" | "warning" | "note" | "none";
-    message: { text: string };
+    level: SarifLevel;
     locations: {
+        logicalLocations?: { kind: string; name: string }[];
         physicalLocation: {
             artifactLocation: { uri: string };
         };
-        logicalLocations?: { name: string; kind: string }[];
     }[];
+    message: { text: string };
     partialFingerprints: Record<string, string>;
     properties?: {
         acknowledged?: boolean;
@@ -117,12 +118,14 @@ interface SarifResult {
         packageVersion?: string;
         severityLabel?: string;
     };
+    ruleId: string;
 }
 
 const advisoryUri = (id: string): string => {
     if (id.startsWith("CVE-")) {
         return `https://nvd.nist.gov/vuln/detail/${id}`;
     }
+
     if (id.startsWith("GHSA-")) {
         return `https://github.com/advisories/${id}`;
     }
@@ -144,45 +147,42 @@ export const emitSarif = (options: SarifEmitOptions): SarifLog => {
     const lockfileUri = options.artifactUri ?? (relative(options.workspaceRoot, join(options.workspaceRoot, "package.json")) || "package.json");
 
     for (const finding of options.findings) {
-        const { vulnerability: vuln, packageName, packageVersion, acknowledged } = finding;
+        const { acknowledged, packageName, packageVersion, vulnerability: vuln } = finding;
         const level = SEVERITY_TO_LEVEL[vuln.severity] ?? "none";
         const label = SEVERITY_TO_LABEL[vuln.severity] ?? "none";
 
         if (!rulesById.has(vuln.id)) {
             rulesById.set(vuln.id, {
-                id: vuln.id,
-                name: vuln.id,
-                shortDescription: { text: (vuln.summary.split("\n")[0] ?? vuln.id).slice(0, 200) },
+                defaultConfiguration: { level },
                 fullDescription: { text: vuln.summary || `Advisory ${vuln.id}` },
                 helpUri: advisoryUri(vuln.id),
-                defaultConfiguration: { level },
+                id: vuln.id,
+                name: vuln.id,
                 properties: {
+                    precision: "very-high",
                     "security-severity": securitySeverity(vuln),
                     "severity-label": label,
                     tags: ["security", "vulnerability", "supply-chain", `severity:${label}`],
-                    precision: "very-high",
                 },
+                shortDescription: { text: (vuln.summary.split("\n")[0] ?? vuln.id).slice(0, 200) },
             });
         }
 
         results.push({
-            ruleId: vuln.id,
             level,
+            locations: [
+                {
+                    logicalLocations: [{ kind: "package", name: `${packageName}@${packageVersion}` }],
+                    physicalLocation: {
+                        artifactLocation: { uri: lockfileUri },
+                    },
+                },
+            ],
             message: {
                 text: `${vuln.id}: ${packageName}@${packageVersion} — ${vuln.summary || "no summary"}${
                     vuln.fixedVersions.length > 0 ? ` (fix: ${vuln.fixedVersions.join(", ")})` : ""
                 }`,
             },
-            locations: [
-                {
-                    physicalLocation: {
-                        artifactLocation: { uri: lockfileUri },
-                    },
-                    logicalLocations: [
-                        { name: `${packageName}@${packageVersion}`, kind: "package" },
-                    ],
-                },
-            ],
             partialFingerprints: {
                 advisoryId: vuln.id,
                 package: packageName,
@@ -197,24 +197,25 @@ export const emitSarif = (options: SarifEmitOptions): SarifLog => {
                 packageVersion,
                 severityLabel: label,
             },
+            ruleId: vuln.id,
         });
     }
 
     return {
         $schema: "https://json.schemastore.org/sarif-2.1.0.json",
-        version: "2.1.0",
         runs: [
             {
+                results,
                 tool: {
                     driver: {
-                        name: options.tool.name,
-                        version: options.tool.version,
                         informationUri: options.tool.informationUri,
+                        name: options.tool.name,
                         rules: [...rulesById.values()],
+                        version: options.tool.version,
                     },
                 },
-                results,
             },
         ],
+        version: "2.1.0",
     };
 };

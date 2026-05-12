@@ -143,7 +143,7 @@ describe(logCommandOutputCI, () => {
         const sectionKeyOf = (output: string): string => {
             const matched = sectionPattern.exec(output);
 
-            return matched ? matched[1] ?? "" : "";
+            return matched ? (matched[1] ?? "") : "";
         };
 
         const firstKey = sectionKeyOf(firstWrites);

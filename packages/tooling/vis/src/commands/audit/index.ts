@@ -68,7 +68,8 @@ const audit: Command = {
             type: String,
         },
         {
-            description: "Comma-separated list of OSV ecosystems to scan (default: npm). Supported: npm, pypi, crates.io (or 'cargo'), maven, go, rubygems. Non-npm ecosystems require --offline (online OSV path is npm-only).",
+            description:
+                "Comma-separated list of OSV ecosystems to scan (default: npm). Supported: npm, pypi, crates.io (or 'cargo'), maven, go, rubygems. Non-npm ecosystems require --offline (online OSV path is npm-only).",
             name: "ecosystem",
             type: String,
         },

@@ -18,18 +18,7 @@ import { collectSync, readJsonSync } from "@visulima/fs";
 
 const SOURCE_EXTENSIONS = ["ts", "tsx", "js", "jsx", "mjs", "cjs", "mts", "cts"];
 
-const DEFAULT_SKIP: RegExp[] = [
-    /node_modules/,
-    /\.git/,
-    /\.next/,
-    /\.cache/,
-    /dist/,
-    /build/,
-    /coverage/,
-    /\.turbo/,
-    /\.nx/,
-    /\.parcel-cache/,
-];
+const DEFAULT_SKIP: RegExp[] = [/node_modules/, /\.git/, /\.next/, /\.cache/, /dist/, /build/, /coverage/, /\.turbo/, /\.nx/, /\.parcel-cache/];
 
 const PACKAGE_JSON_DEP_KEYS = ["dependencies", "devDependencies", "peerDependencies", "optionalDependencies"] as const;
 
@@ -63,9 +52,7 @@ const normalizePackageName = (specifier: string): string | undefined => {
 
 const extractImportedNames = (source: string): Set<string> => {
     const found = new Set<string>();
-    const stripped = source
-        .replace(/\/\*[\s\S]*?\*\//g, "")
-        .replace(/(^|[^:])\/\/.*$/gm, "$1");
+    const stripped = source.replaceAll(/\/\*[\s\S]*?\*\//g, "").replaceAll(/(^|[^:])\/\/.*$/gm, "$1");
 
     const collect = (regex: RegExp): void => {
         regex.lastIndex = 0;
@@ -99,7 +86,7 @@ const extractPackageJsonNames = (jsonPath: string): Set<string> => {
             const map = pkg[key];
 
             if (map && typeof map === "object" && !Array.isArray(map)) {
-                for (const name of Object.keys(map as Record<string, string>)) {
+                for (const name of Object.keys(map)) {
                     found.add(name);
                 }
             }
@@ -112,24 +99,24 @@ const extractPackageJsonNames = (jsonPath: string): Set<string> => {
 };
 
 export interface ReachabilityOptions {
-    workspaceRoot: string;
-    /** Names of vulnerable packages to filter. Anything not in this set is ignored. */
-    vulnerablePackages: Set<string>;
     /** Force-keep these packages even if not statically imported (loaders, plugin chains, etc.). */
     alwaysAssumeUsed?: string[];
-    /** Override the file-walk skip list. Defaults to common build artefact directories. */
-    skip?: RegExp[];
     /** Limit the walk to a subset of source extensions. */
     extensions?: string[];
+    /** Override the file-walk skip list. Defaults to common build artefact directories. */
+    skip?: RegExp[];
+    /** Names of vulnerable packages to filter. Anything not in this set is ignored. */
+    vulnerablePackages: Set<string>;
+    workspaceRoot: string;
 }
 
 export interface ReachabilityResult {
-    /** Subset of `vulnerablePackages` that the static scan considers reachable. */
-    reachable: Set<string>;
-    /** Full set of statically-imported package names — useful for debugging. */
-    importedTotal: Set<string>;
     /** Files scanned. */
     filesScanned: number;
+    /** Full set of statically-imported package names — useful for debugging. */
+    importedTotal: Set<string>;
+    /** Subset of `vulnerablePackages` that the static scan considers reachable. */
+    reachable: Set<string>;
 }
 
 /**
@@ -168,7 +155,7 @@ export const computeReachableVulnerablePackages = (options: ReachabilityOptions)
         extensions: ["json"],
         includeDirs: false,
         skip,
-    }).filter((path) => path.endsWith("/package.json") || path.endsWith("\\package.json") || path.endsWith("package.json"));
+    }).filter((path) => path.endsWith("/package.json") || path.endsWith(String.raw`\package.json`) || path.endsWith("package.json"));
 
     for (const path of packageJsonFiles) {
         for (const name of extractPackageJsonNames(path)) {
@@ -191,9 +178,9 @@ export const computeReachableVulnerablePackages = (options: ReachabilityOptions)
     }
 
     return {
-        reachable,
-        importedTotal: imported,
         filesScanned,
+        importedTotal: imported,
+        reachable,
     };
 };
 

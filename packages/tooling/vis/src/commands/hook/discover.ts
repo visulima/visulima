@@ -5,12 +5,9 @@ import { spawnSync } from "node:child_process";
  *
  *   - `staged`: pre-commit-style; `git diff --cached` with ACM filter
  *   - `all`:    `--all-files` equivalent; `git ls-files`
- *   - `range`:  `--from-ref/--to-ref`; `git diff <from>..<to>` with ACM
+ *   - `range`:  `--from-ref/--to-ref`; `git diff &lt;from>..&lt;to>` with ACM
  */
-export type DiscoverMode =
-    | { kind: "all" }
-    | { kind: "range"; fromRef: string; toRef: string }
-    | { kind: "staged" };
+export type DiscoverMode = { kind: "all" } | { fromRef: string; kind: "range"; toRef: string } | { kind: "staged" };
 
 /**
  * Split a NUL-delimited git output buffer into filenames. We walk the
@@ -64,16 +61,15 @@ const gitListFiles = (args: ReadonlyArray<string>, errorHint: string, root: stri
  */
 export const discoverFiles = (mode: DiscoverMode, root: string): string[] => {
     switch (mode.kind) {
-        case "all":
+        case "all": {
             return gitListFiles(["ls-files", "-z"], "ls-files", root);
-        case "range":
-            return gitListFiles(
-                ["diff", "--name-only", "--diff-filter=ACM", "-z", mode.fromRef, mode.toRef],
-                "diff --from-ref/--to-ref",
-                root,
-            );
-        case "staged":
+        }
+        case "range": {
+            return gitListFiles(["diff", "--name-only", "--diff-filter=ACM", "-z", mode.fromRef, mode.toRef], "diff --from-ref/--to-ref", root);
+        }
+        case "staged": {
             return gitListFiles(["diff", "--cached", "--name-only", "--diff-filter=ACM", "-z"], "diff --cached", root);
+        }
         default: {
             const unreachable: never = mode;
 

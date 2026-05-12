@@ -304,10 +304,10 @@ export type CycloneDxRatingMethod = "CVSSv2" | "CVSSv3" | "CVSSv31" | "CVSSv4" |
 export type CycloneDxSeverity = "critical" | "high" | "medium" | "low" | "info" | "none" | "unknown";
 
 export interface CycloneDxVulnerabilityRating {
-    source?: { name?: string; url?: string };
+    method?: CycloneDxRatingMethod;
     score?: number;
     severity?: CycloneDxSeverity;
-    method?: CycloneDxRatingMethod;
+    source?: { name?: string; url?: string };
     vector?: string;
 }
 
@@ -318,48 +318,42 @@ export interface CycloneDxVulnerabilityReference {
 
 export interface CycloneDxVulnerabilityAffects {
     ref: string;
-    versions?: { version: string; status?: "affected" | "unaffected" | "unknown" }[];
+    versions?: { status?: "affected" | "unaffected" | "unknown"; version: string }[];
 }
 
 /** CycloneDX 1.7 VEX analysis state. */
-export type CycloneDxAnalysisState
-    = "resolved"
-    | "resolved_with_pedigree"
-    | "exploitable"
-    | "in_triage"
-    | "false_positive"
-    | "not_affected";
+export type CycloneDxAnalysisState = "resolved" | "resolved_with_pedigree" | "exploitable" | "in_triage" | "false_positive" | "not_affected";
 
 /** CycloneDX 1.7 VEX analysis justification. */
 export type CycloneDxAnalysisJustification
-    = "code_not_present"
-    | "code_not_reachable"
-    | "requires_configuration"
-    | "requires_dependency"
-    | "requires_environment"
-    | "protected_by_compiler"
-    | "protected_at_runtime"
-    | "protected_at_perimeter"
-    | "protected_by_mitigating_control";
+    = | "code_not_present"
+        | "code_not_reachable"
+        | "requires_configuration"
+        | "requires_dependency"
+        | "requires_environment"
+        | "protected_by_compiler"
+        | "protected_at_runtime"
+        | "protected_at_perimeter"
+        | "protected_by_mitigating_control";
 
 export interface CycloneDxVulnerability {
-    "bom-ref"?: string;
-    id: string;
-    source?: { name?: string; url?: string };
-    references?: CycloneDxVulnerabilityReference[];
-    ratings?: CycloneDxVulnerabilityRating[];
-    description?: string;
-    detail?: string;
-    recommendation?: string;
-    created?: string;
-    published?: string;
-    updated?: string;
     affects?: CycloneDxVulnerabilityAffects[];
     analysis?: {
-        state?: CycloneDxAnalysisState;
+        detail?: string;
         justification?: CycloneDxAnalysisJustification;
         response?: ("can_not_fix" | "will_not_fix" | "update" | "rollback" | "workaround_available")[];
-        detail?: string;
+        state?: CycloneDxAnalysisState;
     };
+    "bom-ref"?: string;
+    created?: string;
+    description?: string;
+    detail?: string;
+    id: string;
     properties?: Property[];
+    published?: string;
+    ratings?: CycloneDxVulnerabilityRating[];
+    recommendation?: string;
+    references?: CycloneDxVulnerabilityReference[];
+    source?: { name?: string; url?: string };
+    updated?: string;
 }

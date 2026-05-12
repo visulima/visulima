@@ -11,7 +11,7 @@ import type { BuiltinContext } from "./types";
  */
 const detectDuplicateJsonKeys = (source: string): void => {
     let i = 0;
-    const length = source.length;
+    const { length } = source;
 
     const skipWs = (): void => {
         while (i < length && /\s/.test(source[i]!)) {
@@ -28,14 +28,11 @@ const detectDuplicateJsonKeys = (source: string): void => {
         const start = i;
 
         while (i < length && source[i] !== "\"") {
-            if (source[i] === "\\") {
-                i += 2;
-            } else {
-                i += 1;
-            }
+            i += source[i] === "\\" ? 2 : 1;
         }
 
         const raw = source.slice(start, i);
+
         i += 1;
 
         return JSON.parse(`"${raw}"`) as string;
@@ -45,15 +42,26 @@ const detectDuplicateJsonKeys = (source: string): void => {
         skipWs();
         const ch = source[i];
 
-        if (ch === "{") {
-            parseObject();
-        } else if (ch === "[") {
-            parseArray();
-        } else if (ch === "\"") {
-            parseString();
-        } else {
-            while (i < length && ",}]".indexOf(source[i]!) === -1 && !/\s/.test(source[i]!)) {
-                i += 1;
+        switch (ch) {
+            case "\"": {
+                parseString();
+
+                break;
+            }
+            case "[": {
+                parseArray();
+
+                break;
+            }
+            case "{": {
+                parseObject();
+
+                break;
+            }
+            default: {
+                while (i < length && !",}]".includes(source[i]!) && !/\s/.test(source[i]!)) {
+                    i += 1;
+                }
             }
         }
     };

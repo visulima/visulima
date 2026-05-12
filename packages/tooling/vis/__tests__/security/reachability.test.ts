@@ -95,24 +95,21 @@ describe(computeReachableVulnerablePackages, () => {
         writeFileSync(join(workspace, "package.json"), JSON.stringify({ name: "x" }));
 
         const result = computeReachableVulnerablePackages({
+            vulnerablePackages: new Set(["axios", "lodash"]),
             workspaceRoot: workspace,
-            vulnerablePackages: new Set(["lodash", "axios"]),
         });
 
-        expect([...result.reachable].sort()).toEqual(["lodash"]);
+        expect([...result.reachable].sort()).toStrictEqual(["lodash"]);
     });
 
     it("counts package.json-declared deps as reachable", () => {
         expect.assertions(1);
 
-        writeFileSync(
-            join(workspace, "package.json"),
-            JSON.stringify({ name: "x", dependencies: { lodash: "^4" } }),
-        );
+        writeFileSync(join(workspace, "package.json"), JSON.stringify({ dependencies: { lodash: "^4" }, name: "x" }));
 
         const result = computeReachableVulnerablePackages({
-            workspaceRoot: workspace,
             vulnerablePackages: new Set(["lodash"]),
+            workspaceRoot: workspace,
         });
 
         expect(result.reachable.has("lodash")).toBe(true);
@@ -124,9 +121,9 @@ describe(computeReachableVulnerablePackages, () => {
         writeFileSync(join(workspace, "package.json"), JSON.stringify({ name: "x" }));
 
         const result = computeReachableVulnerablePackages({
-            workspaceRoot: workspace,
-            vulnerablePackages: new Set(["esbuild"]),
             alwaysAssumeUsed: ["esbuild"],
+            vulnerablePackages: new Set(["esbuild"]),
+            workspaceRoot: workspace,
         });
 
         expect(result.reachable.has("esbuild")).toBe(true);

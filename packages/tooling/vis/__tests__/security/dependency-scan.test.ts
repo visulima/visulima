@@ -9,39 +9,39 @@ import { lockedPackages } from "../../src/security/dependency-scan";
 const npmLockfileWithDevTransitive = (): string =>
     JSON.stringify(
         {
-            name: "fixture",
-            version: "0.0.0",
             lockfileVersion: 3,
+            name: "fixture",
             packages: {
                 "": {
-                    name: "fixture",
-                    version: "0.0.0",
                     dependencies: {
                         "prod-pkg": "1.0.0",
                     },
                     devDependencies: {
                         "dev-pkg": "2.0.0",
                     },
-                },
-                "node_modules/prod-pkg": {
-                    version: "1.0.0",
-                    dependencies: {
-                        "shared-dep": "3.0.0",
-                    },
-                },
-                "node_modules/dev-pkg": {
-                    version: "2.0.0",
-                    dependencies: {
-                        "dev-only-transitive": "9.9.9",
-                    },
-                },
-                "node_modules/shared-dep": {
-                    version: "3.0.0",
+                    name: "fixture",
+                    version: "0.0.0",
                 },
                 "node_modules/dev-only-transitive": {
                     version: "9.9.9",
                 },
+                "node_modules/dev-pkg": {
+                    dependencies: {
+                        "dev-only-transitive": "9.9.9",
+                    },
+                    version: "2.0.0",
+                },
+                "node_modules/prod-pkg": {
+                    dependencies: {
+                        "shared-dep": "3.0.0",
+                    },
+                    version: "1.0.0",
+                },
+                "node_modules/shared-dep": {
+                    version: "3.0.0",
+                },
             },
+            version: "0.0.0",
         },
         undefined,
         2,
@@ -50,10 +50,10 @@ const npmLockfileWithDevTransitive = (): string =>
 const packageJsonForLockfile = (): string =>
     JSON.stringify(
         {
-            name: "fixture",
-            version: "0.0.0",
             dependencies: { "prod-pkg": "1.0.0" },
             devDependencies: { "dev-pkg": "2.0.0" },
+            name: "fixture",
+            version: "0.0.0",
         },
         undefined,
         2,
@@ -79,7 +79,7 @@ describe("lockedPackages with prod-only filter", () => {
         const all = lockedPackages(workspace, "npm");
         const names = all.map((p) => p.name).sort();
 
-        expect(names).toEqual(["dev-only-transitive", "dev-pkg", "prod-pkg", "shared-dep"]);
+        expect(names).toStrictEqual(["dev-only-transitive", "dev-pkg", "prod-pkg", "shared-dep"]);
     });
 
     it("filters out dev roots and dev-only transitives when includeDev is false", () => {
@@ -88,7 +88,7 @@ describe("lockedPackages with prod-only filter", () => {
         const prod = lockedPackages(workspace, "npm", { includeDev: false });
         const names = prod.map((p) => p.name).sort();
 
-        expect(names).toEqual(["prod-pkg", "shared-dep"]);
+        expect(names).toStrictEqual(["prod-pkg", "shared-dep"]);
     });
 
     it("returns empty when the lockfile is missing", () => {
@@ -96,6 +96,6 @@ describe("lockedPackages with prod-only filter", () => {
 
         const empty = lockedPackages(join(tmpdir(), "definitely-not-a-workspace"), "npm");
 
-        expect(empty).toEqual([]);
+        expect(empty).toStrictEqual([]);
     });
 });

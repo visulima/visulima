@@ -5,12 +5,7 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { parse as parseYaml } from "yaml";
 
-import {
-    applyOverridePlan,
-    buildOverridePlanFromFindings,
-    planOverrideWrite,
-    resolveOverrideSurface,
-} from "../../src/security/transitive-fix";
+import { applyOverridePlan, buildOverridePlanFromFindings, planOverrideWrite, resolveOverrideSurface } from "../../src/security/transitive-fix";
 
 describe(buildOverridePlanFromFindings, () => {
     it("emits caret-pinned overrides per vulnerable package", () => {
@@ -97,16 +92,9 @@ describe(planOverrideWrite, () => {
     it("merges new pnpm overrides with existing ones, sorted by key", () => {
         expect.assertions(2);
 
-        writeFileSync(
-            join(workspace, "pnpm-workspace.yaml"),
-            "packages:\n  - 'packages/*'\n\noverrides:\n  'older-pkg': '^1.0.0'\n",
-        );
+        writeFileSync(join(workspace, "pnpm-workspace.yaml"), "packages:\n  - 'packages/*'\n\noverrides:\n  'older-pkg': '^1.0.0'\n");
 
-        const plan = planOverrideWrite(
-            workspace,
-            { entries: [{ packageName: "lodash", spec: "^4.17.21" }] },
-            { name: "pnpm", version: "10.0.0" },
-        );
+        const plan = planOverrideWrite(workspace, { entries: [{ packageName: "lodash", spec: "^4.17.21" }] }, { name: "pnpm", version: "10.0.0" });
 
         const parsed = parseYaml(plan.nextContent) as { overrides: Record<string, string>; packages: string[] };
 
@@ -117,16 +105,9 @@ describe(planOverrideWrite, () => {
     it("writes npm overrides into package.json#overrides", () => {
         expect.assertions(1);
 
-        writeFileSync(
-            join(workspace, "package.json"),
-            JSON.stringify({ dependencies: {}, name: "ws", version: "1.0.0" }, undefined, 2),
-        );
+        writeFileSync(join(workspace, "package.json"), JSON.stringify({ dependencies: {}, name: "ws", version: "1.0.0" }, undefined, 2));
 
-        const plan = planOverrideWrite(
-            workspace,
-            { entries: [{ packageName: "axios", spec: "^1.6.0" }] },
-            { name: "npm", version: "10.0.0" },
-        );
+        const plan = planOverrideWrite(workspace, { entries: [{ packageName: "axios", spec: "^1.6.0" }] }, { name: "npm", version: "10.0.0" });
 
         const parsed = JSON.parse(plan.nextContent) as Record<string, unknown>;
 
@@ -138,11 +119,7 @@ describe(planOverrideWrite, () => {
 
         writeFileSync(join(workspace, "package.json"), JSON.stringify({ name: "ws" }, undefined, 2));
 
-        const plan = planOverrideWrite(
-            workspace,
-            { entries: [{ packageName: "axios", spec: "^1.6.0" }] },
-            { name: "yarn", version: "4.0.0" },
-        );
+        const plan = planOverrideWrite(workspace, { entries: [{ packageName: "axios", spec: "^1.6.0" }] }, { name: "yarn", version: "4.0.0" });
 
         const parsed = JSON.parse(plan.nextContent) as Record<string, unknown>;
 
@@ -154,11 +131,7 @@ describe(planOverrideWrite, () => {
 
         writeFileSync(join(workspace, "package.json"), JSON.stringify({ name: "ws" }, undefined, 2));
 
-        const plan = planOverrideWrite(
-            workspace,
-            { entries: [{ packageName: "axios", spec: "^1.6.0" }] },
-            { name: "pnpm", version: "9.15.0" },
-        );
+        const plan = planOverrideWrite(workspace, { entries: [{ packageName: "axios", spec: "^1.6.0" }] }, { name: "pnpm", version: "9.15.0" });
 
         const parsed = JSON.parse(plan.nextContent) as { pnpm: { overrides: Record<string, string> } };
 
@@ -170,11 +143,7 @@ describe(planOverrideWrite, () => {
 
         writeFileSync(
             join(workspace, "package.json"),
-            JSON.stringify(
-                { name: "ws", overrides: { lodash: "^4.17.21", "stays-the-same": "^1.0.0" } },
-                undefined,
-                2,
-            ),
+            JSON.stringify({ name: "ws", overrides: { lodash: "^4.17.21", "stays-the-same": "^1.0.0" } }, undefined, 2),
         );
 
         const plan = planOverrideWrite(
@@ -197,16 +166,9 @@ describe(planOverrideWrite, () => {
     it("reports changed=false when every entry was unchanged", () => {
         expect.assertions(1);
 
-        writeFileSync(
-            join(workspace, "package.json"),
-            JSON.stringify({ name: "ws", overrides: { axios: "^1.6.0" } }, undefined, 2),
-        );
+        writeFileSync(join(workspace, "package.json"), JSON.stringify({ name: "ws", overrides: { axios: "^1.6.0" } }, undefined, 2));
 
-        const plan = planOverrideWrite(
-            workspace,
-            { entries: [{ packageName: "axios", spec: "^1.6.0" }] },
-            { name: "npm", version: "10.0.0" },
-        );
+        const plan = planOverrideWrite(workspace, { entries: [{ packageName: "axios", spec: "^1.6.0" }] }, { name: "npm", version: "10.0.0" });
 
         expect(plan.changed).toBe(false);
     });
@@ -218,7 +180,12 @@ describe(planOverrideWrite, () => {
 
         const planA = planOverrideWrite(
             workspace,
-            { entries: [{ packageName: "z-pkg", spec: "^1" }, { packageName: "a-pkg", spec: "^1" }] },
+            {
+                entries: [
+                    { packageName: "z-pkg", spec: "^1" },
+                    { packageName: "a-pkg", spec: "^1" },
+                ],
+            },
             { name: "npm", version: "10.0.0" },
         );
 
@@ -226,7 +193,12 @@ describe(planOverrideWrite, () => {
 
         const planB = planOverrideWrite(
             workspace,
-            { entries: [{ packageName: "a-pkg", spec: "^1" }, { packageName: "z-pkg", spec: "^1" }] },
+            {
+                entries: [
+                    { packageName: "a-pkg", spec: "^1" },
+                    { packageName: "z-pkg", spec: "^1" },
+                ],
+            },
             { name: "npm", version: "10.0.0" },
         );
 
@@ -250,11 +222,7 @@ describe(applyOverridePlan, () => {
 
         writeFileSync(join(workspace, "package.json"), JSON.stringify({ name: "ws" }, undefined, 2));
 
-        const plan = planOverrideWrite(
-            workspace,
-            { entries: [{ packageName: "axios", spec: "^1.6.0" }] },
-            { name: "npm", version: "10.0.0" },
-        );
+        const plan = planOverrideWrite(workspace, { entries: [{ packageName: "axios", spec: "^1.6.0" }] }, { name: "npm", version: "10.0.0" });
 
         applyOverridePlan(plan);
 
@@ -267,18 +235,11 @@ describe(applyOverridePlan, () => {
     it("is a no-op when nothing changed", () => {
         expect.assertions(1);
 
-        writeFileSync(
-            join(workspace, "package.json"),
-            JSON.stringify({ name: "ws", overrides: { axios: "^1.6.0" } }, undefined, 2),
-        );
+        writeFileSync(join(workspace, "package.json"), JSON.stringify({ name: "ws", overrides: { axios: "^1.6.0" } }, undefined, 2));
 
         const before = readFileSync(join(workspace, "package.json"), "utf8");
 
-        const plan = planOverrideWrite(
-            workspace,
-            { entries: [{ packageName: "axios", spec: "^1.6.0" }] },
-            { name: "npm", version: "10.0.0" },
-        );
+        const plan = planOverrideWrite(workspace, { entries: [{ packageName: "axios", spec: "^1.6.0" }] }, { name: "npm", version: "10.0.0" });
 
         applyOverridePlan(plan);
 
@@ -288,11 +249,7 @@ describe(applyOverridePlan, () => {
     it("errors when applying pnpm v10+ overrides without a pnpm-workspace.yaml", () => {
         expect.assertions(1);
 
-        const plan = planOverrideWrite(
-            workspace,
-            { entries: [{ packageName: "axios", spec: "^1.6.0" }] },
-            { name: "pnpm", version: "10.0.0" },
-        );
+        const plan = planOverrideWrite(workspace, { entries: [{ packageName: "axios", spec: "^1.6.0" }] }, { name: "pnpm", version: "10.0.0" });
 
         expect(() => applyOverridePlan(plan)).toThrow(/pnpm-workspace\.yaml not found/);
     });

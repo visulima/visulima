@@ -5,8 +5,8 @@ import { join } from "@visulima/path";
 import type { BuiltinContext } from "./types";
 
 // SP, TAB, VT, FF, CR
-const WHITESPACE = new Set<number>([0x20, 0x09, 0x0b, 0x0c, 0x0d]);
-const MARKDOWN_RE = /\.(md|markdown|mdown|mdx)$/i;
+const WHITESPACE = new Set<number>([0x09, 0x0b, 0x0c, 0x0d, 0x20]);
+const MARKDOWN_RE = /\.(?:md|markdown|mdown|mdx)$/i;
 
 /**
  * Mirrors `pre-commit/pre-commit-hooks/trailing_whitespace_fixer.py`:
@@ -48,13 +48,7 @@ const runTrailingWhitespace = (files: ReadonlyArray<string>, _args: ReadonlyArra
 
             const nonWhitespace = content.some((b) => !WHITESPACE.has(b));
 
-            if (
-                isMarkdown
-                && content.length >= 2
-                && content[content.length - 1] === 0x20
-                && content[content.length - 2] === 0x20
-                && nonWhitespace
-            ) {
+            if (isMarkdown && content.length >= 2 && content[content.length - 1] === 0x20 && content[content.length - 2] === 0x20 && nonWhitespace) {
                 stripEnd = Math.min(stripEnd + 2, content.length);
             }
 

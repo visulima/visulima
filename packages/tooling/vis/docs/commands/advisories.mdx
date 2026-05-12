@@ -9,11 +9,11 @@ description: "Manage the local OSV advisory cache that powers offline vulnerabil
 
 ## Sub-commands
 
-| Command | Description |
-| --- | --- |
-| `vis advisories sync` | Download and ingest one or more OSV ecosystem dumps. |
+| Command                 | Description                                                                            |
+| ----------------------- | -------------------------------------------------------------------------------------- |
+| `vis advisories sync`   | Download and ingest one or more OSV ecosystem dumps.                                   |
 | `vis advisories status` | Print the DB summary: path, schema version, per-ecosystem row counts, last sync, ETag. |
-| `vis advisories prune` | Delete the local DB. |
+| `vis advisories prune`  | Delete the local DB.                                                                   |
 
 ## `vis advisories sync`
 
@@ -40,13 +40,13 @@ vis advisories sync --source https://mirror.example.com
 
 ### Options
 
-| Option | Default | Description |
-| --- | --- | --- |
-| `--ecosystem <list>` | `npm` | Comma-separated list of ecosystems to sync. |
-| `--force` | `false` | Re-download and re-ingest even if the upstream ETag is unchanged. |
-| `--source <url>` | OSV.dev | Override the advisory source URL. Must be HTTPS and resolve to an allowed host. |
-| `--db <path>` | `<cache>/vis/advisories/db.sqlite` | Override the cache DB path. |
-| `--format <fmt>` | `table` | `table` (default) or `json`. |
+| Option               | Default                            | Description                                                                     |
+| -------------------- | ---------------------------------- | ------------------------------------------------------------------------------- |
+| `--ecosystem <list>` | `npm`                              | Comma-separated list of ecosystems to sync.                                     |
+| `--force`            | `false`                            | Re-download and re-ingest even if the upstream ETag is unchanged.               |
+| `--source <url>`     | OSV.dev                            | Override the advisory source URL. Must be HTTPS and resolve to an allowed host. |
+| `--db <path>`        | `<cache>/vis/advisories/db.sqlite` | Override the cache DB path.                                                     |
+| `--format <fmt>`     | `table`                            | `table` (default) or `json`.                                                    |
 
 ### Allowed sources
 

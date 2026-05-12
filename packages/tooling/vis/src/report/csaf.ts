@@ -11,26 +11,26 @@
 import type { SecurityVulnerability } from "../security/advisories";
 
 export interface CsafFinding {
+    acknowledged: boolean;
     packageName: string;
     packageVersion: string;
     vulnerability: SecurityVulnerability;
-    acknowledged: boolean;
 }
 
 export interface CsafEmitOptions {
-    /** Workspace root — stamped into `document.tracking.id`. */
-    workspaceRoot: string;
-    tool: {
-        name: string;
-        version: string;
-        /** Publisher URL — required by CSAF as `publisher.namespace`. */
-        informationUri: string;
-    };
     findings: CsafFinding[];
     /** Override the issue timestamp. Tests pass a fixed Date. */
     now?: Date;
+    tool: {
+        /** Publisher URL — required by CSAF as `publisher.namespace`. */
+        informationUri: string;
+        name: string;
+        version: string;
+    };
     /** Override the tracking ID. Defaults to a workspace-scoped slug. */
     trackingId?: string;
+    /** Workspace root — stamped into `document.tracking.id`. */
+    workspaceRoot: string;
 }
 
 interface CsafProductIdentificationHelper {
@@ -38,6 +38,7 @@ interface CsafProductIdentificationHelper {
 }
 
 interface CsafBranch {
+    branches?: CsafBranch[];
     category: "product_name" | "product_version" | "vendor";
     name: string;
     product?: {
@@ -45,7 +46,6 @@ interface CsafBranch {
         product_id: string;
         product_identification_helper?: CsafProductIdentificationHelper;
     };
-    branches?: CsafBranch[];
 }
 
 interface CsafProductTree {
@@ -53,10 +53,10 @@ interface CsafProductTree {
 }
 
 interface CsafCvss3 {
-    version: "3.1";
-    vectorString: string;
     baseScore: number;
     baseSeverity: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW" | "NONE";
+    vectorString: string;
+    version: "3.1";
 }
 
 interface CsafScore {
@@ -64,18 +64,25 @@ interface CsafScore {
     products: string[];
 }
 
+type CsafFlagLabel
+    = | "component_not_present"
+        | "inline_mitigations_already_exist"
+        | "vulnerable_code_cannot_be_controlled_by_adversary"
+        | "vulnerable_code_not_in_execute_path"
+        | "vulnerable_code_not_present";
+
 interface CsafVulnerability {
     cve?: string;
+    flags?: { label: CsafFlagLabel; product_ids: string[] }[];
     ids?: { system_name: string; text: string }[];
-    title?: string;
     notes?: { category: "summary" | "description"; text: string; title?: string }[];
     product_status: {
-        known_affected?: string[];
         fixed?: string[];
+        known_affected?: string[];
     };
     references?: { category: "self" | "external"; summary: string; url: string }[];
     scores?: CsafScore[];
-    flags?: { label: string; product_ids: string[] }[];
+    title?: string;
 }
 
 export interface CsafDocument {
@@ -100,23 +107,23 @@ export interface CsafDocument {
             version: string;
         };
     };
-    product_tree: CsafProductTree;
-    vulnerabilities: CsafVulnerability[];
+    product_tree?: CsafProductTree;
+    vulnerabilities?: CsafVulnerability[];
 }
 
 const SEVERITY_TO_CVSS_LABEL: Record<string, CsafCvss3["baseSeverity"]> = {
     CRITICAL: "CRITICAL",
     HIGH: "HIGH",
-    MODERATE: "MEDIUM",
     LOW: "LOW",
+    MODERATE: "MEDIUM",
     UNKNOWN: "NONE",
 };
 
 const SEVERITY_TO_FALLBACK_SCORE: Record<string, number> = {
     CRITICAL: 9.5,
-    HIGH: 8.0,
-    MODERATE: 5.5,
+    HIGH: 8,
     LOW: 2.5,
+    MODERATE: 5.5,
     UNKNOWN: 0,
 };
 
@@ -157,7 +164,6 @@ export const emitCsaf = (options: CsafEmitOptions): CsafDocument => {
     const trackingId = options.trackingId ?? `vis-audit-${now.toISOString().slice(0, 10)}`;
 
     // product_tree: one branch per package, one sub-branch per version.
-    const productIds = new Set<string>();
     const byPackage = groupBy(options.findings, (f) => f.packageName);
 
     const branches: CsafBranch[] = [...byPackage.entries()]
@@ -166,12 +172,8 @@ export const emitCsaf = (options: CsafEmitOptions): CsafDocument => {
             const versions = [...new Set(findings.map((f) => f.packageVersion))].sort();
 
             return {
-                category: "product_name" as const,
-                name: packageName,
                 branches: versions.map((version) => {
                     const pid = productId(packageName, version);
-
-                    productIds.add(pid);
 
                     return {
                         category: "product_version" as const,
@@ -183,6 +185,8 @@ export const emitCsaf = (options: CsafEmitOptions): CsafDocument => {
                         },
                     };
                 }),
+                category: "product_name" as const,
+                name: packageName,
             };
         });
 
@@ -203,21 +207,23 @@ export const emitCsaf = (options: CsafEmitOptions): CsafDocument => {
             const cveId = isCve ? advisoryId : allIds.find((id) => id.startsWith("CVE-"));
             const otherIds = allIds
                 .filter((id) => id !== cveId)
-                .map((id) => ({
-                    system_name: id.startsWith("GHSA-") ? "GitHub Security Advisory" : "OSV",
-                    text: id,
-                }));
+                .map((id) => {
+                    return {
+                        system_name: id.startsWith("GHSA-") ? "GitHub Security Advisory" : "OSV",
+                        text: id,
+                    };
+                });
 
-            const score = typeof sample.cvssScore === "number" && Number.isFinite(sample.cvssScore)
-                ? sample.cvssScore
-                : SEVERITY_TO_FALLBACK_SCORE[sample.severity] ?? 0;
+            const score
+                = typeof sample.cvssScore === "number" && Number.isFinite(sample.cvssScore)
+                    ? sample.cvssScore
+                    : (SEVERITY_TO_FALLBACK_SCORE[sample.severity] ?? 0);
 
             const acknowledgedProducts = findings.filter((f) => f.acknowledged).map((f) => productId(f.packageName, f.packageVersion));
 
             const result: CsafVulnerability = {
                 ...(cveId ? { cve: cveId } : {}),
                 ...(otherIds.length > 0 ? { ids: otherIds } : {}),
-                title: sample.summary.split("\n")[0]?.slice(0, 200) || advisoryId,
                 notes: [
                     {
                         category: "description",
@@ -236,28 +242,29 @@ export const emitCsaf = (options: CsafEmitOptions): CsafDocument => {
                 scores: [
                     {
                         cvss_v3: {
-                            version: "3.1",
+                            baseScore: score,
+                            baseSeverity: SEVERITY_TO_CVSS_LABEL[sample.severity] ?? "NONE",
                             // We don't have the vector string from OSV — synthesize a placeholder
                             // that round-trips the score. CSAF schema requires `vectorString`
                             // when `cvss_v3` is present; consumers that validate the vector
                             // against the score will still accept this.
                             vectorString: `CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:L`,
-                            baseScore: score,
-                            baseSeverity: SEVERITY_TO_CVSS_LABEL[sample.severity] ?? "NONE",
+                            version: "3.1",
                         },
                         products,
                     },
                 ],
+                title: sample.summary.split("\n")[0]?.slice(0, 200) || advisoryId,
+                // CSAF flag.label is a closed enum; `inline_mitigations_already_exist`
+                // is the closest valid match for "user has reviewed and accepted
+                // this finding" — analogous to CycloneDX VEX `not_affected/will_not_fix`.
                 ...(acknowledgedProducts.length > 0
-                    ? { flags: [{ label: "vex_acknowledged", product_ids: acknowledgedProducts }] }
+                    ? { flags: [{ label: "inline_mitigations_already_exist" as const, product_ids: acknowledgedProducts }] }
                     : {}),
             };
 
             return result;
         });
-
-    // Mark productIds reachable so future readers can rely on `branches` carrying all of them.
-    void productIds;
 
     return {
         document: {
@@ -285,7 +292,10 @@ export const emitCsaf = (options: CsafEmitOptions): CsafDocument => {
                 version: "1",
             },
         },
-        product_tree: { branches },
-        vulnerabilities,
+        // CSAF schema requires `branches[]` and `vulnerabilities[]` to be
+        // non-empty when present. With zero findings, omit them entirely —
+        // top-level only mandates `document`.
+        ...(branches.length > 0 ? { product_tree: { branches } } : {}),
+        ...(vulnerabilities.length > 0 ? { vulnerabilities } : {}),
     };
 };

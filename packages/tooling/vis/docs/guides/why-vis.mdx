@@ -9,34 +9,34 @@ Every monorepo task runner caches builds and schedules dependencies. The differe
 
 ## At a glance
 
-|  | vis | Vite Task | Turbo 2.6 | Nx 22 (no Cloud) | moon 2.0 |
-|---|:---:|:---:|:---:|:---:|:---:|
-| Local content-addressed cache | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Affected detection | ✅ | ❌ | ✅ | ✅ | ✅ |
-| HTTP remote cache (Turbo-compat) | ✅ | ❌ | ✅ | community plugins | ✅ |
-| **REAPI gRPC remote cache** (bazel-remote / BuildBuddy / EngFlow) | ✅ | ❌ | ❌ | ❌ | ✅ |
-| **HMAC-signed cache artifacts** | ✅ | ❌ | ✅ (HMAC) | ❌ | ❌ |
-| **`cache why <task>` hash diff** | ✅ | ❌ | ❌ | ❌ | ❌ |
-| **Cache restoration fidelity** (mtime / perms) | ✅ | ⚠ open issues | partial | partial | partial |
-| Cache retention (`--keep-last` / `--max-age` / `--max-size`) | ✅ | ❌ open | ❌ | ❌ | `--lifetime` only |
-| Worktree-aware shared cache | ✅ | ❌ | ❌ | ✅ (22.7+) | ❌ |
-| **MCP server for AI agents** | ✅ (8 tools) | ❌ | skill only | ✅ (docs + workspace) | ✅ (7 tools, v1.37+) |
-| **`ai heal` self-healing CI** | ✅ (GH/GL/Buildkite) | ❌ | ❌ | ✅ Cloud-only | ❌ |
-| **`vis service` cross-invocation registry** | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Watch mode | ✅ | ❌ open | ✅ | ✅ | ❌ |
-| Conditional + finally / always tasks | `when:` + `always:` | ❌ | ❌ | partial | partial (`os`/`runInCI`, no finally) |
-| Plugin / fingerprint hooks | ✅ (14 hooks) | ❌ | ❌ | ✅ | ❌ (WASM toolchains only) |
-| Strict env mode | ✅ | ❌ | ✅ | ❌ | ❌ |
-| Lockfile preflight | ✅ (warn/fail) | ❌ | ❌ | ❌ | auto-install on drift |
-| Inferred targets (Project Crystal) | ✅ (36 tools) | ❌ | ❌ | ✅ | ❌ |
-| Docker scaffold w/ lockfile prune | ✅ | ❌ | ✅ | ❌ | ✅ |
-| Run replay (no re-execution) | ✅ | partial (`--last-details`) | ❌ | ❌ | ❌ |
-| Output styles (quiet-on-success) | ✅ | ❌ | ❌ | ❌ | ✅ (`outputStyle`) |
-| Auto syscall input tracing | ❌ ([roadmap](https://github.com/visulima/visulima/blob/alpha/packages/tooling/vis/priority-roadmap.md)) | ✅ (fspy) | ❌ | ❌ | ❌ |
-| Bundled linter / formatter / bundler | ❌ (orchestrator) | ✅ (Oxlint / Oxfmt / Rolldown) | ❌ | partial | ❌ |
-| Catalog management (pnpm / bun) | ✅ | wraps PM | ❌ | ❌ | ❌ |
-| Built-in secret scanner | ✅ (gitleaks engine, Rust) | ❌ | ❌ | ❌ | ❌ |
-| OSV vulnerability scan | ✅ | ❌ | ❌ | ❌ | ❌ |
+|                                                                   |                                                   vis                                                    |           Vite Task            | Turbo 2.6  |   Nx 22 (no Cloud)    |               moon 2.0               |
+| ----------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------: | :----------------------------: | :--------: | :-------------------: | :----------------------------------: |
+| Local content-addressed cache                                     |                                                    ✅                                                    |               ✅               |     ✅     |          ✅           |                  ✅                  |
+| Affected detection                                                |                                                    ✅                                                    |               ❌               |     ✅     |          ✅           |                  ✅                  |
+| HTTP remote cache (Turbo-compat)                                  |                                                    ✅                                                    |               ❌               |     ✅     |   community plugins   |                  ✅                  |
+| **REAPI gRPC remote cache** (bazel-remote / BuildBuddy / EngFlow) |                                                    ✅                                                    |               ❌               |     ❌     |          ❌           |                  ✅                  |
+| **HMAC-signed cache artifacts**                                   |                                                    ✅                                                    |               ❌               | ✅ (HMAC)  |          ❌           |                  ❌                  |
+| **`cache why <task>` hash diff**                                  |                                                    ✅                                                    |               ❌               |     ❌     |          ❌           |                  ❌                  |
+| **Cache restoration fidelity** (mtime / perms)                    |                                                    ✅                                                    |         ⚠ open issues          |  partial   |        partial        |               partial                |
+| Cache retention (`--keep-last` / `--max-age` / `--max-size`)      |                                                    ✅                                                    |            ❌ open             |     ❌     |          ❌           |          `--lifetime` only           |
+| Worktree-aware shared cache                                       |                                                    ✅                                                    |               ❌               |     ❌     |      ✅ (22.7+)       |                  ❌                  |
+| **MCP server for AI agents**                                      |                                               ✅ (8 tools)                                               |               ❌               | skill only | ✅ (docs + workspace) |         ✅ (7 tools, v1.37+)         |
+| **`ai heal` self-healing CI**                                     |                                           ✅ (GH/GL/Buildkite)                                           |               ❌               |     ❌     |     ✅ Cloud-only     |                  ❌                  |
+| **`vis service` cross-invocation registry**                       |                                                    ✅                                                    |               ❌               |     ❌     |          ❌           |                  ❌                  |
+| Watch mode                                                        |                                                    ✅                                                    |            ❌ open             |     ✅     |          ✅           |                  ❌                  |
+| Conditional + finally / always tasks                              |                                           `when:` + `always:`                                            |               ❌               |     ❌     |        partial        | partial (`os`/`runInCI`, no finally) |
+| Plugin / fingerprint hooks                                        |                                              ✅ (14 hooks)                                               |               ❌               |     ❌     |          ✅           |      ❌ (WASM toolchains only)       |
+| Strict env mode                                                   |                                                    ✅                                                    |               ❌               |     ✅     |          ❌           |                  ❌                  |
+| Lockfile preflight                                                |                                              ✅ (warn/fail)                                              |               ❌               |     ❌     |          ❌           |        auto-install on drift         |
+| Inferred targets (Project Crystal)                                |                                              ✅ (36 tools)                                               |               ❌               |     ❌     |          ✅           |                  ❌                  |
+| Docker scaffold w/ lockfile prune                                 |                                                    ✅                                                    |               ❌               |     ✅     |          ❌           |                  ✅                  |
+| Run replay (no re-execution)                                      |                                                    ✅                                                    |   partial (`--last-details`)   |     ❌     |          ❌           |                  ❌                  |
+| Output styles (quiet-on-success)                                  |                                                    ✅                                                    |               ❌               |     ❌     |          ❌           |          ✅ (`outputStyle`)          |
+| Auto syscall input tracing                                        | ❌ ([roadmap](https://github.com/visulima/visulima/blob/alpha/packages/tooling/vis/priority-roadmap.md)) |           ✅ (fspy)            |     ❌     |          ❌           |                  ❌                  |
+| Bundled linter / formatter / bundler                              |                                            ❌ (orchestrator)                                             | ✅ (Oxlint / Oxfmt / Rolldown) |     ❌     |        partial        |                  ❌                  |
+| Catalog management (pnpm / bun)                                   |                                                    ✅                                                    |            wraps PM            |     ❌     |          ❌           |                  ❌                  |
+| Built-in secret scanner                                           |                                        ✅ (gitleaks engine, Rust)                                        |               ❌               |     ❌     |          ❌           |                  ❌                  |
+| OSV vulnerability scan                                            |                                                    ✅                                                    |               ❌               |     ❌     |          ❌           |                  ❌                  |
 
 Status sources: [Vite Task open issues](https://github.com/voidzero-dev/vite-task/issues), [Turborepo docs](https://turborepo.dev/docs), [Turborepo AI integration](https://turborepo.dev/docs/guides/ai), [Nx docs](https://nx.dev) + [Nx MCP reference](https://nx.dev/docs/reference/nx-mcp), [moon docs](https://moonrepo.dev/docs) + [moon MCP guide](https://moonrepo.dev/docs/guides/mcp), [moon 2.0 release notes](https://moonrepo.dev/blog/moon-v2.0), and [monorepo.tools comparison](https://monorepo.tools/compare). vis state mirrors `priority-roadmap.md` in the same directory.
 

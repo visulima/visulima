@@ -1,15 +1,15 @@
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 import { dim } from "@visulima/colorize";
 
+import type { VisConfig } from "../../config/workspace";
 import { pail } from "../../io/logger";
 import { startScanProgress } from "../../scan/scan-progress";
 import type { SyncResult } from "../../security/advisories";
 import { DEFAULT_ADVISORY_SOURCE, syncAdvisories } from "../../security/advisories";
 import type { AdvisoriesSyncOptions } from "./index";
 
-import type { VisConfig } from "../../config/workspace";
-
-const readAdvisoriesConfig = (visConfig: VisConfig | undefined): NonNullable<NonNullable<NonNullable<VisConfig["security"]>["audit"]>["advisories"]> => visConfig?.security?.audit?.advisories ?? {};
+const readAdvisoriesConfig = (visConfig: VisConfig | undefined): NonNullable<NonNullable<NonNullable<VisConfig["security"]>["audit"]>["advisories"]> =>
+    visConfig?.security?.audit?.advisories ?? {};
 
 const parseEcosystems = (input: string | undefined): string[] => {
     if (!input) {
@@ -32,37 +32,26 @@ const execute = async ({ logger: _logger, options, visConfig, workspaceRoot }: T
     const source = options.source ?? advisoriesConfig.source ?? DEFAULT_ADVISORY_SOURCE;
     const ecosystems = parseEcosystems(options.ecosystem);
 
-    const tasks = ecosystems.map((eco) => ({ id: eco, label: `Sync ${eco} advisories` }));
+    const tasks = ecosystems.map((eco) => {
+        return { id: eco, label: `Sync ${eco} advisories` };
+    });
     const progress = startScanProgress(tasks, { live: !isJson });
 
-    const results: { ecosystem: string; result?: SyncResult; error?: string }[] = [];
+    const results: { ecosystem: string; error?: string; result?: SyncResult }[] = [];
 
     try {
         for (const ecosystem of ecosystems) {
             progress.start(ecosystem);
             const startedAt = Date.now();
-            let downloadBytes = 0;
-            let downloadTotal: number | undefined;
-            let ingestCurrent = 0;
-            let ingestTotal = 0;
 
             try {
                 const result = await syncAdvisories({
-                    workspaceRoot,
-                    ecosystem,
-                    source,
                     allowedHosts: advisoriesConfig.allowedHosts,
                     dbPath: options.db,
+                    ecosystem,
                     force: Boolean(options.force),
-                    onProgress: (current, total, phase) => {
-                        if (phase === "download") {
-                            downloadBytes = current;
-                            downloadTotal = total;
-                        } else {
-                            ingestCurrent = current;
-                            ingestTotal = total;
-                        }
-                    },
+                    source,
+                    workspaceRoot,
                 });
 
                 results.push({ ecosystem, result });
@@ -70,11 +59,7 @@ const execute = async ({ logger: _logger, options, visConfig, workspaceRoot }: T
                 if (result.upToDate) {
                     progress.finish(ecosystem, "ok", `up to date · ${formatDuration(Date.now() - startedAt)}`);
                 } else {
-                    progress.finish(
-                        ecosystem,
-                        "ok",
-                        `${result.advisoriesIngested.toLocaleString()} advisories · ${formatDuration(result.durationMs)}`,
-                    );
+                    progress.finish(ecosystem, "ok", `${result.advisoriesIngested.toLocaleString()} advisories · ${formatDuration(result.durationMs)}`);
                 }
             } catch (error) {
                 const message = error instanceof Error ? error.message : String(error);
@@ -82,12 +67,6 @@ const execute = async ({ logger: _logger, options, visConfig, workspaceRoot }: T
                 results.push({ ecosystem, error: message });
                 progress.finish(ecosystem, "error", message);
             }
-
-            // Suppress unused-var lint until we surface progress numbers in JSON
-            void downloadBytes;
-            void downloadTotal;
-            void ingestCurrent;
-            void ingestTotal;
         }
     } finally {
         progress.stop();
@@ -95,15 +74,17 @@ const execute = async ({ logger: _logger, options, visConfig, workspaceRoot }: T
 
     if (isJson) {
         const payload = {
+            ecosystems: results.map((r) => {
+                return {
+                    advisoriesIngested: r.result?.advisoriesIngested ?? 0,
+                    dbPath: r.result?.dbPath ?? null,
+                    durationMs: r.result?.durationMs ?? 0,
+                    ecosystem: r.ecosystem,
+                    error: r.error ?? null,
+                    upToDate: r.result?.upToDate ?? false,
+                };
+            }),
             source,
-            ecosystems: results.map((r) => ({
-                ecosystem: r.ecosystem,
-                upToDate: r.result?.upToDate ?? false,
-                advisoriesIngested: r.result?.advisoriesIngested ?? 0,
-                durationMs: r.result?.durationMs ?? 0,
-                dbPath: r.result?.dbPath ?? null,
-                error: r.error ?? null,
-            })),
         };
 
         process.stdout.write(`${JSON.stringify(payload, undefined, 2)}\n`);

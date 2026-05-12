@@ -927,6 +927,21 @@ export interface VisConfig {
      */
     security?: {
         /**
+         * Map of package names/patterns to allow (true) or deny (false) build scripts.
+         * Packages not listed are denied by default.
+         * Equivalent to pnpm's `allowBuilds` setting.
+         * @example
+         * ```
+         * allowBuilds: {
+         *   "esbuild": true,
+         *   "core-js": false,
+         *   "@prisma/client": true,
+         * }
+         * ```
+         */
+        allowBuilds?: Record<string, boolean>;
+
+        /**
          * Offline OSV advisory + `vis audit` configuration.
          *
          * Controls `vis audit --offline` and `vis advisories sync` behavior:
@@ -945,14 +960,6 @@ export interface VisConfig {
              */
             advisories?: {
                 /**
-                 * OSV mirror base URL (no trailing slash). Defaults to the
-                 * public Google Cloud Storage bucket
-                 * (`https://osv-vulnerabilities.storage.googleapis.com`).
-                 * Override to point at a corporate mirror.
-                 */
-                source?: string;
-
-                /**
                  * Extra hosts permitted as `audit.advisories.source`. The
                  * built-in allowlist is enforced even if this field is
                  * omitted; entries here add to it.
@@ -970,6 +977,14 @@ export interface VisConfig {
                 refreshIntervalHours?: number;
 
                 /**
+                 * OSV mirror base URL (no trailing slash). Defaults to the
+                 * public Google Cloud Storage bucket
+                 * (`https://osv-vulnerabilities.storage.googleapis.com`).
+                 * Override to point at a corporate mirror.
+                 */
+                source?: string;
+
+                /**
                  * Sigstore signature verification for the OSV dump.
                  * Requires the native binding to be built with the
                  * `verify-signatures` Cargo feature (default in the release
@@ -979,7 +994,7 @@ export interface VisConfig {
                 verify?: {
                     /**
                      * Enable signature verification. The sync flow downloads
-                     * `<eco>/all.zip.sig` next to the zip and aborts if it
+                     * `&lt;eco>/all.zip.sig` next to the zip and aborts if it
                      * cannot verify against `expectedIssuer` / `expectedSubject`.
                      * @default false
                      */
@@ -990,20 +1005,6 @@ export interface VisConfig {
                     expectedSubject?: string;
                 };
             };
-
-            /**
-             * Severity threshold that makes `vis audit` exit non-zero.
-             * Equivalent to the CLI `--fail-on` flag.
-             * @example "high"
-             */
-            failOn?: "critical" | "high" | "low" | "medium";
-
-            /**
-             * When true, `vis audit` skips network calls and queries the
-             * offline cache. Equivalent to the CLI `--offline` flag.
-             * @default false
-             */
-            offlineByDefault?: boolean;
 
             /**
              * Gates for the auto-apply flow (`vis audit --apply` /
@@ -1030,17 +1031,24 @@ export interface VisConfig {
             };
 
             /**
+             * Severity threshold that makes `vis audit` exit non-zero.
+             * Equivalent to the CLI `--fail-on` flag.
+             * @example "high"
+             */
+            failOn?: "critical" | "high" | "low" | "medium";
+
+            /**
+             * When true, `vis audit` skips network calls and queries the
+             * offline cache. Equivalent to the CLI `--offline` flag.
+             * @default false
+             */
+            offlineByDefault?: boolean;
+
+            /**
              * Reachability filter — only report vulnerabilities in
              * packages the workspace statically imports.
              */
             usage?: {
-                /**
-                 * Enable the reachability filter by default. Equivalent to
-                 * `--usage` on the CLI. Disable on the CLI via `--no-usage`.
-                 * @default false
-                 */
-                enabled?: boolean;
-
                 /**
                  * Packages to always treat as reachable even if no static
                  * import is found. Use for build-time loaders, plugin
@@ -1049,23 +1057,15 @@ export interface VisConfig {
                  * @example ["esbuild", "webpack-cli"]
                  */
                 alwaysAssumeUsed?: string[];
+
+                /**
+                 * Enable the reachability filter by default. Equivalent to
+                 * `--usage` on the CLI. Disable on the CLI via `--no-usage`.
+                 * @default false
+                 */
+                enabled?: boolean;
             };
         };
-
-        /**
-         * Map of package names/patterns to allow (true) or deny (false) build scripts.
-         * Packages not listed are denied by default.
-         * Equivalent to pnpm's `allowBuilds` setting.
-         * @example
-         * ```
-         * allowBuilds: {
-         *   "esbuild": true,
-         *   "core-js": false,
-         *   "@prisma/client": true,
-         * }
-         * ```
-         */
-        allowBuilds?: Record<string, boolean>;
 
         /**
          * When true, prevents transitive dependencies from using exotic sources

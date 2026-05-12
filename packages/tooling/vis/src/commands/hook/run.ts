@@ -2,10 +2,10 @@ import { cwd } from "node:process";
 
 import { loadHookConfig } from "./config";
 import { PREK_STAGES_WITH_GIT_ARGS } from "./constants";
-import type { DispatchContext } from "./dispatch";
-import { runStage } from "./dispatch";
 import type { DiscoverMode } from "./discover";
 import { discoverFiles } from "./discover";
+import type { DispatchContext } from "./dispatch";
+import { runStage } from "./dispatch";
 
 interface RunOptions {
     allFiles?: boolean;
@@ -55,16 +55,11 @@ const resolveDiscoverMode = (options: RunOptions): DiscoverMode => {
 };
 
 /**
- * Load `<hooksDirectory>/config.json` and run every hook configured for
+ * Load `&lt;hooksDirectory>/config.json` and run every hook configured for
  * `stage` against the discovered files. Returns a non-zero exit code if
  * any hook fails or if the config is absent/invalid.
  */
-const runHookStage = (
-    root: string,
-    hooksDirectory: string,
-    options: RunOptions,
-    logger: RunLogger,
-): number => {
+const runHookStage = (root: string, hooksDirectory: string, options: RunOptions, logger: RunLogger): number => {
     const stage = options.stage ?? DEFAULT_STAGE;
     const config = loadHookConfig(root, hooksDirectory);
 

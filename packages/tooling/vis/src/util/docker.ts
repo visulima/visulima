@@ -250,8 +250,11 @@ export const scaffoldDockerContext = (options: ScaffoldOptions): { projects: str
     const {
         focus,
         includeSources = false,
-        // eslint-disable-next-line no-console -- default log impl writes to stdout; callers override with their own logger in production paths
-        log = (message: string) => { console.log(message); },
+
+        log = (message: string) => {
+            // eslint-disable-next-line no-console -- default CLI logger for scaffold operations
+            console.log(message);
+        },
         outDir,
         projectGraph,
         pruneLockfile: shouldPruneLockfile = true,

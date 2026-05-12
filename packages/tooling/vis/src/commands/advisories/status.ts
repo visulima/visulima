@@ -39,6 +39,7 @@ const formatRelative = (iso: string): string => {
     if (minutes < 1) {
         return "just now";
     }
+
     if (minutes < 60) {
         return `${minutes}m ago`;
     }
@@ -66,15 +67,17 @@ const execute = async ({ logger: _logger, options, workspaceRoot }: Toolbox<Cons
             `${JSON.stringify(
                 {
                     dbPath,
+                    ecosystems: status.ecosystems.map((e) => {
+                        return {
+                            advisoryCount: e.advisoryCount,
+                            lastSyncIso: e.lastSyncIso,
+                            manifestEtag: e.manifestEtag ?? null,
+                            name: e.name,
+                        };
+                    }),
                     exists: status.exists,
                     schemaVersion: status.schemaVersion,
                     sizeBytes: status.sizeBytes,
-                    ecosystems: status.ecosystems.map((e) => ({
-                        name: e.name,
-                        advisoryCount: e.advisoryCount,
-                        lastSyncIso: e.lastSyncIso,
-                        manifestEtag: e.manifestEtag ?? null,
-                    })),
                 },
                 undefined,
                 2,

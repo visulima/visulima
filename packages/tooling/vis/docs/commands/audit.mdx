@@ -56,61 +56,61 @@ vis audit --sync                   # mirror accepted risks to native PM config
 
 ### Filtering and scope
 
-| Option | Default | Description |
-| --- | --- | --- |
-| `--severity <level>` | `low` | Minimum severity to report: `low`, `medium`, `high`, `critical`. |
-| `--prod-only` | `false` | Skip devDependencies — scan production graph only. |
-| `--usage` | `false` | Reachability filter — only report packages that are statically imported. |
-| `--no-usage` | `false` | Disable the reachability filter even if enabled in config. |
-| `--ecosystem <list>` | `npm` | Comma-separated OSV ecosystems. Only `npm` is wired today; the flag is stable so future ecosystems are purely additive. |
-| `--show-accepted` | `false` | Include findings already on the workspace's accepted-risk list. |
+| Option               | Default | Description                                                                                                             |
+| -------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `--severity <level>` | `low`   | Minimum severity to report: `low`, `medium`, `high`, `critical`.                                                        |
+| `--prod-only`        | `false` | Skip devDependencies — scan production graph only.                                                                      |
+| `--usage`            | `false` | Reachability filter — only report packages that are statically imported.                                                |
+| `--no-usage`         | `false` | Disable the reachability filter even if enabled in config.                                                              |
+| `--ecosystem <list>` | `npm`   | Comma-separated OSV ecosystems. Only `npm` is wired today; the flag is stable so future ecosystems are purely additive. |
+| `--show-accepted`    | `false` | Include findings already on the workspace's accepted-risk list.                                                         |
 
 ### Output formats
 
-| Option | Description |
-| --- | --- |
-| `--format table` | Default human-readable output. |
-| `--format json` | Machine-readable JSON (for CI integration). |
-| `--format sarif` | [SARIF 2.1.0](https://docs.oasis-open.org/sarif/sarif/v2.1.0/) — for GitHub / GitLab code-scanning. |
-| `--format csaf` | [CSAF 2.0](https://oasis-open.github.io/csaf-documentation/) `csaf_vex` profile. |
+| Option                   | Description                                                                                                      |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------- |
+| `--format table`         | Default human-readable output.                                                                                   |
+| `--format json`          | Machine-readable JSON (for CI integration).                                                                      |
+| `--format sarif`         | [SARIF 2.1.0](https://docs.oasis-open.org/sarif/sarif/v2.1.0/) — for GitHub / GitLab code-scanning.              |
+| `--format csaf`          | [CSAF 2.0](https://oasis-open.github.io/csaf-documentation/) `csaf_vex` profile.                                 |
 | `--format cyclonedx-vex` | [CycloneDX 1.7](https://cyclonedx.org/specification/) BOM with `vulnerabilities[]` (SBOM + VEX in one document). |
-| `--report <path>` | Write a self-contained HTML report to `<path>`. Auto-opens in a TTY when not in CI. |
+| `--report <path>`        | Write a self-contained HTML report to `<path>`. Auto-opens in a TTY when not in CI.                              |
 
 ### Offline cache
 
-| Option | Default | Description |
-| --- | --- | --- |
-| `--offline` | `false` | Query the local OSV cache only. Errors if the cache is missing. |
-| `--db <path>` | `<cache>/vis/advisories/db.sqlite` | Override the offline advisory DB path. |
+| Option        | Default                            | Description                                                     |
+| ------------- | ---------------------------------- | --------------------------------------------------------------- |
+| `--offline`   | `false`                            | Query the local OSV cache only. Errors if the cache is missing. |
+| `--db <path>` | `<cache>/vis/advisories/db.sqlite` | Override the offline advisory DB path.                          |
 
 Run [`vis advisories sync`](./advisories.mdx) to populate the cache.
 
 ### Fix loops
 
-| Option | Default | Description |
-| --- | --- | --- |
-| `--fix` | `false` | Show fix suggestions next to each finding. |
-| `--apply` | `false` | Upgrade direct deps for vulnerable packages by running the active PM update command, then rescan. Dry-run preview shown first. |
+| Option               | Default | Description                                                                                                                                       |
+| -------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--fix`              | `false` | Show fix suggestions next to each finding.                                                                                                        |
+| `--apply`            | `false` | Upgrade direct deps for vulnerable packages by running the active PM update command, then rescan. Dry-run preview shown first.                    |
 | `--apply-transitive` | `false` | Write PM-specific overrides for vulnerable transitives (pnpm-workspace.yaml / package.json overrides / resolutions). Dry-run preview shown first. |
-| `--yes` | `false` | Skip the confirmation prompt. **Required in CI for both `--apply` and `--apply-transitive`.** |
-| `--allow-major` | `false` | Allow `--apply` to bump a direct dep across a major version when the lowest fix is outside the existing range. |
+| `--yes`              | `false` | Skip the confirmation prompt. **Required in CI for both `--apply` and `--apply-transitive`.**                                                     |
+| `--allow-major`      | `false` | Allow `--apply` to bump a direct dep across a major version when the lowest fix is outside the existing range.                                    |
 
 ### CI exit gates
 
-| Option | Default | Description |
-| --- | --- | --- |
-| `--exit-code` | `false` | Exit 1 if any actionable issue is found. |
-| `--fail-on <level>` | — | Exit 1 only when a finding is at this severity or higher. |
-| `--sync` | `false` | Sync vis accepted risks to native PM config (`pnpm-workspace.yaml` / `.yarnrc.yml`). |
+| Option              | Default | Description                                                                          |
+| ------------------- | ------- | ------------------------------------------------------------------------------------ |
+| `--exit-code`       | `false` | Exit 1 if any actionable issue is found.                                             |
+| `--fail-on <level>` | —       | Exit 1 only when a finding is at this severity or higher.                            |
+| `--sync`            | `false` | Sync vis accepted risks to native PM config (`pnpm-workspace.yaml` / `.yarnrc.yml`). |
 
 ## Apply loops in depth
 
 The two apply loops are intentionally separated by surface:
 
-| Loop | Touches | When to use |
-| --- | --- | --- |
-| `--apply` | Direct deps in each `package.json` (every workspace member). | The vulnerable package is listed in your manifest. |
-| `--apply-transitive` | PM-specific override surface (one file). | The vulnerable package is pulled in by a transitive — your manifest doesn't list it. |
+| Loop                 | Touches                                                      | When to use                                                                          |
+| -------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------ |
+| `--apply`            | Direct deps in each `package.json` (every workspace member). | The vulnerable package is listed in your manifest.                                   |
+| `--apply-transitive` | PM-specific override surface (one file).                     | The vulnerable package is pulled in by a transitive — your manifest doesn't list it. |
 
 Both loops:
 
@@ -149,9 +149,7 @@ export default defineConfig({
         socket: {
             enabled: true,
             // Workspace-scoped acknowledged risks.
-            acceptedRisks: [
-                { name: "some-package", reason: "Vendor confirmed no fix available", expiresAt: "2026-12-31" },
-            ],
+            acceptedRisks: [{ name: "some-package", reason: "Vendor confirmed no fix available", expiresAt: "2026-12-31" }],
         },
     },
 });

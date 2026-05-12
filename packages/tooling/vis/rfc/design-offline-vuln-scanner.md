@@ -8,36 +8,36 @@ Two roadmap themes converge here: the "Security & Health" command group (`vis au
 
 Three pains, one shape:
 
-1. **Online-only audit is brittle.** `src/util/catalog.ts:fetchVulnerabilities` `POST`s to `api.osv.dev/v1/querybatch` with a 10 s timeout and a `catch → empty map` fallback. On a flaky network, every `vis audit` silently degrades to "no vulnerabilities found." Worse for CI on locked-down runners that block `api.osv.dev` outright — the failure is invisible. An offline-first `advisories sync` + `--offline` mode is the obvious fix; air-gapped enterprise + bullet-proof CI are the consumers.
-2. **`vis audit --fix` lies a little.** Today the flag prints `Fix: update to <version>` lines and stops. The actual workflow users want is an autopilot loop (apply via PM, rescan, exit clean) — and competitor tooling (`npm audit fix`, `pnpm audit --fix`) trains them to expect it.
+1. **Online-only audit is brittle.** `src/util/catalog.ts:fetchVulnerabilities` `POST`s to `api.osv.dev/v1/querybatch` with a 10 s timeout and a `catch → empty map` fallback. On a flaky network, every `vis audit` silently degrades to "no vulnerabilities found." Worse for CI on locked-down runners that block `api.osv.dev` outright — the failure is invisible. An offline `advisories sync` + `--offline` is the obvious fix; air-gapped enterprise + bullet-proof CI are the consumers.
+2. **`vis audit --fix` lies a little.** Today the flag prints `Fix: update to <version>` lines and stops. The actual workflow users want is an autopilot loop (apply via PM, rescan, exit clean) that competitor tooling (`npm audit fix`, `pnpm audit --fix`) trains them to expect.
 3. **No report surface.** vis emits table + JSON. Engineering managers, security reviewers, and PR reviewers ask for a dashboard — a self-contained HTML file with severity buckets, copy-ready remediation commands, and breaking-change markers.
 
 Everywhere the data already exists in vis we extend instead of duplicate.
 
 ## Current state
 
-| Capability | Module | Today |
-| --- | --- | --- |
-| OSV `querybatch` (online) | `src/util/catalog.ts:1191` `fetchVulnerabilities` | exists |
-| Lockfile discovery | `src/security/dependency-scan.ts` `lockedPackages` | exists |
-| Audit CLI | `src/commands/audit/{index,handler}.ts` | exists; flags: `--severity / --format / --fix (suggest-only) / --exit-code / --show-accepted / --sync` |
-| Native PM exclusions | `src/config/audit-config.ts` `readNativeAuditExclusions` | exists |
-| Accepted-risks → native PM config sync | same file, `syncAcceptedRisksToNativeConfig` | exists |
-| Socket.dev supply-chain layer | `src/security/socket-security.ts` | exists |
-| Duplicate-dep detection | `src/security/dependency-scan.ts:findDuplicateDependencies` | exists |
-| Live scan progress | `src/scan/scan-progress.ts` | exists |
-| SBOM (CycloneDX 1.7) | `src/sbom/` | exists |
-| `vis-native` Rust crate (8 NAPI targets) | `native/` | exists; ABI version 3, deps: `napi`, `napi-derive`, `ec4rs`, `prek-identify`, `serde_json`, `sort-package-json`, `which` |
-| MCP server + Claude Skill | `@visulima/vis-mcp`, `skills/` | shipped |
-| Offline OSV DB | — | **missing** |
-| Apply-fix loop (direct) | — | **missing** |
-| Apply-fix loop (transitive overrides) | — | **missing** |
-| HTML report | — | **missing** |
-| Reachability filter | — | **missing** |
-| SARIF / CSAF / CycloneDX-VEX output | — | **missing** |
-| `--prod-only` | — | **missing** |
-| Multi-ecosystem (PyPI / Cargo / Maven / Go / RubyGems) | — | **missing** |
-| Signed advisory bundles (Sigstore) | — | **missing** |
+| Capability                                             | Module                                                      | Today                                                                                                                    |
+| ------------------------------------------------------ | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| OSV `querybatch` (online)                              | `src/util/catalog.ts:1191` `fetchVulnerabilities`           | exists                                                                                                                   |
+| Lockfile discovery                                     | `src/security/dependency-scan.ts` `lockedPackages`          | exists                                                                                                                   |
+| Audit CLI                                              | `src/commands/audit/{index,handler}.ts`                     | exists; flags: `--severity / --format / --fix (suggest-only) / --exit-code / --show-accepted / --sync`                   |
+| Native PM exclusions                                   | `src/config/audit-config.ts` `readNativeAuditExclusions`    | exists                                                                                                                   |
+| Accepted-risks → native PM config sync                 | same file, `syncAcceptedRisksToNativeConfig`                | exists                                                                                                                   |
+| Socket.dev supply-chain layer                          | `src/security/socket-security.ts`                           | exists                                                                                                                   |
+| Duplicate-dep detection                                | `src/security/dependency-scan.ts:findDuplicateDependencies` | exists                                                                                                                   |
+| Live scan progress                                     | `src/scan/scan-progress.ts`                                 | exists                                                                                                                   |
+| SBOM (CycloneDX 1.7)                                   | `src/sbom/`                                                 | exists                                                                                                                   |
+| `vis-native` Rust crate (8 NAPI targets)               | `native/`                                                   | exists; ABI version 3, deps: `napi`, `napi-derive`, `ec4rs`, `prek-identify`, `serde_json`, `sort-package-json`, `which` |
+| MCP server + Claude Skill                              | `@visulima/vis-mcp`, `skills/`                              | shipped                                                                                                                  |
+| Offline OSV DB                                         | —                                                           | **missing**                                                                                                              |
+| Apply-fix loop (direct)                                | —                                                           | **missing**                                                                                                              |
+| Apply-fix loop (transitive overrides)                  | —                                                           | **missing**                                                                                                              |
+| HTML report                                            | —                                                           | **missing**                                                                                                              |
+| Reachability filter                                    | —                                                           | **missing**                                                                                                              |
+| SARIF / CSAF / CycloneDX-VEX output                    | —                                                           | **missing**                                                                                                              |
+| `--prod-only`                                          | —                                                           | **missing**                                                                                                              |
+| Multi-ecosystem (PyPI / Cargo / Maven / Go / RubyGems) | —                                                           | **missing**                                                                                                              |
+| Signed advisory bundles (Sigstore)                     | —                                                           | **missing**                                                                                                              |
 
 ## Proposed surface
 
@@ -84,36 +84,36 @@ import { defineConfig } from "@visulima/vis/config";
 export default defineConfig({
     security: {
         audit: {
-            offline: true,                              // default --offline for `vis audit`
-            failOn: "high",                              // default --fail-on
+            offline: true, // default --offline for `vis audit`
+            failOn: "high", // default --fail-on
             advisories: {
-                ecosystems: ["npm", "pypi"],             // ecosystems to sync; auto-detected if omitted
-                refreshIntervalHours: 24,                // warn-only freshness gate (not auto-pull)
+                ecosystems: ["npm", "pypi"], // ecosystems to sync; auto-detected if omitted
+                refreshIntervalHours: 24, // warn-only freshness gate (not auto-pull)
                 source: "https://osv-vulnerabilities.storage.googleapis.com",
-                allowedHosts: [],                         // extra hostnames permitted as `source`; built-ins auto-allowed
+                allowedHosts: [], // extra hostnames permitted as `source`; built-ins auto-allowed
                 verify: {
-                    enabled: false,                       // off until OSV publishes upstream signatures or user is on a mirror
+                    enabled: false, // off until OSV publishes upstream signatures or user is on a mirror
                     expectedIssuer: "https://accounts.google.com",
                     expectedSubject: "release@osv.dev",
                 },
             },
             usage: {
-                enabled: false,                          // turn on --usage by default
-                onlyUsed: false,                          // gate findings to imported packages (requires enabled = true)
-                dynamic: true,                           // detect import() / require(literal); off → static-only
+                enabled: false, // turn on --usage by default
+                onlyUsed: false, // gate findings to imported packages (requires enabled = true)
+                dynamic: true, // detect import() / require(literal); off → static-only
                 alwaysAssumeUsed: ["esbuild", "webpack-cli"],
-                                                          // packages forced to "imported"; only consulted when
-                                                          // enabled = true. Inert (warn-only at config-load) otherwise.
+                // packages forced to "imported"; only consulted when
+                // enabled = true. Inert (warn-only at config-load) otherwise.
             },
             apply: {
                 transitive: {
-                    enabled: false,                       // gate --apply-transitive in CI behind a config opt-in
-                    strategy: "minimum-fix",              // "minimum-fix" | "latest"; minimum-fix bumps to the lowest fixed version
+                    enabled: false, // gate --apply-transitive in CI behind a config opt-in
+                    strategy: "minimum-fix", // "minimum-fix" | "latest"; minimum-fix bumps to the lowest fixed version
                 },
             },
             report: {
                 outputPath: "./reports/audit.html",
-                autoOpen: false,                         // off in CI either way
+                autoOpen: false, // off in CI either way
             },
         },
     },
@@ -158,7 +158,7 @@ export interface AdvisoryIngestOptions {
     /** Path to a previously-downloaded OSV dump zip on disk. Node downloads, Rust ingests. */
     zipPath: string;
     dbPath: string;
-    ecosystem: string;                 // "npm" | "pypi" | "cargo" | "maven" | "go" | ...
+    ecosystem: string; // "npm" | "pypi" | "cargo" | "maven" | "go" | ...
     /** Opaque token to write into meta.manifest_etag (HTTP ETag header). */
     manifestEtag: string | null;
 }
@@ -168,23 +168,20 @@ export interface AdvisoryIngestResult {
     durationMs: number;
 }
 
-export declare function advisoriesIngest(
-    options: AdvisoryIngestOptions,
-    onProgress: (current: number, total: number) => void,
-): Promise<AdvisoryIngestResult>;
+export declare function advisoriesIngest(options: AdvisoryIngestOptions, onProgress: (current: number, total: number) => void): Promise<AdvisoryIngestResult>;
 
 export interface AdvisoryQuery {
     ecosystem: string;
     name: string;
-    version: string;                   // exact installed version, semver-validated upstream in JS
+    version: string; // exact installed version, semver-validated upstream in JS
 }
 
 export interface NativeVulnerability {
-    id: string;                        // OSV id (e.g. "GHSA-xxxx" or "PYSEC-...")
-    aliases: Array<string>;            // CVE-*, GHSA-*, MAL-*, ...
+    id: string; // OSV id (e.g. "GHSA-xxxx" or "PYSEC-...")
+    aliases: Array<string>; // CVE-*, GHSA-*, MAL-*, ...
     severity: "CRITICAL" | "HIGH" | "MODERATE" | "LOW" | "UNKNOWN";
     summary: string;
-    fixedVersions: Array<string>;      // empty array if none
+    fixedVersions: Array<string>; // empty array if none
     cvssScore: number | null;
 }
 
@@ -194,10 +191,7 @@ export interface AdvisoryQueryResult {
     vulnerabilities: Array<NativeVulnerability>;
 }
 
-export declare function advisoriesQuery(
-    dbPath: string,
-    queries: Array<AdvisoryQuery>,
-): Array<AdvisoryQueryResult>;
+export declare function advisoriesQuery(dbPath: string, queries: Array<AdvisoryQuery>): Array<AdvisoryQueryResult>;
 
 export interface AdvisoryDbStatus {
     exists: boolean;
@@ -211,10 +205,10 @@ export declare function advisoriesStatus(dbPath: string): AdvisoryDbStatus;
 /** Verify a Sigstore signature bundle against a downloaded zip. Gated by the `verify-signatures` cargo feature. */
 export interface VerifySignatureOptions {
     zipPath: string;
-    signaturePath: string;             // path to .sig file (Sigstore bundle JSON)
+    signaturePath: string; // path to .sig file (Sigstore bundle JSON)
     /** Trust policy: identity must match this OIDC issuer / subject. */
-    expectedIssuer: string;            // e.g. "https://accounts.google.com"
-    expectedSubject: string;           // e.g. "release@osv.dev"
+    expectedIssuer: string; // e.g. "https://accounts.google.com"
+    expectedSubject: string; // e.g. "release@osv.dev"
 }
 
 export declare function verifyAdvisorySignature(options: VerifySignatureOptions): { valid: boolean; certificateSubject: string | null };
@@ -342,8 +336,8 @@ Two tiers run; the second only when `security.audit.usage.dynamic` is on (defaul
 
 1. Enumerate vulnerable packages from the audit pass.
 2. Walk the workspace source tree (respect `.gitignore` via `ignore`, already a vis dep). Two languages cover ~98% of JS-land monorepos:
-   - JS/TS: ES + CJS imports via a token scan in Rust. `oxc_resolver` is overkill; a regex-on-stripped-comments pass is good enough for "is this package imported anywhere".
-   - JSON `package.json` `dependencies` — covers conventional setups where a package is declared but never imported (Knip's territory, free win here).
+    - JS/TS: ES + CJS imports via a token scan in Rust. `oxc_resolver` is overkill; a regex-on-stripped-comments pass is good enough for "is this package imported anywhere".
+    - JSON `package.json` `dependencies` — covers conventional setups where a package is declared but never imported (Knip's territory, free win here).
 3. Return `Set<vulnerablePackage>` of statically-imported packages.
 
 **Tier 2 — light dynamic detection (Rust, same pass).**
@@ -397,13 +391,13 @@ Reuses `src/pm/pm-runner.ts` `detectPm` + the existing update plumbing (`src/com
 
 **Transitive deps (`--apply-transitive`).** When the vulnerable package is buried below a direct dep, write a PM-specific override. The override target is `lowestFixedVersion` of the closest direct ancestor that doesn't already pin the bad version. New module `src/security/transitive-fix.ts` with per-PM writers:
 
-| PM | Where the override lives | Shape |
-| --- | --- | --- |
-| pnpm | `pnpm-workspace.yaml` → `overrides:` | `'<pkg>': '^1.2.3'` |
-| npm | `package.json` → `overrides:` | `{ "<pkg>": "^1.2.3" }` |
-| yarn berry (≥ 2.x) | `package.json` → `resolutions:` | `{ "<pkg>": "^1.2.3" }` — berry also accepts descriptor keys like `"<parent>/<pkg>": "^1.2.3"` for parent-scoped pins; we emit the plain key form for the MVP and surface a config note for users who need scoped pins |
-| yarn classic (1.x) | `package.json` → `resolutions:` | plain key form only; berry's descriptor syntax is unsupported here |
-| bun | `package.json` → `overrides:` | npm-compatible |
+| PM                 | Where the override lives             | Shape                                                                                                                                                                                                                  |
+| ------------------ | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| pnpm               | `pnpm-workspace.yaml` → `overrides:` | `'<pkg>': '^1.2.3'`                                                                                                                                                                                                    |
+| npm                | `package.json` → `overrides:`        | `{ "<pkg>": "^1.2.3" }`                                                                                                                                                                                                |
+| yarn berry (≥ 2.x) | `package.json` → `resolutions:`      | `{ "<pkg>": "^1.2.3" }` — berry also accepts descriptor keys like `"<parent>/<pkg>": "^1.2.3"` for parent-scoped pins; we emit the plain key form for the MVP and surface a config note for users who need scoped pins |
+| yarn classic (1.x) | `package.json` → `resolutions:`      | plain key form only; berry's descriptor syntax is unsupported here                                                                                                                                                     |
+| bun                | `package.json` → `overrides:`        | npm-compatible                                                                                                                                                                                                         |
 
 Writers preserve existing entries (merge, never replace) and emit deterministic ordering (sorted keys) so the diff stays reviewable. After write, the PM runs its install with the override in effect; we then rescan to confirm the fix actually landed (override could be shadowed by a more-specific entry).
 
@@ -429,14 +423,14 @@ The feature gate matters because we publish 8 prebuilt `.node` files. The releas
 
 OSV is ecosystem-aware; the schema, NAPI surface, and SQL queries already accept `ecosystem` as a column / parameter from day one (see §A, §B). What changes per ecosystem is the **lockfile reader** (which packages do I have installed?) and the **range matcher** (does this OSV `affected[]` entry apply to my version?).
 
-| Ecosystem | OSV ecosystem name | Lockfile(s) | Range dialect |
-| --- | --- | --- | --- |
-| npm | `npm` | `package-lock.json`, `pnpm-lock.yaml`, `yarn.lock`, `bun.lock` | SemVer (npm) |
-| PyPI | `PyPI` | `poetry.lock`, `uv.lock`, `Pipfile.lock`, `requirements.txt` (best-effort) | PEP 440 |
-| Cargo | `crates.io` | `Cargo.lock` | SemVer (cargo) |
-| Maven | `Maven` | `pom.xml` lock outputs, `gradle.lockfile` | Maven version order |
-| Go | `Go` | `go.sum` | SemVer with `+incompatible` quirks |
-| RubyGems | `RubyGems` | `Gemfile.lock` | RubyGems requirement |
+| Ecosystem | OSV ecosystem name | Lockfile(s)                                                                | Range dialect                      |
+| --------- | ------------------ | -------------------------------------------------------------------------- | ---------------------------------- |
+| npm       | `npm`              | `package-lock.json`, `pnpm-lock.yaml`, `yarn.lock`, `bun.lock`             | SemVer (npm)                       |
+| PyPI      | `PyPI`             | `poetry.lock`, `uv.lock`, `Pipfile.lock`, `requirements.txt` (best-effort) | PEP 440                            |
+| Cargo     | `crates.io`        | `Cargo.lock`                                                               | SemVer (cargo)                     |
+| Maven     | `Maven`            | `pom.xml` lock outputs, `gradle.lockfile`                                  | Maven version order                |
+| Go        | `Go`               | `go.sum`                                                                   | SemVer with `+incompatible` quirks |
+| RubyGems  | `RubyGems`         | `Gemfile.lock`                                                             | RubyGems requirement               |
 
 MVP ships **npm** only; the rest land behind feature parity once a single ecosystem is rock-solid. The schema and CLI flags (`--ecosystem npm,pypi`) are stable from day one so opting in later is purely additive.
 
@@ -468,13 +462,13 @@ Ecosystem auto-detection: presence of `Cargo.lock` → enable `crates.io`, prese
 
 ## Error handling
 
-| Class | Trigger | Message |
-| --- | --- | --- |
-| `AdvisoryDbNotFoundError` | `vis audit --offline` with no DB | `No local advisory DB at <path>. Run 'vis advisories sync' first.` |
-| `AdvisorySchemaMismatchError` | DB schema_version != native expected | `Advisory DB schema is v<n>, this build of vis expects v<m>. Run 'vis advisories sync --force'.` |
-| `AdvisorySyncNetworkError` | Download fails after retries | Surfaces underlying status + URL; suggests `--source` or proxy env |
-| `AdvisorySyncCorruptError` | Zip CRC fails or JSON parse fails | Names the offending advisory id (if known) + line; preserves the previous DB (atomic rename was never done) |
-| `AdvisoryQueryError` | SQLite error | Maps `rusqlite::Error` variants to a vis-domain `cause`: `SqliteFailure(corrupt)` → suggest `vis advisories sync --force`, `SqliteFailure(busy/locked)` → suggest retry, `InvalidQuery`/`InvalidParameterName` → bug report. Raw `rusqlite::Error::to_string()` goes in `details:`, never the user-facing message. |
+| Class                         | Trigger                              | Message                                                                                                                                                                                                                                                                                                            |
+| ----------------------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `AdvisoryDbNotFoundError`     | `vis audit --offline` with no DB     | `No local advisory DB at <path>. Run 'vis advisories sync' first.`                                                                                                                                                                                                                                                 |
+| `AdvisorySchemaMismatchError` | DB schema_version != native expected | `Advisory DB schema is v<n>, this build of vis expects v<m>. Run 'vis advisories sync --force'.`                                                                                                                                                                                                                   |
+| `AdvisorySyncNetworkError`    | Download fails after retries         | Surfaces underlying status + URL; suggests `--source` or proxy env                                                                                                                                                                                                                                                 |
+| `AdvisorySyncCorruptError`    | Zip CRC fails or JSON parse fails    | Names the offending advisory id (if known) + line; preserves the previous DB (atomic rename was never done)                                                                                                                                                                                                        |
+| `AdvisoryQueryError`          | SQLite error                         | Maps `rusqlite::Error` variants to a vis-domain `cause`: `SqliteFailure(corrupt)` → suggest `vis advisories sync --force`, `SqliteFailure(busy/locked)` → suggest retry, `InvalidQuery`/`InvalidParameterName` → bug report. Raw `rusqlite::Error::to_string()` goes in `details:`, never the user-facing message. |
 
 All errors print actionable next-step lines, same shape as the existing `VisConfigLoadError` family.
 
@@ -482,16 +476,16 @@ All errors print actionable next-step lines, same shape as the existing `VisConf
 
 Targets the audit-handler must meet on a representative monorepo (this repo: 44 packages, ~2.8k installed lockfile rows, npm ecosystem only):
 
-| Operation | Target | Notes |
-| --- | --- | --- |
-| `advisories sync` cold — HEAD + GET (download phase) | < 8 s | network-bound, ~80 MB OSV npm dump on a 100 Mbps link |
-| `advisories sync` cold — `advisoriesIngest` (Rust phase) | < 4 s | zip extract + serde_json + INSERT under WAL; bounded by CPU, not IO |
-| `advisories sync` cold — total wall-clock | < 12 s | network-bound; ETag HEAD + atomic rename adds ~1 s over raw download |
-| `advisories sync` ETag short-circuit | < 200 ms | HEAD only; no Rust call |
-| `advisoriesQuery` 2.8k packages | < 80 ms | prepared statement + single transaction + index on `(ecosystem, package)` |
-| `vis audit --offline` end-to-end | < 400 ms | lockfile parse (~80 ms) + query (~80 ms) + format + render |
-| `vis audit` online (today's baseline) | ~1.2 s | OSV roundtrip dominates |
-| `--usage` pass | < 1.5 s | walk + scan; bounded by FS, not advisory size |
+| Operation                                                | Target   | Notes                                                                                                 |
+| -------------------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------- |
+| `advisories sync` cold — HEAD + GET (download phase)     | < 8 s    | network-bound, ~80 MB OSV npm dump on a 100 Mbps link                                                 |
+| `advisories sync` cold — `advisoriesIngest` (Rust phase) | < 4 s    | zip extract + serde_json + INSERT under WAL; bounded by CPU, not IO                                   |
+| `advisories sync` cold — total wall-clock                | < 12 s   | network-bound; ETag HEAD + atomic rename adds ~1 s over raw download                                  |
+| `advisories sync` ETag short-circuit                     | < 200 ms | HEAD only; no Rust call                                                                               |
+| `advisoriesQuery` 2.8k packages                          | < 80 ms  | prepared statement + single transaction + index on `(ecosystem, package)`                             |
+| `vis audit --offline` end-to-end                         | < 400 ms | lockfile parse (~80 ms) + query (~80 ms) + format + render                                            |
+| `vis audit` online (today's baseline)                    | ~1.2 s   | OSV roundtrip dominates                                                                               |
+| `--usage` pass                                           | < 1.5 s  | walk + scan; bounded by FS, not advisory size                                                         |
 
 Regression test budget: a `__tests__/perf/audit-offline.bench.ts` (Vitest bench) that asserts the 400 ms wall-clock with a 50% slack. Run on CI under `pnpm --filter @visulima/vis run test:perf` (new script, ad-hoc lane).
 
@@ -583,6 +577,7 @@ In rough order; each chunk lands as its own commit. Phased so a partial revert i
     - **Test ergonomics.** Mocking `fetch` via a stub server in Vitest is trivial; mocking `ureq` through NAPI is not.
 
     Implementation: Node streams the response to a temp file in `<cache>/vis/advisories/`, then calls `advisoriesIngest({ zipPath, dbPath, ... })` (renamed from `advisoriesSync` to make the split explicit). Progress for the download phase emits from JS via the existing `scan-progress` UI; progress for the ingest phase emits from Rust via threadsafe callbacks. `ureq` is dropped from §A.A.
+
 4. **`--apply` ships direct-deps in Phase 3; `--apply-transitive` ships in the same phase.** Phasing both into one release shrinks the matrix of "which version of vis behaves how" that downstream users have to reason about. The risk delta (transitives rewrite override blocks) is real but the design lives in one place (`src/security/transitive-fix.ts`); shipping it once, gated behind a config opt-in for CI, is safer than shipping two releases that change auto-fix behavior back-to-back.
 5. **SARIF + CSAF + CycloneDX-VEX all ship in Phase 2.** SARIF unblocks GitHub Code Scanning. CSAF unblocks enterprise vuln-management pipelines (the cohort that asks for offline scanning is the same cohort that demands CSAF). CycloneDX-VEX is ~80% reuse of the existing SBOM emitter (`src/sbom/cyclonedx.ts`) — the marginal cost is small enough that splitting it across phases isn't worth a separate release. JSON + table stay the defaults; advanced formats are opt-in via `--format`.
 6. **HTML report uses Preact, not vis's existing React + TUI stack.** TUI React is intended for terminal rendering through `react-reconciler` and is not a DOM stack; we'd ship the React+ReactDOM bundle for one report or build a 3 KB Preact bundle. Preact wins on size and on staying out of React's behavioral assumptions.

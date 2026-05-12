@@ -11,6 +11,9 @@ pub mod npm;
 pub mod pep440;
 pub mod rubygems;
 
+#[cfg(test)]
+mod corpus_tests;
+
 pub trait RangeMatcher: Send + Sync {
     /// Returns `true` if `version` falls in the half-open interval
     /// `[introduced, fixed)`. `fixed = None` means the range is open-high

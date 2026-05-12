@@ -47,10 +47,11 @@ const splitSpecifier = (raw: string): { name: string; spec: string } | undefined
     return { name: trimmed.slice(0, at), spec: trimmed.slice(at + 1) };
 };
 
-const parseKeySpecifiers = (key: string): { name: string; spec: string }[] => key
-    .split(",")
-    .map((piece) => splitSpecifier(piece))
-    .filter((piece): piece is { name: string; spec: string } => piece !== undefined);
+const parseKeySpecifiers = (key: string): { name: string; spec: string }[] =>
+    key
+        .split(",")
+        .map((piece) => splitSpecifier(piece))
+        .filter((piece): piece is { name: string; spec: string } => piece !== undefined);
 
 /**
  * Build a name → list-of-(spec, originalKey) index over all lockfile

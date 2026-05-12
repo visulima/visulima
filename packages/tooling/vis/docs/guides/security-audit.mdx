@@ -78,13 +78,13 @@ The planner classifies each fix as **in-range** (caret bump that satisfies the e
 
 For transitive vulnerabilities (the vulnerable package isn't in your manifest — it's pulled in by something else), `--apply-transitive` writes a pinned override into the appropriate surface for your package manager:
 
-| Package manager | Surface |
-| --- | --- |
-| pnpm v10+ | `pnpm-workspace.yaml#overrides` |
-| pnpm v9 | `package.json#pnpm.overrides` |
-| npm | `package.json#overrides` |
-| Bun | `package.json#overrides` |
-| Yarn | `package.json#resolutions` |
+| Package manager | Surface                         |
+| --------------- | ------------------------------- |
+| pnpm v10+       | `pnpm-workspace.yaml#overrides` |
+| pnpm v9         | `package.json#pnpm.overrides`   |
+| npm             | `package.json#overrides`        |
+| Bun             | `package.json#overrides`        |
+| Yarn            | `package.json#resolutions`      |
 
 The writer is atomic (`.tmp` sibling + `renameSync`) and idempotent — re-running with the same plan is a no-op.
 
@@ -111,7 +111,7 @@ A typical pipeline:
 - run: pnpm exec vis audit --offline --format sarif > audit.sarif
 - uses: github/codeql-action/upload-sarif@v3
   with:
-    sarif_file: audit.sarif
+      sarif_file: audit.sarif
 
 # Hard gate the build on high+ findings
 - run: pnpm exec vis audit --offline --fail-on high
@@ -119,10 +119,10 @@ A typical pipeline:
 
 ### Exit-code semantics
 
-| Flag | Exit behaviour |
-| --- | --- |
-| _none_ | Always exit 0. Audit is informational by default. |
-| `--exit-code` | Exit 1 if any actionable finding is present. |
+| Flag                | Exit behaviour                                                   |
+| ------------------- | ---------------------------------------------------------------- |
+| _none_              | Always exit 0. Audit is informational by default.                |
+| `--exit-code`       | Exit 1 if any actionable finding is present.                     |
 | `--fail-on <level>` | Exit 1 only when at least one finding meets `<level>` or higher. |
 
 Acknowledged risks are excluded from the gate unless `--show-accepted` is set.

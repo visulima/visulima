@@ -6,11 +6,11 @@ import { join } from "@visulima/path";
 import { DEFAULT_HOOKS_DIRECTORY } from "./constants";
 
 /**
- * Sidecar configuration consumed by `vis hook run --stage <stage>`.
+ * Sidecar configuration consumed by `vis hook run --stage &lt;stage>`.
  *
- * Lives at `<hooksDirectory>/config.json` (default `.vis-hooks/config.json`)
+ * Lives at `&lt;hooksDirectory>/config.json` (default `.vis-hooks/config.json`)
  * and is the single source of truth for what each git hook actually
- * does. The generated `<stage>` shell scripts are intentionally thin —
+ * does. The generated `&lt;stage>` shell scripts are intentionally thin —
  * they only `exec` vis with the stage name and forward `$@`, which lets
  * us swap implementations (e.g. native dispatch, parallel execution)
  * without rewriting user-tracked files.
@@ -25,6 +25,7 @@ export interface HookEntry {
     alwaysRun?: boolean;
     /** Extra args passed after `entry`/`builtin`; user-supplied. */
     args?: ReadonlyArray<string>;
+
     /**
      * Name of a vis-bundled builtin (see `builtins/`). Mutually exclusive
      * with `entry` and `fail`; exactly one of the three must be set.
@@ -36,6 +37,7 @@ export interface HookEntry {
     exclude?: string;
     /** Tag list — every tag must be absent (pre-commit `exclude_types`). */
     excludeTypes?: ReadonlyArray<string>;
+
     /**
      * `language: fail` equivalent — print this message and exit non-zero.
      * Used for "don't use this tool" guard hooks.
@@ -304,7 +306,7 @@ export const loadHookConfig = (root: string, hooksDirectory: string = DEFAULT_HO
     } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
 
-        throw new TypeError(`failed to parse ${path}: ${message}`);
+        throw new TypeError(`failed to parse ${path}: ${message}`, { cause: error });
     }
 
     return parseConfig(parsed, warnings ?? []);

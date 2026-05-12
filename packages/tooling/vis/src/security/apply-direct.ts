@@ -22,7 +22,7 @@ import { readPnpmWorkspacePatterns, resolveWorkspacePatterns } from "../config/w
 
 const DEP_FIELDS = ["dependencies", "devDependencies", "optionalDependencies", "peerDependencies"] as const;
 
-type DepField = typeof DEP_FIELDS[number];
+type DepField = (typeof DEP_FIELDS)[number];
 
 interface PackageJsonShape {
     dependencies?: Record<string, string>;
@@ -117,10 +117,7 @@ const collectWorkspaceManifests = (workspaceRoot: string): CollectedManifest[] =
     return collected;
 };
 
-const findDeclarations = (
-    manifests: CollectedManifest[],
-    packageName: string,
-): { field: DepField; manifest: CollectedManifest; range: string }[] => {
+const findDeclarations = (manifests: CollectedManifest[], packageName: string): { field: DepField; manifest: CollectedManifest; range: string }[] => {
     const out: { field: DepField; manifest: CollectedManifest; range: string }[] = [];
 
     for (const manifest of manifests) {

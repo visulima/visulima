@@ -161,8 +161,10 @@ const readExistingOverrides = (workspaceRoot: string, pm: TransitiveFixPmInfo): 
 const renderPnpmWorkspaceOverrides = (existing: string, overrides: Record<string, string>): string => {
     const sortedKeys = Object.keys(overrides).sort();
 
-    if (sortedKeys.length === 0 // Empty plan + no existing block → no-op.
-        && !/^overrides\s*:/m.test(existing)) {
+    if (
+        sortedKeys.length === 0 // Empty plan + no existing block → no-op.
+        && !/^overrides\s*:/m.test(existing)
+    ) {
         return existing;
     }
 
@@ -184,17 +186,12 @@ const renderPnpmWorkspaceOverrides = (existing: string, overrides: Record<string
     return `${trimmed}\n${block}`;
 };
 
-const renderPackageJsonWithOverrides = (
-    filePath: string,
-    existingContent: string,
-    surface: OverrideSurface,
-    overrides: Record<string, string>,
-): string => {
+const renderPackageJsonWithOverrides = (filePath: string, existingContent: string, surface: OverrideSurface, overrides: Record<string, string>): string => {
     const indent = resolveIndentForFile(filePath, existingContent.length > 0 ? existingContent : undefined);
     const pkg = existingContent.length > 0 ? (JSON.parse(existingContent) as Record<string, unknown>) : {};
 
     if (surface === "package.json#pnpm.overrides") {
-        const pnpmBlock = ((pkg.pnpm as Record<string, unknown> | undefined) ?? {});
+        const pnpmBlock = (pkg.pnpm as Record<string, unknown> | undefined) ?? {};
 
         pnpmBlock.overrides = overrides;
         pkg.pnpm = pnpmBlock;
@@ -246,9 +243,10 @@ export const planOverrideWrite = (workspaceRoot: string, plan: OverridePlan, pm:
     const sortedOverrides = sortByKey(merged);
     const changed = entries.some((e) => e.status !== "unchanged");
 
-    const nextContent: string = surface === "pnpm-workspace.yaml"
-        ? renderPnpmWorkspaceOverrides(existingContent, sortedOverrides)
-        : renderPackageJsonWithOverrides(filePath, existingContent, surface, sortedOverrides);
+    const nextContent: string
+        = surface === "pnpm-workspace.yaml"
+            ? renderPnpmWorkspaceOverrides(existingContent, sortedOverrides)
+            : renderPackageJsonWithOverrides(filePath, existingContent, surface, sortedOverrides);
 
     return {
         changed,
@@ -276,9 +274,7 @@ export const applyOverridePlan = (result: ApplyOverridesResult): ApplyOverridesR
     }
 
     if (result.surface === "pnpm-workspace.yaml" && result.previousContent.length === 0) {
-        throw new Error(
-            `${result.filePath} not found. Run \`pnpm init\` or create pnpm-workspace.yaml before applying overrides for pnpm v10+.`,
-        );
+        throw new Error(`${result.filePath} not found. Run \`pnpm init\` or create pnpm-workspace.yaml before applying overrides for pnpm v10+.`);
     }
 
     const tempPath = `${result.filePath}.tmp`;
@@ -317,9 +313,7 @@ export const applyOverridePlan = (result: ApplyOverridesResult): ApplyOverridesR
  * wins (stable insertion order). Callers needing a different tiebreak
  * should pre-sort their findings.
  */
-export const buildOverridePlanFromFindings = (
-    findings: ReadonlyArray<{ packageName: string; vulnerability: { fixedVersions: string[] } }>,
-): OverridePlan => {
+export const buildOverridePlanFromFindings = (findings: ReadonlyArray<{ packageName: string; vulnerability: { fixedVersions: string[] } }>): OverridePlan => {
     const byName = new Map<string, string>();
 
     for (const finding of findings) {
@@ -337,7 +331,9 @@ export const buildOverridePlanFromFindings = (
 
     const entries: OverrideEntry[] = [...byName.entries()]
         .sort(([a], [b]) => a.localeCompare(b))
-        .map(([packageName, spec]) => { return { packageName, spec }; });
+        .map(([packageName, spec]) => {
+            return { packageName, spec };
+        });
 
     return { entries };
 };

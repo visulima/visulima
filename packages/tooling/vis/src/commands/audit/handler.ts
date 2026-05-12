@@ -72,7 +72,7 @@ const SOCKET_ALERT_COLORS: Record<string, (s: string) => string> = {
 // has its own Rust range matcher and lockfile reader; unknown values
 // (or ones whose matcher hasn't landed yet) get a non-fatal warning so
 // CI invocations stay stable as more ecosystems land.
-const SUPPORTED_ECOSYSTEMS = new Set(["npm", "pypi", "crates.io", "cargo", "maven", "go", "rubygems"]);
+const SUPPORTED_ECOSYSTEMS = new Set(["cargo", "crates.io", "go", "maven", "npm", "pypi", "rubygems"]);
 
 const parseEcosystems = (raw: string | undefined): { all: string[]; unsupported: string[] } => {
     const list = (raw ?? "npm")
@@ -136,18 +136,14 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
     const dbPath = options.db as string | undefined;
     const ecosystems = parseEcosystems(options.ecosystem as string | undefined);
     const prodOnly = Boolean(options.prodOnly);
-    const failOn = (options.failOn as SeverityFilter | undefined) ?? (auditConfig?.failOn);
+    const failOn = (options.failOn as SeverityFilter | undefined) ?? auditConfig?.failOn;
     const showFixes = Boolean(options.fix);
     const showAccepted = Boolean(options.showAccepted);
     const socketConfig = visConfig?.security?.socket;
     const acceptedRisks = socketConfig?.acceptedRisks;
     // --no-usage wins over --usage and config; otherwise --usage flag, else config default.
     const usageConfig = auditConfig?.usage;
-    const usageEnabled = options.noUsage
-        ? false
-        : options.usage === undefined
-            ? Boolean(usageConfig?.enabled)
-            : Boolean(options.usage);
+    const usageEnabled = options.noUsage ? false : options.usage === undefined ? Boolean(usageConfig?.enabled) : Boolean(options.usage);
     const quietHeader = isJson || isSarif || isCsaf || isCycloneDxVex;
 
     // Read native PM audit exclusions
@@ -247,11 +243,13 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
 
         const vulnPromise = isOffline
             ? Promise.resolve()
-                .then(() => queryAdvisories(packagesToScan, {
-                    dbPath,
-                    ecosystem: ecosystems.all.find((e) => SUPPORTED_ECOSYSTEMS.has(e.toLowerCase())) ?? "npm",
-                    workspaceRoot,
-                }))
+                .then(() =>
+                    queryAdvisories(packagesToScan, {
+                        dbPath,
+                        ecosystem: ecosystems.all.find((e) => SUPPORTED_ECOSYSTEMS.has(e.toLowerCase())) ?? "npm",
+                        workspaceRoot,
+                    }),
+                )
                 .then((map) => {
                     let count = 0;
 
@@ -380,9 +378,7 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
     // npm-only today). Each ecosystem owns its own lockfile reader and
     // queries the same shared advisory DB with the right ecosystem tag.
     if (isOffline) {
-        const nonNpmEcosystems = ecosystems.all.filter(
-            (eco) => SUPPORTED_ECOSYSTEMS.has(eco.toLowerCase()) && eco.toLowerCase() !== "npm",
-        );
+        const nonNpmEcosystems = ecosystems.all.filter((eco) => SUPPORTED_ECOSYSTEMS.has(eco.toLowerCase()) && eco.toLowerCase() !== "npm");
 
         for (const eco of nonNpmEcosystems) {
             const canonical = canonicalEcosystem(eco);
@@ -398,7 +394,7 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
 
             try {
                 const ecoVulnMap = queryAdvisories(
-                    ecoPackages.map((p) => ({ name: p.name, version: p.version })),
+                    ecoPackages.map((p) => { return { name: p.name, version: p.version }; }),
                     { dbPath, ecosystem: canonical, workspaceRoot },
                 );
 
@@ -834,11 +830,7 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
     applyFailOnGate(filtered, nativeExclusions, failOn);
 };
 
-const applyFailOnGate = (
-    filtered: AuditEntry[],
-    nativeExclusions: ReturnType<typeof readNativeAuditExclusions>,
-    failOn: SeverityFilter | undefined,
-): void => {
+const applyFailOnGate = (filtered: AuditEntry[], nativeExclusions: ReturnType<typeof readNativeAuditExclusions>, failOn: SeverityFilter | undefined): void => {
     if (!failOn) {
         return;
     }
@@ -866,9 +858,7 @@ const applyExitGate = (
 ): void => {
     if (exitCode) {
         const unacknowledged = filtered.filter(
-            (entry) =>
-                !entry.acceptedRisk
-                && entry.vulnerabilities.some((vuln) => !isAdvisoryExcluded(vuln.id, nativeExclusions, vuln.aliases)),
+            (entry) => !entry.acceptedRisk && entry.vulnerabilities.some((vuln) => !isAdvisoryExcluded(vuln.id, nativeExclusions, vuln.aliases)),
         );
 
         if (unacknowledged.length > 0) {
@@ -915,7 +905,8 @@ const promptYesNo = async (question: string, defaultYes: boolean): Promise<boole
     }
 };
 
-const isTransitiveOnlyPm = (pmName: string): pmName is "bun" | "npm" | "pnpm" | "yarn" => pmName === "pnpm" || pmName === "npm" || pmName === "yarn" || pmName === "bun";
+const isTransitiveOnlyPm = (pmName: string): pmName is "bun" | "npm" | "pnpm" | "yarn" =>
+    pmName === "pnpm" || pmName === "npm" || pmName === "yarn" || pmName === "bun";
 
 interface RunApplyDirectArguments {
     actionableFindings: ActionableFinding[];
@@ -1060,12 +1051,7 @@ const runApplyTransitive = async (arguments_: RunApplyTransitiveArguments): Prom
     pail.info(`Target: ${planResult.filePath} (${planResult.surface})`);
 
     for (const entry of planResult.entries) {
-        const tag
-            = entry.status === "added"
-                ? "+"
-                : entry.status === "updated"
-                    ? "~"
-                    : "·";
+        const tag = entry.status === "added" ? "+" : entry.status === "updated" ? "~" : "·";
 
         const previous = entry.previousSpec ? ` (was ${entry.previousSpec})` : "";
 

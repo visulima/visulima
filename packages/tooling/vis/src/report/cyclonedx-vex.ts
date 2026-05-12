@@ -8,15 +8,15 @@
  * `affects[].ref` points at the same `bom-ref` the SBOM already declares.
  */
 
-import type { SecurityVulnerability } from "../security/advisories";
 import { toNpmPurl } from "../sbom/purl";
 import type { CycloneDxBom, CycloneDxSeverity, CycloneDxVulnerability } from "../sbom/types";
+import type { SecurityVulnerability } from "../security/advisories";
 
 export interface CycloneDxVexFinding {
+    acknowledged: boolean;
     packageName: string;
     packageVersion: string;
     vulnerability: SecurityVulnerability;
-    acknowledged: boolean;
 }
 
 export interface CycloneDxVexOptions {
@@ -28,16 +28,16 @@ export interface CycloneDxVexOptions {
 const SEVERITY_MAP: Record<string, CycloneDxSeverity> = {
     CRITICAL: "critical",
     HIGH: "high",
-    MODERATE: "medium",
     LOW: "low",
+    MODERATE: "medium",
     UNKNOWN: "unknown",
 };
 
 const SEVERITY_FALLBACK_SCORE: Record<string, number> = {
     CRITICAL: 9.5,
-    HIGH: 8.0,
-    MODERATE: 5.5,
+    HIGH: 8,
     LOW: 2.5,
+    MODERATE: 5.5,
     UNKNOWN: 0,
 };
 
@@ -95,32 +95,35 @@ export const buildCycloneDxVulnerabilities = (findings: CycloneDxVexFinding[], n
         .map(([advisoryId, group]): CycloneDxVulnerability => {
             const sample = group[0]!.vulnerability;
             const severity = SEVERITY_MAP[sample.severity] ?? "unknown";
-            const score = typeof sample.cvssScore === "number" && Number.isFinite(sample.cvssScore)
-                ? sample.cvssScore
-                : SEVERITY_FALLBACK_SCORE[sample.severity] ?? 0;
+            const score
+                = typeof sample.cvssScore === "number" && Number.isFinite(sample.cvssScore) ? sample.cvssScore : (SEVERITY_FALLBACK_SCORE[sample.severity] ?? 0);
 
             const affectsByPkg = groupBy(group, (f) => f.packageName);
 
-            const affects = [...affectsByPkg.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([packageName, items]) => {
-                const versions = [...new Set(items.map((f) => f.packageVersion))].sort();
-                // The bom-ref convention in `cyclonedx.ts` is the purl itself —
-                // match that so VEX references resolve against existing components.
-                const headRef = toNpmPurl(packageName, versions[0]!);
+            const affects = [...affectsByPkg.entries()]
+                .sort(([a], [b]) => a.localeCompare(b))
+                .map(([packageName, items]) => {
+                    const versions = [...new Set(items.map((f) => f.packageVersion))].sort();
+                    // The bom-ref convention in `cyclonedx.ts` is the purl itself —
+                    // match that so VEX references resolve against existing components.
+                    const headRef = toNpmPurl(packageName, versions[0]!);
 
-                return {
-                    ref: headRef,
-                    versions: versions.map((version) => ({ version, status: "affected" as const })),
-                };
-            });
+                    return {
+                        ref: headRef,
+                        versions: versions.map((version) => { return { status: "affected" as const, version }; }),
+                    };
+                });
 
             // Aliases get serialized as `references[]` so consumers can resolve
             // GHSA↔CVE without re-querying OSV.
             const references = (sample.aliases ?? [])
                 .filter((alias) => alias !== advisoryId)
-                .map((alias) => ({
-                    id: alias,
-                    source: { name: advisorySourceName(alias), url: advisoryUri(alias) },
-                }));
+                .map((alias) => {
+                    return {
+                        id: alias,
+                        source: { name: advisorySourceName(alias), url: advisoryUri(alias) },
+                    };
+                });
 
             // VEX semantics: an acknowledged finding is one the user has triaged
             // and decided not to act on. `not_affected` + `code_not_reachable` is
@@ -130,7 +133,7 @@ export const buildCycloneDxVulnerabilities = (findings: CycloneDxVexFinding[], n
             const anyAcknowledged = group.some((f) => f.acknowledged);
             const allAcknowledged = group.every((f) => f.acknowledged);
             const analysis: CycloneDxVulnerability["analysis"] = allAcknowledged
-                ? { state: "not_affected", justification: "code_not_reachable", response: ["will_not_fix"] }
+                ? { justification: "code_not_reachable", response: ["will_not_fix"], state: "not_affected" }
                 : anyAcknowledged
                     ? { state: "in_triage" }
                     : undefined;
@@ -142,19 +145,19 @@ export const buildCycloneDxVulnerabilities = (findings: CycloneDxVexFinding[], n
                 id: advisoryId,
                 source: { name: advisorySourceName(advisoryId), url: advisoryUri(advisoryId) },
                 ...(references.length > 0 ? { references } : {}),
+                description: sample.summary || `Advisory ${advisoryId}`,
                 ratings: [
                     {
-                        source: { name: advisorySourceName(advisoryId), url: advisoryUri(advisoryId) },
+                        method: "CVSSv31",
                         score,
                         severity,
-                        method: "CVSSv31",
+                        source: { name: advisorySourceName(advisoryId), url: advisoryUri(advisoryId) },
                     },
                 ],
-                description: sample.summary || `Advisory ${advisoryId}`,
                 ...(fixed.length > 0 ? { recommendation: `Upgrade to one of: ${fixed.join(", ")}` } : {}),
+                affects,
                 created: timestamp,
                 published: timestamp,
-                affects,
                 ...(analysis ? { analysis } : {}),
             };
         });

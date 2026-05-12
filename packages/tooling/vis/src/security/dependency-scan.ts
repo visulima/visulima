@@ -55,11 +55,11 @@ export interface LockedPackagesOptions {
 }
 
 interface PackageJsonShape {
-    name?: string;
     dependencies?: Record<string, string>;
     devDependencies?: Record<string, string>;
-    peerDependencies?: Record<string, string>;
+    name?: string;
     optionalDependencies?: Record<string, string>;
+    peerDependencies?: Record<string, string>;
     workspaces?: string[] | { packages?: string[] };
 }
 
@@ -185,11 +185,7 @@ const computeProdReachable = (workspaceRoot: string, entries: LockFileEntry[]): 
     return reachable;
 };
 
-export const lockedPackages = (
-    workspaceRoot: string,
-    pmName: string,
-    options: LockedPackagesOptions = {},
-): InstalledPackage[] => {
+export const lockedPackages = (workspaceRoot: string, pmName: string, options: LockedPackagesOptions = {}): InstalledPackage[] => {
     const lockInfo = LOCKFILE_NAMES[pmName];
 
     if (!lockInfo) {

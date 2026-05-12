@@ -19,7 +19,7 @@ const execute = async ({ logger: _logger, options, workspaceRoot }: Toolbox<Cons
         pail.info("Re-run with --force to proceed.");
 
         if (isJson) {
-            process.stdout.write(`${JSON.stringify({ dbPath, removed: false, reason: "needs --force" })}\n`);
+            process.stdout.write(`${JSON.stringify({ dbPath, reason: "needs --force", removed: false })}\n`);
         }
 
         return;
@@ -40,7 +40,7 @@ const execute = async ({ logger: _logger, options, workspaceRoot }: Toolbox<Cons
     }
 
     if (isJson) {
-        process.stdout.write(`${JSON.stringify({ dbPath, removed: true, files: removed })}\n`);
+        process.stdout.write(`${JSON.stringify({ dbPath, files: removed, removed: true })}\n`);
 
         return;
     }

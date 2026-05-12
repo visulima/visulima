@@ -15,22 +15,22 @@ import { coerce, diff } from "semver";
 import type { SecurityVulnerability } from "../security/advisories";
 
 export interface AuditHtmlFinding {
+    acknowledged: boolean;
     packageName: string;
     packageVersion: string;
-    vulnerability: SecurityVulnerability;
-    acknowledged: boolean;
     /** Remediation command rendered as a one-liner. Falls back to a `# advisory only` line if absent. */
     remediation?: string;
+    vulnerability: SecurityVulnerability;
 }
 
 export interface AuditHtmlEmitOptions {
-    workspaceRoot: string;
-    tool: { name: string; version: string };
     findings: AuditHtmlFinding[];
-    /** Total scanned packages — surfaced in the summary band. */
-    packagesScanned: number;
     /** Override timestamp. Tests pass a fixed Date. */
     now?: Date;
+    /** Total scanned packages — surfaced in the summary band. */
+    packagesScanned: number;
+    tool: { name: string; version: string };
+    workspaceRoot: string;
 }
 
 const SEVERITY_ORDER = ["CRITICAL", "HIGH", "MODERATE", "LOW", "UNKNOWN"] as const;
@@ -38,12 +38,7 @@ const SEVERITY_ORDER = ["CRITICAL", "HIGH", "MODERATE", "LOW", "UNKNOWN"] as con
 type Severity = (typeof SEVERITY_ORDER)[number];
 
 const escapeHtml = (text: string): string =>
-    text
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;");
+    text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&#39;");
 
 const advisoryUri = (id: string): string => {
     if (id.startsWith("CVE-")) {
@@ -87,10 +82,8 @@ const breakingMarker = (installed: string, fixedVersions: string[]): BreakingMar
             if (!lowestMajor) {
                 lowestMajor = fix;
             }
-        } else if (d) {
-            if (!lowestMinorPatch) {
-                lowestMinorPatch = fix;
-            }
+        } else if (d && !lowestMinorPatch) {
+            lowestMinorPatch = fix;
         }
     }
 
@@ -108,14 +101,14 @@ const breakingMarker = (installed: string, fixedVersions: string[]): BreakingMar
 const SEVERITY_RANK: Record<Severity, number> = {
     CRITICAL: 0,
     HIGH: 1,
-    MODERATE: 2,
     LOW: 3,
+    MODERATE: 2,
     UNKNOWN: 4,
 };
 
 const renderRow = (finding: AuditHtmlFinding): string => {
-    const { vulnerability, packageName, packageVersion, acknowledged, remediation } = finding;
-    const severity = vulnerability.severity as Severity;
+    const { acknowledged, packageName, packageVersion, remediation, vulnerability } = finding;
+    const { severity } = vulnerability;
     const marker = breakingMarker(packageVersion, vulnerability.fixedVersions);
     const fix = vulnerability.fixedVersions.length > 0 ? vulnerability.fixedVersions.join(", ") : "—";
     const remediationCell = remediation
@@ -137,8 +130,8 @@ const renderRow = (finding: AuditHtmlFinding): string => {
 export const emitAuditHtml = (options: AuditHtmlEmitOptions): string => {
     const now = options.now ?? new Date();
     const sortedFindings = [...options.findings].sort((a, b) => {
-        const sa = SEVERITY_RANK[(a.vulnerability.severity as Severity) ?? "UNKNOWN"] ?? 4;
-        const sb = SEVERITY_RANK[(b.vulnerability.severity as Severity) ?? "UNKNOWN"] ?? 4;
+        const sa = SEVERITY_RANK[(a.vulnerability.severity) ?? "UNKNOWN"] ?? 4;
+        const sb = SEVERITY_RANK[(b.vulnerability.severity) ?? "UNKNOWN"] ?? 4;
 
         if (sa !== sb) {
             return sa - sb;
@@ -147,10 +140,10 @@ export const emitAuditHtml = (options: AuditHtmlEmitOptions): string => {
         return a.packageName.localeCompare(b.packageName) || a.packageVersion.localeCompare(b.packageVersion);
     });
 
-    const counts: Record<Severity, number> = { CRITICAL: 0, HIGH: 0, MODERATE: 0, LOW: 0, UNKNOWN: 0 };
+    const counts: Record<Severity, number> = { CRITICAL: 0, HIGH: 0, LOW: 0, MODERATE: 0, UNKNOWN: 0 };
 
     for (const finding of sortedFindings) {
-        counts[(finding.vulnerability.severity as Severity) ?? "UNKNOWN"] += 1;
+        counts[(finding.vulnerability.severity) ?? "UNKNOWN"] += 1;
     }
 
     const rows = sortedFindings.map((f) => renderRow(f)).join("\n");
@@ -228,7 +221,10 @@ a:hover { text-decoration: underline; }
 <h1>vis audit</h1>
 <div class="meta">${escapeHtml(options.tool.name)} ${escapeHtml(options.tool.version)} · ${escapeHtml(now.toISOString())} · ${options.packagesScanned} packages scanned · ${sortedFindings.length} findings</div>
 <div class="summary">${summaryBadges || `<span class="badge badge-low">CLEAN</span>`}</div>
-${clean ? `<div class="clean">No security issues found.</div>` : `
+${
+    clean
+        ? `<div class="clean">No security issues found.</div>`
+        : `
 <div class="controls">
   <input id="filter" type="search" placeholder="Filter by package or advisory…" aria-label="Filter findings" />
   <select id="severity" aria-label="Filter by severity">
@@ -255,7 +251,8 @@ ${clean ? `<div class="clean">No security issues found.</div>` : `
 <tbody>
 ${rows}
 </tbody>
-</table>`}
+</table>`
+}
 <script>
 (() => {
   const rank = { CRITICAL: 0, HIGH: 1, MODERATE: 2, LOW: 3, UNKNOWN: 4 };

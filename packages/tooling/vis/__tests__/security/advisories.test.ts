@@ -20,6 +20,7 @@ describe(validateAdvisorySource, () => {
     it("rejects http:// sources", () => {
         expect.assertions(1);
 
+        // eslint-disable-next-line sonarjs/no-clear-text-protocols -- test that http:// is rejected
         expect(() => validateAdvisorySource("http://osv-vulnerabilities.storage.googleapis.com")).toThrow(AdvisorySourceNotAllowedError);
     });
 
