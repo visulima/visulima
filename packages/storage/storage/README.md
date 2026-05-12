@@ -6,7 +6,7 @@
 
 </a>
 
-<h3 align="center">Unified file storage for Node.js, edge runtimes, and modern web frameworks. One library, two surfaces: a one-liner <code>Files</code> facade and a full upload-server framework with TUS, multipart, REST, transformers, and lifecycle hooks.</h3>
+<h3 align="center">Visulima upload - Store files in a web-accessible location via a simplified API. Can automatically scale and rotate images. Includes S3, Azure, GCS and local filesystem-based backends with the most convenient features of each.</h3>
 
 <!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->
 
