@@ -838,11 +838,11 @@ const resolveSelection = (options: LintOptions): LintSelection => {
             || rootPackageManager
             || rootDeps
             || missingPackageJson
-        || deadWorkspacePatterns
-        || typesInDeps
-        || similarDeps
-        || hasBan
-        || hasPin;
+            || deadWorkspacePatterns
+            || typesInDeps
+            || similarDeps
+            || hasBan
+            || hasPin;
 
     if (!anySelected) {
         return {
