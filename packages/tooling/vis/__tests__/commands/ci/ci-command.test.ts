@@ -120,7 +120,7 @@ describe("vis ci", () => {
         } as never);
 
         expect(calls).toHaveLength(3);
-        expect(calls[0]).toStrictEqual({ argv: ["--frozen-lockfile"], name: "install" });
+        expect(calls[0]).toStrictEqual({ argv: ["--ci", "--frozen-lockfile"], name: "install" });
         expect(calls[1]!.name).toBe("affected");
         expect(calls[1]!.argv).toContain("lint");
         expect(calls[2]!.argv).toContain("test");

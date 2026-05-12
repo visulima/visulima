@@ -150,7 +150,7 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
         },
         cwd,
         logger,
-        { preferOffline: options.preferOffline || false },
+        { ciMode, preferOffline: options.preferOffline || false },
     );
 
     if (code !== 0) {

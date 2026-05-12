@@ -4,7 +4,7 @@ import { join } from "@visulima/path";
 
 import { pail } from "../io/logger";
 import { detectPm } from "../pm/pm-runner";
-import { emitSecurityWarnings, enforceScriptSecurity, runApprovedScripts } from "../security/security";
+import { checkPmNativeConfigDrift, emitSecurityWarnings, enforceScriptSecurity, formatDriftReport, runApprovedScripts } from "../security/security";
 import { buildSocketOptions, fetchSocketReports, formatSecurityOverview } from "../security/socket-security";
 
 const INSTALL_COMMANDS = new Set(["add", "install", "update"]);
@@ -76,9 +76,32 @@ const securityEnforcementPlugin: Plugin = {
             runApprovedScripts(toolbox.workspaceRoot, enforcement.postInstallPackages);
         }
 
-        // Display Socket.dev security summary after install/update commands
         const command = process.argv[2] ?? "";
 
+        // Native-config drift check — runs after install/update/add to nudge
+        // users when vis.config security settings have diverged from what
+        // is actually in the PM's native config files.
+        // `detectPm` is cached at the top because both this block and the
+        // socket overview below would otherwise re-detect on every hook.
+        const pm = INSTALL_COMMANDS.has(command) && toolbox.workspaceRoot ? detectPm(toolbox.workspaceRoot) : undefined;
+
+        if (pm && toolbox.visConfig && toolbox.workspaceRoot) {
+            const supported = new Set<string>(["bun", "npm", "pnpm", "yarn"]);
+
+            if (supported.has(pm.name)) {
+                const report = checkPmNativeConfigDrift(toolbox.visConfig, pm.name, toolbox.workspaceRoot);
+
+                if (report.hasDrift) {
+                    pail.info("");
+
+                    for (const line of formatDriftReport(report)) {
+                        pail.warn(line);
+                    }
+                }
+            }
+        }
+
+        // Display Socket.dev security summary after install/update commands
         const socketOptions = buildSocketOptions(toolbox.visConfig?.security?.socket);
 
         if (INSTALL_COMMANDS.has(command) && socketOptions && toolbox.workspaceRoot) {

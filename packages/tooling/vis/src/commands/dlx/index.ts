@@ -11,6 +11,7 @@ const dlx: Command = {
         ["vis dlx create-vite my-app", "Scaffold a new project"],
         ["vis dlx typescript@5.5.4 tsc --version", "Run specific version"],
         ["vis dlx -p cowsay -p lolcatjs -c 'echo hi | cowsay | lolcatjs'", "Multiple packages with shell"],
+        ["vis install && vis dlx --offline typescript tsc --version", "Hardened: pre-install + offline (no registry fetch on dlx)"],
     ],
     group: "Run & Execute",
     loader: () => import("./handler"),
@@ -19,12 +20,19 @@ const dlx: Command = {
         { alias: "p", description: "Additional packages to install (repeatable)", multiple: true, name: "package", type: String },
         { alias: "c", defaultValue: false, description: "Execute within shell environment", name: "shell-mode", type: Boolean },
         { alias: "s", defaultValue: false, description: "Suppress output except command results", name: "silent", type: Boolean },
+        {
+            defaultValue: false,
+            description: "Resolve from local store only — fail rather than fetch from the registry. Pair with `vis install` for hardened npx-style workflows.",
+            name: "offline",
+            type: Boolean,
+        },
     ],
 };
 
 export default dlx;
 
 export type DlxOptions = CreateOptions<{
+    offline: boolean | undefined;
     package: string[] | undefined;
     "shell-mode": boolean | undefined;
     silent: boolean | undefined;

@@ -23,6 +23,17 @@ const TASK_CONFIG_FILES: string[] = ["vis.task.ts", "vis.task.mts", "vis.task.ct
 const TASK_CONFIG_FILE_SET = new Set(TASK_CONFIG_FILES);
 
 /**
+ * Default `security.minimumReleaseAge` applied by `vis init` (in minutes).
+ * 2 days — long enough to filter out most rage-published malware while
+ * staying short enough that genuine fixes still land in a working week.
+ *
+ * Note: this is NOT merged into `SECURITY_DEFAULTS` — leaving it undefined
+ * preserves the "no opinion" semantics that downstream drift checks rely
+ * on. `vis init` writes the value explicitly into the generated config.
+ */
+const DEFAULT_MIN_RELEASE_AGE_MINUTES = 2880;
+
+/**
  * Secure-by-default security settings based on npm supply chain best practices.
  *
  * These defaults are applied automatically when using `defineConfig()` or `loadVisConfig()`.
@@ -623,6 +634,7 @@ export type { VisConfig, VisTaskConfig } from "./types";
 export {
     applyDefaults,
     CONFIG_FILES,
+    DEFAULT_MIN_RELEASE_AGE_MINUTES,
     defineConfig,
     defineTaskConfig,
     findVisConfigFile,

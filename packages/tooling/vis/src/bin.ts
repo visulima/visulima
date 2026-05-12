@@ -48,6 +48,7 @@ import replayCommand from "./commands/replay";
 import runCommand from "./commands/run";
 import sbomCommand from "./commands/sbom";
 import secretsCommand from "./commands/secrets";
+import securityCommands from "./commands/security";
 import serviceCommands from "./commands/service";
 import sortPackageJsonCommand from "./commands/sort-package-json";
 import stagedCommand from "./commands/staged";
@@ -213,6 +214,10 @@ for (const command of aiCommands) {
 }
 
 for (const command of serviceCommands) {
+    cli.addCommand(command);
+}
+
+for (const command of securityCommands) {
     cli.addCommand(command);
 }
 

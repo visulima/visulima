@@ -420,9 +420,48 @@ const applyPreferOffline = (resolved: ResolvedCommand, pm: InstallerInfo["name"]
 };
 
 interface RunInstallExtras extends RunOverrides {
+    /**
+     * CI-grade lockfile enforcement. When the resolved installer is yarn
+     * berry, appends `--immutable-cache` on top of the `--immutable`
+     * already emitted by the Rust resolver for frozen installs — the
+     * pair that the npm security best-practices guide recommends for
+     * "lockfile-enforced installations." No-op for every other PM
+     * because their frozen-install behavior already covers the cache
+     * (npm ci wipes node_modules; pnpm/bun/deno frozen modes never
+     * touch the store mid-install). Yarn classic's `--frozen-lockfile`
+     * predates the split and similarly does not write to the cache.
+     */
+    ciMode?: boolean;
     preferOffline?: boolean;
     silent?: boolean;
 }
+
+/**
+ * Append yarn berry's `--immutable-cache` to a frozen install command.
+ * Pairs with the `--immutable` already emitted by the Rust resolver to
+ * give CI the full lockfile-enforced install surface (lockfile is not
+ * mutated AND the offline mirror cache is not mutated). Skipped when
+ * `--immutable` is absent — without it, `--immutable-cache` is a yarn
+ * error rather than a stricter mode.
+ *
+ * Only yarn berry has the flag. Yarn classic, pnpm, npm, bun, deno, and
+ * aube all return the command unchanged.
+ */
+const applyImmutableCache = (resolved: ResolvedCommand, pm: InstallerInfo["name"], version: string): ResolvedCommand => {
+    if (pm !== "yarn" || version.startsWith("1.")) {
+        return resolved;
+    }
+
+    if (!resolved.args.includes("--immutable")) {
+        return resolved;
+    }
+
+    if (resolved.args.includes("--immutable-cache")) {
+        return resolved;
+    }
+
+    return { ...resolved, args: [...resolved.args, "--immutable-cache"] };
+};
 
 const runInstall = (pm: InstallerInfo, options: InstallOptions, cwd: string, logger: Console, extras: RunInstallExtras = {}): number => {
     // `silent` is wired into the native `InstallOptions` ABI, so we
@@ -440,6 +479,10 @@ const runInstall = (pm: InstallerInfo, options: InstallOptions, cwd: string, log
 
     if (extras.preferOffline) {
         resolved = applyPreferOffline(resolved, pm.name);
+    }
+
+    if (extras.ciMode) {
+        resolved = applyImmutableCache(resolved, pm.name, pm.version);
     }
 
     return runWithNativeDryRun(pm, resolved, cwd, logger, { dry: extras.dry, env: extras.env });
@@ -893,12 +936,109 @@ const runUnlink = (pm: InstallerInfo, packages: string[], recursive: boolean, cw
     return resolveAndRun(pm, () => resolveUnlink(pm.name, pm.version, packages, recursive), cwd, logger, extras);
 };
 
-const runDlx = (pm: InstallerInfo, options: DlxOptions, cwd: string, logger: Console, extras: RunOverrides = {}): number => {
-    if (pm.name === "aube") {
-        return runResolved(pm, resolveAubeDlx(options), cwd, logger, extras);
+interface RunDlxExtras extends RunOverrides {
+    /**
+     * Restrict resolution to the local PM store / npm cache and refuse
+     * to fetch from the network. Mirrors the "harden npx" guidance from
+     * the npm security best-practices list — the recommended flow is to
+     * pre-install the package via `vis install` (lockfile-locked) and
+     * then run `vis dlx --offline &lt;pkg>` so the dlx step never hits the
+     * registry.
+     *
+     * Implemented as a TS post-process rather than a native `DlxOptions`
+     * field because the flag is purely additive and each PM has its own
+     * spelling: pnpm/npm/yarn-classic-fallback → `--offline`, deno →
+     * `--cached-only`. Bun and yarn berry have no offline dlx mode; the
+     * helper logs a warning and forwards the command unchanged so the
+     * user knows their intent did not fully apply.
+     */
+    offline?: boolean;
+}
+
+/**
+ * Splice the PM-specific offline flag into a resolved dlx command,
+ * right after the dlx subcommand keyword so it isn't reinterpreted as
+ * a flag to the package being executed (the user's args follow the
+ * package name on the resolved command line).
+ *
+ * Returns the unchanged command plus a warning when the PM has no
+ * native offline mode for dlx — bun x predates `bun install --offline`
+ * adopting the dlx surface, and yarn berry models network policy via
+ * `.yarnrc.yml` (`enableNetwork`) rather than a per-call flag. We surface
+ * those gaps via `warnings` instead of failing so the user sees the
+ * limitation without losing the run.
+ */
+const applyDlxOffline = (resolved: ResolvedCommand, pm: InstallerInfo["name"], version: string): ResolvedCommand => {
+    if (resolved.args.includes("--offline") || resolved.args.includes("--cached-only")) {
+        return resolved;
     }
 
-    return resolveAndRun(pm, () => resolveDlx(pm.name, pm.version, options), cwd, logger, extras);
+    const insertAt = (flag: string, position: number): ResolvedCommand => {
+        const next = [...resolved.args];
+
+        next.splice(position, 0, flag);
+
+        return { ...resolved, args: next };
+    };
+
+    switch (pm) {
+        case "aube":
+        case "pnpm": {
+            // pnpm dlx accepts --offline (skip network, fail if not in store).
+            // aube has no dlx-specific offline flag but accepts --offline on
+            // its install path; pass through so the user sees their intent.
+            return insertAt("--offline", 1);
+        }
+        case "bun": {
+            return {
+                ...resolved,
+                warnings: [
+                    ...resolved.warnings,
+                    "bun x does not support --offline. Pre-install the package via `vis install` so bun x resolves from the local cache.",
+                ],
+            };
+        }
+        case "deno": {
+            // deno run takes --cached-only. Insert after `run` and before
+            // `-A` to keep the flag list in flag-before-spec order.
+            return insertAt("--cached-only", 1);
+        }
+        case "npm": {
+            // npm exec --offline. Insert at 1 (after `exec`); `--yes` and
+            // `--package=…` flags follow.
+            return insertAt("--offline", 1);
+        }
+        case "yarn": {
+            if (version.startsWith("1.")) {
+                // yarn classic falls back to npx (see resolve_dlx in the
+                // Rust resolver). npx supports --offline.
+                return insertAt("--offline", 0);
+            }
+
+            return {
+                ...resolved,
+                warnings: [
+                    ...resolved.warnings,
+                    "yarn berry has no --offline flag for dlx. Configure `enableNetwork: false` in .yarnrc.yml or set `enableMirror: true` for offline-first behavior.",
+                ],
+            };
+        }
+        default: {
+            const exhaustive: never = pm;
+
+            return { ...resolved, warnings: [...resolved.warnings, `applyDlxOffline: unsupported pm ${String(exhaustive)}`] };
+        }
+    }
+};
+
+const runDlx = (pm: InstallerInfo, options: DlxOptions, cwd: string, logger: Console, extras: RunDlxExtras = {}): number => {
+    let resolved = pm.name === "aube" ? resolveAubeDlx(options) : resolveDlx(pm.name, pm.version, options);
+
+    if (extras.offline) {
+        resolved = applyDlxOffline(resolved, pm.name, pm.version);
+    }
+
+    return runResolved(pm, resolved, cwd, logger, { dry: extras.dry, env: extras.env });
 };
 
 const runExec = (pm: InstallerInfo, options: ExecOptions, cwd: string, logger: Console, extras: RunOverrides = {}): number => {
@@ -933,7 +1073,7 @@ const runPmSubcommand = (pm: InstallerInfo, subcommand: string, args: string[], 
     return resolveAndRun(pm, () => resolvePmCommand(pm.name, pm.version, subcommand, args), cwd, logger, extras);
 };
 
-export type { CorepackMode, InfoOptions, InstallBackend, InstallerInfo, PmInfo, RunAddExtras, RunInstallExtras, RunOverrides, RunRemoveExtras };
+export type { CorepackMode, InfoOptions, InstallBackend, InstallerInfo, PmInfo, RunAddExtras, RunDlxExtras, RunInstallExtras, RunOverrides, RunRemoveExtras };
 export {
     detectLockfileDrift,
     detectPm,
@@ -960,7 +1100,9 @@ export {
  */
 export const pmRunnerInternals = {
     applyCorepack,
+    applyDlxOffline,
     applyDryRun,
+    applyImmutableCache,
     applySilent,
     shouldUseCorepack,
     spawnResolved,

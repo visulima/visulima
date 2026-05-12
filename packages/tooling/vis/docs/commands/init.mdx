@@ -43,5 +43,16 @@ The wizard walks through:
 
 1. **Socket.dev** — Enable supply-chain security scanning
 2. **Build scripts** — Scan and approve packages with build scripts
-3. **Git hooks** — Set up pre-commit hooks with lint-staged
-4. **PM sync** — Sync security settings to pnpm/npm/yarn config
+3. **Minimum release age** — Optionally block freshly-published versions. Defaults to **2880 minutes (2 days)** when accepted.
+4. **Git hooks** — Set up pre-commit hooks with lint-staged
+5. **PM sync** — Sync security settings (allowBuilds + minimumReleaseAge) into the native PM config files (pnpm `pnpm-workspace.yaml`, bun `bunfig.toml`/`package.json`, npm `.npmrc`, yarn berry `.yarnrc.yml`)
+6. **Migration detection** — Detect competing monorepo tools (Nx, Turbo) and offer migration
+
+## Static (non-interactive) defaults
+
+`vis init --no-interactive` writes a config with `security.minimumReleaseAge: 2880` plus the secure defaults applied automatically by `defineConfig()`. When combined with `--sync-native` the value is also mirrored into the active package manager's native config.
+
+## Related
+
+- `vis security sync` — re-push the current `vis.config` values to the PM-native config after editing.
+- `vis security list` — inspect the build-script triage and the drift report.

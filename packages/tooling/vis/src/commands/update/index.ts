@@ -203,6 +203,14 @@ const update: Command = {
             name: "release-channel",
             type: String,
         },
+        {
+            alias: "y",
+            defaultValue: false,
+            description:
+                "Skip the confirmation prompt for blanket --latest updates. Required in non-TTY contexts (CI) when running `vis update --latest` without explicit package arguments.",
+            name: "yes",
+            type: Boolean,
+        },
     ],
 };
 
@@ -238,4 +246,5 @@ export type UpdateOptions = CreateOptions<{
     security: boolean | undefined;
     target: string | undefined;
     "workspace-root": boolean | undefined;
+    yes: boolean | undefined;
 }>;
