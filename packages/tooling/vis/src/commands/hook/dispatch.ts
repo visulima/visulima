@@ -1,7 +1,7 @@
 import { spawnSync } from "node:child_process";
 
-import { getBuiltin } from "./builtins";
 import type { BuiltinContext, BuiltinLogger } from "./builtins";
+import { getBuiltin } from "./builtins";
 import type { HookConfig, HookEntry } from "./config";
 import { PREK_STAGES_WITH_GIT_ARGS } from "./constants";
 import { applyHookFilter } from "./filter";
@@ -11,7 +11,7 @@ import { applyHookFilter } from "./filter";
  * gives ~2 MiB in practice. 32 KiB keeps us well clear of Windows'
  * 32767-char `CreateProcess` limit too.
  *
- * Note: shell `entry` strings are executed via `sh -c "<entry> \"$@\""`,
+ * Note: shell `entry` strings are executed via `sh -c "&lt;entry> \"$@\""`,
  * which means Windows runners need a POSIX `sh` on PATH (Git for Windows
  * provides one). The dispatcher does not synthesise `cmd.exe` pipelines.
  */
@@ -55,10 +55,12 @@ export interface DispatchLogger {
     info: (message: string) => void;
 }
 
-const builtinLoggerFor = (parent: DispatchLogger): BuiltinLogger => ({
-    error: (message) => parent.error(message),
-    info: (message) => parent.info(message),
-});
+const builtinLoggerFor = (parent: DispatchLogger): BuiltinLogger => {
+    return {
+        error: (message) => { parent.error(message); },
+        info: (message) => { parent.info(message); },
+    };
+};
 
 const describeSpawnFailure = (status: number | null, signal: NodeJS.Signals | null, error: Error | undefined): string => {
     if (error) {
@@ -80,6 +82,7 @@ interface DispatchContext {
      */
     extraArgs: ReadonlyArray<string>;
     logger: DispatchLogger;
+
     /**
      * Working directory for child processes. Defaults to process.cwd()
      * when omitted but is taken from the run command in practice.
@@ -135,8 +138,10 @@ const runShellCommand = (
 
         if (result.status === null) {
             context.logger.error(`hook command failed: ${describeSpawnFailure(result.status, result.signal, result.error)}`);
+            // eslint-disable-next-line no-bitwise -- OR-fold exit codes to match upstream pre-commit (`rc |= …`)
             rc |= 1;
         } else {
+            // eslint-disable-next-line no-bitwise -- OR-fold exit codes to match upstream pre-commit (`rc |= …`)
             rc |= result.status;
         }
     }
@@ -248,6 +253,7 @@ export const runStage = (
         const code = runHookEntry(hook, candidateFiles, context);
 
         if (code !== 0) {
+            // eslint-disable-next-line no-bitwise -- OR-fold exit codes to match upstream pre-commit (`rc |= …`)
             rc |= code;
 
             if (config.failFast) {

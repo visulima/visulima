@@ -12,16 +12,18 @@ const ENDINGS: Record<string, Buffer> = {
 
 const FIX_VALUES = new Set<string>(["auto", "cr", "crlf", "lf", "no"]);
 
+type LineEnding = "cr" | "crlf" | "lf";
+
 interface Line {
     content: Buffer;
-    ending: "cr" | "crlf" | "lf" | null;
+    ending: LineEnding | null;
 }
 
 /**
  * Mirrors `pre-commit/pre-commit-hooks/mixed_line_ending.py`.
  *
  * Recognised `args`:
- *   `--fix=<value>` or `-f <value>` / `--fix <value>`
+ *   `--fix=&lt;value>` or `-f &lt;value>` / `--fix &lt;value>`
  *     where value is one of `auto` (default), `no`, `lf`, `crlf`, `cr`.
  */
 const runMixedLineEnding = (files: ReadonlyArray<string>, args: ReadonlyArray<string>, context: BuiltinContext): number => {
@@ -60,8 +62,8 @@ const runMixedLineEnding = (files: ReadonlyArray<string>, args: ReadonlyArray<st
         // Tracks insertion order so the auto-fix target on a tie matches
         // the upstream `Counter.most_common(1)`: first-seen wins, not
         // last-iterated.
-        const counts: Array<{ count: number; kind: "cr" | "crlf" | "lf" }> = [];
-        const bumpCount = (kind: "cr" | "crlf" | "lf"): void => {
+        const counts: { count: number; kind: LineEnding }[] = [];
+        const bumpCount = (kind: LineEnding): void => {
             const existing = counts.find((c) => c.kind === kind);
 
             if (existing) {

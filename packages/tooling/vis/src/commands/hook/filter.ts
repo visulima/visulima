@@ -7,7 +7,7 @@ const compileRegex = (pattern: string, label: string): RegExp => {
     } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
 
-        throw new Error(`invalid ${label} regex ${JSON.stringify(pattern)}: ${message}`);
+        throw new Error(`invalid ${label} regex ${JSON.stringify(pattern)}: ${message}`, { cause: error });
     }
 };
 
