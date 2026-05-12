@@ -1,3 +1,21 @@
+## @visulima/package [5.0.0-alpha.20](https://github.com/visulima/visulima/compare/@visulima/package@5.0.0-alpha.19...@visulima/package@5.0.0-alpha.20) (2026-05-11)
+
+### ⚠ BREAKING CHANGES
+
+* **vis:** vis sbom now emits CycloneDX 1.7. Downstream consumers
+pinned to a 1.6 validator must upgrade.
+
+Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>
+
+### Features
+
+* **vis:** bump sbom to cyclonedx 1.7 ([904075f](https://github.com/visulima/visulima/commit/904075fd9353e40b593d5a13f53307c584e31da7))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.21
+
 ## @visulima/package [5.0.0-alpha.19](https://github.com/visulima/visulima/compare/@visulima/package@5.0.0-alpha.18...@visulima/package@5.0.0-alpha.19) (2026-05-11)
 
 

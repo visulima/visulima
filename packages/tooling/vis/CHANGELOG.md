@@ -1,3 +1,26 @@
+## @visulima/vis [1.0.0-alpha.19](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.18...@visulima/vis@1.0.0-alpha.19) (2026-05-11)
+
+### ⚠ BREAKING CHANGES
+
+* **vis:** replace prek runner with in-process hook dispatcher
+* **vis:** vis sbom now emits CycloneDX 1.7. Downstream consumers
+pinned to a 1.6 validator must upgrade.
+
+Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>
+
+### Features
+
+* **vis:** bump sbom to cyclonedx 1.7 ([904075f](https://github.com/visulima/visulima/commit/904075fd9353e40b593d5a13f53307c584e31da7))
+* **vis:** replace prek runner with in-process hook dispatcher ([659ba07](https://github.com/visulima/visulima/commit/659ba07fc311c36783e8900188b9753276a961fe))
+
+
+### Dependencies
+
+* **@visulima/tui:** upgraded to 1.0.0-alpha.14
+* **@visulima/cerebro:** upgraded to 3.0.0-alpha.22
+* **@visulima/fs:** upgraded to 5.0.0-alpha.21
+* **@visulima/package:** upgraded to 5.0.0-alpha.20
+
 ## @visulima/vis [1.0.0-alpha.18](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.17...@visulima/vis@1.0.0-alpha.18) (2026-05-11)
 
 ### Features
