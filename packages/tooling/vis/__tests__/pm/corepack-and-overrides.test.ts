@@ -24,7 +24,7 @@ vi.mock(import("@visulima/vis/native"), async () => {
 
 const { pmRunnerInternals } = await import("../../src/pm/pm-runner");
 
-const { applyCorepack, applyDryRun, applySilent, shouldUseCorepack, spawnResolved } = pmRunnerInternals;
+const { applyCorepack, applyDlxOffline, applyDryRun, applyImmutableCache, applySilent, shouldUseCorepack, spawnResolved } = pmRunnerInternals;
 
 const RESOLVED = (bin: string, args: string[]) => {
     return { args, bin, warnings: [] as string[] };
@@ -194,6 +194,120 @@ describe(applyDryRun, () => {
         expect.assertions(1);
 
         expect(applyDryRun(RESOLVED("aube", ["install"]), "aube")).toBeNull();
+    });
+});
+
+describe(applyImmutableCache, () => {
+    it("appends --immutable-cache to a yarn berry frozen install", () => {
+        expect.assertions(1);
+
+        const out = applyImmutableCache(RESOLVED("yarn", ["install", "--immutable"]), "yarn", "4.0.0");
+
+        expect(out.args).toStrictEqual(["install", "--immutable", "--immutable-cache"]);
+    });
+
+    it("is a no-op for yarn classic (no --immutable surface)", () => {
+        expect.assertions(1);
+
+        const out = applyImmutableCache(RESOLVED("yarn", ["install", "--frozen-lockfile"]), "yarn", "1.22.0");
+
+        expect(out.args).toStrictEqual(["install", "--frozen-lockfile"]);
+    });
+
+    it("is a no-op when --immutable is absent (yarn rejects --immutable-cache standalone)", () => {
+        expect.assertions(1);
+
+        const out = applyImmutableCache(RESOLVED("yarn", ["install"]), "yarn", "4.0.0");
+
+        expect(out.args).toStrictEqual(["install"]);
+    });
+
+    it("is idempotent — does not double-append", () => {
+        expect.assertions(1);
+
+        const out = applyImmutableCache(RESOLVED("yarn", ["install", "--immutable", "--immutable-cache"]), "yarn", "4.0.0");
+
+        expect(out.args).toStrictEqual(["install", "--immutable", "--immutable-cache"]);
+    });
+
+    it("is a no-op for non-yarn PMs", () => {
+        expect.assertions(5);
+
+        for (const pm of ["npm", "pnpm", "bun", "deno", "aube"] as const) {
+            const out = applyImmutableCache(RESOLVED(pm, ["install", "--immutable"]), pm, "1.0.0");
+
+            expect(out.args).toStrictEqual(["install", "--immutable"]);
+        }
+    });
+});
+
+describe(applyDlxOffline, () => {
+    it("splices --offline after the dlx subcommand for pnpm", () => {
+        expect.assertions(1);
+
+        const out = applyDlxOffline(RESOLVED("pnpm", ["dlx", "--silent", "cowsay", "hello"]), "pnpm", "10.0.0");
+
+        expect(out.args).toStrictEqual(["dlx", "--offline", "--silent", "cowsay", "hello"]);
+    });
+
+    it("splices --offline after exec for npm", () => {
+        expect.assertions(1);
+
+        const out = applyDlxOffline(RESOLVED("npm", ["exec", "--yes", "--", "cowsay"]), "npm", "10.0.0");
+
+        expect(out.args).toStrictEqual(["exec", "--offline", "--yes", "--", "cowsay"]);
+    });
+
+    it("splices --offline before --yes for yarn classic (npx fallback)", () => {
+        expect.assertions(1);
+
+        // yarn classic dlx is rewritten to npx by the Rust resolver (bin: "npx").
+        // For the post-process we only need pm + version; bin is unchanged.
+        const out = applyDlxOffline(RESOLVED("npx", ["--yes", "cowsay"]), "yarn", "1.22.0");
+
+        expect(out.args).toStrictEqual(["--offline", "--yes", "cowsay"]);
+    });
+
+    it("warns instead of inserting for yarn berry (no offline dlx flag)", () => {
+        expect.assertions(2);
+
+        const out = applyDlxOffline(RESOLVED("yarn", ["dlx", "cowsay"]), "yarn", "4.0.0");
+
+        expect(out.args).toStrictEqual(["dlx", "cowsay"]);
+        expect(out.warnings.some((w) => w.includes("yarn berry has no --offline flag"))).toBe(true);
+    });
+
+    it("warns instead of inserting for bun", () => {
+        expect.assertions(2);
+
+        const out = applyDlxOffline(RESOLVED("bun", ["x", "cowsay"]), "bun", "1.2.0");
+
+        expect(out.args).toStrictEqual(["x", "cowsay"]);
+        expect(out.warnings.some((w) => w.includes("bun x does not support --offline"))).toBe(true);
+    });
+
+    it("uses --cached-only for deno", () => {
+        expect.assertions(1);
+
+        const out = applyDlxOffline(RESOLVED("deno", ["run", "-A", "npm:cowsay"]), "deno", "2.0.0");
+
+        expect(out.args).toStrictEqual(["run", "--cached-only", "-A", "npm:cowsay"]);
+    });
+
+    it("is idempotent — does not double-insert when --offline is already present", () => {
+        expect.assertions(1);
+
+        const out = applyDlxOffline(RESOLVED("pnpm", ["dlx", "--offline", "cowsay"]), "pnpm", "10.0.0");
+
+        expect(out.args).toStrictEqual(["dlx", "--offline", "cowsay"]);
+    });
+
+    it("is idempotent for deno (--cached-only already present)", () => {
+        expect.assertions(1);
+
+        const out = applyDlxOffline(RESOLVED("deno", ["run", "--cached-only", "-A", "npm:cowsay"]), "deno", "2.0.0");
+
+        expect(out.args).toStrictEqual(["run", "--cached-only", "-A", "npm:cowsay"]);
     });
 });
 

@@ -27,6 +27,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
         },
         cwd,
         logger,
+        { offline: options.offline || false },
     );
 
     if (code !== 0) {

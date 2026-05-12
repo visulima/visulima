@@ -56,8 +56,9 @@ describe(readPmNativeMinimumReleaseAge, () => {
 
             const result = readPmNativeMinimumReleaseAge(workspaceRoot, "bun");
 
-            // 259200 from bunfig.toml — definitively not 9999 from package.json.
-            expect(result.minutes).toBe(259_200);
+            // Bun's value is in SECONDS (259200s = 72h = 3 days); vis canonicalises
+            // on minutes, so 259200 / 60 = 4320.
+            expect(result.minutes).toBe(4320);
             // Bun spells the excludes field plural (`Excludes`); we normalise
             // to the vis-internal singular (`excludes`) for symmetry with pnpm.
             expect(result.excludes).toStrictEqual(["@types/bun", "typescript"]);
@@ -87,11 +88,64 @@ describe(readPmNativeMinimumReleaseAge, () => {
         });
     });
 
-    describe("unsupported package managers", () => {
-        it("returns empty object for npm/yarn (neither has a native minimumReleaseAge field)", () => {
+    describe("npm", () => {
+        it("reads min-release-age=2d from .npmrc and converts to minutes", () => {
+            expect.assertions(1);
+
+            writeFileSync(join(workspaceRoot, ".npmrc"), "registry=https://registry.npmjs.org/\nmin-release-age=2d\n");
+
+            // 2 days = 2880 minutes.
+            expect(readPmNativeMinimumReleaseAge(workspaceRoot, "npm").minutes).toBe(2880);
+        });
+
+        it("handles hour and minute units", () => {
             expect.assertions(2);
 
+            writeFileSync(join(workspaceRoot, ".npmrc"), "min-release-age=48h\n");
+
+            expect(readPmNativeMinimumReleaseAge(workspaceRoot, "npm").minutes).toBe(2880);
+
+            writeFileSync(join(workspaceRoot, ".npmrc"), "min-release-age=90m\n");
+
+            expect(readPmNativeMinimumReleaseAge(workspaceRoot, "npm").minutes).toBe(90);
+        });
+
+        it("returns undefined minutes when .npmrc lacks the field", () => {
+            expect.assertions(1);
+
+            writeFileSync(join(workspaceRoot, ".npmrc"), "registry=https://registry.npmjs.org/\n");
+
+            expect(readPmNativeMinimumReleaseAge(workspaceRoot, "npm")).toStrictEqual({ minutes: undefined });
+        });
+
+        it("returns empty object when .npmrc is absent", () => {
+            expect.assertions(1);
+
             expect(readPmNativeMinimumReleaseAge(workspaceRoot, "npm")).toStrictEqual({});
+        });
+    });
+
+    describe("yarn", () => {
+        it("reads npmMinimalAgeGate string from .yarnrc.yml and converts to minutes", () => {
+            expect.assertions(1);
+
+            writeFileSync(join(workspaceRoot, ".yarnrc.yml"), "nodeLinker: pnp\nnpmMinimalAgeGate: \"48h\"\n");
+
+            // 48 hours = 2880 minutes.
+            expect(readPmNativeMinimumReleaseAge(workspaceRoot, "yarn").minutes).toBe(2880);
+        });
+
+        it("tolerates a bare numeric value (interpreted as minutes for symmetry with pnpm)", () => {
+            expect.assertions(1);
+
+            writeFileSync(join(workspaceRoot, ".yarnrc.yml"), "npmMinimalAgeGate: 1440\n");
+
+            expect(readPmNativeMinimumReleaseAge(workspaceRoot, "yarn").minutes).toBe(1440);
+        });
+
+        it("returns empty object when .yarnrc.yml is absent (yarn classic case)", () => {
+            expect.assertions(1);
+
             expect(readPmNativeMinimumReleaseAge(workspaceRoot, "yarn")).toStrictEqual({});
         });
     });
@@ -104,6 +158,14 @@ describe(readPmNativeMinimumReleaseAge, () => {
             writeFileSync(join(workspaceRoot, "bunfig.toml"), "[install\nminimumReleaseAge = ");
 
             expect(readPmNativeMinimumReleaseAge(workspaceRoot, "bun")).toStrictEqual({});
+        });
+
+        it("returns undefined minutes for unparseable npm time strings", () => {
+            expect.assertions(1);
+
+            writeFileSync(join(workspaceRoot, ".npmrc"), "min-release-age=not-a-duration\n");
+
+            expect(readPmNativeMinimumReleaseAge(workspaceRoot, "npm").minutes).toBeUndefined();
         });
     });
 });

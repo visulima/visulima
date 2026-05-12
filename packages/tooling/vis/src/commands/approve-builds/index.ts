@@ -5,6 +5,7 @@ const approveBuilds: Command = {
     examples: [
         ["vis approve-builds", "Scan and list unapproved build scripts"],
         ["vis approve-builds --all", "Approve all pending builds (pnpm)"],
+        ["vis approve-builds --write", "Write unapproved entries into vis.config.ts security.allowBuilds"],
         ["vis approve-builds --sync-native", "Sync allowBuilds to native PM config"],
     ],
     group: "Security & Health",
@@ -19,6 +20,12 @@ const approveBuilds: Command = {
             name: "sync-native",
             type: Boolean,
         },
+        {
+            defaultValue: false,
+            description: "Write unapproved entries directly into vis.config.ts security.allowBuilds (LavaMoat 'auto' parity)",
+            name: "write",
+            type: Boolean,
+        },
     ],
 };
 
@@ -28,4 +35,5 @@ export type ApproveBuildsOptions = CreateOptions<{
     all: boolean | undefined;
     scan: boolean | undefined;
     "sync-native": boolean | undefined;
+    write: boolean | undefined;
 }>;
