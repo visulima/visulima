@@ -13,11 +13,11 @@ jobs:
             pull-requests: "write"
         steps:
             - name: "Harden Runner"
-              uses: "step-security/harden-runner@95d9a5deda9de15063e7595e9719c11c38c90ae2" # v2.13.2
+              uses: "step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450" # v2.19.1
               with:
                   egress-policy: "audit"
 
-            - uses: "actions/labeler@8558fd74291d67161a8a78ce36a881fa63b766a9" # v5.0.0
+            - uses: "actions/labeler@f27b608878404679385c85cfa523b85ccb86e213" # v6.1.0
               with:
                   repo-token: "${{ secrets.GITHUB_TOKEN }}"
                   configuration-path: "labeler-config.yml"

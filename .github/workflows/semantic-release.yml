@@ -33,12 +33,12 @@ jobs:
 
         steps:
             - name: "Harden Runner"
-              uses: "step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594" # v2.16.0
+              uses: "step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450" # v2.19.1
               with:
                   egress-policy: "audit"
 
             - name: "Wait for tests to succeed"
-              uses: "lewagon/wait-on-check-action@3603e826ee561ea102b58accb5ea55a1a7482343" # v1.4.1
+              uses: "lewagon/wait-on-check-action@9312864dfbc9fd208e9c0417843430751c042800" # v1.7.0
               timeout-minutes: 30
               with:
                   ref: "${{ github.event.pull_request.head.sha || github.sha }}"
@@ -48,8 +48,10 @@ jobs:
                   allowed-conclusions: "success,skipped,neutral" # all other checks must pass, being skipped or cancelled is not sufficient
                   ignore-checks: "lock-closed / lock-closed, Socket Security: Pull Request Alerts, Dependabot, Discover affected benches, Bench: boxen-bench, Bench: cerebro-bench, Bench: colorize-bench, Bench: command-line-args-bench, Bench: deep-clone-bench, Bench: fmt-bench, Bench: fs-bench, Bench: inspector-bench, Bench: pail-bench, Bench: redact-bench, Bench: string-bench, Bench: tabular-bench, Bench: task-runner-bench, Bench: tui-bench"
 
-            - name: "Git checkout"
-              uses: "actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5" # v4.3.1
+            # Persist credentials so multi-semantic-release can push tags/commits with
+            # the explicitly-passed SEMANTIC_RELEASE_GITHUB_TOKEN.
+            - name: "Git checkout" # zizmor: ignore[artipacked]
+              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
               with:
                   fetch-depth: 0
                   token: "${{ secrets.SEMANTIC_RELEASE_GITHUB_TOKEN }}"
@@ -60,7 +62,7 @@ jobs:
 
             - name: "Derive appropriate SHAs for base and head for `nx affected` commands"
               id: "setSHAs"
-              uses: "nrwl/nx-set-shas@3e9ad7370203c1e93d109be57f3b72eb0eb511b1" # v4
+              uses: "nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1" # v5.0.1
 
             - name: "Setup resources and environment"
               id: "setup"
@@ -74,7 +76,7 @@ jobs:
                   run-npm-audit: false
 
             - name: "Download native build artifacts"
-              uses: "dawidd6/action-download-artifact@8a338493df3d275e4a7a63bcff3b8fe97e51a927" # v19
+              uses: "dawidd6/action-download-artifact@b6e2e70617bc3265edd6dab6c906732b2f1ae151" # v21
               with:
                   workflow: "build-native.yml"
                   commit: "${{ github.sha }}"
