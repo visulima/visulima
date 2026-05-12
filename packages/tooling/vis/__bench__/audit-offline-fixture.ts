@@ -34,6 +34,7 @@ const buildStoredZip = (entries: ZipEntry[]): Buffer => {
 
         const local = Buffer.alloc(30);
 
+        // Local file header signature `PK\x03\x04`.
         local.writeUInt32LE(0x04_03_4b_50, 0);
         local.writeUInt16LE(20, 4);
         local.writeUInt16LE(0, 6);
@@ -49,6 +50,7 @@ const buildStoredZip = (entries: ZipEntry[]): Buffer => {
 
         const central = Buffer.alloc(46);
 
+        // Central directory file header signature `PK\x01\x02`.
         central.writeUInt32LE(0x02_01_4b_50, 0);
         central.writeUInt16LE(20, 4);
         central.writeUInt16LE(20, 6);
@@ -76,6 +78,7 @@ const buildStoredZip = (entries: ZipEntry[]): Buffer => {
 
     const eocd = Buffer.alloc(22);
 
+    // End of central directory record signature `PK\x05\x06`.
     eocd.writeUInt32LE(0x06_05_4b_50, 0);
     eocd.writeUInt16LE(0, 4);
     eocd.writeUInt16LE(0, 6);

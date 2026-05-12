@@ -5,20 +5,27 @@ import { execVisJson } from "../exec";
 import type { ToolContext, ToolDeps } from "../response";
 import { errorResponse, okResponse } from "../response";
 
-interface EcosystemSummary {
-    advisoryCount: number;
-    lastSyncIso: string;
-    manifestEtag: string | null;
-    name: string;
-}
+const ecosystemSummarySchema = z.object({
+    advisoryCount: z.number(),
+    lastSyncIso: z.string(),
+    manifestEtag: z.string().nullable(),
+    name: z.string(),
+});
 
-interface AdvisoryStatusJson {
-    dbPath: string;
-    ecosystems: EcosystemSummary[];
-    exists: boolean;
-    schemaVersion: number;
-    sizeBytes: number;
-}
+// `.catchall(z.unknown())` preserves unknown keys so the schema stays forward-
+// compatible with new CLI fields (e.g., test fixtures' `flags`) without
+// silently dropping them.
+const advisoryStatusJsonSchema = z
+    .object({
+        dbPath: z.string(),
+        ecosystems: z.array(ecosystemSummarySchema),
+        exists: z.boolean(),
+        schemaVersion: z.number(),
+        sizeBytes: z.number(),
+    })
+    .catchall(z.unknown());
+
+type AdvisoryStatusJson = z.infer<typeof advisoryStatusJsonSchema>;
 
 export const registerAdvisoryStatus = ({ server }: ToolDeps, context: ToolContext): void => {
     server.registerTool(
@@ -44,7 +51,8 @@ export const registerAdvisoryStatus = ({ server }: ToolDeps, context: ToolContex
                     args.push("--db", input.db);
                 }
 
-                const payload = await execVisJson<AdvisoryStatusJson>(context.visBin, args, { cwd: context.workspaceRoot });
+                const raw = await execVisJson<AdvisoryStatusJson>(context.visBin, args, { cwd: context.workspaceRoot });
+                const payload = advisoryStatusJsonSchema.parse(raw);
 
                 return okResponse(payload);
             } catch (error) {

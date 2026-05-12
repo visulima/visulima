@@ -230,6 +230,33 @@ mod tests {
     }
 
     #[test]
+    fn range_with_last_affected_emits_pair_with_inclusive_upper() {
+        // OSV `last_affected` is inclusive; `to_pairs` collapses it onto the
+        // `fixed` slot so the matcher can use one comparison path.
+        let r = Range {
+            kind: "SEMVER".into(),
+            events: vec![
+                Event {
+                    introduced: Some("1.0.0".into()),
+                    fixed: None,
+                    last_affected: None,
+                    limit: None,
+                },
+                Event {
+                    introduced: None,
+                    fixed: None,
+                    last_affected: Some("1.5.9".into()),
+                    limit: None,
+                },
+            ],
+        };
+        let pairs = r.to_pairs();
+        assert_eq!(pairs.len(), 1);
+        assert_eq!(pairs[0].introduced, "1.0.0");
+        assert_eq!(pairs[0].fixed.as_deref(), Some("1.5.9"));
+    }
+
+    #[test]
     fn range_open_high_emits_pair_without_fixed() {
         let r = Range {
             kind: "SEMVER".into(),

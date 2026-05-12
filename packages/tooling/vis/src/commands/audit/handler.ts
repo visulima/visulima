@@ -69,6 +69,9 @@ const SOCKET_ALERT_COLORS: Record<string, (s: string) => string> = {
 // CI invocations stay stable as more ecosystems land.
 const SUPPORTED_ECOSYSTEMS = new Set(["cargo", "crates.io", "go", "maven", "npm", "pypi", "rubygems"]);
 
+// Parses `--ecosystem` (comma-separated) into the canonical list plus any
+// entries that don't match SUPPORTED_ECOSYSTEMS — the handler emits a
+// non-fatal warning for unsupported names instead of failing.
 const parseEcosystems = (raw: string | undefined): { all: string[]; unsupported: string[] } => {
     const list = (raw ?? "npm")
         .split(",")
@@ -869,6 +872,9 @@ interface ActionableFinding {
     vulnerability: SecurityVulnerability;
 }
 
+// Reads a yes/no answer from stdin. In non-TTY contexts (CI, piped stdin)
+// the prompt is skipped and `defaultYes` is returned so apply loops behave
+// the same as if the user had pressed Enter.
 const promptYesNo = async (question: string, defaultYes: boolean): Promise<boolean> => {
     if (!process.stdin.isTTY) {
         return defaultYes;
@@ -906,6 +912,11 @@ interface RunApplyDirectArguments {
     yes: boolean;
 }
 
+// Drives the `--fix` workflow: builds an upgrade plan for vulnerable
+// direct dependencies, renders a dry-run preview, prompts for confirmation
+// (or honours `--yes` in CI), then runs the package manager add command
+// per workspace. Returns an exit code when the loop short-circuits, or
+// undefined to continue with the post-fix rescan.
 const runApplyDirect = async (arguments_: RunApplyDirectArguments): Promise<number | undefined> => {
     const plan: DirectApplyPlan = buildDirectApplyPlan({
         allowMajor: arguments_.allowMajor,
@@ -996,6 +1007,11 @@ interface RunApplyTransitiveArguments {
     yes: boolean;
 }
 
+// Drives the `--fix-transitive` workflow: builds an override plan for the
+// vulnerable transitives, enforces the CI two-lock gate (`--yes` plus
+// `security.audit.apply.transitive.enabled`), renders the dry-run preview,
+// prompts the user, then writes the PM-specific override surface. Returns
+// an exit code when the loop short-circuits, or undefined to continue.
 const runApplyTransitive = async (arguments_: RunApplyTransitiveArguments): Promise<number | undefined> => {
     if (!isTransitiveOnlyPm(arguments_.pm.name)) {
         pail.error(`--fix-transitive is not supported for package manager "${arguments_.pm.name}". Use pnpm, npm, yarn, or bun.`);
@@ -1087,6 +1103,15 @@ const runApplyTransitive = async (arguments_: RunApplyTransitiveArguments): Prom
     return 0;
 };
 
+/**
+ * Handler for `vis audit`. Resolves the package graph, runs OSV (offline
+ * or live) + optional Socket.dev intelligence, applies reachability /
+ * severity filtering, renders the chosen format, and dispatches the
+ * `--fix` / `--fix-transitive` apply loops when requested.
+ *
+ * @param toolbox Cerebro toolbox with parsed options, logger, resolved
+ *                vis config, and the discovered workspace root.
+ */
 const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, AuditOptions>): Promise<void> => {
     if (!wsRoot) {
         throw new Error("Could not determine workspace root. Run this command inside a monorepo.");

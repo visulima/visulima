@@ -99,6 +99,7 @@ const advisoriesCommands: Command[] = [advisoriesSync, advisoriesStatus, advisor
 
 export default advisoriesCommands;
 
+/** Typed options for `vis advisories sync` (cache refresh from the OSV dump). */
 export type AdvisoriesSyncOptions = CreateOptions<{
     db: string | undefined;
     ecosystem: string | undefined;
@@ -107,11 +108,13 @@ export type AdvisoriesSyncOptions = CreateOptions<{
     source: string | undefined;
 }>;
 
+/** Typed options for `vis advisories status` (cache freshness report). */
 export type AdvisoriesStatusOptions = CreateOptions<{
     db: string | undefined;
     format: string | undefined;
 }>;
 
+/** Typed options for `vis advisories prune` (delete the local cache). */
 export type AdvisoriesPruneOptions = CreateOptions<{
     db: string | undefined;
     force: boolean | undefined;

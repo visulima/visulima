@@ -25,6 +25,11 @@ interface Line {
  * Recognised `args`:
  *   `--fix=&lt;value>` or `-f &lt;value>` / `--fix &lt;value>`
  *     where value is one of `auto` (default), `no`, `lf`, `crlf`, `cr`.
+ *
+ * @param files Files (relative to `context.root`) to process.
+ * @param args Raw CLI args passed through from the hook config.
+ * @param context Builtin context with logger and workspace root.
+ * @returns Exit code: `0` on no-op, `1` on fixed/found mixed endings, `2` on bad args.
  */
 const runMixedLineEnding = (files: ReadonlyArray<string>, args: ReadonlyArray<string>, context: BuiltinContext): number => {
     let fixArg = "auto";

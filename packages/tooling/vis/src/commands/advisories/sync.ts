@@ -8,8 +8,9 @@ import type { SyncResult } from "../../security/advisories";
 import { DEFAULT_ADVISORY_SOURCE, syncAdvisories } from "../../security/advisories";
 import type { AdvisoriesSyncOptions } from "./index";
 
-const readAdvisoriesConfig = (visConfig: VisConfig | undefined): NonNullable<NonNullable<NonNullable<VisConfig["security"]>["audit"]>["advisories"]> =>
-    visConfig?.security?.audit?.advisories ?? {};
+type AdvisoriesConfig = NonNullable<NonNullable<NonNullable<VisConfig["security"]>["audit"]>["advisories"]>;
+
+const readAdvisoriesConfig = (visConfig: VisConfig | undefined): AdvisoriesConfig => visConfig?.security?.audit?.advisories ?? {};
 
 const parseEcosystems = (input: string | undefined): string[] => {
     if (!input) {
@@ -92,8 +93,10 @@ const execute = async ({ logger: _logger, options, visConfig, workspaceRoot }: T
         const failed = results.filter((r) => r.error);
         const succeeded = results.filter((r) => r.result);
 
-        if (succeeded.length > 0 && succeeded[0]?.result?.dbPath) {
-            pail.info(dim(`DB: ${succeeded[0].result.dbPath}`));
+        const firstSuccess = succeeded[0];
+
+        if (firstSuccess?.result?.dbPath) {
+            pail.info(dim(`DB: ${firstSuccess.result.dbPath}`));
         }
 
         if (failed.length === 0) {

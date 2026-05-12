@@ -55,16 +55,10 @@ export interface DispatchLogger {
     info: (message: string) => void;
 }
 
-const builtinLoggerFor = (parent: DispatchLogger): BuiltinLogger => {
-    return {
-        error: (message) => {
-            parent.error(message);
-        },
-        info: (message) => {
-            parent.info(message);
-        },
-    };
-};
+const builtinLoggerFor = (parent: DispatchLogger): BuiltinLogger => ({
+    error: (message: string): void => parent.error(message),
+    info: (message: string): void => parent.info(message),
+});
 
 const describeSpawnFailure = (status: number | null, signal: NodeJS.Signals | null, error: Error | undefined): string => {
     if (error) {

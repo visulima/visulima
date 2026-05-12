@@ -12,7 +12,7 @@ Install project dependencies using the detected package manager (pnpm, npm, yarn
 `vis install` applies two universal hardening defaults across every package manager, inspired by the [`npm`'s defaults are bad](https://nesbitt.io/2026/03/31/npms-defaults-are-bad.html) write-up:
 
 1. **Frozen lockfile by default.** When a lockfile is present, `vis install` refuses to mutate it — `npm ci` semantics rather than `npm install`'s silent rewrites. Pass `--no-frozen-lockfile` to opt out (the lockfile-only and `--force` flows skip the default automatically).
-2. **Lifecycle scripts blocked by default.** Mirrors pnpm v10: every PM (npm, pnpm, yarn, bun, aube) installs with `--ignore-scripts`. Packages listed in `security.policies.install_scripts.allow` (in `vis.config.ts`) get their `preinstall` / `install` / `postinstall` / `prepare` hooks executed afterwards by vis. Pass `--run-scripts` to restore the PM's native script behavior for one run. Deno does not run npm-style lifecycle scripts and is unaffected by these flags.
+2. **Lifecycle scripts blocked by default.** Mirrors pnpm v10: every PM (npm, pnpm, yarn, bun, aube) installs with `--ignore-scripts`. Packages listed in `security.policies.install_scripts.allow` (in `vis.config.ts`) get their `preinstall` / `install` / `postinstall` / `prepare` hooks executed afterward by vis. Pass `--run-scripts` to restore the PM's native script behavior for one run. Deno does not run npm-style lifecycle scripts and is unaffected by these flags.
 
 To bypass both at once, combine the flags: `vis install --no-frozen-lockfile --run-scripts`.
 

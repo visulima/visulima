@@ -43,7 +43,7 @@ Everywhere the data already exists in vis we extend instead of duplicate.
 
 ### A. New: `vis advisories` subcommand group
 
-```
+```bash
 vis advisories sync              # Pull OSV npm dump → ~/.cache/vis/advisories/db.sqlite
 vis advisories sync --ecosystem npm,pypi   # Future-proof; npm only at launch
 vis advisories sync --force      # Re-download even if cache is fresh
@@ -55,7 +55,7 @@ vis advisories prune             # Delete the local DB
 
 ### B. New flags on `vis audit`
 
-```
+```text
 --offline                    Use the local DB; error if not synced
 --db <path>                  Override the default cache location
 --ecosystem <e1,e2,...>      Scan against these ecosystems (default: auto-detect from lockfiles)
@@ -263,7 +263,7 @@ Schema version is the DB-wide `meta` row `(ecosystem='', key='schema_version')`.
 
 ### D. Sync flow
 
-```
+```text
    ┌────────────────────────────────────────────┐
    │  vis advisories sync [--ecosystem npm,...]  │
    └────┬───────────────────────────────────────┘
@@ -311,7 +311,7 @@ Atomic-ish semantics: the WAL approach keeps in-progress ingest invisible to con
 
 ### E. Query path
 
-```
+```text
    vis audit --offline
    ├─ JS:  lockedPackages(workspaceRoot, pm)        // existing
    ├─ JS:  filter --prod-only via @visulima/package // new
@@ -366,7 +366,7 @@ Lives in `src/security/reachability.ts` (JS-side, calls a new `scan_imports` NAP
 
 ### H. Apply-fix loop (`--apply` direct, `--apply-transitive` transitive)
 
-```
+```text
    ┌──────────────────────────────┐
    │ scan → vulnMap (offline/online) │
    └────┬─────────────────────────┘

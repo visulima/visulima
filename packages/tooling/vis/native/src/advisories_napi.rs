@@ -164,6 +164,8 @@ pub fn advisories_status(db_path: String) -> Result<AdvisoryDbStatus> {
             .into_iter()
             .map(eco_to_js)
             .collect(),
+        // Clamp to u32::MAX (~4 GB) so the value fits a JS Number without
+        // precision loss. The advisory DB is single-digit MB in practice.
         size_bytes: status.size_bytes.min(u32::MAX as u64) as u32,
         schema_version: status.schema_version,
     })
@@ -197,6 +199,8 @@ fn vuln_to_js(v: NativeVulnerability) -> NativeVulnerabilityJs {
 fn eco_to_js(e: EcosystemStatus) -> AdvisoryEcosystemStatus {
     AdvisoryEcosystemStatus {
         name: e.name,
+        // Clamp to u32::MAX for JS Number compatibility; per-ecosystem
+        // advisory counts are in the low tens of thousands today.
         advisory_count: e.advisory_count.min(u32::MAX as u64) as u32,
         last_sync_iso: e.last_sync_iso,
         manifest_etag: e.manifest_etag,

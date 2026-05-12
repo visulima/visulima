@@ -1,5 +1,13 @@
 import type { Command, CreateOptions } from "@visulima/cerebro";
 
+/**
+ * `vis audit` — vulnerability and supply-chain scan over installed packages.
+ *
+ * Resolves the package graph from the lockfile, matches it against OSV
+ * (offline cache or live API), merges optional Socket.dev intelligence,
+ * and renders the result in one of the supported formats. Also drives the
+ * `--fix` / `--fix-transitive` apply loops and the HTML report writer.
+ */
 const audit: Command = {
     description: "Audit installed packages for vulnerabilities and supply chain risks",
     examples: [
@@ -137,6 +145,7 @@ const audit: Command = {
 
 export default audit;
 
+/** Typed options object for the `vis audit` command handler, derived from {@link audit.options}. */
 export type AuditOptions = CreateOptions<{
     "allow-major": boolean | undefined;
     db: string | undefined;

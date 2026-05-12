@@ -5,28 +5,46 @@ import { execVisJson } from "../exec";
 import type { ToolContext, ToolDeps } from "../response";
 import { errorResponse, okResponse } from "../response";
 
-interface VulnerabilityShape {
-    fixedVersions?: string[];
-    id: string;
-    severity: string;
-    summary?: string;
-}
+const vulnerabilitySchema = z.object({
+    fixedVersions: z.array(z.string()).optional(),
+    id: z.string(),
+    severity: z.string(),
+    summary: z.string().optional(),
+});
 
-interface ResultEntry {
-    acceptedRisk?: unknown;
-    name: string;
-    socketAlerts?: unknown[];
-    socketScore?: number | null;
-    version: string;
-    vulnerabilities: VulnerabilityShape[];
-}
+const resultEntrySchema = z.object({
+    acceptedRisk: z.unknown().optional(),
+    name: z.string(),
+    socketAlerts: z.array(z.unknown()).optional(),
+    socketScore: z.number().nullable().optional(),
+    version: z.string(),
+    vulnerabilities: z.array(vulnerabilitySchema),
+});
 
-interface AuditJson {
-    duplicates: { name: string; versionCount: number; versions: string[] }[];
-    packages: number;
-    results: ResultEntry[];
-    summary: { accepted: number; duplicatePackages: number; issues: number; total: number };
-}
+// `.catchall(z.unknown())` preserves unknown keys so the schema stays forward-
+// compatible with new CLI fields (e.g., test fixtures' `flags`) without
+// silently dropping them.
+const auditJsonSchema = z
+    .object({
+        duplicates: z.array(
+            z.object({
+                name: z.string(),
+                versionCount: z.number(),
+                versions: z.array(z.string()),
+            }),
+        ),
+        packages: z.number(),
+        results: z.array(resultEntrySchema),
+        summary: z.object({
+            accepted: z.number(),
+            duplicatePackages: z.number(),
+            issues: z.number(),
+            total: z.number(),
+        }),
+    })
+    .catchall(z.unknown());
+
+type AuditJson = z.infer<typeof auditJsonSchema>;
 
 const SEVERITY_VALUES = ["low", "medium", "high", "critical"] as const;
 
@@ -101,7 +119,8 @@ export const registerAudit = ({ server }: ToolDeps, context: ToolContext): void 
                     args.push("--show-accepted");
                 }
 
-                const payload = await execVisJson<AuditJson>(context.visBin, args, { cwd: context.workspaceRoot });
+                const raw = await execVisJson<AuditJson>(context.visBin, args, { cwd: context.workspaceRoot });
+                const payload = auditJsonSchema.parse(raw);
 
                 return okResponse(payload);
             } catch (error) {
