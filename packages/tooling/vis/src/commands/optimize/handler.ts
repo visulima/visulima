@@ -22,8 +22,6 @@ import { OptimizeStore } from "../../tui/components/optimize/optimize-store";
 import VisOptimizeApp from "../../tui/components/optimize/vis-optimize-app";
 import type { OptimizeOptions } from "./index";
 
-// ── Types ───────────────────────────────────────────────────────────
-
 interface ManifestEntryData {
     categories?: string[];
     deprecated?: boolean;
@@ -56,8 +54,6 @@ interface E18eEntry {
 interface E18eManifest {
     moduleReplacements: E18eEntry[];
 }
-
-// ── Dep collection ──────────────────────────────────────────────────
 
 /** Collects dependency names from a `package.json`. */
 const collectDepsFromPkgJson = (pkgJsonPath: string, productionOnly: boolean): Set<string> => {
@@ -115,8 +111,6 @@ const discoverWorkspacePackages = (workspaceRoot: string): string[] => {
         return [];
     }
 };
-
-// ── Entry builders ──────────────────────────────────────────────────
 
 // Upstream e18e module-replacements docs — slug-keyed markdown files.
 const E18E_DOC_BASE_URL = "https://github.com/es-tooling/module-replacements/blob/main/docs/modules";
@@ -256,8 +250,6 @@ const markCodemodAvailability = async (entries: OptimizeEntry[]): Promise<void> 
         // module-replacements-codemods not installed or failed
     }
 };
-
-// ── Codemod execution ───────────────────────────────────────────────
 
 interface CodemodResult {
     filesChanged: number;

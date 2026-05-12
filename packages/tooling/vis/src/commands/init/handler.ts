@@ -33,8 +33,6 @@ const detectExistingTools = (cwd: string): string[] => {
     return found;
 };
 
-// ── Interactive prompt helpers ──────────────────────────────────────
-
 /** Prompts the user with a question and returns the trimmed answer. */
 const ask = (rl: ReturnType<typeof createInterface>, question: string): Promise<string> =>
     new Promise((resolve) => {
@@ -54,8 +52,6 @@ const confirm = async (rl: ReturnType<typeof createInterface>, question: string,
 
     return answer.toLowerCase() === "y" || answer.toLowerCase() === "yes";
 };
-
-// ── Config template ─────────────────────────────────────────────────
 
 interface ConfigInitOptions {
     allowBuilds: Record<string, boolean>;
@@ -97,8 +93,6 @@ ${sections.join("\n\n")}
 });
 `;
 };
-
-// ── Interactive wizard ──────────────────────────────────────────────
 
 /** Runs the interactive setup wizard, prompting for each configuration option. */
 const runInteractiveInit = async (cwd: string, pm: { name: string; version: string }, configPath: string): Promise<void> => {
@@ -233,8 +227,6 @@ const runInteractiveInit = async (cwd: string, pm: { name: string; version: stri
     pail.notice("  Run 'vis doctor' to see your project's full health status.");
     pail.info("");
 };
-
-// ── Non-interactive init ────────────────────────────────────────────
 
 /** Creates a minimal config file with secure defaults (no prompts). */
 const runStaticInit = (cwd: string, pm: { name: string; version: string }, options: Record<string, unknown>, configPath: string): void => {

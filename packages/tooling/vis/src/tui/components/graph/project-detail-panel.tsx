@@ -6,8 +6,6 @@ import React from "react";
 
 import type { GraphNode } from "./graph-store";
 
-// ── Component ───────────────────────────────────────────────────────────
-
 interface ProjectDetailPanelProps {
     focused: boolean;
     node: GraphNode | null;

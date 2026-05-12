@@ -6,16 +6,12 @@ import type { StagedConfig } from "../staged";
 import type { VisTargetConfiguration } from "../task/target-options";
 import type { VisPlugin } from "../util/hooks";
 
-// ── audit-config types ─────────────────────────────────────────────
-
 interface NativeAuditExclusions {
     /** Package names to exclude from audit (yarn berry only). */
     excludedPackages: string[];
     /** Advisory IDs to ignore (CVE-*, GHSA-*, or numeric IDs). */
     ignoredAdvisories: string[];
 }
-
-// ── workspace types ────────────────────────────────────────────────
 
 export interface CodeownersConfig {
     /** Workspace-level paths that apply outside any project (e.g., `.github/**`). */
@@ -1007,20 +1003,20 @@ export interface VisConfig {
             };
 
             /**
-             * Gates for the auto-apply flow (`vis audit --apply` /
-             * `--apply-transitive`). The CLI prompts outside CI; inside CI
+             * Gates for the auto-fix flow (`vis audit --fix` /
+             * `--fix-transitive`). The CLI prompts outside CI; inside CI
              * the flags refuse to run unless `--yes` is set and, for
              * transitives, `apply.transitive.enabled = true`.
              */
             apply?: {
                 /**
-                 * Gates for `vis audit --apply-transitive`. Two-lock: the
+                 * Gates for `vis audit --fix-transitive`. Two-lock: the
                  * CLI requires `--yes` AND this flag set to `true` before
                  * it will rewrite override entries in CI.
                  */
                 transitive?: {
                     /**
-                     * When true, allows `--apply-transitive` to run in CI
+                     * When true, allows `--fix-transitive` to run in CI
                      * environments. Defaults to false because rewriting
                      * overrides is a higher blast radius than bumping a
                      * direct dep.

@@ -25,8 +25,6 @@ import { pail } from "../io/logger";
 
 type PackageManagerName = "bun" | "deno" | "npm" | "pnpm" | "yarn";
 
-// ── Config checking ──────────────────────────────────────────────────
-
 interface SecurityCheckResult {
     errors: string[];
     warnings: string[];
@@ -314,8 +312,6 @@ const scanUnapprovedBuildScripts = (cwd: string, allowBuilds: Record<string, boo
     return unapproved;
 };
 
-// ── Build script enforcement ─────────────────────────────────────────
-
 /** Detects yarn berry vs classic via .yarnrc.yml presence. */
 const isYarnBerry = (cwd: string): boolean => isAccessibleSync(join(cwd, ".yarnrc.yml"));
 
@@ -430,8 +426,6 @@ const enforceScriptSecurity = (pm: PackageManagerName, workspaceRoot: string, co
 
     return result;
 };
-
-// ── Native config sync ───────────────────────────────────────────────
 
 /**
  * Syncs vis security.allowBuilds to native PM config format.
@@ -569,8 +563,6 @@ const syncAllowBuildsToNativeConfig = (pm: PackageManagerName, workspaceRoot: st
 
     return actions;
 };
-
-// ── Approved script runner ───────────────────────────────────────────
 
 /** Expands glob patterns against installed node_modules. */
 const expandPatterns = (workspaceRoot: string, patterns: string[]): string[] => {

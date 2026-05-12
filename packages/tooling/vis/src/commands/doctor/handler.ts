@@ -43,8 +43,6 @@ import type { DoctorResults, SectionId, SectionStatus } from "./sections";
 import { buildJsonPayload, resolveSections, sectionStatus, shouldFail, summarizeOptimizations } from "./sections";
 import { buildSupplyChainPosture } from "./supply-chain";
 
-// ── Scan orchestration ──────────────────────────────────────────────
-
 interface ScanContext {
     /** --filter regexes applied to per-section findings before they hit the store/results. */
     filterPatterns: ReadonlyArray<RegExp>;
@@ -497,8 +495,6 @@ const streamScans = async (context: ScanContext): Promise<Omit<DoctorResults, "e
     };
 };
 
-// ── Display ─────────────────────────────────────────────────────────
-
 const sectionIcon = (status: SectionStatus): string => {
     switch (status) {
         case "error": {
@@ -779,8 +775,6 @@ const displayResults = (results: DoctorResults, quiet: boolean): void => {
     displaySummary(results, quiet);
 };
 
-// ── Scan task list ──────────────────────────────────────────────────
-
 interface BannerInputs {
     nodeVersion: string;
     packageManagerName: string;
@@ -840,8 +834,6 @@ const printBanner = (input: BannerInputs): void => {
 
     pail.log("");
 };
-
-// ── Main execute ────────────────────────────────────────────────────
 
 const execute = async ({ logger, options, visConfig, visConfigError, workspaceRoot: wsRoot }: Toolbox<Console, DoctorOptions>): Promise<void> => {
     if (!wsRoot) {
@@ -1075,8 +1067,6 @@ const execute = async ({ logger, options, visConfig, visConfigError, workspaceRo
         process.exitCode = 1;
     }
 };
-
-// ── --fix flow ──────────────────────────────────────────────────────
 
 interface PmLike {
     name: string;

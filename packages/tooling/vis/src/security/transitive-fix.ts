@@ -1,5 +1,5 @@
 /**
- * Transitive override writers for `vis audit --apply-transitive`.
+ * Transitive override writers for `vis audit --fix-transitive`.
  *
  * Each package manager has its own override surface — pnpm writes to
  * `pnpm-workspace.yaml` (v10+) or `package.json` (v9 and earlier), npm
@@ -93,7 +93,7 @@ const stringifyJson = (value: Record<string, unknown>, indent: string): string =
 
 /**
  * Compute where the override surface for the given PM lives.
- * Exposed so `--apply-transitive` dry-run can print the target path
+ * Exposed so `--fix-transitive` dry-run can print the target path
  * without performing the write.
  */
 export const resolveOverrideSurface = (workspaceRoot: string, pm: TransitiveFixPmInfo): { filePath: string; surface: OverrideSurface } => {
@@ -208,7 +208,7 @@ const renderPackageJsonWithOverrides = (filePath: string, existingContent: strin
  * Plan + render an override write for `pm` against `workspaceRoot`. Pure
  * function: returns the would-be content but does not touch disk. Use
  * {@link applyOverridePlan} to commit, or feed `nextContent` into a
- * diff for the `--apply-transitive` dry-run preview.
+ * diff for the `--fix-transitive` dry-run preview.
  *
  * Entries are merged with the file's current overrides — never replaced —
  * and the resulting map is sorted by package name so diffs stay stable

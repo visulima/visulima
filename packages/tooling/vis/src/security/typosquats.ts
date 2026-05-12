@@ -19,7 +19,6 @@ import { join } from "@visulima/path";
 import autoBlocklistData from "../../data/typosquats.json" with { type: "json" };
 import manualBlocklistData from "../../data/typosquats-manual.json" with { type: "json" };
 import { pail } from "../io/logger";
-// ── Types ───────────────────────────────────────────────────────────
 
 export type Blocklist = Record<string, string[]>;
 
@@ -44,8 +43,6 @@ export interface TyposquatCheckResult {
     packages: string[];
 }
 
-// ── Homoglyph / keyboard-proximity substitutions ────────────────────
-
 const SUBSTITUTIONS: Record<string, string[]> = {
     a: ["4", "e"],
     b: ["d"],
@@ -66,8 +63,6 @@ const SUBSTITUTIONS: Record<string, string[]> = {
 // Suffixes commonly appended by brand-jacks of scoped packages.
 // e.g. `@tanstack/start` → `tanstack-app`, `start-tanstack-app`.
 const SCOPED_BRAND_SUFFIXES = ["app", "cli", "core", "kit", "lib", "pkg", "sdk"];
-
-// ── Variant generation ─────────────────────────────────────────────
 
 /**
  * Generates typosquat variants of a package name using common attack patterns:
@@ -188,8 +183,6 @@ export const generateVariants = (name: string): Set<string> => {
     return variants;
 };
 
-// ── Blocklist loading ───────────────────────────────────────────────
-
 let cachedBlocklist: Blocklist | undefined;
 let cachedReverseLookup: Map<string, string> | undefined;
 
@@ -229,8 +222,6 @@ const getReverseLookup = (): Map<string, string> => {
 
     return cachedReverseLookup;
 };
-
-// ── Detection ──────────────────────────────────────────────────────
 
 /** Strip scope from a package name (e.g. "@scope/foo" -> "foo"). */
 const bareName = (packageName: string): string => (packageName.startsWith("@") ? (packageName.split("/")[1] ?? packageName) : packageName);
@@ -279,8 +270,6 @@ export const checkTyposquats = (packageNames: string[], allowlist?: string[]): T
     return matches;
 };
 
-// ── Shared helpers ─────────────────────────────────────────────────
-
 /** Print typosquat warnings to stderr. */
 const printTyposquatWarnings = (matches: TyposquatMatch[], context: string): void => {
     pail.warn("");
@@ -315,8 +304,6 @@ const askConfirmation = async (question: string): Promise<string | undefined> =>
 
     return answer;
 };
-
-// ── Interactive prompt (for `add`) ─────────────────────────────────
 
 /**
  * Display typosquat warnings and prompt the user.
@@ -358,8 +345,6 @@ export const runTyposquatCheck = async (packageNames: string[], allowlist?: stri
 
     return { ok: false, packages: packageNames };
 };
-
-// ── package.json scanning (for `install` / `update`) ───────────────
 
 /**
  * Extract the package name from an alias specifier like "npm:reaact@^18".

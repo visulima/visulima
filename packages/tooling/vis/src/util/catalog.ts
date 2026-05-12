@@ -1634,8 +1634,6 @@ const enrichWithSecurity = async (
     }
 };
 
-// ── Outdated result cache (1-minute TTL) ────────────────────────────────
-
 const OUTDATED_CACHE_TTL_MS = 60_000;
 
 interface OutdatedCache {

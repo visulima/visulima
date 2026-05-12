@@ -7,8 +7,6 @@ import type { AiRecommendation } from "../../../ai/ai-analysis";
 import { scoreColor } from "../../../security/socket-security";
 import type { OutdatedEntry } from "../../../util/catalog";
 
-// ── Helpers ─────────────────────────────────────────────────────────────
-
 const UPDATE_TYPE_COLORS: Record<string, string> = {
     major: "red",
     minor: "yellow",
@@ -43,8 +41,6 @@ const ACTION_COLORS: Record<string, string> = {
     skip: "red",
     update: "green",
 };
-
-// ── Component ───────────────────────────────────────────────────────────
 
 interface PackageDetailPanelProps {
     changelogUrl?: string;

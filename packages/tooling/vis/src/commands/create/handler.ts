@@ -24,8 +24,6 @@ import { runInteractivePrompts } from "./prompts";
 import { executeTemplate } from "./templates";
 import { canSafelyOverwrite, isValidPackageName, resolveTargetDir, toValidPackageName } from "./utils";
 
-// ── Post-creation helpers ─────────────────────────────────────────
-
 /**
  * Create or merge `.vscode/settings.json` and `.vscode/extensions.json`
  * with vis defaults (oxc formatter, format-on-save).
@@ -177,8 +175,6 @@ const installDependencies = (
     return false;
 };
 
-// ── Fallback name from git URLs ───────────────────────────────────
-
 /**
  * Extract a sensible project name from a git URL or provider string.
  *
@@ -207,8 +203,6 @@ const extractRepoName = (input: string): string => {
     return toValidPackageName(withoutPrefix) || "my-project";
 };
 
-// ── List templates ────────────────────────────────────────────────
-
 const listTemplates = (aliases?: Record<string, string>): void => {
     pail.info("");
     pail.info("  Built-in templates:");
@@ -236,8 +230,6 @@ const listTemplates = (aliases?: Record<string, string>): void => {
     pail.info(`  ${dim("Template args after --:")}      vis create vite -- --template react-ts`);
     pail.info("");
 };
-
-// ── Print next steps ──────────────────────────────────────────────
 
 const printNextSteps = (targetDir: string, cwd: string, pmName: string, depsInstalled: boolean): void => {
     const relativeDir = resolve(cwd) === resolve(targetDir) ? "" : targetDir;
@@ -287,7 +279,6 @@ const execute = async ({ argument, logger, options, rawUnknown, visConfig, works
     let userConfirmedOverwrite = false;
 
     if (args.length === 0 && isTTY && (options as Record<string, unknown>).interactive !== false) {
-        // ── Interactive mode ──────────────────────────────────
         const answers = await runInteractivePrompts({
             cwd,
             defaultEditor: createConfig?.defaultEditor,
@@ -314,7 +305,6 @@ const execute = async ({ argument, logger, options, rawUnknown, visConfig, works
             "No template specified. Usage: vis create <template> [name] [-- args...]\nUse --list to see available templates, or run interactively in a terminal.",
         );
     } else {
-        // ── Non-interactive mode ─────────────────────────────
         // Split args on "--" separator — everything after it is
         // forwarded to the underlying create-* package. `rawUnknown`
         // is cerebro's native buffer for tokens that command-line-args
@@ -415,8 +405,6 @@ const execute = async ({ argument, logger, options, rawUnknown, visConfig, works
 
         return;
     }
-
-    // ── Post-creation tasks ──────────────────────────────────
 
     // VS Code config
     if (editor === "vscode") {

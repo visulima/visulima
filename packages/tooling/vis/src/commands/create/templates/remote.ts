@@ -16,8 +16,6 @@ import { pail } from "../../../io/logger";
 import { runDlx } from "../../../pm/pm-runner";
 import type { ExecutionContext, TemplateConfig } from "./types";
 
-// ── Auto-fix rules for popular create packages ────────────────────
-
 interface AutoFix {
     /** Extra args to always append. */
     args?: string[];
@@ -72,8 +70,6 @@ const applyAutoFixes = (source: string, args: string[], inMonorepo: boolean): st
     return result;
 };
 
-// ── npm remote executor ───────────────────────────────────────────
-
 /**
  * Execute an npm `create-*` package via the package manager's `dlx` command.
  *
@@ -117,8 +113,6 @@ export const executeRemoteNpm = (config: TemplateConfig, context: ExecutionConte
 
     return code;
 };
-
-// ── Git remote executor (via giget) ───────────────────────────────
 
 /**
  * Download a git repository template using giget.

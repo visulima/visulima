@@ -546,7 +546,7 @@ In rough order; each chunk lands as its own commit. Phased so a partial revert i
 19. **Rust matcher trait** — refactor `range/npm.rs` behind the `RangeMatcher` trait; add `range/pep440.rs`, `range/cargo.rs`, `range/maven.rs`, `range/go.rs`, `range/rubygems.rs`. One commit per matcher with parity tests.
 20. **JS lockfile readers** — `src/security/lockfile-readers/{poetry.ts,uv.ts,pipenv.ts,cargo.ts,maven.ts,gradle.ts,gosum.ts,gemfile.ts}`; auto-detect via marker files.
 21. **`--ecosystem` flag** — plumb through `vis audit` + `vis advisories sync`.
-22. **`verify-signatures` cargo feature** — `native/src/advisories/verify.rs` with `sigstore` crate; release pipeline gains `-verified` binary variants; loader picks based on config.
+22. **`verify-signatures` cargo feature** — `native/src/advisories/verify.rs` with `sigstore` crate; release pipeline gains `-verified` binary variants; loader picks based on config. **Deferred to issue #631** until OSV upstream ships signatures; the corporate-mirror use case is real but niche and doesn't justify the dual-binary release plumbing today. Config schema (`security.audit.advisories.verify`) is already wired so users can declare intent; sync currently no-ops the block.
 
 **Phase 5a — MCP + docs (ships with Phase 4):**
 

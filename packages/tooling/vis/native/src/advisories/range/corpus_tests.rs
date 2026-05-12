@@ -48,7 +48,6 @@ fn assert_dispatch(advisory: &Advisory, affected_idx: usize, version: &str, expe
     );
 }
 
-// ── npm ────────────────────────────────────────────────────────────────
 //
 // Real shape from GHSA-jf85-cpcp-j695 (lodash prototype pollution, fixed in
 // 4.17.12). Picked because it's the canonical npm OSV exemplar.
@@ -77,7 +76,6 @@ fn corpus_npm_lodash_prototype_pollution() {
     assert_dispatch(&adv, 0, "4.17.21", false);
 }
 
-// ── PyPI ───────────────────────────────────────────────────────────────
 //
 // Real shape from GHSA-h4qu-5jpq-4mf5 (urllib3 CRLF injection, fixed in
 // 1.25.9). pep440 ranges use `ECOSYSTEM` event type, not `SEMVER`.
@@ -106,7 +104,6 @@ fn corpus_pypi_urllib3_crlf_injection() {
     assert_dispatch(&adv, 0, "1.26.0", false);
 }
 
-// ── crates.io ──────────────────────────────────────────────────────────
 //
 // Real shape from RUSTSEC-2020-0071 (time segfault, fixed in 0.2.23). The
 // cargo matcher mirrors npm semver semantics with crate-specific edge
@@ -136,7 +133,6 @@ fn corpus_crates_io_time_segfault() {
     assert_dispatch(&adv, 0, "0.3.0", false);
 }
 
-// ── Maven ──────────────────────────────────────────────────────────────
 //
 // Real shape from GHSA-jfh8-c2jp-5v3q (log4j-core RCE, "Log4Shell"). The
 // Maven scheme uses `pkg:maven/group:artifact` style names; fixed in 2.17.0
@@ -167,7 +163,6 @@ fn corpus_maven_log4j_shell() {
     assert_dispatch(&adv, 0, "2.17.1", false);
 }
 
-// ── Go ─────────────────────────────────────────────────────────────────
 //
 // Real shape from GO-2021-0089 (crypto/tls vulnerable to DoS via crafted
 // handshake, fixed in 1.16.2). Go module versions are prefixed with `v`.
@@ -195,7 +190,6 @@ fn corpus_go_stdlib_crypto_tls() {
     assert_dispatch(&adv, 0, "1.17.0", false);
 }
 
-// ── RubyGems ───────────────────────────────────────────────────────────
 //
 // Real shape from GHSA-65cv-r6x7-79hv (activesupport HTML sanitization
 // bypass, fixed in 5.2.4.3 and 6.0.3.1). Multi-branch fix patterns are
@@ -225,7 +219,6 @@ fn corpus_rubygems_activesupport_xss() {
     assert_dispatch(&adv, 0, "5.1.7", false);
 }
 
-// ── Open-high range (no fix released) ──────────────────────────────────
 //
 // Common shape: advisory published before a fix exists. `fixed = None`
 // means "every version >= introduced is affected, forever (until update)".

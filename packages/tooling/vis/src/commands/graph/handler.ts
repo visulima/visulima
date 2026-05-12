@@ -13,8 +13,6 @@ import { GraphStore } from "../../tui/components/graph/graph-store";
 import VisGraphApp from "../../tui/components/graph/vis-graph-app";
 import type { GraphOptions } from "./index";
 
-// ── ASCII Graph Renderer ────────────────────────────────────────────
-
 interface NodeInfo {
     deps: { target: string; type: string }[];
     name: string;
@@ -186,8 +184,6 @@ const projectGraphToAscii = (projectGraph: ProjectGraph, maxDepth: number): stri
     return lines.join("\n");
 };
 
-// ── JSON Export ──────────────────────────────────────────────────────
-
 const projectGraphToJson = (
     projectGraph: ProjectGraph,
 ): {
@@ -205,8 +201,6 @@ const projectGraphToJson = (
 
     return { edges, nodes };
 };
-
-// ── HTML Visualization ──────────────────────────────────────────────
 
 const projectGraphToHtml = (projectGraph: ProjectGraph): string => {
     const nodes = Object.values(projectGraph.nodes).map((node) => {

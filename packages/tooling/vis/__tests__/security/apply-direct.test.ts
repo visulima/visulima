@@ -221,7 +221,7 @@ describe(formatDirectApplyPlan, () => {
 
         expect(formatted).toContain("Apply (1):");
         expect(formatted).toContain("--allow-major");
-        expect(formatted).toContain("--apply-transitive");
+        expect(formatted).toContain("--fix-transitive");
     });
 
     it("returns a no-op message for empty plans", () => {

@@ -37,8 +37,6 @@ import type { SecurityVulnerability } from "../../util/catalog";
 import { fetchVulnerabilities } from "../../util/catalog";
 import type { AuditOptions } from "./index";
 
-// ── Types ───────────────────────────────────────────────────────────
-
 interface AuditEntry {
     acceptedRisk?: AcceptedRisk;
     name: string;
@@ -48,8 +46,6 @@ interface AuditEntry {
 }
 
 type SeverityFilter = "critical" | "high" | "low" | "medium";
-
-// ── Severity helpers ────────────────────────────────────────────────
 
 const SEVERITY_ORDER: Record<string, number> = {
     CRITICAL: 0,
@@ -66,7 +62,6 @@ const SOCKET_ALERT_COLORS: Record<string, (s: string) => string> = {
     medium: yellow,
 };
 
-// ── Ecosystem parsing ──────────────────────────────────────────────
 //
 // `--ecosystem npm,pypi,maven,...` accepts a comma list. Each ecosystem
 // has its own Rust range matcher and lockfile reader; unknown values
@@ -92,8 +87,6 @@ const severityPassesFilter = (severity: string, filter: SeverityFilter): boolean
 
     return vulnLevel <= filterLevel;
 };
-
-// ── Display helpers ─────────────────────────────────────────────────
 
 const SEVERITY_COLOR_FN: Record<string, (s: string) => string> = {
     CRITICAL: red,
@@ -121,8 +114,6 @@ const formatSocketLine = (report: PackageReportData, isAccepted: boolean): strin
     return `  ${pct} ${name}@${report.version} (${scoreLabel(report.score.overall)}${alerts})${badge}`;
 };
 
-// ── Main audit logic ────────────────────────────────────────────────
-
 const executeAudit = async (workspaceRoot: string, options: Record<string, unknown>, visConfig: VisConfig | undefined, _logger: Console): Promise<void> => {
     const severityFilter = (options.severity as SeverityFilter | undefined) ?? "low";
     const format = (options.format as string | undefined) ?? "table";
@@ -137,7 +128,7 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
     const ecosystems = parseEcosystems(options.ecosystem as string | undefined);
     const prodOnly = Boolean(options.prodOnly);
     const failOn = (options.failOn as SeverityFilter | undefined) ?? auditConfig?.failOn;
-    const showFixes = Boolean(options.fix);
+    const showFixes = Boolean(options.showFixes);
     const showAccepted = Boolean(options.showAccepted);
     const socketConfig = visConfig?.security?.socket;
     const acceptedRisks = socketConfig?.acceptedRisks;
@@ -478,18 +469,17 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
             }),
         );
 
-    // ── Apply-loop branches (--apply / --apply-transitive) ───────────
-    const wantsApply = Boolean(options.apply);
-    const wantsApplyTransitive = Boolean(options.applyTransitive);
+    const wantsFix = Boolean(options.fix);
+    const wantsFixTransitive = Boolean(options.fixTransitive);
     const yes = Boolean(options.yes);
     const allowMajor = Boolean(options.allowMajor);
 
-    if (wantsApply || wantsApplyTransitive) {
+    if (wantsFix || wantsFixTransitive) {
         // Strip acknowledged findings before planning — accepted risks
         // should not silently auto-bump or override.
         const actionableFindings = findingsForReport().filter((f) => !f.acknowledged);
 
-        if (wantsApply) {
+        if (wantsFix) {
             const directExit = await runApplyDirect({
                 actionableFindings,
                 allowMajor,
@@ -506,7 +496,7 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
             }
         }
 
-        if (wantsApplyTransitive) {
+        if (wantsFixTransitive) {
             const transitiveExit = await runApplyTransitive({
                 actionableFindings,
                 pm,
@@ -869,8 +859,6 @@ const applyExitGate = (
     applyFailOnGate(filtered, nativeExclusions, failOn);
 };
 
-// ── Apply-loop helpers ──────────────────────────────────────────────
-
 type ApplyPmInfo = ReturnType<typeof detectPm>;
 
 interface ActionableFinding {
@@ -935,7 +923,7 @@ const runApplyDirect = async (arguments_: RunApplyDirectArguments): Promise<numb
     }
 
     if (isInCi && !arguments_.yes) {
-        pail.error("Refusing to run --apply in CI without --yes. Re-run with --yes once the plan above looks right.");
+        pail.error("Refusing to run --fix in CI without --yes. Re-run with --yes once the plan above looks right.");
 
         return 1;
     }
@@ -1009,7 +997,7 @@ interface RunApplyTransitiveArguments {
 
 const runApplyTransitive = async (arguments_: RunApplyTransitiveArguments): Promise<number | undefined> => {
     if (!isTransitiveOnlyPm(arguments_.pm.name)) {
-        pail.error(`--apply-transitive is not supported for package manager "${arguments_.pm.name}". Use pnpm, npm, yarn, or bun.`);
+        pail.error(`--fix-transitive is not supported for package manager "${arguments_.pm.name}". Use pnpm, npm, yarn, or bun.`);
 
         return 1;
     }
@@ -1018,7 +1006,7 @@ const runApplyTransitive = async (arguments_: RunApplyTransitiveArguments): Prom
 
     if (isInCi && (!arguments_.yes || !transitiveEnabled)) {
         pail.error(
-            "Refusing to run --apply-transitive in CI without both --yes and security.audit.apply.transitive.enabled = true. "
+            "Refusing to run --fix-transitive in CI without both --yes and security.audit.apply.transitive.enabled = true. "
             + "Overrides have a higher blast radius than direct bumps — gate on config.",
         );
 

@@ -12,8 +12,6 @@ import { resolve } from "@visulima/path";
 import { randomName } from "./random-name";
 import { isEmptyDir, isValidPackageName, toValidPackageName } from "./utils";
 
-// ── Low-level prompt helpers ──────────────────────────────────────
-
 type RL = ReturnType<typeof createInterface>;
 
 const ask = (rl: RL, question: string): Promise<string> =>
@@ -62,8 +60,6 @@ const select = async (rl: RL, question: string, choices: { hint?: string; label:
         process.stderr.write(`  ${dim("Invalid choice. Try again.")}\n`);
     }
 };
-
-// ── High-level prompt flows ───────────────────────────────────────
 
 export type PackageManager = "bun" | "npm" | "pnpm" | "yarn";
 

@@ -36,12 +36,12 @@ vis audit --report ./audit-report.html
 # Reachability filter — only flag vulns in statically-imported packages
 vis audit --usage
 
-# Apply loops (dry-run preview by default)
-vis audit --fix                    # show fix suggestions
-vis audit --apply                  # upgrade direct deps + rescan
-vis audit --apply --yes            # non-interactive (required in CI)
-vis audit --apply --allow-major    # permit major-version bumps
-vis audit --apply-transitive       # write PM-specific overrides
+# Fix loops (dry-run preview by default)
+vis audit --show-fixes             # print fix suggestions (no apply, no rescan)
+vis audit --fix                    # upgrade direct deps + rescan
+vis audit --fix --yes              # non-interactive (required in CI)
+vis audit --fix --allow-major      # permit major-version bumps
+vis audit --fix-transitive         # write PM-specific overrides
 
 # CI exit gates
 vis audit --exit-code              # exit 1 on any finding
@@ -87,13 +87,13 @@ Run [`vis advisories sync`](./advisories.mdx) to populate the cache.
 
 ### Fix loops
 
-| Option               | Default | Description                                                                                                                                       |
-| -------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--fix`              | `false` | Show fix suggestions next to each finding.                                                                                                        |
-| `--apply`            | `false` | Upgrade direct deps for vulnerable packages by running the active PM update command, then rescan. Dry-run preview shown first.                    |
-| `--apply-transitive` | `false` | Write PM-specific overrides for vulnerable transitives (pnpm-workspace.yaml / package.json overrides / resolutions). Dry-run preview shown first. |
-| `--yes`              | `false` | Skip the confirmation prompt. **Required in CI for both `--apply` and `--apply-transitive`.**                                                     |
-| `--allow-major`      | `false` | Allow `--apply` to bump a direct dep across a major version when the lowest fix is outside the existing range.                                    |
+| Option             | Default | Description                                                                                                                                       |
+| ------------------ | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--show-fixes`     | `false` | Print fix-suggestion lines next to each finding (no apply, no rescan).                                                                            |
+| `--fix`            | `false` | Upgrade direct deps for vulnerable packages by running the active PM update command, then rescan. Dry-run preview shown first.                    |
+| `--fix-transitive` | `false` | Write PM-specific overrides for vulnerable transitives (pnpm-workspace.yaml / package.json overrides / resolutions). Dry-run preview shown first. |
+| `--yes`            | `false` | Skip the confirmation prompt. **Required in CI for both `--fix` and `--fix-transitive`.**                                                         |
+| `--allow-major`    | `false` | Allow `--fix` to bump a direct dep across a major version when the lowest fix is outside the existing range.                                      |
 
 ### CI exit gates
 
@@ -103,14 +103,14 @@ Run [`vis advisories sync`](./advisories.mdx) to populate the cache.
 | `--fail-on <level>` | —       | Exit 1 only when a finding is at this severity or higher.                            |
 | `--sync`            | `false` | Sync vis accepted risks to native PM config (`pnpm-workspace.yaml` / `.yarnrc.yml`). |
 
-## Apply loops in depth
+## Fix loops in depth
 
-The two apply loops are intentionally separated by surface:
+The two fix loops are intentionally separated by surface:
 
-| Loop                 | Touches                                                      | When to use                                                                          |
-| -------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------ |
-| `--apply`            | Direct deps in each `package.json` (every workspace member). | The vulnerable package is listed in your manifest.                                   |
-| `--apply-transitive` | PM-specific override surface (one file).                     | The vulnerable package is pulled in by a transitive — your manifest doesn't list it. |
+| Loop               | Touches                                                      | When to use                                                                          |
+| ------------------ | ------------------------------------------------------------ | ------------------------------------------------------------------------------------ |
+| `--fix`            | Direct deps in each `package.json` (every workspace member). | The vulnerable package is listed in your manifest.                                   |
+| `--fix-transitive` | PM-specific override surface (one file).                     | The vulnerable package is pulled in by a transitive — your manifest doesn't list it. |
 
 Both loops:
 
@@ -119,7 +119,7 @@ Both loops:
 3. Prompt for confirmation (interactive TTY) or honour `--yes` (CI).
 4. Apply, then re-scan to verify the issue is gone.
 
-In CI, `--apply-transitive` requires `--yes` **and** `security.audit.apply.transitive.enabled = true` in `vis.config.ts` — a two-lock design so you don't end up rewriting overrides on every PR by accident.
+In CI, `--fix-transitive` requires `--yes` **and** `security.audit.apply.transitive.enabled = true` in `vis.config.ts` — a two-lock design so you don't end up rewriting overrides on every PR by accident.
 
 ## Configuration
 

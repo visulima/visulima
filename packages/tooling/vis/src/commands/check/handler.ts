@@ -24,7 +24,6 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
 
     const workspaceRoot = wsRoot;
 
-    // ── Security config audit mode ───────────────────────────────
     if (options.securityConfig) {
         const pm = detectPm(workspaceRoot);
 
@@ -53,7 +52,6 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
         }
     }
 
-    // ── Outdated dependency check ────────────────────────────────
     const { packageManager } = findPackageManagerSync(workspaceRoot);
 
     const npmrcConfig = loadNpmrc(workspaceRoot);

@@ -17,8 +17,6 @@ describe("overrides", () => {
         rmSync(tmpDir, { force: true, recursive: true });
     });
 
-    // ── Helpers ─────────────────────────────────────────────────────────
-
     const writePkgJson = (dir: string, content: Record<string, unknown>): string => {
         const filePath = join(dir, "package.json");
 
@@ -28,8 +26,6 @@ describe("overrides", () => {
     };
 
     const readPkgJson = (dir: string): Record<string, unknown> => JSON.parse(readFileSync(join(dir, "package.json"), "utf8")) as Record<string, unknown>;
-
-    // ── readOverrides ───────────────────────────────────────────────────
 
     describe(readOverrides, () => {
         describe("npm", () => {
@@ -119,8 +115,6 @@ describe("overrides", () => {
             });
         });
     });
-
-    // ── applyOverrides ──────────────────────────────────────────────────
 
     describe(applyOverrides, () => {
         it("should add new overrides to npm package.json", () => {
@@ -311,8 +305,6 @@ describe("overrides", () => {
         });
     });
 
-    // ── lockfileContainsPackage ─────────────────────────────────────────
-
     describe(lockfileContainsPackage, () => {
         it("should detect npm lockfile entries", () => {
             expect.assertions(2);
@@ -350,8 +342,6 @@ describe("overrides", () => {
             expect(lockfileContainsPackage("", "lodash", "npm")).toBe(false);
         });
     });
-
-    // ── readLockfileText ────────────────────────────────────────────────
 
     describe(readLockfileText, () => {
         it("should read npm lockfile", () => {

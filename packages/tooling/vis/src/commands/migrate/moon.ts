@@ -7,8 +7,6 @@ import { join } from "@visulima/path";
 import { serializeConfigObject, writeVisConfig } from "./shared";
 import type { MigrateLogger, MigrationReport } from "./types";
 
-// ── Moon config shape ────────────────────────────────────────────────
-
 interface MoonTaskYaml {
     args?: string | string[];
     command?: string;
@@ -31,8 +29,6 @@ interface MoonTasksYaml {
     taskOptions?: Record<string, unknown>;
     tasks?: Record<string, MoonTaskYaml>;
 }
-
-// ── Conversion ───────────────────────────────────────────────────────
 
 const taskToVisTarget = (task: MoonTaskYaml): Record<string, unknown> => {
     const target: Record<string, unknown> = {};
@@ -103,8 +99,6 @@ const renderVisConfig = (tasks: MoonTasksYaml, workspaceRoot: string, useEditorc
     ].join("\n");
 };
 
-// ── Moon file discovery ──────────────────────────────────────────────
-
 const findMoonTasksFile = (workspaceRoot: string): string | undefined => {
     const moonDir = join(workspaceRoot, ".moon");
 
@@ -134,8 +128,6 @@ const findMoonTasksFile = (workspaceRoot: string): string | undefined => {
 
     return undefined;
 };
-
-// ── Migration entry ──────────────────────────────────────────────────
 
 /**
  * Translates a moon `.moon/tasks.yml` into a `vis.config.ts`.
@@ -303,7 +295,6 @@ export const migrateMoon = (
         "vis tasks support `when: { os, env, branch, ci, not.* }` for conditional execution and `always: true` for cleanup tasks that fire even when upstream fails. Review tasks that used moon's `local: true`, `options.runInCI`, or shell-based platform gating — the new surface is more expressive and may simplify them. See docs/guides/conditional-and-finally-tasks.mdx.",
     );
 
-    // ── Templates ────────────────────────────────────────────────────
     // `.moon/templates/` auto-discovers in `vis generate` with no config
     // change needed, so for most users the migration is zero-effort.
     // Still, call it out explicitly so the user knows. `--copy-templates`

@@ -123,8 +123,6 @@ const findVisTaskConfigFile = (projectDirectory: string): string | undefined => 
     return undefined;
 };
 
-// ── Config cache ────────────────────────────────────────────────────
-
 interface ConfigCache {
     config: VisConfig;
     hash: string;
@@ -198,8 +196,6 @@ const writeConfigCache = (cachePath: string, hash: string, config: VisConfig): v
     }
 };
 
-// ── Extends resolver ────────────────────────────────────────────────
-
 const normalizeExtends = (value: VisConfig["extends"]): string[] => {
     if (value === undefined) {
         return [];
@@ -250,8 +246,6 @@ const resolveExtendsSpecifier = (specifier: string, parentFile: string, chain: R
         throw new VisConfigNotFoundError(specifier, [...chain, parentFile], attempted);
     }
 };
-
-// ── Config loader ───────────────────────────────────────────────────
 
 /**
  * Load a single config file via jiti and return its raw export. Wraps
@@ -457,8 +451,6 @@ const loadVisConfig = async (workspaceRoot: string, options?: { explicitConfigPa
 
     return finalConfig;
 };
-
-// ── Per-package task config loader ──────────────────────────────────
 
 interface VisTaskConfigCache {
     config: VisTaskConfig;

@@ -64,8 +64,6 @@ const dedupe = (entries: InstalledPackage[]): InstalledPackage[] => {
     return out;
 };
 
-// ── PyPI ────────────────────────────────────────────────────────────
-
 const TOML_PACKAGE_BLOCK_RE = /\[\[package\]\]([\s\S]*?)(?=\[\[|$)/g;
 const TOML_NAME_RE = /^\s*name\s*=\s*"([^"]+)"\s*$/m;
 const TOML_VERSION_RE = /^\s*version\s*=\s*"([^"]+)"\s*$/m;
@@ -130,8 +128,6 @@ const parsePipfileLock = (content: string): InstalledPackage[] => {
     return entries;
 };
 
-// ── Maven ───────────────────────────────────────────────────────────
-
 const POM_DEP_BLOCK_RE = /<dependency>([\s\S]*?)<\/dependency>/g;
 const POM_GROUP_ID_RE = /<groupId>\s*([^<\s]+)\s*<\/groupId>/;
 const POM_ARTIFACT_ID_RE = /<artifactId>\s*([^<\s]+)\s*<\/artifactId>/;
@@ -186,8 +182,6 @@ const parseGradleLockfile = (content: string): InstalledPackage[] => {
     return entries;
 };
 
-// ── Go ──────────────────────────────────────────────────────────────
-
 const parseGoSum = (content: string): InstalledPackage[] => {
     const entries: InstalledPackage[] = [];
 
@@ -221,8 +215,6 @@ const parseGoSum = (content: string): InstalledPackage[] => {
 
     return entries;
 };
-
-// ── RubyGems ────────────────────────────────────────────────────────
 
 const GEM_SPEC_RE = /^ {4}([^ ()]+) \(([^()]+)\)\s*$/;
 
@@ -264,8 +256,6 @@ const parseGemfileLock = (content: string): InstalledPackage[] => {
 
     return entries;
 };
-
-// ── Dispatch ────────────────────────────────────────────────────────
 
 export const lockedPackagesForEcosystem = (workspaceRoot: string, ecosystem: string): InstalledPackage[] => {
     const lockfile = findEcosystemLockfile(workspaceRoot, ecosystem);

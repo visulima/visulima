@@ -7,8 +7,6 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { VisConfig } from "../../src/config/workspace";
 import { enforceScriptSecurity, syncAllowBuildsToNativeConfig } from "../../src/security/security";
 
-// ── enforceScriptSecurity ────────────────────────────────────────────
-
 describe(enforceScriptSecurity, () => {
     let tmpDir: string;
 
@@ -184,8 +182,6 @@ describe(enforceScriptSecurity, () => {
         });
     });
 });
-
-// ── syncAllowBuildsToNativeConfig ────────────────────────────────────
 
 describe(syncAllowBuildsToNativeConfig, () => {
     let tmpDir: string;

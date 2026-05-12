@@ -161,8 +161,6 @@ export const resolveSelector = async (
     return { projects: [bestProject], target: parsed.target };
 };
 
-// ── Query language ──────────────────────────────────────────────────
-
 /**
  * A single parsed query clause. e.g. `language=typescript` or
  * `tag!=deprecated`.

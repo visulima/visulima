@@ -558,7 +558,6 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
     // workspace doesn't change behavior when its detected PM changes.
     const ignoreScripts = !options.runScripts;
 
-    // ── --to: auto-conform mode (syncpack#285) ───────────────────
     // Direct-edit the target package.json with a conformed spec
     // (catalog ref or sibling-derived range), then run a workspace
     // install to materialize it. We bypass `runAdd` here because no

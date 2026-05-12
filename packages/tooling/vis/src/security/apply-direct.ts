@@ -1,5 +1,5 @@
 /**
- * Direct-dependency apply planner for `vis audit --apply`.
+ * Direct-dependency apply planner for `vis audit --fix`.
  *
  * Walks every workspace `package.json` (root + workspaces) looking for
  * vulnerable packages declared in `dependencies` / `devDependencies` /
@@ -33,7 +33,7 @@ interface PackageJsonShape {
     workspaces?: string[] | { packages?: string[] };
 }
 
-/** A single direct-dep upgrade planned by `--apply`. */
+/** A single direct-dep upgrade planned by `--fix`. */
 export interface DirectFix {
     /** Existing version range from the manifest (`"^1.2.0"`). */
     currentRange: string;
@@ -62,7 +62,7 @@ export interface DirectApplyPlan {
     apply: DirectFix[];
     /** Fixes that would cross a major boundary and were skipped. */
     skippedMajor: DirectFix[];
-    /** Findings that aren't direct deps anywhere — handled by `--apply-transitive`. */
+    /** Findings that aren't direct deps anywhere — handled by `--fix-transitive`. */
     unmatched: { packageName: string; reason: "no-fixed-version" | "transitive-only" }[];
 }
 
@@ -151,7 +151,7 @@ export interface BuildDirectApplyPlanOptions {
  * - `apply`: fixes ready to dispatch via the PM update command.
  * - `skippedMajor`: in-manifest matches whose lowest fix is a major bump.
  * - `unmatched`: findings that aren't declared anywhere — these belong to
- *   `--apply-transitive`. Includes `no-fixed-version` for findings the
+ *   `--fix-transitive`. Includes `no-fixed-version` for findings the
  *   advisory hasn't fixed yet (skipped silently).
  */
 export const buildDirectApplyPlan = (options: BuildDirectApplyPlanOptions): DirectApplyPlan => {
@@ -267,7 +267,7 @@ export const formatDirectApplyPlan = (plan: DirectApplyPlan): string => {
         const noFix = plan.unmatched.filter((u) => u.reason === "no-fixed-version");
 
         if (transitiveOnly.length > 0) {
-            lines.push(`Transitive only (${String(transitiveOnly.length)}, requires --apply-transitive):`);
+            lines.push(`Transitive only (${String(transitiveOnly.length)}, requires --fix-transitive):`);
 
             for (const u of transitiveOnly) {
                 lines.push(`  · ${u.packageName}`);

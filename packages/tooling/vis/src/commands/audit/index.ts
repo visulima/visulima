@@ -16,11 +16,11 @@ const audit: Command = {
         ["vis audit --ecosystem npm,pypi", "Scan multiple OSV ecosystems (npm, pypi, crates.io, maven, go, rubygems)"],
         ["vis audit --prod-only", "Skip devDependencies"],
         ["vis audit --fail-on high", "Exit non-zero on any high or critical finding"],
-        ["vis audit --fix", "Show fix suggestions for vulnerabilities"],
-        ["vis audit --apply", "Apply direct-dep upgrades for vulnerable packages, then rescan (dry-run preview by default)"],
-        ["vis audit --apply --yes", "Skip the confirmation prompt and run the upgrades immediately"],
-        ["vis audit --apply --allow-major", "Permit major-version bumps when the lowest fix is outside the existing range"],
-        ["vis audit --apply-transitive", "Write PM-specific overrides for vulnerable transitives (dry-run preview by default)"],
+        ["vis audit --show-fixes", "Print fix-suggestion lines (no apply, no rescan)"],
+        ["vis audit --fix", "Apply direct-dep upgrades for vulnerable packages, then rescan (dry-run preview by default)"],
+        ["vis audit --fix --yes", "Skip the confirmation prompt and run the upgrades immediately"],
+        ["vis audit --fix --allow-major", "Permit major-version bumps when the lowest fix is outside the existing range"],
+        ["vis audit --fix-transitive", "Write PM-specific overrides for vulnerable transitives (dry-run preview by default)"],
         ["vis audit --exit-code", "Exit with code 1 if issues found (for CI)"],
         ["vis audit --show-accepted", "Include acknowledged risks in output"],
         ["vis audit --sync", `Sync accepted risks to native PM config (pnpm-workspace.yaml / .yarnrc.yml)`],
@@ -86,31 +86,31 @@ const audit: Command = {
         },
         {
             defaultValue: false,
-            description: "Show fix suggestions for vulnerabilities",
-            name: "fix",
+            description: "Print fix-suggestion lines for each finding (no apply, no rescan)",
+            name: "show-fixes",
             type: Boolean,
         },
         {
             defaultValue: false,
             description: "Apply direct-dep fixes for vulnerable packages by running the active PM update command, then rescan",
-            name: "apply",
+            name: "fix",
             type: Boolean,
         },
         {
             defaultValue: false,
             description: "Apply transitive fixes by writing PM-specific overrides (pnpm-workspace.yaml / package.json overrides / resolutions)",
-            name: "apply-transitive",
+            name: "fix-transitive",
             type: Boolean,
         },
         {
             defaultValue: false,
-            description: "Skip confirmation prompt for --apply / --apply-transitive (required in CI)",
+            description: "Skip confirmation prompt for --fix / --fix-transitive (required in CI)",
             name: "yes",
             type: Boolean,
         },
         {
             defaultValue: false,
-            description: "Allow --apply to bump a direct dep across a major version when the lowest fix is outside the existing range",
+            description: "Allow --fix to bump a direct dep across a major version when the lowest fix is outside the existing range",
             name: "allow-major",
             type: Boolean,
         },
@@ -139,13 +139,12 @@ export default audit;
 
 export type AuditOptions = CreateOptions<{
     "allow-major": boolean | undefined;
-    apply: boolean | undefined;
-    "apply-transitive": boolean | undefined;
     db: string | undefined;
     ecosystem: string | undefined;
     "exit-code": boolean | undefined;
     "fail-on": string | undefined;
     fix: boolean | undefined;
+    "fix-transitive": boolean | undefined;
     format: string | undefined;
     "no-usage": boolean | undefined;
     offline: boolean | undefined;
@@ -153,6 +152,7 @@ export type AuditOptions = CreateOptions<{
     report: string | undefined;
     severity: string | undefined;
     "show-accepted": boolean | undefined;
+    "show-fixes": boolean | undefined;
     sync: boolean | undefined;
     usage: boolean | undefined;
     yes: boolean | undefined;

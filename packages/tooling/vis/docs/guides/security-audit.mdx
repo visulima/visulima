@@ -58,25 +58,25 @@ vis audit --report ./report.html # self-contained HTML
 
 This is a noise reducer — vulnerabilities in unused devDependencies stay out of your dashboard.
 
-## 3. Apply loops
+## 3. Fix loops
 
-`vis audit` ships two apply loops. Both default to a dry-run preview and prompt before changing anything.
+`vis audit` ships two fix loops. Both default to a dry-run preview and prompt before changing anything.
 
-### `--apply` — direct-dep upgrades
+### `--fix` — direct-dep upgrades
 
-When the vulnerable package is declared in your `package.json` (or any workspace `package.json`), `--apply` upgrades it by calling the active package manager's update command.
+When the vulnerable package is declared in your `package.json` (or any workspace `package.json`), `--fix` upgrades it by calling the active package manager's update command.
 
 ```bash
-vis audit --apply                  # interactive preview + prompt
-vis audit --apply --yes            # CI — skip prompt
-vis audit --apply --allow-major    # permit major-version bumps
+vis audit --fix                    # interactive preview + prompt
+vis audit --fix --yes              # CI — skip prompt
+vis audit --fix --allow-major      # permit major-version bumps
 ```
 
 The planner classifies each fix as **in-range** (caret bump that satisfies the existing range) or **major** (the fix is outside the range — requires `--allow-major`). Findings that don't match any manifest are reported under "Transitive only" — those belong to the second loop.
 
-### `--apply-transitive` — PM-specific overrides
+### `--fix-transitive` — PM-specific overrides
 
-For transitive vulnerabilities (the vulnerable package isn't in your manifest — it's pulled in by something else), `--apply-transitive` writes a pinned override into the appropriate surface for your package manager:
+For transitive vulnerabilities (the vulnerable package isn't in your manifest — it's pulled in by something else), `--fix-transitive` writes a pinned override into the appropriate surface for your package manager:
 
 | Package manager | Surface                         |
 | --------------- | ------------------------------- |
@@ -88,7 +88,7 @@ For transitive vulnerabilities (the vulnerable package isn't in your manifest �
 
 The writer is atomic (`.tmp` sibling + `renameSync`) and idempotent — re-running with the same plan is a no-op.
 
-In CI, `--apply-transitive` is gated by **two** locks:
+In CI, `--fix-transitive` is gated by **two** locks:
 
 1. `--yes` on the CLI.
 2. `security.audit.apply.transitive.enabled = true` in `vis.config.ts`.
@@ -96,8 +96,8 @@ In CI, `--apply-transitive` is gated by **two** locks:
 This intentional friction prevents a misconfigured pipeline from rewriting your override surface every PR.
 
 ```bash
-vis audit --apply-transitive       # interactive preview
-vis audit --apply-transitive --yes # CI — requires config flag too
+vis audit --fix-transitive         # interactive preview
+vis audit --fix-transitive --yes   # CI — requires config flag too
 ```
 
 ## 4. CI integration

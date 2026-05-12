@@ -15,16 +15,12 @@ import { join } from "@visulima/path";
 
 import { getVisCacheDir } from "../util/vis-paths";
 
-// ── Constants ───────────────────────────────────────────────────────
-
 const SOCKET_API_V0_URL = "https://api.socket.dev/v0/purl?alerts=true";
 
 const getCacheDirectory = (): string => join(getVisCacheDir(), "socket-security");
 const DEFAULT_TTL_MS = 60 * 60 * 1000; // 1 hour
 const DEFAULT_LOW_SCORE_THRESHOLD = 0.4;
 const MAX_BATCH_SIZE = 100;
-
-// ── Types ───────────────────────────────────────────────────────────
 
 /** Extra properties attached to a package alert. */
 interface PackageAlertProps {
@@ -104,8 +100,6 @@ interface CacheEntry {
     ttlMs: number;
 }
 
-// ── Type guards ─────────────────────────────────────────────────────
-
 const isPackageReportData = (o: unknown): o is PackageReportData =>
     typeof o === "object"
     && o !== null
@@ -116,8 +110,6 @@ const isPackageReportData = (o: unknown): o is PackageReportData =>
     && "alerts" in o
     && "score" in o
     && (o as Record<string, unknown>).type === "npm";
-
-// ── Cache helpers (file-based, matching ai-cache.ts pattern) ────────
 
 const ensureCacheDirectory = (): void => {
     ensureDirSync(getCacheDirectory());
@@ -157,15 +149,11 @@ const setCachedReport = (name: string, version: string, report: PackageReportDat
     writeFileSync(join(getCacheDirectory(), `${key}.json`), JSON.stringify(entry), "utf8");
 };
 
-// ── Score calculation ───────────────────────────────────────────────
-
 const calculateOverallScore = (score: Omit<PackageScore, "overall">): number => {
     const components = [score.license, score.maintenance, score.quality, score.supplyChain, score.vulnerability];
 
     return Number((components.reduce((sum, s) => sum + s, 0) / components.length).toFixed(2));
 };
-
-// ── API client ──────────────────────────────────────────────────────
 
 /**
  * Fetches security report data from the Socket.dev API for the given packages.
@@ -322,13 +310,9 @@ const parseNdjsonResponse = (text: string, batch: { name: string; version: strin
     }
 };
 
-// ── Name helpers ────────────────────────────────────────────────────
-
 /** Returns the full package name including namespace scope if present. */
 const getFullPackageName = (report: Pick<PackageReportData, "name" | "namespace">): string =>
     (report.namespace ? `${report.namespace}/${report.name}` : report.name);
-
-// ── Display helpers ─────────────────────────────────────────────────
 
 /** Maps a 0–1 score to a human-readable label. */
 const scoreLabel = (score: number): string => {
@@ -481,8 +465,6 @@ const formatSecurityOverview = (reports: Map<string, PackageReportData>): string
     return lines.join("\n");
 };
 
-// ── Cache management ────────────────────────────────────────────────
-
 const clearSocketCache = (): number => {
     const cacheDirectory = getCacheDirectory();
 
@@ -565,8 +547,6 @@ const buildSocketOptions = (socketConfig: SocketConfigLike | undefined): SocketS
         timeoutMs: socketConfig.timeoutMs,
     };
 };
-
-// ── Accepted risks ──────────────────────────────────────────────────
 
 /** A persisted "accepted risk" entry from the vis config. */
 interface AcceptedRisk {

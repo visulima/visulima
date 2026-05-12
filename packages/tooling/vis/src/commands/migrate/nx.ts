@@ -1091,11 +1091,9 @@ export const migrateNx = (
         nx.targetDefaults = stripNamespacedTargetDefaults(nx.targetDefaults, report);
     }
 
-    // ── Discover workspace projects (used by both project.json work and pnpm-filter rewriting) ──
     const projectJsonPaths = findProjectJsonFiles(workspaceRoot);
     const nameMap = discoverPackageToProjectMap(projectJsonPaths);
 
-    // ── Rewrite root package.json scripts that use `pnpm --filter ... <target>` ──
     const rewriteResult = applyPnpmFilterScriptRewrites(workspaceRoot, nameMap, options, logger, report);
 
     ensurePersistentTargetDefaults(nx, rewriteResult.rewrittenTargets, report);
@@ -1112,7 +1110,6 @@ export const migrateNx = (
         return;
     }
 
-    // ── Per-project project.json processing ─────────────────────────
     rewriteProjectJsonSchemas(projectJsonPaths, options, logger, report);
 
     const { punchList } = translateProjectJsonTargets(projectJsonPaths, options, logger, report);
@@ -1131,10 +1128,8 @@ export const migrateNx = (
         }
     }
 
-    // ── pnpm-workspace.yaml ────────────────────────────────────────
     cleanPnpmWorkspaceYaml(workspaceRoot, options, logger, report);
 
-    // ── Manual steps inherited from the original migrator ──────────
     report.manualSteps.push(
         "vis adds two task primitives nx doesn't expose declaratively: `when: { os, env, branch, ci, not.* }` for conditional execution (replaces ad-hoc `configurations`) and `always: true` for finally/teardown tasks that run even when upstream fails. See docs/guides/conditional-and-finally-tasks.mdx.",
     );
@@ -1145,7 +1140,6 @@ export const migrateNx = (
         );
     }
 
-    // ── Cleanup checklist ──────────────────────────────────────────
     const checklist = collectCleanupChecklist(workspaceRoot);
     const lines = formatChecklist(checklist, workspaceRoot, {});
 
