@@ -32,6 +32,8 @@ const audit: Command = {
         ["vis audit --exit-code", "Exit with code 1 if issues found (for CI)"],
         ["vis audit --show-accepted", "Include acknowledged risks in output"],
         ["vis audit --sync", `Sync accepted risks to native PM config (pnpm-workspace.yaml / .yarnrc.yml)`],
+        ["vis audit --policies license,vulnerability", "Run only the named policies (default: every configured policy)"],
+        ["vis audit --policies none", "Skip the policy engine entirely"],
     ],
     group: "Security & Health",
     loader: () => import("./handler"),
@@ -140,6 +142,12 @@ const audit: Command = {
             name: "sync",
             type: Boolean,
         },
+        {
+            description:
+                "Comma-separated list of supply-chain policies to evaluate (default: every configured policy). Use 'none' to skip the engine entirely, 'all' to force the full set. Known: malware, firstSeen, unexpectedDeps, publisherChange, installScripts, score, vulnerability, license.",
+            name: "policies",
+            type: String,
+        },
     ],
 };
 
@@ -157,6 +165,7 @@ export type AuditOptions = CreateOptions<{
     format: string | undefined;
     "no-usage": boolean | undefined;
     offline: boolean | undefined;
+    policies: string | undefined;
     "prod-only": boolean | undefined;
     report: string | undefined;
     severity: string | undefined;

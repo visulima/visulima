@@ -18,6 +18,7 @@
 import { join, relative } from "node:path";
 
 import type { SecurityVulnerability } from "../security/advisories";
+import type { PolicyDecision } from "../security/policies";
 
 export interface SarifFinding {
     acknowledged: boolean;
@@ -30,6 +31,12 @@ export interface SarifEmitOptions {
     /** Optional explicit lockfile path. Defaults to "package.json" relative to the workspace root. */
     artifactUri?: string;
     findings: SarifFinding[];
+    /**
+     * Non-vulnerability policy decisions (license / install_scripts /
+     * unexpected_deps / …). Vulnerability decisions are emitted via
+     * `findings` above so they get full advisory metadata.
+     */
+    policyDecisions?: PolicyDecision[];
     tool: { informationUri: string; name: string; version: string };
     workspaceRoot: string;
 }
@@ -198,6 +205,70 @@ export const emitSarif = (options: SarifEmitOptions): SarifLog => {
                 severityLabel: label,
             },
             ruleId: vuln.id,
+        });
+    }
+
+    // Non-vulnerability policy decisions ride alongside advisories. One
+    // SARIF rule per policy name keeps the rule table small while still
+    // letting Code Scanning render the right severity badge per row.
+    const policyLevel: Record<PolicyDecision["severity"], SarifLevel> = {
+        block: "error",
+        info: "note",
+        warn: "warning",
+    };
+    const policyLabel: Record<PolicyDecision["severity"], string> = {
+        block: "high",
+        info: "none",
+        warn: "medium",
+    };
+
+    for (const decision of options.policyDecisions ?? []) {
+        if (decision.policy === "vulnerability") {
+            // Already covered by the OSV pass above.
+            continue;
+        }
+
+        const ruleId = `vis.policy.${decision.policy}`;
+        const level = policyLevel[decision.severity];
+        const label = policyLabel[decision.severity];
+
+        if (!rulesById.has(ruleId)) {
+            rulesById.set(ruleId, {
+                defaultConfiguration: { level },
+                fullDescription: { text: `vis policy '${decision.policy}' (Socket.dev-style supply-chain gate)` },
+                id: ruleId,
+                name: ruleId,
+                properties: {
+                    precision: "high",
+                    "security-severity": decision.severity === "block" ? "8.0" : decision.severity === "warn" ? "5.5" : "0.0",
+                    "severity-label": label,
+                    tags: ["security", "supply-chain", "policy", `policy:${decision.policy}`],
+                },
+                shortDescription: { text: `vis policy: ${decision.policy}` },
+            });
+        }
+
+        results.push({
+            level,
+            locations: [
+                {
+                    logicalLocations: [{ kind: "package", name: `${decision.packageName}@${decision.version}` }],
+                    physicalLocation: { artifactLocation: { uri: lockfileUri } },
+                },
+            ],
+            message: { text: decision.reason },
+            partialFingerprints: {
+                package: decision.packageName,
+                policy: decision.policy,
+                version: decision.version,
+            },
+            properties: {
+                ...(decision.acceptedRisk ? { acknowledged: true } : {}),
+                packageName: decision.packageName,
+                packageVersion: decision.version,
+                severityLabel: label,
+            },
+            ruleId,
         });
     }
 

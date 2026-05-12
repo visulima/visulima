@@ -13,6 +13,7 @@
 import { coerce, diff } from "semver";
 
 import type { SecurityVulnerability } from "../security/advisories";
+import type { PolicyDecision } from "../security/policies";
 
 export interface AuditHtmlFinding {
     acknowledged: boolean;
@@ -29,6 +30,8 @@ export interface AuditHtmlEmitOptions {
     now?: Date;
     /** Total scanned packages — surfaced in the summary band. */
     packagesScanned: number;
+    /** Non-vulnerability policy decisions to render in a dedicated section. */
+    policyDecisions?: PolicyDecision[];
     tool: { name: string; version: string };
     workspaceRoot: string;
 }
@@ -154,6 +157,27 @@ export const emitAuditHtml = (options: AuditHtmlEmitOptions): string => {
 
     const clean = sortedFindings.length === 0;
 
+    const policyDecisions = (options.policyDecisions ?? []).filter((d) => d.policy !== "vulnerability");
+    const policyRows = policyDecisions
+        .slice()
+        .sort((a, b) => {
+            const rank = (s: PolicyDecision["severity"]): number => (s === "block" ? 0 : s === "warn" ? 1 : 2);
+
+            return rank(a.severity) - rank(b.severity) || a.policy.localeCompare(b.policy) || a.packageName.localeCompare(b.packageName);
+        })
+        .map((d) => {
+            const acceptedMarker = d.acceptedRisk ? ` <span class="ack">[acknowledged]</span>` : "";
+
+            return `<tr>
+  <td><span class="policy-badge policy-${d.severity}">${d.severity.toUpperCase()}</span></td>
+  <td><code>${escapeHtml(d.policy)}</code></td>
+  <td><code>${escapeHtml(d.packageName)}</code></td>
+  <td><code>${escapeHtml(d.version)}</code></td>
+  <td>${escapeHtml(d.reason)}${acceptedMarker}</td>
+</tr>`;
+        })
+        .join("\n");
+
     return `<!doctype html>
 <html lang="en">
 <head>
@@ -215,6 +239,11 @@ a:hover { text-decoration: underline; }
 .marker-minor-patch { background: var(--minor); }
 .marker-unknown { background: var(--unknown); }
 .clean { padding: 32px; text-align: center; color: var(--muted); font-size: 14px; border: 1px dashed var(--border); border-radius: 8px; }
+h2 { font-size: 16px; margin: 24px 0 12px; }
+.policy-badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+.policy-block { background: rgba(255, 71, 87, 0.2); color: var(--critical); }
+.policy-warn { background: rgba(251, 191, 36, 0.2); color: var(--medium); }
+.policy-info { background: rgba(107, 114, 128, 0.2); color: var(--unknown); }
 </style>
 </head>
 <body>
@@ -252,6 +281,26 @@ ${
 ${rows}
 </tbody>
 </table>`
+}
+${
+    policyDecisions.length > 0
+        ? `
+<h2>Policy Decisions (${policyDecisions.length})</h2>
+<table id="policies">
+<thead>
+<tr>
+  <th>Severity</th>
+  <th>Policy</th>
+  <th>Package</th>
+  <th>Version</th>
+  <th>Reason</th>
+</tr>
+</thead>
+<tbody>
+${policyRows}
+</tbody>
+</table>`
+        : ""
 }
 <script>
 (() => {

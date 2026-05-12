@@ -119,13 +119,65 @@ A typical pipeline:
 
 ### Exit-code semantics
 
-| Flag                | Exit behaviour                                                   |
-| ------------------- | ---------------------------------------------------------------- |
-| _none_              | Always exit 0. Audit is informational by default.                |
-| `--exit-code`       | Exit 1 if any actionable finding is present.                     |
-| `--fail-on <level>` | Exit 1 only when at least one finding meets `<level>` or higher. |
+| Flag                | Exit behaviour                                                                                |
+| ------------------- | --------------------------------------------------------------------------------------------- |
+| _none_              | Always exit 0. Audit is informational by default.                                             |
+| `--exit-code`       | Exit 1 if any actionable finding is present **or** the policy engine emits a `block` decision. |
+| `--fail-on <level>` | Exit 1 when a vulnerability meets `<level>` or higher, **or** when a `block` policy fires.    |
 
 Acknowledged risks are excluded from the gate unless `--show-accepted` is set.
+
+## 5. Supply-chain policy engine
+
+Beyond vulnerability findings, `vis audit` runs a configurable supply-chain
+policy engine inspired by [Socket.dev](https://socket.dev). Each policy maps
+to a `security.policies.<name>` field in `vis.config.ts`; leaving a field
+unset disables the policy entirely.
+
+This release ships four offline-clean policies:
+
+- **`license`** — SPDX allow / deny lists. Deny wins on any sub-expression
+  match in an SPDX expression (`(MIT OR GPL-3.0)` is blocked when
+  `GPL-3.0` is on the deny list).
+- **`installScripts`** — surfaces packages declaring lifecycle scripts
+  (`preinstall`, `install`, `postinstall`, `prepare`, or an implicit
+  `node-gyp rebuild` from a `binding.gyp`). `strict: true` turns
+  unapproved scripts into block-severity decisions.
+- **`vulnerability`** — OSV findings, gated by the existing `failOn` /
+  `usage` knobs. Findings now also flow through the unified policy
+  report and the JSON / SARIF / HTML formatters.
+- **`unexpectedDeps`** — flags packages that aren't on a static
+  allow-list, or that didn't exist in a saved baseline lockfile.
+
+Network-bound policies (`malware`, `firstSeen`, `publisherChange`,
+`score`) plug into the same engine in a follow-up commit; until then
+they're surfaced via the existing Socket-direct integration.
+
+### CLI surface
+
+| Flag                  | Behaviour                                                                                  |
+| --------------------- | ------------------------------------------------------------------------------------------ |
+| `--policies <list>`   | Narrow this run to a subset of policies. Comma list. Accepts camelCase or snake_case names. |
+| `--policies all`      | Force every known policy regardless of config.                                             |
+| `--policies none`     | Skip the engine entirely.                                                                  |
+| _no flag_             | Evaluate every policy that has a configured `security.policies.<name>` entry.              |
+
+### Accepted risks per policy
+
+`security.acceptedRisks` is shared by every policy. Use the optional
+`policies` array to scope an acceptance to a specific gate, and
+`expiresAt` to set a sunset date:
+
+```ts
+acceptedRisks: {
+    "legacy-thing": {
+        reason: "Vendor refuses to relicense; replacing in Q3",
+        acceptedAt: "2026-01-01",
+        expiresAt: "2026-09-30",
+        policies: ["license"],
+    },
+}
+```
 
 ## 5. Accepted-risk workflow
 

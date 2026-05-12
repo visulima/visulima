@@ -21,7 +21,10 @@ import { AdvisoryDbNotFoundError, queryAdvisories, resolveAdvisoryDbPath } from 
 import type { DirectApplyPlan } from "../../security/apply-direct";
 import { buildDirectApplyPlan, formatDirectApplyPlan } from "../../security/apply-direct";
 import { findDuplicateDependencies, lockedPackages } from "../../security/dependency-scan";
+import { readNodeModulesManifests } from "../../security/manifests";
 import { canonicalEcosystem, lockedPackagesForEcosystem } from "../../security/multi-eco-lockfiles";
+import type { PolicyDecision } from "../../security/policies";
+import { evaluatePolicies, parsePoliciesFlag } from "../../security/policies";
 import { computeReachableVulnerablePackages } from "../../security/reachability";
 import type { AcceptedRisk, PackageReportData } from "../../security/socket-security";
 import {
@@ -429,6 +432,41 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
         return vulnPasses || socketPasses || lowScorePasses;
     });
 
+    // 4a. Unified policy engine. The four offline-clean policies
+    // (license, install_scripts, vulnerability, unexpected_deps baseline
+    // mode) run here; network-bound policies join in Phase 3. The
+    // engine receives the same OSV map + Socket reports the handler
+    // already built, so it never refetches anything.
+    const policiesFlag = options.policies as string | undefined;
+    const policyDecisions: PolicyDecision[] = await (async () => {
+        const enabledPolicies = parsePoliciesFlag(policiesFlag, (unknown) => {
+            if (!quietHeader) {
+                pail.warn(`Unknown policy '${unknown}' — ignoring. Known: malware, firstSeen, unexpectedDeps, publisherChange, installScripts, score, vulnerability, license.`);
+            }
+        });
+
+        if (enabledPolicies !== undefined && enabledPolicies.size === 0) {
+            // `--policies none`: explicit bypass.
+            return [];
+        }
+
+        const manifestData = readNodeModulesManifests(workspaceRoot);
+
+        return evaluatePolicies(
+            {
+                manifestData,
+                offline: isOffline,
+                osvFindings: vulnMap,
+                packageManager: pm.name,
+                packages: installed,
+                socketReports,
+                workspaceRoot,
+            },
+            "audit",
+            { enabledPolicies, visConfig: visConfig ?? {} },
+        );
+    })();
+
     // 4b. Reachability filter (`--usage` / `security.audit.usage.enabled`).
     // Drop entries whose vulnerable package isn't statically imported anywhere
     // in the workspace. `alwaysAssumeUsed` is the escape hatch for build-time
@@ -524,13 +562,14 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
     if (isSarif) {
         const sarif = emitSarif({
             findings: findingsForReport(),
+            policyDecisions,
             tool: { informationUri: "https://github.com/visulima/visulima", name: "vis-audit", version: "alpha" },
             workspaceRoot,
         });
 
         process.stdout.write(`${JSON.stringify(sarif, undefined, 2)}\n`);
 
-        applyExitGate(filtered, nativeExclusions, options.exitCode, failOn);
+        applyExitGate(filtered, nativeExclusions, options.exitCode, failOn, policyDecisions);
 
         return;
     }
@@ -545,7 +584,7 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
 
         process.stdout.write(`${JSON.stringify(csaf, undefined, 2)}\n`);
 
-        applyExitGate(filtered, nativeExclusions, options.exitCode, failOn);
+        applyExitGate(filtered, nativeExclusions, options.exitCode, failOn, policyDecisions);
 
         return;
     }
@@ -566,7 +605,7 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
 
         process.stdout.write(`${JSON.stringify(vex, undefined, 2)}\n`);
 
-        applyExitGate(filtered, nativeExclusions, options.exitCode, failOn);
+        applyExitGate(filtered, nativeExclusions, options.exitCode, failOn, policyDecisions);
 
         return;
     }
@@ -576,6 +615,7 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
         const html = emitAuditHtml({
             findings: findingsForReport(),
             packagesScanned: installed.length,
+            policyDecisions,
             tool: { name: "vis-audit", version: "alpha" },
             workspaceRoot,
         });
@@ -600,6 +640,17 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
                 };
             }),
             packages: installed.length,
+            policies: policyDecisions.map((d) => {
+                return {
+                    acceptedRisk: d.acceptedRisk ?? null,
+                    data: d.data ?? null,
+                    packageName: d.packageName,
+                    policy: d.policy,
+                    reason: d.reason,
+                    severity: d.severity,
+                    version: d.version,
+                };
+            }),
             results: filtered.map((e) => {
                 return {
                     acceptedRisk: e.acceptedRisk ?? null,
@@ -614,17 +665,19 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
                 accepted: filtered.filter((e) => e.acceptedRisk).length,
                 duplicatePackages: duplicates.length,
                 issues: filtered.filter((e) => !e.acceptedRisk).length,
+                policyBlocks: policyDecisions.filter((d) => d.severity === "block" && !d.acceptedRisk).length,
+                policyDecisions: policyDecisions.length,
                 total: filtered.length,
             },
         };
 
         process.stdout.write(`${JSON.stringify(jsonResult, undefined, 2)}\n`);
 
-        if (options.exitCode && jsonResult.summary.issues > 0) {
+        if (options.exitCode && (jsonResult.summary.issues > 0 || jsonResult.summary.policyBlocks > 0)) {
             process.exitCode = 1;
         }
 
-        applyFailOnGate(filtered, nativeExclusions, failOn);
+        applyFailOnGate(filtered, nativeExclusions, failOn, policyDecisions);
 
         return;
     }
@@ -727,6 +780,28 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
         }
     }
 
+    // Print policy decisions (excluding vulnerability decisions — those
+    // already appear in the vulnerability section above to avoid double
+    // reporting).
+    const renderablePolicyDecisions = policyDecisions.filter((d) => d.policy !== "vulnerability");
+
+    if (renderablePolicyDecisions.length > 0) {
+        pail.info(`\n── Policy Decisions (${String(renderablePolicyDecisions.length)}) ──`);
+
+        for (const decision of renderablePolicyDecisions) {
+            const isAccepted = Boolean(decision.acceptedRisk);
+
+            if (isAccepted && !showAccepted) {
+                continue;
+            }
+
+            const colorFunction = decision.severity === "block" ? red : decision.severity === "warn" ? yellow : dim;
+            const badge = isAccepted ? ` ${dim("[acknowledged]")}` : "";
+
+            pail.info(`  ${colorFunction(`[${decision.severity}]`)} ${decision.policy} — ${decision.reason}${badge}`);
+        }
+    }
+
     // Summary
     const isEntryExcluded = (e: AuditEntry): boolean =>
         Boolean(e.acceptedRisk) || (e.vulnerabilities.length > 0 && e.vulnerabilities.every((v) => isAdvisoryExcluded(v.id, nativeExclusions, v.aliases)));
@@ -768,6 +843,12 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
     if (duplicates.length > 0) {
         pail.warn(`  ${String(duplicates.length)} package${duplicates.length === 1 ? "" : "s"} with duplicate versions`);
         pail.notice("  Run 'vis dedupe' or your package manager's dedupe command to reduce duplicates.");
+    }
+
+    const blockingPolicyDecisions = policyDecisions.filter((d) => d.severity === "block" && !d.acceptedRisk);
+
+    if (blockingPolicyDecisions.length > 0) {
+        pail.error(`  ${String(blockingPolicyDecisions.length)} policy block${blockingPolicyDecisions.length === 1 ? "" : "s"}`);
     }
 
     if (acknowledgedVulns > 0) {
@@ -820,14 +901,31 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
         }
     }
 
-    if (options.exitCode && unacknowledgedCount > 0) {
+    if (options.exitCode && (unacknowledgedCount > 0 || blockingPolicyDecisions.length > 0)) {
         process.exitCode = 1;
     }
 
-    applyFailOnGate(filtered, nativeExclusions, failOn);
+    applyFailOnGate(filtered, nativeExclusions, failOn, policyDecisions);
 };
 
-const applyFailOnGate = (filtered: AuditEntry[], nativeExclusions: ReturnType<typeof readNativeAuditExclusions>, failOn: SeverityFilter | undefined): void => {
+const hasBlockingPolicy = (decisions: PolicyDecision[] | undefined): boolean => {
+    if (!decisions || decisions.length === 0) {
+        return false;
+    }
+
+    return decisions.some((d) => d.severity === "block" && !d.acceptedRisk);
+};
+
+const applyFailOnGate = (
+    filtered: AuditEntry[],
+    nativeExclusions: ReturnType<typeof readNativeAuditExclusions>,
+    failOn: SeverityFilter | undefined,
+    policyDecisions?: PolicyDecision[],
+): void => {
+    if (hasBlockingPolicy(policyDecisions)) {
+        process.exitCode = 1;
+    }
+
     if (!failOn) {
         return;
     }
@@ -852,13 +950,14 @@ const applyExitGate = (
     nativeExclusions: ReturnType<typeof readNativeAuditExclusions>,
     exitCode: unknown,
     failOn: SeverityFilter | undefined,
+    policyDecisions?: PolicyDecision[],
 ): void => {
     if (exitCode) {
         const unacknowledged = filtered.filter(
             (entry) => !entry.acceptedRisk && entry.vulnerabilities.some((vuln) => !isAdvisoryExcluded(vuln.id, nativeExclusions, vuln.aliases)),
         );
 
-        if (unacknowledged.length > 0) {
+        if (unacknowledged.length > 0 || hasBlockingPolicy(policyDecisions)) {
             process.exitCode = 1;
         }
     }

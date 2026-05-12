@@ -50,6 +50,10 @@ vis audit --fail-on high           # exit 1 on high/critical only
 # Accepted-risk handling
 vis audit --show-accepted          # include acknowledged risks
 vis audit --sync                   # mirror accepted risks to native PM config
+
+# Supply-chain policy engine
+vis audit --policies license,vulnerability  # narrow to a subset for this run
+vis audit --policies none                   # skip the policy engine entirely
 ```
 
 ## Options
@@ -103,6 +107,30 @@ Run [`vis advisories sync`](./advisories.mdx) to populate the cache.
 | `--fail-on <level>` | —       | Exit 1 only when a finding is at this severity or higher.                            |
 | `--sync`            | `false` | Sync vis accepted risks to native PM config (`pnpm-workspace.yaml` / `.yarnrc.yml`). |
 
+### Supply-chain policy engine
+
+| Option                | Default               | Description                                                                                                                                                                              |
+| --------------------- | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--policies <names>`  | every configured policy | Comma list of policies to evaluate this run. Pass `none` to skip the engine entirely, `all` to force every known policy. Known: `malware`, `firstSeen`, `unexpectedDeps`, `publisherChange`, `installScripts`, `score`, `vulnerability`, `license`. |
+
+The policy engine wraps eight Socket.dev-style supply-chain gates. Each policy
+is opt-in via the corresponding `security.policies.<name>` field — leaving the
+field unset means the engine skips that policy entirely. `block`-severity
+decisions feed into `--exit-code` and `--fail-on` the same way vulnerability
+findings do.
+
+This release ships four offline-clean policies:
+
+| Policy            | What it does                                                                          |
+| ----------------- | ------------------------------------------------------------------------------------- |
+| `license`         | SPDX allow / deny lists. Deny wins on any sub-expression match in SPDX expressions.   |
+| `installScripts`  | Wraps the existing `allowBuilds` / `strictDepBuilds` scan; surfaces unapproved hooks. |
+| `vulnerability`   | Surfaces OSV findings; `failOn` controls block vs. warn severity.                     |
+| `unexpectedDeps`  | Allow-list of acceptable transitives + baseline lockfile diff.                        |
+
+Network-bound policies (`malware`, `firstSeen`, `publisherChange`, `score`)
+plug into the same engine in a follow-up commit.
+
 ## Fix loops in depth
 
 The two fix loops are intentionally separated by surface:
@@ -148,6 +176,26 @@ export default defineConfig({
                     // Apply the reachability filter by default.
                     enabled: true,
                 },
+            },
+            license: {
+                // SPDX allow / deny lists. Deny wins on any sub-expression
+                // match within an SPDX expression (`(MIT OR GPL-3.0)`
+                // is blocked when GPL-3.0 is on the deny list).
+                allow: ["MIT", "Apache-2.0", "BSD-3-Clause", "ISC"],
+                deny: ["GPL-3.0", "AGPL-3.0"],
+            },
+            installScripts: {
+                // Build-script approval surface (mirrors pnpm allowBuilds
+                // / strictDepBuilds). Strict mode blocks the install
+                // when any dep declares an unapproved lifecycle script.
+                allow: { esbuild: true, "@swc/core": true },
+                strict: true,
+            },
+            unexpectedDeps: {
+                // Net-new transitive detection. Either provide a
+                // static allow list, a baseline lockfile path, or both
+                // (intersection is enforced).
+                baselineLockfile: "./security/baseline.pnpm-lock.yaml",
             },
         },
         socket: {
