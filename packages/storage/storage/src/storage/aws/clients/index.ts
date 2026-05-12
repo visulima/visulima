@@ -1,6 +1,9 @@
+export { default as akamai } from "./akamai";
 export { default as backblaze } from "./backblaze";
 export { default as cloudflare } from "./cloudflare";
 export { default as digitalOcean } from "./digital-ocean";
+export { default as hetzner } from "./hetzner";
 export { default as minio } from "./minio";
+export { default as storj } from "./storj";
 export { default as tigris } from "./tigris";
 export { default as wasabi } from "./wasabi";

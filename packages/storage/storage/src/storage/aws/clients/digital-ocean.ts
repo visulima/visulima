@@ -11,11 +11,9 @@ import type { CreateDigitalOceanClientParameters } from "./types";
  * - `SPACES_SECRET`
  */
 const digitalOcean = (parameters?: CreateDigitalOceanClientParameters): S3ClientConfig => {
-    const { key, region, secret } = parameters ?? {
-        key: process.env.AWS_ACCESS_KEY_ID || process.env.SPACES_KEY,
-        region: process.env.AWS_REGION || process.env.SPACES_REGION,
-        secret: process.env.AWS_SECRET_ACCESS_KEY || process.env.SPACES_SECRET,
-    };
+    const key = parameters?.key ?? process.env.AWS_ACCESS_KEY_ID ?? process.env.SPACES_KEY;
+    const region = parameters?.region ?? process.env.AWS_REGION ?? process.env.SPACES_REGION;
+    const secret = parameters?.secret ?? process.env.AWS_SECRET_ACCESS_KEY ?? process.env.SPACES_SECRET;
 
     if (!region || !key || !secret) {
         throw new Error("Missing required parameters for DigitalOcean Spaces client.");

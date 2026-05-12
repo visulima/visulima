@@ -31,6 +31,8 @@
         "gcs",
         "google",
         "google-cloud-storage",
+        "hetzner",
+        "hetzner-object-storage",
         "hono",
         "middleware",
         "minio",
@@ -46,6 +48,7 @@
         "s3",
         "serverless",
         "storage",
+        "storj",
         "sveltekit",
         "tus",
         "typescript",
@@ -117,6 +120,34 @@
             "types": "./dist/storage/local/index.d.ts",
             "import": "./dist/storage/local/index.js"
         },
+        "./provider/supabase": {
+            "types": "./dist/storage/supabase/index.d.ts",
+            "import": "./dist/storage/supabase/index.js"
+        },
+        "./provider/uploadthing": {
+            "types": "./dist/storage/uploadthing/index.d.ts",
+            "import": "./dist/storage/uploadthing/index.js"
+        },
+        "./provider/dropbox": {
+            "types": "./dist/storage/dropbox/index.d.ts",
+            "import": "./dist/storage/dropbox/index.js"
+        },
+        "./provider/google-drive": {
+            "types": "./dist/storage/google-drive/index.d.ts",
+            "import": "./dist/storage/google-drive/index.js"
+        },
+        "./provider/onedrive": {
+            "types": "./dist/storage/onedrive/index.d.ts",
+            "import": "./dist/storage/onedrive/index.js"
+        },
+        "./provider/box": {
+            "types": "./dist/storage/box/index.d.ts",
+            "import": "./dist/storage/box/index.js"
+        },
+        "./provider/bunny": {
+            "types": "./dist/storage/bunny/index.d.ts",
+            "import": "./dist/storage/bunny/index.js"
+        },
         "./openapi": {
             "types": "./dist/openapi/index.d.ts",
             "import": "./dist/openapi/index.js"
@@ -177,6 +208,22 @@
             "types": "./dist/adapter/nuxt/module.d.ts",
             "import": "./dist/adapter/nuxt/module.js"
         },
+        "./ai/sdk": {
+            "types": "./dist/ai/ai-sdk/index.d.ts",
+            "import": "./dist/ai/ai-sdk/index.js"
+        },
+        "./ai/openai": {
+            "types": "./dist/ai/openai/index.d.ts",
+            "import": "./dist/ai/openai/index.js"
+        },
+        "./ai/claude": {
+            "types": "./dist/ai/claude/index.d.ts",
+            "import": "./dist/ai/claude/index.js"
+        },
+        "./ai/tanstack": {
+            "types": "./dist/ai/tanstack/index.d.ts",
+            "import": "./dist/ai/tanstack/index.js"
+        },
         "./package.json": "./package.json"
     },
     "files": [
@@ -211,13 +258,15 @@
         "mime": "catalog:prod",
         "nanoid": "catalog:prod",
         "path-to-regexp": "catalog:prod",
-        "type-is": "catalog:prod"
+        "type-is": "catalog:prod",
+        "zod": "catalog:utils"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",
         "@anolilab/prettier-config": "catalog:lint",
         "@anolilab/semantic-release-pnpm": "catalog:dev",
         "@anolilab/semantic-release-preset": "catalog:dev",
+        "@anthropic-ai/claude-agent-sdk": "^0.2.139",
         "@arethetypeswrong/cli": "catalog:dev",
         "@aws-sdk/client-s3": "catalog:dev",
         "@aws-sdk/credential-providers": "catalog:dev",
@@ -225,11 +274,17 @@
         "@aws-sdk/signature-v4-crt": "catalog:dev",
         "@aws-sdk/types": "catalog:dev",
         "@azure/storage-blob": "catalog:dev",
+        "@bunny.net/storage-sdk": "0.3.1",
+        "@googleapis/drive": "20.1.0",
+        "@microsoft/microsoft-graph-client": "3.0.7",
         "@netlify/blobs": "catalog:dev",
         "@nuxt/kit": "catalog:dev",
+        "@openai/agents": "^0.11.4",
         "@opentelemetry/api": "catalog:dev",
         "@remix-run/headers": "catalog:dev",
         "@solidjs/start": "catalog:frontend",
+        "@supabase/storage-js": "2.105.4",
+        "@tanstack/ai": "^0.16.0",
         "@types/etag": "catalog:types",
         "@types/express": "catalog:types",
         "@types/http-errors": "catalog:types",
@@ -243,10 +298,13 @@
         "@visulima/path": "3.0.0-alpha.10",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
+        "ai": "catalog:dev",
         "aws-crt": "catalog:dev",
         "aws-sdk-client-mock": "catalog:dev",
         "aws4fetch": "catalog:dev",
+        "box-typescript-sdk-gen": "1.19.1",
         "cross-fetch": "catalog:dev",
+        "dropbox": "10.34.0",
         "esbuild": "catalog:build",
         "eslint": "catalog:lint",
         "etag": "catalog:dev",
@@ -259,6 +317,7 @@
         "next": "catalog:dev",
         "node-fetch": "catalog:dev",
         "node-mocks-http": "catalog:dev",
+        "openai": "catalog:dev",
         "openapi-types": "catalog:dev",
         "prettier": "catalog:lint",
         "rimraf": "catalog:node",
@@ -267,30 +326,46 @@
         "supertest": "catalog:dev",
         "tempy": "catalog:dev",
         "typescript": "catalog:tsc",
+        "uploadthing": "7.7.4",
         "vitest": "catalog:test"
     },
     "peerDependencies": {
+        "@anthropic-ai/claude-agent-sdk": ">=0.2.0",
         "@aws-sdk/client-s3": ">=3.901.0",
         "@aws-sdk/credential-providers": ">=3.901.0",
         "@aws-sdk/s3-request-presigner": ">=3.901.0",
         "@aws-sdk/signature-v4-crt": ">=3.901.0",
         "@aws-sdk/types": ">=3.930.0",
         "@azure/storage-blob": ">=12.28.0",
+        "@bunny.net/storage-sdk": ">=0.3.0",
+        "@googleapis/drive": ">=20.0.0",
+        "@microsoft/microsoft-graph-client": ">=3.0.0",
         "@netlify/blobs": ">=10.3.1",
         "@nuxt/kit": ">=4.2.1",
+        "@openai/agents": ">=0.11.0",
         "@opentelemetry/api": ">=1.9.0",
         "@solidjs/start": ">=1.1.0",
+        "@supabase/storage-js": ">=2.105.0",
+        "@tanstack/ai": ">=0.16.0",
         "@vercel/blob": ">=2.0.0",
+        "ai": ">=5.0.0",
         "aws-crt": ">=1.27.3",
         "aws4fetch": ">=1.0.0",
+        "box-typescript-sdk-gen": ">=1.19.0",
+        "dropbox": ">=10.34.0",
         "gaxios": ">=7.1.2",
         "google-auth-library": ">=10.4.0",
         "hono": ">=4.0.0",
         "mediabunny": ">=1.23.0",
         "next": ">=15",
-        "sharp": ">=0.34.5"
+        "openai": ">=5.0.0",
+        "sharp": ">=0.34.5",
+        "uploadthing": ">=7.0.0"
     },
     "peerDependenciesMeta": {
+        "@anthropic-ai/claude-agent-sdk": {
+            "optional": true
+        },
         "@aws-sdk/client-s3": {
             "optional": true
         },
@@ -309,10 +384,22 @@
         "@azure/storage-blob": {
             "optional": true
         },
+        "@bunny.net/storage-sdk": {
+            "optional": true
+        },
+        "@googleapis/drive": {
+            "optional": true
+        },
+        "@microsoft/microsoft-graph-client": {
+            "optional": true
+        },
         "@netlify/blobs": {
             "optional": true
         },
         "@nuxt/kit": {
+            "optional": true
+        },
+        "@openai/agents": {
             "optional": true
         },
         "@opentelemetry/api": {
@@ -321,13 +408,28 @@
         "@solidjs/start": {
             "optional": true
         },
+        "@supabase/storage-js": {
+            "optional": true
+        },
+        "@tanstack/ai": {
+            "optional": true
+        },
         "@vercel/blob": {
+            "optional": true
+        },
+        "ai": {
             "optional": true
         },
         "aws-crt": {
             "optional": true
         },
         "aws4fetch": {
+            "optional": true
+        },
+        "box-typescript-sdk-gen": {
+            "optional": true
+        },
+        "dropbox": {
             "optional": true
         },
         "gaxios": {
@@ -345,7 +447,13 @@
         "next": {
             "optional": true
         },
+        "openai": {
+            "optional": true
+        },
         "sharp": {
+            "optional": true
+        },
+        "uploadthing": {
             "optional": true
         }
     },

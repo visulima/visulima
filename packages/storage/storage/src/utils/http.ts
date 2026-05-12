@@ -4,6 +4,7 @@ import type { ReadableStream as NodeReadableStream } from "node:stream/web";
 
 import typeis, { hasBody } from "type-is";
 
+import { BaseStorage } from "../storage/storage";
 import getLastOne from "./primitives/get-last-one";
 import type { Header, Headers, IncomingMessageWithBody } from "./types";
 
@@ -47,22 +48,31 @@ export const readBody = (
     limit: number | undefined,
 ): Promise<string> =>
     new Promise((resolve, reject) => {
-        let body = "";
+        // Accumulate bytes (not characters) so the `limit` is enforced against the actual
+        // payload size on the wire. Multi-byte UTF-8 sequences mean string `.length` undercounts
+        // the byte total — a malicious client could send well over `limit` bytes that decode to
+        // fewer characters and silently bypass the cap.
+        const chunks: Buffer[] = [];
+        let byteLength = 0;
 
-        request.setEncoding(encoding);
+        request.on("data", (chunk: Buffer | string) => {
+            const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk, encoding);
 
-        request.on("data", (chunk) => {
-            if (limit && body.length + chunk.length > limit) {
+            byteLength += buf.length;
+
+            if (limit !== undefined && byteLength > limit) {
                 reject(new Error("Request body length limit exceeded"));
+                request.destroy();
 
                 return;
             }
 
-            body += chunk;
+            chunks.push(buf);
         });
         request.once("end", () => {
-            resolve(body);
+            resolve(Buffer.concat(chunks).toString(encoding));
         });
+        request.once("error", reject);
     });
 
 /**
@@ -143,7 +153,16 @@ export const setHeaders = (response: ServerResponse, headers: Headers = {}): voi
 
     keys.forEach((key) => {
         if (["link", "location"].includes(key.toLowerCase())) {
-            response.setHeader(key, encodeURI((headers[key] as Header).toString()));
+            // `encodeURI` preserves `#` and `?` because they are URI reserved characters. That is
+            // correct when the input is a fully-formed URL, but we use this header to embed a file
+            // id into a path — an id containing `#` or `?` would otherwise be silently reinterpreted
+            // by clients as a fragment or query separator. Forcing them through `%`-encoding closes
+            // that ambiguity. Legitimate query strings on Location targets already arrive
+            // pre-formed; we only encode the literal chars that survived `encodeURI`.
+            const encoded = encodeURI((headers[key] as Header).toString())
+                .replaceAll("#", "%23");
+
+            response.setHeader(key, encoded);
         } else {
             response.setHeader(key, headers[key] as Header);
         }
@@ -217,9 +236,15 @@ export const getRealPath = (request: IncomingMessage & { originalUrl?: string })
 };
 
 /**
+ * Anchored ID matcher — requires the *entire* segment to be alphanumeric chunks joined by hyphens,
+ * with at least three chunks, each chunk ≥ 4 characters. The previous unanchored pattern
+ * `/(?:[\dA-Z]+-){2}[\dA-Z]+/i` matched a substring of *any* string containing two hyphens (e.g.
+ * `a-b-c`), so it would happily pass `not_my_uuid_a-b-c_attack_payload`. Anchoring + a minimum
+ * per-chunk length makes accidental matches near-impossible while still allowing canonical UUIDs
+ * (8-4-4-4-12), content-addressable IDs, and similar formats this codebase uses.
  * @internal
  */
-export const uuidRegex: RegExp = /(?:[\dA-Z]+-){2}[\dA-Z]+/i;
+export const uuidRegex: RegExp = /^[\da-z]{4,}(?:-[\da-z]{4,}){2,}$/i;
 
 /**
  * Extracts a UUID identifier from the request URL path.
@@ -258,6 +283,8 @@ export const getIdFromRequest = (request: IncomingMessage & { originalUrl?: stri
         }
 
         if (uuidRegex.test(cleanSegment)) {
+            BaseStorage.assertSafeId(cleanSegment);
+
             return cleanSegment;
         }
     }
@@ -287,6 +314,8 @@ export const getIdFromRequest = (request: IncomingMessage & { originalUrl?: stri
     // For paths with multiple segments, if the last segment is >= 8 chars and not a common name, use it
     // This allows non-UUID IDs (like nanoid) to work
     if (segments.length > 1) {
+        BaseStorage.assertSafeId(cleanLastSegment);
+
         return cleanLastSegment;
     }
 

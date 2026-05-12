@@ -2,6 +2,7 @@
 
 import createHttpError from "http-errors";
 
+import { BaseStorage } from "../../storage/storage";
 import type { FileInit, UploadFile } from "../../storage/utils/file";
 import { ERRORS } from "../../utils/errors";
 import { getRequestStream } from "../../utils/http";
@@ -61,6 +62,7 @@ class RestFetch<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
                     getMeta: (id: string) => Promise<TFile>;
                     maxUploadSize: number;
                     update: (options: { id: string }, updates: { metadata?: Record<string, unknown>; status?: string }) => Promise<void>;
+                    withLock: <R>(key: string, fn: () => Promise<R>) => Promise<R>;
                     write: (options: { body: unknown; contentLength: number; id: string; start: number }) => Promise<TFile>;
                 };
             }
@@ -221,7 +223,21 @@ class RestFetch<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
 
         if (contentType.includes("application/json")) {
             try {
+                // Reject before reading so a malicious client can't trickle GBs into memory just
+                // to issue a DELETE. 1 MiB comfortably accommodates batch-of-thousands-of-IDs payloads.
+                const MAX_BATCH_DELETE_BYTES = 1_048_576;
+                const contentLength = Number.parseInt(request.headers.get("content-length") ?? "", 10);
+
+                if (Number.isFinite(contentLength) && contentLength > MAX_BATCH_DELETE_BYTES) {
+                    throw createHttpError(413, "Batch delete body exceeds 1 MiB");
+                }
+
                 const body = await request.text();
+
+                if (Buffer.byteLength(body, "utf8") > MAX_BATCH_DELETE_BYTES) {
+                    throw createHttpError(413, "Batch delete body exceeds 1 MiB");
+                }
+
                 const parsed = JSON.parse(body) as unknown;
 
                 if (Array.isArray(parsed)) {
@@ -394,9 +410,12 @@ const extractFileInitFromRequest = (request: Request, contentLength: number, con
 };
 
 /**
- * Extract file ID from request URL.
+ * Extract file ID from request URL and validate it as a safe storage id.
+ * Returns `null` for missing IDs; throws 400 for traversal/invalid IDs.
  */
 const getIdFromRequestUrl = (url: string): string | null => {
+    let id: string | undefined;
+
     try {
         const urlObject = new URL(url);
         const pathParts = urlObject.pathname.split("/").filter(Boolean);
@@ -407,10 +426,20 @@ const getIdFromRequestUrl = (url: string): string | null => {
         }
 
         // Remove extension if present
-        const id = lastPart.replace(/\.[^.]+$/, "");
-
-        return id || null;
+        id = lastPart.replace(/\.[^.]+$/, "") || undefined;
     } catch {
         return null;
     }
+
+    if (!id) {
+        return null;
+    }
+
+    try {
+        BaseStorage.assertSafeId(id);
+    } catch {
+        throw createHttpError(400, `Invalid file id: "${id}"`);
+    }
+
+    return id;
 };

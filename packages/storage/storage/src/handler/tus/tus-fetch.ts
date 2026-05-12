@@ -2,23 +2,39 @@
 
 import createHttpError from "http-errors";
 
+import { BaseStorage } from "../../storage/storage";
 import type { FileInit, UploadFile } from "../../storage/utils/file";
 import BaseHandlerFetch from "../base/base-handler-fetch";
 import type { Handlers, ResponseFile, UploadOptions } from "../types";
-import { TusBase } from "./tus-base";
+import { TUS_RESUMABLE, TusBase } from "./tus-base";
 
 /**
- * Extract file ID from request URL.
+ * Extract file ID from request URL and validate it as a safe storage id.
+ * Returns `undefined` for missing IDs; throws 400 for traversal/invalid IDs.
  */
 const getIdFromRequestUrl = (url: string): string | undefined => {
+    let candidate: string | undefined;
+
     try {
         const urlObject = new URL(url);
         const pathParts = urlObject.pathname.split("/").filter(Boolean);
 
-        return pathParts[pathParts.length - 1] || undefined;
+        candidate = pathParts[pathParts.length - 1] || undefined;
     } catch {
         return undefined;
     }
+
+    if (!candidate) {
+        return undefined;
+    }
+
+    try {
+        BaseStorage.assertSafeId(candidate);
+    } catch {
+        throw createHttpError(400, `Invalid file id: "${candidate}"`);
+    }
+
+    return candidate;
 };
 
 export { TUS_RESUMABLE, TUS_VERSION } from "./tus-base";
@@ -85,6 +101,29 @@ export class Tus<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
                 return tusInstance.buildFileUrlForTus(requestUrl, file);
             }
         })();
+    }
+
+    /**
+     * Web API fetch entrypoint. Wraps the base implementation to ensure every TUS
+     * response — success and error alike — carries the `Tus-Resumable` header,
+     * which the protocol requires on all responses.
+     */
+    public override async fetch(request: Request): Promise<globalThis.Response> {
+        const response = await super.fetch(request);
+
+        if (response.headers.has("Tus-Resumable")) {
+            return response;
+        }
+
+        const headers = new Headers(response.headers);
+
+        headers.set("Tus-Resumable", TUS_RESUMABLE);
+
+        return new Response(response.body, {
+            headers,
+            status: response.status,
+            statusText: response.statusText,
+        });
     }
 
     /**

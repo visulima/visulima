@@ -1,7 +1,8 @@
 import { Readable } from "node:stream";
 
-import { S3Client as S3ClientConstructor } from "@aws-sdk/client-s3";
+import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { fromIni } from "@aws-sdk/credential-providers";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 import type { HttpError } from "../../utils/types";
 import type { FileInit, FileQuery } from "../utils/file";
@@ -59,6 +60,8 @@ class S3Storage extends S3BaseStorage {
 
     private s3Api: S3ClientAdapter;
 
+    private rawClient: S3Client;
+
     public constructor(config: S3StorageOptions) {
         const { bucket = process.env.S3_BUCKET, region = process.env.S3_REGION } = config;
 
@@ -79,7 +82,7 @@ class S3Storage extends S3BaseStorage {
         }
 
         // Initialize client before calling super
-        const client = new S3ClientConstructor(config);
+        const client = new S3Client(config);
 
         super({
             bucket,
@@ -114,6 +117,7 @@ class S3Storage extends S3BaseStorage {
         });
 
         this.s3Api = new S3ClientAdapter(client, bucket);
+        this.rawClient = client;
 
         // Override meta storage to use S3MetaStorage if not local
         const { metaStorage, metaStorageConfig } = config;
@@ -170,22 +174,10 @@ class S3Storage extends S3BaseStorage {
 
             await this.checkIfExpired({ expiredAt: Expires } as S3File);
 
-            // Body from adapter is already Readable
-            const stream = Body as Readable;
-            const readableStream = new Readable({
-                read() {
-                    stream.on("data", (chunk: Buffer) => {
-                        this.push(chunk);
-                    });
-                    stream.on("end", () => {
-                        this.push(null);
-                    });
-                    stream.on("error", (error: Error) => {
-                        this.destroy(error);
-                    });
-                },
-            });
-
+            // Body from the adapter is already a Readable; returning it directly preserves
+            // backpressure. The previous proxy attached `data`/`end`/`error` listeners inside `read()`,
+            // which (a) re-attached them on every read pull, leaking handlers, and (b) forced flowing
+            // mode regardless of consumer pace, breaking backpressure entirely.
             return {
                 headers: {
                     "Content-Length": ContentLength?.toString() ?? "0",
@@ -195,9 +187,38 @@ class S3Storage extends S3BaseStorage {
                     ...(LastModified && { "Last-Modified": LastModified.toString() }),
                 },
                 size: Number(ContentLength),
-                stream: readableStream,
+                stream: Body as Readable,
             };
         });
+    }
+
+    public override get raw(): S3Client {
+        return this.rawClient;
+    }
+
+    public override async getReadUrl(
+        key: string,
+        options?: { expiresIn?: number; responseContentDisposition?: string; responseContentType?: string },
+    ): Promise<string> {
+        const command = new GetObjectCommand({
+            Bucket: this.bucket,
+            Key: key,
+            ...(options?.responseContentDisposition && { ResponseContentDisposition: options.responseContentDisposition }),
+            ...(options?.responseContentType && { ResponseContentType: options.responseContentType }),
+        });
+
+        return getSignedUrl(this.rawClient, command, { expiresIn: options?.expiresIn ?? 3600 });
+    }
+
+    public override async getUploadUrl(key: string, options?: { contentLength?: number; contentType?: string; expiresIn?: number }): Promise<string> {
+        const command = new PutObjectCommand({
+            Bucket: this.bucket,
+            Key: key,
+            ...(options?.contentType && { ContentType: options.contentType }),
+            ...(options?.contentLength !== undefined && { ContentLength: options.contentLength }),
+        });
+
+        return getSignedUrl(this.rawClient, command, { expiresIn: options?.expiresIn ?? 3600 });
     }
 
     protected getS3Api(): S3ClientAdapter {

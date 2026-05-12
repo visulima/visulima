@@ -8,6 +8,12 @@ export default defineConfig({
     rollup: {
         dts: {
             oxc: true,
+            // Keep optional peer dependencies (AWS SDK, AI SDKs, etc.) external in
+            // the emitted .d.ts files. Without this, packem inlines ~700 S3 API
+            // types (~940 KB) and the AI SDK type trees into shared chunks.
+            // Consumers install the peer deps themselves, so the imports resolve
+            // at type-check time.
+            resolve: false,
         },
         license: {
             path: "./LICENSE.md",

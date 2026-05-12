@@ -5,6 +5,7 @@ import type { MultipartPart } from "@remix-run/multipart-parser";
 import { MaxFileSizeExceededError, MultipartParseError, parseMultipartRequest } from "@remix-run/multipart-parser";
 import createHttpError from "http-errors";
 
+import { BaseStorage } from "../../storage/storage";
 import type { UploadFile } from "../../storage/utils/file";
 import ValidationError from "../../utils/validation-error";
 import BaseHandlerFetch from "../base/base-handler-fetch";
@@ -14,17 +15,32 @@ import MultipartBase from "./multipart-base";
 const RE_MIME = /^multipart\/.+|application\/x-www-form-urlencoded$/i;
 
 /**
- * Extract file ID from request URL.
+ * Extract file ID from request URL and validate it as a safe storage id.
+ * Returns `undefined` for missing IDs; throws 400 for traversal/invalid IDs.
  */
 const getIdFromRequestUrl = (url: string): string | undefined => {
+    let candidate: string | undefined;
+
     try {
         const urlObject = new URL(url);
         const pathParts = urlObject.pathname.split("/").filter(Boolean);
 
-        return pathParts[pathParts.length - 1] || undefined;
+        candidate = pathParts[pathParts.length - 1] || undefined;
     } catch {
         return undefined;
     }
+
+    if (!candidate) {
+        return undefined;
+    }
+
+    try {
+        BaseStorage.assertSafeId(candidate);
+    } catch {
+        throw createHttpError(400, `Invalid file id: "${candidate}"`);
+    }
+
+    return candidate;
 };
 
 /**

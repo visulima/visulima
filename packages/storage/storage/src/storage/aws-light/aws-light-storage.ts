@@ -1,6 +1,8 @@
 import { Readable } from "node:stream";
 import type { ReadableStream as NodeReadableStream } from "node:stream/web";
 
+import type { AwsClient } from "aws4fetch";
+
 import type { HttpError } from "../../utils/types";
 import { S3BaseStorage } from "../aws/s3-base-storage";
 import type { FileInit, FileQuery } from "../utils/file";
@@ -184,6 +186,10 @@ class AwsLightStorage extends S3BaseStorage {
                 stream: readableStream,
             };
         });
+    }
+
+    public override get raw(): AwsClient {
+        return this.s3Api.aws;
     }
 
     protected getS3Api(): AwsLightApiAdapter {

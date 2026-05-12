@@ -236,9 +236,9 @@ describe("batch Operations", () => {
         it("should move multiple files successfully", async () => {
             expect.assertions(4);
 
-            // Create source files
-            const file1 = await storage.create({ ...metafile, originalName: "source1.mp4" });
-            const file2 = await storage.create({ ...metafile, originalName: "source2.mp4" });
+            // Create source files (id: undefined so distinct ids are generated from originalName)
+            const file1 = await storage.create({ ...metafile, id: undefined, originalName: "source1.mp4" });
+            const file2 = await storage.create({ ...metafile, id: undefined, originalName: "source2.mp4" });
             const stream1 = new RequestReadStream();
             const stream2 = new RequestReadStream();
 
