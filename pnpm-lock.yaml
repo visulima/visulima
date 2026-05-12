@@ -2076,7 +2076,7 @@ importers:
         version: 7.29.0
       '@fuma-comment/react':
         specifier: catalog:frontend
-        version: 1.4.2(@floating-ui/dom@1.7.6)(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(highlight.js@11.11.1)(lucide-react@1.14.0(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(typescript@6.0.3)
+        version: 1.4.2(@floating-ui/dom@1.7.6)(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(highlight.js@11.11.1)(lucide-react@1.14.0(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(typescript@6.0.3)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(next@16.2.5(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.2.4))
       '@fumadocs/mdx-remote':
         specifier: catalog:prod
         version: 1.4.10(@types/mdx@2.0.13)(@types/react@19.2.14)(fumadocs-core@16.8.7(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.169.2(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/estree-jsx@1.0.5)(@types/hast@3.0.4)(@types/mdast@4.0.4)(@types/react@19.2.14)(lucide-react@1.14.0(react@19.2.6))(next@16.2.5(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react-router@7.15.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react@19.2.6)(zod@4.4.3))(react@19.2.6)
@@ -2263,7 +2263,7 @@ importers:
         version: 1.2.0
       '@netlify/vite-plugin-tanstack-start':
         specifier: catalog:build
-        version: 1.3.9(@azure/storage-blob@12.31.0)(@tanstack/react-start@1.167.65(crossws@0.4.5(srvx@0.11.15))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4)))(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))(webpack@5.106.2(@swc/core@1.15.24)(esbuild@0.28.0)))(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(rollup@4.60.3)(srvx@0.11.15)(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))
+        version: 1.3.9(@azure/storage-blob@12.31.0)(@tanstack/react-start@1.167.65(crossws@0.4.5(srvx@0.11.15))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4)))(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))(webpack@5.106.2(@swc/core@1.15.24)(esbuild@0.28.0)))(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(rollup@4.60.3)(srvx@0.11.15)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(next@16.2.5(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.2.4))(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))
       '@secretlint/secretlint-rule-preset-recommend':
         specifier: catalog:lint
         version: 13.0.0
@@ -6399,6 +6399,9 @@ importers:
       type-is:
         specifier: catalog:prod
         version: 2.0.1
+      zod:
+        specifier: catalog:utils
+        version: 4.4.3
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
@@ -6412,6 +6415,9 @@ importers:
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
         version: 13.4.10(@anolilab/semantic-release-pnpm@8.1.9(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+      '@anthropic-ai/claude-agent-sdk':
+        specifier: ^0.2.139
+        version: 0.2.139(zod@4.4.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -6433,12 +6439,24 @@ importers:
       '@azure/storage-blob':
         specifier: catalog:dev
         version: 12.31.0
+      '@bunny.net/storage-sdk':
+        specifier: 0.3.1
+        version: 0.3.1
+      '@googleapis/drive':
+        specifier: 20.1.0
+        version: 20.1.0
+      '@microsoft/microsoft-graph-client':
+        specifier: 3.0.7
+        version: 3.0.7
       '@netlify/blobs':
         specifier: catalog:dev
         version: 10.7.4
       '@nuxt/kit':
         specifier: catalog:dev
         version: 4.4.4(magicast@0.5.2)
+      '@openai/agents':
+        specifier: ^0.11.4
+        version: 0.11.4(ws@8.20.0)(zod@4.4.3)
       '@opentelemetry/api':
         specifier: catalog:dev
         version: 1.9.1
@@ -6447,7 +6465,13 @@ importers:
         version: 0.19.0
       '@solidjs/start':
         specifier: catalog:frontend
-        version: 1.3.2(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vinxi@0.5.11(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@types/node@25.6.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 1.3.2(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vinxi@0.5.11(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@types/node@25.6.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(uploadthing@7.7.4(express@5.2.1)(fastify@5.8.5)(h3@1.15.11)(next@16.2.5(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.2.4))(yaml@2.8.3))(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+      '@supabase/storage-js':
+        specifier: 2.105.4
+        version: 2.105.4
+      '@tanstack/ai':
+        specifier: ^0.16.0
+        version: 0.16.0(@opentelemetry/api@1.9.1)
       '@types/etag':
         specifier: catalog:types
         version: 1.8.4
@@ -6487,6 +6511,9 @@ importers:
       '@vitest/ui':
         specifier: catalog:test
         version: 4.1.5(vitest@4.1.5)
+      ai:
+        specifier: catalog:dev
+        version: 6.0.175(zod@4.4.3)
       aws-crt:
         specifier: catalog:dev
         version: 1.31.0
@@ -6496,9 +6523,15 @@ importers:
       aws4fetch:
         specifier: catalog:dev
         version: 1.0.20
+      box-typescript-sdk-gen:
+        specifier: 1.19.1
+        version: 1.19.1
       cross-fetch:
         specifier: catalog:dev
         version: 4.1.0
+      dropbox:
+        specifier: 10.34.0
+        version: 10.34.0(@types/node-fetch@2.6.13)
       esbuild:
         specifier: catalog:build
         version: 0.28.0
@@ -6535,6 +6568,9 @@ importers:
       node-mocks-http:
         specifier: catalog:dev
         version: 1.17.2(@types/express@5.0.6)(@types/node@25.6.0)
+      openai:
+        specifier: catalog:dev
+        version: 6.36.0(ws@8.20.0)(zod@4.4.3)
       openapi-types:
         specifier: catalog:dev
         version: 12.1.3
@@ -6559,6 +6595,9 @@ importers:
       typescript:
         specifier: catalog:tsc
         version: 6.0.3
+      uploadthing:
+        specifier: 7.7.4
+        version: 7.7.4(express@5.2.1)(fastify@5.8.5)(h3@1.15.11)(next@16.2.5(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.2.4)
       vitest:
         specifier: catalog:test
         version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.3(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
@@ -6766,7 +6805,7 @@ importers:
         version: link:../..
       nuxt:
         specifier: catalog:prod
-        version: 4.4.4(@azure/storage-blob@12.31.0)(@babel/core@7.29.0)(@babel/plugin-proposal-decorators@7.29.0(@babel/core@7.29.0))(@babel/plugin-syntax-jsx@7.28.6(@babel/core@7.29.0))(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@parcel/watcher@2.5.6)(@types/node@25.6.0)(@vercel/blob@2.3.3)(@vue/compiler-sfc@3.5.34)(aws4fetch@1.0.20)(cac@6.7.14)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(esbuild@0.28.0)(eslint@10.3.0(jiti@2.7.0))(ioredis@5.10.1)(lightningcss@1.32.0)(magicast@0.5.2)(meow@14.1.0)(mysql2@3.22.3(@types/node@25.6.0))(optionator@0.9.4)(rolldown@1.0.0-rc.18)(rollup-plugin-visualizer@7.0.1(rolldown@1.0.0-rc.18)(rollup@4.60.3))(rollup@4.60.3)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(typescript@6.0.3)(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))(vue-tsc@3.2.8(typescript@6.0.3))(yaml@2.8.4)
+        version: 4.4.4(@azure/storage-blob@12.31.0)(@babel/core@7.29.0)(@babel/plugin-proposal-decorators@7.29.0(@babel/core@7.29.0))(@babel/plugin-syntax-jsx@7.28.6(@babel/core@7.29.0))(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@parcel/watcher@2.5.6)(@types/node@25.6.0)(@vercel/blob@2.3.3)(@vue/compiler-sfc@3.5.34)(aws4fetch@1.0.20)(cac@6.7.14)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(esbuild@0.28.0)(eslint@10.3.0(jiti@2.7.0))(ioredis@5.10.1)(lightningcss@1.32.0)(magicast@0.5.2)(meow@14.1.0)(mysql2@3.22.3(@types/node@25.6.0))(optionator@0.9.4)(rolldown@1.0.0-rc.18)(rollup-plugin-visualizer@7.0.1(rolldown@1.0.0-rc.18)(rollup@4.60.3))(rollup@4.60.3)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(typescript@6.0.3)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.2.4))(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))(vue-tsc@3.2.8(typescript@6.0.3))(yaml@2.8.4)
       vue:
         specifier: catalog:frontend
         version: 3.5.34(typescript@6.0.3)
@@ -6828,7 +6867,7 @@ importers:
         version: 0.16.1(solid-js@1.9.12)
       '@solidjs/start':
         specifier: catalog:frontend
-        version: 1.3.2(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vinxi@0.5.11(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@types/node@25.6.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))(vite@8.0.11(@types/node@25.6.0)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))
+        version: 1.3.2(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vinxi@0.5.11(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@types/node@25.6.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.2.4))(yaml@2.8.4))(vite@8.0.11(@types/node@25.6.0)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))
       '@visulima/storage':
         specifier: workspace:*
         version: link:../../../storage
@@ -6840,7 +6879,7 @@ importers:
         version: 1.9.12
       vinxi:
         specifier: catalog:prod
-        version: 0.5.11(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@types/node@25.6.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4)
+        version: 0.5.11(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@types/node@25.6.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.2.4))(yaml@2.8.4)
 
   packages/storage/storage-client/examples/svelte-kit:
     dependencies:
@@ -6889,7 +6928,7 @@ importers:
         version: link:../..
       nitro:
         specifier: catalog:prod
-        version: 3.0.260311-beta(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@netlify/runtime@4.1.20)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.2.0)(ioredis@5.10.1)(jiti@2.7.0)(lru-cache@11.3.6)(miniflare@4.20260504.0)(mongodb@7.2.0(@aws-sdk/credential-providers@3.1044.0)(socks@2.8.7))(mysql2@3.22.3(@types/node@25.6.0))(rollup@4.60.3)(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))
+        version: 3.0.260311-beta(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@netlify/runtime@4.1.20)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.2.0)(ioredis@5.10.1)(jiti@2.7.0)(lru-cache@11.3.6)(miniflare@4.20260504.0)(mongodb@7.2.0(@aws-sdk/credential-providers@3.1044.0)(socks@2.8.7))(mysql2@3.22.3(@types/node@25.6.0))(rollup@4.60.3)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.2.4))(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))
       react:
         specifier: 19.2.6
         version: 19.2.6
@@ -6963,7 +7002,7 @@ importers:
         version: 4.4.4(magicast@0.5.2)
       nuxt:
         specifier: '>=4.0.0'
-        version: 4.4.4(@azure/storage-blob@12.31.0)(@babel/core@7.29.0)(@babel/plugin-proposal-decorators@7.29.0(@babel/core@7.29.0))(@babel/plugin-syntax-jsx@7.28.6(@babel/core@7.29.0))(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@parcel/watcher@2.5.6)(@types/node@25.6.0)(@vercel/blob@2.3.3)(@vue/compiler-sfc@3.5.34)(aws4fetch@1.0.20)(cac@6.7.14)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(esbuild@0.28.0)(eslint@10.3.0(jiti@2.7.0))(ioredis@5.10.1)(lightningcss@1.32.0)(magicast@0.5.2)(meow@14.1.0)(mysql2@3.22.3(@types/node@25.6.0))(optionator@0.9.4)(rolldown@1.0.0-rc.18)(rollup-plugin-visualizer@7.0.1(rolldown@1.0.0-rc.18)(rollup@4.60.3))(rollup@4.60.3)(terser@5.46.1)(tsx@4.21.0)(typescript@6.0.3)(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))(vue-tsc@3.2.8(typescript@6.0.3))(yaml@2.8.4)
+        version: 4.4.4(@azure/storage-blob@12.31.0)(@babel/core@7.29.0)(@babel/plugin-proposal-decorators@7.29.0(@babel/core@7.29.0))(@babel/plugin-syntax-jsx@7.28.6(@babel/core@7.29.0))(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@parcel/watcher@2.5.6)(@types/node@25.6.0)(@vercel/blob@2.3.3)(@vue/compiler-sfc@3.5.34)(aws4fetch@1.0.20)(cac@6.7.14)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(esbuild@0.28.0)(eslint@10.3.0(jiti@2.7.0))(ioredis@5.10.1)(lightningcss@1.32.0)(magicast@0.5.2)(meow@14.1.0)(mysql2@3.22.3(@types/node@25.6.0))(optionator@0.9.4)(rolldown@1.0.0-rc.18)(rollup-plugin-visualizer@7.0.1(rolldown@1.0.0-rc.18)(rollup@4.60.3))(rollup@4.60.3)(terser@5.46.1)(tsx@4.21.0)(typescript@6.0.3)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.2.4))(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))(vue-tsc@3.2.8(typescript@6.0.3))(yaml@2.8.4)
 
   packages/storage/storage/examples/bun:
     dependencies:
@@ -10070,6 +10109,9 @@ packages:
   '@adobe/css-tools@4.4.4':
     resolution: {integrity: sha512-Elp+iwUx5rN5+Y8xLt5/GRoG20WGoDCQ/1Fb+1LiGtvwbDavuSk0jhD/eZdckHAuzcDzccnkv+rEjyWfRx18gg==}
 
+  '@ag-ui/core@0.0.49':
+    resolution: {integrity: sha512-9ywypwjUGtIvTxJ2eKQjhPZgLnSFAfNK7vZUcT7Bz4ur4yAIB+lAFtzvu7VDYe6jsUx/6N/71Dh4R0zX5woNVw==}
+
   '@ai-sdk/anthropic@3.0.75':
     resolution: {integrity: sha512-5AV3CKwaOJFdGXhihVgvRLNrjwRn2Xmy71YygT8DYOA+5zTx93Seg2QSIS8b3tJxzZ7X4H84pEtrE8VZKBCZGA==}
     engines: {node: '>=18'}
@@ -10307,6 +10349,65 @@ packages:
 
   '@antfu/install-pkg@1.1.0':
     resolution: {integrity: sha512-MGQsmw10ZyI+EJo45CdSER4zEb+p31LpDAFp2Z3gkSd1yqVZGi0Ebx++YTEMonJy4oChEMLsxZ64j8FH6sSqtQ==}
+
+  '@anthropic-ai/claude-agent-sdk-darwin-arm64@0.2.139':
+    resolution: {integrity: sha512-dnuO2E0x6o9GAk9iZZKlEd10h+0PQFdTfr5aQU4I0W+0ReKsFEoE9LAqfomS2EvLUQ9L62X0+n0iyZQmAVi1kw==}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@anthropic-ai/claude-agent-sdk-darwin-x64@0.2.139':
+    resolution: {integrity: sha512-SXyldBIwpMHDXppPGObXZ1wjSSWf/YPgD6vK4nssIXarC/DtMRnAQ419Hb3q5MaBB29vSjOPKmG0MOkMltFR/A==}
+    cpu: [x64]
+    os: [darwin]
+
+  '@anthropic-ai/claude-agent-sdk-linux-arm64-musl@0.2.139':
+    resolution: {integrity: sha512-gzMfit9t7Fiy5taZ+miAaP8ZmOMc+hv8Ov3UOXGwJunK6H+0F88ctBSnolDPMPQaS6s2WoMD0o8fhUbBudtMVw==}
+    cpu: [arm64]
+    os: [linux]
+    libc: [musl]
+
+  '@anthropic-ai/claude-agent-sdk-linux-arm64@0.2.139':
+    resolution: {integrity: sha512-qfnQ4SjEcq//iGAJkk25J6j4Tq+dvQe9wHks0dcaSdGOs2D96Teqrb358YJe+nke2DBKVUa9Y4ComW3aUBM29w==}
+    cpu: [arm64]
+    os: [linux]
+    libc: [glibc]
+
+  '@anthropic-ai/claude-agent-sdk-linux-x64-musl@0.2.139':
+    resolution: {integrity: sha512-Fg/aQs1vdyqLrNXqGa1i7/ODpGxP6ud/K/2AgVarLteg2Z3ZnrHPvPQ6iQmTGI8+BhxAZ141t4Dg0CWz3CoqCQ==}
+    cpu: [x64]
+    os: [linux]
+    libc: [musl]
+
+  '@anthropic-ai/claude-agent-sdk-linux-x64@0.2.139':
+    resolution: {integrity: sha512-2Gqy5hV/MyObbwSyNhj5ha2cY5EZnUfDLvpEwR1eeOaU1yqnxzsdNzXWgHIyWQGKGNE2ICwgLYtt6AtOJGWpPg==}
+    cpu: [x64]
+    os: [linux]
+    libc: [glibc]
+
+  '@anthropic-ai/claude-agent-sdk-win32-arm64@0.2.139':
+    resolution: {integrity: sha512-HusAU/gSQ0G0AHU+Hj/ps0Tl5JaUF2nxkp+G42tU6hpnwLMOQMdLx/yqvSQnz4WSxggxiDFmYvMDLYAmuE9Qdg==}
+    cpu: [arm64]
+    os: [win32]
+
+  '@anthropic-ai/claude-agent-sdk-win32-x64@0.2.139':
+    resolution: {integrity: sha512-eJjbtLvEBJcTrl4WJhmhP7FYdTVvx/XtioifH7OEnCoxQozMHhOmA0X90csplIRpttX+jX2PqnE5j2FwU20eCw==}
+    cpu: [x64]
+    os: [win32]
+
+  '@anthropic-ai/claude-agent-sdk@0.2.139':
+    resolution: {integrity: sha512-9zmitYoxCQiQZsTUbm9IGC6VyZt70J3NLtkRQPQvFVfz7bKDrhlZZKzXmyl2XmqedXEIeQy2ACmwdjwzPIVIAw==}
+    engines: {node: '>=18.0.0'}
+    peerDependencies:
+      zod: ^4.0.0
+
+  '@anthropic-ai/sdk@0.81.0':
+    resolution: {integrity: sha512-D4K5PvEV6wPiRtVlVsJHIUhHAmOZ6IT/I9rKlTf84gR7GyyAurPJK7z9BOf/AZqC5d1DhYQGJNKRmV+q8dGhgw==}
+    hasBin: true
+    peerDependencies:
+      zod: ^3.25.0 || ^4.0.0
+    peerDependenciesMeta:
+      zod:
+        optional: true
 
   '@apidevtools/json-schema-ref-parser@14.0.1':
     resolution: {integrity: sha512-Oc96zvmxx1fqoSEdUmfmvvb59/KDOnUoJ7s2t7bISyAn0XEz57LCCw8k2Y4Pf3mwKaZLMciESALORLgfe2frCw==}
@@ -11075,6 +11176,9 @@ packages:
     resolution: {integrity: sha512-ctxtJ/eA+t+6q2++vj5j7FYX3nRu311q1wfYH3xjlLOsczhlhxAg2FWNUXhpGvAw3BWo1xBcvOV6/YLc2r5FJw==}
     hasBin: true
 
+  '@bunny.net/storage-sdk@0.3.1':
+    resolution: {integrity: sha512-nHD+e+CxYBcSoZERkxI/7Qir/kZaCfBTT+ULgZNUitNSyZ4mWD3DbTy+sHwVfRyc6wQ0XYD//6LImi2PU9JoWg==}
+
   '@cacheable/memory@2.0.8':
     resolution: {integrity: sha512-FvEb29x5wVwu/Kf93IWwsOOEuhHh6dYCJF3vcKLzXc0KXIW181AOzv6ceT4ZpBHDvAfG60eqb+ekmrnLHIy+jw==}
 
@@ -11344,6 +11448,11 @@ packages:
         optional: true
       oxlint:
         optional: true
+
+  '@effect/platform@0.90.3':
+    resolution: {integrity: sha512-XvQ37yzWQKih4Du2CYladd1i/MzqtgkTPNCaN6Ku6No4CK83hDtXIV/rP03nEoBg2R3Pqgz6gGWmE2id2G81HA==}
+    peerDependencies:
+      effect: '>=3.20.0'
 
   '@electric-sql/pglite@0.3.16':
     resolution: {integrity: sha512-mZkZfOd9OqTMHsK+1cje8OSzfAQcpD7JmILXTl5ahdempjUDdmg4euf1biDex5/LfQIDJ3gvCu6qDgdnDxfJmA==}
@@ -12308,6 +12417,10 @@ packages:
     resolution: {integrity: sha512-xxqsNsUXaFang9b2e/NTIgqUeuUlifA2Opy1mOVqTDuJZZNIOTgUNyziwBJoleBhMC0XuvY3JNVMWthufcVjRw==}
     engines: {node: '>=18.20.0'}
 
+  '@googleapis/drive@20.1.0':
+    resolution: {integrity: sha512-8/gapeLuZ3igooEGLE1AL3Zp5fjqigZQNmyjehb4QF7JVJh6FXF+72AcQGGsFypwJb2S68HIuQFomHBw4RJSOg==}
+    engines: {node: '>=12.0.0'}
+
   '@grpc/grpc-js@1.14.3':
     resolution: {integrity: sha512-Iq8QQQ/7X3Sac15oB6p0FmUg/klxQvXLeileoqrTRGJYLV+/9tubbr9ipz0GKHjmXVsgFPo/+W+2cA8eNcR+XA==}
     engines: {node: '>=12.10.0'}
@@ -13088,6 +13201,24 @@ packages:
   '@mfederczuk/deeptools@2.1.0-rc01':
     resolution: {integrity: sha512-1BR+HMtmH8nz73oCTAVrflj6dOricPv4fx56PY8Uld+UqJRPaV4DZiXCT/4ThhGAD4Mf1LrRGmRqcsPGKL3hsw==}
 
+  '@microsoft/microsoft-graph-client@3.0.7':
+    resolution: {integrity: sha512-/AazAV/F+HK4LIywF9C+NYHcJo038zEnWkteilcxC1FM/uK/4NVGDKGrxx7nNq1ybspAroRKT4I1FHfxQzxkUw==}
+    engines: {node: '>=12.0.0'}
+    peerDependencies:
+      '@azure/identity': '*'
+      '@azure/msal-browser': '*'
+      buffer: '*'
+      stream-browserify: '*'
+    peerDependenciesMeta:
+      '@azure/identity':
+        optional: true
+      '@azure/msal-browser':
+        optional: true
+      buffer:
+        optional: true
+      stream-browserify:
+        optional: true
+
   '@modelcontextprotocol/sdk@1.29.0':
     resolution: {integrity: sha512-zo37mZA9hJWpULgkRpowewez1y6ML5GsXJPY8FI0tBBCd77HEvza4jDqRKOXgHNn867PVGCyTdzqpz0izu5ZjQ==}
     engines: {node: '>=18'}
@@ -13100,6 +13231,36 @@ packages:
 
   '@mongodb-js/saslprep@1.4.6':
     resolution: {integrity: sha512-y+x3H1xBZd38n10NZF/rEBlvDOOMQ6LKUTHqr8R9VkJ+mmQOYtJFxIlkkK8fZrtOiL6VixbOBWMbZGBdal3Z1g==}
+
+  '@msgpackr-extract/msgpackr-extract-darwin-arm64@3.0.3':
+    resolution: {integrity: sha512-QZHtlVgbAdy2zAqNA9Gu1UpIuI8Xvsd1v8ic6B2pZmeFnFcMWiPLfWXh7TVw4eGEZ/C9TH281KwhVoeQUKbyjw==}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@msgpackr-extract/msgpackr-extract-darwin-x64@3.0.3':
+    resolution: {integrity: sha512-mdzd3AVzYKuUmiWOQ8GNhl64/IoFGol569zNRdkLReh6LRLHOXxU4U8eq0JwaD8iFHdVGqSy4IjFL4reoWCDFw==}
+    cpu: [x64]
+    os: [darwin]
+
+  '@msgpackr-extract/msgpackr-extract-linux-arm64@3.0.3':
+    resolution: {integrity: sha512-YxQL+ax0XqBJDZiKimS2XQaf+2wDGVa1enVRGzEvLLVFeqa5kx2bWbtcSXgsxjQB7nRqqIGFIcLteF/sHeVtQg==}
+    cpu: [arm64]
+    os: [linux]
+
+  '@msgpackr-extract/msgpackr-extract-linux-arm@3.0.3':
+    resolution: {integrity: sha512-fg0uy/dG/nZEXfYilKoRe7yALaNmHoYeIoJuJ7KJ+YyU2bvY8vPv27f7UKhGRpY6euFYqEVhxCFZgAUNQBM3nw==}
+    cpu: [arm]
+    os: [linux]
+
+  '@msgpackr-extract/msgpackr-extract-linux-x64@3.0.3':
+    resolution: {integrity: sha512-cvwNfbP07pKUfq1uH+S6KJ7dT9K8WOE4ZiAcsrSes+UY55E/0jLYc+vq+DO7jlmqRb5zAggExKm0H7O/CBaesg==}
+    cpu: [x64]
+    os: [linux]
+
+  '@msgpackr-extract/msgpackr-extract-win32-x64@3.0.3':
+    resolution: {integrity: sha512-x0fWaQtYp4E6sktbsdAqnehxDgEc/VwM7uLsRCYWaiGu0ykYdZPiS8zCWdnjHwyiumousxfBm4SO31eXqwEZhQ==}
+    cpu: [x64]
+    os: [win32]
 
   '@mswjs/interceptors@0.41.3':
     resolution: {integrity: sha512-cXu86tF4VQVfwz8W1SPbhoRyHJkti6mjH/XJIxp40jhO4j2k1m4KYrEykxqWPkFF3vrK4rgQppBh//AwyGSXPA==}
@@ -13945,6 +14106,29 @@ packages:
 
   '@open-draft/until@2.1.0':
     resolution: {integrity: sha512-U69T3ItWHvLwGg5eJ0n3I62nWuE6ilHlmz7zM0npLBRvPRd7e6NYmg54vvRtP5mZG7kZqZCFVdsTWo7BPtBujg==}
+
+  '@openai/agents-core@0.11.4':
+    resolution: {integrity: sha512-K529uAX9oZV8LUnsv0b+c+nWflIJc+LAJeEfZLN74q0J9UYvyt4pddt30e7OsGS1kPVK/lbChnPCOkPhnd1cpg==}
+    peerDependencies:
+      zod: ^4.0.0
+    peerDependenciesMeta:
+      zod:
+        optional: true
+
+  '@openai/agents-openai@0.11.4':
+    resolution: {integrity: sha512-NAiiCsUsb+4twlaCIZ4OM8s9WoDNKjHfZBrw1jkE/oXH4sXO5OwRqi85ZM5xtfZNBqBF0IEY5hIuwWOhZntdKg==}
+    peerDependencies:
+      zod: ^4.0.0
+
+  '@openai/agents-realtime@0.11.4':
+    resolution: {integrity: sha512-SZS22YbsKilfPpsVJmHwigYbNX3W+ZHZFTm5+uDdV3OnziodCQu2P/cMag2dcpwmJq/fW0lANUzD+YC4l0qwoA==}
+    peerDependencies:
+      zod: ^4.0.0
+
+  '@openai/agents@0.11.4':
+    resolution: {integrity: sha512-HEOnixfXyziXgYcuRWIx+oJRYLgTxX8VFeJPIAum7LSYxznO5orJsn4u+u3w+7xe1BupoB8eUaJ7dDvOSChKPA==}
+    peerDependencies:
+      zod: ^4.0.0
 
   '@opentelemetry/api-logs@0.203.0':
     resolution: {integrity: sha512-9B9RU0H7Ya1Dx/Rkyc4stuBZSGVQF27WigitInx2QQoj6KUpEFYPKoWjdFTunJYxmXmh17HeBvbMa1EhGyPmqQ==}
@@ -17140,6 +17324,9 @@ packages:
   '@speed-highlight/core@1.2.15':
     resolution: {integrity: sha512-BMq1K3DsElxDWawkX6eLg9+CKJrTVGCBAWVuHXVUV2u0s2711qiChLSId6ikYPfxhdYocLNt3wWwSvDiTvFabw==}
 
+  '@standard-schema/spec@1.0.0-beta.4':
+    resolution: {integrity: sha512-d3IxtzLo7P1oZ8s8YNvxzBUXRXojSut8pbPrTYtzsc5sn4+53jVqbk66pQerSZbZSJZQux6LkclB/+8IDordHg==}
+
   '@standard-schema/spec@1.1.0':
     resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
 
@@ -17354,6 +17541,10 @@ packages:
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
     peerDependencies:
       eslint: ^9.0.0 || ^10.0.0
+
+  '@supabase/storage-js@2.105.4':
+    resolution: {integrity: sha512-Jx+pzMP1Whjof2PWHoVBUA75/p7PQE9CqKBzn1oXVyJDOggMLSH2OzVWwsXYaxEpdC1K/KltwmOX44nL3LHl9g==}
+    engines: {node: '>=20.0.0'}
 
   '@sveltejs/acorn-typescript@1.0.9':
     resolution: {integrity: sha512-lVJX6qEgs/4DOcRTpo56tmKzVPtoWAaVbL4hfO7t7NVwl9AAXzQR6cihesW1BmNMPl+bK6dreu2sOKBP2Q9CIA==}
@@ -17873,6 +18064,20 @@ packages:
     resolution: {integrity: sha512-pCvohwOCspk3ZFn6eJzrrX3g4n2JY73H6MmYC87XfGPyTty4YsCjYTMArRZm/zOI8dIt3+EcrLHAFPe5A4bgtw==}
     peerDependencies:
       vite: '>=7.3.2'
+
+  '@tanstack/ai-event-client@0.3.0':
+    resolution: {integrity: sha512-rAXrgLgyxDszd1PVBWH4wpOyP89QpKLY6oAg8eBx44hVhEpkCM50AaoiDtrPCmxMjrucBz9OMkAU2Khb7EaZ6g==}
+    peerDependencies:
+      '@tanstack/ai': 0.16.0
+
+  '@tanstack/ai@0.16.0':
+    resolution: {integrity: sha512-EsMGoMp9Y/H3A4JkhZZhfqk6S8bUxVcoJZhJea2omJtyv58YjcLlqBQFKYx+64egkYOgoORDyxj6bNI6Ne7dcA==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@opentelemetry/api': '>=1.9.0'
+    peerDependenciesMeta:
+      '@opentelemetry/api':
+        optional: true
 
   '@tanstack/devtools-client@0.0.6':
     resolution: {integrity: sha512-f85ZJXJnDIFOoykG/BFIixuAevJovCvJF391LPs6YjBAPhGYC50NWlx1y4iF/UmK5/cCMx+/JqI5SBOz7FanQQ==}
@@ -18828,6 +19033,9 @@ packages:
   '@types/nlcst@1.0.4':
     resolution: {integrity: sha512-ABoYdNQ/kBSsLvZAekMhIPMQ3YUZvavStpKYs7BjLLuKVmIMA0LUgZ7b54zzuWJRbHF80v1cNf4r90Vd6eMQDg==}
 
+  '@types/node-fetch@2.6.13':
+    resolution: {integrity: sha512-QGpRVpzSaUs30JBSGPjOg4Uveu384erbHBoT1zeONvyCfwQxIkUshLAOqN/k9EjGviPRmWTTe6aH2qySWKTVSw==}
+
   '@types/node@18.19.130':
     resolution: {integrity: sha512-GRaXQx6jGfL8sKfaIDD6OupbIHBr9jv7Jnaml9tB7l4v068PAOXqfcujMMo5PhbIs6ggR1XODELqahT2R8v0fg==}
 
@@ -19305,6 +19513,12 @@ packages:
     resolution: {integrity: sha512-lrW200hZdbfRtztbygyaq/6jP6AKE8qQN2KvPcJ+x7wiD038YtnYtZ82IMNJ69GJibV7bwL3y9FgK+5w/pYt6g==}
     cpu: [x64]
     os: [win32]
+
+  '@uploadthing/mime-types@0.3.6':
+    resolution: {integrity: sha512-t3tTzgwFV9+1D7lNDYc7Lr7kBwotHaX0ZsvoCGe7xGnXKo9z0jG2Sjl/msll12FeoLj77nyhsxevXyGpQDBvLg==}
+
+  '@uploadthing/shared@7.1.10':
+    resolution: {integrity: sha512-R/XSA3SfCVnLIzFpXyGaKPfbwlYlWYSTuGjTFHuJhdAomuBuhopAHLh2Ois5fJibAHzi02uP1QCKbgTAdmArqg==}
 
   '@vercel/blob@2.3.3':
     resolution: {integrity: sha512-MtD7VLo6hU07eHR7bmk5SIMD290q574UaNYTe46qeyRT+hWrCy26CoAqfd7PnIefVXvRehRZBzukxuTO9iGTVg==}
@@ -20877,6 +21091,10 @@ packages:
   bowser@2.14.1:
     resolution: {integrity: sha512-tzPjzCxygAKWFOJP011oxFHs57HzIhOEracIgAePE4pqB3LikALKnSzUyU4MGs9/iCEUuHlAJTjTc5M+u7YEGg==}
 
+  box-typescript-sdk-gen@1.19.1:
+    resolution: {integrity: sha512-EE65DdNCSOIqUx5bV8AczL4JbrLbyhdXOXmqWXYvslJVfzeMH583g2TsKESmJSWM800a74F3BzfLm42WYRCTzw==}
+    engines: {node: '>=16.0.0'}
+
   boxen@7.0.0:
     resolution: {integrity: sha512-j//dBVuyacJbvW+tvZ9HuH03fZ46QcaKvvhZickZqtB271DxJ7SNRSNxrV/dZX0085m7hISRZWbzWlJvx/rHSg==}
     engines: {node: '>=14.16'}
@@ -22366,6 +22584,12 @@ packages:
     resolution: {integrity: sha512-pYxfDYpued//QpnLIm4Avk7rsNtAtQkUES2cwAYSvD/wd2pKD71gN2Ebj3e7klzXwjocvE8c5vx/1fxwpqmSxA==}
     engines: {node: '>=4'}
 
+  dropbox@10.34.0:
+    resolution: {integrity: sha512-5jb5/XzU0fSnq36/hEpwT5/QIep7MgqKuxghEG44xCu7HruOAjPdOb3x0geXv5O/hd0nHpQpWO+r5MjYTpMvJg==}
+    engines: {node: '>=0.10.3'}
+    peerDependencies:
+      '@types/node-fetch': ^2.5.7
+
   dunder-proto@1.0.1:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
     engines: {node: '>= 0.4'}
@@ -23736,6 +23960,9 @@ packages:
     resolution: {integrity: sha512-mBxmNbVyjg1LQIIpgO8hN+ybWBgDQK8qjht+EbrTCGmmPV/sc7RF1i9stPTD6bpvXZywBdrwRYxhSdJv867L6A==}
     engines: {node: '>=0.10.0'}
 
+  find-my-way-ts@0.1.6:
+    resolution: {integrity: sha512-a85L9ZoXtNAey3Y6Z+eBWW658kO/MwR7zIafkIUPUMf3isZG0NCs2pjW2wtjxAKuJPxMAsHUIP4ZPGv0o5gyTA==}
+
   find-my-way@9.5.0:
     resolution: {integrity: sha512-VW2RfnmscZO5KgBY5XVyKREMW5nMZcxDy+buTOsL+zIPnBlbKm+00sgzoQzq1EVh4aALZLfKdwv6atBGcjvjrQ==}
     engines: {node: '>=20'}
@@ -24382,6 +24609,10 @@ packages:
     resolution: {integrity: sha512-eAmLkjDjAFCVXg7A1unxHsLf961m6y17QFqXqAXGj/gVkKFrEICfStRfwUlGNfeCEjNRa32JEWOUTlYXPyyKvA==}
     engines: {node: '>=14'}
 
+  googleapis-common@8.0.1:
+    resolution: {integrity: sha512-eCzNACUXPb1PW5l0ULTzMHaL/ltPRADoPgjBlT8jWsTbxkCp6siv+qKJ/1ldaybCthGwsYFYallF7u9AkU4L+A==}
+    engines: {node: '>=18.0.0'}
+
   gopd@1.2.0:
     resolution: {integrity: sha512-ZUKRh6/kUFoAiTAtTYPZJ3hw9wNxx+BIBOijnlG9PnrJsCcSjs1wyyD6vJpaYtgnzDrKYRSqf3OO6Rfa93xsRg==}
     engines: {node: '>= 0.4'}
@@ -24506,6 +24737,9 @@ packages:
   has-yarn@3.0.0:
     resolution: {integrity: sha512-IrsVwUHhEULx3R8f/aA8AHuEzAorplsab/v8HBzEiIukwq5i/EC+xmOW+HfP1OaDP+2JkgT1yILHN2O3UFIbcA==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
+
+  hash-wasm@4.12.0:
+    resolution: {integrity: sha512-+/2B2rYLb48I/evdOIhP+K/DD2ca2fgBjp6O+GBEnCDk2e4rpeXIK8GvIyRPjTezgmWn9gmKwkQjjx6BtqDHVQ==}
 
   hasha@5.2.2:
     resolution: {integrity: sha512-Hrp5vIK/xr5SkeN2onO32H0MgNZ0f17HRNH39WfL0SYUNOTZ5Lz1TJ8Pajo/87dYGEFlLMm7mIc/k/s6Bvz9HQ==}
@@ -24849,6 +25083,10 @@ packages:
         optional: true
       rrule:
         optional: true
+
+  iceberg-js@0.8.1:
+    resolution: {integrity: sha512-1dhVQZXhcHje7798IVM+xoo/1ZdVfzOMIc8/rgVSijRK38EDqOJoGula9N/8ZI5RD8QTxNQtK/Gozpr+qUqRRA==}
+    engines: {node: '>=20.0.0'}
 
   iconv-lite@0.4.24:
     resolution: {integrity: sha512-v3MXnZAcvnywkTUEZomIActle7RXXeedOR31wwl7VlyoXO4Qi9arvSenNQWne1TcRwhCL1HwLI21bEqdpj8/rA==}
@@ -25708,6 +25946,9 @@ packages:
   joi@17.13.3:
     resolution: {integrity: sha512-otDA4ldcIx+ZXsKHWmp0YizCweVRZG96J10b0FevjfuncLO1oX59THoAmHkNubYJ+9gWsYsp5k8v4ib6oDv1fA==}
 
+  jose@5.10.0:
+    resolution: {integrity: sha512-s+3Al/p9g32Iq+oqXxkW//7jk2Vig6FF1CFqzVXoTUXt2qz89YWbL+OwS17NFYEvxC35n0FKeGO2LGYSxeM2Gg==}
+
   jose@6.2.2:
     resolution: {integrity: sha512-d7kPDd34KO/YnzaDOlikGpOurfF0ByC2sEV4cANCtdqLlTfBlw2p14O/5d/zv40gJPbIQxfES3nSx1/oYNyuZQ==}
 
@@ -25805,6 +26046,10 @@ packages:
 
   json-schema-ref-resolver@3.0.0:
     resolution: {integrity: sha512-hOrZIVL5jyYFjzk7+y7n5JDzGlU8rfWDuYyHwGa2WA8/pcmMHezp2xsVwxrebD/Q9t8Nc5DboieySDpCp4WG4A==}
+
+  json-schema-to-ts@3.1.1:
+    resolution: {integrity: sha512-+DWg8jCJG2TEnpy7kOm/7/AxaYoaRbjVB4LFZLySZlWn8exGs3A4OLJR966cVvU26N7X9TWxl+Jsw7dzAqKT6g==}
+    engines: {node: '>=16'}
 
   json-schema-traverse@0.4.1:
     resolution: {integrity: sha512-xbbCH5dCYU5T8LcEhhuh7HJ88HXuW3qsI3Y0zOZFKfZEHcpWiHU/Jxzk629Brsab/mMiHQti9wMP+845RPe3Vg==}
@@ -27347,6 +27592,13 @@ packages:
   ms@2.1.3:
     resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
 
+  msgpackr-extract@3.0.3:
+    resolution: {integrity: sha512-P0efT1C9jIdVRefqjzOQ9Xml57zpOXnIuS+csaB4MdZbTdmGDLo8XhzBG1N7aO11gKDDkJvBLULeFTo46wwreA==}
+    hasBin: true
+
+  msgpackr@1.11.12:
+    resolution: {integrity: sha512-RBdJ1Un7yGlXWajrkxcSa93nvQ0w4zBf60c0yYv7YtBelP8H2FA7XsfBbMHtXKXUMUxH7zV3Zuozh+kUQWhHvg==}
+
   msw@2.14.3:
     resolution: {integrity: sha512-kk8G5cocVlJ4wsKMGZegn2H6XLOEKjbA+nSJE2354e/SRp4mDicCHUYnMXpymzVcVDCs+GUAsmNqSn+yHv4T2A==}
     engines: {node: '>=18'}
@@ -27359,6 +27611,9 @@ packages:
 
   muggle-string@0.4.1:
     resolution: {integrity: sha512-VNTrAak/KhO2i8dqqnqnAHOa3cYBwXEZe9h+D5h/1ZqFSTEFHdM65lR7RoIqq3tBBYavsOXV84NoHXZ0AkPyqQ==}
+
+  multipasta@0.2.7:
+    resolution: {integrity: sha512-KPA58d68KgGil15oDqXjkUBEBYc00XvbPj5/X+dyzeo/lWm9Nc25pQRlf1D+gv4OpK7NM0J1odrbu9JNNGvynA==}
 
   mute-stream@0.0.8:
     resolution: {integrity: sha512-nnbWWOkoWyUsTjKrhgD0dcz22mdkSnpYqbEjIm2nhwhuxlSkpywJmBo8h0ZqJdkp73mb90SssHkN4rsRaBAfAA==}
@@ -27624,6 +27879,10 @@ packages:
   node-forge@1.4.0:
     resolution: {integrity: sha512-LarFH0+6VfriEhqMMcLX2F7SwSXeWwnEAJEsYm5QKWchiVYVvJyV9v7UDvUv+w5HO23ZpQTXDv/GxdDdMyOuoQ==}
     engines: {node: '>= 6.13.0'}
+
+  node-gyp-build-optional-packages@5.2.2:
+    resolution: {integrity: sha512-s+w+rBWnpTMwSFbaE0UXsRlg7hU4FjekKU4eyAih5T8nJuNZT1nNsskXpxmeqSK9UzkBl6UgRlnKc8hz8IEqOw==}
+    hasBin: true
 
   node-gyp-build@4.8.4:
     resolution: {integrity: sha512-LA4ZjwlnUblHVgq0oBF3Jl/6h/Nvs5fzBLwdEF4nuxnFdsfajde4WfxtJr3CaiH+F6ewcIB/q4jQ4UzPyid+CQ==}
@@ -28332,6 +28591,9 @@ packages:
   parseurl@1.3.3:
     resolution: {integrity: sha512-CiyeOxFT/JZyN5m0z9PfXw4SCBJ6Sygz1Dpl0wqjlhDEGGBP1GnsUVEL0p63hoG1fcj3fHynXi9NYO4nWOL+qQ==}
     engines: {node: '>= 0.8'}
+
+  partial-json@0.1.7:
+    resolution: {integrity: sha512-Njv/59hHaokb/hRUjce3Hdv12wd60MtM9Z5Olmn+nehe0QDAsRtRbJPvJ0Z91TusF0SuZRIvnM+S4l6EIP8leA==}
 
   passive-voice@0.1.0:
     resolution: {integrity: sha512-Pj9iwzXw4bKEtdugGYm92jT4tnsj+xrTSkHFEM4bn6fefqbFdZi49tZMmGIZ91aIQTyFtMUww7O2qYaZKAsDag==}
@@ -30661,6 +30923,9 @@ packages:
   sprintf-js@1.0.3:
     resolution: {integrity: sha512-D9cPgkvLlV3t3IzL0D0YLvGA9Ahk4PcvVwUbN0dSGr1aP0Nrt4AEnTUbuGvquEC0mA64Gqt1fzirlRs5ibXx8g==}
 
+  sqids@0.3.0:
+    resolution: {integrity: sha512-lOQK1ucVg+W6n3FhRwwSeUijxe93b51Bfz5PMRMihVf1iVkl82ePQG7V5vwrhzB11v0NtsR25PSZRGiSomJaJw==}
+
   sql-escaper@1.3.3:
     resolution: {integrity: sha512-BsTCV265VpTp8tm1wyIm1xqQCS+Q9NHx2Sr+WcnUrgLrQ6yiDIvHYJV5gHxsj1lMBy2zm5twLaZao8Jd+S8JJw==}
     engines: {bun: '>=1.0.0', deno: '>=2.0.0', node: '>=12.0.0'}
@@ -31566,6 +31831,9 @@ packages:
   truncate-utf8-bytes@1.0.2:
     resolution: {integrity: sha512-95Pu1QXQvruGEhv62XCMO3Mm90GscOCClvrIUwCM0PYOXK3kaF3l3sIHxx71ThJfcbM2O5Au6SO3AWCSEfW4mQ==}
 
+  ts-algebra@2.0.0:
+    resolution: {integrity: sha512-FPAhNPFMrkwz76P7cdjdmiShwMynZYN6SgOujD1urY4oNm80Ou9oMdmbR45LotcKOXoy7wSmHkRFE6Mxbrhefw==}
+
   ts-api-utils@2.5.0:
     resolution: {integrity: sha512-OJ/ibxhPlqrMM0UiNHJ/0CKQkoKF243/AEmplt3qpRgkW8VG7IfOS41h7V8TjITqdByHzrjcS/2si+y4lIh8NA==}
     engines: {node: '>=18.12'}
@@ -32283,6 +32551,27 @@ packages:
   update-notifier@6.0.2:
     resolution: {integrity: sha512-EDxhTEVPZZRLWYcJ4ZXjGFN0oP7qYvbXWzEgRm/Yql4dHX5wDbvh89YHP6PK1lzZJYrMtXUuZZz8XGK+U6U1og==}
     engines: {node: '>=14.16'}
+
+  uploadthing@7.7.4:
+    resolution: {integrity: sha512-rlK/4JWHW5jP30syzWGBFDDXv3WJDdT8gn9OoxRJmXLoXi94hBmyyjxihGlNrKhBc81czyv8TkzMioe/OuKGfA==}
+    engines: {node: '>=18.13.0'}
+    peerDependencies:
+      express: '>=4.22.0'
+      fastify: '*'
+      h3: '>=1.15.9'
+      next: '*'
+      tailwindcss: ^3.0.0 || ^4.0.0-beta.0
+    peerDependenciesMeta:
+      express:
+        optional: true
+      fastify:
+        optional: true
+      h3:
+        optional: true
+      next:
+        optional: true
+      tailwindcss:
+        optional: true
 
   uqr@0.1.3:
     resolution: {integrity: sha512-0rjE8iEJe4YmT9TOhwsZtqCMRLc5DXZUI2UEYUUg63ikBkqqE5EYWaI0etFe/5KUcmcYwLih2RND1kq+hrUJXA==}
@@ -33363,6 +33652,10 @@ snapshots:
   '@actions/io@3.0.2': {}
 
   '@adobe/css-tools@4.4.4': {}
+
+  '@ag-ui/core@0.0.49':
+    dependencies:
+      zod: 3.25.76
 
   '@ai-sdk/anthropic@3.0.75(zod@4.4.3)':
     dependencies:
@@ -34470,6 +34763,54 @@ snapshots:
     dependencies:
       package-manager-detector: 1.6.0
       tinyexec: 1.1.2
+
+  '@anthropic-ai/claude-agent-sdk-darwin-arm64@0.2.139':
+    optional: true
+
+  '@anthropic-ai/claude-agent-sdk-darwin-x64@0.2.139':
+    optional: true
+
+  '@anthropic-ai/claude-agent-sdk-linux-arm64-musl@0.2.139':
+    optional: true
+
+  '@anthropic-ai/claude-agent-sdk-linux-arm64@0.2.139':
+    optional: true
+
+  '@anthropic-ai/claude-agent-sdk-linux-x64-musl@0.2.139':
+    optional: true
+
+  '@anthropic-ai/claude-agent-sdk-linux-x64@0.2.139':
+    optional: true
+
+  '@anthropic-ai/claude-agent-sdk-win32-arm64@0.2.139':
+    optional: true
+
+  '@anthropic-ai/claude-agent-sdk-win32-x64@0.2.139':
+    optional: true
+
+  '@anthropic-ai/claude-agent-sdk@0.2.139(zod@4.4.3)':
+    dependencies:
+      '@anthropic-ai/sdk': 0.81.0(zod@4.4.3)
+      '@modelcontextprotocol/sdk': 1.29.0(zod@4.4.3)
+      zod: 4.4.3
+    optionalDependencies:
+      '@anthropic-ai/claude-agent-sdk-darwin-arm64': 0.2.139
+      '@anthropic-ai/claude-agent-sdk-darwin-x64': 0.2.139
+      '@anthropic-ai/claude-agent-sdk-linux-arm64': 0.2.139
+      '@anthropic-ai/claude-agent-sdk-linux-arm64-musl': 0.2.139
+      '@anthropic-ai/claude-agent-sdk-linux-x64': 0.2.139
+      '@anthropic-ai/claude-agent-sdk-linux-x64-musl': 0.2.139
+      '@anthropic-ai/claude-agent-sdk-win32-arm64': 0.2.139
+      '@anthropic-ai/claude-agent-sdk-win32-x64': 0.2.139
+    transitivePeerDependencies:
+      - '@cfworker/json-schema'
+      - supports-color
+
+  '@anthropic-ai/sdk@0.81.0(zod@4.4.3)':
+    dependencies:
+      json-schema-to-ts: 3.1.1
+    optionalDependencies:
+      zod: 4.4.3
 
   '@apidevtools/json-schema-ref-parser@14.0.1':
     dependencies:
@@ -35778,6 +36119,11 @@ snapshots:
     dependencies:
       css-tree: 3.2.1
 
+  '@bunny.net/storage-sdk@0.3.1':
+    dependencies:
+      dotenv: 16.6.1
+      zod: 3.25.76
+
   '@cacheable/memory@2.0.8':
     dependencies:
       '@cacheable/utils': 2.4.1
@@ -36083,6 +36429,14 @@ snapshots:
       semver: 7.7.4
     optionalDependencies:
       eslint: 10.3.0(jiti@2.7.0)
+
+  '@effect/platform@0.90.3(effect@3.21.0)':
+    dependencies:
+      '@opentelemetry/semantic-conventions': 1.40.0
+      effect: 3.21.0
+      find-my-way-ts: 0.1.6
+      msgpackr: 1.11.12
+      multipasta: 0.2.7
 
   '@electric-sql/pglite@0.3.16': {}
 
@@ -36811,7 +37165,7 @@ snapshots:
 
   '@floating-ui/utils@0.2.11': {}
 
-  '@fuma-comment/react@1.4.2(@floating-ui/dom@1.7.6)(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(highlight.js@11.11.1)(lucide-react@1.14.0(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(typescript@6.0.3)':
+  '@fuma-comment/react@1.4.2(@floating-ui/dom@1.7.6)(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(highlight.js@11.11.1)(lucide-react@1.14.0(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(typescript@6.0.3)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(next@16.2.5(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.2.4))':
     dependencies:
       '@radix-ui/react-collapsible': 1.1.12(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       '@radix-ui/react-dialog': 1.1.15(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
@@ -36850,6 +37204,7 @@ snapshots:
       tippy.js: 6.3.7
     optionalDependencies:
       lucide-react: 1.14.0(react@19.2.6)
+      uploadthing: 7.7.4(express@5.2.1)(h3@1.15.11)(next@16.2.5(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.2.4)
     transitivePeerDependencies:
       - '@floating-ui/dom'
       - '@types/react'
@@ -36902,6 +37257,12 @@ snapshots:
     dependencies:
       '@gitbeaker/core': 43.8.0
       '@gitbeaker/requester-utils': 43.8.0
+
+  '@googleapis/drive@20.1.0':
+    dependencies:
+      googleapis-common: 8.0.1
+    transitivePeerDependencies:
+      - supports-color
 
   '@grpc/grpc-js@1.14.3':
     dependencies:
@@ -37846,6 +38207,11 @@ snapshots:
 
   '@mfederczuk/deeptools@2.1.0-rc01': {}
 
+  '@microsoft/microsoft-graph-client@3.0.7':
+    dependencies:
+      '@babel/runtime': 7.29.2
+      tslib: 2.8.1
+
   '@modelcontextprotocol/sdk@1.29.0(zod@3.25.76)':
     dependencies:
       '@hono/node-server': 2.0.1(hono@4.12.18)
@@ -37893,6 +38259,24 @@ snapshots:
   '@mongodb-js/saslprep@1.4.6':
     dependencies:
       sparse-bitfield: 3.0.3
+
+  '@msgpackr-extract/msgpackr-extract-darwin-arm64@3.0.3':
+    optional: true
+
+  '@msgpackr-extract/msgpackr-extract-darwin-x64@3.0.3':
+    optional: true
+
+  '@msgpackr-extract/msgpackr-extract-linux-arm64@3.0.3':
+    optional: true
+
+  '@msgpackr-extract/msgpackr-extract-linux-arm@3.0.3':
+    optional: true
+
+  '@msgpackr-extract/msgpackr-extract-linux-x64@3.0.3':
+    optional: true
+
+  '@msgpackr-extract/msgpackr-extract-win32-x64@3.0.3':
+    optional: true
 
   '@mswjs/interceptors@0.41.3':
     dependencies:
@@ -38265,7 +38649,7 @@ snapshots:
       uuid: 13.0.0
       write-file-atomic: 5.0.1
 
-  '@netlify/dev@4.18.1(@azure/storage-blob@12.31.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(rollup@4.60.3)(srvx@0.11.15)':
+  '@netlify/dev@4.18.1(@azure/storage-blob@12.31.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(rollup@4.60.3)(srvx@0.11.15)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(next@16.2.5(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.2.4))':
     dependencies:
       '@netlify/ai': 0.4.1
       '@netlify/blobs': 10.7.4
@@ -38275,7 +38659,7 @@ snapshots:
       '@netlify/edge-functions-dev': 1.0.16
       '@netlify/functions-dev': 1.2.6(rollup@4.60.3)
       '@netlify/headers': 2.1.8
-      '@netlify/images': 1.3.7(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.4)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(srvx@0.11.15)
+      '@netlify/images': 1.3.7(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.4)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(srvx@0.11.15)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(next@16.2.5(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.2.4))
       '@netlify/redirects': 3.1.10
       '@netlify/runtime': 4.1.20
       '@netlify/static': 3.1.7
@@ -38387,9 +38771,9 @@ snapshots:
     dependencies:
       '@netlify/headers-parser': 9.0.3
 
-  '@netlify/images@1.3.7(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.4)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(srvx@0.11.15)':
+  '@netlify/images@1.3.7(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.4)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(srvx@0.11.15)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(next@16.2.5(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.2.4))':
     dependencies:
-      ipx: 3.1.1(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.4)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(srvx@0.11.15)
+      ipx: 3.1.1(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.4)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(srvx@0.11.15)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(next@16.2.5(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.2.4))
     transitivePeerDependencies:
       - '@azure/app-configuration'
       - '@azure/cosmos'
@@ -38460,9 +38844,9 @@ snapshots:
 
   '@netlify/types@2.6.0': {}
 
-  '@netlify/vite-plugin-tanstack-start@1.3.9(@azure/storage-blob@12.31.0)(@tanstack/react-start@1.167.65(crossws@0.4.5(srvx@0.11.15))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4)))(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))(webpack@5.106.2(@swc/core@1.15.24)(esbuild@0.28.0)))(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(rollup@4.60.3)(srvx@0.11.15)(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))':
+  '@netlify/vite-plugin-tanstack-start@1.3.9(@azure/storage-blob@12.31.0)(@tanstack/react-start@1.167.65(crossws@0.4.5(srvx@0.11.15))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4)))(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))(webpack@5.106.2(@swc/core@1.15.24)(esbuild@0.28.0)))(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(rollup@4.60.3)(srvx@0.11.15)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(next@16.2.5(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.2.4))(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))':
     dependencies:
-      '@netlify/vite-plugin': 2.12.1(@azure/storage-blob@12.31.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(rollup@4.60.3)(srvx@0.11.15)(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))
+      '@netlify/vite-plugin': 2.12.1(@azure/storage-blob@12.31.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(rollup@4.60.3)(srvx@0.11.15)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(next@16.2.5(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.2.4))(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))
       vite: 8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4)
     optionalDependencies:
       '@tanstack/react-start': 1.167.65(crossws@0.4.5(srvx@0.11.15))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4)))(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))(webpack@5.106.2(@swc/core@1.15.24)(esbuild@0.28.0))
@@ -38494,9 +38878,9 @@ snapshots:
       - supports-color
       - uploadthing
 
-  '@netlify/vite-plugin@2.12.1(@azure/storage-blob@12.31.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(rollup@4.60.3)(srvx@0.11.15)(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))':
+  '@netlify/vite-plugin@2.12.1(@azure/storage-blob@12.31.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(rollup@4.60.3)(srvx@0.11.15)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(next@16.2.5(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.2.4))(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))':
     dependencies:
-      '@netlify/dev': 4.18.1(@azure/storage-blob@12.31.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(rollup@4.60.3)(srvx@0.11.15)
+      '@netlify/dev': 4.18.1(@azure/storage-blob@12.31.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(rollup@4.60.3)(srvx@0.11.15)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(next@16.2.5(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.2.4))
       '@netlify/dev-utils': 4.4.3
       dedent: 1.7.2
       vite: 8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4)
@@ -38767,7 +39151,7 @@ snapshots:
     transitivePeerDependencies:
       - magicast
 
-  '@nuxt/nitro-server@4.4.4(7648dd29a09dac2c287fa530e2fe30ba)':
+  '@nuxt/nitro-server@4.4.4(4e4d322d0f8eda5add264bf1475afee0)':
     dependencies:
       '@babel/plugin-syntax-typescript': 7.28.6(@babel/core@7.29.0)
       '@nuxt/devalue': 2.0.2
@@ -38785,8 +39169,8 @@ snapshots:
       impound: 1.1.5
       klona: 2.0.6
       mocked-exports: 0.1.1
-      nitropack: 2.13.4(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)
-      nuxt: 4.4.4(@azure/storage-blob@12.31.0)(@babel/core@7.29.0)(@babel/plugin-proposal-decorators@7.29.0(@babel/core@7.29.0))(@babel/plugin-syntax-jsx@7.28.6(@babel/core@7.29.0))(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@parcel/watcher@2.5.6)(@types/node@25.6.0)(@vercel/blob@2.3.3)(@vue/compiler-sfc@3.5.34)(aws4fetch@1.0.20)(cac@6.7.14)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(esbuild@0.28.0)(eslint@10.3.0(jiti@2.7.0))(ioredis@5.10.1)(lightningcss@1.32.0)(magicast@0.5.2)(meow@14.1.0)(mysql2@3.22.3(@types/node@25.6.0))(optionator@0.9.4)(rolldown@1.0.0-rc.18)(rollup-plugin-visualizer@7.0.1(rolldown@1.0.0-rc.18)(rollup@4.60.3))(rollup@4.60.3)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(typescript@6.0.3)(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))(vue-tsc@3.2.8(typescript@6.0.3))(yaml@2.8.4)
+      nitropack: 2.13.4(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.2.4))
+      nuxt: 4.4.4(@azure/storage-blob@12.31.0)(@babel/core@7.29.0)(@babel/plugin-proposal-decorators@7.29.0(@babel/core@7.29.0))(@babel/plugin-syntax-jsx@7.28.6(@babel/core@7.29.0))(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@parcel/watcher@2.5.6)(@types/node@25.6.0)(@vercel/blob@2.3.3)(@vue/compiler-sfc@3.5.34)(aws4fetch@1.0.20)(cac@6.7.14)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(esbuild@0.28.0)(eslint@10.3.0(jiti@2.7.0))(ioredis@5.10.1)(lightningcss@1.32.0)(magicast@0.5.2)(meow@14.1.0)(mysql2@3.22.3(@types/node@25.6.0))(optionator@0.9.4)(rolldown@1.0.0-rc.18)(rollup-plugin-visualizer@7.0.1(rolldown@1.0.0-rc.18)(rollup@4.60.3))(rollup@4.60.3)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(typescript@6.0.3)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.2.4))(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))(vue-tsc@3.2.8(typescript@6.0.3))(yaml@2.8.4)
       nypm: 0.6.6
       ohash: 2.0.11
       pathe: 2.0.3
@@ -38794,7 +39178,7 @@ snapshots:
       std-env: 4.1.0
       ufo: 1.6.4
       unctx: 2.5.0
-      unstorage: 1.17.5(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.4)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)
+      unstorage: 1.17.5(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.4)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.2.4))
       vue: 3.5.34(typescript@6.0.3)
       vue-bundle-renderer: 2.2.0
       vue-devtools-stub: 0.1.0
@@ -38839,7 +39223,7 @@ snapshots:
       - uploadthing
       - xml2js
 
-  '@nuxt/nitro-server@4.4.4(cbdd79344f2d480ea25fb498b8600537)':
+  '@nuxt/nitro-server@4.4.4(74a5b8043cb2dc8f57c4cc962420d025)':
     dependencies:
       '@babel/plugin-syntax-typescript': 7.28.6(@babel/core@7.29.0)
       '@nuxt/devalue': 2.0.2
@@ -38857,8 +39241,8 @@ snapshots:
       impound: 1.1.5
       klona: 2.0.6
       mocked-exports: 0.1.1
-      nitropack: 2.13.4(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)
-      nuxt: 4.4.4(@azure/storage-blob@12.31.0)(@babel/core@7.29.0)(@babel/plugin-proposal-decorators@7.29.0(@babel/core@7.29.0))(@babel/plugin-syntax-jsx@7.28.6(@babel/core@7.29.0))(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@parcel/watcher@2.5.6)(@types/node@25.6.0)(@vercel/blob@2.3.3)(@vue/compiler-sfc@3.5.34)(aws4fetch@1.0.20)(cac@6.7.14)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(esbuild@0.28.0)(eslint@10.3.0(jiti@2.7.0))(ioredis@5.10.1)(lightningcss@1.32.0)(magicast@0.5.2)(meow@14.1.0)(mysql2@3.22.3(@types/node@25.6.0))(optionator@0.9.4)(rolldown@1.0.0-rc.18)(rollup-plugin-visualizer@7.0.1(rolldown@1.0.0-rc.18)(rollup@4.60.3))(rollup@4.60.3)(terser@5.46.1)(tsx@4.21.0)(typescript@6.0.3)(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))(vue-tsc@3.2.8(typescript@6.0.3))(yaml@2.8.4)
+      nitropack: 2.13.4(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.2.4))
+      nuxt: 4.4.4(@azure/storage-blob@12.31.0)(@babel/core@7.29.0)(@babel/plugin-proposal-decorators@7.29.0(@babel/core@7.29.0))(@babel/plugin-syntax-jsx@7.28.6(@babel/core@7.29.0))(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@parcel/watcher@2.5.6)(@types/node@25.6.0)(@vercel/blob@2.3.3)(@vue/compiler-sfc@3.5.34)(aws4fetch@1.0.20)(cac@6.7.14)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(esbuild@0.28.0)(eslint@10.3.0(jiti@2.7.0))(ioredis@5.10.1)(lightningcss@1.32.0)(magicast@0.5.2)(meow@14.1.0)(mysql2@3.22.3(@types/node@25.6.0))(optionator@0.9.4)(rolldown@1.0.0-rc.18)(rollup-plugin-visualizer@7.0.1(rolldown@1.0.0-rc.18)(rollup@4.60.3))(rollup@4.60.3)(terser@5.46.1)(tsx@4.21.0)(typescript@6.0.3)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.2.4))(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))(vue-tsc@3.2.8(typescript@6.0.3))(yaml@2.8.4)
       nypm: 0.6.6
       ohash: 2.0.11
       pathe: 2.0.3
@@ -38866,7 +39250,7 @@ snapshots:
       std-env: 4.1.0
       ufo: 1.6.4
       unctx: 2.5.0
-      unstorage: 1.17.5(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.4)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)
+      unstorage: 1.17.5(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.4)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.2.4))
       vue: 3.5.34(typescript@6.0.3)
       vue-bundle-renderer: 2.2.0
       vue-devtools-stub: 0.1.0
@@ -38928,7 +39312,7 @@ snapshots:
       rc9: 3.0.1
       std-env: 4.1.0
 
-  '@nuxt/vite-builder@4.4.4(c1e3cebe6414fb9d382a7a1bd75a662a)':
+  '@nuxt/vite-builder@4.4.4(84e1d8ec17f038463aac7170f2b1a954)':
     dependencies:
       '@nuxt/kit': 4.4.4(magicast@0.5.2)
       '@rollup/plugin-replace': 6.0.3(rollup@4.60.3)
@@ -38946,7 +39330,7 @@ snapshots:
       magic-string: 0.30.21
       mlly: 1.8.2
       mocked-exports: 0.1.1
-      nuxt: 4.4.4(@azure/storage-blob@12.31.0)(@babel/core@7.29.0)(@babel/plugin-proposal-decorators@7.29.0(@babel/core@7.29.0))(@babel/plugin-syntax-jsx@7.28.6(@babel/core@7.29.0))(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@parcel/watcher@2.5.6)(@types/node@25.6.0)(@vercel/blob@2.3.3)(@vue/compiler-sfc@3.5.34)(aws4fetch@1.0.20)(cac@6.7.14)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(esbuild@0.28.0)(eslint@10.3.0(jiti@2.7.0))(ioredis@5.10.1)(lightningcss@1.32.0)(magicast@0.5.2)(meow@14.1.0)(mysql2@3.22.3(@types/node@25.6.0))(optionator@0.9.4)(rolldown@1.0.0-rc.18)(rollup-plugin-visualizer@7.0.1(rolldown@1.0.0-rc.18)(rollup@4.60.3))(rollup@4.60.3)(terser@5.46.1)(tsx@4.21.0)(typescript@6.0.3)(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))(vue-tsc@3.2.8(typescript@6.0.3))(yaml@2.8.4)
+      nuxt: 4.4.4(@azure/storage-blob@12.31.0)(@babel/core@7.29.0)(@babel/plugin-proposal-decorators@7.29.0(@babel/core@7.29.0))(@babel/plugin-syntax-jsx@7.28.6(@babel/core@7.29.0))(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@parcel/watcher@2.5.6)(@types/node@25.6.0)(@vercel/blob@2.3.3)(@vue/compiler-sfc@3.5.34)(aws4fetch@1.0.20)(cac@6.7.14)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(esbuild@0.28.0)(eslint@10.3.0(jiti@2.7.0))(ioredis@5.10.1)(lightningcss@1.32.0)(magicast@0.5.2)(meow@14.1.0)(mysql2@3.22.3(@types/node@25.6.0))(optionator@0.9.4)(rolldown@1.0.0-rc.18)(rollup-plugin-visualizer@7.0.1(rolldown@1.0.0-rc.18)(rollup@4.60.3))(rollup@4.60.3)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(typescript@6.0.3)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.2.4))(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))(vue-tsc@3.2.8(typescript@6.0.3))(yaml@2.8.4)
       nypm: 0.6.6
       pathe: 2.0.3
       pkg-types: 2.3.1
@@ -38992,7 +39376,7 @@ snapshots:
       - vue-tsc
       - yaml
 
-  '@nuxt/vite-builder@4.4.4(d7f416e00808366eca055c0f94b6100c)':
+  '@nuxt/vite-builder@4.4.4(d3c64cce64ff31b0914463c8bd7300a8)':
     dependencies:
       '@nuxt/kit': 4.4.4(magicast@0.5.2)
       '@rollup/plugin-replace': 6.0.3(rollup@4.60.3)
@@ -39010,7 +39394,7 @@ snapshots:
       magic-string: 0.30.21
       mlly: 1.8.2
       mocked-exports: 0.1.1
-      nuxt: 4.4.4(@azure/storage-blob@12.31.0)(@babel/core@7.29.0)(@babel/plugin-proposal-decorators@7.29.0(@babel/core@7.29.0))(@babel/plugin-syntax-jsx@7.28.6(@babel/core@7.29.0))(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@parcel/watcher@2.5.6)(@types/node@25.6.0)(@vercel/blob@2.3.3)(@vue/compiler-sfc@3.5.34)(aws4fetch@1.0.20)(cac@6.7.14)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(esbuild@0.28.0)(eslint@10.3.0(jiti@2.7.0))(ioredis@5.10.1)(lightningcss@1.32.0)(magicast@0.5.2)(meow@14.1.0)(mysql2@3.22.3(@types/node@25.6.0))(optionator@0.9.4)(rolldown@1.0.0-rc.18)(rollup-plugin-visualizer@7.0.1(rolldown@1.0.0-rc.18)(rollup@4.60.3))(rollup@4.60.3)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(typescript@6.0.3)(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))(vue-tsc@3.2.8(typescript@6.0.3))(yaml@2.8.4)
+      nuxt: 4.4.4(@azure/storage-blob@12.31.0)(@babel/core@7.29.0)(@babel/plugin-proposal-decorators@7.29.0(@babel/core@7.29.0))(@babel/plugin-syntax-jsx@7.28.6(@babel/core@7.29.0))(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@parcel/watcher@2.5.6)(@types/node@25.6.0)(@vercel/blob@2.3.3)(@vue/compiler-sfc@3.5.34)(aws4fetch@1.0.20)(cac@6.7.14)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(esbuild@0.28.0)(eslint@10.3.0(jiti@2.7.0))(ioredis@5.10.1)(lightningcss@1.32.0)(magicast@0.5.2)(meow@14.1.0)(mysql2@3.22.3(@types/node@25.6.0))(optionator@0.9.4)(rolldown@1.0.0-rc.18)(rollup-plugin-visualizer@7.0.1(rolldown@1.0.0-rc.18)(rollup@4.60.3))(rollup@4.60.3)(terser@5.46.1)(tsx@4.21.0)(typescript@6.0.3)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.2.4))(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))(vue-tsc@3.2.8(typescript@6.0.3))(yaml@2.8.4)
       nypm: 0.6.6
       pathe: 2.0.3
       pkg-types: 2.3.1
@@ -39240,6 +39624,57 @@ snapshots:
       outvariant: 1.4.3
 
   '@open-draft/until@2.1.0': {}
+
+  '@openai/agents-core@0.11.4(ws@8.20.0)(zod@4.4.3)':
+    dependencies:
+      debug: 4.4.3(supports-color@8.1.1)
+      openai: 6.36.0(ws@8.20.0)(zod@4.4.3)
+    optionalDependencies:
+      '@modelcontextprotocol/sdk': 1.29.0(zod@4.4.3)
+      zod: 4.4.3
+    transitivePeerDependencies:
+      - '@cfworker/json-schema'
+      - supports-color
+      - ws
+
+  '@openai/agents-openai@0.11.4(ws@8.20.0)(zod@4.4.3)':
+    dependencies:
+      '@openai/agents-core': 0.11.4(ws@8.20.0)(zod@4.4.3)
+      debug: 4.4.3(supports-color@8.1.1)
+      openai: 6.36.0(ws@8.20.0)(zod@4.4.3)
+      zod: 4.4.3
+    transitivePeerDependencies:
+      - '@cfworker/json-schema'
+      - supports-color
+      - ws
+
+  '@openai/agents-realtime@0.11.4(zod@4.4.3)':
+    dependencies:
+      '@openai/agents-core': 0.11.4(ws@8.20.0)(zod@4.4.3)
+      '@types/ws': 8.18.1
+      debug: 4.4.3(supports-color@8.1.1)
+      ws: 8.20.0
+      zod: 4.4.3
+    transitivePeerDependencies:
+      - '@cfworker/json-schema'
+      - bufferutil
+      - supports-color
+      - utf-8-validate
+
+  '@openai/agents@0.11.4(ws@8.20.0)(zod@4.4.3)':
+    dependencies:
+      '@openai/agents-core': 0.11.4(ws@8.20.0)(zod@4.4.3)
+      '@openai/agents-openai': 0.11.4(ws@8.20.0)(zod@4.4.3)
+      '@openai/agents-realtime': 0.11.4(zod@4.4.3)
+      debug: 4.4.3(supports-color@8.1.1)
+      openai: 6.36.0(ws@8.20.0)(zod@4.4.3)
+      zod: 4.4.3
+    transitivePeerDependencies:
+      - '@cfworker/json-schema'
+      - bufferutil
+      - supports-color
+      - utf-8-validate
+      - ws
 
   '@opentelemetry/api-logs@0.203.0':
     dependencies:
@@ -42224,11 +42659,11 @@ snapshots:
     dependencies:
       solid-js: 1.9.12
 
-  '@solidjs/start@1.3.2(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vinxi@0.5.11(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@types/node@25.6.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))':
+  '@solidjs/start@1.3.2(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vinxi@0.5.11(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@types/node@25.6.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(uploadthing@7.7.4(express@5.2.1)(fastify@5.8.5)(h3@1.15.11)(next@16.2.5(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.2.4))(yaml@2.8.3))(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))':
     dependencies:
       '@tanstack/server-functions-plugin': 1.121.21(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
-      '@vinxi/plugin-directives': 0.5.1(vinxi@0.5.11(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@types/node@25.6.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
-      '@vinxi/server-components': 0.5.1(vinxi@0.5.11(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@types/node@25.6.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+      '@vinxi/plugin-directives': 0.5.1(vinxi@0.5.11(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@types/node@25.6.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(uploadthing@7.7.4(express@5.2.1)(fastify@5.8.5)(h3@1.15.11)(next@16.2.5(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.2.4))(yaml@2.8.3))
+      '@vinxi/server-components': 0.5.1(vinxi@0.5.11(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@types/node@25.6.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(uploadthing@7.7.4(express@5.2.1)(fastify@5.8.5)(h3@1.15.11)(next@16.2.5(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.2.4))(yaml@2.8.3))
       cookie-es: 2.0.1
       defu: 6.1.7
       error-stack-parser: 2.1.4
@@ -42240,7 +42675,7 @@ snapshots:
       source-map-js: 1.2.1
       terracotta: 1.1.0(solid-js@1.9.12)
       tinyglobby: 0.2.16(patch_hash=dd3579a67d9d131e5ddfa67e5cae3ee576e0235e36ada17ee6486cf037b67ea2)
-      vinxi: 0.5.11(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@types/node@25.6.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)
+      vinxi: 0.5.11(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@types/node@25.6.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(uploadthing@7.7.4(express@5.2.1)(fastify@5.8.5)(h3@1.15.11)(next@16.2.5(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.2.4))(yaml@2.8.3)
       vite-plugin-solid: 2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
     transitivePeerDependencies:
       - '@testing-library/jest-dom'
@@ -42248,11 +42683,11 @@ snapshots:
       - supports-color
       - vite
 
-  '@solidjs/start@1.3.2(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vinxi@0.5.11(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@types/node@25.6.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))(vite@8.0.11(@types/node@25.6.0)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))':
+  '@solidjs/start@1.3.2(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vinxi@0.5.11(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@types/node@25.6.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.2.4))(yaml@2.8.4))(vite@8.0.11(@types/node@25.6.0)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))':
     dependencies:
       '@tanstack/server-functions-plugin': 1.121.21(vite@8.0.11(@types/node@25.6.0)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))
-      '@vinxi/plugin-directives': 0.5.1(vinxi@0.5.11(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@types/node@25.6.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))
-      '@vinxi/server-components': 0.5.1(vinxi@0.5.11(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@types/node@25.6.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))
+      '@vinxi/plugin-directives': 0.5.1(vinxi@0.5.11(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@types/node@25.6.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.2.4))(yaml@2.8.4))
+      '@vinxi/server-components': 0.5.1(vinxi@0.5.11(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@types/node@25.6.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.2.4))(yaml@2.8.4))
       cookie-es: 2.0.1
       defu: 6.1.7
       error-stack-parser: 2.1.4
@@ -42264,7 +42699,7 @@ snapshots:
       source-map-js: 1.2.1
       terracotta: 1.1.0(solid-js@1.9.12)
       tinyglobby: 0.2.16(patch_hash=dd3579a67d9d131e5ddfa67e5cae3ee576e0235e36ada17ee6486cf037b67ea2)
-      vinxi: 0.5.11(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@types/node@25.6.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4)
+      vinxi: 0.5.11(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@types/node@25.6.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.2.4))(yaml@2.8.4)
       vite-plugin-solid: 2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vite@8.0.11(@types/node@25.6.0)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))
     transitivePeerDependencies:
       - '@testing-library/jest-dom'
@@ -42273,6 +42708,8 @@ snapshots:
       - vite
 
   '@speed-highlight/core@1.2.15': {}
+
+  '@standard-schema/spec@1.0.0-beta.4': {}
 
   '@standard-schema/spec@1.1.0': {}
 
@@ -42575,6 +43012,11 @@ snapshots:
       espree: 10.4.0
       estraverse: 5.3.0
       picomatch: 4.0.4(patch_hash=aef213b56c068f03c692caeca8dac2cf04441d233e02db33d063437ef609a9f5)
+
+  '@supabase/storage-js@2.105.4':
+    dependencies:
+      iceberg-js: 0.8.1
+      tslib: 2.8.1
 
   '@sveltejs/acorn-typescript@1.0.9(acorn@8.16.0)':
     dependencies:
@@ -43369,6 +43811,19 @@ snapshots:
       '@tailwindcss/oxide': 4.2.4
       tailwindcss: 4.2.4
       vite: 8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4)
+
+  '@tanstack/ai-event-client@0.3.0(@tanstack/ai@0.16.0(@opentelemetry/api@1.9.1))':
+    dependencies:
+      '@tanstack/ai': 0.16.0(@opentelemetry/api@1.9.1)
+      '@tanstack/devtools-event-client': 0.4.3
+
+  '@tanstack/ai@0.16.0(@opentelemetry/api@1.9.1)':
+    dependencies:
+      '@ag-ui/core': 0.0.49
+      '@tanstack/ai-event-client': 0.3.0(@tanstack/ai@0.16.0(@opentelemetry/api@1.9.1))
+      partial-json: 0.1.7
+    optionalDependencies:
+      '@opentelemetry/api': 1.9.1
 
   '@tanstack/devtools-client@0.0.6':
     dependencies:
@@ -44723,6 +45178,11 @@ snapshots:
     dependencies:
       '@types/unist': 2.0.11
 
+  '@types/node-fetch@2.6.13':
+    dependencies:
+      '@types/node': 25.6.0
+      form-data: 4.0.5
+
   '@types/node@18.19.130':
     dependencies:
       undici-types: 5.26.5
@@ -45292,6 +45752,14 @@ snapshots:
   '@unrs/resolver-binding-win32-x64-msvc@1.11.1':
     optional: true
 
+  '@uploadthing/mime-types@0.3.6': {}
+
+  '@uploadthing/shared@7.1.10':
+    dependencies:
+      '@uploadthing/mime-types': 0.3.6
+      effect: 3.21.0
+      sqids: 0.3.0
+
   '@vercel/blob@2.3.3':
     dependencies:
       async-retry: 1.3.3
@@ -45367,7 +45835,7 @@ snapshots:
       untun: 0.1.3
       uqr: 0.1.3
 
-  '@vinxi/plugin-directives@0.5.1(vinxi@0.5.11(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@types/node@25.6.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))':
+  '@vinxi/plugin-directives@0.5.1(vinxi@0.5.11(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@types/node@25.6.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(uploadthing@7.7.4(express@5.2.1)(fastify@5.8.5)(h3@1.15.11)(next@16.2.5(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.2.4))(yaml@2.8.3))':
     dependencies:
       '@babel/parser': 7.29.3
       acorn: 8.16.0
@@ -45378,9 +45846,9 @@ snapshots:
       magicast: 0.2.11
       recast: 0.23.11
       tslib: 2.8.1
-      vinxi: 0.5.11(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@types/node@25.6.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)
+      vinxi: 0.5.11(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@types/node@25.6.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(uploadthing@7.7.4(express@5.2.1)(fastify@5.8.5)(h3@1.15.11)(next@16.2.5(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.2.4))(yaml@2.8.3)
 
-  '@vinxi/plugin-directives@0.5.1(vinxi@0.5.11(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@types/node@25.6.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))':
+  '@vinxi/plugin-directives@0.5.1(vinxi@0.5.11(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@types/node@25.6.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.2.4))(yaml@2.8.4))':
     dependencies:
       '@babel/parser': 7.29.3
       acorn: 8.16.0
@@ -45391,29 +45859,29 @@ snapshots:
       magicast: 0.2.11
       recast: 0.23.11
       tslib: 2.8.1
-      vinxi: 0.5.11(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@types/node@25.6.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4)
+      vinxi: 0.5.11(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@types/node@25.6.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.2.4))(yaml@2.8.4)
 
-  '@vinxi/server-components@0.5.1(vinxi@0.5.11(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@types/node@25.6.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))':
+  '@vinxi/server-components@0.5.1(vinxi@0.5.11(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@types/node@25.6.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(uploadthing@7.7.4(express@5.2.1)(fastify@5.8.5)(h3@1.15.11)(next@16.2.5(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.2.4))(yaml@2.8.3))':
     dependencies:
-      '@vinxi/plugin-directives': 0.5.1(vinxi@0.5.11(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@types/node@25.6.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+      '@vinxi/plugin-directives': 0.5.1(vinxi@0.5.11(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@types/node@25.6.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(uploadthing@7.7.4(express@5.2.1)(fastify@5.8.5)(h3@1.15.11)(next@16.2.5(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.2.4))(yaml@2.8.3))
       acorn: 8.16.0
       acorn-loose: 8.5.2
       acorn-typescript: 1.4.13(acorn@8.16.0)
       astring: 1.9.0
       magicast: 0.2.11
       recast: 0.23.11
-      vinxi: 0.5.11(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@types/node@25.6.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)
+      vinxi: 0.5.11(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@types/node@25.6.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(uploadthing@7.7.4(express@5.2.1)(fastify@5.8.5)(h3@1.15.11)(next@16.2.5(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.2.4))(yaml@2.8.3)
 
-  '@vinxi/server-components@0.5.1(vinxi@0.5.11(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@types/node@25.6.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))':
+  '@vinxi/server-components@0.5.1(vinxi@0.5.11(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@types/node@25.6.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.2.4))(yaml@2.8.4))':
     dependencies:
-      '@vinxi/plugin-directives': 0.5.1(vinxi@0.5.11(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@types/node@25.6.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))
+      '@vinxi/plugin-directives': 0.5.1(vinxi@0.5.11(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@types/node@25.6.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.2.4))(yaml@2.8.4))
       acorn: 8.16.0
       acorn-loose: 8.5.2
       acorn-typescript: 1.4.13(acorn@8.16.0)
       astring: 1.9.0
       magicast: 0.2.11
       recast: 0.23.11
-      vinxi: 0.5.11(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@types/node@25.6.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4)
+      vinxi: 0.5.11(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@types/node@25.6.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.2.4))(yaml@2.8.4)
 
   '@visulima/cerebro@3.0.0-alpha.11(@bomb.sh/tab@0.0.14(cac@6.7.14)(citty@0.2.2)(commander@14.0.3))(@visulima/boxen@packages+terminal+boxen)(@visulima/find-cache-dir@3.0.0-alpha.9)(@visulima/pail@4.0.0-alpha.11(@opentelemetry/api@1.9.1)(@sveltejs/kit@2.59.1(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.1.1(svelte@5.55.5(@typescript-eslint/types@8.59.2))(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4)))(svelte@5.55.5(@typescript-eslint/types@8.59.2))(typescript@6.0.3)(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4)))(elysia@1.4.28(@sinclair/typebox@0.34.49)(exact-mirror@1.0.0)(file-type@22.0.1)(openapi-types@12.1.3)(typescript@6.0.3))(express@4.22.1)(fastify@5.8.5)(hono@4.12.18)(next@16.2.5(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(rotating-file-stream@3.2.9))(github-slugger@2.0.0)':
     dependencies:
@@ -48104,6 +48572,20 @@ snapshots:
 
   bowser@2.14.1: {}
 
+  box-typescript-sdk-gen@1.19.1:
+    dependencies:
+      buffer: 6.0.3
+      form-data: 4.0.5
+      hash-wasm: 4.12.0
+      jose: 5.10.0
+      node-fetch: 2.7.0
+      proxy-agent: 6.5.0
+      tslib: 2.8.1
+      uuid: 9.0.1
+    transitivePeerDependencies:
+      - encoding
+      - supports-color
+
   boxen@7.0.0:
     dependencies:
       ansi-align: 3.0.1
@@ -49622,6 +50104,13 @@ snapshots:
 
   drange@1.1.1: {}
 
+  dropbox@10.34.0(@types/node-fetch@2.6.13):
+    dependencies:
+      '@types/node-fetch': 2.6.13
+      node-fetch: 2.7.0
+    transitivePeerDependencies:
+      - encoding
+
   dunder-proto@1.0.1:
     dependencies:
       call-bind-apply-helpers: 1.0.2
@@ -50179,7 +50668,7 @@ snapshots:
       eslint: 8.57.1
       eslint-plugin-react: 7.37.5(eslint@8.57.1)
 
-  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.2(eslint@10.3.0(jiti@2.7.0))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@10.3.0(jiti@2.7.0)))(eslint@8.57.1):
+  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.2(eslint@10.3.0(jiti@2.7.0))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1):
     dependencies:
       eslint: 8.57.1
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.59.2(eslint@10.3.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.3.0(jiti@2.7.0))
@@ -51745,6 +52234,8 @@ snapshots:
       fs-exists-sync: 0.1.0
       resolve-dir: 0.1.1
 
+  find-my-way-ts@0.1.6: {}
+
   find-my-way@9.5.0:
     dependencies:
       fast-deep-equal: 3.1.3
@@ -52451,6 +52942,16 @@ snapshots:
 
   google-logging-utils@1.1.3: {}
 
+  googleapis-common@8.0.1:
+    dependencies:
+      extend: 3.0.2
+      gaxios: 7.1.4
+      google-auth-library: 10.6.2
+      qs: 6.15.1
+      url-template: 2.0.8
+    transitivePeerDependencies:
+      - supports-color
+
   gopd@1.2.0: {}
 
   got@12.6.1:
@@ -52577,6 +53078,8 @@ snapshots:
       kind-of: 6.0.3
 
   has-yarn@3.0.0: {}
+
+  hash-wasm@4.12.0: {}
 
   hasha@5.2.2:
     dependencies:
@@ -53018,6 +53521,8 @@ snapshots:
       luxon: 3.7.2
       moment: 2.30.1
 
+  iceberg-js@0.8.1: {}
+
   iconv-lite@0.4.24:
     dependencies:
       safer-buffer: 2.1.2
@@ -53217,7 +53722,7 @@ snapshots:
 
   ipaddr.js@2.3.0: {}
 
-  ipx@3.1.1(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.4)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(srvx@0.11.15):
+  ipx@3.1.1(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.4)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(srvx@0.11.15)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(next@16.2.5(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.2.4)):
     dependencies:
       '@fastify/accept-negotiator': 2.0.1
       citty: 0.1.6
@@ -53233,7 +53738,7 @@ snapshots:
       sharp: 0.34.5
       svgo: 4.0.1
       ufo: 1.6.4
-      unstorage: 1.17.5(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.4)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)
+      unstorage: 1.17.5(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.4)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(next@16.2.5(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.2.4))
       xss: 1.0.15
     transitivePeerDependencies:
       - '@azure/app-configuration'
@@ -54109,6 +54614,8 @@ snapshots:
       '@sideway/formula': 3.0.1
       '@sideway/pinpoint': 2.0.0
 
+  jose@5.10.0: {}
+
   jose@6.2.2: {}
 
   jpeg-js@0.4.4: {}
@@ -54223,6 +54730,11 @@ snapshots:
   json-schema-ref-resolver@3.0.0:
     dependencies:
       dequal: 2.0.3
+
+  json-schema-to-ts@3.1.1:
+    dependencies:
+      '@babel/runtime': 7.29.2
+      ts-algebra: 2.0.0
 
   json-schema-traverse@0.4.1: {}
 
@@ -56709,6 +57221,22 @@ snapshots:
 
   ms@2.1.3: {}
 
+  msgpackr-extract@3.0.3:
+    dependencies:
+      node-gyp-build-optional-packages: 5.2.2
+    optionalDependencies:
+      '@msgpackr-extract/msgpackr-extract-darwin-arm64': 3.0.3
+      '@msgpackr-extract/msgpackr-extract-darwin-x64': 3.0.3
+      '@msgpackr-extract/msgpackr-extract-linux-arm': 3.0.3
+      '@msgpackr-extract/msgpackr-extract-linux-arm64': 3.0.3
+      '@msgpackr-extract/msgpackr-extract-linux-x64': 3.0.3
+      '@msgpackr-extract/msgpackr-extract-win32-x64': 3.0.3
+    optional: true
+
+  msgpackr@1.11.12:
+    optionalDependencies:
+      msgpackr-extract: 3.0.3
+
   msw@2.14.3(@types/node@25.6.0)(typescript@6.0.3):
     dependencies:
       '@inquirer/confirm': 6.0.12(@types/node@25.6.0)
@@ -56735,6 +57263,8 @@ snapshots:
       - '@types/node'
 
   muggle-string@0.4.1: {}
+
+  multipasta@0.2.7: {}
 
   mute-stream@0.0.8: {}
 
@@ -56889,7 +57419,7 @@ snapshots:
       just-extend: 6.2.0
       path-to-regexp: 8.4.2
 
-  nitro@3.0.260311-beta(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@netlify/runtime@4.1.20)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.2.0)(ioredis@5.10.1)(jiti@2.7.0)(lru-cache@11.3.6)(miniflare@4.20260504.0)(mongodb@7.2.0(@aws-sdk/credential-providers@3.1044.0)(socks@2.8.7))(mysql2@3.22.3(@types/node@25.6.0))(rollup@4.60.3)(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4)):
+  nitro@3.0.260311-beta(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@netlify/runtime@4.1.20)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.2.0)(ioredis@5.10.1)(jiti@2.7.0)(lru-cache@11.3.6)(miniflare@4.20260504.0)(mongodb@7.2.0(@aws-sdk/credential-providers@3.1044.0)(socks@2.8.7))(mysql2@3.22.3(@types/node@25.6.0))(rollup@4.60.3)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.2.4))(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4)):
     dependencies:
       consola: 3.4.2
       crossws: 0.4.5(srvx@0.11.15)
@@ -56904,7 +57434,7 @@ snapshots:
       rolldown: 1.0.0-rc.18
       srvx: 0.11.15
       unenv: 2.0.0-rc.24
-      unstorage: 2.0.0-alpha.7(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.4)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(chokidar@5.0.0)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(lru-cache@11.3.6)(mongodb@7.2.0(@aws-sdk/credential-providers@3.1044.0)(socks@2.8.7))(ofetch@2.0.0-alpha.3)
+      unstorage: 2.0.0-alpha.7(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.4)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(chokidar@5.0.0)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(lru-cache@11.3.6)(mongodb@7.2.0(@aws-sdk/credential-providers@3.1044.0)(socks@2.8.7))(ofetch@2.0.0-alpha.3)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.2.4))
     optionalDependencies:
       dotenv: 17.4.2
       giget: 3.2.0
@@ -56942,7 +57472,7 @@ snapshots:
       - sqlite3
       - uploadthing
 
-  nitropack@2.13.4(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15):
+  nitropack@2.13.4(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.2.4)):
     dependencies:
       '@cloudflare/kv-asset-handler': 0.4.2
       '@rollup/plugin-alias': 6.0.0(rollup@4.60.3)
@@ -57009,7 +57539,7 @@ snapshots:
       unenv: 2.0.0-rc.24
       unimport: 6.2.0(oxc-parser@0.128.0)
       unplugin-utils: 0.3.1
-      unstorage: 1.17.5(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.4)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)
+      unstorage: 1.17.5(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.4)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.2.4))
       untyped: 2.0.0
       unwasm: 0.5.3
       youch: 4.1.1
@@ -57141,6 +57671,11 @@ snapshots:
       formdata-polyfill: 4.0.10
 
   node-forge@1.4.0: {}
+
+  node-gyp-build-optional-packages@5.2.2:
+    dependencies:
+      detect-libc: 2.1.2
+    optional: true
 
   node-gyp-build@4.8.4: {}
 
@@ -57307,16 +57842,16 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  nuxt@4.4.4(@azure/storage-blob@12.31.0)(@babel/core@7.29.0)(@babel/plugin-proposal-decorators@7.29.0(@babel/core@7.29.0))(@babel/plugin-syntax-jsx@7.28.6(@babel/core@7.29.0))(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@parcel/watcher@2.5.6)(@types/node@25.6.0)(@vercel/blob@2.3.3)(@vue/compiler-sfc@3.5.34)(aws4fetch@1.0.20)(cac@6.7.14)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(esbuild@0.28.0)(eslint@10.3.0(jiti@2.7.0))(ioredis@5.10.1)(lightningcss@1.32.0)(magicast@0.5.2)(meow@14.1.0)(mysql2@3.22.3(@types/node@25.6.0))(optionator@0.9.4)(rolldown@1.0.0-rc.18)(rollup-plugin-visualizer@7.0.1(rolldown@1.0.0-rc.18)(rollup@4.60.3))(rollup@4.60.3)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(typescript@6.0.3)(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))(vue-tsc@3.2.8(typescript@6.0.3))(yaml@2.8.4):
+  nuxt@4.4.4(@azure/storage-blob@12.31.0)(@babel/core@7.29.0)(@babel/plugin-proposal-decorators@7.29.0(@babel/core@7.29.0))(@babel/plugin-syntax-jsx@7.28.6(@babel/core@7.29.0))(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@parcel/watcher@2.5.6)(@types/node@25.6.0)(@vercel/blob@2.3.3)(@vue/compiler-sfc@3.5.34)(aws4fetch@1.0.20)(cac@6.7.14)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(esbuild@0.28.0)(eslint@10.3.0(jiti@2.7.0))(ioredis@5.10.1)(lightningcss@1.32.0)(magicast@0.5.2)(meow@14.1.0)(mysql2@3.22.3(@types/node@25.6.0))(optionator@0.9.4)(rolldown@1.0.0-rc.18)(rollup-plugin-visualizer@7.0.1(rolldown@1.0.0-rc.18)(rollup@4.60.3))(rollup@4.60.3)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(typescript@6.0.3)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.2.4))(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))(vue-tsc@3.2.8(typescript@6.0.3))(yaml@2.8.4):
     dependencies:
       '@dxup/nuxt': 0.4.1(magicast@0.5.2)(typescript@6.0.3)
       '@nuxt/cli': 3.35.1(@nuxt/schema@4.4.4)(cac@6.7.14)(magicast@0.5.2)
       '@nuxt/devtools': 3.2.4(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))(vue@3.5.34(typescript@6.0.3))
       '@nuxt/kit': 4.4.4(magicast@0.5.2)
-      '@nuxt/nitro-server': 4.4.4(7648dd29a09dac2c287fa530e2fe30ba)
+      '@nuxt/nitro-server': 4.4.4(4e4d322d0f8eda5add264bf1475afee0)
       '@nuxt/schema': 4.4.4
       '@nuxt/telemetry': 2.8.0(@nuxt/kit@4.4.4(magicast@0.5.2))
-      '@nuxt/vite-builder': 4.4.4(d7f416e00808366eca055c0f94b6100c)
+      '@nuxt/vite-builder': 4.4.4(84e1d8ec17f038463aac7170f2b1a954)
       '@unhead/vue': 2.1.13(vue@3.5.34(typescript@6.0.3))
       '@vue/shared': 3.5.34
       chokidar: 5.0.0
@@ -57438,16 +57973,16 @@ snapshots:
       - xml2js
       - yaml
 
-  nuxt@4.4.4(@azure/storage-blob@12.31.0)(@babel/core@7.29.0)(@babel/plugin-proposal-decorators@7.29.0(@babel/core@7.29.0))(@babel/plugin-syntax-jsx@7.28.6(@babel/core@7.29.0))(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@parcel/watcher@2.5.6)(@types/node@25.6.0)(@vercel/blob@2.3.3)(@vue/compiler-sfc@3.5.34)(aws4fetch@1.0.20)(cac@6.7.14)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(esbuild@0.28.0)(eslint@10.3.0(jiti@2.7.0))(ioredis@5.10.1)(lightningcss@1.32.0)(magicast@0.5.2)(meow@14.1.0)(mysql2@3.22.3(@types/node@25.6.0))(optionator@0.9.4)(rolldown@1.0.0-rc.18)(rollup-plugin-visualizer@7.0.1(rolldown@1.0.0-rc.18)(rollup@4.60.3))(rollup@4.60.3)(terser@5.46.1)(tsx@4.21.0)(typescript@6.0.3)(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))(vue-tsc@3.2.8(typescript@6.0.3))(yaml@2.8.4):
+  nuxt@4.4.4(@azure/storage-blob@12.31.0)(@babel/core@7.29.0)(@babel/plugin-proposal-decorators@7.29.0(@babel/core@7.29.0))(@babel/plugin-syntax-jsx@7.28.6(@babel/core@7.29.0))(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@parcel/watcher@2.5.6)(@types/node@25.6.0)(@vercel/blob@2.3.3)(@vue/compiler-sfc@3.5.34)(aws4fetch@1.0.20)(cac@6.7.14)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(esbuild@0.28.0)(eslint@10.3.0(jiti@2.7.0))(ioredis@5.10.1)(lightningcss@1.32.0)(magicast@0.5.2)(meow@14.1.0)(mysql2@3.22.3(@types/node@25.6.0))(optionator@0.9.4)(rolldown@1.0.0-rc.18)(rollup-plugin-visualizer@7.0.1(rolldown@1.0.0-rc.18)(rollup@4.60.3))(rollup@4.60.3)(terser@5.46.1)(tsx@4.21.0)(typescript@6.0.3)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.2.4))(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))(vue-tsc@3.2.8(typescript@6.0.3))(yaml@2.8.4):
     dependencies:
       '@dxup/nuxt': 0.4.1(magicast@0.5.2)(typescript@6.0.3)
       '@nuxt/cli': 3.35.1(@nuxt/schema@4.4.4)(cac@6.7.14)(magicast@0.5.2)
       '@nuxt/devtools': 3.2.4(vite@8.0.11(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))(vue@3.5.34(typescript@6.0.3))
       '@nuxt/kit': 4.4.4(magicast@0.5.2)
-      '@nuxt/nitro-server': 4.4.4(cbdd79344f2d480ea25fb498b8600537)
+      '@nuxt/nitro-server': 4.4.4(74a5b8043cb2dc8f57c4cc962420d025)
       '@nuxt/schema': 4.4.4
       '@nuxt/telemetry': 2.8.0(@nuxt/kit@4.4.4(magicast@0.5.2))
-      '@nuxt/vite-builder': 4.4.4(c1e3cebe6414fb9d382a7a1bd75a662a)
+      '@nuxt/vite-builder': 4.4.4(d3c64cce64ff31b0914463c8bd7300a8)
       '@unhead/vue': 2.1.13(vue@3.5.34(typescript@6.0.3))
       '@vue/shared': 3.5.34
       chokidar: 5.0.0
@@ -58432,6 +58967,8 @@ snapshots:
       peberminta: 0.10.0
 
   parseurl@1.3.3: {}
+
+  partial-json@0.1.7: {}
 
   passive-voice@0.1.0: {}
 
@@ -61230,6 +61767,8 @@ snapshots:
 
   sprintf-js@1.0.3: {}
 
+  sqids@0.3.0: {}
+
   sql-escaper@1.3.3: {}
 
   srvx@0.11.15: {}
@@ -61262,7 +61801,7 @@ snapshots:
   standard@17.1.2(@typescript-eslint/parser@8.59.2(eslint@10.3.0(jiti@2.7.0))(typescript@6.0.3)):
     dependencies:
       eslint: 8.57.1
-      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.2(eslint@10.3.0(jiti@2.7.0))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@10.3.0(jiti@2.7.0)))(eslint@8.57.1)
+      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.2(eslint@10.3.0(jiti@2.7.0))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)
       eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@10.3.0(jiti@2.7.0)))(eslint@8.57.1)
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.59.2(eslint@10.3.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.3.0(jiti@2.7.0))
       eslint-plugin-n: 15.7.0(eslint@8.57.1)
@@ -62301,6 +62840,8 @@ snapshots:
     dependencies:
       utf8-byte-length: 1.0.5
 
+  ts-algebra@2.0.0: {}
+
   ts-api-utils@2.5.0(typescript@5.9.3):
     dependencies:
       typescript: 5.9.3
@@ -62988,7 +63529,7 @@ snapshots:
       has-value: 2.0.2
       isobject: 4.0.0
 
-  unstorage@1.17.5(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.4)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1):
+  unstorage@1.17.5(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.4)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(next@16.2.5(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.2.4)):
     dependencies:
       anymatch: 3.1.3
       chokidar: 5.0.0
@@ -63005,8 +63546,28 @@ snapshots:
       aws4fetch: 1.0.20
       db0: 0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0))
       ioredis: 5.10.1
+      uploadthing: 7.7.4(express@5.2.1)(h3@1.15.11)(next@16.2.5(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.2.4)
 
-  unstorage@2.0.0-alpha.7(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.4)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(chokidar@5.0.0)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(lru-cache@11.3.6)(mongodb@7.2.0(@aws-sdk/credential-providers@3.1044.0)(socks@2.8.7))(ofetch@2.0.0-alpha.3):
+  unstorage@1.17.5(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.4)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.2.4)):
+    dependencies:
+      anymatch: 3.1.3
+      chokidar: 5.0.0
+      destr: 2.0.5
+      h3: 1.15.11
+      lru-cache: 11.3.6
+      node-fetch-native: 1.6.7
+      ofetch: 1.5.1
+      ufo: 1.6.4
+    optionalDependencies:
+      '@azure/storage-blob': 12.31.0
+      '@netlify/blobs': 10.7.4
+      '@vercel/blob': 2.3.3
+      aws4fetch: 1.0.20
+      db0: 0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0))
+      ioredis: 5.10.1
+      uploadthing: 7.7.4(express@5.2.1)(fastify@5.8.5)(h3@1.15.11)(next@16.2.5(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.2.4)
+
+  unstorage@2.0.0-alpha.7(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.4)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(chokidar@5.0.0)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(lru-cache@11.3.6)(mongodb@7.2.0(@aws-sdk/credential-providers@3.1044.0)(socks@2.8.7))(ofetch@2.0.0-alpha.3)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.2.4)):
     optionalDependencies:
       '@azure/storage-blob': 12.31.0
       '@netlify/blobs': 10.7.4
@@ -63018,6 +63579,7 @@ snapshots:
       lru-cache: 11.3.6
       mongodb: 7.2.0(@aws-sdk/credential-providers@3.1044.0(aws-crt@1.31.0))(socks@2.8.7)
       ofetch: 2.0.0-alpha.3
+      uploadthing: 7.7.4(express@5.2.1)(fastify@5.8.5)(h3@1.15.11)(next@16.2.5(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.2.4)
 
   until-async@3.0.2: {}
 
@@ -63071,6 +63633,34 @@ snapshots:
       semver: 7.7.4
       semver-diff: 4.0.0
       xdg-basedir: 5.1.0
+
+  uploadthing@7.7.4(express@5.2.1)(fastify@5.8.5)(h3@1.15.11)(next@16.2.5(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.2.4):
+    dependencies:
+      '@effect/platform': 0.90.3(effect@3.21.0)
+      '@standard-schema/spec': 1.0.0-beta.4
+      '@uploadthing/mime-types': 0.3.6
+      '@uploadthing/shared': 7.1.10
+      effect: 3.21.0
+    optionalDependencies:
+      express: 5.2.1
+      fastify: 5.8.5
+      h3: 1.15.11
+      next: 16.2.5(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      tailwindcss: 4.2.4
+
+  uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(next@16.2.5(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.2.4):
+    dependencies:
+      '@effect/platform': 0.90.3(effect@3.21.0)
+      '@standard-schema/spec': 1.0.0-beta.4
+      '@uploadthing/mime-types': 0.3.6
+      '@uploadthing/shared': 7.1.10
+      effect: 3.21.0
+    optionalDependencies:
+      express: 5.2.1
+      h3: 1.15.11
+      next: 16.2.5(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      tailwindcss: 4.2.4
+    optional: true
 
   uqr@0.1.3: {}
 
@@ -63245,7 +63835,7 @@ snapshots:
       '@types/unist': 3.0.3
       vfile-message: 4.0.3
 
-  vinxi@0.5.11(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@types/node@25.6.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3):
+  vinxi@0.5.11(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@types/node@25.6.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(uploadthing@7.7.4(express@5.2.1)(fastify@5.8.5)(h3@1.15.11)(next@16.2.5(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.2.4))(yaml@2.8.3):
     dependencies:
       '@babel/core': 7.29.0
       '@babel/plugin-syntax-jsx': 7.28.6(@babel/core@7.29.0)
@@ -63266,7 +63856,7 @@ snapshots:
       hookable: 5.5.3
       http-proxy: 1.18.1
       micromatch: 4.0.8
-      nitropack: 2.13.4(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)
+      nitropack: 2.13.4(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.2.4))
       node-fetch-native: 1.6.7
       path-to-regexp: 6.3.0
       pathe: 1.1.2
@@ -63278,7 +63868,7 @@ snapshots:
       ufo: 1.6.4
       unctx: 2.5.0
       unenv: 1.10.0
-      unstorage: 1.17.5(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.4)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)
+      unstorage: 1.17.5(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.4)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.2.4))
       vite: 8.0.11(@types/node@25.6.0)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)
       zod: 4.4.3
     transitivePeerDependencies:
@@ -63329,7 +63919,7 @@ snapshots:
       - xml2js
       - yaml
 
-  vinxi@0.5.11(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@types/node@25.6.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4):
+  vinxi@0.5.11(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@types/node@25.6.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.2.4))(yaml@2.8.4):
     dependencies:
       '@babel/core': 7.29.0
       '@babel/plugin-syntax-jsx': 7.28.6(@babel/core@7.29.0)
@@ -63350,7 +63940,7 @@ snapshots:
       hookable: 5.5.3
       http-proxy: 1.18.1
       micromatch: 4.0.8
-      nitropack: 2.13.4(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)
+      nitropack: 2.13.4(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(mysql2@3.22.3(@types/node@25.6.0))(oxc-parser@0.128.0)(rolldown@1.0.0-rc.18)(srvx@0.11.15)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.2.4))
       node-fetch-native: 1.6.7
       path-to-regexp: 6.3.0
       pathe: 1.1.2
@@ -63362,7 +63952,7 @@ snapshots:
       ufo: 1.6.4
       unctx: 2.5.0
       unenv: 1.10.0
-      unstorage: 1.17.5(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.4)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)
+      unstorage: 1.17.5(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.4)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.3(@types/node@25.6.0)))(ioredis@5.10.1)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.2.4))
       vite: 8.0.11(@types/node@25.6.0)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4)
       zod: 4.4.3
     transitivePeerDependencies:

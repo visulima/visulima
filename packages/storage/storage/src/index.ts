@@ -1,3 +1,5 @@
+export type { DownloadResult, FileBody, FileObject, FilesOptions, ListOptions, SignedReadUrlOptions, SignedUploadUrlOptions, UploadOptions } from "./files";
+export { Files } from "./files";
 export { waitForStorage } from "./handler/utils/storage-utils";
 export { NoOpMetrics, OpenTelemetryMetrics } from "./metrics";
 export { default as DiskStorage } from "./storage/local/disk-storage";
@@ -23,7 +25,16 @@ export type {
 } from "./storage/types";
 export type { FileInit, FilePart, FileQuery, UploadEventType, UploadFile } from "./storage/utils/file";
 export { File, Metadata } from "./storage/utils/file";
-export { ErrorMap, ERRORS, isUploadError, throwErrorCode, UploadError } from "./utils/errors";
+export {
+    ErrorMap,
+    ERRORS,
+    extractHttpStatus,
+    isUploadError,
+    mapStatusToErrorCode,
+    throwErrorCode,
+    UploadError,
+    wrapStorageError,
+} from "./utils/errors";
 export type { RetryConfig } from "./utils/retry";
 export { createRetryWrapper, isRetryableError, retry } from "./utils/retry";
 export type {
