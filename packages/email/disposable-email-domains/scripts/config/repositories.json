@@ -118,5 +118,13 @@
         "blocklist_files": ["/refs/heads/master/disposable_email_providers.txt"],
         "description": "Security-focused disposable email providers from threat intelligence",
         "priority": 2
+    },
+    {
+        "name": "Castle Disposable Email Domains",
+        "url": "https://github.com/castle/disposable-email-domains",
+        "type": "git",
+        "blocklist_files": ["/refs/heads/master/disposable-email-domains.txt"],
+        "description": "Curated top 1,000 disposable email domains, updated daily by Castle",
+        "priority": 2
     }
 ]
