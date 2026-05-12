@@ -752,8 +752,8 @@ describe(DiskStorage, () => {
                 vi.setSystemTime(new Date("2022-02-02"));
             });
 
-            it("should handle directory traversal attempts in filenames", async () => {
-                expect.assertions(2);
+            it("should reject directory traversal attempts in ids", async () => {
+                expect.assertions(1);
 
                 const maliciousFile = {
                     ...metafile,
@@ -761,15 +761,12 @@ describe(DiskStorage, () => {
                     name: "../../../etc/passwd",
                 };
 
-                // The storage may allow creation but should generate safe internal IDs
-                const diskFile = await storage.create(maliciousFile);
-
-                expect(diskFile).toBeDefined();
-                expect(diskFile.id).not.toBe("../../../etc/passwd"); // Should generate safe ID
+                // `..` traversal in the id can escape a path-based MetaStorage — must be rejected.
+                await expect(storage.create(maliciousFile)).rejects.toThrow(/invalid file id|InvalidFileName/i);
             });
 
-            it("should handle absolute path attempts in filenames", async () => {
-                expect.assertions(2);
+            it("should reject absolute-path ids", async () => {
+                expect.assertions(1);
 
                 const maliciousFile = {
                     ...metafile,
@@ -777,11 +774,8 @@ describe(DiskStorage, () => {
                     name: "/etc/passwd",
                 };
 
-                // The storage may allow creation but should generate safe internal IDs
-                const diskFile = await storage.create(maliciousFile);
-
-                expect(diskFile).toBeDefined();
-                expect(diskFile.id).not.toBe("/etc/passwd"); // Should generate safe ID
+                // Absolute-path ids are rejected by the defense-in-depth id check.
+                await expect(storage.create(maliciousFile)).rejects.toThrow(/invalid file id|InvalidFileName/i);
             });
 
             it("should handle reserved filesystem names safely", async () => {
@@ -798,11 +792,11 @@ describe(DiskStorage, () => {
                         name,
                     };
 
-                    // Should create file with safe generated ID
+                    // Should create the file with a safe filesystem path.
                     const diskFile = await storage.create(reservedFile);
 
                     expect(diskFile).toBeDefined();
-                    expect(diskFile.id).not.toBe(name); // Should generate different ID
+                    expect(diskFile.name).not.toBe(name);
                 }
             });
         });

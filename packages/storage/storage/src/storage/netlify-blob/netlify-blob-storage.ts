@@ -38,6 +38,10 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
 
     public override checksumTypes: string[] = ["md5"];
 
+    public override get raw(): ReturnType<typeof getStore> {
+        return this.store;
+    }
+
     protected meta: MetaStorage;
 
     private readonly storeName: string;
@@ -165,7 +169,7 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
                 throw new Error("File part does not match");
             }
 
-            await this.lock(part.id);
+            const lockToken = await this.lock(part.id);
 
             try {
                 if (hasContent(part)) {
@@ -202,13 +206,16 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
                         }
                     }
 
-                    // Upload to Netlify Blob
-                    // Convert Buffer to ArrayBuffer for Netlify Blob API
+                    // Upload to Netlify Blob.
+                    // Convert Buffer to ArrayBuffer for Netlify Blob API.
+                    // Spread user metadata first so the canonical `contentType`
+                    // we just resolved always wins — otherwise a user-supplied
+                    // `metadata.contentType` would override the detected one.
                     await this.retry(() =>
                         this.store.set(file.name, buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength), {
                             metadata: {
-                                contentType: file.contentType,
                                 ...file.metadata,
+                                contentType: file.contentType,
                             },
                         }),
                     );
@@ -229,7 +236,7 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
 
                 return file;
             } finally {
-                await this.unlock(part.id);
+                await this.unlock(part.id, lockToken);
             }
         });
     }

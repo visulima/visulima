@@ -56,6 +56,19 @@ describe("baseStorage", () => {
         await expect(storage.validate({ ...metafile, name: "../file.ext" })).rejects.toHaveProperty("statusCode");
     });
 
+    it("should reject filesystem-incompatible characters that cloud-storage validation would allow", async () => {
+        // Regression: DiskStorage must capture the stricter filesystem validator BEFORE super() —
+        // otherwise BaseStorage falls back to the permissive cloud validator and these names slip through.
+        expect.assertions(6);
+
+        await expect(storage.validate({ ...metafile, name: "evil*.txt" })).rejects.toHaveProperty("statusCode");
+        await expect(storage.validate({ ...metafile, name: "with:colon.txt" })).rejects.toHaveProperty("statusCode");
+        await expect(storage.validate({ ...metafile, name: "back\\slash.txt" })).rejects.toHaveProperty("statusCode");
+        await expect(storage.validate({ ...metafile, name: "pipe|name.txt" })).rejects.toHaveProperty("statusCode");
+        await expect(storage.validate({ ...metafile, name: "ask?.txt" })).rejects.toHaveProperty("statusCode");
+        await expect(storage.validate({ ...metafile, name: 'quote".txt' })).rejects.toHaveProperty("statusCode");
+    });
+
     // Test video/* pattern
 
     it("should reject files with invalid MIME types during validation", async () => {

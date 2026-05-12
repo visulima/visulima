@@ -57,19 +57,15 @@ abstract class MultipartBase<TFile extends UploadFile> {
         // Create a stream from the bytes data
         const stream = this.createStreamFromBytes(filePart.bytes);
 
-        await this.storage.write({
+        // Multipart uploads ship the full body in a single request, so a single write covers the
+        // entire payload. The adapter's `write` flips `status` to `completed` automatically when
+        // `bytesWritten >= size`. Issuing a follow-up zero-byte write was fragile: some adapters
+        // reset `bytesWritten` to 0 on a content-less write, others ignored it entirely.
+        const completedFile = await this.storage.write({
             body: stream,
             contentLength: filePart.size,
             id: file.id,
             start: 0,
-        });
-
-        // Wait for the file to be completed
-        const completedFile = await this.storage.write({
-            body: this.createEmptyStream(),
-            contentLength: 0,
-            id: file.id,
-            start: filePart.size,
         });
 
         // Update completed file with metadata if any was provided

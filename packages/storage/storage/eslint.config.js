@@ -213,6 +213,8 @@ export default createConfig(
             "default-case": "off",
             // Accessor pair grouping conflicts with logical class grouping
             "grouped-accessor-pairs": "off",
+            // `import * as z from "zod"` is the form required by zod/consistent-import
+            "import/no-namespace": "off",
             "n/no-unsupported-features/node-builtins": "off",
             // Mutation of nitro/headers/file params is intentional builder pattern
             "no-param-reassign": "off",

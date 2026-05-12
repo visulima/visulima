@@ -31,8 +31,18 @@ class LocalMetaStorage<T extends File = File> extends MetaStorage<T> {
     /**
      * Returns metafile path.
      * @param id upload id
+     * @throws {UploadError} If the id resolves to a path outside the meta directory (e.g. via `..` traversal or absolute paths).
      */
-    public getMetaPath = (id: string): string => normalize(`${this.directory}/${this.prefix}${id}${this.suffix}`);
+    public getMetaPath = (id: string): string => {
+        const resolved = normalize(`${this.directory}/${this.prefix}${id}${this.suffix}`);
+        const baseWithSeparator = this.directory.endsWith("/") ? this.directory : `${this.directory}/`;
+
+        if (!resolved.startsWith(baseWithSeparator)) {
+            return throwErrorCode(ERRORS.INVALID_FILE_NAME, `Invalid id: "${id}" resolves outside the meta directory`);
+        }
+
+        return resolved;
+    };
 
     /**
      * Returns upload id from metafile path.

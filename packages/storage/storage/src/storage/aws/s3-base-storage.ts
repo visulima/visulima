@@ -13,7 +13,7 @@ import LocalMetaStorage from "../local/local-meta-storage";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
 import type { File, FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
-import { getFileStatus, hasContent, isExpired, partMatch, updateSize } from "../utils/file";
+import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 
 const MIN_PART_SIZE = 5 * 1024 * 1024;
 const PART_SIZE = 16 * 1024 * 1024;
@@ -328,7 +328,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
             file.Parts ??= await this.getParts(file);
             file.bytesWritten = file.Parts.map((item) => item.Size || 0).reduce((p, c) => p + c, 0);
 
-            await this.lock(part.id);
+            const lockToken = await this.lock(part.id);
 
             try {
                 if (hasContent(part)) {
@@ -397,7 +397,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                     file.ETag = completed.ETag;
                 }
             } finally {
-                await this.unlock(part.id);
+                await this.unlock(part.id, lockToken);
             }
 
             return file;
@@ -413,7 +413,11 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
 
             file.status = "deleted";
 
-            await Promise.all([this.deleteMeta(file.id), this.retry(() => this.abortMultipartUpload(file))]);
+            // Sequence the abort before the metadata delete so a partial failure leaves a recoverable
+            // metadata orphan (detectable + retryable) instead of an unreachable multipart upload that
+            // continues to incur storage charges.
+            await this.retry(() => this.abortMultipartUpload(file));
+            await this.deleteMeta(file.id);
 
             const deletedFile = { ...file };
 
@@ -428,18 +432,17 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
      */
     public async copy(name: string, destination: string, options?: { storageClass?: string }): Promise<TFile> {
         return this.instrumentOperation("copy", async () => {
+            S3BaseStorage.assertSafeId(name);
+            S3BaseStorage.assertSafeId(destination);
+
             const sourceFile = await this.getMeta(name);
             const CopySource = `${this.bucket}/${name}`;
-
-            let Bucket = this.bucket;
-            let Key = destination;
-
-            if (destination.startsWith("/")) {
-                const [, bucketName, ...pathSegments] = destination.split("/");
-
-                Bucket = bucketName || this.bucket;
-                Key = pathSegments.join("/");
-            }
+            const Bucket = this.bucket;
+            // Always copy within the same bucket. Previously a leading-slash in
+            // `destination` would re-target a different bucket parsed from the
+            // path — an undocumented behavior that let any caller cross bucket
+            // boundaries by adding `/`.
+            const Key = destination;
 
             const s3Api = this.getS3Api();
 
@@ -480,37 +483,45 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
 
             async () => {
                 const s3Api = this.getS3Api();
+                const pageSize = Math.min(limit, 1000);
                 let parameters: { Bucket: string; ContinuationToken?: string; MaxKeys?: number } = {
                     Bucket: this.bucket,
-                    MaxKeys: limit,
+                    MaxKeys: pageSize,
                 };
                 const items: TFile[] = [];
 
                 let truncated = true;
 
-                while (truncated) {
+                while (truncated && items.length < limit) {
                     try {
                         const response = await this.retry(() => s3Api.listObjectsV2(parameters));
 
                         for (const { Key, LastModified } of response?.Contents || []) {
-                            if (Key !== undefined) {
-                                const { Expires } = await this.retry(() => s3Api.headObject({ Bucket: this.bucket, Key }));
-
-                                if (Expires && isExpired({ expiredAt: Expires } as TFile)) {
-                                    await this.delete({ id: Key });
-                                } else {
-                                    items.push({
-                                        id: Key,
-                                        ...(LastModified && { createdAt: LastModified }),
-                                    } as TFile);
-                                }
+                            if (items.length >= limit) {
+                                break;
                             }
+
+                            if (Key === undefined) {
+                                continue;
+                            }
+
+                            // Skip the per-object HEAD: it turned the listing into
+                            // an N+1 call just to surface lazy expiry. Callers that
+                            // want expiry-cleanup can run the purge loop separately.
+                            items.push({
+                                id: Key,
+                                ...(LastModified && { createdAt: LastModified }),
+                            } as TFile);
                         }
 
                         truncated = response.IsTruncated || false;
 
-                        if (truncated && response.NextContinuationToken) {
-                            parameters = { ...parameters, ContinuationToken: response.NextContinuationToken };
+                        if (truncated && response.NextContinuationToken && items.length < limit) {
+                            parameters = {
+                                ...parameters,
+                                ContinuationToken: response.NextContinuationToken,
+                                MaxKeys: Math.min(pageSize, limit - items.length),
+                            };
                         }
                     } catch (error) {
                         const httpError = this.normalizeError(error instanceof Error ? error : new Error(String(error)));

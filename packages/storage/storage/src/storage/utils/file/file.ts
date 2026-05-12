@@ -93,9 +93,22 @@ class File implements FileInit {
 
     public ETag?: string;
 
-    public constructor({ contentType, expiredAt, metadata, originalName, size }: FileInit) {
+    public constructor({ contentType, expiredAt, id, metadata, originalName, size }: FileInit) {
         this.metadata = metadata;
-        this.originalName = originalName || extractOriginalName(metadata) || (this.id = nanoid());
+
+        let resolvedId: string | undefined = id || undefined;
+        let resolvedOriginalName = originalName || extractOriginalName(metadata);
+
+        if (!resolvedOriginalName) {
+            resolvedId ??= nanoid();
+            resolvedOriginalName = resolvedId;
+        }
+
+        if (resolvedId !== undefined) {
+            this.id = resolvedId;
+        }
+
+        this.originalName = resolvedOriginalName;
         this.contentType = contentType || extractMimeType(metadata) || "application/octet-stream";
         this.expiredAt = expiredAt;
 

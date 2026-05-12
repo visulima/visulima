@@ -46,27 +46,33 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
 
     public override checksumTypes: string[] = ["md5", "sha1"];
 
+    public override get raw(): { directory: string } {
+        return { directory: this.directory };
+    }
+
     public directory: string;
 
     public meta: MetaStorage<TFile>;
 
     public constructor(config: DiskStorageOptions<TFile>) {
-        super(config);
+        // Override filename validation with filesystem-specific validation BEFORE super(),
+        // so BaseStorage captures the stricter local-filesystem validator at construct-time.
+        // Local filesystems have stricter character restrictions than cloud storage platforms.
+        const resolvedConfig = {
+            ...config,
+            fileNameValidation: config.fileNameValidation ?? defaultFilesystemFileNameValidation,
+        };
 
-        this.directory = config.directory;
+        super(resolvedConfig);
 
-        if (config.metaStorage) {
-            this.meta = config.metaStorage;
+        this.directory = resolvedConfig.directory;
+
+        if (resolvedConfig.metaStorage) {
+            this.meta = resolvedConfig.metaStorage;
         } else {
-            const metaConfig = { ...config, ...config.metaStorageConfig, logger: this.logger };
+            const metaConfig = { ...resolvedConfig, ...resolvedConfig.metaStorageConfig, logger: this.logger };
 
             this.meta = new LocalMetaStorage(metaConfig);
-        }
-
-        // Override filename validation with filesystem-specific validation
-        // Local filesystems have stricter character restrictions than cloud storage platforms
-        if (!config.fileNameValidation) {
-            config.fileNameValidation = defaultFilesystemFileNameValidation;
         }
 
         this.isReady = false;
@@ -209,7 +215,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
 
             const path = this.getFilePath(file.name);
 
-            await this.lock(path);
+            const lockToken = await this.lock(path);
 
             try {
                 const startPosition = (part as FilePart).start || 0;
@@ -311,7 +317,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
 
                 return throwErrorCode(ERRORS.FILE_ERROR, (typeof httpError.message === "string" ? httpError.message : String(error)) || String(error));
             } finally {
-                await this.unlock(path);
+                await this.unlock(path, lockToken);
             }
         });
     }
@@ -470,6 +476,9 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
      */
     public async copy(name: string, destination: string): Promise<TFile> {
         return this.instrumentOperation("copy", async () => {
+            DiskStorage.assertSafeId(name);
+            DiskStorage.assertSafeId(destination);
+
             const sourceFile = await this.getMeta(name);
 
             await copyFile(this.getFilePath(sourceFile.name), this.getFilePath(destination));
@@ -488,6 +497,9 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
      */
     public async move(name: string, destination: string): Promise<TFile> {
         return this.instrumentOperation("move", async () => {
+            DiskStorage.assertSafeId(name);
+            DiskStorage.assertSafeId(destination);
+
             // Get source metadata first to get the actual file name
             const sourceFile = await this.getMeta(name);
             const source = this.getFilePath(sourceFile.name);
@@ -547,13 +559,16 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
     }
 
     /**
-     * Returns path for the uploaded file
-     * If filename is already an absolute path, returns it as-is.
-     * Otherwise, joins it with the storage directory.
+     * Returns the absolute on-disk path for the uploaded file, always rooted at
+     * `this.directory`. Absolute inputs and `..` traversals are rejected.
      */
     protected getFilePath(filename: string): string {
+        DiskStorage.assertSafeId(filename);
+
         if (isAbsolute(filename)) {
-            return filename;
+            // assertSafeId already rejects absolute paths, but keep the guard
+            // here so the function remains correct if the check is ever loosened.
+            throwErrorCode(ERRORS.INVALID_FILE_NAME, `Invalid file id: "${filename}"`);
         }
 
         return join(this.directory, filename);

@@ -1,0 +1,82 @@
+# Hetzner Object Storage
+
+> **Just need ad-hoc uploads?** Wrap this adapter in the [`Files` facade](../files-facade.mdx) for a one-liner API. The reference below shows direct adapter usage — pick that path when you're hosting an upload server.
+
+## Overview
+
+Hetzner Object Storage is an S3-compatible object storage service hosted in Hetzner data centers (Falkenstein, Nuremberg, Helsinki). It's priced per TB and well-suited for European workloads with data-residency requirements.
+
+## Installation
+
+```sh
+npm install @aws-sdk/client-s3 @aws-sdk/credential-providers @aws-sdk/s3-request-presigner @aws-sdk/signature-v4-crt aws-crt @aws-sdk/types
+```
+
+## Usage
+
+Hetzner Object Storage is S3-compatible, so use the S3Storage with the Hetzner endpoint:
+
+```typescript
+import { S3Storage } from "@visulima/storage/provider/aws";
+import { hetzner } from "@visulima/storage/provider/aws/s3/clients";
+
+const clientConfig = hetzner({
+    accessKeyId: process.env.HETZNER_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.HETZNER_SECRET_ACCESS_KEY!,
+    location: "fsn1", // fsn1 | nbg1 | hel1
+});
+
+const storage = new S3Storage({
+    bucket: "my-bucket",
+    ...clientConfig,
+});
+```
+
+## Configuration
+
+### Locations
+
+| Code   | Site                |
+| ------ | ------------------- |
+| `fsn1` | Falkenstein, DE     |
+| `nbg1` | Nuremberg, DE       |
+| `hel1` | Helsinki, FI        |
+
+The `location` is used as both the AWS region and the endpoint subdomain (`https://<location>.your-objectstorage.com`).
+
+### Environment Variables
+
+```typescript
+process.env.HETZNER_ACCESS_KEY_ID = "your-access-key";
+process.env.HETZNER_SECRET_ACCESS_KEY = "your-secret-key";
+process.env.HETZNER_LOCATION = "fsn1";
+
+const clientConfig = hetzner(); // Uses environment variables
+const storage = new S3Storage({
+    bucket: "my-bucket",
+    ...clientConfig,
+});
+```
+
+### With Explicit Parameters
+
+```typescript
+const clientConfig = hetzner({
+    accessKeyId: "your-access-key",
+    secretAccessKey: "your-secret-key",
+    location: "nbg1",
+});
+```
+
+## Features
+
+- **EU data residency**: All locations are in the EU (Germany, Finland)
+- **S3-Compatible**: Works with the AWS S3 SDK and any S3-compatible tooling
+- **Flat pricing**: Transparent per-TB pricing with no surprise egress fees on most plans
+
+## Best Practices
+
+1. **Pin your location** — keep buckets close to your compute to minimize latency
+2. **Use environment variables** — never hard-code keys
+3. **Configure CORS** in the Hetzner console for browser uploads
+4. **Generate scoped keys** per environment / service via the Hetzner console

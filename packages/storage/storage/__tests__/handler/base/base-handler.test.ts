@@ -404,7 +404,7 @@ describe("baseHandler", () => {
                     bytesWritten: 100,
                     contentType: "application/octet-stream",
                     createdAt: new Date(),
-                    id: "test-file-id",
+                    id: "test-file-aaaa",
                     metadata: {},
                     name: "test-file.txt",
                     originalName: "test-file.txt",
@@ -424,7 +424,7 @@ describe("baseHandler", () => {
                 const request = createRequest({
                     headers: { range: "bytes=0-49" },
                     method: "GET",
-                    url: "/files/test-file-id/download",
+                    url: "/files/test-file-aaaa/download",
                 });
                 const response = createResponse();
 
@@ -434,8 +434,8 @@ describe("baseHandler", () => {
 
                 await uploader.download(request, response);
 
-                expect(getMetaSpy).toHaveBeenCalledWith("test-file-id");
-                expect(getStreamSpy).toHaveBeenCalledWith({ id: "test-file-id" });
+                expect(getMetaSpy).toHaveBeenCalledWith("test-file-aaaa");
+                expect(getStreamSpy).toHaveBeenCalledWith({ id: "test-file-aaaa" });
                 // The response is now handled directly by sendStream
                 // Status code and headers are set by sendStream method
 
@@ -454,7 +454,7 @@ describe("baseHandler", () => {
 
                 const request = createRequest({
                     method: "GET",
-                    url: "/files/123-456-789/download",
+                    url: "/files/1234-5678-9012/download",
                 });
                 const response = createResponse();
 
@@ -481,7 +481,7 @@ describe("baseHandler", () => {
                     bytesWritten: 100,
                     contentType: "application/octet-stream",
                     createdAt: new Date(),
-                    id: "test-file-id",
+                    id: "test-file-aaaa",
                     metadata: {},
                     name: "test-file.txt",
                     originalName: "test-file.txt",
@@ -491,7 +491,7 @@ describe("baseHandler", () => {
 
                 const request = createRequest({
                     method: "GET",
-                    url: "/files/test-file-id/download",
+                    url: "/files/test-file-aaaa/download",
                 });
 
                 const response = createResponse();
@@ -500,13 +500,15 @@ describe("baseHandler", () => {
                 vi.spyOn(response, "listeners").mockReturnValue([]);
                 vi.spyOn(response, "on").mockImplementation(() => response);
 
-                await uploader.download(request, response);
+                try {
+                    await uploader.download(request, response);
 
-                expect(response.statusCode).toBe(501);
-
-                // Restore getStream method
-                (storage as unknown as { getStream?: typeof originalGetStream }).getStream = originalGetStream;
-                getMetaSpy.mockRestore();
+                    expect(response.statusCode).toBe(501);
+                } finally {
+                    // Restore getStream even if the test throws so later specs can spy on it.
+                    (storage as unknown as { getStream?: typeof originalGetStream }).getStream = originalGetStream;
+                    getMetaSpy.mockRestore();
+                }
             });
         });
 
@@ -519,7 +521,7 @@ describe("baseHandler", () => {
                     bytesWritten: 2_000_000, // 2MB file
                     contentType: "application/octet-stream",
                     createdAt: new Date(),
-                    id: "large-file-id",
+                    id: "large-file-aaaa",
                     metadata: {},
                     name: "large-file.dat",
                     originalName: "large-file.dat",
@@ -533,7 +535,7 @@ describe("baseHandler", () => {
                     contentType: "application/octet-stream",
                     ETag: "etag123",
                     expiredAt: undefined,
-                    id: "large-file-id",
+                    id: "large-file-aaaa",
                     metadata: {},
                     modifiedAt: new Date(),
                     name: "large-file.dat",
@@ -552,7 +554,7 @@ describe("baseHandler", () => {
 
                 const request = createRequest({
                     method: "GET",
-                    url: "/files/large-file-id",
+                    url: "/files/large-file-aaaa",
                 });
                 const response = createResponse();
 
@@ -562,8 +564,8 @@ describe("baseHandler", () => {
 
                 await uploader.handle(request, response);
 
-                expect(getMetaSpy).toHaveBeenCalledWith("large-file-id");
-                expect(getStreamSpy).toHaveBeenCalledWith({ id: "large-file-id" });
+                expect(getMetaSpy).toHaveBeenCalledWith("large-file-aaaa");
+                expect(getStreamSpy).toHaveBeenCalledWith({ id: "large-file-aaaa" });
                 // For large files, streaming should be used (not buffer-based get)
                 expect(getSpy).not.toHaveBeenCalled();
 
@@ -580,7 +582,7 @@ describe("baseHandler", () => {
                     bytesWritten: 1000,
                     contentType: "text/plain",
                     createdAt: new Date(),
-                    id: "small-file-id",
+                    id: "small-file-aaaa",
                     metadata: {},
                     name: "small-file.txt",
                     originalName: "small-file.txt",
@@ -594,7 +596,7 @@ describe("baseHandler", () => {
                     contentType: "text/plain",
                     ETag: "etag123",
                     expiredAt: undefined,
-                    id: "small-file-id",
+                    id: "small-file-aaaa",
                     metadata: {},
                     modifiedAt: new Date(),
                     name: "small-file.txt",
@@ -604,7 +606,7 @@ describe("baseHandler", () => {
 
                 const request = createRequest({
                     method: "GET",
-                    url: "/files/small-file-id",
+                    url: "/files/small-file-aaaa",
                 });
                 const response = createResponse();
 
@@ -614,7 +616,7 @@ describe("baseHandler", () => {
 
                 await uploader.handle(request, response);
 
-                expect(getSpy).toHaveBeenCalledWith({ id: "small-file-id" });
+                expect(getSpy).toHaveBeenCalledWith({ id: "small-file-aaaa" });
                 expect(response.statusCode).toBe(200);
                 expect(response.getHeader("content-type")).toBe("text/plain");
 
@@ -630,7 +632,7 @@ describe("baseHandler", () => {
                     bytesWritten: 2_000_000, // 2MB file
                     contentType: "application/octet-stream",
                     createdAt: new Date(),
-                    id: "large-file-id",
+                    id: "large-file-aaaa",
                     metadata: {},
                     name: "large-file.dat",
                     originalName: "large-file.dat",
@@ -645,7 +647,7 @@ describe("baseHandler", () => {
                     contentType: "application/octet-stream",
                     ETag: "etag123",
                     expiredAt: undefined,
-                    id: "large-file-id",
+                    id: "large-file-aaaa",
                     metadata: {},
                     modifiedAt: new Date(),
                     name: "large-file.dat",
@@ -657,7 +659,7 @@ describe("baseHandler", () => {
 
                 const request = createRequest({
                     method: "GET",
-                    url: "/files/large-file-id",
+                    url: "/files/large-file-aaaa",
                 });
                 const response = createResponse();
 
@@ -667,9 +669,9 @@ describe("baseHandler", () => {
 
                 await uploader.handle(request, response);
 
-                expect(getMetaSpy).toHaveBeenCalledWith("large-file-id");
-                expect(getStreamSpy).toHaveBeenCalledWith({ id: "large-file-id" });
-                expect(getSpy).toHaveBeenCalledWith({ id: "large-file-id" });
+                expect(getMetaSpy).toHaveBeenCalledWith("large-file-aaaa");
+                expect(getStreamSpy).toHaveBeenCalledWith({ id: "large-file-aaaa" });
+                expect(getSpy).toHaveBeenCalledWith({ id: "large-file-aaaa" });
                 expect(loggerSpy).toHaveBeenCalledWith("Streaming failed, falling back to buffer: Error: Streaming failed");
 
                 getMetaSpy.mockRestore();

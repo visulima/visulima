@@ -1,3 +1,6 @@
+import type {
+    GetObjectCommand,
+    PutObjectCommand } from "@aws-sdk/client-s3";
 import {
     AbortMultipartUploadCommand,
     CompleteMultipartUploadCommand,
@@ -9,6 +12,7 @@ import {
     S3Client,
     UploadPartCommand,
 } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { mockClient } from "aws-sdk-client-mock";
 import { beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 
@@ -233,21 +237,17 @@ describe(S3Storage, () => {
             expect(result.name).toBe("new name");
         });
 
-        it("absolute", async () => {
-            expect.assertions(2);
+        it("rejects absolute destination paths to prevent cross-bucket targeting", async () => {
+            // Previously a leading-slash destination like "/otherBucket/key" was
+            // silently parsed and used to re-target a different bucket. That is
+            // now blocked: callers must use S3-native cross-bucket copy APIs.
+            expect.assertions(1);
 
             s3Mock.resetHistory();
             s3Mock.on(HeadObjectCommand).resolves(metafileResponse);
             s3Mock.on(CopyObjectCommand).resolves({});
 
-            const result = await storage.copy("name", "/otherBucket/new name");
-
-            expect(s3Mock.call(1).args[0].input).toStrictEqual({
-                Bucket: "otherBucket",
-                CopySource: "bucket/name",
-                Key: "new name",
-            });
-            expect(result.name).toBe("new name");
+            await expect(storage.copy("name", "/otherBucket/new name")).rejects.toThrow(/Invalid file id/);
         });
 
         it("with storage class", async () => {
@@ -287,6 +287,66 @@ describe(S3Storage, () => {
             expect.assertions(1);
 
             expect(storage.normalizeError(new Error("unknown") as AwsError)).toMatchSnapshot();
+        });
+    });
+
+    describe("raw + presign helpers", () => {
+        it("exposes the underlying S3Client via .raw", () => {
+            expect.assertions(1);
+
+            expect(storage.raw).toBeInstanceOf(S3Client);
+        });
+
+        it("getReadUrl() builds a GetObjectCommand for the bucket+key and forwards expiresIn", async () => {
+            expect.assertions(4);
+
+            const mockedGetSignedUrl = vi.mocked(getSignedUrl);
+
+            mockedGetSignedUrl.mockClear();
+
+            const url = await storage.getReadUrl("avatars/abc.png", {
+                expiresIn: 900,
+                responseContentDisposition: 'attachment; filename="abc.png"',
+                responseContentType: "image/png",
+            });
+
+            expect(url).toBe("https://api.s3.example.com?signed");
+            expect(mockedGetSignedUrl).toHaveBeenCalledTimes(1);
+
+            const [, command, options_] = mockedGetSignedUrl.mock.calls[0] as [unknown, GetObjectCommand, { expiresIn: number }];
+
+            expect(command.input).toEqual({
+                Bucket: "bucket",
+                Key: "avatars/abc.png",
+                ResponseContentDisposition: 'attachment; filename="abc.png"',
+                ResponseContentType: "image/png",
+            });
+            expect(options_).toEqual({ expiresIn: 900 });
+        });
+
+        it("getUploadUrl() builds a PutObjectCommand and defaults expiresIn to 3600", async () => {
+            expect.assertions(3);
+
+            const mockedGetSignedUrl = vi.mocked(getSignedUrl);
+
+            mockedGetSignedUrl.mockClear();
+
+            const url = await storage.getUploadUrl("uploads/x.bin", {
+                contentLength: 1024,
+                contentType: "application/octet-stream",
+            });
+
+            expect(url).toBe("https://api.s3.example.com?signed");
+
+            const [, command, options_] = mockedGetSignedUrl.mock.calls[0] as [unknown, PutObjectCommand, { expiresIn: number }];
+
+            expect(command.input).toEqual({
+                Bucket: "bucket",
+                ContentLength: 1024,
+                ContentType: "application/octet-stream",
+                Key: "uploads/x.bin",
+            });
+            expect(options_).toEqual({ expiresIn: 3600 });
         });
     });
 });

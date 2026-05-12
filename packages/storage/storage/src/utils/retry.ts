@@ -8,21 +8,26 @@ const defaultRetryConfig: Required<Omit<RetryConfig, "calculateDelay">> & { calc
     maxDelay: 30_000,
     maxRetries: 3,
     retryableStatusCodes: [408, 429, 500, 502, 503, 504],
-    shouldRetry: () => true,
+    // Default to `false` so the retry decision falls through to `isRetryableError`, which knows
+    // about the network/AWS/Azure patterns. The previous `() => true` short-circuited that and
+    // forced retries on every error — including 4xx client failures (auth, 404, validation)
+    // where retrying just wastes attempts and amplifies the failure.
+    shouldRetry: () => false,
 };
 
 /**
- * Calculate exponential backoff delay
+ * Calculate exponential backoff delay with full jitter
  * @param attempt Current retry attempt (0-indexed)
  * @param initialDelay Initial delay in milliseconds
  * @param backoffMultiplier Multiplier for exponential backoff
  * @param maxDelay Maximum delay in milliseconds
- * @returns Delay in milliseconds
+ * @returns Delay in milliseconds, randomized within [0, exponential bound] to prevent
+ *   thundering-herd retries from many concurrent clients hitting the same back-end at once.
  */
 const calculateExponentialBackoff = (attempt: number, initialDelay: number, backoffMultiplier: number, maxDelay: number): number => {
-    const delay = initialDelay * backoffMultiplier ** attempt;
+    const ceiling = Math.min(initialDelay * backoffMultiplier ** attempt, maxDelay);
 
-    return Math.min(delay, maxDelay);
+    return Math.floor(Math.random() * ceiling);
 };
 
 /**

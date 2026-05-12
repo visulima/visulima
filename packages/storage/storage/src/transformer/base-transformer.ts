@@ -81,15 +81,38 @@ abstract class BaseTransformer<
 
     /**
      * Clears cache for a specific file or all files.
+     *
+     * Cache keys are `${fileId}:${stepsHash}` (see `generateCacheKey` in subclasses),
+     * so per-file invalidation must iterate keys to find every transform of `fileId`.
+     * Falls back to a full `clear()` when the underlying cache doesn't expose `keys()`.
      * @param fileId Optional file identifier to clear cache for specific file.
      */
     public clearCache(fileId?: string): void {
-        if (fileId) {
-            // Clear cache for specific file
-            this.cache?.delete(fileId);
-        } else {
-            // Clear all cache
+        if (!fileId) {
             this.cache?.clear?.();
+
+            return;
+        }
+
+        if (!this.cache) {
+            return;
+        }
+
+        if (typeof this.cache.keys !== "function") {
+            this.logger?.warn?.(
+                "clearCache(fileId) cannot scope its invalidation because the cache does not implement keys(); falling back to full clear()",
+            );
+            this.cache.clear?.();
+
+            return;
+        }
+
+        const prefix = `${fileId}:`;
+
+        for (const key of this.cache.keys()) {
+            if (typeof key === "string" && (key === fileId || key.startsWith(prefix))) {
+                this.cache.delete(key);
+            }
         }
     }
 

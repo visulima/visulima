@@ -11,11 +11,15 @@ import type { CreateWasabiClientParameters } from "./types";
  * - `AWS_SECRET_ACCESS_KEY`
  */
 const wasabi = (parameters?: CreateWasabiClientParameters): S3ClientConfig => {
-    const { accessKeyId, region, secretAccessKey } = parameters ?? {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID || process.env.WASABI_ACCESS_KEY_ID || process.env.WASABI_ACCESS_KEY,
-        region: process.env.AWS_REGION || process.env.WASABI_REGION,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || process.env.WASABI_SECRET_ACCESS_KEY || process.env.WASABI_SECRET_KEY,
-    };
+    const accessKeyId = parameters?.accessKeyId
+        ?? process.env.AWS_ACCESS_KEY_ID
+        ?? process.env.WASABI_ACCESS_KEY_ID
+        ?? process.env.WASABI_ACCESS_KEY;
+    const region = parameters?.region ?? process.env.AWS_REGION ?? process.env.WASABI_REGION;
+    const secretAccessKey = parameters?.secretAccessKey
+        ?? process.env.AWS_SECRET_ACCESS_KEY
+        ?? process.env.WASABI_SECRET_ACCESS_KEY
+        ?? process.env.WASABI_SECRET_KEY;
 
     if (!region || !accessKeyId || !secretAccessKey) {
         throw new Error("Missing required parameters for Wasabi client.");

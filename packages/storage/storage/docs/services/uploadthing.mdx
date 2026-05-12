@@ -1,0 +1,96 @@
+# UploadThing
+
+> **Just need ad-hoc uploads?** Wrap this adapter in the [`Files` facade](../files-facade.mdx) for a one-liner API. The reference below shows direct adapter usage and UploadThing-specific key handling.
+
+## Overview
+
+The UploadThing adapter wraps `UTApi` from `uploadthing/server`. Uploads are keyed by user-supplied `customId` so subsequent operations (`delete`, `signed URL`, `list`) round-trip on the user's key rather than UploadThing's internal `fileKey`. Read URLs are minted as public CDN URLs (`<appId>.ufs.sh/f/<customId>`) when the ACL is `public-read`, or as signed URLs via `generateSignedURL()` when the ACL is `private`.
+
+## Installation
+
+```sh
+npm install uploadthing
+```
+
+```sh
+yarn add uploadthing
+```
+
+```sh
+pnpm add uploadthing
+```
+
+## Usage
+
+```ts
+import UploadThingStorage from "@visulima/storage/provider/uploadthing";
+
+const storage = new UploadThingStorage({
+    token: process.env.UPLOADTHING_TOKEN!,
+    acl: "public-read",
+});
+```
+
+The `token` is the base64-encoded JSON from your UploadThing dashboard — it embeds both `apiKey` and `appId`. The adapter decodes it once at construction to extract `appId` for CDN URL minting.
+
+## Configuration
+
+### Pre-built client
+
+```ts
+import { UTApi } from "uploadthing/server";
+
+const storage = new UploadThingStorage({
+    client: new UTApi({ defaultKeyType: "customId", token: process.env.UPLOADTHING_TOKEN! }),
+    token: process.env.UPLOADTHING_TOKEN!, // still required — used to derive appId
+});
+```
+
+Even with a pre-built client, `token` is required so the adapter can extract `appId` for CDN URLs.
+
+### ACL
+
+```ts
+new UploadThingStorage({
+    token: process.env.UPLOADTHING_TOKEN!,
+    acl: "private", // or "public-read" (default)
+});
+```
+
+- `public-read`: every upload is publicly readable; `getReadUrl()` returns the CDN URL synchronously without a round-trip.
+- `private`: `getReadUrl()` calls `utapi.generateSignedURL()` for each request.
+
+### Default signed URL lifetime
+
+```ts
+new UploadThingStorage({
+    /* … */
+    defaultUrlExpiresIn: 3600, // seconds; capped at 7 days (604_800)
+});
+```
+
+## URL Generation
+
+### `getReadUrl(key, options?)`
+
+- `public-read` ACL: returns `https://<appId>.ufs.sh/f/<encoded-customId>` synchronously.
+- `private` ACL: returns a signed URL via `generateSignedURL(key, { expiresIn, keyType: "customId" })`. `expiresIn` is clamped to 7 days.
+- `responseContentDisposition` is not supported.
+
+### `getUploadUrl(key)`
+
+Throws `METHOD_NOT_ALLOWED`. UploadThing's signed PUT URLs require HMAC signing against a UFS ingest endpoint — out of scope for this adapter. Callers that need direct-from-browser uploads should use UploadThing's [file-router pattern](https://docs.uploadthing.com/) via `storage.raw`.
+
+## Features
+
+- **customId keying** — operations are addressed by your virtual key, not UploadThing's internal fileKey.
+- **ACL-aware reads** — public files use the CDN directly; private files use signed URLs only when needed.
+- **Token-derived `appId`** — no separate config field; the dashboard token already contains everything.
+- **Native `listFiles`** — `storage.list()` round-trips a single `utapi.listFiles({ limit })`.
+
+## Limitations
+
+- No native presigned upload URLs — use the file-router pattern via `storage.raw` for direct-from-browser uploads.
+- `copy()` is download-then-reupload (UploadThing has no server-side copy).
+- `list()` has no server-side prefix filter — prefix filtering happens client-side per page.
+- Signed URLs cap at 7 days.

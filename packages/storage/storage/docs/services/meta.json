@@ -1,17 +1,27 @@
 {
     "title": "Storage Services",
     "pages": [
+        "capabilities",
         "amazon-s3",
         "aws-light",
         "azure",
         "backblaze-b2",
+        "box",
+        "bunny",
         "cloudflare-r2",
         "digital-ocean-spaces",
+        "dropbox",
         "google-cloud-storage",
+        "google-drive",
+        "hetzner",
         "local-disk",
         "minio",
         "netlify-blob",
+        "onedrive",
+        "storj",
+        "supabase",
         "tigris",
+        "uploadthing",
         "vercel-blob",
         "wasabi"
     ]

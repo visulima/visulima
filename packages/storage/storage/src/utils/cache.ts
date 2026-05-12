@@ -16,6 +16,14 @@ export interface Cache<K = string, V = unknown> {
     /** Check if a key exists in cache */
     has: (key: K) => boolean | Promise<boolean>;
 
+    /**
+     * Optional. Iterate over the cache's current keys. Required for prefix-based
+     * eviction (`clearCache(fileId)` in transformers) — when absent, per-file
+     * clear falls back to a full `clear()`. `LRUCache` from `lru-cache`
+     * satisfies this out of the box.
+     */
+    keys?: () => Iterable<K>;
+
     /** Set a value in cache */
     set: (key: K, value: V, options?: CacheOptions) => boolean | Promise<boolean>;
 }

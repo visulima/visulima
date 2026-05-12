@@ -119,6 +119,164 @@ export class UploadError extends Error {
 export const isUploadError = (error: unknown): error is UploadError => !!(error as UploadError).UploadErrorCode;
 
 /**
+ * Best-effort extraction of an HTTP status from a native SDK error.
+ *
+ * Covers the shapes used by the consumer-provider SDKs:
+ * - Dropbox `DropboxResponseError` → `error.status`
+ * - Box `BoxAPIError` / Microsoft Graph errors → `error.statusCode`
+ * - googleapis errors → `error.code` (numeric) or `error.response.status`
+ * - Supabase / fetch-style errors → `error.status` or `error.response.status`
+ */
+export const extractHttpStatus = (error: unknown): number | undefined => {
+    if (!error || typeof error !== "object") {
+        return undefined;
+    }
+
+    const object = error as Record<string, unknown>;
+
+    if (typeof object.status === "number") {
+        return object.status;
+    }
+
+    if (typeof object.statusCode === "number") {
+        return object.statusCode;
+    }
+
+    if (typeof object.code === "number") {
+        return object.code;
+    }
+
+    const response = object.response as { status?: unknown; statusCode?: unknown } | undefined;
+
+    if (typeof response?.status === "number") {
+        return response.status;
+    }
+
+    if (typeof response?.statusCode === "number") {
+        return response.statusCode;
+    }
+
+    return undefined;
+};
+
+/**
+ * Map an HTTP status code to the closest canonical ERRORS value.
+ *
+ * Returns STORAGE_ERROR for unknown/5xx and BAD_REQUEST for unmapped 4xx.
+ * 401 (unauthenticated) collapses to FORBIDDEN because the ERRORS enum has
+ * no dedicated UNAUTHORIZED value; callers needing to distinguish the two
+ * should inspect the native error on `UploadError.detail`.
+ */
+export const mapStatusToErrorCode = (status?: number): ERRORS => {
+    if (status === undefined) {
+        return ERRORS.STORAGE_ERROR;
+    }
+
+    switch (status) {
+        case 400: {
+            return ERRORS.BAD_REQUEST;
+        }
+        case 401:
+        case 403: {
+            return ERRORS.FORBIDDEN;
+        }
+        case 404: {
+            return ERRORS.FILE_NOT_FOUND;
+        }
+        case 405: {
+            return ERRORS.METHOD_NOT_ALLOWED;
+        }
+        case 409: {
+            return ERRORS.FILE_CONFLICT;
+        }
+        case 410: {
+            return ERRORS.GONE;
+        }
+        case 413: {
+            return ERRORS.REQUEST_ENTITY_TOO_LARGE;
+        }
+        case 415: {
+            return ERRORS.UNSUPPORTED_MEDIA_TYPE;
+        }
+        case 422: {
+            return ERRORS.UNPROCESSABLE_ENTITY;
+        }
+        case 423: {
+            return ERRORS.FILE_LOCKED;
+        }
+        case 429: {
+            return ERRORS.TOO_MANY_REQUESTS;
+        }
+        case 503: {
+            return ERRORS.STORAGE_BUSY;
+        }
+        default: {
+            if (status >= 500 && status < 600) {
+                return ERRORS.STORAGE_ERROR;
+            }
+
+            if (status >= 400 && status < 500) {
+                return ERRORS.BAD_REQUEST;
+            }
+
+            return ERRORS.UNKNOWN_ERROR;
+        }
+    }
+};
+
+const composeWrappedMessage = (adapter: string, operation: string, detail: string | undefined, status: number | undefined): string => {
+    const prefix = `${adapter}: ${operation} failed`;
+
+    if (detail) {
+        return `${prefix} — ${detail}`;
+    }
+
+    if (status !== undefined) {
+        return `${prefix} (HTTP ${status})`;
+    }
+
+    return prefix;
+};
+
+/**
+ * Normalize a native storage-SDK error into an `UploadError`.
+ *
+ * The native error is preserved on `.detail` so advanced callers can drop down
+ * to provider-specific shapes when needed. Already-wrapped `UploadError`
+ * instances pass through unchanged.
+ * @example
+ * ```ts
+ * try {
+ *     await client.filesCopyV2({ from_path, to_path });
+ * } catch (error) {
+ *     throw wrapStorageError(error, { adapter: "Dropbox", operation: "copy" });
+ * }
+ * ```
+ */
+export const wrapStorageError = (
+    error: unknown,
+    options: {
+        adapter: string;
+        code?: ERRORS;
+        message?: string;
+        operation: string;
+        status?: number;
+    },
+): UploadError => {
+    if (isUploadError(error)) {
+        return error;
+    }
+
+    const status = options.status ?? extractHttpStatus(error);
+    const code = options.code ?? mapStatusToErrorCode(status);
+    const nativeMessage = (error as { message?: unknown } | null)?.message;
+    const detail = typeof nativeMessage === "string" && nativeMessage.length > 0 ? nativeMessage : undefined;
+    const message = options.message ?? composeWrappedMessage(options.adapter, options.operation, detail, status);
+
+    return new UploadError(code, message, error);
+};
+
+/**
  * Convenience function to throw an UploadError from a string error code.
  * Looks up the appropriate error message from ErrorMap.
  * @param UploadErrorCode String error code to convert to UploadError
