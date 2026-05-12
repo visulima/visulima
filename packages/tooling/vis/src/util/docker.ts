@@ -252,6 +252,7 @@ export const scaffoldDockerContext = (options: ScaffoldOptions): { projects: str
         includeSources = false,
 
         log = (message: string) => {
+            // eslint-disable-next-line no-console -- default log impl writes to stdout; callers override with their own logger in production paths
             console.log(message);
         },
         outDir,
