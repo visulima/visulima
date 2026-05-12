@@ -57,8 +57,12 @@ export interface DispatchLogger {
 
 const builtinLoggerFor = (parent: DispatchLogger): BuiltinLogger => {
     return {
-        error: (message) => { parent.error(message); },
-        info: (message) => { parent.info(message); },
+        error: (message) => {
+            parent.error(message);
+        },
+        info: (message) => {
+            parent.info(message);
+        },
     };
 };
 
@@ -122,11 +126,12 @@ const runShellCommand = (
         return result.status;
     }
 
-    const overhead = Buffer.byteLength(command, "utf8")
-        + Buffer.byteLength("sh", "utf8")
-        + Buffer.byteLength("-c", "utf8")
-        + extraArgs.reduce((sum, a) => sum + Buffer.byteLength(a, "utf8") + 8, 0)
-        + 64;
+    const overhead
+        = Buffer.byteLength(command, "utf8")
+            + Buffer.byteLength("sh", "utf8")
+            + Buffer.byteLength("-c", "utf8")
+            + extraArgs.reduce((sum, a) => sum + Buffer.byteLength(a, "utf8") + 8, 0)
+            + 64;
 
     let rc = 0;
 
@@ -154,11 +159,7 @@ const runShellCommand = (
  * resulting exit code (0 = pass, non-zero = fail). The caller is
  * responsible for OR-folding return codes across hooks.
  */
-export const runHookEntry = (
-    entry: HookEntry,
-    candidateFiles: ReadonlyArray<string>,
-    context: DispatchContext,
-): number => {
+export const runHookEntry = (entry: HookEntry, candidateFiles: ReadonlyArray<string>, context: DispatchContext): number => {
     if (entry.fail !== undefined) {
         context.logger.info(entry.fail);
 
@@ -235,12 +236,7 @@ export const runHookEntry = (
  * Run every hook configured for `stage`. OR-folds exit codes (any
  * non-zero ⇒ failure) and short-circuits when `failFast` is set.
  */
-export const runStage = (
-    config: HookConfig,
-    stage: string,
-    candidateFiles: ReadonlyArray<string>,
-    context: DispatchContext,
-): number => {
+export const runStage = (config: HookConfig, stage: string, candidateFiles: ReadonlyArray<string>, context: DispatchContext): number => {
     const hooks = config.stages[stage];
 
     if (!hooks || hooks.length === 0) {

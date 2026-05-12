@@ -801,11 +801,7 @@ const executePmWrapper = (
  * Returns `true` to continue, `false` to abort (with `process.exitCode` set
  * when the abort represents a hard failure).
  */
-export const requireBlanketUpdateConfirmation = async (
-    options: Partial<UpdateOptions>,
-    hasPackageArgs: boolean,
-    logger: Console,
-): Promise<boolean> => {
+export const requireBlanketUpdateConfirmation = async (options: Partial<UpdateOptions>, hasPackageArgs: boolean, logger: Console): Promise<boolean> => {
     const isLatest = options.latest === true || options.target === "latest";
 
     if (hasPackageArgs || !isLatest) {

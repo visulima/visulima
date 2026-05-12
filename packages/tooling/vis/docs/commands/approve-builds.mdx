@@ -24,11 +24,11 @@ vis approve-builds --write          # write the suggested entries into vis.confi
 
 ## Options
 
-| Option          | Default | Description                                                                                                 |
-| --------------- | ------- | ----------------------------------------------------------------------------------------------------------- |
-| `--all`         | `false` | Approve all pending builds without prompting (pnpm only)                                                    |
-| `--scan`        | `false` | Force vis scanning even for pnpm (instead of delegating to `pnpm approve-builds`)                           |
-| `--sync-native` | `false` | Sync `allowBuilds` to the native PM config (bun: `trustedDependencies`, npm: `.npmrc`, yarn: `.yarnrc.yml`) |
+| Option          | Default | Description                                                                                                      |
+| --------------- | ------- | ---------------------------------------------------------------------------------------------------------------- |
+| `--all`         | `false` | Approve all pending builds without prompting (pnpm only)                                                         |
+| `--scan`        | `false` | Force vis scanning even for pnpm (instead of delegating to `pnpm approve-builds`)                                |
+| `--sync-native` | `false` | Sync `allowBuilds` to the native PM config (bun: `trustedDependencies`, npm: `.npmrc`, yarn: `.yarnrc.yml`)      |
 | `--write`       | `false` | Mutate `vis.config.ts` in place — add the unapproved packages to `security.allowBuilds` (LavaMoat `auto` parity) |
 
 ### `--write` behavior
@@ -37,9 +37,9 @@ vis approve-builds --write          # write the suggested entries into vis.confi
 
 - Honors `security.pinVersions`: with pinning on, entries are written as `"<name>@<version>": true,`; otherwise as `"<name>": true,`.
 - Three layouts are supported:
-  - `security.allowBuilds` already exists → new entries are appended; existing keys are deduped.
-  - `security` exists but no `allowBuilds` → an `allowBuilds` block is inserted as the first child of `security`.
-  - Neither exists → a fresh `security: { allowBuilds: { ... } }` is injected at the top of `defineConfig({ … })` / `export default { … }`.
+    - `security.allowBuilds` already exists → new entries are appended; existing keys are deduped.
+    - `security` exists but no `allowBuilds` → an `allowBuilds` block is inserted as the first child of `security`.
+    - Neither exists → a fresh `security: { allowBuilds: { ... } }` is injected at the top of `defineConfig({ … })` / `export default { … }`.
 
 If no `vis.config.{ts,js,mjs,cjs}` is found, the command reports `no-config` and prints the snippet you would paste in manually. If the file exists but cannot be anchored (no `defineConfig(` or `export default {`), the command reports `missing-anchor` and leaves the file untouched.
 

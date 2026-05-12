@@ -82,12 +82,12 @@ The installer uses the detected PM's idiomatic `add -D` invocation (pnpm `add -D
 
 #### Per-PM targets
 
-| PM    | `allowBuilds` target                                                    | `minimumReleaseAge` target                                  | Excludes target                       |
-| ----- | ----------------------------------------------------------------------- | ----------------------------------------------------------- | ------------------------------------- |
-| pnpm  | `pnpm-workspace.yaml` `allowBuilds` map + `onlyBuiltDependencies` list  | `pnpm-workspace.yaml` `minimumReleaseAge` (minutes)         | `minimumReleaseAgeExclude` list       |
-| bun   | `package.json` `trustedDependencies`                                    | `bunfig.toml` `[install]` `minimumReleaseAge` (**seconds**) | `minimumReleaseAgeExcludes` (plural)  |
-| npm   | _(no native allowlist)_                                                 | `.npmrc` `min-release-age=<duration>` (e.g. `2d`, `48h`)    | _(npm has no native excludes list)_   |
-| yarn  | _(no native allowlist)_                                                 | `.yarnrc.yml` `npmMinimalAgeGate: "<duration>"` (berry only) | _(yarn has no native excludes list)_ |
+| PM   | `allowBuilds` target                                                   | `minimumReleaseAge` target                                   | Excludes target                      |
+| ---- | ---------------------------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------ |
+| pnpm | `pnpm-workspace.yaml` `allowBuilds` map + `onlyBuiltDependencies` list | `pnpm-workspace.yaml` `minimumReleaseAge` (minutes)          | `minimumReleaseAgeExclude` list      |
+| bun  | `package.json` `trustedDependencies`                                   | `bunfig.toml` `[install]` `minimumReleaseAge` (**seconds**)  | `minimumReleaseAgeExcludes` (plural) |
+| npm  | _(no native allowlist)_                                                | `.npmrc` `min-release-age=<duration>` (e.g. `2d`, `48h`)     | _(npm has no native excludes list)_  |
+| yarn | _(no native allowlist)_                                                | `.yarnrc.yml` `npmMinimalAgeGate: "<duration>"` (berry only) | _(yarn has no native excludes list)_ |
 
 Vis canonicalises all durations to **minutes**. The syncer rounds sub-minute fractional values up to whole minutes before writing so that the same vis-config value round-trips identically across PMs.
 
@@ -97,30 +97,30 @@ Yarn classic (no `.yarnrc.yml`) is silently skipped because it has no equivalent
 
 ### `vis security list`
 
-| Option   | Default | Description                                                  |
-| -------- | ------- | ------------------------------------------------------------ |
-| `--json` | `false` | Emit the report as JSON instead of human-readable text       |
+| Option   | Default | Description                                            |
+| -------- | ------- | ------------------------------------------------------ |
+| `--json` | `false` | Emit the report as JSON instead of human-readable text |
 
 ### `vis security sync`
 
-| Option                    | Default | Description                                                                                |
-| ------------------------- | ------- | ------------------------------------------------------------------------------------------ |
-| `--skip-allow-builds`     | `false` | Skip syncing `allowBuilds` (`trustedDependencies` / `onlyBuiltDependencies` etc.)          |
-| `--skip-min-release-age`  | `false` | Skip syncing `minimumReleaseAge` and its excludes                                          |
+| Option                   | Default | Description                                                                       |
+| ------------------------ | ------- | --------------------------------------------------------------------------------- |
+| `--skip-allow-builds`    | `false` | Skip syncing `allowBuilds` (`trustedDependencies` / `onlyBuiltDependencies` etc.) |
+| `--skip-min-release-age` | `false` | Skip syncing `minimumReleaseAge` and its excludes                                 |
 
 ### `vis security run`
 
-| Option         | Default | Description                                                                  |
-| -------------- | ------- | ---------------------------------------------------------------------------- |
-| `--with-root`  | `false` | After dependency scripts, also run the workspace root's prepublish + prepare |
-| `--root-only`  | `false` | Skip dependency scripts and only run the workspace root's prepublish + prepare |
+| Option        | Default | Description                                                                    |
+| ------------- | ------- | ------------------------------------------------------------------------------ |
+| `--with-root` | `false` | After dependency scripts, also run the workspace root's prepublish + prepare   |
+| `--root-only` | `false` | Skip dependency scripts and only run the workspace root's prepublish + prepare |
 
 ### `vis security tripwire`
 
-| Option       | Default | Description                                                            |
-| ------------ | ------- | ---------------------------------------------------------------------- |
-| `--status`   | `false` | Report whether `@lavamoat/preinstall-always-fail` is installed         |
-| `--remove`   | `false` | Strip `@lavamoat/preinstall-always-fail` from `package.json`           |
+| Option     | Default | Description                                                    |
+| ---------- | ------- | -------------------------------------------------------------- |
+| `--status` | `false` | Report whether `@lavamoat/preinstall-always-fail` is installed |
+| `--remove` | `false` | Strip `@lavamoat/preinstall-always-fail` from `package.json`   |
 
 ## Drift report (post-install)
 

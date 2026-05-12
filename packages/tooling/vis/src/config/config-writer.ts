@@ -107,9 +107,7 @@ const writeApprovedBuildsToVisConfig = (
         return { added: [], configPath, skipped: entries, status: "missing-anchor" };
     }
 
-    const block = `\n    security: {\n        allowBuilds: {\n${entries
-        .map((e) => renderEntry(e, "            "))
-        .join("\n")}\n        },\n    },`;
+    const block = `\n    security: {\n        allowBuilds: {\n${entries.map((e) => renderEntry(e, "            ")).join("\n")}\n        },\n    },`;
     const updated = `${original.slice(0, anchorMatch.index + anchorMatch[0].length)}${block}${original.slice(anchorMatch.index + anchorMatch[0].length)}`;
 
     writeFileSync(configPath, updated);

@@ -48,13 +48,7 @@ const runTrailingWhitespace = (files: ReadonlyArray<string>, _args: ReadonlyArra
 
             const nonWhitespace = content.some((b) => !WHITESPACE.has(b));
 
-            if (
-                isMarkdown
-                && content.length >= 2
-                && content[content.length - 1] === 0x20
-                && content[content.length - 2] === 0x20
-                && nonWhitespace
-            ) {
+            if (isMarkdown && content.length >= 2 && content[content.length - 1] === 0x20 && content[content.length - 2] === 0x20 && nonWhitespace) {
                 stripEnd = Math.min(stripEnd + 2, content.length);
             }
 

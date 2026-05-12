@@ -23,9 +23,7 @@ const execute = ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console,
         return;
     }
 
-    const allowBuilds = Object.fromEntries(
-        Object.entries(visConfig.security.allowBuilds ?? {}).filter(([, v]) => v),
-    );
+    const allowBuilds = Object.fromEntries(Object.entries(visConfig.security.allowBuilds ?? {}).filter(([, v]) => v));
     const minutes = visConfig.security.minimumReleaseAge;
     const excludes = visConfig.security.minimumReleaseAgeExclude ?? [];
 

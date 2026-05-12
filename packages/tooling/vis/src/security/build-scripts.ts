@@ -101,7 +101,12 @@ const collectBuildScriptPackages = (cwd: string): BuildScriptEntry[] => {
                 }
 
                 if (declared.length > 0 && !seen.has(pkgName)) {
-                    seen.set(pkgName, { directory: fullPath, hooks: declared, name: pkgName, version: typeof pkg.version === "string" ? pkg.version : undefined });
+                    seen.set(pkgName, {
+                        directory: fullPath,
+                        hooks: declared,
+                        name: pkgName,
+                        version: typeof pkg.version === "string" ? pkg.version : undefined,
+                    });
                 }
 
                 const nested = join(fullPath, "node_modules");
@@ -213,11 +218,7 @@ interface BuildScriptStatus {
  * allowlist entries no longer match anything (excess / stale), and any
  * version-drift suggestions when `pinVersions: true`.
  */
-const scanBuildScriptStatus = (
-    cwd: string,
-    allowBuilds: Record<string, boolean>,
-    options: { pinVersions?: boolean } = {},
-): BuildScriptStatus => {
+const scanBuildScriptStatus = (cwd: string, allowBuilds: Record<string, boolean>, options: { pinVersions?: boolean } = {}): BuildScriptStatus => {
     const pinVersions = options.pinVersions === true;
     const installed = collectBuildScriptPackages(cwd);
     const unapproved: BuildScriptEntry[] = [];

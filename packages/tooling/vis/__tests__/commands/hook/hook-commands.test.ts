@@ -272,7 +272,7 @@ describe(runHookStage, () => {
         spawnSync("git", ["add", "pkg.json"], { cwd: temporary.root });
 
         writeConfig(temporary.root, {
-            "pre-commit": [{ builtin: "check-json", files: "\\.json$", id: "check-json" }],
+            "pre-commit": [{ builtin: "check-json", files: String.raw`\.json$`, id: "check-json" }],
         });
 
         const code = runHookStage(temporary.root, ".vis-hooks", { stage: "pre-commit" }, noopLogger);
@@ -289,7 +289,7 @@ describe(runHookStage, () => {
         spawnSync("git", ["add", "notes.txt"], { cwd: temporary.root });
 
         writeConfig(temporary.root, {
-            "pre-commit": [{ builtin: "trailing-whitespace", files: "\\.txt$", id: "trailing-whitespace" }],
+            "pre-commit": [{ builtin: "trailing-whitespace", files: String.raw`\.txt$`, id: "trailing-whitespace" }],
         });
 
         const code = runHookStage(temporary.root, ".vis-hooks", { stage: "pre-commit" }, noopLogger);

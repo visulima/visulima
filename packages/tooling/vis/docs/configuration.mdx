@@ -606,16 +606,16 @@ export default defineConfig({
 });
 ```
 
-| Field                 | Default | Description                                                                                                                                                                                                                                |
-| --------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `sponsor.enabled`     | `true`  | One-line "consider sponsoring visulima" notice.                                                                                                                                                                                            |
-| `mcpPromote.enabled`  | `true`  | One-line tip pointing at `@visulima/vis-mcp` install when an AI CLI (Claude Code, Cursor, Windsurf, Continue, Zed, Cline) is installed locally but vis-mcp is not yet wired into its config. Suppressed during `ai` / `mcp` / help / version invocations. |
+| Field                | Default | Description                                                                                                                                                                                                                                               |
+| -------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sponsor.enabled`    | `true`  | One-line "consider sponsoring visulima" notice.                                                                                                                                                                                                           |
+| `mcpPromote.enabled` | `true`  | One-line tip pointing at `@visulima/vis-mcp` install when an AI CLI (Claude Code, Cursor, Windsurf, Continue, Zed, Cline) is installed locally but vis-mcp is not yet wired into its config. Suppressed during `ai` / `mcp` / help / version invocations. |
 
 Each notice has an equivalent env-var opt-out — useful when a single invocation should stay quiet without touching the config file:
 
-| Env var                | Effect                                                |
-| ---------------------- | ----------------------------------------------------- |
-| `VIS_NO_SPONSOR=1`     | Suppresses the sponsor notice for this invocation.    |
+| Env var                | Effect                                                  |
+| ---------------------- | ------------------------------------------------------- |
+| `VIS_NO_SPONSOR=1`     | Suppresses the sponsor notice for this invocation.      |
 | `VIS_NO_MCP_PROMOTE=1` | Suppresses the vis-mcp install tip for this invocation. |
 
 The MCP nudge never writes to your AI CLI's config — it prints a copy-paste command. Staying out of the trust chain is intentional.

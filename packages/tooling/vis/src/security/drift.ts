@@ -44,9 +44,7 @@ const readPmNativeSnapshot = (pm: PackageManagerName, workspaceRoot: string): Pm
                 const tomlPath = join(workspaceRoot, "bunfig.toml");
 
                 if (isAccessibleSync(tomlPath)) {
-                    const data = readTomlSync(tomlPath) as
-                        | { install?: { minimumReleaseAge?: number; minimumReleaseAgeExcludes?: string[] } }
-                        | undefined;
+                    const data = readTomlSync(tomlPath) as { install?: { minimumReleaseAge?: number; minimumReleaseAgeExcludes?: string[] } } | undefined;
                     const rawSeconds = data?.install?.minimumReleaseAge;
 
                     if (typeof rawSeconds === "number") {
