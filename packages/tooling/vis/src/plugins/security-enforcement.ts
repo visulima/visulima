@@ -79,7 +79,7 @@ const securityEnforcementPlugin: Plugin = {
         // Display Socket.dev security summary after install/update commands
         const command = process.argv[2] ?? "";
 
-        const socketOptions = buildSocketOptions(toolbox.visConfig?.security?.socket);
+        const socketOptions = buildSocketOptions(toolbox.visConfig?.security?.socket, toolbox.visConfig?.security?.policies?.score?.minimum);
 
         if (INSTALL_COMMANDS.has(command) && socketOptions && toolbox.workspaceRoot) {
             try {

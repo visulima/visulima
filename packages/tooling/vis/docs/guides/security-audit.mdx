@@ -54,7 +54,7 @@ vis audit --report ./report.html # self-contained HTML
 
 ### Reachability
 
-`--usage` (or `security.audit.usage.enabled` in config) filters findings to only those packages that are statically imported somewhere in your source tree. Dynamic `require()` calls behind variable names are conservatively treated as reachable.
+`--usage` (or `security.policies.vulnerability.usage.enabled` in config) filters findings to only those packages that are statically imported somewhere in your source tree. Dynamic `require()` calls behind variable names are conservatively treated as reachable.
 
 This is a noise reducer — vulnerabilities in unused devDependencies stay out of your dashboard.
 

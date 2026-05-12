@@ -13,6 +13,20 @@ interface NativeAuditExclusions {
     ignoredAdvisories: string[];
 }
 
+/**
+ * The 8 Socket.dev-style supply-chain policies. Used in `security.policies`
+ * and `security.acceptedRisks[*].policies`.
+ */
+export type PolicyName =
+    | "first_seen"
+    | "install_scripts"
+    | "license"
+    | "malware"
+    | "publisher_change"
+    | "score"
+    | "unexpected_deps"
+    | "vulnerability";
+
 export interface CodeownersConfig {
     /** Workspace-level paths that apply outside any project (e.g., `.github/**`). */
     globalPaths?: Record<string, string[]>;
@@ -923,19 +937,51 @@ export interface VisConfig {
      */
     security?: {
         /**
-         * Map of package names/patterns to allow (true) or deny (false) build scripts.
-         * Packages not listed are denied by default.
-         * Equivalent to pnpm's `allowBuilds` setting.
+         * Packages whose policy findings have been reviewed and explicitly
+         * accepted. Matched against every policy unless `policies` narrows the
+         * scope. Replaces the legacy `security.socket.acceptedRisks` map.
+         *
+         * Key format: package name (`"lodash"`), name@version
+         * (`"lodash@4.17.21"`), or glob (`"@myorg/*"`). Unversioned keys match
+         * all versions of that package.
          * @example
          * ```
-         * allowBuilds: {
-         *   "esbuild": true,
-         *   "core-js": false,
-         *   "@prisma/client": true,
+         * acceptedRisks: {
+         *   "some-risky-pkg": {
+         *     reason: "Internal fork, low score expected",
+         *     acceptedAt: "2026-03-15T10:00:00Z",
+         *     acceptedScore: 0.25,
+         *     policies: ["score"],
+         *     expiresAt: "2026-12-31",
+         *   },
          * }
          * ```
          */
-        allowBuilds?: Record<string, boolean>;
+        acceptedRisks?: Record<
+            string,
+            {
+                /** ISO 8601 timestamp when the risk was accepted. */
+                acceptedAt: string;
+                /**
+                 * The overall Socket.dev score at the time of acceptance.
+                 * Only relevant for the `score` policy; ignored elsewhere.
+                 */
+                acceptedScore?: number;
+                /**
+                 * ISO 8601 date (or datetime). After this point the acceptance
+                 * stops applying and vis emits a warning. Leave undefined for
+                 * non-expiring entries.
+                 */
+                expiresAt?: string;
+                /**
+                 * Which policies this acceptance covers. When undefined the
+                 * acceptance applies to every policy finding on this package.
+                 */
+                policies?: PolicyName[];
+                /** User-provided reason for accepting the risk. */
+                reason: string;
+            }
+        >;
 
         /**
          * Offline OSV advisory + `vis audit` configuration.
@@ -944,11 +990,10 @@ export interface VisConfig {
          * - `audit.advisories.source` is the OSV mirror to download from. It
          *   must be `https://` and resolve to a host in `allowedHosts` (or one
          *   of the built-in defaults).
-         * - `audit.failOn` mirrors the `--fail-on` CLI flag so CI configs can
-         *   declare a single severity gate.
          * - `audit.offlineByDefault` flips the default of `--offline`.
          *
-         * Each field is independently overridable from the command line.
+         * Vulnerability severity gating and reachability filtering live under
+         * `policies.vulnerability` (see below).
          */
         audit?: {
             /**
@@ -1027,40 +1072,11 @@ export interface VisConfig {
             };
 
             /**
-             * Severity threshold that makes `vis audit` exit non-zero.
-             * Equivalent to the CLI `--fail-on` flag.
-             * @example "high"
-             */
-            failOn?: "critical" | "high" | "low" | "medium";
-
-            /**
              * When true, `vis audit` skips network calls and queries the
              * offline cache. Equivalent to the CLI `--offline` flag.
              * @default false
              */
             offlineByDefault?: boolean;
-
-            /**
-             * Reachability filter — only report vulnerabilities in
-             * packages the workspace statically imports.
-             */
-            usage?: {
-                /**
-                 * Packages to always treat as reachable even if no static
-                 * import is found. Use for build-time loaders, plugin
-                 * chains, and other packages pulled in via runtime
-                 * resolution that the static scan can't see.
-                 * @example ["esbuild", "webpack-cli"]
-                 */
-                alwaysAssumeUsed?: string[];
-
-                /**
-                 * Enable the reachability filter by default. Equivalent to
-                 * `--usage` on the CLI. Disable on the CLI via `--no-usage`.
-                 * @default false
-                 */
-                enabled?: boolean;
-            };
         };
 
         /**
@@ -1072,60 +1088,210 @@ export interface VisConfig {
         blockExoticSubdeps?: boolean;
 
         /**
-         * Minimum number of minutes that must pass after a version is published
-         * before vis will allow installation. Reduces risk of installing
-         * compromised packages that are typically discovered within hours.
-         * Equivalent to pnpm's `minimumReleaseAge`.
-         * @default 0
-         * @example 1440 // 24 hours
+         * Supply-chain policy gates. Each sub-block enables one policy and
+         * configures its behavior. When a sub-block is omitted the policy is
+         * inactive. `acceptedRisks` (above) silences specific packages without
+         * disabling a policy globally.
+         *
+         * The 8 policies are inspired by Socket.dev's classification:
+         * - `malware`            — Socket-flagged malicious packages
+         * - `first_seen`         — packages published less than N minutes ago
+         * - `unexpected_deps`    — packages outside an allow-list / baseline
+         * - `publisher_change`   — maintainer set changed between installs
+         * - `install_scripts`    — preinstall/install/postinstall scripts
+         * - `score`              — Socket overall score below threshold
+         * - `vulnerability`      — OSV vulnerability findings
+         * - `license`            — SPDX allow / deny lists
          */
-        minimumReleaseAge?: number;
-
-        /**
-         * Package names/patterns excluded from minimumReleaseAge check.
-         * Equivalent to pnpm's `minimumReleaseAgeExclude`.
-         * @example ["webpack", "react", "@myorg/*"]
-         */
-        minimumReleaseAgeExclude?: string[];
-
-        /**
-         * Socket.dev security intelligence configuration.
-         * When enabled, vis fetches package security scores, alerts, and report
-         * data from the Socket.dev API during install, update, and check commands.
-         * @see https://socket.dev
-         */
-        socket?: {
+        policies?: {
             /**
-             * Packages whose low Socket.dev scores or alerts have been reviewed
-             * and explicitly accepted. These packages skip the confirmation
-             * prompt during `vis add` and show as "acknowledged" in `vis audit`.
-             *
-             * Key format: package name (`"lodash"`), name@version
-             * (`"lodash@4.17.21"`), or glob (`"@myorg/*"`).
-             * Unversioned keys match all versions of that package.
+             * Minimum number of minutes that must pass after a version is
+             * published before vis will allow installation. Migrated from
+             * the legacy `security.minimumReleaseAge` field. Equivalent to
+             * pnpm's `minimumReleaseAge`.
+             * @default 0
+             * @example { minutes: 1440, exclude: ["@myorg/*"] } // 24 hours
+             */
+            first_seen?: {
+                /**
+                 * Package names/patterns excluded from the first_seen check.
+                 * Equivalent to pnpm's `minimumReleaseAgeExclude`.
+                 * @example ["webpack", "react", "@myorg/*"]
+                 */
+                exclude?: string[];
+                /** Minutes after publish before install is allowed. */
+                minutes?: number;
+            };
+
+            /**
+             * Build-script (pre/install/postinstall/prepare) controls.
+             * Migrated from the legacy `security.allowBuilds` /
+             * `security.strictDepBuilds` fields.
+             * @example { allow: { esbuild: true }, strict: true }
+             */
+            install_scripts?: {
+                /**
+                 * Map of package names/patterns to allow (true) or deny
+                 * (false) build scripts. Packages not listed are denied
+                 * by default. Equivalent to pnpm's `allowBuilds`.
+                 */
+                allow?: Record<string, boolean>;
+                /**
+                 * When true, installation will fail (exit non-zero) if any
+                 * dependencies have unreviewed build scripts. Equivalent to
+                 * pnpm's `strictDepBuilds`.
+                 * @default false
+                 */
+                strict?: boolean;
+            };
+
+            /**
+             * SPDX license allow / deny lists. Deny wins on any sub-license
+             * match in SPDX expressions (`(MIT OR GPL-3.0)` against
+             * `deny: ["GPL-3.0"]` is blocked). Packages with no declared
+             * license are flagged when `allow` is set.
              * @example
              * ```
-             * acceptedRisks: {
-             *   "some-risky-pkg": {
-             *     reason: "Internal fork, low score expected",
-             *     acceptedAt: "2026-03-15T10:00:00Z",
-             *     acceptedScore: 0.25,
-             *   },
+             * license: {
+             *   allow: ["MIT", "Apache-2.0", "BSD-3-Clause"],
+             *   deny: ["GPL-3.0", "AGPL-3.0"],
              * }
              * ```
              */
-            acceptedRisks?: Record<
-                string,
-                {
-                    /** ISO 8601 timestamp when the risk was accepted. */
-                    acceptedAt: string;
-                    /** The overall Socket.dev score at the time of acceptance. */
-                    acceptedScore: number;
-                    /** User-provided reason for accepting the risk. */
-                    reason: string;
-                }
-            >;
+            license?: {
+                /**
+                 * SPDX identifiers that are explicitly permitted. When set,
+                 * any package whose declared license is not on this list is
+                 * blocked.
+                 */
+                allow?: string[];
+                /**
+                 * SPDX identifiers that are explicitly forbidden. Always
+                 * wins over `allow` when both reference the same identifier.
+                 */
+                deny?: string[];
+            };
 
+            /**
+             * Behavior when the Socket.dev feed flags a package as malicious
+             * (`alerts[].type === "Malware"`).
+             * @default { mode: "block" } when Socket is enabled, off otherwise
+             */
+            malware?: {
+                /**
+                 * - `"block"` — emit a block decision.
+                 * - `"warn"`  — surface as a warning; do not gate exit code.
+                 * - `"off"`   — disable the policy entirely.
+                 */
+                mode?: "block" | "off" | "warn";
+            };
+
+            /**
+             * Trust-level checking for package publishing. Migrated from the
+             * legacy `security.trustPolicy*` fields. Equivalent to pnpm's
+             * `trustPolicy`.
+             * @example { mode: "no-downgrade", ignoreAfter: 43200 } // 30 days
+             */
+            publisher_change?: {
+                /**
+                 * Package selectors excluded from the check.
+                 * Equivalent to pnpm's `trustPolicyExclude`.
+                 * @example ["chokidar@4.0.3"]
+                 */
+                exclude?: string[];
+                /**
+                 * Ignore packages published more than N minutes ago. Useful
+                 * for older packages that pre-date provenance support.
+                 * Equivalent to pnpm's `trustPolicyIgnoreAfter`.
+                 */
+                ignoreAfter?: number;
+                /**
+                 * - `"off"`           — no trust checking (default).
+                 * - `"no-downgrade"`  — block when a package's trust level
+                 *   has decreased compared to previous releases (e.g., was
+                 *   published by trusted publisher, now only has provenance).
+                 */
+                mode?: "no-downgrade" | "off";
+            };
+
+            /**
+             * Socket.dev overall-score threshold. Packages scoring below
+             * `minimum` trigger a block decision (or interactive prompt
+             * during `vis add`). Migrated from the legacy
+             * `security.socket.minimumScore` field.
+             * @example { minimum: 0.4 }
+             */
+            score?: {
+                /**
+                 * Minimum overall Socket.dev score (0–1). Set to 0 to
+                 * disable the gate while keeping Socket data fetched.
+                 * @default 0.4
+                 */
+                minimum?: number;
+            };
+
+            /**
+             * Net-new transitive dependency detection. Either provide a
+             * static allow-list, a baseline lockfile path (recommended), or
+             * both — the intersection is enforced.
+             * @example { baselineLockfile: "./security/lockfile.baseline.yaml" }
+             */
+            unexpected_deps?: {
+                /**
+                 * Allow-list of dependency names that may appear in the
+                 * resolved package set. Glob patterns are supported.
+                 * @example ["lodash", "axios", "@myorg/*"]
+                 */
+                allow?: string[];
+                /**
+                 * Path (absolute or relative to the workspace root) to a
+                 * baseline lockfile snapshot. The policy diffs the current
+                 * lockfile against this baseline and flags any package that
+                 * didn't exist before.
+                 * @example "./security/lockfile.baseline.yaml"
+                 */
+                baselineLockfile?: string;
+            };
+
+            /**
+             * OSV vulnerability gating. Migrated from the legacy
+             * `security.audit.failOn` + `security.audit.usage` fields.
+             */
+            vulnerability?: {
+                /**
+                 * Severity threshold that makes `vis audit` exit non-zero.
+                 * Equivalent to the CLI `--fail-on` flag.
+                 * @example "high"
+                 */
+                failOn?: "critical" | "high" | "low" | "medium";
+                /**
+                 * Reachability filter — only report vulnerabilities in
+                 * packages the workspace statically imports.
+                 */
+                usage?: {
+                    /**
+                     * Packages to always treat as reachable even if no
+                     * static import is found.
+                     * @example ["esbuild", "webpack-cli"]
+                     */
+                    alwaysAssumeUsed?: string[];
+                    /**
+                     * Enable the reachability filter by default. Equivalent
+                     * to `--usage` on the CLI; `--no-usage` disables.
+                     * @default false
+                     */
+                    enabled?: boolean;
+                };
+            };
+        };
+
+        /**
+         * Socket.dev data-source configuration. Connection knobs only — score
+         * thresholds and accepted-risk overrides moved to `policies.score` and
+         * `security.acceptedRisks` respectively.
+         * @see https://socket.dev
+         */
+        socket?: {
             /**
              * Custom Socket.dev API token. Falls back to the public API token.
              * Set via VIS_SOCKET_TOKEN environment variable or here.
@@ -1145,54 +1311,11 @@ export interface VisConfig {
             enabled?: boolean;
 
             /**
-             * Minimum overall Socket.dev score (0–1) for a package to be
-             * accepted without a confirmation prompt during `vis add`.
-             * Packages scoring below this threshold trigger an interactive
-             * prompt asking the user to confirm. Set to 0 to disable.
-             * @default 0.4
-             */
-            minimumScore?: number;
-
-            /**
              * Request timeout in milliseconds for the Socket.dev API.
              * @default 15_000 (15 seconds)
              */
             timeoutMs?: number;
         };
-
-        /**
-         * When true, installation will fail (exit non-zero) if any dependencies
-         * have unreviewed build scripts. Equivalent to pnpm's `strictDepBuilds`.
-         * @default false
-         */
-        strictDepBuilds?: boolean;
-
-        /**
-         * Trust level checking for package publishing.
-         * - "off": No trust checking (default)
-         * - "no-downgrade": Fail if a package's trust level has decreased
-         *   compared to previous releases (e.g., was published by trusted
-         *   publisher, now only has provenance).
-         * Equivalent to pnpm's `trustPolicy`.
-         * @default "off"
-         */
-        trustPolicy?: "no-downgrade" | "off";
-
-        /**
-         * Package selectors excluded from trust policy checks.
-         * Equivalent to pnpm's `trustPolicyExclude`.
-         * @example ["chokidar@4.0.3", "@babel/core@7.28.5"]
-         */
-        trustPolicyExclude?: string[];
-
-        /**
-         * Ignore the trust policy check for packages published more than
-         * the specified number of minutes ago. Useful for older packages
-         * that pre-date provenance support.
-         * Equivalent to pnpm's `trustPolicyIgnoreAfter` (10.27+).
-         * @example 43200 // 30 days
-         */
-        trustPolicyIgnoreAfter?: number;
 
         /**
          * Package names to skip during typosquat detection.

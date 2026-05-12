@@ -123,17 +123,18 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
     const isJson = format === "json" || Boolean(options.json);
     const reportPath = options.report as string | undefined;
     const auditConfig = visConfig?.security?.audit;
+    const policies = visConfig?.security?.policies;
     const isOffline = options.offline === undefined ? Boolean(auditConfig?.offlineByDefault) : Boolean(options.offline);
     const dbPath = options.db as string | undefined;
     const ecosystems = parseEcosystems(options.ecosystem as string | undefined);
     const prodOnly = Boolean(options.prodOnly);
-    const failOn = (options.failOn as SeverityFilter | undefined) ?? auditConfig?.failOn;
+    const failOn = (options.failOn as SeverityFilter | undefined) ?? policies?.vulnerability?.failOn;
     const showFixes = Boolean(options.showFixes);
     const showAccepted = Boolean(options.showAccepted);
     const socketConfig = visConfig?.security?.socket;
-    const acceptedRisks = socketConfig?.acceptedRisks;
+    const acceptedRisks = visConfig?.security?.acceptedRisks;
     // --no-usage wins over --usage and config; otherwise --usage flag, else config default.
-    const usageConfig = auditConfig?.usage;
+    const usageConfig = policies?.vulnerability?.usage;
     const usageEnabled = options.noUsage ? false : options.usage === undefined ? Boolean(usageConfig?.enabled) : Boolean(options.usage);
     const quietHeader = isJson || isSarif || isCsaf || isCycloneDxVex;
 
@@ -199,7 +200,7 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
 
     // Offline mode skips every network-bound source; socket.dev is therefore
     // disabled regardless of socketConfig.enabled.
-    const socketOptions = isOffline ? undefined : buildSocketOptions(socketConfig);
+    const socketOptions = isOffline ? undefined : buildSocketOptions(socketConfig, policies?.score?.minimum);
 
     // findDuplicateDependencies is synchronous — hoist it outside Promise.all
     // so the async fan-out only contains genuine async work.

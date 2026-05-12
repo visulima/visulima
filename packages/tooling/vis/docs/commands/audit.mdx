@@ -133,12 +133,6 @@ export default defineConfig({
         audit: {
             // Default to the offline OSV cache when present.
             offlineByDefault: true,
-            // CI exit gate (overridable via --fail-on).
-            failOn: "high",
-            usage: {
-                // Apply the reachability filter by default.
-                enabled: true,
-            },
             apply: {
                 transitive: {
                     // CI gate — required alongside `--yes` before overrides are written.
@@ -146,10 +140,26 @@ export default defineConfig({
                 },
             },
         },
+        policies: {
+            vulnerability: {
+                // CI exit gate (overridable via --fail-on).
+                failOn: "high",
+                usage: {
+                    // Apply the reachability filter by default.
+                    enabled: true,
+                },
+            },
+        },
         socket: {
             enabled: true,
-            // Workspace-scoped acknowledged risks.
-            acceptedRisks: [{ name: "some-package", reason: "Vendor confirmed no fix available", expiresAt: "2026-12-31" }],
+        },
+        // Workspace-scoped acknowledged risks (shared across all policies).
+        acceptedRisks: {
+            "some-package": {
+                reason: "Vendor confirmed no fix available",
+                acceptedAt: "2026-01-01",
+                expiresAt: "2026-12-31",
+            },
         },
     },
 });

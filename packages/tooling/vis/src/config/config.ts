@@ -25,31 +25,45 @@ const TASK_CONFIG_FILE_SET = new Set(TASK_CONFIG_FILES);
 /**
  * Secure-by-default security settings based on npm supply chain best practices.
  *
- * These defaults are applied automatically when using `defineConfig()` or `loadVisConfig()`.
+ * Applied automatically when using `defineConfig()` or `loadVisConfig()`.
  * Users can override any value — their settings always take precedence.
  * @see https://github.com/lirantal/awesome-npm-security-best-practices
  */
-const SECURITY_DEFAULTS: Required<
-    Pick<NonNullable<VisConfig["security"]>, "blockExoticSubdeps" | "strictDepBuilds" | "trustPolicy" | "trustPolicyIgnoreAfter">
-> = {
-    /** Block transitive dependencies from using git repos or tarball URLs. */
+const SECURITY_DEFAULTS: NonNullable<VisConfig["security"]> = {
     blockExoticSubdeps: true,
-    /** Make unapproved build scripts a hard error instead of a warning. */
-    strictDepBuilds: true,
-    /** Fail if a package's trust level has decreased compared to prior releases. */
-    trustPolicy: "no-downgrade" as const,
-    /** Skip trust policy check for packages published more than 30 days ago. */
-    trustPolicyIgnoreAfter: 43_200,
+    policies: {
+        install_scripts: { strict: true },
+        publisher_change: { ignoreAfter: 43_200, mode: "no-downgrade" },
+    },
 };
 
 /**
  * Deep-merge user security settings with secure defaults.
- * User-provided values always win.
+ * User-provided values always win, but unspecified sub-keys inherit defaults.
  */
 const mergeSecurityDefaults = (security: VisConfig["security"]): VisConfig["security"] => {
+    if (!security) {
+        return { ...SECURITY_DEFAULTS };
+    }
+
+    const defaultPolicies = SECURITY_DEFAULTS.policies ?? {};
+    const userPolicies = security.policies ?? {};
+
     return {
         ...SECURITY_DEFAULTS,
         ...security,
+        policies: {
+            ...defaultPolicies,
+            ...userPolicies,
+            install_scripts: {
+                ...defaultPolicies.install_scripts,
+                ...userPolicies.install_scripts,
+            },
+            publisher_change: {
+                ...defaultPolicies.publisher_change,
+                ...userPolicies.publisher_change,
+            },
+        },
     };
 };
 

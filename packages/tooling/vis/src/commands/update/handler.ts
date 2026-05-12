@@ -318,7 +318,7 @@ const executeCatalogUpdate = async (
         logger.info(`Checking ${String(totalDeps)} catalog dependencies...\n`);
     }
 
-    const socketOptions = buildSocketOptions(visConfig.security?.socket);
+    const socketOptions = buildSocketOptions(visConfig.security?.socket, visConfig.security?.policies?.score?.minimum);
 
     const { checkedCount, failed, filteredByTarget, ignored, outdated } = await checkOutdated(
         catalogs,
@@ -327,7 +327,7 @@ const executeCatalogUpdate = async (
         onProgress,
         workspaceRoot,
         socketOptions,
-        visConfig.security?.socket?.acceptedRisks,
+        visConfig.security?.acceptedRisks,
     );
 
     if (progressInstance) {

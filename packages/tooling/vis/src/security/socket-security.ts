@@ -13,6 +13,7 @@ import { readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { ensureDirSync, isAccessibleSync, readJsonSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
+import type { PolicyName } from "../config/types";
 import { getVisCacheDir } from "../util/vis-paths";
 
 const SOCKET_API_V0_URL = "https://api.socket.dev/v0/purl?alerts=true";
@@ -525,15 +526,19 @@ interface SocketConfigLike {
     apiToken?: string;
     cacheTtlMs?: number;
     enabled?: boolean;
-    minimumScore?: number;
     timeoutMs?: number;
 }
 
 /**
  * Builds SocketSecurityOptions from the VisConfig socket config section.
  * Returns undefined if Socket.dev is not enabled or no API token is available.
+ * `scoreMinimum` is sourced from `security.policies.score.minimum` and passed
+ * through so report rendering can highlight low-score packages.
  */
-const buildSocketOptions = (socketConfig: SocketConfigLike | undefined): SocketSecurityOptions | undefined => {
+const buildSocketOptions = (
+    socketConfig: SocketConfigLike | undefined,
+    scoreMinimum?: number,
+): SocketSecurityOptions | undefined => {
     if (!socketConfig?.enabled) {
         return undefined;
     }
@@ -543,7 +548,7 @@ const buildSocketOptions = (socketConfig: SocketConfigLike | undefined): SocketS
     return {
         apiToken,
         cacheTtlMs: socketConfig.cacheTtlMs,
-        minimumScore: socketConfig.minimumScore,
+        minimumScore: scoreMinimum,
         timeoutMs: socketConfig.timeoutMs,
     };
 };
@@ -552,8 +557,21 @@ const buildSocketOptions = (socketConfig: SocketConfigLike | undefined): SocketS
 interface AcceptedRisk {
     /** ISO 8601 timestamp when the risk was accepted. */
     acceptedAt: string;
-    /** The overall Socket.dev score at the time of acceptance. */
-    acceptedScore: number;
+    /**
+     * The overall Socket.dev score at the time of acceptance.
+     * Only relevant for the `score` policy; ignored elsewhere.
+     */
+    acceptedScore?: number;
+    /**
+     * ISO 8601 date (or datetime). After this point the acceptance stops
+     * applying and vis emits a warning. Leave undefined for non-expiring entries.
+     */
+    expiresAt?: string;
+    /**
+     * Which policies this acceptance covers. When undefined the acceptance
+     * applies to every policy finding on this package.
+     */
+    policies?: PolicyName[];
     /** User-provided reason for accepting the risk. */
     reason: string;
 }
@@ -561,27 +579,52 @@ interface AcceptedRisk {
 /**
  * Checks if a package has an accepted risk entry.
  * Matches by exact name@version, unversioned name, or trailing glob patterns.
+ * When `policy` is provided the candidate is only returned if its
+ * `policies` array is undefined (covers all policies) or contains the policy.
+ * Expired entries (`expiresAt` in the past) are skipped.
  * Returns the matching AcceptedRisk if found, undefined otherwise.
  */
-const findAcceptedRisk = (packageName: string, version: string, acceptedRisks: Record<string, AcceptedRisk> | undefined): AcceptedRisk | undefined => {
+const findAcceptedRisk = (
+    packageName: string,
+    version: string,
+    acceptedRisks: Record<string, AcceptedRisk> | undefined,
+    policy?: PolicyName,
+): AcceptedRisk | undefined => {
     if (!acceptedRisks) {
         return undefined;
     }
 
+    const now = Date.now();
+    const matches = (risk: AcceptedRisk): boolean => {
+        if (risk.expiresAt) {
+            const expiresMs = Date.parse(risk.expiresAt);
+
+            if (!Number.isNaN(expiresMs) && expiresMs < now) {
+                return false;
+            }
+        }
+
+        if (policy && risk.policies && !risk.policies.includes(policy)) {
+            return false;
+        }
+
+        return true;
+    };
+
     // Check exact name@version, then unversioned name
     const versionedKey = `${packageName}@${version}`;
 
-    if (acceptedRisks[versionedKey]) {
+    if (acceptedRisks[versionedKey] && matches(acceptedRisks[versionedKey])) {
         return acceptedRisks[versionedKey];
     }
 
-    if (acceptedRisks[packageName]) {
+    if (acceptedRisks[packageName] && matches(acceptedRisks[packageName])) {
         return acceptedRisks[packageName];
     }
 
     // Check glob patterns (e.g., "@myorg/*")
     for (const [pattern, risk] of Object.entries(acceptedRisks)) {
-        if (pattern.endsWith("*") && packageName.startsWith(pattern.slice(0, -1))) {
+        if (pattern.endsWith("*") && packageName.startsWith(pattern.slice(0, -1)) && matches(risk)) {
             return risk;
         }
     }
@@ -596,11 +639,12 @@ const findAcceptedRisk = (packageName: string, version: string, acceptedRisks: R
 const formatAcceptedRiskSnippet = (packageName: string, _version: string, score: number, reason: string): string => {
     const key = `"${packageName}"`;
     const lines = [
-        `    // Add to security.socket.acceptedRisks in vis.config.ts:`,
+        `    // Add to security.acceptedRisks in vis.config.ts:`,
         `    ${key}: {`,
         `      reason: "${reason}",`,
         `      acceptedAt: "${new Date().toISOString()}",`,
         `      acceptedScore: ${String(score)},`,
+        `      policies: ["score"],`,
         `    },`,
     ];
 

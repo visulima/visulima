@@ -162,8 +162,8 @@ const streamScans = async (context: ScanContext): Promise<Omit<DoctorResults, "e
     // Build scan config
     const npmrcConfig = loadNpmrc(workspaceRoot);
     const catalogs = readCatalogs(workspaceRoot, packageManager);
-    const socketOptions = buildSocketOptions(visConfig?.security?.socket);
-    const acceptedRisks = visConfig?.security?.socket?.acceptedRisks;
+    const socketOptions = buildSocketOptions(visConfig?.security?.socket, visConfig?.security?.policies?.score?.minimum);
+    const acceptedRisks = visConfig?.security?.acceptedRisks;
     const lockText = readLockfileText(workspaceRoot, pm.name);
 
     const checkOptions: CatalogCheckOptions = {

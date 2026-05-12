@@ -113,7 +113,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
         logger.info(`Checking ${String(totalDeps)} catalog dependencies against npm registry...\n`);
     }
 
-    const socketOptions = buildSocketOptions(visConfig?.security?.socket);
+    const socketOptions = buildSocketOptions(visConfig?.security?.socket, visConfig?.security?.policies?.score?.minimum);
 
     const { failed, outdated } = await checkOutdated(
         catalogs,
@@ -122,7 +122,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
         onProgress,
         workspaceRoot,
         socketOptions,
-        visConfig?.security?.socket?.acceptedRisks,
+        visConfig?.security?.acceptedRisks,
     );
 
     if (progressInstance) {

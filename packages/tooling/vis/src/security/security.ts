@@ -1,9 +1,9 @@
 /**
  * Supply chain security for package management commands.
  *
- * Ports pnpm's security features (minimumReleaseAge, trustPolicy,
- * allowBuilds, blockExoticSubdeps, strictDepBuilds) to work universally
- * across all package managers.
+ * Maps the unified `security.policies` config to pnpm-native settings
+ * (minimumReleaseAge, trustPolicy, allowBuilds, blockExoticSubdeps,
+ * strictDepBuilds) and enforces them universally across package managers.
  *
  * Support matrix for build script enforcement:
  * - pnpm v10+: Native `allowBuilds` in pnpm-workspace.yaml (vis validates config)
@@ -47,46 +47,48 @@ const checkSecurityConfig = (config: VisConfig, packageManager: string): Securit
         return result;
     }
 
-    // allowBuilds has no default — it must be user-supplied
-    if (!security.allowBuilds || Object.keys(security.allowBuilds).length === 0) {
+    const policies = security.policies ?? {};
+    const installScripts = policies.install_scripts;
+    const allow = installScripts?.allow;
+    const hasAllow = allow && Object.keys(allow).length > 0;
+
+    if (!hasAllow) {
         result.warnings.push(
             packageManager === "pnpm"
-                ? "security.allowBuilds is not configured. pnpm blocks build scripts by default since v10. Run 'vis approve-builds' to review."
-                : "security.allowBuilds is not configured. Consider listing which packages are allowed to run install/postinstall scripts.",
+                ? "security.policies.install_scripts.allow is not configured. pnpm blocks build scripts by default since v10. Run 'vis approve-builds' to review."
+                : "security.policies.install_scripts.allow is not configured. Consider listing which packages are allowed to run install/postinstall scripts.",
         );
     }
 
-    // Warn if user explicitly disabled defaults
-    if (security.minimumReleaseAge === 0) {
-        result.warnings.push("security.minimumReleaseAge is explicitly set to 0. New packages can be installed immediately after publishing.");
+    if (policies.first_seen?.minutes === 0) {
+        result.warnings.push("security.policies.first_seen.minutes is explicitly set to 0. New packages can be installed immediately after publishing.");
     }
 
-    if (security.trustPolicy === "off") {
-        result.warnings.push("security.trustPolicy is explicitly set to 'off'. Packages whose trust level has decreased will not be blocked.");
+    if (policies.publisher_change?.mode === "off") {
+        result.warnings.push("security.policies.publisher_change.mode is explicitly 'off'. Packages whose trust level has decreased will not be blocked.");
     }
 
     if (security.blockExoticSubdeps === false) {
         result.warnings.push("security.blockExoticSubdeps is explicitly disabled. Transitive dependencies can pull code from git repos or tarball URLs.");
     }
 
-    if (security.strictDepBuilds === false) {
-        result.warnings.push("security.strictDepBuilds is explicitly disabled. Unapproved build scripts will only produce warnings, not errors.");
+    if (installScripts?.strict === false) {
+        result.warnings.push("security.policies.install_scripts.strict is explicitly disabled. Unapproved build scripts will only produce warnings, not errors.");
     }
 
-    // Error: strictDepBuilds is on but no allowBuilds
-    if (security.strictDepBuilds && (!security.allowBuilds || Object.keys(security.allowBuilds).length === 0)) {
+    if (installScripts?.strict && !hasAllow) {
         result.errors.push(
-            "security.strictDepBuilds is enabled but security.allowBuilds is empty. All dependencies with build scripts will be blocked. "
+            "security.policies.install_scripts.strict is enabled but `.allow` is empty. All dependencies with build scripts will be blocked. "
             + "Run 'vis approve-builds' to review and add packages.",
         );
     }
 
     // Warn about stale accepted risks (>90 days old)
-    if (security.socket?.acceptedRisks) {
+    if (security.acceptedRisks) {
         const staleThresholdMs = 90 * 24 * 60 * 60 * 1000;
         const now = Date.now();
 
-        for (const [pkg, risk] of Object.entries(security.socket.acceptedRisks)) {
+        for (const [pkg, risk] of Object.entries(security.acceptedRisks)) {
             const acceptedTime = new Date(risk.acceptedAt).getTime();
 
             if (now - acceptedTime > staleThresholdMs) {
@@ -118,7 +120,7 @@ const emitSecurityWarnings = (config: VisConfig, packageManager: string, enforce
         pail.error(error);
     }
 
-    const summarized = enforcementWillFire ? result.warnings.filter((w) => !w.startsWith("security.allowBuilds is not configured")) : result.warnings;
+    const summarized = enforcementWillFire ? result.warnings.filter((w) => !w.startsWith("security.policies.install_scripts.allow is not configured")) : result.warnings;
 
     if (summarized.length > 0) {
         pail.warn(`${summarized.length} security recommendation${summarized.length === 1 ? "" : "s"} found. Run 'vis check --security-config' for details.`);
@@ -134,31 +136,37 @@ const printSecurityReport = (config: VisConfig, packageManager: string): void =>
 
     // Show active security settings
     if (security) {
+        const policies = security.policies ?? {};
+        const firstSeen = policies.first_seen;
+        const publisherChange = policies.publisher_change;
+        const installScripts = policies.install_scripts;
+        const score = policies.score;
+
         pail.info("Active security settings:");
-        pail.info(`  minimumReleaseAge:      ${security.minimumReleaseAge ?? "not set"} minutes`);
-        pail.info(`  trustPolicy:            ${security.trustPolicy ?? "not set"}`);
-        pail.info(`  trustPolicyIgnoreAfter: ${security.trustPolicyIgnoreAfter ?? "not set"} minutes`);
-        pail.info(`  blockExoticSubdeps:     ${security.blockExoticSubdeps ?? false}`);
-        pail.info(`  strictDepBuilds:        ${security.strictDepBuilds ?? false}`);
-        pail.info(`  allowBuilds:            ${security.allowBuilds ? `${Object.keys(security.allowBuilds).length} entries` : "not configured"}`);
+        pail.info(`  policies.first_seen.minutes:           ${firstSeen?.minutes ?? "not set"} minutes`);
+        pail.info(`  policies.publisher_change.mode:        ${publisherChange?.mode ?? "not set"}`);
+        pail.info(`  policies.publisher_change.ignoreAfter: ${publisherChange?.ignoreAfter ?? "not set"} minutes`);
+        pail.info(`  blockExoticSubdeps:                    ${security.blockExoticSubdeps ?? false}`);
+        pail.info(`  policies.install_scripts.strict:       ${installScripts?.strict ?? false}`);
+        pail.info(`  policies.install_scripts.allow:        ${installScripts?.allow ? `${Object.keys(installScripts.allow).length} entries` : "not configured"}`);
         pail.info("");
         pail.info("Socket.dev integration:");
-        pail.info(`  socket.enabled:         ${security.socket?.enabled ?? false}`);
-        pail.info(`  socket.apiToken:        ${security.socket?.apiToken || process.env.VIS_SOCKET_TOKEN ? "configured" : "using public token"}`);
-        pail.info(`  socket.minimumScore:    ${security.socket?.minimumScore ?? "default (0.4)"}`);
-        pail.info(`  socket.cacheTtlMs:      ${security.socket?.cacheTtlMs ?? "default (1 hour)"}`);
-        pail.info(`  socket.timeoutMs:       ${security.socket?.timeoutMs ?? "default (15s)"}`);
+        pail.info(`  socket.enabled:                        ${security.socket?.enabled ?? false}`);
+        pail.info(`  socket.apiToken:                       ${security.socket?.apiToken || process.env.VIS_SOCKET_TOKEN ? "configured" : "using public token"}`);
+        pail.info(`  policies.score.minimum:                ${score?.minimum ?? "default (0.4)"}`);
+        pail.info(`  socket.cacheTtlMs:                     ${security.socket?.cacheTtlMs ?? "default (1 hour)"}`);
+        pail.info(`  socket.timeoutMs:                      ${security.socket?.timeoutMs ?? "default (15s)"}`);
 
-        if (security.socket?.acceptedRisks) {
-            const risks = Object.entries(security.socket.acceptedRisks);
+        if (security.acceptedRisks) {
+            const risks = Object.entries(security.acceptedRisks);
 
-            pail.info(`  socket.acceptedRisks:   ${String(risks.length)} entr${risks.length === 1 ? "y" : "ies"}`);
+            pail.info(`  acceptedRisks:                         ${String(risks.length)} entr${risks.length === 1 ? "y" : "ies"}`);
 
             for (const [pkg, risk] of risks) {
                 pail.info(`    ${pkg}: ${risk.reason} (accepted ${risk.acceptedAt.slice(0, 10)})`);
             }
         } else {
-            pail.info("  socket.acceptedRisks:   none");
+            pail.info("  acceptedRisks:                         none");
         }
 
         pail.info("");
@@ -179,15 +187,19 @@ const printSecurityReport = (config: VisConfig, packageManager: string): void =>
     }
 
     pail.notice("");
-    pail.notice("Secure defaults are applied by defineConfig(). You only need to add allowBuilds:");
+    pail.notice("Secure defaults are applied by defineConfig(). You only need to add install-script allowances:");
     pail.notice("");
     pail.notice("  import { defineConfig } from '@visulima/vis/config';");
     pail.notice("");
     pail.notice("  export default defineConfig({");
     pail.notice("    security: {");
-    pail.notice("      allowBuilds: {");
-    pail.notice("        esbuild: true,");
-    pail.notice("        '@prisma/client': true,");
+    pail.notice("      policies: {");
+    pail.notice("        install_scripts: {");
+    pail.notice("          allow: {");
+    pail.notice("            esbuild: true,");
+    pail.notice("            '@prisma/client': true,");
+    pail.notice("          },");
+    pail.notice("        },");
     pail.notice("      },");
     pail.notice("    },");
     pail.notice("  });");
@@ -203,30 +215,35 @@ const previewPnpmSync = (config: VisConfig): string[] => {
         return [];
     }
 
+    const policies = security.policies ?? {};
+    const firstSeen = policies.first_seen;
+    const publisherChange = policies.publisher_change;
+    const installScripts = policies.install_scripts;
+
     const entries: string[] = [];
 
-    if (security.minimumReleaseAge !== undefined) {
-        entries.push(`minimumReleaseAge: ${security.minimumReleaseAge}`);
+    if (firstSeen?.minutes !== undefined) {
+        entries.push(`minimumReleaseAge: ${firstSeen.minutes}`);
     }
 
-    if (security.trustPolicy && security.trustPolicy !== "off") {
-        entries.push(`trustPolicy: ${security.trustPolicy}`);
+    if (publisherChange?.mode && publisherChange.mode !== "off") {
+        entries.push(`trustPolicy: ${publisherChange.mode}`);
     }
 
     if (security.blockExoticSubdeps) {
         entries.push("blockExoticSubdeps: true");
     }
 
-    if (security.allowBuilds) {
-        entries.push(`allowBuilds: ${Object.keys(security.allowBuilds).length} entries`);
+    if (installScripts?.allow) {
+        entries.push(`allowBuilds: ${Object.keys(installScripts.allow).length} entries`);
     }
 
-    if (security.strictDepBuilds) {
+    if (installScripts?.strict) {
         entries.push("strictDepBuilds: true");
     }
 
-    if (security.trustPolicyIgnoreAfter !== undefined) {
-        entries.push(`trustPolicyIgnoreAfter: ${security.trustPolicyIgnoreAfter}`);
+    if (publisherChange?.ignoreAfter !== undefined) {
+        entries.push(`trustPolicyIgnoreAfter: ${publisherChange.ignoreAfter}`);
     }
 
     return entries;
@@ -333,7 +350,7 @@ const enforceScriptSecurity = (pm: PackageManagerName, workspaceRoot: string, co
         warnings: [],
     };
 
-    const allowBuilds = config.security?.allowBuilds ?? {};
+    const allowBuilds = config.security?.policies?.install_scripts?.allow ?? {};
     const hasAllowList = Object.keys(allowBuilds).length > 0;
 
     switch (pm) {
@@ -348,7 +365,7 @@ const enforceScriptSecurity = (pm: PackageManagerName, workspaceRoot: string, co
 
                     if (!pkg.trustedDependencies?.length) {
                         result.warnings.push(
-                            "vis security.allowBuilds is configured but trustedDependencies is empty. Run 'vis approve-builds --sync-native'.",
+                            "vis security.policies.install_scripts.allow is configured but trustedDependencies is empty. Run 'vis approve-builds --sync-native'.",
                         );
                     }
                 } catch {
@@ -368,7 +385,9 @@ const enforceScriptSecurity = (pm: PackageManagerName, workspaceRoot: string, co
                 result.warnings.push("npm does not block lifecycle scripts. vis will add --ignore-scripts automatically.");
                 result.extraArgs.push("--ignore-scripts");
             } else if (!hasIgnoreScripts && !hasAllowList) {
-                result.warnings.push("npm does not block lifecycle scripts. Add 'ignore-scripts=true' to .npmrc and configure security.allowBuilds.");
+                result.warnings.push(
+                    "npm does not block lifecycle scripts. Add 'ignore-scripts=true' to .npmrc and configure security.policies.install_scripts.allow.",
+                );
             }
 
             if (hasAllowList) {
@@ -428,7 +447,7 @@ const enforceScriptSecurity = (pm: PackageManagerName, workspaceRoot: string, co
 };
 
 /**
- * Syncs vis security.allowBuilds to native PM config format.
+ * Syncs vis security.policies.install_scripts.allow to native PM config format.
  */
 const syncAllowBuildsToNativeConfig = (pm: PackageManagerName, workspaceRoot: string, allowBuilds: Record<string, boolean>): string[] => {
     const actions: string[] = [];

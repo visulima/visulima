@@ -63,14 +63,14 @@ const generateConfigContent = (_pm: string, options: ConfigInitOptions): string 
     const sections: string[] = [];
 
     // Security section
-    const allowBuildsEntries = Object.entries(options.allowBuilds)
+    const allowEntries = Object.entries(options.allowBuilds)
         .filter(([, v]) => v)
-        .map(([k]) => `            "${k}": true,`)
+        .map(([k]) => `                    "${k}": true,`)
         .join("\n");
 
-    const allowBuildsBlock = allowBuildsEntries ? `{\n${allowBuildsEntries}\n        }` : "{}";
+    const allowBlock = allowEntries ? `{\n${allowEntries}\n                }` : "{}";
 
-    let securityBlock = `        allowBuilds: ${allowBuildsBlock},`;
+    let securityBlock = `        policies: {\n            install_scripts: {\n                allow: ${allowBlock},\n            },\n        },`;
 
     if (options.enableSocket) {
         securityBlock += `\n        socket: { enabled: true },`;

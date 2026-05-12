@@ -155,7 +155,7 @@ const confirmLowScorePackages = async (lowScorePackages: PackageReportData[], mi
 
     if (rememberAnswer.toLowerCase() === "y" || rememberAnswer.toLowerCase() === "yes") {
         pail.notice("");
-        pail.notice("Add the following to security.socket.acceptedRisks in vis.config.ts:");
+        pail.notice("Add the following to security.acceptedRisks in vis.config.ts:");
         pail.notice("");
 
         for (const report of lowScorePackages) {
@@ -529,12 +529,12 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
 
     // Socket.dev pre-add check (unless disabled)
     if ((options as Record<string, unknown>).socketCheck !== false) {
-        const socketOptions = buildSocketOptions(visConfig?.security?.socket);
+        const socketOptions = buildSocketOptions(visConfig?.security?.socket, visConfig?.security?.policies?.score?.minimum);
 
         if (socketOptions) {
             const minimumScore = socketOptions.minimumScore ?? DEFAULT_LOW_SCORE_THRESHOLD;
 
-            const shouldContinue = await runSocketPreCheck(packages, socketOptions, minimumScore, visConfig?.security?.socket?.acceptedRisks);
+            const shouldContinue = await runSocketPreCheck(packages, socketOptions, minimumScore, visConfig?.security?.acceptedRisks);
 
             if (!shouldContinue) {
                 process.exitCode = 1;

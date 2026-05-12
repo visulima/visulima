@@ -882,16 +882,49 @@
         "security": {
             "type": "object",
             "properties": {
+                "acceptedRisks": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "object",
+                        "properties": {
+                            "acceptedAt": {
+                                "type": "string",
+                                "description": "ISO 8601 timestamp when the risk was accepted."
+                            },
+                            "acceptedScore": {
+                                "type": "number",
+                                "description": "The overall Socket.dev score at the time of acceptance. Only relevant for the `score` policy; ignored elsewhere."
+                            },
+                            "expiresAt": {
+                                "type": "string",
+                                "description": "ISO 8601 date (or datetime). After this point the acceptance stops applying and vis emits a warning. Leave undefined for non-expiring entries."
+                            },
+                            "policies": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/$defs/PolicyName"
+                                },
+                                "description": "Which policies this acceptance covers. When undefined the acceptance applies to every policy finding on this package."
+                            },
+                            "reason": {
+                                "type": "string",
+                                "description": "User-provided reason for accepting the risk."
+                            }
+                        },
+                        "required": [
+                            "acceptedAt",
+                            "reason"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "description": "Packages whose policy findings have been reviewed and explicitly accepted. Matched against every policy unless `policies` narrows the scope. Replaces the legacy `security.socket.acceptedRisks` map.\n\nKey format: package name (`\"lodash\"`), name@version (`\"lodash@4.17.21\"`), or glob (`\"@myorg/*\"`). Unversioned keys match all versions of that package."
+                },
                 "audit": {
                     "type": "object",
                     "properties": {
                         "advisories": {
                             "type": "object",
                             "properties": {
-                                "source": {
-                                    "type": "string",
-                                    "description": "OSV mirror base URL (no trailing slash). Defaults to the public Google Cloud Storage bucket (`https://osv-vulnerabilities.storage.googleapis.com`). Override to point at a corporate mirror."
-                                },
                                 "allowedHosts": {
                                     "type": "array",
                                     "items": {
@@ -909,12 +942,16 @@
                                     "description": "Number of hours after `lastSyncIso` before `vis audit` prints a \"your advisory cache may be stale\" notice. `vis audit` never auto-syncs — the user runs `vis advisories sync` themselves.",
                                     "default": 24
                                 },
+                                "source": {
+                                    "type": "string",
+                                    "description": "OSV mirror base URL (no trailing slash). Defaults to the public Google Cloud Storage bucket (`https://osv-vulnerabilities.storage.googleapis.com`). Override to point at a corporate mirror."
+                                },
                                 "verify": {
                                     "type": "object",
                                     "properties": {
                                         "enabled": {
                                             "type": "boolean",
-                                            "description": "Enable signature verification. The sync flow downloads `<eco>/all.zip.sig` next to the zip and aborts if it cannot verify against `expectedIssuer` / `expectedSubject`.",
+                                            "description": "Enable signature verification. The sync flow downloads `&lt;eco>/all.zip.sig` next to the zip and aborts if it cannot verify against `expectedIssuer` / `expectedSubject`.",
                                             "default": false
                                         },
                                         "expectedIssuer": {
@@ -933,24 +970,6 @@
                             "additionalProperties": false,
                             "description": "Offline advisory cache settings."
                         },
-                        "failOn": {
-                            "type": "string",
-                            "enum": [
-                                "critical",
-                                "high",
-                                "low",
-                                "medium"
-                            ],
-                            "description": "Severity threshold that makes `vis audit` exit non-zero. Equivalent to the CLI `--fail-on` flag.",
-                            "examples": [
-                                "high"
-                            ]
-                        },
-                        "offlineByDefault": {
-                            "type": "boolean",
-                            "description": "When true, `vis audit` skips network calls and queries the offline cache. Equivalent to the CLI `--offline` flag.",
-                            "default": false
-                        },
                         "apply": {
                             "type": "object",
                             "properties": {
@@ -959,110 +978,272 @@
                                     "properties": {
                                         "enabled": {
                                             "type": "boolean",
-                                            "description": "When true, allows `--apply-transitive` to run in CI environments. Defaults to false because rewriting overrides is a higher blast radius than bumping a direct dep.",
+                                            "description": "When true, allows `--fix-transitive` to run in CI environments. Defaults to false because rewriting overrides is a higher blast radius than bumping a direct dep.",
                                             "default": false
                                         }
                                     },
                                     "additionalProperties": false,
-                                    "description": "Gates for `vis audit --apply-transitive`. Two-lock: the CLI requires `--yes` AND this flag set to `true` before it will rewrite override entries in CI."
+                                    "description": "Gates for `vis audit --fix-transitive`. Two-lock: the CLI requires `--yes` AND this flag set to `true` before it will rewrite override entries in CI."
                                 }
                             },
                             "additionalProperties": false,
-                            "description": "Gates for the auto-apply flow (`vis audit --apply` / `--apply-transitive`). The CLI prompts outside CI; inside CI the flags refuse to run unless `--yes` is set and, for transitives, `apply.transitive.enabled = true`."
+                            "description": "Gates for the auto-fix flow (`vis audit --fix` / `--fix-transitive`). The CLI prompts outside CI; inside CI the flags refuse to run unless `--yes` is set and, for transitives, `apply.transitive.enabled = true`."
                         },
-                        "usage": {
-                            "type": "object",
-                            "properties": {
-                                "enabled": {
-                                    "type": "boolean",
-                                    "description": "Enable the reachability filter by default. Equivalent to `--usage` on the CLI. Disable on the CLI via `--no-usage`.",
-                                    "default": false
-                                },
-                                "alwaysAssumeUsed": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "string"
-                                    },
-                                    "description": "Packages to always treat as reachable even if no static import is found. Use for build-time loaders, plugin chains, and other packages pulled in via runtime resolution that the static scan can't see.",
-                                    "examples": [
-                                        [
-                                            "esbuild",
-                                            "webpack-cli"
-                                        ]
-                                    ]
-                                }
-                            },
-                            "additionalProperties": false,
-                            "description": "Reachability filter — only report vulnerabilities in packages the workspace statically imports."
+                        "offlineByDefault": {
+                            "type": "boolean",
+                            "description": "When true, `vis audit` skips network calls and queries the offline cache. Equivalent to the CLI `--offline` flag.",
+                            "default": false
                         }
                     },
                     "additionalProperties": false,
-                    "description": "Offline OSV advisory + `vis audit` configuration.\n\nControls `vis audit --offline` and `vis advisories sync` behavior:\n- `audit.advisories.source` is the OSV mirror to download from. It   must be `https://` and resolve to a host in `allowedHosts` (or one   of the built-in defaults).\n- `audit.failOn` mirrors the `--fail-on` CLI flag so CI configs can   declare a single severity gate.\n- `audit.offlineByDefault` flips the default of `--offline`.\n\nEach field is independently overridable from the command line."
-                },
-                "allowBuilds": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "boolean"
-                    },
-                    "description": "Map of package names/patterns to allow (true) or deny (false) build scripts. Packages not listed are denied by default. Equivalent to pnpm's `allowBuilds` setting."
+                    "description": "Offline OSV advisory + `vis audit` configuration.\n\nControls `vis audit --offline` and `vis advisories sync` behavior:\n- `audit.advisories.source` is the OSV mirror to download from. It   must be `https://` and resolve to a host in `allowedHosts` (or one   of the built-in defaults).\n- `audit.offlineByDefault` flips the default of `--offline`.\n\nVulnerability severity gating and reachability filtering live under `policies.vulnerability` (see below)."
                 },
                 "blockExoticSubdeps": {
                     "type": "boolean",
                     "description": "When true, prevents transitive dependencies from using exotic sources (git repositories, direct tarball URLs). Only direct dependencies may use such sources. Equivalent to pnpm's `blockExoticSubdeps`.",
                     "default": false
                 },
-                "minimumReleaseAge": {
-                    "type": "number",
-                    "description": "Minimum number of minutes that must pass after a version is published before vis will allow installation. Reduces risk of installing compromised packages that are typically discovered within hours. Equivalent to pnpm's `minimumReleaseAge`.",
-                    "examples": [
-                        1440
-                    ],
-                    "default": 0
-                },
-                "minimumReleaseAgeExclude": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
+                "policies": {
+                    "type": "object",
+                    "properties": {
+                        "first_seen": {
+                            "type": "object",
+                            "properties": {
+                                "exclude": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "description": "Package names/patterns excluded from the first_seen check. Equivalent to pnpm's `minimumReleaseAgeExclude`.",
+                                    "examples": [
+                                        [
+                                            "webpack",
+                                            "react",
+                                            "@myorg/*"
+                                        ]
+                                    ]
+                                },
+                                "minutes": {
+                                    "type": "number",
+                                    "description": "Minutes after publish before install is allowed."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "description": "Minimum number of minutes that must pass after a version is published before vis will allow installation. Migrated from the legacy `security.minimumReleaseAge` field. Equivalent to pnpm's `minimumReleaseAge`.",
+                            "examples": [
+                                {
+                                    "minutes": 1440,
+                                    "exclude": [
+                                        "@myorg/*"
+                                    ]
+                                }
+                            ],
+                            "default": 0
+                        },
+                        "install_scripts": {
+                            "type": "object",
+                            "properties": {
+                                "allow": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "boolean"
+                                    },
+                                    "description": "Map of package names/patterns to allow (true) or deny (false) build scripts. Packages not listed are denied by default. Equivalent to pnpm's `allowBuilds`."
+                                },
+                                "strict": {
+                                    "type": "boolean",
+                                    "description": "When true, installation will fail (exit non-zero) if any dependencies have unreviewed build scripts. Equivalent to pnpm's `strictDepBuilds`.",
+                                    "default": false
+                                }
+                            },
+                            "additionalProperties": false,
+                            "description": "Build-script (pre/install/postinstall/prepare) controls. Migrated from the legacy `security.allowBuilds` / `security.strictDepBuilds` fields.",
+                            "examples": [
+                                {
+                                    "allow": {
+                                        "esbuild": true
+                                    },
+                                    "strict": true
+                                }
+                            ]
+                        },
+                        "license": {
+                            "type": "object",
+                            "properties": {
+                                "allow": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "description": "SPDX identifiers that are explicitly permitted. When set, any package whose declared license is not on this list is blocked."
+                                },
+                                "deny": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "description": "SPDX identifiers that are explicitly forbidden. Always wins over `allow` when both reference the same identifier."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "description": "SPDX license allow / deny lists. Deny wins on any sub-license match in SPDX expressions (`(MIT OR GPL-3.0)` against `deny: [\"GPL-3.0\"]` is blocked). Packages with no declared license are flagged when `allow` is set."
+                        },
+                        "malware": {
+                            "type": "object",
+                            "properties": {
+                                "mode": {
+                                    "type": "string",
+                                    "enum": [
+                                        "block",
+                                        "off",
+                                        "warn"
+                                    ],
+                                    "description": "- `\"block\"` — emit a block decision.\n- `\"warn\"`  — surface as a warning; do not gate exit code.\n- `\"off\"`   — disable the policy entirely."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "description": "Behavior when the Socket.dev feed flags a package as malicious (`alerts[].type === \"Malware\"`).",
+                            "default": "{ mode: \"block\" } when Socket is enabled, off otherwise"
+                        },
+                        "publisher_change": {
+                            "type": "object",
+                            "properties": {
+                                "exclude": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "description": "Package selectors excluded from the check. Equivalent to pnpm's `trustPolicyExclude`.",
+                                    "examples": [
+                                        [
+                                            "chokidar@4.0.3"
+                                        ]
+                                    ]
+                                },
+                                "ignoreAfter": {
+                                    "type": "number",
+                                    "description": "Ignore packages published more than N minutes ago. Useful for older packages that pre-date provenance support. Equivalent to pnpm's `trustPolicyIgnoreAfter`."
+                                },
+                                "mode": {
+                                    "type": "string",
+                                    "enum": [
+                                        "no-downgrade",
+                                        "off"
+                                    ],
+                                    "description": "- `\"off\"`           — no trust checking (default).\n- `\"no-downgrade\"`  — block when a package's trust level   has decreased compared to previous releases (e.g., was   published by trusted publisher, now only has provenance)."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "description": "Trust-level checking for package publishing. Migrated from the legacy `security.trustPolicy*` fields. Equivalent to pnpm's `trustPolicy`.",
+                            "examples": [
+                                {
+                                    "mode": "no-downgrade",
+                                    "ignoreAfter": 43200
+                                }
+                            ]
+                        },
+                        "score": {
+                            "type": "object",
+                            "properties": {
+                                "minimum": {
+                                    "type": "number",
+                                    "description": "Minimum overall Socket.dev score (0–1). Set to 0 to disable the gate while keeping Socket data fetched.",
+                                    "default": 0.4
+                                }
+                            },
+                            "additionalProperties": false,
+                            "description": "Socket.dev overall-score threshold. Packages scoring below `minimum` trigger a block decision (or interactive prompt during `vis add`). Migrated from the legacy `security.socket.minimumScore` field.",
+                            "examples": [
+                                {
+                                    "minimum": 0.4
+                                }
+                            ]
+                        },
+                        "unexpected_deps": {
+                            "type": "object",
+                            "properties": {
+                                "allow": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "description": "Allow-list of dependency names that may appear in the resolved package set. Glob patterns are supported.",
+                                    "examples": [
+                                        [
+                                            "lodash",
+                                            "axios",
+                                            "@myorg/*"
+                                        ]
+                                    ]
+                                },
+                                "baselineLockfile": {
+                                    "type": "string",
+                                    "description": "Path (absolute or relative to the workspace root) to a baseline lockfile snapshot. The policy diffs the current lockfile against this baseline and flags any package that didn't exist before.",
+                                    "examples": [
+                                        "./security/lockfile.baseline.yaml"
+                                    ]
+                                }
+                            },
+                            "additionalProperties": false,
+                            "description": "Net-new transitive dependency detection. Either provide a static allow-list, a baseline lockfile path (recommended), or both — the intersection is enforced.",
+                            "examples": [
+                                {
+                                    "baselineLockfile": "./security/lockfile.baseline.yaml"
+                                }
+                            ]
+                        },
+                        "vulnerability": {
+                            "type": "object",
+                            "properties": {
+                                "failOn": {
+                                    "type": "string",
+                                    "enum": [
+                                        "critical",
+                                        "high",
+                                        "low",
+                                        "medium"
+                                    ],
+                                    "description": "Severity threshold that makes `vis audit` exit non-zero. Equivalent to the CLI `--fail-on` flag.",
+                                    "examples": [
+                                        "high"
+                                    ]
+                                },
+                                "usage": {
+                                    "type": "object",
+                                    "properties": {
+                                        "alwaysAssumeUsed": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "description": "Packages to always treat as reachable even if no static import is found.",
+                                            "examples": [
+                                                [
+                                                    "esbuild",
+                                                    "webpack-cli"
+                                                ]
+                                            ]
+                                        },
+                                        "enabled": {
+                                            "type": "boolean",
+                                            "description": "Enable the reachability filter by default. Equivalent to `--usage` on the CLI; `--no-usage` disables.",
+                                            "default": false
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "Reachability filter — only report vulnerabilities in packages the workspace statically imports."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "description": "OSV vulnerability gating. Migrated from the legacy `security.audit.failOn` + `security.audit.usage` fields."
+                        }
                     },
-                    "description": "Package names/patterns excluded from minimumReleaseAge check. Equivalent to pnpm's `minimumReleaseAgeExclude`.",
-                    "examples": [
-                        [
-                            "webpack",
-                            "react",
-                            "@myorg/*"
-                        ]
-                    ]
+                    "additionalProperties": false,
+                    "description": "Supply-chain policy gates. Each sub-block enables one policy and configures its behavior. When a sub-block is omitted the policy is inactive. `acceptedRisks` (above) silences specific packages without disabling a policy globally.\n\nThe 8 policies are inspired by Socket.dev's classification:\n- `malware`            — Socket-flagged malicious packages\n- `first_seen`         — packages published less than N minutes ago\n- `unexpected_deps`    — packages outside an allow-list / baseline\n- `publisher_change`   — maintainer set changed between installs\n- `install_scripts`    — preinstall/install/postinstall scripts\n- `score`              — Socket overall score below threshold\n- `vulnerability`      — OSV vulnerability findings\n- `license`            — SPDX allow / deny lists"
                 },
                 "socket": {
                     "type": "object",
                     "properties": {
-                        "acceptedRisks": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "object",
-                                "properties": {
-                                    "acceptedAt": {
-                                        "type": "string",
-                                        "description": "ISO 8601 timestamp when the risk was accepted."
-                                    },
-                                    "acceptedScore": {
-                                        "type": "number",
-                                        "description": "The overall Socket.dev score at the time of acceptance."
-                                    },
-                                    "reason": {
-                                        "type": "string",
-                                        "description": "User-provided reason for accepting the risk."
-                                    }
-                                },
-                                "required": [
-                                    "acceptedAt",
-                                    "acceptedScore",
-                                    "reason"
-                                ],
-                                "additionalProperties": false
-                            },
-                            "description": "Packages whose low Socket.dev scores or alerts have been reviewed and explicitly accepted. These packages skip the confirmation prompt during `vis add` and show as \"acknowledged\" in `vis audit`.\n\nKey format: package name (`\"lodash\"`), name@version (`\"lodash@4.17.21\"`), or glob (`\"@myorg/*\"`). Unversioned keys match all versions of that package."
-                        },
                         "apiToken": {
                             "type": "string",
                             "description": "Custom Socket.dev API token. Falls back to the public API token. Set via VIS_SOCKET_TOKEN environment variable or here."
@@ -1077,11 +1258,6 @@
                             "description": "Enable Socket.dev security scanning on install/update/check commands.",
                             "default": false
                         },
-                        "minimumScore": {
-                            "type": "number",
-                            "description": "Minimum overall Socket.dev score (0–1) for a package to be accepted without a confirmation prompt during `vis add`. Packages scoring below this threshold trigger an interactive prompt asking the user to confirm. Set to 0 to disable.",
-                            "default": 0.4
-                        },
                         "timeoutMs": {
                             "type": "number",
                             "description": "Request timeout in milliseconds for the Socket.dev API.",
@@ -1089,41 +1265,7 @@
                         }
                     },
                     "additionalProperties": false,
-                    "description": "Socket.dev security intelligence configuration. When enabled, vis fetches package security scores, alerts, and report data from the Socket.dev API during install, update, and check commands."
-                },
-                "strictDepBuilds": {
-                    "type": "boolean",
-                    "description": "When true, installation will fail (exit non-zero) if any dependencies have unreviewed build scripts. Equivalent to pnpm's `strictDepBuilds`.",
-                    "default": false
-                },
-                "trustPolicy": {
-                    "type": "string",
-                    "enum": [
-                        "no-downgrade",
-                        "off"
-                    ],
-                    "description": "Trust level checking for package publishing.\n- \"off\": No trust checking (default)\n- \"no-downgrade\": Fail if a package's trust level has decreased   compared to previous releases (e.g., was published by trusted   publisher, now only has provenance). Equivalent to pnpm's `trustPolicy`.",
-                    "default": "off"
-                },
-                "trustPolicyExclude": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    },
-                    "description": "Package selectors excluded from trust policy checks. Equivalent to pnpm's `trustPolicyExclude`.",
-                    "examples": [
-                        [
-                            "chokidar@4.0.3",
-                            "@babel/core@7.28.5"
-                        ]
-                    ]
-                },
-                "trustPolicyIgnoreAfter": {
-                    "type": "number",
-                    "description": "Ignore the trust policy check for packages published more than the specified number of minutes ago. Useful for older packages that pre-date provenance support. Equivalent to pnpm's `trustPolicyIgnoreAfter` (10.27+).",
-                    "examples": [
-                        43200
-                    ]
+                    "description": "Socket.dev data-source configuration. Connection knobs only — score thresholds and accepted-risk overrides moved to `policies.score` and `security.acceptedRisks` respectively."
                 },
                 "typosquatAllowlist": {
                     "type": "array",
@@ -3006,6 +3148,20 @@
             ],
             "additionalProperties": false,
             "description": "One family of upstream-coupled packages.\n\n`members` is an exact-match list. `prefixes` accept any dep whose name starts with the prefix — useful for monorepos that ship many subpackages under one scope (e.g. `@babel/`, `@storybook/`, `@nx/`). A family can use either or both; a dep matching either list belongs to the family."
+        },
+        "PolicyName": {
+            "type": "string",
+            "enum": [
+                "first_seen",
+                "install_scripts",
+                "license",
+                "malware",
+                "publisher_change",
+                "score",
+                "unexpected_deps",
+                "vulnerability"
+            ],
+            "description": "The 8 Socket.dev-style supply-chain policies. Used in `security.policies` and `security.acceptedRisks[*].policies`."
         },
         "StagedConfig": {
             "type": "object",

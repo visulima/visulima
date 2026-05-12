@@ -37,8 +37,11 @@ describe("published JSON schemas", () => {
             install: { backend: "auto" },
             preflight: { lockfile: true },
             security: {
-                minimumReleaseAge: 1440,
-                socket: { enabled: true, minimumScore: 0.5 },
+                policies: {
+                    first_seen: { minutes: 1440 },
+                    score: { minimum: 0.5 },
+                },
+                socket: { enabled: true },
             },
             sharedWorktreeCache: false,
             sortPackageJson: { sortScripts: true },

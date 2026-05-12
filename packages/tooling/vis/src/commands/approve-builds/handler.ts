@@ -38,14 +38,14 @@ const execute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Co
         // relative to the native config.
         if (!options.syncNative) {
             pail.notice("");
-            pail.notice("Tip: vis.config.ts security.allowBuilds may now be out of sync with pnpm-workspace.yaml.");
+            pail.notice("Tip: vis.config.ts security.policies.install_scripts.allow may now be out of sync with pnpm-workspace.yaml.");
             pail.notice("Run 'vis check --security-config' to compare, or copy the new entries into vis.config.ts.");
 
             return;
         }
     } else {
         // For other PMs (or --scan flag), do our own scanning
-        const allowBuilds = visConfig?.security?.allowBuilds ?? {};
+        const allowBuilds = visConfig?.security?.policies?.install_scripts?.allow ?? {};
         const unapproved = scanUnapprovedBuildScripts(cwd, allowBuilds);
 
         if (unapproved.length === 0) {
@@ -61,14 +61,18 @@ const execute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Co
             pail.notice("To approve these packages, add them to vis.config.ts:");
             pail.notice("");
             pail.notice("  security: {");
-            pail.notice("    allowBuilds: {");
+            pail.notice("    policies: {");
+            pail.notice("      install_scripts: {");
+            pail.notice("        allow: {");
 
             for (const pkg of unapproved) {
                 const name = pkg.split(" (")[0];
 
-                pail.notice(`      "${name}": true,`);
+                pail.notice(`          "${name}": true,`);
             }
 
+            pail.notice("        },");
+            pail.notice("      },");
             pail.notice("    },");
             pail.notice("  },");
 
@@ -81,10 +85,10 @@ const execute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Co
 
     // Sync to native PM config if requested
     if (options.syncNative) {
-        const allowBuilds = visConfig?.security?.allowBuilds ?? {};
+        const allowBuilds = visConfig?.security?.policies?.install_scripts?.allow ?? {};
 
         if (Object.keys(allowBuilds).length === 0) {
-            pail.warn("No security.allowBuilds configured in vis.config.ts. Nothing to sync.");
+            pail.warn("No security.policies.install_scripts.allow configured in vis.config.ts. Nothing to sync.");
         } else {
             const actions = syncAllowBuildsToNativeConfig(pm.name, cwd, allowBuilds);
 

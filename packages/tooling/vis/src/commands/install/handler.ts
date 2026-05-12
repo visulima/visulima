@@ -135,8 +135,8 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
             force: options.force || false,
             frozenLockfile: shouldFreeze,
             // Block-by-default lifecycle scripts (mirrors pnpm v10).
-            // Allowlisted packages from `security.allowBuilds` are executed
-            // post-install by the `security-enforcement` plugin's
+            // Allowlisted packages from `security.policies.install_scripts.allow`
+            // are executed post-install by the `security-enforcement` plugin's
             // afterCommand hook (`runApprovedScripts`). The escape hatch
             // is `--run-scripts`, which restores the PM's native behavior.
             ignoreScripts: !options.runScripts,
