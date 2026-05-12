@@ -32,19 +32,21 @@ jobs:
             codecov: "${{ steps.changes.outputs.codecov }}"
         steps:
             - name: "Harden Runner"
-              uses: "step-security/harden-runner@95d9a5deda9de15063e7595e9719c11c38c90ae2" # v2.13.2
+              uses: "step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450" # v2.19.1
               with:
                   egress-policy: "audit"
 
             - name: "Git checkout"
-              uses: "actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5" # v4.3.1
+              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+              with:
+                  persist-credentials: false
               env:
                   GIT_COMMITTER_NAME: "GitHub Actions Shell"
                   GIT_AUTHOR_NAME: "GitHub Actions Shell"
                   EMAIL: "github-actions[bot]@users.noreply.github.com"
 
             - name: "Check for file changes"
-              uses: "dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36" # v3.0.2
+              uses: "dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d" # v4.0.1
               id: "changes"
               with:
                   token: "${{ github.token }}"
@@ -80,24 +82,25 @@ jobs:
             NODE: "${{ matrix.node_version }}"
         steps:
             - name: "Harden Runner"
-              uses: "step-security/harden-runner@95d9a5deda9de15063e7595e9719c11c38c90ae2" # v2.13.2
+              uses: "step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450" # v2.19.1
               with:
                   egress-policy: "audit"
 
             - name: "Git checkout ${{ env.HEAD_REPOSITORY }}:${{ env.HEAD_REF }}"
-              uses: "actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5" # v4.3.1
+              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
               env:
                   GIT_COMMITTER_NAME: "GitHub Actions Shell"
                   GIT_AUTHOR_NAME: "GitHub Actions Shell"
                   EMAIL: "github-actions[bot]@users.noreply.github.com"
               with:
+                  persist-credentials: false
                   # Number of commits to fetch. 0 indicates all history for all branches and tags.
                   # Pulls all commits (needed for NX)
                   fetch-depth: 0
 
             - name: "Derive appropriate SHAs for base and head for `nx affected` commands"
               id: "setSHAs"
-              uses: "nrwl/nx-set-shas@3e9ad7370203c1e93d109be57f3b72eb0eb511b1" # v4
+              uses: "nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1" # v5.0.1
 
             - name: "Setup resources and environment"
               id: "setup"
@@ -113,18 +116,18 @@ jobs:
 
             - name: "Setup Deno"
               if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 22 && matrix.deno_version"
-              uses: "denoland/setup-deno@e95548e56dfa95d4e1a28d6f422fafe75c4c26fb" # v2.0.3
+              uses: "denoland/setup-deno@667a34cdef165d8d2b2e98dde39547c9daac7282" # v2.0.4
               with:
                   deno-version: "${{ matrix.deno_version }}"
                   cache: true
             - name: "Setup Bun"
               if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 22 && matrix.bun_version"
-              uses: "oven-sh/setup-bun@735343b667d3e6f658f44d0eca948eb6282f2b76" # v2.0.2
+              uses: "oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6" # v2.2.0
               with:
                   bun-version: "${{ matrix.bun_version }}"
 
             - name: "Wait for Build Native workflow"
-              uses: "lewagon/wait-on-check-action@3603e826ee561ea102b58accb5ea55a1a7482343" # v1.4.1
+              uses: "lewagon/wait-on-check-action@9312864dfbc9fd208e9c0417843430751c042800" # v1.7.0
               timeout-minutes: 30
               with:
                   ref: "${{ github.event.pull_request.head.sha || github.sha }}"
@@ -138,7 +141,7 @@ jobs:
             # the .node files only exist in the build-native runner — test runs fail at
             # require('./<pkg>-native.linux-x64-gnu.node').
             - name: "Download native build artifacts"
-              uses: "dawidd6/action-download-artifact@8a338493df3d275e4a7a63bcff3b8fe97e51a927" # v19
+              uses: "dawidd6/action-download-artifact@b6e2e70617bc3265edd6dab6c906732b2f1ae151" # v21
               with:
                   workflow: "build-native.yml"
                   commit: "${{ github.event.pull_request.head.sha || github.sha }}"
@@ -170,7 +173,7 @@ jobs:
             # diffs).
             - name: "Get changed files"
               id: "files"
-              uses: "tj-actions/changed-files@c65cd883420fd2eb864698a825fc4162dd94482c" # v44.5.7
+              uses: "tj-actions/changed-files@9426d40962ed5378910ee2e21d5f8c6fcbf2dd96" # v47.0.6
               with:
                   files_ignore_from_source_file: ".github/ignore-files-for-nx-affected.yml"
                   base_sha: "${{ steps.setSHAs.outputs.base }}"
@@ -217,24 +220,25 @@ jobs:
             NODE: "22"
         steps:
             - name: "Harden Runner"
-              uses: "step-security/harden-runner@95d9a5deda9de15063e7595e9719c11c38c90ae2" # v2.13.2
+              uses: "step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450" # v2.19.1
               with:
                   egress-policy: "audit"
 
             - name: "Git checkout ${{ env.HEAD_REPOSITORY }}:${{ env.HEAD_REF }}"
-              uses: "actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5" # v4.3.1
+              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
               env:
                   GIT_COMMITTER_NAME: "GitHub Actions Shell"
                   GIT_AUTHOR_NAME: "GitHub Actions Shell"
                   EMAIL: "github-actions[bot]@users.noreply.github.com"
               with:
+                  persist-credentials: false
                   # Number of commits to fetch. 0 indicates all history for all branches and tags.
                   # Pulls all commits (needed for NX)
                   fetch-depth: 0
 
             - name: "Derive appropriate SHAs for base and head for `nx affected` commands"
               id: "setSHAs"
-              uses: "nrwl/nx-set-shas@3e9ad7370203c1e93d109be57f3b72eb0eb511b1" # v4
+              uses: "nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1" # v5.0.1
 
             - name: "Setup resources and environment"
               id: "setup"
@@ -248,7 +252,7 @@ jobs:
                   run-npm-audit: false
 
             - name: "Wait for Build Native workflow"
-              uses: "lewagon/wait-on-check-action@3603e826ee561ea102b58accb5ea55a1a7482343" # v1.4.1
+              uses: "lewagon/wait-on-check-action@9312864dfbc9fd208e9c0417843430751c042800" # v1.7.0
               timeout-minutes: 30
               with:
                   ref: "${{ github.event.pull_request.head.sha || github.sha }}"
@@ -262,7 +266,7 @@ jobs:
             # the .node files only exist in the build-native runner — test runs fail at
             # require('./<pkg>-native.linux-x64-gnu.node').
             - name: "Download native build artifacts"
-              uses: "dawidd6/action-download-artifact@8a338493df3d275e4a7a63bcff3b8fe97e51a927" # v19
+              uses: "dawidd6/action-download-artifact@b6e2e70617bc3265edd6dab6c906732b2f1ae151" # v21
               with:
                   workflow: "build-native.yml"
                   commit: "${{ github.event.pull_request.head.sha || github.sha }}"
@@ -310,7 +314,7 @@ jobs:
             # If any jobs we depend on fail, we will fail since this is a required check
             # NOTE: A timeout is considered a failure
             - name: "Harden Runner"
-              uses: "step-security/harden-runner@95d9a5deda9de15063e7595e9719c11c38c90ae2" # v2.13.2
+              uses: "step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450" # v2.19.1
               with:
                   egress-policy: "audit"
 

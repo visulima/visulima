@@ -36,17 +36,17 @@ jobs:
             any-changed: "${{ steps.changes.outputs.task-runner == 'true' || steps.changes.outputs.tui == 'true' || steps.changes.outputs.vis == 'true' || steps.changes.outputs.secret-scanner == 'true' }}"
         steps:
             - name: "Harden Runner"
-              uses: "step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594" # v2.16.0
+              uses: "step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450" # v2.19.1
               with:
                   egress-policy: "audit"
 
             - name: "Git checkout"
-              uses: "actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5" # v4.3.1
+              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
               with:
                   persist-credentials: false
 
             - name: "Check for native file changes"
-              uses: "dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36" # v3.0.2
+              uses: "dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d" # v4.0.1
               id: "changes"
               with:
                   filters: |
@@ -111,42 +111,42 @@ jobs:
 
         steps:
             - name: "Harden Runner"
-              uses: "step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594" # v2.16.0
+              uses: "step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450" # v2.19.1
               with:
                   egress-policy: "audit"
 
             - name: "Git checkout"
-              uses: "actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5" # v4.3.1
+              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
               with:
                   persist-credentials: false
 
             # --- Cache per package ---
             # Caches always restore (keyed by source hash) so test.yml can download
             # the resulting artifacts even for PRs that don't touch native sources.
-            - name: "Cache task-runner native build"
+            - name: "Restore task-runner native build cache"
               id: "cache-task-runner"
-              uses: "actions/cache@5a3ec84eff668545956fd18022155c47e93e2684" # v4.2.3
+              uses: "actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae" # v5.0.5
               with:
                   path: "packages/tooling/task-runner/*.node"
                   key: "native-task-runner-${{ matrix.settings.target }}-zig0.14.1-${{ hashFiles('rust-toolchain.toml', 'packages/tooling/task-runner/native/Cargo.toml', 'packages/tooling/task-runner/native/Cargo.lock', 'packages/tooling/task-runner/native/build.rs', 'packages/tooling/task-runner/native/src/**') }}"
 
-            - name: "Cache tui native build"
+            - name: "Restore tui native build cache"
               id: "cache-tui"
-              uses: "actions/cache@5a3ec84eff668545956fd18022155c47e93e2684" # v4.2.3
+              uses: "actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae" # v5.0.5
               with:
                   path: "packages/terminal/tui/*.node"
                   key: "native-tui-${{ matrix.settings.target }}-zig0.14.1-${{ hashFiles('rust-toolchain.toml', 'packages/terminal/tui/native/Cargo.toml', 'packages/terminal/tui/native/Cargo.lock', 'packages/terminal/tui/native/build.rs', 'packages/terminal/tui/native/src/**') }}"
 
-            - name: "Cache vis native build"
+            - name: "Restore vis native build cache"
               id: "cache-vis"
-              uses: "actions/cache@5a3ec84eff668545956fd18022155c47e93e2684" # v4.2.3
+              uses: "actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae" # v5.0.5
               with:
                   path: "packages/tooling/vis/*.node"
                   key: "native-vis-${{ matrix.settings.target }}-zig0.14.1-${{ hashFiles('rust-toolchain.toml', 'packages/tooling/vis/native/Cargo.toml', 'packages/tooling/vis/native/Cargo.lock', 'packages/tooling/vis/native/build.rs', 'packages/tooling/vis/native/src/**') }}"
 
-            - name: "Cache secret-scanner native build"
+            - name: "Restore secret-scanner native build cache"
               id: "cache-secret-scanner"
-              uses: "actions/cache@5a3ec84eff668545956fd18022155c47e93e2684" # v4.2.3
+              uses: "actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae" # v5.0.5
               with:
                   path: "packages/tooling/secret-scanner/*.node"
                   key: "native-secret-scanner-${{ matrix.settings.target }}-zig0.14.1-${{ hashFiles('rust-toolchain.toml', 'packages/tooling/secret-scanner/native/Cargo.toml', 'packages/tooling/secret-scanner/native/Cargo.lock', 'packages/tooling/secret-scanner/native/build.rs', 'packages/tooling/secret-scanner/native/src/**') }}"
@@ -227,30 +227,61 @@ jobs:
               run: "pnpm build:native --target ${{ matrix.settings.target }} ${{ matrix.settings.cross || '' }}"
               working-directory: "packages/tooling/secret-scanner"
 
+            # --- Save build artifacts back to cache (trusted refs only) ---
+            # PRs (including forks) restore but never write — a fork build can't
+            # poison the cache for the next main run that pulls under the same key.
+            - name: "Save task-runner native build cache"
+              if: "github.event_name == 'push' && steps.cache-task-runner.outputs.cache-hit != 'true'"
+              uses: "actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae" # v5.0.5
+              with:
+                  path: "packages/tooling/task-runner/*.node"
+                  key: "${{ steps.cache-task-runner.outputs.cache-primary-key }}"
+
+            - name: "Save tui native build cache"
+              if: "github.event_name == 'push' && steps.cache-tui.outputs.cache-hit != 'true'"
+              uses: "actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae" # v5.0.5
+              with:
+                  path: "packages/terminal/tui/*.node"
+                  key: "${{ steps.cache-tui.outputs.cache-primary-key }}"
+
+            - name: "Save vis native build cache"
+              if: "github.event_name == 'push' && steps.cache-vis.outputs.cache-hit != 'true'"
+              uses: "actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae" # v5.0.5
+              with:
+                  path: "packages/tooling/vis/*.node"
+                  key: "${{ steps.cache-vis.outputs.cache-primary-key }}"
+
+            - name: "Save secret-scanner native build cache"
+              if: "github.event_name == 'push' && steps.cache-secret-scanner.outputs.cache-hit != 'true'"
+              uses: "actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae" # v5.0.5
+              with:
+                  path: "packages/tooling/secret-scanner/*.node"
+                  key: "${{ steps.cache-secret-scanner.outputs.cache-primary-key }}"
+
             # --- Upload artifacts per package ---
             - name: "Upload task-runner artifact"
-              uses: "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02" # v4.6.2
+              uses: "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a" # v7.0.1
               with:
                   name: "bindings-task-runner-${{ matrix.settings.target }}"
                   path: "packages/tooling/task-runner/*.node"
                   if-no-files-found: "error"
 
             - name: "Upload tui artifact"
-              uses: "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02" # v4.6.2
+              uses: "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a" # v7.0.1
               with:
                   name: "bindings-tui-${{ matrix.settings.target }}"
                   path: "packages/terminal/tui/*.node"
                   if-no-files-found: "error"
 
             - name: "Upload vis artifact"
-              uses: "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02" # v4.6.2
+              uses: "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a" # v7.0.1
               with:
                   name: "bindings-vis-${{ matrix.settings.target }}"
                   path: "packages/tooling/vis/*.node"
                   if-no-files-found: "error"
 
             - name: "Upload secret-scanner artifact"
-              uses: "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02" # v4.6.2
+              uses: "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a" # v7.0.1
               with:
                   name: "bindings-secret-scanner-${{ matrix.settings.target }}"
                   path: "packages/tooling/secret-scanner/*.node"
@@ -289,7 +320,7 @@ jobs:
         runs-on: "ubuntu-24.04"
         steps:
             - name: "Harden Runner"
-              uses: "step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594" # v2.16.0
+              uses: "step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450" # v2.19.1
               with:
                   egress-policy: "audit"
 
