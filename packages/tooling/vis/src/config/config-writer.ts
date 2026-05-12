@@ -54,7 +54,24 @@ const writeApprovedBuildsToVisConfig = (
 
     const original = readFileSync(configPath);
 
-    const allowBlockMatch = /(allow\s*:\s*\{)([^}]*)(\})/.exec(original);
+    // Scope the `allow:` match to follow an `install_scripts:` opener so a
+    // hypothetical `allow:` elsewhere (e.g., in another plugin's options)
+    // isn't accidentally clobbered. The writer is still regex-based (not
+    // an AST), so deeper nesting inside `install_scripts.allow` is not
+    // supported — entries there are flat `name: bool` pairs by contract.
+    const installScriptsStart = original.search(/install_scripts\s*:\s*\{/);
+    let allowBlockMatch: RegExpMatchArray | null = null;
+    let allowBlockOffset = 0;
+
+    if (installScriptsStart !== -1) {
+        const slice = original.slice(installScriptsStart);
+        const localMatch = slice.match(/(allow\s*:\s*\{)([^}]*)(\})/);
+
+        if (localMatch?.index !== undefined) {
+            allowBlockMatch = localMatch;
+            allowBlockOffset = installScriptsStart + localMatch.index;
+        }
+    }
 
     if (allowBlockMatch) {
         const blockBody = allowBlockMatch[2] ?? "";
@@ -83,14 +100,14 @@ const writeApprovedBuildsToVisConfig = (
             return { added: [], configPath, skipped, status: "noop" };
         }
 
-        const indentMatch = /\n([ \t]+)\S/.exec(blockBody);
+        const indentMatch = blockBody.match(/\n([ \t]+)\S/);
         const indent = indentMatch?.[1] ?? "                ";
         const insertion = `\n${added.map((e) => renderEntry(e, indent)).join("\n")}`;
         const trimmedBody = blockBody.replace(/\s+$/, "");
         const trailing = blockBody.slice(trimmedBody.length);
         const newBody = `${trimmedBody}${trimmedBody.endsWith(",") || trimmedBody === "" ? "" : ","}${insertion}${trailing.length > 0 ? trailing : "\n"}`;
 
-        const updated = `${original.slice(0, allowBlockMatch.index)}${allowBlockMatch[1]!}${newBody}${allowBlockMatch[3]!}${original.slice(allowBlockMatch.index + allowBlockMatch[0].length)}`;
+        const updated = `${original.slice(0, allowBlockOffset)}${allowBlockMatch[1]!}${newBody}${allowBlockMatch[3]!}${original.slice(allowBlockOffset + allowBlockMatch[0].length)}`;
 
         writeFileSync(configPath, updated);
 

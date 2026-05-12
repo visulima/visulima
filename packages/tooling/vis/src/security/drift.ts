@@ -218,11 +218,11 @@ const formatDriftReport = (report: DriftReport): string[] => {
 
     if (report.allowBuilds) {
         if (report.allowBuilds.onlyInVis.length > 0) {
-            lines.push(`  allowBuilds — only in vis.config: ${report.allowBuilds.onlyInVis.join(", ")}`);
+            lines.push(`  security.policies.install_scripts.allow — only in vis.config: ${report.allowBuilds.onlyInVis.join(", ")}`);
         }
 
         if (report.allowBuilds.onlyInPm.length > 0) {
-            lines.push(`  allowBuilds — only in ${report.packageManager} config: ${report.allowBuilds.onlyInPm.join(", ")}`);
+            lines.push(`  security.policies.install_scripts.allow — only in ${report.packageManager} config: ${report.allowBuilds.onlyInPm.join(", ")}`);
         }
     }
 
@@ -230,16 +230,16 @@ const formatDriftReport = (report: DriftReport): string[] => {
         const vis = report.minReleaseAge.vis === undefined ? "unset" : `${String(report.minReleaseAge.vis)} min`;
         const pm = report.minReleaseAge.pm === undefined ? "unset" : `${String(report.minReleaseAge.pm)} min`;
 
-        lines.push(`  minimumReleaseAge — vis.config: ${vis}, ${report.packageManager}: ${pm}`);
+        lines.push(`  security.policies.first_seen.minutes — vis.config: ${vis}, ${report.packageManager}: ${pm}`);
     }
 
     if (report.minReleaseAgeExcludes) {
         if (report.minReleaseAgeExcludes.onlyInVis.length > 0) {
-            lines.push(`  minimumReleaseAgeExclude — only in vis.config: ${report.minReleaseAgeExcludes.onlyInVis.join(", ")}`);
+            lines.push(`  security.policies.first_seen.exclude — only in vis.config: ${report.minReleaseAgeExcludes.onlyInVis.join(", ")}`);
         }
 
         if (report.minReleaseAgeExcludes.onlyInPm.length > 0) {
-            lines.push(`  minimumReleaseAgeExclude — only in ${report.packageManager} config: ${report.minReleaseAgeExcludes.onlyInPm.join(", ")}`);
+            lines.push(`  security.policies.first_seen.exclude — only in ${report.packageManager} config: ${report.minReleaseAgeExcludes.onlyInPm.join(", ")}`);
         }
     }
 

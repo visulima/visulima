@@ -963,14 +963,17 @@ export interface VisConfig {
                 /** ISO 8601 timestamp when the risk was accepted. */
                 acceptedAt: string;
                 /**
-                 * The overall Socket.dev score at the time of acceptance.
+                 * The overall Socket.dev score at the time of acceptance,
+                 * in the range `[0, 1]` (mirrors `policies.score.minimum`).
                  * Only relevant for the `score` policy; ignored elsewhere.
                  */
                 acceptedScore?: number;
                 /**
                  * ISO 8601 date (or datetime). After this point the acceptance
                  * stops applying and vis emits a warning. Leave undefined for
-                 * non-expiring entries.
+                 * non-expiring entries. Values that fail to parse as a Date
+                 * are rejected by the loader rather than silently treated as
+                 * "always expired".
                  */
                 expiresAt?: string;
                 /**
@@ -1019,9 +1022,11 @@ export interface VisConfig {
 
                 /**
                  * OSV mirror base URL (no trailing slash). Defaults to the
-                 * public Google Cloud Storage bucket
-                 * (`https://osv-vulnerabilities.storage.googleapis.com`).
-                 * Override to point at a corporate mirror.
+                 * public Google Cloud Storage bucket. Override to point at a
+                 * corporate mirror; the hostname must appear in `allowedHosts`
+                 * (or one of the built-in defaults) and the scheme must be
+                 * `https://`.
+                 * @default "https://osv-vulnerabilities.storage.googleapis.com"
                  */
                 source?: string;
 
@@ -1208,7 +1213,11 @@ export interface VisConfig {
             /**
              * Behavior when the Socket.dev feed flags a package as malicious
              * (`alerts[].type === "Malware"`).
-             * @default { mode: "block" } when Socket is enabled, off otherwise
+             *
+             * The default is cross-field: `{ mode: "block" }` whenever
+             * `security.socket.enabled !== false` (the engine cannot evaluate
+             * malware without Socket data), and `"off"` otherwise. Consumers
+             * resolve this default at evaluation time.
              */
             malware?: {
                 /**
@@ -1258,7 +1267,14 @@ export interface VisConfig {
                 /**
                  * Minimum overall Socket.dev score (0–1). Set to 0 to
                  * disable the gate while keeping Socket data fetched.
-                 * @default 0.4
+                 *
+                 * Today only `vis add` consults this value (via
+                 * `buildSocketOptions`), falling back to
+                 * `DEFAULT_LOW_SCORE_THRESHOLD` (`0.4`) when unset. The
+                 * `audit`, `doctor`, and `analyze` surfaces still compare
+                 * against the hard-coded threshold — overriding `minimum`
+                 * affects the `add` gate but not those reports until the
+                 * follow-up wiring lands.
                  */
                 minimum?: number;
             };

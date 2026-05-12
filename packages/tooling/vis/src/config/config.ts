@@ -59,22 +59,24 @@ const mergeSecurityDefaults = (security: VisConfig["security"]): VisConfig["secu
 
     const defaultPolicies = SECURITY_DEFAULTS.policies ?? {};
     const userPolicies = security.policies ?? {};
+    // Generic two-level merge so any new default sub-policy added to
+    // `SECURITY_DEFAULTS.policies` picks up the same merge semantics
+    // without further code changes.
+    const mergedPolicies: NonNullable<VisConfig["security"]>["policies"] = { ...defaultPolicies, ...userPolicies };
+
+    for (const key of Object.keys(defaultPolicies) as (keyof typeof defaultPolicies)[]) {
+        const defaultValue = defaultPolicies[key];
+        const userValue = userPolicies[key];
+
+        if (defaultValue !== undefined && userValue !== undefined) {
+            mergedPolicies[key] = { ...defaultValue, ...userValue } as never;
+        }
+    }
 
     return {
         ...SECURITY_DEFAULTS,
         ...security,
-        policies: {
-            ...defaultPolicies,
-            ...userPolicies,
-            install_scripts: {
-                ...defaultPolicies.install_scripts,
-                ...userPolicies.install_scripts,
-            },
-            publisher_change: {
-                ...defaultPolicies.publisher_change,
-                ...userPolicies.publisher_change,
-            },
-        },
+        policies: mergedPolicies,
     };
 };
 
@@ -345,7 +347,16 @@ const mergeVisConfigs = (parent: VisConfig, child: VisConfig): VisConfig => {
     }
 
     if (parent.security || child.security) {
-        merged.security = { ...parent.security, ...child.security };
+        // Deep-merge `policies` and `acceptedRisks` so a preset that sets
+        // `security.policies.install_scripts.allow` isn't wiped when the
+        // consumer config sets any other policy key. Per-policy bodies
+        // remain shallow-merged to match `mergeSecurityDefaults`.
+        merged.security = {
+            ...parent.security,
+            ...child.security,
+            acceptedRisks: { ...parent.security?.acceptedRisks, ...child.security?.acceptedRisks },
+            policies: { ...parent.security?.policies, ...child.security?.policies },
+        };
     }
 
     if (parent.update || child.update) {
@@ -606,9 +617,13 @@ const defineTaskConfig = (config: VisTaskConfig): VisTaskConfig => config;
  *
  * export default defineConfig({
  *     security: {
- *         allowBuilds: {
- *             esbuild: true,
- *             "@prisma/client": true,
+ *         policies: {
+ *             install_scripts: {
+ *                 allow: {
+ *                     esbuild: true,
+ *                     "@prisma/client": true,
+ *                 },
+ *             },
  *         },
  *     },
  * });
@@ -620,9 +635,11 @@ const defineTaskConfig = (config: VisTaskConfig): VisTaskConfig => config;
  *
  * export default defineConfig({
  *     security: {
- *         // Relax cooldown to 24 hours instead of the default 14 days
- *         minimumReleaseAge: 1440,
- *         allowBuilds: { esbuild: true },
+ *         policies: {
+ *             // Relax cooldown to 24 hours instead of the default 14 days
+ *             first_seen: { minutes: 1440 },
+ *             install_scripts: { allow: { esbuild: true } },
+ *         },
  *     },
  * });
  * ```
