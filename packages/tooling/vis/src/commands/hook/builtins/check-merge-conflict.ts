@@ -31,7 +31,7 @@ const PATTERNS: ReadonlyArray<string> = ["<<<<<<< ", "======= ", "=======\r\n", 
  * Mirrors `pre-commit/pre-commit-hooks/check_merge_conflict.py`: only
  * scans for conflict markers when git is mid-merge/rebase, unless the
  * caller passes `--assume-in-merge`. Skipping the guard means every
- * legit `<<<<<<<` in docs would fail the hook.
+ * legit `&lt;&lt;&lt;&lt;&lt;&lt;&lt;` in docs would fail the hook.
  */
 const runCheckMergeConflict = (files: ReadonlyArray<string>, args: ReadonlyArray<string>, context: BuiltinContext): number => {
     const assumeInMerge = args.includes("--assume-in-merge");

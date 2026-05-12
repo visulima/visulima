@@ -97,10 +97,7 @@ describe(syncMinimumReleaseAgeToNativeConfig, () => {
         it("preserves an existing [install] section and unrelated keys", () => {
             expect.assertions(3);
 
-            writeFileSync(
-                join(tmpDir, "bunfig.toml"),
-                "[install]\nregistry = \"https://registry.npmjs.org/\"\nminimumReleaseAge = 60\n",
-            );
+            writeFileSync(join(tmpDir, "bunfig.toml"), "[install]\nregistry = \"https://registry.npmjs.org/\"\nminimumReleaseAge = 60\n");
 
             syncMinimumReleaseAgeToNativeConfig("bun", tmpDir, 2880);
 

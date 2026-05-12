@@ -97,15 +97,15 @@ const syncAllowBuildsToNativeConfig = (pm: PackageManagerName, workspaceRoot: st
 
                 const existingBlockRegex = /^allowBuilds:[ \t]*\n(?:[ \t]{2}[^\n]*\n)*/m;
 
-                content = existingBlockRegex.test(content) ? content.replace(existingBlockRegex, allowBuildsBlock) : `${content.trimEnd()}\n\n${allowBuildsBlock}`;
+                content = existingBlockRegex.test(content)
+                    ? content.replace(existingBlockRegex, allowBuildsBlock)
+                    : `${content.trimEnd()}\n\n${allowBuildsBlock}`;
 
                 if (onlyBuiltMerged.length > 0) {
                     const listBlock = `onlyBuiltDependencies:\n${onlyBuiltMerged.map((name) => `  - ${needsQuote(name) ? `'${name.replaceAll("'", "''")}'` : name}`).join("\n")}\n`;
                     const existingListRegex = /^onlyBuiltDependencies:[ \t]*\n(?:[ \t]{2}[^\n]*\n)*/m;
 
-                    content = existingListRegex.test(content)
-                        ? content.replace(existingListRegex, listBlock)
-                        : `${content.trimEnd()}\n\n${listBlock}`;
+                    content = existingListRegex.test(content) ? content.replace(existingListRegex, listBlock) : `${content.trimEnd()}\n\n${listBlock}`;
                 }
 
                 writeFileSync(filePath, content);

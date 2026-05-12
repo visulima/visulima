@@ -5,8 +5,7 @@ import { cwd } from "node:process";
 import { isAccessibleSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
-import { loadHookConfig } from "./config";
-import { HOOK_CONFIG_FILENAME } from "./config";
+import { HOOK_CONFIG_FILENAME, loadHookConfig } from "./config";
 import { HOOKS } from "./constants";
 
 /* eslint-disable no-bitwise -- Unix mode bits need bit-level masking. */
@@ -102,12 +101,7 @@ const validateHooks = (root: string, hooksDirectory: string): ValidationResult =
     if (sawStageScript) {
         const configPath = join(directory, HOOK_CONFIG_FILENAME);
 
-        if (!isAccessibleSync(configPath)) {
-            issues.push({
-                kind: "error",
-                message: `Stage scripts are present but ${hooksDirectory}/${HOOK_CONFIG_FILENAME} is missing. Re-run \`vis hook migrate\`.`,
-            });
-        } else {
+        if (isAccessibleSync(configPath)) {
             try {
                 loadHookConfig(root, hooksDirectory);
             } catch (error) {
@@ -117,6 +111,11 @@ const validateHooks = (root: string, hooksDirectory: string): ValidationResult =
                     path: join(hooksDirectory, HOOK_CONFIG_FILENAME),
                 });
             }
+        } else {
+            issues.push({
+                kind: "error",
+                message: `Stage scripts are present but ${hooksDirectory}/${HOOK_CONFIG_FILENAME} is missing. Re-run \`vis hook migrate\`.`,
+            });
         }
     }
 

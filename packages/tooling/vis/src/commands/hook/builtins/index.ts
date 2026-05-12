@@ -14,7 +14,7 @@ import { runCheckMergeConflict } from "./check-merge-conflict";
 import { runEndOfFileFixer } from "./end-of-file-fixer";
 import { runMixedLineEnding } from "./mixed-line-ending";
 import { runTrailingWhitespace } from "./trailing-whitespace";
-import type { BuiltinContext, BuiltinFunction, BuiltinLogger } from "./types";
+import type { BuiltinFunction } from "./types";
 
 const BUILTIN_REGISTRY: Readonly<Record<string, BuiltinFunction>> = {
     "check-json": runCheckJson,
@@ -30,5 +30,6 @@ const isBuiltin = (id: string): boolean => Object.hasOwn(BUILTIN_REGISTRY, id);
 
 const getBuiltin = (id: string): BuiltinFunction | undefined => BUILTIN_REGISTRY[id];
 
-export type { BuiltinContext, BuiltinFunction, BuiltinLogger };
 export { BUILTIN_HOOK_IDS, BUILTIN_REGISTRY, getBuiltin, isBuiltin };
+
+export { type BuiltinContext, type BuiltinFunction, type BuiltinLogger } from "./types";

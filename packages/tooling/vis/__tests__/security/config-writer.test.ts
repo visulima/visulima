@@ -33,10 +33,7 @@ describe(writeApprovedBuildsToVisConfig, () => {
 
         const configPath = join(tmpDir, "vis.config.ts");
 
-        writeFileSync(
-            configPath,
-            "import { defineConfig } from \"@visulima/vis/config\";\n\nexport default defineConfig({\n    name: \"demo\",\n});\n",
-        );
+        writeFileSync(configPath, "import { defineConfig } from \"@visulima/vis/config\";\n\nexport default defineConfig({\n    name: \"demo\",\n});\n");
 
         const result = writeApprovedBuildsToVisConfig(tmpDir, ["esbuild", "sharp"]);
         const content = readFileSync(configPath, "utf8");

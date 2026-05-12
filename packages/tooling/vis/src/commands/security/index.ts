@@ -10,9 +10,7 @@ const securityList: Command = {
     group: "Security & Health",
     loader: () => import("./list"),
     name: "list",
-    options: [
-        { defaultValue: false, description: "Emit the report as JSON instead of human-readable text", name: "json", type: Boolean },
-    ],
+    options: [{ defaultValue: false, description: "Emit the report as JSON instead of human-readable text", name: "json", type: Boolean }],
 };
 
 const securitySync: Command = {
@@ -55,7 +53,12 @@ const securityRun: Command = {
     name: "run",
     options: [
         { defaultValue: false, description: "Also run the workspace root's prepublish + prepare hooks after dependencies", name: "with-root", type: Boolean },
-        { defaultValue: false, description: "Skip dependency scripts and only run the workspace root's prepublish + prepare hooks", name: "root-only", type: Boolean },
+        {
+            defaultValue: false,
+            description: "Skip dependency scripts and only run the workspace root's prepublish + prepare hooks",
+            name: "root-only",
+            type: Boolean,
+        },
     ],
 };
 

@@ -7,7 +7,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { VisConfig } from "../../src/config/workspace";
 import { checkPmNativeConfigDrift, formatDriftReport } from "../../src/security/security";
 
-const cfg = (security: NonNullable<VisConfig["security"]>): VisConfig => ({ security } satisfies VisConfig);
+const cfg = (security: NonNullable<VisConfig["security"]>): VisConfig => ({ security }) satisfies VisConfig;
 
 describe(checkPmNativeConfigDrift, () => {
     let tmpDir: string;
@@ -46,11 +46,7 @@ describe(checkPmNativeConfigDrift, () => {
 
             writeFileSync(join(tmpDir, "pnpm-workspace.yaml"), "minimumReleaseAge: 2880\nallowBuilds:\n  esbuild: true\n");
 
-            const report = checkPmNativeConfigDrift(
-                cfg({ allowBuilds: { esbuild: true }, minimumReleaseAge: 2880 }),
-                "pnpm",
-                tmpDir,
-            );
+            const report = checkPmNativeConfigDrift(cfg({ allowBuilds: { esbuild: true }, minimumReleaseAge: 2880 }), "pnpm", tmpDir);
 
             expect(report.hasDrift).toBe(false);
         });
@@ -62,11 +58,7 @@ describe(checkPmNativeConfigDrift, () => {
 
             writeFileSync(join(tmpDir, "pnpm-workspace.yaml"), "allowBuilds:\n  esbuild: true\n");
 
-            const report = checkPmNativeConfigDrift(
-                cfg({ allowBuilds: { esbuild: true, sharp: true } }),
-                "pnpm",
-                tmpDir,
-            );
+            const report = checkPmNativeConfigDrift(cfg({ allowBuilds: { esbuild: true, sharp: true } }), "pnpm", tmpDir);
 
             expect(report.hasDrift).toBe(true);
             expect(report.allowBuilds?.onlyInVis).toStrictEqual(["sharp"]);
@@ -77,11 +69,7 @@ describe(checkPmNativeConfigDrift, () => {
 
             writeFileSync(join(tmpDir, "pnpm-workspace.yaml"), "allowBuilds:\n  esbuild: true\n  sharp: true\n");
 
-            const report = checkPmNativeConfigDrift(
-                cfg({ allowBuilds: { esbuild: true } }),
-                "pnpm",
-                tmpDir,
-            );
+            const report = checkPmNativeConfigDrift(cfg({ allowBuilds: { esbuild: true } }), "pnpm", tmpDir);
 
             expect(report.allowBuilds?.onlyInPm).toStrictEqual(["sharp"]);
         });
@@ -91,11 +79,7 @@ describe(checkPmNativeConfigDrift, () => {
 
             writeFileSync(join(tmpDir, "pnpm-workspace.yaml"), "onlyBuiltDependencies:\n  - esbuild\n  - sharp\n");
 
-            const report = checkPmNativeConfigDrift(
-                cfg({ allowBuilds: { esbuild: true } }),
-                "pnpm",
-                tmpDir,
-            );
+            const report = checkPmNativeConfigDrift(cfg({ allowBuilds: { esbuild: true } }), "pnpm", tmpDir);
 
             expect(report.allowBuilds?.onlyInPm).toStrictEqual(["sharp"]);
         });
@@ -126,11 +110,7 @@ describe(checkPmNativeConfigDrift, () => {
 
             writeFileSync(join(tmpDir, "package.json"), JSON.stringify({ trustedDependencies: ["esbuild"] }));
 
-            const report = checkPmNativeConfigDrift(
-                cfg({ allowBuilds: { esbuild: true, sharp: true } }),
-                "bun",
-                tmpDir,
-            );
+            const report = checkPmNativeConfigDrift(cfg({ allowBuilds: { esbuild: true, sharp: true } }), "bun", tmpDir);
 
             expect(report.allowBuilds?.onlyInVis).toStrictEqual(["sharp"]);
         });
@@ -195,16 +175,9 @@ describe(checkPmNativeConfigDrift, () => {
         it("flags minimumReleaseAgeExclude differences for pnpm", () => {
             expect.assertions(2);
 
-            writeFileSync(
-                join(tmpDir, "pnpm-workspace.yaml"),
-                "minimumReleaseAge: 2880\nminimumReleaseAgeExclude:\n  - typescript\n",
-            );
+            writeFileSync(join(tmpDir, "pnpm-workspace.yaml"), "minimumReleaseAge: 2880\nminimumReleaseAgeExclude:\n  - typescript\n");
 
-            const report = checkPmNativeConfigDrift(
-                cfg({ minimumReleaseAge: 2880, minimumReleaseAgeExclude: ["typescript", "@types/node"] }),
-                "pnpm",
-                tmpDir,
-            );
+            const report = checkPmNativeConfigDrift(cfg({ minimumReleaseAge: 2880, minimumReleaseAgeExclude: ["typescript", "@types/node"] }), "pnpm", tmpDir);
 
             expect(report.minReleaseAgeExcludes?.onlyInVis).toStrictEqual(["@types/node"]);
             expect(report.hasDrift).toBe(true);

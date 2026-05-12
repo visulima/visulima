@@ -102,7 +102,9 @@ const execute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Co
                         break;
                     }
                     case "noop": {
-                        pail.info(`All ${String(entries.length)} entr${entries.length === 1 ? "y" : "ies"} were already present in vis.config.ts security.allowBuilds.`);
+                        pail.info(
+                            `All ${String(entries.length)} entr${entries.length === 1 ? "y" : "ies"} were already present in vis.config.ts security.allowBuilds.`,
+                        );
                         break;
                     }
                     default: {
@@ -121,7 +123,9 @@ const execute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Co
         // for packages that have since been removed.
         if (status.excess.length > 0) {
             pail.notice("");
-            pail.warn(`Stale allowBuilds entries — ${String(status.excess.length)} pattern${status.excess.length === 1 ? "" : "s"} no longer match any installed package:`);
+            pail.warn(
+                `Stale allowBuilds entries — ${String(status.excess.length)} pattern${status.excess.length === 1 ? "" : "s"} no longer match any installed package:`,
+            );
 
             for (const pattern of status.excess) {
                 pail.info(`  ${pattern}`);
@@ -132,7 +136,9 @@ const execute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Co
 
         if (status.versionDrift.length > 0) {
             pail.notice("");
-            pail.warn(`Version drift — ${String(status.versionDrift.length)} entr${status.versionDrift.length === 1 ? "y" : "ies"} pinned to an outdated version:`);
+            pail.warn(
+                `Version drift — ${String(status.versionDrift.length)} entr${status.versionDrift.length === 1 ? "y" : "ies"} pinned to an outdated version:`,
+            );
 
             for (const { from, to } of status.versionDrift) {
                 pail.info(`  ${from}  →  ${to}`);

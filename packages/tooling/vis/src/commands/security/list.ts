@@ -15,25 +15,29 @@ const execute = ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console,
     const pinVersions = visConfig?.security?.pinVersions === true;
     const status = scanBuildScriptStatus(cwd, allowBuilds, { pinVersions });
     const binConflicts = collectBinShadows(cwd, allowBins);
-    const drift = visConfig && SUPPORTED_PMS.has(pm.name)
-        ? checkPmNativeConfigDrift(visConfig, pm.name, cwd)
-        : undefined;
+    const drift = visConfig && SUPPORTED_PMS.has(pm.name) ? checkPmNativeConfigDrift(visConfig, pm.name, cwd) : undefined;
 
     if (options.json) {
-        process.stdout.write(`${JSON.stringify(
-            {
-                binConflicts,
-                drift,
-                excess: status.excess,
-                installed: status.installed.map((p) => { return { hooks: p.hooks, name: p.name, version: p.version }; }),
-                packageManager: pm.name,
-                pinVersions,
-                unapproved: status.unapproved.map((p) => { return { hooks: p.hooks, name: p.name, version: p.version }; }),
-                versionDrift: status.versionDrift,
-            },
-            undefined,
-            2,
-        )}\n`);
+        process.stdout.write(
+            `${JSON.stringify(
+                {
+                    binConflicts,
+                    drift,
+                    excess: status.excess,
+                    installed: status.installed.map((p) => {
+                        return { hooks: p.hooks, name: p.name, version: p.version };
+                    }),
+                    packageManager: pm.name,
+                    pinVersions,
+                    unapproved: status.unapproved.map((p) => {
+                        return { hooks: p.hooks, name: p.name, version: p.version };
+                    }),
+                    versionDrift: status.versionDrift,
+                },
+                undefined,
+                2,
+            )}\n`,
+        );
 
         return;
     }
@@ -76,7 +80,9 @@ const execute = ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console,
 
     if (status.versionDrift.length > 0) {
         pail.info("");
-        pail.warn(`  Version drift (pinVersions: true) — ${String(status.versionDrift.length)} entr${status.versionDrift.length === 1 ? "y" : "ies"} point at outdated versions:`);
+        pail.warn(
+            `  Version drift (pinVersions: true) — ${String(status.versionDrift.length)} entr${status.versionDrift.length === 1 ? "y" : "ies"} point at outdated versions:`,
+        );
 
         for (const { from, to } of status.versionDrift) {
             pail.info(`    ${from}  →  ${to}`);

@@ -85,27 +85,27 @@ The Oct 2025 ViteConf announcement landed as a public alpha on Mar 13 2026. The 
 
 - Tasks defined under `run.tasks` in `vite.config.ts`: `command`, `dependsOn`, `cache`, `envs`. `dependsOn` supports `taskName` and `package#taskName`.
 - pnpm-style `--filter` (name/glob/dir, `...` for deps/dependents, `!` exclusions). `-r` recursive, `-t` transitive, `-w` workspace root, `--parallel`, `--concurrency-limit` (default 4).
-- **Auto-input tracking via syscall tracing (fspy).** Records reads, *missing-file probes*, and *directory listings* — caching needs zero declared `inputs`. Adding a file to a probed directory or creating a previously-missing file invalidates the cache. (Open issues #353/#354 expose a SIGBUS edge on `/dev/shm`-constrained hosts — implementation is real, still rough.)
+- **Auto-input tracking via syscall tracing (fspy).** Records reads, _missing-file probes_, and _directory listings_ — caching needs zero declared `inputs`. Adding a file to a probed directory or creating a previously-missing file invalidates the cache. (Open issues #353/#354 expose a SIGBUS edge on `/dev/shm`-constrained hosts — implementation is real, still rough.)
 - **Compound-command sub-task splitting.** `a && b` and nested `vp run` calls are split into independent cached tasks. Granular cache hits, but the model has ordering bugs in flight (issue #364).
 - `-v` summary, `--last-details` to replay prior run summary, cache stored at `node_modules/.vite/task-cache`.
 - Args after the task name pass through to the underlying command (`vp run test --reporter verbose`).
 
 **Notable open-issue gaps (May 2026):**
 
-| Gap | Issue | Status in vis |
-|---|---|---|
-| Remote cache | not on roadmap | ✅ HTTP + REAPI gRPC, `vis cache doctor` |
-| Affected detection | not on roadmap | ✅ `vis affected`, `${affected.files}` token |
-| Watch mode | #276 | ✅ Vitest-style keybinds |
-| Cache eviction | #251, #315 | ✅ `vis cache prune --keep-last/--max-age-days/--max-size` |
-| Output preserves colors / globs / mtime | #358, #321, #375 | ✅ archive preserves mtime+mode; `vis cache verify` |
-| Cache why / hash debugging | hinted #311 | ✅ `vis cache why`, `vis cache hash` |
-| Task aliases / groups / discoverability | #277 | ✅ `vis list --targets` + tag selectors |
-| First-class task arg schema | #274 | ✅ via `vis.task.ts` |
-| Per-task shell selection | #275 | partial |
-| Dependency on a group of tasks | #272 | ✅ tag overlay |
-| RFC for richer `dependsOn` syntax | #322 | ✅ `WhenCondition` |
-| Self-hosting Vite Task in own repo | #256 | n/a (vis already self-hosts) |
+| Gap                                     | Issue            | Status in vis                                              |
+| --------------------------------------- | ---------------- | ---------------------------------------------------------- |
+| Remote cache                            | not on roadmap   | ✅ HTTP + REAPI gRPC, `vis cache doctor`                   |
+| Affected detection                      | not on roadmap   | ✅ `vis affected`, `${affected.files}` token               |
+| Watch mode                              | #276             | ✅ Vitest-style keybinds                                   |
+| Cache eviction                          | #251, #315       | ✅ `vis cache prune --keep-last/--max-age-days/--max-size` |
+| Output preserves colors / globs / mtime | #358, #321, #375 | ✅ archive preserves mtime+mode; `vis cache verify`        |
+| Cache why / hash debugging              | hinted #311      | ✅ `vis cache why`, `vis cache hash`                       |
+| Task aliases / groups / discoverability | #277             | ✅ `vis list --targets` + tag selectors                    |
+| First-class task arg schema             | #274             | ✅ via `vis.task.ts`                                       |
+| Per-task shell selection                | #275             | partial                                                    |
+| Dependency on a group of tasks          | #272             | ✅ tag overlay                                             |
+| RFC for richer `dependsOn` syntax       | #322             | ✅ `WhenCondition`                                         |
+| Self-hosting Vite Task in own repo      | #256             | n/a (vis already self-hosts)                               |
 
 **Underlying toolchain advantage** (still strong): Vite 8, Vitest 4.1, Oxlint 1.52 (~50–100× ESLint), Oxfmt beta (~30× Prettier), Rolldown (1.6–7.7× Vite 7), tsgo, tsdown. Shared Rust core across subcommands.
 

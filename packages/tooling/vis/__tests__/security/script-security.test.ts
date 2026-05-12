@@ -374,10 +374,7 @@ describe(syncAllowBuildsToNativeConfig, () => {
         it("should merge with existing onlyBuiltDependencies list and preserve sort order", () => {
             expect.assertions(3);
 
-            writeFileSync(
-                join(tmpDir, "pnpm-workspace.yaml"),
-                "packages:\n  - 'packages/*'\n\nonlyBuiltDependencies:\n  - prisma\n",
-            );
+            writeFileSync(join(tmpDir, "pnpm-workspace.yaml"), "packages:\n  - 'packages/*'\n\nonlyBuiltDependencies:\n  - prisma\n");
 
             syncAllowBuildsToNativeConfig("pnpm", tmpDir, { esbuild: true });
 

@@ -137,10 +137,7 @@ describe(scanBuildScriptStatus, () => {
             const storeNm = join(root, "node_modules", ".pnpm", storeKey, "node_modules");
 
             mkdirSync(join(storeNm, pkgName), { recursive: true });
-            writeFileSync(
-                join(storeNm, pkgName, "package.json"),
-                JSON.stringify({ name: pkgName, scripts, version: "1.0.0" }),
-            );
+            writeFileSync(join(storeNm, pkgName, "package.json"), JSON.stringify({ name: pkgName, scripts, version: "1.0.0" }));
         };
 
         it("scans packages that live only under `.pnpm/<hash>/node_modules/<pkg>`", () => {

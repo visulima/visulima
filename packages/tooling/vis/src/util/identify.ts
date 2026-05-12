@@ -22,7 +22,13 @@
 
 import { basename } from "node:path";
 
-import { allKnownTags, NATIVE_BINDING_VERSION, parseShebang as parseShebangNative, tagsFromPath as tagsFromPathNative, tagsFromPaths as tagsFromPathsNative } from "#native";
+import {
+    allKnownTags,
+    NATIVE_BINDING_VERSION,
+    parseShebang as parseShebangNative,
+    tagsFromPath as tagsFromPathNative,
+    tagsFromPaths as tagsFromPathsNative,
+} from "#native";
 
 const EXPECTED_BINDING_VERSION = 3;
 
@@ -78,9 +84,7 @@ const VIS_FILENAME_TAGS: Readonly<Record<string, ReadonlyArray<string>>> = {
  * basename (lowercased) to avoid an exhaustive filename table for
  * conventionally-named files.
  */
-const VIS_SUFFIX_TAGS: ReadonlyArray<readonly [string, ReadonlyArray<string>]> = [
-    [".releaserc.json", ["release-config", "vis-config"]],
-];
+const VIS_SUFFIX_TAGS: ReadonlyArray<readonly [string, ReadonlyArray<string>]> = [[".releaserc.json", ["release-config", "vis-config"]]];
 
 const classifyVis = (path: string): Set<string> => {
     const tags = new Set<string>();
@@ -107,12 +111,7 @@ const classifyVis = (path: string): Set<string> => {
 };
 
 /** The full vis tag universe — every tag any path in this repo could produce. */
-const VIS_TAG_UNIVERSE: ReadonlySet<string> = new Set<string>(
-    [
-        ...Object.values(VIS_FILENAME_TAGS).flat(),
-        ...VIS_SUFFIX_TAGS.flatMap(([, t]) => t),
-    ],
-);
+const VIS_TAG_UNIVERSE: ReadonlySet<string> = new Set<string>([...Object.values(VIS_FILENAME_TAGS).flat(), ...VIS_SUFFIX_TAGS.flatMap(([, t]) => t)]);
 
 // ---------- public API ---------------------------------------------------
 

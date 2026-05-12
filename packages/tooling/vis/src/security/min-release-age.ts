@@ -25,12 +25,7 @@ import type { PackageManagerName } from "./types";
  * "not set in vis.config" action). `0` writes a literal zero, which the
  * package manager interprets as "no gating" — explicit-disable, not delete.
  */
-const syncMinimumReleaseAgeToNativeConfig = (
-    pm: PackageManagerName,
-    workspaceRoot: string,
-    minutes: number | undefined,
-    excludes: string[] = [],
-): string[] => {
+const syncMinimumReleaseAgeToNativeConfig = (pm: PackageManagerName, workspaceRoot: string, minutes: number | undefined, excludes: string[] = []): string[] => {
     const actions: string[] = [];
 
     if (minutes === undefined) {
@@ -47,9 +42,10 @@ const syncMinimumReleaseAgeToNativeConfig = (
             let content = isAccessibleSync(tomlPath) ? readFileSync(tomlPath) : "";
             const seconds = wholeMinutes * 60;
             const ageLine = `minimumReleaseAge = ${String(seconds)}`;
-            const excludesLine = excludes.length > 0
-                ? `minimumReleaseAgeExcludes = [${excludes.map((p) => `"${p.replaceAll(String.raw`"`, String.raw`\"`)}"`).join(", ")}]`
-                : undefined;
+            const excludesLine
+                = excludes.length > 0
+                    ? `minimumReleaseAgeExcludes = [${excludes.map((p) => `"${p.replaceAll(String.raw`"`, String.raw`\"`)}"`).join(", ")}]`
+                    : undefined;
             const installHeader = /^\[install\][ \t]*\n/m.exec(content);
 
             if (installHeader?.index === undefined) {
@@ -63,9 +59,7 @@ const syncMinimumReleaseAgeToNativeConfig = (
                 const sectionEnd = nextSection?.index === undefined ? content.length : sectionStart + nextSection.index;
                 let body = content.slice(sectionStart, sectionEnd);
 
-                body = /^[ \t]*minimumReleaseAge[ \t]*=/m.test(body)
-                    ? body.replace(/^[ \t]*minimumReleaseAge[ \t]*=.*$/m, ageLine)
-                    : `${ageLine}\n${body}`;
+                body = /^[ \t]*minimumReleaseAge[ \t]*=/m.test(body) ? body.replace(/^[ \t]*minimumReleaseAge[ \t]*=.*$/m, ageLine) : `${ageLine}\n${body}`;
 
                 if (excludesLine) {
                     body = /^[ \t]*minimumReleaseAgeExcludes[ \t]*=/m.test(body)
@@ -92,9 +86,7 @@ const syncMinimumReleaseAgeToNativeConfig = (
             const duration = formatMinutesAsTimeString(wholeMinutes);
             const line = `min-release-age=${duration}`;
 
-            content = /^\s*min-release-age\s*=/m.test(content)
-                ? content.replace(/^\s*min-release-age\s*=.*$/m, line)
-                : `${content.trimEnd()}\n${line}\n`;
+            content = /^\s*min-release-age\s*=/m.test(content) ? content.replace(/^\s*min-release-age\s*=.*$/m, line) : `${content.trimEnd()}\n${line}\n`;
 
             writeFileSync(npmrcPath, content.endsWith("\n") ? content : `${content}\n`);
             actions.push(`Updated .npmrc min-release-age=${duration} (${String(wholeMinutes)} minutes)`);

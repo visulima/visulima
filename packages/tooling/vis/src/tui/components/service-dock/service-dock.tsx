@@ -163,9 +163,7 @@ const ServiceDock = ({ activeIndex, focused, store }: ServiceDockProps): React.J
         return <></>;
     }
 
-    const states: ServiceState[] = ids
-        .map((id) => snapshot.get(id))
-        .filter((state): state is ServiceState => state !== undefined);
+    const states: ServiceState[] = ids.map((id) => snapshot.get(id)).filter((state): state is ServiceState => state !== undefined);
 
     const dockState = store.getDockState();
     const borderColor = dockState === "crash" ? "red" : dockState === "ready" ? "gray" : focused ? "white" : "cyan";
