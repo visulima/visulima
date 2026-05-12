@@ -1,5 +1,7 @@
 # AWS Light Storage
 
+> **Just need ad-hoc uploads?** Wrap this adapter in the [`Files` facade](../files-facade.mdx) for a one-liner API. The reference below shows direct adapter usage — pick that path when you're hosting an upload server.
+
 ## Overview
 
 AWS Light Storage is a lightweight S3-compatible storage implementation optimized for worker environments. It uses `aws4fetch` instead of the full AWS SDK, making it perfect for Cloudflare Workers, Web Workers, and other edge runtime environments where the AWS SDK cannot run.

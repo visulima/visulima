@@ -2,6 +2,7 @@
     "title": "Storage",
     "pages": [
         "introduction",
+        "files-facade",
         "framework",
         "services",
         "---Features---",

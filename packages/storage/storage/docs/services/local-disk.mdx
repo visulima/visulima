@@ -1,5 +1,7 @@
 # Local Disk Storage
 
+> **Just need ad-hoc reads / writes?** Wrap `DiskStorage` in the [`Files` facade](../files-facade.mdx) for a one-liner API. The reference below shows direct adapter usage, with the resumable / multipart / lifecycle features that are unique to the framework surface.
+
 ## Overview
 
 Local disk storage provides file storage on the local filesystem. It's ideal for development, single-server deployments, and scenarios where cloud storage isn't needed.
@@ -144,7 +146,8 @@ const storage = new DiskStorage({
 Cloud storage platforms (S3, Azure, GCS) use more permissive validation by default, only blocking dangerous patterns like path traversal (`../`) and null bytes (`\0`). They accept most special characters since cloud storage handles URL encoding automatically.
 
 ```typescript
-import { S3Storage, defaultCloudStorageFileNameValidation } from "@visulima/storage";
+import { defaultCloudStorageFileNameValidation } from "@visulima/storage";
+import { S3Storage } from "@visulima/storage/provider/aws";
 
 const storage = new S3Storage({
     bucket: "my-bucket",

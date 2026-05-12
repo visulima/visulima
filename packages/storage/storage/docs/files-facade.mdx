@@ -1,0 +1,204 @@
+# `Files` facade
+
+Files-SDK–style unified facade over any `BaseStorage` adapter. Eight methods + a `.raw` escape hatch, web-standard body types, provider-agnostic return shape.
+
+```ts
+import { Files } from "@visulima/storage";
+import { S3Storage } from "@visulima/storage/provider/aws";
+
+const files = new Files({
+    adapter: new S3Storage({ bucket: "uploads", region: "us-east-1" }),
+});
+```
+
+The user-supplied `key` is both the storage path and the metadata id — subsequent operations look up the object by the same key used to upload it.
+
+## When to use it
+
+- One-shot puts and gets (uploading a `Blob`, fetching a `Buffer`).
+- Provider-portable code — swap `S3Storage` for `BunnyStorage` without changing call sites.
+- AI-agent and LLM tool integrations (the `@visulima/storage/ai/*` subpaths build on top of `Files`).
+- Quick scripts, serverless functions, and small services that don't need TUS / multipart / lifecycle hooks.
+
+For client-driven uploads (browser forms, large resumable files, chunked transfers), skip the facade and use the adapter directly with an [HTTP handler](./tus-handler.mdx).
+
+## Method surface
+
+| Method | Signature | Notes |
+| --- | --- | --- |
+| `upload` | `(key, body, opts?) → Promise<FileObject>` | Accepts any [supported body type](#body-types). |
+| `download` | `(key) → Promise<DownloadResult>` | Returns `{ body: Buffer, ...FileObject }`. |
+| `head` | `(key) → Promise<FileObject>` | Metadata only. |
+| `delete` | `(key) → Promise<void>` | Idempotent on most providers. |
+| `copy` | `(source, destination, opts?) → Promise<FileObject>` | Server-side where supported; download + re-upload otherwise. |
+| `list` | `(opts?) → Promise<FileObject[]>` | Optional `prefix` filter and `limit`. |
+| `url` | `(key, opts?) → Promise<string>` | Signed-read URL when the provider supports it. |
+| `signedUploadUrl` | `(key, opts?) → Promise<string>` | Presigned-PUT URL for direct-from-browser uploads. |
+| `raw` (getter) | `→ unknown` | The adapter's native client (`S3Client`, `BlobServiceClient`, …). |
+
+## Body types
+
+`Files.upload(key, body, opts?)` accepts:
+
+| Type | Size hint | Notes |
+| --- | --- | --- |
+| `string` | derived | UTF-8 encoded. |
+| `Buffer` | derived | |
+| `Uint8Array` / `ArrayBuffer` / `ArrayBufferView` | derived | |
+| `Blob` | derived | Web `Blob` (Node 18+ and all modern runtimes). |
+| `ReadableStream<Uint8Array>` | **required via `opts.size`** for some adapters | Web stream, not Node `Readable`. |
+| `NodeJS.ReadableStream` | **required via `opts.size`** for some adapters | Node `Readable`. |
+
+Stream inputs don't carry a length; pass `opts.size` when the underlying adapter or upload protocol needs to know it up front (multipart, content-length headers, presigned-PUT bodies).
+
+## Return shape: `FileObject`
+
+Every method that returns object data returns the same provider-agnostic shape:
+
+```ts
+interface FileObject {
+    contentType: string;
+    etag?: string;
+    key: string;
+    lastModified?: Date | number | string;
+    metadata?: Record<string, unknown>;
+    size?: number;
+}
+
+interface DownloadResult extends FileObject {
+    body: Buffer;
+}
+```
+
+No S3-style `ETag` capitalization quirks, no Azure-specific fields leaking through — adapter-side mapping is the facade's job.
+
+## Typed `.raw` escape hatch
+
+`Files` is generic over the adapter type, so `files.raw` is typed to the adapter's native client when you pin it:
+
+```ts
+import { Files, S3Storage } from "@visulima/storage";
+import type { S3Client } from "@aws-sdk/client-s3";
+
+const files = new Files({ adapter: new S3Storage({ bucket: "u", region: "us-east-1" }) });
+
+// `files.raw` is `S3Client` (not `unknown`).
+const s3: S3Client = files.raw;
+await s3.send(/* …adapter-specific call… */);
+```
+
+Adapters without a native client (e.g. `DiskStorage`) return `undefined` from `raw`.
+
+## Examples
+
+### Save a `Blob` from a form
+
+```ts
+const file = formData.get("avatar") as Blob;
+
+await files.upload(`avatars/${userId}.png`, file, {
+    contentType: file.type,
+    metadata: { userId },
+});
+```
+
+### Read into a `Buffer`
+
+```ts
+const { body, contentType, size } = await files.download(`avatars/${userId}.png`);
+
+response.setHeader("Content-Type", contentType);
+response.setHeader("Content-Length", String(size));
+response.end(body);
+```
+
+### Mint a signed URL for a private object
+
+```ts
+const url = await files.url(`docs/${docId}.pdf`, {
+    expiresIn: 900,
+    responseContentDisposition: `attachment; filename="${docId}.pdf"`,
+});
+```
+
+`responseContentDisposition` and `responseContentType` are honored where the provider supports them; otherwise the call throws `UploadError(METHOD_NOT_ALLOWED)` so the caller knows the feature is unsupported.
+
+### Presigned upload for a browser client
+
+```ts
+const uploadUrl = await files.signedUploadUrl(`raw/${id}.bin`, {
+    contentType: "application/octet-stream",
+    contentLength: bytes,
+    expiresIn: 600,
+});
+
+return Response.json({ uploadUrl });
+```
+
+Not every adapter supports presigned PUT. Adapters without a primitive (UploadThing, Bunny) throw `UploadError(METHOD_NOT_ALLOWED)` with a message pointing to the supported alternative.
+
+### Stream a large upload
+
+```ts
+import { createReadStream } from "node:fs";
+import { stat } from "node:fs/promises";
+
+const { size } = await stat(path);
+
+await files.upload(key, createReadStream(path), {
+    contentType: "video/mp4",
+    size,
+});
+```
+
+### List with a prefix
+
+```ts
+const userFiles = await files.list({ prefix: `users/${userId}/`, limit: 100 });
+```
+
+`list()` is intentionally simple: it asks the adapter for up to `limit` files (default `1000`), then filters by `prefix` in memory. Server-side prefix scoping isn't exposed through `BaseStorage.list` — if you need it (e.g. S3 `ListObjectsV2` with a `Prefix`), reach for `files.adapter.raw` and call the native SDK directly.
+
+### Copy across keys
+
+```ts
+await files.copy(`tmp/${id}`, `final/${id}`);
+await files.delete(`tmp/${id}`);
+```
+
+For providers without server-side copy (Bunny, UploadThing), `copy` is a download + re-upload roundtrip and `move = copy + delete` is non-atomic — a failed delete leaves the source behind.
+
+## Errors
+
+Every method that hits the network throws an `UploadError` from `@visulima/storage` on failure, with a stable `UploadErrorCode` from the `ERRORS` enum:
+
+```ts
+import { ERRORS, isUploadError } from "@visulima/storage";
+
+try {
+    await files.download("missing.bin");
+} catch (error) {
+    if (isUploadError(error) && error.UploadErrorCode === ERRORS.FILE_NOT_FOUND) {
+        // …
+    }
+    throw error;
+}
+```
+
+Adapters normalize provider-specific error shapes into the same enum: `FILE_NOT_FOUND` (404), `FORBIDDEN` (401/403), `BAD_REQUEST` (400), `METHOD_NOT_ALLOWED` (unsupported primitive), `STORAGE_ERROR` (everything else). The original error is preserved on `UploadError.detail`.
+
+→ See [Error handling](./error-handling.mdx) for the full enum and how to wrap your own adapter errors.
+
+## When to drop down to the adapter
+
+The facade is intentionally narrow. Reach for the adapter (`files.adapter`) when you need:
+
+- **Resumable uploads** — `BaseStorage.write(part)` takes a `FilePart` with `start` offsets; `Files.upload` is one-shot only.
+- **Lifecycle hooks** — `onCreate`, `onUpdate`, `onComplete`, `onDelete`, `onError` are configured on the adapter.
+- **Validators / locking** — file-type, size, and MIME validation; lock tokens for concurrent writers.
+- **Expiration / purge** — the adapter's `expiration` config.
+- **Batch ops** — `deleteBatch`, `copyBatch`, `moveBatch` with per-item error capture.
+- **OpenAPI export** — schema generation against the adapter, not the facade.
+- **Transformers** — `ImageTransformer`, `VideoTransformer`, `AudioTransformer`, `MediaTransformer` all take an adapter.
+
+The facade and the adapter are not exclusive — `files.adapter` always returns the underlying `BaseStorage`, so you can mix both styles in the same codebase.
