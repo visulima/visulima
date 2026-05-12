@@ -438,10 +438,20 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
     // engine receives the same OSV map + Socket reports the handler
     // already built, so it never refetches anything.
     const policiesFlag = options.policies as string | undefined;
+    const unknownPolicyTokens: string[] = [];
     const policyDecisions: PolicyDecision[] = await (async () => {
         const enabledPolicies = parsePoliciesFlag(policiesFlag, (unknown) => {
-            if (!quietHeader) {
-                pail.warn(`Unknown policy '${unknown}' — ignoring. Known: malware, firstSeen, unexpectedDeps, publisherChange, installScripts, score, vulnerability, license.`);
+            unknownPolicyTokens.push(unknown);
+
+            const message = `Unknown policy '${unknown}' — ignoring. Known: malware, firstSeen, unexpectedDeps, publisherChange, installScripts, score, vulnerability, license.`;
+
+            if (quietHeader) {
+                // Machine-readable formats can't carry warnings inline (sarif/csaf/cyclonedx-vex
+                // are schema-bound). Always emit to stderr so CI logs surface typos that
+                // would otherwise silently disable enforcement.
+                process.stderr.write(`vis audit: ${message}\n`);
+            } else {
+                pail.warn(message);
             }
         });
 
@@ -669,6 +679,11 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
                 policyDecisions: policyDecisions.length,
                 total: filtered.length,
             },
+            warnings: unknownPolicyTokens.length > 0
+                ? unknownPolicyTokens.map((token) => {
+                    return { kind: "unknown-policy" as const, token };
+                })
+                : [],
         };
 
         process.stdout.write(`${JSON.stringify(jsonResult, undefined, 2)}\n`);
@@ -780,10 +795,36 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
         }
     }
 
-    // Print policy decisions (excluding vulnerability decisions — those
-    // already appear in the vulnerability section above to avoid double
-    // reporting).
-    const renderablePolicyDecisions = policyDecisions.filter((d) => d.policy !== "vulnerability");
+    // Print policy decisions. Non-vulnerability policies always render here.
+    // Vulnerability-policy decisions normally appear in the vulnerability
+    // section above (avoiding double reporting), BUT when --severity hides a
+    // finding while --fail-on still gates on it, the user would otherwise
+    // exit 1 with no visible explanation. Surface block-severity vuln
+    // policy decisions here so the gate is always visible.
+    const shownVulnIds = new Set<string>();
+
+    for (const severity of ["CRITICAL", "HIGH", "MODERATE", "LOW"] as const) {
+        const items = vulnsBySeverity[severity];
+
+        if (!items) {
+            continue;
+        }
+
+        for (const { vuln } of items) {
+            shownVulnIds.add(vuln.id);
+        }
+    }
+
+    const renderablePolicyDecisions = policyDecisions.filter((d) => {
+        if (d.policy !== "vulnerability") {
+            return true;
+        }
+
+        // Surface vulnerability blocks that were masked by --severity.
+        const advisoryId = typeof d.data?.advisoryId === "string" ? d.data.advisoryId : undefined;
+
+        return d.severity === "block" && advisoryId !== undefined && !shownVulnIds.has(advisoryId);
+    });
 
     if (renderablePolicyDecisions.length > 0) {
         pail.info(`\n── Policy Decisions (${String(renderablePolicyDecisions.length)}) ──`);
@@ -962,7 +1003,7 @@ const applyExitGate = (
         }
     }
 
-    applyFailOnGate(filtered, nativeExclusions, failOn);
+    applyFailOnGate(filtered, nativeExclusions, failOn, policyDecisions);
 };
 
 type ApplyPmInfo = ReturnType<typeof detectPm>;
