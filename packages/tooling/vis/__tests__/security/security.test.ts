@@ -27,52 +27,52 @@ describe(checkSecurityConfig, () => {
         });
     });
 
-    describe("policies.first_seen", () => {
+    describe("policies.firstSeen", () => {
         it("should warn when minutes is explicitly set to 0", () => {
             expect.assertions(1);
 
-            const config: VisConfig = { security: { policies: { first_seen: { minutes: 0 } } } };
+            const config: VisConfig = { security: { policies: { firstSeen: { minutes: 0 } } } };
             const result = checkSecurityConfig(config, "pnpm");
 
-            expect(result.warnings.some((w) => w.includes("first_seen.minutes is explicitly set to 0"))).toBe(true);
+            expect(result.warnings.some((w) => w.includes("firstSeen.minutes is explicitly set to 0"))).toBe(true);
         });
 
         it("should not warn when set to a positive value", () => {
             expect.assertions(1);
 
-            const config: VisConfig = { security: { policies: { first_seen: { minutes: 1440 } } } };
+            const config: VisConfig = { security: { policies: { firstSeen: { minutes: 1440 } } } };
             const result = checkSecurityConfig(config, "pnpm");
 
-            expect(result.warnings.some((w) => w.includes("first_seen"))).toBe(false);
+            expect(result.warnings.some((w) => w.includes("firstSeen"))).toBe(false);
         });
 
         it("should not warn when undefined (defaults apply)", () => {
             expect.assertions(1);
 
-            const config: VisConfig = { security: { policies: { install_scripts: { allow: { esbuild: true } } } } };
+            const config: VisConfig = { security: { policies: { installScripts: { allow: { esbuild: true } } } } };
             const result = checkSecurityConfig(config, "pnpm");
 
-            expect(result.warnings.some((w) => w.includes("first_seen"))).toBe(false);
+            expect(result.warnings.some((w) => w.includes("firstSeen"))).toBe(false);
         });
     });
 
-    describe("policies.install_scripts.allow", () => {
+    describe("policies.installScripts.allow", () => {
         it("should warn when not configured for pnpm", () => {
             expect.assertions(1);
 
-            const config: VisConfig = { security: { policies: { first_seen: { minutes: 1440 } } } };
+            const config: VisConfig = { security: { policies: { firstSeen: { minutes: 1440 } } } };
             const result = checkSecurityConfig(config, "pnpm");
 
-            expect(result.warnings.some((w) => w.includes("install_scripts.allow") && w.includes("pnpm"))).toBe(true);
+            expect(result.warnings.some((w) => w.includes("installScripts.allow") && w.includes("pnpm"))).toBe(true);
         });
 
         it("should warn differently for non-pnpm managers", () => {
             expect.assertions(2);
 
-            const config: VisConfig = { security: { policies: { first_seen: { minutes: 1440 } } } };
+            const config: VisConfig = { security: { policies: { firstSeen: { minutes: 1440 } } } };
             const result = checkSecurityConfig(config, "npm");
 
-            expect(result.warnings.some((w) => w.includes("install_scripts.allow"))).toBe(true);
+            expect(result.warnings.some((w) => w.includes("installScripts.allow"))).toBe(true);
             expect(result.warnings.some((w) => w.includes("pnpm blocks build scripts"))).toBe(false);
         });
 
@@ -82,14 +82,14 @@ describe(checkSecurityConfig, () => {
             const config: VisConfig = {
                 security: {
                     policies: {
-                        first_seen: { minutes: 1440 },
-                        install_scripts: { allow: { esbuild: true } },
+                        firstSeen: { minutes: 1440 },
+                        installScripts: { allow: { esbuild: true } },
                     },
                 },
             };
             const result = checkSecurityConfig(config, "pnpm");
 
-            expect(result.warnings.some((w) => w.includes("install_scripts.allow is not configured"))).toBe(false);
+            expect(result.warnings.some((w) => w.includes("installScripts.allow is not configured"))).toBe(false);
         });
 
         it("should warn when configured with empty object", () => {
@@ -98,27 +98,27 @@ describe(checkSecurityConfig, () => {
             const config: VisConfig = {
                 security: {
                     policies: {
-                        first_seen: { minutes: 1440 },
-                        install_scripts: { allow: {} },
+                        firstSeen: { minutes: 1440 },
+                        installScripts: { allow: {} },
                     },
                 },
             };
             const result = checkSecurityConfig(config, "pnpm");
 
-            expect(result.warnings.some((w) => w.includes("install_scripts.allow"))).toBe(true);
+            expect(result.warnings.some((w) => w.includes("installScripts.allow"))).toBe(true);
         });
     });
 
-    describe("policies.publisher_change", () => {
+    describe("policies.publisherChange", () => {
         it("should warn when mode explicitly set to off", () => {
             expect.assertions(1);
 
             const config: VisConfig = {
-                security: { policies: { first_seen: { minutes: 1440 }, publisher_change: { mode: "off" } } },
+                security: { policies: { firstSeen: { minutes: 1440 }, publisherChange: { mode: "off" } } },
             };
             const result = checkSecurityConfig(config, "pnpm");
 
-            expect(result.warnings.some((w) => w.includes("publisher_change.mode is explicitly 'off'"))).toBe(true);
+            expect(result.warnings.some((w) => w.includes("publisherChange.mode is explicitly 'off'"))).toBe(true);
         });
 
         it("should not warn when set to no-downgrade", () => {
@@ -127,24 +127,24 @@ describe(checkSecurityConfig, () => {
             const config: VisConfig = {
                 security: {
                     policies: {
-                        first_seen: { minutes: 1440 },
-                        install_scripts: { allow: { esbuild: true } },
-                        publisher_change: { mode: "no-downgrade" },
+                        firstSeen: { minutes: 1440 },
+                        installScripts: { allow: { esbuild: true } },
+                        publisherChange: { mode: "no-downgrade" },
                     },
                 },
             };
             const result = checkSecurityConfig(config, "pnpm");
 
-            expect(result.warnings.some((w) => w.includes("publisher_change"))).toBe(false);
+            expect(result.warnings.some((w) => w.includes("publisherChange"))).toBe(false);
         });
 
         it("should not warn when undefined (defaults apply)", () => {
             expect.assertions(1);
 
-            const config: VisConfig = { security: { policies: { install_scripts: { allow: { esbuild: true } } } } };
+            const config: VisConfig = { security: { policies: { installScripts: { allow: { esbuild: true } } } } };
             const result = checkSecurityConfig(config, "pnpm");
 
-            expect(result.warnings.some((w) => w.includes("publisher_change"))).toBe(false);
+            expect(result.warnings.some((w) => w.includes("publisherChange"))).toBe(false);
         });
     });
 
@@ -165,9 +165,9 @@ describe(checkSecurityConfig, () => {
                 security: {
                     blockExoticSubdeps: true,
                     policies: {
-                        first_seen: { minutes: 1440 },
-                        install_scripts: { allow: { esbuild: true } },
-                        publisher_change: { mode: "no-downgrade" },
+                        firstSeen: { minutes: 1440 },
+                        installScripts: { allow: { esbuild: true } },
+                        publisherChange: { mode: "no-downgrade" },
                     },
                 },
             };
@@ -179,28 +179,28 @@ describe(checkSecurityConfig, () => {
         it("should not warn when undefined (defaults apply)", () => {
             expect.assertions(1);
 
-            const config: VisConfig = { security: { policies: { install_scripts: { allow: { esbuild: true } } } } };
+            const config: VisConfig = { security: { policies: { installScripts: { allow: { esbuild: true } } } } };
             const result = checkSecurityConfig(config, "pnpm");
 
             expect(result.warnings.some((w) => w.includes("blockExoticSubdeps"))).toBe(false);
         });
     });
 
-    describe("policies.install_scripts.strict", () => {
+    describe("policies.installScripts.strict", () => {
         it("should error when enabled without allow entries", () => {
             expect.assertions(1);
 
             const config: VisConfig = {
                 security: {
                     policies: {
-                        first_seen: { minutes: 1440 },
-                        install_scripts: { strict: true },
+                        firstSeen: { minutes: 1440 },
+                        installScripts: { strict: true },
                     },
                 },
             };
             const result = checkSecurityConfig(config, "pnpm");
 
-            expect(result.errors.some((e) => e.includes("install_scripts.strict"))).toBe(true);
+            expect(result.errors.some((e) => e.includes("installScripts.strict"))).toBe(true);
         });
 
         it("should not error when enabled with allow entries", () => {
@@ -209,23 +209,23 @@ describe(checkSecurityConfig, () => {
             const config: VisConfig = {
                 security: {
                     policies: {
-                        first_seen: { minutes: 1440 },
-                        install_scripts: { allow: { esbuild: true }, strict: true },
+                        firstSeen: { minutes: 1440 },
+                        installScripts: { allow: { esbuild: true }, strict: true },
                     },
                 },
             };
             const result = checkSecurityConfig(config, "pnpm");
 
-            expect(result.errors.some((e) => e.includes("install_scripts.strict"))).toBe(false);
+            expect(result.errors.some((e) => e.includes("installScripts.strict"))).toBe(false);
         });
 
         it("should warn when explicitly disabled", () => {
             expect.assertions(1);
 
-            const config: VisConfig = { security: { policies: { install_scripts: { strict: false } } } };
+            const config: VisConfig = { security: { policies: { installScripts: { strict: false } } } };
             const result = checkSecurityConfig(config, "pnpm");
 
-            expect(result.warnings.some((w) => w.includes("install_scripts.strict is explicitly disabled"))).toBe(true);
+            expect(result.warnings.some((w) => w.includes("installScripts.strict is explicitly disabled"))).toBe(true);
         });
     });
 
@@ -237,9 +237,9 @@ describe(checkSecurityConfig, () => {
                 security: {
                     blockExoticSubdeps: true,
                     policies: {
-                        first_seen: { minutes: 1440 },
-                        install_scripts: { allow: { "@prisma/client": true, esbuild: true } },
-                        publisher_change: { mode: "no-downgrade" },
+                        firstSeen: { minutes: 1440 },
+                        installScripts: { allow: { "@prisma/client": true, esbuild: true } },
+                        publisherChange: { mode: "no-downgrade" },
                     },
                 },
             };

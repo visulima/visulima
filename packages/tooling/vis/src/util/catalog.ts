@@ -2027,7 +2027,7 @@ const formatOutdatedTable = (outdated: OutdatedEntry[], logger: Console): void =
     }
 };
 
-const formatSummary = (outdated: OutdatedEntry[]): string => {
+const formatSummary = (outdated: OutdatedEntry[], scoreMinimum: number = DEFAULT_LOW_SCORE_THRESHOLD): string => {
     let majors = 0;
     let minors = 0;
     let patches = 0;
@@ -2052,7 +2052,7 @@ const formatSummary = (outdated: OutdatedEntry[]): string => {
             socketAlertCount++;
         }
 
-        if (entry.socketReport && entry.socketReport.score.overall < DEFAULT_LOW_SCORE_THRESHOLD) {
+        if (entry.socketReport && entry.socketReport.score.overall < scoreMinimum) {
             lowScoreCount++;
         }
     }
@@ -2089,7 +2089,7 @@ const formatSummary = (outdated: OutdatedEntry[]): string => {
             React.createElement(
                 Text,
                 { color: "yellow" },
-                `  ${String(lowScoreCount)} package${lowScoreCount === 1 ? "" : "s"} with low Socket.dev score (<${String(DEFAULT_LOW_SCORE_THRESHOLD * 100)}%)`,
+                `  ${String(lowScoreCount)} package${lowScoreCount === 1 ? "" : "s"} with low Socket.dev score (<${String(Math.round(scoreMinimum * 100))}%)`,
             ),
         );
     }

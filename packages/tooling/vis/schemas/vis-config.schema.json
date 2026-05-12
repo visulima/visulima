@@ -893,11 +893,11 @@
                             },
                             "acceptedScore": {
                                 "type": "number",
-                                "description": "The overall Socket.dev score at the time of acceptance. Only relevant for the `score` policy; ignored elsewhere."
+                                "description": "The overall Socket.dev score at the time of acceptance, in the range `[0, 1]` (mirrors `policies.score.minimum`). Only relevant for the `score` policy; ignored elsewhere."
                             },
                             "expiresAt": {
                                 "type": "string",
-                                "description": "ISO 8601 date (or datetime). After this point the acceptance stops applying and vis emits a warning. Leave undefined for non-expiring entries."
+                                "description": "ISO 8601 date (or datetime). After this point the acceptance stops applying and vis emits a warning. Leave undefined for non-expiring entries. Values that fail to parse as a Date are rejected by the loader rather than silently treated as \"always expired\"."
                             },
                             "policies": {
                                 "type": "array",
@@ -944,7 +944,8 @@
                                 },
                                 "source": {
                                     "type": "string",
-                                    "description": "OSV mirror base URL (no trailing slash). Defaults to the public Google Cloud Storage bucket (`https://osv-vulnerabilities.storage.googleapis.com`). Override to point at a corporate mirror."
+                                    "description": "OSV mirror base URL (no trailing slash). Defaults to the public Google Cloud Storage bucket. Override to point at a corporate mirror; the hostname must appear in `allowedHosts` (or one of the built-in defaults) and the scheme must be `https://`.",
+                                    "default": "https://osv-vulnerabilities.storage.googleapis.com"
                                 },
                                 "verify": {
                                     "type": "object",
@@ -998,15 +999,27 @@
                     "additionalProperties": false,
                     "description": "Offline OSV advisory + `vis audit` configuration.\n\nControls `vis audit --offline` and `vis advisories sync` behavior:\n- `audit.advisories.source` is the OSV mirror to download from. It   must be `https://` and resolve to a host in `allowedHosts` (or one   of the built-in defaults).\n- `audit.offlineByDefault` flips the default of `--offline`.\n\nVulnerability severity gating and reachability filtering live under `policies.vulnerability` (see below)."
                 },
+                "allowBins": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "boolean"
+                    },
+                    "description": "Map of bin names (or `pkg#bin` qualifiers) blessed for shadowing. When two installed packages expose the same bin name, vis flags the collision in `vis security list` and the post-install drift report — set the bin (or `pkg#bin`) to `true` here to suppress the warning once you've reviewed the conflict.\n\nPort of LavaMoat allow-scripts' experimental `allowBins`. Bare names match any conflicting bin with that name; the `pkg#bin` form scopes the approval to a single package's bin."
+                },
                 "blockExoticSubdeps": {
                     "type": "boolean",
                     "description": "When true, prevents transitive dependencies from using exotic sources (git repositories, direct tarball URLs). Only direct dependencies may use such sources. Equivalent to pnpm's `blockExoticSubdeps`.",
                     "default": false
                 },
+                "pinVersions": {
+                    "type": "boolean",
+                    "description": "When true, `security.policies.installScripts.allow` keys are matched as `name@version`. A version bump on an approved package drops it from the allowlist until the new version is explicitly re-approved (port of LavaMoat allow-scripts' version-aware policy matcher).\n\nAfter a version bump, run `vis approve-builds` or `vis security list` — both surface a \"Version drift\" block with the suggested new key (`old-key  →  new-key`) so you can update `vis.config.ts` by hand.",
+                    "default": false
+                },
                 "policies": {
                     "type": "object",
                     "properties": {
-                        "first_seen": {
+                        "firstSeen": {
                             "type": "object",
                             "properties": {
                                 "exclude": {
@@ -1014,7 +1027,7 @@
                                     "items": {
                                         "type": "string"
                                     },
-                                    "description": "Package names/patterns excluded from the first_seen check. Equivalent to pnpm's `minimumReleaseAgeExclude`.",
+                                    "description": "Package names/patterns excluded from the firstSeen check. Equivalent to pnpm's `minimumReleaseAgeExclude`.",
                                     "examples": [
                                         [
                                             "webpack",
@@ -1040,7 +1053,7 @@
                             ],
                             "default": 0
                         },
-                        "install_scripts": {
+                        "installScripts": {
                             "type": "object",
                             "properties": {
                                 "allow": {
@@ -1102,10 +1115,9 @@
                                 }
                             },
                             "additionalProperties": false,
-                            "description": "Behavior when the Socket.dev feed flags a package as malicious (`alerts[].type === \"Malware\"`).",
-                            "default": "{ mode: \"block\" } when Socket is enabled, off otherwise"
+                            "description": "Behavior when the Socket.dev feed flags a package as malicious (`alerts[].type === \"Malware\"`).\n\nThe default is cross-field: `{ mode: \"block\" }` whenever `security.socket.enabled !== false` (the engine cannot evaluate malware without Socket data), and `\"off\"` otherwise. Consumers resolve this default at evaluation time."
                         },
-                        "publisher_change": {
+                        "publisherChange": {
                             "type": "object",
                             "properties": {
                                 "exclude": {
@@ -1147,8 +1159,7 @@
                             "properties": {
                                 "minimum": {
                                     "type": "number",
-                                    "description": "Minimum overall Socket.dev score (0–1). Set to 0 to disable the gate while keeping Socket data fetched.",
-                                    "default": 0.4
+                                    "description": "Minimum overall Socket.dev score (0–1). Set to 0 to disable the gate while keeping Socket data fetched.\n\nToday only `vis add` consults this value (via `buildSocketOptions`), falling back to `DEFAULT_LOW_SCORE_THRESHOLD` (`0.4`) when unset. The `audit`, `doctor`, and `analyze` surfaces still compare against the hard-coded threshold — overriding `minimum` affects the `add` gate but not those reports until the follow-up wiring lands."
                                 }
                             },
                             "additionalProperties": false,
@@ -1159,7 +1170,7 @@
                                 }
                             ]
                         },
-                        "unexpected_deps": {
+                        "unexpectedDeps": {
                             "type": "object",
                             "properties": {
                                 "allow": {
@@ -1239,7 +1250,7 @@
                         }
                     },
                     "additionalProperties": false,
-                    "description": "Supply-chain policy gates. Each sub-block enables one policy and configures its behavior. When a sub-block is omitted the policy is inactive. `acceptedRisks` (above) silences specific packages without disabling a policy globally.\n\nThe 8 policies are inspired by Socket.dev's classification:\n- `malware`            — Socket-flagged malicious packages\n- `first_seen`         — packages published less than N minutes ago\n- `unexpected_deps`    — packages outside an allow-list / baseline\n- `publisher_change`   — maintainer set changed between installs\n- `install_scripts`    — preinstall/install/postinstall scripts\n- `score`              — Socket overall score below threshold\n- `vulnerability`      — OSV vulnerability findings\n- `license`            — SPDX allow / deny lists"
+                    "description": "Supply-chain policy gates. Each sub-block enables one policy and configures its behavior. When a sub-block is omitted the policy is inactive. `acceptedRisks` (above) silences specific packages without disabling a policy globally.\n\nThe 8 policies are inspired by Socket.dev's classification:\n- `malware`            — Socket-flagged malicious packages\n- `firstSeen`         — packages published less than N minutes ago\n- `unexpectedDeps`    — packages outside an allow-list / baseline\n- `publisherChange`   — maintainer set changed between installs\n- `installScripts`    — preinstall/install/postinstall scripts\n- `score`              — Socket overall score below threshold\n- `vulnerability`      — OSV vulnerability findings\n- `license`            — SPDX allow / deny lists"
                 },
                 "socket": {
                     "type": "object",
@@ -3152,13 +3163,13 @@
         "PolicyName": {
             "type": "string",
             "enum": [
-                "first_seen",
-                "install_scripts",
+                "firstSeen",
+                "installScripts",
                 "license",
                 "malware",
-                "publisher_change",
+                "publisherChange",
                 "score",
-                "unexpected_deps",
+                "unexpectedDeps",
                 "vulnerability"
             ],
             "description": "The 8 Socket.dev-style supply-chain policies. Used in `security.policies` and `security.acceptedRisks[*].policies`."

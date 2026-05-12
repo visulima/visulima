@@ -13,7 +13,7 @@ interface SecurityCheckResult {
  *
  * When `defineConfig()` or `loadVisConfig()` is used, secure defaults are already
  * merged. This function validates the *final* config (defaults + user overrides)
- * and flags remaining gaps — primarily `install_scripts.allow`, which must be
+ * and flags remaining gaps — primarily `installScripts.allow`, which must be
  * user-supplied.
  */
 const checkSecurityConfig = (config: VisConfig, packageManager: string): SecurityCheckResult => {
@@ -27,24 +27,24 @@ const checkSecurityConfig = (config: VisConfig, packageManager: string): Securit
     }
 
     const policies = security.policies ?? {};
-    const installScripts = policies.install_scripts;
+    const installScripts = policies.installScripts;
     const allow = installScripts?.allow;
     const hasAllow = allow && Object.keys(allow).length > 0;
 
     if (!hasAllow) {
         result.warnings.push(
             packageManager === "pnpm"
-                ? "security.policies.install_scripts.allow is not configured. pnpm blocks build scripts by default since v10. Run 'vis approve-builds' to review."
-                : "security.policies.install_scripts.allow is not configured. Consider listing which packages are allowed to run install/postinstall scripts.",
+                ? "security.policies.installScripts.allow is not configured. pnpm blocks build scripts by default since v10. Run 'vis approve-builds' to review."
+                : "security.policies.installScripts.allow is not configured. Consider listing which packages are allowed to run install/postinstall scripts.",
         );
     }
 
-    if (policies.first_seen?.minutes === 0) {
-        result.warnings.push("security.policies.first_seen.minutes is explicitly set to 0. New packages can be installed immediately after publishing.");
+    if (policies.firstSeen?.minutes === 0) {
+        result.warnings.push("security.policies.firstSeen.minutes is explicitly set to 0. New packages can be installed immediately after publishing.");
     }
 
-    if (policies.publisher_change?.mode === "off") {
-        result.warnings.push("security.policies.publisher_change.mode is explicitly 'off'. Packages whose trust level has decreased will not be blocked.");
+    if (policies.publisherChange?.mode === "off") {
+        result.warnings.push("security.policies.publisherChange.mode is explicitly 'off'. Packages whose trust level has decreased will not be blocked.");
     }
 
     if (security.blockExoticSubdeps === false) {
@@ -52,12 +52,12 @@ const checkSecurityConfig = (config: VisConfig, packageManager: string): Securit
     }
 
     if (installScripts?.strict === false) {
-        result.warnings.push("security.policies.install_scripts.strict is explicitly disabled. Unapproved build scripts will only produce warnings, not errors.");
+        result.warnings.push("security.policies.installScripts.strict is explicitly disabled. Unapproved build scripts will only produce warnings, not errors.");
     }
 
     if (installScripts?.strict && !hasAllow) {
         result.errors.push(
-            "security.policies.install_scripts.strict is enabled but `.allow` is empty. All dependencies with build scripts will be blocked. "
+            "security.policies.installScripts.strict is enabled but `.allow` is empty. All dependencies with build scripts will be blocked. "
             + "Run 'vis approve-builds' to review and add packages.",
         );
     }
@@ -82,7 +82,7 @@ const checkSecurityConfig = (config: VisConfig, packageManager: string): Securit
  * Emits a single-line security summary warning before PM commands.
  * Skipped in CI unless VIS_SECURITY_WARNINGS=1.
  *
- * When `enforcementWillFire` is true (install/add/update), the install_scripts.allow
+ * When `enforcementWillFire` is true (install/add/update), the installScripts.allow
  * warning is excluded from the summary because `enforceScriptSecurity` is
  * about to emit a more specific, actionable warning for it. Without this,
  * users see two stacked warnings saying the same thing.
@@ -99,7 +99,7 @@ const emitSecurityWarnings = (config: VisConfig, packageManager: string, enforce
     }
 
     const summarized = enforcementWillFire
-        ? result.warnings.filter((w) => !w.startsWith("security.policies.install_scripts.allow is not configured"))
+        ? result.warnings.filter((w) => !w.startsWith("security.policies.installScripts.allow is not configured"))
         : result.warnings;
 
     if (summarized.length > 0) {
@@ -116,18 +116,18 @@ const printSecurityReport = (config: VisConfig, packageManager: string): void =>
 
     if (security) {
         const policies = security.policies ?? {};
-        const firstSeen = policies.first_seen;
-        const publisherChange = policies.publisher_change;
-        const installScripts = policies.install_scripts;
+        const firstSeen = policies.firstSeen;
+        const publisherChange = policies.publisherChange;
+        const installScripts = policies.installScripts;
         const score = policies.score;
 
         pail.info("Active security settings:");
-        pail.info(`  policies.first_seen.minutes:           ${firstSeen?.minutes ?? "not set"} minutes`);
-        pail.info(`  policies.publisher_change.mode:        ${publisherChange?.mode ?? "not set"}`);
-        pail.info(`  policies.publisher_change.ignoreAfter: ${publisherChange?.ignoreAfter ?? "not set"} minutes`);
+        pail.info(`  policies.firstSeen.minutes:           ${firstSeen?.minutes ?? "not set"} minutes`);
+        pail.info(`  policies.publisherChange.mode:        ${publisherChange?.mode ?? "not set"}`);
+        pail.info(`  policies.publisherChange.ignoreAfter: ${publisherChange?.ignoreAfter ?? "not set"} minutes`);
         pail.info(`  blockExoticSubdeps:                    ${security.blockExoticSubdeps ?? false}`);
-        pail.info(`  policies.install_scripts.strict:       ${installScripts?.strict ?? false}`);
-        pail.info(`  policies.install_scripts.allow:        ${installScripts?.allow ? `${Object.keys(installScripts.allow).length} entries` : "not configured"}`);
+        pail.info(`  policies.installScripts.strict:       ${installScripts?.strict ?? false}`);
+        pail.info(`  policies.installScripts.allow:        ${installScripts?.allow ? `${Object.keys(installScripts.allow).length} entries` : "not configured"}`);
         pail.info("");
         pail.info("Socket.dev integration:");
         pail.info(`  socket.enabled:                        ${security.socket?.enabled ?? false}`);
@@ -173,7 +173,7 @@ const printSecurityReport = (config: VisConfig, packageManager: string): void =>
     pail.notice("  export default defineConfig({");
     pail.notice("    security: {");
     pail.notice("      policies: {");
-    pail.notice("        install_scripts: {");
+    pail.notice("        installScripts: {");
     pail.notice("          allow: {");
     pail.notice("            esbuild: true,");
     pail.notice("            '@prisma/client': true,");
@@ -195,9 +195,9 @@ const previewPnpmSync = (config: VisConfig): string[] => {
     }
 
     const policies = security.policies ?? {};
-    const firstSeen = policies.first_seen;
-    const publisherChange = policies.publisher_change;
-    const installScripts = policies.install_scripts;
+    const firstSeen = policies.firstSeen;
+    const publisherChange = policies.publisherChange;
+    const installScripts = policies.installScripts;
 
     const entries: string[] = [];
 

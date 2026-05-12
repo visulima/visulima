@@ -10,7 +10,7 @@ const SUPPORTED_PMS = new Set<string>(["bun", "npm", "pnpm", "yarn"]);
 const execute = ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, SecurityListOptions>): void => {
     const cwd = wsRoot ?? process.cwd();
     const pm = detectPm(cwd);
-    const allowBuilds = visConfig?.security?.policies?.install_scripts?.allow ?? {};
+    const allowBuilds = visConfig?.security?.policies?.installScripts?.allow ?? {};
     const allowBins = visConfig?.security?.allowBins ?? {};
     const pinVersions = visConfig?.security?.pinVersions === true;
     const status = scanBuildScriptStatus(cwd, allowBuilds, { pinVersions });
@@ -75,7 +75,7 @@ const execute = ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console,
             pail.info(`    ! ${pattern}`);
         }
 
-        pail.notice("    Remove these from vis.config.ts security.policies.install_scripts.allow.");
+        pail.notice("    Remove these from vis.config.ts security.policies.installScripts.allow.");
     }
 
     if (status.versionDrift.length > 0) {
@@ -88,7 +88,7 @@ const execute = ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console,
             pail.info(`    ${from}  →  ${to}`);
         }
 
-        pail.notice("    Update vis.config.ts security.policies.install_scripts.allow keys to migrate.");
+        pail.notice("    Update vis.config.ts security.policies.installScripts.allow keys to migrate.");
     }
 
     if (binConflicts.length > 0) {

@@ -6,7 +6,7 @@ import { isYarnBerry } from "./pm-helpers";
 import type { PackageManagerName } from "./types";
 
 /**
- * Syncs vis security.policies.install_scripts.allow to native PM config format.
+ * Syncs vis security.policies.installScripts.allow to native PM config format.
  */
 const syncAllowBuildsToNativeConfig = (pm: PackageManagerName, workspaceRoot: string, allowBuilds: Record<string, boolean>): string[] => {
     const actions: string[] = [];

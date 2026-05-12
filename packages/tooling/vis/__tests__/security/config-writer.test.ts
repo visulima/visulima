@@ -28,7 +28,7 @@ describe(writeApprovedBuildsToVisConfig, () => {
         expect(result.skipped).toStrictEqual(["esbuild"]);
     });
 
-    it("injects a security.policies.install_scripts.allow block when neither security nor policies exists", () => {
+    it("injects a security.policies.installScripts.allow block when neither security nor policies exists", () => {
         expect.assertions(3);
 
         const configPath = join(tmpDir, "vis.config.ts");
@@ -43,14 +43,14 @@ describe(writeApprovedBuildsToVisConfig, () => {
         expect(content).toContain("\"esbuild\": true,");
     });
 
-    it("inserts into an existing install_scripts.allow block and dedups existing keys", () => {
+    it("inserts into an existing installScripts.allow block and dedups existing keys", () => {
         expect.assertions(3);
 
         const configPath = join(tmpDir, "vis.config.ts");
 
         writeFileSync(
             configPath,
-            "import { defineConfig } from \"@visulima/vis/config\";\n\nexport default defineConfig({\n    security: {\n        policies: {\n            install_scripts: {\n                allow: {\n                    \"esbuild\": true,\n                },\n            },\n        },\n    },\n});\n",
+            "import { defineConfig } from \"@visulima/vis/config\";\n\nexport default defineConfig({\n    security: {\n        policies: {\n            installScripts: {\n                allow: {\n                    \"esbuild\": true,\n                },\n            },\n        },\n    },\n});\n",
         );
 
         const result = writeApprovedBuildsToVisConfig(tmpDir, ["esbuild", "sharp"]);
@@ -68,7 +68,7 @@ describe(writeApprovedBuildsToVisConfig, () => {
 
         writeFileSync(
             configPath,
-            "import { defineConfig } from \"@visulima/vis/config\";\n\nexport default defineConfig({\n    security: {\n        policies: {\n            install_scripts: {\n                allow: {\n                    \"esbuild\": true,\n                },\n            },\n        },\n    },\n});\n",
+            "import { defineConfig } from \"@visulima/vis/config\";\n\nexport default defineConfig({\n    security: {\n        policies: {\n            installScripts: {\n                allow: {\n                    \"esbuild\": true,\n                },\n            },\n        },\n    },\n});\n",
         );
 
         const result = writeApprovedBuildsToVisConfig(tmpDir, ["esbuild"]);
@@ -77,14 +77,14 @@ describe(writeApprovedBuildsToVisConfig, () => {
         expect(result.skipped).toStrictEqual(["esbuild"]);
     });
 
-    it("adds allow block to an existing install_scripts block without allow", () => {
+    it("adds allow block to an existing installScripts block without allow", () => {
         expect.assertions(3);
 
         const configPath = join(tmpDir, "vis.config.ts");
 
         writeFileSync(
             configPath,
-            "import { defineConfig } from \"@visulima/vis/config\";\n\nexport default defineConfig({\n    security: {\n        policies: {\n            install_scripts: {\n                strict: true,\n            },\n        },\n    },\n});\n",
+            "import { defineConfig } from \"@visulima/vis/config\";\n\nexport default defineConfig({\n    security: {\n        policies: {\n            installScripts: {\n                strict: true,\n            },\n        },\n    },\n});\n",
         );
 
         const result = writeApprovedBuildsToVisConfig(tmpDir, ["esbuild"]);

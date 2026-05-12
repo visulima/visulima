@@ -12,11 +12,11 @@ describe(defineConfig, () => {
 
         const config = defineConfig({});
 
-        expect(config.security?.policies?.first_seen?.minutes).toBeUndefined();
-        expect(config.security?.policies?.publisher_change?.mode).toBe("no-downgrade");
-        expect(config.security?.policies?.publisher_change?.ignoreAfter).toBe(SECURITY_DEFAULTS.policies?.publisher_change?.ignoreAfter);
+        expect(config.security?.policies?.firstSeen?.minutes).toBeUndefined();
+        expect(config.security?.policies?.publisherChange?.mode).toBe("no-downgrade");
+        expect(config.security?.policies?.publisherChange?.ignoreAfter).toBe(SECURITY_DEFAULTS.policies?.publisherChange?.ignoreAfter);
         expect(config.security?.blockExoticSubdeps).toBe(true);
-        expect(config.security?.policies?.install_scripts?.strict).toBe(true);
+        expect(config.security?.policies?.installScripts?.strict).toBe(true);
         expect(config.update?.security).toBe(true);
         expect(config.update?.target).toBe("minor");
     });
@@ -27,31 +27,31 @@ describe(defineConfig, () => {
         const config = defineConfig({
             security: {
                 policies: {
-                    first_seen: { minutes: 1440 },
-                    install_scripts: { strict: false },
+                    firstSeen: { minutes: 1440 },
+                    installScripts: { strict: false },
                 },
             },
             update: { target: "patch" },
         });
 
-        expect(config.security?.policies?.first_seen?.minutes).toBe(1440);
-        expect(config.security?.policies?.install_scripts?.strict).toBe(false);
+        expect(config.security?.policies?.firstSeen?.minutes).toBe(1440);
+        expect(config.security?.policies?.installScripts?.strict).toBe(false);
         expect(config.update?.target).toBe("patch");
     });
 
-    it("should merge user install_scripts.allow with defaults", () => {
+    it("should merge user installScripts.allow with defaults", () => {
         expect.assertions(2);
 
         const config = defineConfig({
             security: {
                 policies: {
-                    install_scripts: { allow: { esbuild: true } },
+                    installScripts: { allow: { esbuild: true } },
                 },
             },
         });
 
-        expect(config.security?.policies?.install_scripts?.allow).toStrictEqual({ esbuild: true });
-        expect(config.security?.policies?.publisher_change?.mode).toBe("no-downgrade");
+        expect(config.security?.policies?.installScripts?.allow).toStrictEqual({ esbuild: true });
+        expect(config.security?.policies?.publisherChange?.mode).toBe("no-downgrade");
     });
 
     it("should support all config sections", () => {
@@ -72,12 +72,12 @@ describe(defineConfig, () => {
         const config = defineConfig({
             security: {
                 blockExoticSubdeps: false,
-                policies: { publisher_change: { mode: "off" } },
+                policies: { publisherChange: { mode: "off" } },
             },
         });
 
         expect(config.security?.blockExoticSubdeps).toBe(false);
-        expect(config.security?.policies?.publisher_change?.mode).toBe("off");
+        expect(config.security?.policies?.publisherChange?.mode).toBe("off");
     });
 });
 
@@ -148,8 +148,8 @@ describe(loadVisConfig, () => {
         const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
         const config = await loadVisConfig(temporaryDirectory);
 
-        expect(config.security?.policies?.first_seen?.minutes).toBeUndefined();
-        expect(config.security?.policies?.publisher_change?.mode).toBe("no-downgrade");
+        expect(config.security?.policies?.firstSeen?.minutes).toBeUndefined();
+        expect(config.security?.policies?.publisherChange?.mode).toBe("no-downgrade");
         expect(config.security?.blockExoticSubdeps).toBe(true);
     });
 
@@ -163,7 +163,7 @@ describe(loadVisConfig, () => {
         const config = await loadVisConfig(temporaryDirectory);
 
         expect(config.update?.target).toBe("minor");
-        expect(config.security?.policies?.publisher_change?.mode).toBe("no-downgrade");
+        expect(config.security?.policies?.publisherChange?.mode).toBe("no-downgrade");
     });
 
     it("should load a TypeScript config file and apply defaults", async () => {

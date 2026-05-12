@@ -18,13 +18,13 @@ interface NativeAuditExclusions {
  * and `security.acceptedRisks[*].policies`.
  */
 export type PolicyName =
-    | "first_seen"
-    | "install_scripts"
+    | "firstSeen"
+    | "installScripts"
     | "license"
     | "malware"
-    | "publisher_change"
+    | "publisherChange"
     | "score"
-    | "unexpected_deps"
+    | "unexpectedDeps"
     | "vulnerability";
 
 export interface CodeownersConfig {
@@ -1113,7 +1113,7 @@ export interface VisConfig {
         blockExoticSubdeps?: boolean;
 
         /**
-         * When true, `security.policies.install_scripts.allow` keys are matched
+         * When true, `security.policies.installScripts.allow` keys are matched
          * as `name@version`. A version bump on an approved package drops it from
          * the allowlist until the new version is explicitly re-approved (port
          * of LavaMoat allow-scripts' version-aware policy matcher).
@@ -1133,10 +1133,10 @@ export interface VisConfig {
          *
          * The 8 policies are inspired by Socket.dev's classification:
          * - `malware`            — Socket-flagged malicious packages
-         * - `first_seen`         — packages published less than N minutes ago
-         * - `unexpected_deps`    — packages outside an allow-list / baseline
-         * - `publisher_change`   — maintainer set changed between installs
-         * - `install_scripts`    — preinstall/install/postinstall scripts
+         * - `firstSeen`         — packages published less than N minutes ago
+         * - `unexpectedDeps`    — packages outside an allow-list / baseline
+         * - `publisherChange`   — maintainer set changed between installs
+         * - `installScripts`    — preinstall/install/postinstall scripts
          * - `score`              — Socket overall score below threshold
          * - `vulnerability`      — OSV vulnerability findings
          * - `license`            — SPDX allow / deny lists
@@ -1150,9 +1150,9 @@ export interface VisConfig {
              * @default 0
              * @example { minutes: 1440, exclude: ["@myorg/*"] } // 24 hours
              */
-            first_seen?: {
+            firstSeen?: {
                 /**
-                 * Package names/patterns excluded from the first_seen check.
+                 * Package names/patterns excluded from the firstSeen check.
                  * Equivalent to pnpm's `minimumReleaseAgeExclude`.
                  * @example ["webpack", "react", "@myorg/*"]
                  */
@@ -1167,7 +1167,7 @@ export interface VisConfig {
              * `security.strictDepBuilds` fields.
              * @example { allow: { esbuild: true }, strict: true }
              */
-            install_scripts?: {
+            installScripts?: {
                 /**
                  * Map of package names/patterns to allow (true) or deny
                  * (false) build scripts. Packages not listed are denied
@@ -1234,7 +1234,7 @@ export interface VisConfig {
              * `trustPolicy`.
              * @example { mode: "no-downgrade", ignoreAfter: 43200 } // 30 days
              */
-            publisher_change?: {
+            publisherChange?: {
                 /**
                  * Package selectors excluded from the check.
                  * Equivalent to pnpm's `trustPolicyExclude`.
@@ -1268,13 +1268,10 @@ export interface VisConfig {
                  * Minimum overall Socket.dev score (0–1). Set to 0 to
                  * disable the gate while keeping Socket data fetched.
                  *
-                 * Today only `vis add` consults this value (via
-                 * `buildSocketOptions`), falling back to
-                 * `DEFAULT_LOW_SCORE_THRESHOLD` (`0.4`) when unset. The
-                 * `audit`, `doctor`, and `analyze` surfaces still compare
-                 * against the hard-coded threshold — overriding `minimum`
-                 * affects the `add` gate but not those reports until the
-                 * follow-up wiring lands.
+                 * Consulted by `vis add`, `audit`, `doctor`, `check`, and
+                 * `update`; resolved once in `buildSocketOptions`, then
+                 * threaded through every consumer. Falls back to
+                 * `DEFAULT_LOW_SCORE_THRESHOLD` (`0.4`) when unset.
                  */
                 minimum?: number;
             };
@@ -1285,7 +1282,7 @@ export interface VisConfig {
              * both — the intersection is enforced.
              * @example { baselineLockfile: "./security/lockfile.baseline.yaml" }
              */
-            unexpected_deps?: {
+            unexpectedDeps?: {
                 /**
                  * Allow-list of dependency names that may appear in the
                  * resolved package set. Glob patterns are supported.

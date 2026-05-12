@@ -11,7 +11,7 @@ Add packages using the detected package manager. Before installing, vis runs a *
 
 `vis add` blocks dependency lifecycle scripts on every package manager (npm, pnpm, yarn, bun, aube, deno) — the same pnpm v10 default applied universally. The newly-installed package's `preinstall` / `install` / `postinstall` / `prepare` scripts will not run unless:
 
-- the package is listed in `security.policies.install_scripts.allow` in `vis.config.ts` (vis runs its scripts post-install), or
+- the package is listed in `security.policies.installScripts.allow` in `vis.config.ts` (vis runs its scripts post-install), or
 - you pass `--run-scripts` to opt out for one run.
 
 This pairs with the typosquat and Socket.dev checks: even if a malicious package slips past the name and score checks, its install hooks won't execute.
@@ -51,7 +51,7 @@ vis add lodash --no-typosquat-check    # Skip typosquat name check
 | `--filter`             | `-F`  |         | Filter by workspace package name                                                                                                                 |
 | `--to`                 |       |         | Target a single workspace package and auto-conform the version to existing catalogs / sibling deps (syncpack#285)                                |
 | `--auto-install-peers` |       | `false` | After adding, recursively install non-optional peer dependencies that aren't already in the workspace (matches nypm's `installPeerDependencies`) |
-| `--run-scripts`        |       | `false` | Run lifecycle scripts (opts out of the universal block-by-default policy; allowlisted packages still run via `security.policies.install_scripts.allow`)             |
+| `--run-scripts`        |       | `false` | Run lifecycle scripts (opts out of the universal block-by-default policy; allowlisted packages still run via `security.policies.installScripts.allow`)             |
 | `--no-typosquat-check` |       | `false` | Skip typosquat name check before adding                                                                                                          |
 | `--no-socket-check`    |       | `false` | Skip Socket.dev security check before adding                                                                                                     |
 

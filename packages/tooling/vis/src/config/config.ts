@@ -23,7 +23,7 @@ const TASK_CONFIG_FILES: string[] = ["vis.task.ts", "vis.task.mts", "vis.task.ct
 const TASK_CONFIG_FILE_SET = new Set(TASK_CONFIG_FILES);
 
 /**
- * Default `security.policies.first_seen.minutes` applied by `vis init`.
+ * Default `security.policies.firstSeen.minutes` applied by `vis init`.
  * 2 days — long enough to filter out most rage-published malware while
  * staying short enough that genuine fixes still land in a working week.
  *
@@ -43,8 +43,8 @@ const DEFAULT_MIN_RELEASE_AGE_MINUTES = 2880;
 const SECURITY_DEFAULTS: NonNullable<VisConfig["security"]> = {
     blockExoticSubdeps: true,
     policies: {
-        install_scripts: { strict: true },
-        publisher_change: { ignoreAfter: 43_200, mode: "no-downgrade" },
+        installScripts: { strict: true },
+        publisherChange: { ignoreAfter: 43_200, mode: "no-downgrade" },
     },
 };
 
@@ -348,7 +348,7 @@ const mergeVisConfigs = (parent: VisConfig, child: VisConfig): VisConfig => {
 
     if (parent.security || child.security) {
         // Deep-merge `policies` and `acceptedRisks` so a preset that sets
-        // `security.policies.install_scripts.allow` isn't wiped when the
+        // `security.policies.installScripts.allow` isn't wiped when the
         // consumer config sets any other policy key. Per-policy bodies
         // remain shallow-merged to match `mergeSecurityDefaults`.
         merged.security = {
@@ -618,7 +618,7 @@ const defineTaskConfig = (config: VisTaskConfig): VisTaskConfig => config;
  * export default defineConfig({
  *     security: {
  *         policies: {
- *             install_scripts: {
+ *             installScripts: {
  *                 allow: {
  *                     esbuild: true,
  *                     "@prisma/client": true,
@@ -637,8 +637,8 @@ const defineTaskConfig = (config: VisTaskConfig): VisTaskConfig => config;
  *     security: {
  *         policies: {
  *             // Relax cooldown to 24 hours instead of the default 14 days
- *             first_seen: { minutes: 1440 },
- *             install_scripts: { allow: { esbuild: true } },
+ *             firstSeen: { minutes: 1440 },
+ *             installScripts: { allow: { esbuild: true } },
  *         },
  *     },
  * });

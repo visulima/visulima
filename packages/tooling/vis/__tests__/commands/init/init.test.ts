@@ -27,9 +27,9 @@ export default defineConfig({
     security: {
         blockExoticSubdeps: true,
         policies: {
-            first_seen: { minutes: 1440 },
-            install_scripts: { allow: {} },
-            publisher_change: { mode: "no-downgrade" },
+            firstSeen: { minutes: 1440 },
+            installScripts: { allow: {} },
+            publisherChange: { mode: "no-downgrade" },
         },
     },
     update: {
@@ -44,18 +44,18 @@ export default defineConfig({
         expect(existsSync(configPath)).toBe(true);
     });
 
-    it("should include security.policies.first_seen.minutes", () => {
+    it("should include security.policies.firstSeen.minutes", () => {
         expect.assertions(1);
 
-        const content = `first_seen: { minutes: 1440 }`;
+        const content = `firstSeen: { minutes: 1440 }`;
 
         expect(content).toContain("minutes: 1440");
     });
 
-    it("should include security.policies.publisher_change.mode", () => {
+    it("should include security.policies.publisherChange.mode", () => {
         expect.assertions(1);
 
-        const content = `publisher_change: { mode: "no-downgrade" }`;
+        const content = `publisherChange: { mode: "no-downgrade" }`;
 
         expect(content).toContain("no-downgrade");
     });
@@ -68,10 +68,10 @@ export default defineConfig({
         expect(content).toContain("blockExoticSubdeps: true");
     });
 
-    it("should include empty install_scripts.allow for user to fill", () => {
+    it("should include empty installScripts.allow for user to fill", () => {
         expect.assertions(1);
 
-        const content = `install_scripts: { allow: {} }`;
+        const content = `installScripts: { allow: {} }`;
 
         expect(content).toContain("allow: {}");
     });

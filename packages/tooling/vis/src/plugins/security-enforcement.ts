@@ -112,7 +112,7 @@ const securityEnforcementPlugin: Plugin = {
                     const reports = await fetchSocketReports(packages, socketOptions);
 
                     if (reports.size > 0) {
-                        const overview = formatSecurityOverview(reports);
+                        const overview = formatSecurityOverview(reports, socketOptions.minimumScore);
 
                         if (overview) {
                             pail.info("");

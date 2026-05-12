@@ -8,22 +8,22 @@ const EXPORT_DEFAULT_RE = /(export\s+default\s+\{)/;
 const renderEntry = (key: string, indent: string): string => `${indent}${JSON.stringify(key)}: true,`;
 
 /**
- * Adds entries to `security.policies.install_scripts.allow` inside an
+ * Adds entries to `security.policies.installScripts.allow` inside an
  * existing `vis.config.ts`.
  *
  * The writer is regex-based (no AST). It walks the nesting chain and
  * injects the deepest missing block:
  *
- * 1. `security.policies.install_scripts.allow` already exists — insert
+ * 1. `security.policies.installScripts.allow` already exists — insert
  *    new entries inside the existing `allow` block.
- * 2. `security.policies.install_scripts` exists but no `allow` —
+ * 2. `security.policies.installScripts` exists but no `allow` —
  *    inject the `allow` block as the first child.
- * 3. `security.policies` exists but no `install_scripts` — inject
- *    `install_scripts: { allow: { ... } }` as a child of `policies`.
+ * 3. `security.policies` exists but no `installScripts` — inject
+ *    `installScripts: { allow: { ... } }` as a child of `policies`.
  * 4. `security` exists but no `policies` — inject the `policies` chain
  *    as a child of `security`.
  * 5. No `security:` block — inject a fresh
- *    `security: { policies: { install_scripts: { allow: { ... } } } }`
+ *    `security: { policies: { installScripts: { allow: { ... } } } }`
  *    as the first child of `defineConfig({` / `export default {`.
  *
  * Returns the result so the caller can decide how to surface the outcome.
@@ -54,12 +54,12 @@ const writeApprovedBuildsToVisConfig = (
 
     const original = readFileSync(configPath);
 
-    // Scope the `allow:` match to follow an `install_scripts:` opener so a
+    // Scope the `allow:` match to follow an `installScripts:` opener so a
     // hypothetical `allow:` elsewhere (e.g., in another plugin's options)
     // isn't accidentally clobbered. The writer is still regex-based (not
-    // an AST), so deeper nesting inside `install_scripts.allow` is not
+    // an AST), so deeper nesting inside `installScripts.allow` is not
     // supported — entries there are flat `name: bool` pairs by contract.
-    const installScriptsStart = original.search(/install_scripts\s*:\s*\{/);
+    const installScriptsStart = original.search(/installScripts\s*:\s*\{/);
     let allowBlockMatch: RegExpMatchArray | null = null;
     let allowBlockOffset = 0;
 
@@ -114,7 +114,7 @@ const writeApprovedBuildsToVisConfig = (
         return { added, configPath, skipped, status: "updated" };
     }
 
-    const installScriptsRegex = /(install_scripts\s*:\s*\{)/;
+    const installScriptsRegex = /(installScripts\s*:\s*\{)/;
 
     if (installScriptsRegex.test(original)) {
         const block = `\n                allow: {\n${entries.map((e) => renderEntry(e, "                    ")).join("\n")}\n                },`;
@@ -128,7 +128,7 @@ const writeApprovedBuildsToVisConfig = (
     const policiesRegex = /(policies\s*:\s*\{)/;
 
     if (policiesRegex.test(original)) {
-        const block = `\n            install_scripts: {\n                allow: {\n${entries.map((e) => renderEntry(e, "                    ")).join("\n")}\n                },\n            },`;
+        const block = `\n            installScripts: {\n                allow: {\n${entries.map((e) => renderEntry(e, "                    ")).join("\n")}\n                },\n            },`;
         const updated = original.replace(policiesRegex, `$1${block}`);
 
         writeFileSync(configPath, updated);
@@ -139,7 +139,7 @@ const writeApprovedBuildsToVisConfig = (
     const securityBlockRegex = /(security\s*:\s*\{)/;
 
     if (securityBlockRegex.test(original)) {
-        const block = `\n        policies: {\n            install_scripts: {\n                allow: {\n${entries.map((e) => renderEntry(e, "                    ")).join("\n")}\n                },\n            },\n        },`;
+        const block = `\n        policies: {\n            installScripts: {\n                allow: {\n${entries.map((e) => renderEntry(e, "                    ")).join("\n")}\n                },\n            },\n        },`;
         const updated = original.replace(securityBlockRegex, `$1${block}`);
 
         writeFileSync(configPath, updated);
@@ -153,7 +153,7 @@ const writeApprovedBuildsToVisConfig = (
         return { added: [], configPath, skipped: entries, status: "missing-anchor" };
     }
 
-    const block = `\n    security: {\n        policies: {\n            install_scripts: {\n                allow: {\n${entries.map((e) => renderEntry(e, "                    ")).join("\n")}\n                },\n            },\n        },\n    },`;
+    const block = `\n    security: {\n        policies: {\n            installScripts: {\n                allow: {\n${entries.map((e) => renderEntry(e, "                    ")).join("\n")}\n                },\n            },\n        },\n    },`;
     const updated = `${original.slice(0, anchorMatch.index + anchorMatch[0].length)}${block}${original.slice(anchorMatch.index + anchorMatch[0].length)}`;
 
     writeFileSync(configPath, updated);

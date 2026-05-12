@@ -40,7 +40,7 @@ const add: Command = {
         {
             defaultValue: false,
             description:
-                "Run lifecycle scripts during add (opts out of vis's default block-by-default policy; allowlisted packages run via security.policies.install_scripts.allow)",
+                "Run lifecycle scripts during add (opts out of vis's default block-by-default policy; allowlisted packages run via security.policies.installScripts.allow)",
             name: "run-scripts",
             type: Boolean,
         },

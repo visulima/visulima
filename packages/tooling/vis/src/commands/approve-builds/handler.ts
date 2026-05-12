@@ -39,14 +39,14 @@ const execute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Co
         // relative to the native config.
         if (!options.syncNative) {
             pail.notice("");
-            pail.notice("Tip: vis.config.ts security.policies.install_scripts.allow may now be out of sync with pnpm-workspace.yaml.");
+            pail.notice("Tip: vis.config.ts security.policies.installScripts.allow may now be out of sync with pnpm-workspace.yaml.");
             pail.notice("Run 'vis check --security-config' to compare, or copy the new entries into vis.config.ts.");
 
             return;
         }
     } else {
         // For other PMs (or --scan flag), do our own scanning
-        const allowBuilds = visConfig?.security?.policies?.install_scripts?.allow ?? {};
+        const allowBuilds = visConfig?.security?.policies?.installScripts?.allow ?? {};
         const pinVersions = visConfig?.security?.pinVersions === true;
         const status = scanBuildScriptStatus(cwd, allowBuilds, { pinVersions });
 
@@ -69,7 +69,7 @@ const execute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Co
             pail.notice("");
             pail.notice("  security: {");
             pail.notice("    policies: {");
-            pail.notice("      install_scripts: {");
+            pail.notice("      installScripts: {");
             pail.notice("        allow: {");
 
             for (const entry of status.unapproved) {
@@ -107,7 +107,7 @@ const execute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Co
                     }
                     case "noop": {
                         pail.info(
-                            `All ${String(entries.length)} entr${entries.length === 1 ? "y" : "ies"} were already present in vis.config.ts security.policies.install_scripts.allow.`,
+                            `All ${String(entries.length)} entr${entries.length === 1 ? "y" : "ies"} were already present in vis.config.ts security.policies.installScripts.allow.`,
                         );
                         break;
                     }
@@ -128,14 +128,14 @@ const execute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Co
         if (status.excess.length > 0) {
             pail.notice("");
             pail.warn(
-                `Stale install_scripts.allow entries — ${String(status.excess.length)} pattern${status.excess.length === 1 ? "" : "s"} no longer match any installed package:`,
+                `Stale installScripts.allow entries — ${String(status.excess.length)} pattern${status.excess.length === 1 ? "" : "s"} no longer match any installed package:`,
             );
 
             for (const pattern of status.excess) {
                 pail.info(`  ${pattern}`);
             }
 
-            pail.notice("Consider removing these entries from vis.config.ts security.policies.install_scripts.allow.");
+            pail.notice("Consider removing these entries from vis.config.ts security.policies.installScripts.allow.");
         }
 
         if (status.versionDrift.length > 0) {
@@ -148,16 +148,16 @@ const execute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Co
                 pail.info(`  ${from}  →  ${to}`);
             }
 
-            pail.notice("Rename the keys in vis.config.ts security.policies.install_scripts.allow to migrate.");
+            pail.notice("Rename the keys in vis.config.ts security.policies.installScripts.allow to migrate.");
         }
     }
 
     // Sync to native PM config if requested
     if (options.syncNative) {
-        const allowBuilds = visConfig?.security?.policies?.install_scripts?.allow ?? {};
+        const allowBuilds = visConfig?.security?.policies?.installScripts?.allow ?? {};
 
         if (Object.keys(allowBuilds).length === 0) {
-            pail.warn("No security.policies.install_scripts.allow configured in vis.config.ts. Nothing to sync.");
+            pail.warn("No security.policies.installScripts.allow configured in vis.config.ts. Nothing to sync.");
         } else {
             const actions = syncAllowBuildsToNativeConfig(pm.name, cwd, allowBuilds);
 

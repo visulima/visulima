@@ -293,14 +293,14 @@ const logFilteredByTarget = (entries: OutdatedEntry[], logger: Console): void =>
     }
 };
 
-const writeFormattedOutput = (entries: OutdatedEntry[], failed: string[], format: string, logger: Console): void => {
+const writeFormattedOutput = (entries: OutdatedEntry[], failed: string[], format: string, logger: Console, scoreMinimum?: number): void => {
     if (format === "json") {
         process.stdout.write(`${formatOutdatedJson({ checkedCount: 0, failed, filteredByTarget: [], ignored: [], outdated: entries })}\n`);
     } else if (format === "minimal") {
         process.stdout.write(`${formatOutdatedMinimal(entries)}\n`);
     } else {
         formatOutdatedTable(entries, logger);
-        logger.info(formatSummary(entries));
+        logger.info(formatSummary(entries, scoreMinimum));
     }
 };
 
@@ -630,7 +630,7 @@ const executeCatalogUpdate = async (
         }
 
         process.stdout.write("\n");
-        logger.info(formatSummary(outdated));
+        logger.info(formatSummary(outdated, socketOptions?.minimumScore));
 
         if (checkedCount > outdated.length) {
             const totalCatalogEntries = [...catalogs.values()].reduce((sum, deps) => sum + deps.size, 0);
@@ -696,7 +696,7 @@ const executeCatalogUpdate = async (
             process.stdout.write(`${JSON.stringify(output, undefined, 2)}\n`);
         } else {
             logger.info(`Would update ${String(outdated.length)} dependencies:\n`);
-            writeFormattedOutput(outdated, failed, format, logger);
+            writeFormattedOutput(outdated, failed, format, logger, socketOptions?.minimumScore);
 
             if (aiResult) {
                 logger.info("");
@@ -727,7 +727,7 @@ const executeCatalogUpdate = async (
     }
 
     logger.info(`Updating ${String(toApply.length)} catalog dependencies...\n`);
-    writeFormattedOutput(toApply, [], format, logger);
+    writeFormattedOutput(toApply, [], format, logger, socketOptions?.minimumScore);
     logFilteredByTarget(filteredByTarget, logger);
 
     const mergedOptions = { ...options, install: options.install ?? configDefaults.install };

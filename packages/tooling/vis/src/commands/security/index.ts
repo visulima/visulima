@@ -42,7 +42,7 @@ const securitySync: Command = {
 
 const securityRun: Command = {
     commandPath: ["security"],
-    description: "Run lifecycle scripts for packages in security.policies.install_scripts.allow (LavaMoat 'run' parity)",
+    description: "Run lifecycle scripts for packages in security.policies.installScripts.allow (LavaMoat 'run' parity)",
     examples: [
         ["vis security run", "Run preinstall/install/postinstall for every approved package"],
         ["vis security run --with-root", "Also run the workspace root's prepublish + prepare hooks"],

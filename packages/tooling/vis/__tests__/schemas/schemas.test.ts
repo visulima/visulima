@@ -38,7 +38,7 @@ describe("published JSON schemas", () => {
             preflight: { lockfile: true },
             security: {
                 policies: {
-                    first_seen: { minutes: 1440 },
+                    firstSeen: { minutes: 1440 },
                     score: { minimum: 0.5 },
                 },
                 socket: { enabled: true },

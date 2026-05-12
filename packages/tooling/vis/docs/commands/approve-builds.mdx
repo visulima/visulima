@@ -5,7 +5,7 @@ description: "Review and approve dependencies with build scripts"
 
 # vis approve-builds
 
-Scan installed dependencies for packages with lifecycle (build) scripts and surface them for explicit approval. vis blocks dependency build scripts by default; use this command to populate `security.policies.install_scripts.allow` (or the native PM equivalent) for the packages you trust.
+Scan installed dependencies for packages with lifecycle (build) scripts and surface them for explicit approval. vis blocks dependency build scripts by default; use this command to populate `security.policies.installScripts.allow` (or the native PM equivalent) for the packages you trust.
 
 ## Usage
 
@@ -18,7 +18,7 @@ vis approve-builds [options]
 ```bash
 vis approve-builds                  # interactively review pending builds
 vis approve-builds --all            # approve everything (pnpm only, no prompts)
-vis approve-builds --sync-native    # mirror install_scripts.allow into the native PM config
+vis approve-builds --sync-native    # mirror installScripts.allow into the native PM config
 vis approve-builds --write          # write the suggested entries into vis.config.ts
 ```
 
@@ -28,18 +28,18 @@ vis approve-builds --write          # write the suggested entries into vis.confi
 | --------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | `--all`         | `false` | Approve all pending builds without prompting (pnpm only)                                                                             |
 | `--scan`        | `false` | Force vis scanning even for pnpm (instead of delegating to `pnpm approve-builds`)                                                    |
-| `--sync-native` | `false` | Sync `install_scripts.allow` to the native PM config (bun: `trustedDependencies`, npm: `.npmrc`, yarn: `.yarnrc.yml`)                |
-| `--write`       | `false` | Mutate `vis.config.ts` in place — add the unapproved packages to `security.policies.install_scripts.allow` (LavaMoat `auto` parity)  |
+| `--sync-native` | `false` | Sync `installScripts.allow` to the native PM config (bun: `trustedDependencies`, npm: `.npmrc`, yarn: `.yarnrc.yml`)                |
+| `--write`       | `false` | Mutate `vis.config.ts` in place — add the unapproved packages to `security.policies.installScripts.allow` (LavaMoat `auto` parity)  |
 
 ### `--write` behavior
 
-`--write` adds every unapproved package to `vis.config.ts` under `security.policies.install_scripts.allow`. It is the non-interactive counterpart of LavaMoat's `allow-scripts auto`:
+`--write` adds every unapproved package to `vis.config.ts` under `security.policies.installScripts.allow`. It is the non-interactive counterpart of LavaMoat's `allow-scripts auto`:
 
 - Honors `security.pinVersions`: with pinning on, entries are written as `"<name>@<version>": true,`; otherwise as `"<name>": true,`.
 - Three layouts are supported:
-    - `security.policies.install_scripts.allow` already exists → new entries are appended; existing keys are deduped.
-    - `security.policies.install_scripts` exists but no `allow` → an `allow` block is inserted as the first child of `install_scripts`.
-    - Neither exists → a fresh `security: { policies: { install_scripts: { allow: { ... } } } }` is injected at the top of `defineConfig({ … })` / `export default { … }`.
+    - `security.policies.installScripts.allow` already exists → new entries are appended; existing keys are deduped.
+    - `security.policies.installScripts` exists but no `allow` → an `allow` block is inserted as the first child of `installScripts`.
+    - Neither exists → a fresh `security: { policies: { installScripts: { allow: { ... } } } }` is injected at the top of `defineConfig({ … })` / `export default { … }`.
 
 If no `vis.config.{ts,js,mjs,cjs}` is found, the command reports `no-config` and prints the snippet you would paste in manually. If the file exists but cannot be anchored (no `defineConfig(` or `export default {`), the command reports `missing-anchor` and leaves the file untouched.
 
@@ -47,8 +47,8 @@ If no `vis.config.{ts,js,mjs,cjs}` is found, the command reports `no-config` and
 
 When run with the vis scanner (i.e. for any non-pnpm PM, or pnpm with `--scan`), the output includes:
 
-- **Unapproved** — installed packages with lifecycle scripts (`preinstall`, `install`, `postinstall`, `prepare`) that are not covered by `security.policies.install_scripts.allow`. Packages that ship a `binding.gyp` but no install script are flagged with the synthetic hook `install (binding.gyp)` — npm runs `node-gyp rebuild` for them implicitly (LavaMoat allow-scripts parity).
-- **Stale install_scripts.allow entries** — patterns in `security.policies.install_scripts.allow` that no longer match any installed package. Prune them from `vis.config.ts`.
+- **Unapproved** — installed packages with lifecycle scripts (`preinstall`, `install`, `postinstall`, `prepare`) that are not covered by `security.policies.installScripts.allow`. Packages that ship a `binding.gyp` but no install script are flagged with the synthetic hook `install (binding.gyp)` — npm runs `node-gyp rebuild` for them implicitly (LavaMoat allow-scripts parity).
+- **Stale installScripts.allow entries** — patterns in `security.policies.installScripts.allow` that no longer match any installed package. Prune them from `vis.config.ts`.
 - **Version drift** (only when `security.pinVersions: true`) — entries pinned to a version that is no longer installed, with a `from  →  to` migration suggestion you can paste into `vis.config.ts`.
 
 When `security.pinVersions: true`, suggested allowlist keys are emitted as `"<name>@<version>": true,` so a copy-paste covers the exact installed version.
@@ -56,4 +56,4 @@ When `security.pinVersions: true`, suggested allowlist keys are emitted as `"<na
 ## Related
 
 - `vis security list` — same triage report, also available as `--json` for tooling integration.
-- `vis security sync` — push the updated `install_scripts.allow` to the native PM config.
+- `vis security sync` — push the updated `installScripts.allow` to the native PM config.

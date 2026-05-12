@@ -24,9 +24,9 @@ const execute = ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console,
     }
 
     const policies = visConfig.security.policies ?? {};
-    const allowBuilds = Object.fromEntries(Object.entries(policies.install_scripts?.allow ?? {}).filter(([, v]) => v));
-    const minutes = policies.first_seen?.minutes;
-    const excludes = policies.first_seen?.exclude ?? [];
+    const allowBuilds = Object.fromEntries(Object.entries(policies.installScripts?.allow ?? {}).filter(([, v]) => v));
+    const minutes = policies.firstSeen?.minutes;
+    const excludes = policies.firstSeen?.exclude ?? [];
 
     const actions: string[] = [];
 

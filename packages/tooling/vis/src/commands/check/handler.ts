@@ -198,7 +198,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
         }
 
         process.stdout.write("\n");
-        logger.info(formatSummary(outdated));
+        logger.info(formatSummary(outdated, socketOptions?.minimumScore));
     } else if (format === "json") {
         const output: Record<string, unknown> = { failed, outdated };
 
@@ -211,7 +211,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
         process.stdout.write(`${formatOutdatedMinimal(outdated)}\n`);
     } else {
         formatOutdatedTable(outdated, logger);
-        logger.info(formatSummary(outdated));
+        logger.info(formatSummary(outdated, socketOptions?.minimumScore));
 
         if (aiResult) {
             logger.info("");

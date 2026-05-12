@@ -389,8 +389,12 @@ const formatReportDetailed = (report: PackageReportData): string => {
 /**
  * Formats a security summary for a list of packages.
  * Suitable for displaying after install/update commands.
+ *
+ * `minimumScore` is the threshold below which a package is flagged as
+ * "low score" — sourced from `security.policies.score.minimum` (resolved
+ * by `buildSocketOptions`, default `DEFAULT_LOW_SCORE_THRESHOLD`).
  */
-const formatSecurityOverview = (reports: Map<string, PackageReportData>): string => {
+const formatSecurityOverview = (reports: Map<string, PackageReportData>, minimumScore: number = DEFAULT_LOW_SCORE_THRESHOLD): string => {
     if (reports.size === 0) {
         return "";
     }
@@ -428,7 +432,7 @@ const formatSecurityOverview = (reports: Map<string, PackageReportData>): string
             }
         }
 
-        if (report.score.overall < DEFAULT_LOW_SCORE_THRESHOLD) {
+        if (report.score.overall < minimumScore) {
             lowScorePackages++;
         }
     }
@@ -460,7 +464,9 @@ const formatSecurityOverview = (reports: Map<string, PackageReportData>): string
     }
 
     if (lowScorePackages > 0) {
-        lines.push(`  ${String(lowScorePackages)} package${lowScorePackages === 1 ? "" : "s"} with low security score (<40%)`);
+        const pct = Math.round(minimumScore * 100);
+
+        lines.push(`  ${String(lowScorePackages)} package${lowScorePackages === 1 ? "" : "s"} with low security score (<${String(pct)}%)`);
     }
 
     return lines.join("\n");
@@ -532,8 +538,10 @@ interface SocketConfigLike {
 /**
  * Builds SocketSecurityOptions from the VisConfig socket config section.
  * Returns undefined if Socket.dev is not enabled or no API token is available.
- * `scoreMinimum` is sourced from `security.policies.score.minimum` and passed
- * through so report rendering can highlight low-score packages.
+ * `scoreMinimum` is sourced from `security.policies.score.minimum` and falls
+ * back to `DEFAULT_LOW_SCORE_THRESHOLD` so every downstream consumer
+ * (`vis add`, `audit`, `doctor`, `analyze`) sees the same effective
+ * threshold without each one re-resolving the default.
  */
 const buildSocketOptions = (
     socketConfig: SocketConfigLike | undefined,
@@ -548,7 +556,7 @@ const buildSocketOptions = (
     return {
         apiToken,
         cacheTtlMs: socketConfig.cacheTtlMs,
-        minimumScore: scoreMinimum,
+        minimumScore: scoreMinimum ?? DEFAULT_LOW_SCORE_THRESHOLD,
         timeoutMs: socketConfig.timeoutMs,
     };
 };

@@ -12,7 +12,7 @@ Install project dependencies using the detected package manager (pnpm, npm, yarn
 `vis install` applies two universal hardening defaults across every package manager, inspired by the [`npm`'s defaults are bad](https://nesbitt.io/2026/03/31/npms-defaults-are-bad.html) write-up:
 
 1. **Frozen lockfile by default.** When a lockfile is present, `vis install` refuses to mutate it — `npm ci` semantics rather than `npm install`'s silent rewrites. Pass `--no-frozen-lockfile` to opt out (the lockfile-only and `--force` flows skip the default automatically).
-2. **Lifecycle scripts blocked by default.** Mirrors pnpm v10: every PM (npm, pnpm, yarn, bun, aube) installs with `--ignore-scripts`. Packages listed in `security.policies.install_scripts.allow` (in `vis.config.ts`) get their `preinstall` / `install` / `postinstall` / `prepare` hooks executed afterward by vis. Pass `--run-scripts` to restore the PM's native script behavior for one run. Deno does not run npm-style lifecycle scripts and is unaffected by these flags.
+2. **Lifecycle scripts blocked by default.** Mirrors pnpm v10: every PM (npm, pnpm, yarn, bun, aube) installs with `--ignore-scripts`. Packages listed in `security.policies.installScripts.allow` (in `vis.config.ts`) get their `preinstall` / `install` / `postinstall` / `prepare` hooks executed afterward by vis. Pass `--run-scripts` to restore the PM's native script behavior for one run. Deno does not run npm-style lifecycle scripts and is unaffected by these flags.
 
 To bypass both at once, combine the flags: `vis install --no-frozen-lockfile --run-scripts`.
 
@@ -31,7 +31,7 @@ vis install
 # Allow lockfile updates for this run
 vis install --no-frozen-lockfile
 
-# Run lifecycle scripts (allowlisted packages run regardless via security.policies.install_scripts.allow)
+# Run lifecycle scripts (allowlisted packages run regardless via security.policies.installScripts.allow)
 vis install --run-scripts
 
 # Install with frozen lockfile (explicit; same as the default when a lockfile exists)
@@ -65,7 +65,7 @@ vis install --no-aube
 | `--ci`                 |       | `false` | Clean install: wipes `node_modules` then installs with frozen lockfile (mirrors `npm ci` / `pnpm ci`)                                |
 | `--force`              | `-f`  | `false` | Force re-resolution of all deps                                                                                                      |
 | `--no-optional`        |       | `false` | Skip optional dependencies                                                                                                           |
-| `--run-scripts`        |       | `false` | Run lifecycle scripts (opts out of the universal block-by-default policy; allowlisted packages still run via `security.policies.install_scripts.allow`) |
+| `--run-scripts`        |       | `false` | Run lifecycle scripts (opts out of the universal block-by-default policy; allowlisted packages still run via `security.policies.installScripts.allow`) |
 | `--lockfile-only`      |       | `false` | Update lockfile without installing                                                                                                   |
 | `--offline`            |       | `false` | Strict offline: fail if any package is missing from the cache                                                                        |
 | `--prefer-offline`     |       | `false` | Cache-first: use cached packages when available, fall back to network for the rest                                                   |

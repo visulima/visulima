@@ -163,6 +163,10 @@ const streamScans = async (context: ScanContext): Promise<Omit<DoctorResults, "e
     const npmrcConfig = loadNpmrc(workspaceRoot);
     const catalogs = readCatalogs(workspaceRoot, packageManager);
     const socketOptions = buildSocketOptions(visConfig?.security?.socket, visConfig?.security?.policies?.score?.minimum);
+    // Effective low-score threshold for every doctor check site. `buildSocketOptions`
+    // returns `undefined` when Socket is disabled, so fall back to the config value
+    // (or `DEFAULT_LOW_SCORE_THRESHOLD`) for sites that compute against scores.
+    const scoreMinimum = socketOptions?.minimumScore ?? visConfig?.security?.policies?.score?.minimum ?? DEFAULT_LOW_SCORE_THRESHOLD;
     const acceptedRisks = visConfig?.security?.acceptedRisks;
     const lockText = readLockfileText(workspaceRoot, pm.name);
 
@@ -291,7 +295,7 @@ const streamScans = async (context: ScanContext): Promise<Omit<DoctorResults, "e
                     for (const report of reports.values()) {
                         alerts += report.alerts.length;
 
-                        if (report.score.overall < DEFAULT_LOW_SCORE_THRESHOLD) {
+                        if (report.score.overall < scoreMinimum) {
                             low += 1;
                         }
                     }
@@ -456,7 +460,7 @@ const streamScans = async (context: ScanContext): Promise<Omit<DoctorResults, "e
         for (const report of socketReports.values()) {
             socketAlerts += report.alerts.length;
 
-            if (report.score.overall < DEFAULT_LOW_SCORE_THRESHOLD) {
+            if (report.score.overall < scoreMinimum) {
                 socketLowScore += 1;
             }
         }
@@ -883,6 +887,10 @@ const execute = async ({ logger, options, visConfig, visConfigError, workspaceRo
     const installed = lockedPackages(wsRoot, pm.name);
     const installedCount = installed.length;
     const socketEnabled = Boolean(buildSocketOptions(visConfig?.security?.socket));
+    // Effective Socket low-score threshold for `applyFilter` and any other
+    // post-scan aggregation in `execute`. Sourced from
+    // `security.policies.score.minimum` (or the hard-coded default).
+    const scoreMinimum = visConfig?.security?.policies?.score?.minimum ?? DEFAULT_LOW_SCORE_THRESHOLD;
     const workspaceDirectories = discoverWorkspacePackages(wsRoot);
 
     if (!isJson && !quiet && !wantsInteractive) {
@@ -1007,7 +1015,7 @@ const execute = async ({ logger, options, visConfig, visConfigError, workspaceRo
         }
     }
 
-    const results = applyFilter(fullResults, filterPatterns);
+    const results = applyFilter(fullResults, filterPatterns, scoreMinimum);
 
     // JSON output
     if (isJson) {

@@ -11,9 +11,9 @@ const baseSecurity: VisConfig = {
     security: {
         blockExoticSubdeps: true,
         policies: {
-            first_seen: { minutes: 1440 },
-            install_scripts: { allow: { esbuild: true } },
-            publisher_change: { mode: "no-downgrade" },
+            firstSeen: { minutes: 1440 },
+            installScripts: { allow: { esbuild: true } },
+            publisherChange: { mode: "no-downgrade" },
         },
     },
 };

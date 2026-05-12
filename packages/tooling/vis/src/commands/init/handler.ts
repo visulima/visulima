@@ -71,10 +71,10 @@ const generateConfigContent = (_pm: string, options: ConfigInitOptions): string 
 
     const allowBlock = allowEntries ? `{\n${allowEntries}\n                }` : "{}";
 
-    const policySections: string[] = [`            install_scripts: {\n                allow: ${allowBlock},\n            },`];
+    const policySections: string[] = [`            installScripts: {\n                allow: ${allowBlock},\n            },`];
 
     if (options.minimumReleaseAge !== undefined) {
-        policySections.push(`            first_seen: {\n                minutes: ${String(options.minimumReleaseAge)},\n            },`);
+        policySections.push(`            firstSeen: {\n                minutes: ${String(options.minimumReleaseAge)},\n            },`);
     }
 
     let securityBlock = `        policies: {\n${policySections.join("\n")}\n        },`;

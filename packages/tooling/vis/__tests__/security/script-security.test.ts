@@ -40,7 +40,7 @@ describe(enforceScriptSecurity, () => {
             expect.assertions(1);
 
             const result = enforceScriptSecurity("pnpm", tmpDir, {
-                security: { policies: { install_scripts: { allow: { esbuild: true } } } },
+                security: { policies: { installScripts: { allow: { esbuild: true } } } },
             });
 
             expect(result.extraArgs).toStrictEqual([]);
@@ -60,7 +60,7 @@ describe(enforceScriptSecurity, () => {
             expect.assertions(1);
 
             const config: VisConfig = {
-                security: { policies: { install_scripts: { allow: { esbuild: true } } } },
+                security: { policies: { installScripts: { allow: { esbuild: true } } } },
             };
 
             const result = enforceScriptSecurity("bun", tmpDir, config);
@@ -74,7 +74,7 @@ describe(enforceScriptSecurity, () => {
             writeFileSync(join(tmpDir, "package.json"), JSON.stringify({ name: "test", trustedDependencies: ["esbuild"] }));
 
             const result = enforceScriptSecurity("bun", tmpDir, {
-                security: { policies: { install_scripts: { allow: { esbuild: true } } } },
+                security: { policies: { installScripts: { allow: { esbuild: true } } } },
             });
 
             expect(result.warnings.some((w) => w.includes("trustedDependencies is empty"))).toBe(false);
@@ -102,7 +102,7 @@ describe(enforceScriptSecurity, () => {
             expect.assertions(1);
 
             const config: VisConfig = {
-                security: { policies: { install_scripts: { allow: { esbuild: true } } } },
+                security: { policies: { installScripts: { allow: { esbuild: true } } } },
             };
 
             const result = enforceScriptSecurity("npm", tmpDir, config);
@@ -116,7 +116,7 @@ describe(enforceScriptSecurity, () => {
             const config: VisConfig = {
                 security: {
                     policies: {
-                        install_scripts: {
+                        installScripts: {
                             allow: {
                                 "@prisma/client": true,
                                 "core-js": false,
@@ -139,7 +139,7 @@ describe(enforceScriptSecurity, () => {
             writeFileSync(join(tmpDir, ".npmrc"), "ignore-scripts=true\n");
 
             const config: VisConfig = {
-                security: { policies: { install_scripts: { allow: { esbuild: true } } } },
+                security: { policies: { installScripts: { allow: { esbuild: true } } } },
             };
 
             const result = enforceScriptSecurity("npm", tmpDir, config);

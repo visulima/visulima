@@ -5,7 +5,7 @@ import { formatMinutesAsTimeString, renderYamlKey } from "./duration";
 import type { PackageManagerName } from "./types";
 
 /**
- * Mirrors `security.policies.first_seen.minutes` (and `first_seen.exclude`) from vis-config
+ * Mirrors `security.policies.firstSeen.minutes` (and `firstSeen.exclude`) from vis-config
  * to the package manager's native config so the PM's own install/update path
  * enforces the same gate vis already enforces internally.
  *

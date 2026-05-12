@@ -532,9 +532,9 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
         const socketOptions = buildSocketOptions(visConfig?.security?.socket, visConfig?.security?.policies?.score?.minimum);
 
         if (socketOptions) {
-            const minimumScore = socketOptions.minimumScore ?? DEFAULT_LOW_SCORE_THRESHOLD;
-
-            const shouldContinue = await runSocketPreCheck(packages, socketOptions, minimumScore, visConfig?.security?.acceptedRisks);
+            // `buildSocketOptions` resolves the effective minimum score (config or default),
+            // so we can trust `socketOptions.minimumScore` is always set here.
+            const shouldContinue = await runSocketPreCheck(packages, socketOptions, socketOptions.minimumScore ?? DEFAULT_LOW_SCORE_THRESHOLD, visConfig?.security?.acceptedRisks);
 
             if (!shouldContinue) {
                 process.exitCode = 1;
@@ -550,7 +550,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
 
     // Secure-by-default: lifecycle scripts are off unless the user opts in
     // with --run-scripts. Mirrors pnpm v10's universal block-then-allowlist
-    // model — packages listed in security.policies.install_scripts.allow get their scripts
+    // model — packages listed in security.policies.installScripts.allow get their scripts
     // run after install via the security-enforcement plugin's
     // `runApprovedScripts` hook (afterCommand). This applies to every PM:
     // pnpm/bun/aube already block by default, npm/yarn need the explicit

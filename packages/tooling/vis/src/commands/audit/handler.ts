@@ -204,6 +204,9 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
     // Offline mode skips every network-bound source; socket.dev is therefore
     // disabled regardless of socketConfig.enabled.
     const socketOptions = isOffline ? undefined : buildSocketOptions(socketConfig, policies?.score?.minimum);
+    // Resolve the effective low-score threshold once so every filter site below
+    // honours `security.policies.score.minimum` (or its default).
+    const scoreMinimum = socketOptions?.minimumScore ?? policies?.score?.minimum ?? DEFAULT_LOW_SCORE_THRESHOLD;
 
     // findDuplicateDependencies is synchronous — hoist it outside Promise.all
     // so the async fan-out only contains genuine async work.
@@ -307,7 +310,7 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
                         for (const report of reports.values()) {
                             alerts += report.alerts.length;
 
-                            if (report.score.overall < DEFAULT_LOW_SCORE_THRESHOLD) {
+                            if (report.score.overall < scoreMinimum) {
                                 low += 1;
                             }
                         }
@@ -355,7 +358,7 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
         const accepted = findAcceptedRisk(pkg.name, pkg.version, acceptedRisks);
 
         const hasVulns = vulns.length > 0;
-        const hasLowScore = report ? report.score.overall < DEFAULT_LOW_SCORE_THRESHOLD : false;
+        const hasLowScore = report ? report.score.overall < scoreMinimum : false;
         const hasAlerts = report ? report.alerts.length > 0 : false;
 
         if (hasVulns || hasLowScore || hasAlerts) {
@@ -421,7 +424,7 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
         const socketPasses = entry.socketReport?.alerts.some((a) =>
             severityPassesFilter(a.severity === "medium" ? "MODERATE" : a.severity.toUpperCase(), severityFilter),
         );
-        const lowScorePasses = entry.socketReport && entry.socketReport.score.overall < DEFAULT_LOW_SCORE_THRESHOLD;
+        const lowScorePasses = entry.socketReport && entry.socketReport.score.overall < scoreMinimum;
 
         return vulnPasses || socketPasses || lowScorePasses;
     });
@@ -686,7 +689,7 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
 
     // Print Socket.dev supply chain issues
     const socketIssues = filtered.filter(
-        (e) => e.socketReport && (e.socketReport.score.overall < DEFAULT_LOW_SCORE_THRESHOLD || e.socketReport.alerts.length > 0),
+        (e) => e.socketReport && (e.socketReport.score.overall < scoreMinimum || e.socketReport.alerts.length > 0),
     );
 
     if (socketIssues.length > 0) {
