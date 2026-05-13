@@ -151,7 +151,8 @@ const resolveAuth = (options: OneDriveStorageOptions): GraphClient => {
     let handle: AuthHandle | undefined;
 
     if (options.accessToken !== undefined) {
-        handle = typeof options.accessToken === "function" ? createCallableAccessTokenAuth(options.accessToken) : createStaticAccessTokenAuth(options.accessToken);
+        handle =
+            typeof options.accessToken === "function" ? createCallableAccessTokenAuth(options.accessToken) : createStaticAccessTokenAuth(options.accessToken);
     } else if (options.clientCredentials) {
         handle = createClientCredentialsAuth(options.clientCredentials);
     } else if (options.oauth) {

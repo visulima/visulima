@@ -307,6 +307,7 @@
         "dropbox": "10.34.0",
         "esbuild": "catalog:build",
         "eslint": "catalog:lint",
+        "eslint-plugin-zod": "4.2.2",
         "etag": "catalog:dev",
         "express": "catalog:backend",
         "gaxios": "catalog:dev",

@@ -256,7 +256,9 @@ describe(OneDriveStorage, () => {
 
             const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
                 headers: new Headers(),
-                json: async () => { return { resourceId: "01ITEM", status: "completed" }; },
+                json: async () => {
+                    return { resourceId: "01ITEM", status: "completed" };
+                },
                 ok: true,
                 status: 200,
             } as Response);

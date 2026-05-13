@@ -111,7 +111,9 @@ const createRefreshTokenAuth = (client: Dropbox, options: RefreshTokenAuthOption
                 refresh_token: options.refreshToken,
                 ...(options.appSecret && { client_secret: options.appSecret }),
             }),
-        onRefresh: (token) => { setAccessToken(client, token); },
+        onRefresh: (token) => {
+            setAccessToken(client, token);
+        },
         provider: "Dropbox",
         tokenUrl: "https://api.dropboxapi.com/oauth2/token",
     });
@@ -631,7 +633,7 @@ class DropboxStorage extends BaseStorage<DropboxFile> {
             close: false,
             contents: data.subarray(offset, Math.min(offset + UPLOAD_SESSION_CHUNK_BYTES, total)),
         });
-        const sessionId = (start.result).session_id;
+        const sessionId = start.result.session_id;
 
         offset = Math.min(offset + UPLOAD_SESSION_CHUNK_BYTES, total);
 
