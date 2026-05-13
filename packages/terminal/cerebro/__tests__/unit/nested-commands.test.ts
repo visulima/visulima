@@ -111,6 +111,62 @@ describe("nested commands", () => {
         await expect((nestedBuildExecute.mock.results[0] as { value: Promise<string> }).value).resolves.toBe("nested-build");
     });
 
+    it("should route a flat command correctly when registered before a nested namesake in the same Cli", async () => {
+        expect.assertions(2);
+
+        const flatInstallExecute = vi.fn().mockResolvedValue("flat");
+        const hookInstallExecute = vi.fn().mockResolvedValue("hook");
+
+        // Registering the flat command first then a nested one with the same leaf
+        // name must not clobber the flat command's slot in the name-keyed lookup.
+        const cli = new Cli("MyCLI", { argv: ["install"] });
+
+        cli.addCommand({ description: "Install deps", execute: flatInstallExecute, name: "install" });
+        cli.addCommand({ commandPath: ["hook"], description: "Install hooks", execute: hookInstallExecute, name: "install" });
+
+        await cli.run({ shouldExitProcess: false });
+
+        expect(flatInstallExecute).toHaveBeenCalledTimes(1);
+        expect(hookInstallExecute).not.toHaveBeenCalled();
+    });
+
+    it("should allow registering a flat command after a nested one with the same leaf name", async () => {
+        expect.assertions(4);
+
+        const flatInstallExecute = vi.fn().mockResolvedValue("flat");
+        const hookInstallExecute = vi.fn().mockResolvedValue("hook");
+
+        const loggerMock = {
+            debug: vi.fn(),
+            error: vi.fn(),
+            info: vi.fn(),
+            log: vi.fn(),
+            raw: vi.fn(),
+            warn: vi.fn(),
+        };
+
+        // Order is intentional: nested first, then flat. Previously this either
+        // threw a spurious DUPLICATE_COMMAND, or the flat command silently
+        // evicted the nested entry from `#commands.values()` — invisible to
+        // help listings even though `#commandsByPath` still held it.
+        const cli = new Cli("MyCLI", { argv: ["help"], logger: loggerMock as unknown as Console });
+
+        cli.addCommand({ commandPath: ["hook"], description: "Install hooks", execute: hookInstallExecute, name: "install" });
+
+        expect(() => {
+            cli.addCommand({ description: "Install dependencies", execute: flatInstallExecute, name: "install" });
+        }).not.toThrow();
+
+        await cli.run({ shouldExitProcess: false });
+
+        const helpOutput = loggerMock.raw.mock.calls.flat().join("\n");
+
+        // Both must still appear in the general help listing.
+        expect(helpOutput).toContain("Install dependencies");
+        expect(helpOutput).toContain("Install hooks");
+        expect(loggerMock.error).not.toHaveBeenCalled();
+    });
+
     it("should throw error for duplicate nested command paths", () => {
         expect.assertions(1);
 
@@ -391,5 +447,55 @@ describe("nested commands", () => {
 
         expect(helpOutput).toContain("ai providers");
         expect(helpOutput).toContain("ai test");
+    });
+
+    it("should print command-specific help when invoking `help <name>` with a positional", async () => {
+        expect.assertions(2);
+
+        const loggerMock = {
+            debug: vi.fn(),
+            error: vi.fn(),
+            info: vi.fn(),
+            log: vi.fn(),
+            raw: vi.fn(),
+            warn: vi.fn(),
+        };
+
+        const cli = new Cli("MyCLI", { argv: ["help", "install"], logger: loggerMock as unknown as Console });
+
+        cli.addCommand({ description: "Install dependencies", execute: vi.fn(), name: "install" });
+        cli.addCommand({ commandPath: ["hook"], description: "Install hooks", execute: vi.fn(), name: "install" });
+
+        await cli.run({ shouldExitProcess: false });
+
+        const helpOutput = loggerMock.raw.mock.calls.flat().join("\n");
+
+        expect(helpOutput).toContain("Install dependencies");
+        expect(loggerMock.error).not.toHaveBeenCalled();
+    });
+
+    it("should print help for a nested command when invoking `help <parent> <child>`", async () => {
+        expect.assertions(2);
+
+        const loggerMock = {
+            debug: vi.fn(),
+            error: vi.fn(),
+            info: vi.fn(),
+            log: vi.fn(),
+            raw: vi.fn(),
+            warn: vi.fn(),
+        };
+
+        const cli = new Cli("MyCLI", { argv: ["help", "hook", "install"], logger: loggerMock as unknown as Console });
+
+        cli.addCommand({ description: "Install dependencies", execute: vi.fn(), name: "install" });
+        cli.addCommand({ commandPath: ["hook"], description: "Install hooks for the workspace", execute: vi.fn(), name: "install" });
+
+        await cli.run({ shouldExitProcess: false });
+
+        const helpOutput = loggerMock.raw.mock.calls.flat().join("\n");
+
+        expect(helpOutput).toContain("Install hooks for the workspace");
+        expect(loggerMock.error).not.toHaveBeenCalled();
     });
 });

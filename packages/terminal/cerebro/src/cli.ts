@@ -505,7 +505,14 @@ export class Cli<T extends Console = Console> implements ICli<T> {
             });
         }
 
-        if (this.#commands.has(command.name) && !command.commandPath) {
+        const newIsNested = Array.isArray(command.commandPath) && command.commandPath.length > 0;
+        const existingByName = this.#commands.get(command.name);
+        const existingIsFlat = existingByName !== undefined && (existingByName.commandPath === undefined || existingByName.commandPath.length === 0);
+
+        // Two flat commands with the same name are a true duplicate. Nested
+        // commands sharing a leaf name with a flat command (or with each other)
+        // are disambiguated by their full path, so they are allowed.
+        if (!newIsNested && existingIsFlat) {
             throw new CerebroError(`Command with name "${command.name}" already exists`, "DUPLICATE_COMMAND", { commandName: command.name });
         }
 
@@ -526,7 +533,27 @@ export class Cli<T extends Console = Console> implements ICli<T> {
             command.__requiredOptions__ = command.options.filter((option) => option.required === true);
         }
 
-        this.#commands.set(command.name, command);
+        // The name-keyed map is the canonical lookup for bare leaf names.
+        // A flat command should win this slot over any nested namesake, since
+        // `cli foo` (with no parent) can only mean the flat one. When a flat
+        // command already owns the leaf-name slot, register the nested command
+        // under its full path key so iteration (help listings, alternatives)
+        // still sees every command.
+        if (newIsNested && existingByName !== undefined) {
+            this.#commands.set(pathKey, command);
+        } else {
+            // If a nested namesake currently owns the name slot (registered
+            // before this flat one), preserve it by re-keying it under its
+            // full path before the flat takes over. Otherwise iteration over
+            // `#commands.values()` would lose the nested entry.
+            if (!newIsNested && existingByName !== undefined && !existingIsFlat) {
+                const existingFullPath = getFullCommandPath(existingByName.name, existingByName.commandPath);
+                this.#commands.set(getCommandPathKey(existingFullPath), existingByName);
+            }
+
+            this.#commands.set(command.name, command);
+        }
+
         this.#commandPaths.set(pathKey, fullPath);
         this.#commandsByPath.set(pathKey, command);
 
