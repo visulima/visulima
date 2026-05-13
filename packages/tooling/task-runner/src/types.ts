@@ -34,7 +34,7 @@ export type TaskPriority = "high" | "low" | "normal";
  * number of in-flight tasks across every target that opts into the
  * group via {@link TargetConfiguration.concurrencyGroup}. Independent
  * of `--parallel`: the global cap still bounds total in-flight tasks,
- * and group caps further bound the named subset. Values `<= 0` are
+ * and group caps further bound the named subset. Values `&lt;= 0` are
  * ignored.
  */
 export type ConcurrencyGroups = Record<string, number>;
@@ -81,18 +81,6 @@ export interface Task {
      * runner uses faithful defaults (mtime + mode preserved).
      */
     cacheRestore?: CacheRestoreOptions;
-    /** Hash of the task inputs for caching */
-    hash?: string;
-    /** Detailed hash information */
-    hashDetails?: TaskHashDetails;
-    /** Unique identifier for the task, typically "project:target:configuration" */
-    id: string;
-
-    /**
-     * Maximum in-flight instances allowed for this task's target name.
-     * Carried over from {@link TargetConfiguration.maxConcurrent}.
-     */
-    maxConcurrent?: number;
 
     /**
      * Workspace-level concurrency group. Carried over from
@@ -101,6 +89,19 @@ export interface Task {
      * {@link TaskRunnerOptions.concurrencyGroups}.
      */
     concurrencyGroup?: string;
+    /** Hash of the task inputs for caching */
+    hash?: string;
+    /** Detailed hash information */
+    hashDetails?: TaskHashDetails;
+
+    /** Unique identifier for the task, typically "project:target:configuration" */
+    id: string;
+
+    /**
+     * Maximum in-flight instances allowed for this task's target name.
+     * Carried over from {@link TargetConfiguration.maxConcurrent}.
+     */
+    maxConcurrent?: number;
 
     /**
      * Output patterns this task produces. Each entry is either a
@@ -320,8 +321,6 @@ export interface TargetConfiguration {
     cacheRestore?: CacheRestoreOptions;
     /** The command to run (alternative to executor) */
     command?: string;
-    /** Named configurations (e.g., "production", "development") */
-    configurations?: Record<string, Record<string, unknown>>;
 
     /**
      * Workspace-level concurrency group this target opts into. The
@@ -338,14 +337,16 @@ export interface TargetConfiguration {
      * finalisation phase outside the scheduler.
      */
     concurrencyGroup?: string;
+
+    /** Named configurations (e.g., "production", "development") */
+    configurations?: Record<string, Record<string, unknown>>;
     /** Other targets this target depends on */
     dependsOn?: (string | TargetDependencyConfig)[];
     /** The executor/command to run */
     executor?: string;
     /** Input patterns for cache invalidation */
     inputs?: (string | InputDefinition)[];
-    /** Options passed to the executor */
-    options?: Record<string, unknown>;
+
     /**
      * Maximum number of in-flight instances of this target across the
      * whole graph. When set, the scheduler refuses to start an
@@ -355,7 +356,7 @@ export interface TargetConfiguration {
      * and `maxConcurrent` further bounds the per-target subset.
      *
      * Use for tests/deploys that share an external resource (DB, port,
-     * mock server). Set to `1` to serialize. Values `<= 0` are ignored.
+     * mock server). Set to `1` to serialize. Values `&lt;= 0` are ignored.
      *
      * If multiple projects declare different values for the same
      * target name, the runner uses the smallest declared cap. Caps
@@ -363,6 +364,8 @@ export interface TargetConfiguration {
      * separate finalisation phase outside the scheduler.
      */
     maxConcurrent?: number;
+    /** Options passed to the executor */
+    options?: Record<string, unknown>;
     /** Output patterns produced by this target */
     outputs?: string[];
     /** Whether this target supports parallel execution */
@@ -655,6 +658,27 @@ export interface TaskRunnerOptions {
     cacheDirectory?: string;
 
     /**
+     * Workspace-level concurrency group caps. Maps a group name to the
+     * maximum number of in-flight tasks across every target whose
+     * `concurrencyGroup` field equals the same name. Independent of
+     * `parallel`: the global cap still bounds total tasks, and group
+     * caps further bound the named subset.
+     *
+     * Common shape — one cap per shared resource:
+     *
+     *   ```ts
+     *   concurrencyGroups: {
+     *     "db-bound": 2,    // any target hitting the local Postgres
+     *     "deploy-lock": 1, // any deploy target
+     *   }
+     *   ```
+     *
+     * Targets opt in via {@link TargetConfiguration.concurrencyGroup}.
+     * Values `&lt;= 0` are ignored.
+     */
+    concurrencyGroups?: ConcurrencyGroups;
+
+    /**
      * Directory used to persist run summaries (`runs/`),
      * `last-summary.json`, and other run-scoped state. Defaults to
      * `{workspaceRoot}/.task-runner` when omitted so standalone
@@ -670,6 +694,7 @@ export interface TaskRunnerOptions {
      * @default false
      */
     dryRun?: boolean;
+
     /** Custom environment variables to include in hash */
     envVars?: string[];
 
@@ -726,27 +751,6 @@ export interface TaskRunnerOptions {
      * @default false
      */
     incrementalFileHashing?: boolean;
-
-    /**
-     * Workspace-level concurrency group caps. Maps a group name to the
-     * maximum number of in-flight tasks across every target whose
-     * `concurrencyGroup` field equals the same name. Independent of
-     * `parallel`: the global cap still bounds total tasks, and group
-     * caps further bound the named subset.
-     *
-     * Common shape — one cap per shared resource:
-     *
-     *   ```ts
-     *   concurrencyGroups: {
-     *     "db-bound": 2,    // any target hitting the local Postgres
-     *     "deploy-lock": 1, // any deploy target
-     *   }
-     *   ```
-     *
-     * Targets opt in via {@link TargetConfiguration.concurrencyGroup}.
-     * Values `<= 0` are ignored.
-     */
-    concurrencyGroups?: ConcurrencyGroups;
     /** Maximum age of cache entries in milliseconds */
     maxCacheAge?: number;
     /** Maximum cache size (e.g., "1GB") */
@@ -767,6 +771,7 @@ export interface TaskRunnerOptions {
      * @default false
      */
     namespaceByGlobalEnv?: boolean;
+
     /**
      * Plugin extension point invoked during task fingerprinting. Fires
      * once per task after the built-in inputs (filesets, runtime, env)
@@ -872,10 +877,7 @@ export interface TaskExecutionOptions {
 /**
  * A task executor function.
  */
-export type TaskExecutor = (
-    task: Task,
-    options: TaskExecutionOptions,
-) => Promise<{ code: number; retryAttempts?: number; terminalOutput: string }>;
+export type TaskExecutor = (task: Task, options: TaskExecutionOptions) => Promise<{ code: number; retryAttempts?: number; terminalOutput: string }>;
 
 /**
  * The function type for a task runner.
@@ -966,6 +968,7 @@ export interface ConcurrentRunnerOptions {
     restart?: {
         /** Delay between restarts in ms. "exponential" for 2^attempt * 1000ms. */
         delay?: number | "exponential";
+
         /**
          * Optional pre-restart callback. Fires once per scheduled retry,
          * after the failed attempt is detected and before the restart

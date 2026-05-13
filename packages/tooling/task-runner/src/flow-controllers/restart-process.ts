@@ -10,6 +10,7 @@ import type { ConcurrentCloseEvent, ConcurrentCommandConfig, ConcurrentRunnerOpt
 export interface RestartOptions {
     /** Delay between restarts in milliseconds. "exponential" for 2^attempt * 1000ms. */
     delay: number | "exponential";
+
     /**
      * Optional pre-restart callback. Fires once per scheduled retry,
      * **after** the failed attempt is detected and **before** the restart

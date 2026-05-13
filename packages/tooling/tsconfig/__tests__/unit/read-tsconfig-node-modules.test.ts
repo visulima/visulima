@@ -12,8 +12,8 @@ import { stripVTControlCharacters } from "node:util";
 
 import { writeFileSync, writeJsonSync } from "@visulima/fs";
 import { dirname, join } from "@visulima/path";
-import { x } from "tinyexec";
 import { temporaryDirectory } from "tempy";
+import { x } from "tinyexec";
 import { version as tsVersion } from "typescript";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
@@ -69,7 +69,7 @@ describe("node_modules", () => {
         it("implicit tsconfig.json", async () => {
             expect.assertions(1);
 
-            writeFileSync(join(distribution, "node_modules", "dep", "index.js"), 'require("fs")');
+            writeFileSync(join(distribution, "node_modules", "dep", "index.js"), "require(\"fs\")");
             writeJsonSync(join(distribution, "node_modules", "dep", "package.json"), {
                 main: "./index.js",
             });
@@ -325,7 +325,7 @@ describe("node_modules", () => {
         });
     });
 
-    it('directory named "tsconfig.json"', async () => {
+    it("directory named \"tsconfig.json\"", async () => {
         expect.assertions(1);
 
         writeJsonSync(join(distribution, "node_modules", "dep", "tsconfig.json", "tsconfig.json"), {
