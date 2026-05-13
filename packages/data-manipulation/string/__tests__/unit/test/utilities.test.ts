@@ -75,7 +75,7 @@ describe("aNSI string test utilities", () => {
             expect(formatted.stripped).toBe("");
             expect(formatted.ansi).toBe("");
             expect(formatted.lengthDifference).toBe(0);
-            expect(formatted.json).toBe('""');
+            expect(formatted.json).toBe("\"\"");
         });
 
         it("should handle ANSI strings with special characters", () => {
