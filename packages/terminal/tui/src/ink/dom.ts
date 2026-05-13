@@ -212,6 +212,13 @@ export type DOMElement = InkNode & {
     onComputeLayout?: () => void;
     onImmediateRender?: () => void;
     onRender?: () => void;
+    onStaticChange?: () => void;
+
+    /**
+     * Tracks the previous commit's `staticNode` so the reconciler can detect identity changes
+     * (first mount, last unmount, key-driven remount) and reset accumulated `fullStaticOutput`.
+     */
+    previousStaticNode?: DOMElement;
 
     /**
      * Set of ResizeObservers attached to this element.

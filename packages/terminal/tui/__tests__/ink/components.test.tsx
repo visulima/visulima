@@ -661,8 +661,8 @@ describe("components", () => {
         expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("x");
     });
 
-    it("disable raw mode when all input components are unmounted", () => {
-        expect.assertions(10);
+    it("disable raw mode when all input components are unmounted", async () => {
+        expect.assertions(15);
 
         const stdout = createStdout();
 
@@ -717,14 +717,25 @@ describe("components", () => {
         expect(stdin.setRawMode as any).toHaveBeenCalledTimes(1);
         expect(stdin.ref as any).toHaveBeenCalledTimes(1);
         expect((stdin.setRawMode as any).mock.calls[0]).toStrictEqual([true]);
+        expect(stdin.listenerCount("readable")).toBe(1);
 
         rerender(<Test renderFirstInput />);
 
         expect(stdin.setRawMode as any).toHaveBeenCalledTimes(1);
         expect(stdin.ref as any).toHaveBeenCalledTimes(1);
         expect(stdin.unref as any).toHaveBeenCalledTimes(0);
+        expect(stdin.listenerCount("readable")).toBe(1);
 
         rerender(<Test />);
+
+        // Input handling detaches synchronously, terminal raw-mode teardown is deferred.
+        expect(stdin.setRawMode as any).toHaveBeenCalledTimes(1);
+        expect(stdin.unref as any).toHaveBeenCalledTimes(0);
+        expect(stdin.listenerCount("readable")).toBe(0);
+
+        await new Promise<void>((resolve) => {
+            queueMicrotask(resolve);
+        });
 
         expect(stdin.setRawMode as any).toHaveBeenCalledTimes(2);
         expect(stdin.ref as any).toHaveBeenCalledTimes(1);

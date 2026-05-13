@@ -49,7 +49,7 @@ const emptyMetrics: BoxMetrics = {
     width: 0,
 };
 
-const findRootNode = (node?: DOMElement): DOMElement | undefined => {
+const findRootNode = (node: DOMElement | null | undefined): DOMElement | undefined => {
     if (!node) {
         return undefined;
     }
@@ -86,7 +86,8 @@ const Example = () => {
 };
 ```
  */
-const useBoxMetrics = (ref: RefObject<DOMElement>): UseBoxMetricsResult => {
+// `RefObject<DOMElement | null>` matches the common pattern of `useRef<DOMElement | null>(null)` for refs passed to DOM node `ref` props.
+const useBoxMetrics = (ref: RefObject<DOMElement | null>): UseBoxMetricsResult => {
     const [metrics, setMetrics] = useState<BoxMetrics>(emptyMetrics);
     const [hasMeasured, setHasMeasured] = useState(false);
     const { stdout } = useStdout();

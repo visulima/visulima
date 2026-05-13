@@ -458,6 +458,19 @@ const reconcilerInstance: ReturnType<typeof createReconciler> = createReconciler
 
         emitLayoutListeners(rootNode);
 
+        /*
+        Fire `onStaticChange` BEFORE `onImmediateRender` so ink resets accumulated static output
+        before the new instance emits. Without this, items from a replaced/removed <Static> stay
+        in `fullStaticOutput` and get replayed on rewrites.
+        */
+        if (rootNode.staticNode !== rootNode.previousStaticNode) {
+            rootNode.previousStaticNode = rootNode.staticNode;
+
+            if (typeof rootNode.onStaticChange === "function") {
+                rootNode.onStaticChange();
+            }
+        }
+
         // Since renders are throttled at the instance level and <Static> component children
         // are rendered only once and then get deleted, we need an escape hatch to
         // trigger an immediate render to ensure <Static> children are written to output before they get erased
