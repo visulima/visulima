@@ -194,8 +194,13 @@ class ContentSection extends BaseSection {
             const paddingRight = 1;
             const resolvedTerminalWidth = resolveTerminalWidth(getTerminalWidth());
 
-            // eslint-disable-next-line no-confusing-arrow -- ternary body is short enough to stay inline
-            const formatRow = (row: string | string[]): string[] => Array.isArray(row) ? row.map((cell) => templateFormat(cell)) : [templateFormat(row)];
+            const formatRow = (row: string | string[]): string[] => {
+                if (Array.isArray(row)) {
+                    return row.map((cell) => templateFormat(cell));
+                }
+
+                return [templateFormat(row)];
+            };
             const formattedRows: string[][] = content.map((row) => formatRow(row));
 
             const columnWidths = computeColumnWidths(formattedRows, resolvedTerminalWidth, paddingLeft, paddingRight);
