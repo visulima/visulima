@@ -2,9 +2,15 @@ import type { Command, CreateOptions } from "@visulima/cerebro";
 
 const install: Command = {
     alias: "i",
+    argument: {
+        description: "Optional package names. When provided, delegates to `vis add` (enables npm-style `alias npm='vis install'` wrappers).",
+        name: "packages",
+        type: String,
+    },
     description: "Install dependencies using the detected package manager",
     examples: [
         ["vis install", "Install all dependencies (frozen-lockfile by default when a lockfile is present)"],
+        ["vis install react react-dom", "Delegates to `vis add` — enables shell aliases like `alias npm='vis install'`"],
         ["vis i --no-frozen-lockfile", "Allow lockfile updates (escape hatch for the default)"],
         ["vis install --ci", "Clean install: wipe node_modules + frozen lockfile (mirrors npm ci / pnpm ci)"],
         ["vis install --prefer-offline", "Use cached packages when available, fall back to network"],
@@ -22,8 +28,33 @@ const install: Command = {
     loader: () => import("./handler"),
     name: "install",
     options: [
-        { alias: "P", conflicts: "dev", description: "Skip devDependencies", name: "prod", type: Boolean },
-        { alias: "D", conflicts: "prod", description: "Install devDependencies only", name: "dev", type: Boolean },
+        { alias: "P", conflicts: "dev", description: "Skip devDependencies (no positional args) / add as peer (with positional args, npm-style)", name: "prod", type: Boolean },
+        { alias: "D", conflicts: "prod", description: "Install devDependencies only (no positional args) / add as dev (with positional args, npm-style)", name: "dev", type: Boolean },
+        {
+            defaultValue: false,
+            description: "Add as optional dependency (only with positional args; mirrors `npm install -O`)",
+            name: "save-optional",
+            type: Boolean,
+        },
+        {
+            alias: "E",
+            defaultValue: false,
+            description: "Save exact version (only with positional args; mirrors `npm install -E`)",
+            name: "exact",
+            type: Boolean,
+        },
+        {
+            defaultValue: false,
+            description: "Skip Socket.dev security check (only with positional args; mirrors `vis add --no-socket-check`)",
+            name: "no-socket-check",
+            type: Boolean,
+        },
+        {
+            defaultValue: false,
+            description: "Skip the offline marshall pipeline (only with positional args; mirrors `vis add --no-marshall-check`)",
+            name: "no-marshall-check",
+            type: Boolean,
+        },
         { defaultValue: false, description: "Use frozen lockfile (CI mode, maps to npm ci)", name: "frozen-lockfile", type: Boolean },
         {
             defaultValue: false,
@@ -67,6 +98,7 @@ export default install;
 export type InstallOptions = CreateOptions<{
     ci: boolean | undefined;
     dev: boolean | undefined;
+    exact: boolean | undefined;
     filter: string[] | undefined;
     force: boolean | undefined;
     "frozen-lockfile": boolean | undefined;
@@ -74,13 +106,16 @@ export type InstallOptions = CreateOptions<{
     "lockfile-only": boolean | undefined;
     "no-aube": boolean | undefined;
     "no-frozen-lockfile": boolean | undefined;
+    "no-marshall-check": boolean | undefined;
     "no-optional": boolean | undefined;
+    "no-socket-check": boolean | undefined;
     "no-typosquat-check": boolean | undefined;
     offline: boolean | undefined;
     "prefer-offline": boolean | undefined;
     prod: boolean | undefined;
     recursive: boolean | undefined;
     "run-scripts": boolean | undefined;
+    "save-optional": boolean | undefined;
     silent: boolean | undefined;
     "workspace-root": boolean | undefined;
 }>;

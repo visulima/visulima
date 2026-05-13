@@ -22,6 +22,7 @@ import type { DirectApplyPlan } from "../../security/apply-direct";
 import { buildDirectApplyPlan, formatDirectApplyPlan } from "../../security/apply-direct";
 import { findDuplicateDependencies, lockedPackages } from "../../security/dependency-scan";
 import { readNodeModulesManifests } from "../../security/manifests";
+import { isMarshallDisabled } from "../../security/marshalls/registry";
 import { canonicalEcosystem, lockedPackagesForEcosystem } from "../../security/multi-eco-lockfiles";
 import type { PolicyDecision } from "../../security/policies";
 import { evaluatePolicies, getRegisteredPolicyNames, parsePoliciesFlag } from "../../security/policies";
@@ -190,8 +191,9 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
     });
 
     // Offline mode skips every network-bound source; socket.dev is therefore
-    // disabled regardless of socketConfig.enabled.
-    const socketOptions = isOffline ? undefined : buildSocketOptions(socketConfig, policies?.score?.minimum);
+    // disabled regardless of socketConfig.enabled. MARSHALL_DISABLE_SOCKET
+    // is the equivalent env-var escape hatch.
+    const socketOptions = isOffline || isMarshallDisabled("socket") ? undefined : buildSocketOptions(socketConfig, policies?.score?.minimum);
     // Resolve the effective low-score threshold once so every filter site below
     // honours `security.policies.score.minimum` (or its default).
     const scoreMinimum = socketOptions?.minimumScore ?? policies?.score?.minimum ?? DEFAULT_LOW_SCORE_THRESHOLD;
@@ -442,7 +444,7 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
             }
         });
 
-        if (enabledPolicies !== undefined && enabledPolicies.size === 0) {
+        if (enabledPolicies?.size === 0) {
             // `--policies none`: explicit bypass.
             return [];
         }
@@ -1239,15 +1241,6 @@ const runApplyTransitive = async (arguments_: RunApplyTransitiveArguments): Prom
     return 0;
 };
 
-/**
- * Handler for `vis audit`. Resolves the package graph, runs OSV (offline
- * or live) + optional Socket.dev intelligence, applies reachability /
- * severity filtering, renders the chosen format, and dispatches the
- * `--fix` / `--fix-transitive` apply loops when requested.
- *
- * @param toolbox Cerebro toolbox with parsed options, logger, resolved
- *                vis config, and the discovered workspace root.
- */
 const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, AuditOptions>): Promise<void> => {
     if (!wsRoot) {
         throw new Error("Could not determine workspace root. Run this command inside a monorepo.");

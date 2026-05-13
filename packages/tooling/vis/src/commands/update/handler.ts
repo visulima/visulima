@@ -21,6 +21,7 @@ import { resolveUpdateCommand } from "../../pm/package-manager";
 import { resolveInstaller } from "../../pm/pm-runner";
 import { presentMarshallFindings } from "../../security/marshalls/decision-prompt";
 import { runMarshallPipeline } from "../../security/marshalls/pipeline";
+import { isMarshallDisabled } from "../../security/marshalls/registry";
 import { resolveExplicitPackages } from "../../security/marshalls/resolve-explicit";
 import { buildSocketOptions, scoreColor } from "../../security/socket-security";
 import { runTyposquatCheck, scanDepsForTyposquats } from "../../security/typosquats";
@@ -404,13 +405,25 @@ const executeCatalogUpdate = async (
         }
     }
 
-    // Resolve minimumReleaseAge: vis config → PM-native config → undefined (disabled)
-    const { excludes: pmNativeExcludes, minutes: pmNativeAge } = readPmNativeMinimumReleaseAge(workspaceRoot, packageManager);
-    const effectiveAge = configDefaults.minimumReleaseAge ?? pmNativeAge;
-    const effectiveExcludes = configDefaults.minimumReleaseAgeExclude ?? pmNativeExcludes;
+    // Resolve minimumReleaseAge: vis config → PM-native config → undefined (disabled).
+    // MARSHALL_DISABLE_MIN_RELEASE_AGE=1 (or MARSHALL_DISABLE_ALL=1) skips the gate
+    // entirely — useful for emergency upgrades where the release-age window
+    // would otherwise block a fix.
+    const minReleaseAgeDisabled = isMarshallDisabled("minReleaseAge");
+    const { excludes: pmNativeExcludes, minutes: pmNativeAge } = minReleaseAgeDisabled
+        ? { excludes: undefined, minutes: undefined }
+        : readPmNativeMinimumReleaseAge(workspaceRoot, packageManager);
+    const effectiveAge = minReleaseAgeDisabled ? undefined : (configDefaults.minimumReleaseAge ?? pmNativeAge);
+    const effectiveExcludes = minReleaseAgeDisabled ? undefined : (configDefaults.minimumReleaseAgeExclude ?? pmNativeExcludes);
+
+    if (minReleaseAgeDisabled && (configDefaults.minimumReleaseAge !== undefined || pmNativeAge !== undefined)) {
+        // Info-level: the env var is the user's explicit opt-out, so a warning on
+        // every run would just be noise. A subtle reminder is enough.
+        logger.info(`minimumReleaseAge gate disabled via MARSHALL_DISABLE_MIN_RELEASE_AGE.`);
+    }
 
     // Warn if both are set but differ
-    if (configDefaults.minimumReleaseAge !== undefined && pmNativeAge !== undefined && configDefaults.minimumReleaseAge !== pmNativeAge) {
+    if (!minReleaseAgeDisabled && configDefaults.minimumReleaseAge !== undefined && pmNativeAge !== undefined && configDefaults.minimumReleaseAge !== pmNativeAge) {
         const pmConfigFile = packageManager === "pnpm" ? "pnpm-workspace.yaml" : "bunfig.toml";
 
         logger.warn(
@@ -470,7 +483,9 @@ const executeCatalogUpdate = async (
         logger.info(`Checking ${String(totalDeps)} catalog dependencies...\n`);
     }
 
-    const socketOptions = buildSocketOptions(visConfig.security?.socket, visConfig.security?.policies?.score?.minimum);
+    const socketOptions = isMarshallDisabled("socket")
+        ? undefined
+        : buildSocketOptions(visConfig.security?.socket, visConfig.security?.policies?.score?.minimum);
 
     const { checkedCount, failed, filteredByTarget, ignored, outdated } = await checkOutdated(
         catalogs,

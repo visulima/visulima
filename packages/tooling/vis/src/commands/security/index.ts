@@ -79,7 +79,24 @@ const securityTripwire: Command = {
     ],
 };
 
-const securityCommands: Command[] = [securityList, securitySync, securityRun, securityTripwire];
+const securityKeysRefresh: Command = {
+    commandPath: ["security"],
+    description: "Force-refresh the cached npm signing keys used by the signatures marshall",
+    examples: [
+        ["vis security keys-refresh", "Drop the disk cache and fetch a fresh key set from registry.npmjs.org"],
+        ["vis security keys-refresh --clear", "Only drop the cache, do not refetch"],
+        ["vis security keys-refresh --json", "Emit the refresh result as JSON for tooling"],
+    ],
+    group: "Security & Health",
+    loader: () => import("./keys-refresh"),
+    name: "keys-refresh",
+    options: [
+        { defaultValue: false, description: "Only clear the cache, do not refetch", name: "clear", type: Boolean },
+        { defaultValue: false, description: "Emit the result as JSON instead of human-readable text", name: "json", type: Boolean },
+    ],
+};
+
+const securityCommands: Command[] = [securityList, securitySync, securityRun, securityTripwire, securityKeysRefresh];
 
 export default securityCommands;
 
@@ -100,4 +117,9 @@ export type SecurityRunOptions = CreateOptions<{
 export type SecurityTripwireOptions = CreateOptions<{
     remove: boolean | undefined;
     status: boolean | undefined;
+}>;
+
+export type SecurityKeysRefreshOptions = CreateOptions<{
+    clear: boolean | undefined;
+    json: boolean | undefined;
 }>;

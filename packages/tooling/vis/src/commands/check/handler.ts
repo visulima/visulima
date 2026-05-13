@@ -8,6 +8,7 @@ import React from "react";
 import { formatAiAnalysis, runAiAnalysis, validateAnalysisType } from "../../ai/ai-analysis";
 import { pail } from "../../io/logger";
 import { detectPm } from "../../pm/pm-runner";
+import { isMarshallDisabled } from "../../security/marshalls/registry";
 import { previewPnpmSync, printSecurityReport } from "../../security/security";
 import { buildSocketOptions, scoreColor } from "../../security/socket-security";
 import CheckProgressApp from "../../tui/components/check-progress-app";
@@ -113,7 +114,9 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
         logger.info(`Checking ${String(totalDeps)} catalog dependencies against npm registry...\n`);
     }
 
-    const socketOptions = buildSocketOptions(visConfig?.security?.socket, visConfig?.security?.policies?.score?.minimum);
+    const socketOptions = isMarshallDisabled("socket")
+        ? undefined
+        : buildSocketOptions(visConfig?.security?.socket, visConfig?.security?.policies?.score?.minimum);
 
     const { failed, outdated } = await checkOutdated(
         catalogs,
