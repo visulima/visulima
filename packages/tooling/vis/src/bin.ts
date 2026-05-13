@@ -34,6 +34,7 @@ import ignoreCommand from "./commands/ignore";
 import implodeCommand from "./commands/implode";
 import infoCommand from "./commands/info";
 import initCommand from "./commands/init";
+import inspectCommand from "./commands/inspect";
 import installCommand from "./commands/install";
 import linkCommand from "./commands/link";
 import lintCommand from "./commands/lint";
@@ -190,6 +191,7 @@ cli.addCommand(implodeCommand);
 // Security commands
 cli.addCommand(approveBuildsCommand);
 cli.addCommand(auditCommand);
+cli.addCommand(inspectCommand);
 cli.addCommand(doctorCommand);
 cli.addCommand(optimizeCommand);
 cli.addCommand(sbomCommand);

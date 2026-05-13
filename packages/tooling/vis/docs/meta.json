@@ -42,6 +42,7 @@
                 "commands/pm",
                 "commands/doctor",
                 "commands/audit",
+                "commands/inspect",
                 "commands/advisories",
                 "commands/secrets",
                 "commands/sbom",
