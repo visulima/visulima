@@ -193,6 +193,27 @@ describe("inject source", () => {
     });
 
     describe("function declarations", () => {
+        it("scopes propsName to the nearest enclosing function — inner spread isn't matched against outer propsName", () => {
+            expect.hasAssertions();
+
+            // Outer function destructures into `outer`; inner arrow uses `inner`.
+            // `<button {...inner} />` must be skipped because inner's own props are
+            // spread onto it — not because of any relationship to `outer`. And
+            // `<Child {...outer} />` is skipped because outer's props spread.
+            // Both elements skipped ⇒ no transform ⇒ undefined return.
+            const output = addSourceToJsx(
+                `
+function Parent({ ...outer }) {
+    const Child = (inner) => <button {...inner} />;
+    return <Child {...outer} />;
+}
+        `,
+                "test.jsx",
+            );
+
+            expect(output).toBeUndefined();
+        });
+
         it("should not duplicate the same property if there are nested functions", () => {
             expect.hasAssertions();
 

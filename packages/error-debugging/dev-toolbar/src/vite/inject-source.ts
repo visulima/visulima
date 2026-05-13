@@ -19,48 +19,28 @@ export const SOURCE_ATTR = "data-vdt-source";
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const getPropsNameFromFunctionDeclaration = (
-    functionDeclaration: t.ArrowFunctionExpression | t.FunctionDeclaration | t.FunctionExpression | t.VariableDeclarator,
+    functionDeclaration: t.ArrowFunctionExpression | t.FunctionDeclaration | t.FunctionExpression,
 ): string | undefined => {
     let propsName: string | undefined;
 
-    const extractFromParams = (params: (t.Identifier | t.Pattern | t.RestElement | t.TSParameterProperty)[]): void => {
-        const first = params[0];
+    const first = functionDeclaration.params[0];
 
-        if (!first) {
-            return;
-        }
-
-        // handles (props) => {}
-        if (first.type === "Identifier") {
-            propsName = first.name;
-        }
-
-        // handles ({ ...props }) => {}
-        if (first.type === "ObjectPattern") {
-            first.properties.forEach((prop) => {
-                if (prop.type === "RestElement" && prop.argument.type === "Identifier") {
-                    propsName = prop.argument.name;
-                }
-            });
-        }
-    };
-
-    if (
-        functionDeclaration.type === "FunctionExpression" ||
-        functionDeclaration.type === "ArrowFunctionExpression" ||
-        functionDeclaration.type === "FunctionDeclaration"
-    ) {
-        extractFromParams(functionDeclaration.params);
-
-        return propsName;
+    if (!first) {
+        return undefined;
     }
 
-    // VariableDeclarator — init may be an arrow or function expression
-    if (
-        functionDeclaration.type === "VariableDeclarator" &&
-        (functionDeclaration.init?.type === "ArrowFunctionExpression" || functionDeclaration.init?.type === "FunctionExpression")
-    ) {
-        extractFromParams(functionDeclaration.init.params);
+    // handles (props) => {}
+    if (first.type === "Identifier") {
+        propsName = first.name;
+    }
+
+    // handles ({ ...props }) => {}
+    if (first.type === "ObjectPattern") {
+        first.properties.forEach((prop) => {
+            if (prop.type === "RestElement" && prop.argument.type === "Identifier") {
+                propsName = prop.argument.name;
+            }
+        });
     }
 
     return propsName;
@@ -156,12 +136,12 @@ const transformJSX = (
     // Skip fragments and structural HTML document elements — there is no useful
     // click-to-source action for <html>, <head>, or <body>.
     if (
-        nameOfElement === "Fragment" ||
-        nameOfElement === "React.Fragment" ||
-        nameOfElement === "html" ||
-        nameOfElement === "head" ||
-        nameOfElement === "body" ||
-        matcher(ignoreComponents, nameOfElement)
+        nameOfElement === "Fragment"
+        || nameOfElement === "React.Fragment"
+        || nameOfElement === "html"
+        || nameOfElement === "head"
+        || nameOfElement === "body"
+        || matcher(ignoreComponents, nameOfElement)
     ) {
         return false;
     }
@@ -200,34 +180,51 @@ const transform = (ast: ReturnType<typeof parse>, file: string, ignoreComponents
     // position map built from the original source.
     const occurrenceCounter = posMap ? new Map<string, number>() : undefined;
 
-    const visitJSX =
-        (propsName: string | undefined) =>
-        (element: NodePath<t.JSXOpeningElement>): void => {
-            if (transformJSX(element, propsName, file, ignoreComponents, posMap, occurrenceCounter)) {
-                didTransform = true;
-            }
-        };
+    const visitJSX
+        = (propsName: string | undefined) =>
+            (element: NodePath<t.JSXOpeningElement>): void => {
+                if (transformJSX(element, propsName, file, ignoreComponents, posMap, occurrenceCounter)) {
+                    didTransform = true;
+                }
+            };
+
+    // Walk a function's body in isolation: JSX in this scope uses *this* function's
+    // propsName; descent into nested functions stops here, and each nested function
+    // is then walked with its own propsName context. Crossing function boundaries
+    // would annotate inner JSX with the outer function's propsName, breaking the
+    // hasSpread check when an inner component spreads its own props.
+    const visitFunction = (fnPath: NodePath<t.ArrowFunctionExpression | t.FunctionDeclaration | t.FunctionExpression>): void => {
+        const propsName = getPropsNameFromFunctionDeclaration(fnPath.node);
+
+        fnPath.traverse({
+            ArrowFunctionExpression(inner: NodePath<t.ArrowFunctionExpression>) {
+                visitFunction(inner);
+                inner.skip();
+            },
+            FunctionDeclaration(inner: NodePath<t.FunctionDeclaration>) {
+                visitFunction(inner);
+                inner.skip();
+            },
+            FunctionExpression(inner: NodePath<t.FunctionExpression>) {
+                visitFunction(inner);
+                inner.skip();
+            },
+            JSXOpeningElement: visitJSX(propsName),
+        });
+    };
 
     trav(ast, {
         ArrowFunctionExpression(path: NodePath<t.ArrowFunctionExpression>) {
-            path.traverse({ JSXOpeningElement: visitJSX(getPropsNameFromFunctionDeclaration(path.node)) });
+            visitFunction(path);
+            path.skip();
         },
         FunctionDeclaration(path: NodePath<t.FunctionDeclaration>) {
-            path.traverse({ JSXOpeningElement: visitJSX(getPropsNameFromFunctionDeclaration(path.node)) });
+            visitFunction(path);
+            path.skip();
         },
         FunctionExpression(path: NodePath<t.FunctionExpression>) {
-            path.traverse({ JSXOpeningElement: visitJSX(getPropsNameFromFunctionDeclaration(path.node)) });
-        },
-        VariableDeclaration(path: NodePath<t.VariableDeclaration>) {
-            const decl = path.node.declarations.find(
-                (d: t.VariableDeclarator) => d.init?.type === "ArrowFunctionExpression" || d.init?.type === "FunctionExpression",
-            );
-
-            if (!decl) {
-                return;
-            }
-
-            path.traverse({ JSXOpeningElement: visitJSX(getPropsNameFromFunctionDeclaration(decl)) });
+            visitFunction(path);
+            path.skip();
         },
     });
 
