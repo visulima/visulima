@@ -125,7 +125,7 @@ Repository: git+https://github.com/visulima/visulima.git
 > > ## ai
 > >
 > > License: Apache-2.0
-> > Repository: git+https://github.com/vercel/ai.git
+> > Repository: https://github.com/vercel/ai
 > >
 > > > Copyright 2023 Vercel, Inc.
 > > >
