@@ -27,12 +27,15 @@ const wrapText = (
         return "";
     }
 
-    // eslint-disable-next-line @stylistic/operator-linebreak -- prettier places `=` at end of line
-    let string =
-        (strings as { raw?: ArrayLike<string> | ReadonlyArray<string> }).raw === undefined
-            // eslint-disable-next-line @typescript-eslint/no-base-to-string -- strings is string | number | array of strings here; objects only carry `raw`, handled in the other branch
-            ? String(strings)
-            : String.raw(strings as { raw: ArrayLike<string> | ReadonlyArray<string> }, ...values);
+    let string;
+
+    // eslint-disable-next-line unicorn/prefer-ternary -- ternary form trips @stylistic/operator-linebreak with the inline disable comment for no-base-to-string
+    if ((strings as { raw?: ArrayLike<string> | ReadonlyArray<string> }).raw === undefined) {
+        // eslint-disable-next-line @typescript-eslint/no-base-to-string -- strings is string | number | array of strings here; objects only carry `raw`, handled in the other branch
+        string = String(strings);
+    } else {
+        string = String.raw(strings as { raw: ArrayLike<string> | ReadonlyArray<string> }, ...values);
+    }
 
     if (string.includes("\u001B")) {
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
