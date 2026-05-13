@@ -39,7 +39,7 @@ const provider: ProviderFactory<MailjetConfig, unknown, MailjetEmailOptions> = d
             endpoint: config.endpoint ?? DEFAULT_ENDPOINT,
             retries: config.retries ?? DEFAULT_RETRIES,
             timeout: config.timeout ?? DEFAULT_TIMEOUT,
-            ...(config.logger && { logger: config.logger }),
+            ...config.logger && { logger: config.logger },
         };
 
         const providerState = new ProviderState();
@@ -127,7 +127,7 @@ const provider: ProviderFactory<MailjetConfig, unknown, MailjetEmailOptions> = d
              */
             async initialize(): Promise<void> {
                 await providerState.ensureInitialized(async () => {
-                    if (!(await this.isAvailable())) {
+                    if (!await this.isAvailable()) {
                         throw new EmailError(PROVIDER_NAME, "Mailjet API not available or invalid API credentials");
                     }
 
@@ -164,13 +164,13 @@ const provider: ProviderFactory<MailjetConfig, unknown, MailjetEmailOptions> = d
                     });
 
                     return Boolean(
-                        result.success &&
-                        result.data &&
-                        typeof result.data === "object" &&
-                        "statusCode" in result.data &&
-                        typeof (result.data as { statusCode?: unknown }).statusCode === "number" &&
-                        (result.data as { statusCode: number }).statusCode >= 200 &&
-                        (result.data as { statusCode: number }).statusCode < 300,
+                        result.success
+                        && result.data
+                        && typeof result.data === "object"
+                        && "statusCode" in result.data
+                        && typeof (result.data as { statusCode?: unknown }).statusCode === "number"
+                        && (result.data as { statusCode: number }).statusCode >= 200
+                        && (result.data as { statusCode: number }).statusCode < 300,
                     );
                 } catch (error) {
                     logger.debug("Error checking availability:", error);
@@ -324,7 +324,7 @@ const provider: ProviderFactory<MailjetConfig, unknown, MailjetEmailOptions> = d
                                     Base64Content: content,
                                     ContentType: attachment.contentType ?? "application/octet-stream",
                                     Filename: attachment.filename,
-                                    ...(attachment.cid && { ContentID: attachment.cid }),
+                                    ...attachment.cid && { ContentID: attachment.cid },
                                 };
                             }),
                         );

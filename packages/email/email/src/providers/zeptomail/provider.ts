@@ -26,7 +26,7 @@ const zeptomailProvider: ProviderFactory<ZeptomailConfig> = defineProvider((conf
     }
 
     if (!config.token.startsWith("Zoho-enczapikey ")) {
-        throw new EmailError(PROVIDER_NAME, 'Token should be in the format "Zoho-enczapikey <your_api_key>"');
+        throw new EmailError(PROVIDER_NAME, "Token should be in the format \"Zoho-enczapikey <your_api_key>\"");
     }
 
     const options: Pick<ZeptomailConfig, "logger" | "token"> & Required<Omit<ZeptomailConfig, "logger" | "token">> = {
@@ -60,7 +60,7 @@ const zeptomailProvider: ProviderFactory<ZeptomailConfig> = defineProvider((conf
          */
         async initialize(): Promise<void> {
             await providerState.ensureInitialized(async () => {
-                if (!(await this.isAvailable())) {
+                if (!await this.isAvailable()) {
                     throw new EmailError(PROVIDER_NAME, "Zeptomail API not available or invalid token");
                 }
 
