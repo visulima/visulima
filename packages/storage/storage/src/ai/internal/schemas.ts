@@ -43,33 +43,25 @@ export const getFileUrlInputSchema: z.ZodObject<{
     key: z.ZodString;
     responseContentDisposition: z.ZodOptional<z.ZodString>;
 }> = z.object({
-    expiresIn: z
-        .int()
-        .positive()
-        .optional()
-        .meta({ description: "Override the adapter default URL expiry in seconds. Ignored by permanent-CDN adapters." }),
+    expiresIn: z.int().positive().optional().meta({ description: "Override the adapter default URL expiry in seconds. Ignored by permanent-CDN adapters." }),
     key: z.string().trim().meta({ description: "The object key to build a URL for" }),
-    responseContentDisposition: z
-        .string()
-        .trim()
-        .optional()
-        .meta({
-            description:
-                "Force a Content-Disposition header on the response (e.g. 'attachment; filename=\"f.txt\"'). Strongly recommended for user-uploaded content to prevent inline rendering of HTML/SVG.",
-        }),
+    responseContentDisposition: z.string().trim().optional().meta({
+        description:
+            "Force a Content-Disposition header on the response (e.g. 'attachment; filename=\"f.txt\"'). Strongly recommended for user-uploaded content to prevent inline rendering of HTML/SVG.",
+    }),
 });
 
 export const uploadFileInputSchema: z.ZodObject<{
     content: z.ZodString;
     contentType: z.ZodOptional<z.ZodString>;
-    encoding: z.ZodOptional<z.ZodEnum<{ text: "text"; base64: "base64" }>>;
+    encoding: z.ZodOptional<z.ZodEnum<{ base64: "base64"; text: "text" }>>;
     key: z.ZodString;
     metadata: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodString>>;
 }> = z.object({
     // `content` may legitimately carry leading/trailing whitespace (text bodies)
     // or trailing newlines (base64 payloads), so we don't trim it.
     // eslint-disable-next-line zod/prefer-string-schema-with-trim
-    content: z.string().meta({ description: "File body. Treated as UTF-8 text unless encoding is \"base64\"." }),
+    content: z.string().meta({ description: 'File body. Treated as UTF-8 text unless encoding is "base64".' }),
     contentType: z.string().trim().optional().meta({ description: "MIME type recorded with the object" }),
     encoding: z.enum(["text", "base64"]).optional().meta({ description: "How to interpret content (default: text)" }),
     key: z.string().trim().meta({ description: "Destination object key" }),
@@ -152,7 +144,7 @@ export const TOOL_SCHEMAS: ToolSchemaMap = {
         input: signUploadUrlInputSchema,
     },
     uploadFile: {
-        description: "Upload a file to the configured bucket. Pass content as UTF-8 text by default, or as base64 with encoding=\"base64\" for binary payloads.",
+        description: 'Upload a file to the configured bucket. Pass content as UTF-8 text by default, or as base64 with encoding="base64" for binary payloads.',
         input: uploadFileInputSchema,
     },
 };

@@ -5,65 +5,75 @@ import type { BunnyStorageOptions } from "../../../src/storage/bunny/types";
 import { ERRORS } from "../../../src/utils/errors";
 import { storageOptions } from "../../__helpers__/config";
 
-const makeStorageFile = (overrides: Record<string, unknown> = {}) => { return {
-    _tag: "StorageFile" as const,
-    checksum: "ABCD1234",
-    contentType: "application/octet-stream",
-    data: vi.fn(async () => { return {
-        length: 7,
-        response: new Response("payload"),
-        stream: new ReadableStream<Uint8Array>({
-            start(controller) {
-                controller.enqueue(new TextEncoder().encode("payload"));
-                controller.close();
-            },
+const makeStorageFile = (overrides: Record<string, unknown> = {}) => {
+    return {
+        _tag: "StorageFile" as const,
+        checksum: "ABCD1234",
+        contentType: "application/octet-stream",
+        data: vi.fn(async () => {
+            return {
+                length: 7,
+                response: new Response("payload"),
+                stream: new ReadableStream<Uint8Array>({
+                    start(controller) {
+                        controller.enqueue(new TextEncoder().encode("payload"));
+                        controller.close();
+                    },
+                }),
+            };
         }),
-    }; }),
-    dateCreated: new Date("2026-01-01T00:00:00Z"),
-    guid: "guid-1",
-    isDirectory: false,
-    lastChanged: new Date("2026-01-02T00:00:00Z"),
-    length: 7,
-    objectName: "file.bin",
-    path: "/zone/",
-    replicatedZones: null,
-    serverId: 1,
-    storageZoneId: 1,
-    storageZoneName: "zone",
-    userId: "user",
-    ...overrides,
-}; };
+        dateCreated: new Date("2026-01-01T00:00:00Z"),
+        guid: "guid-1",
+        isDirectory: false,
+        lastChanged: new Date("2026-01-02T00:00:00Z"),
+        length: 7,
+        objectName: "file.bin",
+        path: "/zone/",
+        replicatedZones: null,
+        serverId: 1,
+        storageZoneId: 1,
+        storageZoneName: "zone",
+        userId: "user",
+        ...overrides,
+    };
+};
 
-const { fileMock, zoneMock } = vi.hoisted(() => { return {
-    fileMock: {
-        get: vi.fn(),
-        list: vi.fn(),
-        remove: vi.fn(),
-        upload: vi.fn(),
-    },
-    zoneMock: {
-        connect_with_accesskey: vi.fn(() => { return { _tag: "StorageZone", accessKey: "ak", name: "test-zone", region: "de" }; }),
-        name: vi.fn(() => "test-zone"),
-    },
-}; });
-
-vi.mock(import("@bunny.net/storage-sdk"), () => { return {
-    file: fileMock,
-    regions: {
-        StorageRegion: {
-            Falkenstein: "de",
-            Johannesburg: "jh",
-            London: "uk",
-            LosAngeles: "la",
-            NewYork: "ny",
-            SaoPaulo: "br",
-            Singapore: "sg",
-            Stockholm: "se",
-            Sydney: "syd",
+const { fileMock, zoneMock } = vi.hoisted(() => {
+    return {
+        fileMock: {
+            get: vi.fn(),
+            list: vi.fn(),
+            remove: vi.fn(),
+            upload: vi.fn(),
         },
-    },
-    zone: zoneMock,
-}; });
+        zoneMock: {
+            connect_with_accesskey: vi.fn(() => {
+                return { _tag: "StorageZone", accessKey: "ak", name: "test-zone", region: "de" };
+            }),
+            name: vi.fn(() => "test-zone"),
+        },
+    };
+});
+
+vi.mock(import("@bunny.net/storage-sdk"), () => {
+    return {
+        file: fileMock,
+        regions: {
+            StorageRegion: {
+                Falkenstein: "de",
+                Johannesburg: "jh",
+                London: "uk",
+                LosAngeles: "la",
+                NewYork: "ny",
+                SaoPaulo: "br",
+                Singapore: "sg",
+                Stockholm: "se",
+                Sydney: "syd",
+            },
+        },
+        zone: zoneMock,
+    };
+});
 
 const baseOptions: BunnyStorageOptions = {
     ...(storageOptions as BunnyStorageOptions),
@@ -100,12 +110,15 @@ describe(BunnyStorage, () => {
         it("rejects unsupported regions", () => {
             expect.assertions(1);
 
-            expect(() => new BunnyStorage({
-                ...(storageOptions as BunnyStorageOptions),
-                accessKey: "k",
-                region: "atlantis" as never,
-                zone: "z",
-            })).toThrow(/unsupported region/);
+            expect(
+                () =>
+                    new BunnyStorage({
+                        ...(storageOptions as BunnyStorageOptions),
+                        accessKey: "k",
+                        region: "atlantis" as never,
+                        zone: "z",
+                    }),
+            ).toThrow(/unsupported region/);
         });
 
         it("falls back to BUNNY_STORAGE_* env vars", () => {
@@ -154,8 +167,7 @@ describe(BunnyStorage, () => {
 
             const storage = new BunnyStorage(baseOptions);
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta")
-                .mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
 
             fileMock.remove.mockResolvedValueOnce(true);
 
@@ -170,8 +182,7 @@ describe(BunnyStorage, () => {
 
             const storage = new BunnyStorage(baseOptions);
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta")
-                .mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
 
             // Real SDK: `(await fetch(...)).ok` — returns `false` for any non-2xx
             // (incl. 404). We rely on idempotent delete: missing key = success.
@@ -188,8 +199,7 @@ describe(BunnyStorage, () => {
 
             const storage = new BunnyStorage(baseOptions);
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta")
-                .mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
 
             fileMock.remove.mockRejectedValueOnce(new TypeError("fetch failed"));
 
@@ -205,8 +215,7 @@ describe(BunnyStorage, () => {
 
             const storage = new BunnyStorage(baseOptions);
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta")
-                .mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
 
             fileMock.get.mockResolvedValueOnce(makeStorageFile());
 
@@ -222,8 +231,7 @@ describe(BunnyStorage, () => {
 
             const storage = new BunnyStorage(baseOptions);
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta")
-                .mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
 
             // The real SDK throws a plain `Error` whose message is
             // `File not found: ${path}` with NO status/statusCode field.
@@ -243,8 +251,7 @@ describe(BunnyStorage, () => {
 
             const storage = new BunnyStorage(baseOptions);
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta")
-                .mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
 
             fileMock.get.mockRejectedValueOnce(new Error("Unauthorized access to storage zone: test-zone"));
 
@@ -263,8 +270,7 @@ describe(BunnyStorage, () => {
 
             const storage = new BunnyStorage(baseOptions);
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta")
-                .mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
 
             fileMock.get.mockRejectedValueOnce(new Error("An unknown error has occurred during the request."));
 
@@ -286,13 +292,10 @@ describe(BunnyStorage, () => {
 
             const storage = new BunnyStorage(baseOptions);
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta")
-                .mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
 
             fileMock.get.mockResolvedValueOnce(makeStorageFile());
-            fileMock.upload.mockRejectedValueOnce(
-                new Error("Unable to upload file. Either invalid path specified, either provided checksum invalid"),
-            );
+            fileMock.upload.mockRejectedValueOnce(new Error("Unable to upload file. Either invalid path specified, either provided checksum invalid"));
 
             await expect(storage.copy("user/src.bin", "user/dst.bin")).rejects.toMatchObject({
                 UploadErrorCode: ERRORS.BAD_REQUEST,
@@ -304,8 +307,7 @@ describe(BunnyStorage, () => {
 
             const storage = new BunnyStorage(baseOptions);
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta")
-                .mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
 
             const sdkError = new Error("File not found: /missing");
 
@@ -402,9 +404,9 @@ describe(BunnyStorage, () => {
                 publicBaseUrl: "https://cdn.example.com",
             });
 
-            await expect(storage.getReadUrl("user/file.bin", { responseContentDisposition: "attachment" }))
-                .rejects
-.toThrow(/responseContentDisposition.*not supported/);
+            await expect(storage.getReadUrl("user/file.bin", { responseContentDisposition: "attachment" })).rejects.toThrow(
+                /responseContentDisposition.*not supported/,
+            );
         });
 
         it("returns a joined Pull Zone URL when publicBaseUrl is set", async () => {
@@ -435,8 +437,7 @@ describe(BunnyStorage, () => {
 
             const storage = new BunnyStorage(baseOptions);
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta")
-                .mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
 
             fileMock.get.mockResolvedValueOnce(makeStorageFile());
             fileMock.upload.mockResolvedValueOnce(true);

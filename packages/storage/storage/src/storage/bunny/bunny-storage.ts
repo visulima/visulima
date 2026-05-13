@@ -347,7 +347,7 @@ class BunnyStorage extends BaseStorage<BunnyFile> {
             const source = await this.get({ id: name });
             const path = toBunnyPath(destination);
             const buffer = source.content;
-            const size = typeof source.size === "string" ? Number(source.size) : source.size ?? buffer.length;
+            const size = typeof source.size === "string" ? Number(source.size) : (source.size ?? buffer.length);
 
             try {
                 await BunnyStorageSDK.file.upload(this.client, path, streamFromBuffer(buffer), {
@@ -400,7 +400,8 @@ class BunnyStorage extends BaseStorage<BunnyFile> {
                     .filter((entry) => !entry.isDirectory)
                     .slice(0, limit)
                     .map((entry) => {
-                        const path = entry.path.endsWith(entry.objectName) || !entry.objectName ? entry.path : `${entry.path.replace(/\/+$/u, "")}/${entry.objectName}`;
+                        const path =
+                            entry.path.endsWith(entry.objectName) || !entry.objectName ? entry.path : `${entry.path.replace(/\/+$/u, "")}/${entry.objectName}`;
                         const key = fromBunnyPath(path);
                         const file = new BunnyFile({
                             contentType: entry.contentType || "application/octet-stream",
@@ -444,6 +445,7 @@ class BunnyStorage extends BaseStorage<BunnyFile> {
         return joinPublicUrl(this.publicBaseUrl, key);
     }
 
+    // eslint-disable-next-line class-methods-use-this -- override of the base contract; signals "not supported" without instance state
     public override async getUploadUrl(_key: string, _options?: { contentLength?: number; contentType?: string; expiresIn?: number }): Promise<string> {
         return throwErrorCode(
             ERRORS.METHOD_NOT_ALLOWED,

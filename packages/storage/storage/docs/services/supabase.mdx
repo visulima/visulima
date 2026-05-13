@@ -90,7 +90,7 @@ Calls `bucket.createSignedUrl(key, expiresIn, { download })`. `expiresIn` is cla
 ```ts
 const url = await storage.getReadUrl("avatar.png", { expiresIn: 600 });
 const downloadUrl = await storage.getReadUrl("doc.pdf", {
-    responseContentDisposition: "attachment; filename=\"Q1 Report.pdf\"",
+    responseContentDisposition: 'attachment; filename="Q1 Report.pdf"',
 });
 ```
 

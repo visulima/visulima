@@ -154,12 +154,7 @@ const dispatch = async (files: Files, name: FileToolName, args: unknown): Promis
  * }
  * ```
  */
-export const createResponsesFileTools = ({
-    files,
-    overrides,
-    readOnly = false,
-    requireApproval = true,
-}: ResponsesFileToolsOptions): ResponsesFileTools => {
+export const createResponsesFileTools = ({ files, overrides, readOnly = false, requireApproval = true }: ResponsesFileToolsOptions): ResponsesFileTools => {
     const includedNames = TOOL_NAMES.filter((name) => !(readOnly && isWriteTool(name)));
 
     const approvalFor = (name: string): boolean => {

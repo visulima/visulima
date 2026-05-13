@@ -159,8 +159,7 @@ export const setHeaders = (response: ServerResponse, headers: Headers = {}): voi
             // by clients as a fragment or query separator. Forcing them through `%`-encoding closes
             // that ambiguity. Legitimate query strings on Location targets already arrive
             // pre-formed; we only encode the literal chars that survived `encodeURI`.
-            const encoded = encodeURI((headers[key] as Header).toString())
-                .replaceAll("#", "%23");
+            const encoded = encodeURI((headers[key] as Header).toString()).replaceAll("#", "%23");
 
             response.setHeader(key, encoded);
         } else {

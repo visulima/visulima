@@ -63,7 +63,7 @@ describe("baseStorage", () => {
 
         await expect(storage.validate({ ...metafile, name: "evil*.txt" })).rejects.toHaveProperty("statusCode");
         await expect(storage.validate({ ...metafile, name: "with:colon.txt" })).rejects.toHaveProperty("statusCode");
-        await expect(storage.validate({ ...metafile, name: "back\\slash.txt" })).rejects.toHaveProperty("statusCode");
+        await expect(storage.validate({ ...metafile, name: String.raw`back\slash.txt` })).rejects.toHaveProperty("statusCode");
         await expect(storage.validate({ ...metafile, name: "pipe|name.txt" })).rejects.toHaveProperty("statusCode");
         await expect(storage.validate({ ...metafile, name: "ask?.txt" })).rejects.toHaveProperty("statusCode");
         await expect(storage.validate({ ...metafile, name: 'quote".txt' })).rejects.toHaveProperty("statusCode");

@@ -46,9 +46,7 @@ export interface BoxCcgOptions {
     userId?: string;
 }
 
-export type BoxJwtOptions =
-    | { configFilePath: string }
-    | { configJsonString: string };
+export type BoxJwtOptions = { configFilePath: string } | { configJsonString: string };
 
 export interface BoxStorageOptions extends BaseStorageOptions {
     /**

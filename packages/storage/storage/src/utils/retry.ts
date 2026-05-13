@@ -22,11 +22,12 @@ const defaultRetryConfig: Required<Omit<RetryConfig, "calculateDelay">> & { calc
  * @param backoffMultiplier Multiplier for exponential backoff
  * @param maxDelay Maximum delay in milliseconds
  * @returns Delay in milliseconds, randomized within [0, exponential bound] to prevent
- *   thundering-herd retries from many concurrent clients hitting the same back-end at once.
+ * thundering-herd retries from many concurrent clients hitting the same back-end at once.
  */
 const calculateExponentialBackoff = (attempt: number, initialDelay: number, backoffMultiplier: number, maxDelay: number): number => {
     const ceiling = Math.min(initialDelay * backoffMultiplier ** attempt, maxDelay);
 
+    // eslint-disable-next-line sonarjs/pseudo-random -- Math.random is used for jitter to prevent thundering-herd retries, not for security
     return Math.floor(Math.random() * ceiling);
 };
 

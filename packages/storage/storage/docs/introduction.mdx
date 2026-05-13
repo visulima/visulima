@@ -89,15 +89,15 @@ Three handlers cover the common upload patterns:
 
 ## Choosing your surface
 
-| You want to… | Use |
-| --- | --- |
-| Save a `Blob` / `Buffer` to S3 and get a signed URL | `Files` |
-| Drop in a file picker / "import from cloud" flow | `Files` with a consumer provider adapter |
-| Expose ad-hoc storage to an AI agent or LLM tool | `Files` + `@visulima/storage/ai/*` subpaths |
-| Build a TUS / multipart / chunked upload endpoint | adapter + handler |
-| Transform images / video / audio on the fly | adapter + [transformer](./transformers.mdx) |
-| Hook `onCreate` / `onComplete` / `onDelete` lifecycles | adapter |
-| Export OpenAPI for an upload endpoint | adapter + [OpenAPI export](./openapi.mdx) |
+| You want to…                                           | Use                                         |
+| ------------------------------------------------------ | ------------------------------------------- |
+| Save a `Blob` / `Buffer` to S3 and get a signed URL    | `Files`                                     |
+| Drop in a file picker / "import from cloud" flow       | `Files` with a consumer provider adapter    |
+| Expose ad-hoc storage to an AI agent or LLM tool       | `Files` + `@visulima/storage/ai/*` subpaths |
+| Build a TUS / multipart / chunked upload endpoint      | adapter + handler                           |
+| Transform images / video / audio on the fly            | adapter + [transformer](./transformers.mdx) |
+| Hook `onCreate` / `onComplete` / `onDelete` lifecycles | adapter                                     |
+| Export OpenAPI for an upload endpoint                  | adapter + [OpenAPI export](./openapi.mdx)   |
 
 ## Providers
 

@@ -107,17 +107,11 @@ describe(createTanstackFileTools, () => {
 
     it("executes uploadFile + getFileMetadata round-trip", async () => {
         const tools = createTanstackFileTools({ files });
-        const uploadResult = await tools.uploadFile.execute!(
-            { content: "hi", contentType: "text/plain", key: "tanstack.txt" },
-            undefined,
-        );
+        const uploadResult = await tools.uploadFile.execute!({ content: "hi", contentType: "text/plain", key: "tanstack.txt" }, undefined);
 
         expect(uploadResult).toMatchObject({ key: "tanstack.txt" });
 
-        const head = (await tools.getFileMetadata.execute!(
-            { key: "tanstack.txt" },
-            undefined,
-        )) as { contentType: string; key: string; size: number };
+        const head = (await tools.getFileMetadata.execute!({ key: "tanstack.txt" }, undefined)) as { contentType: string; key: string; size: number };
 
         expect(head.key).toBe("tanstack.txt");
         expect(head.contentType).toBe("text/plain");

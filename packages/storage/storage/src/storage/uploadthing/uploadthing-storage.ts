@@ -34,12 +34,7 @@ const decodeToken = (token: string): DecodedToken => {
         throw new Error(`UploadThing: token does not decode to JSON: ${(error as Error).message}`);
     }
 
-    if (
-        !parsed ||
-        typeof parsed !== "object" ||
-        typeof (parsed as DecodedToken).apiKey !== "string" ||
-        typeof (parsed as DecodedToken).appId !== "string"
-    ) {
+    if (!parsed || typeof parsed !== "object" || typeof (parsed as DecodedToken).apiKey !== "string" || typeof (parsed as DecodedToken).appId !== "string") {
         throw new Error("UploadThing: token missing `apiKey` or `appId`");
     }
 
@@ -61,6 +56,8 @@ const basename = (key: string): string => {
 
     return index === -1 ? key : key.slice(index + 1);
 };
+
+/* eslint-disable jsdoc/check-indentation -- bullet-list continuations are indented for readability */
 
 /**
  * UploadThing storage backend.
@@ -195,7 +192,7 @@ class UploadThingStorage extends BaseStorage<UploadThingFile> {
                         throw new Error(result.error.message);
                     }
 
-                    const data = result.data;
+                    const { data } = result;
 
                     file.bytesWritten = buffer.length;
                     file.size = buffer.length;
@@ -383,6 +380,7 @@ class UploadThingStorage extends BaseStorage<UploadThingFile> {
         return ufsUrl;
     }
 
+    // eslint-disable-next-line class-methods-use-this -- override of the base contract; signals "not supported" without instance state
     public override async getUploadUrl(_key: string, _options?: { contentLength?: number; contentType?: string; expiresIn?: number }): Promise<string> {
         // Signed PUT URLs for UploadThing require HMAC signing over a UFS
         // ingest endpoint — out of scope for this adapter. Callers that need

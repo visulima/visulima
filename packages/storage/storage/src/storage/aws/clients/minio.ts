@@ -12,16 +12,11 @@ import type { CreateMinioClientParameters } from "./types";
  * - `MINIO_ENDPOINT`
  */
 const minio = (parameters?: CreateMinioClientParameters): S3ClientConfig => {
-    const accessKeyId = parameters?.accessKeyId
-        ?? process.env.AWS_ACCESS_KEY_ID
-        ?? process.env.MINIO_ACCESS_KEY_ID
-        ?? process.env.MINIO_ACCESS_KEY;
+    const accessKeyId = parameters?.accessKeyId ?? process.env.AWS_ACCESS_KEY_ID ?? process.env.MINIO_ACCESS_KEY_ID ?? process.env.MINIO_ACCESS_KEY;
     const endpoint = parameters?.endpoint ?? process.env.AWS_ENDPOINT ?? process.env.MINIO_ENDPOINT;
     const region = parameters?.region ?? process.env.AWS_REGION ?? process.env.MINIO_REGION;
-    const secretAccessKey = parameters?.secretAccessKey
-        ?? process.env.AWS_SECRET_ACCESS_KEY
-        ?? process.env.MINIO_SECRET_ACCESS_KEY
-        ?? process.env.MINIO_SECRET_KEY;
+    const secretAccessKey =
+        parameters?.secretAccessKey ?? process.env.AWS_SECRET_ACCESS_KEY ?? process.env.MINIO_SECRET_ACCESS_KEY ?? process.env.MINIO_SECRET_KEY;
 
     if (!region || !accessKeyId || !secretAccessKey || !endpoint) {
         throw new Error("Missing required parameters for Minio client.");

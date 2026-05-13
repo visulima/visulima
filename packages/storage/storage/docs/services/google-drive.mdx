@@ -77,7 +77,9 @@ The `google-auth-library` `OAuth2Client` handles refresh natively — no per-req
 
 ```ts
 const storage = new GoogleDriveStorage({
-    credentials: { /* … */ },
+    credentials: {
+        /* … */
+    },
     publicByDefault: true,
 });
 

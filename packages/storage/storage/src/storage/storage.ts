@@ -24,7 +24,7 @@ import type { File, FileInit, FilePart, FileQuery } from "./utils/file";
 import { isExpired, updateMetadata } from "./utils/file";
 import type { FileReturn } from "./utils/file/types";
 
-const SECRET_KEY_PATTERN = /(secret|password|passwd|pwd|token|apikey|api[_-]?key|credential|authorization|sas|signature|sessiontoken|connectionstring)/i;
+const SECRET_KEY_PATTERN = /(secret|password|passwd|pwd|token|api[_-]?key|credential|authorization|sas|signature|sessiontoken|connectionstring)/i;
 
 /**
  * Returns a shallow copy of `config` with any credential-bearing fields
@@ -440,16 +440,16 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
         // Reject Windows-style drive letters explicitly — node:path's isAbsolute is platform-aware
         // and won't catch "C:\\foo" when this process is running on Linux.
         if (
-            !id
-            || typeof id !== "string"
-            || id.includes("\0")
-            || id.includes("../")
-            || id.includes("..\\")
-            || id === ".."
-            || id.startsWith("../")
-            || id.startsWith("..\\")
-            || isAbsolute(id)
-            || /^[A-Z]:[/\\]/i.test(id)
+            !id ||
+            typeof id !== "string" ||
+            id.includes("\0") ||
+            id.includes("../") ||
+            id.includes("..\\") ||
+            id === ".." ||
+            id.startsWith("../") ||
+            id.startsWith("..\\") ||
+            isAbsolute(id) ||
+            /^[A-Z]:[/\\]/i.test(id)
         ) {
             throwErrorCode(ERRORS.INVALID_FILE_NAME, `Invalid file id: "${id}"`);
         }
@@ -975,11 +975,11 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
      * handlers can serialize cross-call read-modify-write sequences on the same upload (e.g.
      * appending to `_chunks` during chunked PATCH).
      */
-    public async withLock<R>(key: string, fn: () => Promise<R>): Promise<R> {
+    public async withLock<R>(key: string, function_: () => Promise<R>): Promise<R> {
         const token = await this.lock(key);
 
         try {
-            return await fn();
+            return await function_();
         } finally {
             await this.unlock(key, token);
         }

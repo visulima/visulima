@@ -75,12 +75,7 @@ describe("openAI adapters", () => {
         it("omits writes when readOnly: true", () => {
             const { definitions } = createResponsesFileTools({ files, readOnly: true });
 
-            expect(definitions.map((definition) => definition.name).toSorted()).toEqual([
-                "downloadFile",
-                "getFileMetadata",
-                "getFileUrl",
-                "listFiles",
-            ]);
+            expect(definitions.map((definition) => definition.name).toSorted()).toEqual(["downloadFile", "getFileMetadata", "getFileUrl", "listFiles"]);
         });
 
         it("reports needsApproval for write tools", () => {
@@ -95,9 +90,7 @@ describe("openAI adapters", () => {
         it("execute round-trips a function_call", async () => {
             const tools = createResponsesFileTools({ files, requireApproval: false });
 
-            const uploadOut = await tools.execute(
-                fakeCall("uploadFile", { content: "hi", contentType: "text/plain", key: "responses.txt" }),
-            );
+            const uploadOut = await tools.execute(fakeCall("uploadFile", { content: "hi", contentType: "text/plain", key: "responses.txt" }));
 
             expect(uploadOut.type).toBe("function_call_output");
             expect(uploadOut.call_id).toBe("call_uploadFile");

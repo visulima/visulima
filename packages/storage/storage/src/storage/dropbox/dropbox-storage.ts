@@ -1,4 +1,5 @@
-import { Dropbox, DropboxAuth, DropboxResponseError, type files } from "dropbox";
+import type { files } from "dropbox";
+import { Dropbox, DropboxAuth, DropboxResponseError } from "dropbox";
 
 import { ERRORS, throwErrorCode } from "../../utils/errors";
 import { createOAuthRefreshHandle } from "../../utils/oauth-refresh";
@@ -16,14 +17,14 @@ const UPLOAD_SESSION_CHUNK_BYTES = 8 * 1024 * 1024;
 
 type DropboxWithAuth = Dropbox & {
     auth: {
-        getAccessToken(): string;
-        setAccessToken(token: string): void;
+        getAccessToken: () => string;
+        setAccessToken: (token: string) => void;
     };
 };
 
 interface AuthHandle {
-    ensureAccessToken(): Promise<void>;
-    getAccessToken(): Promise<string>;
+    ensureAccessToken: () => Promise<void>;
+    getAccessToken: () => Promise<string>;
 }
 
 const setAccessToken = (client: Dropbox, token: string): void => {
@@ -101,15 +102,16 @@ interface RefreshTokenAuthOptions {
     refreshToken: string;
 }
 
-const createRefreshTokenAuth = (client: Dropbox, opts: RefreshTokenAuthOptions): AuthHandle => {
+const createRefreshTokenAuth = (client: Dropbox, options: RefreshTokenAuthOptions): AuthHandle => {
     const handle = createOAuthRefreshHandle({
-        buildBody: () => new URLSearchParams({
-            client_id: opts.appKey,
-            grant_type: "refresh_token",
-            refresh_token: opts.refreshToken,
-            ...(opts.appSecret && { client_secret: opts.appSecret }),
-        }),
-        onRefresh: (token) => setAccessToken(client, token),
+        buildBody: () =>
+            new URLSearchParams({
+                client_id: options.appKey,
+                grant_type: "refresh_token",
+                refresh_token: options.refreshToken,
+                ...(options.appSecret && { client_secret: options.appSecret }),
+            }),
+        onRefresh: (token) => { setAccessToken(client, token); },
         provider: "Dropbox",
         tokenUrl: "https://api.dropboxapi.com/oauth2/token",
     });
@@ -127,9 +129,9 @@ interface ResolvedAuth {
     client: Dropbox;
 }
 
-const resolveAuth = (opts: DropboxStorageOptions): ResolvedAuth => {
-    if (opts.client) {
-        const builtClient = opts.client;
+const resolveAuth = (options: DropboxStorageOptions): ResolvedAuth => {
+    if (options.client) {
+        const builtClient = options.client;
 
         return {
             authHandle: {
@@ -140,8 +142,8 @@ const resolveAuth = (opts: DropboxStorageOptions): ResolvedAuth => {
         };
     }
 
-    const explicitToken = opts.accessToken;
-    const explicitRefresh = opts.refreshToken !== undefined || opts.appKey !== undefined || opts.appSecret !== undefined;
+    const explicitToken = options.accessToken;
+    const explicitRefresh = options.refreshToken !== undefined || options.appKey !== undefined || options.appSecret !== undefined;
 
     if (explicitToken !== undefined && explicitRefresh) {
         throw new Error("Dropbox storage: pass exactly one of `accessToken` or `refreshToken` (with `appKey`).");
@@ -150,24 +152,23 @@ const resolveAuth = (opts: DropboxStorageOptions): ResolvedAuth => {
     if (explicitToken !== undefined) {
         const auth = new DropboxAuth({ accessToken: typeof explicitToken === "string" ? explicitToken : undefined });
         const client = new Dropbox({ auth });
-        const handle = typeof explicitToken === "function"
-            ? createCallableAccessTokenAuth(client, explicitToken)
-            : createStaticAccessTokenAuth(client, explicitToken);
+        const handle =
+            typeof explicitToken === "function" ? createCallableAccessTokenAuth(client, explicitToken) : createStaticAccessTokenAuth(client, explicitToken);
 
         return { authHandle: handle, client };
     }
 
     if (explicitRefresh) {
-        if (!opts.refreshToken || !opts.appKey) {
+        if (!options.refreshToken || !options.appKey) {
             throw new Error("Dropbox storage: refresh-token auth requires both `refreshToken` and `appKey`.");
         }
 
         const auth = new DropboxAuth({});
         const client = new Dropbox({ auth });
         const handle = createRefreshTokenAuth(client, {
-            appKey: opts.appKey,
-            ...(opts.appSecret && { appSecret: opts.appSecret }),
-            refreshToken: opts.refreshToken,
+            appKey: options.appKey,
+            ...(options.appSecret && { appSecret: options.appSecret }),
+            refreshToken: options.refreshToken,
         });
 
         return { authHandle: handle, client };
@@ -201,10 +202,12 @@ const resolveAuth = (opts: DropboxStorageOptions): ResolvedAuth => {
     }
 
     throw new Error(
-        "Dropbox storage: missing auth. Pass `client`, `accessToken`, or `refreshToken` + `appKey`. "
-            + "Env fallbacks: DROPBOX_ACCESS_TOKEN, or DROPBOX_REFRESH_TOKEN + DROPBOX_APP_KEY (+ DROPBOX_APP_SECRET).",
+        "Dropbox storage: missing auth. Pass `client`, `accessToken`, or `refreshToken` + `appKey`. " +
+            "Env fallbacks: DROPBOX_ACCESS_TOKEN, or DROPBOX_REFRESH_TOKEN + DROPBOX_APP_KEY (+ DROPBOX_APP_SECRET).",
     );
 };
+
+/* eslint-disable jsdoc/check-indentation -- bullet-list continuations are indented for readability */
 
 /**
  * Dropbox storage backend.
@@ -215,7 +218,7 @@ const resolveAuth = (opts: DropboxStorageOptions): ResolvedAuth => {
  *
  * **Auth precedence** (same model as files-sdk's Dropbox adapter):
  * 1. `client` (pre-built `Dropbox`)
- * 2. `accessToken` (string or `() => string | Promise<string>`)
+ * 2. `accessToken` (string or `() => string | Promise&lt;string>`)
  * 3. `refreshToken` + `appKey` (+ optional `appSecret`)
  * 4. Env fallback: `DROPBOX_ACCESS_TOKEN`, or `DROPBOX_REFRESH_TOKEN` +
  *    `DROPBOX_APP_KEY` (+ optional `DROPBOX_APP_SECRET`)
@@ -330,9 +333,8 @@ class DropboxStorage extends BaseStorage<DropboxFile> {
 
                     await this.authHandle.ensureAccessToken();
 
-                    const result = buffer.byteLength <= SIMPLE_UPLOAD_LIMIT_BYTES
-                        ? await this.uploadSimple(path, buffer)
-                        : await this.uploadSession(path, buffer);
+                    const result =
+                        buffer.byteLength <= SIMPLE_UPLOAD_LIMIT_BYTES ? await this.uploadSimple(path, buffer) : await this.uploadSession(path, buffer);
 
                     file.bytesWritten = buffer.length;
                     file.size = buffer.length;
@@ -410,8 +412,8 @@ class DropboxStorage extends BaseStorage<DropboxFile> {
 
             await this.authHandle.ensureAccessToken();
 
-            const res = await this.client.filesDownload({ path });
-            const data = res.result as files.FileMetadata & { fileBinary?: unknown; fileBlob?: unknown };
+            const response = await this.client.filesDownload({ path });
+            const data = response.result as files.FileMetadata & { fileBinary?: unknown; fileBlob?: unknown };
 
             let buffer: Buffer;
 
@@ -420,7 +422,7 @@ class DropboxStorage extends BaseStorage<DropboxFile> {
             } else if (data.fileBlob instanceof Blob) {
                 buffer = Buffer.from(await data.fileBlob.arrayBuffer());
             } else {
-                throw new Error("Dropbox: unexpected download response shape — neither fileBinary nor fileBlob present");
+                throw new TypeError("Dropbox: unexpected download response shape — neither fileBinary nor fileBlob present");
             }
 
             return {
@@ -494,12 +496,12 @@ class DropboxStorage extends BaseStorage<DropboxFile> {
             async () => {
                 await this.authHandle.ensureAccessToken();
 
-                const res = await this.client.filesListFolder({
+                const response = await this.client.filesListFolder({
                     limit,
                     path: this.rootFolderPath ? `/${this.rootFolderPath}` : "",
                     recursive: true,
                 });
-                const result = res.result;
+                const { result } = response;
                 const files: DropboxFile[] = [];
 
                 for (const entry of result.entries) {
@@ -566,16 +568,17 @@ class DropboxStorage extends BaseStorage<DropboxFile> {
             return await this.createPublicSharedLink(key);
         }
 
-        const res = await this.client.filesGetTemporaryLink({ path: this.keyToPath(key) });
+        const response = await this.client.filesGetTemporaryLink({ path: this.keyToPath(key) });
 
-        return res.result.link;
+        return response.result.link;
     }
 
+    // eslint-disable-next-line class-methods-use-this -- override of the base contract; signals "not supported" without instance state
     public override async getUploadUrl(_key: string, _options?: { contentLength?: number; contentType?: string; expiresIn?: number }): Promise<string> {
         return throwErrorCode(
             ERRORS.METHOD_NOT_ALLOWED,
-            "Dropbox: presigned upload URLs use POST with a raw body, which doesn't fit the PUT-style upload-url contract. "
-                + "Use `write()` or `storage.raw.filesGetTemporaryUploadLink(...)` directly.",
+            "Dropbox: presigned upload URLs use POST with a raw body, which doesn't fit the PUT-style upload-url contract. " +
+                "Use `write()` or `storage.raw.filesGetTemporaryUploadLink(...)` directly.",
         );
     }
 
@@ -611,14 +614,14 @@ class DropboxStorage extends BaseStorage<DropboxFile> {
     }
 
     private async uploadSimple(path: string, data: Buffer): Promise<files.FileMetadata> {
-        const res = await this.client.filesUpload({
+        const response = await this.client.filesUpload({
             contents: data,
             mode: { ".tag": "overwrite" },
             mute: true,
             path,
-        } as files.UploadArg & { contents: Buffer });
+        });
 
-        return res.result;
+        return response.result;
     }
 
     private async uploadSession(path: string, data: Buffer): Promise<files.FileMetadata> {
@@ -627,20 +630,19 @@ class DropboxStorage extends BaseStorage<DropboxFile> {
         const start = await this.client.filesUploadSessionStart({
             close: false,
             contents: data.subarray(offset, Math.min(offset + UPLOAD_SESSION_CHUNK_BYTES, total)),
-        } as { close: boolean; contents: Buffer });
-        const sessionId = (start.result as { session_id: string }).session_id;
+        });
+        const sessionId = (start.result).session_id;
 
         offset = Math.min(offset + UPLOAD_SESSION_CHUNK_BYTES, total);
 
         while (total - offset > UPLOAD_SESSION_CHUNK_BYTES) {
             const chunk = data.subarray(offset, offset + UPLOAD_SESSION_CHUNK_BYTES);
 
-            // eslint-disable-next-line no-await-in-loop -- chunks must be sequential to honor Dropbox session offset.
             await this.client.filesUploadSessionAppendV2({
                 close: false,
                 contents: chunk,
                 cursor: { offset, session_id: sessionId },
-            } as { close: boolean; contents: Buffer; cursor: { offset: number; session_id: string } });
+            });
             offset += UPLOAD_SESSION_CHUNK_BYTES;
         }
 
@@ -649,23 +651,22 @@ class DropboxStorage extends BaseStorage<DropboxFile> {
             commit: { mode: { ".tag": "overwrite" }, mute: true, path },
             contents: tail,
             cursor: { offset, session_id: sessionId },
-        } as { commit: files.CommitInfo; contents: Buffer; cursor: { offset: number; session_id: string } });
+        });
 
         return finish.result;
     }
 
     private async createPublicSharedLink(key: string): Promise<string> {
         try {
-            const res = await this.client.sharingCreateSharedLinkWithSettings({
+            const response = await this.client.sharingCreateSharedLinkWithSettings({
                 path: this.keyToPath(key),
                 settings: { requested_visibility: { ".tag": "public" } },
             });
 
-            return rewriteSharedLinkForDirectDownload((res.result as { url: string }).url);
+            return rewriteSharedLinkForDirectDownload((response.result as { url: string }).url);
         } catch (error) {
             if (error instanceof DropboxResponseError) {
-                const existing = (error.error as { shared_link_already_exists?: { metadata?: { url?: string } } })
-                    ?.shared_link_already_exists?.metadata?.url;
+                const existing = (error.error as { shared_link_already_exists?: { metadata?: { url?: string } } })?.shared_link_already_exists?.metadata?.url;
 
                 if (typeof existing === "string" && existing.length > 0) {
                     return rewriteSharedLinkForDirectDownload(existing);
@@ -694,14 +695,14 @@ const isNotFoundError = (error: unknown): boolean => {
             return;
         }
 
-        const obj = node as Record<string, unknown>;
-        const tag = obj[".tag"];
+        const object = node as Record<string, unknown>;
+        const tag = object[".tag"];
 
         if (typeof tag === "string") {
             tags.push(tag);
         }
 
-        for (const value of Object.values(obj)) {
+        for (const value of Object.values(object)) {
             if (value && typeof value === "object") {
                 walk(value, depth + 1);
             }

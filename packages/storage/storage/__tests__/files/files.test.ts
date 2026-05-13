@@ -226,24 +226,15 @@ describe("files facade", () => {
     });
 
     describe("path traversal hardening", () => {
-        const traversalKeys: string[] = [
-            "../etc/passwd",
-            "foo/../../bar",
-            "..\\windows\\system32",
-            "/etc/passwd",
-            "C:\\Windows\\system32",
-            "with\0null",
-        ];
+        const traversalKeys: string[] = ["../etc/passwd", "foo/../../bar", String.raw`..\windows\system32`, "/etc/passwd", String.raw`C:\Windows\system32`, "with\0null"];
 
         for (const key of traversalKeys) {
-            // eslint-disable-next-line vitest/expect-expect
             it(`rejects upload for unsafe key ${JSON.stringify(key)}`, async () => {
                 const { facade } = makeFiles(directory);
 
                 await expect(facade.upload(key, "x")).rejects.toThrow(/Invalid file id|InvalidFileName/);
             });
 
-            // eslint-disable-next-line vitest/expect-expect
             it(`rejects head/delete/download for unsafe key ${JSON.stringify(key)}`, async () => {
                 const { facade } = makeFiles(directory);
 
@@ -252,7 +243,6 @@ describe("files facade", () => {
                 await expect(facade.download(key)).rejects.toThrow(/Invalid file id|InvalidFileName/);
             });
 
-            // eslint-disable-next-line vitest/expect-expect
             it(`rejects copy when either side is ${JSON.stringify(key)}`, async () => {
                 const { facade } = makeFiles(directory);
 

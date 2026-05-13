@@ -99,9 +99,7 @@ abstract class BaseTransformer<
         }
 
         if (typeof this.cache.keys !== "function") {
-            this.logger?.warn?.(
-                "clearCache(fileId) cannot scope its invalidation because the cache does not implement keys(); falling back to full clear()",
-            );
+            this.logger?.warn?.("clearCache(fileId) cannot scope its invalidation because the cache does not implement keys(); falling back to full clear()");
             this.cache.clear?.();
 
             return;

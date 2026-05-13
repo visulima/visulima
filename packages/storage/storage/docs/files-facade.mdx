@@ -24,30 +24,30 @@ For client-driven uploads (browser forms, large resumable files, chunked transfe
 
 ## Method surface
 
-| Method | Signature | Notes |
-| --- | --- | --- |
-| `upload` | `(key, body, opts?) → Promise<FileObject>` | Accepts any [supported body type](#body-types). |
-| `download` | `(key) → Promise<DownloadResult>` | Returns `{ body: Buffer, ...FileObject }`. |
-| `head` | `(key) → Promise<FileObject>` | Metadata only. |
-| `delete` | `(key) → Promise<void>` | Idempotent on most providers. |
-| `copy` | `(source, destination, opts?) → Promise<FileObject>` | Server-side where supported; download + re-upload otherwise. |
-| `list` | `(opts?) → Promise<FileObject[]>` | Optional `prefix` filter and `limit`. |
-| `url` | `(key, opts?) → Promise<string>` | Signed-read URL when the provider supports it. |
-| `signedUploadUrl` | `(key, opts?) → Promise<string>` | Presigned-PUT URL for direct-from-browser uploads. |
-| `raw` (getter) | `→ unknown` | The adapter's native client (`S3Client`, `BlobServiceClient`, …). |
+| Method            | Signature                                            | Notes                                                             |
+| ----------------- | ---------------------------------------------------- | ----------------------------------------------------------------- |
+| `upload`          | `(key, body, opts?) → Promise<FileObject>`           | Accepts any [supported body type](#body-types).                   |
+| `download`        | `(key) → Promise<DownloadResult>`                    | Returns `{ body: Buffer, ...FileObject }`.                        |
+| `head`            | `(key) → Promise<FileObject>`                        | Metadata only.                                                    |
+| `delete`          | `(key) → Promise<void>`                              | Idempotent on most providers.                                     |
+| `copy`            | `(source, destination, opts?) → Promise<FileObject>` | Server-side where supported; download + re-upload otherwise.      |
+| `list`            | `(opts?) → Promise<FileObject[]>`                    | Optional `prefix` filter and `limit`.                             |
+| `url`             | `(key, opts?) → Promise<string>`                     | Signed-read URL when the provider supports it.                    |
+| `signedUploadUrl` | `(key, opts?) → Promise<string>`                     | Presigned-PUT URL for direct-from-browser uploads.                |
+| `raw` (getter)    | `→ unknown`                                          | The adapter's native client (`S3Client`, `BlobServiceClient`, …). |
 
 ## Body types
 
 `Files.upload(key, body, opts?)` accepts:
 
-| Type | Size hint | Notes |
-| --- | --- | --- |
-| `string` | derived | UTF-8 encoded. |
-| `Buffer` | derived | |
-| `Uint8Array` / `ArrayBuffer` / `ArrayBufferView` | derived | |
-| `Blob` | derived | Web `Blob` (Node 18+ and all modern runtimes). |
-| `ReadableStream<Uint8Array>` | **required via `opts.size`** for some adapters | Web stream, not Node `Readable`. |
-| `NodeJS.ReadableStream` | **required via `opts.size`** for some adapters | Node `Readable`. |
+| Type                                             | Size hint                                      | Notes                                          |
+| ------------------------------------------------ | ---------------------------------------------- | ---------------------------------------------- |
+| `string`                                         | derived                                        | UTF-8 encoded.                                 |
+| `Buffer`                                         | derived                                        |                                                |
+| `Uint8Array` / `ArrayBuffer` / `ArrayBufferView` | derived                                        |                                                |
+| `Blob`                                           | derived                                        | Web `Blob` (Node 18+ and all modern runtimes). |
+| `ReadableStream<Uint8Array>`                     | **required via `opts.size`** for some adapters | Web stream, not Node `Readable`.               |
+| `NodeJS.ReadableStream`                          | **required via `opts.size`** for some adapters | Node `Readable`.                               |
 
 Stream inputs don't carry a length; pass `opts.size` when the underlying adapter or upload protocol needs to know it up front (multipart, content-length headers, presigned-PUT bodies).
 

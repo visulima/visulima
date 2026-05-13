@@ -1,17 +1,18 @@
+/* eslint-disable max-classes-per-file, @typescript-eslint/no-extraneous-class, no-constructor-return -- mock SDK classes for vendor library shape */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import UploadThingStorage from "../../../src/storage/uploadthing/uploadthing-storage";
 import type { UploadThingStorageOptions } from "../../../src/storage/uploadthing/types";
+import UploadThingStorage from "../../../src/storage/uploadthing/uploadthing-storage";
 import { storageOptions } from "../../__helpers__/config";
 
 const validToken = Buffer.from(JSON.stringify({ apiKey: "sk_test_abc", appId: "test-app" })).toString("base64");
 
-const makeMockUtapi = () => ({
+const makeMockUtapi = () => { return {
     deleteFiles: vi.fn(),
     generateSignedURL: vi.fn(),
     listFiles: vi.fn(),
     uploadFiles: vi.fn(),
-});
+}; };
 
 let mockUtapi: ReturnType<typeof makeMockUtapi>;
 
@@ -19,17 +20,20 @@ vi.mock(import("uploadthing/server"), () => {
     return {
         UTApi: class {
             public constructor() {
-                return mockUtapi as unknown as typeof this;
+                return mockUtapi;
             }
         },
         UTFile: class {
             public customId?: string;
+
             public name: string;
+
             public type?: string;
-            public constructor(_chunks: unknown[], name: string, opts?: { customId?: string; type?: string }) {
+
+            public constructor(_chunks: unknown[], name: string, options?: { customId?: string; type?: string }) {
                 this.name = name;
-                this.customId = opts?.customId;
-                this.type = opts?.type;
+                this.customId = options?.customId;
+                this.type = options?.type;
             }
         },
     };
@@ -46,18 +50,24 @@ describe(UploadThingStorage, () => {
         it("rejects when no token is configured", () => {
             expect.assertions(1);
 
-            expect(() => new UploadThingStorage({
-                ...(storageOptions as UploadThingStorageOptions),
-            })).toThrow(/missing token/);
+            expect(
+                () =>
+                    new UploadThingStorage({
+                        ...(storageOptions as UploadThingStorageOptions),
+                    }),
+            ).toThrow(/missing token/);
         });
 
         it("rejects malformed (non-base64) tokens", () => {
             expect.assertions(1);
 
-            expect(() => new UploadThingStorage({
-                ...(storageOptions as UploadThingStorageOptions),
-                token: "not%%%base64",
-            })).toThrow(/UploadThing/);
+            expect(
+                () =>
+                    new UploadThingStorage({
+                        ...(storageOptions as UploadThingStorageOptions),
+                        token: "not%%%base64",
+                    }),
+            ).toThrow(/UploadThing/);
         });
 
         it("rejects tokens that decode to JSON without apiKey/appId", () => {
@@ -65,10 +75,13 @@ describe(UploadThingStorage, () => {
 
             const bad = Buffer.from(JSON.stringify({ apiKey: "x" })).toString("base64");
 
-            expect(() => new UploadThingStorage({
-                ...(storageOptions as UploadThingStorageOptions),
-                token: bad,
-            })).toThrow(/missing `apiKey` or `appId`/);
+            expect(
+                () =>
+                    new UploadThingStorage({
+                        ...(storageOptions as UploadThingStorageOptions),
+                        token: bad,
+                    }),
+            ).toThrow(/missing `apiKey` or `appId`/);
         });
 
         it("falls back to UPLOADTHING_TOKEN env var", () => {
@@ -86,10 +99,13 @@ describe(UploadThingStorage, () => {
         it("requires token even when a pre-built client is passed (for appId)", () => {
             expect.assertions(1);
 
-            expect(() => new UploadThingStorage({
-                ...(storageOptions as UploadThingStorageOptions),
-                client: mockUtapi as unknown as UploadThingStorageOptions["client"],
-            })).toThrow(/`token` is required/);
+            expect(
+                () =>
+                    new UploadThingStorage({
+                        ...(storageOptions as UploadThingStorageOptions),
+                        client: mockUtapi as unknown as UploadThingStorageOptions["client"],
+                    }),
+            ).toThrow(/`token` is required/);
         });
     });
 
@@ -102,8 +118,7 @@ describe(UploadThingStorage, () => {
                 token: validToken,
             });
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta")
-                .mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
 
             mockUtapi.deleteFiles.mockResolvedValueOnce({ success: true });
 
@@ -178,8 +193,9 @@ describe(UploadThingStorage, () => {
                 token: validToken,
             });
 
-            await expect(storage.getReadUrl("user/file.mp4", { responseContentDisposition: "attachment" }))
-                .rejects.toThrow(/responseContentDisposition.*not supported/);
+            await expect(storage.getReadUrl("user/file.mp4", { responseContentDisposition: "attachment" })).rejects.toThrow(
+                /responseContentDisposition.*not supported/,
+            );
         });
     });
 

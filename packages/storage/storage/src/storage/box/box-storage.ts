@@ -1,16 +1,7 @@
 import { Readable } from "node:stream";
 
 import type { BoxClient } from "box-typescript-sdk-gen";
-import {
-    BoxCcgAuth,
-    BoxClient as BoxClientImpl,
-    BoxDeveloperTokenAuth,
-    BoxJwtAuth,
-    BoxOAuth,
-    CcgConfig,
-    JwtConfig,
-    OAuthConfig,
-} from "box-typescript-sdk-gen";
+import { BoxCcgAuth, BoxClient as BoxClientImpl, BoxDeveloperTokenAuth, BoxJwtAuth, BoxOAuth, CcgConfig, JwtConfig, OAuthConfig } from "box-typescript-sdk-gen";
 
 import { ERRORS, throwErrorCode } from "../../utils/errors";
 import type MetaStorage from "../meta-storage";
@@ -25,7 +16,7 @@ const DEFAULT_ROOT_FOLDER_ID = "0";
 const SIMPLE_UPLOAD_LIMIT_BYTES = 50 * 1024 * 1024;
 
 interface AuthHandle {
-    ensureReady(): Promise<void>;
+    ensureReady: () => Promise<void>;
 }
 
 const noopAuthHandle: AuthHandle = {
@@ -104,26 +95,25 @@ const buildJwtConfig = (jwt: BoxJwtOptions): JwtConfig => {
     return JwtConfig.fromConfigFile(jwt.configFilePath);
 };
 
-const countAuthMethods = (opts: BoxStorageOptions): number =>
-    [opts.developerToken, opts.oauth, opts.ccg, opts.jwt].filter((v) => v !== undefined).length;
+const countAuthMethods = (options: BoxStorageOptions): number => [options.developerToken, options.oauth, options.ccg, options.jwt].filter((v) => v !== undefined).length;
 
-const resolveAuth = (opts: BoxStorageOptions): ResolvedAuth => {
-    if (opts.client) {
-        return { authHandle: noopAuthHandle, client: opts.client };
+const resolveAuth = (options: BoxStorageOptions): ResolvedAuth => {
+    if (options.client) {
+        return { authHandle: noopAuthHandle, client: options.client };
     }
 
-    if (countAuthMethods(opts) > 1) {
+    if (countAuthMethods(options) > 1) {
         throw new Error("Box storage: pass exactly one of `developerToken`, `oauth`, `ccg`, or `jwt`.");
     }
 
-    if (opts.developerToken !== undefined) {
-        const auth = new BoxDeveloperTokenAuth({ token: opts.developerToken });
+    if (options.developerToken !== undefined) {
+        const auth = new BoxDeveloperTokenAuth({ token: options.developerToken });
 
         return { authHandle: noopAuthHandle, client: new BoxClientImpl({ auth }) };
     }
 
-    if (opts.oauth) {
-        const { clientId, clientSecret, refreshToken } = opts.oauth;
+    if (options.oauth) {
+        const { clientId, clientSecret, refreshToken } = options.oauth;
         const config = new OAuthConfig({ clientId, clientSecret });
         const auth = new BoxOAuth({ config });
 
@@ -144,8 +134,8 @@ const resolveAuth = (opts: BoxStorageOptions): ResolvedAuth => {
         return { authHandle: handle, client: new BoxClientImpl({ auth }) };
     }
 
-    if (opts.ccg) {
-        const { clientId, clientSecret, enterpriseId, userId } = opts.ccg;
+    if (options.ccg) {
+        const { clientId, clientSecret, enterpriseId, userId } = options.ccg;
 
         if (!enterpriseId && !userId) {
             throw new Error("Box storage: `ccg` auth requires either `enterpriseId` or `userId`.");
@@ -162,8 +152,8 @@ const resolveAuth = (opts: BoxStorageOptions): ResolvedAuth => {
         return { authHandle: noopAuthHandle, client: new BoxClientImpl({ auth }) };
     }
 
-    if (opts.jwt) {
-        const config = buildJwtConfig(opts.jwt);
+    if (options.jwt) {
+        const config = buildJwtConfig(options.jwt);
         const auth = new BoxJwtAuth({ config });
 
         return { authHandle: noopAuthHandle, client: new BoxClientImpl({ auth }) };
@@ -177,16 +167,14 @@ const resolveAuth = (opts: BoxStorageOptions): ResolvedAuth => {
         return { authHandle: noopAuthHandle, client: new BoxClientImpl({ auth }) };
     }
 
-    throw new Error(
-        "Box storage: missing auth. Pass `client`, `developerToken`, `oauth`, `ccg`, or `jwt`. Env fallback: BOX_DEVELOPER_TOKEN.",
-    );
+    throw new Error("Box storage: missing auth. Pass `client`, `developerToken`, `oauth`, `ccg`, or `jwt`. Env fallback: BOX_DEVELOPER_TOKEN.");
 };
 
 const isNotFoundError = (error: unknown): boolean => {
     if (error && typeof error === "object") {
-        const obj = error as { responseInfo?: { body?: { code?: string }; code?: string; statusCode?: number } };
-        const code = obj.responseInfo?.code ?? obj.responseInfo?.body?.code;
-        const status = obj.responseInfo?.statusCode;
+        const object = error as { responseInfo?: { body?: { code?: string }; code?: string; statusCode?: number } };
+        const code = object.responseInfo?.code ?? object.responseInfo?.body?.code;
+        const status = object.responseInfo?.statusCode;
 
         return status === 404 || code === "not_found" || code === "file_not_found" || code === "folder_not_found" || code === "trashed";
     }
@@ -196,15 +184,17 @@ const isNotFoundError = (error: unknown): boolean => {
 
 const isConflictError = (error: unknown): boolean => {
     if (error && typeof error === "object") {
-        const obj = error as { responseInfo?: { body?: { code?: string }; code?: string; statusCode?: number } };
-        const code = obj.responseInfo?.code ?? obj.responseInfo?.body?.code;
-        const status = obj.responseInfo?.statusCode;
+        const object = error as { responseInfo?: { body?: { code?: string }; code?: string; statusCode?: number } };
+        const code = object.responseInfo?.code ?? object.responseInfo?.body?.code;
+        const status = object.responseInfo?.statusCode;
 
         return status === 409 || code === "item_name_in_use" || code === "conflict";
     }
 
     return false;
 };
+
+/* eslint-disable jsdoc/check-indentation -- bullet-list continuations are indented for readability */
 
 /**
  * Box storage backend.
@@ -312,7 +302,7 @@ class BoxStorage extends BaseStorage<BoxFile> {
             let file: BoxFile;
 
             if ("contentType" in part && "metadata" in part && !("body" in part) && !("start" in part)) {
-                file = part as BoxFile;
+                file = part;
             } else {
                 file = await this.getMeta(part.id);
                 await this.checkIfExpired(file);
@@ -392,7 +382,7 @@ class BoxStorage extends BaseStorage<BoxFile> {
             await this.authHandle.ensureReady();
 
             try {
-                const fileId = file?.boxFileId ?? await this.resolveFileId(key);
+                const fileId = file?.boxFileId ?? (await this.resolveFileId(key));
 
                 await this.client.files.deleteFileById(fileId);
                 this.fileIdCache.delete(key);
@@ -433,22 +423,22 @@ class BoxStorage extends BaseStorage<BoxFile> {
 
             await this.authHandle.ensureReady();
 
-            const fileId = stored?.boxFileId ?? await this.resolveFileId(key);
-            const item = await this.client.files.getFileById(fileId) as BoxFileLike;
+            const fileId = stored?.boxFileId ?? (await this.resolveFileId(key));
+            const item = (await this.client.files.getFileById(fileId)) as BoxFileLike;
             const url = await this.client.downloads.getDownloadFileUrl(fileId);
-            const res = await fetch(url);
+            const response = await fetch(url);
 
-            if (!res.ok) {
-                throw new Error(`Box: download fetch failed (${res.status})`);
+            if (!response.ok) {
+                throw new Error(`Box: download fetch failed (${response.status})`);
             }
 
-            const arrayBuffer = await res.arrayBuffer();
+            const arrayBuffer = await response.arrayBuffer();
             const buffer = Buffer.from(arrayBuffer);
 
             return {
                 content: buffer,
                 contentType: stored?.contentType ?? "application/octet-stream",
-                ETag: stored?.ETag ?? (item.etag ?? undefined),
+                ETag: stored?.ETag ?? item.etag ?? undefined,
                 expiredAt: stored?.expiredAt,
                 id,
                 metadata: stored?.metadata ?? {},
@@ -466,11 +456,11 @@ class BoxStorage extends BaseStorage<BoxFile> {
 
             const sourceId = await this.resolveFileId(name);
             const { leaf, parents } = splitKey(destination);
-            const destFolderId = await this.resolveFolderId(parents, { create: true });
-            const created = await this.client.files.copyFile(sourceId, {
+            const destinationFolderId = await this.resolveFolderId(parents, { create: true });
+            const created = (await this.client.files.copyFile(sourceId, {
                 name: leaf,
-                parent: { id: destFolderId },
-            }) as BoxFileLike;
+                parent: { id: destinationFolderId },
+            })) as BoxFileLike;
 
             if (created.id) {
                 this.fileIdCache.set(destination, created.id);
@@ -498,13 +488,13 @@ class BoxStorage extends BaseStorage<BoxFile> {
 
             const sourceId = await this.resolveFileId(name);
             const { leaf, parents } = splitKey(destination);
-            const destFolderId = await this.resolveFolderId(parents, { create: true });
-            const updated = await this.client.files.updateFileById(sourceId, {
+            const destinationFolderId = await this.resolveFolderId(parents, { create: true });
+            const updated = (await this.client.files.updateFileById(sourceId, {
                 requestBody: {
                     name: leaf,
-                    parent: { id: destFolderId },
+                    parent: { id: destinationFolderId },
                 },
-            }) as BoxFileLike;
+            })) as BoxFileLike;
 
             this.fileIdCache.delete(name);
 
@@ -545,7 +535,6 @@ class BoxStorage extends BaseStorage<BoxFile> {
                 const pageLimit = Math.min(limit, 1000);
 
                 while (out.length < limit) {
-                    // eslint-disable-next-line no-await-in-loop -- pagination is sequential by API design
                     const page = await this.client.folders.getFolderItems(this.rootFolderId, {
                         queryParams: {
                             fields: ["id", "name", "size", "modified_at", "etag", "type"],
@@ -620,6 +609,7 @@ class BoxStorage extends BaseStorage<BoxFile> {
         return this.client.downloads.getDownloadFileUrl(fileId);
     }
 
+    // eslint-disable-next-line class-methods-use-this -- override of the base contract; signals "not supported" without instance state
     public override async getUploadUrl(_key: string, _options?: { contentLength?: number; contentType?: string; expiresIn?: number }): Promise<string> {
         return throwErrorCode(
             ERRORS.METHOD_NOT_ALLOWED,
@@ -631,9 +621,7 @@ class BoxStorage extends BaseStorage<BoxFile> {
         let offset = 0;
         const limit = 1000;
 
-        // eslint-disable-next-line no-constant-condition -- terminated by entries.length < limit
         while (true) {
-            // eslint-disable-next-line no-await-in-loop -- pagination is sequential by API design
             const page = await this.client.folders.getFolderItems(folderId, {
                 queryParams: { fields: ["id", "name", "type"], limit, offset },
             });
@@ -655,11 +643,12 @@ class BoxStorage extends BaseStorage<BoxFile> {
         }
     }
 
-    private folderCacheKey(parents: readonly string[]): string {
+    // eslint-disable-next-line class-methods-use-this -- keep instance shape; could be static but callers use `this.folderCacheKey`
+    private folderCacheKey(parents: ReadonlyArray<string>): string {
         return parents.join("/");
     }
 
-    private async resolveFolderId(parents: readonly string[], options: { create: boolean }): Promise<string> {
+    private async resolveFolderId(parents: ReadonlyArray<string>, options: { create: boolean }): Promise<string> {
         if (parents.length === 0) {
             return this.rootFolderId;
         }
@@ -685,7 +674,6 @@ class BoxStorage extends BaseStorage<BoxFile> {
                 continue;
             }
 
-            // eslint-disable-next-line no-await-in-loop -- folder walk must be sequential
             const child = await this.findChildByName(currentId, segment);
 
             if (child && child.type === "folder") {
@@ -703,7 +691,6 @@ class BoxStorage extends BaseStorage<BoxFile> {
             }
 
             try {
-                // eslint-disable-next-line no-await-in-loop -- folder creation must be sequential
                 const created = await this.client.folders.createFolder({ name: segment, parent: { id: currentId } });
 
                 if (!created.id) {
@@ -714,7 +701,6 @@ class BoxStorage extends BaseStorage<BoxFile> {
                 this.folderIdCache.set(partialKey, currentId);
             } catch (error) {
                 if (isConflictError(error)) {
-                    // eslint-disable-next-line no-await-in-loop -- recovery path
                     const existing = await this.findChildByName(currentId, segment);
 
                     if (existing && existing.type === "folder") {
@@ -781,11 +767,11 @@ class BoxStorage extends BaseStorage<BoxFile> {
         }
 
         if (fileId) {
-            const res = await this.client.uploads.uploadFileVersion(fileId, {
+            const response = await this.client.uploads.uploadFileVersion(fileId, {
                 attributes: { name: leaf },
                 file: bufferToReadable(data),
             });
-            const entry = (res.entries ?? [])[0] as BoxFileLike | undefined;
+            const entry = (response.entries ?? [])[0] as BoxFileLike | undefined;
 
             if (!entry) {
                 throw new Error("Box: uploadFileVersion returned no file");
@@ -794,11 +780,11 @@ class BoxStorage extends BaseStorage<BoxFile> {
             return entry;
         }
 
-        const res = await this.client.uploads.uploadFile({
+        const response = await this.client.uploads.uploadFile({
             attributes: { name: leaf, parent: { id: folderId } },
             file: bufferToReadable(data),
         });
-        const entry = (res.entries ?? [])[0] as BoxFileLike | undefined;
+        const entry = (response.entries ?? [])[0] as BoxFileLike | undefined;
 
         if (!entry) {
             throw new Error("Box: uploadFile returned no file");
@@ -809,11 +795,11 @@ class BoxStorage extends BaseStorage<BoxFile> {
 
     private async ensureSharedLink(fileId: string): Promise<string> {
         try {
-            const file = await this.client.sharedLinksFiles.addShareLinkToFile(
+            const file = (await this.client.sharedLinksFiles.addShareLinkToFile(
                 fileId,
                 { sharedLink: { access: "open" } },
                 { fields: "shared_link" },
-            ) as BoxFileLike;
+            )) as BoxFileLike;
             const link = file.sharedLink;
             const out = link?.downloadUrl ?? link?.url;
 
@@ -832,14 +818,12 @@ class BoxStorage extends BaseStorage<BoxFile> {
     }
 
     private async fetchSharedLinkUrl(fileId: string): Promise<string> {
-        const file = await this.client.sharedLinksFiles.getSharedLinkForFile(fileId, { fields: "shared_link" }) as BoxFileLike;
+        const file = (await this.client.sharedLinksFiles.getSharedLinkForFile(fileId, { fields: "shared_link" })) as BoxFileLike;
         const link = file.sharedLink;
         const out = link?.downloadUrl ?? link?.url;
 
         if (!out) {
-            throw new Error(
-                "Box: file has no shared link. Call write() with publicByDefault: true, or addShareLinkToFile via storage.raw.",
-            );
+            throw new Error("Box: file has no shared link. Call write() with publicByDefault: true, or addShareLinkToFile via storage.raw.");
         }
 
         return out;

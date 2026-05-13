@@ -160,7 +160,7 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
      * (e.g. DiskStorage).
      */
     public get raw(): TStorage["raw"] {
-        return this.adapter.raw as TStorage["raw"];
+        return this.adapter.raw;
     }
 
     public async upload(key: string, body: FileBody, options: UploadOptions = {}): Promise<FileObject> {

@@ -192,9 +192,7 @@ export const createClaudeFileTools = ({
         }
     }
 
-    const includedTools = (Object.entries(allTools) as [FileToolName, AnyToolDefinition][]).filter(
-        ([name]) => !(readOnly && isWriteTool(name)),
-    );
+    const includedTools = (Object.entries(allTools) as [FileToolName, AnyToolDefinition][]).filter(([name]) => !(readOnly && isWriteTool(name)));
 
     const prefix = `mcp__${serverName}__`;
     const stripPrefix = (name: string): string => (name.startsWith(prefix) ? name.slice(prefix.length) : name);
@@ -219,9 +217,9 @@ export const createClaudeFileTools = ({
         Promise.resolve(
             needsApproval(toolName)
                 ? {
-                    behavior: "deny",
-                    message: `Tool "${toolName}" requires approval.`,
-                }
+                      behavior: "deny",
+                      message: `Tool "${toolName}" requires approval.`,
+                  }
                 : { behavior: "allow", updatedInput: input },
         );
 

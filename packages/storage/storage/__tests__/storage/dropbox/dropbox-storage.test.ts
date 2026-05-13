@@ -1,10 +1,11 @@
+/* eslint-disable max-classes-per-file, @typescript-eslint/no-extraneous-class, no-constructor-return, @typescript-eslint/no-useless-constructor -- mock SDK classes for vendor library shape */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import DropboxStorage from "../../../src/storage/dropbox/dropbox-storage";
 import type { DropboxStorageOptions } from "../../../src/storage/dropbox/types";
 import { storageOptions } from "../../__helpers__/config";
 
-const makeMockClient = () => ({
+const makeMockClient = () => { return {
     auth: {
         getAccessToken: vi.fn(() => "tok"),
         setAccessToken: vi.fn(),
@@ -17,7 +18,7 @@ const makeMockClient = () => ({
     filesUpload: vi.fn(),
     sharingCreateSharedLinkWithSettings: vi.fn(),
     sharingListSharedLinks: vi.fn(),
-});
+}; };
 
 let mockClient: ReturnType<typeof makeMockClient>;
 
@@ -37,7 +38,7 @@ vi.mock(import("dropbox"), () => {
     return {
         Dropbox: class {
             public constructor() {
-                return mockClient as unknown as typeof this;
+                return mockClient;
             }
         },
         DropboxAuth: class {
@@ -64,29 +65,38 @@ describe(DropboxStorage, () => {
         it("rejects both accessToken and refreshToken at once", () => {
             expect.assertions(1);
 
-            expect(() => new DropboxStorage({
-                ...(storageOptions as DropboxStorageOptions),
-                accessToken: "tok",
-                appKey: "k",
-                refreshToken: "rt",
-            })).toThrow(/exactly one of `accessToken` or `refreshToken`/);
+            expect(
+                () =>
+                    new DropboxStorage({
+                        ...(storageOptions as DropboxStorageOptions),
+                        accessToken: "tok",
+                        appKey: "k",
+                        refreshToken: "rt",
+                    }),
+            ).toThrow(/exactly one of `accessToken` or `refreshToken`/);
         });
 
         it("rejects refreshToken without appKey", () => {
             expect.assertions(1);
 
-            expect(() => new DropboxStorage({
-                ...(storageOptions as DropboxStorageOptions),
-                refreshToken: "rt",
-            })).toThrow(/refresh-token auth requires both `refreshToken` and `appKey`/);
+            expect(
+                () =>
+                    new DropboxStorage({
+                        ...(storageOptions as DropboxStorageOptions),
+                        refreshToken: "rt",
+                    }),
+            ).toThrow(/refresh-token auth requires both `refreshToken` and `appKey`/);
         });
 
         it("rejects when no auth source is configured", () => {
             expect.assertions(1);
 
-            expect(() => new DropboxStorage({
-                ...(storageOptions as DropboxStorageOptions),
-            })).toThrow(/missing auth/);
+            expect(
+                () =>
+                    new DropboxStorage({
+                        ...(storageOptions as DropboxStorageOptions),
+                    }),
+            ).toThrow(/missing auth/);
         });
 
         it("accepts a pre-built client without any other auth", () => {
@@ -133,8 +143,7 @@ describe(DropboxStorage, () => {
                 accessToken: "tok",
             });
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta")
-                .mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
 
             const result = await storage.delete({ id: "folder/file.mp4" });
 
@@ -150,8 +159,7 @@ describe(DropboxStorage, () => {
                 accessToken: "tok",
             });
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta")
-                .mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
 
             mockClient.filesDeleteV2.mockRejectedValueOnce(new FakeDropboxResponseError(404, {}));
 
@@ -166,8 +174,7 @@ describe(DropboxStorage, () => {
                 accessToken: "tok",
             });
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta")
-                .mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
 
             mockClient.filesDeleteV2.mockRejectedValueOnce(
                 new FakeDropboxResponseError(409, {
@@ -244,8 +251,7 @@ describe(DropboxStorage, () => {
                 accessToken: "tok",
             });
 
-            await expect(storage.getReadUrl("file.mp4", { expiresIn: 20_000 }))
-                .rejects.toThrow(/exceeds the 14400s/);
+            await expect(storage.getReadUrl("file.mp4", { expiresIn: 20_000 })).rejects.toThrow(/exceeds the 14400s/);
         });
 
         it("rejects responseContentDisposition", async () => {
@@ -256,8 +262,9 @@ describe(DropboxStorage, () => {
                 accessToken: "tok",
             });
 
-            await expect(storage.getReadUrl("file.mp4", { responseContentDisposition: "attachment" }))
-                .rejects.toThrow(/responseContentDisposition.*not supported/);
+            await expect(storage.getReadUrl("file.mp4", { responseContentDisposition: "attachment" })).rejects.toThrow(
+                /responseContentDisposition.*not supported/,
+            );
         });
 
         it("returns a permanent shared link when publicByDefault is true", async () => {
@@ -277,7 +284,10 @@ describe(DropboxStorage, () => {
 
             // The adapter rewrites ?dl=0 → ?dl=1 so the link serves raw bytes.
             expect(url).toBe("https://www.dropbox.com/s/abc?dl=1");
-            expect(mockClient.sharingCreateSharedLinkWithSettings).toHaveBeenCalled();
+            expect(mockClient.sharingCreateSharedLinkWithSettings).toHaveBeenCalledWith({
+                path: "/file.mp4",
+                settings: { requested_visibility: { ".tag": "public" } },
+            });
         });
 
         it("recovers from shared_link_already_exists by querying the existing link", async () => {

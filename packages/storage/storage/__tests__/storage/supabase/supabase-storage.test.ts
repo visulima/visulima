@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/no-extraneous-class, no-constructor-return -- mock SDK classes for vendor library shape */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import SupabaseStorage from "../../../src/storage/supabase/supabase-storage";
 import type { SupabaseStorageOptions } from "../../../src/storage/supabase/types";
 import { storageOptions } from "../../__helpers__/config";
 
-const makeBucketApi = () => ({
+const makeBucketApi = () => { return {
     copy: vi.fn(),
     createSignedUploadUrl: vi.fn(),
     createSignedUrl: vi.fn(),
@@ -14,11 +15,11 @@ const makeBucketApi = () => ({
     move: vi.fn(),
     remove: vi.fn(),
     upload: vi.fn(),
-});
+}; };
 
-const makeMockClient = (bucketApi: ReturnType<typeof makeBucketApi>) => ({
+const makeMockClient = (bucketApi: ReturnType<typeof makeBucketApi>) => { return {
     from: vi.fn(() => bucketApi),
-});
+}; };
 
 let bucketApi: ReturnType<typeof makeBucketApi>;
 let mockClient: ReturnType<typeof makeMockClient>;
@@ -27,7 +28,7 @@ vi.mock(import("@supabase/storage-js"), () => {
     return {
         StorageClient: class {
             public constructor() {
-                return mockClient as unknown as typeof this;
+                return mockClient;
             }
         },
     };
@@ -47,21 +48,27 @@ describe(SupabaseStorage, () => {
         it("rejects when url is missing", () => {
             expect.assertions(1);
 
-            expect(() => new SupabaseStorage({
-                ...(storageOptions as SupabaseStorageOptions),
-                bucket: "b",
-                serviceKey: "k",
-            })).toThrow(/`url` is required/);
+            expect(
+                () =>
+                    new SupabaseStorage({
+                        ...(storageOptions as SupabaseStorageOptions),
+                        bucket: "b",
+                        serviceKey: "k",
+                    }),
+            ).toThrow(/`url` is required/);
         });
 
         it("rejects when serviceKey is missing", () => {
             expect.assertions(1);
 
-            expect(() => new SupabaseStorage({
-                ...(storageOptions as SupabaseStorageOptions),
-                bucket: "b",
-                url: "https://example.supabase.co",
-            })).toThrow(/`serviceKey` is required/);
+            expect(
+                () =>
+                    new SupabaseStorage({
+                        ...(storageOptions as SupabaseStorageOptions),
+                        bucket: "b",
+                        url: "https://example.supabase.co",
+                    }),
+            ).toThrow(/`serviceKey` is required/);
         });
 
         it("falls back to env vars for url and key", () => {
@@ -101,8 +108,7 @@ describe(SupabaseStorage, () => {
                 client: mockClient as unknown as SupabaseStorageOptions["client"],
             });
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta")
-                .mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
 
             bucketApi.remove.mockResolvedValueOnce({ data: [{ name: "file.mp4" }], error: null });
 
@@ -121,8 +127,7 @@ describe(SupabaseStorage, () => {
                 client: mockClient as unknown as SupabaseStorageOptions["client"],
             });
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta")
-                .mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
 
             bucketApi.remove.mockResolvedValueOnce({
                 data: null,
@@ -141,8 +146,7 @@ describe(SupabaseStorage, () => {
                 client: mockClient as unknown as SupabaseStorageOptions["client"],
             });
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta")
-                .mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
 
             bucketApi.remove.mockResolvedValueOnce({
                 data: null,
@@ -163,8 +167,7 @@ describe(SupabaseStorage, () => {
                 client: mockClient as unknown as SupabaseStorageOptions["client"],
             });
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta")
-                .mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
 
             bucketApi.copy.mockResolvedValueOnce({ data: { path: "dest.mp4" }, error: null });
 
@@ -185,8 +188,7 @@ describe(SupabaseStorage, () => {
                 client: mockClient as unknown as SupabaseStorageOptions["client"],
             });
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta")
-                .mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
 
             bucketApi.move.mockResolvedValueOnce({ data: { path: "renamed.mp4" }, error: null });
 
@@ -253,14 +255,10 @@ describe(SupabaseStorage, () => {
 
             await storage.getReadUrl("file.mp4", { responseContentDisposition: "attachment; filename=report.pdf" });
 
-            expect(bucketApi.createSignedUrl).toHaveBeenCalledWith(
-                "file.mp4",
-                3600,
-                { download: "report.pdf" },
-            );
+            expect(bucketApi.createSignedUrl).toHaveBeenCalledWith("file.mp4", 3600, { download: "report.pdf" });
         });
 
-        it("extracts a quoted filename from attachment; filename=\"...\"", async () => {
+        it('extracts a quoted filename from attachment; filename="..."', async () => {
             expect.assertions(1);
 
             const storage = new SupabaseStorage({
@@ -274,13 +272,9 @@ describe(SupabaseStorage, () => {
                 error: null,
             });
 
-            await storage.getReadUrl("file.mp4", { responseContentDisposition: "attachment; filename=\"Q1 Report.pdf\"" });
+            await storage.getReadUrl("file.mp4", { responseContentDisposition: 'attachment; filename="Q1 Report.pdf"' });
 
-            expect(bucketApi.createSignedUrl).toHaveBeenCalledWith(
-                "file.mp4",
-                3600,
-                { download: "Q1 Report.pdf" },
-            );
+            expect(bucketApi.createSignedUrl).toHaveBeenCalledWith("file.mp4", 3600, { download: "Q1 Report.pdf" });
         });
 
         it("decodes RFC 5987 filename* (UTF-8'')", async () => {
@@ -299,11 +293,7 @@ describe(SupabaseStorage, () => {
 
             await storage.getReadUrl("file.mp4", { responseContentDisposition: "attachment; filename*=UTF-8''r%C3%A9sum%C3%A9.pdf" });
 
-            expect(bucketApi.createSignedUrl).toHaveBeenCalledWith(
-                "file.mp4",
-                3600,
-                { download: "résumé.pdf" },
-            );
+            expect(bucketApi.createSignedUrl).toHaveBeenCalledWith("file.mp4", 3600, { download: "résumé.pdf" });
         });
 
         it("forwards attachment without filename as download:true", async () => {
@@ -322,11 +312,7 @@ describe(SupabaseStorage, () => {
 
             await storage.getReadUrl("file.mp4", { responseContentDisposition: "attachment" });
 
-            expect(bucketApi.createSignedUrl).toHaveBeenCalledWith(
-                "file.mp4",
-                3600,
-                { download: true },
-            );
+            expect(bucketApi.createSignedUrl).toHaveBeenCalledWith("file.mp4", 3600, { download: true });
         });
 
         it("ignores prefixes that only start with 'attachment' (e.g. attachment-style)", async () => {
@@ -345,11 +331,7 @@ describe(SupabaseStorage, () => {
 
             await storage.getReadUrl("file.mp4", { responseContentDisposition: "attachment-style" });
 
-            expect(bucketApi.createSignedUrl).toHaveBeenCalledWith(
-                "file.mp4",
-                3600,
-                { download: undefined },
-            );
+            expect(bucketApi.createSignedUrl).toHaveBeenCalledWith("file.mp4", 3600, { download: undefined });
         });
 
         it("matches Attachment case-insensitively (RFC 6266)", async () => {
@@ -368,11 +350,7 @@ describe(SupabaseStorage, () => {
 
             await storage.getReadUrl("file.mp4", { responseContentDisposition: "Attachment; filename=report.pdf" });
 
-            expect(bucketApi.createSignedUrl).toHaveBeenCalledWith(
-                "file.mp4",
-                3600,
-                { download: "report.pdf" },
-            );
+            expect(bucketApi.createSignedUrl).toHaveBeenCalledWith("file.mp4", 3600, { download: "report.pdf" });
         });
 
         it("treats inline disposition as undefined download", async () => {
@@ -391,11 +369,7 @@ describe(SupabaseStorage, () => {
 
             await storage.getReadUrl("file.mp4", { responseContentDisposition: "inline" });
 
-            expect(bucketApi.createSignedUrl).toHaveBeenCalledWith(
-                "file.mp4",
-                3600,
-                { download: undefined },
-            );
+            expect(bucketApi.createSignedUrl).toHaveBeenCalledWith("file.mp4", 3600, { download: undefined });
         });
 
         it("throws when createSignedUrl returns an error", async () => {

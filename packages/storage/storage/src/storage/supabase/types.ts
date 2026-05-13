@@ -18,16 +18,16 @@ export interface SupabaseStorageOptions extends BaseStorageOptions {
     client?: StorageClient;
 
     /**
-     * Override the global `fetch` (e.g. for tests, custom timeouts, retries).
-     * Ignored when `client` is supplied.
-     */
-    fetch?: typeof globalThis.fetch;
-
-    /**
      * Default expiry, in seconds, for `getReadUrl`. Capped at 1 week (Supabase
      * maximum). Defaults to 3600 (1 hour).
      */
     defaultUrlExpiresIn?: number;
+
+    /**
+     * Override the global `fetch` (e.g. for tests, custom timeouts, retries).
+     * Ignored when `client` is supplied.
+     */
+    fetch?: typeof globalThis.fetch;
 
     /**
      * Configure metafiles storage. Used for TUS-style resumable upload
