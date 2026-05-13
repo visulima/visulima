@@ -31,6 +31,7 @@ export interface SarifEmitOptions {
     /** Optional explicit lockfile path. Defaults to "package.json" relative to the workspace root. */
     artifactUri?: string;
     findings: SarifFinding[];
+
     /**
      * Non-vulnerability policy decisions (license / install_scripts /
      * unexpected_deps / …). Vulnerability decisions are emitted via

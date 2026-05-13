@@ -29,7 +29,7 @@ describe("vis.config.ts deprecated-key detection", () => {
 
         writeConfig(join(scratch, "vis.config.ts"), `{ targetDefaults: { build: { cache: true } } }`);
 
-        const error = await loadVisConfig(scratch).catch((e: unknown) => e);
+        const error = await loadVisConfig(scratch).catch((error_: unknown) => error_);
 
         expect(error).toBeInstanceOf(VisConfigDeprecatedKeyError);
         expect((error as VisConfigDeprecatedKeyError).message).toContain("targetDefaults");
@@ -43,7 +43,7 @@ describe("vis.config.ts deprecated-key detection", () => {
             `{ taskDefaults: [{ scope: { tags: ["frontend"] }, targets: { build: { cache: true } } }] }`,
         );
 
-        const error = await loadVisConfig(scratch).catch((e: unknown) => e);
+        const error = await loadVisConfig(scratch).catch((error_: unknown) => error_);
 
         expect(error).toBeInstanceOf(VisConfigDeprecatedKeyError);
         expect((error as VisConfigDeprecatedKeyError).message).toContain("taskDefaults");
@@ -55,7 +55,7 @@ describe("vis.config.ts deprecated-key detection", () => {
 
         writeConfig(join(scratch, "vis.config.ts"), `{ taskRunnerOptions: { parallel: 4 } }`);
 
-        const error = await loadVisConfig(scratch).catch((e: unknown) => e);
+        const error = await loadVisConfig(scratch).catch((error_: unknown) => error_);
 
         expect(error).toBeInstanceOf(VisConfigDeprecatedKeyError);
         expect((error as VisConfigDeprecatedKeyError).message).toContain("taskRunner");
@@ -69,7 +69,7 @@ describe("vis.config.ts deprecated-key detection", () => {
             `{ scopedTasks: [{ scope: { tags: ["api"] }, targets: { build: { cache: true } } }] }`,
         );
 
-        const error = await loadVisConfig(scratch).catch((e: unknown) => e);
+        const error = await loadVisConfig(scratch).catch((error_: unknown) => error_);
 
         expect(error).toBeInstanceOf(VisConfigDeprecatedKeyError);
         expect((error as VisConfigDeprecatedKeyError).message).toContain("match");

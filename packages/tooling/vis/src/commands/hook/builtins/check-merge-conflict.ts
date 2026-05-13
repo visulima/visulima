@@ -32,7 +32,6 @@ const PATTERNS: ReadonlyArray<string> = ["<<<<<<< ", "======= ", "=======\r\n", 
  * scans for conflict markers when git is mid-merge/rebase, unless the
  * caller passes `--assume-in-merge`. Skipping the guard means every
  * legit `&lt;&lt;&lt;&lt;&lt;&lt;&lt;` in docs would fail the hook.
- *
  * @param files Files (relative to `context.root`) to scan.
  * @param args Raw CLI args; `--assume-in-merge` skips the mid-merge guard.
  * @param context Builtin context with logger and workspace root.

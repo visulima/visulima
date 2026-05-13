@@ -15,8 +15,8 @@
  */
 
 import type { VisConfig } from "../../config/types";
-import type { PackageManifest } from "../manifests";
 import { normalizeSpdxId } from "../../sbom/license";
+import type { PackageManifest } from "../manifests";
 import { findAcceptedRisk } from "../socket-security";
 import type { PolicyDecision, PolicyInput } from "./index";
 
@@ -30,10 +30,10 @@ const SPDX_BINARY_OPERATORS = new Set(["AND", "OR"]);
  * is treated as an SPDX id candidate.
  *
  * Special handling:
- * - `WITH <exception>` — the right-hand identifier is an SPDX exception
+ * - `WITH &lt;exception>` — the right-hand identifier is an SPDX exception
  *   (e.g. `Classpath-exception-2.0`), not a license. It's a modifier on
  *   the preceding licence, so we skip it for allow/deny matching.
- * - `<id>+` — the "or-later" marker (e.g. `GPL-3.0+` means GPL-3.0 or
+ * - `&lt;id>+` — the "or-later" marker (e.g. `GPL-3.0+` means GPL-3.0 or
  *   later). We emit BOTH the bare id and the canonical `-or-later` form
  *   so a deny on either matches.
  * - `LicenseRef-*` / `DocumentRef-*` — custom-license refs pass through

@@ -27,7 +27,7 @@ const checkSecurityConfig = (config: VisConfig, packageManager: string): Securit
     }
 
     const policies = security.policies ?? {};
-    const installScripts = policies.installScripts;
+    const { installScripts } = policies;
     const allow = installScripts?.allow;
     const hasAllow = allow && Object.keys(allow).length > 0;
 
@@ -116,10 +116,10 @@ const printSecurityReport = (config: VisConfig, packageManager: string): void =>
 
     if (security) {
         const policies = security.policies ?? {};
-        const firstSeen = policies.firstSeen;
-        const publisherChange = policies.publisherChange;
-        const installScripts = policies.installScripts;
-        const score = policies.score;
+        const { firstSeen } = policies;
+        const { publisherChange } = policies;
+        const { installScripts } = policies;
+        const { score } = policies;
 
         pail.info("Active security settings:");
         pail.info(`  policies.firstSeen.minutes:           ${firstSeen?.minutes ?? "not set"} minutes`);
@@ -195,9 +195,9 @@ const previewPnpmSync = (config: VisConfig): string[] => {
     }
 
     const policies = security.policies ?? {};
-    const firstSeen = policies.firstSeen;
-    const publisherChange = policies.publisherChange;
-    const installScripts = policies.installScripts;
+    const { firstSeen } = policies;
+    const { publisherChange } = policies;
+    const { installScripts } = policies;
 
     const entries: string[] = [];
 

@@ -36,6 +36,7 @@ describe("published JSON schemas", () => {
             inferTargets: { vite: false, vitest: true },
             install: { backend: "auto" },
             preflight: { lockfile: true },
+            scopedTasks: [{ match: { tags: ["frontend"] }, tasks: { build: { cache: true } } }],
             security: {
                 policies: {
                     firstSeen: { minutes: 1440 },
@@ -46,10 +47,9 @@ describe("published JSON schemas", () => {
             sharedWorktreeCache: false,
             sortPackageJson: { sortScripts: true },
             strictEnv: true,
-            tasks: { build: { cache: true } },
-            scopedTasks: [{ match: { tags: ["frontend"] }, tasks: { build: { cache: true } } }],
             taskGroups: { lint: ["eslint", { group: "format" }] },
             taskRunner: { parallel: 4 },
+            tasks: { build: { cache: true } },
             tui: { autoExit: 3 },
             update: { format: "table", target: "minor" },
             versionConstraint: ">=1.0.0",

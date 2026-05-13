@@ -13,10 +13,9 @@
  */
 
 import { readFileSync } from "@visulima/fs";
+import type { LockFileType } from "@visulima/package";
 import { parseLockFileContent } from "@visulima/package";
 import { isAbsolute, resolve } from "@visulima/path";
-
-import type { LockFileType } from "@visulima/package";
 
 import type { VisConfig } from "../../config/types";
 import { LOCKFILE_NAMES } from "../dependency-scan";
@@ -26,7 +25,7 @@ import type { PolicyDecision, PolicyInput } from "./index";
 /**
  * Best-effort lockfile-type detection from a filename. Accepts both the
  * canonical name (`pnpm-lock.yaml`) and any path ending in
- * `<sep><canonical-name>` so users can prefix baseline files (e.g.
+ * `&lt;sep>&lt;canonical-name>` so users can prefix baseline files (e.g.
  * `baseline.pnpm-lock.yaml`, `2026-01.yarn.lock`).
  */
 const detectLockfileType = (path: string): LockFileType | undefined => {

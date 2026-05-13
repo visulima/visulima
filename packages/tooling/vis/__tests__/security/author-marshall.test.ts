@@ -4,8 +4,8 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { clearPackumentCache } from "../../src/security/marshalls/packument";
 import { runAuthorMarshall } from "../../src/security/marshalls/author";
+import { clearPackumentCache } from "../../src/security/marshalls/packument";
 
 let homeOverride: string;
 
@@ -19,12 +19,13 @@ vi.mock(import("node:os"), async (importOriginal) => {
 });
 
 const stubFetch = (response: { body?: unknown; status?: number }): ReturnType<typeof vi.fn> => {
-    const handler = vi.fn(async () =>
-        Promise.resolve({
-            json: async () => Promise.resolve(response.body ?? {}),
+    const handler = vi.fn(async () => {
+        return {
+            json: async () => response.body ?? {},
             ok: (response.status ?? 200) < 400,
             status: response.status ?? 200,
-        }),
+        };
+    },
     );
 
     vi.stubGlobal("fetch", handler);
