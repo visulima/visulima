@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/naming-convention, import/no-named-as-default, unicorn/no-null */
+/* eslint-disable @typescript-eslint/naming-convention, unicorn/no-null */
 import { createDecMode, resetMode, setMode } from "@visulima/ansi";
-import EventEmitter from "eventemitter3";
+import { EventEmitter } from "tseep";
 
 import type { RendererInstance, TerminalGuardInstance } from "./native-binding";
 import { Renderer, TerminalGuard } from "./native-binding";

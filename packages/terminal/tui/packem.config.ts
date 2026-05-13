@@ -34,7 +34,6 @@ export default defineConfig({
                     "@visulima/tui-binding-win32-arm64-msvc",
                     "@visulima/tui-binding-win32-x64-msvc",
                     "react-devtools-core",
-                    "yoga-layout-prebuilt",
                 ],
             },
             hoisted: {
