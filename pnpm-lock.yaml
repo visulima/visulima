@@ -210,9 +210,6 @@ catalogs:
     '@visulima/packem':
       specifier: 2.0.0-alpha.78
       version: 2.0.0-alpha.78
-    '@xterm/headless':
-      specifier: ^6.0.0
-      version: 6.0.0
     '@yarnpkg/pnp':
       specifier: 4.1.5
       version: 4.1.5
@@ -1025,9 +1022,6 @@ catalogs:
     args-tokens:
       specifier: ^0.24.3
       version: 0.24.3
-    auto-bind:
-      specifier: ^5.0.1
-      version: 5.0.1
     aws-crt:
       specifier: 1.31.0
       version: 1.31.0
@@ -1151,12 +1145,6 @@ catalogs:
     empathic:
       specifier: 2.0.0
       version: 2.0.0
-    es-toolkit:
-      specifier: ^1.46.1
-      version: 1.46.1
-    eventemitter3:
-      specifier: ^5.0.4
-      version: 5.0.4
     fast-copy:
       specifier: ^4.0.3
       version: 4.0.3
@@ -1397,9 +1385,6 @@ catalogs:
     slugify:
       specifier: 1.6.9
       version: 1.6.9
-    stack-utils:
-      specifier: ^2.0.6
-      version: 2.0.6
     string-ts:
       specifier: 2.3.1
       version: 2.3.1
@@ -1424,6 +1409,9 @@ catalogs:
     ts-japi:
       specifier: ^1.12.3
       version: 1.12.3
+    tseep:
+      specifier: ^1.3.1
+      version: 1.3.1
     tslog:
       specifier: ^4.10.2
       version: 4.10.2
@@ -1463,9 +1451,6 @@ catalogs:
     yoga-layout:
       specifier: ~3.2.1
       version: 3.2.1
-    yoga-layout-prebuilt:
-      specifier: ^1.10.0
-      version: 1.10.0
   style:
     '@tailwindcss/typography':
       specifier: 0.5.19
@@ -1654,9 +1639,6 @@ catalogs:
     '@types/scheduler':
       specifier: ^0.26.0
       version: 0.26.0
-    '@types/stack-utils':
-      specifier: ^2.0.3
-      version: 2.0.3
     '@types/supertest':
       specifier: ^7.2.0
       version: 7.2.0
@@ -8670,45 +8652,18 @@ importers:
 
   packages/terminal/tui:
     dependencies:
-      '@visulima/ansi':
-        specifier: 4.0.0-alpha.13
-        version: link:../ansi
-      '@visulima/colorize':
-        specifier: 2.0.0-alpha.10
-        version: link:../colorize
-      '@visulima/spinner':
-        specifier: 1.0.0-alpha.1
-        version: link:../spinner
-      '@visulima/string':
-        specifier: 3.0.0-alpha.13
-        version: link:../../data-manipulation/string
       '@visulima/tabular':
         specifier: 4.0.0-alpha.11
         version: link:../tabular
       cfonts:
         specifier: 3.3.1
         version: 3.3.1
-      cli-boxes:
-        specifier: catalog:prod
-        version: 4.0.1
       code-excerpt:
         specifier: catalog:prod
         version: 4.0.0
       diff:
         specifier: catalog:prod
         version: 9.0.0
-      es-toolkit:
-        specifier: catalog:prod
-        version: 1.46.1
-      eventemitter3:
-        specifier: catalog:prod
-        version: 5.0.4
-      is-in-ci:
-        specifier: catalog:prod
-        version: 2.0.0
-      patch-console:
-        specifier: catalog:prod
-        version: 2.0.0
       react:
         specifier: 19.2.6
         version: 19.2.6
@@ -8721,24 +8676,9 @@ importers:
       scheduler:
         specifier: catalog:prod
         version: 0.27.0
-      signal-exit:
-        specifier: catalog:prod
-        version: 4.1.0
-      stack-utils:
-        specifier: catalog:prod
-        version: 2.0.6
-      terminal-size:
-        specifier: catalog:prod
-        version: 4.0.1
-      type-fest:
-        specifier: catalog:prod
-        version: 5.6.0
       yoga-layout:
         specifier: catalog:prod
         version: 3.2.1
-      yoga-layout-prebuilt:
-        specifier: catalog:prod
-        version: 1.10.0
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
@@ -8788,30 +8728,39 @@ importers:
       '@types/scheduler':
         specifier: catalog:types
         version: 0.26.0
-      '@types/stack-utils':
-        specifier: catalog:types
-        version: 2.0.3
       '@types/ws':
         specifier: catalog:types
         version: 8.18.1
+      '@visulima/ansi':
+        specifier: 4.0.0-alpha.13
+        version: link:../ansi
       '@visulima/boxen':
         specifier: 3.0.0-alpha.10
         version: link:../boxen
+      '@visulima/colorize':
+        specifier: 2.0.0-alpha.10
+        version: link:../colorize
+      '@visulima/error':
+        specifier: 6.0.0-alpha.23
+        version: link:../../error-debugging/error
       '@visulima/packem':
         specifier: catalog:dev
         version: 2.0.0-alpha.78(9eb304b30a9050adc83e4b01cc20afa7)
+      '@visulima/spinner':
+        specifier: 1.0.0-alpha.1
+        version: link:../spinner
+      '@visulima/string':
+        specifier: 3.0.0-alpha.13
+        version: link:../../data-manipulation/string
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.5(@vitest/browser@4.1.5)(vitest@4.1.5)
       '@vitest/ui':
         specifier: catalog:test
         version: 4.1.5(vitest@4.1.5)
-      '@xterm/headless':
-        specifier: catalog:dev
-        version: 6.0.0
-      auto-bind:
+      cli-boxes:
         specifier: catalog:prod
-        version: 5.0.1
+        version: 4.0.1
       conventional-changelog-conventionalcommits:
         specifier: catalog:dev
         version: 9.3.1
@@ -8845,12 +8794,18 @@ importers:
       eslint-plugin-validate-jsx-nesting:
         specifier: catalog:lint
         version: 0.1.1(eslint@10.3.0(jiti@2.7.0))
+      is-in-ci:
+        specifier: catalog:prod
+        version: 2.0.0
       marked:
         specifier: catalog:dev
         version: 18.0.3
       node-pty:
         specifier: catalog:dev
         version: 1.1.0
+      patch-console:
+        specifier: catalog:prod
+        version: 2.0.0
       prettier:
         specifier: catalog:lint
         version: 3.8.3
@@ -8869,9 +8824,21 @@ importers:
       shiki:
         specifier: catalog:syntax
         version: 4.0.2
+      signal-exit:
+        specifier: catalog:prod
+        version: 4.1.0
+      terminal-size:
+        specifier: catalog:prod
+        version: 4.0.1
+      tseep:
+        specifier: catalog:prod
+        version: 1.3.1
       tsx:
         specifier: catalog:dev
         version: 4.21.0
+      type-fest:
+        specifier: catalog:prod
+        version: 5.6.0
       typescript:
         specifier: catalog:tsc
         version: 6.0.3
@@ -12491,7 +12458,7 @@ packages:
     resolution: {integrity: sha512-jI9yMDyFpqBeSighf/zlXnQG/nl9AyBc6aAgy4XtxJMyt/CNyJpvPfzDD+bCc2zAOmhhqtF6TnmIaY+xV4mIrw==}
     engines: {node: '>=20'}
     peerDependencies:
-      hono: '>=4.10.2'
+      hono: '>=4.12.4'
 
   '@hono/swagger-ui@0.6.1':
     resolution: {integrity: sha512-sJTvldu1GPeEPfyeLG7gRj+W4vEuD+JDi+JjJ3TJs/DvMUtBLs0KJO5yokGegWWdy5qrbdnQGekbhgNRmPmYKQ==}
@@ -19094,9 +19061,6 @@ packages:
   '@types/yauzl@2.10.3':
     resolution: {integrity: sha512-oJoftv0LSuaDZE3Le4DbKX+KS9G36NzOeSap90UIK0yMA/NhKJhqlSGtNDORNRaIbQfzjXDrQa0ytJ6mNRGz/Q==}
 
-  '@types/yoga-layout@1.9.2':
-    resolution: {integrity: sha512-S9q47ByT2pPvD65IvrWp7qppVMpk9WGMbVq9wbWZOHg6tnXSD4vyhao6nOSBwwfDdV2p3Kx9evA9vI+XWTfDvw==}
-
   '@typescript-eslint/eslint-plugin@8.59.1':
     resolution: {integrity: sha512-BOziFIfE+6osHO9FoJG4zjoHUcvI7fTNBSpdAwrNH0/TLvzjsk2oo8XSSOT2HhqUyhZPfHv4UOffoJ9oEEQ7Ag==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
@@ -20303,9 +20267,6 @@ packages:
     engines: {node: '>=14'}
     cpu: [x64]
     os: [win32]
-
-  '@xterm/headless@6.0.0':
-    resolution: {integrity: sha512-5Yj1QINYCyzrZtf8OFIHi47iQtI+0qYFPHmouEfG8dHNxbZ9Tb9YGSuLcsEwj9Z+OL75GJqPyJbyoFer80a2Hw==}
 
   '@xtuc/ieee754@1.2.0':
     resolution: {integrity: sha512-DX8nKgqcGwsc0eJSqYt5lwP4DH5FlHnmuWWBRy7X0NcaGR0ZtuyeESgMwTYVEtxmsNGY+qit4QYT/MIYTOTPeA==}
@@ -31740,6 +31701,9 @@ packages:
   tsconfig@7.0.0:
     resolution: {integrity: sha512-vZXmzPrL+EmC4T/4rVlT2jNVMWCi/O4DIiSj3UHg1OE5kCKbk4mfrXc6dZksLgRM/TZlKnousKH9bbTazUWRRw==}
 
+  tseep@1.3.1:
+    resolution: {integrity: sha512-ZPtfk1tQnZVyr7BPtbJ93qaAh2lZuIOpTMjhrYa4XctT8xe7t4SAW9LIxrySDuYMsfNNayE51E/WNGrNVgVicQ==}
+
   tslib@1.14.1:
     resolution: {integrity: sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg==}
 
@@ -33364,10 +33328,6 @@ packages:
   yoctocolors@2.1.2:
     resolution: {integrity: sha512-CzhO+pFNo8ajLM2d2IW/R93ipy99LWjtwblvC1RsoSUMZgyLbYFr221TnSNT7GjGdYui6P459mw9JH/g/zW2ug==}
     engines: {node: '>=18'}
-
-  yoga-layout-prebuilt@1.10.0:
-    resolution: {integrity: sha512-YnOmtSbv4MTf7RGJMK0FvZ+KD8OEe/J5BNnR0GHhD8J/XcG/Qvxgszm0Un6FTHWW4uHlTgP0IztiXQnGyIR45g==}
-    engines: {node: '>=8'}
 
   yoga-layout@3.2.1:
     resolution: {integrity: sha512-0LPOt3AxKqMdFBZA3HBAt/t/8vIKq7VaQYbuA8WxCgung+p9TVyKRYdpvCb80HcdTN2NkbIKbhNwKUfm3tQywQ==}
@@ -44875,8 +44835,6 @@ snapshots:
       '@types/node': 25.6.0
     optional: true
 
-  '@types/yoga-layout@1.9.2': {}
-
   '@typescript-eslint/eslint-plugin@8.59.1(@typescript-eslint/parser@8.59.1(eslint@10.3.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.3.0(jiti@2.7.0))(typescript@6.0.3)':
     dependencies:
       '@eslint-community/regexpp': 4.12.2
@@ -47207,8 +47165,6 @@ snapshots:
 
   '@xn-sakina/rml-win32-x64-msvc@2.8.0':
     optional: true
-
-  '@xterm/headless@6.0.0': {}
 
   '@xtuc/ieee754@1.2.0': {}
 
@@ -50013,7 +49969,7 @@ snapshots:
       eslint: 8.57.1
       eslint-plugin-react: 7.37.5(eslint@8.57.1)
 
-  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.2(eslint@10.3.0(jiti@2.7.0))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1):
+  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.2(eslint@10.3.0(jiti@2.7.0))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@10.3.0(jiti@2.7.0)))(eslint@8.57.1):
     dependencies:
       eslint: 8.57.1
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.59.2(eslint@10.3.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.3.0(jiti@2.7.0))
@@ -61026,7 +60982,7 @@ snapshots:
   standard@17.1.2(@typescript-eslint/parser@8.59.2(eslint@10.3.0(jiti@2.7.0))(typescript@6.0.3)):
     dependencies:
       eslint: 8.57.1
-      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.2(eslint@10.3.0(jiti@2.7.0))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)
+      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.2(eslint@10.3.0(jiti@2.7.0))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@10.3.0(jiti@2.7.0)))(eslint@8.57.1)
       eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@10.3.0(jiti@2.7.0)))(eslint@8.57.1)
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.59.2(eslint@10.3.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.3.0(jiti@2.7.0))
       eslint-plugin-n: 15.7.0(eslint@8.57.1)
@@ -62160,6 +62116,8 @@ snapshots:
       '@types/strip-json-comments': 0.0.30
       strip-bom: 3.0.0
       strip-json-comments: 2.0.1
+
+  tseep@1.3.1: {}
 
   tslib@1.14.1: {}
 
@@ -64177,10 +64135,6 @@ snapshots:
   yoctocolors-cjs@2.1.3: {}
 
   yoctocolors@2.1.2: {}
-
-  yoga-layout-prebuilt@1.10.0:
-    dependencies:
-      '@types/yoga-layout': 1.9.2
 
   yoga-layout@3.2.1: {}
 

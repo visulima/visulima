@@ -1,5 +1,5 @@
-/* eslint-disable e18e/prefer-static-regex, import/no-named-as-default, no-bitwise, no-control-regex, radix, sonarjs/prefer-regexp-exec, unicorn/no-null, unicorn/prefer-code-point */
-import EventEmitter from "eventemitter3";
+/* eslint-disable e18e/prefer-static-regex, no-bitwise, no-control-regex, radix, sonarjs/prefer-regexp-exec, unicorn/no-null, unicorn/prefer-code-point */
+import { EventEmitter } from "tseep";
 
 export interface MouseEvent {
     button: "left" | "right" | "middle" | "scrollUp" | "scrollDown";

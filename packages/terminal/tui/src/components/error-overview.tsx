@@ -2,30 +2,34 @@
 import { existsSync, readFileSync } from "node:fs";
 import { cwd } from "node:process";
 
+import { parseStacktrace } from "@visulima/error/stacktrace";
 import type { CodeExcerpt } from "code-excerpt";
 import codeExcerpt from "code-excerpt";
 import type { ReactElement } from "react";
-import StackUtils from "stack-utils";
 
 import Box from "./box";
 import Text from "./text";
 
 // Error's source file is reported as file:///home/user/file.js
-// This function removes the file://[cwd] part
-const cleanupPath = (path: string | undefined): string | undefined => path?.replace(`file://${cwd()}/`, "");
+// or an absolute path. Strip both the `file://` scheme and a leading cwd
+// so paths render relative to the working directory.
+const cleanupPath = (path: string | undefined): string | undefined => {
+    if (!path) {
+        return path;
+    }
 
-const stackUtils = new StackUtils({
-    cwd: cwd(),
-    internals: StackUtils.nodeInternals(),
-});
+    const workingDirectory = cwd();
+
+    return path.replace(`file://${workingDirectory}/`, "").replace(`${workingDirectory}/`, "");
+};
 
 type Props = {
     readonly error: Error;
 };
 
 export default function ErrorOverview({ error }: Props): ReactElement {
-    const stack = error.stack ? error.stack.split("\n").slice(1) : undefined;
-    const origin = stack ? stackUtils.parseLine(stack[0]!) : undefined;
+    const traces = parseStacktrace(error);
+    const origin = traces[0];
     const filePath = cleanupPath(origin?.file);
     let excerpt: CodeExcerpt[] | undefined;
     let lineWidth = 0;
@@ -93,43 +97,42 @@ export default function ErrorOverview({ error }: Props): ReactElement {
                 </Box>
             ) : null}
 
-            {stack ? (
+            {traces.length > 0 ? (
                 <Box flexDirection="column" marginTop={1}>
-                    {stack.map((line) => {
-                        const parsedLine = stackUtils.parseLine(line);
+                    {traces.map((trace) => {
+                        const fileLabel = cleanupPath(trace.file) ?? "";
 
-                        // If the line from the stack cannot be parsed, we print out the unparsed line.
-                        if (!parsedLine) {
+                        // Fall back to the raw stack line when none of the
+                        // structured fields could be extracted.
+                        if (!trace.methodName && !trace.file) {
                             return (
-                                <Box key={line}>
+                                <Box key={trace.raw}>
                                     <Text dimColor>- </Text>
                                     <Text bold dimColor>
-                                        {line}
-                                        \t
-{" "}
+                                        {trace.raw}
                                     </Text>
                                 </Box>
                             );
                         }
 
                         return (
-                            <Box key={line}>
+                            <Box key={trace.raw}>
                                 <Text dimColor>- </Text>
                                 <Text bold dimColor>
-                                    {parsedLine.function}
+                                    {trace.methodName ?? "<anonymous>"}
                                 </Text>
                                 <Text
-                                    aria-label={`at ${cleanupPath(parsedLine.file) ?? ""} line ${parsedLine.line} column ${parsedLine.column}`}
+                                    aria-label={`at ${fileLabel} line ${trace.line} column ${trace.column}`}
                                     color="gray"
                                     dimColor
                                 >
                                     {" "}
                                     (
-{cleanupPath(parsedLine.file) ?? ""}
+{fileLabel}
 :
-{parsedLine.line}
+{trace.line}
 :
-{parsedLine.column}
+{trace.column}
 )
                                 </Text>
                             </Box>
