@@ -704,6 +704,7 @@ const cleanupResizeObserver = (element: HTMLElement | null): void => {
 };
 
 const removeAnnotationForm = (): void => {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     const element = document.querySelector<HTMLElement>(`#${FORM_ID}`) as (HTMLElement & { annotationId?: string }) | null;
     const existed = !!element;
 
