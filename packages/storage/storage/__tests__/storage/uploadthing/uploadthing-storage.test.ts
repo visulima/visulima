@@ -7,12 +7,14 @@ import { storageOptions } from "../../__helpers__/config";
 
 const validToken = Buffer.from(JSON.stringify({ apiKey: "sk_test_abc", appId: "test-app" })).toString("base64");
 
-const makeMockUtapi = () => { return {
-    deleteFiles: vi.fn(),
-    generateSignedURL: vi.fn(),
-    listFiles: vi.fn(),
-    uploadFiles: vi.fn(),
-}; };
+const makeMockUtapi = () => {
+    return {
+        deleteFiles: vi.fn(),
+        generateSignedURL: vi.fn(),
+        listFiles: vi.fn(),
+        uploadFiles: vi.fn(),
+    };
+};
 
 let mockUtapi: ReturnType<typeof makeMockUtapi>;
 

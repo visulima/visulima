@@ -5,21 +5,25 @@ import SupabaseStorage from "../../../src/storage/supabase/supabase-storage";
 import type { SupabaseStorageOptions } from "../../../src/storage/supabase/types";
 import { storageOptions } from "../../__helpers__/config";
 
-const makeBucketApi = () => { return {
-    copy: vi.fn(),
-    createSignedUploadUrl: vi.fn(),
-    createSignedUrl: vi.fn(),
-    download: vi.fn(),
-    exists: vi.fn(),
-    list: vi.fn(),
-    move: vi.fn(),
-    remove: vi.fn(),
-    upload: vi.fn(),
-}; };
+const makeBucketApi = () => {
+    return {
+        copy: vi.fn(),
+        createSignedUploadUrl: vi.fn(),
+        createSignedUrl: vi.fn(),
+        download: vi.fn(),
+        exists: vi.fn(),
+        list: vi.fn(),
+        move: vi.fn(),
+        remove: vi.fn(),
+        upload: vi.fn(),
+    };
+};
 
-const makeMockClient = (bucketApi: ReturnType<typeof makeBucketApi>) => { return {
-    from: vi.fn(() => bucketApi),
-}; };
+const makeMockClient = (bucketApi: ReturnType<typeof makeBucketApi>) => {
+    return {
+        from: vi.fn(() => bucketApi),
+    };
+};
 
 let bucketApi: ReturnType<typeof makeBucketApi>;
 let mockClient: ReturnType<typeof makeMockClient>;

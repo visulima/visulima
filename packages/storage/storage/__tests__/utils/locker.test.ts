@@ -1,17 +1,18 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, expectTypeOf, it } from "vitest";
 
 import Locker from "../../src/utils/locker";
 
 describe("utils", () => {
     describe(Locker, () => {
         it("should successfully lock a key and return a unique token", async () => {
-            expect.assertions(2);
+            expect.assertions(1);
 
             const locker = new Locker();
 
             const token = locker.lock("key");
 
-            expect(typeof token).toBe("string");
+            expectTypeOf(token).toBeString();
+
             expect(token.length).toBeGreaterThan(0);
         });
 

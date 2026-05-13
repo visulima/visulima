@@ -5,18 +5,20 @@ import GoogleDriveStorage from "../../../src/storage/google-drive/google-drive-s
 import type { GoogleDriveStorageOptions } from "../../../src/storage/google-drive/types";
 import { storageOptions } from "../../__helpers__/config";
 
-const makeMockDrive = () => { return {
-    files: {
-        copy: vi.fn(),
-        create: vi.fn(),
-        delete: vi.fn(),
-        get: vi.fn(),
-        list: vi.fn(),
-    },
-    permissions: {
-        create: vi.fn(),
-    },
-}; };
+const makeMockDrive = () => {
+    return {
+        files: {
+            copy: vi.fn(),
+            create: vi.fn(),
+            delete: vi.fn(),
+            get: vi.fn(),
+            list: vi.fn(),
+        },
+        permissions: {
+            create: vi.fn(),
+        },
+    };
+};
 
 let mockDrive: ReturnType<typeof makeMockDrive>;
 

@@ -95,7 +95,8 @@ const buildJwtConfig = (jwt: BoxJwtOptions): JwtConfig => {
     return JwtConfig.fromConfigFile(jwt.configFilePath);
 };
 
-const countAuthMethods = (options: BoxStorageOptions): number => [options.developerToken, options.oauth, options.ccg, options.jwt].filter((v) => v !== undefined).length;
+const countAuthMethods = (options: BoxStorageOptions): number =>
+    [options.developerToken, options.oauth, options.ccg, options.jwt].filter((v) => v !== undefined).length;
 
 const resolveAuth = (options: BoxStorageOptions): ResolvedAuth => {
     if (options.client) {

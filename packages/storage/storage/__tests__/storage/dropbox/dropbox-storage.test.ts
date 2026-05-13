@@ -5,20 +5,22 @@ import DropboxStorage from "../../../src/storage/dropbox/dropbox-storage";
 import type { DropboxStorageOptions } from "../../../src/storage/dropbox/types";
 import { storageOptions } from "../../__helpers__/config";
 
-const makeMockClient = () => { return {
-    auth: {
-        getAccessToken: vi.fn(() => "tok"),
-        setAccessToken: vi.fn(),
-    },
-    filesCopyV2: vi.fn(),
-    filesDeleteV2: vi.fn(),
-    filesDownload: vi.fn(),
-    filesGetTemporaryLink: vi.fn(),
-    filesMoveV2: vi.fn(),
-    filesUpload: vi.fn(),
-    sharingCreateSharedLinkWithSettings: vi.fn(),
-    sharingListSharedLinks: vi.fn(),
-}; };
+const makeMockClient = () => {
+    return {
+        auth: {
+            getAccessToken: vi.fn(() => "tok"),
+            setAccessToken: vi.fn(),
+        },
+        filesCopyV2: vi.fn(),
+        filesDeleteV2: vi.fn(),
+        filesDownload: vi.fn(),
+        filesGetTemporaryLink: vi.fn(),
+        filesMoveV2: vi.fn(),
+        filesUpload: vi.fn(),
+        sharingCreateSharedLinkWithSettings: vi.fn(),
+        sharingListSharedLinks: vi.fn(),
+    };
+};
 
 let mockClient: ReturnType<typeof makeMockClient>;
 

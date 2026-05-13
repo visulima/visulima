@@ -18,7 +18,9 @@ describe(createOAuthRefreshHandle, () => {
         expect.assertions(3);
 
         fetchSpy.mockResolvedValue({
-            json: async () => { return { access_token: "tok-1", expires_in: 3600 }; },
+            json: async () => {
+                return { access_token: "tok-1", expires_in: 3600 };
+            },
             ok: true,
         });
 
@@ -44,11 +46,15 @@ describe(createOAuthRefreshHandle, () => {
 
         fetchSpy
             .mockResolvedValueOnce({
-                json: async () => { return { access_token: "tok-1", expires_in: 100 }; },
+                json: async () => {
+                    return { access_token: "tok-1", expires_in: 100 };
+                },
                 ok: true,
             })
             .mockResolvedValueOnce({
-                json: async () => { return { access_token: "tok-2", expires_in: 100 }; },
+                json: async () => {
+                    return { access_token: "tok-2", expires_in: 100 };
+                },
                 ok: true,
             });
 
@@ -78,7 +84,9 @@ describe(createOAuthRefreshHandle, () => {
         vi.setSystemTime(new Date("2026-01-01T00:00:00Z"));
 
         fetchSpy.mockResolvedValue({
-            json: async () => { return { access_token: "tok-1" }; },
+            json: async () => {
+                return { access_token: "tok-1" };
+            },
             ok: true,
         });
 
@@ -109,7 +117,9 @@ describe(createOAuthRefreshHandle, () => {
         expect.assertions(2);
 
         fetchSpy.mockResolvedValue({
-            json: async () => { return { access_token: "tok-1", expires_in: 3600 }; },
+            json: async () => {
+                return { access_token: "tok-1", expires_in: 3600 };
+            },
             ok: true,
         });
 
@@ -150,7 +160,9 @@ describe(createOAuthRefreshHandle, () => {
         expect.assertions(1);
 
         fetchSpy.mockResolvedValue({
-            json: async () => { return { expires_in: 3600 }; },
+            json: async () => {
+                return { expires_in: 3600 };
+            },
             ok: true,
         });
 
@@ -167,7 +179,9 @@ describe(createOAuthRefreshHandle, () => {
         expect.assertions(3);
 
         fetchSpy.mockResolvedValue({
-            json: async () => { return { access_token: "tok", expires_in: 3600 }; },
+            json: async () => {
+                return { access_token: "tok", expires_in: 3600 };
+            },
             ok: true,
         });
 

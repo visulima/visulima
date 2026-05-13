@@ -5,32 +5,34 @@ import BoxStorage from "../../../src/storage/box/box-storage";
 import type { BoxStorageOptions } from "../../../src/storage/box/types";
 import { storageOptions } from "../../__helpers__/config";
 
-const makeMockClient = () => { return {
-    chunkedUploads: {
-        uploadBigFile: vi.fn(),
-    },
-    downloads: {
-        getDownloadFileUrl: vi.fn(),
-    },
-    files: {
-        copyFile: vi.fn(),
-        deleteFileById: vi.fn(),
-        getFileById: vi.fn(),
-        updateFileById: vi.fn(),
-    },
-    folders: {
-        createFolder: vi.fn(),
-        getFolderItems: vi.fn(),
-    },
-    sharedLinksFiles: {
-        addShareLinkToFile: vi.fn(),
-        getSharedLinkForFile: vi.fn(),
-    },
-    uploads: {
-        uploadFile: vi.fn(),
-        uploadFileVersion: vi.fn(),
-    },
-}; };
+const makeMockClient = () => {
+    return {
+        chunkedUploads: {
+            uploadBigFile: vi.fn(),
+        },
+        downloads: {
+            getDownloadFileUrl: vi.fn(),
+        },
+        files: {
+            copyFile: vi.fn(),
+            deleteFileById: vi.fn(),
+            getFileById: vi.fn(),
+            updateFileById: vi.fn(),
+        },
+        folders: {
+            createFolder: vi.fn(),
+            getFolderItems: vi.fn(),
+        },
+        sharedLinksFiles: {
+            addShareLinkToFile: vi.fn(),
+            getSharedLinkForFile: vi.fn(),
+        },
+        uploads: {
+            uploadFile: vi.fn(),
+            uploadFileVersion: vi.fn(),
+        },
+    };
+};
 
 let mockClient: ReturnType<typeof makeMockClient>;
 const constructorCalls: { args: unknown[]; auth: string }[] = [];
@@ -67,9 +69,13 @@ vi.mock(import("box-typescript-sdk-gen"), () => {
             }
         },
         JwtConfig: class {
-            public static fromConfigFile = vi.fn(() => { return {}; });
+            public static fromConfigFile = vi.fn(() => {
+                return {};
+            });
 
-            public static fromConfigJsonString = vi.fn(() => { return {}; });
+            public static fromConfigJsonString = vi.fn(() => {
+                return {};
+            });
         },
         OAuthConfig: class {
             public constructor(...args: unknown[]) {

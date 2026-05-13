@@ -226,7 +226,14 @@ describe("files facade", () => {
     });
 
     describe("path traversal hardening", () => {
-        const traversalKeys: string[] = ["../etc/passwd", "foo/../../bar", String.raw`..\windows\system32`, "/etc/passwd", String.raw`C:\Windows\system32`, "with\0null"];
+        const traversalKeys: string[] = [
+            "../etc/passwd",
+            "foo/../../bar",
+            String.raw`..\windows\system32`,
+            "/etc/passwd",
+            String.raw`C:\Windows\system32`,
+            "with\0null",
+        ];
 
         for (const key of traversalKeys) {
             it(`rejects upload for unsafe key ${JSON.stringify(key)}`, async () => {
