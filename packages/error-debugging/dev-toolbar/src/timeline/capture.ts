@@ -62,11 +62,11 @@ const startTimelineCapture = (): void => {
             store.addEvent("errors", {
                 data: err
                     ? {
-                          loc: err.loc,
-                          message: err.message,
-                          plugin: err.plugin,
-                          stack: err.stack,
-                      }
+                        loc: err.loc,
+                        message: err.message,
+                        plugin: err.plugin,
+                        stack: err.stack,
+                    }
                     : undefined,
                 id: generateId("vite-err"),
                 level: "error",

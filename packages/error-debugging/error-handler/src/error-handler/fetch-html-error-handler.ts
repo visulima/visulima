@@ -220,7 +220,7 @@ class MockServerResponse {
 }
 /* eslint-enable class-methods-use-this */
 
-export const fetchHtmlErrorHandler = (options: HtmlErrorHandlerOptions = {}): ((error: Error, request: Request) => Promise<Response>) => {
+export const fetchHtmlErrorHandler = (options: HtmlErrorHandlerOptions = {}): (error: Error, request: Request) => Promise<Response> => {
     const nodeHandler = htmlErrorHandler(options);
 
     return async (error: Error, request: Request): Promise<Response> => {

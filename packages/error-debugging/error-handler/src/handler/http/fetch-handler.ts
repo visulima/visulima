@@ -10,7 +10,7 @@ const fetchHandler = (
         onError?: (error: Error, request: Request) => void | Promise<void>;
         showTrace?: boolean;
     } = {},
-): ((request: Request) => Promise<Response>) => {
+): (request: Request) => Promise<Response> => {
     const defaultHtml = fetchHtmlErrorHandler(options);
 
     const negotiated = createFetchNegotiatedErrorHandler(options.extraHandlers ?? [], options.showTrace ?? true, defaultHtml);
