@@ -194,7 +194,7 @@ class ContentSection extends BaseSection {
             const paddingRight = 1;
             const resolvedTerminalWidth = resolveTerminalWidth(getTerminalWidth());
 
-            // eslint-disable-next-line no-confusing-arrow -- `@stylistic/no-extra-parens` and `arrow-body-style` reject the alternative phrasings
+            // eslint-disable-next-line no-confusing-arrow -- ternary body is short enough to stay inline
             const formatRow = (row: string | string[]): string[] => Array.isArray(row) ? row.map((cell) => templateFormat(cell)) : [templateFormat(row)];
             const formattedRows: string[][] = content.map((row) => formatRow(row));
 
