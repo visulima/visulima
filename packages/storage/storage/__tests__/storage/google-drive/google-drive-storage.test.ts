@@ -1,10 +1,11 @@
+/* eslint-disable max-classes-per-file, @typescript-eslint/no-useless-constructor, class-methods-use-this -- mock SDK classes for vendor library shape */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import GoogleDriveStorage from "../../../src/storage/google-drive/google-drive-storage";
 import type { GoogleDriveStorageOptions } from "../../../src/storage/google-drive/types";
 import { storageOptions } from "../../__helpers__/config";
 
-const makeMockDrive = () => ({
+const makeMockDrive = () => { return {
     files: {
         copy: vi.fn(),
         create: vi.fn(),
@@ -15,7 +16,7 @@ const makeMockDrive = () => ({
     permissions: {
         create: vi.fn(),
     },
-});
+}; };
 
 let mockDrive: ReturnType<typeof makeMockDrive>;
 
@@ -29,15 +30,25 @@ vi.mock(import("google-auth-library"), () => {
     return {
         GoogleAuth: class {
             public constructor() {}
-            public async getAccessToken(): Promise<string> { return "token-from-google-auth"; }
+
+            public async getAccessToken(): Promise<string> {
+                return "token-from-google-auth";
+            }
         },
         JWT: class {
             public constructor() {}
-            public async getAccessToken(): Promise<{ token: string }> { return { token: "token-from-jwt" }; }
+
+            public async getAccessToken(): Promise<{ token: string }> {
+                return { token: "token-from-jwt" };
+            }
         },
         OAuth2Client: class {
             public constructor() {}
-            public async getAccessToken(): Promise<{ token: string }> { return { token: "token-from-oauth" }; }
+
+            public async getAccessToken(): Promise<{ token: string }> {
+                return { token: "token-from-oauth" };
+            }
+
             public setCredentials(): void {}
         },
     };
@@ -59,9 +70,12 @@ describe(GoogleDriveStorage, () => {
         it("rejects when no auth source is configured", () => {
             expect.assertions(1);
 
-            expect(() => new GoogleDriveStorage({
-                ...(storageOptions as GoogleDriveStorageOptions),
-            })).toThrow(/missing auth/);
+            expect(
+                () =>
+                    new GoogleDriveStorage({
+                        ...(storageOptions as GoogleDriveStorageOptions),
+                    }),
+            ).toThrow(/missing auth/);
         });
 
         it("accepts a pre-built client without any other auth", () => {
@@ -123,8 +137,7 @@ describe(GoogleDriveStorage, () => {
                 client: mockDrive as unknown as GoogleDriveStorageOptions["client"],
             });
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta")
-                .mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
 
             mockDrive.files.list.mockResolvedValueOnce({
                 data: { files: [{ id: "file-1" }] },
@@ -133,7 +146,13 @@ describe(GoogleDriveStorage, () => {
 
             await storage.delete({ id: "video.mp4" });
 
-            expect(mockDrive.files.list).toHaveBeenCalled();
+            expect(mockDrive.files.list).toHaveBeenCalledWith({
+                fields: "files(id)",
+                includeItemsFromAllDrives: true,
+                pageSize: 2,
+                q: "appProperties has { key='fsdkKey' and value='video.mp4' } and trashed=false",
+                supportsAllDrives: true,
+            });
             expect(mockDrive.files.delete).toHaveBeenCalledWith(expect.objectContaining({ fileId: "file-1" }));
         });
 
@@ -145,8 +164,7 @@ describe(GoogleDriveStorage, () => {
                 client: mockDrive as unknown as GoogleDriveStorageOptions["client"],
             });
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta")
-                .mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
 
             mockDrive.files.list.mockResolvedValueOnce({
                 data: { files: [{ id: "file-1" }] },
@@ -176,14 +194,16 @@ describe(GoogleDriveStorage, () => {
 
             const result = await storage.copy("source.mp4", "dest/copy.mp4");
 
-            expect(mockDrive.files.copy).toHaveBeenCalledWith(expect.objectContaining({
-                fileId: "src-id",
-                requestBody: expect.objectContaining({
-                    appProperties: { fsdkKey: "dest/copy.mp4" },
-                    name: "copy.mp4",
-                    parents: ["folder-xyz"],
+            expect(mockDrive.files.copy).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    fileId: "src-id",
+                    requestBody: expect.objectContaining({
+                        appProperties: { fsdkKey: "dest/copy.mp4" },
+                        name: "copy.mp4",
+                        parents: ["folder-xyz"],
+                    }),
                 }),
-            }));
+            );
             expect(result.driveFileId).toBe("dst-id");
         });
     });
@@ -209,8 +229,9 @@ describe(GoogleDriveStorage, () => {
                 publicByDefault: true,
             });
 
-            await expect(storage.getReadUrl("file.mp4", { responseContentDisposition: "attachment" }))
-                .rejects.toThrow(/responseContentDisposition.*not supported/);
+            await expect(storage.getReadUrl("file.mp4", { responseContentDisposition: "attachment" })).rejects.toThrow(
+                /responseContentDisposition.*not supported/,
+            );
         });
 
         it("returns the Drive public download URL when publicByDefault is true", async () => {

@@ -78,39 +78,51 @@ describe(OneDriveStorage, () => {
         it("rejects more than one of driveId / siteId / userId", () => {
             expect.assertions(1);
 
-            expect(() => new OneDriveStorage({
-                ...(storageOptions as OneDriveStorageOptions),
-                accessToken: "tok",
-                driveId: "d",
-                siteId: "s",
-            })).toThrow(/at most one of `driveId`, `siteId`, or `userId`/);
+            expect(
+                () =>
+                    new OneDriveStorage({
+                        ...(storageOptions as OneDriveStorageOptions),
+                        accessToken: "tok",
+                        driveId: "d",
+                        siteId: "s",
+                    }),
+            ).toThrow(/at most one of `driveId`, `siteId`, or `userId`/);
         });
 
         it("rejects clientCredentials without an explicit target", () => {
             expect.assertions(1);
 
-            expect(() => new OneDriveStorage({
-                ...(storageOptions as OneDriveStorageOptions),
-                clientCredentials: { clientId: "id", clientSecret: "s", tenantId: "t" },
-            })).toThrow(/clientCredentials.*requires.*driveId.*siteId.*userId/);
+            expect(
+                () =>
+                    new OneDriveStorage({
+                        ...(storageOptions as OneDriveStorageOptions),
+                        clientCredentials: { clientId: "id", clientSecret: "s", tenantId: "t" },
+                    }),
+            ).toThrow(/clientCredentials.*requires.*driveId.*siteId.*userId/);
         });
 
         it("rejects more than one auth option", () => {
             expect.assertions(1);
 
-            expect(() => new OneDriveStorage({
-                ...(storageOptions as OneDriveStorageOptions),
-                accessToken: "tok",
-                oauth: { clientId: "id", refreshToken: "rt" },
-            })).toThrow(/exactly one of `accessToken`, `clientCredentials`, or `oauth`/);
+            expect(
+                () =>
+                    new OneDriveStorage({
+                        ...(storageOptions as OneDriveStorageOptions),
+                        accessToken: "tok",
+                        oauth: { clientId: "id", refreshToken: "rt" },
+                    }),
+            ).toThrow(/exactly one of `accessToken`, `clientCredentials`, or `oauth`/);
         });
 
         it("rejects when no auth source is configured", () => {
             expect.assertions(1);
 
-            expect(() => new OneDriveStorage({
-                ...(storageOptions as OneDriveStorageOptions),
-            })).toThrow(/missing auth/);
+            expect(
+                () =>
+                    new OneDriveStorage({
+                        ...(storageOptions as OneDriveStorageOptions),
+                    }),
+            ).toThrow(/missing auth/);
         });
 
         it("accepts a pre-built client without any other auth", () => {
@@ -147,8 +159,7 @@ describe(OneDriveStorage, () => {
             });
 
             // delete looks up meta first (will fail to find), then deletes by id
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta")
-                .mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
 
             await storage.delete({ id: "folder/sub/file.mp4" });
 
@@ -168,8 +179,7 @@ describe(OneDriveStorage, () => {
                 driveId: "drive-xyz",
             });
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta")
-                .mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
 
             await storage.delete({ id: "file.mp4" });
 
@@ -186,8 +196,7 @@ describe(OneDriveStorage, () => {
                 accessToken: "tok",
             });
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta")
-                .mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
 
             await storage.delete({ id: "foo bar/baz qux.mp4" });
 
@@ -204,8 +213,7 @@ describe(OneDriveStorage, () => {
                 accessToken: "tok",
             });
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta")
-                .mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
 
             mockClient.api.mockImplementationOnce((url: string) => {
                 const call = makeApi(url);
@@ -248,7 +256,7 @@ describe(OneDriveStorage, () => {
 
             const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
                 headers: new Headers(),
-                json: async () => ({ resourceId: "01ITEM", status: "completed" }),
+                json: async () => { return { resourceId: "01ITEM", status: "completed" }; },
                 ok: true,
                 status: 200,
             } as Response);
@@ -412,8 +420,9 @@ describe(OneDriveStorage, () => {
                 accessToken: "tok",
             });
 
-            await expect(storage.getReadUrl("file.mp4", { responseContentDisposition: "attachment" }))
-                .rejects.toThrow(/responseContentDisposition.*not supported/);
+            await expect(storage.getReadUrl("file.mp4", { responseContentDisposition: "attachment" })).rejects.toThrow(
+                /responseContentDisposition.*not supported/,
+            );
         });
     });
 

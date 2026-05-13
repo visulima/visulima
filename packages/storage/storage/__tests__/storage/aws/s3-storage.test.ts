@@ -1,6 +1,4 @@
-import type {
-    GetObjectCommand,
-    PutObjectCommand } from "@aws-sdk/client-s3";
+import type { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import {
     AbortMultipartUploadCommand,
     CompleteMultipartUploadCommand,

@@ -173,13 +173,15 @@ export const executors: Executors = {
         const results = await files.list({ limit, prefix });
 
         return {
-            items: results.map((item): ListFilesItem => { return {
-                contentType: item.contentType,
-                ...(item.etag ? { etag: item.etag } : {}),
-                key: item.key,
-                ...(serializeLastModified(item.lastModified) ? { lastModified: serializeLastModified(item.lastModified) } : {}),
-                ...(typeof item.size === "number" ? { size: item.size } : {}),
-            }; }),
+            items: results.map((item): ListFilesItem => {
+                return {
+                    contentType: item.contentType,
+                    ...(item.etag ? { etag: item.etag } : {}),
+                    key: item.key,
+                    ...(serializeLastModified(item.lastModified) ? { lastModified: serializeLastModified(item.lastModified) } : {}),
+                    ...(typeof item.size === "number" ? { size: item.size } : {}),
+                };
+            }),
         };
     },
 

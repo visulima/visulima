@@ -18,9 +18,9 @@ describe(createOAuthRefreshHandle, () => {
         expect.assertions(3);
 
         fetchSpy.mockResolvedValue({
-            json: async () => ({ access_token: "tok-1", expires_in: 3600 }),
+            json: async () => { return { access_token: "tok-1", expires_in: 3600 }; },
             ok: true,
-        } as Response);
+        });
 
         const handle = createOAuthRefreshHandle({
             buildBody: () => new URLSearchParams({ grant_type: "refresh_token" }),
@@ -38,18 +38,19 @@ describe(createOAuthRefreshHandle, () => {
 
     it("refreshes when the cached token is within the leeway window", async () => {
         expect.assertions(3);
+
         vi.useFakeTimers();
         vi.setSystemTime(new Date("2026-01-01T00:00:00Z"));
 
         fetchSpy
             .mockResolvedValueOnce({
-                json: async () => ({ access_token: "tok-1", expires_in: 100 }),
+                json: async () => { return { access_token: "tok-1", expires_in: 100 }; },
                 ok: true,
-            } as Response)
+            })
             .mockResolvedValueOnce({
-                json: async () => ({ access_token: "tok-2", expires_in: 100 }),
+                json: async () => { return { access_token: "tok-2", expires_in: 100 }; },
                 ok: true,
-            } as Response);
+            });
 
         const handle = createOAuthRefreshHandle({
             buildBody: () => new URLSearchParams({ grant_type: "refresh_token" }),
@@ -72,13 +73,14 @@ describe(createOAuthRefreshHandle, () => {
 
     it("falls back to 3600s when expires_in is missing", async () => {
         expect.assertions(2);
+
         vi.useFakeTimers();
         vi.setSystemTime(new Date("2026-01-01T00:00:00Z"));
 
         fetchSpy.mockResolvedValue({
-            json: async () => ({ access_token: "tok-1" }),
+            json: async () => { return { access_token: "tok-1" }; },
             ok: true,
-        } as Response);
+        });
 
         const handle = createOAuthRefreshHandle({
             buildBody: () => new URLSearchParams(),
@@ -107,9 +109,9 @@ describe(createOAuthRefreshHandle, () => {
         expect.assertions(2);
 
         fetchSpy.mockResolvedValue({
-            json: async () => ({ access_token: "tok-1", expires_in: 3600 }),
+            json: async () => { return { access_token: "tok-1", expires_in: 3600 }; },
             ok: true,
-        } as Response);
+        });
 
         const onRefresh = vi.fn();
         const handle = createOAuthRefreshHandle({
@@ -133,7 +135,7 @@ describe(createOAuthRefreshHandle, () => {
             status: 400,
             statusText: "Bad Request",
             text: async () => "invalid_grant",
-        } as Response);
+        });
 
         const handle = createOAuthRefreshHandle({
             buildBody: () => new URLSearchParams(),
@@ -141,18 +143,16 @@ describe(createOAuthRefreshHandle, () => {
             tokenUrl: "https://example/token",
         });
 
-        await expect(handle.getAccessToken()).rejects.toThrow(
-            /Dropbox: token exchange failed \(400\): invalid_grant/,
-        );
+        await expect(handle.getAccessToken()).rejects.toThrow(/Dropbox: token exchange failed \(400\): invalid_grant/);
     });
 
     it("throws when the response is missing access_token", async () => {
         expect.assertions(1);
 
         fetchSpy.mockResolvedValue({
-            json: async () => ({ expires_in: 3600 }),
+            json: async () => { return { expires_in: 3600 }; },
             ok: true,
-        } as Response);
+        });
 
         const handle = createOAuthRefreshHandle({
             buildBody: () => new URLSearchParams(),
@@ -160,18 +160,16 @@ describe(createOAuthRefreshHandle, () => {
             tokenUrl: "https://example/token",
         });
 
-        await expect(handle.getAccessToken()).rejects.toThrow(
-            /OneDrive: token response missing access_token/,
-        );
+        await expect(handle.getAccessToken()).rejects.toThrow(/OneDrive: token response missing access_token/);
     });
 
-    it("POSTs the buildBody output as application/x-www-form-urlencoded", async () => {
+    it("pOSTs the buildBody output as application/x-www-form-urlencoded", async () => {
         expect.assertions(3);
 
         fetchSpy.mockResolvedValue({
-            json: async () => ({ access_token: "tok", expires_in: 3600 }),
+            json: async () => { return { access_token: "tok", expires_in: 3600 }; },
             ok: true,
-        } as Response);
+        });
 
         const handle = createOAuthRefreshHandle({
             buildBody: () => new URLSearchParams({ client_id: "abc", grant_type: "refresh_token" }),

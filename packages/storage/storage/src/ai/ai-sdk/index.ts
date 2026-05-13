@@ -75,12 +75,7 @@ export type ReadOnlyFileTools = Pick<FileTools, FileReadToolName>;
 export function createFileTools(options: FileToolsOptions & { readOnly: true }): ReadOnlyFileTools;
 export function createFileTools(options: FileToolsOptions & { readOnly?: false | undefined }): FileTools;
 export function createFileTools(options: FileToolsOptions): FileTools | ReadOnlyFileTools;
-export function createFileTools({
-    files,
-    overrides,
-    readOnly = false,
-    requireApproval = true,
-}: FileToolsOptions): FileTools | ReadOnlyFileTools {
+export function createFileTools({ files, overrides, readOnly = false, requireApproval = true }: FileToolsOptions): FileTools | ReadOnlyFileTools {
     const approval = (name: FileWriteToolName) => {
         return {
             needsApproval: resolveApproval(name, requireApproval),
@@ -114,9 +109,7 @@ export function createFileTools({
         return allTools;
     }
 
-    return Object.fromEntries(
-        Object.entries(allTools).filter(([name]) => !WRITE_TOOL_NAME_SET.has(name as FileWriteToolName)),
-    ) as ReadOnlyFileTools;
+    return Object.fromEntries(Object.entries(allTools).filter(([name]) => !WRITE_TOOL_NAME_SET.has(name as FileWriteToolName))) as ReadOnlyFileTools;
 }
 
 export { copyFile, deleteFile, downloadFile, getFileMetadata, getFileUrl, listFiles, signUploadUrl, uploadFile } from "./tools";

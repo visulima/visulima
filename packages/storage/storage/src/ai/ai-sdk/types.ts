@@ -14,14 +14,5 @@ export interface ToolOptions {
  * the tool's behavior and contract and shouldn't be patched at this layer.
  */
 export type ToolOverrides = Partial<
-    Pick<
-        Tool,
-        | "description"
-        | "needsApproval"
-        | "onInputAvailable"
-        | "onInputDelta"
-        | "onInputStart"
-        | "providerOptions"
-        | "toModelOutput"
-    >
+    Pick<Tool, "description" | "needsApproval" | "onInputAvailable" | "onInputDelta" | "onInputStart" | "providerOptions" | "toModelOutput">
 >;

@@ -1,6 +1,8 @@
+/* eslint-disable max-classes-per-file -- helper auth wrapper class is co-located with the storage backend */
 import { Readable } from "node:stream";
 
-import { drive, type drive_v3 } from "@googleapis/drive";
+import type { drive_v3 } from "@googleapis/drive";
+import { drive } from "@googleapis/drive";
 import { GoogleAuth, JWT, OAuth2Client } from "google-auth-library";
 
 import { ERRORS, throwErrorCode, wrapStorageError } from "../../utils/errors";
@@ -21,12 +23,12 @@ const FILE_FIELDS = "id, name, size, mimeType, md5Checksum, modifiedTime, appPro
 type AuthHandle = GoogleAuth | JWT | OAuth2Client;
 
 const basename = (key: string): string => {
-    const idx = key.lastIndexOf("/");
+    const index = key.lastIndexOf("/");
 
-    return idx === -1 ? key : key.slice(idx + 1);
+    return index === -1 ? key : key.slice(index + 1);
 };
 
-const escapeQueryValue = (value: string): string => value.replaceAll("\\", "\\\\").replaceAll("'", "\\'");
+const escapeQueryValue = (value: string): string => value.replaceAll("\\", "\\\\").replaceAll("'", String.raw`\'`);
 
 class LRU<V> {
     readonly #cap: number;
@@ -71,30 +73,30 @@ class LRU<V> {
     }
 }
 
-const buildAuth = (opts: GoogleDriveStorageOptions): AuthHandle | undefined => {
-    const subject = opts.subject ?? process.env.GOOGLE_DRIVE_SUBJECT;
+const buildAuth = (options: GoogleDriveStorageOptions): AuthHandle | undefined => {
+    const subject = options.subject ?? process.env.GOOGLE_DRIVE_SUBJECT;
 
-    if (opts.credentials) {
+    if (options.credentials) {
         return new JWT({
-            email: opts.credentials.client_email,
-            key: opts.credentials.private_key,
+            email: options.credentials.client_email,
+            key: options.credentials.private_key,
             scopes: [DRIVE_SCOPE],
             ...(subject && { subject }),
         });
     }
 
-    if (opts.keyFilename) {
+    if (options.keyFilename) {
         return new GoogleAuth({
-            keyFile: opts.keyFilename,
+            keyFile: options.keyFilename,
             scopes: [DRIVE_SCOPE],
             ...(subject && { clientOptions: { subject } }),
         });
     }
 
-    if (opts.oauth) {
-        const o = new OAuth2Client({ clientId: opts.oauth.clientId, clientSecret: opts.oauth.clientSecret });
+    if (options.oauth) {
+        const o = new OAuth2Client({ clientId: options.oauth.clientId, clientSecret: options.oauth.clientSecret });
 
-        o.setCredentials({ refresh_token: opts.oauth.refreshToken });
+        o.setCredentials({ refresh_token: options.oauth.refreshToken });
 
         return o;
     }
@@ -148,7 +150,7 @@ const toUint8 = (data: unknown): Uint8Array => {
     }
 
     if (ArrayBuffer.isView(data)) {
-        const v = data as ArrayBufferView;
+        const v = data;
 
         return new Uint8Array(v.buffer, v.byteOffset, v.byteLength);
     }
@@ -159,6 +161,8 @@ const toUint8 = (data: unknown): Uint8Array => {
 
     throw new Error("Google Drive: unexpected response payload shape");
 };
+
+/* eslint-disable jsdoc/check-indentation -- bullet-list continuations are indented for readability */
 
 /**
  * Google Drive storage backend.
@@ -220,13 +224,13 @@ class GoogleDriveStorage extends BaseStorage<GoogleDriveFile> {
 
             if (!built) {
                 throw new Error(
-                    "Google Drive storage: missing auth. Pass `client`, `credentials`, `keyFilename`, or `oauth`. "
-                        + "Env fallbacks: GOOGLE_DRIVE_CLIENT_EMAIL + GOOGLE_DRIVE_PRIVATE_KEY, or GOOGLE_DRIVE_KEY_FILE.",
+                    "Google Drive storage: missing auth. Pass `client`, `credentials`, `keyFilename`, or `oauth`. " +
+                        "Env fallbacks: GOOGLE_DRIVE_CLIENT_EMAIL + GOOGLE_DRIVE_PRIVATE_KEY, or GOOGLE_DRIVE_KEY_FILE.",
                 );
             }
 
             this.authForTokens = built;
-            this.driveClient = drive({ auth: built as never, version: "v3" });
+            this.driveClient = drive({ auth: built, version: "v3" });
         }
 
         const driveId = config.driveId ?? process.env.GOOGLE_DRIVE_ID;
@@ -316,7 +320,7 @@ class GoogleDriveStorage extends BaseStorage<GoogleDriveFile> {
                         [KEY_PROP]: key,
                     };
 
-                    const res = await this.driveClient.files.create({
+                    const response = await this.driveClient.files.create({
                         ...this.sharedDriveParams,
                         fields: "id, size, mimeType, md5Checksum, modifiedTime",
                         media: {
@@ -331,7 +335,7 @@ class GoogleDriveStorage extends BaseStorage<GoogleDriveFile> {
                         },
                     });
 
-                    const { data } = res;
+                    const { data } = response;
                     const fileId = data.id ?? undefined;
 
                     if (fileId) {
@@ -421,13 +425,13 @@ class GoogleDriveStorage extends BaseStorage<GoogleDriveFile> {
                 fileId = await this.resolveFileId(id);
             }
 
-            const [metaRes, mediaRes] = await Promise.all([
+            const [metaResponse, mediaResponse] = await Promise.all([
                 this.driveClient.files.get({ ...this.sharedDriveParams, fields: FILE_FIELDS, fileId }),
                 this.driveClient.files.get({ ...this.sharedDriveParams, alt: "media", fileId }, { responseType: "arraybuffer" }),
             ]);
 
-            const data = metaRes.data;
-            const bytes = toUint8(mediaRes.data as unknown);
+            const { data } = metaResponse;
+            const bytes = toUint8(mediaResponse.data);
             const buffer = Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength);
             const props = (data.appProperties ?? {}) as Record<string, string>;
 
@@ -449,7 +453,7 @@ class GoogleDriveStorage extends BaseStorage<GoogleDriveFile> {
     public async copy(name: string, destination: string): Promise<GoogleDriveFile> {
         return this.instrumentOperation("copy", async () => {
             const fromId = await this.resolveFileId(name);
-            const res = await this.driveClient.files.copy({
+            const response = await this.driveClient.files.copy({
                 ...this.sharedDriveParams,
                 fields: "id, size, mimeType, md5Checksum",
                 fileId: fromId,
@@ -460,14 +464,14 @@ class GoogleDriveStorage extends BaseStorage<GoogleDriveFile> {
                 },
             });
 
-            const newId = res.data.id ?? undefined;
+            const newId = response.data.id ?? undefined;
 
             if (newId) {
                 this.fileIdCache.set(destination, newId);
             }
 
             const file = new GoogleDriveFile({
-                contentType: res.data.mimeType ?? "application/octet-stream",
+                contentType: response.data.mimeType ?? "application/octet-stream",
                 metadata: {},
                 originalName: destination,
             });
@@ -475,9 +479,9 @@ class GoogleDriveStorage extends BaseStorage<GoogleDriveFile> {
             file.id = destination;
             file.name = destination;
             file.driveFileId = newId;
-            file.mimeType = res.data.mimeType ?? undefined;
-            file.ETag = res.data.md5Checksum ?? undefined;
-            file.size = Number(res.data.size ?? 0);
+            file.mimeType = response.data.mimeType ?? undefined;
+            file.ETag = response.data.md5Checksum ?? undefined;
+            file.size = Number(response.data.size ?? 0);
 
             return file;
         });
@@ -498,14 +502,14 @@ class GoogleDriveStorage extends BaseStorage<GoogleDriveFile> {
             "list",
             async () => {
                 const q = `'${escapeQueryValue(this.rootFolderId)}' in parents and trashed=false`;
-                const res = await this.driveClient.files.list({
+                const response = await this.driveClient.files.list({
                     ...this.sharedDriveParams,
                     fields: `nextPageToken, files(${FILE_FIELDS})`,
                     pageSize: limit,
                     q,
                 });
 
-                const files = res.data.files ?? [];
+                const files = response.data.files ?? [];
                 const out: GoogleDriveFile[] = [];
 
                 for (const item of files) {
@@ -557,8 +561,8 @@ class GoogleDriveStorage extends BaseStorage<GoogleDriveFile> {
         if (!this.publicByDefault) {
             return throwErrorCode(
                 ERRORS.METHOD_NOT_ALLOWED,
-                "Google Drive: getReadUrl() requires the adapter to be constructed with `publicByDefault: true`. "
-                    + "Drive has no signed URL primitive — use get() for private files.",
+                "Google Drive: getReadUrl() requires the adapter to be constructed with `publicByDefault: true`. " +
+                    "Drive has no signed URL primitive — use get() for private files.",
             );
         }
 
@@ -601,23 +605,23 @@ class GoogleDriveStorage extends BaseStorage<GoogleDriveFile> {
             parents: [this.rootFolderId],
         };
 
-        const res = await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&supportsAllDrives=true", {
+        const response = await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&supportsAllDrives=true", {
             body: JSON.stringify(initBody),
             headers,
             method: "POST",
         });
 
-        if (!res.ok) {
-            const text = await res.text().catch(() => "");
+        if (!response.ok) {
+            const text = await response.text().catch(() => "");
 
-            throw wrapStorageError(new Error(`${res.statusText} ${text}`.trim() || res.statusText), {
+            throw wrapStorageError(new Error(`${response.statusText} ${text}`.trim() || response.statusText), {
                 adapter: "Google Drive",
                 operation: "resumable upload session",
-                status: res.status,
+                status: response.status,
             });
         }
 
-        const sessionUrl = res.headers.get("location") ?? res.headers.get("Location");
+        const sessionUrl = response.headers.get("location") ?? response.headers.get("Location");
 
         if (!sessionUrl) {
             throw wrapStorageError(new Error("response missing Location header"), {
@@ -638,14 +642,14 @@ class GoogleDriveStorage extends BaseStorage<GoogleDriveFile> {
         }
 
         const q = `appProperties has { key='${KEY_PROP}' and value='${escapeQueryValue(key)}' } and trashed=false`;
-        const res = await this.driveClient.files.list({
+        const response = await this.driveClient.files.list({
             ...this.sharedDriveParams,
             fields: "files(id)",
             pageSize: 2,
             q,
         });
 
-        const files = res.data.files ?? [];
+        const files = response.data.files ?? [];
 
         if (files.length === 0) {
             throw new Error(`Google Drive: not found: ${key}`);
@@ -674,17 +678,17 @@ const isNotFoundError = (error: unknown): boolean => {
         return false;
     }
 
-    const e = error as { code?: number | string; response?: { status?: number }; status?: number };
+    const typedError = error as { code?: number | string; response?: { status?: number }; status?: number };
 
-    if (typeof e.code === "number" && e.code === 404) {
+    if (typeof typedError.code === "number" && typedError.code === 404) {
         return true;
     }
 
-    if (typeof e.status === "number" && e.status === 404) {
+    if (typeof typedError.status === "number" && typedError.status === 404) {
         return true;
     }
 
-    return typeof e.response?.status === "number" && e.response.status === 404;
+    return typeof typedError.response?.status === "number" && typedError.response.status === 404;
 };
 
 export default GoogleDriveStorage;

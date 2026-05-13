@@ -62,7 +62,7 @@ class RestFetch<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
                     getMeta: (id: string) => Promise<TFile>;
                     maxUploadSize: number;
                     update: (options: { id: string }, updates: { metadata?: Record<string, unknown>; status?: string }) => Promise<void>;
-                    withLock: <R>(key: string, fn: () => Promise<R>) => Promise<R>;
+                    withLock: <R>(key: string, function_: () => Promise<R>) => Promise<R>;
                     write: (options: { body: unknown; contentLength: number; id: string; start: number }) => Promise<TFile>;
                 };
             }

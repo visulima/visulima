@@ -3,16 +3,6 @@ import { toolDefinition } from "@tanstack/ai";
 
 import type { Files } from "../../files";
 import { executors } from "../internal/executors";
-import type {
-    CopyFileInput,
-    DeleteFileInput,
-    DownloadFileInput,
-    GetFileMetadataInput,
-    GetFileUrlInput,
-    ListFilesInput,
-    SignUploadUrlInput,
-    UploadFileInput,
-} from "../internal/schemas";
 import { TOOL_SCHEMAS } from "../internal/schemas";
 import type { ToolOptions } from "./types";
 
@@ -30,28 +20,28 @@ export const listFiles = (files: Files): ServerTool<ListFilesParameters, never, 
         description: TOOL_SCHEMAS.listFiles.description,
         inputSchema: TOOL_SCHEMAS.listFiles.input,
         name: "listFiles",
-    }).server((input) => executors.listFiles(files, input as ListFilesInput)) as ServerTool<ListFilesParameters, never, "listFiles">;
+    }).server((input) => executors.listFiles(files, input)) as ServerTool<ListFilesParameters, never, "listFiles">;
 
 export const getFileMetadata = (files: Files): ServerTool<GetFileMetadataParameters, never, "getFileMetadata"> =>
     toolDefinition({
         description: TOOL_SCHEMAS.getFileMetadata.description,
         inputSchema: TOOL_SCHEMAS.getFileMetadata.input,
         name: "getFileMetadata",
-    }).server((input) => executors.getFileMetadata(files, input as GetFileMetadataInput)) as ServerTool<GetFileMetadataParameters, never, "getFileMetadata">;
+    }).server((input) => executors.getFileMetadata(files, input)) as ServerTool<GetFileMetadataParameters, never, "getFileMetadata">;
 
 export const downloadFile = (files: Files): ServerTool<DownloadFileParameters, never, "downloadFile"> =>
     toolDefinition({
         description: TOOL_SCHEMAS.downloadFile.description,
         inputSchema: TOOL_SCHEMAS.downloadFile.input,
         name: "downloadFile",
-    }).server((input) => executors.downloadFile(files, input as DownloadFileInput)) as ServerTool<DownloadFileParameters, never, "downloadFile">;
+    }).server((input) => executors.downloadFile(files, input)) as ServerTool<DownloadFileParameters, never, "downloadFile">;
 
 export const getFileUrl = (files: Files): ServerTool<GetFileUrlParameters, never, "getFileUrl"> =>
     toolDefinition({
         description: TOOL_SCHEMAS.getFileUrl.description,
         inputSchema: TOOL_SCHEMAS.getFileUrl.input,
         name: "getFileUrl",
-    }).server((input) => executors.getFileUrl(files, input as GetFileUrlInput)) as ServerTool<GetFileUrlParameters, never, "getFileUrl">;
+    }).server((input) => executors.getFileUrl(files, input)) as ServerTool<GetFileUrlParameters, never, "getFileUrl">;
 
 export const uploadFile = (files: Files, { needsApproval = true }: ToolOptions = {}): ServerTool<UploadFileParameters, never, "uploadFile"> =>
     toolDefinition({
@@ -59,7 +49,7 @@ export const uploadFile = (files: Files, { needsApproval = true }: ToolOptions =
         inputSchema: TOOL_SCHEMAS.uploadFile.input,
         name: "uploadFile",
         needsApproval,
-    }).server((input) => executors.uploadFile(files, input as UploadFileInput)) as ServerTool<UploadFileParameters, never, "uploadFile">;
+    }).server((input) => executors.uploadFile(files, input)) as ServerTool<UploadFileParameters, never, "uploadFile">;
 
 export const deleteFile = (files: Files, { needsApproval = true }: ToolOptions = {}): ServerTool<DeleteFileParameters, never, "deleteFile"> =>
     toolDefinition({
@@ -67,7 +57,7 @@ export const deleteFile = (files: Files, { needsApproval = true }: ToolOptions =
         inputSchema: TOOL_SCHEMAS.deleteFile.input,
         name: "deleteFile",
         needsApproval,
-    }).server((input) => executors.deleteFile(files, input as DeleteFileInput)) as ServerTool<DeleteFileParameters, never, "deleteFile">;
+    }).server((input) => executors.deleteFile(files, input)) as ServerTool<DeleteFileParameters, never, "deleteFile">;
 
 export const copyFile = (files: Files, { needsApproval = true }: ToolOptions = {}): ServerTool<CopyFileParameters, never, "copyFile"> =>
     toolDefinition({
@@ -75,7 +65,7 @@ export const copyFile = (files: Files, { needsApproval = true }: ToolOptions = {
         inputSchema: TOOL_SCHEMAS.copyFile.input,
         name: "copyFile",
         needsApproval,
-    }).server((input) => executors.copyFile(files, input as CopyFileInput)) as ServerTool<CopyFileParameters, never, "copyFile">;
+    }).server((input) => executors.copyFile(files, input)) as ServerTool<CopyFileParameters, never, "copyFile">;
 
 export const signUploadUrl = (files: Files, { needsApproval = true }: ToolOptions = {}): ServerTool<SignUploadUrlParameters, never, "signUploadUrl"> =>
     toolDefinition({
@@ -83,4 +73,4 @@ export const signUploadUrl = (files: Files, { needsApproval = true }: ToolOption
         inputSchema: TOOL_SCHEMAS.signUploadUrl.input,
         name: "signUploadUrl",
         needsApproval,
-    }).server((input) => executors.signUploadUrl(files, input as SignUploadUrlInput)) as ServerTool<SignUploadUrlParameters, never, "signUploadUrl">;
+    }).server((input) => executors.signUploadUrl(files, input)) as ServerTool<SignUploadUrlParameters, never, "signUploadUrl">;

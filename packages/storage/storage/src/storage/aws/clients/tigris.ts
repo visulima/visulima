@@ -11,15 +11,10 @@ import type { CreateTigrisClientParameters } from "./types";
  * - `TIGRIS_ENDPOINT`
  */
 const tigris = (parameters?: CreateTigrisClientParameters): S3ClientConfig => {
-    const accessKeyId = parameters?.accessKeyId
-        ?? process.env.AWS_ACCESS_KEY_ID
-        ?? process.env.TIGRIS_ACCESS_KEY_ID
-        ?? process.env.TIGRIS_ACCESS_KEY;
+    const accessKeyId = parameters?.accessKeyId ?? process.env.AWS_ACCESS_KEY_ID ?? process.env.TIGRIS_ACCESS_KEY_ID ?? process.env.TIGRIS_ACCESS_KEY;
     const endpoint = parameters?.endpoint ?? process.env.TIGRIS_ENDPOINT;
-    const secretAccessKey = parameters?.secretAccessKey
-        ?? process.env.AWS_SECRET_ACCESS_KEY
-        ?? process.env.TIGRIS_SECRET_ACCESS_KEY
-        ?? process.env.TIGRIS_SECRET_KEY;
+    const secretAccessKey =
+        parameters?.secretAccessKey ?? process.env.AWS_SECRET_ACCESS_KEY ?? process.env.TIGRIS_SECRET_ACCESS_KEY ?? process.env.TIGRIS_SECRET_KEY;
 
     if (!accessKeyId || !secretAccessKey) {
         throw new Error("Missing required parameters for Tigris client.");

@@ -1,10 +1,11 @@
+/* eslint-disable max-classes-per-file, @typescript-eslint/no-extraneous-class, no-constructor-return, sonarjs/public-static-readonly -- mock SDK classes for vendor library shape */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import BoxStorage from "../../../src/storage/box/box-storage";
 import type { BoxStorageOptions } from "../../../src/storage/box/types";
 import { storageOptions } from "../../__helpers__/config";
 
-const makeMockClient = () => ({
+const makeMockClient = () => { return {
     chunkedUploads: {
         uploadBigFile: vi.fn(),
     },
@@ -29,17 +30,18 @@ const makeMockClient = () => ({
         uploadFile: vi.fn(),
         uploadFileVersion: vi.fn(),
     },
-});
+}; };
 
 let mockClient: ReturnType<typeof makeMockClient>;
-const constructorCalls: { auth: string; args: unknown[] }[] = [];
+const constructorCalls: { args: unknown[]; auth: string }[] = [];
 
 vi.mock(import("box-typescript-sdk-gen"), () => {
-    const recordConstructor = (auth: string) => class {
-        public constructor(...args: unknown[]) {
-            constructorCalls.push({ args, auth });
-        }
-    };
+    const recordConstructor = (auth: string) =>
+        class {
+            public constructor(...args: unknown[]) {
+                constructorCalls.push({ args, auth });
+            }
+        };
 
     return {
         BoxCcgAuth: recordConstructor("ccg"),
@@ -47,7 +49,7 @@ vi.mock(import("box-typescript-sdk-gen"), () => {
             public constructor() {
                 Object.assign(this, mockClient);
 
-                return mockClient as unknown as typeof this;
+                return mockClient;
             }
         },
         BoxDeveloperTokenAuth: recordConstructor("developer"),
@@ -65,9 +67,9 @@ vi.mock(import("box-typescript-sdk-gen"), () => {
             }
         },
         JwtConfig: class {
-            public static fromConfigFile = vi.fn(() => ({}));
+            public static fromConfigFile = vi.fn(() => { return {}; });
 
-            public static fromConfigJsonString = vi.fn(() => ({}));
+            public static fromConfigJsonString = vi.fn(() => { return {}; });
         },
         OAuthConfig: class {
             public constructor(...args: unknown[]) {
@@ -89,28 +91,37 @@ describe(BoxStorage, () => {
         it("rejects more than one auth method", () => {
             expect.assertions(1);
 
-            expect(() => new BoxStorage({
-                ...(storageOptions as BoxStorageOptions),
-                developerToken: "dev",
-                oauth: { clientId: "c", clientSecret: "s", refreshToken: "r" },
-            })).toThrow(/exactly one of `developerToken`, `oauth`, `ccg`, or `jwt`/);
+            expect(
+                () =>
+                    new BoxStorage({
+                        ...(storageOptions as BoxStorageOptions),
+                        developerToken: "dev",
+                        oauth: { clientId: "c", clientSecret: "s", refreshToken: "r" },
+                    }),
+            ).toThrow(/exactly one of `developerToken`, `oauth`, `ccg`, or `jwt`/);
         });
 
         it("rejects ccg without enterpriseId or userId", () => {
             expect.assertions(1);
 
-            expect(() => new BoxStorage({
-                ...(storageOptions as BoxStorageOptions),
-                ccg: { clientId: "c", clientSecret: "s" },
-            })).toThrow(/ccg.*requires.*enterpriseId.*userId/);
+            expect(
+                () =>
+                    new BoxStorage({
+                        ...(storageOptions as BoxStorageOptions),
+                        ccg: { clientId: "c", clientSecret: "s" },
+                    }),
+            ).toThrow(/ccg.*requires.*enterpriseId.*userId/);
         });
 
         it("rejects when no auth source is configured", () => {
             expect.assertions(1);
 
-            expect(() => new BoxStorage({
-                ...(storageOptions as BoxStorageOptions),
-            })).toThrow(/missing auth/);
+            expect(
+                () =>
+                    new BoxStorage({
+                        ...(storageOptions as BoxStorageOptions),
+                    }),
+            ).toThrow(/missing auth/);
         });
 
         it("accepts a pre-built client without any other auth", () => {
@@ -158,8 +169,7 @@ describe(BoxStorage, () => {
                 developerToken: "tok",
             });
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta")
-                .mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
 
             mockClient.folders.getFolderItems.mockResolvedValueOnce({
                 entries: [{ id: "FID", name: "file.mp4", type: "file" }],
@@ -179,8 +189,7 @@ describe(BoxStorage, () => {
                 developerToken: "tok",
             });
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta")
-                .mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
 
             mockClient.folders.getFolderItems.mockResolvedValueOnce({
                 entries: [{ id: "FID", name: "file.mp4", type: "file" }],
@@ -265,11 +274,7 @@ describe(BoxStorage, () => {
 
             const url = await storage.getReadUrl("file.mp4");
 
-            expect(mockClient.sharedLinksFiles.addShareLinkToFile).toHaveBeenCalledWith(
-                "FID",
-                { sharedLink: { access: "open" } },
-                { fields: "shared_link" },
-            );
+            expect(mockClient.sharedLinksFiles.addShareLinkToFile).toHaveBeenCalledWith("FID", { sharedLink: { access: "open" } }, { fields: "shared_link" });
             expect(url).toBe("https://app.box.com/s/share123");
         });
 
@@ -326,8 +331,9 @@ describe(BoxStorage, () => {
                 developerToken: "tok",
             });
 
-            await expect(storage.getReadUrl("file.mp4", { responseContentType: "video/mp4" }))
-                .rejects.toThrow(/responseContentDisposition.*responseContentType.*not supported/);
+            await expect(storage.getReadUrl("file.mp4", { responseContentType: "video/mp4" })).rejects.toThrow(
+                /responseContentDisposition.*responseContentType.*not supported/,
+            );
         });
     });
 

@@ -15,15 +15,10 @@ import type { CreateStorjClientParameters } from "./types";
  * - `STORJ_ENDPOINT` (defaults to `https://gateway.storjshare.io`)
  */
 const storj = (parameters?: CreateStorjClientParameters): S3ClientConfig => {
-    const accessKeyId = parameters?.accessKeyId
-        ?? process.env.AWS_ACCESS_KEY_ID
-        ?? process.env.STORJ_ACCESS_KEY_ID
-        ?? process.env.STORJ_ACCESS_KEY;
+    const accessKeyId = parameters?.accessKeyId ?? process.env.AWS_ACCESS_KEY_ID ?? process.env.STORJ_ACCESS_KEY_ID ?? process.env.STORJ_ACCESS_KEY;
     const endpoint = parameters?.endpoint ?? process.env.STORJ_ENDPOINT;
-    const secretAccessKey = parameters?.secretAccessKey
-        ?? process.env.AWS_SECRET_ACCESS_KEY
-        ?? process.env.STORJ_SECRET_ACCESS_KEY
-        ?? process.env.STORJ_SECRET_KEY;
+    const secretAccessKey =
+        parameters?.secretAccessKey ?? process.env.AWS_SECRET_ACCESS_KEY ?? process.env.STORJ_SECRET_ACCESS_KEY ?? process.env.STORJ_SECRET_KEY;
 
     if (!accessKeyId || !secretAccessKey) {
         throw new Error("Missing required parameters for Storj client.");

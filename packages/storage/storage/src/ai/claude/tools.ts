@@ -19,7 +19,7 @@ const IDEMPOTENT_WRITE_ANNOTATIONS: ToolAnnotations = {
     readOnlyHint: false,
 };
 
-const okResult = (output: unknown): { content: Array<{ text: string; type: "text" }> } => {
+const okResult = (output: unknown): { content: { text: string; type: "text" }[] } => {
     return {
         content: [
             {
@@ -30,7 +30,7 @@ const okResult = (output: unknown): { content: Array<{ text: string; type: "text
     };
 };
 
-const errorResult = (error: unknown): { content: Array<{ text: string; type: "text" }>; isError: true } => {
+const errorResult = (error: unknown): { content: { text: string; type: "text" }[]; isError: true } => {
     return {
         content: [
             {
@@ -101,10 +101,7 @@ export const claudeGetFileUrl = (files: Files): SdkMcpToolDefinition<GetFileUrlS
         { annotations: READ_ANNOTATIONS },
     );
 
-export const claudeUploadFile = (
-    files: Files,
-    { annotations = WRITE_ANNOTATIONS }: ClaudeWriteToolOptions = {},
-): SdkMcpToolDefinition<UploadFileShape> =>
+export const claudeUploadFile = (files: Files, { annotations = WRITE_ANNOTATIONS }: ClaudeWriteToolOptions = {}): SdkMcpToolDefinition<UploadFileShape> =>
     tool(
         "uploadFile",
         TOOL_SCHEMAS.uploadFile.description,
@@ -113,10 +110,7 @@ export const claudeUploadFile = (
         { annotations },
     );
 
-export const claudeDeleteFile = (
-    files: Files,
-    { annotations = WRITE_ANNOTATIONS }: ClaudeWriteToolOptions = {},
-): SdkMcpToolDefinition<DeleteFileShape> =>
+export const claudeDeleteFile = (files: Files, { annotations = WRITE_ANNOTATIONS }: ClaudeWriteToolOptions = {}): SdkMcpToolDefinition<DeleteFileShape> =>
     tool(
         "deleteFile",
         TOOL_SCHEMAS.deleteFile.description,

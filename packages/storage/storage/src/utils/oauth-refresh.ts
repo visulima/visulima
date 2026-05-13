@@ -16,7 +16,7 @@ interface OAuthTokenResponse {
 }
 
 export interface OAuthRefreshHandle {
-    getAccessToken(): Promise<string>;
+    getAccessToken: () => Promise<string>;
 }
 
 export interface CreateOAuthRefreshOptions {
@@ -65,19 +65,19 @@ export const createOAuthRefreshHandle = (options: CreateOAuthRefreshOptions): OA
             return cached.token;
         }
 
-        const res = await fetch(options.tokenUrl, {
+        const response = await fetch(options.tokenUrl, {
             body: options.buildBody(),
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
             method: "POST",
         });
 
-        if (!res.ok) {
-            const text = await res.text().catch(() => "");
+        if (!response.ok) {
+            const text = await response.text().catch(() => "");
 
-            throw new Error(`${options.provider}: token exchange failed (${res.status}): ${text || res.statusText}`);
+            throw new Error(`${options.provider}: token exchange failed (${response.status}): ${text || response.statusText}`);
         }
 
-        const json = (await res.json()) as OAuthTokenResponse;
+        const json = (await response.json()) as OAuthTokenResponse;
 
         if (!json.access_token) {
             throw new Error(`${options.provider}: token response missing access_token`);

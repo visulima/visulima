@@ -14,12 +14,8 @@ import type { CreateAkamaiClientParameters } from "./types";
  * - `AKAMAI_REGION` (e.g. `us-iad-1`)
  */
 const akamai = (parameters?: Partial<CreateAkamaiClientParameters>): S3ClientConfig => {
-    const accessKeyId = parameters?.accessKeyId
-        ?? process.env.AWS_ACCESS_KEY_ID
-        ?? process.env.AKAMAI_ACCESS_KEY_ID;
-    const secretAccessKey = parameters?.secretAccessKey
-        ?? process.env.AWS_SECRET_ACCESS_KEY
-        ?? process.env.AKAMAI_SECRET_ACCESS_KEY;
+    const accessKeyId = parameters?.accessKeyId ?? process.env.AWS_ACCESS_KEY_ID ?? process.env.AKAMAI_ACCESS_KEY_ID;
+    const secretAccessKey = parameters?.secretAccessKey ?? process.env.AWS_SECRET_ACCESS_KEY ?? process.env.AKAMAI_SECRET_ACCESS_KEY;
     const region = parameters?.region ?? process.env.AKAMAI_REGION;
 
     if (!accessKeyId || !secretAccessKey || !region) {

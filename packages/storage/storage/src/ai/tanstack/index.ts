@@ -117,9 +117,7 @@ export function createTanstackFileTools({
         return allTools;
     }
 
-    return Object.fromEntries(
-        Object.entries(allTools).filter(([name]) => !WRITE_TOOL_NAME_SET.has(name as FileWriteToolName)),
-    ) as ReadOnlyTanstackFileTools;
+    return Object.fromEntries(Object.entries(allTools).filter(([name]) => !WRITE_TOOL_NAME_SET.has(name as FileWriteToolName))) as ReadOnlyTanstackFileTools;
 }
 
 export { copyFile, deleteFile, downloadFile, getFileMetadata, getFileUrl, listFiles, signUploadUrl, uploadFile } from "./tools";

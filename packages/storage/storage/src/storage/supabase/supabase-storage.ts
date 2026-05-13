@@ -106,8 +106,8 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
             this.storageClient = new StorageClient(
                 storageUrl,
                 {
-                    Authorization: `Bearer ${key}`,
                     apikey: key,
+                    Authorization: `Bearer ${key}`,
                 },
                 config.fetch,
             );
@@ -259,7 +259,9 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
             let path = id;
 
             try {
-                path = (await this.getMeta(id)).path ?? id;
+                const meta = await this.getMeta(id);
+
+                path = meta.path ?? id;
             } catch {
                 // direct path lookup
             }
@@ -311,7 +313,8 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
 
     public async copy(name: string, destination: string): Promise<SupabaseFile> {
         return this.instrumentOperation("copy", async () => {
-            const source = (await this.getMetaSafe(name))?.path ?? name;
+            const meta = await this.getMetaSafe(name);
+            const source = meta?.path ?? name;
             const target = destination;
 
             const { error } = await this.storageClient.from(this.bucket).copy(source, target);
@@ -337,7 +340,8 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
 
     public async move(name: string, destination: string): Promise<SupabaseFile> {
         return this.instrumentOperation("move", async () => {
-            const source = (await this.getMetaSafe(name))?.path ?? name;
+            const meta = await this.getMetaSafe(name);
+            const source = meta?.path ?? name;
 
             const { error } = await this.storageClient.from(this.bucket).move(source, destination);
 

@@ -36,7 +36,7 @@ describe("utils", () => {
             expect(() => throwErrorCode("BadRequest")).toThrow(UploadError);
         });
 
-        describe("extractHttpStatus", () => {
+        describe(extractHttpStatus, () => {
             it("should read `status` (Dropbox / Supabase / fetch)", () => {
                 expect.assertions(1);
                 expect(extractHttpStatus({ status: 404 })).toBe(404);
@@ -70,7 +70,7 @@ describe("utils", () => {
             });
         });
 
-        describe("mapStatusToErrorCode", () => {
+        describe(mapStatusToErrorCode, () => {
             it.each([
                 [400, ERRORS.BAD_REQUEST],
                 [401, ERRORS.FORBIDDEN],
@@ -104,7 +104,7 @@ describe("utils", () => {
             });
         });
 
-        describe("wrapStorageError", () => {
+        describe(wrapStorageError, () => {
             it("should wrap a native error with status into an UploadError", () => {
                 expect.assertions(4);
 
@@ -165,10 +165,13 @@ describe("utils", () => {
             it("should include `(HTTP N)` when the error carries a status but no message", () => {
                 expect.assertions(1);
 
-                const wrapped = wrapStorageError({ status: 503 }, {
-                    adapter: "OneDrive",
-                    operation: "copy",
-                });
+                const wrapped = wrapStorageError(
+                    { status: 503 },
+                    {
+                        adapter: "OneDrive",
+                        operation: "copy",
+                    },
+                );
 
                 expect(wrapped.message).toBe("OneDrive: copy failed (HTTP 503)");
             });

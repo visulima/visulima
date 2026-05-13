@@ -95,17 +95,15 @@ describe(createFileTools, () => {
 
     it("executes uploadFile + getFileMetadata round-trip", async () => {
         const tools = createFileTools({ files });
-        const uploadResult = await tools.uploadFile.execute(
-            { content: "hi", contentType: "text/plain", key: "ai-sdk.txt" },
-            { messages: [], toolCallId: "1" },
-        );
+        const uploadResult = await tools.uploadFile.execute({ content: "hi", contentType: "text/plain", key: "ai-sdk.txt" }, { messages: [], toolCallId: "1" });
 
         expect(uploadResult).toMatchObject({ key: "ai-sdk.txt" });
 
-        const head = (await tools.getFileMetadata.execute(
-            { key: "ai-sdk.txt" },
-            { messages: [], toolCallId: "2" },
-        )) as { contentType: string; key: string; size: number };
+        const head = (await tools.getFileMetadata.execute({ key: "ai-sdk.txt" }, { messages: [], toolCallId: "2" })) as {
+            contentType: string;
+            key: string;
+            size: number;
+        };
 
         expect(head.key).toBe("ai-sdk.txt");
         expect(head.contentType).toBe("text/plain");

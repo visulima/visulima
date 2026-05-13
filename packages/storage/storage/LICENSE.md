@@ -23,11 +23,14 @@ SOFTWARE.
 <!-- DEPENDENCIES -->
 
 # Licenses of bundled dependencies
+
 The published @visulima/storage artifact additionally contains code with the following licenses:
 ISC, MIT
 
 # Bundled dependencies:
+
 ## @remix-run/headers
+
 License: MIT
 By: Michael Jackson
 Repository: git+https://github.com/remix-run/remix.git
@@ -54,9 +57,10 @@ Repository: git+https://github.com/remix-run/remix.git
 > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > SOFTWARE.
 
----------------------------------------
+---
 
 ## @visulima/fs
+
 License: MIT
 By: Daniel Bannert
 Repository: git+https://github.com/visulima/visulima.git
@@ -82,8 +86,6 @@ Repository: git+https://github.com/visulima/visulima.git
 > LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > SOFTWARE.
->
->
 >
 > # Licenses of bundled dependencies
 >
@@ -153,7 +155,7 @@ Repository: git+https://github.com/visulima/visulima.git
 > > ## ai
 > >
 > > License: Apache-2.0
-> > Repository: git+https://github.com/vercel/ai.git
+> > Repository: https://github.com/vercel/ai
 > >
 > > > Copyright 2023 Vercel, Inc.
 > > >
@@ -377,10 +379,6 @@ Repository: git+https://github.com/visulima/visulima.git
 > > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > > SOFTWARE.
 >
->
->
->
->
 > # Licenses of bundled types
 >
 > The published @visulima/fs artifact additionally contains code with the following licenses:
@@ -438,9 +436,10 @@ Repository: git+https://github.com/visulima/visulima.git
 > > TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
 > > THIS SOFTWARE.
 
----------------------------------------
+---
 
 ## @visulima/humanizer
+
 License: MIT
 By: Daniel Bannert
 Repository: git+https://github.com/visulima/visulima.git
@@ -507,9 +506,10 @@ Repository: git+https://github.com/visulima/visulima.git
 >
 > SPDX-License-Identifier: MIT or UNLICENSE
 
----------------------------------------
+---
 
 ## @visulima/path
+
 License: MIT
 By: Daniel Bannert
 Repository: git+https://github.com/visulima/visulima.git
@@ -609,8 +609,6 @@ Repository: git+https://github.com/visulima/visulima.git
 > FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 > DEALINGS IN THE SOFTWARE.
 >
->
->
 > # Licenses of bundled dependencies
 >
 > The published @visulima/path artifact additionally contains code with the following licenses:
@@ -635,13 +633,14 @@ Repository: git+https://github.com/visulima/visulima.git
 > >
 > > THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
----------------------------------------
+---
 
 ## @visulima/storage-nuxt
 
----------------------------------------
+---
 
 ## depd
+
 License: MIT
 By: Douglas Christopher Wilson
 Repository: dougwilson/nodejs-depd
@@ -669,9 +668,10 @@ Repository: dougwilson/nodejs-depd
 > TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 > SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
----------------------------------------
+---
 
 ## etag
+
 License: MIT
 By: Douglas Christopher Wilson, David Björklund
 Repository: jshttp/etag
@@ -699,9 +699,10 @@ Repository: jshttp/etag
 > TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 > SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
----------------------------------------
+---
 
 ## http-errors
+
 License: MIT
 By: Jonathan Ong, Alan Plum, Douglas Christopher Wilson
 Repository: jshttp/http-errors
@@ -729,9 +730,10 @@ Repository: jshttp/http-errors
 > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 > THE SOFTWARE.
 
----------------------------------------
+---
 
 ## inherits
+
 License: ISC
 Repository: git://github.com/isaacs/inherits
 
@@ -751,9 +753,10 @@ Repository: git://github.com/isaacs/inherits
 > OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 > PERFORMANCE OF THIS SOFTWARE.
 
----------------------------------------
+---
 
 ## setprototypeof
+
 License: ISC
 By: Wes Todd
 Repository: https://github.com/wesleytodd/setprototypeof.git
@@ -772,9 +775,10 @@ Repository: https://github.com/wesleytodd/setprototypeof.git
 > OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 > CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
----------------------------------------
+---
 
 ## statuses
+
 License: MIT
 By: Douglas Christopher Wilson, Jonathan Ong
 Repository: jshttp/statuses
@@ -802,9 +806,10 @@ Repository: jshttp/statuses
 > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 > THE SOFTWARE.
 
----------------------------------------
+---
 
 ## toidentifier
+
 License: MIT
 By: Douglas Christopher Wilson, Nick Baugh
 Repository: component/toidentifier
@@ -836,9 +841,11 @@ Repository: component/toidentifier
 <!-- TYPE_DEPENDENCIES -->
 
 # Licenses of bundled types
+
 The published @visulima/storage artifact additionally contains code with the following licenses:
 
 # Bundled types:
+
 ## @visulima/storage-nuxt
 
 <!-- /TYPE_DEPENDENCIES -->

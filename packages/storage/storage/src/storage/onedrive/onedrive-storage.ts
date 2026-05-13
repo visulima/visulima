@@ -17,7 +17,7 @@ const UPLOAD_SESSION_CHUNK_BYTES = 16 * 320 * 1024; // 5 MiB — must be a multi
 const COPY_POLL_INTERVAL_MS = 1000;
 
 interface AuthHandle {
-    getAccessToken(): Promise<string>;
+    getAccessToken: () => Promise<string>;
 }
 
 interface DriveItem {
@@ -60,7 +60,11 @@ const trimSlashes = (s: string): string => {
     return start === 0 && end === s.length ? s : s.slice(start, end);
 };
 
-const encodePathSegments = (path: string): string => path.split("/").map((segment) => encodeURIComponent(segment)).join("/");
+const encodePathSegments = (path: string): string =>
+    path
+        .split("/")
+        .map((segment) => encodeURIComponent(segment))
+        .join("/");
 
 const collectStream = async (stream: AsyncIterable<Uint8Array | Buffer>): Promise<Buffer> => {
     const chunks: Buffer[] = [];
@@ -72,9 +76,11 @@ const collectStream = async (stream: AsyncIterable<Uint8Array | Buffer>): Promis
     return Buffer.concat(chunks);
 };
 
-const createStaticAccessTokenAuth = (token: string): AuthHandle => ({
-    getAccessToken: () => Promise.resolve(token),
-});
+const createStaticAccessTokenAuth = (token: string): AuthHandle => {
+    return {
+        getAccessToken: () => Promise.resolve(token),
+    };
+};
 
 const createCallableAccessTokenAuth = (source: () => string | Promise<string>): AuthHandle => {
     const ensure = async (): Promise<string> => source();
@@ -90,12 +96,13 @@ interface ClientCredentialsAuthOptions {
 
 const createClientCredentialsAuth = (options: ClientCredentialsAuthOptions): AuthHandle =>
     createOAuthRefreshHandle({
-        buildBody: () => new URLSearchParams({
-            client_id: options.clientId,
-            client_secret: options.clientSecret,
-            grant_type: "client_credentials",
-            scope: GRAPH_DEFAULT_SCOPE,
-        }),
+        buildBody: () =>
+            new URLSearchParams({
+                client_id: options.clientId,
+                client_secret: options.clientSecret,
+                grant_type: "client_credentials",
+                scope: GRAPH_DEFAULT_SCOPE,
+            }),
         provider: "OneDrive",
         tokenUrl: `https://login.microsoftonline.com/${encodeURIComponent(options.tenantId)}/oauth2/v2.0/token`,
     });
@@ -109,29 +116,32 @@ interface RefreshTokenAuthOptions {
 
 const createRefreshTokenAuth = (options: RefreshTokenAuthOptions): AuthHandle =>
     createOAuthRefreshHandle({
-        buildBody: () => new URLSearchParams({
-            client_id: options.clientId,
-            grant_type: "refresh_token",
-            refresh_token: options.refreshToken,
-            scope: GRAPH_DEFAULT_SCOPE,
-            ...(options.clientSecret && { client_secret: options.clientSecret }),
-        }),
+        buildBody: () =>
+            new URLSearchParams({
+                client_id: options.clientId,
+                grant_type: "refresh_token",
+                refresh_token: options.refreshToken,
+                scope: GRAPH_DEFAULT_SCOPE,
+                ...(options.clientSecret && { client_secret: options.clientSecret }),
+            }),
         provider: "OneDrive",
         tokenUrl: `https://login.microsoftonline.com/${encodeURIComponent(options.tenantId ?? "common")}/oauth2/v2.0/token`,
     });
 
-const makeAuthProvider = (handle: AuthHandle): AuthenticationProvider => ({
-    getAccessToken: () => handle.getAccessToken(),
-});
+const makeAuthProvider = (handle: AuthHandle): AuthenticationProvider => {
+    return {
+        getAccessToken: () => handle.getAccessToken(),
+    };
+};
 
-const resolveAuth = (opts: OneDriveStorageOptions): GraphClient => {
-    if (opts.client) {
-        return opts.client;
+const resolveAuth = (options: OneDriveStorageOptions): GraphClient => {
+    if (options.client) {
+        return options.client;
     }
 
-    const explicitToken = opts.accessToken !== undefined;
-    const explicitClientCreds = opts.clientCredentials !== undefined;
-    const explicitOAuth = opts.oauth !== undefined;
+    const explicitToken = options.accessToken !== undefined;
+    const explicitClientCreds = options.clientCredentials !== undefined;
+    const explicitOAuth = options.oauth !== undefined;
     const chosen = [explicitToken, explicitClientCreds, explicitOAuth].filter(Boolean).length;
 
     if (chosen > 1) {
@@ -140,18 +150,16 @@ const resolveAuth = (opts: OneDriveStorageOptions): GraphClient => {
 
     let handle: AuthHandle | undefined;
 
-    if (opts.accessToken !== undefined) {
-        handle = typeof opts.accessToken === "function"
-            ? createCallableAccessTokenAuth(opts.accessToken)
-            : createStaticAccessTokenAuth(opts.accessToken);
-    } else if (opts.clientCredentials) {
-        handle = createClientCredentialsAuth(opts.clientCredentials);
-    } else if (opts.oauth) {
+    if (options.accessToken !== undefined) {
+        handle = typeof options.accessToken === "function" ? createCallableAccessTokenAuth(options.accessToken) : createStaticAccessTokenAuth(options.accessToken);
+    } else if (options.clientCredentials) {
+        handle = createClientCredentialsAuth(options.clientCredentials);
+    } else if (options.oauth) {
         handle = createRefreshTokenAuth({
-            clientId: opts.oauth.clientId,
-            refreshToken: opts.oauth.refreshToken,
-            ...(opts.oauth.clientSecret && { clientSecret: opts.oauth.clientSecret }),
-            ...(opts.oauth.tenantId && { tenantId: opts.oauth.tenantId }),
+            clientId: options.oauth.clientId,
+            refreshToken: options.oauth.refreshToken,
+            ...(options.oauth.clientSecret && { clientSecret: options.oauth.clientSecret }),
+            ...(options.oauth.tenantId && { tenantId: options.oauth.tenantId }),
         });
     }
 
@@ -185,9 +193,9 @@ const resolveAuth = (opts: OneDriveStorageOptions): GraphClient => {
 
     if (!handle) {
         throw new Error(
-            "OneDrive storage: missing auth. Pass `client`, `accessToken`, `clientCredentials`, or `oauth`. "
-                + "Env fallbacks: ONEDRIVE_ACCESS_TOKEN; or ONEDRIVE_REFRESH_TOKEN + ONEDRIVE_CLIENT_ID (+ optional ONEDRIVE_CLIENT_SECRET, ONEDRIVE_TENANT_ID); "
-                + "or ONEDRIVE_CLIENT_ID + ONEDRIVE_CLIENT_SECRET + ONEDRIVE_TENANT_ID.",
+            "OneDrive storage: missing auth. Pass `client`, `accessToken`, `clientCredentials`, or `oauth`. " +
+                "Env fallbacks: ONEDRIVE_ACCESS_TOKEN; or ONEDRIVE_REFRESH_TOKEN + ONEDRIVE_CLIENT_ID (+ optional ONEDRIVE_CLIENT_SECRET, ONEDRIVE_TENANT_ID); " +
+                "or ONEDRIVE_CLIENT_ID + ONEDRIVE_CLIENT_SECRET + ONEDRIVE_TENANT_ID.",
         );
     }
 
@@ -200,13 +208,15 @@ const isNotFoundError = (error: unknown): boolean => {
     }
 
     if (error && typeof error === "object") {
-        const obj = error as { statusCode?: number; status?: number; code?: string };
+        const object = error as { code?: string; status?: number; statusCode?: number };
 
-        return obj.statusCode === 404 || obj.status === 404 || obj.code === "itemNotFound";
+        return object.statusCode === 404 || object.status === 404 || object.code === "itemNotFound";
     }
 
     return false;
 };
+
+/* eslint-disable jsdoc/check-indentation -- bullet-list continuations are indented for readability */
 
 /**
  * OneDrive / SharePoint storage backend (Microsoft Graph).
@@ -217,7 +227,7 @@ const isNotFoundError = (error: unknown): boolean => {
  *
  * **Auth precedence**:
  * 1. `client` (pre-built `@microsoft/microsoft-graph-client` `Client`)
- * 2. `accessToken` (string or `() => string | Promise<string>`)
+ * 2. `accessToken` (string or `() => string | Promise&lt;string>`)
  * 3. `clientCredentials` (`tenantId` + `clientId` + `clientSecret`) — app-only
  * 4. `oauth` (`refreshToken` + `clientId` [+ `clientSecret`, `tenantId`]) — delegated
  * 5. Env fallback: `ONEDRIVE_ACCESS_TOKEN`; or `ONEDRIVE_REFRESH_TOKEN` +
@@ -329,7 +339,7 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
             let file: OneDriveFile;
 
             if ("contentType" in part && "metadata" in part && !("body" in part) && !("start" in part)) {
-                file = part as OneDriveFile;
+                file = part;
             } else {
                 file = await this.getMeta(part.id);
                 await this.checkIfExpired(file);
@@ -358,9 +368,10 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
                     const buffer = await collectStream(part.body);
                     const key = file.name || file.id;
 
-                    const item = buffer.byteLength <= SIMPLE_UPLOAD_LIMIT_BYTES
-                        ? await this.uploadSimple(key, buffer, file.contentType)
-                        : await this.uploadSession(key, buffer, file.contentType);
+                    const item =
+                        buffer.byteLength <= SIMPLE_UPLOAD_LIMIT_BYTES
+                            ? await this.uploadSimple(key, buffer, file.contentType)
+                            : await this.uploadSession(key, buffer, file.contentType);
 
                     file.bytesWritten = buffer.length;
                     file.size = buffer.length;
@@ -434,11 +445,8 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
                 // direct path lookup
             }
 
-            const item = await this.client.api(this.itemApiPath(key)).get() as DriveItem;
-            const arrayBuffer = await this.client
-                .api(this.itemActionPath(key, "content"))
-                .responseType(ResponseType.ARRAYBUFFER)
-                .get() as ArrayBuffer;
+            const item = (await this.client.api(this.itemApiPath(key)).get()) as DriveItem;
+            const arrayBuffer = (await this.client.api(this.itemActionPath(key, "content")).responseType(ResponseType.ARRAYBUFFER).get()) as ArrayBuffer;
             const buffer = Buffer.from(arrayBuffer);
 
             return {
@@ -465,10 +473,7 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
                 parentReference: { path: parentPath },
             };
 
-            const response = await this.client
-                .api(this.itemActionPath(name, "copy"))
-                .responseType(ResponseType.RAW)
-                .post(body) as Response;
+            const response = (await this.client.api(this.itemActionPath(name, "copy")).responseType(ResponseType.RAW).post(body)) as Response;
 
             if (response.status !== 202) {
                 const text = await response.text().catch(() => "");
@@ -511,10 +516,10 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
             const parentPath = this.parentReferencePath(destination);
             const newName = baseName(destination);
 
-            const moved = await this.client.api(this.itemApiPath(name)).patch({
+            const moved = (await this.client.api(this.itemApiPath(name)).patch({
                 name: newName,
                 parentReference: { path: parentPath },
-            }) as DriveItem;
+            })) as DriveItem;
 
             const file = new OneDriveFile({
                 contentType: "application/octet-stream",
@@ -547,8 +552,7 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
                 let url: string | null = `${this.folderListChildrenPath()}?$top=${Math.min(limit, 1000)}`;
 
                 while (url && files.length < limit) {
-                    // eslint-disable-next-line no-await-in-loop -- paginated iteration
-                    const page = await this.client.api(url).get() as { "@odata.nextLink"?: string; value: DriveItem[] };
+                    const page = (await this.client.api(url).get()) as { "@odata.nextLink"?: string; value: DriveItem[] };
 
                     for (const item of page.value) {
                         if (!item.file) {
@@ -604,10 +608,10 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
         }
 
         if (this.publicByDefault) {
-            const link = await this.client.api(this.itemActionPath(key, "createLink")).post({
+            const link = (await this.client.api(this.itemActionPath(key, "createLink")).post({
                 scope: "anonymous",
                 type: "view",
-            }) as { link?: { webUrl?: string } };
+            })) as { link?: { webUrl?: string } };
 
             const webUrl = link.link?.webUrl;
 
@@ -618,7 +622,7 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
             return webUrl;
         }
 
-        const item = await this.client.api(this.itemApiPath(key)).select("@microsoft.graph.downloadUrl").get() as DriveItem;
+        const item = (await this.client.api(this.itemApiPath(key)).select("@microsoft.graph.downloadUrl").get()) as DriveItem;
         const downloadUrl = item["@microsoft.graph.downloadUrl"];
 
         if (!downloadUrl) {
@@ -629,12 +633,12 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
     }
 
     public override async getUploadUrl(key: string, options?: { contentLength?: number; contentType?: string; expiresIn?: number }): Promise<string> {
-        const session = await this.client.api(this.itemActionPath(key, "createUploadSession")).post({
+        const session = (await this.client.api(this.itemActionPath(key, "createUploadSession")).post({
             item: {
                 "@microsoft.graph.conflictBehavior": "replace",
                 ...(options?.contentType && { file: { mimeType: options.contentType } }),
             },
-        }) as UploadSessionResponse;
+        })) as UploadSessionResponse;
 
         if (!session.uploadUrl) {
             throw wrapStorageError(new Error("createUploadSession response missing uploadUrl"), {
@@ -701,7 +705,7 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
 
         const last = inner.lastIndexOf("/");
 
-        if (last >= 0) {
+        if (last !== -1) {
             const folder = inner.slice(0, last);
 
             if (folder) {
@@ -719,14 +723,12 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
     private itemPathToKey(item: DriveItem): string {
         const parentPath = item.parentReference?.path ?? "";
         const rootMarker = "/root:";
-        const idx = parentPath.indexOf(rootMarker);
-        let folder = idx >= 0 ? parentPath.slice(idx + rootMarker.length) : "";
+        const index = parentPath.indexOf(rootMarker);
+        let folder = index === -1 ? "" : parentPath.slice(index + rootMarker.length);
 
         folder = trimSlashes(decodeURIComponent(folder));
 
-        const stripped = this.rootFolderPath && folder.startsWith(this.rootFolderPath)
-            ? folder.slice(this.rootFolderPath.length)
-            : folder;
+        const stripped = this.rootFolderPath && folder.startsWith(this.rootFolderPath) ? folder.slice(this.rootFolderPath.length) : folder;
 
         const cleanFolder = trimSlashes(stripped);
 
@@ -734,21 +736,21 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
     }
 
     private async uploadSimple(key: string, data: Buffer, contentType?: string): Promise<DriveItem> {
-        const result = await this.client
+        const result = (await this.client
             .api(`${this.itemActionPath(key, "content")}?@microsoft.graph.conflictBehavior=replace`)
             .header("Content-Type", contentType ?? "application/octet-stream")
-            .put(data) as DriveItem;
+            .put(data)) as DriveItem;
 
         return result;
     }
 
     private async uploadSession(key: string, data: Buffer, contentType?: string): Promise<DriveItem> {
-        const session = await this.client.api(this.itemActionPath(key, "createUploadSession")).post({
+        const session = (await this.client.api(this.itemActionPath(key, "createUploadSession")).post({
             item: {
                 "@microsoft.graph.conflictBehavior": "replace",
                 ...(contentType && { file: { mimeType: contentType } }),
             },
-        }) as UploadSessionResponse;
+        })) as UploadSessionResponse;
 
         const total = data.byteLength;
         let offset = 0;
@@ -758,7 +760,6 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
             const end = Math.min(offset + UPLOAD_SESSION_CHUNK_BYTES, total);
             const chunk = data.subarray(offset, end);
 
-            // eslint-disable-next-line no-await-in-loop -- chunks must be sequential per Graph upload-session contract
             const response = await fetch(session.uploadUrl, {
                 body: new Uint8Array(chunk),
                 headers: {
@@ -769,10 +770,8 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
             });
 
             if (response.status === 200 || response.status === 201) {
-                // eslint-disable-next-line no-await-in-loop -- terminal request — yield the parsed body
-                final = await response.json() as DriveItem;
+                final = (await response.json()) as DriveItem;
             } else if (response.status !== 202) {
-                // eslint-disable-next-line no-await-in-loop -- error path
                 const text = await response.text().catch(() => "");
 
                 throw wrapStorageError(new Error(text || response.statusText), {
@@ -799,9 +798,7 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
     private async pollCopyMonitor(monitorUrl: string): Promise<string | undefined> {
         const deadline = Date.now() + this.copyTimeoutMs;
 
-        // eslint-disable-next-line no-constant-condition -- bounded by `deadline` check below
         while (true) {
-            // eslint-disable-next-line no-await-in-loop -- sequential polling
             const response = await fetch(monitorUrl);
 
             if (!response.ok) {
@@ -812,8 +809,7 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
                 });
             }
 
-            // eslint-disable-next-line no-await-in-loop -- sequential polling
-            const body = await response.json() as CopyMonitorResponse;
+            const body = (await response.json()) as CopyMonitorResponse;
 
             if (body.status === "completed") {
                 return body.resourceId;
@@ -831,7 +827,6 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
                 throw new Error(`OneDrive: copy timed out after ${this.copyTimeoutMs}ms (status: ${body.status ?? "unknown"})`);
             }
 
-            // eslint-disable-next-line no-await-in-loop -- sequential polling
             await new Promise<void>((resolve) => {
                 setTimeout(resolve, COPY_POLL_INTERVAL_MS);
             });
@@ -843,9 +838,9 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
 
 const baseName = (key: string): string => {
     const trimmed = trimSlashes(key);
-    const idx = trimmed.lastIndexOf("/");
+    const index = trimmed.lastIndexOf("/");
 
-    return idx >= 0 ? trimmed.slice(idx + 1) : trimmed;
+    return index === -1 ? trimmed : trimmed.slice(index + 1);
 };
 
 export default OneDriveStorage;
