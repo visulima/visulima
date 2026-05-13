@@ -1050,7 +1050,8 @@
                                         "@myorg/*"
                                     ]
                                 }
-                            ]
+                            ],
+                            "default": 0
                         },
                         "installScripts": {
                             "type": "object",
@@ -1158,7 +1159,7 @@
                             "properties": {
                                 "minimum": {
                                     "type": "number",
-                                    "description": "Minimum overall Socket.dev score (0–1). Set to 0 to disable the gate while keeping Socket data fetched.\n\nToday only `vis add` consults this value (via `buildSocketOptions`), falling back to `DEFAULT_LOW_SCORE_THRESHOLD` (`0.4`) when unset. The `audit`, `doctor`, and `analyze` surfaces still compare against the hard-coded threshold — overriding `minimum` affects the `add` gate but not those reports until the follow-up wiring lands."
+                                    "description": "Minimum overall Socket.dev score (0–1). Set to 0 to disable the gate while keeping Socket data fetched.\n\nConsulted by `vis add`, `audit`, `doctor`, `check`, and `update`; resolved once in `buildSocketOptions`, then threaded through every consumer. Falls back to `DEFAULT_LOW_SCORE_THRESHOLD` (`0.4`) when unset."
                                 }
                             },
                             "additionalProperties": false,
@@ -1249,7 +1250,7 @@
                         }
                     },
                     "additionalProperties": false,
-                    "description": "Supply-chain policy gates. Each sub-block enables one policy and configures its behavior. Most policies are inactive when their sub-block is omitted — except `installScripts` (defaults to `strict: true`) and `publisherChange` (defaults to `mode: \"no-downgrade\"` with `ignoreAfter: 43200`), which are part of `SECURITY_DEFAULTS` and remain on unless explicitly disabled. `acceptedRisks` (above) silences specific packages without disabling a policy globally.\n\nThe 8 policies are inspired by Socket.dev's classification:\n- `malware`            — Socket-flagged malicious packages\n- `firstSeen`         — packages published less than N minutes ago\n- `unexpectedDeps`    — packages outside an allow-list / baseline\n- `publisherChange`   — maintainer set changed between installs\n- `installScripts`    — preinstall/install/postinstall scripts\n- `score`              — Socket overall score below threshold\n- `vulnerability`      — OSV vulnerability findings\n- `license`            — SPDX allow / deny lists"
+                    "description": "Supply-chain policy gates. Each sub-block enables one policy and configures its behavior. When a sub-block is omitted the policy is inactive. `acceptedRisks` (above) silences specific packages without disabling a policy globally.\n\nThe 8 policies are inspired by Socket.dev's classification:\n- `malware`            — Socket-flagged malicious packages\n- `firstSeen`         — packages published less than N minutes ago\n- `unexpectedDeps`    — packages outside an allow-list / baseline\n- `publisherChange`   — maintainer set changed between installs\n- `installScripts`    — preinstall/install/postinstall scripts\n- `score`              — Socket overall score below threshold\n- `vulnerability`      — OSV vulnerability findings\n- `license`            — SPDX allow / deny lists"
                 },
                 "socket": {
                     "type": "object",
@@ -1276,6 +1277,218 @@
                     },
                     "additionalProperties": false,
                     "description": "Socket.dev data-source configuration. Connection knobs only — score thresholds and accepted-risk overrides moved to `policies.score` and `security.acceptedRisks` respectively."
+                },
+                "marshalls": {
+                    "type": "object",
+                    "properties": {
+                        "archivedRepo": {
+                            "type": "object",
+                            "properties": {
+                                "allowlist": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "description": "Package names to skip."
+                                },
+                                "enabled": {
+                                    "type": "boolean",
+                                    "description": "Default: marshall is on. Set false to disable."
+                                },
+                                "githubToken": {
+                                    "type": "string",
+                                    "description": "GitHub PAT for the API call (5k/hr vs 60/hr)."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "description": "Archived-repo marshall (GitHub repository status)."
+                        },
+                        "author": {
+                            "type": "object",
+                            "properties": {
+                                "allowlist": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "dormantErrorDays": {
+                                    "type": "number",
+                                    "description": "Days since the publisher's last release before flagging as error."
+                                },
+                                "dormantWarnDays": {
+                                    "type": "number",
+                                    "description": "Days since the publisher's last release before flagging as warning."
+                                },
+                                "enabled": {
+                                    "type": "boolean"
+                                },
+                                "newPublisherWindowDays": {
+                                    "type": "number",
+                                    "description": "Window for the \"new publisher on an established package\" check."
+                                },
+                                "recentVersionErrorDays": {
+                                    "type": "number",
+                                    "description": "Days since the resolved version was published — error threshold."
+                                },
+                                "recentVersionWarnDays": {
+                                    "type": "number",
+                                    "description": "Days since the resolved version was published — warning threshold."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "description": "Author / publisher heuristics."
+                        },
+                        "downloads": {
+                            "type": "object",
+                            "properties": {
+                                "allowlist": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "enabled": {
+                                    "type": "boolean"
+                                },
+                                "errorThreshold": {
+                                    "type": "number",
+                                    "description": "Below this monthly count → error (default: 20)."
+                                },
+                                "warnThreshold": {
+                                    "type": "number",
+                                    "description": "Below this monthly count → warning (default: 1000)."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "description": "Monthly download-count floor."
+                        },
+                        "expiredDomains": {
+                            "type": "object",
+                            "properties": {
+                                "allowDomains": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "description": "Domains exempted from the check (legacy / internal)."
+                                },
+                                "allowlist": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "dnsServers": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "description": "DNS resolvers to query (default: system)."
+                                },
+                                "enabled": {
+                                    "type": "boolean"
+                                },
+                                "timeoutMs": {
+                                    "type": "number",
+                                    "description": "Per-domain DNS timeout (default: 5000)."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "description": "Maintainer-email-domain NS lookup."
+                        },
+                        "metadata": {
+                            "type": "object",
+                            "properties": {
+                                "allowlist": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "checks": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string",
+                                        "enum": [
+                                            "license",
+                                            "readme",
+                                            "repo"
+                                        ]
+                                    },
+                                    "description": "Subset of checks to run. Default: all three."
+                                },
+                                "enabled": {
+                                    "type": "boolean"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "description": "README / license / repository presence checks."
+                        },
+                        "newBin": {
+                            "type": "object",
+                            "properties": {
+                                "allowlist": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "enabled": {
+                                    "type": "boolean"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "description": "New CLI-bin script introduced in this version."
+                        },
+                        "provenance": {
+                            "type": "object",
+                            "properties": {
+                                "allowlist": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "enabled": {
+                                    "type": "boolean"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "description": "Provenance regression check."
+                        },
+                        "signatures": {
+                            "type": "object",
+                            "properties": {
+                                "allowlist": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "enabled": {
+                                    "type": "boolean",
+                                    "description": "Default: marshall is *off*. Set true to enable."
+                                },
+                                "keysUrl": {
+                                    "type": "string",
+                                    "description": "Override the keys endpoint (default: npm registry)."
+                                },
+                                "treatExpiredAs": {
+                                    "type": "string",
+                                    "enum": [
+                                        "error",
+                                        "warning"
+                                    ],
+                                    "description": "How to treat an expired-but-known key. Default: \"warning\"."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "description": "ECDSA P-256 verification against npm's signing keys. Disabled by default because npm coverage still has gaps that produce noisy warnings on legitimate packages."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "description": "Pre-install marshall pipeline — packument-derived supply-chain gates (author, provenance, new-bin, metadata, downloads, expired-domains, signatures, archived-repo) that run before `vis add` / `vis install <pkg>` / `vis update <pkg>` hand off to the underlying package manager. Every entry is optional; omit a key and the marshall runs with defaults. Set `enabled: false` on a specific marshall to skip it without touching env vars."
                 },
                 "typosquatAllowlist": {
                     "type": "array",
@@ -1347,7 +1560,7 @@
             "description": "When `true`, every task command is scanned for `${VAR}` / `$VAR` references before spawn. If a referenced var is unset in the task's effective env (envFile + service env + per-task `env` + `process.env`), the task fails with an actionable error naming the missing variable, instead of letting the shell silently substitute an empty string.\n\nOverride per run with `--strict-env` / `--no-strict-env`. Override per target with `options.strictEnv`.",
             "default": false
         },
-        "targetDefaults": {
+        "tasks": {
             "type": "object",
             "additionalProperties": {
                 "type": "object",
@@ -1858,14 +2071,14 @@
                 },
                 "additionalProperties": false
             },
-            "description": "Target default configurations"
+            "description": "Workspace-wide task defaults keyed by target name. Applied universally to every project that exposes a matching target. Use `scopedTasks` when defaults should only apply to a subset of projects."
         },
-        "taskDefaults": {
+        "scopedTasks": {
             "type": "array",
             "items": {
-                "$ref": "#/$defs/TaskDefaultsBlock"
+                "$ref": "#/$defs/ScopedTasksBlock"
             },
-            "description": "Cascading task-default blocks. Each block may scope its targets to a subset of projects via `scope`. Blocks are evaluated in order; later blocks override earlier ones when the same field is set.\n\nScope matching is additive — if `scope` is omitted, the block applies to every project."
+            "description": "Cascading scoped-task blocks. Each block may narrow its tasks to a subset of projects via `match`. Blocks are evaluated in order; later blocks override earlier ones when the same field is set.\n\nMatch predicates are additive — if `match` is omitted, the block applies to every project."
         },
         "taskGroups": {
             "type": "object",
@@ -1921,7 +2134,7 @@
             },
             "description": "Named bundles of target dependencies, referenceable from any task's `dependsOn`. `dependsOn: [{ group: \"lint\" }]` expands to every entry in the named group; nested groups are resolved recursively and a cycle raises during discovery."
         },
-        "taskRunnerOptions": {
+        "taskRunner": {
             "type": "object",
             "properties": {
                 "autoEnvVars": {
@@ -2725,7 +2938,7 @@
                 }
             },
             "additionalProperties": false,
-            "description": "Task runner options forwarded verbatim to `defaultTaskRunner`.\n\nIncludes `remoteCache` (HTTP or REAPI gRPC backend), `cacheDirectory`, `parallel`, `globalEnv`, `globalInputs`, `targetDefaults`, etc. See `TaskRunnerOptions` for the full surface."
+            "description": "Task runner options forwarded verbatim to `defaultTaskRunner`.\n\nIncludes `remoteCache` (HTTP or REAPI gRPC backend), `cacheDirectory`, `parallel`, `globalEnv`, `globalInputs`, etc. See `TaskRunnerOptions` for the full surface."
         },
         "toolchain": {
             "type": "object",
@@ -3170,8 +3383,7 @@
                 "score",
                 "unexpectedDeps",
                 "vulnerability"
-            ],
-            "description": "The 8 Socket.dev-style supply-chain policies. Used in `security.policies` and `security.acceptedRisks[*].policies`."
+            ]
         },
         "StagedConfig": {
             "type": "object",
@@ -3426,14 +3638,14 @@
             ],
             "description": "Semantic classification for a target.\n- `build`: Generates one or more artifacts; cached by default.\n- `test`: Validation task (lint, typecheck, unit test). Default type.\n- `run`: One-off or long-running process. Not cached by default."
         },
-        "TaskDefaultsBlock": {
+        "ScopedTasksBlock": {
             "type": "object",
             "properties": {
-                "scope": {
-                    "$ref": "#/$defs/TaskDefaultsScope",
-                    "description": "Optional scope predicate; if omitted, the block applies universally."
+                "match": {
+                    "$ref": "#/$defs/ScopedTasksMatch",
+                    "description": "Optional match predicate; if omitted, the block applies universally."
                 },
-                "targets": {
+                "tasks": {
                     "type": "object",
                     "additionalProperties": {
                         "type": "object",
@@ -3944,16 +4156,16 @@
                         },
                         "additionalProperties": false
                     },
-                    "description": "Target default configurations."
+                    "description": "Task default configurations, keyed by target name."
                 }
             },
             "required": [
-                "targets"
+                "tasks"
             ],
             "additionalProperties": false,
-            "description": "A single task-defaults block — a set of target defaults gated by an optional scope predicate."
+            "description": "A single scoped-tasks block — a set of task defaults gated by an optional match predicate."
         },
-        "TaskDefaultsScope": {
+        "ScopedTasksMatch": {
             "type": "object",
             "properties": {
                 "language": {
@@ -4088,7 +4300,7 @@
                 }
             },
             "additionalProperties": false,
-            "description": "A scope predicate used by  {@link  VisConfig.taskDefaults } . All listed constraints must match for the block to apply."
+            "description": "A predicate used by  {@link  VisConfig.scopedTasks } . All listed constraints must match for the block to apply."
         }
     }
 }

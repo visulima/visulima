@@ -23,7 +23,7 @@ change before you apply.
 
 ### turborepo
 
-Reads `turbo.json` and writes `vis.config.ts` with equivalent `targetDefaults`:
+Reads `turbo.json` and writes `vis.config.ts` with equivalent `tasks`:
 
 ```bash
 vis migrate turborepo
@@ -32,11 +32,11 @@ vis migrate turborepo --dry-run    # Preview without writing
 
 Translates:
 
-- `tasks` / `pipeline` entries → `targetDefaults`
+- `tasks` / `pipeline` entries → `tasks`
 - `^build` dependsOn → `{ dependencies: true, target: "build" }`
 - `project#task` → `{ projects: "project", target: "task" }`
-- `globalDependencies` → `taskRunnerOptions.globalInputs`
-- `globalEnv` → `taskRunnerOptions.globalEnv`
+- `globalDependencies` → `taskRunner.globalInputs`
+- `globalEnv` → `taskRunner.globalEnv`
 - `persistent` / `interactive` → `options.persistent` / `options.interactive`
 
 Remote cache is flagged in the migration report (vis uses the same Turborepo HTTP protocol).
@@ -53,7 +53,7 @@ vis migrate nx --dry-run
 Translates:
 
 - `namedInputs` → `namedInputs`
-- `targetDefaults` → `targetDefaults`
+- `targetDefaults` → `tasks`
 
 Per-project `project.json` files are **left untouched** — vis reads them natively (targets, tags, implicitDependencies, sourceRoot).
 
@@ -68,7 +68,7 @@ vis migrate moon --dry-run
 
 Translates:
 
-- `tasks` → `targetDefaults` (command + args merged, deps, inputs, outputs, type, preset, options)
+- `tasks` → `tasks` (command + args merged, deps, inputs, outputs, type, preset, options)
 - `fileGroups` → `fileGroups`
 - `implicitInputs` → `namedInputs.default`
 

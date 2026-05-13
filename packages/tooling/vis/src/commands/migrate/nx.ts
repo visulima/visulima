@@ -140,8 +140,8 @@ const stripNamespacedTargetDefaults = (targetDefaults: Record<string, NxTargetDe
 
         const hint = NX_EXECUTOR_HINTS[key];
         const message = hint
-            ? `Dropped \`${key}\` from targetDefaults — vis uses package.json scripts as targets. Move its settings to \`${hint}\` if appropriate.`
-            : `Dropped \`${key}\` from targetDefaults — vis only supports script-name targets, not nx-namespaced executors.`;
+            ? `Dropped \`${key}\` from tasks — vis uses package.json scripts as targets. Move its settings to \`${hint}\` if appropriate.`
+            : `Dropped \`${key}\` from tasks — vis only supports script-name targets, not nx-namespaced executors.`;
 
         report.warnings.push(message);
     }
@@ -157,7 +157,7 @@ const renderVisConfig = (nx: NxJson, workspaceRoot: string, useEditorconfig?: bo
     }
 
     if (nx.targetDefaults && Object.keys(nx.targetDefaults).length > 0) {
-        configObject.targetDefaults = nx.targetDefaults;
+        configObject.tasks = nx.targetDefaults;
     }
 
     const serialised = serializeConfigObject(configObject, join(workspaceRoot, "vis.config.ts"), useEditorconfig);
@@ -667,7 +667,7 @@ const ensurePersistentTargetDefaults = (nx: NxJson, rewrittenTargets: ReadonlySe
             targetDefaults = { ...targetDefaults, [target]: next };
             modified = true;
             report.manualSteps.push(
-                `targetDefaults.${target} set to { persistent: true, cache: false } — long-running task auto-detected from rewritten pnpm filter scripts. Adjust if your ${target} is actually short-lived.`,
+                `tasks.${target} set to { persistent: true, cache: false } — long-running task auto-detected from rewritten pnpm filter scripts. Adjust if your ${target} is actually short-lived.`,
             );
         }
     }

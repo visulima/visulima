@@ -84,7 +84,7 @@ describe("cacheDoctorExecute", () => {
             const fetchMock = vi.fn().mockResolvedValue({ status: 401 });
 
             globalThis.fetch = fetchMock;
-            const toolbox = buildToolbox({}, { taskRunnerOptions: { remoteCache: { url: "https://cache.example.com" } } });
+            const toolbox = buildToolbox({}, { taskRunner: { remoteCache: { url: "https://cache.example.com" } } });
 
             await cacheDoctorExecute(toolbox as never);
 
@@ -99,7 +99,7 @@ describe("cacheDoctorExecute", () => {
             expect.assertions(2);
 
             vi.spyOn(globalThis, "fetch").mockImplementation().mockRejectedValue(new Error("ECONNREFUSED"));
-            const toolbox = buildToolbox({}, { taskRunnerOptions: { remoteCache: { url: "https://cache.example.com" } } });
+            const toolbox = buildToolbox({}, { taskRunner: { remoteCache: { url: "https://cache.example.com" } } });
 
             await cacheDoctorExecute(toolbox as never);
 
@@ -118,7 +118,7 @@ describe("cacheDoctorExecute", () => {
             globalThis.fetch = fetchMock;
             const toolbox = buildToolbox(
                 { url: "https://override.example.com" },
-                { taskRunnerOptions: { remoteCache: { url: "https://config.example.com" } } },
+                { taskRunner: { remoteCache: { url: "https://config.example.com" } } },
             );
 
             await cacheDoctorExecute(toolbox as never);
@@ -148,7 +148,7 @@ describe("cacheDoctorExecute", () => {
             expect.assertions(3);
 
             vi.spyOn(globalThis, "fetch").mockImplementation().mockResolvedValue({ status: 401 });
-            const toolbox = buildToolbox({ format: "json" }, { taskRunnerOptions: { remoteCache: { url: "https://cache.example.com" } } });
+            const toolbox = buildToolbox({ format: "json" }, { taskRunner: { remoteCache: { url: "https://cache.example.com" } } });
 
             await cacheDoctorExecute(toolbox as never);
 
@@ -165,7 +165,7 @@ describe("cacheDoctorExecute", () => {
             expect.assertions(3);
 
             probeCapabilitiesMock.mockResolvedValue({ digestFunctions: ["SHA256"], maxBatchTotalSizeBytes: 4096 });
-            const toolbox = buildToolbox({}, { taskRunnerOptions: { remoteCache: { url: "grpcs://cache.example.com:443" } } });
+            const toolbox = buildToolbox({}, { taskRunner: { remoteCache: { url: "grpcs://cache.example.com:443" } } });
 
             await cacheDoctorExecute(toolbox as never);
 
@@ -179,7 +179,7 @@ describe("cacheDoctorExecute", () => {
 
             probeCapabilitiesMock.mockResolvedValue({ digestFunctions: ["SHA256"], maxBatchTotalSizeBytes: 16 });
             vi.spyOn(globalThis, "fetch").mockImplementation();
-            const toolbox = buildToolbox({ backend: "reapi" }, { taskRunnerOptions: { remoteCache: { url: "https://cache.example.com" } } });
+            const toolbox = buildToolbox({ backend: "reapi" }, { taskRunner: { remoteCache: { url: "https://cache.example.com" } } });
 
             await cacheDoctorExecute(toolbox as never);
 
@@ -195,7 +195,7 @@ describe("cacheDoctorExecute", () => {
             const toolbox = buildToolbox(
                 {},
                 {
-                    taskRunnerOptions: {
+                    taskRunner: {
                         remoteCache: {
                             allowInsecureBearer: true,
                             bearerToken: "token-xyz",
@@ -217,7 +217,7 @@ describe("cacheDoctorExecute", () => {
             expect.assertions(3);
 
             probeCapabilitiesMock.mockRejectedValue(new Error("UNAUTHENTICATED: bad token"));
-            const toolbox = buildToolbox({ format: "json" }, { taskRunnerOptions: { remoteCache: { url: "grpcs://cache.example.com:443" } } });
+            const toolbox = buildToolbox({ format: "json" }, { taskRunner: { remoteCache: { url: "grpcs://cache.example.com:443" } } });
 
             await cacheDoctorExecute(toolbox as never);
 
@@ -239,7 +239,7 @@ describe("cacheDoctorExecute", () => {
             closeMock.mockImplementation(() => {
                 throw new Error("close failed: handle already disposed");
             });
-            const toolbox = buildToolbox({ format: "json" }, { taskRunnerOptions: { remoteCache: { url: "grpcs://cache.example.com:443" } } });
+            const toolbox = buildToolbox({ format: "json" }, { taskRunner: { remoteCache: { url: "grpcs://cache.example.com:443" } } });
 
             await cacheDoctorExecute(toolbox as never);
 

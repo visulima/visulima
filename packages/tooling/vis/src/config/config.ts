@@ -9,6 +9,7 @@ import { createJiti } from "jiti";
 
 import { VisConfigCycleError, VisConfigLoadError, VisConfigNotFoundError } from "../errors";
 import { mergeTargetWithInherit } from "../task/target-merge";
+import { assertNoDeprecatedConfigKeys, assertNoDeprecatedTaskKeys } from "./deprecation";
 import type { VisConfig, VisTaskConfig } from "./types";
 
 /** Supported config file names, checked in priority order. */
@@ -315,27 +316,27 @@ const loadRawConfig = async (jiti: ReturnType<typeof createJiti>, configPath: st
 
 /**
  * Merge two `VisConfig` objects — child wins. Most top-level fields are
- * shallow-merged; `targetDefaults` runs through {@link mergeTargetWithInherit}
+ * shallow-merged; `tasks` runs through {@link mergeTargetWithInherit}
  * so the `@inherit` sentinel works across the extends chain;
- * `taskDefaults` blocks concatenate (parent first, child last), which
+ * `scopedTasks` blocks concatenate (parent first, child last), which
  * preserves the existing "later block wins" precedence.
  */
 const mergeVisConfigs = (parent: VisConfig, child: VisConfig): VisConfig => {
     const merged: VisConfig = { ...parent, ...child };
 
-    if (parent.targetDefaults || child.targetDefaults) {
-        const names = new Set<string>([...Object.keys(parent.targetDefaults ?? {}), ...Object.keys(child.targetDefaults ?? {})]);
-        const out: NonNullable<VisConfig["targetDefaults"]> = {};
+    if (parent.tasks || child.tasks) {
+        const names = new Set<string>([...Object.keys(parent.tasks ?? {}), ...Object.keys(child.tasks ?? {})]);
+        const out: NonNullable<VisConfig["tasks"]> = {};
 
         for (const name of names) {
-            out[name] = mergeTargetWithInherit(parent.targetDefaults?.[name], child.targetDefaults?.[name]);
+            out[name] = mergeTargetWithInherit(parent.tasks?.[name], child.tasks?.[name]);
         }
 
-        merged.targetDefaults = out;
+        merged.tasks = out;
     }
 
-    if (parent.taskDefaults || child.taskDefaults) {
-        merged.taskDefaults = [...(parent.taskDefaults ?? []), ...(child.taskDefaults ?? [])];
+    if (parent.scopedTasks || child.scopedTasks) {
+        merged.scopedTasks = [...(parent.scopedTasks ?? []), ...(child.scopedTasks ?? [])];
     }
 
     if (parent.fileGroups || child.fileGroups) {
@@ -377,8 +378,8 @@ const mergeVisConfigs = (parent: VisConfig, child: VisConfig): VisConfig => {
         merged.update = { ...parent.update, ...child.update };
     }
 
-    if (parent.taskRunnerOptions || child.taskRunnerOptions) {
-        merged.taskRunnerOptions = { ...parent.taskRunnerOptions, ...child.taskRunnerOptions };
+    if (parent.taskRunner || child.taskRunner) {
+        merged.taskRunner = { ...parent.taskRunner, ...child.taskRunner };
     }
 
     // `extends` is consumed during resolution — never propagated downstream.
@@ -418,6 +419,9 @@ const resolveConfigChain = async (
 
     try {
         const raw = await loadRawConfig(jiti, configPath, chain);
+
+        assertNoDeprecatedConfigKeys(configPath, chain, raw);
+
         const extendsList = normalizeExtends(raw.extends);
 
         for (const specifier of extendsList) {
@@ -587,7 +591,12 @@ const loadVisTaskConfig = async (workspaceRoot: string, projectDirectory: string
     }
 
     const jiti = createJiti(projectDirectory, { fsCache: false, moduleCache: false });
+    // loadRawConfig validates against VisConfig-shaped keys; vis.task.ts
+    // has its own (smaller) deprecation set, so re-run a task-specific check.
     const raw = await loadRawConfig(jiti, taskConfigPath, []);
+
+    assertNoDeprecatedTaskKeys(taskConfigPath, [], raw);
+
     const taskConfig = raw as unknown as VisTaskConfig;
 
     if (cachePath) {

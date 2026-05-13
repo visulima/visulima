@@ -34,49 +34,49 @@ describe("vis.config.ts extends chain", () => {
     it("loads a single-file config with no extends", async () => {
         expect.assertions(1);
 
-        writeConfig(join(scratch, "vis.config.ts"), `{ targetDefaults: { build: { cache: true } } }`);
+        writeConfig(join(scratch, "vis.config.ts"), `{ tasks: { build: { cache: true } } }`);
 
         const config = await loadVisConfig(scratch);
 
-        expect(config.targetDefaults?.build).toMatchObject({ cache: true });
+        expect(config.tasks?.build).toMatchObject({ cache: true });
     });
 
     it("merges a relative-path extends — child wins per top-level key", async () => {
         expect.assertions(2);
 
-        writeConfig(join(scratch, "shared.config.ts"), `{ targetDefaults: { build: { cache: false }, lint: { cache: true } } }`);
-        writeConfig(join(scratch, "vis.config.ts"), `{ extends: ["./shared.config.ts"], targetDefaults: { build: { cache: true } } }`);
+        writeConfig(join(scratch, "shared.config.ts"), `{ tasks: { build: { cache: false }, lint: { cache: true } } }`);
+        writeConfig(join(scratch, "vis.config.ts"), `{ extends: ["./shared.config.ts"], tasks: { build: { cache: true } } }`);
 
         const config = await loadVisConfig(scratch);
 
         // Child overrode `build.cache` — preserved
-        expect(config.targetDefaults?.build).toMatchObject({ cache: true });
+        expect(config.tasks?.build).toMatchObject({ cache: true });
         // Parent's `lint` survived because the child didn't redefine it
-        expect(config.targetDefaults?.lint).toMatchObject({ cache: true });
+        expect(config.tasks?.lint).toMatchObject({ cache: true });
     });
 
     it("handles the @inherit sentinel across extends", async () => {
         expect.assertions(1);
 
-        writeConfig(join(scratch, "shared.config.ts"), `{ targetDefaults: { build: { dependsOn: ["^build"] } } }`);
-        writeConfig(join(scratch, "vis.config.ts"), `{ extends: ["./shared.config.ts"], targetDefaults: { build: { dependsOn: ["@inherit", "lint"] } } }`);
+        writeConfig(join(scratch, "shared.config.ts"), `{ tasks: { build: { dependsOn: ["^build"] } } }`);
+        writeConfig(join(scratch, "vis.config.ts"), `{ extends: ["./shared.config.ts"], tasks: { build: { dependsOn: ["@inherit", "lint"] } } }`);
 
         const config = await loadVisConfig(scratch);
 
-        expect(config.targetDefaults?.build?.dependsOn).toStrictEqual(["^build", "lint"]);
+        expect(config.tasks?.build?.dependsOn).toStrictEqual(["^build", "lint"]);
     });
 
     it("processes multi-element extends left-to-right (later wins)", async () => {
         expect.assertions(1);
 
-        writeConfig(join(scratch, "a.config.ts"), `{ targetDefaults: { build: { cache: false } } }`);
-        writeConfig(join(scratch, "b.config.ts"), `{ targetDefaults: { build: { cache: true } } }`);
+        writeConfig(join(scratch, "a.config.ts"), `{ tasks: { build: { cache: false } } }`);
+        writeConfig(join(scratch, "b.config.ts"), `{ tasks: { build: { cache: true } } }`);
         writeConfig(join(scratch, "vis.config.ts"), `{ extends: ["./a.config.ts", "./b.config.ts"] }`);
 
         const config = await loadVisConfig(scratch);
 
         // b extends after a, and root has nothing — b wins.
-        expect(config.targetDefaults?.build?.cache).toBe(true);
+        expect(config.tasks?.build?.cache).toBe(true);
     });
 
     it("throws VisConfigCycleError on a cyclic extends chain", async () => {
@@ -92,7 +92,7 @@ describe("vis.config.ts extends chain", () => {
     it("allows diamond extends (same file pulled in via two paths)", async () => {
         expect.assertions(1);
 
-        writeConfig(join(scratch, "leaf.config.ts"), `{ targetDefaults: { build: { cache: true } } }`);
+        writeConfig(join(scratch, "leaf.config.ts"), `{ tasks: { build: { cache: true } } }`);
         writeConfig(join(scratch, "a.config.ts"), `{ extends: ["./leaf.config.ts"] }`);
         writeConfig(join(scratch, "b.config.ts"), `{ extends: ["./leaf.config.ts"] }`);
         writeConfig(join(scratch, "vis.config.ts"), `{ extends: ["./a.config.ts", "./b.config.ts"] }`);
@@ -100,7 +100,7 @@ describe("vis.config.ts extends chain", () => {
         const config = await loadVisConfig(scratch);
 
         // Diamond resolves cleanly, leaf merged once.
-        expect(config.targetDefaults?.build?.cache).toBe(true);
+        expect(config.tasks?.build?.cache).toBe(true);
     });
 
     it("rejects absolute paths in extends", async () => {
@@ -119,27 +119,27 @@ describe("vis.config.ts extends chain", () => {
         await expect(loadVisConfig(scratch)).rejects.toBeInstanceOf(VisConfigNotFoundError);
     });
 
-    it("concatenates taskDefaults blocks across the chain (parent first)", async () => {
+    it("concatenates scopedTasks blocks across the chain (parent first)", async () => {
         expect.assertions(2);
 
-        writeConfig(join(scratch, "shared.config.ts"), `{ taskDefaults: [{ scope: { tags: ["base"] }, targets: { build: { cache: true } } }] }`);
+        writeConfig(join(scratch, "shared.config.ts"), `{ scopedTasks: [{ match: { tags: ["base"] }, tasks: { build: { cache: true } } }] }`);
         writeConfig(
             join(scratch, "vis.config.ts"),
-            `{ extends: ["./shared.config.ts"], taskDefaults: [{ scope: { tags: ["app"] }, targets: { build: { cache: false } } }] }`,
+            `{ extends: ["./shared.config.ts"], scopedTasks: [{ match: { tags: ["app"] }, tasks: { build: { cache: false } } }] }`,
         );
 
         const config = await loadVisConfig(scratch);
 
-        expect(config.taskDefaults).toHaveLength(2);
+        expect(config.scopedTasks).toHaveLength(2);
         // Parent's block lands first, root's block second — preserves the
         // existing "later wins" semantics for matching scopes.
-        expect(config.taskDefaults?.[0]?.scope?.tags).toStrictEqual(["base"]);
+        expect(config.scopedTasks?.[0]?.match?.tags).toStrictEqual(["base"]);
     });
 
     it("strips `extends` from the merged result", async () => {
         expect.assertions(1);
 
-        writeConfig(join(scratch, "shared.config.ts"), `{ targetDefaults: {} }`);
+        writeConfig(join(scratch, "shared.config.ts"), `{ tasks: {} }`);
         writeConfig(join(scratch, "vis.config.ts"), `{ extends: ["./shared.config.ts"] }`);
 
         const config = await loadVisConfig(scratch);

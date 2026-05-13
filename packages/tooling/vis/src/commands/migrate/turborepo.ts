@@ -48,10 +48,10 @@ const convertDependsOn = (deps: string[]): (string | { dependencies?: boolean; p
     });
 
 const renderVisConfig = (turbo: TurboJson, workspaceRoot: string, useEditorconfig?: boolean): string => {
-    const tasks = turbo.tasks ?? turbo.pipeline ?? {};
-    const targetDefaults: Record<string, Record<string, unknown>> = {};
+    const turboTasks = turbo.tasks ?? turbo.pipeline ?? {};
+    const tasks: Record<string, Record<string, unknown>> = {};
 
-    for (const [taskName, task] of Object.entries(tasks)) {
+    for (const [taskName, task] of Object.entries(turboTasks)) {
         if (taskName.includes("#")) {
             continue;
         }
@@ -96,38 +96,38 @@ const renderVisConfig = (turbo: TurboJson, workspaceRoot: string, useEditorconfi
             entry.options = options;
         }
 
-        targetDefaults[taskName] = entry;
+        tasks[taskName] = entry;
     }
 
     const configObject: Record<string, unknown> = {};
 
-    if (Object.keys(targetDefaults).length > 0) {
-        configObject.targetDefaults = targetDefaults;
+    if (Object.keys(tasks).length > 0) {
+        configObject.tasks = tasks;
     }
 
-    const taskRunnerOptions: Record<string, unknown> = {};
+    const taskRunner: Record<string, unknown> = {};
 
     if (turbo.globalDependencies && turbo.globalDependencies.length > 0) {
-        taskRunnerOptions.globalInputs = turbo.globalDependencies;
+        taskRunner.globalInputs = turbo.globalDependencies;
     }
 
     if (turbo.globalEnv && turbo.globalEnv.length > 0) {
-        taskRunnerOptions.globalEnv = turbo.globalEnv;
+        taskRunner.globalEnv = turbo.globalEnv;
     }
 
     if (turbo.globalPassThroughEnv && turbo.globalPassThroughEnv.length > 0) {
-        taskRunnerOptions.globalPassThroughEnv = turbo.globalPassThroughEnv;
+        taskRunner.globalPassThroughEnv = turbo.globalPassThroughEnv;
     }
 
-    if (Object.keys(taskRunnerOptions).length > 0) {
-        configObject.taskRunnerOptions = taskRunnerOptions;
+    if (Object.keys(taskRunner).length > 0) {
+        configObject.taskRunner = taskRunner;
     }
 
     const serialised = serializeConfigObject(configObject, join(workspaceRoot, "vis.config.ts"), useEditorconfig);
 
     return [
         "// Migrated from turbo.json by `vis migrate turborepo`.",
-        "// Review the generated targetDefaults and move project-specific tasks",
+        "// Review the generated `tasks` block and move project-specific tasks",
         "// into each project's project.json.",
         "",
         "import { defineConfig } from \"@visulima/vis/config\";",
@@ -168,7 +168,7 @@ export const migrateTurborepo = (
     }
 
     report.manualSteps.push(
-        "Review targetDefaults in vis.config.ts — project-specific tasks (turbo's project#task syntax) were skipped and should be moved into each project's project.json.",
+        "Review the `tasks` block in vis.config.ts — project-specific tasks (turbo's project#task syntax) were skipped and should be moved into each project's project.json.",
     );
     report.manualSteps.push(
         "vis adds two task primitives turbo doesn't have: `when: { os, env, branch, ci, not.* }` for conditional execution and `always: true` for finally/teardown tasks that run even when upstream fails. See docs/guides/conditional-and-finally-tasks.mdx.",
@@ -184,7 +184,7 @@ export const migrateTurborepo = (
 
     if (turbo.remoteCache?.enabled) {
         report.manualSteps.push(
-            "turbo remote cache detected. vis speaks the same HTTP protocol — set taskRunnerOptions.remoteCache { url, token, teamId } in vis.config.ts, or keep your TURBO_API / TURBO_TOKEN / TURBO_TEAM env vars (vis honours them as fallbacks).",
+            "turbo remote cache detected. vis speaks the same HTTP protocol — set taskRunner.remoteCache { url, token, teamId } in vis.config.ts, or keep your TURBO_API / TURBO_TOKEN / TURBO_TEAM env vars (vis honours them as fallbacks).",
         );
     }
 };

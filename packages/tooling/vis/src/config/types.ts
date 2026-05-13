@@ -108,7 +108,7 @@ export interface OwnersEntry {
  */
 export interface VisTaskConfig {
     /** Per-target overrides — same shape as `project.json#targets`. */
-    targets?: Record<string, VisTargetConfiguration>;
+    tasks?: Record<string, VisTargetConfiguration>;
 }
 
 /**
@@ -154,10 +154,10 @@ export interface ProjectJson {
 }
 
 /**
- * A scope predicate used by {@link VisConfig.taskDefaults}.
+ * A predicate used by {@link VisConfig.scopedTasks}.
  * All listed constraints must match for the block to apply.
  */
-export interface TaskDefaultsScope {
+export interface ScopedTasksMatch {
     /** Match on primary language. */
     language?: string | string[];
     /** Match on project layer. */
@@ -171,14 +171,14 @@ export interface TaskDefaultsScope {
 }
 
 /**
- * A single task-defaults block — a set of target defaults gated by an
- * optional scope predicate.
+ * A single scoped-tasks block — a set of task defaults gated by an
+ * optional match predicate.
  */
-export interface TaskDefaultsBlock {
-    /** Optional scope predicate; if omitted, the block applies universally. */
-    scope?: TaskDefaultsScope;
-    /** Target default configurations. */
-    targets: Record<string, Partial<VisTargetConfiguration>>;
+export interface ScopedTasksBlock {
+    /** Optional match predicate; if omitted, the block applies universally. */
+    match?: ScopedTasksMatch;
+    /** Task default configurations, keyed by target name. */
+    tasks: Record<string, Partial<VisTargetConfiguration>>;
 }
 
 export interface VisConfig {
@@ -1369,6 +1369,93 @@ export interface VisConfig {
         };
 
         /**
+         * Pre-install marshall pipeline — packument-derived supply-chain
+         * gates (author, provenance, new-bin, metadata, downloads,
+         * expired-domains, signatures, archived-repo) that run before
+         * `vis add` / `vis install <pkg>` / `vis update <pkg>` hand off to
+         * the underlying package manager. Every entry is optional; omit a
+         * key and the marshall runs with defaults. Set `enabled: false`
+         * on a specific marshall to skip it without touching env vars.
+         */
+        marshalls?: {
+            /** Archived-repo marshall (GitHub repository status). */
+            archivedRepo?: {
+                /** Package names to skip. */
+                allowlist?: string[];
+                /** Default: marshall is on. Set false to disable. */
+                enabled?: boolean;
+                /** GitHub PAT for the API call (5k/hr vs 60/hr). */
+                githubToken?: string;
+            };
+            /** Author / publisher heuristics. */
+            author?: {
+                allowlist?: string[];
+                /** Days since the publisher's last release before flagging as error. */
+                dormantErrorDays?: number;
+                /** Days since the publisher's last release before flagging as warning. */
+                dormantWarnDays?: number;
+                enabled?: boolean;
+                /** Window for the "new publisher on an established package" check. */
+                newPublisherWindowDays?: number;
+                /** Days since the resolved version was published — error threshold. */
+                recentVersionErrorDays?: number;
+                /** Days since the resolved version was published — warning threshold. */
+                recentVersionWarnDays?: number;
+            };
+            /** Monthly download-count floor. */
+            downloads?: {
+                allowlist?: string[];
+                enabled?: boolean;
+                /** Below this monthly count → error (default: 20). */
+                errorThreshold?: number;
+                /** Below this monthly count → warning (default: 1000). */
+                warnThreshold?: number;
+            };
+            /** Maintainer-email-domain NS lookup. */
+            expiredDomains?: {
+                /** Domains exempted from the check (legacy / internal). */
+                allowDomains?: string[];
+                allowlist?: string[];
+                /** DNS resolvers to query (default: system). */
+                dnsServers?: string[];
+                enabled?: boolean;
+                /** Per-domain DNS timeout (default: 5000). */
+                timeoutMs?: number;
+            };
+            /** README / license / repository presence checks. */
+            metadata?: {
+                allowlist?: string[];
+                /** Subset of checks to run. Default: all three. */
+                checks?: ("license" | "readme" | "repo")[];
+                enabled?: boolean;
+            };
+            /** New CLI-bin script introduced in this version. */
+            newBin?: {
+                allowlist?: string[];
+                enabled?: boolean;
+            };
+            /** Provenance regression check. */
+            provenance?: {
+                allowlist?: string[];
+                enabled?: boolean;
+            };
+            /**
+             * ECDSA P-256 verification against npm's signing keys. Disabled
+             * by default because npm coverage still has gaps that produce
+             * noisy warnings on legitimate packages.
+             */
+            signatures?: {
+                allowlist?: string[];
+                /** Default: marshall is *off*. Set true to enable. */
+                enabled?: boolean;
+                /** Override the keys endpoint (default: npm registry). */
+                keysUrl?: string;
+                /** How to treat an expired-but-known key. Default: "warning". */
+                treatExpiredAs?: "error" | "warning";
+            };
+        };
+
+        /**
          * Package names to skip during typosquat detection.
          * Use this for internal packages or known-safe names that happen to
          * look similar to popular packages.
@@ -1453,25 +1540,29 @@ export interface VisConfig {
      */
     strictEnv?: boolean;
 
-    /** Target default configurations */
-    targetDefaults?: Record<string, Partial<VisTargetConfiguration>>;
+    /**
+     * Workspace-wide task defaults keyed by target name. Applied universally
+     * to every project that exposes a matching target. Use `scopedTasks` when
+     * defaults should only apply to a subset of projects.
+     */
+    tasks?: Record<string, Partial<VisTargetConfiguration>>;
 
     /**
-     * Cascading task-default blocks. Each block may scope its targets to a
-     * subset of projects via `scope`. Blocks are evaluated in order; later
+     * Cascading scoped-task blocks. Each block may narrow its tasks to a
+     * subset of projects via `match`. Blocks are evaluated in order; later
      * blocks override earlier ones when the same field is set.
      *
-     * Scope matching is additive — if `scope` is omitted, the block applies
+     * Match predicates are additive — if `match` is omitted, the block applies
      * to every project.
      * @example
      * ```
-     * taskDefaults: [
-     *   { scope: { tags: ["frontend"] }, targets: { build: { cache: true } } },
-     *   { scope: { projectType: "library" }, targets: { lint: { cache: true } } },
+     * scopedTasks: [
+     *   { match: { tags: ["frontend"] }, tasks: { build: { cache: true } } },
+     *   { match: { projectType: "library" }, tasks: { lint: { cache: true } } },
      * ]
      * ```
      */
-    taskDefaults?: TaskDefaultsBlock[];
+    scopedTasks?: ScopedTasksBlock[];
 
     /**
      * Named bundles of target dependencies, referenceable from any task's
@@ -1485,10 +1576,10 @@ export interface VisConfig {
      * Task runner options forwarded verbatim to `defaultTaskRunner`.
      *
      * Includes `remoteCache` (HTTP or REAPI gRPC backend), `cacheDirectory`,
-     * `parallel`, `globalEnv`, `globalInputs`, `targetDefaults`, etc.
+     * `parallel`, `globalEnv`, `globalInputs`, etc.
      * See `TaskRunnerOptions` for the full surface.
      */
-    taskRunnerOptions?: Partial<TaskRunnerOptions>;
+    taskRunner?: Partial<TaskRunnerOptions>;
 
     /**
      * Toolchain (Node / pnpm / python / rust / ...) management. vis
