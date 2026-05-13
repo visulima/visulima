@@ -1,9 +1,11 @@
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 
+import type { VisConfig } from "../../config/workspace";
 import { detectPackageManager } from "../hook/migrate";
 import { migrateDeps } from "./deps";
 import { migrateGitleaks } from "./gitleaks";
 import type {
+    MigrateAllOptions,
     MigrateDepsOptions,
     MigrateGitleaksOptions,
     MigrateKingfisherOptions,
@@ -12,6 +14,7 @@ import type {
     MigrateNanoStagedOptions,
     MigrateNxOptions,
     MigrateSecretlintOptions,
+    MigrateSelfOptions,
     MigrateSherifOptions,
     MigrateSyncpackOptions,
     MigrateTurborepoOptions,
@@ -22,6 +25,8 @@ import { migrateMoon } from "./moon";
 import { migrateNanoStaged } from "./nano-staged";
 import { migrateNx } from "./nx";
 import { confirm } from "./prompt";
+import { migrateSelf } from "./self";
+import { buildProbeContext, getApplicableMigrations } from "./registry";
 import { migrateSecretlint } from "./secretlint";
 import { migrateSherif } from "./sherif";
 import { printSummary } from "./summary";
@@ -266,11 +271,94 @@ const migrateSherifExecuteImpl = async ({ logger, options, visConfig, workspaceR
     printSummary(ctx.report, logger);
 };
 
+const migrateSelfExecuteImpl = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Console, MigrateSelfOptions>): Promise<void> => {
+    if (!(await maybeConfirm("self", options, logger))) {
+        return;
+    }
+
+    const ctx = buildContext({ logger, options, visConfig: visConfig as Record<string, unknown> | undefined, workspaceRoot });
+
+    announceDryRun(ctx);
+
+    logger.info("── Migrating vis.config.ts to current schema ──");
+    migrateSelf(ctx.root, { dryRun: ctx.dryRun }, logger, ctx.report);
+    logger.info("");
+
+    printSummary(ctx.report, logger);
+};
+
 const migrateVerifyExecuteImpl = ({ logger, workspaceRoot }: Toolbox): void => {
     const root = workspaceRoot ?? process.cwd();
     const issues = verifyMigration(root, logger);
 
     if (issues.length > 0) {
+        process.exitCode = 1;
+    }
+};
+
+const migrateAllExecuteImpl = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Console, MigrateAllOptions>): Promise<void> => {
+    const root = workspaceRoot ?? process.cwd();
+    const config = (visConfig ?? {}) as VisConfig;
+    const context = buildProbeContext(root, config);
+    const applicable = getApplicableMigrations(context);
+
+    if (applicable.length === 0) {
+        logger.info("No applicable migrations detected in this workspace.");
+
+        return;
+    }
+
+    const dryRun = Boolean(options.dryRun);
+
+    logger.info(`Detected ${String(applicable.length)} migration(s):`);
+
+    for (const entry of applicable) {
+        logger.info(`  • ${entry.title} — ${entry.description}`);
+    }
+
+    logger.info("");
+
+    if (!options.yes && !dryRun) {
+        const confirmed = await confirm("Apply all detected migrations? Backups (.bak) will be created.");
+
+        if (!confirmed) {
+            logger.info("Aborted.");
+
+            return;
+        }
+    }
+
+    if (dryRun) {
+        logger.info("Running in dry-run mode — no changes will be made.\n");
+    }
+
+    const report: MigrationReport = createMigrationReport();
+    const failures: { error: unknown; id: string }[] = [];
+
+    for (const entry of applicable) {
+        try {
+            logger.info(`── Applying ${entry.title} ──`);
+
+            if (dryRun) {
+                for (const line of entry.probe(context)) {
+                    logger.info(line);
+                }
+            } else {
+                entry.apply(context, report, logger);
+            }
+
+            logger.info("");
+        } catch (error) {
+            failures.push({ error, id: entry.id });
+            logger.warn(`Failed to apply ${entry.title}: ${(error as Error).message}`);
+        }
+    }
+
+    printSummary(report, logger);
+
+    if (failures.length > 0) {
+        logger.warn("");
+        logger.warn(`${String(failures.length)} migration(s) failed — see messages above.`);
         process.exitCode = 1;
     }
 };
@@ -286,4 +374,6 @@ export const migrateKingfisherExecute = migrateKingfisherExecuteImpl as CommandE
 export const migrateSecretlintExecute = migrateSecretlintExecuteImpl as CommandExecute<Toolbox>;
 export const migrateSyncpackExecute = migrateSyncpackExecuteImpl as CommandExecute<Toolbox>;
 export const migrateSherifExecute = migrateSherifExecuteImpl as CommandExecute<Toolbox>;
+export const migrateSelfExecute = migrateSelfExecuteImpl as CommandExecute<Toolbox>;
 export const migrateVerifyExecute = migrateVerifyExecuteImpl;
+export const migrateAllExecute = migrateAllExecuteImpl as CommandExecute<Toolbox>;
