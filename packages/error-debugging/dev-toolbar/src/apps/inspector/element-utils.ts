@@ -865,10 +865,10 @@ export const getElementsInRect = (rect: DOMRect): Element[] => {
                 const elementRect = getViewportRect(element);
 
                 if (
-                    elementRect.left >= rect.x - 5 &&
-                    elementRect.top >= rect.y - 5 &&
-                    elementRect.right <= rect.x + rect.width + 5 &&
-                    elementRect.bottom <= rect.y + rect.height + 5
+                    elementRect.left >= rect.x - 5
+                    && elementRect.top >= rect.y - 5
+                    && elementRect.right <= rect.x + rect.width + 5
+                    && elementRect.bottom <= rect.y + rect.height + 5
                 ) {
                     seen.add(element);
                     elements.push(element);

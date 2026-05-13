@@ -525,12 +525,12 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                 }, 380);
             });
         } else if (
-            !isFullscreen &&
-            wasFullscreen && // ── Exiting fullscreen ───────────────────────────────────────────
+            !isFullscreen
+            && wasFullscreen // ── Exiting fullscreen ───────────────────────────────────────────
             // If the animated exit is in progress, the onClick handler owns the
             // element styles — don't fight it. Only run instant snap for non-
             // animated exits (e.g. programmatic viewMode changes).
-            !isExitAnimatingRef.current
+            && !isExitAnimatingRef.current
         ) {
             element.style.transition = "none";
             element.style.clipPath = "";
@@ -651,12 +651,12 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
         return undefined;
     }
 
-    const startResize =
-        (direction: { bottom?: boolean; left?: boolean; right?: boolean; top?: boolean }) =>
-        (event_: MouseEvent): void => {
-            event_.preventDefault();
-            isResizingRef.current = direction;
-        };
+    const startResize
+        = (direction: { bottom?: boolean; left?: boolean; right?: boolean; top?: boolean }) =>
+            (event_: MouseEvent): void => {
+                event_.preventDefault();
+                isResizingRef.current = direction;
+            };
 
     return (
         <>

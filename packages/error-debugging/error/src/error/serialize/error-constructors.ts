@@ -65,9 +65,9 @@ export const isErrorLike = (
     name?: string;
     stack?: string;
 } =>
-    value !== null &&
-    typeof value === "object" &&
-    typeof (value as { name?: unknown }).name === "string" &&
-    typeof (value as { message?: unknown }).message === "string" &&
+    value !== null
+    && typeof value === "object"
+    && typeof (value as { name?: unknown }).name === "string"
+    && typeof (value as { message?: unknown }).message === "string"
     // Must be a known error constructor name or a generic Error
-    (getErrorConstructor((value as { name: string }).name) !== undefined || (value as { name: string }).name === "Error");
+    && (getErrorConstructor((value as { name: string }).name) !== undefined || (value as { name: string }).name === "Error");
