@@ -19,6 +19,7 @@ import { join } from "@visulima/path";
 import autoBlocklistData from "../../data/typosquats.json" with { type: "json" };
 import manualBlocklistData from "../../data/typosquats-manual.json" with { type: "json" };
 import { pail } from "../io/logger";
+import { isMarshallDisabled } from "./marshalls/registry";
 
 export type Blocklist = Record<string, string[]>;
 
@@ -316,6 +317,10 @@ const askConfirmation = async (question: string): Promise<string | undefined> =>
  * Non-interactive mode always aborts.
  */
 export const runTyposquatCheck = async (packageNames: string[], allowlist?: string[]): Promise<TyposquatCheckResult> => {
+    if (isMarshallDisabled("typosquats")) {
+        return { ok: true, packages: packageNames };
+    }
+
     const matches = checkTyposquats(packageNames, allowlist);
 
     if (matches.length === 0) {
@@ -407,6 +412,10 @@ const readDepsFromPackageJson = (packageJsonPath: string): string[] => {
  * @returns `true` to proceed, `false` to abort.
  */
 export const scanDepsForTyposquats = async (cwd: string, allowlist?: string[]): Promise<boolean> => {
+    if (isMarshallDisabled("typosquats")) {
+        return true;
+    }
+
     const packageJsonPath = join(cwd, "package.json");
     const depNames = readDepsFromPackageJson(packageJsonPath);
 

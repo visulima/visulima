@@ -16,6 +16,7 @@ const add: Command = {
         ["vis add lodash -w", "Add to workspace root"],
         ["vis add lodash --no-socket-check", "Add without Socket.dev check"],
         ["vis add lodash --no-typosquat-check", "Skip typosquat name check"],
+        ["vis add lodash --no-marshall-check", "Skip the offline marshall pipeline (author, downloads, etc.)"],
         ["vis add lodash --run-scripts", "Run lifecycle scripts (opts out of vis's default block-by-default policy)"],
     ],
     group: "Dependencies",
@@ -37,6 +38,12 @@ const add: Command = {
         },
         { defaultValue: false, description: "Skip typosquat name check before adding", name: "no-typosquat-check", type: Boolean },
         { defaultValue: false, description: "Skip Socket.dev security check before adding", name: "no-socket-check", type: Boolean },
+        {
+            defaultValue: false,
+            description: "Skip the offline marshall pipeline (author, provenance, metadata, downloads, expired-domains, new-bin, signatures, archived-repo)",
+            name: "no-marshall-check",
+            type: Boolean,
+        },
         {
             defaultValue: false,
             description:
@@ -61,6 +68,7 @@ export type AddOptions = CreateOptions<{
     exact: boolean | undefined;
     filter: string[] | undefined;
     global: boolean | undefined;
+    "no-marshall-check": boolean | undefined;
     "no-socket-check": boolean | undefined;
     "no-typosquat-check": boolean | undefined;
     "run-scripts": boolean | undefined;

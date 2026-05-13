@@ -19,6 +19,9 @@ import type { VisConfig } from "../../config/workspace";
 import type { UpdateCommandOptions } from "../../pm/package-manager";
 import { resolveUpdateCommand } from "../../pm/package-manager";
 import { resolveInstaller } from "../../pm/pm-runner";
+import { presentMarshallFindings } from "../../security/marshalls/decision-prompt";
+import { runMarshallPipeline } from "../../security/marshalls/pipeline";
+import { resolveExplicitPackages } from "../../security/marshalls/resolve-explicit";
 import { buildSocketOptions, scoreColor } from "../../security/socket-security";
 import { runTyposquatCheck, scanDepsForTyposquats } from "../../security/typosquats";
 import CheckProgressApp from "../../tui/components/check-progress-app";
@@ -929,7 +932,7 @@ const execute = async ({ argument: rawArgument, logger, options, visConfig, work
         }
     }
 
-    // Rollback mode
+    // Rollback mode — short-circuits before any registry work.
     if (options.rollback) {
         if (!hasBackup(workspaceRoot, packageManager)) {
             logger.info("No backup found. Run 'vis update' first to create a backup.");
@@ -946,6 +949,28 @@ const execute = async ({ argument: rawArgument, logger, options, visConfig, work
         }
 
         return;
+    }
+
+    // Pre-install marshall pipeline — only on the explicit-args branch.
+    // Blanket `vis update` is a packument fan-out over every installed dep
+    // and would multiply network traffic dramatically; user-typed package
+    // names are the right scope for these checks.
+    if (argument.length > 0 && (options as Record<string, unknown>).marshallCheck !== false) {
+        const resolved = await resolveExplicitPackages(argument);
+
+        if (resolved.length > 0) {
+            const findings = await runMarshallPipeline(resolved, {
+                config: visConfig?.security?.marshalls,
+                workspaceRoot,
+            });
+            const proceed = await presentMarshallFindings(findings);
+
+            if (!proceed) {
+                process.exitCode = 1;
+
+                return;
+            }
+        }
     }
 
     // Blanket --latest gate: confirm before upgrading everything to latest.

@@ -5,7 +5,7 @@ description: "Add packages with typosquat detection and security scanning"
 
 # vis add
 
-Add packages using the detected package manager. Before installing, vis runs a **typosquat check** against a curated blocklist of known malicious package names, followed by an optional **Socket.dev security scan**.
+Add packages using the detected package manager. Before installing, vis runs a **typosquat check** against a curated blocklist of known malicious package names, an offline **marshall pipeline** (author, provenance, metadata, downloads, expired-domains, new-bin, archived-repo), and an optional **Socket.dev security scan**.
 
 ## Secure-by-default behavior
 
@@ -35,6 +35,7 @@ vis add lodash -w                      # Add to workspace root
 vis add esbuild --run-scripts          # Opt out of the universal script block for this run
 vis add lodash --no-socket-check       # Add without Socket.dev check
 vis add lodash --no-typosquat-check    # Skip typosquat name check
+vis add lodash --no-marshall-check     # Skip the offline marshall pipeline
 ```
 
 ## Options
@@ -53,6 +54,7 @@ vis add lodash --no-typosquat-check    # Skip typosquat name check
 | `--auto-install-peers` |       | `false` | After adding, recursively install non-optional peer dependencies that aren't already in the workspace (matches nypm's `installPeerDependencies`) |
 | `--run-scripts`        |       | `false` | One-off opt-out: run lifecycle scripts for all packages in this install, overriding the block-by-default policy. The persistent allowlist at `security.policies.installScripts.allow` is the recommended approach for repeated runs. |
 | `--no-typosquat-check` |       | `false` | Skip typosquat name check before adding                                                                                                          |
+| `--no-marshall-check`  |       | `false` | Skip the offline marshall pipeline (author, provenance, metadata, downloads, expired-domains, new-bin, archived-repo). Signatures are opt-in via config and are not run here even when the marshall check is enabled. |
 | `--no-socket-check`    |       | `false` | Skip Socket.dev security check before adding                                                                                                     |
 
 ## How It Works

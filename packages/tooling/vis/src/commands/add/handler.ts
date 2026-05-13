@@ -5,11 +5,13 @@ import { dim, green, red, yellow } from "@visulima/colorize";
 import { readJsonSync, writeJsonSync } from "@visulima/fs";
 import { findPackageManagerSync } from "@visulima/package";
 import { join } from "@visulima/path";
-import { coerce } from "semver";
 
 import { discoverWorkspace } from "../../config/workspace";
 import { pail } from "../../io/logger";
 import { resolveInstaller, runAdd, runInstall } from "../../pm/pm-runner";
+import { presentMarshallFindings } from "../../security/marshalls/decision-prompt";
+import { runMarshallPipeline } from "../../security/marshalls/pipeline";
+import { resolveExplicitPackages, resolveLatestVersions } from "../../security/marshalls/resolve-explicit";
 import type { AcceptedRisk, PackageReportData, SocketSecurityOptions } from "../../security/socket-security";
 import {
     buildSocketOptions,
@@ -28,45 +30,6 @@ import { conformToCatalog } from "../../util/conform-to-catalog";
 import { resolveIndentForExistingFile } from "../../util/editorconfig";
 import { parsePackageArgument, toStringArray } from "../../util/utils";
 import type { AddOptions } from "./index";
-
-/**
- * Resolves the latest version for each package from the npm registry.
- * Used to get a concrete version for Socket.dev lookup when only a name is given.
- */
-const resolveLatestVersions = async (packageNames: string[], timeoutMs: number = 10_000): Promise<Map<string, string>> => {
-    const results = new Map<string, string>();
-    const controller = new AbortController();
-    const timeout = setTimeout(() => {
-        controller.abort();
-    }, timeoutMs);
-
-    try {
-        const fetches = packageNames.map(async (name) => {
-            try {
-                const response = await fetch(`https://registry.npmjs.org/${name}/latest`, {
-                    headers: { Accept: "application/json" },
-                    signal: controller.signal,
-                });
-
-                if (response.ok) {
-                    const data = (await response.json()) as { version?: string };
-
-                    if (data.version) {
-                        results.set(name, data.version);
-                    }
-                }
-            } catch {
-                // Skip unresolvable packages
-            }
-        });
-
-        await Promise.all(fetches);
-    } finally {
-        clearTimeout(timeout);
-    }
-
-    return results;
-};
 
 /**
  * Displays Socket.dev security reports for packages being added.
@@ -181,35 +144,7 @@ const runSocketPreCheck = async (
     minimumScore: number,
     acceptedRisks: Record<string, AcceptedRisk> | undefined,
 ): Promise<boolean> => {
-    const parsed = packages.map((argument) => parsePackageArgument(argument));
-
-    // Coerce version specs to concrete semver (handles "^1.2.3", "19", "latest" etc.)
-    const coercedSpecs = new Map<string, string>();
-
-    for (const p of parsed) {
-        if (p.versionSpec) {
-            const coerced = coerce(p.versionSpec);
-
-            if (coerced) {
-                coercedSpecs.set(p.name, coerced.version);
-            }
-        }
-    }
-
-    // Resolve packages that couldn't be coerced (dist-tags like "latest", "next")
-    const needsResolution = parsed.filter((p) => !coercedSpecs.has(p.name)).map((p) => p.name);
-    const resolvedVersions = needsResolution.length > 0 ? await resolveLatestVersions(needsResolution) : new Map<string, string>();
-
-    // Build lookup list with concrete semver only
-    const lookupPackages: { name: string; version: string }[] = [];
-
-    for (const p of parsed) {
-        const version = coercedSpecs.get(p.name) ?? resolvedVersions.get(p.name);
-
-        if (version) {
-            lookupPackages.push({ name: p.name, version });
-        }
-    }
+    const lookupPackages = await resolveExplicitPackages(packages);
 
     if (lookupPackages.length === 0) {
         return true;
@@ -525,6 +460,29 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
 
             return packages[i] ?? "";
         });
+    }
+
+    // Pre-install marshall pipeline (packument-derived author, provenance,
+    // metadata, downloads, expired-domains, new-bin, signatures, archived-repo
+    // checks). Runs against the post-typosquat-correction args, before the
+    // Socket.dev lookup that follows — Socket is a separate paid service with
+    // its own UX, while the marshall pipeline is offline-friendly and free.
+    if ((options as Record<string, unknown>).marshallCheck !== false) {
+        const resolved = await resolveExplicitPackages(packages);
+
+        if (resolved.length > 0) {
+            const findings = await runMarshallPipeline(resolved, {
+                config: visConfig?.security?.marshalls,
+                workspaceRoot: wsRoot,
+            });
+            const proceed = await presentMarshallFindings(findings);
+
+            if (!proceed) {
+                process.exitCode = 1;
+
+                return;
+            }
+        }
     }
 
     // Socket.dev pre-add check (unless disabled)
