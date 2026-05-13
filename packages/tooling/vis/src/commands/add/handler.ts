@@ -11,6 +11,7 @@ import { pail } from "../../io/logger";
 import { resolveInstaller, runAdd, runInstall } from "../../pm/pm-runner";
 import { presentMarshallFindings } from "../../security/marshalls/decision-prompt";
 import { runMarshallPipeline } from "../../security/marshalls/pipeline";
+import { isMarshallDisabled } from "../../security/marshalls/registry";
 import { resolveExplicitPackages, resolveLatestVersions } from "../../security/marshalls/resolve-explicit";
 import type { AcceptedRisk, PackageReportData, SocketSecurityOptions } from "../../security/socket-security";
 import {
@@ -485,8 +486,8 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
         }
     }
 
-    // Socket.dev pre-add check (unless disabled)
-    if ((options as Record<string, unknown>).socketCheck !== false) {
+    // Socket.dev pre-add check (unless disabled via --no-socket-check or MARSHALL_DISABLE_SOCKET)
+    if ((options as Record<string, unknown>).socketCheck !== false && !isMarshallDisabled("socket")) {
         const socketOptions = buildSocketOptions(visConfig?.security?.socket, visConfig?.security?.policies?.score?.minimum);
 
         if (socketOptions) {

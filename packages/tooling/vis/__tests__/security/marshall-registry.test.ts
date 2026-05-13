@@ -69,7 +69,7 @@ describe(isMarshallDisabled, () => {
         expect(isMarshallDisabled("author", { MARSHALL_DISABLE_AUTHOR: "" })).toBe(false);
     });
 
-    it("MARSHALL_DISABLE_ALL disables every marshall", () => {
+    it("mARSHALL_DISABLE_ALL disables every marshall", () => {
         expect.assertions(ALL_MARSHALLS.length);
 
         const env = { MARSHALL_DISABLE_ALL: "1" };
@@ -79,7 +79,7 @@ describe(isMarshallDisabled, () => {
         }
     });
 
-    it("MARSHALL_DISABLE_ALL wins over an explicit per-marshall enable", () => {
+    it("mARSHALL_DISABLE_ALL wins over an explicit per-marshall enable", () => {
         expect.assertions(1);
 
         // No "enable" override exists — env is purely additive. This documents
@@ -121,19 +121,20 @@ describe(isMarshallDisabled, () => {
     });
 });
 
-describe("ALL_MARSHALLS contents", () => {
+describe("aLL_MARSHALLS contents", () => {
     it("is deduplicated", () => {
         expect.assertions(1);
 
         expect(new Set(ALL_MARSHALLS).size).toBe(ALL_MARSHALLS.length);
     });
 
-    it("contains the 8 policy marshalls and 9 pre-install marshalls", () => {
+    it("contains the policy, integration, and pre-install marshalls", () => {
         expect.assertions(1);
 
         const policy: MarshallName[] = ["installScripts", "firstSeen", "publisherChange", "score", "malware", "vulnerability", "license", "unexpectedDeps"];
         const preInstall: MarshallName[] = ["typosquats", "author", "expiredDomains", "signatures", "provenance", "newBin", "downloads", "metadata", "archivedRepo"];
+        const integrations: MarshallName[] = ["minReleaseAge", "socket"];
 
-        expect(new Set([...policy, ...preInstall])).toStrictEqual(new Set(ALL_MARSHALLS));
+        expect(new Set([...policy, ...preInstall, ...integrations])).toStrictEqual(new Set(ALL_MARSHALLS));
     });
 });

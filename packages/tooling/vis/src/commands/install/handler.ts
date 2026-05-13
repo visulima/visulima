@@ -40,8 +40,51 @@ const hasLockfile = (start: string): boolean => {
 
 const ALLOWED_BACKENDS: ReadonlySet<InstallBackend> = new Set(["aube", "auto", "bun", "npm", "pnpm", "yarn"]);
 
-const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, InstallOptions>): Promise<void> => {
+const execute = async (toolbox: Toolbox<Console, InstallOptions>): Promise<void> => {
+    const { argument, logger, options, visConfig, workspaceRoot: wsRoot } = toolbox;
     const cwd = wsRoot ?? process.cwd();
+
+    // npm-style passthrough: `vis install <pkg>` (or aliased `npm install <pkg>`)
+    // delegates to the `vis add` pipeline, which runs typosquats + marshalls +
+    // Socket.dev and edits package.json instead of running a bare install.
+    if (argument && argument.length > 0) {
+        const opts = options as Record<string, unknown>;
+        const { default: addExecute } = await import("../add/handler");
+
+        // Cerebro normalizes `--no-foo` into camelCase `foo: false` at parse time.
+        // The add handler reads `marshallCheck`/`socketCheck`/`typosquatCheck`
+        // and treats `=== false` as "user opted out". Pass `false` only when
+        // the user actually disabled the check; otherwise leave it undefined
+        // so the default-enabled path runs.
+        const marshallCheck = opts.marshallCheck === false || opts["no-marshall-check"] === true ? false : undefined;
+        const socketCheck = opts.socketCheck === false || opts["no-socket-check"] === true ? false : undefined;
+        const typosquatCheck = opts.typosquatCheck === false || opts["no-typosquat-check"] === true ? false : undefined;
+        const runScripts = opts.runScripts === true || opts["run-scripts"] === true;
+        const workspaceRoot = opts.workspaceRoot === true || opts["workspace-root"] === true;
+        const saveOptional = opts.saveOptional === true || opts["save-optional"] === true;
+        const saveDev = options.dev === true;
+
+        const addOptions: Record<string, unknown> = {
+            autoInstallPeers: false,
+            exact: opts.exact === true,
+            filter: options.filter,
+            global: false,
+            marshallCheck,
+            runScripts,
+            saveDev,
+            saveOptional,
+            savePeer: false,
+            socketCheck,
+            to: undefined,
+            typosquatCheck,
+            workspace: false,
+            workspaceRoot,
+        };
+
+        await addExecute({ ...toolbox, argument, options: addOptions });
+
+        return;
+    }
 
     // Scan package.json deps for typosquats (unless disabled)
     if ((options as Record<string, unknown>).typosquatCheck !== false) {

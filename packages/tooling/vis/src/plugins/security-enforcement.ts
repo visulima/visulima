@@ -4,6 +4,7 @@ import { join } from "@visulima/path";
 
 import { pail } from "../io/logger";
 import { detectPm } from "../pm/pm-runner";
+import { isMarshallDisabled } from "../security/marshalls/registry";
 import { checkPmNativeConfigDrift, emitSecurityWarnings, enforceScriptSecurity, formatDriftReport, runApprovedScripts } from "../security/security";
 import { buildSocketOptions, fetchSocketReports, formatSecurityOverview } from "../security/socket-security";
 
@@ -70,6 +71,8 @@ const securityEnforcementPlugin: Plugin = {
             return;
         }
 
+        // `enforcement` only exists when beforeCommand's installScripts gate passed,
+        // so an extra `isMarshallDisabled("installScripts")` check here would be redundant.
         const enforcement = (toolbox as unknown as Record<string, unknown>).scriptEnforcement as ReturnType<typeof enforceScriptSecurity> | undefined;
 
         if (enforcement?.postInstallPackages.length && toolbox.workspaceRoot) {
@@ -104,7 +107,7 @@ const securityEnforcementPlugin: Plugin = {
         // Display Socket.dev security summary after install/update commands
         const socketOptions = buildSocketOptions(toolbox.visConfig?.security?.socket, toolbox.visConfig?.security?.policies?.score?.minimum);
 
-        if (INSTALL_COMMANDS.has(command) && socketOptions && toolbox.workspaceRoot) {
+        if (INSTALL_COMMANDS.has(command) && socketOptions && toolbox.workspaceRoot && !isMarshallDisabled("socket")) {
             try {
                 const packages = resolveInstalledPackages(toolbox.workspaceRoot);
 
@@ -152,7 +155,7 @@ const securityEnforcementPlugin: Plugin = {
 
             emitSecurityWarnings(toolbox.visConfig, pm.name, willEnforce);
 
-            if (willEnforce) {
+            if (willEnforce && !isMarshallDisabled("installScripts")) {
                 const enforcement = enforceScriptSecurity(pm.name, toolbox.workspaceRoot, toolbox.visConfig);
 
                 for (const w of enforcement.warnings) {
