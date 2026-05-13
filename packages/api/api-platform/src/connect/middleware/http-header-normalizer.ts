@@ -63,7 +63,7 @@ const defaults = {
 const httpHeaderNormalizerMiddleware = (options_?: {
     canonical?: boolean;
     normalizeHeaderKey?: (key: string, canonical: boolean) => string;
-}): ((request: IncomingMessage, response: ServerResponse, next: NextHandler) => ValueOrPromise<void>) => {
+}): (request: IncomingMessage, response: ServerResponse, next: NextHandler) => ValueOrPromise<void> => {
     const options = { ...defaults, ...options_ };
 
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters -- Request generic flows into mutated request.headers/request.rawHeaders assignment

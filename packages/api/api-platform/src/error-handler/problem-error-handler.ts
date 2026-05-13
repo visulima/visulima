@@ -29,7 +29,7 @@ const problemErrorHandler: ErrorHandler = (error, _request, response) => {
             title: title || getReasonPhrase(statusCode) || defaultTitle,
             // eslint-disable-next-line perfectionist/sort-objects
             details: message,
-            ...(expose ? { trace: stack } : {}),
+            ...expose ? { trace: stack } : {},
         });
     } else {
         addStatusCodeToResponse(response, error);
@@ -40,7 +40,7 @@ const problemErrorHandler: ErrorHandler = (error, _request, response) => {
             title: getReasonPhrase(response.statusCode) || defaultTitle,
             // eslint-disable-next-line perfectionist/sort-objects
             details: message,
-            ...((error as Error & { expose: boolean }).expose ? { trace: stack } : {}),
+            ...(error as Error & { expose: boolean }).expose ? { trace: stack } : {},
         });
     }
 };

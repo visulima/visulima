@@ -7,8 +7,8 @@ import type { NextJsWebpackConfig, WebpackConfigContext } from "next/dist/server
 import type { NextConfig } from "next/types";
 import type { Configuration } from "webpack";
 
-const withOpenApi =
-    ({
+const withOpenApi
+    = ({
         definition,
         output,
         sources,
@@ -18,57 +18,57 @@ const withOpenApi =
         output: string;
         sources: string[];
         verbose?: boolean;
-    }): ((nextConfig: NextConfig) => NextConfig) =>
-    (nextConfig: NextConfig): NextConfig => {
-        return {
-            ...nextConfig,
-            webpack: (config: Configuration, options: WebpackConfigContext) => {
-                if (!options.isServer) {
-                    return config;
-                }
+    }): (nextConfig: NextConfig) => NextConfig =>
+        (nextConfig: NextConfig): NextConfig => {
+            return {
+                ...nextConfig,
+                webpack: (config: Configuration, options: WebpackConfigContext) => {
+                    if (!options.isServer) {
+                        return config;
+                    }
 
-                if (output.startsWith("/")) {
+                    if (output.startsWith("/")) {
                     // eslint-disable-next-line no-param-reassign
-                    output = output.slice(1);
-                }
+                        output = output.slice(1);
+                    }
 
-                if (!output.endsWith(".json")) {
-                    throw new Error("The output path must end with .json");
-                }
+                    if (!output.endsWith(".json")) {
+                        throw new Error("The output path must end with .json");
+                    }
 
-                // eslint-disable-next-line no-param-reassign
-                config = {
-                    ...config,
-                    plugins: [
+                    // eslint-disable-next-line no-param-reassign
+                    config = {
+                        ...config,
+                        plugins: [
                         // @ts-expect-error: ignore
-                        ...config.plugins,
-                        new SwaggerCompilerPlugin(
-                            `${options.dir}/${output}`,
-                            sources.map((source) => {
-                                const combinedPath = join(options.dir, source.replace("./", ""));
+                            ...config.plugins,
+                            new SwaggerCompilerPlugin(
+                                `${options.dir}/${output}`,
+                                sources.map((source) => {
+                                    const combinedPath = join(options.dir, source.replace("./", ""));
 
-                                // Check if the path is a directory
-                                fs.lstatSync(combinedPath).isDirectory();
+                                    // Check if the path is a directory
+                                    fs.lstatSync(combinedPath).isDirectory();
 
-                                return combinedPath;
-                            }),
-                            {
+                                    return combinedPath;
+                                }),
+                                {
                                 // @ts-expect-error: This property should be overwritten
-                                openapi: "3.0.0",
-                                ...definition,
-                            },
-                            { verbose },
-                        ),
-                    ],
-                };
+                                    openapi: "3.0.0",
+                                    ...definition,
+                                },
+                                { verbose },
+                            ),
+                        ],
+                    };
 
-                if (typeof nextConfig.webpack === "function") {
-                    return nextConfig.webpack(config, options) as NextJsWebpackConfig;
-                }
+                    if (typeof nextConfig.webpack === "function") {
+                        return nextConfig.webpack(config, options) as NextJsWebpackConfig;
+                    }
 
-                return config as NextJsWebpackConfig;
-            },
+                    return config as NextJsWebpackConfig;
+                },
+            };
         };
-    };
 
 export default withOpenApi;
