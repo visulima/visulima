@@ -106,6 +106,23 @@ export const parseTimeStringToMinutes = (input: string): number | undefined => {
 };
 
 /**
+ * Parses a `.npmrc` `min-release-age` value into minutes. npm's CLI defines
+ * this option as `null or Number` measured in **days**, so a bare integer
+ * like `"1"` means one day — not one minute. Legacy `Nd`/`Nh`/`Nm` strings
+ * (older vis writes and hand-edits) still fall back to `parseTimeStringToMinutes`
+ * for forgiving drift comparison until `vis security sync` rewrites them.
+ */
+export const parseNpmReleaseAgeValue = (raw: string): number | undefined => {
+    const trimmed = raw.trim();
+
+    if (/^\d+$/.test(trimmed)) {
+        return Number.parseInt(trimmed, 10) * 1440;
+    }
+
+    return parseTimeStringToMinutes(trimmed);
+};
+
+/**
  * Inverse of `parseTimeStringToMinutes`: renders a minutes count as the
  * largest whole-unit time string (`Nd`/`Nh`/`Nm`). Used when writing to npm /
  * yarn configs that expect duration strings.
@@ -138,10 +155,16 @@ export const formatMinutesAsTimeString = (minutes: number): string => {
  * - bun: `bunfig.toml [install]` — value in **seconds**, divided by 60.
  *   Bun's installer knobs (registry, scopes, lockfile, minimumReleaseAge, …)
  *   all live under `[install]` per https://bun.sh/docs/runtime/bunfig#install.
- * - npm: `.npmrc` `min-release-age=&lt;duration>` — time-string parsed via
- *   `parseTimeStringToMinutes` (e.g. `2d`, `48h`, `15m`).
- * - yarn: `.yarnrc.yml` `npmMinimalAgeGate: "&lt;duration>"` — same time-string
- *   syntax as npm.
+ * - npm: `.npmrc` `min-release-age=&lt;integer>` — npm's option type is
+ *   `null or Number` measured in **days**, so a bare integer maps to days × 1440
+ *   minutes. Legacy `Nd`/`Nh`/`Nm` strings from earlier vis releases or hand-
+ *   edits are still accepted via `parseNpmReleaseAgeValue` for forgiving drift
+ *   comparison, but npm itself would `parseInt` those (silently misreading
+ *   `48h` as 48 *days*).
+ * - yarn: `.yarnrc.yml` `npmMinimalAgeGate: &lt;minutes>` — yarn's docs spell
+ *   this as a duration string but yarnpkg/berry#6991 makes day suffixes parse
+ *   as minutes. Vis writes a bare integer in minutes to dodge the bug. We
+ *   still accept duration strings on read for back-compat.
  */
 export const readPmNativeMinimumReleaseAge = (workspaceRoot: string, packageManager: string): PmNativeMinimumReleaseAge => {
     try {
@@ -177,7 +200,7 @@ export const readPmNativeMinimumReleaseAge = (workspaceRoot: string, packageMana
                     const content = readFileSync(npmrcPath);
                     const match = /^\s*min-release-age\s*=\s*([^\s#;]+)/m.exec(content);
 
-                    return { minutes: match ? parseTimeStringToMinutes(match[1]!) : undefined };
+                    return { minutes: match ? parseNpmReleaseAgeValue(match[1]!) : undefined };
                 }
 
                 break;

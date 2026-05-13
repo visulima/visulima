@@ -121,16 +121,17 @@ describe(syncMinimumReleaseAgeToNativeConfig, () => {
     });
 
     describe("npm", () => {
-        it("writes min-release-age as a duration string to .npmrc", () => {
+        it("writes min-release-age as an integer (days) to .npmrc — npm's unit", () => {
             expect.assertions(2);
 
-            // 2880 minutes = 48 hours = 2 days → renders as "2d".
+            // 2880 minutes = 48 hours = 2 days. npm's `min-release-age` is
+            // typed as `null or Number` measured in days, so we write `2`.
             const actions = syncMinimumReleaseAgeToNativeConfig("npm", tmpDir, 2880);
 
             const content = readFileSync(join(tmpDir, ".npmrc"), "utf8");
 
-            expect(content).toContain("min-release-age=2d");
-            expect(actions[0]).toContain("min-release-age=2d");
+            expect(content).toContain("min-release-age=2");
+            expect(actions[0]).toContain("min-release-age=2");
         });
 
         it("replaces an existing min-release-age line in-place", () => {
@@ -142,8 +143,20 @@ describe(syncMinimumReleaseAgeToNativeConfig, () => {
 
             const content = readFileSync(join(tmpDir, ".npmrc"), "utf8");
 
-            expect(content).toContain("min-release-age=2d");
-            expect(content).not.toMatch(/min-release-age=1d\b/);
+            expect(content).toContain("min-release-age=2");
+            expect(content).not.toContain("min-release-age=1d");
+        });
+
+        it("rounds sub-day minute counts up to at least one day", () => {
+            expect.assertions(1);
+
+            // 60 minutes can't be represented in npm's day-only field — the
+            // safe choice is to round up (stricter gate), never down.
+            syncMinimumReleaseAgeToNativeConfig("npm", tmpDir, 60);
+
+            const content = readFileSync(join(tmpDir, ".npmrc"), "utf8");
+
+            expect(content).toContain("min-release-age=1");
         });
 
         it("notes that excludes are skipped (npm has no native equivalent)", () => {
@@ -156,19 +169,23 @@ describe(syncMinimumReleaseAgeToNativeConfig, () => {
     });
 
     describe("yarn (berry)", () => {
-        it("writes npmMinimalAgeGate as a quoted duration string to .yarnrc.yml", () => {
-            expect.assertions(1);
+        it("writes npmMinimalAgeGate as a bare integer (minutes) — dodges yarnpkg/berry#6991", () => {
+            expect.assertions(2);
 
+            // yarn's docs advertise duration strings, but `"2d"` is silently
+            // treated as 2 *minutes* due to yarnpkg/berry#6991. Vis writes a
+            // bare integer minute count instead.
             writeFileSync(join(tmpDir, ".yarnrc.yml"), "nodeLinker: pnp\n");
 
             syncMinimumReleaseAgeToNativeConfig("yarn", tmpDir, 2880);
 
             const content = readFileSync(join(tmpDir, ".yarnrc.yml"), "utf8");
 
-            expect(content).toContain("npmMinimalAgeGate: \"2d\"");
+            expect(content).toContain("npmMinimalAgeGate: 2880");
+            expect(content).not.toContain("npmMinimalAgeGate: \"");
         });
 
-        it("replaces an existing npmMinimalAgeGate", () => {
+        it("replaces an existing npmMinimalAgeGate (including legacy duration-string form)", () => {
             expect.assertions(2);
 
             writeFileSync(join(tmpDir, ".yarnrc.yml"), "npmMinimalAgeGate: \"24h\"\nnodeLinker: pnp\n");
@@ -177,8 +194,23 @@ describe(syncMinimumReleaseAgeToNativeConfig, () => {
 
             const content = readFileSync(join(tmpDir, ".yarnrc.yml"), "utf8");
 
-            expect(content).toContain("npmMinimalAgeGate: \"2d\"");
+            expect(content).toContain("npmMinimalAgeGate: 2880");
             expect(content).not.toContain("npmMinimalAgeGate: \"24h\"");
+        });
+
+        it("writes npmPreapprovedPackages (yarn's native exclude list) when excludes are present", () => {
+            expect.assertions(3);
+
+            writeFileSync(join(tmpDir, ".yarnrc.yml"), "nodeLinker: pnp\n");
+
+            syncMinimumReleaseAgeToNativeConfig("yarn", tmpDir, 1440, ["typescript", "@types/node"]);
+
+            const content = readFileSync(join(tmpDir, ".yarnrc.yml"), "utf8");
+
+            expect(content).toContain("npmPreapprovedPackages:");
+            expect(content).toContain("- typescript");
+            // Scoped names are YAML-quoted.
+            expect(content).toContain("'@types/node'");
         });
 
         it("skips with note when .yarnrc.yml is absent (yarn classic case)", () => {
@@ -191,7 +223,7 @@ describe(syncMinimumReleaseAgeToNativeConfig, () => {
     });
 
     describe("fractional-minute canonicalisation", () => {
-        it("rounds sub-minute fractions up to whole minutes before writing (no PM-specific drift)", () => {
+        it("rounds sub-minute fractions to zero across all PMs (canonical disable)", () => {
             expect.assertions(3);
 
             writeFileSync(join(tmpDir, "pnpm-workspace.yaml"), "packages:\n  - '.'\n");
@@ -202,23 +234,24 @@ describe(syncMinimumReleaseAgeToNativeConfig, () => {
             syncMinimumReleaseAgeToNativeConfig("bun", tmpDir, 0.4);
             syncMinimumReleaseAgeToNativeConfig("npm", tmpDir, 0.4);
 
-            // 0.4 minutes is rounded to 0 (Math.round(0.4) === 0). pnpm writes
-            // "minimumReleaseAge: 0", bun writes "0" seconds, npm writes "0m".
-            // All three are the same canonical zero, so a follow-up drift check
-            // sees a consistent value across PMs.
+            // 0.4 minutes rounds to 0 (Math.round(0.4) === 0). Every PM gets
+            // its canonical disable value: pnpm `0` (minutes), bun `0` (seconds),
+            // npm `0` (days).
             expect(readFileSync(join(tmpDir, "pnpm-workspace.yaml"), "utf8")).toContain("minimumReleaseAge: 0");
             expect(readFileSync(join(tmpDir, "bunfig.toml"), "utf8")).toContain("minimumReleaseAge = 0");
-            expect(readFileSync(join(tmpDir, ".npmrc"), "utf8")).toContain("min-release-age=0m");
+            expect(readFileSync(join(tmpDir, ".npmrc"), "utf8")).toContain("min-release-age=0");
         });
 
-        it("rounds 1.5 minutes up to 2 minutes (largest whole-unit string is `2m`)", () => {
+        it("rounds 1.5 minutes up to 1 day for npm (npm can only express days)", () => {
             expect.assertions(1);
 
             writeFileSync(join(tmpDir, ".npmrc"), "");
 
+            // 1.5 → 2 minutes (Math.round) → ceil(2/1440) = 1 day. npm gate
+            // ends up stricter than vis-config, never weaker.
             syncMinimumReleaseAgeToNativeConfig("npm", tmpDir, 1.5);
 
-            expect(readFileSync(join(tmpDir, ".npmrc"), "utf8")).toContain("min-release-age=2m");
+            expect(readFileSync(join(tmpDir, ".npmrc"), "utf8")).toContain("min-release-age=1");
         });
     });
 });

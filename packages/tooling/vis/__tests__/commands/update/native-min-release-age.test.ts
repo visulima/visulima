@@ -89,16 +89,26 @@ describe(readPmNativeMinimumReleaseAge, () => {
     });
 
     describe("npm", () => {
-        it("reads min-release-age=2d from .npmrc and converts to minutes", () => {
+        it("reads a bare integer as days (npm's canonical unit)", () => {
             expect.assertions(1);
 
-            writeFileSync(join(workspaceRoot, ".npmrc"), "registry=https://registry.npmjs.org/\nmin-release-age=2d\n");
+            // npm CLI's option type is `null or Number` measured in days, so
+            // `min-release-age=2` ≡ 2 days = 2880 minutes.
+            writeFileSync(join(workspaceRoot, ".npmrc"), "registry=https://registry.npmjs.org/\nmin-release-age=2\n");
+
+            expect(readPmNativeMinimumReleaseAge(workspaceRoot, "npm").minutes).toBe(2880);
+        });
+
+        it("still parses `Nd` duration strings (legacy vis writes) for back-compat", () => {
+            expect.assertions(1);
+
+            writeFileSync(join(workspaceRoot, ".npmrc"), "min-release-age=2d\n");
 
             // 2 days = 2880 minutes.
             expect(readPmNativeMinimumReleaseAge(workspaceRoot, "npm").minutes).toBe(2880);
         });
 
-        it("handles hour and minute units", () => {
+        it("handles legacy hour and minute units for back-compat", () => {
             expect.assertions(2);
 
             writeFileSync(join(workspaceRoot, ".npmrc"), "min-release-age=48h\n");

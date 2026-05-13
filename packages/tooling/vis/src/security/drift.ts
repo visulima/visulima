@@ -14,6 +14,33 @@ interface PmNativeSnapshot {
 }
 
 /**
+ * Parses a `.npmrc` `min-release-age` value into minutes.
+ *
+ * npm's CLI defines this option as `null or Number` in **days**. A bare
+ * integer like `1` means "1 day", not "1 minute" — npm's config parser
+ * runs `parseInt` over the value, so `48h` would silently be read as 48
+ * *days*, and `15m` as 15 *days*. To stay aligned with what npm actually
+ * enforces:
+ *
+ * - A bare integer (`"1"` / `"2"`) is treated as days × 1440 minutes.
+ * - A `Nd` duration string still parses as days for round-trip with the
+ *   shared `parseDurationToMinutes` helper (vis used to write these).
+ * - `Nh` / `Nm` from legacy vis writes are still parsed via the duration
+ *   helper so the drift reader can compare vis-intent values. npm itself
+ *   would misinterpret them, but a follow-up `vis security sync` rewrites
+ *   them to canonical integer days.
+ */
+const parseNpmReleaseAgeValue = (raw: string): number | undefined => {
+    const trimmed = raw.trim();
+
+    if (/^\d+$/.test(trimmed)) {
+        return Number.parseInt(trimmed, 10) * 1440;
+    }
+
+    return parseDurationToMinutes(trimmed);
+};
+
+/**
  * Reads the package manager's native security knobs into a normalised
  * snapshot for drift comparison. All durations are in minutes.
  *
@@ -67,7 +94,7 @@ const readPmNativeSnapshot = (pm: PackageManagerName, workspaceRoot: string): Pm
                     const match = /^\s*min-release-age\s*=\s*([^\s#;]+)/m.exec(content);
 
                     if (match) {
-                        snapshot.minReleaseAgeMinutes = parseDurationToMinutes(match[1]!);
+                        snapshot.minReleaseAgeMinutes = parseNpmReleaseAgeValue(match[1]!);
                     }
                 }
 
@@ -113,13 +140,27 @@ const readPmNativeSnapshot = (pm: PackageManagerName, workspaceRoot: string): Pm
                 const yarnrcPath = join(workspaceRoot, ".yarnrc.yml");
 
                 if (isAccessibleSync(yarnrcPath)) {
-                    const data = readYamlSync(yarnrcPath) as { npmMinimalAgeGate?: number | string } | undefined;
+                    const data = readYamlSync(yarnrcPath) as
+                        | {
+                            npmMinimalAgeGate?: number | string;
+                            npmPreapprovedPackages?: string[];
+                        }
+                        | undefined;
                     const raw = data?.npmMinimalAgeGate;
 
+                    // yarn's docs spell this as a duration string, but yarnpkg/berry#6991
+                    // makes day suffixes parse as minutes — so vis writes (and the canonical
+                    // safe form is) a bare integer in minutes. We still accept duration
+                    // strings here for back-compat with older vis-written configs and
+                    // user-edited values.
                     if (typeof raw === "string") {
                         snapshot.minReleaseAgeMinutes = parseDurationToMinutes(raw);
                     } else if (typeof raw === "number") {
                         snapshot.minReleaseAgeMinutes = raw;
+                    }
+
+                    if (Array.isArray(data?.npmPreapprovedPackages)) {
+                        snapshot.minReleaseAgeExcludes = new Set(data.npmPreapprovedPackages);
                     }
                 }
 
@@ -189,7 +230,7 @@ const checkPmNativeConfigDrift = (config: VisConfig, pm: PackageManagerName, wor
         }
     }
 
-    if (firstSeen?.exclude && (pm === "pnpm" || pm === "bun")) {
+    if (firstSeen?.exclude && (pm === "pnpm" || pm === "bun" || pm === "yarn")) {
         const visSet = new Set(firstSeen.exclude);
         const pmSet = snapshot.minReleaseAgeExcludes ?? new Set<string>();
         const onlyInVis = [...visSet].filter((x) => !pmSet.has(x));

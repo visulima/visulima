@@ -153,7 +153,18 @@ describe(checkPmNativeConfigDrift, () => {
     });
 
     describe("npm drift", () => {
-        it("parses .npmrc duration strings (e.g. '2d') before comparing", () => {
+        it("treats a bare integer in .npmrc as days (npm's actual unit)", () => {
+            expect.assertions(1);
+
+            // `min-release-age=2` is npm's canonical form = 2 days = 2880 min.
+            writeFileSync(join(tmpDir, ".npmrc"), "min-release-age=2\n");
+
+            const report = checkPmNativeConfigDrift(cfg({ minimumReleaseAge: 2880 }), "npm", tmpDir);
+
+            expect(report.hasDrift).toBe(false);
+        });
+
+        it("still parses legacy duration strings (e.g. '2d') for back-compat with older vis writes", () => {
             expect.assertions(1);
 
             writeFileSync(join(tmpDir, ".npmrc"), "min-release-age=2d\n");
@@ -170,7 +181,7 @@ describe(checkPmNativeConfigDrift, () => {
 
             const report = checkPmNativeConfigDrift(cfg({ minimumReleaseAge: 2880 }), "npm", tmpDir);
 
-            // 24h = 1440 minutes; vis wants 2880.
+            // 24h = 1440 minutes (legacy parse path); vis wants 2880.
             expect(report.minReleaseAge).toStrictEqual({ pm: 1440, vis: 2880 });
         });
     });
@@ -180,6 +191,16 @@ describe(checkPmNativeConfigDrift, () => {
             expect.assertions(1);
 
             // No .yarnrc.yml exists → vis must not report drift.
+            const report = checkPmNativeConfigDrift(cfg({ minimumReleaseAge: 2880 }), "yarn", tmpDir);
+
+            expect(report.hasDrift).toBe(false);
+        });
+
+        it("treats a bare-integer npmMinimalAgeGate as minutes (canonical form)", () => {
+            expect.assertions(1);
+
+            writeFileSync(join(tmpDir, ".yarnrc.yml"), "npmMinimalAgeGate: 2880\n");
+
             const report = checkPmNativeConfigDrift(cfg({ minimumReleaseAge: 2880 }), "yarn", tmpDir);
 
             expect(report.hasDrift).toBe(false);
@@ -203,6 +224,24 @@ describe(checkPmNativeConfigDrift, () => {
             writeFileSync(join(tmpDir, "pnpm-workspace.yaml"), "minimumReleaseAge: 2880\nminimumReleaseAgeExclude:\n  - typescript\n");
 
             const report = checkPmNativeConfigDrift(cfg({ minimumReleaseAge: 2880, minimumReleaseAgeExclude: ["typescript", "@types/node"] }), "pnpm", tmpDir);
+
+            expect(report.minReleaseAgeExcludes?.onlyInVis).toStrictEqual(["@types/node"]);
+            expect(report.hasDrift).toBe(true);
+        });
+
+        it("flags npmPreapprovedPackages differences for yarn berry", () => {
+            expect.assertions(2);
+
+            writeFileSync(
+                join(tmpDir, ".yarnrc.yml"),
+                "npmMinimalAgeGate: 2880\nnpmPreapprovedPackages:\n  - typescript\n",
+            );
+
+            const report = checkPmNativeConfigDrift(
+                cfg({ minimumReleaseAge: 2880, minimumReleaseAgeExclude: ["typescript", "@types/node"] }),
+                "yarn",
+                tmpDir,
+            );
 
             expect(report.minReleaseAgeExcludes?.onlyInVis).toStrictEqual(["@types/node"]);
             expect(report.hasDrift).toBe(true);
