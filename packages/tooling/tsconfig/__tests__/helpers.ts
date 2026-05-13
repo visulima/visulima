@@ -35,12 +35,12 @@ export const execScriptSync = (file: string, flags: string[] = []): string => {
  * Copyright (c) Hiroki Osame &lt;hiroki.osame@gmail.com>
  */
 export const getTscTsconfig = async (cwd: string, filePath?: string): Promise<TsConfigJson> => {
-    const output = await x(tscPath, ["--showConfig", ...(filePath ? ["--project", filePath] : [])], { nodeOptions: { cwd } });
+    const output = await x(tscPath, ["--showConfig", ...filePath ? ["--project", filePath] : []], { nodeOptions: { cwd } });
 
     // tsc emits diagnostic text on stdout when --showConfig fails (e.g., circular extends, unresolved files).
     // Mirror execa's default `reject: true` by surfacing that text as the error message — tests pattern-match it.
     if (output.exitCode !== 0) {
-        throw new Error(output.stdout.trim() || output.stderr.trim() || `tsc exited with code ${output.exitCode}`);
+        throw new Error(output.stdout.trim() || output.stderr.trim() || `tsc exited with code ${String(output.exitCode)}`);
     }
 
     return JSON.parse(output.stdout) as TsConfigJson;
