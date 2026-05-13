@@ -48,6 +48,7 @@ export default defineConfig({
                     "compromise",
                     "v8-compile-cache",
                     "fastest-levenshtein",
+                    "terminal-size"
                 ],
             },
         },
