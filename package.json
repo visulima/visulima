@@ -338,7 +338,7 @@
         "typescript": "catalog:tsc",
         "vitest": "catalog:test"
     },
-    "packageManager": "pnpm@10.33.2",
+    "packageManager": "pnpm@11.1.1",
     "engines": {
         "node": "^22.14.0 || >=24.10.0"
     }

@@ -10,9 +10,7 @@ import { exit } from "node:process";
 // `nx affected` reads NX_BASE / NX_HEAD from the env (set by nrwl/nx-set-shas
 // in the workflow). Don't pass --files=<huge list> — that hits the kernel
 // argv size limit on long diffs.
-const json = execSync(
-    `pnpm exec nx show projects --affected --exclude=*-bench,docs,storybook,shared-utils --json`,
-).toString("utf8");
+const json = execSync(`pnpm exec nx show projects --affected --exclude=*-bench,docs,storybook,shared-utils --json`).toString("utf8");
 
 /** @type {string[]} */
 const affectedProjects = JSON.parse(json);
