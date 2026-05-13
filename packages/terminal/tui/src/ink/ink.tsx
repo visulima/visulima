@@ -7,8 +7,8 @@ import { ALT_SCREEN_OFF, ALT_SCREEN_ON, clearScreenAndHomeCursor, cursorHide, cu
 import { wordWrap } from "@visulima/string";
 // autoBind removed — only methods passed as callbacks need binding,
 // and those are defined as arrow function properties.
-import type { DebouncedFunc } from "es-toolkit/compat";
-import { throttle } from "es-toolkit/compat";
+import type { ThrottledFn } from "./utils/throttle";
+import { throttle } from "./utils/throttle";
 import isInCi from "is-in-ci";
 import patchConsole from "patch-console";
 import type { ReactNode } from "react";
@@ -318,7 +318,7 @@ export default class Ink {
 
     private renderedCursorRequested: boolean;
 
-    private readonly throttledLog: LogUpdate | DebouncedFunc<(output: string) => void>;
+    private readonly throttledLog: LogUpdate | ThrottledFn<(output: string) => void>;
 
     private readonly isScreenReaderEnabled: boolean;
 
@@ -363,7 +363,7 @@ export default class Ink {
 
     private unsubscribeResize?: () => void;
 
-    private readonly throttledOnRender?: DebouncedFunc<() => void>;
+    private readonly throttledOnRender?: ThrottledFn<() => void>;
 
     private hasPendingThrottledRender = false;
 
@@ -441,6 +441,8 @@ export default class Ink {
             this.rootNode.onRender = baseOnRender;
             this.rootNode.onImmediateRender = this.onRender;
         }
+
+        this.rootNode.onStaticChange = this.handleStaticChange;
 
         this.log = logUpdate.create(options.stdout, {
             incremental: options.incrementalRendering,
@@ -777,6 +779,11 @@ export default class Ink {
             }
         }
     }
+
+    // Resets `fullStaticOutput` when the <Static> identity changes so stale items from a previous instance are not replayed on future rewrites.
+    handleStaticChange = (): void => {
+        this.fullStaticOutput = "";
+    };
 
     onRender: () => void = () => {
         this.hasPendingThrottledRender = false;
