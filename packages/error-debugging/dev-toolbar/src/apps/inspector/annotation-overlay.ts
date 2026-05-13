@@ -704,7 +704,7 @@ const cleanupResizeObserver = (element: HTMLElement | null): void => {
 };
 
 const removeAnnotationForm = (): void => {
-    const element = document.querySelector<HTMLElement>(`#${FORM_ID}`);
+    const element = document.querySelector<HTMLElement>(`#${FORM_ID}`) as (HTMLElement & { annotationId?: string }) | null;
     const existed = !!element;
 
     // Unmark the marker if editing an existing annotation
