@@ -349,8 +349,8 @@ export class StyledLine {
 
         // Rebuild text in the destination range
         const destinationTextStart = this.charData![destinationStart]! & OFFSET_MASK;
-        const destinationTextEnd =
-            destinationStart + actualCount < this.length ? this.charData![destinationStart + actualCount]! & OFFSET_MASK : this.text!.length;
+        const destinationTextEnd
+            = destinationStart + actualCount < this.length ? this.charData![destinationStart + actualCount]! & OFFSET_MASK : this.text!.length;
 
         // Build new text segment from source
         let newSegment = "";
@@ -633,8 +633,8 @@ export class StyledLine {
         if (this.spans) {
             for (let s = this.spans.length - 1; s >= 0; s--) {
                 const span = this.spans[s]!;
-                const hasStylesOnSpan =
-                    (span.formatFlags & ~FULL_WIDTH_MASK) !== 0 || span.fgColor !== undefined || span.bgColor !== undefined || span.link !== undefined;
+                const hasStylesOnSpan
+                    = (span.formatFlags & ~FULL_WIDTH_MASK) !== 0 || span.fgColor !== undefined || span.bgColor !== undefined || span.link !== undefined;
 
                 if (hasStylesOnSpan) {
                     this._cachedTrimmedLength = currentIndex + 1;
@@ -701,11 +701,11 @@ export class StyledLine {
             const sp2 = s2[i]!;
 
             if (
-                sp1.length !== sp2.length ||
-                sp1.formatFlags !== sp2.formatFlags ||
-                sp1.fgColor !== sp2.fgColor ||
-                sp1.bgColor !== sp2.bgColor ||
-                sp1.link !== sp2.link
+                sp1.length !== sp2.length
+                || sp1.formatFlags !== sp2.formatFlags
+                || sp1.fgColor !== sp2.fgColor
+                || sp1.bgColor !== sp2.bgColor
+                || sp1.link !== sp2.link
             ) {
                 return false;
             }
@@ -737,7 +737,7 @@ export class StyledLine {
         return Array.from({ length: this.length }, (_, i) => this.getValue(i));
     }
 
-    *[Symbol.iterator](): Iterator<{
+    * [Symbol.iterator](): Iterator<{
         bgColor?: string;
         fgColor?: string;
         formatFlags: number;
@@ -922,10 +922,10 @@ export class StyledLine {
             const previousSpan = this.spans[spanIndex - 1]!;
 
             if (
-                previousSpan.formatFlags === formatFlags &&
-                previousSpan.fgColor === fgColor &&
-                previousSpan.bgColor === bgColor &&
-                previousSpan.link === link
+                previousSpan.formatFlags === formatFlags
+                && previousSpan.fgColor === fgColor
+                && previousSpan.bgColor === bgColor
+                && previousSpan.link === link
             ) {
                 previousSpan.length += 1;
 

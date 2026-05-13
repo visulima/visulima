@@ -67,11 +67,14 @@ Licensed under the Apache License, Version 2.0
 <!-- DEPENDENCIES -->
 
 # Licenses of bundled dependencies
+
 The published @visulima/tui artifact additionally contains code with the following licenses:
 ISC, MIT
 
 # Bundled dependencies:
+
 ## @visulima/ansi
+
 License: MIT
 By: Daniel Bannert
 Repository: git+https://github.com/visulima/visulima.git
@@ -97,8 +100,6 @@ Repository: git+https://github.com/visulima/visulima.git
 > LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > SOFTWARE.
->
->
 >
 > # Licenses of bundled dependencies
 >
@@ -202,10 +203,6 @@ Repository: git+https://github.com/visulima/visulima.git
 > > WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
 > > ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 >
->
->
->
->
 > # Licenses of bundled types
 >
 > The published @visulima/ansi artifact additionally contains code with the following licenses:
@@ -229,9 +226,10 @@ Repository: git+https://github.com/visulima/visulima.git
 > >
 > > THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
----------------------------------------
+---
 
 ## @visulima/colorize
+
 License: MIT
 By: Daniel Bannert
 Repository: git+https://github.com/visulima/visulima.git
@@ -278,8 +276,6 @@ Repository: git+https://github.com/visulima/visulima.git
 > ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 > OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 >
->
->
 > # Licenses of bundled dependencies
 >
 > The published @visulima/colorize artifact additionally contains code with the following licenses:
@@ -303,9 +299,10 @@ Repository: git+https://github.com/visulima/visulima.git
 > >
 > > THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
----------------------------------------
+---
 
 ## @visulima/is-ansi-color-supported
+
 License: MIT
 By: Daniel Bannert
 Repository: git+https://github.com/visulima/visulima.git
@@ -332,9 +329,10 @@ Repository: git+https://github.com/visulima/visulima.git
 > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > SOFTWARE.
 
----------------------------------------
+---
 
 ## @visulima/spinner
+
 License: MIT
 By: Daniel Bannert
 Repository: git+https://github.com/visulima/visulima.git
@@ -381,8 +379,6 @@ Repository: git+https://github.com/visulima/visulima.git
 > - **License:** MIT
 > - **Description:** Provides Unicode-based braille animations that were adapted for additional visual effects.
 >
->
->
 > # Licenses of bundled dependencies
 >
 > The published @visulima/spinner artifact additionally contains code with the following licenses:
@@ -405,10 +401,6 @@ Repository: git+https://github.com/visulima/visulima.git
 > > The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 > >
 > > THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
->
->
->
->
 >
 > # Licenses of bundled types
 >
@@ -433,9 +425,10 @@ Repository: git+https://github.com/visulima/visulima.git
 > >
 > > THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
----------------------------------------
+---
 
 ## @visulima/string
+
 License: MIT
 By: Daniel Bannert
 Repository: git+https://github.com/visulima/visulima.git
@@ -461,8 +454,6 @@ Repository: git+https://github.com/visulima/visulima.git
 > LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > SOFTWARE.
->
->
 >
 > # Licenses of bundled dependencies
 >
@@ -987,10 +978,6 @@ Repository: git+https://github.com/visulima/visulima.git
 > > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > > SOFTWARE.
 >
->
->
->
->
 > # Licenses of bundled types
 >
 > The published @visulima/string artifact additionally contains code with the following licenses:
@@ -1098,9 +1085,10 @@ Repository: git+https://github.com/visulima/visulima.git
 > >
 > > THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
----------------------------------------
+---
 
 ## cli-boxes
+
 License: MIT
 By: Sindre Sorhus
 Repository: sindresorhus/cli-boxes
@@ -1115,9 +1103,10 @@ Repository: sindresorhus/cli-boxes
 >
 > THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
----------------------------------------
+---
 
 ## code-excerpt
+
 License: MIT
 By: vdemedes
 Repository: vadimdemedes/code-excerpt
@@ -1144,9 +1133,10 @@ Repository: vadimdemedes/code-excerpt
 > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 > THE SOFTWARE.
 
----------------------------------------
+---
 
 ## convert-to-spaces
+
 License: MIT
 By: Vadim Demedes
 Repository: vadimdemedes/convert-to-spaces
@@ -1173,9 +1163,10 @@ Repository: vadimdemedes/convert-to-spaces
 > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 > THE SOFTWARE.
 
----------------------------------------
+---
 
 ## es-toolkit
+
 License: MIT
 Repository: https://github.com/toss/es-toolkit.git
 
@@ -1205,9 +1196,10 @@ Repository: https://github.com/toss/es-toolkit.git
 > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > SOFTWARE.
 
----------------------------------------
+---
 
 ## escape-string-regexp
+
 License: MIT
 By: Sindre Sorhus, Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com), Joshua Boy Nicolai Appelman <joshua@jbna.nl> (jbna.nl)
 Repository: sindresorhus/escape-string-regexp
@@ -1222,9 +1214,10 @@ Repository: sindresorhus/escape-string-regexp
 >
 > THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
----------------------------------------
+---
 
 ## is-in-ci
+
 License: MIT
 By: Sindre Sorhus
 Repository: sindresorhus/is-in-ci
@@ -1239,9 +1232,10 @@ Repository: sindresorhus/is-in-ci
 >
 > THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
----------------------------------------
+---
 
 ## patch-console
+
 License: MIT
 By: vdemedes
 Repository: vadimdemedes/patch-console
@@ -1256,9 +1250,10 @@ Repository: vadimdemedes/patch-console
 >
 > THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
----------------------------------------
+---
 
 ## signal-exit
+
 License: ISC
 By: Ben Coe
 Repository: https://github.com/tapjs/signal-exit.git
@@ -1280,9 +1275,10 @@ Repository: https://github.com/tapjs/signal-exit.git
 > WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
 > ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
----------------------------------------
+---
 
 ## stack-utils
+
 License: MIT
 By: James Talmage
 Repository: tapjs/stack-utils
@@ -1309,9 +1305,10 @@ Repository: tapjs/stack-utils
 > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 > THE SOFTWARE.
 
----------------------------------------
+---
 
 ## terminal-size
+
 License: MIT
 By: Sindre Sorhus
 Repository: sindresorhus/terminal-size
@@ -1331,11 +1328,14 @@ Repository: sindresorhus/terminal-size
 <!-- TYPE_DEPENDENCIES -->
 
 # Licenses of bundled types
+
 The published @visulima/tui artifact additionally contains code with the following licenses:
 MIT
 
 # Bundled types:
+
 ## @visulima/tabular
+
 License: MIT
 By: Daniel Bannert
 Repository: git+https://github.com/visulima/visulima.git
@@ -1956,78 +1956,6 @@ Repository: git+https://github.com/visulima/visulima.git
 > > > LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 > > > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > > > SOFTWARE.
-> >
-> > ---
-> >
-> > ## get-east-asian-width
-> >
-> > License: MIT
-> > By: Sindre Sorhus
-> > Repository: sindresorhus/get-east-asian-width
-> >
-> > > MIT License
-> > >
-> > > Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)
-> > >
-> > > Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-> > >
-> > > The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-> > >
-> > > THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-> >
-> > ---
-> >
-> > ## indent-string
-> >
-> > License: MIT
-> > By: Sindre Sorhus
-> > Repository: sindresorhus/indent-string
-> >
-> > > MIT License
-> > >
-> > > Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)
-> > >
-> > > Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-> > >
-> > > The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-> > >
-> > > THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-> >
-> > ---
-> >
-> > ## redent
-> >
-> > License: MIT
-> > By: Sindre Sorhus
-> > Repository: sindresorhus/redent
-> >
-> > > MIT License
-> > >
-> > > Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)
-> > >
-> > > Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-> > >
-> > > The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-> > >
-> > > THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-> >
-> > ---
-> >
-> > ## strip-indent
-> >
-> > License: MIT
-> > By: Sindre Sorhus
-> > Repository: sindresorhus/strip-indent
-> >
-> > > MIT License
-> > >
-> > > Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)
-> > >
-> > > Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-> > >
-> > > The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-> > >
-> > > THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 >
 > ---
 >
@@ -2048,8 +1976,6 @@ Repository: git+https://github.com/visulima/visulima.git
 > > THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 >
 > <!-- /DEPENDENCIES -->
->
->
 >
 > # Licenses of bundled types
 >
@@ -2647,77 +2573,5 @@ Repository: git+https://github.com/visulima/visulima.git
 > > > LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 > > > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > > > SOFTWARE.
-> >
-> > ---
-> >
-> > ## get-east-asian-width
-> >
-> > License: MIT
-> > By: Sindre Sorhus
-> > Repository: sindresorhus/get-east-asian-width
-> >
-> > > MIT License
-> > >
-> > > Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)
-> > >
-> > > Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-> > >
-> > > The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-> > >
-> > > THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-> >
-> > ---
-> >
-> > ## indent-string
-> >
-> > License: MIT
-> > By: Sindre Sorhus
-> > Repository: sindresorhus/indent-string
-> >
-> > > MIT License
-> > >
-> > > Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)
-> > >
-> > > Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-> > >
-> > > The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-> > >
-> > > THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-> >
-> > ---
-> >
-> > ## redent
-> >
-> > License: MIT
-> > By: Sindre Sorhus
-> > Repository: sindresorhus/redent
-> >
-> > > MIT License
-> > >
-> > > Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)
-> > >
-> > > Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-> > >
-> > > The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-> > >
-> > > THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-> >
-> > ---
-> >
-> > ## strip-indent
-> >
-> > License: MIT
-> > By: Sindre Sorhus
-> > Repository: sindresorhus/strip-indent
-> >
-> > > MIT License
-> > >
-> > > Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)
-> > >
-> > > Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-> > >
-> > > The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-> > >
-> > > THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 <!-- /TYPE_DEPENDENCIES -->

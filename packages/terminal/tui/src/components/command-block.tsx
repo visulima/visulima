@@ -121,7 +121,9 @@ export default function CommandBlock({ command, cwd, durationMs, exitCode, maxOu
         trailing.push(
             <Text color={exitCode === 0 ? "green" : "red"} key="exit">
                 {" "}
-                exit {exitCode}
+                exit
+{" "}
+{exitCode}
             </Text>,
         );
     }
@@ -136,14 +138,24 @@ export default function CommandBlock({ command, cwd, durationMs, exitCode, maxOu
                         {command}
                     </Text>
                 </Box>
-                {cwd === undefined ? undefined : <Text dimColor> @{cwd}</Text>}
+                {cwd === undefined
+                    ? undefined
+                    : (
+<Text dimColor>
+{" "}
+@
+{cwd}
+</Text>
+                    )}
                 {trailing.length === 0 ? undefined : <Box flexShrink={0}>{trailing}</Box>}
             </Box>
-            {output === undefined ? undefined : (
+            {output === undefined
+                ? undefined
+                : (
                 <Box flexDirection="column" marginTop={1}>
                     {typeof output === "string" ? <Text>{truncateOutput(output, maxOutputRows)}</Text> : output}
                 </Box>
-            )}
+                )}
         </Box>
     );
 }

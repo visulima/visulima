@@ -41,7 +41,14 @@ export default function Tag({ children, color = "blue", icon, variant = "subtle"
         return (
             <Box borderColor={color} borderStyle="round" paddingX={1}>
                 <Text color={color}>
-                    {icon === undefined ? undefined : <>{icon} </>}
+                    {icon === undefined
+                        ? undefined
+                        : (
+<>
+{icon}
+{" "}
+</>
+                        )}
                     {children}
                 </Text>
             </Box>
@@ -52,15 +59,30 @@ export default function Tag({ children, color = "blue", icon, variant = "subtle"
         return (
             <Text backgroundColor={color} color="black">
                 {" "}
-                {icon === undefined ? undefined : <>{icon} </>}
-                {children}{" "}
+                {icon === undefined
+                    ? undefined
+                    : (
+<>
+{icon}
+{" "}
+</>
+                    )}
+                {children}
+{" "}
             </Text>
         );
     }
 
     return (
         <Text color={color}>
-            {icon === undefined ? undefined : <>{icon} </>}
+            {icon === undefined
+                ? undefined
+                : (
+<>
+{icon}
+{" "}
+</>
+                )}
             {children}
         </Text>
     );

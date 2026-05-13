@@ -2,15 +2,14 @@
 import { PassThrough } from "node:stream";
 
 import { Box as JrInkBox, render as jrInkRender, Text as JrInkText } from "@jrichman/ink";
+// Import from production build (pre-compiled JS) for accurate benchmarks.
+// Run `pnpm --filter @visulima/tui run build:prod` before benchmarking.
+import { Box as TuiBox } from "@visulima/tui/dist/components/box.js";
+import { Text as TuiText } from "@visulima/tui/dist/components/text.js";
+import { render as tuiRender } from "@visulima/tui/dist/ink/index.js";
 import { Box as InkBox, render as inkRender, Text as InkText } from "ink";
 import React from "react";
 import { bench, describe } from "vitest";
-
-// Import from production build (pre-compiled JS) for accurate benchmarks.
-// Run `pnpm --filter @visulima/tui run build:prod` before benchmarking.
-import { Box as TuiBox } from "../dist/components/box.js";
-import { Text as TuiText } from "../dist/components/text.js";
-import { render as tuiRender } from "../dist/ink/index.js";
 
 const createMockStdout = () => {
     const stream = new PassThrough() as NodeJS.WriteStream;

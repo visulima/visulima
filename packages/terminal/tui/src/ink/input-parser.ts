@@ -10,11 +10,11 @@ type ParsedInput = {
     readonly pending: string;
 };
 
-type ParsedSequence =
-    | {
-          readonly nextIndex: number;
-          readonly sequence: string;
-      }
+type ParsedSequence
+    = | {
+        readonly nextIndex: number;
+        readonly sequence: string;
+    }
     | "pending"
     | undefined;
 
@@ -111,11 +111,11 @@ const parseEscapedCodePoint = (
     };
 };
 
-type ParsedEscapeSequence =
-    | {
-          readonly nextIndex: number;
-          readonly sequence: string;
-      }
+type ParsedEscapeSequence
+    = | {
+        readonly nextIndex: number;
+        readonly sequence: string;
+    }
     | "pending";
 
 const parseEscapeSequence = (input: string, escapeIndex: number): ParsedEscapeSequence => {

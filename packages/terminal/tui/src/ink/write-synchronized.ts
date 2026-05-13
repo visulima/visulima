@@ -1,4 +1,3 @@
-/* eslint-disable import/no-extraneous-dependencies */
 import type { Writable } from "node:stream";
 
 import { createDecMode, resetMode, setMode } from "@visulima/ansi";

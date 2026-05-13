@@ -192,7 +192,7 @@ const applyPositionStyles = (node: YogaNode, style: Styles): void => {
             style.position === "absolute"
                 ? Yoga.POSITION_TYPE_ABSOLUTE
                 : // static maps to relative because there is no static conceptually
-                  Yoga.POSITION_TYPE_RELATIVE,
+                Yoga.POSITION_TYPE_RELATIVE,
         );
     }
 

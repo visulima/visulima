@@ -1,4 +1,4 @@
-/* eslint-disable import/no-extraneous-dependencies, import/no-named-as-default-member */
+/* eslint-disable import/no-named-as-default-member */
 import colorizeDefault from "@visulima/colorize";
 import cliBoxes from "cli-boxes";
 
@@ -86,9 +86,9 @@ const buildBorderWithTitle = (
     const rightFill = middleWidth - leftFill;
 
     return (
-        stylePiece(borderChar.repeat(leftFill), borderFg, borderBg, borderDim) +
-        leftTitle +
-        stylePiece(borderChar.repeat(rightFill), borderFg, borderBg, borderDim)
+        stylePiece(borderChar.repeat(leftFill), borderFg, borderBg, borderDim)
+        + leftTitle
+        + stylePiece(borderChar.repeat(rightFill), borderFg, borderBg, borderDim)
     );
 };
 
