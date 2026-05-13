@@ -27,8 +27,8 @@ const cfg = (security: LegacySecurityShape): VisConfig => {
         = installScripts === undefined && firstSeen === undefined
             ? undefined
             : {
-                ...(installScripts === undefined ? {} : { installScripts: installScripts }),
-                ...(firstSeen === undefined ? {} : { firstSeen: firstSeen }),
+                ...(installScripts === undefined ? {} : { installScripts }),
+                ...(firstSeen === undefined ? {} : { firstSeen }),
             };
 
     return { security: { ...(policies === undefined ? {} : { policies }) } } satisfies VisConfig;

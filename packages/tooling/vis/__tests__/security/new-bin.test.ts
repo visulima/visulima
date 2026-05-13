@@ -4,8 +4,8 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { clearPackumentCache } from "../../src/security/marshalls/packument";
 import { normalizeBin, runNewBinMarshall } from "../../src/security/marshalls/new-bin";
+import { clearPackumentCache } from "../../src/security/marshalls/packument";
 
 let homeOverride: string;
 
@@ -19,12 +19,13 @@ vi.mock(import("node:os"), async (importOriginal) => {
 });
 
 const stubFetch = (response: { body?: unknown; status?: number }): ReturnType<typeof vi.fn> => {
-    const handler = vi.fn(async () =>
-        Promise.resolve({
-            json: async () => Promise.resolve(response.body ?? {}),
+    const handler = vi.fn(async () => {
+        return {
+            json: async () => response.body ?? {},
             ok: (response.status ?? 200) < 400,
             status: response.status ?? 200,
-        }),
+        };
+    },
     );
 
     vi.stubGlobal("fetch", handler);
@@ -32,18 +33,20 @@ const stubFetch = (response: { body?: unknown; status?: number }): ReturnType<ty
     return handler;
 };
 
-const packumentWith = (versions: Record<string, Record<string, string> | string | undefined>): Record<string, unknown> => ({
-    name: "demo",
-    versions: Object.fromEntries(
-        Object.entries(versions).map(([version, bin]) => [
-            version,
-            {
-                bin,
+const packumentWith = (versions: Record<string, Record<string, string> | string | undefined>): Record<string, unknown> => {
+    return {
+        name: "demo",
+        versions: Object.fromEntries(
+            Object.entries(versions).map(([version, bin]) => [
                 version,
-            },
-        ]),
-    ),
-});
+                {
+                    bin,
+                    version,
+                },
+            ]),
+        ),
+    };
+};
 
 describe(normalizeBin, () => {
     it("returns an empty map when bin is undefined", () => {

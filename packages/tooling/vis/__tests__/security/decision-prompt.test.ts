@@ -1,7 +1,7 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
-import type { MarshallFinding } from "../../src/security/marshalls/findings";
 import { presentMarshallDecision } from "../../src/security/marshalls/decision-prompt";
+import type { MarshallFinding } from "../../src/security/marshalls/findings";
 
 const errorFinding: MarshallFinding = {
     marshall: "author",
@@ -104,6 +104,7 @@ describe(presentMarshallDecision, () => {
 
     it("runs the countdown and proceeds in a TTY when warnings-only", async () => {
         expect.assertions(2);
+
         vi.useFakeTimers();
 
         const output = makeOutput();
@@ -141,6 +142,7 @@ describe(presentMarshallDecision, () => {
 
     it("honors VIS_AUTO_CONTINUE_SECONDS when supplied", async () => {
         expect.assertions(1);
+
         vi.useFakeTimers();
 
         const output = makeOutput();
@@ -158,6 +160,7 @@ describe(presentMarshallDecision, () => {
 
     it("aborts via supplied signal during countdown (user-aborted)", async () => {
         expect.assertions(1);
+
         vi.useFakeTimers();
 
         const controller = new AbortController();
@@ -179,8 +182,9 @@ describe(presentMarshallDecision, () => {
         await expect(promise).resolves.toStrictEqual({ proceed: false, reason: "user-aborted" });
     });
 
-    it("renders a single static line on dumb terminals (no \\r animation)", async () => {
+    it(String.raw`renders a single static line on dumb terminals (no \r animation)`, async () => {
         expect.assertions(2);
+
         vi.useFakeTimers();
 
         const output = makeOutput();

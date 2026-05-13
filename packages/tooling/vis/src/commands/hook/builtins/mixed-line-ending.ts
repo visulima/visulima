@@ -25,7 +25,6 @@ interface Line {
  * Recognised `args`:
  *   `--fix=&lt;value>` or `-f &lt;value>` / `--fix &lt;value>`
  *     where value is one of `auto` (default), `no`, `lf`, `crlf`, `cr`.
- *
  * @param files Files (relative to `context.root`) to process.
  * @param args Raw CLI args passed through from the hook config.
  * @param context Builtin context with logger and workspace root.

@@ -28,7 +28,7 @@ describe("vis migrate self", () => {
         rmSync(tmpDir, { force: true, recursive: true });
     });
 
-    describe("rewriteSource", () => {
+    describe(rewriteSource, () => {
         it("rewrites targetDefaults → tasks at object-key positions", () => {
             expect.assertions(2);
 
@@ -64,7 +64,7 @@ describe("vis migrate self", () => {
         });
     });
 
-    describe("migrateSelf", () => {
+    describe(migrateSelf, () => {
         it("rewrites a vis.config.ts in place and creates a .bak", () => {
             expect.assertions(4);
 

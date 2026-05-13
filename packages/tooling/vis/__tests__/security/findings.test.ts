@@ -7,21 +7,25 @@ import {
     MarshallFindings,
 } from "../../src/security/marshalls/findings";
 
-const errorFinding = (overrides: Partial<MarshallFinding> = {}): MarshallFinding => ({
-    marshall: "author",
-    message: "publisher email is unverified",
-    packageName: "demo",
-    severity: "error",
-    ...overrides,
-});
+const errorFinding = (overrides: Partial<MarshallFinding> = {}): MarshallFinding => {
+    return {
+        marshall: "author",
+        message: "publisher email is unverified",
+        packageName: "demo",
+        severity: "error",
+        ...overrides,
+    };
+};
 
-const warningFinding = (overrides: Partial<MarshallFinding> = {}): MarshallFinding => ({
-    marshall: "downloads",
-    message: "fewer than 100 weekly downloads",
-    packageName: "demo",
-    severity: "warning",
-    ...overrides,
-});
+const warningFinding = (overrides: Partial<MarshallFinding> = {}): MarshallFinding => {
+    return {
+        marshall: "downloads",
+        message: "fewer than 100 weekly downloads",
+        packageName: "demo",
+        severity: "warning",
+        ...overrides,
+    };
+};
 
 describe(MarshallFindings, () => {
     it("is empty by default", () => {

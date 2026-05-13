@@ -25,6 +25,7 @@ export interface ManifestMaintainer {
 export interface PackageManifest {
     /** Path to the directory containing `package.json` on disk. */
     directory: string;
+
     /**
      * Raw license declaration as it appears in the manifest. May be a
      * plain SPDX id, an SPDX expression, the legacy `{ type }` object,

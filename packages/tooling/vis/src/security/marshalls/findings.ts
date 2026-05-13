@@ -25,6 +25,7 @@ import type { MarshallName } from "./registry";
 export interface MarshallFinding {
     /** The marshall that produced the finding. Used for grouping + the disable-hint. */
     marshall: MarshallName;
+
     /**
      * Human-readable explanation, one line. Convention: include the failing
      * value where it helps (`"published 3 days ago (threshold: 7)"`) so the
@@ -34,6 +35,7 @@ export interface MarshallFinding {
     /** Package the finding applies to. `name` only — version (if relevant) goes in the message. */
     packageName: string;
     severity: "error" | "warning";
+
     /**
      * Optional one-liner with the next step the user can take to resolve
      * the finding — e.g. `"Add 'demo' to security.author.allowlist."`. Shown
@@ -60,7 +62,7 @@ export class MarshallFindings {
     }
 
     /** Read-only snapshot — callers must not mutate the array. */
-    all(): readonly MarshallFinding[] {
+    all(): ReadonlyArray<MarshallFinding> {
         return this.entries;
     }
 
@@ -98,7 +100,7 @@ export class MarshallFindings {
  * (`pail.warn`, `pail.error`, file output, …). Lines do NOT include trailing
  * newlines.
  */
-export const formatMarshallFindingsAsTable = (findings: readonly MarshallFinding[]): string[] => {
+export const formatMarshallFindingsAsTable = (findings: ReadonlyArray<MarshallFinding>): string[] => {
     if (findings.length === 0) {
         return [];
     }
@@ -144,13 +146,15 @@ export const formatMarshallFindingsAsTable = (findings: readonly MarshallFinding
  * indentation / streaming themselves.
  */
 export const formatMarshallFindingsAsJson = (
-    findings: readonly MarshallFinding[],
-): { errors: MarshallFinding[]; findings: MarshallFinding[]; summary: { errorCount: number; warningCount: number }; warnings: MarshallFinding[] } => ({
-    errors: findings.filter((finding) => finding.severity === "error"),
-    findings: [...findings],
-    summary: {
-        errorCount: findings.filter((finding) => finding.severity === "error").length,
-        warningCount: findings.filter((finding) => finding.severity === "warning").length,
-    },
-    warnings: findings.filter((finding) => finding.severity === "warning"),
-});
+    findings: ReadonlyArray<MarshallFinding>,
+): { errors: MarshallFinding[]; findings: MarshallFinding[]; summary: { errorCount: number; warningCount: number }; warnings: MarshallFinding[] } => {
+    return {
+        errors: findings.filter((finding) => finding.severity === "error"),
+        findings: [...findings],
+        summary: {
+            errorCount: findings.filter((finding) => finding.severity === "error").length,
+            warningCount: findings.filter((finding) => finding.severity === "warning").length,
+        },
+        warnings: findings.filter((finding) => finding.severity === "warning"),
+    };
+};

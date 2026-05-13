@@ -1,5 +1,5 @@
-import { VisConfigDeprecatedKeyError } from "../errors";
 import type { DeprecatedKey } from "../errors";
+import { VisConfigDeprecatedKeyError } from "../errors";
 
 /**
  * Scan a raw `vis.config.ts` export for keys that have been removed in
@@ -23,7 +23,7 @@ const detectDeprecatedConfigKeys = (raw: Record<string, unknown>): DeprecatedKey
     }
 
     if (Object.hasOwn(raw, "taskDefaults")) {
-        const taskDefaults = raw.taskDefaults;
+        const { taskDefaults } = raw;
         const children: DeprecatedKey[] = [];
 
         if (Array.isArray(taskDefaults)) {

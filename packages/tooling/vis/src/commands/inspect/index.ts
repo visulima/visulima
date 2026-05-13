@@ -1,7 +1,7 @@
 import type { Command, CreateOptions } from "@visulima/cerebro";
 
 /**
- * `vis inspect <pkg>` — dry-run every marshall against `<pkg>[@<spec>]`
+ * `vis inspect &lt;pkg>` — dry-run every marshall against `&lt;pkg>[@&lt;spec>]`
  * without installing anything. Lets users pre-flight a dependency before
  * letting it touch the lockfile.
  */

@@ -159,8 +159,7 @@ export const emitAuditHtml = (options: AuditHtmlEmitOptions): string => {
     const clean = sortedFindings.length === 0;
 
     const policyDecisions = (options.policyDecisions ?? []).filter((d) => d.policy !== "vulnerability");
-    const policyRows = policyDecisions
-        .slice()
+    const policyRows = [...policyDecisions]
         .sort((a, b) => {
             const rank = (s: PolicyDecision["severity"]): number => (s === "block" ? 0 : s === "warn" ? 1 : 2);
 

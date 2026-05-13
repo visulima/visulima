@@ -1,6 +1,5 @@
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 
-import type { VisConfig } from "../../config/workspace";
 import { detectPackageManager } from "../hook/migrate";
 import { migrateDeps } from "./deps";
 import { migrateGitleaks } from "./gitleaks";
@@ -25,9 +24,9 @@ import { migrateMoon } from "./moon";
 import { migrateNanoStaged } from "./nano-staged";
 import { migrateNx } from "./nx";
 import { confirm } from "./prompt";
-import { migrateSelf } from "./self";
 import { buildProbeContext, getApplicableMigrations } from "./registry";
 import { migrateSecretlint } from "./secretlint";
+import { migrateSelf } from "./self";
 import { migrateSherif } from "./sherif";
 import { printSummary } from "./summary";
 import { migrateSyncpack } from "./syncpack";
@@ -298,7 +297,7 @@ const migrateVerifyExecuteImpl = ({ logger, workspaceRoot }: Toolbox): void => {
 
 const migrateAllExecuteImpl = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Console, MigrateAllOptions>): Promise<void> => {
     const root = workspaceRoot ?? process.cwd();
-    const config = (visConfig ?? {}) as VisConfig;
+    const config = (visConfig ?? {});
     const context = buildProbeContext(root, config);
     const applicable = getApplicableMigrations(context);
 

@@ -19,7 +19,7 @@ interface PmNativeSnapshot {
  * npm's CLI defines this option as `null or Number` in **days**. A bare
  * integer like `1` means "1 day", not "1 minute" — npm's config parser
  * runs `parseInt` over the value, so `48h` would silently be read as 48
- * *days*, and `15m` as 15 *days*. To stay aligned with what npm actually
+ * days*, and `15m` as 15 *days*. To stay aligned with what npm actually
  * enforces:
  *
  * - A bare integer (`"1"` / `"2"`) is treated as days × 1440 minutes.
@@ -202,8 +202,8 @@ const checkPmNativeConfigDrift = (config: VisConfig, pm: PackageManagerName, wor
     const security = config.security ?? {};
 
     const policies = security.policies ?? {};
-    const installScripts = policies.installScripts;
-    const firstSeen = policies.firstSeen;
+    const { installScripts } = policies;
+    const { firstSeen } = policies;
 
     if (installScripts?.allow && (pm === "pnpm" || pm === "bun")) {
         const visApproved = new Set(

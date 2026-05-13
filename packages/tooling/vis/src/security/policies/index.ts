@@ -100,14 +100,9 @@ export interface EvaluateOptions {
  * network state directly — the engine prepares the snapshot.
  */
 export interface PolicyModule {
-    /** Display name; matches the corresponding `security.policies.*` key. */
-    name: PolicyName;
-    /**
-     * `false` means the engine emits an `info` "skipped — requires
-     * network" decision when `input.offline` is true, and short-circuits
-     * the module. `true` means the policy runs normally offline.
-     */
-    offlineSupported: boolean;
+    /** Produce zero or more decisions for the given input. */
+    evaluate: (input: PolicyInput, config: VisConfig) => Promise<PolicyDecision[]> | PolicyDecision[];
+
     /**
      * Returns `false` when the user hasn't configured this policy
      * (so the engine omits it from the result unless explicitly
@@ -115,10 +110,17 @@ export interface PolicyModule {
      * see only the policies they opted into.
      */
     isConfigured: (config: VisConfig) => boolean;
+    /** Display name; matches the corresponding `security.policies.*` key. */
+    name: PolicyName;
+
+    /**
+     * `false` means the engine emits an `info` "skipped — requires
+     * network" decision when `input.offline` is true, and short-circuits
+     * the module. `true` means the policy runs normally offline.
+     */
+    offlineSupported: boolean;
     /** Surfaces the policy makes sense on. `[]` is illegal. */
-    surfaces: readonly PolicySurface[];
-    /** Produce zero or more decisions for the given input. */
-    evaluate: (input: PolicyInput, config: VisConfig) => Promise<PolicyDecision[]> | PolicyDecision[];
+    surfaces: ReadonlyArray<PolicySurface>;
 }
 
 const REGISTRY: PolicyModule[] = [
@@ -180,32 +182,29 @@ const selectModules = (
     surface: PolicySurface,
     config: VisConfig,
     enabledPolicies: Set<PolicyName> | undefined,
-): PolicyModule[] => {
-    return REGISTRY.filter((policyModule) => {
-        if (!policyModule.surfaces.includes(surface)) {
-            return false;
-        }
+): PolicyModule[] => REGISTRY.filter((policyModule) => {
+    if (!policyModule.surfaces.includes(surface)) {
+        return false;
+    }
 
-        if (enabledPolicies !== undefined) {
-            return enabledPolicies.has(policyModule.name);
-        }
+    if (enabledPolicies !== undefined) {
+        return enabledPolicies.has(policyModule.name);
+    }
 
-        return policyModule.isConfigured(config);
-    });
-};
+    return policyModule.isConfigured(config);
+});
 
 /**
  * Run every selected policy against `input` and return the flat list of
  * decisions. Failures inside a policy module are converted to an
  * `info`-level decision so a single broken policy can't take down the
  * whole audit.
- *
- * @param input  Snapshot of the resolved package set + ancillary data.
+ * @param input Snapshot of the resolved package set + ancillary data.
  * @param surface Where the call is coming from. Different surfaces
- *                expose different policy subsets (`install` skips
- *                policies that need the audit report).
+ * expose different policy subsets (`install` skips
+ * policies that need the audit report).
  * @param options Caller knobs (active config, optional explicit policy
- *                allow-list).
+ * allow-list).
  */
 export const evaluatePolicies = async (
     input: PolicyInput,
@@ -255,7 +254,7 @@ export const evaluatePolicies = async (
  * - an empty set when the user passed `--policies none` (engine
  *   evaluates nothing — useful for `--policies none` to bypass the
  *   engine entirely);
- * - a `Set<PolicyName>` otherwise.
+ * - a `Set&lt;PolicyName>` otherwise.
  *
  * Unknown policy names are silently skipped after a warning has been
  * emitted by the caller — we don't want a typo to silently expand the
@@ -306,13 +305,13 @@ export const parsePoliciesFlag = (
         // and convert `_x` sequences to upper-case.
         const camel = token
             .replace(/^_+/, "")
-            .replace(/_+([a-z])/g, (_, c: string) => c.toUpperCase());
+            .replaceAll(/_+([a-z])/g, (_, c: string) => c.toUpperCase());
         const canonical = POLICY_NAME_LOOKUP.get(camel.toLowerCase());
 
-        if (canonical !== undefined) {
-            result.add(canonical);
-        } else {
+        if (canonical === undefined) {
             onUnknown?.(token);
+        } else {
+            result.add(canonical);
         }
     }
 
