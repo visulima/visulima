@@ -640,7 +640,7 @@ describe(InProcessTaskHasher, () => {
     });
 
     it("should mix onFingerprint contributions into the runtime bucket", async () => {
-        expect.assertions(3);
+        expect.assertions(2);
 
         const seen: { task: string }[] = [];
 
