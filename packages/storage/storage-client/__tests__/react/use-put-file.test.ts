@@ -48,7 +48,7 @@ class CustomMockXMLHttpRequest extends MockXMLHttpRequest {
         }
 
         if (header === "ETag") {
-            return '"test-etag"';
+            return "\"test-etag\"";
         }
 
         return undefined;
