@@ -76,7 +76,7 @@ describe(PluginManager, () => {
 
             expect(() => {
                 pluginManager.register(plugin);
-            }).toThrow('Plugin "test-plugin" is already registered');
+            }).toThrow("Plugin \"test-plugin\" is already registered");
             expect(() => {
                 pluginManager.register(plugin);
             }).toThrow(Error);
@@ -97,7 +97,7 @@ describe(PluginManager, () => {
 
             expect(() => {
                 pluginManager.register(plugin2);
-            }).toThrow('Cannot register plugin "plugin2" after initialization');
+            }).toThrow("Cannot register plugin \"plugin2\" after initialization");
         });
     });
 
@@ -179,7 +179,7 @@ describe(PluginManager, () => {
 
             pluginManager.register(plugin);
 
-            await expect(pluginManager.init({} as PluginContext)).rejects.toThrow('Plugin "test-plugin" depends on "missing-plugin" which is not registered');
+            await expect(pluginManager.init({} as PluginContext)).rejects.toThrow("Plugin \"test-plugin\" depends on \"missing-plugin\" which is not registered");
             await expect(pluginManager.init({} as PluginContext)).rejects.toThrow(Error);
         });
 
@@ -198,7 +198,7 @@ describe(PluginManager, () => {
             pluginManager.register(plugin1);
             pluginManager.register(plugin2);
 
-            await expect(pluginManager.init({} as PluginContext)).rejects.toThrow('Circular dependency detected involving plugin "plugin1"');
+            await expect(pluginManager.init({} as PluginContext)).rejects.toThrow("Circular dependency detected involving plugin \"plugin1\"");
         });
 
         it("should throw error when initializing twice", async () => {
@@ -452,7 +452,7 @@ describe(PluginManager, () => {
             pluginManager.register(plugin1);
             pluginManager.register(plugin2);
 
-            expect(() => pluginManager.getDependencyOrder()).toThrow('Circular dependency detected involving plugin "plugin1"');
+            expect(() => pluginManager.getDependencyOrder()).toThrow("Circular dependency detected involving plugin \"plugin1\"");
         });
 
         it("should throw error for missing dependency", () => {
@@ -462,7 +462,7 @@ describe(PluginManager, () => {
 
             pluginManager.register(plugin);
 
-            expect(() => pluginManager.getDependencyOrder()).toThrow('Plugin "missing" not found');
+            expect(() => pluginManager.getDependencyOrder()).toThrow("Plugin \"missing\" not found");
         });
 
         it("should cache dependency order", () => {

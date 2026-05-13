@@ -450,7 +450,7 @@ describe("command/help", () => {
 
             helpCommand.execute(toolboxMock as unknown as IToolbox);
 
-            expect(errorMock).toHaveBeenCalledWith('Command "nonexistent" not found');
+            expect(errorMock).toHaveBeenCalledWith("Command \"nonexistent\" not found");
         });
 
         it("should append a Subcommands section to a flat command's help when it has nested children", () => {
@@ -504,6 +504,42 @@ describe("command/help", () => {
             const subcommandsSection = usageCalls.find((section) => section.header?.includes("Subcommands"));
 
             expect(subcommandsSection).toBeUndefined();
+        });
+
+        it("should print the flat command's help when --help collides with a nested command of the same leaf name", () => {
+            expect.assertions(2);
+
+            const flatInstall: ICommand = {
+                description: "Install dependencies using the detected package manager",
+                execute: () => {},
+                name: "install",
+            };
+            const nestedInstall: ICommand = {
+                commandPath: ["hook"],
+                description: "Install git hooks for the workspace",
+                execute: () => {},
+                name: "install",
+            };
+
+            // Simulate the name-keyed map after both have been registered:
+            // the nested command overwrites the flat one under the leaf name.
+            const collisionMap = new Map<string, ICommand>([["install", nestedInstall]]);
+
+            const helpCommand = new HelpCommand(collisionMap);
+            const toolboxMock = {
+                command: flatInstall,
+                commandName: "install",
+                logger: loggerMock,
+                runtime: runtimeMock,
+            };
+
+            helpCommand.execute(toolboxMock as unknown as IToolbox);
+
+            const usageCalls = vi.mocked(commandLineUsage).mock.calls[0][0];
+            const descriptionSection = usageCalls.find((section) => section.header?.includes("Description"));
+
+            expect(descriptionSection).toBeDefined();
+            expect(descriptionSection?.content).toBe("Install dependencies using the detected package manager");
         });
     });
 });
