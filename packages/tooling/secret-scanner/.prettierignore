@@ -9,9 +9,11 @@ coverage
 node_modules
 .eslintcache
 native/target
+
 data/LICENSE-GITLEAKS
 data/LICENSE-KINGFISHER
 data/NOTICE-KINGFISHER
+data/ruleset.json
 
 **/tsconfig.json
 **/jsconfig.json

@@ -24,6 +24,10 @@ export default createConfig(
             "native/Cargo.toml",
             "native/deny.toml",
             "native/index.d.ts",
+            "data/LICENSE-GITLEAKS",
+            "data/LICENSE-KINGFISHER",
+            "data/NOTICE-KINGFISHER",
+            "data/ruleset.json",
         ],
         typescript: {
             tsconfigPath: "./tsconfig.eslint.json",
