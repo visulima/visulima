@@ -54,8 +54,8 @@
 export type OptionNameToCamelCase<T extends string> = T extends `${infer Start}-${infer Rest}`
     ? `${Lowercase<Start>}${Capitalize<OptionNameToCamelCase<Rest>>}`
     : T extends `${infer Start}_${infer Rest}`
-      ? `${Lowercase<Start>}${Capitalize<OptionNameToCamelCase<Rest>>}`
-      : Lowercase<T>;
+        ? `${Lowercase<Start>}${Capitalize<OptionNameToCamelCase<Rest>>}`
+        : Lowercase<T>;
 
 /**
  * Helper type to create a type-safe options object from option definitions.

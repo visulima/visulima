@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
 import camelCase from "@visulima/string/case/camel-case";
 
 import type { OptionDefinition } from "../../types/command";

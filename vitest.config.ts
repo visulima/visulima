@@ -1,6 +1,13 @@
 import { defineConfig } from "vitest/config";
 import type { Plugin } from "vite";
 
+// Force colorize on at the root level so snapshots that capture ANSI codes
+// stay stable when vitest is launched from the monorepo root (e.g. via
+// lint-staged `vitest related --run <absolute paths>`) which bypasses the
+// per-package vitest configs.
+process.env.FORCE_COLOR = "1";
+delete process.env.NO_COLOR;
+
 // Stub plugin for .svelte files at root scan level.
 // When vitest related runs its global import analysis, it encounters .svelte
 // components imported by storage-client tests. Without a Svelte plugin, Vite

@@ -18,9 +18,9 @@ import type { CommandExecute, LazyCommandModule } from "../types/command";
  * ```
  */
 // eslint-disable-next-line import/prefer-default-export -- re-exported by name from src/index.ts as public API
-export const lazyNamed =
+export const lazyNamed
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters -- K constrains `key` to be a valid key of M, used by the caller
-    <M extends Record<string, unknown>, K extends keyof M, TContext>(load: () => Promise<M>, key: K): (() => Promise<LazyCommandModule<TContext>>) =>
+    = <M extends Record<string, unknown>, K extends keyof M, TContext>(load: () => Promise<M>, key: K): () => Promise<LazyCommandModule<TContext>> =>
         async () => {
             const loaded = await load();
 

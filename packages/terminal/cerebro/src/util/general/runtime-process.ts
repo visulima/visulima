@@ -397,7 +397,7 @@ export type ProcessEventHandler = (...args: unknown[]) => void;
  * @param handler Handler function
  * @returns Cleanup function to remove the handler
  */
-export const onProcessEvent = (event: ProcessEventType, handler: ProcessEventHandler): (() => void) => {
+export const onProcessEvent = (event: ProcessEventType, handler: ProcessEventHandler): () => void => {
     // Check for Deno first - Deno doesn't have process events, return no-op cleanup
     if (hasDeno(globalThis)) {
         // Deno uses global error handlers differently

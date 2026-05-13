@@ -77,9 +77,9 @@ const printGeneralHelp = (logger: Console, runtime: ICli<Console>, commands: Map
                 }),
                 commands.has("help")
                     ? {
-                          header: inverse.yellow(" Command Options "),
-                          optionList: (commands.get("help") as ICommand).options?.filter((option) => !option.hidden),
-                      }
+                        header: inverse.yellow(" Command Options "),
+                        optionList: (commands.get("help") as ICommand).options?.filter((option) => !option.hidden),
+                    }
                     : undefined,
                 { header: inverse.yellow(" Global Options "), optionList: runtime.getGlobalOptions() },
                 {
@@ -137,7 +137,7 @@ const printParentHelp = <OD extends OptionDefinition<any>>(logger: Console, runt
         },
         {
             content: children.map((child) => {
-                const fullPath = [...(child.commandPath ?? []), child.name].join(" ");
+                const fullPath = [...child.commandPath ?? [], child.name].join(" ");
 
                 return [green(fullPath), child.description ?? ""];
             }),
@@ -159,10 +159,14 @@ const printCommandHelp = <OD extends OptionDefinition<any>>(
     runtime: ICli<Console>,
     commands: Map<string, ICommand<OD>>,
     name: string,
+    resolvedCommand?: ICommand<OD>,
     // eslint-disable-next-line sonarjs/cognitive-complexity
 ): void => {
-    // Try to find command by name first
-    let command = commands.get(name);
+    // Prefer a pre-resolved command (e.g. when `--help` is set on a top-level
+    // command whose leaf name collides with a nested command — the name-only
+    // map loses one of them, but the caller already resolved the right one).
+    // Try to find command by name first if not already resolved
+    let command = resolvedCommand ?? commands.get(name);
 
     // If not found, try to find by full path (for nested commands)
     if (!command) {
@@ -253,13 +257,13 @@ const printCommandHelp = <OD extends OptionDefinition<any>>(
         });
     }
 
-    const ownPath = [...(command.commandPath ?? []), command.name];
+    const ownPath = [...command.commandPath ?? [], command.name];
     const ownChildren = findChildren(commands, ownPath);
 
     if (ownChildren.length > 0) {
         usageGroups.push({
             content: ownChildren.map((child) => {
-                const fullPath = [...(child.commandPath ?? []), child.name].join(" ");
+                const fullPath = [...child.commandPath ?? [], child.name].join(" ");
 
                 return [green(fullPath), child.description ?? ""];
             }),
@@ -288,7 +292,7 @@ class HelpCommand<TLogger extends Console = Console> implements ICommand<OptionD
     }
 
     public execute(toolbox: IToolbox<TLogger>): void {
-        const { commandName, logger, options, runtime } = toolbox;
+        const { command, commandName, logger, options, runtime } = toolbox;
 
         const { footer, header } = runtime.getCommandSection();
 
@@ -305,7 +309,13 @@ class HelpCommand<TLogger extends Console = Console> implements ICommand<OptionD
                 typeof options?.group === "string" ? options.group : undefined,
             );
         } else {
-            printCommandHelp(logger, runtime as unknown as ICli<Console>, this.commands as unknown as Map<string, ICommand>, commandName);
+            // When --help is invoked on a specific command, the toolbox already
+            // carries the correctly-resolved command (including nested vs. flat
+            // disambiguation by full path). Pass it through so the renderer
+            // doesn't re-look up by leaf name.
+            const resolved = command === undefined || command.name === "help" ? undefined : command;
+
+            printCommandHelp(logger, runtime as unknown as ICli<Console>, this.commands as unknown as Map<string, ICommand>, commandName, resolved);
         }
 
         if (footer) {

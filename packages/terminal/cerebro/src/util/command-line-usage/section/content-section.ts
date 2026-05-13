@@ -1,10 +1,77 @@
+import { getStringWidth } from "@visulima/string";
 import { createTable } from "@visulima/tabular";
 import { NO_BORDER } from "@visulima/tabular/style";
+import terminalSize from "terminal-size";
 
 import type { Content as IContent } from "../../../types/command-line-usage";
 import templateFormat from "../../text-processing/template-format";
 import getTerminalWidth from "../get-terminal-width";
 import BaseSection from "./base-section";
+
+/**
+ * Resolve a terminal width for column-width math. Prefers an explicit
+ * `CEREBRO_TERMINAL_WIDTH` override, then delegates to `terminal-size`,
+ * which handles TTY ioctl, the `COLUMNS` env var, and falls back to `80`
+ * in non-interactive contexts (CI, piped output, tests).
+ */
+const resolveTerminalWidth = (override: number | undefined): number => {
+    if (override !== undefined && override > 0) {
+        return override;
+    }
+
+    return terminalSize().columns;
+};
+
+/**
+ * For 2-column rows (e.g. command-name + description), pin both columns to
+ * fixed widths so long names like `migrate lint-staged` never wrap mid-name
+ * and every description starts in the same column. Returns `undefined` when
+ * sizing should fall back to tabular's automatic layout (single-column rows,
+ * mixed shapes, or when the widest name would leave less than ~20 cols for
+ * the description). Returned widths include cell padding because tabular's
+ * `columnWidths` API expects total cell width.
+ */
+const computeColumnWidths = (formattedRows: string[][], terminalWidth: number, leftPad: number, rightPad: number): [number, number] | undefined => {
+    if (formattedRows.length === 0 || formattedRows.some((row) => row.length !== 2)) {
+        return undefined;
+    }
+
+    let widest = 0;
+
+    for (const row of formattedRows) {
+        const cell = row[0];
+
+        if (cell === undefined) {
+            continue;
+        }
+
+        const width = getStringWidth(cell);
+
+        if (width > widest) {
+            widest = width;
+        }
+    }
+
+    if (widest === 0) {
+        return undefined;
+    }
+
+    const totalPadding = leftPad + rightPad;
+    const firstColumnTotal = widest + totalPadding;
+
+    // Reserve at least 20 cols of content for the description after padding;
+    // otherwise pinning the name column would crush the right-hand text.
+    const minDescriptionContent = 20;
+    const minSecondColumnTotal = minDescriptionContent + totalPadding;
+
+    if (firstColumnTotal + minSecondColumnTotal > terminalWidth) {
+        return undefined;
+    }
+
+    const secondColumnTotal = terminalWidth - firstColumnTotal;
+
+    return [firstColumnTotal, secondColumnTotal];
+};
 
 /**
  * A Content section comprises a header and one or more lines of content.
@@ -119,27 +186,42 @@ class ContentSection extends BaseSection {
         }
 
         if (
-            Array.isArray(content) &&
+            Array.isArray(content)
             // eslint-disable-next-line @typescript-eslint/no-shadow
-            content.every((value) => typeof value === "string" || (Array.isArray(value) && value.every((value) => typeof value === "string")))
+            && content.every((value) => typeof value === "string" || (Array.isArray(value) && value.every((value) => typeof value === "string")))
         ) {
+            const paddingLeft = 4;
+            const paddingRight = 1;
+            const resolvedTerminalWidth = resolveTerminalWidth(getTerminalWidth());
+
+            // eslint-disable-next-line no-confusing-arrow -- `@stylistic/no-extra-parens` and `arrow-body-style` reject the alternative phrasings
+            const formatRow = (row: string | string[]): string[] => Array.isArray(row) ? row.map((cell) => templateFormat(cell)) : [templateFormat(row)];
+            const formattedRows: string[][] = content.map((row) => formatRow(row));
+
+            const columnWidths = computeColumnWidths(formattedRows, resolvedTerminalWidth, paddingLeft, paddingRight);
+
             const table = createTable({
+                columnWidths,
                 showHeader: false,
                 style: {
                     border: NO_BORDER,
-                    paddingLeft: 4,
-                    paddingRight: 1,
+                    paddingLeft,
+                    paddingRight,
                 },
-                terminalWidth: getTerminalWidth(),
+                terminalWidth: resolvedTerminalWidth,
                 truncateOverflow: false,
                 wordWrap: true,
             });
 
-            content.forEach((row) => {
-                if (Array.isArray(row)) {
-                    table.addRow(row.map((cell) => templateFormat(cell)));
+            formattedRows.forEach((row) => {
+                if (columnWidths !== undefined && row.length === 2) {
+                    // Disable wrap on column 0 so multi-token names (e.g.
+                    // `migrate lint-staged`, `security run`, `check [c, outdated]`)
+                    // stay on a single line. Width comes from table-level
+                    // `columnWidths`, which keeps every row aligned to the widest name.
+                    table.addRow([{ content: row[0] as string, wordWrap: false }, row[1]]);
                 } else {
-                    table.addRow([templateFormat(row)]);
+                    table.addRow(row);
                 }
             });
 

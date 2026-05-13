@@ -39,10 +39,10 @@ export const updateNotifierPlugin = (options: UpdateNotifierPluginOptions = {}):
                 ...options,
             };
 
-            const shouldCheck =
-                Boolean(updateNotifierOptions.alwaysRun) ||
+            const shouldCheck
+                = Boolean(updateNotifierOptions.alwaysRun)
                 // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- intentional boolean coercion for truthy check
-                !(env.NO_UPDATE_NOTIFIER || env.NODE_ENV === "test" || toolbox.argv.includes("--no-update-notifier") || isCI);
+                    || !(env.NO_UPDATE_NOTIFIER || env.NODE_ENV === "test" || toolbox.argv.includes("--no-update-notifier") || isCI);
 
             if (!shouldCheck) {
                 logger.debug("Update notifier: skipping check (disabled by environment or flags)");

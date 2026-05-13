@@ -882,7 +882,7 @@ export class Cli<T extends Console = Console> implements ICli<T> {
             // #executeCommandInternal before the plugin manager's try/catch
             // below can pick them up. Render them through the logger and
             // re-throw so the caller sees a non-zero exit code.
-            this.#logger.error(error as Error);
+            this.#logger.error(error);
 
             if (shouldExitProcess) {
                 return exitProcess(1);
