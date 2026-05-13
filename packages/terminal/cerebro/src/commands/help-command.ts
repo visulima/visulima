@@ -2,7 +2,7 @@ import { cyan, green, inverse, yellow } from "@visulima/colorize";
 
 import defaultEnv from "../default-env";
 import type { Cli as ICli } from "../types/cli";
-import type { Command as ICommand, OptionDefinition } from "../types/command";
+import type { ArgumentDefinition, Command as ICommand, OptionDefinition } from "../types/command";
 import type { Section } from "../types/command-line-usage";
 import type { Toolbox as IToolbox } from "../types/toolbox";
 import commandLineUsage from "../util/command-line-usage";
@@ -275,7 +275,13 @@ const printCommandHelp = <OD extends OptionDefinition<any>>(
 };
 
 class HelpCommand<TLogger extends Console = Console> implements ICommand<OptionDefinition<string>, TLogger> {
-    public name = "help";
+    public argument: ArgumentDefinition<string> = {
+        description: "Command to show help for (subcommand path supported, e.g. `cli help docker build`)",
+        name: "command",
+        type: String,
+    };
+
+    public name: string = "help";
 
     public options: OptionDefinition<string>[] = [
         {
@@ -292,7 +298,7 @@ class HelpCommand<TLogger extends Console = Console> implements ICommand<OptionD
     }
 
     public execute(toolbox: IToolbox<TLogger>): void {
-        const { command, commandName, logger, options, runtime } = toolbox;
+        const { argument, command, commandName, logger, options, runtime } = toolbox;
 
         const { footer, header } = runtime.getCommandSection();
 
@@ -300,7 +306,13 @@ class HelpCommand<TLogger extends Console = Console> implements ICommand<OptionD
             ((logger as Console & { raw?: (...args: unknown[]) => void }).raw ?? logger.log)(templateFormat(header));
         }
 
-        if (commandName === "help") {
+        // `cli help <name>` arrives with commandName === "help" and the target
+        // name(s) in the positional argument. Join multiple segments so nested
+        // paths like `cli help hook install` resolve via the path-aware lookup
+        // in printCommandHelp.
+        const positionalName = commandName === "help" && Array.isArray(argument) && argument.length > 0 ? argument.join(" ") : undefined;
+
+        if (commandName === "help" && positionalName === undefined) {
             printGeneralHelp(
                 logger,
                 runtime as unknown as ICli<Console>,
@@ -312,11 +324,18 @@ class HelpCommand<TLogger extends Console = Console> implements ICommand<OptionD
             // When --help is invoked on a specific command, the toolbox already
             // carries the correctly-resolved command (including nested vs. flat
             // disambiguation by full path). Pass it through so the renderer
-            // doesn't re-look up by leaf name.
+            // doesn't re-look up by leaf name. When entering via `help <name>`,
+            // we don't have a resolved command yet — fall back to lookup by name.
             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, sonarjs/different-types-comparison -- command may be undefined at runtime even though the type says otherwise
-            const resolved = command === undefined || command.name === "help" ? undefined : command;
+            const resolved = positionalName !== undefined || command === undefined || command.name === "help" ? undefined : command;
 
-            printCommandHelp(logger, runtime as unknown as ICli<Console>, this.commands as unknown as Map<string, ICommand>, commandName, resolved);
+            printCommandHelp(
+                logger,
+                runtime as unknown as ICli<Console>,
+                this.commands as unknown as Map<string, ICommand>,
+                positionalName ?? commandName,
+                resolved,
+            );
         }
 
         if (footer) {
