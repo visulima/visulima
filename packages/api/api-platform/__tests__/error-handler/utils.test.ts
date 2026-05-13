@@ -36,7 +36,7 @@ describe("error-handler/utils", () => {
         sendJson(res, { test: "test" });
 
         // eslint-disable-next-line no-underscore-dangle
-        expect(res._getData()).toBe('{"test":"test"}');
+        expect(res._getData()).toBe("{\"test\":\"test\"}");
     });
 
     it("should add status code to response", () => {
