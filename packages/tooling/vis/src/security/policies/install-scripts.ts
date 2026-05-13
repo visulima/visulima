@@ -29,7 +29,9 @@ export const evaluateInstallScriptsPolicy = (input: PolicyInput, config: VisConf
         return [];
     }
 
-    const status = scanBuildScriptStatus(input.workspaceRoot, allow);
+    const status = scanBuildScriptStatus(input.workspaceRoot, allow, {
+        pinVersions: config.security?.pinVersions === true,
+    });
 
     if (status.unapproved.length === 0) {
         return [];

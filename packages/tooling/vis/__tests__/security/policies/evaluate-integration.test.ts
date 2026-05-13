@@ -213,4 +213,33 @@ describe(parsePoliciesFlag, () => {
 
         expect(set?.size).toBeGreaterThanOrEqual(8);
     });
+
+    it("is case-insensitive on policy names", () => {
+        expect.assertions(2);
+
+        const set = parsePoliciesFlag("LICENSE,InstallScripts");
+
+        expect(set?.has("license")).toBe(true);
+        expect(set?.has("installScripts")).toBe(true);
+    });
+
+    it("strips leading underscores from tokens", () => {
+        expect.assertions(2);
+
+        const unknown: string[] = [];
+        const set = parsePoliciesFlag("_license,__install_scripts", (n) => unknown.push(n));
+
+        expect(unknown).toStrictEqual([]);
+        expect(set?.has("license") && set?.has("installScripts")).toBe(true);
+    });
+
+    it("does not consider whitespace-only tokens as unknown", () => {
+        expect.assertions(2);
+
+        const unknown: string[] = [];
+        const set = parsePoliciesFlag("license, ,vulnerability", (n) => unknown.push(n));
+
+        expect(unknown).toStrictEqual([]);
+        expect(set?.size).toBe(2);
+    });
 });

@@ -236,6 +236,7 @@ export const emitSarif = (options: SarifEmitOptions): SarifLog => {
             rulesById.set(ruleId, {
                 defaultConfiguration: { level },
                 fullDescription: { text: `vis policy '${decision.policy}' (Socket.dev-style supply-chain gate)` },
+                helpUri: `https://visulima.com/packages/vis/commands/audit#policy-${decision.policy}`,
                 id: ruleId,
                 name: ruleId,
                 properties: {

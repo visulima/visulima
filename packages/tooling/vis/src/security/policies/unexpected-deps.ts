@@ -16,32 +16,24 @@ import { readFileSync } from "@visulima/fs";
 import { parseLockFileContent } from "@visulima/package";
 import { isAbsolute, resolve } from "@visulima/path";
 
+import type { LockFileType } from "@visulima/package";
+
 import type { VisConfig } from "../../config/types";
+import { LOCKFILE_NAMES } from "../dependency-scan";
 import { findAcceptedRisk } from "../socket-security";
 import type { PolicyDecision, PolicyInput } from "./index";
 
-const LOCKFILE_NAMES: Record<string, { file: string; type: "bun" | "npm" | "pnpm" | "yarn" }> = {
-    bun: { file: "bun.lock", type: "bun" },
-    npm: { file: "package-lock.json", type: "npm" },
-    pnpm: { file: "pnpm-lock.yaml", type: "pnpm" },
-    yarn: { file: "yarn.lock", type: "yarn" },
-};
-
-const detectLockfileType = (path: string): "bun" | "npm" | "pnpm" | "yarn" | undefined => {
-    if (path.endsWith("pnpm-lock.yaml") || path.endsWith(".pnpm-lock.yaml")) {
-        return "pnpm";
-    }
-
-    if (path.endsWith("package-lock.json")) {
-        return "npm";
-    }
-
-    if (path.endsWith("yarn.lock")) {
-        return "yarn";
-    }
-
-    if (path.endsWith("bun.lock")) {
-        return "bun";
+/**
+ * Best-effort lockfile-type detection from a filename. Accepts both the
+ * canonical name (`pnpm-lock.yaml`) and any path ending in
+ * `<sep><canonical-name>` so users can prefix baseline files (e.g.
+ * `baseline.pnpm-lock.yaml`, `2026-01.yarn.lock`).
+ */
+const detectLockfileType = (path: string): LockFileType | undefined => {
+    for (const info of Object.values(LOCKFILE_NAMES)) {
+        if (path === info.file || path.endsWith(`/${info.file}`) || path.endsWith(`.${info.file}`)) {
+            return info.type;
+        }
     }
 
     return undefined;
@@ -64,7 +56,7 @@ const loadBaselineKeys = (workspaceRoot: string, baselinePath: string, packageMa
         return undefined;
     }
 
-    const type = detectLockfileType(absolute) ?? LOCKFILE_NAMES[packageManager]?.type;
+    const type: LockFileType | undefined = detectLockfileType(absolute) ?? LOCKFILE_NAMES[packageManager]?.type;
 
     if (!type) {
         return undefined;

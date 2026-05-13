@@ -26,7 +26,7 @@ export interface DuplicatePackage {
     versions: string[];
 }
 
-const LOCKFILE_NAMES: Record<string, { file: string; type: LockFileType }> = {
+export const LOCKFILE_NAMES: Record<string, { file: string; type: LockFileType }> = {
     bun: { file: "bun.lock", type: "bun" },
     npm: { file: "package-lock.json", type: "npm" },
     pnpm: { file: "pnpm-lock.yaml", type: "pnpm" },

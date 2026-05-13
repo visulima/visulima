@@ -15,13 +15,12 @@
  * registry without touching the surfaces.
  */
 
-import type { VisConfig } from "../../config/types";
-import type { PolicyName } from "../../config/types";
-import type { InstalledPackage } from "../dependency-scan";
-import type { PackageReportData } from "../socket-security";
-import type { AcceptedRisk } from "../socket-security";
+import type { PolicyName, VisConfig } from "../../config/types";
+import { POLICY_NAMES } from "../../config/types";
 import type { SecurityVulnerability } from "../../util/catalog";
+import type { InstalledPackage } from "../dependency-scan";
 import type { PackageManifest } from "../manifests";
+import type { AcceptedRisk, PackageReportData } from "../socket-security";
 import { evaluateInstallScriptsPolicy } from "./install-scripts";
 import { evaluateLicensePolicy } from "./license";
 import { evaluateUnexpectedDepsPolicy } from "./unexpected-deps";
@@ -262,6 +261,24 @@ export const evaluatePolicies = async (
  * emitted by the caller — we don't want a typo to silently expand the
  * allow-list.
  */
+/** Lowercase → canonical camelCase lookup for case-insensitive parsing. */
+const POLICY_NAME_LOOKUP: Map<string, PolicyName> = (() => {
+    const map = new Map<string, PolicyName>();
+
+    for (const name of POLICY_NAMES) {
+        map.set(name.toLowerCase(), name);
+    }
+
+    return map;
+})();
+
+/**
+ * Names of policies that currently have a registered module. Useful for
+ * differentiating "unknown token" from "known SPDX-ish identifier but no
+ * module shipped yet" in user-facing diagnostics.
+ */
+export const getRegisteredPolicyNames = (): PolicyName[] => REGISTRY.map((m) => m.name);
+
 export const parsePoliciesFlag = (
     raw: string | undefined,
     onUnknown?: (name: string) => void,
@@ -270,17 +287,6 @@ export const parsePoliciesFlag = (
         return undefined;
     }
 
-    const KNOWN_POLICIES: PolicyName[] = [
-        "firstSeen",
-        "installScripts",
-        "license",
-        "malware",
-        "publisherChange",
-        "score",
-        "unexpectedDeps",
-        "vulnerability",
-    ];
-    const knownSet = new Set<PolicyName>(KNOWN_POLICIES);
     const normalized = raw.trim().toLowerCase();
 
     if (normalized === "" || normalized === "none") {
@@ -288,18 +294,23 @@ export const parsePoliciesFlag = (
     }
 
     if (normalized === "all") {
-        return knownSet;
+        return new Set<PolicyName>(POLICY_NAMES);
     }
 
     const result = new Set<PolicyName>();
 
     for (const token of raw.split(",").map((s) => s.trim()).filter((s) => s.length > 0)) {
-        // Accept both camelCase and snake_case spellings for ergonomics.
-        // Internally we always use camelCase.
-        const camel = token.replace(/_([a-z])/g, (_, c: string) => c.toUpperCase());
+        // Accept both camelCase and snake_case spellings for ergonomics
+        // (the CLI surface advertises camelCase; users sometimes type
+        // snake_case out of muscle memory). Strip leading underscores
+        // and convert `_x` sequences to upper-case.
+        const camel = token
+            .replace(/^_+/, "")
+            .replace(/_+([a-z])/g, (_, c: string) => c.toUpperCase());
+        const canonical = POLICY_NAME_LOOKUP.get(camel.toLowerCase());
 
-        if (knownSet.has(camel as PolicyName)) {
-            result.add(camel as PolicyName);
+        if (canonical !== undefined) {
+            result.add(canonical);
         } else {
             onUnknown?.(token);
         }

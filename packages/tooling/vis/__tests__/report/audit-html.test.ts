@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { emitAuditHtml } from "../../src/report/audit-html";
 import type { SecurityVulnerability } from "../../src/security/advisories";
+import type { PolicyDecision } from "../../src/security/policies";
 
 const vuln = (overrides: Partial<SecurityVulnerability> = {}): SecurityVulnerability => {
     return {
@@ -193,6 +194,69 @@ describe(emitAuditHtml, () => {
         expect(copyable?.dataset.cmd).toBe("pnpm update lodash@4.17.21");
 
         await window.happyDOM.close();
+    });
+
+    it("renders a Policy Decisions section when non-vulnerability decisions are present", () => {
+        expect.assertions(4);
+
+        const decisions: PolicyDecision[] = [
+            {
+                data: { deniedLicense: "GPL-3.0" },
+                packageName: "gpl-pkg",
+                policy: "license",
+                reason: "gpl-pkg@1.0.0 license GPL-3.0 is denied",
+                severity: "block",
+                version: "1.0.0",
+            },
+            {
+                packageName: "build-pkg",
+                policy: "installScripts",
+                reason: "build-pkg@3.0.0 has unapproved postinstall script",
+                severity: "warn",
+                version: "3.0.0",
+            },
+            // Vulnerability policy is excluded from the policy table — it's
+            // already rendered in the findings table above.
+            {
+                packageName: "lodash",
+                policy: "vulnerability",
+                reason: "duplicate",
+                severity: "block",
+                version: "4.17.20",
+            },
+        ];
+
+        const html = emitAuditHtml({
+            ...baseOptions,
+            findings: [],
+            policyDecisions: decisions,
+        });
+
+        expect(html).toContain("Policy Decisions (2)");
+        expect(html).toContain("gpl-pkg");
+        expect(html).toContain("build-pkg");
+        // Vulnerability decisions are filtered out, so duplicate is never rendered.
+        expect(html).not.toMatch(/<code>vulnerability<\/code>/);
+    });
+
+    it("omits the Policy Decisions section when there are no non-vulnerability decisions", () => {
+        expect.assertions(1);
+
+        const html = emitAuditHtml({
+            ...baseOptions,
+            findings: [],
+            policyDecisions: [
+                {
+                    packageName: "lodash",
+                    policy: "vulnerability",
+                    reason: "duplicate",
+                    severity: "block",
+                    version: "4.17.20",
+                },
+            ],
+        });
+
+        expect(html).not.toContain("Policy Decisions");
     });
 
     it("renders no <script> for XSS payloads and keeps them as inert text nodes", async () => {

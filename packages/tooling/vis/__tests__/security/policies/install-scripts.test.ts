@@ -80,4 +80,38 @@ describe(evaluateInstallScriptsPolicy, () => {
 
         expect(evaluateInstallScriptsPolicy(buildInput(), config)).toStrictEqual([]);
     });
+
+    it("forwards security.pinVersions: rejects version-mismatched allow entries", () => {
+        expect.assertions(2);
+
+        // Installed esbuild@1.0.0 is on the allow-list at a different version.
+        writePkg(workspaceRoot, "esbuild", { install: "node ./build.js" });
+        const config: VisConfig = {
+            security: {
+                pinVersions: true,
+                policies: { installScripts: { allow: { "esbuild@0.18.0": true }, strict: true } },
+            },
+        };
+        const decisions = evaluateInstallScriptsPolicy(buildInput(), config);
+
+        // With pinVersions on, the version-pinned allow entry does NOT match
+        // esbuild@1.0.0, so it's blocked.
+        expect(decisions).toHaveLength(1);
+        expect(decisions[0]?.severity).toBe("block");
+    });
+
+    it("forwards security.pinVersions: ignores version suffix when disabled", () => {
+        expect.assertions(1);
+
+        writePkg(workspaceRoot, "esbuild", { install: "node ./build.js" });
+        const config: VisConfig = {
+            security: {
+                pinVersions: false,
+                policies: { installScripts: { allow: { "esbuild@0.18.0": true }, strict: true } },
+            },
+        };
+
+        // Without pinVersions, the version part is ignored — esbuild matches.
+        expect(evaluateInstallScriptsPolicy(buildInput(), config)).toStrictEqual([]);
+    });
 });

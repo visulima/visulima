@@ -10,7 +10,7 @@
  * `node_modules`). Entries are deduplicated by `name@version`.
  */
 
-import { readdirSync, statSync } from "node:fs";
+import { lstatSync, readdirSync } from "node:fs";
 
 import { isAccessibleSync, readJsonSync } from "@visulima/fs";
 import { join } from "@visulima/path";
@@ -90,7 +90,17 @@ export const readNodeModulesManifests = (cwd: string): Map<string, PackageManife
 
     const result = new Map<string, PackageManifest>();
 
+    // Cycle guard: a workspace-linked `node_modules` can point back into
+    // the source tree and the walk would otherwise recurse forever.
+    const visited = new Set<string>();
+
     const scanDir = (dir: string, scopePrefix = ""): void => {
+        if (visited.has(dir)) {
+            return;
+        }
+
+        visited.add(dir);
+
         let entries: string[];
 
         try {
@@ -102,8 +112,26 @@ export const readNodeModulesManifests = (cwd: string): Map<string, PackageManife
         for (const entry of entries) {
             const fullPath = join(dir, entry);
 
+            // Use lstat so a symlinked workspace package doesn't get
+            // slurped into the manifest map. The `.pnpm/` store entries
+            // below are real directories so they're unaffected.
+            let stat;
+
+            try {
+                stat = lstatSync(fullPath);
+            } catch {
+                continue;
+            }
+
+            if (stat.isSymbolicLink()) {
+                continue;
+            }
+
             if (entry.startsWith("@")) {
-                scanDir(fullPath, `${entry}/`);
+                if (stat.isDirectory()) {
+                    scanDir(fullPath, `${entry}/`);
+                }
+
                 continue;
             }
 
@@ -131,7 +159,7 @@ export const readNodeModulesManifests = (cwd: string): Map<string, PackageManife
                 continue;
             }
 
-            if (entry.startsWith(".")) {
+            if (entry.startsWith(".") || !stat.isDirectory()) {
                 continue;
             }
 
@@ -139,7 +167,7 @@ export const readNodeModulesManifests = (cwd: string): Map<string, PackageManife
             const pkgJsonPath = join(fullPath, "package.json");
 
             try {
-                if (!statSync(fullPath).isDirectory() || !isAccessibleSync(pkgJsonPath)) {
+                if (!isAccessibleSync(pkgJsonPath)) {
                     continue;
                 }
 

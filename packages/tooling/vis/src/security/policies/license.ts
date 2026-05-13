@@ -15,19 +15,30 @@
  */
 
 import type { VisConfig } from "../../config/types";
+import type { PackageManifest } from "../manifests";
 import { normalizeSpdxId } from "../../sbom/license";
 import { findAcceptedRisk } from "../socket-security";
 import type { PolicyDecision, PolicyInput } from "./index";
 
-const SPDX_OPERATORS = new Set(["AND", "OR", "WITH"]);
+const SPDX_BINARY_OPERATORS = new Set(["AND", "OR"]);
 
 /**
  * Extracts every leaf identifier from an SPDX expression.
  *
- * The expression grammar is small enough that we tokenize on whitespace
- * and parentheses rather than pulling in `spdx-expression-parse`. Each
- * token that isn't a known operator is treated as an SPDX id candidate
- * (after stripping `+` for "or-later" markers).
+ * Grammar is small enough that we tokenize on whitespace and parentheses
+ * rather than pulling in `spdx-expression-parse`. Each non-operator token
+ * is treated as an SPDX id candidate.
+ *
+ * Special handling:
+ * - `WITH <exception>` — the right-hand identifier is an SPDX exception
+ *   (e.g. `Classpath-exception-2.0`), not a license. It's a modifier on
+ *   the preceding licence, so we skip it for allow/deny matching.
+ * - `<id>+` — the "or-later" marker (e.g. `GPL-3.0+` means GPL-3.0 or
+ *   later). We emit BOTH the bare id and the canonical `-or-later` form
+ *   so a deny on either matches.
+ * - `LicenseRef-*` / `DocumentRef-*` — custom-license refs pass through
+ *   as leaves so the allow-list mode treats them as unknown (must be
+ *   explicitly listed) and deny-list mode can target them by name.
  */
 const extractSpdxLeaves = (expression: string): string[] => {
     const tokens = expression
@@ -38,18 +49,38 @@ const extractSpdxLeaves = (expression: string): string[] => {
         .filter((t) => t.length > 0);
 
     const leaves: string[] = [];
+    let skipNext = false;
 
     for (const raw of tokens) {
         const upper = raw.toUpperCase();
 
-        if (SPDX_OPERATORS.has(upper)) {
+        if (skipNext) {
+            skipNext = false;
+
             continue;
         }
 
-        const cleaned = raw.endsWith("+") ? raw.slice(0, -1) : raw;
-        const normalized = normalizeSpdxId(cleaned);
+        if (upper === "WITH") {
+            skipNext = true;
 
-        leaves.push(normalized ?? cleaned);
+            continue;
+        }
+
+        if (SPDX_BINARY_OPERATORS.has(upper)) {
+            continue;
+        }
+
+        const hasOrLater = raw.endsWith("+");
+        const bare = hasOrLater ? raw.slice(0, -1) : raw;
+        const normalized = normalizeSpdxId(bare) ?? bare;
+
+        leaves.push(normalized);
+
+        if (hasOrLater) {
+            // `GPL-3.0+` → also emit `GPL-3.0-or-later` so a deny on the
+            // canonical SPDX 3.x form matches.
+            leaves.push(`${normalized}-or-later`);
+        }
     }
 
     return leaves;
@@ -59,7 +90,7 @@ const extractSpdxLeaves = (expression: string): string[] => {
  * Extracts the declared license expression from a manifest. Returns
  * `undefined` when nothing usable is declared.
  */
-const declaredLicense = (manifest: { license?: string | { type?: string }; licenses?: { type?: string }[] }): string | undefined => {
+const declaredLicense = (manifest: Pick<PackageManifest, "license" | "licenses">): string | undefined => {
     if (typeof manifest.license === "string") {
         const trimmed = manifest.license.trim();
 

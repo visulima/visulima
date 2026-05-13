@@ -24,8 +24,10 @@ import { findDuplicateDependencies, lockedPackages } from "../../security/depend
 import { readNodeModulesManifests } from "../../security/manifests";
 import { canonicalEcosystem, lockedPackagesForEcosystem } from "../../security/multi-eco-lockfiles";
 import type { PolicyDecision } from "../../security/policies";
-import { evaluatePolicies, parsePoliciesFlag } from "../../security/policies";
+import { evaluatePolicies, getRegisteredPolicyNames, parsePoliciesFlag } from "../../security/policies";
 import { computeReachableVulnerablePackages } from "../../security/reachability";
+import type { SeverityFilter } from "../../security/severity";
+import { severityPassesFilter } from "../../security/severity";
 import type { AcceptedRisk, PackageReportData } from "../../security/socket-security";
 import {
     buildSocketOptions,
@@ -47,16 +49,6 @@ interface AuditEntry {
     version: string;
     vulnerabilities: SecurityVulnerability[];
 }
-
-type SeverityFilter = "critical" | "high" | "low" | "medium";
-
-const SEVERITY_ORDER: Record<string, number> = {
-    CRITICAL: 0,
-    HIGH: 1,
-    LOW: 3,
-    MODERATE: 2,
-    UNKNOWN: 4,
-};
 
 const SOCKET_ALERT_COLORS: Record<string, (s: string) => string> = {
     critical: red,
@@ -85,13 +77,6 @@ const parseEcosystems = (raw: string | undefined): { all: string[]; unsupported:
     const unsupported = all.filter((eco) => !SUPPORTED_ECOSYSTEMS.has(eco.toLowerCase()));
 
     return { all, unsupported };
-};
-
-const severityPassesFilter = (severity: string, filter: SeverityFilter): boolean => {
-    const filterLevel = SEVERITY_ORDER[filter.toUpperCase()] ?? SEVERITY_ORDER.MODERATE ?? 2;
-    const vulnLevel = SEVERITY_ORDER[severity.toUpperCase()] ?? 4;
-
-    return vulnLevel <= filterLevel;
 };
 
 const SEVERITY_COLOR_FN: Record<string, (s: string) => string> = {
@@ -440,10 +425,12 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
     const policiesFlag = options.policies as string | undefined;
     const unknownPolicyTokens: string[] = [];
     const policyDecisions: PolicyDecision[] = await (async () => {
+        const registered = getRegisteredPolicyNames();
+        const registeredList = registered.map((n) => `'${n}'`).join(", ");
         const enabledPolicies = parsePoliciesFlag(policiesFlag, (unknown) => {
             unknownPolicyTokens.push(unknown);
 
-            const message = `Unknown policy '${unknown}' — ignoring. Known: malware, firstSeen, unexpectedDeps, publisherChange, installScripts, score, vulnerability, license.`;
+            const message = `Unknown policy '${unknown}' — ignoring. Available: ${registeredList}.`;
 
             if (quietHeader) {
                 // Machine-readable formats can't carry warnings inline (sarif/csaf/cyclonedx-vex
@@ -460,7 +447,13 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
             return [];
         }
 
-        const manifestData = readNodeModulesManifests(workspaceRoot);
+        // `license` is currently the only policy that reads node_modules manifests.
+        // Skip the walk (thousands of `package.json` reads in a large monorepo) when
+        // it isn't both configured *and* enabled.
+        const licenseConfig = visConfig?.security?.policies?.license;
+        const licenseConfigured = Boolean(licenseConfig && ((licenseConfig.allow?.length ?? 0) > 0 || (licenseConfig.deny?.length ?? 0) > 0));
+        const licenseEnabled = enabledPolicies === undefined || enabledPolicies.has("license");
+        const manifestData = licenseConfigured && licenseEnabled ? readNodeModulesManifests(workspaceRoot) : undefined;
 
         return evaluatePolicies(
             {

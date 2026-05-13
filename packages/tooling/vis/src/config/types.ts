@@ -15,17 +15,22 @@ interface NativeAuditExclusions {
 
 /**
  * The 8 Socket.dev-style supply-chain policies. Used in `security.policies`
- * and `security.acceptedRisks[*].policies`.
+ * and `security.acceptedRisks[*].policies`. Kept as a const tuple so callers
+ * can import the runtime array (`POLICY_NAMES`) for iteration without
+ * drifting from the union type.
  */
-export type PolicyName =
-    | "firstSeen"
-    | "installScripts"
-    | "license"
-    | "malware"
-    | "publisherChange"
-    | "score"
-    | "unexpectedDeps"
-    | "vulnerability";
+export const POLICY_NAMES = [
+    "firstSeen",
+    "installScripts",
+    "license",
+    "malware",
+    "publisherChange",
+    "score",
+    "unexpectedDeps",
+    "vulnerability",
+] as const;
+
+export type PolicyName = (typeof POLICY_NAMES)[number];
 
 export interface CodeownersConfig {
     /** Workspace-level paths that apply outside any project (e.g., `.github/**`). */
