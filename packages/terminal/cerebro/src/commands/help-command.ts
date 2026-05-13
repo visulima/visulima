@@ -313,6 +313,7 @@ class HelpCommand<TLogger extends Console = Console> implements ICommand<OptionD
             // carries the correctly-resolved command (including nested vs. flat
             // disambiguation by full path). Pass it through so the renderer
             // doesn't re-look up by leaf name.
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, sonarjs/different-types-comparison -- command may be undefined at runtime even though the type says otherwise
             const resolved = command === undefined || command.name === "help" ? undefined : command;
 
             printCommandHelp(logger, runtime as unknown as ICli<Console>, this.commands as unknown as Map<string, ICommand>, commandName, resolved);
