@@ -115,8 +115,8 @@ export const parseTimeStringToMinutes = (input: string): number | undefined => {
 export const parseNpmReleaseAgeValue = (raw: string): number | undefined => {
     const trimmed = raw.trim();
 
-    if (/^\d+$/.test(trimmed)) {
-        return Number.parseInt(trimmed, 10) * 1440;
+    if (/^\d+(?:\.\d+)?$/.test(trimmed)) {
+        return Number.parseFloat(trimmed) * 1440;
     }
 
     return parseTimeStringToMinutes(trimmed);

@@ -349,13 +349,27 @@ const mergeVisConfigs = (parent: VisConfig, child: VisConfig): VisConfig => {
     if (parent.security || child.security) {
         // Deep-merge `policies` and `acceptedRisks` so a preset that sets
         // `security.policies.installScripts.allow` isn't wiped when the
-        // consumer config sets any other policy key. Per-policy bodies
-        // remain shallow-merged to match `mergeSecurityDefaults`.
+        // consumer config sets `security.policies.installScripts.strict`.
+        // Per-policy bodies are merged one level deep — matches
+        // `mergeSecurityDefaults`.
+        const parentPolicies = parent.security?.policies ?? {};
+        const childPolicies = child.security?.policies ?? {};
+        const mergedPolicies: NonNullable<VisConfig["security"]>["policies"] = { ...parentPolicies, ...childPolicies };
+
+        for (const key of Object.keys(parentPolicies) as (keyof typeof parentPolicies)[]) {
+            const parentValue = parentPolicies[key];
+            const childValue = childPolicies[key];
+
+            if (parentValue !== undefined && childValue !== undefined) {
+                mergedPolicies[key] = { ...parentValue, ...childValue } as never;
+            }
+        }
+
         merged.security = {
             ...parent.security,
             ...child.security,
             acceptedRisks: { ...parent.security?.acceptedRisks, ...child.security?.acceptedRisks },
-            policies: { ...parent.security?.policies, ...child.security?.policies },
+            policies: mergedPolicies,
         };
     }
 

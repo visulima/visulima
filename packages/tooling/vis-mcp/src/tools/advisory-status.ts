@@ -39,6 +39,7 @@ export const registerAdvisoryStatus = ({ server }: ToolDeps, context: ToolContex
             inputSchema: {
                 db: z
                     .string()
+                    .min(1)
                     .optional()
                     .describe("Override the cache DB path (default: <cache>/vis/advisories/db.sqlite)."),
             },
@@ -47,7 +48,7 @@ export const registerAdvisoryStatus = ({ server }: ToolDeps, context: ToolContex
             try {
                 const args = ["advisories", "status", "--format", "json"];
 
-                if (input.db) {
+                if (input.db !== undefined) {
                     args.push("--db", input.db);
                 }
 

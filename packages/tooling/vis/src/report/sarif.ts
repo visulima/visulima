@@ -148,6 +148,7 @@ const securitySeverity = (vuln: SecurityVulnerability): string => {
     return SEVERITY_TO_SECURITY_SEVERITY[vuln.severity] ?? "0.0";
 };
 
+/** Builds a SARIF 2.1.0 log from OSV findings plus non-vulnerability policy decisions (one rule per advisory id and per policy name). */
 export const emitSarif = (options: SarifEmitOptions): SarifLog => {
     const rulesById = new Map<string, SarifRule>();
     const results: SarifResult[] = [];

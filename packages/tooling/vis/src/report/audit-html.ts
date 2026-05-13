@@ -130,6 +130,7 @@ const renderRow = (finding: AuditHtmlFinding): string => {
 </tr>`;
 };
 
+/** Renders an audit run (vulnerabilities + non-vulnerability policy decisions) as a self-contained HTML report. */
 export const emitAuditHtml = (options: AuditHtmlEmitOptions): string => {
     const now = options.now ?? new Date();
     const sortedFindings = [...options.findings].sort((a, b) => {

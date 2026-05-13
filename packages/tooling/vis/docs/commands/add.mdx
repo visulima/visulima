@@ -51,7 +51,7 @@ vis add lodash --no-typosquat-check    # Skip typosquat name check
 | `--filter`             | `-F`  |         | Filter by workspace package name                                                                                                                 |
 | `--to`                 |       |         | Target a single workspace package and auto-conform the version to existing catalogs / sibling deps (syncpack#285)                                |
 | `--auto-install-peers` |       | `false` | After adding, recursively install non-optional peer dependencies that aren't already in the workspace (matches nypm's `installPeerDependencies`) |
-| `--run-scripts`        |       | `false` | Run lifecycle scripts (opts out of the universal block-by-default policy; allowlisted packages still run via `security.policies.installScripts.allow`)             |
+| `--run-scripts`        |       | `false` | One-off opt-out: run lifecycle scripts for all packages in this install, overriding the block-by-default policy. The persistent allowlist at `security.policies.installScripts.allow` is the recommended approach for repeated runs. |
 | `--no-typosquat-check` |       | `false` | Skip typosquat name check before adding                                                                                                          |
 | `--no-socket-check`    |       | `false` | Skip Socket.dev security check before adding                                                                                                     |
 

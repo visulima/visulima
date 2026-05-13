@@ -1050,8 +1050,7 @@
                                         "@myorg/*"
                                     ]
                                 }
-                            ],
-                            "default": 0
+                            ]
                         },
                         "installScripts": {
                             "type": "object",
@@ -1250,7 +1249,7 @@
                         }
                     },
                     "additionalProperties": false,
-                    "description": "Supply-chain policy gates. Each sub-block enables one policy and configures its behavior. When a sub-block is omitted the policy is inactive. `acceptedRisks` (above) silences specific packages without disabling a policy globally.\n\nThe 8 policies are inspired by Socket.dev's classification:\n- `malware`            — Socket-flagged malicious packages\n- `firstSeen`         — packages published less than N minutes ago\n- `unexpectedDeps`    — packages outside an allow-list / baseline\n- `publisherChange`   — maintainer set changed between installs\n- `installScripts`    — preinstall/install/postinstall scripts\n- `score`              — Socket overall score below threshold\n- `vulnerability`      — OSV vulnerability findings\n- `license`            — SPDX allow / deny lists"
+                    "description": "Supply-chain policy gates. Each sub-block enables one policy and configures its behavior. Most policies are inactive when their sub-block is omitted — except `installScripts` (defaults to `strict: true`) and `publisherChange` (defaults to `mode: \"no-downgrade\"` with `ignoreAfter: 43200`), which are part of `SECURITY_DEFAULTS` and remain on unless explicitly disabled. `acceptedRisks` (above) silences specific packages without disabling a policy globally.\n\nThe 8 policies are inspired by Socket.dev's classification:\n- `malware`            — Socket-flagged malicious packages\n- `firstSeen`         — packages published less than N minutes ago\n- `unexpectedDeps`    — packages outside an allow-list / baseline\n- `publisherChange`   — maintainer set changed between installs\n- `installScripts`    — preinstall/install/postinstall scripts\n- `score`              — Socket overall score below threshold\n- `vulnerability`      — OSV vulnerability findings\n- `license`            — SPDX allow / deny lists"
                 },
                 "socket": {
                     "type": "object",

@@ -108,6 +108,15 @@ describe(readPmNativeMinimumReleaseAge, () => {
             expect(readPmNativeMinimumReleaseAge(workspaceRoot, "npm").minutes).toBe(2880);
         });
 
+        it("reads decimal day values (npm's option type is Number, not integer)", () => {
+            expect.assertions(1);
+
+            writeFileSync(join(workspaceRoot, ".npmrc"), "min-release-age=1.5\n");
+
+            // 1.5 days = 2160 minutes.
+            expect(readPmNativeMinimumReleaseAge(workspaceRoot, "npm").minutes).toBe(2160);
+        });
+
         it("handles legacy hour and minute units for back-compat", () => {
             expect.assertions(2);
 

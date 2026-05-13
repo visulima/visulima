@@ -158,4 +158,47 @@ describe("vis.config.ts extends chain", () => {
         expect(config.fileGroups?.sources).toStrictEqual(["src/**/*.ts"]);
         expect(config.fileGroups?.tests).toStrictEqual(["**/*.test.ts"]);
     });
+
+    it("deep-merges security.policies sub-bodies across extends (parent allow + child strict survive both)", async () => {
+        // Regression: a shared preset that only sets `installScripts.allow`
+        // must not be wiped when the consumer config sets a different field
+        // (`installScripts.strict`) on the same policy. Prior to the fix the
+        // per-policy bodies merged shallowly so the child object entirely
+        // replaced the parent.
+        expect.assertions(3);
+
+        writeConfig(
+            join(scratch, "shared.config.ts"),
+            `{ security: { policies: { installScripts: { allow: { "esbuild": true } } } } }`,
+        );
+        writeConfig(
+            join(scratch, "vis.config.ts"),
+            `{ extends: ["./shared.config.ts"], security: { policies: { installScripts: { strict: false } } } }`,
+        );
+
+        const config = await loadVisConfig(scratch);
+
+        expect(config.security?.policies?.installScripts?.allow?.esbuild).toBe(true);
+        expect(config.security?.policies?.installScripts?.strict).toBe(false);
+        // publisherChange comes from SECURITY_DEFAULTS — survives the merge.
+        expect(config.security?.policies?.publisherChange?.mode).toBe("no-downgrade");
+    });
+
+    it("merges acceptedRisks entries across extends (parent + child entries both survive)", async () => {
+        expect.assertions(2);
+
+        writeConfig(
+            join(scratch, "shared.config.ts"),
+            `{ security: { acceptedRisks: { "lodash": { reason: "preset", acceptedAt: "2026-01-01" } } } }`,
+        );
+        writeConfig(
+            join(scratch, "vis.config.ts"),
+            `{ extends: ["./shared.config.ts"], security: { acceptedRisks: { "left-pad": { reason: "consumer", acceptedAt: "2026-02-01" } } } }`,
+        );
+
+        const config = await loadVisConfig(scratch);
+
+        expect(config.security?.acceptedRisks?.["lodash"]?.reason).toBe("preset");
+        expect(config.security?.acceptedRisks?.["left-pad"]?.reason).toBe("consumer");
+    });
 });
