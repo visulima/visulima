@@ -98,7 +98,7 @@ const calculateProjectDepths = (projectGraph: ProjectGraph): Map<string, number>
 /**
  * Builds a Map of target-name → cap by walking the task graph and
  * taking the smallest declared `maxConcurrent` for each target name.
- * Values `<= 0` are ignored (treated as "no cap"). Multiple projects
+ * Values `&lt;= 0` are ignored (treated as "no cap"). Multiple projects
  * declaring different caps for the same target name reduce to the min,
  * so a single project pinning `test:e2e` to 1 takes effect even if
  * other projects don't declare a cap.
@@ -142,8 +142,8 @@ const buildGroupCaps = (raw: ConcurrencyGroups | undefined): Map<string, number>
 
 /**
  * Computes the concurrency keys a task holds, in priority-stable
- * order. Each key is `target:<name>` for the per-target cap, or
- * `group:<name>` for a workspace-level cap. Returns an empty array
+ * order. Each key is `target:&lt;name>` for the per-target cap, or
+ * `group:&lt;name>` for a workspace-level cap. Returns an empty array
  * when the task has neither cap, so the hot path stays allocation-free
  * for the common uncapped case.
  */

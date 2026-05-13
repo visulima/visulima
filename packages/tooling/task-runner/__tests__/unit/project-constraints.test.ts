@@ -245,9 +245,9 @@ describe(enforceProjectConstraints, () => {
 
             const graph: ProjectGraph = {
                 dependencies: {
+                    cli: [],
                     "lib-a": [{ source: "lib-a", target: "svc", type: "static" }],
                     "lib-b": [{ source: "lib-b", target: "cli", type: "static" }],
-                    cli: [],
                     svc: [],
                 },
                 nodes: {

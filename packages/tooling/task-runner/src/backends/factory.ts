@@ -24,10 +24,7 @@ export const resolveCacheMode = (options: { mode?: CacheMode }): CacheMode => op
  * use to mean "no remote cache configured." REAPI users are unaffected
  * — the env vars are Turborepo-shaped and only resolve `http` fields.
  */
-export const resolveTurboEnvCompat = (
-    input?: Partial<RemoteCacheOptions>,
-    env: NodeJS.ProcessEnv = process.env,
-): RemoteCacheOptions | undefined => {
+export const resolveTurboEnvCompat = (input?: Partial<RemoteCacheOptions>, env: NodeJS.ProcessEnv = process.env): RemoteCacheOptions | undefined => {
     const backend = input?.backend ?? "http";
 
     if (backend !== "http") {

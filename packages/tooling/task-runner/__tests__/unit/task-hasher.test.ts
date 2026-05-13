@@ -2,7 +2,7 @@ import { mkdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, expectTypeOf, it } from "vitest";
 
 import { computeTaskHash, InProcessTaskHasher } from "../../src/task-hasher";
 import type { FingerprintContributor, Task, TaskHashDetails } from "../../src/types";
@@ -666,7 +666,8 @@ describe(InProcessTaskHasher, () => {
         // Contributions are namespaced under `plugin:` so they can't
         // collide with built-in env: / framework-env: / runtime keys.
         expect(details.runtime?.["plugin:vis-plugin"]).toBeDefined();
-        expect(typeof details.runtime?.["plugin:vis-plugin"]).toBe("string");
+
+        expectTypeOf(details.runtime?.["plugin:vis-plugin"]).toBeString();
     });
 
     it("should hash differently when contributions change value", async () => {
@@ -674,7 +675,9 @@ describe(InProcessTaskHasher, () => {
 
         const makeHasher = (value: string) =>
             new InProcessTaskHasher({
-                onFingerprint: (_task, contributor) => contributor.contribute("schema", value),
+                onFingerprint: (_task, contributor) => {
+                    contributor.contribute("schema", value);
+                },
                 projects: { "lib-a": { root: "packages/lib-a" } },
                 workspaceRoot,
             });
@@ -742,12 +745,16 @@ describe(InProcessTaskHasher, () => {
 
         await expect(
             // @ts-expect-error -- runtime check for plugins without TS
-            makeHasher((c) => c.contribute("", "v")).hashTask(task),
+            makeHasher((c) => {
+                c.contribute("", "v");
+            }).hashTask(task),
         ).rejects.toThrow(/non-empty string key/);
 
         await expect(
             // @ts-expect-error -- runtime check for plugins without TS
-            makeHasher((c) => c.contribute("schema", undefined)).hashTask(task),
+            makeHasher((c) => {
+                c.contribute("schema", undefined);
+            }).hashTask(task),
         ).rejects.toThrow(/string value/);
     });
 

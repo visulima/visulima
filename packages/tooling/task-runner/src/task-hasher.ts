@@ -415,7 +415,9 @@ class InProcessTaskHasher implements TaskHasher {
                     // throws an opaque TypeError) or silently collide
                     // every empty-key contribution under `plugin:`.
                     if (typeof key !== "string" || key.length === 0) {
-                        throw new TypeError(`task:fingerprint contribute() requires a non-empty string key, got ${typeof key === "string" ? "''" : typeof key}`);
+                        throw new TypeError(
+                            `task:fingerprint contribute() requires a non-empty string key, got ${typeof key === "string" ? "''" : typeof key}`,
+                        );
                     }
 
                     if (typeof value !== "string") {

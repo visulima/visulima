@@ -307,10 +307,9 @@ tags = [
   "exposure",
   "backup"
 ]
+
 [[rules.allowlists]]
-paths = [
-  '''(?:^|/)(?:public|static|__fixtures__)/''',
-]
+paths = [ '''(?:^|/)(?:public|static|__fixtures__)/''', ]
 
 [[rules]]
 id = "exposed-tilde-backup"

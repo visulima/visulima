@@ -191,7 +191,9 @@ describe(TaskScheduler, () => {
 const buildSiblingGraph = (
     targetName: string,
     projects: string[],
-    overrides: (project: string) => Partial<Task> = () => ({}),
+    overrides: (project: string) => Partial<Task> = () => {
+        return {};
+    },
 ): { projectGraph: ProjectGraph; taskGraph: TaskGraph } => {
     const tasks: Record<string, Task> = {};
     const dependencies: Record<string, string[]> = {};
@@ -220,11 +222,13 @@ const buildSiblingGraph = (
     };
 };
 
-describe("TaskScheduler concurrency caps", () => {
+describe("taskScheduler concurrency caps", () => {
     it("should serialize tasks of the same target when maxConcurrent=1", () => {
         expect.assertions(4);
 
-        const { projectGraph, taskGraph } = buildSiblingGraph("e2e", ["a", "b", "c"], () => ({ maxConcurrent: 1 }));
+        const { projectGraph, taskGraph } = buildSiblingGraph("e2e", ["a", "b", "c"], () => {
+            return { maxConcurrent: 1 };
+        });
         const scheduler = new TaskScheduler(taskGraph, projectGraph, 8);
 
         // Even with 8 parallel slots, only one e2e task may start at a time.
@@ -249,7 +253,9 @@ describe("TaskScheduler concurrency caps", () => {
     it("should allow up to maxConcurrent tasks of the same target in one batch", () => {
         expect.assertions(2);
 
-        const { projectGraph, taskGraph } = buildSiblingGraph("test", ["a", "b", "c", "d"], () => ({ maxConcurrent: 2 }));
+        const { projectGraph, taskGraph } = buildSiblingGraph("test", ["a", "b", "c", "d"], () => {
+            return { maxConcurrent: 2 };
+        });
         const scheduler = new TaskScheduler(taskGraph, projectGraph, 8);
 
         const batch = scheduler.getNextBatch();
@@ -298,9 +304,11 @@ describe("TaskScheduler concurrency caps", () => {
         expect.assertions(1);
 
         const caps: Record<string, number> = { a: Number.NaN, b: Number.POSITIVE_INFINITY, c: -1 };
-        const { projectGraph, taskGraph } = buildSiblingGraph("test", ["a", "b", "c"], (project) => ({
-            maxConcurrent: caps[project] as number,
-        }));
+        const { projectGraph, taskGraph } = buildSiblingGraph("test", ["a", "b", "c"], (project) => {
+            return {
+                maxConcurrent: caps[project],
+            };
+        });
         const scheduler = new TaskScheduler(taskGraph, projectGraph, 8);
 
         const batch = scheduler.getNextBatch();
@@ -399,7 +407,9 @@ describe("TaskScheduler concurrency caps", () => {
     it("should be idempotent on double startTask / completeTask", () => {
         expect.assertions(3);
 
-        const { projectGraph, taskGraph } = buildSiblingGraph("e2e", ["a", "b"], () => ({ maxConcurrent: 1 }));
+        const { projectGraph, taskGraph } = buildSiblingGraph("e2e", ["a", "b"], () => {
+            return { maxConcurrent: 1 };
+        });
         const scheduler = new TaskScheduler(taskGraph, projectGraph, 8);
 
         const batch1 = scheduler.getNextBatch();
@@ -430,7 +440,9 @@ describe("TaskScheduler concurrency caps", () => {
     it("should ignore maxConcurrent values <= 0", () => {
         expect.assertions(1);
 
-        const { projectGraph, taskGraph } = buildSiblingGraph("test", ["a", "b", "c"], () => ({ maxConcurrent: 0 }));
+        const { projectGraph, taskGraph } = buildSiblingGraph("test", ["a", "b", "c"], () => {
+            return { maxConcurrent: 0 };
+        });
         const scheduler = new TaskScheduler(taskGraph, projectGraph, 8);
 
         const batch = scheduler.getNextBatch();
@@ -520,7 +532,9 @@ describe("TaskScheduler concurrency caps", () => {
     it("should free the cap slot when a task completes", () => {
         expect.assertions(2);
 
-        const { projectGraph, taskGraph } = buildSiblingGraph("e2e", ["a", "b"], () => ({ maxConcurrent: 1 }));
+        const { projectGraph, taskGraph } = buildSiblingGraph("e2e", ["a", "b"], () => {
+            return { maxConcurrent: 1 };
+        });
         const scheduler = new TaskScheduler(taskGraph, projectGraph, 8);
 
         const batch1 = scheduler.getNextBatch();

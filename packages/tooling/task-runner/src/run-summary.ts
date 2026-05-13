@@ -27,6 +27,7 @@ interface TaskSummary {
     hashDetails: TaskHashDetails | undefined;
     /** The task's declared outputs (glob patterns, literals, or `{ auto: true }`). */
     outputs: OutputSpec[];
+
     /**
      * Number of times the task was restarted before producing this final
      * exit code. Omitted when the task completed on its first attempt;
