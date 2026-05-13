@@ -18,12 +18,13 @@ vi.mock(import("node:os"), async (importOriginal) => {
 });
 
 const stubFetch = (response: { body?: unknown; status?: number }): ReturnType<typeof vi.fn> => {
-    const handler = vi.fn(async () =>
-        Promise.resolve({
-            json: async () => Promise.resolve(response.body ?? {}),
+    const handler = vi.fn(async () => {
+        return {
+            json: async () => response.body ?? {},
             ok: (response.status ?? 200) < 400,
             status: response.status ?? 200,
-        }),
+        };
+    },
     );
 
     vi.stubGlobal("fetch", handler);
@@ -129,13 +130,15 @@ describe(runDownloadsMarshall, () => {
         const fetchSpy = stubFetch({ body: { downloads: 5000 } });
 
         await runDownloadsMarshall(["demo"], { cacheTtlMs: 1 });
-        await new Promise((resolve) => setTimeout(resolve, 5));
+        await new Promise((resolve) => {
+            setTimeout(resolve, 5);
+        });
         await runDownloadsMarshall(["demo"], { cacheTtlMs: 1 });
 
         expect(fetchSpy).toHaveBeenCalledTimes(2);
     });
 
-    it("URL-encodes scoped names", async () => {
+    it("uRL-encodes scoped names", async () => {
         expect.assertions(1);
 
         const fetchSpy = stubFetch({ body: { downloads: 5000 } });

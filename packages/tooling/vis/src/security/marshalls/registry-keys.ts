@@ -98,8 +98,12 @@ export const fetchRegistryKeys = async (options: FetchRegistryKeysOptions = {}):
     }
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), DEFAULT_FETCH_TIMEOUT_MS);
-    const abortListener = (): void => controller.abort();
+    const timeout = setTimeout(() => {
+        controller.abort();
+    }, DEFAULT_FETCH_TIMEOUT_MS);
+    const abortListener = (): void => {
+        controller.abort();
+    };
 
     options.signal?.addEventListener("abort", abortListener, { once: true });
 

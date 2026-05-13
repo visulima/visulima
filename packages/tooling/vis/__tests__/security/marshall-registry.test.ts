@@ -39,6 +39,7 @@ describe(envVarFor, () => {
 
 describe(isMarshallDisabled, () => {
     it("returns false when the env is empty", () => {
+        // eslint-disable-next-line vitest/prefer-expect-assertions -- ALL_MARSHALLS is the canonical registry; iteration count tracks it.
         expect.assertions(ALL_MARSHALLS.length);
 
         for (const name of ALL_MARSHALLS) {
@@ -70,6 +71,7 @@ describe(isMarshallDisabled, () => {
     });
 
     it("mARSHALL_DISABLE_ALL disables every marshall", () => {
+        // eslint-disable-next-line vitest/prefer-expect-assertions -- ALL_MARSHALLS is the canonical registry; iteration count tracks it.
         expect.assertions(ALL_MARSHALLS.length);
 
         const env = { MARSHALL_DISABLE_ALL: "1" };

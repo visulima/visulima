@@ -65,7 +65,8 @@ const writeApprovedBuildsToVisConfig = (
 
     if (installScriptsStart !== -1) {
         const slice = original.slice(installScriptsStart);
-        const localMatch = slice.match(/(allow\s*:\s*\{)([^}]*)(\})/);
+        const allowRe = /(allow\s*:\s*\{)([^}]*)(\})/;
+        const localMatch = allowRe.exec(slice);
 
         if (localMatch?.index !== undefined) {
             allowBlockMatch = localMatch;
@@ -100,7 +101,8 @@ const writeApprovedBuildsToVisConfig = (
             return { added: [], configPath, skipped, status: "noop" };
         }
 
-        const indentMatch = blockBody.match(/\n([ \t]+)\S/);
+        const indentRe = /\n([ \t]+)\S/;
+        const indentMatch = indentRe.exec(blockBody);
         const indent = indentMatch?.[1] ?? "                ";
         const insertion = `\n${added.map((e) => renderEntry(e, indent)).join("\n")}`;
         const trimmedBody = blockBody.replace(/\s+$/, "");

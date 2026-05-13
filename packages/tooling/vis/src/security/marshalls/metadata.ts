@@ -108,14 +108,7 @@ const checkRepository = (entry: PackumentVersionEntry): MetadataIssue | undefine
         candidate = `https://${sshShorthand[1]}/${sshShorthand[2]}`;
     }
 
-    try {
-        // eslint-disable-next-line no-new
-        new URL(candidate);
-
-        return undefined;
-    } catch {
-        return "invalid-repo-url";
-    }
+    return URL.canParse(candidate) ? undefined : "invalid-repo-url";
 };
 
 const resolveLatestVersion = (packument: Packument): string | undefined => {

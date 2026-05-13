@@ -34,8 +34,10 @@ export interface RunNewBinMarshallOptions {
 }
 
 /**
+ * Normalize a package's `bin` field to a `{ name -> command }` map.
+ *
  * npm allows `bin` to be either a string (the package's name is the bin) or
- * a record. Normalize to a `{ name -> command }` map.
+ * a record.
  */
 export const normalizeBin = (binField: PackumentVersionEntry["bin"], packageName: string): Record<string, string> => {
     if (binField === undefined) {

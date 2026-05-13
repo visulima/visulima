@@ -5,13 +5,8 @@ import { buildProjectGraph, discoverWorkspace } from "../../config/workspace";
 import { pruneDockerContext, scaffoldDockerContext } from "../../util/docker";
 import type { DockerOptions } from "./index";
 
-/**
- * Handler for `vis docker`. Dispatches the `scaffold` and `prune` subcommands
- * for the focused-context Docker workflow.
- *
- * @param toolbox Cerebro toolbox carrying parsed arguments, options, the resolved
- *                vis config, and the discovered workspace root.
- */
+// Handler for `vis docker`. Dispatches the `scaffold` and `prune` subcommands
+// for the focused-context Docker workflow.
 const execute = async ({ argument, logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, DockerOptions>): Promise<void> => {
     const subcommand = argument[0];
 

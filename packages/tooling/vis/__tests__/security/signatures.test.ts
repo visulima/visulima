@@ -56,11 +56,11 @@ const stubFetchSequence = (responses: StubResponse[]): ReturnType<typeof vi.fn> 
 
         index += 1;
 
-        return Promise.resolve({
-            json: async () => Promise.resolve(response.body ?? {}),
+        return {
+            json: async () => response.body ?? {},
             ok: (response.status ?? 200) < 400,
             status: response.status ?? 200,
-        });
+        };
     });
 
     vi.stubGlobal("fetch", handler);
@@ -68,24 +68,28 @@ const stubFetchSequence = (responses: StubResponse[]): ReturnType<typeof vi.fn> 
     return handler;
 };
 
-const packumentBody = (signatures: { keyid: string; sig: string }[] | undefined, integrity: string | undefined): Record<string, unknown> => ({
-    "dist-tags": { latest: "1.0.0" },
-    name: "demo",
-    versions: {
-        "1.0.0": {
-            dist: {
-                ...(integrity === undefined ? {} : { integrity }),
-                ...(signatures === undefined ? {} : { signatures }),
-                tarball: "https://registry.npmjs.org/demo/-/demo-1.0.0.tgz",
+const packumentBody = (signatures: { keyid: string; sig: string }[] | undefined, integrity: string | undefined): Record<string, unknown> => {
+    return {
+        "dist-tags": { latest: "1.0.0" },
+        name: "demo",
+        versions: {
+            "1.0.0": {
+                dist: {
+                    ...(integrity === undefined ? {} : { integrity }),
+                    ...(signatures === undefined ? {} : { signatures }),
+                    tarball: "https://registry.npmjs.org/demo/-/demo-1.0.0.tgz",
+                },
+                version: "1.0.0",
             },
-            version: "1.0.0",
         },
-    },
-});
+    };
+};
 
-const keysBody = (keys: { expires?: string; key: string; keyid: string }[]): { keys: { expires?: string; key: string; keyid: string }[] } => ({
-    keys,
-});
+const keysBody = (keys: { expires?: string; key: string; keyid: string }[]): { keys: { expires?: string; key: string; keyid: string }[] } => {
+    return {
+        keys,
+    };
+};
 
 describe(runSignatureMarshall, () => {
     beforeEach(() => {
@@ -125,12 +129,10 @@ describe(runSignatureMarshall, () => {
 
         const integrity = "sha512-fakeintegrity==";
         const key = generateKeyMaterial("SHA256:test-key");
-        const realMessage = `demo@1.0.0:${integrity}`;
+        // Sign a *different* message ("other@..." vs the expected "demo@...") so the resulting
+        // signature is guaranteed not to verify under the marshall's reconstructed payload.
         const wrongMessage = `other@1.0.0:${integrity}`;
         const tamperedSignature = key.sign(wrongMessage);
-
-        // Ensure these signatures are genuinely different from one that would verify against realMessage.
-        void realMessage;
 
         stubFetchSequence([
             { body: keysBody([{ key: key.publicKeySpkiBase64, keyid: key.keyid }]) },

@@ -6,8 +6,8 @@ import { runArchivedRepoMarshall } from "../../security/marshalls/archived-repo"
 import { runAuthorMarshall } from "../../security/marshalls/author";
 import { runDownloadsMarshall } from "../../security/marshalls/downloads";
 import { runExpiredDomainsMarshall } from "../../security/marshalls/expired-domains";
-import { formatMarshallFindingsAsJson, formatMarshallFindingsAsTable, MarshallFindings } from "../../security/marshalls/findings";
 import type { MarshallFinding } from "../../security/marshalls/findings";
+import { formatMarshallFindingsAsJson, formatMarshallFindingsAsTable, MarshallFindings } from "../../security/marshalls/findings";
 import { runMetadataMarshall } from "../../security/marshalls/metadata";
 import { runNewBinMarshall } from "../../security/marshalls/new-bin";
 import { getPackument, resolveVersionRange } from "../../security/marshalls/packument";
@@ -33,7 +33,7 @@ const KNOWN_MARSHALLS: ReadonlySet<MarshallName> = new Set([
 ]);
 
 /**
- * Split `<name>` or `<name>@<spec>` into `{ name, spec }`. Scoped names
+ * Split `&lt;name>` or `&lt;name>@&lt;spec>` into `{ name, spec }`. Scoped names
  * keep their leading `@` — the *second* `@` (if any) is the separator.
  */
 const parsePackageArg = (raw: string): ParsedPackageArg | undefined => {
@@ -46,7 +46,7 @@ const parsePackageArg = (raw: string): ParsedPackageArg | undefined => {
     if (trimmed.startsWith("@")) {
         const separator = trimmed.indexOf("@", 1);
 
-        if (separator < 0) {
+        if (separator === -1) {
             return { name: trimmed, spec: undefined };
         }
 
@@ -55,7 +55,7 @@ const parsePackageArg = (raw: string): ParsedPackageArg | undefined => {
 
     const separator = trimmed.indexOf("@");
 
-    if (separator < 0) {
+    if (separator === -1) {
         return { name: trimmed, spec: undefined };
     }
 
@@ -89,7 +89,7 @@ const should = (only: Set<MarshallName> | undefined, name: MarshallName): boolea
  * because npm's signing-key coverage still produces noisy warnings on
  * legitimate packages. Users opt in via `--only signatures`.
  */
-const shouldRunSignatures = (only: Set<MarshallName> | undefined): boolean => only !== undefined && only.has("signatures");
+const shouldRunSignatures = (only: Set<MarshallName> | undefined): boolean => only?.has("signatures") ?? false;
 
 const execute = async ({ argument, options, workspaceRoot: wsRoot }: Toolbox<Console, InspectOptions>): Promise<void> => {
     if (!argument || argument.length === 0) {
@@ -229,7 +229,7 @@ const execute = async ({ argument, options, workspaceRoot: wsRoot }: Toolbox<Con
         }
     }
 
-    const snapshot: readonly MarshallFinding[] = findings.all();
+    const snapshot: ReadonlyArray<MarshallFinding> = findings.all();
 
     if (options.json === true) {
         process.stdout.write(`${JSON.stringify(formatMarshallFindingsAsJson(snapshot), undefined, 2)}\n`);

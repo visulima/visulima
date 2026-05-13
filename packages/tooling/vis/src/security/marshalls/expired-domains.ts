@@ -55,6 +55,7 @@ interface DomainCacheEntry {
 
 const DEFAULT_TTL_MS = 24 * 60 * 60 * 1000;
 const DEFAULT_PER_DOMAIN_TIMEOUT_MS = 4000;
+// eslint-disable-next-line sonarjs/no-hardcoded-ip -- Cloudflare (1.1.1.1) and Google (8.8.8.8) public DNS resolvers used to avoid relying on a possibly-misconfigured system resolver.
 const DEFAULT_DNS_SERVERS = ["1.1.1.1", "8.8.8.8"];
 
 const getExpiredDomainsCacheDir = (): string => join(getVisCacheDir(), "expired-domains");
@@ -137,8 +138,10 @@ const withTimeout = async <T>(promise: Promise<T>, timeoutMs: number): Promise<T
     try {
         return await Promise.race([
             promise,
-            new Promise<T>((_, reject) => {
-                timer = setTimeout(() => { reject(new Error("ETIMEDOUT")); }, timeoutMs);
+            new Promise<T>((_resolve, reject) => {
+                timer = setTimeout(() => {
+                    reject(new Error("ETIMEDOUT"));
+                }, timeoutMs);
             }),
         ]);
     } finally {
@@ -257,6 +260,7 @@ export const runExpiredDomainsMarshall = async (
             return [];
         }
 
+        // eslint-disable-next-line no-underscore-dangle -- `_npmUser` is the npm registry field name.
         const maintainers = collectMaintainers(entry.maintainers, entry._npmUser);
         const seenDomainsForPackage = new Set<string>();
         const localFindings: ExpiredDomainFinding[] = [];

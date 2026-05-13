@@ -198,7 +198,7 @@ describe("inspect handler", () => {
 
         await execute(buildToolbox({ options: { json: true } }) as never);
 
-        const jsonOutput = stdoutSpy.mock.calls.map((call) => String(call[0])).join("");
+        const jsonOutput: string = stdoutSpy.mock.calls.map((call) => String(call[0])).join("");
         const parsed = JSON.parse(jsonOutput.trim()) as { findings: unknown[]; summary: { errorCount: number; warningCount: number } };
 
         expect(parsed.findings).toHaveLength(1);

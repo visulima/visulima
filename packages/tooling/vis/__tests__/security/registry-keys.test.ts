@@ -29,11 +29,11 @@ const stubFetchSequence = (responses: StubResponse[]): ReturnType<typeof vi.fn> 
 
         index += 1;
 
-        return Promise.resolve({
-            json: async () => Promise.resolve(response.body ?? {}),
+        return {
+            json: async () => response.body ?? {},
             ok: (response.status ?? 200) < 400,
             status: response.status ?? 200,
-        });
+        };
     });
 
     vi.stubGlobal("fetch", handler);
@@ -56,7 +56,7 @@ describe(fetchRegistryKeys, () => {
     });
 
     it("fetches keys on first call and caches the result", async () => {
-        expect.assertions(3);
+        expect.assertions(4);
 
         const fetchSpy = stubFetchSequence([
             { body: { keys: [{ key: "base64key", keyid: "SHA256:abc" }] } },
@@ -70,7 +70,8 @@ describe(fetchRegistryKeys, () => {
         const second = await fetchRegistryKeys();
 
         expect(second?.fromCache).toBe(true);
-        void fetchSpy;
+        // First call hit the network; second was served from cache.
+        expect(fetchSpy).toHaveBeenCalledTimes(1);
     });
 
     it("falls back to expired cache when network returns 5xx", async () => {
