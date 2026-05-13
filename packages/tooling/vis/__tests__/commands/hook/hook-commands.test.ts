@@ -42,8 +42,6 @@ const writeHookScript = (root: string, stage: string, body: string): void => {
 
 const noopLogger = { error: (): void => undefined, info: (): void => undefined, warn: (): void => undefined };
 
-// ─── parseStageScript ───────────────────────────────────────────────
-
 describe(parseStageScript, () => {
     it("extracts `# id: name` headers emitted by the migrator", () => {
         expect.assertions(3);
@@ -74,8 +72,6 @@ describe(parseStageScript, () => {
         expect(blocks[0]?.id).toBe("(custom)");
     });
 });
-
-// ─── listHooks ─────────────────────────────────────────────────────
 
 describe(listHooks, () => {
     let temporary: { cleanup: () => void; root: string };
@@ -110,8 +106,6 @@ describe(listHooks, () => {
         expect(formatted.some((line) => line.includes("pre-commit"))).toBe(true);
     });
 });
-
-// ─── validateHooks ──────────────────────────────────────────────────
 
 describe(validateHooks, () => {
     let temporary: { cleanup: () => void; root: string };
@@ -173,8 +167,6 @@ describe(validateHooks, () => {
         expect(result.issues.some((i) => i.message.includes("config.json"))).toBe(true);
     });
 });
-
-// ─── runHookStage ───────────────────────────────────────────────────
 
 const writeConfig = (root: string, stages: HookConfig["stages"]): void => {
     mkdirSync(join(root, ".vis-hooks"), { recursive: true });

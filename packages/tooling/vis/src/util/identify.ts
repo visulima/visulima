@@ -30,7 +30,7 @@ import {
     tagsFromPaths as tagsFromPathsNative,
 } from "#native";
 
-const EXPECTED_BINDING_VERSION = 3;
+const EXPECTED_BINDING_VERSION = 4;
 
 if (NATIVE_BINDING_VERSION !== EXPECTED_BINDING_VERSION) {
     throw new Error(

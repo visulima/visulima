@@ -33,8 +33,6 @@ const detectExistingTools = (cwd: string): string[] => {
     return found;
 };
 
-// ── Interactive prompt helpers ──────────────────────────────────────
-
 /** Prompts the user with a question and returns the trimmed answer. */
 const ask = (rl: ReturnType<typeof createInterface>, question: string): Promise<string> =>
     new Promise((resolve) => {
@@ -55,8 +53,6 @@ const confirm = async (rl: ReturnType<typeof createInterface>, question: string,
     return answer.toLowerCase() === "y" || answer.toLowerCase() === "yes";
 };
 
-// ── Config template ─────────────────────────────────────────────────
-
 interface ConfigInitOptions {
     allowBuilds: Record<string, boolean>;
     enableSocket: boolean;
@@ -68,18 +64,20 @@ const generateConfigContent = (_pm: string, options: ConfigInitOptions): string 
     const sections: string[] = [];
 
     // Security section
-    const allowBuildsEntries = Object.entries(options.allowBuilds)
+    const allowEntries = Object.entries(options.allowBuilds)
         .filter(([, v]) => v)
-        .map(([k]) => `            "${k}": true,`)
+        .map(([k]) => `                    "${k}": true,`)
         .join("\n");
 
-    const allowBuildsBlock = allowBuildsEntries ? `{\n${allowBuildsEntries}\n        }` : "{}";
+    const allowBlock = allowEntries ? `{\n${allowEntries}\n                }` : "{}";
 
-    let securityBlock = `        allowBuilds: ${allowBuildsBlock},`;
+    const policySections: string[] = [`            installScripts: {\n                allow: ${allowBlock},\n            },`];
 
     if (options.minimumReleaseAge !== undefined) {
-        securityBlock += `\n        minimumReleaseAge: ${String(options.minimumReleaseAge)},`;
+        policySections.push(`            firstSeen: {\n                minutes: ${String(options.minimumReleaseAge)},\n            },`);
     }
+
+    let securityBlock = `        policies: {\n${policySections.join("\n")}\n        },`;
 
     if (options.enableSocket) {
         securityBlock += `\n        socket: { enabled: true },`;
@@ -102,8 +100,6 @@ ${sections.join("\n\n")}
 });
 `;
 };
-
-// ── Interactive wizard ──────────────────────────────────────────────
 
 /** Runs the interactive setup wizard, prompting for each configuration option. */
 const runInteractiveInit = async (cwd: string, pm: { name: string; version: string }, configPath: string): Promise<void> => {
@@ -255,8 +251,6 @@ const runInteractiveInit = async (cwd: string, pm: { name: string; version: stri
     pail.notice("  Run 'vis doctor' to see your project's full health status.");
     pail.info("");
 };
-
-// ── Non-interactive init ────────────────────────────────────────────
 
 /** Creates a minimal config file with secure defaults (no prompts). */
 const runStaticInit = (cwd: string, pm: { name: string; version: string }, options: Record<string, unknown>, configPath: string): void => {

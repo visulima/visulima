@@ -13,8 +13,6 @@ import { join } from "@visulima/path";
 import { pail } from "../../../io/logger";
 import type { ExecutionContext } from "./types";
 
-// ── Template files ────────────────────────────────────────────────
-
 const packageJson = (name: string, description: string): string =>
     `${JSON.stringify(
         {
@@ -77,8 +75,6 @@ export const generate = (): void => {
     // TODO: Implement your generator logic here
 };
 `;
-
-// ── Executor ──────────────────────────────────────────────────────
 
 /**
  * Scaffold a code generator package with a bin entry point.

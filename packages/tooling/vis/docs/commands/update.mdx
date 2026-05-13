@@ -57,6 +57,7 @@ vis update --rollback               # Restore catalog from last backup
 | `--install`                 |       | `true`   | Run install after catalog update (`--no-install` to skip)                       |
 | `--rollback`                |       | `false`  | Restore catalog file from the last backup                                       |
 | `--no-typosquat-check`      |       | `false`  | Skip typosquat name check for package arguments                                 |
+| `--no-marshall-check`       |       | `false`  | Skip the offline marshall pipeline when explicit package arguments are supplied (author, provenance, metadata, downloads, expired-domains, new-bin, archived-repo). Blanket `vis update` never runs the pipeline. |
 | `--max-concurrent-requests` |       | `8`      | Cap concurrent registry requests during outdated checks (catalog)               |
 | `--release-channel`         |       | `stable` | Channel filter: `stable`, `same` (match current's prerelease channel), or `any` |
 
@@ -172,7 +173,7 @@ Values that reference other dependencies (e.g., `"$react"` in npm overrides) are
 
 The `update.minimumReleaseAge` setting (in minutes) filters out versions published too recently, so you don't adopt packages that might be yanked or found malicious shortly after publishing.
 
-This is separate from `security.minimumReleaseAge` (which applies at install time). The update setting is **not enabled by default** — all published versions are eligible for updates unless you opt in.
+This is separate from `security.policies.firstSeen.minutes` (which applies at install time). The update setting is **not enabled by default** — all published versions are eligible for updates unless you opt in.
 
 ```typescript
 export default defineConfig({

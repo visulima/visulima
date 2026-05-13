@@ -5,15 +5,11 @@ import React from "react";
 
 import type { GraphFilterType, GraphNode } from "./graph-store";
 
-// ── Filter bar labels ───────────────────────────────────────────────────
-
 const FILTER_LABELS: { key: GraphFilterType; label: string; shortcut: string }[] = [
     { key: "all", label: "All", shortcut: "1" },
     { key: "app", label: "Apps", shortcut: "2" },
     { key: "lib", label: "Libs", shortcut: "3" },
 ];
-
-// ── Sub-components ──────────────────────────────────────────────────────
 
 interface ProjectRowProps {
     isSelected: boolean;
@@ -74,8 +70,6 @@ const TypeHeader = ({ count, label }: TypeHeaderProps): React.JSX.Element => (
         </Text>
     </Box>
 );
-
-// ── Main Component ──────────────────────────────────────────────────────
 
 interface ProjectListPanelProps {
     filterActive: boolean;

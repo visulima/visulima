@@ -18,8 +18,6 @@ const errorMessage = (error: unknown): string => {
     return String(error);
 };
 
-// ── Package argument parsing ────────────────────────────────────────
-
 const VERSION_SPEC_REGEX = /^(.+?)(?:@(.+))?$/;
 
 /**

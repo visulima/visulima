@@ -101,7 +101,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
         }
 
         // Also fetch Socket.dev report if enabled
-        const socketOptions = buildSocketOptions(visConfig?.security?.socket);
+        const socketOptions = buildSocketOptions(visConfig?.security?.socket, visConfig?.security?.policies?.score?.minimum);
 
         if (socketOptions) {
             const reports = await fetchSocketReports([{ name: packageName, version }], socketOptions);

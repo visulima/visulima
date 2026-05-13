@@ -14,8 +14,6 @@ import { join } from "@visulima/path";
 
 import type { NativeAuditExclusions } from "./types";
 
-// ── Shared helpers ──────────────────────────────────────────────────
-
 /** Safely coerces a YAML value to a string array. */
 const toStringArray = (value: unknown): string[] => {
     if (!Array.isArray(value)) {
@@ -39,8 +37,6 @@ const matchesGlobList = (value: string, patterns: string[]): boolean => {
 
     return false;
 };
-
-// ── Readers (use @visulima/fs readYamlSync for proper parsing) ──────
 
 interface PnpmWorkspaceYaml {
     auditConfig?: {
@@ -126,8 +122,6 @@ const isAdvisoryExcluded = (vulnId: string, exclusions: NativeAuditExclusions, a
 };
 
 const isPackageExcluded = (packageName: string, exclusions: NativeAuditExclusions): boolean => matchesGlobList(packageName, exclusions.excludedPackages);
-
-// ── Writers (sync vis → native PM config) ───────────────────────────
 
 const syncAcceptedRisksToNativeConfig = (pm: string, workspaceRoot: string, advisoryIds: string[]): string[] => {
     if (advisoryIds.length === 0) {

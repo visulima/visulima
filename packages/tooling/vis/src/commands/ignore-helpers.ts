@@ -9,8 +9,6 @@ import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
 
-// ─── Constants ───────────────────────────────────────────────────────
-
 /** Commit-message tokens that unconditionally skip the build. */
 const SKIP_TOKENS = ["[skip ci]", "[ci skip]", "[no ci]", "[vis skip]", "[nx skip]"] as const;
 
@@ -56,8 +54,6 @@ const CI_BASE_SHA_ENV_VARS = [
  */
 const GIT_REF_RE = /^[\w./~^@{}][\w.\-/~^@{}]*$/;
 
-// ─── Types ───────────────────────────────────────────────────────────
-
 /** Machine-readable reason codes for the ignore decision. */
 type IgnoreReason
     = | "commit-force-deploy"
@@ -92,8 +88,6 @@ interface IgnoreDecision {
 
 /** Extra fields that decisions from the affected-detection path carry. */
 type DecisionExtras = Partial<Pick<IgnoreDecision, "affectedProjects" | "base" | "head">>;
-
-// ─── Helpers ─────────────────────────────────────────────────────────
 
 /**
  * Returns the first non-empty value from the CI env var priority list,

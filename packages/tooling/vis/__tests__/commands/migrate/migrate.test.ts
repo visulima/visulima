@@ -28,8 +28,6 @@ import {
 } from "../../../src/commands/migrate/lint-staged";
 import { addManualStep, addMigrationWarning, createMigrationReport } from "../../../src/commands/migrate/types";
 
-// ─── Helpers ────────────────────────────────────────────────────────
-
 const createTemporaryDirectory = (): { cleanup: () => void; root: string } => {
     const root = mkdtempSync(join(tmpdir(), "vis-migrate-test-"));
 
@@ -52,8 +50,6 @@ const createLogger = (): { info: (message: string) => void; messages: string[]; 
         warnings,
     };
 };
-
-// ─── MigrationReport (unit) ────────────────────────────────────────
 
 describe("migrationReport", () => {
     it("should create empty report", () => {
@@ -102,8 +98,6 @@ describe("migrationReport", () => {
         expect(true).toBe(true);
     });
 });
-
-// ─── JSON utilities (unit) ─────────────────────────────────────────
 
 describe("json utilities", () => {
     let temporary: { cleanup: () => void; root: string };
@@ -189,8 +183,6 @@ describe("json utilities", () => {
     });
 });
 
-// ─── detectLintStagedConfig (unit) ─────────────────────────────────
-
 describe(detectLintStagedConfig, () => {
     let temporary: { cleanup: () => void; root: string };
 
@@ -246,8 +238,6 @@ describe(detectLintStagedConfig, () => {
     });
 });
 
-// ─── hasStandaloneLintStagedConfig (unit) ──────────────────────────
-
 describe(hasStandaloneLintStagedConfig, () => {
     let temporary: { cleanup: () => void; root: string };
 
@@ -281,8 +271,6 @@ describe(hasStandaloneLintStagedConfig, () => {
         expect(hasStandaloneLintStagedConfig(temporary.root)).toBe(false);
     });
 });
-
-// ─── hasUnsupportedLintStagedConfig (unit) ─────────────────────────
 
 describe(hasUnsupportedLintStagedConfig, () => {
     let temporary: { cleanup: () => void; root: string };
@@ -326,8 +314,6 @@ describe(hasUnsupportedLintStagedConfig, () => {
     });
 });
 
-// ─── hasStagedConfigInVisConfig (unit) ─────────────────────────────
-
 describe(hasStagedConfigInVisConfig, () => {
     let temporary: { cleanup: () => void; root: string };
 
@@ -362,8 +348,6 @@ describe(hasStagedConfigInVisConfig, () => {
     });
 });
 
-// ─── extractLintStagedFromPackageJson (unit) ───────────────────────
-
 describe(extractLintStagedFromPackageJson, () => {
     let temporary: { cleanup: () => void; root: string };
 
@@ -394,8 +378,6 @@ describe(extractLintStagedFromPackageJson, () => {
     });
 });
 
-// ─── generateStagedConfigSnippet (unit) ────────────────────────────
-
 describe(generateStagedConfigSnippet, () => {
     it("should generate snippet for string commands", () => {
         expect.assertions(2);
@@ -415,8 +397,6 @@ describe(generateStagedConfigSnippet, () => {
         expect(snippet).toContain("\"stylelint\"");
     });
 });
-
-// ─── insertStagedIntoVisConfig (unit) ──────────────────────────────
 
 describe(insertStagedIntoVisConfig, () => {
     let temporary: { cleanup: () => void; root: string };
@@ -476,8 +456,6 @@ describe(insertStagedIntoVisConfig, () => {
         expect(content).toContain("staged:");
     });
 });
-
-// ─── removeLintStagedFromPackageJson (unit) ────────────────────────
 
 describe(removeLintStagedFromPackageJson, () => {
     let temporary: { cleanup: () => void; root: string };
@@ -552,8 +530,6 @@ describe(removeLintStagedFromPackageJson, () => {
     });
 });
 
-// ─── removeLintStagedConfigFiles (unit) ────────────────────────────
-
 describe(removeLintStagedConfigFiles, () => {
     let temporary: { cleanup: () => void; root: string };
 
@@ -580,8 +556,6 @@ describe(removeLintStagedConfigFiles, () => {
         expect(report.removedConfigCount).toBe(2);
     });
 });
-
-// ─── rewritePreCommitHook (unit) ──────────────────────────────────
 
 describe(rewritePreCommitHook, () => {
     let temporary: { cleanup: () => void; root: string };
@@ -685,8 +659,6 @@ describe(rewritePreCommitHook, () => {
     });
 });
 
-// ─── rewriteScripts (deps) (unit) ─────────────────────────────────
-
 describe(rewriteScripts, () => {
     it("should remove standalone husky script", () => {
         expect.assertions(2);
@@ -728,8 +700,6 @@ describe(rewriteScripts, () => {
         expect(result.scripts).toStrictEqual({ build: "tsc", test: "vitest" });
     });
 });
-
-// ─── rewritePackageJson (deps) (unit) ─────────────────────────────
 
 describe(rewritePackageJson, () => {
     let temporary: { cleanup: () => void; root: string };
@@ -948,8 +918,6 @@ describe(rewritePackageJson, () => {
     });
 });
 
-// ─── migrateLintStaged (integration) ──────────────────────────────
-
 describe(migrateLintStaged, () => {
     let temporary: { cleanup: () => void; root: string };
 
@@ -1107,8 +1075,6 @@ describe(migrateLintStaged, () => {
     });
 });
 
-// ─── parseLintStagedJsonFile (unit) ────────────────────────────────
-
 describe(parseLintStagedJsonFile, () => {
     let temporary: { cleanup: () => void; root: string };
 
@@ -1147,8 +1113,6 @@ describe(parseLintStagedJsonFile, () => {
     });
 });
 
-// ─── editJsonFile edge cases (unit) ───────────────────────────────
-
 describe("editJsonFile edge cases", () => {
     let temporary: { cleanup: () => void; root: string };
 
@@ -1185,8 +1149,6 @@ describe("editJsonFile edge cases", () => {
     });
 });
 
-// ─── insertStagedIntoVisConfig edge cases (unit) ──────────────────
-
 describe("insertStagedIntoVisConfig edge cases", () => {
     let temporary: { cleanup: () => void; root: string };
 
@@ -1208,8 +1170,6 @@ describe("insertStagedIntoVisConfig edge cases", () => {
         expect(insertStagedIntoVisConfig(temporary.root, { "*.ts": "eslint" }, logger)).toBe(false);
     });
 });
-
-// ─── rewriteScripts edge cases (unit) ─────────────────────────────
 
 describe("rewriteScripts edge cases", () => {
     it("should remove husky install standalone", () => {
@@ -1273,8 +1233,6 @@ describe("rewriteScripts edge cases", () => {
     });
 });
 
-// ─── rewritePackageJson edge cases (unit) ─────────────────────────
-
 describe("rewritePackageJson edge cases", () => {
     let temporary: { cleanup: () => void; root: string };
 
@@ -1337,8 +1295,6 @@ describe("rewritePackageJson edge cases", () => {
         expect(report.removedPackageCount).toBe(0);
     });
 });
-
-// ─── updatePnpmWorkspaceCatalog (unit) ────────────────────────────
 
 describe(updatePnpmWorkspaceCatalog, () => {
     let temporary: { cleanup: () => void; root: string };
@@ -1409,8 +1365,6 @@ describe(updatePnpmWorkspaceCatalog, () => {
         expect(content).toContain("newpkg: \"^1.0.0\"");
     });
 });
-
-// ─── migrateDeps (integration) ────────────────────────────────────
 
 describe(migrateDeps, () => {
     let temporary: { cleanup: () => void; root: string };
@@ -1495,8 +1449,6 @@ describe(migrateDeps, () => {
     });
 });
 
-// ─── constants (unit) ──────────────────────────────────────────────
-
 describe("constants", () => {
     it("should have expected replaced packages", () => {
         expect.assertions(2);
@@ -1522,8 +1474,6 @@ describe("constants", () => {
         expect(STALE_LINT_STAGED_PATTERNS[1]?.test("lint-staged --verbose")).toBe(true);
     });
 });
-
-// ─── migrateLintStaged edge cases (integration) ───────────────────
 
 describe("migrateLintStaged edge cases", () => {
     let temporary: { cleanup: () => void; root: string };

@@ -14,8 +14,6 @@ import { join } from "@visulima/path";
 import { pail } from "../../../io/logger";
 import type { ExecutionContext } from "./types";
 
-// ── Template files ────────────────────────────────────────────────
-
 // The monorepo template always uses pnpm since it generates pnpm-workspace.yaml.
 const rootPackageJson = (name: string): string =>
     `${JSON.stringify(
@@ -122,8 +120,6 @@ pnpm test
 └── package.json
 \`\`\`
 `;
-
-// ── Executor ──────────────────────────────────────────────────────
 
 /**
  * Scaffold a pnpm monorepo workspace with apps/ and packages/ directories.

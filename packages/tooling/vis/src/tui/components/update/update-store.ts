@@ -1,8 +1,6 @@
 import type { AiAnalysisResult, AiRecommendation } from "../../../ai/ai-analysis";
 import type { OutdatedEntry } from "../../../util/catalog";
 
-// ── State Shape ─────────────────────────────────────────────────────────
-
 export type FilterType = "all" | "major" | "minor" | "patch" | "security";
 export type UpdatePhase = "applying" | "browsing" | "done" | "error";
 
@@ -36,8 +34,6 @@ export interface UpdateState {
 }
 
 type Listener = () => void;
-
-// ── Helpers ─────────────────────────────────────────────────────────────
 
 const groupByCatalog = (entries: OutdatedEntry[]): Map<string, OutdatedEntry[]> => {
     const map = new Map<string, OutdatedEntry[]>();
@@ -74,8 +70,6 @@ const filterEntries = (entries: OutdatedEntry[], filterType: FilterType, filterT
     return filtered;
 };
 
-// ── UpdateStore ─────────────────────────────────────────────────────────
-
 export class UpdateStore {
     #state: UpdateState;
 
@@ -109,8 +103,6 @@ export class UpdateStore {
         };
     }
 
-    // ── React integration ───────────────────────────────────────────
-
     public getSnapshot = (): UpdateState => this.#state;
 
     public subscribe = (listener: Listener): (() => void) => {
@@ -120,8 +112,6 @@ export class UpdateStore {
             this.#listeners.delete(listener);
         };
     };
-
-    // ── Derived data ────────────────────────────────────────────────
 
     /** Get the currently filtered + visible entries. */
     public getFilteredEntries(): OutdatedEntry[] {
@@ -138,8 +128,6 @@ export class UpdateStore {
         return this.#allEntries.filter((e) => this.#state.checkedEntries.has(e.packageName));
     }
 
-    // ── Navigation ──────────────────────────────────────────────────
-
     public setSelectedIndex(index: number): void {
         const filtered = this.getFilteredEntries();
         const clamped = Math.max(0, Math.min(index, filtered.length - 1));
@@ -154,8 +142,6 @@ export class UpdateStore {
             this.#emit({ ...this.#state, focusedPanel: panel });
         }
     }
-
-    // ── Filtering ───────────────────────────────────────────────────
 
     public setFilterType(type: FilterType): void {
         if (type !== this.#state.filterType) {
@@ -202,8 +188,6 @@ export class UpdateStore {
         }
     }
 
-    // ── Selection ───────────────────────────────────────────────────
-
     public toggleCheck(packageName: string): void {
         const checked = new Set(this.#state.checkedEntries);
 
@@ -244,8 +228,6 @@ export class UpdateStore {
         }
     }
 
-    // ── Apply lifecycle ─────────────────────────────────────────────
-
     public startApply(): void {
         const checked = this.getCheckedEntries();
 
@@ -272,8 +254,6 @@ export class UpdateStore {
     public setError(error: string): void {
         this.#emit({ ...this.#state, error, phase: "error" });
     }
-
-    // ── Internal ────────────────────────────────────────────────────
 
     #emit(newState: UpdateState): void {
         this.#state = newState;

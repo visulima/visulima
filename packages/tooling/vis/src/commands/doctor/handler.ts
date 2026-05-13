@@ -43,8 +43,6 @@ import type { DoctorResults, SectionId, SectionStatus } from "./sections";
 import { buildJsonPayload, resolveSections, sectionStatus, shouldFail, summarizeOptimizations } from "./sections";
 import { buildSupplyChainPosture } from "./supply-chain";
 
-// ── Scan orchestration ──────────────────────────────────────────────
-
 interface ScanContext {
     /** --filter regexes applied to per-section findings before they hit the store/results. */
     filterPatterns: ReadonlyArray<RegExp>;
@@ -164,8 +162,12 @@ const streamScans = async (context: ScanContext): Promise<Omit<DoctorResults, "e
     // Build scan config
     const npmrcConfig = loadNpmrc(workspaceRoot);
     const catalogs = readCatalogs(workspaceRoot, packageManager);
-    const socketOptions = buildSocketOptions(visConfig?.security?.socket);
-    const acceptedRisks = visConfig?.security?.socket?.acceptedRisks;
+    const socketOptions = buildSocketOptions(visConfig?.security?.socket, visConfig?.security?.policies?.score?.minimum);
+    // Effective low-score threshold for every doctor check site. `buildSocketOptions`
+    // returns `undefined` when Socket is disabled, so fall back to the config value
+    // (or `DEFAULT_LOW_SCORE_THRESHOLD`) for sites that compute against scores.
+    const scoreMinimum = socketOptions?.minimumScore ?? visConfig?.security?.policies?.score?.minimum ?? DEFAULT_LOW_SCORE_THRESHOLD;
+    const acceptedRisks = visConfig?.security?.acceptedRisks;
     const lockText = readLockfileText(workspaceRoot, pm.name);
 
     const checkOptions: CatalogCheckOptions = {
@@ -293,7 +295,7 @@ const streamScans = async (context: ScanContext): Promise<Omit<DoctorResults, "e
                     for (const report of reports.values()) {
                         alerts += report.alerts.length;
 
-                        if (report.score.overall < DEFAULT_LOW_SCORE_THRESHOLD) {
+                        if (report.score.overall < scoreMinimum) {
                             low += 1;
                         }
                     }
@@ -458,7 +460,7 @@ const streamScans = async (context: ScanContext): Promise<Omit<DoctorResults, "e
         for (const report of socketReports.values()) {
             socketAlerts += report.alerts.length;
 
-            if (report.score.overall < DEFAULT_LOW_SCORE_THRESHOLD) {
+            if (report.score.overall < scoreMinimum) {
                 socketLowScore += 1;
             }
         }
@@ -496,8 +498,6 @@ const streamScans = async (context: ScanContext): Promise<Omit<DoctorResults, "e
         workspaceCount: workspaceDirectories.length,
     };
 };
-
-// ── Display ─────────────────────────────────────────────────────────
 
 const sectionIcon = (status: SectionStatus): string => {
     switch (status) {
@@ -779,8 +779,6 @@ const displayResults = (results: DoctorResults, quiet: boolean): void => {
     displaySummary(results, quiet);
 };
 
-// ── Scan task list ──────────────────────────────────────────────────
-
 interface BannerInputs {
     nodeVersion: string;
     packageManagerName: string;
@@ -841,8 +839,6 @@ const printBanner = (input: BannerInputs): void => {
     pail.log("");
 };
 
-// ── Main execute ────────────────────────────────────────────────────
-
 const execute = async ({ logger, options, visConfig, visConfigError, workspaceRoot: wsRoot }: Toolbox<Console, DoctorOptions>): Promise<void> => {
     if (!wsRoot) {
         throw new Error("Could not determine workspace root.");
@@ -891,6 +887,10 @@ const execute = async ({ logger, options, visConfig, visConfigError, workspaceRo
     const installed = lockedPackages(wsRoot, pm.name);
     const installedCount = installed.length;
     const socketEnabled = Boolean(buildSocketOptions(visConfig?.security?.socket));
+    // Effective Socket low-score threshold for `applyFilter` and any other
+    // post-scan aggregation in `execute`. Sourced from
+    // `security.policies.score.minimum` (or the hard-coded default).
+    const scoreMinimum = visConfig?.security?.policies?.score?.minimum ?? DEFAULT_LOW_SCORE_THRESHOLD;
     const workspaceDirectories = discoverWorkspacePackages(wsRoot);
 
     if (!isJson && !quiet && !wantsInteractive) {
@@ -1015,7 +1015,7 @@ const execute = async ({ logger, options, visConfig, visConfigError, workspaceRo
         }
     }
 
-    const results = applyFilter(fullResults, filterPatterns);
+    const results = applyFilter(fullResults, filterPatterns, scoreMinimum);
 
     // JSON output
     if (isJson) {
@@ -1075,8 +1075,6 @@ const execute = async ({ logger, options, visConfig, visConfigError, workspaceRo
         process.exitCode = 1;
     }
 };
-
-// ── --fix flow ──────────────────────────────────────────────────────
 
 interface PmLike {
     name: string;

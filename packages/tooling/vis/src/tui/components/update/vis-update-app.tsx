@@ -13,15 +13,11 @@ import PackageDetailPanel from "./package-detail-panel";
 import PackageListPanel from "./package-list-panel";
 import type { FilterType, UpdateStore } from "./update-store";
 
-// ── Layout constants ────────────────────────────────────────────────────
-
 const MIN_HORIZONTAL_WIDTH = 100;
 const MIN_VIEWPORT_WIDTH = 40;
 const MIN_VIEWPORT_HEIGHT = 10;
 const EMPTY_ENTRIES: OutdatedEntry[] = [];
 const FILTER_TABS: FilterType[] = ["all", "major", "minor", "patch", "security"];
-
-// ── Component ───────────────────────────────────────────────────────────
 
 interface VisUpdateAppProps {
     /** 0 = no auto-exit (default), >0 = countdown seconds */
@@ -127,8 +123,6 @@ const VisUpdateApp = ({
     useEffect(() => {
         detailScrollRef.current?.scrollToTop();
     }, [selectedEntry?.packageName]);
-
-    // ── Keyboard handling ───────────────────────────────────────────
 
     useInput(
         (input, key) => {
@@ -403,8 +397,6 @@ const VisUpdateApp = ({
         { isActive: true },
     );
 
-    // ── Layout ──────────────────────────────────────────────────────
-
     if (columns < MIN_VIEWPORT_WIDTH || rows < MIN_VIEWPORT_HEIGHT) {
         return (
             <Box alignItems="center" height={rows} justifyContent="center" width={columns}>
@@ -420,8 +412,6 @@ x
     }
 
     const isHorizontal = columns >= MIN_HORIZONTAL_WIDTH;
-
-    // ── Footer ──────────────────────────────────────────────────────
 
     const footerItems: React.JSX.Element[] = [
         <Box gap={1} key="q">
@@ -510,8 +500,6 @@ FILTERED (
             </Box>
         </Box>
     );
-
-    // ── Help dialog ─────────────────────────────────────────────────
 
     const helpPopup = (
         <Dialog
@@ -670,8 +658,6 @@ FILTERED (
         </Dialog>
     );
 
-    // ── Confirm dialog ──────────────────────────────────────────────
-
     const checkedList = store.getCheckedEntries();
     const majorCount = checkedList.filter((e) => e.updateType === "major").length;
 
@@ -744,8 +730,6 @@ major update
         </Dialog>
     );
 
-    // ── Filtered-out dialog ───────────────────────────────────────
-
     const filteredOutDialog
         = filteredOutEntries.length > 0
             ? (
@@ -809,8 +793,6 @@ major update
             )
             : null;
 
-    // ── Panels ──────────────────────────────────────────────────────
-
     const listPanel = (
         <PackageListPanel
             checkedEntries={state.checkedEntries}
@@ -842,8 +824,6 @@ major update
         />
     );
 
-    // ── Horizontal layout ───────────────────────────────────────────
-
     if (isHorizontal) {
         const detailWidth = Math.floor(columns * 0.35);
 
@@ -867,8 +847,6 @@ major update
             </Box>
         );
     }
-
-    // ── Vertical layout ─────────────────────────────────────────────
 
     const listHeight = Math.floor(rows * 0.55);
 

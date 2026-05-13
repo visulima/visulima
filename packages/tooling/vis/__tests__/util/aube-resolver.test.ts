@@ -114,16 +114,13 @@ describe(resolveAubeInstall, () => {
         });
 
         expect(args).toStrictEqual([
-            // ── globals (in pushFilterGlobals + post-globals order) ──
             "--filter",
             "@scope/a",
             "--recursive",
             "--workspace-root",
             "--silent",
             "--frozen-lockfile",
-            // ── subcommand ──
             "install",
-            // ── install-level flags (in source-defined order) ──
             "--dev",
             "--force",
             "--no-optional",

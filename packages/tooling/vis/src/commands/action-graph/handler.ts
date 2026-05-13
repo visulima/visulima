@@ -118,7 +118,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
 
     const taskGraph = createTaskGraph(initialTasks, {
         projectGraph,
-        targetDefaults: config.targetDefaults as unknown as Record<string, Partial<TargetConfiguration>>,
+        targetDefaults: config.tasks as unknown as Record<string, Partial<TargetConfiguration>>,
         workspace,
     });
 

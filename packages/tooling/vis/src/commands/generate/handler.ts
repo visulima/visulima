@@ -294,7 +294,6 @@ const execute = async ({ argument, options, rawUnknown, visConfig, workspaceRoot
 
     const input = ownArgs[0];
 
-    // ── Remote source ────────────────────────────────────────
     let remoteCleanup: (() => void) | undefined;
 
     if (input && isRemoteSource(input)) {
@@ -357,7 +356,6 @@ const execute = async ({ argument, options, rawUnknown, visConfig, workspaceRoot
         templateDestination = template.destination;
     }
 
-    // ── Destination ──────────────────────────────────────────
     const toFlag = options.to;
     const dryRun = Boolean(options.dryRun);
     const force = Boolean(options.force);
@@ -377,7 +375,6 @@ const execute = async ({ argument, options, rawUnknown, visConfig, workspaceRoot
 
     const destination = isAbsolute(destinationInput) ? destinationInput : resolve(cwd, destinationInput);
 
-    // ── Options collection ───────────────────────────────────
     pail.info(`Template: ${bold(cyan(templateName))}`);
     pail.info(`Target:   ${dim(destination)}`);
     process.stderr.write("\n");
@@ -389,7 +386,6 @@ const execute = async ({ argument, options, rawUnknown, visConfig, workspaceRoot
         variables: template.options ?? {},
     });
 
-    // ── Run ──────────────────────────────────────────────────
     try {
         await runTemplate(template, {
             cwd,

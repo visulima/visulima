@@ -7,7 +7,10 @@ import { spawnSync } from "node:child_process";
  *   - `all`:    `--all-files` equivalent; `git ls-files`
  *   - `range`:  `--from-ref/--to-ref`; `git diff &lt;from>..&lt;to>` with ACM
  */
-export type DiscoverMode = { kind: "all" } | { fromRef: string; kind: "range"; toRef: string } | { kind: "staged" };
+export type DiscoverMode =
+    | { kind: "all" }
+    | { fromRef: string; kind: "range"; toRef: string }
+    | { kind: "staged" };
 
 /**
  * Split a NUL-delimited git output buffer into filenames. We walk the

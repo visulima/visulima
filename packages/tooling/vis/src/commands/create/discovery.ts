@@ -10,8 +10,6 @@
 
 import type { TemplateConfig, TemplateType } from "./templates/types";
 
-// ── Built-in templates ────────────────────────────────────────────
-
 const BUILTIN_MAP: Record<string, TemplateType> = {
     "vis:app": "builtin:app",
     "vis:application": "builtin:app",
@@ -20,8 +18,6 @@ const BUILTIN_MAP: Record<string, TemplateType> = {
     "vis:library": "builtin:library",
     "vis:monorepo": "builtin:monorepo",
 };
-
-// ── Git URL detection ─────────────────────────────────────────────
 
 /**
  * All prefixes that route to giget's `downloadTemplate` (remote:git).
@@ -77,8 +73,6 @@ export const isGitUrl = (input: string): boolean => {
     return !input.startsWith("@") && /^[^/#@][^/#]*\/[^/#]+/.test(input);
 };
 
-// ── npm shorthand expansion ───────────────────────────────────────
-
 /**
  * Names that are used as direct npm executables (not `create-*` packages).
  * These must not be expanded — they are passed directly to `dlx` and
@@ -127,8 +121,6 @@ export const expandCreateShorthand = (name: string): string => {
     return `create-${name}`;
 };
 
-// ── Main discovery ────────────────────────────────────────────────
-
 /**
  * Given the raw template string from the user, determine what kind of
  * template it is and return a resolved {@link TemplateConfig}.
@@ -157,8 +149,6 @@ export const discoverTemplate = (input: string, extraArgs: string[] = []): Templ
     // 3. Assume npm create package
     return { args: extraArgs, source: expandCreateShorthand(input), type: "remote:npm" };
 };
-
-// ── Parent directory inference ─────────────────────────────────────
 
 /**
  * Suggest the most appropriate parent directory for a new project based on

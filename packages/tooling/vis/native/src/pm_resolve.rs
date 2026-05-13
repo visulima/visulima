@@ -34,7 +34,6 @@ fn is_pnpm_v11_plus(version: &str) -> Option<bool> {
     parse_major(version).map(|major| major >= 11)
 }
 
-// ── Install ──────────────────────────────────────────────────────────
 
 #[napi(object)]
 pub struct InstallOptions {
@@ -237,7 +236,6 @@ pub fn resolve_install(pm: String, version: String, opts: InstallOptions) -> nap
     Ok(ResolvedCommand { bin: pm, args, warnings })
 }
 
-// ── Add ──────────────────────────────────────────────────────────────
 
 #[napi(object)]
 pub struct AddOptions {
@@ -438,7 +436,6 @@ pub fn resolve_add(pm: String, version: String, opts: AddOptions) -> napi::Resul
     Ok(ResolvedCommand { bin: pm, args, warnings })
 }
 
-// ── Remove ───────────────────────────────────────────────────────────
 
 #[napi(object)]
 pub struct RemoveOptions {
@@ -560,7 +557,6 @@ pub fn resolve_remove(pm: String, version: String, opts: RemoveOptions) -> napi:
     Ok(ResolvedCommand { bin: pm, args, warnings })
 }
 
-// ── Dedupe ───────────────────────────────────────────────────────────
 
 #[napi(catch_unwind)]
 pub fn resolve_dedupe(pm: String, version: String, check: bool) -> napi::Result<ResolvedCommand> {
@@ -609,7 +605,6 @@ pub fn resolve_dedupe(pm: String, version: String, check: bool) -> napi::Result<
     Ok(ResolvedCommand { bin: pm, args, warnings })
 }
 
-// ── Why ──────────────────────────────────────────────────────────────
 
 #[napi(object)]
 pub struct WhyOptions {
@@ -729,7 +724,6 @@ pub fn resolve_why(pm: String, version: String, opts: WhyOptions) -> napi::Resul
     Ok(ResolvedCommand { bin: pm, args, warnings })
 }
 
-// ── Outdated ─────────────────────────────────────────────────────────
 
 #[napi(object)]
 pub struct OutdatedOptions {
@@ -860,7 +854,6 @@ pub fn resolve_outdated(pm: String, version: String, opts: OutdatedOptions) -> n
     Ok(ResolvedCommand { bin: pm, args, warnings })
 }
 
-// ── Link / Unlink ────────────────────────────────────────────────────
 
 /// Returns `true` when the target looks like a filesystem path (absolute,
 /// relative, or Windows-style) rather than a bare package name.
@@ -1012,7 +1005,6 @@ pub fn resolve_unlink(
     Ok(ResolvedCommand { bin: pm, args, warnings })
 }
 
-// ── Dlx ──────────────────────────────────────────────────────────────
 
 #[napi(object)]
 pub struct DlxOptions {
@@ -1153,7 +1145,6 @@ pub fn resolve_dlx(pm: String, version: String, opts: DlxOptions) -> napi::Resul
     Ok(ResolvedCommand { bin, args, warnings })
 }
 
-// ── Exec ─────────────────────────────────────────────────────────────
 
 #[napi(object)]
 pub struct ExecOptions {
@@ -1264,7 +1255,6 @@ pub fn resolve_exec(pm: String, version: String, opts: ExecOptions) -> napi::Res
     Ok(ResolvedCommand { bin, args, warnings })
 }
 
-// ── PM utilities ─────────────────────────────────────────────────────
 
 #[napi(catch_unwind)]
 pub fn resolve_pm_command(

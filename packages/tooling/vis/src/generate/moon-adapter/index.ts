@@ -22,8 +22,6 @@ import { splitFrontmatter } from "./frontmatter";
 import type { Node } from "./tera-subset";
 import { evaluateConditionExpression, parseTemplate, renderTemplate } from "./tera-subset";
 
-// ── template.yml schema (subset of moon) ─────────────────────────
-
 interface MoonVariableYaml {
     default?: unknown;
     internal?: boolean;

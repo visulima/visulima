@@ -13,8 +13,6 @@ import { pail } from "../../../io/logger";
 import { runDlx } from "../../../pm/pm-runner";
 import type { ExecutionContext, TemplateConfig } from "./types";
 
-// ── vis:app — delegate to create-vite ─────────────────────────────
-
 const executeApp = (config: TemplateConfig, context: ExecutionContext): number => {
     pail.info("Scaffolding application via create-vite...");
 
@@ -40,8 +38,6 @@ const executeApp = (config: TemplateConfig, context: ExecutionContext): number =
         context.logger,
     );
 };
-
-// ── vis:library — scaffold a TS library package ───────────────────
 
 const libraryPackageJson = (name: string): string =>
     `${JSON.stringify(
@@ -139,8 +135,6 @@ const executeLibrary = (_config: TemplateConfig, context: ExecutionContext): num
 
     return 0;
 };
-
-// ── Router ────────────────────────────────────────────────────────
 
 /**
  * Execute a built-in template (vis:app or vis:library).

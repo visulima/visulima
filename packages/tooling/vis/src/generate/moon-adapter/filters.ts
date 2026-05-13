@@ -34,12 +34,10 @@ const stringify = (value: unknown): string => {
  * at render time so typos in templates don't silently no-op.
  */
 export const FILTERS: Record<string, FilterFn> = {
-    // ── Eight case filters (moon parity) ─────────────────────────────
     camel_case: (value) => camelCase(stringify(value)),
     kebab_case: (value) => kebabCase(stringify(value)),
     lower_case: (value) => stringify(value).toLowerCase(),
     pascal_case: (value) => pascalCase(stringify(value)),
-    // ── Path filters (moon parity) ───────────────────────────────────
 
     /**
      * `path_join`: join the input string with the filter argument as

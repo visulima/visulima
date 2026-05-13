@@ -58,7 +58,7 @@ describe("vis.task.ts per-package overlay", () => {
         writeProject(scratch, "alpha", {
             projectJson: { targets: { build: { command: "from-project-json" } } },
             visTaskTs: `export default {
-    targets: {
+    tasks: {
         build: { command: "from-vis-task" },
     },
 };`,
@@ -67,7 +67,7 @@ describe("vis.task.ts per-package overlay", () => {
         const index = await loadVisTaskConfigsForWorkspace(scratch);
 
         expect(index.size).toBe(1);
-        expect(index.get("packages/alpha")?.targets?.build?.command).toBe("from-vis-task");
+        expect(index.get("packages/alpha")?.tasks?.build?.command).toBe("from-vis-task");
     });
 
     it("vis.task.ts targets override project.json targets in discoverWorkspace", async () => {
@@ -76,7 +76,7 @@ describe("vis.task.ts per-package overlay", () => {
         writeProject(scratch, "beta", {
             projectJson: { targets: { build: { command: "from-project-json", outputs: ["dist/**"] } } },
             visTaskTs: `export default {
-    targets: {
+    tasks: {
         build: { command: "from-vis-task" },
     },
 };`,
@@ -94,7 +94,7 @@ describe("vis.task.ts per-package overlay", () => {
         writeProject(scratch, "gamma", {
             projectJson: { targets: { build: { command: "from-project-json", outputs: ["dist/**"] } } },
             visTaskTs: `export default {
-    targets: {
+    tasks: {
         build: { command: "from-vis-task" },
     },
 };`,
@@ -114,7 +114,7 @@ describe("vis.task.ts per-package overlay", () => {
         writeProject(scratch, "delta", {
             projectJson: { targets: { build: { command: "tsc", inputs: ["src/**/*.ts"] } } },
             visTaskTs: `export default {
-    targets: {
+    tasks: {
         build: { inputs: ["@inherit", "proto/**/*.proto"] },
     },
 };`,
@@ -131,7 +131,7 @@ describe("vis.task.ts per-package overlay", () => {
 
         writeProject(scratch, "with-overlay", {
             projectJson: { targets: { build: { command: "from-project-json" } } },
-            visTaskTs: `export default { targets: { build: { command: "from-vis-task" } } };`,
+            visTaskTs: `export default { tasks: { build: { command: "from-vis-task" } } };`,
         });
         writeProject(scratch, "without-overlay", {
             projectJson: { targets: { build: { command: "from-project-json" } } },
@@ -150,7 +150,7 @@ describe("vis.task.ts per-package overlay", () => {
         writeProject(scratch, "epsilon", {
             projectJson: { targets: { deploy: { command: "echo deploy" } } },
             visTaskTs: `export default {
-    targets: {
+    tasks: {
         deploy: { when: { ci: true }, always: false },
     },
 };`,

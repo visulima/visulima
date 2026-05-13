@@ -74,8 +74,6 @@ export const deriveBottomTitle = ({
     return "<tab> or <enter> to focus";
 };
 
-// ── Component ───────────────────────────────────────────────────────────
-
 interface OutputPanelProps {
     /** Auto-follow output as new lines arrive. Defaults to true. */
     autoScroll?: boolean;

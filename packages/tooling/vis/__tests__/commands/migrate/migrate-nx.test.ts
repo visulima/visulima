@@ -60,7 +60,7 @@ describe("migrate-nx", () => {
             const content = readFileSync(configPath, "utf8");
 
             expect(content).toContain("namedInputs");
-            expect(content).toContain("targetDefaults");
+            expect(content).toContain("tasks");
         });
 
         it("should note default base branch when present", () => {
@@ -101,7 +101,7 @@ describe("migrate-nx", () => {
             // Namespaced keys do not.
             expect(content).not.toContain("@nx/js:tsc");
             // Both stripped keys produce a warning.
-            expect(report.warnings.filter((w) => w.includes("targetDefaults"))).toHaveLength(2);
+            expect(report.warnings.filter((w) => w.includes("tasks"))).toHaveLength(2);
         });
 
         it("rewrites $schema in project.json files to point at vis", () => {
@@ -299,7 +299,7 @@ describe("migrate-nx", () => {
     });
 
     describe("pnpm filter script rewriting", () => {
-        it("rewrites `pnpm --filter <pkg> dev` to `vis run dev --projects=<project>` and adds persistent targetDefaults", () => {
+        it("rewrites `pnpm --filter <pkg> dev` to `vis run dev --projects=<project>` and adds persistent task defaults", () => {
             expect.assertions(5);
 
             writeJson(join(tmpDir, "nx.json"), {});

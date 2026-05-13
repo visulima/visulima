@@ -12,8 +12,6 @@ import type { GraphFilterType, GraphStore } from "./graph-store";
 import ProjectDetailPanel from "./project-detail-panel";
 import ProjectListPanel from "./project-list-panel";
 
-// ── Layout constants ────────────────────────────────────────────────────
-
 const MIN_HORIZONTAL_WIDTH = 100;
 const MIN_VIEWPORT_WIDTH = 40;
 const MIN_VIEWPORT_HEIGHT = 10;
@@ -23,8 +21,6 @@ const FILTER_KEYS: Record<string, GraphFilterType> = {
     2: "app",
     3: "lib",
 };
-
-// ── Component ───────────────────────────────────────────────────────────
 
 interface VisGraphAppProps {
     autoExitSeconds?: number;
@@ -109,8 +105,6 @@ const VisGraphApp = ({ autoExitSeconds = 0, store }: VisGraphAppProps): React.JS
     useEffect(() => {
         detailScrollRef.current?.scrollToTop();
     }, [selectedNode?.name]);
-
-    // ── Keyboard handling ───────────────────────────────────────────
 
     useInput(
         (input, key) => {
@@ -323,8 +317,6 @@ const VisGraphApp = ({ autoExitSeconds = 0, store }: VisGraphAppProps): React.JS
         { isActive: true },
     );
 
-    // ── Layout ──────────────────────────────────────────────────────
-
     if (columns < MIN_VIEWPORT_WIDTH || rows < MIN_VIEWPORT_HEIGHT) {
         return (
             <Box alignItems="center" height={rows} justifyContent="center" width={columns}>
@@ -340,8 +332,6 @@ x
     }
 
     const isHorizontal = columns >= MIN_HORIZONTAL_WIDTH;
-
-    // ── Footer ──────────────────────────────────────────────────────
 
     const footer = (
         <Box borderBottom={false} borderColor="gray" borderLeft={false} borderRight={false} borderStyle="single" flexShrink={0}>
@@ -379,8 +369,6 @@ x
             </Box>
         </Box>
     );
-
-    // ── Help dialog ─────────────────────────────────────────────────
 
     const helpPopup = (
         <Dialog
@@ -531,8 +519,6 @@ x
         </Dialog>
     );
 
-    // ── Panels ──────────────────────────────────────────────────────
-
     const listPanel = (
         <ProjectListPanel
             filterActive={state.filterActive}
@@ -548,8 +534,6 @@ x
     );
 
     const detailPanel = <ProjectDetailPanel focused={state.focusedPanel === "detail"} node={selectedNode} scrollRef={detailScrollRef} />;
-
-    // ── Horizontal layout ───────────────────────────────────────────
 
     if (isHorizontal) {
         const detailWidth = Math.floor(columns * 0.35);
@@ -572,8 +556,6 @@ x
             </Box>
         );
     }
-
-    // ── Vertical layout ─────────────────────────────────────────────
 
     const listHeight = Math.floor(rows * 0.55);
 

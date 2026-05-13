@@ -1,7 +1,5 @@
 import type { ProjectGraph, ProjectGraphDependency, ProjectGraphProjectNode } from "@visulima/task-runner";
 
-// ── State Shape ─────────────────────────────────────────────────────────
-
 export type GraphFilterType = "all" | "app" | "lib";
 
 export interface GraphNode {
@@ -27,8 +25,6 @@ export interface GraphState {
 }
 
 type Listener = () => void;
-
-// ── Helpers ─────────────────────────────────────────────────────────────
 
 const TYPE_PRIORITY: Record<string, number> = {
     application: 0,
@@ -88,8 +84,6 @@ const filterNodes = (allNodes: GraphNode[], filterType: GraphFilterType, filterT
     return filtered;
 };
 
-// ── GraphStore ──────────────────────────────────────────────────────────
-
 export class GraphStore {
     #state: GraphState;
 
@@ -112,8 +106,6 @@ export class GraphStore {
         };
     }
 
-    // ── React integration ───────────────────────────────────────────
-
     public getSnapshot = (): GraphState => this.#state;
 
     public subscribe = (listener: Listener): (() => void) => {
@@ -123,8 +115,6 @@ export class GraphStore {
             this.#listeners.delete(listener);
         };
     };
-
-    // ── Derived data ────────────────────────────────────────────────
 
     public getFilteredNodes(): GraphNode[] {
         return filterNodes(this.#state.allNodes, this.#state.filterType, this.#state.filterText);
@@ -137,8 +127,6 @@ export class GraphStore {
 
         return { apps, deps, libs: total - apps, total };
     }
-
-    // ── Navigation ──────────────────────────────────────────────────
 
     public setSelectedIndex(index: number): void {
         const filtered = this.getFilteredNodes();
@@ -154,8 +142,6 @@ export class GraphStore {
             this.#emit({ ...this.#state, focusedPanel: panel });
         }
     }
-
-    // ── Filtering ───────────────────────────────────────────────────
 
     public setFilterType(type: GraphFilterType): void {
         if (type !== this.#state.filterType) {
@@ -185,8 +171,6 @@ export class GraphStore {
             });
         }
     }
-
-    // ── Internal ────────────────────────────────────────────────────
 
     #emit(newState: GraphState): void {
         this.#state = newState;

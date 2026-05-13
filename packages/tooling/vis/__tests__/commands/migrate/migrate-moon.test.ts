@@ -60,7 +60,7 @@ describe("migrate-moon", () => {
             const content = readFileSync(configPath, "utf8");
 
             expect(content).toContain("fileGroups");
-            expect(content).toContain("targetDefaults");
+            expect(content).toContain("tasks");
         });
 
         it("should warn about unsupported task fields (env, platform, toolchain)", () => {

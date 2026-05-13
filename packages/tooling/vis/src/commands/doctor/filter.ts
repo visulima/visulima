@@ -1,4 +1,3 @@
-import { DEFAULT_LOW_SCORE_THRESHOLD } from "../../security/socket-security";
 import type { DoctorFinding } from "../../tui/components/doctor/findings";
 import type { DoctorResults } from "./sections";
 
@@ -37,8 +36,11 @@ const matchesAny = (name: string, patterns: ReadonlyArray<RegExp>): boolean => {
  * Narrow a `DoctorResults` to only entries whose package name matches
  * the supplied patterns. Runtime diagnostics are workspace-wide and
  * always pass through — the filter is package-name only.
+ *
+ * `scoreMinimum` is the effective Socket low-score threshold (resolved
+ * by the caller from `security.policies.score.minimum`).
  */
-export const applyFilter = (results: DoctorResults, patterns: ReadonlyArray<RegExp>): DoctorResults => {
+export const applyFilter = (results: DoctorResults, patterns: ReadonlyArray<RegExp>, scoreMinimum: number): DoctorResults => {
     if (patterns.length === 0) {
         return results;
     }
@@ -59,7 +61,7 @@ export const applyFilter = (results: DoctorResults, patterns: ReadonlyArray<RegE
         if (entry.socketReport) {
             socketAlerts += entry.socketReport.alerts.length;
 
-            if (entry.socketReport.score.overall < DEFAULT_LOW_SCORE_THRESHOLD) {
+            if (entry.socketReport.score.overall < scoreMinimum) {
                 socketLowScore += 1;
             }
         }

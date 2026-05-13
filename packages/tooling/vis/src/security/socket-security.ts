@@ -13,9 +13,8 @@ import { readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { ensureDirSync, isAccessibleSync, readJsonSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
+import type { PolicyName } from "../config/types";
 import { getVisCacheDir } from "../util/vis-paths";
-
-// ── Constants ───────────────────────────────────────────────────────
 
 const SOCKET_API_V0_URL = "https://api.socket.dev/v0/purl?alerts=true";
 
@@ -23,8 +22,6 @@ const getCacheDirectory = (): string => join(getVisCacheDir(), "socket-security"
 const DEFAULT_TTL_MS = 60 * 60 * 1000; // 1 hour
 const DEFAULT_LOW_SCORE_THRESHOLD = 0.4;
 const MAX_BATCH_SIZE = 100;
-
-// ── Types ───────────────────────────────────────────────────────────
 
 /** Extra properties attached to a package alert. */
 interface PackageAlertProps {
@@ -104,8 +101,6 @@ interface CacheEntry {
     ttlMs: number;
 }
 
-// ── Type guards ─────────────────────────────────────────────────────
-
 const isPackageReportData = (o: unknown): o is PackageReportData =>
     typeof o === "object"
     && o !== null
@@ -116,8 +111,6 @@ const isPackageReportData = (o: unknown): o is PackageReportData =>
     && "alerts" in o
     && "score" in o
     && (o as Record<string, unknown>).type === "npm";
-
-// ── Cache helpers (file-based, matching ai-cache.ts pattern) ────────
 
 const ensureCacheDirectory = (): void => {
     ensureDirSync(getCacheDirectory());
@@ -157,15 +150,11 @@ const setCachedReport = (name: string, version: string, report: PackageReportDat
     writeFileSync(join(getCacheDirectory(), `${key}.json`), JSON.stringify(entry), "utf8");
 };
 
-// ── Score calculation ───────────────────────────────────────────────
-
 const calculateOverallScore = (score: Omit<PackageScore, "overall">): number => {
     const components = [score.license, score.maintenance, score.quality, score.supplyChain, score.vulnerability];
 
     return Number((components.reduce((sum, s) => sum + s, 0) / components.length).toFixed(2));
 };
-
-// ── API client ──────────────────────────────────────────────────────
 
 /**
  * Fetches security report data from the Socket.dev API for the given packages.
@@ -322,13 +311,9 @@ const parseNdjsonResponse = (text: string, batch: { name: string; version: strin
     }
 };
 
-// ── Name helpers ────────────────────────────────────────────────────
-
 /** Returns the full package name including namespace scope if present. */
 const getFullPackageName = (report: Pick<PackageReportData, "name" | "namespace">): string =>
     (report.namespace ? `${report.namespace}/${report.name}` : report.name);
-
-// ── Display helpers ─────────────────────────────────────────────────
 
 /** Maps a 0–1 score to a human-readable label. */
 const scoreLabel = (score: number): string => {
@@ -404,8 +389,12 @@ const formatReportDetailed = (report: PackageReportData): string => {
 /**
  * Formats a security summary for a list of packages.
  * Suitable for displaying after install/update commands.
+ *
+ * `minimumScore` is the threshold below which a package is flagged as
+ * "low score" — sourced from `security.policies.score.minimum` (resolved
+ * by `buildSocketOptions`, default `DEFAULT_LOW_SCORE_THRESHOLD`).
  */
-const formatSecurityOverview = (reports: Map<string, PackageReportData>): string => {
+const formatSecurityOverview = (reports: Map<string, PackageReportData>, minimumScore: number = DEFAULT_LOW_SCORE_THRESHOLD): string => {
     if (reports.size === 0) {
         return "";
     }
@@ -443,7 +432,7 @@ const formatSecurityOverview = (reports: Map<string, PackageReportData>): string
             }
         }
 
-        if (report.score.overall < DEFAULT_LOW_SCORE_THRESHOLD) {
+        if (report.score.overall < minimumScore) {
             lowScorePackages++;
         }
     }
@@ -475,13 +464,13 @@ const formatSecurityOverview = (reports: Map<string, PackageReportData>): string
     }
 
     if (lowScorePackages > 0) {
-        lines.push(`  ${String(lowScorePackages)} package${lowScorePackages === 1 ? "" : "s"} with low security score (<40%)`);
+        const pct = Math.round(minimumScore * 100);
+
+        lines.push(`  ${String(lowScorePackages)} package${lowScorePackages === 1 ? "" : "s"} with low security score (<${String(pct)}%)`);
     }
 
     return lines.join("\n");
 };
-
-// ── Cache management ────────────────────────────────────────────────
 
 const clearSocketCache = (): number => {
     const cacheDirectory = getCacheDirectory();
@@ -543,15 +532,21 @@ interface SocketConfigLike {
     apiToken?: string;
     cacheTtlMs?: number;
     enabled?: boolean;
-    minimumScore?: number;
     timeoutMs?: number;
 }
 
 /**
  * Builds SocketSecurityOptions from the VisConfig socket config section.
  * Returns undefined if Socket.dev is not enabled or no API token is available.
+ * `scoreMinimum` is sourced from `security.policies.score.minimum` and falls
+ * back to `DEFAULT_LOW_SCORE_THRESHOLD` so every downstream consumer
+ * (`vis add`, `audit`, `doctor`, `analyze`) sees the same effective
+ * threshold without each one re-resolving the default.
  */
-const buildSocketOptions = (socketConfig: SocketConfigLike | undefined): SocketSecurityOptions | undefined => {
+const buildSocketOptions = (
+    socketConfig: SocketConfigLike | undefined,
+    scoreMinimum?: number,
+): SocketSecurityOptions | undefined => {
     if (!socketConfig?.enabled) {
         return undefined;
     }
@@ -561,19 +556,30 @@ const buildSocketOptions = (socketConfig: SocketConfigLike | undefined): SocketS
     return {
         apiToken,
         cacheTtlMs: socketConfig.cacheTtlMs,
-        minimumScore: socketConfig.minimumScore,
+        minimumScore: scoreMinimum ?? DEFAULT_LOW_SCORE_THRESHOLD,
         timeoutMs: socketConfig.timeoutMs,
     };
 };
-
-// ── Accepted risks ──────────────────────────────────────────────────
 
 /** A persisted "accepted risk" entry from the vis config. */
 interface AcceptedRisk {
     /** ISO 8601 timestamp when the risk was accepted. */
     acceptedAt: string;
-    /** The overall Socket.dev score at the time of acceptance. */
-    acceptedScore: number;
+    /**
+     * The overall Socket.dev score at the time of acceptance.
+     * Only relevant for the `score` policy; ignored elsewhere.
+     */
+    acceptedScore?: number;
+    /**
+     * ISO 8601 date (or datetime). After this point the acceptance stops
+     * applying and vis emits a warning. Leave undefined for non-expiring entries.
+     */
+    expiresAt?: string;
+    /**
+     * Which policies this acceptance covers. When undefined the acceptance
+     * applies to every policy finding on this package.
+     */
+    policies?: PolicyName[];
     /** User-provided reason for accepting the risk. */
     reason: string;
 }
@@ -581,27 +587,52 @@ interface AcceptedRisk {
 /**
  * Checks if a package has an accepted risk entry.
  * Matches by exact name@version, unversioned name, or trailing glob patterns.
+ * When `policy` is provided the candidate is only returned if its
+ * `policies` array is undefined (covers all policies) or contains the policy.
+ * Expired entries (`expiresAt` in the past) are skipped.
  * Returns the matching AcceptedRisk if found, undefined otherwise.
  */
-const findAcceptedRisk = (packageName: string, version: string, acceptedRisks: Record<string, AcceptedRisk> | undefined): AcceptedRisk | undefined => {
+const findAcceptedRisk = (
+    packageName: string,
+    version: string,
+    acceptedRisks: Record<string, AcceptedRisk> | undefined,
+    policy?: PolicyName,
+): AcceptedRisk | undefined => {
     if (!acceptedRisks) {
         return undefined;
     }
 
+    const now = Date.now();
+    const matches = (risk: AcceptedRisk): boolean => {
+        if (risk.expiresAt) {
+            const expiresMs = Date.parse(risk.expiresAt);
+
+            if (!Number.isNaN(expiresMs) && expiresMs < now) {
+                return false;
+            }
+        }
+
+        if (policy && risk.policies && !risk.policies.includes(policy)) {
+            return false;
+        }
+
+        return true;
+    };
+
     // Check exact name@version, then unversioned name
     const versionedKey = `${packageName}@${version}`;
 
-    if (acceptedRisks[versionedKey]) {
+    if (acceptedRisks[versionedKey] && matches(acceptedRisks[versionedKey])) {
         return acceptedRisks[versionedKey];
     }
 
-    if (acceptedRisks[packageName]) {
+    if (acceptedRisks[packageName] && matches(acceptedRisks[packageName])) {
         return acceptedRisks[packageName];
     }
 
     // Check glob patterns (e.g., "@myorg/*")
     for (const [pattern, risk] of Object.entries(acceptedRisks)) {
-        if (pattern.endsWith("*") && packageName.startsWith(pattern.slice(0, -1))) {
+        if (pattern.endsWith("*") && packageName.startsWith(pattern.slice(0, -1)) && matches(risk)) {
             return risk;
         }
     }
@@ -616,11 +647,12 @@ const findAcceptedRisk = (packageName: string, version: string, acceptedRisks: R
 const formatAcceptedRiskSnippet = (packageName: string, _version: string, score: number, reason: string): string => {
     const key = `"${packageName}"`;
     const lines = [
-        `    // Add to security.socket.acceptedRisks in vis.config.ts:`,
+        `    // Add to security.acceptedRisks in vis.config.ts:`,
         `    ${key}: {`,
         `      reason: "${reason}",`,
         `      acceptedAt: "${new Date().toISOString()}",`,
         `      acceptedScore: ${String(score)},`,
+        `      policies: ["score"],`,
         `    },`,
     ];
 

@@ -25,8 +25,6 @@ vi.mock(import("node:readline"), async (importOriginal) => {
     };
 });
 
-// ── generateVariants ───────────────────────────────────────────────
-
 describe(generateVariants, () => {
     it("should return empty set for names shorter than 3 characters", () => {
         expect.assertions(3);
@@ -41,8 +39,6 @@ describe(generateVariants, () => {
 
         expect(generateVariants("abc").size).toBeGreaterThan(0);
     });
-
-    // ── Character omission ──────────────────────────────────────────
 
     describe("character omission", () => {
         it("should drop each non-separator character", () => {
@@ -72,8 +68,6 @@ describe(generateVariants, () => {
         });
     });
 
-    // ── Adjacent transposition ──────────────────────────────────────
-
     describe("adjacent transposition", () => {
         it("should swap each adjacent pair of different characters", () => {
             expect.assertions(4);
@@ -95,8 +89,6 @@ describe(generateVariants, () => {
             expect(variants.has("aab")).toBe(false);
         });
     });
-
-    // ── Character duplication ───────────────────────────────────────
 
     describe("character duplication", () => {
         it("should duplicate each non-separator character", () => {
@@ -122,8 +114,6 @@ describe(generateVariants, () => {
             expect(hasDupSeparator).toBe(false);
         });
     });
-
-    // ── Homoglyph substitution ──────────────────────────────────────
 
     describe("homoglyph substitution", () => {
         it("should substitute common homoglyphs", () => {
@@ -162,8 +152,6 @@ describe(generateVariants, () => {
             expect(variants.size).toBeGreaterThan(0);
         });
     });
-
-    // ── Separator manipulation ──────────────────────────────────────
 
     describe("separator manipulation", () => {
         it("should produce separator variants for hyphenated names", () => {
@@ -232,8 +220,6 @@ describe(generateVariants, () => {
         });
     });
 
-    // ── Common suffixes ─────────────────────────────────────────────
-
     describe("common suffixes", () => {
         it("should add -js, js, -node suffixes for unscoped packages", () => {
             expect.assertions(3);
@@ -255,8 +241,6 @@ describe(generateVariants, () => {
             expect(variants.has("@scope/pkg-node")).toBe(false);
         });
     });
-
-    // ── Scoped-package brand-jacks ──────────────────────────────────
 
     describe("scoped-package brand-jacks", () => {
         it("should emit the scope as a standalone variant", () => {
@@ -325,8 +309,6 @@ describe(generateVariants, () => {
         });
     });
 
-    // ── Edge cases ──────────────────────────────────────────────────
-
     describe("edge cases", () => {
         it("should never include the original name in variants", () => {
             // 5 names × 1 assertion each = 5
@@ -369,8 +351,6 @@ describe(generateVariants, () => {
         });
     });
 });
-
-// ── checkTyposquat ─────────────────────────────────────────────────
 
 describe(checkTyposquat, () => {
     it("should detect a known blocklisted typosquat", () => {
@@ -500,8 +480,6 @@ describe(checkTyposquat, () => {
     });
 });
 
-// ── checkTyposquats (batch) ────────────────────────────────────────
-
 describe(checkTyposquats, () => {
     it("should return empty array when all names are safe", () => {
         expect.assertions(1);
@@ -560,8 +538,6 @@ describe(checkTyposquats, () => {
         expect(byInput.get("halk")!.legitimate).toBe("chalk");
     });
 });
-
-// ── runTyposquatCheck (interactive prompt) ──────────────────────────
 
 describe(runTyposquatCheck, () => {
     const originalIsTTY = process.stdin.isTTY;
@@ -712,8 +688,6 @@ describe(runTyposquatCheck, () => {
     });
 });
 
-// ── parsePackageArgument ───────────────────────────────────────────
-
 describe(parsePackageArgument, () => {
     it("should parse a bare package name", () => {
         expect.assertions(1);
@@ -782,8 +756,6 @@ describe(parsePackageArgument, () => {
     });
 });
 
-// ── allowlist ──────────────────────────────────────────────────────
-
 describe("checkTyposquats with allowlist", () => {
     it("should skip allowlisted packages", () => {
         expect.assertions(2);
@@ -818,8 +790,6 @@ describe("checkTyposquats with allowlist", () => {
         expect(result).toHaveLength(1);
     });
 });
-
-// ── scanDepsForTyposquats ──────────────────────────────────────────
 
 describe(scanDepsForTyposquats, () => {
     const originalIsTTY = process.stdin.isTTY;

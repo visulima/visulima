@@ -9,6 +9,7 @@ import { createJiti } from "jiti";
 
 import { VisConfigCycleError, VisConfigLoadError, VisConfigNotFoundError } from "../errors";
 import { mergeTargetWithInherit } from "../task/target-merge";
+import { assertNoDeprecatedConfigKeys, assertNoDeprecatedTaskKeys } from "./deprecation";
 import type { VisConfig, VisTaskConfig } from "./types";
 
 /** Supported config file names, checked in priority order. */
@@ -23,7 +24,7 @@ const TASK_CONFIG_FILES: string[] = ["vis.task.ts", "vis.task.mts", "vis.task.ct
 const TASK_CONFIG_FILE_SET = new Set(TASK_CONFIG_FILES);
 
 /**
- * Default `security.minimumReleaseAge` applied by `vis init` (in minutes).
+ * Default `security.policies.firstSeen.minutes` applied by `vis init`.
  * 2 days — long enough to filter out most rage-published malware while
  * staying short enough that genuine fixes still land in a working week.
  *
@@ -36,31 +37,47 @@ const DEFAULT_MIN_RELEASE_AGE_MINUTES = 2880;
 /**
  * Secure-by-default security settings based on npm supply chain best practices.
  *
- * These defaults are applied automatically when using `defineConfig()` or `loadVisConfig()`.
+ * Applied automatically when using `defineConfig()` or `loadVisConfig()`.
  * Users can override any value — their settings always take precedence.
  * @see https://github.com/lirantal/awesome-npm-security-best-practices
  */
-const SECURITY_DEFAULTS: Required<
-    Pick<NonNullable<VisConfig["security"]>, "blockExoticSubdeps" | "strictDepBuilds" | "trustPolicy" | "trustPolicyIgnoreAfter">
-> = {
-    /** Block transitive dependencies from using git repos or tarball URLs. */
+const SECURITY_DEFAULTS: NonNullable<VisConfig["security"]> = {
     blockExoticSubdeps: true,
-    /** Make unapproved build scripts a hard error instead of a warning. */
-    strictDepBuilds: true,
-    /** Fail if a package's trust level has decreased compared to prior releases. */
-    trustPolicy: "no-downgrade" as const,
-    /** Skip trust policy check for packages published more than 30 days ago. */
-    trustPolicyIgnoreAfter: 43_200,
+    policies: {
+        installScripts: { strict: true },
+        publisherChange: { ignoreAfter: 43_200, mode: "no-downgrade" },
+    },
 };
 
 /**
  * Deep-merge user security settings with secure defaults.
- * User-provided values always win.
+ * User-provided values always win, but unspecified sub-keys inherit defaults.
  */
 const mergeSecurityDefaults = (security: VisConfig["security"]): VisConfig["security"] => {
+    if (!security) {
+        return { ...SECURITY_DEFAULTS };
+    }
+
+    const defaultPolicies = SECURITY_DEFAULTS.policies ?? {};
+    const userPolicies = security.policies ?? {};
+    // Generic two-level merge so any new default sub-policy added to
+    // `SECURITY_DEFAULTS.policies` picks up the same merge semantics
+    // without further code changes.
+    const mergedPolicies: NonNullable<VisConfig["security"]>["policies"] = { ...defaultPolicies, ...userPolicies };
+
+    for (const key of Object.keys(defaultPolicies) as (keyof typeof defaultPolicies)[]) {
+        const defaultValue = defaultPolicies[key];
+        const userValue = userPolicies[key];
+
+        if (defaultValue !== undefined && userValue !== undefined) {
+            mergedPolicies[key] = { ...defaultValue, ...userValue } as never;
+        }
+    }
+
     return {
         ...SECURITY_DEFAULTS,
         ...security,
+        policies: mergedPolicies,
     };
 };
 
@@ -133,8 +150,6 @@ const findVisTaskConfigFile = (projectDirectory: string): string | undefined => 
 
     return undefined;
 };
-
-// ── Config cache ────────────────────────────────────────────────────
 
 interface ConfigCache {
     config: VisConfig;
@@ -209,8 +224,6 @@ const writeConfigCache = (cachePath: string, hash: string, config: VisConfig): v
     }
 };
 
-// ── Extends resolver ────────────────────────────────────────────────
-
 const normalizeExtends = (value: VisConfig["extends"]): string[] => {
     if (value === undefined) {
         return [];
@@ -262,8 +275,6 @@ const resolveExtendsSpecifier = (specifier: string, parentFile: string, chain: R
     }
 };
 
-// ── Config loader ───────────────────────────────────────────────────
-
 /**
  * Load a single config file via jiti and return its raw export. Wraps
  * any throw in `VisConfigLoadError` so a syntax error surfaces with the
@@ -305,27 +316,27 @@ const loadRawConfig = async (jiti: ReturnType<typeof createJiti>, configPath: st
 
 /**
  * Merge two `VisConfig` objects — child wins. Most top-level fields are
- * shallow-merged; `targetDefaults` runs through {@link mergeTargetWithInherit}
+ * shallow-merged; `tasks` runs through {@link mergeTargetWithInherit}
  * so the `@inherit` sentinel works across the extends chain;
- * `taskDefaults` blocks concatenate (parent first, child last), which
+ * `scopedTasks` blocks concatenate (parent first, child last), which
  * preserves the existing "later block wins" precedence.
  */
 const mergeVisConfigs = (parent: VisConfig, child: VisConfig): VisConfig => {
     const merged: VisConfig = { ...parent, ...child };
 
-    if (parent.targetDefaults || child.targetDefaults) {
-        const names = new Set<string>([...Object.keys(parent.targetDefaults ?? {}), ...Object.keys(child.targetDefaults ?? {})]);
-        const out: NonNullable<VisConfig["targetDefaults"]> = {};
+    if (parent.tasks || child.tasks) {
+        const names = new Set<string>([...Object.keys(parent.tasks ?? {}), ...Object.keys(child.tasks ?? {})]);
+        const out: NonNullable<VisConfig["tasks"]> = {};
 
         for (const name of names) {
-            out[name] = mergeTargetWithInherit(parent.targetDefaults?.[name], child.targetDefaults?.[name]);
+            out[name] = mergeTargetWithInherit(parent.tasks?.[name], child.tasks?.[name]);
         }
 
-        merged.targetDefaults = out;
+        merged.tasks = out;
     }
 
-    if (parent.taskDefaults || child.taskDefaults) {
-        merged.taskDefaults = [...(parent.taskDefaults ?? []), ...(child.taskDefaults ?? [])];
+    if (parent.scopedTasks || child.scopedTasks) {
+        merged.scopedTasks = [...(parent.scopedTasks ?? []), ...(child.scopedTasks ?? [])];
     }
 
     if (parent.fileGroups || child.fileGroups) {
@@ -337,15 +348,38 @@ const mergeVisConfigs = (parent: VisConfig, child: VisConfig): VisConfig => {
     }
 
     if (parent.security || child.security) {
-        merged.security = { ...parent.security, ...child.security };
+        // Deep-merge `policies` and `acceptedRisks` so a preset that sets
+        // `security.policies.installScripts.allow` isn't wiped when the
+        // consumer config sets `security.policies.installScripts.strict`.
+        // Per-policy bodies are merged one level deep — matches
+        // `mergeSecurityDefaults`.
+        const parentPolicies = parent.security?.policies ?? {};
+        const childPolicies = child.security?.policies ?? {};
+        const mergedPolicies: NonNullable<VisConfig["security"]>["policies"] = { ...parentPolicies, ...childPolicies };
+
+        for (const key of Object.keys(parentPolicies) as (keyof typeof parentPolicies)[]) {
+            const parentValue = parentPolicies[key];
+            const childValue = childPolicies[key];
+
+            if (parentValue !== undefined && childValue !== undefined) {
+                mergedPolicies[key] = { ...parentValue, ...childValue } as never;
+            }
+        }
+
+        merged.security = {
+            ...parent.security,
+            ...child.security,
+            acceptedRisks: { ...parent.security?.acceptedRisks, ...child.security?.acceptedRisks },
+            policies: mergedPolicies,
+        };
     }
 
     if (parent.update || child.update) {
         merged.update = { ...parent.update, ...child.update };
     }
 
-    if (parent.taskRunnerOptions || child.taskRunnerOptions) {
-        merged.taskRunnerOptions = { ...parent.taskRunnerOptions, ...child.taskRunnerOptions };
+    if (parent.taskRunner || child.taskRunner) {
+        merged.taskRunner = { ...parent.taskRunner, ...child.taskRunner };
     }
 
     // `extends` is consumed during resolution — never propagated downstream.
@@ -385,6 +419,9 @@ const resolveConfigChain = async (
 
     try {
         const raw = await loadRawConfig(jiti, configPath, chain);
+
+        assertNoDeprecatedConfigKeys(configPath, chain, raw);
+
         const extendsList = normalizeExtends(raw.extends);
 
         for (const specifier of extendsList) {
@@ -468,8 +505,6 @@ const loadVisConfig = async (workspaceRoot: string, options?: { explicitConfigPa
 
     return finalConfig;
 };
-
-// ── Per-package task config loader ──────────────────────────────────
 
 interface VisTaskConfigCache {
     config: VisTaskConfig;
@@ -556,7 +591,12 @@ const loadVisTaskConfig = async (workspaceRoot: string, projectDirectory: string
     }
 
     const jiti = createJiti(projectDirectory, { fsCache: false, moduleCache: false });
+    // loadRawConfig validates against VisConfig-shaped keys; vis.task.ts
+    // has its own (smaller) deprecation set, so re-run a task-specific check.
     const raw = await loadRawConfig(jiti, taskConfigPath, []);
+
+    assertNoDeprecatedTaskKeys(taskConfigPath, [], raw);
+
     const taskConfig = raw as unknown as VisTaskConfig;
 
     if (cachePath) {
@@ -600,9 +640,13 @@ const defineTaskConfig = (config: VisTaskConfig): VisTaskConfig => config;
  *
  * export default defineConfig({
  *     security: {
- *         allowBuilds: {
- *             esbuild: true,
- *             "@prisma/client": true,
+ *         policies: {
+ *             installScripts: {
+ *                 allow: {
+ *                     esbuild: true,
+ *                     "@prisma/client": true,
+ *                 },
+ *             },
  *         },
  *     },
  * });
@@ -614,9 +658,11 @@ const defineTaskConfig = (config: VisTaskConfig): VisTaskConfig => config;
  *
  * export default defineConfig({
  *     security: {
- *         // Relax cooldown to 24 hours instead of the default 14 days
- *         minimumReleaseAge: 1440,
- *         allowBuilds: { esbuild: true },
+ *         policies: {
+ *             // Relax cooldown to 24 hours instead of the default 14 days
+ *             firstSeen: { minutes: 1440 },
+ *             installScripts: { allow: { esbuild: true } },
+ *         },
  *     },
  * });
  * ```

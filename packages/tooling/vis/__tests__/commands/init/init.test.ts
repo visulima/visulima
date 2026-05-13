@@ -25,10 +25,12 @@ describe("init config generation", () => {
 
 export default defineConfig({
     security: {
-        minimumReleaseAge: 1440,
-        trustPolicy: "no-downgrade",
         blockExoticSubdeps: true,
-        allowBuilds: {},
+        policies: {
+            firstSeen: { minutes: 1440 },
+            installScripts: { allow: {} },
+            publisherChange: { mode: "no-downgrade" },
+        },
     },
     update: {
         security: true,
@@ -42,18 +44,18 @@ export default defineConfig({
         expect(existsSync(configPath)).toBe(true);
     });
 
-    it("should include security.minimumReleaseAge", () => {
+    it("should include security.policies.firstSeen.minutes", () => {
         expect.assertions(1);
 
-        const content = `security: { minimumReleaseAge: 1440 }`;
+        const content = `firstSeen: { minutes: 1440 }`;
 
-        expect(content).toContain("minimumReleaseAge: 1440");
+        expect(content).toContain("minutes: 1440");
     });
 
-    it("should include security.trustPolicy", () => {
+    it("should include security.policies.publisherChange.mode", () => {
         expect.assertions(1);
 
-        const content = `trustPolicy: "no-downgrade"`;
+        const content = `publisherChange: { mode: "no-downgrade" }`;
 
         expect(content).toContain("no-downgrade");
     });
@@ -66,12 +68,12 @@ export default defineConfig({
         expect(content).toContain("blockExoticSubdeps: true");
     });
 
-    it("should include empty allowBuilds for user to fill", () => {
+    it("should include empty installScripts.allow for user to fill", () => {
         expect.assertions(1);
 
-        const content = `allowBuilds: {}`;
+        const content = `installScripts: { allow: {} }`;
 
-        expect(content).toContain("allowBuilds: {}");
+        expect(content).toContain("allow: {}");
     });
 
     it("should include update.security: true", () => {

@@ -21,8 +21,6 @@ import {
     stageScriptBody,
 } from "../../../src/commands/hook/prek";
 
-// ─── Helpers ────────────────────────────────────────────────────────
-
 const createTemporaryDirectory = (): { cleanup: () => void; root: string } => {
     const root = mkdtempSync(join(tmpdir(), "vis-prek-test-"));
 
@@ -63,8 +61,6 @@ const collectLogger = (): { info: (message: string) => void; messages: string[];
         warnings,
     };
 };
-
-// ─── detectPrekConfig ───────────────────────────────────────────────
 
 describe(detectPrekConfig, () => {
     let temporary: { cleanup: () => void; root: string };
@@ -126,8 +122,6 @@ describe(detectPrekConfig, () => {
     });
 });
 
-// ─── mapPrekStage ───────────────────────────────────────────────────
-
 describe(mapPrekStage, () => {
     it("maps legacy aliases to canonical git hook names", () => {
         expect.assertions(3);
@@ -145,8 +139,6 @@ describe(mapPrekStage, () => {
         expect(mapPrekStage("pre-push")).toBe("pre-push");
     });
 });
-
-// ─── resolveStages ──────────────────────────────────────────────────
 
 describe(resolveStages, () => {
     it("returns explicit stages when provided", () => {
@@ -173,8 +165,6 @@ describe(resolveStages, () => {
         expect(resolveStages({ stages: ["commit", "push"] }, undefined)).toStrictEqual(["pre-commit", "pre-push"]);
     });
 });
-
-// ─── buildHookEntry ─────────────────────────────────────────────────
 
 describe(buildHookEntry, () => {
     it("converts a local system hook into an entry with raw values preserved", () => {
@@ -229,8 +219,6 @@ describe(buildHookEntry, () => {
     });
 });
 
-// ─── stageScriptBody ────────────────────────────────────────────────
-
 describe(stageScriptBody, () => {
     it("emits a thin shim that defers to vis hook run", () => {
         expect.assertions(2);
@@ -241,8 +229,6 @@ describe(stageScriptBody, () => {
         expect(body).toMatch(/^#!\/usr\/bin\/env sh/);
     });
 });
-
-// ─── convertPrekConfig ──────────────────────────────────────────────
 
 describe(convertPrekConfig, () => {
     it("converts a local system hook into a pre-commit entry", () => {
@@ -573,8 +559,6 @@ describe(convertPrekConfig, () => {
     });
 });
 
-// ─── parsePrekConfig ────────────────────────────────────────────────
-
 describe(parsePrekConfig, () => {
     it("parses valid YAML", () => {
         expect.assertions(1);
@@ -598,8 +582,6 @@ describe(parsePrekConfig, () => {
         expect(parsePrekConfig("")).toBeUndefined();
     });
 });
-
-// ─── migrateFromPrek (integration) ──────────────────────────────────
 
 describe(migrateFromPrek, () => {
     it.skipIf(process.platform === "win32")("performs a full local-hook migration", () => {
@@ -783,8 +765,6 @@ describe(migrateFromPrek, () => {
     });
 });
 
-// ─── parseAdditionalDep ─────────────────────────────────────────────
-
 describe(parseAdditionalDep, () => {
     it("handles bare package names", () => {
         expect.assertions(1);
@@ -826,8 +806,6 @@ describe(parseAdditionalDep, () => {
     });
 });
 
-// ─── normalizeRepoKey ───────────────────────────────────────────────
-
 describe(normalizeRepoKey, () => {
     it("normalises https, git, and ssh GitHub URLs", () => {
         expect.assertions(3);
@@ -843,8 +821,6 @@ describe(normalizeRepoKey, () => {
         expect(normalizeRepoKey("https://gitlab.com/foo/bar")).toBe("https://gitlab.com/foo/bar");
     });
 });
-
-// ─── mergeAdditionalDependencies ────────────────────────────────────
 
 describe(mergeAdditionalDependencies, () => {
     let temporary: { cleanup: () => void; root: string };
@@ -942,8 +918,6 @@ stages = ["pre-commit"]
     });
 });
 
-// ─── loadPrekConfig ─────────────────────────────────────────────────
-
 describe(loadPrekConfig, () => {
     let temporary: { cleanup: () => void; root: string };
 
@@ -994,8 +968,6 @@ language = "system"
         expect(loadPrekConfig(path)?.repos?.[0]?.hooks?.[0]?.id).toBe("b");
     });
 });
-
-// ─── migrateFromPrek --dry-run ──────────────────────────────────────
 
 describe("migrateFromPrek --dry-run", () => {
     it.skipIf(process.platform === "win32")("does not write any files but still reports the plan", () => {

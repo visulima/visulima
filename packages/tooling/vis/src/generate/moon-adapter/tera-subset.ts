@@ -27,8 +27,6 @@ import { splitCommaOutsideQuotes } from "./util";
 
 type QuoteChar = "\"" | "'";
 
-// ── Tokens ───────────────────────────────────────────────────────
-
 type Token = { line: number; type: "text"; value: string } | { line: number; type: "expr"; value: string } | { line: number; type: "stmt"; value: string };
 
 const TAG_PATTERN = /\{\{-?(.+?)-?\}\}|\{%-?(.+?)-?%\}/gs;
@@ -77,8 +75,6 @@ const tokenize = (source: string): Token[] => {
 
     return tokens;
 };
-
-// ── AST ──────────────────────────────────────────────────────────
 
 type Node
     = | { type: "text"; value: string }
@@ -205,8 +201,6 @@ const stripQuotes = (input: string): string | undefined => {
 
     return undefined;
 };
-
-// ── Expression evaluation ────────────────────────────────────────
 
 const stringify = (value: unknown): string => {
     if (value == null) {
@@ -548,8 +542,6 @@ const matchingParen = (input: string): number => {
 
     return -1;
 };
-
-// ── Renderer ─────────────────────────────────────────────────────
 
 interface RenderOptions {
     /** Source filename — used in error messages. */

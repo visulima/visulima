@@ -19,8 +19,6 @@ interface MigrateLogger {
     warn: (message: string) => void;
 }
 
-// ─── Detection ──────────────────────────────────────────────────────
-
 /**
  * Check if a standalone lint-staged config file exists.
  */
@@ -80,8 +78,6 @@ const detectLintStagedConfig = (root: string): string | undefined => {
     return undefined;
 };
 
-// ─── Config extraction ──────────────────────────────────────────────
-
 /**
  * Extract lint-staged config from package.json.
  */
@@ -95,8 +91,6 @@ const extractLintStagedFromPackageJson = (root: string): Record<string, string |
  * Parse a JSON lint-staged config file.
  */
 const parseLintStagedJsonFile = (filePath: string): Record<string, string | string[]> | undefined => readJsonFile<Record<string, string | string[]>>(filePath);
-
-// ─── Config writing ─────────────────────────────────────────────────
 
 /**
  * Generate a TypeScript snippet for the staged block.
@@ -156,8 +150,6 @@ const insertStagedIntoVisConfig = (root: string, config: Record<string, string |
 
     return true;
 };
-
-// ─── Cleanup ────────────────────────────────────────────────────────
 
 /**
  * Remove `lint-staged` key, config, and dependency from package.json in a single read/write.
@@ -224,8 +216,6 @@ const removeLintStagedConfigFiles = (root: string, report: MigrationReport): voi
     }
 };
 
-// ─── Pre-commit hook rewriting ──────────────────────────────────────
-
 /**
  * Rewrite pre-commit hook to replace lint-staged invocations with `vis staged`.
  */
@@ -286,8 +276,6 @@ const rewritePreCommitHook = (root: string, hooksDirectory: string): boolean => 
 
     return true;
 };
-
-// ─── Orchestrator helpers ────────────────────────────────────────────
 
 /**
  * Extract lint-staged config from the detected source.
@@ -370,8 +358,6 @@ const applyMigration = (
     cleanupLintStagedArtifacts(root, report, options.useEditorconfig);
     rewriteHooks(root, options, logger, report);
 };
-
-// ─── Orchestrator ───────────────────────────────────────────────────
 
 /**
  * Migrates lint-staged configuration to vis.config.ts staged block.

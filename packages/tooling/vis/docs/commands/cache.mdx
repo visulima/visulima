@@ -48,7 +48,7 @@ vis cache prune --scope=all       # garbage-collect both stores
 vis cache size --scope=shared     # default; explicit for scripts
 ```
 
-Explicit cache paths win over scope: `--cache-dir <path>`, `taskRunnerOptions.cacheDirectory` in `vis.config.ts`, and the `VIS_CACHE_DIRECTORY` env var (parity with `NX_CACHE_DIRECTORY`) all skip worktree remapping.
+Explicit cache paths win over scope: `--cache-dir <path>`, `taskRunner.cacheDirectory` in `vis.config.ts`, and the `VIS_CACHE_DIRECTORY` env var (parity with `NX_CACHE_DIRECTORY`) all skip worktree remapping.
 
 `vis cache clean` always nukes the directory the resolver picked. From a linked worktree without an explicit override, that's the _main_ worktree's cache — so `clean` requires `--force` (or interactive confirmation) before deleting it because the path is outside the current `workspaceRoot`.
 

@@ -19,7 +19,7 @@ Keep your `vis.json` configuration consistent across team members by committing 
         "target": "minor",
         "exclude": ["legacy-*", "deprecated-*"]
     },
-    "targetDefaults": {
+    "tasks": {
         "build": {
             "dependsOn": ["^build"],
             "outputs": ["{projectRoot}/dist/**"],
@@ -217,7 +217,7 @@ Leverage `vis run` caching for faster builds:
 
 ```json
 {
-    "targetDefaults": {
+    "tasks": {
         "build": {
             "outputs": ["{projectRoot}/dist/**"],
             "cache": true
@@ -226,7 +226,7 @@ Leverage `vis run` caching for faster builds:
             "cache": true
         }
     },
-    "taskRunnerOptions": {
+    "taskRunner": {
         "parallel": 5,
         "smartLockfileHashing": true
     }

@@ -22,7 +22,7 @@ import type {
     PackageJsonIndex,
     ProjectJson,
     ProjectOptionsIndex,
-    TaskDefaultsScope,
+    ScopedTasksMatch,
     VisConfig,
     VisProjectConfiguration,
     VisTaskConfigIndex,
@@ -398,10 +398,10 @@ const FILE_GROUP_PREFIX = "@filegroup:";
 type ProjectType = NonNullable<ProjectJson["projectType"]>;
 
 /**
- * Returns true if the named `TaskDefaultsBlock` scope matches the
- * given project metadata. Missing scope fields are treated as "any".
+ * Returns true if the given `ScopedTasksBlock.match` predicate matches
+ * the project metadata. Missing match fields are treated as "any".
  */
-const scopeMatches = (scope: TaskDefaultsScope | undefined, projectJson: ProjectJson | undefined, projectType: ProjectType): boolean => {
+const scopeMatches = (scope: ScopedTasksMatch | undefined, projectJson: ProjectJson | undefined, projectType: ProjectType): boolean => {
     if (!scope) {
         return true;
     }
@@ -447,9 +447,9 @@ const scopeMatches = (scope: TaskDefaultsScope | undefined, projectJson: Project
 };
 
 /**
- * Returns the merged target defaults that apply to a project, combining
- * the flat `config.targetDefaults` with all matching `config.taskDefaults`
- * blocks in declaration order. Later entries override earlier ones.
+ * Returns the merged task defaults that apply to a project, combining
+ * the flat `config.tasks` with all matching `config.scopedTasks` blocks
+ * in declaration order. Later entries override earlier ones.
  */
 const collectTargetDefaults = (
     config: VisConfig,
@@ -458,16 +458,16 @@ const collectTargetDefaults = (
 ): Record<string, Partial<VisTargetConfiguration>> => {
     const merged: Record<string, Partial<VisTargetConfiguration>> = {};
 
-    for (const [name, defaults] of Object.entries(config.targetDefaults ?? {})) {
+    for (const [name, defaults] of Object.entries(config.tasks ?? {})) {
         merged[name] = mergeTargetWithInherit(undefined, defaults);
     }
 
-    for (const block of config.taskDefaults ?? []) {
-        if (!scopeMatches(block.scope, projectJson, projectType)) {
+    for (const block of config.scopedTasks ?? []) {
+        if (!scopeMatches(block.match, projectJson, projectType)) {
             continue;
         }
 
-        for (const [name, defaults] of Object.entries(block.targets)) {
+        for (const [name, defaults] of Object.entries(block.tasks)) {
             merged[name] = mergeTargetWithInherit(merged[name], defaults);
         }
     }
@@ -708,7 +708,7 @@ const discoverWorkspace = (
 
         const defaults = collectTargetDefaults(config, projectJson, projectType);
 
-        const overlayTargets = mergeProjectTargets(projectJson?.targets, taskConfigs?.get(projectDirectory)?.targets);
+        const overlayTargets = mergeProjectTargets(projectJson?.targets, taskConfigs?.get(projectDirectory)?.tasks);
         const visTargets = createTargetsFromScripts(pkg.scripts, overlayTargets, defaults, config.fileGroups);
 
         // Project Crystal-style inference. Runs *after* the explicit
@@ -904,8 +904,8 @@ export type {
     PackageJsonIndex,
     ProjectJson,
     ProjectOptionsIndex,
-    TaskDefaultsBlock,
-    TaskDefaultsScope,
+    ScopedTasksBlock,
+    ScopedTasksMatch,
     VisConfig,
     VisProjectConfiguration,
     VisTaskConfig,

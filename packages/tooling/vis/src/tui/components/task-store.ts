@@ -3,8 +3,6 @@ import type { Task, TaskResult } from "@visulima/task-runner";
 import type { VisTargetOptions } from "../../task/target-options";
 import type { TaskRowData } from "./task-row";
 
-// ── State Shape ─────────────────────────────────────────────────────────
-
 export interface TaskState {
     /** Auto-exit countdown in seconds. null = not counting. */
     autoExitCountdown: number | null;
@@ -58,8 +56,6 @@ export interface TaskState {
 
 type Listener = () => void;
 
-// ── TaskStore ───────────────────────────────────────────────────────────
-
 export class TaskStore {
     #state: TaskState;
 
@@ -97,8 +93,6 @@ export class TaskStore {
         };
     }
 
-    // ── React integration ───────────────────────────────────────────
-
     public getSnapshot = (): TaskState => this.#state;
 
     public subscribe = (listener: Listener): (() => void) => {
@@ -108,8 +102,6 @@ export class TaskStore {
             this.#listeners.delete(listener);
         };
     };
-
-    // ── Lifecycle methods (called by task runner) ───────────────────
 
     public startTasks(started: Task[]): void {
         const rows = [...this.#state.rows];
@@ -265,8 +257,6 @@ export class TaskStore {
         }
     }
 
-    // ── UI state methods (called by React components) ───────────────
-
     public setSelectedIndex(index: number): void {
         if (index !== this.#state.selectedIndex) {
             this.#emit({ ...this.#state, selectedIndex: index });
@@ -407,8 +397,6 @@ export class TaskStore {
             this.#emit({ ...this.#state, rerunRequested: false });
         }
     }
-
-    // ── Internal ────────────────────────────────────────────────────
 
     #emit(newState: TaskState): void {
         this.#state = newState;

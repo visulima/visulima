@@ -165,7 +165,6 @@ export const runTemplate = async (template: Template, options: RunnerOptions): P
 
     const creation: Creation = await template.produce(context);
 
-    // ── Files ─────────────────────────────────────────────────────
     const files = creation.files ? flattenTree(creation.files) : [];
     const filesMeta = creation.filesMeta ?? {};
 
@@ -212,7 +211,6 @@ export const runTemplate = async (template: Template, options: RunnerOptions): P
         pail.success(`Wrote ${String(written)} file${written === 1 ? "" : "s"}${skipped > 0 ? `, skipped ${String(skipped)}` : ""}`);
     }
 
-    // ── Scripts ───────────────────────────────────────────────────
     if (!options.dryRun && !options.skipScripts && creation.scripts && creation.scripts.length > 0) {
         const phases = groupByPhase(creation.scripts);
 
@@ -233,7 +231,6 @@ export const runTemplate = async (template: Template, options: RunnerOptions): P
         }
     }
 
-    // ── Suggestions ───────────────────────────────────────────────
     if (creation.suggestions && creation.suggestions.length > 0) {
         process.stderr.write("\n");
         pail.notice("Next steps:");

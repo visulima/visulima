@@ -4,6 +4,8 @@ import { join } from "@visulima/path";
 
 import type { BuiltinContext } from "./types";
 
+type LineEnding = "cr" | "crlf" | "lf";
+
 const ENDINGS: Record<string, Buffer> = {
     cr: Buffer.from([0x0d]),
     crlf: Buffer.from([0x0d, 0x0a]),
@@ -11,8 +13,6 @@ const ENDINGS: Record<string, Buffer> = {
 };
 
 const FIX_VALUES = new Set<string>(["auto", "cr", "crlf", "lf", "no"]);
-
-type LineEnding = "cr" | "crlf" | "lf";
 
 interface Line {
     content: Buffer;
@@ -25,6 +25,11 @@ interface Line {
  * Recognised `args`:
  *   `--fix=&lt;value>` or `-f &lt;value>` / `--fix &lt;value>`
  *     where value is one of `auto` (default), `no`, `lf`, `crlf`, `cr`.
+ *
+ * @param files Files (relative to `context.root`) to process.
+ * @param args Raw CLI args passed through from the hook config.
+ * @param context Builtin context with logger and workspace root.
+ * @returns Exit code: `0` on no-op, `1` on fixed/found mixed endings, `2` on bad args.
  */
 const runMixedLineEnding = (files: ReadonlyArray<string>, args: ReadonlyArray<string>, context: BuiltinContext): number => {
     let fixArg = "auto";
@@ -109,7 +114,7 @@ const runMixedLineEnding = (files: ReadonlyArray<string>, args: ReadonlyArray<st
             continue;
         }
 
-        let target: "cr" | "crlf" | "lf" | undefined;
+        let target: LineEnding | undefined;
 
         if (fixArg === "auto") {
             if (!mixed) {
@@ -117,7 +122,7 @@ const runMixedLineEnding = (files: ReadonlyArray<string>, args: ReadonlyArray<st
             }
 
             // First-seen wins on ties (matches `Counter.most_common`).
-            let best: { count: number; kind: "cr" | "crlf" | "lf" } | undefined;
+            let best: { count: number; kind: LineEnding } | undefined;
 
             for (const c of counts) {
                 if (!best || c.count > best.count) {
@@ -127,7 +132,7 @@ const runMixedLineEnding = (files: ReadonlyArray<string>, args: ReadonlyArray<st
 
             target = best?.kind;
         } else {
-            target = fixArg as "cr" | "crlf" | "lf";
+            target = fixArg as LineEnding;
             const other = counts.some((c) => c.kind !== target && c.count > 0);
 
             if (!other) {

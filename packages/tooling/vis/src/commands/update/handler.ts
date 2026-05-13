@@ -19,6 +19,9 @@ import type { VisConfig } from "../../config/workspace";
 import type { UpdateCommandOptions } from "../../pm/package-manager";
 import { resolveUpdateCommand } from "../../pm/package-manager";
 import { resolveInstaller } from "../../pm/pm-runner";
+import { presentMarshallFindings } from "../../security/marshalls/decision-prompt";
+import { runMarshallPipeline } from "../../security/marshalls/pipeline";
+import { resolveExplicitPackages } from "../../security/marshalls/resolve-explicit";
 import { buildSocketOptions, scoreColor } from "../../security/socket-security";
 import { runTyposquatCheck, scanDepsForTyposquats } from "../../security/typosquats";
 import CheckProgressApp from "../../tui/components/check-progress-app";
@@ -106,6 +109,23 @@ export const parseTimeStringToMinutes = (input: string): number | undefined => {
 };
 
 /**
+ * Parses a `.npmrc` `min-release-age` value into minutes. npm's CLI defines
+ * this option as `null or Number` measured in **days**, so a bare integer
+ * like `"1"` means one day — not one minute. Legacy `Nd`/`Nh`/`Nm` strings
+ * (older vis writes and hand-edits) still fall back to `parseTimeStringToMinutes`
+ * for forgiving drift comparison until `vis security sync` rewrites them.
+ */
+export const parseNpmReleaseAgeValue = (raw: string): number | undefined => {
+    const trimmed = raw.trim();
+
+    if (/^\d+(?:\.\d+)?$/.test(trimmed)) {
+        return Number.parseFloat(trimmed) * 1440;
+    }
+
+    return parseTimeStringToMinutes(trimmed);
+};
+
+/**
  * Inverse of `parseTimeStringToMinutes`: renders a minutes count as the
  * largest whole-unit time string (`Nd`/`Nh`/`Nm`). Used when writing to npm /
  * yarn configs that expect duration strings.
@@ -138,10 +158,16 @@ export const formatMinutesAsTimeString = (minutes: number): string => {
  * - bun: `bunfig.toml [install]` — value in **seconds**, divided by 60.
  *   Bun's installer knobs (registry, scopes, lockfile, minimumReleaseAge, …)
  *   all live under `[install]` per https://bun.sh/docs/runtime/bunfig#install.
- * - npm: `.npmrc` `min-release-age=&lt;duration>` — time-string parsed via
- *   `parseTimeStringToMinutes` (e.g. `2d`, `48h`, `15m`).
- * - yarn: `.yarnrc.yml` `npmMinimalAgeGate: "&lt;duration>"` — same time-string
- *   syntax as npm.
+ * - npm: `.npmrc` `min-release-age=&lt;integer>` — npm's option type is
+ *   `null or Number` measured in **days**, so a bare integer maps to days × 1440
+ *   minutes. Legacy `Nd`/`Nh`/`Nm` strings from earlier vis releases or hand-
+ *   edits are still accepted via `parseNpmReleaseAgeValue` for forgiving drift
+ *   comparison, but npm itself would `parseInt` those (silently misreading
+ *   `48h` as 48 *days*).
+ * - yarn: `.yarnrc.yml` `npmMinimalAgeGate: &lt;minutes>` — yarn's docs spell
+ *   this as a duration string but yarnpkg/berry#6991 makes day suffixes parse
+ *   as minutes. Vis writes a bare integer in minutes to dodge the bug. We
+ *   still accept duration strings on read for back-compat.
  */
 export const readPmNativeMinimumReleaseAge = (workspaceRoot: string, packageManager: string): PmNativeMinimumReleaseAge => {
     try {
@@ -177,7 +203,7 @@ export const readPmNativeMinimumReleaseAge = (workspaceRoot: string, packageMana
                     const content = readFileSync(npmrcPath);
                     const match = /^\s*min-release-age\s*=\s*([^\s#;]+)/m.exec(content);
 
-                    return { minutes: match ? parseTimeStringToMinutes(match[1]!) : undefined };
+                    return { minutes: match ? parseNpmReleaseAgeValue(match[1]!) : undefined };
                 }
 
                 break;
@@ -293,14 +319,14 @@ const logFilteredByTarget = (entries: OutdatedEntry[], logger: Console): void =>
     }
 };
 
-const writeFormattedOutput = (entries: OutdatedEntry[], failed: string[], format: string, logger: Console): void => {
+const writeFormattedOutput = (entries: OutdatedEntry[], failed: string[], format: string, logger: Console, scoreMinimum?: number): void => {
     if (format === "json") {
         process.stdout.write(`${formatOutdatedJson({ checkedCount: 0, failed, filteredByTarget: [], ignored: [], outdated: entries })}\n`);
     } else if (format === "minimal") {
         process.stdout.write(`${formatOutdatedMinimal(entries)}\n`);
     } else {
         formatOutdatedTable(entries, logger);
-        logger.info(formatSummary(entries));
+        logger.info(formatSummary(entries, scoreMinimum));
     }
 };
 
@@ -444,7 +470,7 @@ const executeCatalogUpdate = async (
         logger.info(`Checking ${String(totalDeps)} catalog dependencies...\n`);
     }
 
-    const socketOptions = buildSocketOptions(visConfig.security?.socket);
+    const socketOptions = buildSocketOptions(visConfig.security?.socket, visConfig.security?.policies?.score?.minimum);
 
     const { checkedCount, failed, filteredByTarget, ignored, outdated } = await checkOutdated(
         catalogs,
@@ -453,7 +479,7 @@ const executeCatalogUpdate = async (
         onProgress,
         workspaceRoot,
         socketOptions,
-        visConfig.security?.socket?.acceptedRisks,
+        visConfig.security?.acceptedRisks,
     );
 
     if (progressInstance) {
@@ -630,7 +656,7 @@ const executeCatalogUpdate = async (
         }
 
         process.stdout.write("\n");
-        logger.info(formatSummary(outdated));
+        logger.info(formatSummary(outdated, socketOptions?.minimumScore));
 
         if (checkedCount > outdated.length) {
             const totalCatalogEntries = [...catalogs.values()].reduce((sum, deps) => sum + deps.size, 0);
@@ -696,7 +722,7 @@ const executeCatalogUpdate = async (
             process.stdout.write(`${JSON.stringify(output, undefined, 2)}\n`);
         } else {
             logger.info(`Would update ${String(outdated.length)} dependencies:\n`);
-            writeFormattedOutput(outdated, failed, format, logger);
+            writeFormattedOutput(outdated, failed, format, logger, socketOptions?.minimumScore);
 
             if (aiResult) {
                 logger.info("");
@@ -727,7 +753,7 @@ const executeCatalogUpdate = async (
     }
 
     logger.info(`Updating ${String(toApply.length)} catalog dependencies...\n`);
-    writeFormattedOutput(toApply, [], format, logger);
+    writeFormattedOutput(toApply, [], format, logger, socketOptions?.minimumScore);
     logFilteredByTarget(filteredByTarget, logger);
 
     const mergedOptions = { ...options, install: options.install ?? configDefaults.install };
@@ -906,7 +932,7 @@ const execute = async ({ argument: rawArgument, logger, options, visConfig, work
         }
     }
 
-    // Rollback mode
+    // Rollback mode — short-circuits before any registry work.
     if (options.rollback) {
         if (!hasBackup(workspaceRoot, packageManager)) {
             logger.info("No backup found. Run 'vis update' first to create a backup.");
@@ -923,6 +949,28 @@ const execute = async ({ argument: rawArgument, logger, options, visConfig, work
         }
 
         return;
+    }
+
+    // Pre-install marshall pipeline — only on the explicit-args branch.
+    // Blanket `vis update` is a packument fan-out over every installed dep
+    // and would multiply network traffic dramatically; user-typed package
+    // names are the right scope for these checks.
+    if (argument.length > 0 && (options as Record<string, unknown>).marshallCheck !== false) {
+        const resolved = await resolveExplicitPackages(argument);
+
+        if (resolved.length > 0) {
+            const findings = await runMarshallPipeline(resolved, {
+                config: visConfig?.security?.marshalls,
+                workspaceRoot,
+            });
+            const proceed = await presentMarshallFindings(findings);
+
+            if (!proceed) {
+                process.exitCode = 1;
+
+                return;
+            }
+        }
     }
 
     // Blanket --latest gate: confirm before upgrading everything to latest.

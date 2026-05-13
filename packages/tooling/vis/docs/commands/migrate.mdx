@@ -23,7 +23,7 @@ change before you apply.
 
 ### turborepo
 
-Reads `turbo.json` and writes `vis.config.ts` with equivalent `targetDefaults`:
+Reads `turbo.json` and writes `vis.config.ts` with equivalent `tasks`:
 
 ```bash
 vis migrate turborepo
@@ -32,11 +32,11 @@ vis migrate turborepo --dry-run    # Preview without writing
 
 Translates:
 
-- `tasks` / `pipeline` entries → `targetDefaults`
+- `tasks` / `pipeline` entries → `tasks`
 - `^build` dependsOn → `{ dependencies: true, target: "build" }`
 - `project#task` → `{ projects: "project", target: "task" }`
-- `globalDependencies` → `taskRunnerOptions.globalInputs`
-- `globalEnv` → `taskRunnerOptions.globalEnv`
+- `globalDependencies` → `taskRunner.globalInputs`
+- `globalEnv` → `taskRunner.globalEnv`
 - `persistent` / `interactive` → `options.persistent` / `options.interactive`
 
 Remote cache is flagged in the migration report (vis uses the same Turborepo HTTP protocol).
@@ -53,7 +53,7 @@ vis migrate nx --dry-run
 Translates:
 
 - `namedInputs` → `namedInputs`
-- `targetDefaults` → `targetDefaults`
+- `targetDefaults` → `tasks`
 
 Per-project `project.json` files are **left untouched** — vis reads them natively (targets, tags, implicitDependencies, sourceRoot).
 
@@ -68,7 +68,7 @@ vis migrate moon --dry-run
 
 Translates:
 
-- `tasks` → `targetDefaults` (command + args merged, deps, inputs, outputs, type, preset, options)
+- `tasks` → `tasks` (command + args merged, deps, inputs, outputs, type, preset, options)
 - `fileGroups` → `fileGroups`
 - `implicitInputs` → `namedInputs.default`
 
@@ -269,6 +269,30 @@ vis migrate sherif --dry-run
 - `ignore-dependencies` → mirror in `vis.config.ts` under `policy.workspaceVersions.ignore`, `policy.customTypes.ignore`, `policy.typesInDeps.ignore`, `policy.redefineRoot.ignore` (per-rule scoping in vis vs. global in sherif).
 - `ignore-packages` / `ignore-paths` → flagged for review; vis has no global package/path-skip yet (only per-rule scoping via `policy.bannedDeps.{packages,paths}`).
 - Pre-commit hooks and CI workflows referencing `sherif` are flagged but not auto-rewritten — the reviewer chooses the right `vis lint` flag set.
+
+### self
+
+Rewrites an existing `vis.config.ts` / `vis.task.ts` (and any `extends` chain) to use the current field names after a vis hard-break rename. Run after upgrading vis when `VisConfigDeprecatedKeyError` fires at load time.
+
+```bash
+vis migrate self
+vis migrate self --dry-run    # Preview without writing
+```
+
+**Current rename table** (vis 1.x → 2.0):
+
+| Previous                          | New                          |
+| --------------------------------- | ---------------------------- |
+| `VisConfig.targetDefaults`        | `VisConfig.tasks`            |
+| `VisConfig.taskDefaults`          | `VisConfig.scopedTasks`      |
+| `VisConfig.taskRunnerOptions`     | `VisConfig.taskRunner`       |
+| `ScopedTasksBlock.scope`          | `ScopedTasksBlock.match`     |
+| `ScopedTasksBlock.targets`        | `ScopedTasksBlock.tasks`     |
+| `VisTaskConfig.targets`           | `VisTaskConfig.tasks`        |
+
+Rewrites `vis.config.{ts,mts,cts,js,mjs,cjs}` at the workspace root and every `vis.task.{ts,mts,cts,js,mjs,cjs}` overlay found beneath it (`node_modules`, `.git`, `.vis/`, and common build output directories are skipped). Source files are rewritten only when they contain an old key; a `.bak` is created next to each modified file. `--dry-run` lists which files would change without touching disk.
+
+JSON configs and files referenced via `extends` are out of scope — rewrite those by hand (the rename table above is the full diff).
 
 ### verify
 

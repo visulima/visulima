@@ -1,11 +1,11 @@
 import { isAccessibleSync, readFileSync, writeFileSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
-import { formatMinutesAsTimeString, renderYamlKey } from "./duration";
+import { renderYamlKey } from "./duration";
 import type { PackageManagerName } from "./types";
 
 /**
- * Mirrors `security.minimumReleaseAge` (and the excludes list) from vis-config
+ * Mirrors `security.policies.firstSeen.minutes` (and `firstSeen.exclude`) from vis-config
  * to the package manager's native config so the PM's own install/update path
  * enforces the same gate vis already enforces internally.
  *
@@ -15,9 +15,19 @@ import type { PackageManagerName } from "./types";
  *   `minimumReleaseAgeExclude` (list).
  * - **bun** → `bunfig.toml [install]`: `minimumReleaseAge` (**seconds**) +
  *   `minimumReleaseAgeExcludes` (list, plural per bun's docs).
- * - **npm** → `.npmrc`: `min-release-age=&lt;duration>` (e.g. `2d`, `48h`).
- *   npm has no native per-package exclude list.
- * - **yarn** (berry) → `.yarnrc.yml`: `npmMinimalAgeGate: "&lt;duration>"`.
+ * - **npm** → `.npmrc`: `min-release-age=&lt;integer>` — npm's CLI defines this
+ *   as `null or Number` measured in **days**; duration strings like `48h`
+ *   are not understood (npm's config validator parseInt's them, so `48h`
+ *   would silently be treated as 48 *days*). To stay safe vis writes an
+ *   integer day count rounded *up* from the configured minutes, so the
+ *   native gate is always at least as strict as vis-config. npm has no
+ *   native per-package exclude list.
+ * - **yarn** (berry) → `.yarnrc.yml`: `npmMinimalAgeGate: &lt;minutes>` written
+ *   as a **bare integer**. Yarn's docs advertise duration strings (`7d`),
+ *   but yarnpkg/berry#6991 makes yarn silently treat `7d` as 7 *minutes*.
+ *   Writing a bare integer minute count dodges the bug and round-trips
+ *   correctly with vis-config. Excludes go to `npmPreapprovedPackages`
+ *   (yarn's native exclude list, accepts globs + exact locators).
  *   yarn classic has no equivalent — we skip with a note.
  *
  * The vis-internal unit is **minutes**; this helper converts to whatever
@@ -83,13 +93,15 @@ const syncMinimumReleaseAgeToNativeConfig = (pm: PackageManagerName, workspaceRo
         case "npm": {
             const npmrcPath = join(workspaceRoot, ".npmrc");
             let content = isAccessibleSync(npmrcPath) ? readFileSync(npmrcPath) : "";
-            const duration = formatMinutesAsTimeString(wholeMinutes);
-            const line = `min-release-age=${duration}`;
+            // npm's `min-release-age` is `null or Number` in *days*. Round up
+            // so the native gate is never weaker than the configured minutes.
+            const days = wholeMinutes === 0 ? 0 : Math.max(1, Math.ceil(wholeMinutes / 1440));
+            const line = `min-release-age=${String(days)}`;
 
             content = /^\s*min-release-age\s*=/m.test(content) ? content.replace(/^\s*min-release-age\s*=.*$/m, line) : `${content.trimEnd()}\n${line}\n`;
 
             writeFileSync(npmrcPath, content.endsWith("\n") ? content : `${content}\n`);
-            actions.push(`Updated .npmrc min-release-age=${duration} (${String(wholeMinutes)} minutes)`);
+            actions.push(`Updated .npmrc min-release-age=${String(days)} (rounded up from ${String(wholeMinutes)} minutes; npm's unit is days)`);
 
             if (excludes.length > 0) {
                 actions.push("npm has no native per-package exclude list; skipped excludes sync.");
@@ -146,8 +158,10 @@ const syncMinimumReleaseAgeToNativeConfig = (pm: PackageManagerName, workspaceRo
             }
 
             let content = readFileSync(yarnrcPath);
-            const duration = formatMinutesAsTimeString(wholeMinutes);
-            const line = `npmMinimalAgeGate: "${duration}"`;
+            // Write a bare integer (minutes) — yarnpkg/berry#6991 makes
+            // duration strings like "7d" parse as 7 minutes. A bare number
+            // is unambiguous and not affected by the bug.
+            const line = `npmMinimalAgeGate: ${String(wholeMinutes)}`;
 
             if (!content.endsWith("\n")) {
                 content += "\n";
@@ -157,11 +171,18 @@ const syncMinimumReleaseAgeToNativeConfig = (pm: PackageManagerName, workspaceRo
                 ? content.replace(/^npmMinimalAgeGate[ \t]*:.*$/m, line)
                 : `${content.trimEnd()}\n\n${line}\n`;
 
+            if (excludes.length > 0) {
+                const block = `npmPreapprovedPackages:\n${excludes.map((p) => `  - ${renderYamlKey(p)}`).join("\n")}\n`;
+                const blockRegex = /^npmPreapprovedPackages:[ \t]*\n(?:[ \t]{2}[^\n]*\n)*/m;
+
+                content = blockRegex.test(content) ? content.replace(blockRegex, block) : `${content.trimEnd()}\n\n${block}`;
+            }
+
             writeFileSync(yarnrcPath, content);
-            actions.push(`Updated .yarnrc.yml npmMinimalAgeGate: "${duration}" (${String(wholeMinutes)} minutes)`);
+            actions.push(`Updated .yarnrc.yml npmMinimalAgeGate: ${String(wholeMinutes)} (minutes; bare integer dodges yarn duration-string bug)`);
 
             if (excludes.length > 0) {
-                actions.push("yarn has no native per-package exclude list; skipped excludes sync.");
+                actions.push(`Updated .yarnrc.yml npmPreapprovedPackages (${String(excludes.length)} entries)`);
             }
 
             break;

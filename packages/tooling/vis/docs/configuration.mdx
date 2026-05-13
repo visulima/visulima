@@ -26,11 +26,24 @@ Supported file names (checked in order): `vis.config.ts`, `.mts`, `.cts`, `.js`,
 
 ### Target Defaults
 
-Apply default configuration to all projects that have a matching target:
+Apply default configuration to all projects that have a matching target.
+
+#### Picking a defaults tool
+
+vis ships four mechanisms for sharing target configuration. Use the smallest one that fits — they compose, so you can mix.
+
+| Tool                | Reach for it when…                                                                                           | Section                                   |
+| ------------------- | ------------------------------------------------------------------------------------------------------------ | ----------------------------------------- |
+| `tasks`             | One target name should behave the same in **every** project (e.g. `build` always declares `^build`).         | This section                              |
+| `scopedTasks`       | Defaults need to apply to a **subset** of projects matched by `tags` / `projectType` / `layer` / `stack` / `language`. | [Scoped Tasks](#scoped-tasks) |
+| `taskGroups`        | The same multi-entry `dependsOn` array repeats across **two or more** targets — name the bundle once, reuse. | [Task Groups](#task-groups)               |
+| `@inherit` sentinel | A single project needs to **extend** an inherited array (`dependsOn`, `inputs`, `outputs`, `aliases`) instead of replacing it. | [`@inherit` array sentinel](#inherit-array-sentinel) |
+
+Per-target `project.json#targets` (and `vis.task.ts` overlays) override everything above — use them only for project-specific deviations, not as the default home for shared config.
 
 ```typescript
 export default defineConfig({
-    targetDefaults: {
+    tasks: {
         build: {
             dependsOn: ["^build"],
             outputs: ["{projectRoot}/dist/**"],
@@ -72,7 +85,7 @@ export default defineConfig({
         tests: ["**/*.test.ts", "**/*.spec.ts"],
         configs: ["tsconfig.json", "vis.config.ts"],
     },
-    targetDefaults: {
+    tasks: {
         build: {
             inputs: ["@filegroup:sources", "@filegroup:configs"],
         },
@@ -102,7 +115,7 @@ Negation (`!`) works for fileset forms only: `!file://...`, `!glob://...`, `!{pr
 
 ```typescript
 export default defineConfig({
-    targetDefaults: {
+    tasks: {
         build: {
             inputs: [
                 "glob://{projectRoot}/src/**/*", // fileset
@@ -141,7 +154,7 @@ export default defineConfig({
 
 Entries are processed left-to-right (later entries win). The consumer file always overrides anything pulled in from `extends`. Cycles raise `VisConfigCycleError`; missing entries raise `VisConfigNotFoundError`. Both errors include the full chain of files for debugging deep `extends` graphs.
 
-By default the consumer's arrays replace inherited arrays wholesale. Use the [`@inherit` array sentinel](#inherit-array-sentinel) when you want to extend an array from `extends` (or from `targetDefaults`) instead of replacing it.
+By default the consumer's arrays replace inherited arrays wholesale. Use the [`@inherit` array sentinel](#inherit-array-sentinel) when you want to extend an array from `extends` (or from `tasks`) instead of replacing it.
 
 #### Per-package `vis.task.ts`
 
@@ -152,7 +165,7 @@ Drop a `vis.task.ts` in a project to override its targets with full type-safety.
 import { defineTaskConfig } from "@visulima/vis/config";
 
 export default defineTaskConfig({
-    targets: {
+    tasks: {
         build: {
             inputs: ["@inherit", "src/proto/**/*.proto"],
             outputs: ["dist/**/*"],
@@ -170,9 +183,9 @@ Lowest to highest priority — later overrides earlier:
 
 1. `extends` chain (flattened depth-first, left-to-right)
 2. Root `vis.config.ts` values
-3. `taskDefaults` blocks (in declaration order)
+3. `scopedTasks` blocks (in declaration order)
 4. `project.json#targets`
-5. **`vis.task.ts#targets`**
+5. **`vis.task.ts#tasks`**
 6. `package.json#scripts` _(fallback only — fills `command` if still undefined)_
 7. Preset
 8. `defaultCacheForType`
@@ -182,41 +195,45 @@ Lowest to highest priority — later overrides earlier:
 By default, child arrays replace parent arrays. To extend instead, use `"@inherit"` — every occurrence is replaced inline by the parent's entries:
 
 ```typescript
-// vis.config.ts targetDefaults
-targetDefaults: {
+// vis.config.ts tasks
+tasks: {
     build: { dependsOn: ["^build"] },
 }
 
 // packages/api/crud/vis.task.ts overlay
-targets: {
+tasks: {
     build: { dependsOn: ["@inherit", "^proto-gen"] }, // → ["^build", "^proto-gen"]
 }
 ```
 
 Applies to `dependsOn`, `inputs`, `outputs`, and `aliases`. An empty array (`dependsOn: []`) is a deliberate reset; an array without `@inherit` is a wholesale replace.
 
-### Scoped Task Defaults
+**When to reach for `@inherit`:** one project needs an extra dependency, input, or output on top of the inherited defaults — not as a replacement. Common cases: a package that generates code before its build (`["@inherit", "^proto-gen"]`), a test target that also needs fixtures (`inputs: ["@inherit", "{projectRoot}/__fixtures__/**"]`), or an output target that emits a second artefact (`outputs: ["@inherit", "{projectRoot}/types/**"]`).
+
+If you find yourself writing `@inherit` in two or more projects with the same addition, that's the signal to move the addition into `scopedTasks` (scoped) or `tasks` (universal) instead, and drop the per-project overlay.
+
+### Scoped Tasks
 
 Apply target defaults conditionally based on project metadata:
 
 ```typescript
 export default defineConfig({
-    taskDefaults: [
+    scopedTasks: [
         {
-            scope: { tags: ["frontend"] },
-            targets: {
+            match: { tags: ["frontend"] },
+            tasks: {
                 build: { command: "vite build", outputs: ["dist/**"] },
             },
         },
         {
-            scope: { projectType: "library", language: "typescript" },
-            targets: {
+            match: { projectType: "library", language: "typescript" },
+            tasks: {
                 build: { command: "tsc --build" },
             },
         },
         {
-            scope: { layer: ["tool", "automation"] },
-            targets: {
+            match: { layer: ["tool", "automation"] },
+            tasks: {
                 test: { options: { retryCount: 2 } },
             },
         },
@@ -224,7 +241,7 @@ export default defineConfig({
 });
 ```
 
-Scope fields (all optional, must all match):
+Match fields (all optional, must all match):
 
 | Field         | Type                         | Description                         |
 | ------------- | ---------------------------- | ----------------------------------- |
@@ -391,11 +408,11 @@ Key knobs introduced with the build-script triage and drift checker:
 
 After install/update commands vis automatically prints a **drift report** when `vis.config` and the PM-native config disagree. Run `vis security sync` to push vis-config values to the native config; run `vis security list` to inspect the full triage (approved / unapproved / stale / version-drift).
 
-### Task Runner Options
+### Task Runner
 
 ```typescript
 export default defineConfig({
-    taskRunnerOptions: {
+    taskRunner: {
         parallel: 5,
         smartLockfileHashing: true,
         frameworkInference: true,
@@ -435,7 +452,7 @@ export default defineConfig({
         lint: ["eslint", "prettier", "types"],
         "pre-build": [{ group: "lint" }, "codegen"],
     },
-    targetDefaults: {
+    tasks: {
         build: {
             // Expands to: ["eslint", "prettier", "types", "codegen"]
             dependsOn: [{ group: "pre-build" }],
@@ -696,6 +713,29 @@ Place a `project.json` in each workspace package for per-project configuration. 
 | `owners`               | `object[]` | Code ownership declarations (see [vis sync](/commands/sync))                   |
 | `project`              | `object`   | Human-readable metadata (title, description, owner)                            |
 | `targets`              | `object`   | Target definitions (see [vis run](/commands/run#target-options))               |
+
+### Implicit Dependencies
+
+`implicitDependencies` declares project edges that don't exist in `package.json`. Use it when project A needs to rebuild whenever project B changes, but A doesn't actually `import` B — so the package-manager graph wouldn't pick it up.
+
+```json
+{
+    "$schema": "https://unpkg.com/@visulima/vis/schemas/project.schema.json",
+    "projectType": "application",
+    "implicitDependencies": ["@myorg/eslint-config", "@myorg/tsconfig"]
+}
+```
+
+Common triggers:
+
+- **Shared config packages** — your `eslint-config` / `tsconfig` / `prettier-config` package isn't `import`ed at runtime, but every consumer needs its `build` to run first.
+- **Codegen sources** — a `.proto` package or schema-generator that emits files into a sibling project. The consumer doesn't `import` the generator; it consumes its output.
+- **Docs / fixture packages** — your `docs` app reads MDX from a sibling package via filesystem globs, not imports.
+- **Composite-tsconfig roots** — TypeScript project references already imply rebuild ordering, but only if `tsc --build` runs; for cache invalidation in vis, declare the edge explicitly.
+
+If two projects already have a `package.json` dependency edge (`"dependencies": { "@myorg/lib": "workspace:*" }`), vis picks that up automatically — don't duplicate it here. `implicitDependencies` is the escape hatch for the cases where the dep graph misses what the build graph needs.
+
+Add the same project name to multiple consumers' `implicitDependencies` to fan it out; vis deduplicates during graph construction.
 
 ### Targets in project.json
 

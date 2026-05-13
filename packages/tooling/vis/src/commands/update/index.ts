@@ -194,6 +194,13 @@ const update: Command = {
             type: Boolean,
         },
         {
+            defaultValue: false,
+            description:
+                "Skip the offline marshall pipeline (author, provenance, metadata, downloads, expired-domains, new-bin, signatures, archived-repo) when explicit package arguments are supplied",
+            name: "no-marshall-check",
+            type: Boolean,
+        },
+        {
             description: "Cap concurrent registry requests during outdated checks (default: 8)",
             name: "max-concurrent-requests",
             type: Number,
@@ -234,6 +241,7 @@ export type UpdateOptions = CreateOptions<{
     latest: boolean | undefined;
     "max-concurrent-requests": number | undefined;
     "no-catalog": boolean | undefined;
+    "no-marshall-check": boolean | undefined;
     "no-optional": boolean | undefined;
     "no-save": boolean | undefined;
     "no-typosquat-check": boolean | undefined;

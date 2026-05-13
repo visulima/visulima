@@ -6,8 +6,6 @@
 
 import { describe, expect, it } from "vitest";
 
-// ── Shared helpers ───────────────────────────────────────────────────
-
 const toStringArray = (value: unknown): string[] => {
     if (!value) {
         return [];
@@ -53,8 +51,6 @@ describe("toStringArray helper", () => {
         expect(toStringArray([])).toStrictEqual([]);
     });
 });
-
-// ── Install command ──────────────────────────────────────────────────
 
 describe("install command options", () => {
     it("should build correct InstallOptions defaults", () => {
@@ -122,8 +118,6 @@ describe("install command options", () => {
     });
 });
 
-// ── Add command ──────────────────────────────────────────────────────
-
 describe("add command argument validation", () => {
     it("should reject empty packages", () => {
         expect.assertions(1);
@@ -165,8 +159,6 @@ describe("add command argument validation", () => {
     });
 });
 
-// ── Remove command ───────────────────────────────────────────────────
-
 describe("remove command argument validation", () => {
     it("should reject empty packages", () => {
         expect.assertions(1);
@@ -195,8 +187,6 @@ describe("remove command argument validation", () => {
     });
 });
 
-// ── Dedupe command ───────────────────────────────────────────────────
-
 describe("dedupe command options", () => {
     it("should default check to false", () => {
         expect.assertions(1);
@@ -214,8 +204,6 @@ describe("dedupe command options", () => {
         expect((options.check as boolean) || false).toBe(true);
     });
 });
-
-// ── Why command ──────────────────────────────────────────────────────
 
 describe("why command argument validation", () => {
     it("should reject empty packages", () => {
@@ -248,8 +236,6 @@ describe("why command argument validation", () => {
     });
 });
 
-// ── Outdated command ─────────────────────────────────────────────────
-
 describe("outdated command options", () => {
     it("should default format to table", () => {
         expect.assertions(1);
@@ -275,8 +261,6 @@ describe("outdated command options", () => {
         expect((options.format as string) || "table").toBe("list");
     });
 });
-
-// ── Link / Unlink commands ───────────────────────────────────────────
 
 describe("link command argument handling", () => {
     it("should handle no target (register current package)", () => {
@@ -326,8 +310,6 @@ describe("unlink command options", () => {
     });
 });
 
-// ── Dlx command ──────────────────────────────────────────────────────
-
 describe("dlx command argument validation", () => {
     it("should reject empty args", () => {
         expect.assertions(1);
@@ -376,8 +358,6 @@ describe("dlx command argument validation", () => {
     });
 });
 
-// ── Exec command ─────────────────────────────────────────────────────
-
 describe("exec command argument validation", () => {
     it("should reject empty args", () => {
         expect.assertions(1);
@@ -411,8 +391,6 @@ describe("exec command argument validation", () => {
         expect((options.reverse as boolean) || false).toBe(false);
     });
 });
-
-// ── PM command ───────────────────────────────────────────────────────
 
 describe("pm command argument validation", () => {
     it("should reject empty args", () => {

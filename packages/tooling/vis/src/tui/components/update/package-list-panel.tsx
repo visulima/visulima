@@ -9,8 +9,6 @@ import type { OutdatedEntry } from "../../../util/catalog";
 import { useMeasuredHeight } from "../../use-measured-height";
 import type { FilterType } from "./update-store";
 
-// ── Helpers ─────────────────────────────────────────────────────────────
-
 const UPDATE_TYPE_COLORS: Record<string, string> = {
     major: "red",
     minor: "yellow",
@@ -24,8 +22,6 @@ const FILTER_TABS: ReadonlyArray<{ id: FilterType; label: string }> = [
     { id: "patch", label: "Patch" },
     { id: "security", label: "Security" },
 ];
-
-// ── Sub-components ──────────────────────────────────────────────────────
 
 interface PackageRowProps {
     checked: boolean;
@@ -113,8 +109,6 @@ const CatalogHeader = ({ count, name }: CatalogHeaderProps): React.JSX.Element =
         </Text>
     </Box>
 );
-
-// ── Main Component ──────────────────────────────────────────────────────
 
 interface PackageListPanelProps {
     checkedEntries: Set<string>;

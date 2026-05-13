@@ -1399,7 +1399,7 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
     // regular runner doesn't execute them — they run via `runPersistentTasks`.
     let taskGraph = createTaskGraph([...initialTasks, ...persistentTasks], {
         projectGraph,
-        targetDefaults: config.targetDefaults as unknown as Record<string, Partial<TargetConfiguration>>,
+        targetDefaults: config.tasks as unknown as Record<string, Partial<TargetConfiguration>>,
         workspace,
     });
 
@@ -1948,12 +1948,12 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
     // and relative --cache-dir values are normalized against the
     // workspace root. Other fields keep their existing spread semantics
     // to avoid changing override precedence for parallel/dryRun/etc.
-    const configTaskRunnerOptions = (config.taskRunnerOptions ?? {}) as TaskRunnerOptions & { cacheDirectory?: string };
+    const configTaskRunner = (config.taskRunner ?? {}) as TaskRunnerOptions & { cacheDirectory?: string };
     // Anchor the default cache path to the *main* worktree root when this
     // workspace is a linked git worktree, so sibling agents share one cache
     // instead of rebuilding the same hash N times. Explicit paths
     // (--cache-dir, vis.config.ts, VIS_CACHE_DIRECTORY) win unchanged.
-    const baseCacheDirectory = resolveSharedCacheDirectory(workspaceRoot, options.cacheDir, configTaskRunnerOptions.cacheDirectory, config.sharedWorktreeCache);
+    const baseCacheDirectory = resolveSharedCacheDirectory(workspaceRoot, options.cacheDir, configTaskRunner.cacheDirectory, config.sharedWorktreeCache);
     // Branch-scope the cache dir when configured so main/feature
     // branches stop overwriting each other's entries.
     const resolvedCacheDirectory = applyBranchScope(baseCacheDirectory, workspaceRoot, config.branchScopedCache);
@@ -1982,7 +1982,7 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
         parallel: resolvedParallel,
         skipNxCache: !options.cache,
         summarize: options.summarize ?? false,
-        ...configTaskRunnerOptions,
+        ...configTaskRunner,
         // Applied after the config spread so the user's `--cache-dir` flag
         // wins over a config value and relative paths are normalized
         // against `workspaceRoot` via `resolveCacheDirectory()`.
@@ -1993,7 +1993,7 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
         // (if any) is honoured because the spread above can carry it
         // through; the explicit assignment here guarantees vis-driven
         // runs always co-locate their state under `.vis/`.
-        dataDirectory: configTaskRunnerOptions.dataDirectory ?? getVisWorkspaceDataDir(workspaceRoot),
+        dataDirectory: configTaskRunner.dataDirectory ?? getVisWorkspaceDataDir(workspaceRoot),
         // Bridge the typed `task:fingerprint` hook into task-runner's
         // `onFingerprint` callback. Placed after the config spread so
         // the plugin pipeline always runs — a config-supplied
@@ -2014,7 +2014,7 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
     // working without rewriting CI secrets. Rejects malformed CLI values
     // up front so a typo in `--cache-mode=eread` doesn't silently fall
     // through to the runner and surface as "no cache hits".
-    const envCompatRemoteCache = resolveTurboEnvCompat(configTaskRunnerOptions.remoteCache);
+    const envCompatRemoteCache = resolveTurboEnvCompat(configTaskRunner.remoteCache);
 
     if (envCompatRemoteCache) {
         const cliMode = parseCacheMode(options.cacheMode);

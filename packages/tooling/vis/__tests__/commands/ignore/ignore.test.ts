@@ -26,8 +26,6 @@ import {
     validateGitRef,
 } from "../../../src/commands/ignore-helpers";
 
-// ─── Helpers ─────────────────────────────────────────────────────────
-
 /**
  * Builds a temp directory with an initialised git repo and a seeded
  * commit so the git-backed helpers have something to read.
@@ -61,8 +59,6 @@ const createTemporaryGitRepo = (): { cleanup: () => void; commit: (message: stri
     };
 };
 
-// ─── commitHasSkipMessage ────────────────────────────────────────────
-
 describe(commitHasSkipMessage, () => {
     it.each(SKIP_TOKENS)("matches skip token %s regardless of project", (token) => {
         expect.assertions(1);
@@ -90,8 +86,6 @@ describe(commitHasSkipMessage, () => {
     });
 });
 
-// ─── commitHasForceDeployMessage ─────────────────────────────────────
-
 describe(commitHasForceDeployMessage, () => {
     it.each(FORCE_TOKENS)("matches force-deploy token %s regardless of project", (token) => {
         expect.assertions(1);
@@ -116,8 +110,6 @@ describe(commitHasForceDeployMessage, () => {
         expect(commitHasForceDeployMessage("feat: something", "my-app")).toBe(false);
     });
 });
-
-// ─── resolveCiBaseSha ────────────────────────────────────────────────
 
 describe(resolveCiBaseSha, () => {
     it("returns undefined when no CI env var is set", () => {
@@ -177,8 +169,6 @@ describe(resolveCiBaseSha, () => {
         expect(CI_BASE_SHA_ENV_VARS).not.toContain("RENDER_GIT_COMMIT");
     });
 });
-
-// ─── validateGitRef ──────────────────────────────────────────────────
 
 describe(validateGitRef, () => {
     it("accepts common git ref shapes", () => {
@@ -251,8 +241,6 @@ describe(validateGitRef, () => {
     });
 });
 
-// ─── exitCodeFor ─────────────────────────────────────────────────────
-
 describe(exitCodeFor, () => {
     const decisionBuild: IgnoreDecision = { action: "build", message: "", project: "p", reason: "project-affected" };
     const decisionSkip: IgnoreDecision = { action: "skip", message: "", project: "p", reason: "project-not-affected" };
@@ -269,8 +257,6 @@ describe(exitCodeFor, () => {
         expect(exitCodeFor(decisionBuild, true)).toBe(0);
     });
 });
-
-// ─── matchesPerProjectToken ──────────────────────────────────────────
 
 describe(matchesPerProjectToken, () => {
     it("matches vis prefix for the given verb and project", () => {
@@ -296,8 +282,6 @@ describe(matchesPerProjectToken, () => {
         expect(matchesPerProjectToken("chore: [vis deploy my-app]", "skip", "my-app")).toBe(false);
     });
 });
-
-// ─── decideBuild / decideSkip ────────────────────────────────────────
 
 describe("decision factories", () => {
     it("decideBuild returns a build decision with the given fields", () => {
@@ -346,8 +330,6 @@ describe("decision factories", () => {
     });
 });
 
-// ─── formatDecisionLine ──────────────────────────────────────────────
-
 describe(formatDecisionLine, () => {
     it("prepends stop emoji for skip actions", () => {
         expect.assertions(1);
@@ -375,8 +357,6 @@ describe(formatDecisionLine, () => {
         expect(formatDecisionLine(decision)).toBe("\u2705 project affected");
     });
 });
-
-// ─── readLastCommitMessage ───────────────────────────────────────────
 
 describe(readLastCommitMessage, () => {
     let repo: ReturnType<typeof createTemporaryGitRepo>;
@@ -424,8 +404,6 @@ describe(readLastCommitMessage, () => {
         expect(commitHasSkipMessage(message, "my-app")).toBe(true);
     });
 });
-
-// ─── isRefReachable ──────────────────────────────────────────────────
 
 describe(isRefReachable, () => {
     let repo: ReturnType<typeof createTemporaryGitRepo>;

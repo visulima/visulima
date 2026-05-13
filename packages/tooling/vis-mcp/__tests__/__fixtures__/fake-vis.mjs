@@ -94,6 +94,46 @@ if (command.startsWith("run ")) {
     process.exit(0);
 }
 
+if (argv[0] === "audit" && argv.includes("--format") && argv[argv.indexOf("--format") + 1] === "json") {
+    writeJson({
+        packages: 42,
+        duplicates: [],
+        results: [
+            {
+                name: "lodash",
+                version: "4.17.20",
+                acceptedRisk: null,
+                socketAlerts: [],
+                socketScore: null,
+                vulnerabilities: [
+                    {
+                        id: "GHSA-xxxx",
+                        severity: "HIGH",
+                        summary: "Prototype Pollution",
+                        fixedVersions: ["4.17.21"],
+                    },
+                ],
+            },
+        ],
+        summary: { accepted: 0, duplicatePackages: 0, issues: 1, total: 1 },
+        flags: argv,
+    });
+    process.exit(0);
+}
+
+if (argv[0] === "advisories" && argv[1] === "status" && argv.includes("--format") && argv[argv.indexOf("--format") + 1] === "json") {
+    writeJson({
+        dbPath: argv.includes("--db") ? argv[argv.indexOf("--db") + 1] : "/cache/vis/advisories/db.sqlite",
+        exists: true,
+        schemaVersion: 2,
+        sizeBytes: 1024,
+        ecosystems: [
+            { name: "npm", advisoryCount: 5000, lastSyncIso: "2026-05-01T00:00:00Z", manifestEtag: "etag-abc" },
+        ],
+    });
+    process.exit(0);
+}
+
 if (command === "fail-bad-json") {
     process.stdout.write("not-json{");
     process.exit(0);

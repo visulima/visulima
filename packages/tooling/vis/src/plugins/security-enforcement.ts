@@ -102,7 +102,7 @@ const securityEnforcementPlugin: Plugin = {
         }
 
         // Display Socket.dev security summary after install/update commands
-        const socketOptions = buildSocketOptions(toolbox.visConfig?.security?.socket);
+        const socketOptions = buildSocketOptions(toolbox.visConfig?.security?.socket, toolbox.visConfig?.security?.policies?.score?.minimum);
 
         if (INSTALL_COMMANDS.has(command) && socketOptions && toolbox.workspaceRoot) {
             try {
@@ -112,7 +112,7 @@ const securityEnforcementPlugin: Plugin = {
                     const reports = await fetchSocketReports(packages, socketOptions);
 
                     if (reports.size > 0) {
-                        const overview = formatSecurityOverview(reports);
+                        const overview = formatSecurityOverview(reports, socketOptions.minimumScore);
 
                         if (overview) {
                             pail.info("");
