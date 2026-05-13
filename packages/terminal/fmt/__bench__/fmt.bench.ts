@@ -1,6 +1,5 @@
 import { format as utilityFormat } from "node:util";
 
-// eslint-disable-next-line import/no-extraneous-dependencies
 import quickFormat from "quick-format-unescaped";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { bench, describe } from "vitest";
