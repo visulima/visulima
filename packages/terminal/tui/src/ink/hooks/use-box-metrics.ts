@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import type { DOMElement } from "../dom";
 import { addLayoutListener } from "../dom";
-import useStdout from "./use-stdout";
 
 // Yoga's `right`/`bottom` are omitted: always `0` for flow layout and unintuitive for absolute positioning.
 
@@ -90,7 +89,6 @@ const Example = () => {
 const useBoxMetrics = (ref: RefObject<DOMElement | null>): UseBoxMetricsResult => {
     const [metrics, setMetrics] = useState<BoxMetrics>(emptyMetrics);
     const [hasMeasured, setHasMeasured] = useState(false);
-    const { stdout } = useStdout();
 
     const updateMetrics = useCallback(() => {
         const layout = ref.current?.yogaNode?.getComputedLayout() ?? emptyMetrics;
@@ -114,6 +112,8 @@ const useBoxMetrics = (ref: RefObject<DOMElement | null>): UseBoxMetricsResult =
 
     // Subscribe to root layout commits so memoized components still receive
     // sibling-driven position/size updates, even when they skip re-rendering.
+    // Terminal resize events fan out through this channel too — ink's resize
+    // handler calls `emitLayoutListeners` after recalculating Yoga layout.
     useEffect(() => {
         const rootNode = findRootNode(ref.current);
 
@@ -123,18 +123,6 @@ const useBoxMetrics = (ref: RefObject<DOMElement | null>): UseBoxMetricsResult =
 
         return addLayoutListener(rootNode, updateMetrics);
     });
-
-    // Terminal resize events do not go through React's render cycle. Ink
-    // recalculates Yoga layout in its own resize handler — registered in the
-    // Ink constructor, before this hook mounts — so by the time the resize
-    // callback runs, Yoga has already computed the post-resize metrics.
-    useEffect(() => {
-        stdout.on("resize", updateMetrics);
-
-        return () => {
-            stdout.off("resize", updateMetrics);
-        };
-    }, [stdout, updateMetrics]);
 
     return useMemo(() => {
         return {

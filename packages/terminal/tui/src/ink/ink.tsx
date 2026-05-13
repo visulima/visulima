@@ -589,6 +589,10 @@ export default class Ink {
         clearStyledLineCache();
 
         this.calculateLayout();
+        // Fan out to useBoxMetrics consumers via the shared layout-listener channel
+        // instead of having each hook subscribe to stdout 'resize' directly — N consumers
+        // would otherwise trip Node's default 10-listener cap (MaxListenersExceededWarning).
+        dom.emitLayoutListeners(this.rootNode);
         this.onRender();
 
         this.lastTerminalWidth = currentWidth;
