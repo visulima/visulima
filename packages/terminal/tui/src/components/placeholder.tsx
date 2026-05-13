@@ -81,7 +81,7 @@ export default function Placeholder({
                 // Guard against an explicitly empty `widths` prop — modulo
                 // by zero would yield NaN and the nullish fallback would
                 // still force every row to full width, hiding the bug.
-                const ratio = widths.length > 0 ? (widths[index % widths.length] ?? 1) : 1;
+                const ratio = widths.length > 0 ? widths[index % widths.length] ?? 1 : 1;
                 const effectiveWidth = Math.max(1, Math.round(baseWidth * ratio));
                 const fill = character.repeat(effectiveWidth);
 

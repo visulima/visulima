@@ -17,18 +17,18 @@ import {
     enableX10Mouse,
 } from "@visulima/ansi";
 
-type AnsiCodeKey =
-    | "alternateScroll"
-    | "mouseButton"
-    | "mouseDrag"
-    | "mouseFocus"
-    | "mouseHighlight"
-    | "mouseMotion"
-    | "mouseMotionOthers"
-    | "mousePixelMode"
-    | "mouseSGR"
-    | "mouseUtf8"
-    | "mouseX10";
+type AnsiCodeKey
+    = | "alternateScroll"
+        | "mouseButton"
+        | "mouseDrag"
+        | "mouseFocus"
+        | "mouseHighlight"
+        | "mouseMotion"
+        | "mouseMotionOthers"
+        | "mousePixelMode"
+        | "mouseSGR"
+        | "mouseUtf8"
+        | "mouseX10";
 
 const ANSI_CODES: Record<AnsiCodeKey, { off: string; on: string }> = {
     // SET_ALTERNATE_SCROLL — no dedicated helper in @visulima/ansi

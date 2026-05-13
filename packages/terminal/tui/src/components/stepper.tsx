@@ -88,22 +88,27 @@ export default function Stepper({ accentColor = "blue", activeIndex = 0, errorCo
                         <Box flexDirection="column" key={step.key ?? index}>
                             <Box>
                                 <Text color={color} dimColor={status === "pending"}>
-                                    {STATUS_ICON[status]}{" "}
+                                    {STATUS_ICON[status]}
+{" "}
                                 </Text>
                                 <Text bold={status === "active"} color={color} dimColor={status === "pending"}>
                                     {step.label}
                                 </Text>
                             </Box>
-                            {step.description === undefined ? undefined : (
+                            {step.description === undefined
+                                ? undefined
+                                : (
                                 <Box marginLeft={2}>
                                     <Text dimColor>{step.description}</Text>
                                 </Box>
-                            )}
-                            {isLast ? undefined : (
+                                )}
+                            {isLast
+                                ? undefined
+                                : (
                                 <Box marginLeft={0}>
                                     <Text dimColor>│</Text>
                                 </Box>
-                            )}
+                                )}
                         </Box>
                     );
                 })}
@@ -123,7 +128,8 @@ export default function Stepper({ accentColor = "blue", activeIndex = 0, errorCo
                     <Fragment key={step.key ?? index}>
                         <Box>
                             <Text color={color} dimColor={status === "pending"}>
-                                {STATUS_ICON[status]}{" "}
+                                {STATUS_ICON[status]}
+{" "}
                             </Text>
                             <Text bold={status === "active"} color={color} dimColor={status === "pending"}>
                                 {step.label}

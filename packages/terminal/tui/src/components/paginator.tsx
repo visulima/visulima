@@ -99,7 +99,10 @@ const Indicator = ({
         return (
             <Text>
                 <Text color={color}>{currentPage + 1}</Text>
-                <Text dimColor>/{totalPages}</Text>
+                <Text dimColor>
+/
+{totalPages}
+                </Text>
             </Text>
         );
     }
@@ -112,7 +115,11 @@ const Indicator = ({
             <Box>
                 {previousArrow}
                 <Text color={color}>{currentPage + 1}</Text>
-                <Text dimColor> /{totalPages}</Text>
+                <Text dimColor>
+{" "}
+/
+{totalPages}
+                </Text>
                 {nextArrow}
             </Box>
         );

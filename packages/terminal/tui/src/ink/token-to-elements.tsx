@@ -62,11 +62,14 @@ export const tokenLinesToElements = (lines: ThemedToken[][], options: TokenRende
 
                 return (
                     <Box key={lineIndex}>
-                        {showLineNumbers ? (
+                        {showLineNumbers
+                            ? (
                             <Text color={isHighlighted ? "yellow" : undefined} dimColor={!isHighlighted}>
-                                {String(lineNumber).padStart(gutterWidth)}{" "}
+                                {String(lineNumber).padStart(gutterWidth)}
+{" "}
                             </Text>
-                        ) : undefined}
+                            )
+                            : undefined}
                         <Text backgroundColor={isHighlighted ? "#3a3a00" : undefined}>
                             {line.length > 0 ? line.map((token, tokenIndex) => renderToken(token, tokenIndex)) : ""}
                         </Text>

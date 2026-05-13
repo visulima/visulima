@@ -189,11 +189,13 @@ function renderFull(
                 <Box key={`b-${bIndex}`}>
                     <Text color={options.keyColor}>{keys}</Text>
                     <Text> </Text>
-                    {options.descriptionColor ? (
+                    {options.descriptionColor
+                        ? (
                         <Text color={options.descriptionColor}>{binding.description}</Text>
-                    ) : (
+                        )
+                        : (
                         <Text dimColor>{binding.description}</Text>
-                    )}
+                        )}
                 </Box>,
             );
         }

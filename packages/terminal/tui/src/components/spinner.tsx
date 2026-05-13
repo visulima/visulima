@@ -1,4 +1,4 @@
-/* eslint-disable import/no-extraneous-dependencies, react/function-component-definition */
+/* eslint-disable react/function-component-definition */
 
 /**
  * Spinner component for Ink.

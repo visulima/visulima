@@ -392,8 +392,8 @@ export default class Output {
 
         const canUseMemoization = this.lineMemoizationEnabled;
         const hasPrevious = this.previousLines.length > 0;
-        const canReuseRows =
-            canUseMemoization && hasPrevious && this.previousLines.length === output.length && this.previousRenderedLines.length === output.length;
+        const canReuseRows
+            = canUseMemoization && hasPrevious && this.previousLines.length === output.length && this.previousRenderedLines.length === output.length;
 
         if (this.previousLines.length > output.length) {
             this.previousLines.length = output.length;

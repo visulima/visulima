@@ -349,11 +349,13 @@ function UnifiedView({
         <Box flexDirection="column">
             {hunks.map((hunk, hunkIndex) => (
                 <Box flexDirection="column" key={hunkIndex}>
-                    {hunkIndex > 0 ? (
+                    {hunkIndex > 0
+                        ? (
                         <Box marginBottom={0} marginTop={0}>
                             <Text dimColor>···</Text>
                         </Box>
-                    ) : undefined}
+                        )
+                        : undefined}
                     <Text color="cyan" dimColor>
                         {hunk.header}
                     </Text>
@@ -391,11 +393,16 @@ function UnifiedView({
 
                         return (
                             <Box key={lineIndex}>
-                                {showLineNumbers ? (
+                                {showLineNumbers
+                                    ? (
                                     <Text color={color} dimColor={line.type === "context"}>
-                                        {String(line.oldLineNum ?? "").padStart(4)} {String(line.newLineNum ?? "").padStart(4)}{" "}
+                                        {String(line.oldLineNum ?? "").padStart(4)}
+{" "}
+{String(line.newLineNum ?? "").padStart(4)}
+{" "}
                                     </Text>
-                                ) : undefined}
+                                    )
+                                    : undefined}
                                 <Text color={color}>{prefix}</Text>
                                 {lineContent}
                             </Box>
@@ -428,12 +435,14 @@ function SplitView({
     return (
         <Box flexDirection="column">
             {hunks.map((hunk, hunkIndex) => {
-                const separator =
-                    hunkIndex > 0 ? (
+                const separator
+                    = hunkIndex > 0
+                        ? (
                         <Box marginBottom={0} marginTop={0}>
                             <Text dimColor>···</Text>
                         </Box>
-                    ) : undefined;
+                        )
+                        : undefined;
 
                 // Build left (old) and right (new) lines using precomputed inline diffs
                 const leftLines: { content: ReactNode; lineNum?: number }[] = [];
@@ -506,12 +515,26 @@ function SplitView({
                             return (
                                 <Box flexDirection="row" key={rowIndex}>
                                     <Box width={halfWidth}>
-                                        {showLineNumbers ? <Text dimColor>{String(left?.lineNum ?? "").padStart(4)} </Text> : undefined}
+                                        {showLineNumbers
+                                            ? (
+<Text dimColor>
+{String(left?.lineNum ?? "").padStart(4)}
+{" "}
+</Text>
+                                            )
+                                            : undefined}
                                         {left?.content}
                                     </Box>
                                     <Text dimColor>│</Text>
                                     <Box width={halfWidth}>
-                                        {showLineNumbers ? <Text dimColor>{String(right?.lineNum ?? "").padStart(4)} </Text> : undefined}
+                                        {showLineNumbers
+                                            ? (
+<Text dimColor>
+{String(right?.lineNum ?? "").padStart(4)}
+{" "}
+</Text>
+                                            )
+                                            : undefined}
                                         {right?.content}
                                     </Box>
                                 </Box>
@@ -574,10 +597,14 @@ export default function DiffView({
     const labels = (
         <Box flexDirection="column">
             <Text color="red" dimColor>
-                --- {oldLabel}
+                ---
+{" "}
+{oldLabel}
             </Text>
             <Text color="green" dimColor>
-                +++ {newLabel}
+                +++
+{" "}
+{newLabel}
             </Text>
         </Box>
     );

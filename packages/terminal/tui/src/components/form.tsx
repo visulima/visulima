@@ -103,18 +103,22 @@ const Form: FormComponent = Object.assign(
     ({ accentColor = "blue", bordered = true, children, description, footer, title, width }: Props): ReactElement => {
         const content = (
             <Box flexDirection="column">
-                {title === undefined ? undefined : (
+                {title === undefined
+                    ? undefined
+                    : (
                     <Box marginBottom={1}>
                         <Text bold color={accentColor}>
                             {title}
                         </Text>
                     </Box>
-                )}
-                {description === undefined ? undefined : (
+                    )}
+                {description === undefined
+                    ? undefined
+                    : (
                     <Box marginBottom={1}>
                         <Text dimColor>{description}</Text>
                     </Box>
-                )}
+                    )}
                 <Box flexDirection="column">{children}</Box>
                 {footer === undefined ? undefined : <Box marginTop={1}>{footer}</Box>}
             </Box>

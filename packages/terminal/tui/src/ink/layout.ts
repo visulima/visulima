@@ -60,8 +60,8 @@ export const processLayout = <T>(node: DOMNode, callbacks: LayoutCallbacks<T>): 
     const { initialState, onNewline, onSpace, onText } = callbacks;
 
     if (
-        (node.nodeName !== "ink-box" && node.nodeName !== "ink-root" && node.nodeName !== "ink-text" && node.nodeName !== "ink-virtual-text") ||
-        !node.yogaNode
+        (node.nodeName !== "ink-box" && node.nodeName !== "ink-root" && node.nodeName !== "ink-text" && node.nodeName !== "ink-virtual-text")
+        || !node.yogaNode
     ) {
         return { lineBottom: 0, state: initialState() };
     }

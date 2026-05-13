@@ -41,7 +41,14 @@ export type Props = {
  */
 export default function ModelBadge({ color = "magenta", icon, model, provider, variant = "solid" }: Props): ReactElement {
     const chip = (content: ReactNode): ReactElement => {
-        const renderedIcon = icon === undefined ? undefined : <>{icon} </>;
+        const renderedIcon = icon === undefined
+            ? undefined
+            : (
+<>
+{icon}
+{" "}
+</>
+            );
 
         if (variant === "outline") {
             return (
@@ -67,7 +74,8 @@ export default function ModelBadge({ color = "magenta", icon, model, provider, v
             <Text backgroundColor={color} color="black">
                 {" "}
                 {renderedIcon}
-                {content}{" "}
+                {content}
+{" "}
             </Text>
         );
     };

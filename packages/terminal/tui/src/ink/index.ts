@@ -2,7 +2,7 @@
  * Public API for the `@visulima/tui` ink entry point.
  *
  * Components and hooks have moved to dedicated subpaths
- * (`@visulima/tui/components/<name>` and `@visulima/tui/hooks/<name>`); this
+ * (`@visulima/tui/components/&lt;name>` and `@visulima/tui/hooks/&lt;name>`); this
  * file now exposes only lower-level primitives (clipboard, DOM helpers,
  * layout, measurement, mouse, render, scroll, terminal palette, …).
  */

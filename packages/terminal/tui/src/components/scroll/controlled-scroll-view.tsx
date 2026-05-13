@@ -299,13 +299,13 @@ export const ControlledScrollView = ({
     let belowSpacerHeight = 0;
     // Only virtualize if all current items have been measured (height > 0).
     // New items added dynamically will have height 0 until measured.
-    const allItemsMeasured =
-        childArray.length > 0 &&
-        childArray.every((_: ReactNode, index: number) => {
-            const key = itemKeysRef.current[index] ?? index;
+    const allItemsMeasured
+        = childArray.length > 0
+            && childArray.every((_: ReactNode, index: number) => {
+                const key = itemKeysRef.current[index] ?? index;
 
-            return (itemHeightsRef.current[key] ?? 0) > 0;
-        });
+                return (itemHeightsRef.current[key] ?? 0) > 0;
+            });
     const shouldVirtualize = virtualize && hasMeasuredRef.current && allItemsMeasured;
 
     if (shouldVirtualize) {
@@ -395,7 +395,7 @@ export const ControlledScrollView = ({
                             return (
                                 <MeasurableItem
                                     index={index}
-                                    key={isValidElement(child) ? (child.key ?? index) : index}
+                                    key={isValidElement(child) ? child.key ?? index : index}
                                     measureKey={itemMeasureKeys[index]}
                                     onMeasure={handleItemMeasure}
                                     width={viewportSize.width}

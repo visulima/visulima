@@ -81,9 +81,9 @@ export type Props = {
     readonly title?: string;
 };
 
-type FlatRow =
-    | { readonly item: MenuItem; readonly kind: "item"; readonly sectionId: string | undefined }
-    | { readonly kind: "section-header"; readonly sectionId: string; readonly title: string };
+type FlatRow
+    = | { readonly item: MenuItem; readonly kind: "item"; readonly sectionId: string | undefined }
+        | { readonly kind: "section-header"; readonly sectionId: string; readonly title: string };
 
 const flatten = (items: ReadonlyArray<MenuItem> | undefined, sections: ReadonlyArray<MenuSection> | undefined): ReadonlyArray<FlatRow> => {
     if (sections && sections.length > 0) {
@@ -156,7 +156,6 @@ export default function Menu({ accentColor = "blue", autoFocus = false, bordered
         const row = rows[current];
         const stillValid = row?.kind === "item" && !row.item.isDisabled;
 
-        // eslint-disable-next-line react-you-might-not-need-an-effect/no-event-handler -- re-clamp on row prop changes; not an event response
         if (!stillValid) {
             const next = firstEnabledIndex(rows);
 
@@ -192,13 +191,15 @@ export default function Menu({ accentColor = "blue", autoFocus = false, bordered
 
     const content = (
         <Box flexDirection="column">
-            {title === undefined ? undefined : (
+            {title === undefined
+                ? undefined
+                : (
                 <Box marginBottom={1}>
                     <Text bold color={accentColor}>
                         {title}
                     </Text>
                 </Box>
-            )}
+                )}
             {rows.map((row, index) => {
                 if (row.kind === "section-header") {
                     return (
@@ -217,21 +218,29 @@ export default function Menu({ accentColor = "blue", autoFocus = false, bordered
                         <Text color={color} dimColor={item.isDisabled}>
                             {isRowFocused ? "▸ " : "  "}
                         </Text>
-                        {item.icon === undefined ? undefined : (
+                        {item.icon === undefined
+                            ? undefined
+                            : (
                             <Text color={color} dimColor={item.isDisabled}>
-                                {item.icon}{" "}
+                                {item.icon}
+{" "}
                             </Text>
-                        )}
+                            )}
                         <Box flexGrow={1} flexShrink={1} minWidth={0}>
                             <Text bold={isRowFocused} color={color} dimColor={item.isDisabled} wrap="truncate-end">
                                 {item.label}
                             </Text>
                         </Box>
-                        {item.hotkey === undefined ? undefined : (
+                        {item.hotkey === undefined
+                            ? undefined
+                            : (
                             <Box flexShrink={0}>
-                                <Text dimColor> {item.hotkey}</Text>
+                                <Text dimColor>
+{" "}
+{item.hotkey}
+                                </Text>
                             </Box>
-                        )}
+                            )}
                     </Box>
                 );
             })}

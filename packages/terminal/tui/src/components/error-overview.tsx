@@ -1,4 +1,4 @@
-/* eslint-disable @stylistic/multiline-ternary, import/no-extraneous-dependencies, react/function-component-definition */
+/* eslint-disable @stylistic/multiline-ternary, react/function-component-definition */
 import { existsSync, readFileSync } from "node:fs";
 import { cwd } from "node:process";
 
@@ -47,16 +47,24 @@ export default function ErrorOverview({ error }: Props): ReactElement {
             <Box>
                 <Text backgroundColor="red" color="white">
                     {" "}
-                    ERROR{" "}
+                    ERROR
+{" "}
                 </Text>
 
-                <Text> {error.message}</Text>
+                <Text>
+{" "}
+{error.message}
+                </Text>
             </Box>
 
             {origin && filePath ? (
                 <Box marginTop={1}>
                     <Text dimColor>
-                        {filePath}:{origin.line}:{origin.column}
+                        {filePath}
+:
+{origin.line}
+:
+{origin.column}
                     </Text>
                 </Box>
             ) : null}
@@ -72,7 +80,8 @@ export default function ErrorOverview({ error }: Props): ReactElement {
                                     color={line === origin.line ? "white" : undefined}
                                     dimColor={line !== origin.line}
                                 >
-                                    {String(line).padStart(lineWidth, " ")}:
+                                    {String(line).padStart(lineWidth, " ")}
+:
                                 </Text>
                             </Box>
 
@@ -96,7 +105,8 @@ export default function ErrorOverview({ error }: Props): ReactElement {
                                     <Text dimColor>- </Text>
                                     <Text bold dimColor>
                                         {line}
-                                        \t{" "}
+                                        \t
+{" "}
                                     </Text>
                                 </Box>
                             );
@@ -114,7 +124,13 @@ export default function ErrorOverview({ error }: Props): ReactElement {
                                     dimColor
                                 >
                                     {" "}
-                                    ({cleanupPath(parsedLine.file) ?? ""}:{parsedLine.line}:{parsedLine.column})
+                                    (
+{cleanupPath(parsedLine.file) ?? ""}
+:
+{parsedLine.line}
+:
+{parsedLine.column}
+)
                                 </Text>
                             </Box>
                         );

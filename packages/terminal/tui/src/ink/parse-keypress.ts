@@ -526,11 +526,11 @@ const parseKeypress = (s: Buffer | string = ""): ParsedKey => {
                 // shift+letter
                 key.name = s.toLowerCase();
                 key.shift = true;
-            } else if ((parts = metaKeyCodeRe.exec(s))) {
+            } else if (parts = metaKeyCodeRe.exec(s)) {
                 // meta+character key
                 key.meta = true;
                 key.shift = /^[A-Z]$/.test(parts[1]!);
-            } else if ((parts = functionKeyRe.exec(s))) {
+            } else if (parts = functionKeyRe.exec(s)) {
                 const segs = [...s];
 
                 if (segs[0] === "\u001B" && segs[1] === "\u001B") {
