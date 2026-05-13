@@ -63,12 +63,13 @@ const samplePackument = {
 } as const;
 
 const stubFetch = (response: { body?: unknown; status?: number }): ReturnType<typeof vi.fn> => {
-    const handler = vi.fn(async () =>
-        Promise.resolve({
-            json: async () => Promise.resolve(response.body ?? {}),
+    const handler = vi.fn(async () => {
+        return {
+            json: async () => response.body ?? {},
             ok: (response.status ?? 200) < 400,
             status: response.status ?? 200,
-        }),
+        };
+    },
     );
 
     vi.stubGlobal("fetch", handler);
@@ -108,6 +109,7 @@ describe(getPackument, () => {
         const result = await getPackument("demo");
 
         expect(result?.name).toBe("demo");
+        // eslint-disable-next-line no-underscore-dangle -- `_npmUser` is the npm registry field name.
         expect(result?.versions["1.0.0"]?._npmUser?.email).toBe("maintainer@example.com");
         // Stray fields are dropped.
         expect((result?.versions["1.2.0"] as Record<string, unknown>).random_extra_field).toBeUndefined();
@@ -133,7 +135,9 @@ describe(getPackument, () => {
 
         // TTL 1ms guarantees the second call sees an expired entry.
         await getPackument("demo", { cacheTtlMs: 1 });
-        await new Promise((resolve) => setTimeout(resolve, 5));
+        await new Promise((resolve) => {
+            setTimeout(resolve, 5);
+        });
         await getPackument("demo", { cacheTtlMs: 1 });
 
         expect(fetchSpy).toHaveBeenCalledTimes(2);
@@ -160,7 +164,7 @@ describe(getPackument, () => {
         expect(headers["Authorization"]).toBe("Bearer deadbeef");
     });
 
-    it("URL-encodes scoped package names", async () => {
+    it("uRL-encodes scoped package names", async () => {
         expect.assertions(1);
 
         const fetchSpy = stubFetch({ body: { ...samplePackument, name: "@scope/demo" } });

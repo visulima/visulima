@@ -7,8 +7,8 @@
  * a stale tarball or compromised CI key would produce.
  *
  * Reads through the shared {@link getPackument} cache — no extra HTTP. The
- * raw finding shape is intentionally narrower than {@link MarshallFinding};
- * call sites wrap it with `marshall: "provenance"` + severity + message.
+ * raw finding shape is intentionally narrower than the outer marshall finding
+ * envelope; call sites wrap it with `marshall: "provenance"` + severity + message.
  */
 
 import { lt as semverLt, satisfies as semverSatisfies, valid as semverValid } from "semver";

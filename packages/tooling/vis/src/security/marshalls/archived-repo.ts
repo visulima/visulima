@@ -155,8 +155,12 @@ interface FetchRepoResult {
 const fetchGitHubRepo = async (owner: string, repo: string, token: string | undefined, signal: AbortSignal | undefined): Promise<FetchRepoResult> => {
     const url = `${GITHUB_API_BASE}/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`;
     const controller = new AbortController();
-    const timeout = setTimeout(() => { controller.abort(); }, DEFAULT_FETCH_TIMEOUT_MS);
-    const abortListener = (): void => { controller.abort(); };
+    const timeout = setTimeout(() => {
+        controller.abort();
+    }, DEFAULT_FETCH_TIMEOUT_MS);
+    const abortListener = (): void => {
+        controller.abort();
+    };
 
     signal?.addEventListener("abort", abortListener, { once: true });
 

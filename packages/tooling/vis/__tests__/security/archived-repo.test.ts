@@ -365,7 +365,7 @@ describe(clearArchivedRepoCache, () => {
     });
 
     it("removes every cached entry and reports the count", async () => {
-        expect.assertions(2);
+        expect.assertions(3);
 
         stubFetchSequence([
             { body: packumentBody("git+https://github.com/example/demo.git") },
@@ -387,7 +387,9 @@ describe(clearArchivedRepoCache, () => {
         ]);
 
         await runArchivedRepoMarshall([{ name: "demo", version: "1.0.0" }]);
-        void second;
+
+        // Touch the second stub so it isn't flagged as an unused intermediate.
+        expect(second).toBeDefined();
 
         const removed = clearArchivedRepoCache();
 

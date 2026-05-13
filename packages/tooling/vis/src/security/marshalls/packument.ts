@@ -5,7 +5,7 @@
  * so the registry is hit at most once per `vis add` / `vis update` /
  * `vis inspect` invocation, regardless of how many marshalls run.
  *
- * Layout: `<getVisCacheDir()>/packuments/<encodeURIComponent(name)>.json`
+ * Layout: `&lt;getVisCacheDir()>/packuments/&lt;encodeURIComponent(name)>.json`
  * containing `{ createdAt, ttlMs, packument }`. Default TTL is 30 minutes.
  *
  * Cached packuments are **stripped** to the fields marshalls consume —
@@ -20,6 +20,8 @@
  *
  * That subset is enough to power every marshall sections 1–8 describe.
  */
+
+/* eslint-disable no-underscore-dangle -- `_npmUser` is the npm registry field name. */
 
 import { readdirSync, rmSync, writeFileSync } from "node:fs";
 
@@ -262,7 +264,6 @@ const resolveRegistry = async (name: string, options: GetPackumentOptions): Prom
  * decide whether to soft-fail or block — most marshalls degrade to a
  * warning, matching `socket-security.ts`'s "errors are visible but not
  * fatal" UX.
- *
  * @param name Package name (scoped names like `@scope/pkg` are accepted as-is).
  */
 export const getPackument = async (name: string, options: GetPackumentOptions = {}): Promise<Packument | undefined> => {
@@ -277,10 +278,14 @@ export const getPackument = async (name: string, options: GetPackumentOptions = 
     const baseUrl = registry.url.endsWith("/") ? registry.url.slice(0, -1) : registry.url;
     const url = `${baseUrl}/${name.replace("/", "%2f")}`;
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), DEFAULT_FETCH_TIMEOUT_MS);
+    const timeout = setTimeout(() => {
+        controller.abort();
+    }, DEFAULT_FETCH_TIMEOUT_MS);
 
     // Propagate caller-supplied abort.
-    const abortListener = (): void => controller.abort();
+    const abortListener = (): void => {
+        controller.abort();
+    };
 
     options.signal?.addEventListener("abort", abortListener, { once: true });
 

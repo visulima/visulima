@@ -565,16 +565,19 @@ const buildSocketOptions = (
 interface AcceptedRisk {
     /** ISO 8601 timestamp when the risk was accepted. */
     acceptedAt: string;
+
     /**
      * The overall Socket.dev score at the time of acceptance.
      * Only relevant for the `score` policy; ignored elsewhere.
      */
     acceptedScore?: number;
+
     /**
      * ISO 8601 date (or datetime). After this point the acceptance stops
      * applying and vis emits a warning. Leave undefined for non-expiring entries.
      */
     expiresAt?: string;
+
     /**
      * Which policies this acceptance covers. When undefined the acceptance
      * applies to every policy finding on this package.
@@ -612,11 +615,7 @@ const findAcceptedRisk = (
             }
         }
 
-        if (policy && risk.policies && !risk.policies.includes(policy)) {
-            return false;
-        }
-
-        return true;
+        return !(policy && risk.policies && !risk.policies.includes(policy));
     };
 
     // Check exact name@version, then unversioned name

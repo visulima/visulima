@@ -19,6 +19,8 @@
  * 21/7/30 days does not cross" requirement.
  */
 
+/* eslint-disable no-underscore-dangle -- `_npmUser` is the npm registry field name. */
+
 import { lt as semverLt, valid as semverValid } from "semver";
 
 import { DEFAULT_MARSHALL_CONCURRENCY, mapWithConcurrency } from "./concurrency";

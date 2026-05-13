@@ -100,8 +100,12 @@ interface FetchResult {
 const fetchDownloads = async (name: string, signal: AbortSignal | undefined): Promise<FetchResult> => {
     const url = `${DOWNLOADS_API_BASE}/${encodeURIComponent(name)}`;
     const controller = new AbortController();
-    const timeout = setTimeout(() => { controller.abort(); }, DEFAULT_FETCH_TIMEOUT_MS);
-    const abortListener = (): void => { controller.abort(); };
+    const timeout = setTimeout(() => {
+        controller.abort();
+    }, DEFAULT_FETCH_TIMEOUT_MS);
+    const abortListener = (): void => {
+        controller.abort();
+    };
 
     signal?.addEventListener("abort", abortListener, { once: true });
 

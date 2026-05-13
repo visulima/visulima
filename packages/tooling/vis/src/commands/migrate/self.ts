@@ -74,7 +74,7 @@ export const rewriteSource = (source: string, renames: ReadonlyArray<KeyRename>)
  * (or its `.mts/.cts/.js/.mjs/.cjs` variants), or `undefined` if none.
  */
 const CONFIG_FILENAMES = ["vis.config.ts", "vis.config.mts", "vis.config.cts", "vis.config.js", "vis.config.mjs", "vis.config.cjs"];
-const TASK_CONFIG_BASENAMES = new Set(["vis.task.ts", "vis.task.mts", "vis.task.cts", "vis.task.js", "vis.task.mjs", "vis.task.cjs"]);
+const TASK_CONFIG_BASENAMES = new Set(["vis.task.cjs", "vis.task.cts", "vis.task.js", "vis.task.mjs", "vis.task.mts", "vis.task.ts"]);
 
 const findConfigFile = (workspaceRoot: string): string | undefined => {
     for (const name of CONFIG_FILENAMES) {
@@ -121,6 +121,7 @@ const findTaskConfigFiles = (workspaceRoot: string): string[] => {
  * In dry-run mode, prints the proposed file content but writes nothing.
  * Otherwise creates a `.bak` next to each modified file before writing.
  * @param workspaceRoot Absolute workspace root path.
+ * @param options Migration options.
  * @param options.dryRun When true, preview without writing.
  * @param options.taskConfigPaths Optional override of the discovered list; primarily for tests.
  * @param logger Logger for user feedback.
