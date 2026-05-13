@@ -23,7 +23,7 @@ const enforceScriptSecurity = (pm: PackageManagerName, workspaceRoot: string, co
         warnings: [],
     };
 
-    const allowBuilds = config.security?.allowBuilds ?? {};
+    const allowBuilds = config.security?.policies?.installScripts?.allow ?? {};
     const hasAllowList = Object.keys(allowBuilds).length > 0;
 
     switch (pm) {
@@ -38,7 +38,7 @@ const enforceScriptSecurity = (pm: PackageManagerName, workspaceRoot: string, co
 
                     if (!pkg.trustedDependencies?.length) {
                         result.warnings.push(
-                            "vis security.allowBuilds is configured but trustedDependencies is empty. Run 'vis approve-builds --sync-native'.",
+                            "vis security.policies.installScripts.allow is configured but trustedDependencies is empty. Run 'vis approve-builds --sync-native'.",
                         );
                     }
                 } catch {
@@ -58,7 +58,7 @@ const enforceScriptSecurity = (pm: PackageManagerName, workspaceRoot: string, co
                 result.warnings.push("npm does not block lifecycle scripts. vis will add --ignore-scripts automatically.");
                 result.extraArgs.push("--ignore-scripts");
             } else if (!hasIgnoreScripts && !hasAllowList) {
-                result.warnings.push("npm does not block lifecycle scripts. Add 'ignore-scripts=true' to .npmrc and configure security.allowBuilds.");
+                result.warnings.push("npm does not block lifecycle scripts. Add 'ignore-scripts=true' to .npmrc and configure security.policies.installScripts.allow.");
             }
 
             if (hasAllowList) {

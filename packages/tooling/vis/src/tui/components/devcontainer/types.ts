@@ -1,5 +1,3 @@
-// ── DevContainer Configuration Types ───────────────────────────────────
-
 export interface DevcontainerBuild {
     args?: Record<string, string>;
     context?: string;
@@ -52,8 +50,6 @@ export interface DevcontainerConfig {
     workspaceFolder?: string;
     workspaceMount?: string;
 }
-
-// ── TUI Types ──────────────────────────────────────────────────────────
 
 export type SectionId = "compose" | "environment" | "extensions" | "features" | "general" | "lifecycle" | "mounts" | "ports";
 

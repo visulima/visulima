@@ -25,8 +25,6 @@ import PreviewPanel from "./sections/preview-panel";
 import type { DevcontainerConfig, SectionId } from "./types";
 import { validateConfig } from "./validate";
 
-// ── Layout constants ────────────────────────────────────────────────────
-
 const MIN_VIEWPORT_WIDTH = 80;
 const MIN_VIEWPORT_HEIGHT = 15;
 const MIN_SPLIT_WIDTH = 120;
@@ -44,8 +42,6 @@ const EDITOR_SECTIONS: ReadonlyArray<{ description: string; id: SectionId; label
 ] as const;
 
 const SECTION_DESCRIPTIONS: ReadonlyMap<SectionId, string> = new Map(EDITOR_SECTIONS.map((s) => [s.id, s.description]));
-
-// ── Field count helper ──────────────────────────────────────────────────
 
 const getFieldCount = (section: SectionId, config: DevcontainerConfig, featureSearch: string, extensionSearch: string): number => {
     switch (section) {
@@ -86,8 +82,6 @@ const getFieldCount = (section: SectionId, config: DevcontainerConfig, featureSe
         }
     }
 };
-
-// ── Component ───────────────────────────────────────────────────────────
 
 interface VisDevcontainerAppProps {
     readonly onSave: (config: DevcontainerConfig) => void;
@@ -221,8 +215,6 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
         }, 2000);
     }, [onSave, store]);
 
-    // ── Template selector ───────────────────────────────────────────
-
     useInput(
         (input, key) => {
             if (key.downArrow || input === "j") {
@@ -241,8 +233,6 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
         },
         { isActive: state.showTemplateSelector },
     );
-
-    // ── Port input handler ──────────────────────────────────────────
 
     useInput(
         (input, key) => {
@@ -278,8 +268,6 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
         },
         { isActive: addingPort },
     );
-
-    // ── Env add handler ─────────────────────────────────────────────
 
     useInput(
         (input, key) => {
@@ -330,8 +318,6 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
         },
         { isActive: addingEnv !== null },
     );
-
-    // ── Mount add handler ────────────────────────────────────────────
 
     useInput(
         (input, key) => {
@@ -414,8 +400,6 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
         },
         { isActive: addingMount },
     );
-
-    // ── Main keyboard handler ───────────────────────────────────────
 
     useInput(
         (input, key) => {
@@ -809,13 +793,10 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
         { isActive: !state.showTemplateSelector && !addingPort && addingEnv === null && !addingMount },
     );
 
-    // ── Hooks must run before any conditional early-return ─────────
     // `useMemo` for the JSON preview must precede the size-check / template-
     // selector guards below, otherwise React's rules-of-hooks fires because
     // the hook call order varies across renders.
     const jsonPreview = useMemo(() => store.getJsonPreview(), [state.config]);
-
-    // ── Size check ──────────────────────────────────────────────────
 
     if (columns < MIN_VIEWPORT_WIDTH || rows < MIN_VIEWPORT_HEIGHT) {
         return (
@@ -834,8 +815,6 @@ x
             </Box>
         );
     }
-
-    // ── Template selector dialog ────────────────────────────────────
 
     if (state.showTemplateSelector) {
         return (
@@ -888,8 +867,6 @@ x
             </Box>
         );
     }
-
-    // ── Active section content ──────────────────────────────────────
 
     let sectionContent: React.JSX.Element;
 
@@ -1028,8 +1005,6 @@ env:
         }
     }
 
-    // ── Footer ──────────────────────────────────────────────────────
-
     const footer = (
         <Box borderBottom={false} borderColor="gray" borderLeft={false} borderRight={false} borderStyle="single" flexShrink={0}>
             <Box flexGrow={1} flexWrap="wrap" gap={2} paddingX={1}>
@@ -1098,8 +1073,6 @@ env:
             </Box>
         </Box>
     );
-
-    // ── Help dialog ─────────────────────────────────────────────────
 
     const helpPopup = (
         <Dialog
@@ -1250,7 +1223,6 @@ env:
         </Dialog>
     );
 
-    // ── Preview panel (always visible) ──────────────────────────────
     // `jsonPreview` is computed at the top of the component; see the note near
     // the initial hook block about rules-of-hooks.
 
@@ -1264,12 +1236,8 @@ env:
         />
     );
 
-    // ── Determine layout ────────────────────────────────────────────
-
     const isSplitLayout = columns >= MIN_SPLIT_WIDTH;
     const previewWidth = isSplitLayout ? Math.floor(columns * 0.38) : 0;
-
-    // ── Main layout ─────────────────────────────────────────────────
 
     return (
         <Box flexDirection="column" height={rows} width={columns}>

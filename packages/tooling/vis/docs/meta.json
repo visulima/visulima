@@ -42,6 +42,8 @@
                 "commands/pm",
                 "commands/doctor",
                 "commands/audit",
+                "commands/inspect",
+                "commands/advisories",
                 "commands/secrets",
                 "commands/sbom",
                 "commands/approve-builds",
@@ -62,11 +64,14 @@
             "title": "Guides",
             "pages": [
                 "guides/why-vis",
+                "guides/config-model",
                 "guides/best-practices",
                 "guides/ci-cd",
                 "guides/conditional-and-finally-tasks",
                 "guides/git-hooks",
                 "guides/plugins",
+                "guides/security-audit",
+                "guides/shell-alias",
                 "guides/ai-integration"
             ]
         }

@@ -10,6 +10,7 @@ import { join } from "@visulima/path";
 import pkg from "../package.json";
 import actionGraphCommand from "./commands/action-graph";
 import addCommand from "./commands/add";
+import advisoriesCommands from "./commands/advisories";
 import affectedCommand from "./commands/affected";
 import aiCommands from "./commands/ai";
 import analyzeCommand from "./commands/analyze";
@@ -33,6 +34,7 @@ import ignoreCommand from "./commands/ignore";
 import implodeCommand from "./commands/implode";
 import infoCommand from "./commands/info";
 import initCommand from "./commands/init";
+import inspectCommand from "./commands/inspect";
 import installCommand from "./commands/install";
 import linkCommand from "./commands/link";
 import lintCommand from "./commands/lint";
@@ -189,6 +191,7 @@ cli.addCommand(implodeCommand);
 // Security commands
 cli.addCommand(approveBuildsCommand);
 cli.addCommand(auditCommand);
+cli.addCommand(inspectCommand);
 cli.addCommand(doctorCommand);
 cli.addCommand(optimizeCommand);
 cli.addCommand(sbomCommand);
@@ -206,6 +209,10 @@ for (const command of migrateCommands) {
 }
 
 for (const command of cacheCommands) {
+    cli.addCommand(command);
+}
+
+for (const command of advisoriesCommands) {
     cli.addCommand(command);
 }
 

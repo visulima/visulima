@@ -9,13 +9,9 @@ import { getStatusInfo, isCacheStatus } from "../status-utils";
 import { DASH, ELLIPSIS } from "../symbols";
 import type { TaskRowData } from "./task-row";
 
-// ── Column widths (matching Nx constants) ───────────────────────────────
-
 const STATUS_ICON_WIDTH = 6;
 const CACHE_COLUMN_WIDTH = 8;
 const DURATION_COLUMN_WIDTH = 12;
-
-// ── Helpers ─────────────────────────────────────────────────────────────
 
 const getCacheLabel = (status: TaskRowData["status"]): string => {
     if (status === "running" || status === "pending") {
@@ -44,8 +40,6 @@ const getPinLabel = (taskId: string, pinnedTaskIds: [string | null, string | nul
 
     return "";
 };
-
-// ── Sub-components ──────────────────────────────────────────────────────
 
 interface TaskListRowProps {
     compact?: boolean;
@@ -131,8 +125,6 @@ const TaskListRow = ({ compact, focused, isSelected, pinLabel, row }: TaskListRo
         </Box>
     );
 };
-
-// ── Main Component ──────────────────────────────────────────────────────
 
 interface TaskListPanelProps {
     /** Hide Cache + Duration columns (used in split view where output panel shows them). */

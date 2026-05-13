@@ -5,8 +5,6 @@ import { TEMPLATES } from "./catalogs/templates";
 import type { DevcontainerConfig, MountEntry, SectionId } from "./types";
 import { SECTION_ORDER } from "./types";
 
-// ── State Shape ─────────────────────────────────────────────────────────
-
 export interface DevcontainerState {
     /** The configuration being edited. */
     config: DevcontainerConfig;
@@ -40,11 +38,7 @@ export interface DevcontainerState {
 
 type Listener = () => void;
 
-// ── Helpers ─────────────────────────────────────────────────────────────
-
 const deepClone = <T>(value: T): T => structuredClone(value);
-
-// ── DevcontainerStore ───────────────────────────────────────────────────
 
 export class DevcontainerStore {
     #listeners = new Set<Listener>();
@@ -74,8 +68,6 @@ export class DevcontainerStore {
         };
     }
 
-    // ── React integration ───────────────────────────────────────────
-
     public getSnapshot = (): DevcontainerState => this.#state;
 
     public subscribe = (listener: Listener): (() => void) => {
@@ -85,8 +77,6 @@ export class DevcontainerStore {
             this.#listeners.delete(listener);
         };
     };
-
-    // ── Tab navigation ──────────────────────────────────────────────
 
     public setSection(section: SectionId): void {
         if (section !== this.#state.section) {
@@ -113,8 +103,6 @@ export class DevcontainerStore {
         this.setSection(SECTION_ORDER[previous] as SectionId);
     }
 
-    // ── Field navigation ────────────────────────────────────────────
-
     public setFieldIndex(index: number): void {
         if (index !== this.#state.fieldIndex) {
             this.#emit({ ...this.#state, fieldIndex: Math.max(0, index) });
@@ -126,8 +114,6 @@ export class DevcontainerStore {
             this.#emit({ ...this.#state, fieldEditing: editing });
         }
     }
-
-    // ── Template selector ───────────────────────────────────────────
 
     public setTemplateIndex(index: number): void {
         const clamped = Math.max(0, Math.min(index, TEMPLATES.length - 1));
@@ -156,8 +142,6 @@ export class DevcontainerStore {
         this.#emit({ ...this.#state, showTemplateSelector: false });
     }
 
-    // ── General config updates ──────────────────────────────────────
-
     public updateConfig(partial: Partial<DevcontainerConfig>): void {
         this.#emit({
             ...this.#state,
@@ -165,8 +149,6 @@ export class DevcontainerStore {
             isDirty: true,
         });
     }
-
-    // ── Features ────────────────────────────────────────────────────
 
     public toggleFeature(featureId: string): void {
         const features = { ...this.#state.config.features };
@@ -190,8 +172,6 @@ export class DevcontainerStore {
     public setFeatureSearch(search: string): void {
         this.#emit({ ...this.#state, featureSearch: search, fieldIndex: 0 });
     }
-
-    // ── Ports ───────────────────────────────────────────────────────
 
     public addPort(port: number | string): void {
         const existing = this.#state.config.forwardPorts ?? [];
@@ -222,8 +202,6 @@ export class DevcontainerStore {
         });
     }
 
-    // ── Extensions ──────────────────────────────────────────────────
-
     public toggleExtension(extensionId: string): void {
         const customizations = { ...this.#state.config.customizations };
         const vscode = { ...customizations.vscode };
@@ -253,8 +231,6 @@ export class DevcontainerStore {
         this.#emit({ ...this.#state, extensionSearch: search, fieldIndex: 0 });
     }
 
-    // ── Environment variables ───────────────────────────────────────
-
     public addEnvVar(target: "container" | "remote", key: string, value: string): void {
         const field = target === "container" ? "containerEnv" : "remoteEnv";
         const env = { ...this.#state.config[field], [key]: value };
@@ -279,8 +255,6 @@ export class DevcontainerStore {
             isDirty: true,
         });
     }
-
-    // ── Mounts ──────────────────────────────────────────────────────
 
     public addMount(mount: MountEntry): void {
         const mounts = [...(this.#state.config.mounts ?? []), mount];
@@ -325,8 +299,6 @@ export class DevcontainerStore {
         );
     }
 
-    // ── Lifecycle commands ───────────────────────────────────────────
-
     public setLifecycleCommand(hook: "onCreateCommand" | "postAttachCommand" | "postCreateCommand" | "postStartCommand", command: string): void {
         this.#emit({
             ...this.#state,
@@ -334,8 +306,6 @@ export class DevcontainerStore {
             isDirty: true,
         });
     }
-
-    // ── Save lifecycle ────────────────────────────────────────────────
 
     public markClean(): void {
         this.#emit({
@@ -345,8 +315,6 @@ export class DevcontainerStore {
         });
     }
 
-    // ── Preview / Serialization ─────────────────────────────────────
-
     public getJsonPreview(): string {
         return JSON.stringify(this.#cleanConfig(), null, 2);
     }
@@ -355,8 +323,6 @@ export class DevcontainerStore {
     public cleanConfig(): DevcontainerConfig {
         return this.#cleanConfig();
     }
-
-    // ── Internal ────────────────────────────────────────────────────
 
     #cleanConfig(): DevcontainerConfig {
         // JSON round-trip: drops undefined values, safe for plain JSON config objects

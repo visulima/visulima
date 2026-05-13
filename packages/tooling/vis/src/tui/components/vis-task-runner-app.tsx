@@ -20,8 +20,6 @@ import type { ServiceDockStore } from "./service-dock/service-dock-store";
 import TaskListPanel from "./task-list-panel";
 import type { TaskStore } from "./task-store";
 
-// ── Layout constants ───────────────────────────────────────────────────
-
 const MIN_VIEWPORT_WIDTH = 40;
 const MIN_VIEWPORT_HEIGHT = 10;
 const MIN_HORIZONTAL_WIDTH = 100;
@@ -30,8 +28,6 @@ const MIN_HORIZONTAL_WIDTH = 100;
 // renders when no dock store is present — keeps the filteredRows memo
 // from invalidating on every render in the common no-services case.
 const EMPTY_IDS: ReadonlyArray<string> = Object.freeze([]);
-
-// ── Component ───────────────────────────────────────────────────────────
 
 interface VisTaskRunnerAppProps {
     /** 0 = no auto-exit (default), >0 = countdown seconds */
@@ -236,8 +232,6 @@ const VisTaskRunnerApp = ({
         listScrollRef.current?.scrollTo(Math.max(0, index - 2));
     }, []);
 
-    // ── Interactive input handlers ────────────────────────────────────
-
     // Auto-disable interactive mode when the viewed task is no longer running
     useEffect(() => {
         if (state.interactiveMode && outputTask?.status !== "running") {
@@ -271,7 +265,6 @@ const VisTaskRunnerApp = ({
         stdinRegistry.get(outputTaskId)?.resize?.(panelCols, panelRows);
     }, [columns, rows, state.viewMode, outputTaskId]);
 
-    // ── Keyboard handling (interactive mode — raw passthrough to PTY) ──
     // Forward every keystroke directly to the PTY so interactive tools
     // (inquirer, npm prompts, etc.) receive arrow keys, characters, etc.
 
@@ -335,8 +328,6 @@ const VisTaskRunnerApp = ({
         },
         { isActive: state.interactiveMode },
     );
-
-    // ── Keyboard handling ───────────────────────────────────────────
 
     useInput(
         (input, key) => {
@@ -418,7 +409,6 @@ const VisTaskRunnerApp = ({
                 return;
             }
 
-            // ── Filter mode ─────────────────────────────────────────
             if (state.filterActive) {
                 if (key.escape) {
                     store.setFilterActive(false);
@@ -448,7 +438,6 @@ const VisTaskRunnerApp = ({
                 return;
             }
 
-            // ── Interactive input toggle (i) ───────────────────────
             if (input === "i" && outputTask?.status === "running") {
                 const isOutputView = state.viewMode === "fullscreen" || (state.viewMode === "split" && state.focusedPanel === "output");
 
@@ -459,7 +448,6 @@ const VisTaskRunnerApp = ({
                 }
             }
 
-            // ── Fullscreen output mode ─────────────────────────────
             if (state.viewMode === "fullscreen") {
                 if (key.escape) {
                     store.setViewMode("split");
@@ -530,7 +518,6 @@ const VisTaskRunnerApp = ({
                 return;
             }
 
-            // ── Service dock focus ─────────────────────────────────
             if (state.focusedPanel === "dock" && hasDock && serviceDockStore) {
                 if (key.tab) {
                     // Leaving the dock for the task list: drop any
@@ -602,7 +589,6 @@ const VisTaskRunnerApp = ({
                 return;
             }
 
-            // ── Split view ─────────────────────────────────────────
             if (state.viewMode === "split") {
                 // Tab switches focus between panels
                 if (key.tab) {
@@ -730,7 +716,6 @@ const VisTaskRunnerApp = ({
                 }
             }
 
-            // ── List view / task list navigation (list + split task-focused) ──
             if (state.viewMode === "list" || (state.viewMode === "split" && state.focusedPanel === "tasks")) {
                 // In list view, Tab into the dock when present.
                 if (key.tab && state.viewMode === "list" && hasDock) {
@@ -809,8 +794,6 @@ const VisTaskRunnerApp = ({
         { isActive: !state.interactiveMode },
     );
 
-    // ── Layout ──────────────────────────────────────────────────────
-
     // Terminal too small
     if (columns < MIN_VIEWPORT_WIDTH || rows < MIN_VIEWPORT_HEIGHT) {
         return (
@@ -829,8 +812,6 @@ x
             </Box>
         );
     }
-
-    // ── Status summary (right-aligned in footer) ───────────────────
 
     const statusSummary = (
         <Box gap={1}>
@@ -869,8 +850,6 @@ total
             )}
         </Box>
     );
-
-    // ── Footer ─────────────────────────────────────────────────────
 
     let footerItems: React.JSX.Element[];
 
@@ -1072,8 +1051,6 @@ total
             </Box>
         </Box>
     );
-
-    // ── Help popup overlay ──────────────────────────────────────────
 
     const helpPopup = (
         <Dialog
@@ -1373,8 +1350,6 @@ List
         </Dialog>
     );
 
-    // ── Quit dialog overlay ───────────────────────────────────────────
-
     const quitDialog = (
         <QuitDialog
             autoExitSeconds={autoExitSeconds > 0 ? autoExitSeconds : 3}
@@ -1384,8 +1359,6 @@ List
             visible={quitDialogVisible}
         />
     );
-
-    // ── FULLSCREEN OUTPUT VIEW ──────────────────────────────────────
 
     const dockElement
         = hasDock && serviceDockStore ? <ServiceDock activeIndex={dockActiveIndex} focused={state.focusedPanel === "dock"} store={serviceDockStore} /> : null;
@@ -1413,8 +1386,6 @@ List
             </Box>
         );
     }
-
-    // ── SPLIT VIEW ──────────────────────────────────────────────────
 
     if (state.viewMode === "split") {
         const isHorizontal = columns >= MIN_HORIZONTAL_WIDTH;
@@ -1481,8 +1452,6 @@ List
             </Box>
         );
     }
-
-    // ── LIST VIEW (default, full width) ─────────────────────────────
 
     return (
         <Box flexDirection="column" height={rows} width={columns}>

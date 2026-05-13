@@ -9,8 +9,6 @@ import { hookScript, installHooks } from "../../../src/commands/hook/install";
 import { cleanPackageJsonScripts, detectHuskyDirectory, detectPackageManager, transformHookScript } from "../../../src/commands/hook/migrate";
 import { uninstallHooks } from "../../../src/commands/hook/uninstall";
 
-// ─── Helpers ────────────────────────────────────────────────────────
-
 const DIRNAME_LINE_RE = /^d=(.+)$/m;
 const DIRNAME_COUNT_RE = /dirname/g;
 
@@ -57,8 +55,6 @@ const createTemporaryDirectory = (): { cleanup: () => void; root: string } => {
         root,
     };
 };
-
-// ─── hookScript (unit) ──────────────────────────────────────────────
 
 describe(hookScript, () => {
     it("should compute correct depth for simple dir", () => {
@@ -113,8 +109,6 @@ describe(hookScript, () => {
         expect(script).toContain("VIS_GIT_HOOKS");
     });
 });
-
-// ─── installHooks (integration) ─────────────────────────────────────
 
 describe(installHooks, () => {
     it.skipIf(process.platform === "win32")("should create internal dispatcher scripts but not user hooks", () => {
@@ -223,8 +217,6 @@ describe(installHooks, () => {
     });
 });
 
-// ─── uninstallHooks (integration) ───────────────────────────────────
-
 describe(uninstallHooks, () => {
     it.skipIf(process.platform === "win32")("should unset core.hooksPath and remove internal directory", () => {
         expect.assertions(5);
@@ -269,8 +261,6 @@ describe(uninstallHooks, () => {
         }
     });
 });
-
-// ─── transformHookScript (unit) ─────────────────────────────────────
 
 describe(transformHookScript, () => {
     it("should remove common.sh sourcing line", () => {
@@ -317,8 +307,6 @@ echo "done"
         expect(result).not.toContain(". \"$(dirname \"$0\")/common.sh\"");
     });
 });
-
-// ─── detectHuskyDirectory (unit) ────────────────────────────────────
 
 describe(detectHuskyDirectory, () => {
     let temporary: { cleanup: () => void; root: string };
@@ -370,8 +358,6 @@ describe(detectHuskyDirectory, () => {
         expect(detectHuskyDirectory(temporary.root)).toBeUndefined();
     });
 });
-
-// ─── detectPackageManager (unit) ────────────────────────────────────
 
 describe(detectPackageManager, () => {
     let temporary: { cleanup: () => void; root: string };
@@ -439,8 +425,6 @@ describe(detectPackageManager, () => {
         expect(detectPackageManager(temporary.root)).toBe("pnpm");
     });
 });
-
-// ─── cleanPackageJsonScripts (unit) ─────────────────────────────────
 
 describe(cleanPackageJsonScripts, () => {
     let temporary: { cleanup: () => void; root: string };

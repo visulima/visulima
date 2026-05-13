@@ -65,8 +65,6 @@ const writeState = (state: TipState): void => {
     }
 };
 
-// ── Tip definitions ──────────────────────────────────────────────────
-
 const tips: Tip[] = [
     {
         cooldownMs: 30 * 60 * 1000, // 30 minutes

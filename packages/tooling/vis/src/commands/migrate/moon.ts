@@ -7,8 +7,6 @@ import { join } from "@visulima/path";
 import { serializeConfigObject, writeVisConfig } from "./shared";
 import type { MigrateLogger, MigrationReport } from "./types";
 
-// ── Moon config shape ────────────────────────────────────────────────
-
 interface MoonTaskYaml {
     args?: string | string[];
     command?: string;
@@ -31,8 +29,6 @@ interface MoonTasksYaml {
     taskOptions?: Record<string, unknown>;
     tasks?: Record<string, MoonTaskYaml>;
 }
-
-// ── Conversion ───────────────────────────────────────────────────────
 
 const taskToVisTarget = (task: MoonTaskYaml): Record<string, unknown> => {
     const target: Record<string, unknown> = {};
@@ -75,14 +71,14 @@ const renderVisConfig = (tasks: MoonTasksYaml, workspaceRoot: string, useEditorc
         configObject.fileGroups = tasks.fileGroups;
     }
 
-    const targetDefaults: Record<string, Record<string, unknown>> = {};
+    const visTasks: Record<string, Record<string, unknown>> = {};
 
     for (const [name, task] of Object.entries(tasks.tasks ?? {})) {
-        targetDefaults[name] = taskToVisTarget(task);
+        visTasks[name] = taskToVisTarget(task);
     }
 
-    if (Object.keys(targetDefaults).length > 0) {
-        configObject.targetDefaults = targetDefaults;
+    if (Object.keys(visTasks).length > 0) {
+        configObject.tasks = visTasks;
     }
 
     if (tasks.implicitInputs && tasks.implicitInputs.length > 0) {
@@ -102,8 +98,6 @@ const renderVisConfig = (tasks: MoonTasksYaml, workspaceRoot: string, useEditorc
         "",
     ].join("\n");
 };
-
-// ── Moon file discovery ──────────────────────────────────────────────
 
 const findMoonTasksFile = (workspaceRoot: string): string | undefined => {
     const moonDir = join(workspaceRoot, ".moon");
@@ -134,8 +128,6 @@ const findMoonTasksFile = (workspaceRoot: string): string | undefined => {
 
     return undefined;
 };
-
-// ── Migration entry ──────────────────────────────────────────────────
 
 /**
  * Translates a moon `.moon/tasks.yml` into a `vis.config.ts`.
@@ -271,7 +263,7 @@ export const migrateMoon = (
 
     if (parsed.extends && parsed.extends.length > 0) {
         report.warnings.push(
-            "`extends` was found in the moon config but has no direct vis equivalent — inline the referenced files or use vis's `taskDefaults` blocks.",
+            "`extends` was found in the moon config but has no direct vis equivalent — inline the referenced files or use vis's `scopedTasks` blocks.",
         );
     }
 
@@ -297,13 +289,12 @@ export const migrateMoon = (
         "moon's per-project `moon.yml` files should be converted to `project.json`. vis reads targets, tags, layer, stack, language, and owners from project.json — the field names match.",
     );
     report.manualSteps.push(
-        "Scoped `.moon/tasks/<scope>.yml` files map to vis's `taskDefaults` with a `scope` block. Only the first scope file was parsed — review the generated file.",
+        "Scoped `.moon/tasks/<scope>.yml` files map to vis's `scopedTasks` with a `match` block. Only the first scope file was parsed — review the generated file.",
     );
     report.manualSteps.push(
         "vis tasks support `when: { os, env, branch, ci, not.* }` for conditional execution and `always: true` for cleanup tasks that fire even when upstream fails. Review tasks that used moon's `local: true`, `options.runInCI`, or shell-based platform gating — the new surface is more expressive and may simplify them. See docs/guides/conditional-and-finally-tasks.mdx.",
     );
 
-    // ── Templates ────────────────────────────────────────────────────
     // `.moon/templates/` auto-discovers in `vis generate` with no config
     // change needed, so for most users the migration is zero-effort.
     // Still, call it out explicitly so the user knows. `--copy-templates`

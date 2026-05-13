@@ -24,7 +24,6 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
 
     const workspaceRoot = wsRoot;
 
-    // ── Security config audit mode ───────────────────────────────
     if (options.securityConfig) {
         const pm = detectPm(workspaceRoot);
 
@@ -53,7 +52,6 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
         }
     }
 
-    // ── Outdated dependency check ────────────────────────────────
     const { packageManager } = findPackageManagerSync(workspaceRoot);
 
     const npmrcConfig = loadNpmrc(workspaceRoot);
@@ -115,7 +113,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
         logger.info(`Checking ${String(totalDeps)} catalog dependencies against npm registry...\n`);
     }
 
-    const socketOptions = buildSocketOptions(visConfig?.security?.socket);
+    const socketOptions = buildSocketOptions(visConfig?.security?.socket, visConfig?.security?.policies?.score?.minimum);
 
     const { failed, outdated } = await checkOutdated(
         catalogs,
@@ -124,7 +122,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
         onProgress,
         workspaceRoot,
         socketOptions,
-        visConfig?.security?.socket?.acceptedRisks,
+        visConfig?.security?.acceptedRisks,
     );
 
     if (progressInstance) {
@@ -200,7 +198,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
         }
 
         process.stdout.write("\n");
-        logger.info(formatSummary(outdated));
+        logger.info(formatSummary(outdated, socketOptions?.minimumScore));
     } else if (format === "json") {
         const output: Record<string, unknown> = { failed, outdated };
 
@@ -213,7 +211,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
         process.stdout.write(`${formatOutdatedMinimal(outdated)}\n`);
     } else {
         formatOutdatedTable(outdated, logger);
-        logger.info(formatSummary(outdated));
+        logger.info(formatSummary(outdated, socketOptions?.minimumScore));
 
         if (aiResult) {
             logger.info("");

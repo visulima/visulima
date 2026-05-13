@@ -1,7 +1,5 @@
 import type { MigrationEntry } from "../../../commands/migrate/registry";
 
-// ── State shape ─────────────────────────────────────────────────────────
-
 export type MigratePhase = "applying" | "browsing" | "done" | "error";
 
 export interface MigrateItem {

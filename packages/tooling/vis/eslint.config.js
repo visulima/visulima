@@ -9,6 +9,7 @@ export default createConfig(
             "coverage",
             "__fixtures__",
             "__docs__",
+            "__bench__",
             "vitest.config.ts",
             "packem.config.ts",
             ".secretlintrc.cjs",
@@ -25,6 +26,10 @@ export default createConfig(
             // Vendored CycloneDX schemas — kept verbatim per Apache-2.0 §4.2, so
             // project formatting rules don't apply. See __tests__/sbom/schemas/README.md.
             "__tests__/sbom/schemas/*.json",
+            // Vendored upstream JSON schemas used by the report-validation
+            // harness in __tests__/fixtures/schemas/load.ts. Refreshed via
+            // scripts/refresh-vendored-schemas.ts and kept verbatim.
+            "__tests__/fixtures/schemas/*.json",
         ],
         typescript: {
             tsconfigPath: "./tsconfig.eslint.json",

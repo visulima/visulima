@@ -29,7 +29,7 @@ const hookInstall: Command = {
         ["vis hook install", "Install git hooks in .vis-hooks/"],
         ["vis hook install --hooks-dir=.githooks", "Install hooks in a custom directory"],
     ],
-    group: "Scaffold & Config",
+    group: "Git Hooks",
     loader: () =>
         import("./handler").then((m) => {
             return { default: m.hookInstallExecute };
@@ -43,7 +43,7 @@ const hookUninstall: Command = {
     description: "Remove git hooks and reset core.hooksPath",
     env: [...sharedHookEnv],
     examples: [["vis hook uninstall", "Remove git hooks and reset core.hooksPath"]],
-    group: "Scaffold & Config",
+    group: "Git Hooks",
     loader: () =>
         import("./handler").then((m) => {
             return { default: m.hookUninstallExecute };
@@ -60,7 +60,7 @@ const hookMigrate: Command = {
         ["vis hook migrate", "Migrate from husky or prek to vis hooks (auto-detected)"],
         ["vis hook migrate --dry-run", "Preview what a migration would write without touching disk"],
     ],
-    group: "Scaffold & Config",
+    group: "Git Hooks",
     loader: () =>
         import("./handler").then((m) => {
             return { default: m.hookMigrateExecute };
@@ -82,7 +82,7 @@ const hookList: Command = {
     description: "Show configured hooks grouped by stage",
     env: [...sharedHookEnv],
     examples: [["vis hook list", "Show configured hooks grouped by stage"]],
-    group: "Scaffold & Config",
+    group: "Git Hooks",
     loader: () =>
         import("./handler").then((m) => {
             return { default: m.hookListExecute };
@@ -96,7 +96,7 @@ const hookValidate: Command = {
     description: "Sanity-check installed hooks and the bundled runner",
     env: [...sharedHookEnv],
     examples: [["vis hook validate", "Sanity-check installed hooks and the bundled runner"]],
-    group: "Scaffold & Config",
+    group: "Git Hooks",
     loader: () =>
         import("./handler").then((m) => {
             return { default: m.hookValidateExecute };
@@ -119,7 +119,7 @@ const hookRun: Command = {
         ["vis hook run pre-commit --from-ref=main --to-ref=HEAD", "Run pre-commit hooks on files changed between two refs"],
         ["vis hook run pre-commit --last-commit", "Shortcut for --from-ref HEAD~1 --to-ref HEAD"],
     ],
-    group: "Scaffold & Config",
+    group: "Git Hooks",
     loader: () =>
         import("./handler").then((m) => {
             return { default: m.hookRunExecute };
@@ -164,7 +164,7 @@ const hookAdd: Command = {
     description: "Add a managed hook snippet (e.g. `vis secrets --staged`)",
     env: [...sharedHookEnv],
     examples: [["vis hook add secrets", "Add a pre-commit hook that runs `vis secrets --staged`"]],
-    group: "Scaffold & Config",
+    group: "Git Hooks",
     loader: () =>
         import("./handler").then((m) => {
             return { default: m.hookAddExecute };

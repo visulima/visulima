@@ -12,7 +12,7 @@ import { DEFAULT_WORKSPACE_CACHE_DIRECTORY } from "../util/vis-paths";
  * cache from the outside) so both commands agree on:
  *
  * - the resolution order: `--cache-dir` flag > vis.config.ts
- *   `taskRunnerOptions.cacheDirectory` > `{workspaceRoot}/.vis/cache`
+ *   `taskRunner.cacheDirectory` > `{workspaceRoot}/.vis/cache`
  * - relative-path normalization against `workspaceRoot`
  * - containment checks (used to decide whether a destructive operation is
  *   safe to perform without confirmation)
@@ -32,7 +32,7 @@ import { DEFAULT_WORKSPACE_CACHE_DIRECTORY } from "../util/vis-paths";
  * runners can pin the cache root without rewriting `vis.config.ts`.
  * @param workspaceRoot Absolute path to the workspace root directory.
  * @param optionsCacheDir CLI `--cache-dir` value (may be relative or absolute). Takes highest priority.
- * @param configCacheDir `taskRunnerOptions.cacheDirectory` from vis.config.ts (may be relative or absolute).
+ * @param configCacheDir `taskRunner.cacheDirectory` from vis.config.ts (may be relative or absolute).
  * @returns The resolved absolute path to the cache directory.
  */
 const resolveCacheDirectory = (workspaceRoot: string, optionsCacheDir: string | undefined, configCacheDir: string | undefined): string => {
@@ -88,7 +88,7 @@ export const resolveSharedCacheRoot = (workspaceRoot: string, enabled: boolean |
  * agents in sibling worktrees share `&lt;mainWorktreeRoot>/.vis/cache`.
  * @param workspaceRoot Absolute path of the current workspace (linked or primary).
  * @param optionsCacheDir CLI `--cache-dir` value (may be relative or absolute).
- * @param configCacheDir `taskRunnerOptions.cacheDirectory` from vis.config.ts.
+ * @param configCacheDir `taskRunner.cacheDirectory` from vis.config.ts.
  * @param sharedWorktreeCache Whether to share the cache between sibling worktrees. Defaults to `true`.
  */
 const resolveSharedCacheDirectory = (

@@ -98,8 +98,6 @@ export interface ToolchainStatus {
     readonly tools: ReadonlyArray<ToolStatus>;
 }
 
-// ── Manager detection ───────────────────────────────────────────────
-
 /**
  * Managers we try to auto-detect. `self-activate` isn't detected — it's
  * the pnpm/yarn binary handling `packageManager` itself, so it appears
@@ -407,8 +405,6 @@ export const pickPrimaryManager = (workspaceRoot: string, config?: ToolchainConf
         ?? found.find((d) => d.configFiles.length > 0) ?? { configFiles: [], installed: false, name: "none" }
     );
 };
-
-// ── Pin discovery ───────────────────────────────────────────────────
 
 interface RootPackageJson {
     engines?: Partial<Record<RuntimeTool, string>>;
@@ -741,8 +737,6 @@ export const parseExpectedTools = (workspaceRoot: string, config?: ToolchainConf
     return [...merged.values()];
 };
 
-// ── Status ──────────────────────────────────────────────────────────
-
 /**
  * Per-tool lookup for `&lt;tool> --version`-style queries. Most tools
  * follow the `&lt;tool> --version` convention, but a few don't:
@@ -1041,8 +1035,6 @@ export const getToolchainStatus = (workspaceRoot: string, config?: ToolchainConf
 
     return { detected, tools };
 };
-
-// ── Install / use commands ──────────────────────────────────────────
 
 export interface InstallInvocation {
     readonly args: ReadonlyArray<string>;
@@ -1511,8 +1503,6 @@ export const parseUseArgument = (raw: string): ToolSpec | undefined => {
 
     return { source: "vis.config.ts", tool: normalizedTool, version: match[2]! };
 };
-
-// ── Auto-install hook (vis run / vis ci pre-flight) ─────────────────
 
 export interface EnsureToolchainResult {
     /** Tools that vis tried to install on the user's behalf. */

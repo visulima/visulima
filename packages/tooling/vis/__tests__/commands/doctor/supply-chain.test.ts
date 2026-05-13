@@ -9,10 +9,12 @@ import { cleanupTemporaryDirectory, createTemporaryDirectory } from "../../test-
 
 const baseSecurity: VisConfig = {
     security: {
-        allowBuilds: { esbuild: "^0.20.0" },
         blockExoticSubdeps: true,
-        minimumReleaseAge: 1440,
-        trustPolicy: "no-downgrade",
+        policies: {
+            firstSeen: { minutes: 1440 },
+            installScripts: { allow: { esbuild: true } },
+            publisherChange: { mode: "no-downgrade" },
+        },
     },
 };
 

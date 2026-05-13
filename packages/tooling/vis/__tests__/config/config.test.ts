@@ -12,11 +12,11 @@ describe(defineConfig, () => {
 
         const config = defineConfig({});
 
-        expect(config.security?.minimumReleaseAge).toBeUndefined();
-        expect(config.security?.trustPolicy).toBe("no-downgrade");
-        expect(config.security?.trustPolicyIgnoreAfter).toBe(SECURITY_DEFAULTS.trustPolicyIgnoreAfter);
+        expect(config.security?.policies?.firstSeen?.minutes).toBeUndefined();
+        expect(config.security?.policies?.publisherChange?.mode).toBe("no-downgrade");
+        expect(config.security?.policies?.publisherChange?.ignoreAfter).toBe(SECURITY_DEFAULTS.policies?.publisherChange?.ignoreAfter);
         expect(config.security?.blockExoticSubdeps).toBe(true);
-        expect(config.security?.strictDepBuilds).toBe(true);
+        expect(config.security?.policies?.installScripts?.strict).toBe(true);
         expect(config.update?.security).toBe(true);
         expect(config.update?.target).toBe("minor");
     });
@@ -25,24 +25,33 @@ describe(defineConfig, () => {
         expect.assertions(3);
 
         const config = defineConfig({
-            security: { minimumReleaseAge: 1440, strictDepBuilds: false },
+            security: {
+                policies: {
+                    firstSeen: { minutes: 1440 },
+                    installScripts: { strict: false },
+                },
+            },
             update: { target: "patch" },
         });
 
-        expect(config.security?.minimumReleaseAge).toBe(1440);
-        expect(config.security?.strictDepBuilds).toBe(false);
+        expect(config.security?.policies?.firstSeen?.minutes).toBe(1440);
+        expect(config.security?.policies?.installScripts?.strict).toBe(false);
         expect(config.update?.target).toBe("patch");
     });
 
-    it("should merge user allowBuilds with defaults", () => {
+    it("should merge user installScripts.allow with defaults", () => {
         expect.assertions(2);
 
         const config = defineConfig({
-            security: { allowBuilds: { esbuild: true } },
+            security: {
+                policies: {
+                    installScripts: { allow: { esbuild: true } },
+                },
+            },
         });
 
-        expect(config.security?.allowBuilds).toStrictEqual({ esbuild: true });
-        expect(config.security?.trustPolicy).toBe("no-downgrade");
+        expect(config.security?.policies?.installScripts?.allow).toStrictEqual({ esbuild: true });
+        expect(config.security?.policies?.publisherChange?.mode).toBe("no-downgrade");
     });
 
     it("should support all config sections", () => {
@@ -61,11 +70,14 @@ describe(defineConfig, () => {
         expect.assertions(2);
 
         const config = defineConfig({
-            security: { blockExoticSubdeps: false, trustPolicy: "off" },
+            security: {
+                blockExoticSubdeps: false,
+                policies: { publisherChange: { mode: "off" } },
+            },
         });
 
         expect(config.security?.blockExoticSubdeps).toBe(false);
-        expect(config.security?.trustPolicy).toBe("off");
+        expect(config.security?.policies?.publisherChange?.mode).toBe("off");
     });
 });
 
@@ -136,8 +148,8 @@ describe(loadVisConfig, () => {
         const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
         const config = await loadVisConfig(temporaryDirectory);
 
-        expect(config.security?.minimumReleaseAge).toBeUndefined();
-        expect(config.security?.trustPolicy).toBe("no-downgrade");
+        expect(config.security?.policies?.firstSeen?.minutes).toBeUndefined();
+        expect(config.security?.policies?.publisherChange?.mode).toBe("no-downgrade");
         expect(config.security?.blockExoticSubdeps).toBe(true);
     });
 
@@ -151,7 +163,7 @@ describe(loadVisConfig, () => {
         const config = await loadVisConfig(temporaryDirectory);
 
         expect(config.update?.target).toBe("minor");
-        expect(config.security?.trustPolicy).toBe("no-downgrade");
+        expect(config.security?.policies?.publisherChange?.mode).toBe("no-downgrade");
     });
 
     it("should load a TypeScript config file and apply defaults", async () => {

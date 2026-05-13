@@ -1,9 +1,9 @@
 /**
  * Supply chain security for package management commands.
  *
- * Ports pnpm's security features (minimumReleaseAge, trustPolicy,
- * allowBuilds, blockExoticSubdeps, strictDepBuilds) to work universally
- * across all package managers.
+ * Maps the unified `security.policies` config to native PM settings
+ * (minimumReleaseAge, trustPolicy, allowBuilds, blockExoticSubdeps,
+ * strictDepBuilds) and enforces them universally across package managers.
  *
  * Support matrix for build script enforcement:
  * - pnpm v10+: Native `allowBuilds` in pnpm-workspace.yaml (vis validates config)

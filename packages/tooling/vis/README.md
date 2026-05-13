@@ -6,7 +6,7 @@
 
 </a>
 
-<h3 align="center">A CLI task runner for monorepo workspaces, powered by @visulima/task-runner</h3>
+<h3 align="center">A monorepo dev toolkit — task runner, remote caching, security scanning, git hooks, and AI agent integrations — powered by @visulima/task-runner</h3>
 
 <!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->
 

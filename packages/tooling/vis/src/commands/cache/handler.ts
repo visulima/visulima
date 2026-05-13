@@ -1029,18 +1029,18 @@ const resolveCacheDirectoryFromContext = (
     visConfig: Record<string, unknown> | undefined,
 ): ResolvedCacheContext => {
     const resolvedWorkspaceRoot = workspaceRoot ?? process.cwd();
-    const cfg = (visConfig ?? {}) as { sharedWorktreeCache?: boolean; taskRunnerOptions?: { cacheDirectory?: string } };
-    const taskRunnerOptions = cfg.taskRunnerOptions ?? {};
+    const cfg = (visConfig ?? {}) as { sharedWorktreeCache?: boolean; taskRunner?: { cacheDirectory?: string } };
+    const taskRunner = cfg.taskRunner ?? {};
     const scope = parseScope(options.scope as string | undefined);
     const optionsCacheDir = options.cacheDir as string | undefined;
 
     // Worktree-local: this checkout's `.vis/cache`. Disable
     // worktree-share by passing `sharedWorktreeCache: false` so the
     // resolver returns the literal workspace_root path.
-    const worktreeDirectory = resolveSharedCacheDirectory(resolvedWorkspaceRoot, optionsCacheDir, taskRunnerOptions.cacheDirectory, false);
+    const worktreeDirectory = resolveSharedCacheDirectory(resolvedWorkspaceRoot, optionsCacheDir, taskRunner.cacheDirectory, false);
 
     // Shared: the main worktree's cache (or workspace_root for primary checkouts).
-    const sharedDirectory = resolveSharedCacheDirectory(resolvedWorkspaceRoot, optionsCacheDir, taskRunnerOptions.cacheDirectory, cfg.sharedWorktreeCache);
+    const sharedDirectory = resolveSharedCacheDirectory(resolvedWorkspaceRoot, optionsCacheDir, taskRunner.cacheDirectory, cfg.sharedWorktreeCache);
 
     let primary: string;
     let directories: string[];

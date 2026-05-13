@@ -8,15 +8,22 @@ const EXPORT_DEFAULT_RE = /(export\s+default\s+\{)/;
 const renderEntry = (key: string, indent: string): string => `${indent}${JSON.stringify(key)}: true,`;
 
 /**
- * Adds entries to `security.allowBuilds` inside an existing `vis.config.ts`.
+ * Adds entries to `security.policies.installScripts.allow` inside an
+ * existing `vis.config.ts`.
  *
- * The writer is regex-based (no AST). It handles three layouts:
+ * The writer is regex-based (no AST). It walks the nesting chain and
+ * injects the deepest missing block:
  *
- * 1. `security: { allowBuilds: { ... } }` already exists — insert new
- *    entries inside the existing `allowBuilds` block.
- * 2. `security: { ... }` exists but no `allowBuilds` key — inject the
- *    `allowBuilds` block as the first child of `security`.
- * 3. No `security:` block — inject a fresh `security: { allowBuilds: {} }`
+ * 1. `security.policies.installScripts.allow` already exists — insert
+ *    new entries inside the existing `allow` block.
+ * 2. `security.policies.installScripts` exists but no `allow` —
+ *    inject the `allow` block as the first child.
+ * 3. `security.policies` exists but no `installScripts` — inject
+ *    `installScripts: { allow: { ... } }` as a child of `policies`.
+ * 4. `security` exists but no `policies` — inject the `policies` chain
+ *    as a child of `security`.
+ * 5. No `security:` block — inject a fresh
+ *    `security: { policies: { installScripts: { allow: { ... } } } }`
  *    as the first child of `defineConfig({` / `export default {`.
  *
  * Returns the result so the caller can decide how to surface the outcome.
@@ -47,10 +54,27 @@ const writeApprovedBuildsToVisConfig = (
 
     const original = readFileSync(configPath);
 
-    const allowBuildsBlockMatch = /(allowBuilds\s*:\s*\{)([^}]*)(\})/.exec(original);
+    // Scope the `allow:` match to follow an `installScripts:` opener so a
+    // hypothetical `allow:` elsewhere (e.g., in another plugin's options)
+    // isn't accidentally clobbered. The writer is still regex-based (not
+    // an AST), so deeper nesting inside `installScripts.allow` is not
+    // supported — entries there are flat `name: bool` pairs by contract.
+    const installScriptsStart = original.search(/installScripts\s*:\s*\{/);
+    let allowBlockMatch: RegExpMatchArray | null = null;
+    let allowBlockOffset = 0;
 
-    if (allowBuildsBlockMatch) {
-        const blockBody = allowBuildsBlockMatch[2] ?? "";
+    if (installScriptsStart !== -1) {
+        const slice = original.slice(installScriptsStart);
+        const localMatch = slice.match(/(allow\s*:\s*\{)([^}]*)(\})/);
+
+        if (localMatch?.index !== undefined) {
+            allowBlockMatch = localMatch;
+            allowBlockOffset = installScriptsStart + localMatch.index;
+        }
+    }
+
+    if (allowBlockMatch) {
+        const blockBody = allowBlockMatch[2] ?? "";
         const existingKeys = new Set<string>();
 
         for (const keyMatch of blockBody.matchAll(/["']([^"']+)["']\s*:/g)) {
@@ -76,24 +100,46 @@ const writeApprovedBuildsToVisConfig = (
             return { added: [], configPath, skipped, status: "noop" };
         }
 
-        const indentMatch = /\n([ \t]+)\S/.exec(blockBody);
-        const indent = indentMatch?.[1] ?? "            ";
+        const indentMatch = blockBody.match(/\n([ \t]+)\S/);
+        const indent = indentMatch?.[1] ?? "                ";
         const insertion = `\n${added.map((e) => renderEntry(e, indent)).join("\n")}`;
         const trimmedBody = blockBody.replace(/\s+$/, "");
         const trailing = blockBody.slice(trimmedBody.length);
         const newBody = `${trimmedBody}${trimmedBody.endsWith(",") || trimmedBody === "" ? "" : ","}${insertion}${trailing.length > 0 ? trailing : "\n"}`;
 
-        const updated = `${original.slice(0, allowBuildsBlockMatch.index)}${allowBuildsBlockMatch[1]!}${newBody}${allowBuildsBlockMatch[3]!}${original.slice(allowBuildsBlockMatch.index + allowBuildsBlockMatch[0].length)}`;
+        const updated = `${original.slice(0, allowBlockOffset)}${allowBlockMatch[1]!}${newBody}${allowBlockMatch[3]!}${original.slice(allowBlockOffset + allowBlockMatch[0].length)}`;
 
         writeFileSync(configPath, updated);
 
         return { added, configPath, skipped, status: "updated" };
     }
 
+    const installScriptsRegex = /(installScripts\s*:\s*\{)/;
+
+    if (installScriptsRegex.test(original)) {
+        const block = `\n                allow: {\n${entries.map((e) => renderEntry(e, "                    ")).join("\n")}\n                },`;
+        const updated = original.replace(installScriptsRegex, `$1${block}`);
+
+        writeFileSync(configPath, updated);
+
+        return { added: entries, configPath, skipped: [], status: "updated" };
+    }
+
+    const policiesRegex = /(policies\s*:\s*\{)/;
+
+    if (policiesRegex.test(original)) {
+        const block = `\n            installScripts: {\n                allow: {\n${entries.map((e) => renderEntry(e, "                    ")).join("\n")}\n                },\n            },`;
+        const updated = original.replace(policiesRegex, `$1${block}`);
+
+        writeFileSync(configPath, updated);
+
+        return { added: entries, configPath, skipped: [], status: "updated" };
+    }
+
     const securityBlockRegex = /(security\s*:\s*\{)/;
 
     if (securityBlockRegex.test(original)) {
-        const block = `\n        allowBuilds: {\n${entries.map((e) => renderEntry(e, "            ")).join("\n")}\n        },`;
+        const block = `\n        policies: {\n            installScripts: {\n                allow: {\n${entries.map((e) => renderEntry(e, "                    ")).join("\n")}\n                },\n            },\n        },`;
         const updated = original.replace(securityBlockRegex, `$1${block}`);
 
         writeFileSync(configPath, updated);
@@ -107,7 +153,7 @@ const writeApprovedBuildsToVisConfig = (
         return { added: [], configPath, skipped: entries, status: "missing-anchor" };
     }
 
-    const block = `\n    security: {\n        allowBuilds: {\n${entries.map((e) => renderEntry(e, "            ")).join("\n")}\n        },\n    },`;
+    const block = `\n    security: {\n        policies: {\n            installScripts: {\n                allow: {\n${entries.map((e) => renderEntry(e, "                    ")).join("\n")}\n                },\n            },\n        },\n    },`;
     const updated = `${original.slice(0, anchorMatch.index + anchorMatch[0].length)}${block}${original.slice(anchorMatch.index + anchorMatch[0].length)}`;
 
     writeFileSync(configPath, updated);

@@ -20,8 +20,6 @@ describe("optimize", () => {
         rmSync(tmpDir, { force: true, recursive: true });
     });
 
-    // ── Helpers ─────────────────────────────────────────────────────────
-
     const makeEntry = (overrides: Partial<OptimizeEntry> = {}): OptimizeEntry => {
         return {
             category: "native",
@@ -35,8 +33,6 @@ describe("optimize", () => {
     const writePkgJson = (dir: string, content: Record<string, unknown>): void => {
         writeFileSync(join(dir, "package.json"), `${JSON.stringify(content, null, 2)}\n`);
     };
-
-    // ── OptimizeStore ───────────────────────────────────────────────────
 
     describe(OptimizeStore, () => {
         it("should initialize with entries", () => {
@@ -201,8 +197,6 @@ describe("optimize", () => {
         });
     });
 
-    // ── Integration: pnpm v10+ workspace yaml overrides ─────────────────
-
     describe("pnpm v10+ workspace overrides integration", () => {
         it("should round-trip read and write overrides in pnpm-workspace.yaml", () => {
             expect.assertions(3);
@@ -241,8 +235,6 @@ describe("optimize", () => {
             expect(yaml).toContain("overrides:\n  'foo': 'bar'");
         });
     });
-
-    // ── Integration: multi-PM override writing ──────────────────────────
 
     describe("multi-PM override writing", () => {
         const entries = [

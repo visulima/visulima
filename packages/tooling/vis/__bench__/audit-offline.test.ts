@@ -1,0 +1,61 @@
+/**
+ * Phase 1 perf budget gate for `vis audit --offline`.
+ *
+ * Budget from the RFC (`packages/tooling/vis/rfc/design-offline-vuln-scanner.md`
+ * §Performance budget): `advisoriesQuery` over 2.8k packages must finish
+ * inside 80 ms. We assert with 50 % slack (120 ms) so noisy CI hosts don't
+ * flake while we still catch a serious regression.
+ *
+ * Companion file: `audit-offline.bench.ts` provides the trend-reporting
+ * `bench()` task for `vitest bench`.
+ */
+import { performance } from "node:perf_hooks";
+
+import { advisoriesQuery } from "#native";
+import type { AdvisoryQuery } from "#native";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+
+import { createAuditOfflineFixture } from "./audit-offline-fixture";
+
+const PKG_COUNT = 2800;
+const BUDGET_MS = 80;
+const BUDGET_WITH_SLACK_MS = 120;
+
+let dbPath: string;
+let queries: AdvisoryQuery[];
+let cleanup: () => void;
+
+beforeAll(async () => {
+    const fixture = await createAuditOfflineFixture(PKG_COUNT);
+
+    dbPath = fixture.dbPath;
+    queries = fixture.queries;
+    cleanup = fixture.cleanup;
+});
+
+afterAll(() => {
+    cleanup?.();
+});
+
+describe("audit-offline · advisoriesQuery 2.8k packages", () => {
+    it(`stays under the ${BUDGET_MS}ms budget (with 50% slack → ${BUDGET_WITH_SLACK_MS}ms)`, () => {
+        expect.assertions(2);
+
+        // Warm pass to fault SQLite pages into the OS page cache; the budget
+        // describes steady-state query latency, not cold-cache open costs.
+        const warmHits = advisoriesQuery(dbPath, queries);
+
+        expect(warmHits.length).toBe(PKG_COUNT);
+
+        const start = performance.now();
+
+        advisoriesQuery(dbPath, queries);
+
+        const elapsed = performance.now() - start;
+
+        expect(
+            elapsed,
+            `advisoriesQuery took ${elapsed.toFixed(1)}ms (budget ${BUDGET_MS}ms, slack ${BUDGET_WITH_SLACK_MS}ms)`,
+        ).toBeLessThan(BUDGET_WITH_SLACK_MS);
+    });
+});

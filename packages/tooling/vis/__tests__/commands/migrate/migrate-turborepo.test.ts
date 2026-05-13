@@ -54,7 +54,7 @@ describe("migrate-turborepo", () => {
             const content = readFileSync(configPath, "utf8");
 
             expect(content).toContain("defineConfig");
-            expect(content).toContain("targetDefaults");
+            expect(content).toContain("tasks");
         });
 
         it("should convert ^build dependsOn to dependencies form", () => {

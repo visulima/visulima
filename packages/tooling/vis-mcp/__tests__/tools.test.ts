@@ -6,6 +6,8 @@ import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import type { McpToolResponse, ToolContext, ToolDeps } from "../src/response";
+import { registerAdvisoryStatus } from "../src/tools/advisory-status";
+import { registerAudit } from "../src/tools/audit";
 import { registerCacheHash } from "../src/tools/cache-hash";
 import { registerCacheWhy } from "../src/tools/cache-why";
 import { registerDescribeProject } from "../src/tools/describe-project";
@@ -349,5 +351,86 @@ describe(registerCacheHash, () => {
 
         expect(result.taskId).toBe("@scope/alpha:build");
         expect(result.hash).toBe("abcdef0123456789");
+    });
+});
+
+describe(registerAudit, () => {
+    it("should register the tool and return the parsed audit payload", async () => {
+        expect.assertions(3);
+
+        const { calls, server } = makeFakeServer();
+
+        registerAudit({ server }, ctx());
+
+        expect(calls).toHaveLength(1);
+        expect(calls[0]!.name).toBe("audit");
+
+        const result = parseOk(await calls[0]!.handler({})) as {
+            packages: number;
+            results: { name: string; vulnerabilities: { id: string }[] }[];
+            summary: { issues: number };
+        };
+
+        expect(result.summary.issues).toBe(1);
+    });
+
+    it("should forward severity, offline, prodOnly, usage, ecosystem, and showAccepted to the CLI", async () => {
+        expect.assertions(7);
+
+        const { calls, server } = makeFakeServer();
+
+        registerAudit({ server }, ctx());
+
+        const result = parseOk(
+            await calls[0]!.handler({
+                ecosystem: "npm,pypi",
+                offline: true,
+                prodOnly: true,
+                severity: "high",
+                showAccepted: true,
+                usage: true,
+            }),
+        ) as { flags: string[] };
+
+        expect(result.flags).toContain("--severity");
+        expect(result.flags).toContain("high");
+        expect(result.flags).toContain("--offline");
+        expect(result.flags).toContain("--prod-only");
+        expect(result.flags).toContain("--usage");
+        expect(result.flags).toContain("--ecosystem");
+        expect(result.flags).toContain("--show-accepted");
+    });
+});
+
+describe(registerAdvisoryStatus, () => {
+    it("should register the tool and return the parsed DB status", async () => {
+        expect.assertions(3);
+
+        const { calls, server } = makeFakeServer();
+
+        registerAdvisoryStatus({ server }, ctx());
+
+        expect(calls[0]!.name).toBe("advisory_status");
+
+        const result = parseOk(await calls[0]!.handler({})) as {
+            ecosystems: { advisoryCount: number; name: string }[];
+            exists: boolean;
+        };
+
+        expect(result.exists).toBe(true);
+        expect(result.ecosystems[0]!.name).toBe("npm");
+    });
+
+    it("should pass --db when provided", async () => {
+        expect.assertions(1);
+
+        const { calls, server } = makeFakeServer();
+
+        registerAdvisoryStatus({ server }, ctx());
+
+        const customDb = join(workspaceRoot, "custom.sqlite");
+        const result = parseOk(await calls[0]!.handler({ db: customDb })) as { dbPath: string };
+
+        expect(result.dbPath).toBe(customDb);
     });
 });

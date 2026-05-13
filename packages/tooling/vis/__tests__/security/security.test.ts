@@ -27,52 +27,52 @@ describe(checkSecurityConfig, () => {
         });
     });
 
-    describe("minimumReleaseAge", () => {
-        it("should warn when explicitly set to 0", () => {
+    describe("policies.firstSeen", () => {
+        it("should warn when minutes is explicitly set to 0", () => {
             expect.assertions(1);
 
-            const config: VisConfig = { security: { minimumReleaseAge: 0 } };
+            const config: VisConfig = { security: { policies: { firstSeen: { minutes: 0 } } } };
             const result = checkSecurityConfig(config, "pnpm");
 
-            expect(result.warnings.some((w) => w.includes("minimumReleaseAge is explicitly set to 0"))).toBe(true);
+            expect(result.warnings.some((w) => w.includes("firstSeen.minutes is explicitly set to 0"))).toBe(true);
         });
 
         it("should not warn when set to a positive value", () => {
             expect.assertions(1);
 
-            const config: VisConfig = { security: { minimumReleaseAge: 1440 } };
+            const config: VisConfig = { security: { policies: { firstSeen: { minutes: 1440 } } } };
             const result = checkSecurityConfig(config, "pnpm");
 
-            expect(result.warnings.some((w) => w.includes("minimumReleaseAge"))).toBe(false);
+            expect(result.warnings.some((w) => w.includes("firstSeen"))).toBe(false);
         });
 
         it("should not warn when undefined (defaults apply)", () => {
             expect.assertions(1);
 
-            const config: VisConfig = { security: { allowBuilds: { esbuild: true } } };
+            const config: VisConfig = { security: { policies: { installScripts: { allow: { esbuild: true } } } } };
             const result = checkSecurityConfig(config, "pnpm");
 
-            expect(result.warnings.some((w) => w.includes("minimumReleaseAge"))).toBe(false);
+            expect(result.warnings.some((w) => w.includes("firstSeen"))).toBe(false);
         });
     });
 
-    describe("allowBuilds", () => {
+    describe("policies.installScripts.allow", () => {
         it("should warn when not configured for pnpm", () => {
             expect.assertions(1);
 
-            const config: VisConfig = { security: { minimumReleaseAge: 1440 } };
+            const config: VisConfig = { security: { policies: { firstSeen: { minutes: 1440 } } } };
             const result = checkSecurityConfig(config, "pnpm");
 
-            expect(result.warnings.some((w) => w.includes("allowBuilds") && w.includes("pnpm"))).toBe(true);
+            expect(result.warnings.some((w) => w.includes("installScripts.allow") && w.includes("pnpm"))).toBe(true);
         });
 
         it("should warn differently for non-pnpm managers", () => {
             expect.assertions(2);
 
-            const config: VisConfig = { security: { minimumReleaseAge: 1440 } };
+            const config: VisConfig = { security: { policies: { firstSeen: { minutes: 1440 } } } };
             const result = checkSecurityConfig(config, "npm");
 
-            expect(result.warnings.some((w) => w.includes("allowBuilds"))).toBe(true);
+            expect(result.warnings.some((w) => w.includes("installScripts.allow"))).toBe(true);
             expect(result.warnings.some((w) => w.includes("pnpm blocks build scripts"))).toBe(false);
         });
 
@@ -81,13 +81,15 @@ describe(checkSecurityConfig, () => {
 
             const config: VisConfig = {
                 security: {
-                    allowBuilds: { esbuild: true },
-                    minimumReleaseAge: 1440,
+                    policies: {
+                        firstSeen: { minutes: 1440 },
+                        installScripts: { allow: { esbuild: true } },
+                    },
                 },
             };
             const result = checkSecurityConfig(config, "pnpm");
 
-            expect(result.warnings.some((w) => w.includes("allowBuilds is not configured"))).toBe(false);
+            expect(result.warnings.some((w) => w.includes("installScripts.allow is not configured"))).toBe(false);
         });
 
         it("should warn when configured with empty object", () => {
@@ -95,24 +97,28 @@ describe(checkSecurityConfig, () => {
 
             const config: VisConfig = {
                 security: {
-                    allowBuilds: {},
-                    minimumReleaseAge: 1440,
+                    policies: {
+                        firstSeen: { minutes: 1440 },
+                        installScripts: { allow: {} },
+                    },
                 },
             };
             const result = checkSecurityConfig(config, "pnpm");
 
-            expect(result.warnings.some((w) => w.includes("allowBuilds"))).toBe(true);
+            expect(result.warnings.some((w) => w.includes("installScripts.allow"))).toBe(true);
         });
     });
 
-    describe("trustPolicy", () => {
-        it("should warn when explicitly set to off", () => {
+    describe("policies.publisherChange", () => {
+        it("should warn when mode explicitly set to off", () => {
             expect.assertions(1);
 
-            const config: VisConfig = { security: { minimumReleaseAge: 1440, trustPolicy: "off" } };
+            const config: VisConfig = {
+                security: { policies: { firstSeen: { minutes: 1440 }, publisherChange: { mode: "off" } } },
+            };
             const result = checkSecurityConfig(config, "pnpm");
 
-            expect(result.warnings.some((w) => w.includes("trustPolicy is explicitly set to 'off'"))).toBe(true);
+            expect(result.warnings.some((w) => w.includes("publisherChange.mode is explicitly 'off'"))).toBe(true);
         });
 
         it("should not warn when set to no-downgrade", () => {
@@ -120,23 +126,25 @@ describe(checkSecurityConfig, () => {
 
             const config: VisConfig = {
                 security: {
-                    allowBuilds: { esbuild: true },
-                    minimumReleaseAge: 1440,
-                    trustPolicy: "no-downgrade",
+                    policies: {
+                        firstSeen: { minutes: 1440 },
+                        installScripts: { allow: { esbuild: true } },
+                        publisherChange: { mode: "no-downgrade" },
+                    },
                 },
             };
             const result = checkSecurityConfig(config, "pnpm");
 
-            expect(result.warnings.some((w) => w.includes("trustPolicy"))).toBe(false);
+            expect(result.warnings.some((w) => w.includes("publisherChange"))).toBe(false);
         });
 
         it("should not warn when undefined (defaults apply)", () => {
             expect.assertions(1);
 
-            const config: VisConfig = { security: { allowBuilds: { esbuild: true } } };
+            const config: VisConfig = { security: { policies: { installScripts: { allow: { esbuild: true } } } } };
             const result = checkSecurityConfig(config, "pnpm");
 
-            expect(result.warnings.some((w) => w.includes("trustPolicy"))).toBe(false);
+            expect(result.warnings.some((w) => w.includes("publisherChange"))).toBe(false);
         });
     });
 
@@ -155,10 +163,12 @@ describe(checkSecurityConfig, () => {
 
             const config: VisConfig = {
                 security: {
-                    allowBuilds: { esbuild: true },
                     blockExoticSubdeps: true,
-                    minimumReleaseAge: 1440,
-                    trustPolicy: "no-downgrade",
+                    policies: {
+                        firstSeen: { minutes: 1440 },
+                        installScripts: { allow: { esbuild: true } },
+                        publisherChange: { mode: "no-downgrade" },
+                    },
                 },
             };
             const result = checkSecurityConfig(config, "pnpm");
@@ -169,50 +179,53 @@ describe(checkSecurityConfig, () => {
         it("should not warn when undefined (defaults apply)", () => {
             expect.assertions(1);
 
-            const config: VisConfig = { security: { allowBuilds: { esbuild: true } } };
+            const config: VisConfig = { security: { policies: { installScripts: { allow: { esbuild: true } } } } };
             const result = checkSecurityConfig(config, "pnpm");
 
             expect(result.warnings.some((w) => w.includes("blockExoticSubdeps"))).toBe(false);
         });
     });
 
-    describe("strictDepBuilds", () => {
-        it("should error when enabled without allowBuilds", () => {
+    describe("policies.installScripts.strict", () => {
+        it("should error when enabled without allow entries", () => {
             expect.assertions(1);
 
             const config: VisConfig = {
                 security: {
-                    minimumReleaseAge: 1440,
-                    strictDepBuilds: true,
+                    policies: {
+                        firstSeen: { minutes: 1440 },
+                        installScripts: { strict: true },
+                    },
                 },
             };
             const result = checkSecurityConfig(config, "pnpm");
 
-            expect(result.errors.some((e) => e.includes("strictDepBuilds"))).toBe(true);
+            expect(result.errors.some((e) => e.includes("installScripts.strict"))).toBe(true);
         });
 
-        it("should not error when enabled with allowBuilds", () => {
+        it("should not error when enabled with allow entries", () => {
             expect.assertions(1);
 
             const config: VisConfig = {
                 security: {
-                    allowBuilds: { esbuild: true },
-                    minimumReleaseAge: 1440,
-                    strictDepBuilds: true,
+                    policies: {
+                        firstSeen: { minutes: 1440 },
+                        installScripts: { allow: { esbuild: true }, strict: true },
+                    },
                 },
             };
             const result = checkSecurityConfig(config, "pnpm");
 
-            expect(result.errors.some((e) => e.includes("strictDepBuilds"))).toBe(false);
+            expect(result.errors.some((e) => e.includes("installScripts.strict"))).toBe(false);
         });
 
         it("should warn when explicitly disabled", () => {
             expect.assertions(1);
 
-            const config: VisConfig = { security: { strictDepBuilds: false } };
+            const config: VisConfig = { security: { policies: { installScripts: { strict: false } } } };
             const result = checkSecurityConfig(config, "pnpm");
 
-            expect(result.warnings.some((w) => w.includes("strictDepBuilds is explicitly disabled"))).toBe(true);
+            expect(result.warnings.some((w) => w.includes("installScripts.strict is explicitly disabled"))).toBe(true);
         });
     });
 
@@ -222,10 +235,12 @@ describe(checkSecurityConfig, () => {
 
             const config: VisConfig = {
                 security: {
-                    allowBuilds: { "@prisma/client": true, esbuild: true },
                     blockExoticSubdeps: true,
-                    minimumReleaseAge: 1440,
-                    trustPolicy: "no-downgrade",
+                    policies: {
+                        firstSeen: { minutes: 1440 },
+                        installScripts: { allow: { "@prisma/client": true, esbuild: true } },
+                        publisherChange: { mode: "no-downgrade" },
+                    },
                 },
             };
             const result = checkSecurityConfig(config, "pnpm");

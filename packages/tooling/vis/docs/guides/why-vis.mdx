@@ -66,7 +66,7 @@ Status sources: [Vite Task open issues](https://github.com/voidzero-dev/vite-tas
 
 ## Migration notes
 
-- **From Turbo:** vis's HTTP backend honours `TURBO_API` / `TURBO_TOKEN` / `TURBO_TEAM` as fallbacks when `taskRunnerOptions.remoteCache.{url,token,teamId}` is unset, so an existing Turbo CI environment keeps working unchanged. `vis migrate turbo` (when shipped) will rewrite `turbo.json` into `vis-config.ts` + per-package `vis.task.ts`. Today, declare targets in `vis-config.ts` and keep the Turbo cache running side-by-side during cutover.
+- **From Turbo:** vis's HTTP backend honours `TURBO_API` / `TURBO_TOKEN` / `TURBO_TEAM` as fallbacks when `taskRunner.remoteCache.{url,token,teamId}` is unset, so an existing Turbo CI environment keeps working unchanged. `vis migrate turbo` (when shipped) will rewrite `turbo.json` into `vis-config.ts` + per-package `vis.task.ts`. Today, declare targets in `vis-config.ts` and keep the Turbo cache running side-by-side during cutover.
 - **From Nx:** `project.json` is read directly — no migration needed for the project graph. Targets defined in `project.json` work as-is; vis adds `vis.task.ts` overlay for per-package tweaks.
 - **From moon:** Moon's `tasks.yml` syntax is close enough that hand-porting a project takes minutes. `vis generate buildkite-ci` and friends already use moon's template format (Tera + frontmatter), so generators carry over.
 - **From `lint-staged` + `husky` + `gitleaks` + `secretlint`:** `vis migrate gitleaks`, `vis migrate secretlint`, and `vis hook install` collapse all four into vis. `vis staged` is a drop-in for `lint-staged`'s config shape.

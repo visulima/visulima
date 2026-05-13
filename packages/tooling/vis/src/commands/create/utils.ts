@@ -12,8 +12,6 @@ import { isAccessibleSync } from "@visulima/fs";
 import { basename, resolve } from "@visulima/path";
 import validate from "validate-npm-package-name";
 
-// ── Package name helpers ──────────────────────────────────────────
-
 /**
  * Validate an npm package name using the official `validate-npm-package-name` library.
  * Handles blacklisted names, core module conflicts, length limits, etc.
@@ -44,8 +42,6 @@ export const toValidPackageName = (raw: string): string =>
         .replace(/^[._-]+/, "")
         .replaceAll(/-{2,}/g, "-")
         .replace(/-$/, "");
-
-// ── Directory helpers ─────────────────────────────────────────────
 
 /** Files that are safe to ignore when deciding if a directory is "empty". */
 const IGNORED_FILES = new Set([".DS_Store", ".git", ".gitkeep", "Thumbs.db"]);

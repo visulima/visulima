@@ -4,7 +4,7 @@ import { join } from "@visulima/path";
 
 import type { BuiltinContext } from "./types";
 
-// SP, TAB, VT, FF, CR
+// TAB, VT, FF, CR, SP
 const WHITESPACE = new Set<number>([0x09, 0x0b, 0x0c, 0x0d, 0x20]);
 const MARKDOWN_RE = /\.(?:md|markdown|mdown|mdx)$/i;
 
