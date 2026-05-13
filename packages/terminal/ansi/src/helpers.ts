@@ -3,10 +3,10 @@
  * It specifically checks for the presence of `globalThis.window.document`.
  */
 
-const isBrowser =
-    typeof globalThis !== "undefined" &&
-    typeof (globalThis as Record<string, unknown>).window === "object" &&
-    ((globalThis as Record<string, unknown>).window as Record<string, unknown>).document !== undefined;
+const isBrowser
+    = typeof globalThis !== "undefined"
+        && typeof (globalThis as Record<string, unknown>).window === "object"
+        && ((globalThis as Record<string, unknown>).window as Record<string, unknown>).document !== undefined;
 
 const OSTYPE_REGEX = /^(?:msys|cygwin)$/;
 
