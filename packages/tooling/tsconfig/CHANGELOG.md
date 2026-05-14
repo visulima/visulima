@@ -1,3 +1,18 @@
+## @visulima/tsconfig [3.0.0-alpha.22](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.0.0-alpha.21...@visulima/tsconfig@3.0.0-alpha.22) (2026-05-14)
+
+### Features
+
+* **tsconfig:** clear lint findings in tsc helper ([d9a99bc](https://github.com/visulima/visulima/commit/d9a99bc860e26bcdcdda8cf2e98528a746c3b05a))
+
+### Miscellaneous Chores
+
+* **tooling:** apply prettier and eslint formatting sweep ([c2c641d](https://github.com/visulima/visulima/commit/c2c641d40242e99030cb990fa01039db5e267667))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.22
+
 ## @visulima/tsconfig [3.0.0-alpha.21](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.0.0-alpha.20...@visulima/tsconfig@3.0.0-alpha.21) (2026-05-11)
 
 
