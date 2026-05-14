@@ -4,6 +4,8 @@ mod advisories;
 mod advisories_napi;
 mod editorconfig;
 mod identify;
+mod osv_bloom;
+mod osv_bloom_napi;
 mod pm_clean;
 mod pm_detect;
 mod pm_exec;
@@ -13,6 +15,7 @@ mod sort_package_json;
 pub use advisories_napi::*;
 pub use editorconfig::*;
 pub use identify::*;
+pub use osv_bloom_napi::*;
 pub use pm_clean::*;
 pub use pm_detect::*;
 pub use pm_exec::*;
@@ -31,5 +34,7 @@ pub use sort_package_json::*;
 ///       `parse_shebang`, `all_known_tags`.
 ///   4 — added offline advisories: `advisories_ingest`, `advisories_query`,
 ///       `advisories_status`. Backed by bundled SQLite (rusqlite) + zip.
+///   5 — added osv-bloom prefilter: `osv_bloom_decode`, `osv_bloom_probe`,
+///       `osv_bloom_probe_batch`. Backed by `blake3` keyed-hash double-hashing.
 #[napi]
-pub const NATIVE_BINDING_VERSION: u32 = 4;
+pub const NATIVE_BINDING_VERSION: u32 = 5;

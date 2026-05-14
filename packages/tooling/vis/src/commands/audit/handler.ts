@@ -1,3 +1,4 @@
+import { spawnSync } from "node:child_process";
 import { existsSync, writeFileSync } from "node:fs";
 import { createInterface } from "node:readline";
 
@@ -5,6 +6,8 @@ import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 import { cyan, dim, magenta, red, yellow } from "@visulima/colorize";
 import { resolve as resolvePath } from "@visulima/path";
 import isInCi from "is-in-ci";
+
+import { whichBin } from "#native";
 
 import { isAdvisoryExcluded, isPackageExcluded, readNativeAuditExclusions, syncAcceptedRisksToNativeConfig } from "../../config/audit-config";
 import type { VisConfig } from "../../config/workspace";
@@ -24,6 +27,7 @@ import { findDuplicateDependencies, lockedPackages } from "../../security/depend
 import { readNodeModulesManifests } from "../../security/manifests";
 import { isMarshallDisabled } from "../../security/marshalls/registry";
 import { canonicalEcosystem, lockedPackagesForEcosystem } from "../../security/multi-eco-lockfiles";
+import { loadOsvBloomHandle, OsvBloomCacheMissError, probeOsvBloomBatch } from "../../security/osv-bloom";
 import type { PolicyDecision } from "../../security/policies";
 import { evaluatePolicies, getRegisteredPolicyNames, parsePoliciesFlag } from "../../security/policies";
 import { computeReachableVulnerablePackages } from "../../security/reachability";
@@ -106,7 +110,182 @@ const formatSocketLine = (report: PackageReportData, isAccepted: boolean): strin
     return `  ${pct} ${name}@${report.version} (${scoreLabel(report.score.overall)}${alerts})${badge}`;
 };
 
+export type AuditBackend = "aube" | "auto" | "vis";
+
+const AUDIT_BACKEND_VALUES: ReadonlySet<AuditBackend> = new Set<AuditBackend>(["aube", "auto", "vis"]);
+
+const isAuditBackend = (value: string | undefined): value is AuditBackend =>
+    value !== undefined && AUDIT_BACKEND_VALUES.has(value as AuditBackend);
+
+/**
+ * Resolve which scanner runs for `vis audit`. Precedence (highest first):
+ *
+ *   1. CLI `--backend` flag
+ *   2. `VIS_AUDIT_BACKEND` env var
+ *   3. `security.audit.backend` config value
+ *   4. `auto` — delegate to aube only when the active installer is aube
+ *      AND the binary is on PATH; otherwise vis runs its own scanner.
+ *
+ * The auto branch checks `visConfig.install.backend` first (declarative),
+ * then `VIS_INSTALLER` (per-shell override). Either set to `"aube"` plus
+ * `whichBin("aube") !== null` triggers delegation. Bare `auto` with no
+ * installer hint never delegates — silent delegation surprises users
+ * whose workspace pins pnpm even if they happen to have aube installed
+ * globally.
+ */
+export const resolveAuditBackend = (
+    optionBackend: string | undefined,
+    configBackend: string | undefined,
+    visConfig: { install?: { backend?: string } } | undefined,
+): "aube" | "vis" => {
+    if (optionBackend !== undefined && !isAuditBackend(optionBackend)) {
+        throw new Error(`Invalid --backend value '${optionBackend}'. Expected one of: aube, auto, vis.`);
+    }
+
+    const envRaw = process.env.VIS_AUDIT_BACKEND;
+
+    if (envRaw !== undefined && envRaw !== "" && !isAuditBackend(envRaw)) {
+        throw new Error(`Invalid VIS_AUDIT_BACKEND value '${envRaw}'. Expected one of: aube, auto, vis.`);
+    }
+
+    const envBackend = isAuditBackend(envRaw) ? envRaw : undefined;
+    const configValue = isAuditBackend(configBackend) ? configBackend : undefined;
+    const optionValue = isAuditBackend(optionBackend) ? optionBackend : undefined;
+    const requested: AuditBackend = optionValue ?? envBackend ?? configValue ?? "auto";
+
+    if (requested === "aube") {
+        return "aube";
+    }
+
+    if (requested === "vis") {
+        return "vis";
+    }
+
+    const installer = visConfig?.install?.backend ?? process.env.VIS_INSTALLER;
+
+    if (installer === "aube" && whichBin("aube") !== null) {
+        return "aube";
+    }
+
+    return "vis";
+};
+
+/**
+ * Translate vis's severity vocabulary into aube's. Aube uses the npm
+ * audit naming (`moderate` instead of `medium`); the other levels match
+ * one-to-one. Returns `undefined` when the caller didn't set a severity
+ * filter so the aube CLI keeps its own default.
+ */
+export const mapSeverityToAube = (severity: SeverityFilter | undefined): string | undefined => {
+    if (severity === undefined) {
+        return undefined;
+    }
+
+    switch (severity) {
+        case "critical": {
+            return "critical";
+        }
+
+        case "high": {
+            return "high";
+        }
+
+        case "low": {
+            return "low";
+        }
+
+        case "medium": {
+            return "moderate";
+        }
+
+        default: {
+            const exhaustive: never = severity;
+
+            return exhaustive;
+        }
+    }
+};
+
+/**
+ * Spawn `aube audit` with the subset of vis options aube understands.
+ * Vis-only flags (offline, socket, sarif/csaf/cyclonedx-vex output,
+ * --usage, etc.) are surfaced via a single warning so the user knows
+ * which features are skipped when delegating.
+ */
+const runAubeAudit = (workspaceRoot: string, options: Record<string, unknown>, _visConfig: VisConfig | undefined): number => {
+    const args: string[] = ["audit"];
+
+    const severity = mapSeverityToAube(options.severity as SeverityFilter | undefined);
+
+    if (severity !== undefined) {
+        args.push("--audit-level", severity);
+    }
+
+    if (options.prodOnly === true || options.prod === true) {
+        args.push("--prod");
+    }
+
+    if (options.json === true || options.format === "json") {
+        args.push("--json");
+    }
+
+    const wantsFix = options.fix === true;
+    const wantsFixTransitive = options["fix-transitive"] === true || options.fixTransitive === true;
+
+    if (wantsFixTransitive) {
+        args.push("--fix=override");
+    } else if (wantsFix) {
+        args.push("--fix=update");
+    }
+
+    const skipped: string[] = [];
+
+    if (options.offline === true) {
+        skipped.push("--offline (aube has its own offline cache)");
+    }
+
+    if (options.socket === true) {
+        skipped.push("--socket (aube uses its own scoring backend)");
+    }
+
+    if (options.format === "sarif" || options.format === "csaf" || options.format === "cyclonedx" || options.format === "cyclonedx-vex") {
+        skipped.push(`--format=${String(options.format)} (only json/text is forwarded to aube)`);
+    }
+
+    if (skipped.length > 0) {
+        pail.warn(`Delegating to 'aube audit'. Skipping vis-only flags: ${skipped.join(", ")}`);
+    }
+
+    const result = spawnSync("aube", args, { cwd: workspaceRoot, stdio: "inherit" });
+
+    if (result.error) {
+        const { code } = result.error as NodeJS.ErrnoException;
+
+        if (code === "ENOENT") {
+            pail.error("Backend 'aube' selected but the 'aube' binary was not found on PATH. Install aube or run with --backend vis.");
+        } else {
+            pail.error(`Failed to spawn aube: ${result.error.message}`);
+        }
+
+        return 1;
+    }
+
+    return result.status ?? 1;
+};
+
 const executeAudit = async (workspaceRoot: string, options: Record<string, unknown>, visConfig: VisConfig | undefined, _logger: Console): Promise<void> => {
+    const backend = resolveAuditBackend(
+        options.backend as string | undefined,
+        visConfig?.security?.audit?.backend,
+        visConfig,
+    );
+
+    if (backend === "aube") {
+        process.exitCode = runAubeAudit(workspaceRoot, options, visConfig);
+
+        return;
+    }
+
     const severityFilter = (options.severity as SeverityFilter | undefined) ?? "low";
     const format = (options.format as string | undefined) ?? "table";
     const isSarif = format === "sarif";
@@ -189,6 +368,77 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
     const packagesToScan = installed.map((p) => {
         return { name: p.name, version: p.version };
     });
+
+    // 2a. Bloom prefilter for OSV MAL-* advisories. Cheap pre-pass that
+    // surfaces likely-malicious packages early (cold-start protection on
+    // ephemeral CI runners). Hits are confirmed downstream by the existing
+    // advisory query path — bloom is informational, never authoritative.
+    const bloomConfig = visConfig?.security?.audit?.advisories?.bloom;
+    const bloomMode = bloomConfig?.mode ?? "off";
+    let bloomHits: { name: string; version: string }[] = [];
+
+    if (bloomMode !== "off") {
+        try {
+            const handle = await loadOsvBloomHandle(workspaceRoot, { softFail: bloomMode === "on" });
+
+            if (handle) {
+                bloomHits = probeOsvBloomBatch(handle, packagesToScan).map((hit) => {
+                    return { name: hit.name, version: hit.version };
+                });
+
+                if (!quietHeader && bloomHits.length > 0) {
+                    pail.warn(
+                        `osv-bloom prefilter flagged ${String(bloomHits.length)} package${bloomHits.length === 1 ? "" : "s"} as possibly malicious (MAL-*). `
+                        + `Confirming via the advisory query path…`,
+                    );
+
+                    const MAX_BLOOM_LOG = 10;
+
+                    for (const hit of bloomHits.slice(0, MAX_BLOOM_LOG)) {
+                        pail.warn(`  ${red("[bloom]")} ${hit.name}@${hit.version}`);
+                    }
+
+                    if (bloomHits.length > MAX_BLOOM_LOG) {
+                        pail.warn(`  …and ${String(bloomHits.length - MAX_BLOOM_LOG)} more (full list in --format json output)`);
+                    }
+                }
+            } else if (!quietHeader) {
+                pail.info(dim("osv-bloom cache absent — skipping prefilter (run `vis advisories bloom sync` to enable)."));
+            }
+        } catch (error) {
+            if (error instanceof OsvBloomCacheMissError && bloomMode === "required") {
+                const message = `${error.message} (security.audit.advisories.bloom.mode = "required")`;
+
+                if (quietHeader) {
+                    process.stderr.write(`${message}\n`);
+                } else {
+                    pail.error(message);
+                }
+
+                process.exitCode = 1;
+
+                return;
+            }
+
+            const message = error instanceof Error ? error.message : String(error);
+
+            if (bloomMode === "required") {
+                if (quietHeader) {
+                    process.stderr.write(`osv-bloom prefilter failed: ${message}\n`);
+                } else {
+                    pail.error(`osv-bloom prefilter failed: ${message}`);
+                }
+
+                process.exitCode = 1;
+
+                return;
+            }
+
+            if (!quietHeader) {
+                pail.warn(`osv-bloom prefilter failed (continuing): ${message}`);
+            }
+        }
+    }
 
     // Offline mode skips every network-bound source; socket.dev is therefore
     // disabled regardless of socketConfig.enabled. MARSHALL_DISABLE_SOCKET
@@ -637,6 +887,7 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
     // 5. JSON output
     if (isJson) {
         const jsonResult = {
+            bloomHits,
             duplicates: duplicates.map((d) => {
                 return {
                     name: d.name,

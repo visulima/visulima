@@ -129,6 +129,7 @@ const buildKeyIndex = (entries: Record<string, PnpmPackageEntry> | undefined): M
 };
 
 export const prunePnpmLockfile = (input: PruneInput): PruneResult => {
+    const displayName = input.displayName ?? "pnpm-lock.yaml";
     const text = typeof input.lockfileContent === "string" ? input.lockfileContent : input.lockfileContent.toString("utf8");
 
     let parsed: PnpmLockfile;
@@ -136,11 +137,11 @@ export const prunePnpmLockfile = (input: PruneInput): PruneResult => {
     try {
         parsed = parseYaml(text) as PnpmLockfile;
     } catch (error) {
-        throw new LockfilePruneError(`pnpm-lock.yaml: parse failed — ${(error as Error).message}`);
+        throw new LockfilePruneError(`${displayName}: parse failed — ${(error as Error).message}`);
     }
 
     if (!parsed || typeof parsed !== "object") {
-        throw new LockfilePruneError("pnpm-lock.yaml: top-level value is not an object");
+        throw new LockfilePruneError(`${displayName}: top-level value is not an object`);
     }
 
     const importers = parsed.importers ?? {};
@@ -269,7 +270,7 @@ export const prunePnpmLockfile = (input: PruneInput): PruneResult => {
 
     return {
         content: stringifyYaml(result, { lineWidth: 0 }),
-        message: `pnpm-lock.yaml: kept ${prunedPackageCount}/${originalPackageCount} packages and ${Object.keys(keptImporters).length} importers (dropped ${droppedPackages} packages, ${droppedImporters} importers)`,
+        message: `${displayName}: kept ${prunedPackageCount}/${originalPackageCount} packages and ${Object.keys(keptImporters).length} importers (dropped ${droppedPackages} packages, ${droppedImporters} importers)`,
         status: "pruned",
     };
 };

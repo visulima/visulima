@@ -164,7 +164,7 @@ Resolution precedence (highest first):
 1. `--installer <name>` CLI flag — `auto`, `aube`, `pnpm`, `npm`, `yarn`, or `bun` (or `--no-aube` to force the lockfile-detected PM for a single run; `--no-aube` wins over every other source).
 2. `VIS_INSTALLER` environment variable — same accepted values as the flag.
 3. `install.backend` in `vis.config.ts` — same accepted values; the team-wide pin.
-4. Auto-detect — `aube` when it's on `PATH`, otherwise the lockfile-detected PM (`pnpm-lock.yaml` → pnpm, `package-lock.json` → npm, `yarn.lock` → yarn, `bun.lockb` → bun).
+4. Auto-detect — `aube` when it's on `PATH` or `aube-lock.yaml` is present, otherwise the lockfile-detected PM (`pnpm-lock.yaml` → pnpm, `package-lock.json` → npm, `yarn.lock` → yarn, `bun.lockb` → bun).
 
 Each step is consulted in order; the first one that resolves to a concrete backend wins. Picking an explicit value (`pnpm`, `npm`, …) at any level always beats the auto-detect step below it, so you can override the team default for a single shell session via `VIS_INSTALLER=pnpm vis install` without touching the config file.
 
@@ -184,6 +184,21 @@ Aube reuses pnpm/npm/yarn/bun lockfile formats but its serialized output isn't b
 ### Lifecycle scripts
 
 Aube already skips dependency lifecycle scripts by default. `--ignore-scripts` is a no-op under aube (`vis install` warns when you pass it). To opt specific packages back in, run `aube approve-builds` — the inverse direction from the pnpm/npm `--ignore-scripts` model.
+
+### Audit delegation
+
+When aube is the active installer, `vis audit` delegates to `aube audit` so a single, consistent vulnerability scan runs regardless of entry point. Resolution mirrors the installer chain:
+
+1. `--backend <name>` CLI flag — `auto`, `aube`, or `vis`.
+2. `VIS_AUDIT_BACKEND` env var.
+3. `security.audit.backend` in `vis.config.ts`.
+4. Defaults to `auto` — delegates only when `install.backend` (or `VIS_INSTALLER`) resolves to aube AND `aube` is on `PATH`.
+
+Vis-only features (`--report`, `--fix-transitive`, `--usage`, `--policies`, `--format sarif|csaf|cyclonedx-vex`, `--ecosystem` beyond npm) print a warning and are dropped when delegating; pass `--backend vis` to force the built-in OSV/Socket scanner.
+
+### Doctor visibility
+
+When aube is the installer, `vis doctor` surfaces aube's effective hardening posture (`paranoid`, `trustPolicy`, `blockExoticSubdeps`, `jailBuilds`, `strictDepBuilds`, `minimumReleaseAge`, `allowBuilds`) alongside the existing vis `security.policies.*` findings, reading from `aube-workspace.yaml` (or falling back to `pnpm-workspace.yaml`). Aube's defaults are already hardened, so most entries render as `ok` — the section turns into a positive confirmation rather than a wall of warnings.
 
 ## Commands
 

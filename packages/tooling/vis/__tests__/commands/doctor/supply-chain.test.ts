@@ -129,4 +129,46 @@ describe(buildSupplyChainPosture, () => {
 
         expect(result.findings.some((f) => f.label.includes("leftover"))).toBe(false);
     });
+
+    it("emits an ok finding when aube paranoid is enabled", () => {
+        expect.assertions(3);
+
+        writeFileSync(join(workspaceRoot, "package.json"), JSON.stringify({ name: "root" }, undefined, 2));
+        writeFileSync(join(workspaceRoot, "aube-workspace.yaml"), "paranoid: true\n");
+
+        const result = buildSupplyChainPosture(baseSecurity, { packageManager: "aube", workspaceRoot });
+
+        const paranoid = result.findings.find((f) => f.label.includes("aube paranoid"));
+
+        expect(paranoid).toBeDefined();
+        expect(paranoid?.severity).toBe("ok");
+        expect(paranoid?.label).toContain("aube-workspace.yaml");
+    });
+
+    it("emits warn findings when aube hardening knobs are explicitly relaxed", () => {
+        expect.assertions(3);
+
+        writeFileSync(join(workspaceRoot, "package.json"), JSON.stringify({ name: "root" }, undefined, 2));
+        writeFileSync(
+            join(workspaceRoot, "aube-workspace.yaml"),
+            "trustPolicy: off\nblockExoticSubdeps: false\nminimumReleaseAge: 0\n",
+        );
+
+        const result = buildSupplyChainPosture(baseSecurity, { packageManager: "aube", workspaceRoot });
+
+        expect(result.findings.some((f) => f.label.includes("aube trustPolicy: off") && f.severity === "warn")).toBe(true);
+        expect(result.findings.some((f) => f.label.includes("aube blockExoticSubdeps: false") && f.severity === "warn")).toBe(true);
+        expect(result.findings.some((f) => f.label.includes("aube minimumReleaseAge: 0") && f.severity === "warn")).toBe(true);
+    });
+
+    it("skips aube findings when the package manager is not aube", () => {
+        expect.assertions(1);
+
+        writeFileSync(join(workspaceRoot, "package.json"), JSON.stringify({ name: "root" }, undefined, 2));
+        writeFileSync(join(workspaceRoot, "aube-workspace.yaml"), "paranoid: true\n");
+
+        const result = buildSupplyChainPosture(baseSecurity, { packageManager: "pnpm", workspaceRoot });
+
+        expect(result.findings.some((f) => f.label.startsWith("aube "))).toBe(false);
+    });
 });

@@ -1,10 +1,14 @@
 /**
  * `vis advisories` — offline OSV advisory DB management.
  *
- * Three sub-commands:
+ * Three sub-commands at the top level:
  *   sync    Download + ingest one or more ecosystem dumps into the local cache.
  *   status  Print DB path, schema version, per-ecosystem row counts and ETag.
  *   prune   Delete the local cache (full reset).
+ *
+ * Two `advisories bloom` sub-commands for the MAL-* bloom prefilter:
+ *   bloom sync    Fetch + verify the `endevco/osv-bloom` filter.
+ *   bloom status  Print bloom cache freshness and parameters.
  *
  * Read paths (`status`) are pure JS. Mutating paths (`sync`, `prune`) call
  * into the native crate.
@@ -95,7 +99,54 @@ const advisoriesPrune: Command = {
     ],
 };
 
-const advisoriesCommands: Command[] = [advisoriesSync, advisoriesStatus, advisoriesPrune];
+const bloomCacheDirOption = {
+    description: "Override the bloom cache directory (defaults to <cache>/vis/osv-bloom/).",
+    name: "cache-dir",
+    type: String,
+} as const;
+
+const advisoriesBloomSync: Command = {
+    commandPath: ["advisories", "bloom"],
+    description: "Fetch and verify the endevco/osv-bloom MAL-* prefilter into the local cache",
+    examples: [
+        ["vis advisories bloom sync", "Fetch the bloom filter from the default upstream"],
+        ["vis advisories bloom sync --force", "Re-download even when the set digest matches"],
+        ["vis advisories bloom sync --source https://bloom.example.com", "Use an internal mirror (must be in allowedHosts)"],
+    ],
+    group: "Security & Health",
+    loader: lazyNamed(() => import("./bloom-sync"), "advisoriesBloomSyncExecute"),
+    name: "sync",
+    options: [
+        {
+            defaultValue: false,
+            description: "Re-download and re-verify even when the upstream set digest is unchanged.",
+            name: "force",
+            type: Boolean,
+        },
+        {
+            description: "Override the bloom source URL. Must be https and resolve to an allowed host.",
+            name: "source",
+            type: String,
+        },
+        bloomCacheDirOption,
+        formatOption,
+    ],
+};
+
+const advisoriesBloomStatus: Command = {
+    commandPath: ["advisories", "bloom"],
+    description: "Print the local osv-bloom cache freshness: built-at, filter size, m/k parameters, set digest",
+    examples: [
+        ["vis advisories bloom status", "Human-readable summary"],
+        ["vis advisories bloom status --format json", "Machine-readable for CI freshness checks"],
+    ],
+    group: "Security & Health",
+    loader: lazyNamed(() => import("./bloom-status"), "advisoriesBloomStatusExecute"),
+    name: "status",
+    options: [bloomCacheDirOption, formatOption],
+};
+
+const advisoriesCommands: Command[] = [advisoriesSync, advisoriesStatus, advisoriesPrune, advisoriesBloomSync, advisoriesBloomStatus];
 
 export default advisoriesCommands;
 
@@ -118,5 +169,19 @@ export type AdvisoriesStatusOptions = CreateOptions<{
 export type AdvisoriesPruneOptions = CreateOptions<{
     db: string | undefined;
     force: boolean | undefined;
+    format: string | undefined;
+}>;
+
+/** Typed options for `vis advisories bloom sync`. */
+export type AdvisoriesBloomSyncOptions = CreateOptions<{
+    "cache-dir": string | undefined;
+    force: boolean | undefined;
+    format: string | undefined;
+    source: string | undefined;
+}>;
+
+/** Typed options for `vis advisories bloom status`. */
+export type AdvisoriesBloomStatusOptions = CreateOptions<{
+    "cache-dir": string | undefined;
     format: string | undefined;
 }>;

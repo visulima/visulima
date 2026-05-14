@@ -132,6 +132,40 @@ describe("lockfile", () => {
             // detail paths are workspace-root-relative (no leading absolute prefix).
             expect(result.detail?.lockfilePath).toBe("bun.lock");
         });
+
+        it("should detect aube by aube-lock.yaml and recommend `aube install` in TTY", () => {
+            expect.assertions(3);
+
+            writeFile("aube-lock.yaml", "lockfileVersion: '9.0'\n");
+
+            const result = checkLockfileFreshness(tmp);
+
+            expect(result.detail?.packageManager).toBe("aube");
+            expect(result.detail?.lockfilePath).toBe("aube-lock.yaml");
+            expect(result.message).toContain("aube install");
+        });
+
+        it("should recommend `aube ci` when running in CI", () => {
+            expect.assertions(1);
+
+            writeFile("aube-lock.yaml", "lockfileVersion: '9.0'\n");
+
+            const result = checkLockfileFreshness(tmp, { inCi: true });
+
+            expect(result.message).toContain("aube ci");
+        });
+
+        it("should recognise the aube install marker (.aube-state)", () => {
+            expect.assertions(2);
+
+            writeFile("aube-lock.yaml", "lockfileVersion: '9.0'\n", 60);
+            writeFile("node_modules/.aube-state", "{}\n");
+
+            const result = checkLockfileFreshness(tmp);
+
+            expect(result.failure).toBeUndefined();
+            expect(result.detail?.marker).toBe("node_modules/.aube-state");
+        });
     });
 
     describe(runLockfilePreflight, () => {

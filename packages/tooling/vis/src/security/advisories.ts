@@ -25,7 +25,7 @@ import {
     NATIVE_BINDING_VERSION,
 } from "#native";
 
-const EXPECTED_BINDING_VERSION = 4;
+const EXPECTED_BINDING_VERSION = 5;
 
 if (NATIVE_BINDING_VERSION !== EXPECTED_BINDING_VERSION) {
     throw new Error(

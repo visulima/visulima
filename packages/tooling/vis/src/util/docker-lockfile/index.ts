@@ -1,3 +1,4 @@
+import { pruneAubeLockfile } from "./aube";
 import { pruneBunLockfile } from "./bun";
 import { pruneNpmLockfile } from "./npm";
 import { prunePnpmLockfile } from "./pnpm";
@@ -16,6 +17,9 @@ import { pruneYarnLockfile } from "./yarn";
  */
 export const pruneLockfile = (input: PruneInput): PruneResult => {
     switch (input.packageManager) {
+        case "aube": {
+            return pruneAubeLockfile(input);
+        }
         case "bun": {
             return pruneBunLockfile(input);
         }

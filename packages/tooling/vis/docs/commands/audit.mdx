@@ -113,6 +113,16 @@ Run [`vis advisories sync`](./advisories.mdx) to populate the cache.
 | --------------------- | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `--policies <names>`  | every configured policy | Comma list of policies to evaluate this run. Pass `none` to skip the engine entirely, `all` to force every known policy. Known: `malware`, `firstSeen`, `unexpectedDeps`, `publisherChange`, `installScripts`, `score`, `vulnerability`, `license`. |
 
+### Backend selection
+
+| Option              | Default | Description                                                                                                                                                                |
+| ------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--backend <name>`  | `auto`  | Vulnerability scanner backend. `auto` delegates to `aube audit` when aube is the active installer; `aube` forces delegation (errors if `aube` is not on `PATH`); `vis` always uses the built-in OSV/Socket scanner. |
+
+Resolution: CLI `--backend` → `VIS_AUDIT_BACKEND` env → `security.audit.backend` in `vis.config.ts` → `auto`.
+
+Vis-only features (`--report`, `--fix-transitive`, `--usage`, `--policies`, `--format sarif|csaf|cyclonedx-vex`, `--ecosystem` beyond `npm`) print a warning and are dropped when delegating; pass `--backend vis` if you need them.
+
 The policy engine wraps eight Socket.dev-style supply-chain gates. Each policy
 is opt-in via the corresponding `security.policies.<name>` field — leaving the
 field unset means the engine skips that policy entirely. `block`-severity

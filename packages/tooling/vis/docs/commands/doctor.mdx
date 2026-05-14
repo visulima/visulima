@@ -104,6 +104,8 @@ A doctor run with no `security` block at all surfaces a single warning pointing 
 
 `patchedDependencies` is read from `pnpm-workspace.yaml` (pnpm) or `package.json` (bun); npm and yarn use different formats and are skipped silently. The check resolves each entry's path relative to the workspace root and only reports problems — when every patch file resolves, the section adds a single `ok` finding with the entry count.
 
+When [aube](https://github.com/endevco/aube) is the active installer, doctor also surfaces aube's effective security posture next to vis's `security.policies.*` findings. The block reads `aube-workspace.yaml` (falling back to `pnpm-workspace.yaml`) and reports on `paranoid`, `trustPolicy`, `blockExoticSubdeps`, `jailBuilds`, `strictDepBuilds`, `minimumReleaseAge`, and `allowBuilds`. Aube's defaults are already hardened, so most entries render as `ok`; the section only escalates to `warn` when a hardening knob is explicitly relaxed (e.g. `trustPolicy: off`, `blockExoticSubdeps: false`, `minimumReleaseAge: 0`).
+
 ### Dependencies
 
 - Total installed packages and detected workspaces.

@@ -23,7 +23,7 @@ import {
 } from "../../runtime/toolchain";
 import type { ToolchainOptions } from "./index";
 
-const KNOWN_TOOLS: ReadonlyArray<RuntimeTool> = ["bun", "deno", "go", "node", "npm", "pnpm", "python", "ruby", "rust", "yarn"];
+const KNOWN_TOOLS: ReadonlyArray<RuntimeTool> = ["aube", "bun", "deno", "go", "node", "npm", "pnpm", "python", "ruby", "rust", "yarn"];
 
 const isKnownTool = (value: string): value is RuntimeTool => (KNOWN_TOOLS as ReadonlyArray<string>).includes(value);
 

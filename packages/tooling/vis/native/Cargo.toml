@@ -8,6 +8,7 @@ license = "MIT"
 crate-type = [ "cdylib" ]
 
 [dependencies]
+blake3 = "1"
 ec4rs = "1"
 napi = { version = "3", features = [ "async" ] }
 napi-derive = "3"

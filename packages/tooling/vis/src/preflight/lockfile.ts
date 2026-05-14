@@ -2,7 +2,7 @@ import { existsSync, statSync } from "node:fs";
 
 import { join } from "@visulima/path";
 
-export type LockfilePackageManager = "bun" | "npm" | "pnpm" | "yarn";
+export type LockfilePackageManager = "aube" | "bun" | "npm" | "pnpm" | "yarn";
 
 export interface LockfilePreflightLogger {
     /**
@@ -21,13 +21,15 @@ export interface LockfilePreflightLogger {
  *
  * Cross-PM precedence (when *multiple* managers' lockfiles coexist —
  * e.g. mid-migration) is determined by the iteration order below:
- * bun → npm → pnpm → yarn. This is rare in practice; if it bites a
+ * aube → bun → npm → pnpm → yarn. Aube leads because its presence is
+ * the user opting *in* to aube — if both `aube-lock.yaml` and a legacy
+ * lockfile exist (common mid-migration when aube was just adopted),
+ * the aube-managed install is the source of truth. If this bites a
  * workspace, the right fix is to delete the stale lockfile rather
- * than tweak this list. The order is a v1 choice driven by "newest
- * PM wins, alphabetical otherwise" — change it only with a release
- * note.
+ * than tweak this list.
  */
 const LOCKFILE_FILES_BY_MANAGER: Record<LockfilePackageManager, string[]> = {
+    aube: ["aube-lock.yaml"],
     bun: ["bun.lock", "bun.lockb"],
     npm: ["package-lock.json"],
     pnpm: ["pnpm-lock.yaml"],
@@ -61,6 +63,10 @@ export interface LockfilePreflightResult {
  * the lockfile mtime against the freshest of these to decide whether
  * `node_modules` is in sync with the lockfile. Verified against each
  * PM's documented behavior:
+ *  - aube writes `node_modules/.aube-state` (per docs/pnpm-users.md, the
+ *    aube analogue of pnpm's `.modules.yaml`). When aube runs against an
+ *    existing pnpm workspace it preserves the pnpm marker too, but the
+ *    aube-specific one is the source of truth for freshness.
  *  - pnpm writes `node_modules/.modules.yaml` on every install.
  *  - npm 7+ mirrors the lockfile to `node_modules/.package-lock.json`.
  *  - yarn classic writes `.yarn-integrity`; yarn berry writes
@@ -69,6 +75,7 @@ export interface LockfilePreflightResult {
  *    `install/lockfile/bun.lockb.zig` writes this on every install).
  */
 const INSTALL_MARKERS: Record<LockfilePackageManager, string[]> = {
+    aube: ["node_modules/.aube-state", "node_modules/.modules.yaml"],
     bun: ["node_modules/.bun-tag"],
     npm: ["node_modules/.package-lock.json"],
     pnpm: ["node_modules/.modules.yaml", "node_modules/.pnpm/lock.yaml"],
@@ -84,12 +91,14 @@ const INSTALL_MARKERS: Record<LockfilePackageManager, string[]> = {
  */
 const INSTALL_COMMAND: Record<"ci" | "tty", Record<LockfilePackageManager, string>> = {
     ci: {
+        aube: "aube ci",
         bun: "bun install --frozen-lockfile",
         npm: "npm ci",
         pnpm: "pnpm install --frozen-lockfile",
         yarn: "yarn install --immutable",
     },
     tty: {
+        aube: "aube install",
         bun: "bun install",
         npm: "npm install",
         pnpm: "pnpm install",

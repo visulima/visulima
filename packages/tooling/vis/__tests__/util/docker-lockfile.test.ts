@@ -406,6 +406,56 @@ describe("pruneLockfile (bun)", () => {
     });
 });
 
+describe("pruneLockfile (aube)", () => {
+    it("delegates to the pnpm pruner and re-tags the message with aube-lock.yaml", () => {
+        expect.assertions(4);
+
+        const lockfile = `lockfileVersion: '9.0'
+importers:
+  .:
+    devDependencies:
+      typescript:
+        specifier: ^5.5.0
+        version: 5.5.0
+  packages/a:
+    dependencies:
+      lodash:
+        specifier: ^4.17.21
+        version: 4.17.21
+  packages/b:
+    dependencies:
+      chalk:
+        specifier: ^5.3.0
+        version: 5.3.0
+packages:
+  lodash@4.17.21:
+    resolution: {integrity: sha512-fake}
+  chalk@5.3.0:
+    resolution: {integrity: sha512-fake}
+  typescript@5.5.0:
+    resolution: {integrity: sha512-fake}
+snapshots:
+  lodash@4.17.21: {}
+  chalk@5.3.0: {}
+  typescript@5.5.0: {}
+`;
+
+        const result = pruneLockfile({
+            closure: closure({ deps: undefined, name: "a", relativeRoot: "packages/a" }),
+            lockfileContent: lockfile,
+            packageManager: "aube",
+        });
+
+        expect(result.status).toBe("pruned");
+        expect(result.message).toContain("aube-lock.yaml");
+        expect(result.message).not.toContain("pnpm-lock.yaml");
+
+        const parsed = parseYaml(result.content!) as { importers: Record<string, unknown> };
+
+        expect(Object.keys(parsed.importers)).toStrictEqual([".", "packages/a"]);
+    });
+});
+
 describe("pruneLockfile (dispatcher)", () => {
     it("throws on unsupported package manager", () => {
         expect.assertions(1);
