@@ -1,3 +1,20 @@
+## @visulima/api-platform [4.0.0-alpha.22](https://github.com/visulima/visulima/compare/@visulima/api-platform@4.0.0-alpha.21...@visulima/api-platform@4.0.0-alpha.22) (2026-05-14)
+
+### Features
+
+* **api-platform:** clarify dotenv disable comment ([ff60061](https://github.com/visulima/visulima/commit/ff60061520baeaba8de86203be1c5015ecd3e633))
+
+### Miscellaneous Chores
+
+* **api-platform:** apply prettier and eslint formatting sweep ([b96b41a](https://github.com/visulima/visulima/commit/b96b41ac709bab9725cf4b65f12c70e6dc3ed5f6))
+
+
+### Dependencies
+
+* **@visulima/connect:** upgraded to 4.0.0-alpha.21
+* **@visulima/fs:** upgraded to 5.0.0-alpha.22
+* **@visulima/jsdoc-open-api:** upgraded to 3.0.0-alpha.21
+
 ## @visulima/api-platform [4.0.0-alpha.21](https://github.com/visulima/visulima/compare/@visulima/api-platform@4.0.0-alpha.20...@visulima/api-platform@4.0.0-alpha.21) (2026-05-11)
 
 
