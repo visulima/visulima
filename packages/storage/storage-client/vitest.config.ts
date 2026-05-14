@@ -26,6 +26,7 @@ const config = getVitestConfig({
                 inline: ["solid-js", "@tanstack/solid-query", "@tanstack/react-query", "@tanstack/vue-query", "@tanstack/svelte-query", "@tanstack/query-core"],
             },
         },
+        setupFiles: ["./__tests__/setup.ts"],
     },
     resolve: {
         conditions: ["@tanstack/custom-condition", "browser", "development"],
