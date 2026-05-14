@@ -1,3 +1,19 @@
+## @visulima/storage-client [1.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/storage-client@1.0.0-alpha.13...@visulima/storage-client@1.0.0-alpha.14) (2026-05-14)
+
+### Features
+
+* **storage-client:** clear lint findings in chunked rest upload ([f3fd16a](https://github.com/visulima/visulima/commit/f3fd16a064678dc94245fee353dd125e4f5b4e6d))
+
+### Miscellaneous Chores
+
+* **storage-client:** apply prettier and eslint formatting sweep ([6dffb2f](https://github.com/visulima/visulima/commit/6dffb2fcdd50ade03ecaac623406b04b701c7fde))
+
+### Tests
+
+* **storage-client:** fix flaky uploader retryBatch status check ([aea0679](https://github.com/visulima/visulima/commit/aea067952b04297d245452a2c9b09694caeaa8b6))
+* **storage-client:** swallow happy-dom teardown race in react query tests ([b263720](https://github.com/visulima/visulima/commit/b26372032668efacf49b85ca824b38624211a99e))
+* **storage-client:** switch to vitest's dangerouslyIgnoreUnhandledErrors ([148bd32](https://github.com/visulima/visulima/commit/148bd32cb3f2b27fcf37a1048034520322351e3e))
+
 ## @visulima/storage-client [1.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/storage-client@1.0.0-alpha.12...@visulima/storage-client@1.0.0-alpha.13) (2026-05-07)
 
 ### Bug Fixes
