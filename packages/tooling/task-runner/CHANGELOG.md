@@ -1,3 +1,17 @@
+## @visulima/task-runner [1.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/task-runner@1.0.0-alpha.13...@visulima/task-runner@1.0.0-alpha.14) (2026-05-14)
+
+### Bug Fixes
+
+* **release:** patch NAPI version-check string and ship fresh loader on release ([0676e33](https://github.com/visulima/visulima/commit/0676e336f453c9ae38c9f3a5fbbb675f9bff7ea0))
+
+### Miscellaneous Chores
+
+* **tooling:** apply prettier and eslint formatting sweep ([c2c641d](https://github.com/visulima/visulima/commit/c2c641d40242e99030cb990fa01039db5e267667))
+
+### Tests
+
+* fixed count ([6fdd45e](https://github.com/visulima/visulima/commit/6fdd45e3855b619d09d3f33ec7c4277e59ef84da))
+
 ## @visulima/task-runner [1.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/task-runner@1.0.0-alpha.12...@visulima/task-runner@1.0.0-alpha.13) (2026-05-11)
 
 ### Features
