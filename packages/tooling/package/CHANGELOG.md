@@ -1,3 +1,14 @@
+## @visulima/package [5.0.0-alpha.21](https://github.com/visulima/visulima/compare/@visulima/package@5.0.0-alpha.20...@visulima/package@5.0.0-alpha.21) (2026-05-14)
+
+### Miscellaneous Chores
+
+* **tooling:** apply prettier and eslint formatting sweep ([c2c641d](https://github.com/visulima/visulima/commit/c2c641d40242e99030cb990fa01039db5e267667))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.22
+
 ## @visulima/package [5.0.0-alpha.20](https://github.com/visulima/visulima/compare/@visulima/package@5.0.0-alpha.19...@visulima/package@5.0.0-alpha.20) (2026-05-11)
 
 ### ⚠ BREAKING CHANGES
