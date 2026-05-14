@@ -2,7 +2,7 @@
 import { deepCopy as mfederczukClone } from "@mfederczuk/deeptools";
 import ungapStructuredClone from "@ungap/structured-clone";
 import { deepClone as visulimaDeepCopy } from "@visulima/deep-clone";
-import data from "@visulima/deep-clone/__fixtures__/data.json";
+import data from "../__fixtures__/data.json" with { type: "json" };
 import cloneDeep from "clone-deep";
 import deepCopy from "deep-copy";
 import fastCopy, { copyStrict as fastCopyStrict } from "fast-copy";
