@@ -73,15 +73,13 @@ jobs:
               uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
               with:
                   persist-credentials: false
+                  # Number of commits to fetch. 0 indicates all history for all branches and tags.
+                  # Pulls all commits (needed for NX)
+                  fetch-depth: 0
               env:
                   GIT_COMMITTER_NAME: "GitHub Actions Shell"
                   GIT_AUTHOR_NAME: "GitHub Actions Shell"
                   EMAIL: "github-actions[bot]@users.noreply.github.com"
-              with:
-                  persist-credentials: false
-                  # Number of commits to fetch. 0 indicates all history for all branches and tags.
-                  # Pulls all commits (needed for NX)
-                  fetch-depth: 0
 
             - name: "Derive appropriate SHAs for base and head for `nx affected` commands"
               id: "setSHAs"
@@ -124,15 +122,13 @@ jobs:
               uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
               with:
                   persist-credentials: false
+                  # Number of commits to fetch. 0 indicates all history for all branches and tags.
+                  # Pulls all commits (needed for NX)
+                  fetch-depth: 0
               env:
                   GIT_COMMITTER_NAME: "GitHub Actions Shell"
                   GIT_AUTHOR_NAME: "GitHub Actions Shell"
                   EMAIL: "github-actions[bot]@users.noreply.github.com"
-              with:
-                  persist-credentials: false
-                  # Number of commits to fetch. 0 indicates all history for all branches and tags.
-                  # Pulls all commits (needed for NX)
-                  fetch-depth: 0
 
             - name: "Derive appropriate SHAs for base and head for `nx affected` commands"
               id: "setSHAs"
