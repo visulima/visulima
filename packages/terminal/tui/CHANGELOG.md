@@ -1,3 +1,28 @@
+## @visulima/tui [1.0.0-alpha.15](https://github.com/visulima/visulima/compare/@visulima/tui@1.0.0-alpha.14...@visulima/tui@1.0.0-alpha.15) (2026-05-14)
+
+### Bug Fixes
+
+* **bench:** import deep-clone fixture + tui modules via public paths ([362417e](https://github.com/visulima/visulima/commit/362417e58ee07b8efa8fa1057572ea729a035058))
+* **release:** patch NAPI version-check string and ship fresh loader on release ([0676e33](https://github.com/visulima/visulima/commit/0676e336f453c9ae38c9f3a5fbbb675f9bff7ea0))
+* **tui:** backport ink v7.0.1-7.0.3 upstream fixes ([aa981c3](https://github.com/visulima/visulima/commit/aa981c3fc26646baffc4af423bf7e2978598873f))
+* **tui:** share useBoxMetrics resize listener via emitLayoutListeners ([2a17d4f](https://github.com/visulima/visulima/commit/2a17d4f947f33a29830b230a895ff4553710d0b0))
+
+### Miscellaneous Chores
+
+* **tui:** apply prettier and eslint formatting sweep ([62a7700](https://github.com/visulima/visulima/commit/62a7700005ff20a567643a09bc89a7d212b3e17d))
+* **tui:** drop runtime deps in favor of local helpers ([4427daf](https://github.com/visulima/visulima/commit/4427daf4a8d5c7b831950d3e75bd066e1ff16ab3))
+
+### Tests
+
+* **tui:** pass interactive:true to useBoxMetrics resize-listener tests ([e6394be](https://github.com/visulima/visulima/commit/e6394be60ad294235c88f62e53b90160b61d695e))
+* **tui:** stabilize Transition onExit test with vi.waitFor ([cd5e8a0](https://github.com/visulima/visulima/commit/cd5e8a004c062949bd5fe6cb31a39def83071e4d))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.11
+* **@visulima/error:** upgraded to 6.0.0-alpha.24
+
 ## @visulima/tui [1.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/tui@1.0.0-alpha.13...@visulima/tui@1.0.0-alpha.14) (2026-05-11)
 
 ## @visulima/tui [1.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/tui@1.0.0-alpha.12...@visulima/tui@1.0.0-alpha.13) (2026-05-11)
