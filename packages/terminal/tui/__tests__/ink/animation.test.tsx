@@ -58,6 +58,8 @@ describe(Transition, () => {
     });
 
     it("should call onExit after an exit transition completes", async () => {
+        expect.hasAssertions();
+
         const onExit = vi.fn();
 
         // We need to start from an entered state and flip to show=false after mount.
