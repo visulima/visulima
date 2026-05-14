@@ -1,3 +1,26 @@
+## @visulima/fs [5.0.0-alpha.22](https://github.com/visulima/visulima/compare/@visulima/fs@5.0.0-alpha.21...@visulima/fs@5.0.0-alpha.22) (2026-05-14)
+
+### Features
+
+* **fs:** include __bench__ in eslint tsconfig ([90ca264](https://github.com/visulima/visulima/commit/90ca264770479e4bcaa35edaaf62fd48560ec39b))
+
+### Miscellaneous Chores
+
+* **fs:** apply prettier and eslint formatting sweep ([6e442f3](https://github.com/visulima/visulima/commit/6e442f3fe4413d52db2959f92574c4159e0450ce))
+
+### Code Refactoring
+
+* **fs-bench:** move fixture creation to pretest:bench + idempotent ([767dc11](https://github.com/visulima/visulima/commit/767dc1113ace6da2fe7b814d836c27f683698c91))
+
+### Continuous Integration
+
+* **fs-bench:** skip fixture postinstall on windows ([906bfd4](https://github.com/visulima/visulima/commit/906bfd417c2c78f8bfcb7467e947d8c250b2723b))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.24
+
 ## @visulima/fs [5.0.0-alpha.21](https://github.com/visulima/visulima/compare/@visulima/fs@5.0.0-alpha.20...@visulima/fs@5.0.0-alpha.21) (2026-05-11)
 
 
