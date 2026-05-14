@@ -351,7 +351,7 @@ jobs:
 
             - name: "Build secret-scanner JS dependencies (fs, path)"
               if: "matrix.settings.testable && (github.event_name != 'pull_request' || needs.files-changed.outputs.secret-scanner == 'true')"
-              run: "pnpm exec nx run-many --target=build --projects=filesystem/fs,filesystem/path"
+              run: "pnpm --filter @visulima/path --filter @visulima/fs run build"
 
             - name: "Test secret-scanner native binding"
               if: "matrix.settings.testable && (github.event_name != 'pull_request' || needs.files-changed.outputs.secret-scanner == 'true')"
