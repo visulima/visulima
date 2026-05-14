@@ -899,6 +899,7 @@ export {
 
 export type {
     CodeownersConfig,
+    CodeownersSource,
     OwnersEntry,
     PackageJson,
     PackageJsonIndex,
