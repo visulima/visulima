@@ -1,3 +1,14 @@
+## @visulima/jsdoc-open-api [3.0.0-alpha.21](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.20...@visulima/jsdoc-open-api@3.0.0-alpha.21) (2026-05-14)
+
+### Miscellaneous Chores
+
+* **jsdoc-open-api:** apply formatter sweep ([6852218](https://github.com/visulima/visulima/commit/6852218fe4d8099771d12499cba090d73034b3c3))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.22
+
 ## @visulima/jsdoc-open-api [3.0.0-alpha.20](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.19...@visulima/jsdoc-open-api@3.0.0-alpha.20) (2026-05-11)
 
 
