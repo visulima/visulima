@@ -86,9 +86,34 @@ jobs:
                   if_no_artifact_found: "fail"
                   allow_forks: false
 
+            - name: "Download NAPI loader artifacts"
+              uses: "dawidd6/action-download-artifact@b6e2e70617bc3265edd6dab6c906732b2f1ae151" # v21
+              with:
+                  workflow: "build-native.yml"
+                  commit: "${{ github.sha }}"
+                  name: "loader-(.+)"
+                  name_is_regexp: true
+                  path: "artifacts"
+                  if_no_artifact_found: "fail"
+                  allow_forks: false
+
             - name: "Distribute native artifacts to platform packages"
               shell: "bash"
               run: |
+                  # Loaders: overwrite committed index.js / index.d.ts with the
+                  # ones napi build emitted for this commit. Guarantees the published
+                  # types match the Rust signatures of the .node binaries below.
+                  # The version string baked into index.js is patched to nextRelease.version
+                  # later by scripts/semantic-release-native-addons.mjs.
+                  cp artifacts/loader-task-runner/index.js packages/tooling/task-runner/index.js
+                  cp artifacts/loader-task-runner/index.d.ts packages/tooling/task-runner/index.d.ts
+                  cp artifacts/loader-tui/index.js packages/terminal/tui/index.js
+                  cp artifacts/loader-tui/index.d.ts packages/terminal/tui/index.d.ts
+                  cp artifacts/loader-vis/index.js packages/tooling/vis/index.js
+                  cp artifacts/loader-vis/index.d.ts packages/tooling/vis/index.d.ts
+                  cp artifacts/loader-secret-scanner/index.js packages/tooling/secret-scanner/index.js
+                  cp artifacts/loader-secret-scanner/index.d.ts packages/tooling/secret-scanner/index.d.ts
+
                   # task-runner: move matching .node files and distribute to npm packages
                   find artifacts -name "task-runner-native.*.node" -exec mv {} packages/tooling/task-runner/ \;
                   cd packages/tooling/task-runner && pnpm exec napi artifacts --output-dir . --npm-dir npm && rm -f *.node && cd ../../..
