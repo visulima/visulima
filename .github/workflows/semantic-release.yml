@@ -141,11 +141,41 @@ jobs:
                   # This is needed for the colorize integration test
                   TEST_PROD_BUILD: "true"
 
+            # Inlined replacement for `anolilab/workflows/step/codecov@main`.
+            # Upstream discovers projects via `pnpm nx show projects --projects "packages/*"`,
+            # which (a) returns nothing here because our packages live at
+            # `packages/<category>/<name>/`, and (b) leaks pnpm platform-mismatch
+            # warnings (one per NAPI subpackage) into the captured array, so a
+            # warning line becomes a fake "project" and codecov fails with
+            # `--fail-on-error` against a path that doesn't exist.
+            - name: "Download and verify Codecov CLI"
+              shell: "bash"
+              run: |
+                  curl -Os https://cli.codecov.io/latest/linux/codecov
+                  curl -Os https://cli.codecov.io/latest/linux/codecov.SHA256SUM
+                  curl -Os https://cli.codecov.io/latest/linux/codecov.SHA256SUM.sig
+                  curl https://keybase.io/codecovsecurity/pgp_keys.asc | gpg --no-default-keyring --keyring trustedkeys.gpg --import
+                  gpgv codecov.SHA256SUM.sig codecov.SHA256SUM
+                  shasum -a 256 -c codecov.SHA256SUM
+                  sudo chmod +x codecov
+
             - name: "Upload code coverage to codecov"
-              uses: "anolilab/workflows/step/codecov@main"
-              with:
-                  run-lint: "false"
-                  codecov-token: "${{ secrets.CODECOV_TOKEN }}"
+              shell: "bash"
+              env:
+                  CODECOV_TOKEN: "${{ secrets.CODECOV_TOKEN }}"
+                  RUN_ID: "${{ github.run_id }}"
+              run: |
+                  shopt -s nullglob
+                  uploaded=0
+                  for cov_dir in packages/*/*/coverage; do
+                      pkg_dir="$(dirname "$cov_dir")"
+                      project="$(basename "$pkg_dir")"
+                      echo "Running codecov in ${pkg_dir}"
+                      ./codecov --codecov-yml-path codecov.yml --verbose upload-process --fail-on-error \
+                          --dir "$pkg_dir" -t "$CODECOV_TOKEN" -F "$project" -n "${project}-${RUN_ID}"
+                      uploaded=$((uploaded + 1))
+                  done
+                  echo "Codecov uploads completed: ${uploaded}"
 
             - name: "Semantic Release"
               if: "success()"
