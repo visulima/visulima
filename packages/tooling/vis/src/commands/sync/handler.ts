@@ -5,13 +5,68 @@ import { writeFileSync, writeJsonSync } from "@visulima/fs";
 import { join, relative } from "@visulima/path";
 import zeptomatch from "zeptomatch";
 
+import type { CodeownersSource } from "../../config/workspace";
 import { discoverWorkspace } from "../../config/workspace";
-import { buildCodeownersLines, renderCodeowners } from "../../util/codeowners";
+import type { CodeownersLine } from "../../util/codeowners";
+import {
+    buildCodeownersLines,
+    DEFAULT_BLOCK_MARKER,
+    mergeIntoExisting,
+    renderCodeowners,
+    renderCodeownersBlock,
+} from "../../util/codeowners";
+import { collectMaintainerLines, collectNestedCodeownersLines } from "../../util/codeowners-sources";
 import { resolveIndentForExistingFile } from "../../util/editorconfig";
 import type { SyncFieldsChange } from "../../util/sync-package-json-fields";
 import { applyFieldChanges, computeFieldChanges, DEFAULT_SYNCED_FIELDS } from "../../util/sync-package-json-fields";
 import { collectWorkspaceDirectories, readPkg } from "../../util/workspace-deps";
 import type { SyncOptions } from "./index";
+
+const KNOWN_SOURCES: ReadonlySet<CodeownersSource> = new Set(["nested-codeowners", "package-json-maintainers", "project-json"]);
+
+/**
+ * Parses a repeated CLI flag like `--fields license,engines --fields author`
+ * into a deduped string list. `cerebro` returns one entry per flag
+ * occurrence; users typically write a single comma-separated value, so
+ * we split each entry too. Falls back to the supplied default when the
+ * normalised list is empty. The optional `validate` hook rejects unknown
+ * tokens (used by `--from` to gate codeowners sources).
+ */
+const parseCsvOption = <T extends string>(
+    raw: string[] | undefined,
+    fallback: ReadonlyArray<T>,
+    validate?: (value: string) => value is T,
+): T[] => {
+    const seen = new Set<T>();
+    const out: T[] = [];
+
+    for (const entry of raw ?? []) {
+        for (const piece of entry.split(",")) {
+            const name = piece.trim();
+
+            if (name.length === 0) {
+                continue;
+            }
+
+            if (validate && !validate(name)) {
+                throw new Error(`Unknown codeowners source: "${name}". Known: ${[...KNOWN_SOURCES].join(", ")}.`);
+            }
+
+            const typed = name as T;
+
+            if (seen.has(typed)) {
+                continue;
+            }
+
+            seen.add(typed);
+            out.push(typed);
+        }
+    }
+
+    return out.length > 0 ? out : [...fallback];
+};
+
+const isCodeownersSource = (value: string): value is CodeownersSource => KNOWN_SOURCES.has(value as CodeownersSource);
 
 const KNOWN_KINDS = ["codeowners", "package-json-fields"] as const;
 
@@ -40,57 +95,64 @@ interface PackageJsonReport {
     totalPackages: number;
 }
 
-/**
- * `multiple: true` means cerebro returns one entry per `--fields` flag, but
- * users typically write `--fields license,engines` once. Split on commas, trim,
- * dedupe, fall back to defaults when empty.
- */
-const parseFieldsOption = (raw: string[] | undefined): string[] => {
-    const seen = new Set<string>();
-    const out: string[] = [];
+const matchesAnyGlob = (name: string, globs: string[]): boolean => globs.some((pattern) => zeptomatch(pattern, name));
 
-    for (const entry of raw ?? []) {
-        for (const piece of entry.split(",")) {
-            const name = piece.trim();
+const runCodeowners = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, SyncOptions>): Promise<void> => {
+    const root = wsRoot as string;
+    const { workspace } = discoverWorkspace(root, visConfig);
+    const codeownersConfig = visConfig?.codeowners;
 
-            if (name.length === 0 || seen.has(name)) {
-                continue;
-            }
+    const sources = parseCsvOption<CodeownersSource>(options.from, codeownersConfig?.sources ?? ["project-json"], isCodeownersSource);
+    const regenerationCommand = options.regenerationCommand ?? codeownersConfig?.regenerationCommand;
+    const preserveBlock = options.preserveBlock === true || codeownersConfig?.preserveBlock === true;
+    const marker = codeownersConfig?.blockMarker ?? DEFAULT_BLOCK_MARKER;
+    const nestedIncludes = options.nestedIncludes ?? codeownersConfig?.nestedIncludes;
+    const outRelative = options.out ?? "CODEOWNERS";
 
-            seen.add(name);
-            out.push(name);
+    const extraLines: CodeownersLine[] = [];
+
+    if (sources.includes("nested-codeowners")) {
+        const nestedLines = await collectNestedCodeownersLines(root, nestedIncludes, outRelative);
+
+        for (const line of nestedLines) {
+            extraLines.push({ ...line, source: "nested" });
         }
     }
 
-    return out.length > 0 ? out : [...DEFAULT_SYNCED_FIELDS];
-};
+    if (sources.includes("package-json-maintainers")) {
+        const maintainerLines = collectMaintainerLines(workspace, root);
 
-const matchesAnyGlob = (name: string, globs: string[]): boolean => globs.some((pattern) => zeptomatch(pattern, name));
+        for (const line of maintainerLines) {
+            extraLines.push({ ...line, source: "maintainers" });
+        }
+    }
 
-const runCodeowners = ({ logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, SyncOptions>): void => {
-    const { workspace } = discoverWorkspace(wsRoot as string, visConfig);
-    const lines = buildCodeownersLines(workspace, visConfig?.codeowners);
+    const lines = sources.includes("project-json")
+        ? buildCodeownersLines(workspace, codeownersConfig, extraLines)
+        : buildCodeownersLines({ projects: {} }, codeownersConfig, extraLines);
 
     if (lines.length === 0) {
-        logger.info("No `owners` entries found in any project. Nothing to sync.");
+        logger.info("No `owners` entries found in any source. Nothing to sync.");
 
         return;
     }
 
-    const rendered = renderCodeowners(lines, visConfig?.codeowners?.provider ?? "github");
-    const outPath = options.out ? join(wsRoot as string, options.out) : join(wsRoot as string, "CODEOWNERS");
+    const outPath = join(root, outRelative);
+
+    let existing = "";
+
+    try {
+        existing = readFileSync(outPath, "utf8");
+    } catch (error: unknown) {
+        if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
+            throw error;
+        }
+    }
+
+    const renderOptions = { regenerationCommand };
+    const rendered = preserveBlock ? mergeIntoExisting(existing, renderCodeownersBlock(lines, marker, renderOptions), marker) : renderCodeowners(lines, renderOptions);
 
     if (options.check) {
-        let existing = "";
-
-        try {
-            existing = readFileSync(outPath, "utf8");
-        } catch (error: unknown) {
-            if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
-                throw error;
-            }
-        }
-
         if (existing.trim() !== rendered.trim()) {
             logger.error(`${outPath} is out of date. Run \`vis sync codeowners\` to update it.`);
             process.exitCode = 1;
@@ -119,7 +181,7 @@ const runPackageJsonFields = ({ logger, options, visConfig, workspaceRoot: wsRoo
         return;
     }
 
-    const fields = parseFieldsOption(options.fields);
+    const fields = parseCsvOption(options.fields, DEFAULT_SYNCED_FIELDS);
     const ignoreGlobs = options.ignorePackageName ?? [];
     const checkMode = options.check === true;
     const format = (options.format ?? "human").toLowerCase();
@@ -231,7 +293,7 @@ const execute = async (toolbox: Toolbox<Console, SyncOptions>): Promise<void> =>
     }
 
     if (kind === "codeowners") {
-        runCodeowners(toolbox);
+        await runCodeowners(toolbox);
 
         return;
     }

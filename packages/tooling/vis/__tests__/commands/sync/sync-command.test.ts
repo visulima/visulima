@@ -186,6 +186,79 @@ describe("vis sync codeowners", () => {
         expect(text).toContain("is up to date");
     });
 
+    it("--preserve-block splices the generated block into an existing CODEOWNERS file", async () => {
+        expect.assertions(4);
+
+        const existing = [
+            "# hand-written header",
+            "/manual/path @manual-team",
+            "",
+        ].join("\n");
+
+        writeFileSync(join(workspaceRoot, "CODEOWNERS"), existing);
+
+        const { logger } = makeLogger();
+
+        await syncExecute({
+            argument: ["codeowners"],
+            logger,
+            options: { preserveBlock: true },
+            runtime: {} as never,
+            visConfig: undefined,
+            workspaceRoot,
+        } as never);
+
+        const written = readFileSync(join(workspaceRoot, "CODEOWNERS"), "utf8");
+
+        expect(written).toContain("# hand-written header");
+        expect(written).toContain("/manual/path @manual-team");
+        expect(written).toContain("# BEGIN vis-codeowners");
+        expect(written).toContain("/packages/a/src/** @team-a");
+    });
+
+    it("--preserve-block replaces only the marker block on re-run, keeping hand edits", async () => {
+        expect.assertions(2);
+
+        const { logger } = makeLogger();
+
+        // First run plants the block in a hand-maintained file.
+        writeFileSync(
+            join(workspaceRoot, "CODEOWNERS"),
+            "# hand-written header\n/manual/path @manual-team\n",
+        );
+
+        await syncExecute({
+            argument: ["codeowners"],
+            logger,
+            options: { preserveBlock: true },
+            runtime: {} as never,
+            visConfig: undefined,
+            workspaceRoot,
+        } as never);
+
+        // Drift the project so the block changes, then re-run.
+        const aDir = join(workspaceRoot, "packages", "a");
+
+        writeFileSync(
+            join(aDir, "project.json"),
+            JSON.stringify({ owners: [{ owners: ["@team-a-new"], path: "src/**" }] }),
+        );
+
+        await syncExecute({
+            argument: ["codeowners"],
+            logger,
+            options: { preserveBlock: true },
+            runtime: {} as never,
+            visConfig: undefined,
+            workspaceRoot,
+        } as never);
+
+        const written = readFileSync(join(workspaceRoot, "CODEOWNERS"), "utf8");
+
+        expect(written).toContain("/manual/path @manual-team");
+        expect(written).toContain("@team-a-new");
+    });
+
     it("logs 'Nothing to sync' when no project declares owners", async () => {
         expect.assertions(1);
 

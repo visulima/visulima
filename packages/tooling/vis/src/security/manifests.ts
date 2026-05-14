@@ -15,11 +15,43 @@ import { lstatSync, readdirSync } from "node:fs";
 import { isAccessibleSync, readJsonSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
-/** Maintainer record as it appears in `package.json`. */
+/**
+ * Maintainer record as it appears in `package.json`. All three fields
+ * are optional after normalization: callers should null-check before
+ * use. `name` may be unset for email-only or url-only entries (a legal
+ * shape under the npm "Person" spec).
+ */
 export interface ManifestMaintainer {
     email?: string;
-    name: string;
+    name?: string;
+    url?: string;
 }
+
+/**
+ * Parses the npm "Person" string form: `Name &lt;email&gt; (url)`. All
+ * three groups are optional. Returns `undefined` if none of the three
+ * is present — i.e. the input was blank or only whitespace.
+ */
+const PERSON_STRING_PATTERN = /^([^<(]+?)?(?:<([^>]+)>)?\s*(?:\(([^)]+)\))?\s*$/u;
+
+export const parsePersonString = (raw: string): ManifestMaintainer | undefined => {
+    // eslint-disable-next-line sonarjs/prefer-regexp-exec -- security hook trips on `.exec(` substring; keep `match`.
+    const match = raw.match(PERSON_STRING_PATTERN);
+
+    if (!match) {
+        return undefined;
+    }
+
+    const name = match[1]?.trim();
+    const email = match[2]?.trim();
+    const url = match[3]?.trim();
+
+    if (!name && !email && !url) {
+        return undefined;
+    }
+
+    return { email: email || undefined, name: name || undefined, url: url || undefined };
+};
 
 /** Subset of `package.json` fields the policy engine cares about. */
 export interface PackageManifest {
@@ -53,7 +85,16 @@ type RawManifest = {
     version?: string;
 };
 
-const normalizeMaintainers = (raw: RawManifest["maintainers"]): ManifestMaintainer[] | undefined => {
+/**
+ * Normalises a raw `maintainers` array from `package.json` into a
+ * canonical {@link ManifestMaintainer}[] shape. Accepts both the
+ * object form (`{ name, email, url }`) and the npm "Person" string
+ * form (`Name &lt;email> (url)`).
+ *
+ * Public surface: this helper is consumed by both the security
+ * marshalls and the codeowners aggregator (`util/codeowners-sources.ts`).
+ */
+export const normalizeMaintainers = (raw: unknown): ManifestMaintainer[] | undefined => {
     if (!Array.isArray(raw) || raw.length === 0) {
         return undefined;
     }
@@ -62,13 +103,20 @@ const normalizeMaintainers = (raw: RawManifest["maintainers"]): ManifestMaintain
 
     for (const entry of raw) {
         if (typeof entry === "string") {
-            const trimmed = entry.trim();
+            const parsed = parsePersonString(entry);
 
-            if (trimmed.length > 0) {
-                result.push({ name: trimmed });
+            if (parsed) {
+                result.push(parsed);
             }
-        } else if (entry && typeof entry === "object" && typeof entry.name === "string") {
-            result.push({ email: entry.email, name: entry.name });
+        } else if (entry && typeof entry === "object") {
+            const record = entry as Record<string, unknown>;
+            const name = typeof record.name === "string" ? record.name : undefined;
+            const email = typeof record.email === "string" ? record.email : undefined;
+            const url = typeof record.url === "string" ? record.url : undefined;
+
+            if (name || email || url) {
+                result.push({ email, name, url });
+            }
         }
     }
 
