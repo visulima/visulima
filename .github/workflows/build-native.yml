@@ -177,7 +177,7 @@ jobs:
             - name: "Setup resources and environment"
               if: "steps.need-build.outputs.any == 'true' || (matrix.settings.testable && needs.files-changed.outputs.any-changed == 'true')"
               id: "setup"
-              uses: "anolilab/workflows/step/setup@c7103f1bfdb14c19596c4f80156c824951bfc117" # main
+              uses: "anolilab/workflows/step/setup@d41177e2669f36e552713aadcae2d6b455d0999f" # main
               with:
                   node-version: "22"
                   cache-prefix: "build-native"
