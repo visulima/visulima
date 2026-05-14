@@ -1,3 +1,167 @@
+## @visulima/vis [1.0.0-alpha.20](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.19...@visulima/vis@1.0.0-alpha.20) (2026-05-14)
+
+### ⚠ BREAKING CHANGES
+
+* **vis:** the following security.* keys were renamed:
+- security.minimumReleaseAge          -> security.policies.first_seen.minutes
+- security.minimumReleaseAgeExclude   -> security.policies.first_seen.exclude
+- security.trustPolicy                -> security.policies.publisher_change.mode
+- security.trustPolicyExclude         -> security.policies.publisher_change.exclude
+- security.trustPolicyIgnoreAfter     -> security.policies.publisher_change.ignoreAfter
+- security.allowBuilds                -> security.policies.install_scripts.allow
+- security.strictDepBuilds            -> security.policies.install_scripts.strict
+- security.socket.minimumScore        -> security.policies.score.minimum
+- security.socket.acceptedRisks       -> security.acceptedRisks
+- security.audit.failOn               -> security.policies.vulnerability.failOn
+- security.audit.usage                -> security.policies.vulnerability.usage
+
+AcceptedRisk now carries optional policies[] and expiresAt fields so
+risks can be scoped per-policy and time-boxed. Native PM sync writers
+keep emitting pnpm-native field names since pnpm owns that schema.
+
+Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>
+
+* chore(vis): address coderabbit review feedback
+
+- Add JSDoc to exported items across hook builtins, advisories, audit, docker
+- Document OSV `last_affected` inclusive-upper semantics with a focused test
+- Annotate NAPI u64→u32 truncations with JS Number range rationale
+- Switch vis-mcp tool payloads to zod schemas with `.catchall(z.unknown())`
+  so unknown CLI fields stay forward-compatible
+- Fence RFC code blocks with explicit languages and tidy hook-command
+  formatting (multi-line type, implicit-return arrows)
+
+Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>
+
+* chore(vis): address second-round coderabbit feedback on policies rename
+
+- Drift report labels now reference `security.policies.*` paths so the
+  hint matches the keys users edit
+- `defineConfig` JSDoc examples use the new `security.policies` shape
+- `mergeSecurityDefaults` deep-merges every defaulted sub-policy
+  generically; `mergeVisConfigs` deep-merges `policies` and
+  `acceptedRisks` so presets aren't clobbered
+- Config-writer scopes its `allow:` match to follow an
+  `install_scripts:` opener
+- JSDoc clarifications for `audit.advisories.source` default,
+  `acceptedRisks.expiresAt`/`acceptedScore` ranges, `malware.mode`
+  cross-field default, and the current `policies.score.minimum`
+  wiring gap
+
+Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>
+
+* chore(vis): finish coderabbit round-2 fixes — camelCase policies + wire score.minimum
+
+- Rename `PolicyName` union to camelCase (`firstSeen`, `installScripts`,
+  `publisherChange`, `unexpectedDeps`). Updates every consumer in src/,
+  test fixtures, schemas, and docs. JSON schema regenerated.
+- Add `types` mapping to the `#native` package.json import so TypeScript
+  resolves `index.d.ts` when consumers import the alias.
+- Thread `socketOptions.minimumScore` through `audit`, `doctor`, `check`,
+  `update`, `add`, `formatSecurityOverview`, `formatSummary`, and
+  `applyFilter`. `buildSocketOptions` now resolves the effective minimum
+  once (from `security.policies.score.minimum` or
+  `DEFAULT_LOW_SCORE_THRESHOLD`) so every consumer sees the same value
+  instead of comparing scores against the hard-coded constant.
+- Update the JSDoc on `policies.score.minimum` to reflect the new wiring.
+
+Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>
+
+* feat(vis): add Socket-style policy engine with 4 offline-clean policies
+
+Introduce a unified `evaluatePolicies()` engine under `src/security/policies/`
+with four offline-clean modules: license, install_scripts, vulnerability,
+and unexpected_deps (baseline mode). Each policy emits PolicyDecisions
+(block/warn/info) keyed by package, with per-policy accepted-risk scoping
+and expiresAt support reused from the shared matcher.
+
+Wires the engine into `vis audit`: a new `--policies <names>` flag
+(comma-list, `all`, or `none`) narrows evaluation. Block-severity
+decisions feed into `--exit-code` and `--fail-on`. JSON output gains
+`policies[]` + `summary.policyBlocks`. SARIF and HTML formatters render
+policy decisions alongside vulnerabilities; CSAF and CycloneDX-VEX are
+intentionally left untouched (vuln-specific data models).
+
+Adds `readNodeModulesManifests()` to walk `node_modules/` (including the
+pnpm `.pnpm/` content-addressed store) and surface license + scripts +
+maintainers metadata for the offline policies.
+
+33 new unit + integration tests; full vitest suite (3582/3582) green;
+`tsc --noEmit` clean.
+
+Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>
+
+* fix(vis): close three audit policy gating gaps surfaced by CodeRabbit
+
+- applyExitGate's fallthrough call to applyFailOnGate was dropping the
+  policyDecisions argument, so `vis audit --format sarif --fail-on high`
+  exited 0 when the only signal was a block-severity policy decision.
+  Forward the argument.
+- Unknown --policies tokens were silently swallowed when format was
+  json/sarif/csaf/cyclonedx-vex, so a typoed CI invocation reduced
+  enforcement with no log. Always emit the warning to stderr and
+  surface the tokens in JSON output as `warnings[]`.
+- Vulnerability-policy block decisions whose advisory was masked by
+  --severity used to exit 1 with no visible reason. Surface those
+  decisions in the human-readable "Policy Decisions" section so the
+  gate is always traceable.
+
+Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>
+
+* fix(vis): correct npm/yarn min-release-age native config writers
+
+npm CLI types `min-release-age` as `Number` in days, not a duration string —
+vis wrote `48h`/`15m`, which npm's parseInt would silently read as 48/15 days.
+Write integer days rounded up so the native gate is never weaker than vis-config.
+
+Yarn Berry silently treats day suffixes in `npmMinimalAgeGate` as minutes
+
+### Features
+
+* **vis:** add LavaMoat allow-scripts parity (run/tripwire/--write/allowBins) ([84218d3](https://github.com/visulima/visulima/commit/84218d392abcde8d76b9b92de7d220be2b08e854))
+* **vis:** multi-source codeowners aggregation ([d22df81](https://github.com/visulima/visulima/commit/d22df81214899209be3fd9fa4d83372be97552ef))
+* **vis:** offline OSV scanner + unified security.policies ([#632](https://github.com/visulima/visulima/issues/632)) ([6461902](https://github.com/visulima/visulima/commit/646190243bf51bb6df172665d70fd501644e7bc3)), closes [#631](https://github.com/visulima/visulima/issues/631) [#631](https://github.com/visulima/visulima/issues/631) [yarnpkg/berry#6991](https://github.com/yarnpkg/berry/issues/6991)
+* **vis:** wire marshall env-var matrix into install/audit/check + add keys-refresh ([e1e2d6c](https://github.com/visulima/visulima/commit/e1e2d6c2dc81cfdf442b6f75b6497150b368565f))
+
+### Bug Fixes
+
+* **release:** patch NAPI version-check string and ship fresh loader on release ([0676e33](https://github.com/visulima/visulima/commit/0676e336f453c9ae38c9f3a5fbbb675f9bff7ea0))
+* **vis:** clear lint findings in hook dispatch, builtins, and util ([d05204c](https://github.com/visulima/visulima/commit/d05204c9a88d300b2b4ba3c2dd4169a9860a1d86))
+
+### Documentation
+
+* **vis:** add vltpkg/security-archive attribution ([019d6fd](https://github.com/visulima/visulima/commit/019d6fd4d4426991f2fb31450f72616b14874aff))
+
+### Miscellaneous Chores
+
+* fixed build ([ec156bf](https://github.com/visulima/visulima/commit/ec156bf08859e81186b74533610357d85c38f64e))
+* update license file ([8a84e10](https://github.com/visulima/visulima/commit/8a84e10f2077779159f2f1e186be1d461c47e043))
+* **vis:** apply prettier and eslint --fix sweep ([ec64552](https://github.com/visulima/visulima/commit/ec645524984f0e767ba63b3fcaaf60e184d31edf))
+* **vis:** clear remaining ESLint findings across marshalls and tests ([29f87c5](https://github.com/visulima/visulima/commit/29f87c56d8c4aadfe5e270e67901435af31b8eae))
+* **vis:** fix indent-binary-ops and silence default-log no-console ([9c8d5e1](https://github.com/visulima/visulima/commit/9c8d5e1cc07e6e5f3c01d0b79715f074dbda9b0b))
+* **vis:** style normalization sweep + scopedTasks/allowBins config fields ([ff97758](https://github.com/visulima/visulima/commit/ff977584da0afdf61d619b7a5fb7536f80c782a6))
+
+### Tests
+
+* **vis:** raise audit-offline gate to 5× budget for CI hosts ([345b159](https://github.com/visulima/visulima/commit/345b1590cd5f0fbe432855aafde8e7cb3ab19c84))
+* **vis:** use median-of-11 samples for audit-offline perf gate ([3225515](https://github.com/visulima/visulima/commit/3225515f9bf67149b8e0cb42812bc21729b6d750))
+
+### Continuous Integration
+
+* **vis:** track index.d.ts so loader artifact survives cache hits ([b9a439f](https://github.com/visulima/visulima/commit/b9a439f178f1849cc14233ad76e51fe38e5d180f))
+
+
+### Dependencies
+
+* **@visulima/secret-scanner:** upgraded to 1.0.0-alpha.3
+* **@visulima/task-runner:** upgraded to 1.0.0-alpha.14
+* **@visulima/tui:** upgraded to 1.0.0-alpha.15
+* **@visulima/cerebro:** upgraded to 3.0.0-alpha.23
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.11
+* **@visulima/fs:** upgraded to 5.0.0-alpha.22
+* **@visulima/package:** upgraded to 5.0.0-alpha.21
+* **@visulima/pail:** upgraded to 4.0.0-alpha.16
+
 ## @visulima/vis [1.0.0-alpha.19](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.18...@visulima/vis@1.0.0-alpha.19) (2026-05-11)
 
 ### ⚠ BREAKING CHANGES
