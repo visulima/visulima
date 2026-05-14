@@ -1,3 +1,14 @@
+## @visulima/vite-overlay [2.0.0-alpha.26](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.0-alpha.25...@visulima/vite-overlay@2.0.0-alpha.26) (2026-05-14)
+
+### Miscellaneous Chores
+
+* **vite-overlay:** apply prettier and eslint formatting sweep ([21712b7](https://github.com/visulima/visulima/commit/21712b7acf46f2bef5b1b06c4087282267d9d433))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.24
+
 ## @visulima/vite-overlay [2.0.0-alpha.25](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.0-alpha.24...@visulima/vite-overlay@2.0.0-alpha.25) (2026-05-11)
 
 
