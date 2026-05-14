@@ -87,7 +87,7 @@ function requireNative() {
                     process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                 ) {
                     throw new Error(
-                        `Native binding package version mismatch, expected 1.0.0-alpha.14 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+                        `Native binding package version mismatch, expected 1.0.0-alpha.15 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
                     );
                 }
                 return binding;
@@ -109,7 +109,7 @@ function requireNative() {
                     process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                 ) {
                     throw new Error(
-                        `Native binding package version mismatch, expected 1.0.0-alpha.14 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+                        `Native binding package version mismatch, expected 1.0.0-alpha.15 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
                     );
                 }
                 return binding;
@@ -136,7 +136,7 @@ function requireNative() {
                         process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                     ) {
                         throw new Error(
-                            `Native binding package version mismatch, expected 1.0.0-alpha.14 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+                            `Native binding package version mismatch, expected 1.0.0-alpha.15 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
                         );
                     }
                     return binding;
@@ -158,7 +158,7 @@ function requireNative() {
                         process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                     ) {
                         throw new Error(
-                            `Native binding package version mismatch, expected 1.0.0-alpha.14 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+                            `Native binding package version mismatch, expected 1.0.0-alpha.15 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
                         );
                     }
                     return binding;
@@ -181,7 +181,7 @@ function requireNative() {
                     process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                 ) {
                     throw new Error(
-                        `Native binding package version mismatch, expected 1.0.0-alpha.14 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+                        `Native binding package version mismatch, expected 1.0.0-alpha.15 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
                     );
                 }
                 return binding;
@@ -203,7 +203,7 @@ function requireNative() {
                     process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                 ) {
                     throw new Error(
-                        `Native binding package version mismatch, expected 1.0.0-alpha.14 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+                        `Native binding package version mismatch, expected 1.0.0-alpha.15 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
                     );
                 }
                 return binding;
@@ -224,7 +224,7 @@ function requireNative() {
             const bindingPackageVersion = require("@visulima/tui-binding-darwin-universal/package.json").version;
             if (bindingPackageVersion !== "1.0.0-alpha.14" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
                 throw new Error(
-                    `Native binding package version mismatch, expected 1.0.0-alpha.14 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+                    `Native binding package version mismatch, expected 1.0.0-alpha.15 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
                 );
             }
             return binding;
@@ -246,7 +246,7 @@ function requireNative() {
                     process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                 ) {
                     throw new Error(
-                        `Native binding package version mismatch, expected 1.0.0-alpha.14 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+                        `Native binding package version mismatch, expected 1.0.0-alpha.15 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
                     );
                 }
                 return binding;
@@ -268,7 +268,7 @@ function requireNative() {
                     process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                 ) {
                     throw new Error(
-                        `Native binding package version mismatch, expected 1.0.0-alpha.14 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+                        `Native binding package version mismatch, expected 1.0.0-alpha.15 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
                     );
                 }
                 return binding;
@@ -294,7 +294,7 @@ function requireNative() {
                     process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                 ) {
                     throw new Error(
-                        `Native binding package version mismatch, expected 1.0.0-alpha.14 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+                        `Native binding package version mismatch, expected 1.0.0-alpha.15 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
                     );
                 }
                 return binding;
@@ -316,7 +316,7 @@ function requireNative() {
                     process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                 ) {
                     throw new Error(
-                        `Native binding package version mismatch, expected 1.0.0-alpha.14 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+                        `Native binding package version mismatch, expected 1.0.0-alpha.15 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
                     );
                 }
                 return binding;
@@ -343,7 +343,7 @@ function requireNative() {
                         process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                     ) {
                         throw new Error(
-                            `Native binding package version mismatch, expected 1.0.0-alpha.14 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+                            `Native binding package version mismatch, expected 1.0.0-alpha.15 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
                         );
                     }
                     return binding;
@@ -365,7 +365,7 @@ function requireNative() {
                         process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                     ) {
                         throw new Error(
-                            `Native binding package version mismatch, expected 1.0.0-alpha.14 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+                            `Native binding package version mismatch, expected 1.0.0-alpha.15 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
                         );
                     }
                     return binding;
@@ -389,7 +389,7 @@ function requireNative() {
                         process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                     ) {
                         throw new Error(
-                            `Native binding package version mismatch, expected 1.0.0-alpha.14 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+                            `Native binding package version mismatch, expected 1.0.0-alpha.15 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
                         );
                     }
                     return binding;
@@ -411,7 +411,7 @@ function requireNative() {
                         process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                     ) {
                         throw new Error(
-                            `Native binding package version mismatch, expected 1.0.0-alpha.14 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+                            `Native binding package version mismatch, expected 1.0.0-alpha.15 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
                         );
                     }
                     return binding;
@@ -435,7 +435,7 @@ function requireNative() {
                         process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                     ) {
                         throw new Error(
-                            `Native binding package version mismatch, expected 1.0.0-alpha.14 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+                            `Native binding package version mismatch, expected 1.0.0-alpha.15 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
                         );
                     }
                     return binding;
@@ -457,7 +457,7 @@ function requireNative() {
                         process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                     ) {
                         throw new Error(
-                            `Native binding package version mismatch, expected 1.0.0-alpha.14 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+                            `Native binding package version mismatch, expected 1.0.0-alpha.15 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
                         );
                     }
                     return binding;
@@ -481,7 +481,7 @@ function requireNative() {
                         process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                     ) {
                         throw new Error(
-                            `Native binding package version mismatch, expected 1.0.0-alpha.14 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+                            `Native binding package version mismatch, expected 1.0.0-alpha.15 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
                         );
                     }
                     return binding;
@@ -503,7 +503,7 @@ function requireNative() {
                         process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                     ) {
                         throw new Error(
-                            `Native binding package version mismatch, expected 1.0.0-alpha.14 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+                            `Native binding package version mismatch, expected 1.0.0-alpha.15 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
                         );
                     }
                     return binding;
@@ -527,7 +527,7 @@ function requireNative() {
                         process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                     ) {
                         throw new Error(
-                            `Native binding package version mismatch, expected 1.0.0-alpha.14 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+                            `Native binding package version mismatch, expected 1.0.0-alpha.15 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
                         );
                     }
                     return binding;
@@ -549,7 +549,7 @@ function requireNative() {
                         process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                     ) {
                         throw new Error(
-                            `Native binding package version mismatch, expected 1.0.0-alpha.14 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+                            `Native binding package version mismatch, expected 1.0.0-alpha.15 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
                         );
                     }
                     return binding;
@@ -572,7 +572,7 @@ function requireNative() {
                     process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                 ) {
                     throw new Error(
-                        `Native binding package version mismatch, expected 1.0.0-alpha.14 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+                        `Native binding package version mismatch, expected 1.0.0-alpha.15 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
                     );
                 }
                 return binding;
@@ -594,7 +594,7 @@ function requireNative() {
                     process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                 ) {
                     throw new Error(
-                        `Native binding package version mismatch, expected 1.0.0-alpha.14 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+                        `Native binding package version mismatch, expected 1.0.0-alpha.15 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
                     );
                 }
                 return binding;
@@ -620,7 +620,7 @@ function requireNative() {
                     process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                 ) {
                     throw new Error(
-                        `Native binding package version mismatch, expected 1.0.0-alpha.14 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+                        `Native binding package version mismatch, expected 1.0.0-alpha.15 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
                     );
                 }
                 return binding;
@@ -642,7 +642,7 @@ function requireNative() {
                     process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                 ) {
                     throw new Error(
-                        `Native binding package version mismatch, expected 1.0.0-alpha.14 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+                        `Native binding package version mismatch, expected 1.0.0-alpha.15 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
                     );
                 }
                 return binding;
@@ -664,7 +664,7 @@ function requireNative() {
                     process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                 ) {
                     throw new Error(
-                        `Native binding package version mismatch, expected 1.0.0-alpha.14 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
+                        `Native binding package version mismatch, expected 1.0.0-alpha.15 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
                     );
                 }
                 return binding;
