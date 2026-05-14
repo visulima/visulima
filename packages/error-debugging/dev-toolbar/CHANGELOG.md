@@ -1,3 +1,15 @@
+## @visulima/dev-toolbar [1.0.0-alpha.24](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.0-alpha.23...@visulima/dev-toolbar@1.0.0-alpha.24) (2026-05-14)
+
+### Bug Fixes
+
+* **dev-toolbar:** cast form element to AnnotationElement shape ([618e91e](https://github.com/visulima/visulima/commit/618e91e5535a75f1d2d0132e0f7085987af79b34))
+* **dev-toolbar:** scope JSX inject to enclosing function ([1b7e82a](https://github.com/visulima/visulima/commit/1b7e82af78cd599bd35b58a2f3e232c25b7e5192))
+* **dev-toolbar:** silence unnecessary-type-assertion on form element cast ([86282de](https://github.com/visulima/visulima/commit/86282de06a3581be69210a12f12e307ac6ca99c8))
+
+### Miscellaneous Chores
+
+* **error:** apply prettier and eslint formatting sweep ([25c5eaf](https://github.com/visulima/visulima/commit/25c5eaf4989bddfe860b52aea113b3e229fea84f))
+
 ## @visulima/dev-toolbar [1.0.0-alpha.23](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.0-alpha.22...@visulima/dev-toolbar@1.0.0-alpha.23) (2026-05-11)
 
 ## @visulima/dev-toolbar [1.0.0-alpha.22](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.0-alpha.21...@visulima/dev-toolbar@1.0.0-alpha.22) (2026-05-11)
