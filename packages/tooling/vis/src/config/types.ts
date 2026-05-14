@@ -1091,6 +1091,56 @@ export interface VisConfig {
                 allowedHosts?: string[];
 
                 /**
+                 * Bloom-filter prefilter for OSV `MAL-*` (malicious-package)
+                 * advisories. Probes a ~380 KB filter fetched from
+                 * `endevco/osv-bloom` and escalates hits to the existing
+                 * advisory query path for `(name, version)` confirmation.
+                 *
+                 * Cost: ~380 KB on the wire, refreshed every 10 minutes
+                 * upstream. False-positive rate is ~0.1%, so a typical
+                 * 1000-package lockfile triggers zero or one extra
+                 * round trip per audit.
+                 *
+                 * Independent of `audit.advisories.source` / `verify` —
+                 * those control the full OSV ingest. The bloom is
+                 * MAL-* only and aimed at cold-start preflight and
+                 * ephemeral CI runners that haven't synced the full DB.
+                 */
+                bloom?: {
+                    /**
+                     * Extra hosts permitted as `bloom.source`. The
+                     * built-in allowlist (`endevco.github.io`) is enforced
+                     * even if this field is omitted; entries here add to it.
+                     */
+                    allowedHosts?: string[];
+
+                    /**
+                     * Prefilter mode:
+                     * - `off`: never run the bloom check.
+                     * - `on`: run when a local filter is cached; on
+                     *   fetch failure, fall back to the cached filter or
+                     *   skip the prefilter (audit continues against the
+                     *   non-bloom path).
+                     * - `required`: hard-fail the audit when the bloom
+                     *   refresh fails or the local cache is missing.
+                     *   Use in hardened CI together with
+                     *   `audit.advisories.source`.
+                     * @default "off"
+                     */
+                    mode?: "off" | "on" | "required";
+
+                    /**
+                     * Bloom mirror base URL (no trailing slash). Defaults
+                     * to the public `endevco/osv-bloom` GH Pages site.
+                     * Override only if you mirror the bloom artifacts
+                     * internally; the hostname must appear in
+                     * `allowedHosts`.
+                     * @default "https://endevco.github.io/osv-bloom"
+                     */
+                    source?: string;
+                };
+
+                /**
                  * Number of hours after `lastSyncIso` before `vis audit`
                  * prints a "your advisory cache may be stale" notice.
                  * `vis audit` never auto-syncs — the user runs
@@ -1154,6 +1204,26 @@ export interface VisConfig {
                     enabled?: boolean;
                 };
             };
+
+            /**
+             * Vulnerability scanner backend.
+             *
+             * - `auto` (default): delegate to `aube audit` when aube is the
+             *   active installer (its scanner reads the same lockfile and
+             *   produces equivalent severity ratings); otherwise run vis's
+             *   own OSV/Socket scanner.
+             * - `aube`: always delegate to `aube audit`. Errors if `aube` is
+             *   not on PATH.
+             * - `vis`: always use vis's built-in scanner — never delegate.
+             *
+             * Delegation avoids redundant work (aube already has a
+             * full-fidelity audit pass that respects its own exclusions
+             * via `aube-workspace.yaml::auditConfig`) and lets users get
+             * a single, consistent result regardless of which entry point
+             * they invoke.
+             * @default "auto"
+             */
+            backend?: "aube" | "auto" | "vis";
 
             /**
              * When true, `vis audit` skips network calls and queries the

@@ -30,7 +30,7 @@ import {
     tagsFromPaths as tagsFromPathsNative,
 } from "#native";
 
-const EXPECTED_BINDING_VERSION = 4;
+const EXPECTED_BINDING_VERSION = 5;
 
 if (NATIVE_BINDING_VERSION !== EXPECTED_BINDING_VERSION) {
     throw new Error(
@@ -68,6 +68,8 @@ export interface TypesFilter {
 const VIS_FILENAME_TAGS: Readonly<Record<string, ReadonlyArray<string>>> = {
     ".releaserc": ["release-config", "vis-config"],
     ".releaserc.json": ["release-config", "vis-config"],
+    "aube-lock.yaml": ["aube-lock", "lockfile"],
+    "aube-workspace.yaml": ["aube-workspace", "vis-config"],
     "nx.json": ["nx-workspace", "vis-config"],
     "packem.config.js": ["packem-config", "vis-config"],
     "packem.config.mjs": ["packem-config", "vis-config"],

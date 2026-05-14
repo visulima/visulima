@@ -282,17 +282,16 @@ const validateWorkspacesField = (raw: PackageJson["workspaces"]): string[] => {
 };
 
 /**
- * Read `overrides:` from `pnpm-workspace.yaml` (pnpm v9+ moved the
- * `pnpm.overrides` block out of `package.json` into the workspace
- * config). Returns the flat `{ depName: specifier }` map, or
- * `undefined` if the file is missing / unparseable / has no overrides.
- *
- * Best-effort: a malformed YAML file returns `undefined` instead of
- * throwing — drift detection should silently skip the file rather than
- * crash a `vis lint` invocation.
+ * Workspace-config YAML names in precedence order. Aube ships with the
+ * pnpm-compatible shape but uses its own filename; when both files
+ * exist (rare, mid-migration) aube reads aube-workspace.yaml first per
+ * `crates/aube-manifest/src/workspace.rs::WORKSPACE_YAML_NAMES`. Match
+ * that ordering so vis surfaces the same patterns/overrides aube would.
  */
-const readPnpmWorkspaceOverrides = (workspaceRoot: string): Record<string, string> | undefined => {
-    const filePath = join(workspaceRoot, "pnpm-workspace.yaml");
+const WORKSPACE_YAML_NAMES = ["aube-workspace.yaml", "pnpm-workspace.yaml"] as const;
+
+const readWorkspaceYamlOverrides = (workspaceRoot: string, fileName: string): Record<string, string> | undefined => {
+    const filePath = join(workspaceRoot, fileName);
 
     if (!isAccessibleSync(filePath)) {
         return undefined;
@@ -327,8 +326,8 @@ const readPnpmWorkspaceOverrides = (workspaceRoot: string): Record<string, strin
     return Object.keys(out).length > 0 ? out : undefined;
 };
 
-const readPnpmWorkspacePatterns = (workspaceRoot: string): string[] | undefined => {
-    const filePath = join(workspaceRoot, "pnpm-workspace.yaml");
+const readWorkspaceYamlPatterns = (workspaceRoot: string, fileName: string): string[] | undefined => {
+    const filePath = join(workspaceRoot, fileName);
 
     if (!isAccessibleSync(filePath)) {
         return undefined;
@@ -358,6 +357,43 @@ const readPnpmWorkspacePatterns = (workspaceRoot: string): string[] | undefined 
     }
 
     return patterns.length > 0 ? patterns : undefined;
+};
+
+/**
+ * Read `overrides:` from `aube-workspace.yaml` (preferred) or
+ * `pnpm-workspace.yaml`. Returns the flat `{ depName: specifier }`
+ * map, or `undefined` if no file exists / it's unparseable / has no
+ * overrides.
+ *
+ * Best-effort: a malformed YAML file returns `undefined` instead of
+ * throwing — drift detection should silently skip the file rather than
+ * crash a `vis lint` invocation.
+ *
+ * Re-exported under the legacy `readPnpmWorkspaceOverrides` name to
+ * preserve API stability — both names resolve through the same lookup.
+ */
+const readPnpmWorkspaceOverrides = (workspaceRoot: string): Record<string, string> | undefined => {
+    for (const fileName of WORKSPACE_YAML_NAMES) {
+        const overrides = readWorkspaceYamlOverrides(workspaceRoot, fileName);
+
+        if (overrides) {
+            return overrides;
+        }
+    }
+
+    return undefined;
+};
+
+const readPnpmWorkspacePatterns = (workspaceRoot: string): string[] | undefined => {
+    for (const fileName of WORKSPACE_YAML_NAMES) {
+        const patterns = readWorkspaceYamlPatterns(workspaceRoot, fileName);
+
+        if (patterns) {
+            return patterns;
+        }
+    }
+
+    return undefined;
 };
 
 /**

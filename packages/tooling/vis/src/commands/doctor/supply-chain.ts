@@ -18,6 +18,7 @@
  */
 
 import type { VisConfig } from "../../config/workspace";
+import { applyAubeParanoidOverrides, readAubeSecurityPosture } from "../../util/aube-config";
 import { findPatchIssues, readPatchedDependencies } from "../../util/patched-dependencies";
 import { scanMigrationLeftovers } from "../migrate/verify";
 import type { SectionStatus, SupplyChainFinding, SupplyChainPosture } from "./sections";
@@ -154,6 +155,83 @@ export const buildSupplyChainPosture = (config: VisConfig | undefined, context: 
                 detail: "Run `vis migrate verify` for the full list, then re-run `vis migrate <tool>` to clean up.",
                 label: `${String(leftovers.length)} leftover ${leftovers.length === 1 ? "reference" : "references"} to ${toolList}`,
                 severity: "warn",
+            });
+        }
+    }
+
+    // Aube security posture — aube has its own knobs (paranoid, trustPolicy,
+    // jailBuilds, strictDepBuilds, blockExoticSubdeps, minimumReleaseAge,
+    // allowBuilds) that overlap with vis's `security.policies.*`. When aube
+    // is the installer, surface aube's effective state next to the vis
+    // policies so users see one coherent picture instead of two unrelated
+    // sets of toggles. Aube's defaults are *already* hardened
+    // (blockExoticSubdeps: true, trustPolicy: no-downgrade,
+    // minimumReleaseAge: 1440), so most findings are `ok` — the section
+    // becomes a positive confirmation rather than a wall of warnings.
+    if (context.workspaceRoot && context.packageManager === "aube") {
+        const rawPosture = readAubeSecurityPosture(context.workspaceRoot);
+        const posture = applyAubeParanoidOverrides(rawPosture);
+        const sourceSuffix = posture.source ? ` (from ${posture.source})` : "";
+
+        if (posture.paranoid === true) {
+            findings.push({
+                detail: "Forces jailBuilds, trustPolicy=no-downgrade, minimumReleaseAgeStrict, strictStoreIntegrity, and strictDepBuilds on.",
+                label: `aube paranoid: true${sourceSuffix}`,
+                severity: "ok",
+            });
+        }
+
+        // trustPolicy — default is "no-downgrade"; only flag the explicit `off`.
+        if (posture.trustPolicy === "off") {
+            findings.push({
+                detail: "Trust downgrades between releases will not be blocked. Set trustPolicy: no-downgrade in aube-workspace.yaml.",
+                label: `aube trustPolicy: off${sourceSuffix}`,
+                severity: "warn",
+            });
+        }
+
+        // blockExoticSubdeps — default true; flag only when explicitly disabled.
+        if (posture.blockExoticSubdeps === false) {
+            findings.push({
+                detail: "Transitive deps from git+, file:, and tarball URLs will not be blocked. Re-enable with blockExoticSubdeps: true.",
+                label: `aube blockExoticSubdeps: false${sourceSuffix}`,
+                severity: "warn",
+            });
+        }
+
+        // minimumReleaseAge — default 1440 (24h). Flag explicit 0 (disabled).
+        if (posture.minimumReleaseAge === 0) {
+            findings.push({
+                detail: "Newly published versions are not held in a cooling window. Restore with minimumReleaseAge: 1440 (24h) or higher.",
+                label: `aube minimumReleaseAge: 0${sourceSuffix}`,
+                severity: "warn",
+            });
+        }
+
+        // jailBuilds — default false today, planned true in v2. `ok` when on.
+        if (posture.jailBuilds === true) {
+            findings.push({
+                label: `aube jailBuilds: true${sourceSuffix}`,
+                severity: "ok",
+            });
+        }
+
+        // strictDepBuilds — default false. `ok` when on.
+        if (posture.strictDepBuilds === true) {
+            findings.push({
+                label: `aube strictDepBuilds: true${sourceSuffix}`,
+                severity: "ok",
+            });
+        }
+
+        // allowBuilds count — informational. Aube blocks lifecycle scripts
+        // by default and `allowBuilds` is the opt-in. An empty list isn't
+        // a warning here (vis already surfaces installScripts.allow above);
+        // surface only the count when it's non-zero.
+        if (posture.allowBuildsCount > 0) {
+            findings.push({
+                label: `aube allowBuilds: ${String(posture.allowBuildsCount)} ${posture.allowBuildsCount === 1 ? "entry" : "entries"}${sourceSuffix}`,
+                severity: "ok",
             });
         }
     }

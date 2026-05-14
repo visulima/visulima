@@ -148,6 +148,12 @@ const audit: Command = {
             name: "policies",
             type: String,
         },
+        {
+            description:
+                "Audit backend: 'auto' (default, delegates to 'aube audit' when aube is the installer), 'aube' (force delegate), or 'vis' (always use vis's OSV/Socket scanner).",
+            name: "backend",
+            type: String,
+        },
     ],
 };
 
@@ -156,6 +162,7 @@ export default audit;
 /** Typed options object for the `vis audit` command handler, derived from {@link audit.options}. */
 export type AuditOptions = CreateOptions<{
     "allow-major": boolean | undefined;
+    backend: string | undefined;
     db: string | undefined;
     ecosystem: string | undefined;
     "exit-code": boolean | undefined;

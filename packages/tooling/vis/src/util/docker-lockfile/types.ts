@@ -25,6 +25,14 @@ export interface PruneInput {
      * them directly.
      */
     closure: FocusProject[];
+
+    /**
+     * Optional filename label used in human-readable messages and
+     * errors. Defaults to the canonical name for `packageManager`
+     * (e.g. `pnpm-lock.yaml` for pnpm). Aube reuses the pnpm parser,
+     * so its dispatcher overrides this with `aube-lock.yaml`.
+     */
+    displayName?: string;
     /** Raw lockfile contents (UTF-8 text or, for `bun.lockb`, a Buffer). */
     lockfileContent: Buffer | string;
     /** Package manager whose lockfile we're pruning. */

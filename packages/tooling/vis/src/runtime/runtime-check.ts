@@ -1,6 +1,8 @@
 import { isAccessibleSync, readFileSync, readJsonSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
+import { whichBin } from "#native";
+
 /**
  * Runtime-version mismatch finding. vis doesn't manage runtimes directly,
  * but it can warn when the currently running Node/Bun/Deno doesn't match
@@ -172,13 +174,23 @@ export const checkRuntimeVersions = (workspaceRoot: string): RuntimeFinding[] =>
         const detectedFromUserAgent = (process.env["npm_config_user_agent"] ?? "").split(" ")[0] ?? "";
         const [detectedName, detectedVersion] = detectedFromUserAgent.split("/");
 
+        // Aube enforces its own `packageManagerStrict` setting (tri-state:
+        // off | warn | error, defaulting to warn) and emits a clear
+        // diagnostic when the pin doesn't match. Double-erroring here
+        // would mask aube's message — but only when aube is actually
+        // installed and able to surface that diagnostic. Without aube on
+        // PATH, vis's error stays as the only signal so the user is told
+        // something is wrong.
+        const aubePin = expectedName === "aube";
+        const aubeAvailable = aubePin && whichBin("aube") !== null;
+
         if (detectedName && expectedName && detectedName !== expectedName) {
             findings.push({
                 actual: detectedName,
                 expected: expectedName,
                 kind: "packageManager",
                 message: `package.json packageManager pins ${rootPkg.packageManager} but the current invocation is ${detectedFromUserAgent}. Install the correct package manager.`,
-                severity: "error",
+                severity: aubeAvailable ? "warning" : "error",
             });
         } else if (detectedVersion && expectedVersion && detectedVersion !== expectedVersion) {
             findings.push({

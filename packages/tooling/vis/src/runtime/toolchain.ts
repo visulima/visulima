@@ -25,7 +25,7 @@ export const SUPPORTED_MANAGERS = ["proto", "mise", "fnm", "volta", "asdf", "nvm
 
 export type VersionManagerName = "asdf" | "corepack" | "fnm" | "mise" | "none" | "nvm" | "proto" | "self-activate" | "volta";
 
-export type RuntimeTool = "bun" | "deno" | "go" | "node" | "npm" | "pnpm" | "python" | "ruby" | "rust" | "yarn";
+export type RuntimeTool = "aube" | "bun" | "deno" | "go" | "node" | "npm" | "pnpm" | "python" | "ruby" | "rust" | "yarn";
 
 /**
  * Where an expected version came from, in priority order. Higher-indexed
@@ -120,7 +120,10 @@ const MANAGER_CAPABILITIES: Record<DetectableManager, ReadonlyArray<RuntimeTool>
     asdf: ["bun", "deno", "go", "node", "npm", "pnpm", "python", "ruby", "rust", "yarn"],
     corepack: ["npm", "pnpm", "yarn"],
     fnm: ["node"],
-    mise: ["bun", "deno", "go", "node", "npm", "pnpm", "python", "ruby", "rust", "yarn"],
+    // mise installs aube via the official `aube` registry entry (the
+    // recommended install path per the aube docs). proto/asdf don't have
+    // a published plugin yet — list mise only.
+    mise: ["aube", "bun", "deno", "go", "node", "npm", "pnpm", "python", "ruby", "rust", "yarn"],
     nvm: ["node"],
     proto: ["bun", "deno", "go", "node", "npm", "pnpm", "python", "ruby", "rust", "yarn"],
     volta: ["node", "npm", "pnpm", "yarn"],
@@ -591,6 +594,9 @@ const normalizeToolName = (raw: string): RuntimeTool | undefined => {
     const lower = raw.toLowerCase();
 
     switch (lower) {
+        case "aube": {
+            return "aube";
+        }
         case "bun": {
             return "bun";
         }
@@ -748,6 +754,7 @@ export const parseExpectedTools = (workspaceRoot: string, config?: ToolchainConf
  *     on others — try both before giving up.
  */
 const TOOL_VERSION_QUERY: Record<RuntimeTool, { args: ReadonlyArray<string>; binaries: ReadonlyArray<string> }> = {
+    aube: { args: ["--version"], binaries: ["aube"] },
     bun: { args: ["--version"], binaries: ["bun"] },
     deno: { args: ["--version"], binaries: ["deno"] },
     go: { args: ["version"], binaries: ["go"] },
@@ -914,6 +921,12 @@ const preferenceFor = (source: PinSource, tool: RuntimeTool): ReadonlyArray<Vers
 
             if (tool === "npm") {
                 return ["volta", "proto", "mise", "asdf", "corepack"];
+            }
+
+            if (tool === "aube") {
+                // aube has no corepack support today; mise is the recommended
+                // path per its docs, with brew/npm-global as alternatives.
+                return ["mise"];
             }
 
             if (tool === "bun") {
