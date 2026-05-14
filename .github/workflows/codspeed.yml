@@ -74,7 +74,10 @@ jobs:
               id: "affected"
               shell: "bash"
               run: |
-                  affected=$(pnpm exec nx show projects --affected --withTarget=test:bench --json 2>/dev/null || echo '[]')
+                  # `pnpm exec` leaks workspace platform-mismatch warnings to stdout
+                  # (one line per native NAPI sub-package). Keep only the JSON line.
+                  affected=$(pnpm exec nx show projects --affected --withTarget=test:bench --json 2>/dev/null | grep -E '^\[' | tail -n 1)
+                  affected=${affected:-'[]'}
 
                   if [ -z "$affected" ] || [ "$affected" = "[]" ]; then
                     echo "No affected bench projects."
@@ -161,7 +164,7 @@ jobs:
               run: |
                   pnpm exec nx graph --focus="$BENCH_PROJECT" --file=/tmp/bench-graph.json >/dev/null
                   focused=$(jq -r '.graph.nodes | keys[]' /tmp/bench-graph.json | sort -u)
-                  buildable=$(pnpm exec nx show projects --withTarget=build:prod --json | jq -r '.[]' | sort -u)
+                  buildable=$(pnpm exec nx show projects --withTarget=build:prod --json | grep -E '^\[' | tail -n 1 | jq -r '.[]' | sort -u)
                   deps=$(comm -12 <(echo "$focused") <(echo "$buildable") | paste -sd, -)
 
                   if [ -z "$deps" ]; then
