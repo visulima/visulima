@@ -1,3 +1,15 @@
+## @visulima/pail [4.0.0-alpha.16](https://github.com/visulima/visulima/compare/@visulima/pail@4.0.0-alpha.15...@visulima/pail@4.0.0-alpha.16) (2026-05-14)
+
+### Miscellaneous Chores
+
+* **error:** apply prettier and eslint formatting sweep ([25c5eaf](https://github.com/visulima/visulima/commit/25c5eaf4989bddfe860b52aea113b3e229fea84f))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.11
+* **@visulima/error:** upgraded to 6.0.0-alpha.24
+
 ## @visulima/pail [4.0.0-alpha.15](https://github.com/visulima/visulima/compare/@visulima/pail@4.0.0-alpha.14...@visulima/pail@4.0.0-alpha.15) (2026-05-07)
 
 
