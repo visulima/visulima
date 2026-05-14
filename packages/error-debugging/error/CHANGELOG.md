@@ -1,3 +1,9 @@
+## @visulima/error [6.0.0-alpha.24](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.23...@visulima/error@6.0.0-alpha.24) (2026-05-14)
+
+### Miscellaneous Chores
+
+* **error:** apply prettier and eslint formatting sweep ([25c5eaf](https://github.com/visulima/visulima/commit/25c5eaf4989bddfe860b52aea113b3e229fea84f))
+
 ## @visulima/error [6.0.0-alpha.23](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.22...@visulima/error@6.0.0-alpha.23) (2026-05-11)
 
 ## @visulima/error [6.0.0-alpha.22](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.21...@visulima/error@6.0.0-alpha.22) (2026-05-11)
