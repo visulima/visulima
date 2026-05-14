@@ -1,3 +1,13 @@
+## @visulima/deep-clone [4.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/deep-clone@4.0.0-alpha.12...@visulima/deep-clone@4.0.0-alpha.13) (2026-05-14)
+
+### Bug Fixes
+
+* **bench:** import deep-clone fixture + tui modules via public paths ([362417e](https://github.com/visulima/visulima/commit/362417e58ee07b8efa8fa1057572ea729a035058))
+
+### Miscellaneous Chores
+
+* **deep-clone:** apply formatter sweep to benchmark ([95e5e5d](https://github.com/visulima/visulima/commit/95e5e5d99b52c6c0accb3531b35998ceea5c3097))
+
 ## @visulima/deep-clone [4.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/deep-clone@4.0.0-alpha.11...@visulima/deep-clone@4.0.0-alpha.12) (2026-05-07)
 
 ### Bug Fixes
