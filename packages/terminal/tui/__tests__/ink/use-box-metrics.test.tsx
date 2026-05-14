@@ -188,7 +188,9 @@ describe("use-box-metrics", () => {
         const stdout = createStdout(100);
 
         const initialListenerCount = stdout.listenerCount("resize");
-        const { unmount, waitUntilRenderFlush } = render(<SimpleBox />, { stdout });
+        // `interactive: true` is required: ink only attaches the stdout resize listener in interactive mode,
+        // and the default flips to `false` on CI (`isInCi` is true), which would make this assertion fail there.
+        const { unmount, waitUntilRenderFlush } = render(<SimpleBox />, { interactive: true, stdout });
 
         await waitUntilRenderFlush();
 
@@ -204,7 +206,7 @@ describe("use-box-metrics", () => {
 
         const stdout = createStdout(100);
 
-        const { unmount, waitUntilRenderFlush } = render(<SimpleBox />, { stdout });
+        const { unmount, waitUntilRenderFlush } = render(<SimpleBox />, { interactive: true, stdout });
 
         await waitUntilRenderFlush();
         unmount();
