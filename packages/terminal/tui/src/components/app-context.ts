@@ -17,7 +17,7 @@ export type Props = {
      * @example
      * ```jsx
      * import {useEffect} from 'react';
-	* import {useApp} from 'ink';
+	* import {useApp} from '@visulima/tui/hooks/use-app';
      
 	const Example = () => {
 		const {waitUntilRenderFlush} = useApp();

@@ -32,7 +32,9 @@ export type RenderToStringOptions = {
  
 @example
 ```
-import {renderToString, Text, Box} from 'ink';
+import {renderToString} from '@visulima/tui';
+import {Box} from '@visulima/tui/components/box';
+import {Text} from '@visulima/tui/components/text';
  
 const output = renderToString(
 	<Box padding={1}>
