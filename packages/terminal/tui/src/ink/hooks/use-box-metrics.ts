@@ -70,7 +70,9 @@ const findRootNode = (node: DOMElement | null | undefined): DOMElement | undefin
  * @example
  * ```tsx
 import {useRef} from 'react';
-import {Box, Text, useBoxMetrics} from 'ink';
+import {Box} from '@visulima/tui/components/box';
+import {Text} from '@visulima/tui/components/text';
+import {useBoxMetrics} from '@visulima/tui/hooks/use-box-metrics';
  
 const Example = () => {
 	const ref = useRef(null);

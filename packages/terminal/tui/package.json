@@ -592,6 +592,7 @@
     "dependencies": {
         "code-excerpt": "catalog:prod",
         "scheduler": "catalog:prod",
+        "type-fest": "catalog:prod",
         "yoga-layout": "catalog:prod"
     },
     "devDependencies": {
@@ -647,7 +648,6 @@
         "terminal-size": "catalog:prod",
         "tseep": "catalog:prod",
         "tsx": "catalog:dev",
-        "type-fest": "catalog:prod",
         "typescript": "catalog:tsc",
         "vitest": "catalog:test",
         "ws": "catalog:prod"
@@ -655,13 +655,13 @@
     "peerDependencies": {
         "@shikijs/langs": "catalog:prod",
         "@shikijs/themes": "catalog:dev",
-        "@visulima/tabular": "4.0.0-alpha.11",
-        "cfonts": "3.3.1",
+        "@visulima/tabular": "catalog:prod",
+        "cfonts": "catalog:prod",
         "diff": "catalog:prod",
         "marked": "catalog:dev",
-        "react": ">=19.2.6",
-        "react-devtools-core": ">=7.0.1",
-        "react-reconciler": ">=0.33.0",
+        "react": "^19.2.6",
+        "react-devtools-core": "^7.0.1",
+        "react-reconciler": "^0.33.0",
         "shiki": "catalog:syntax",
         "ws": "catalog:prod"
     },

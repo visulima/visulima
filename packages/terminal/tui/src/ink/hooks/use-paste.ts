@@ -28,7 +28,8 @@ type Options = {
  * removed in the next major version.
  *
  * ```
- * import {useInput, usePaste} from 'ink';
+ * import {useInput} from '@visulima/tui/hooks/use-input';
+ * import {usePaste} from '@visulima/tui/hooks/use-paste';
  *
  * const MyInput = () => {
  *   useInput((input, key) => {

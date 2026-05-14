@@ -8,7 +8,8 @@ type Output = {
      * The ID of the currently focused component, or `undefined` if no component is focused.
      * @example
      * ```tsx
-     * import {Text, useFocusManager} from 'ink';
+     * import {Text} from '@visulima/tui/components/text';
+     * import {useFocusManager} from '@visulima/tui/hooks/use-focus-manager';
      *
      * const Example = () => {
      * const {activeId} = useFocusManager();

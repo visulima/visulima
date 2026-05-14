@@ -161,7 +161,7 @@ type Options = {
  * major version.
  *
  * ```
- * import {useInput} from 'ink';
+ * import {useInput} from '@visulima/tui/hooks/use-input';
  *
  * const UserInput = () => {
  * useInput((input, key) => {
