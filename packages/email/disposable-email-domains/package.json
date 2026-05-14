@@ -1,6 +1,6 @@
 {
     "name": "@visulima/disposable-email-domains",
-    "version": "1.0.0-alpha.13",
+    "version": "1.0.0-alpha.14",
     "description": "A regularly updated list of disposable and temporary email domains.",
     "keywords": [
         "disposable-email",
