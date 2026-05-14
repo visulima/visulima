@@ -1,3 +1,14 @@
+## @visulima/error-handler [2.0.0-alpha.23](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.0-alpha.22...@visulima/error-handler@2.0.0-alpha.23) (2026-05-14)
+
+### Miscellaneous Chores
+
+* **error:** apply prettier and eslint formatting sweep ([25c5eaf](https://github.com/visulima/visulima/commit/25c5eaf4989bddfe860b52aea113b3e229fea84f))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.24
+
 ## @visulima/error-handler [2.0.0-alpha.22](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.0-alpha.21...@visulima/error-handler@2.0.0-alpha.22) (2026-05-11)
 
 
