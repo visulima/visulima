@@ -58,8 +58,6 @@ describe(Transition, () => {
     });
 
     it("should call onExit after an exit transition completes", async () => {
-        expect.assertions(1);
-
         const onExit = vi.fn();
 
         // We need to start from an entered state and flip to show=false after mount.
@@ -80,9 +78,8 @@ describe(Transition, () => {
         };
 
         mount(<Harness />);
-        await delay(120);
 
-        expect(onExit).toHaveBeenCalledWith();
+        await vi.waitFor(() => expect(onExit).toHaveBeenCalledWith(), { interval: 10, timeout: 500 });
     });
 });
 
