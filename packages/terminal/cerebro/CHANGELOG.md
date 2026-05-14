@@ -1,3 +1,23 @@
+## @visulima/cerebro [3.0.0-alpha.23](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.22...@visulima/cerebro@3.0.0-alpha.23) (2026-05-14)
+
+### Features
+
+* **cerebro:** clear lint findings and resolve help command collisions ([b75f269](https://github.com/visulima/visulima/commit/b75f2693426e35c3866f7cb501a1a25ad92e6e83))
+
+### Bug Fixes
+
+* **cerebro:** disambiguate flat/nested commands sharing a leaf name ([fdfe641](https://github.com/visulima/visulima/commit/fdfe64188e4d4f280d1466df6fcbcbbc6e3a891b))
+* **cerebro:** rewrite formatRow as if/else to satisfy lint rules ([43140b3](https://github.com/visulima/visulima/commit/43140b391c6282f3ff335b51713e77335c46cd31))
+* **cerebro:** silence unused-condition lint on resolved help command ([02b0695](https://github.com/visulima/visulima/commit/02b06957e6db41c9fdc3ff47ad5d3c9941f77214))
+* **cerebro:** suppress no-confusing-arrow on content section formatRow ([847b679](https://github.com/visulima/visulima/commit/847b67932150e07e111b77e908b5bd4ee074837d))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.11
+* **@visulima/error:** upgraded to 6.0.0-alpha.24
+* **@visulima/pail:** upgraded to 4.0.0-alpha.16
+
 ## @visulima/cerebro [3.0.0-alpha.22](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.21...@visulima/cerebro@3.0.0-alpha.22) (2026-05-11)
 
 
