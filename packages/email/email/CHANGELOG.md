@@ -1,3 +1,16 @@
+## @visulima/email [1.0.0-alpha.28](https://github.com/visulima/visulima/compare/@visulima/email@1.0.0-alpha.27...@visulima/email@1.0.0-alpha.28) (2026-05-14)
+
+### Miscellaneous Chores
+
+* **email:** apply prettier and eslint formatting sweep ([6950709](https://github.com/visulima/visulima/commit/69507091f75a9c4783f4ce04927c4152d7a00cd7))
+
+
+### Dependencies
+
+* **@visulima/disposable-email-domains:** upgraded to 1.0.0-alpha.14
+* **@visulima/error:** upgraded to 6.0.0-alpha.24
+* **@visulima/fs:** upgraded to 5.0.0-alpha.22
+
 ## @visulima/email [1.0.0-alpha.27](https://github.com/visulima/visulima/compare/@visulima/email@1.0.0-alpha.26...@visulima/email@1.0.0-alpha.27) (2026-05-11)
 
 
