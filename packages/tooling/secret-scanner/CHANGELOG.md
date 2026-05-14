@@ -1,3 +1,19 @@
+## @visulima/secret-scanner [1.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/secret-scanner@1.0.0-alpha.2...@visulima/secret-scanner@1.0.0-alpha.3) (2026-05-14)
+
+### Bug Fixes
+
+* **release:** patch NAPI version-check string and ship fresh loader on release ([0676e33](https://github.com/visulima/visulima/commit/0676e336f453c9ae38c9f3a5fbbb675f9bff7ea0))
+
+### Miscellaneous Chores
+
+* ignore the data ruleset ([c9a2dda](https://github.com/visulima/visulima/commit/c9a2ddadca09bb978ea6a356942f7b870926c3fe))
+* **tooling:** apply prettier and eslint formatting sweep ([c2c641d](https://github.com/visulima/visulima/commit/c2c641d40242e99030cb990fa01039db5e267667))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.22
+
 ## @visulima/secret-scanner [1.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/secret-scanner@1.0.0-alpha.1...@visulima/secret-scanner@1.0.0-alpha.2) (2026-05-11)
 
 ### Features
