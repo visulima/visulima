@@ -4,22 +4,25 @@ import { join, resolve } from "node:path";
 
 import { up } from "empathic/walk";
 
-// Bench fixtures are only consumed on Linux (CodSpeed). Skip the deep
-// tree generation on Windows so native-build CI jobs install faster.
-if (process.platform === "win32") {
-    console.log("Skipping bench fixtures on Windows.");
-    process.exit(0);
-}
-
 const COUNT = +(process.argv[2] ?? "6");
 
 const fixtures = resolve("fixtures");
 const start = join(fixtures, "a/b/c/d/e/f/g/h/i/j");
+// Idempotence sentinel: once written, subsequent runs short-circuit so
+// repeated `pretest:bench` invocations don't pile on more random files.
+const sentinel = join(fixtures, ".generated");
 
 /**
  *
  */
 async function main() {
+    if (existsSync(sentinel)) {
+        // eslint-disable-next-line no-console
+        console.log("Bench fixtures already generated. Skipping.");
+
+        return;
+    }
+
     if (!existsSync(start)) {
         await mkdir(start, {
             recursive: true,
@@ -49,6 +52,8 @@ async function main() {
         // eslint-disable-next-line no-console
         console.log('> "%s" has %d file(s)', directory, array.length);
     }
+
+    await writeFile(sentinel, "");
 }
 
 main().catch((error) => {

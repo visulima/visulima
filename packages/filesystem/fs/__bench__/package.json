@@ -4,7 +4,7 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "postinstall": "node ./scripts/create-fixtures.mjs",
+        "pretest:bench": "node ./scripts/create-fixtures.mjs",
         "test:bench": "vitest bench"
     },
     "dependencies": {
