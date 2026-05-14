@@ -1,3 +1,5 @@
+## @visulima/connect [4.0.0-alpha.21](https://github.com/visulima/visulima/compare/@visulima/connect@4.0.0-alpha.20...@visulima/connect@4.0.0-alpha.21) (2026-05-14)
+
 ## @visulima/connect [4.0.0-alpha.20](https://github.com/visulima/visulima/compare/@visulima/connect@4.0.0-alpha.19...@visulima/connect@4.0.0-alpha.20) (2026-05-11)
 
 ## @visulima/connect [4.0.0-alpha.19](https://github.com/visulima/visulima/compare/@visulima/connect@4.0.0-alpha.18...@visulima/connect@4.0.0-alpha.19) (2026-05-11)
