@@ -4,6 +4,13 @@ import { join, resolve } from "node:path";
 
 import { up } from "empathic/walk";
 
+// Bench fixtures are only consumed on Linux (CodSpeed). Skip the deep
+// tree generation on Windows so native-build CI jobs install faster.
+if (process.platform === "win32") {
+    console.log("Skipping bench fixtures on Windows.");
+    process.exit(0);
+}
+
 const COUNT = +(process.argv[2] ?? "6");
 
 const fixtures = resolve("fixtures");
