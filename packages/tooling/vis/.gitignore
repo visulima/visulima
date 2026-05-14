@@ -1,4 +1,3 @@
 *.node
 native/target/
-index.d.ts
 examples/**/.task-runner-cache
