@@ -43,6 +43,7 @@
         [
             "@semantic-release/git",
             {
+                "assets": ["CHANGELOG.md", "package.json", "package-lock.json", "npm-shrinkwrap.json", "index.js"],
                 "message": "chore(release): ${nextRelease.gitTag} [skip ci]\\n\\n${nextRelease.notes}"
             }
         ],

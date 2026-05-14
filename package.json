@@ -259,6 +259,7 @@
         "test:pail": "pnpm --filter \"pail\" run test",
         "test:prisma-dmmf-transformer": "pnpm --filter \"prisma-dmmf-transformer\" run test",
         "test:redact": "pnpm --filter \"redact\" run test",
+        "test:scripts": "node --test \"scripts/__tests__/*.test.mjs\"",
         "test:storage": "pnpm --filter \"storage\" run test",
         "test:storage-client": "pnpm --filter \"storage-client\" run test",
         "test:string": "pnpm --filter \"string\" run test",

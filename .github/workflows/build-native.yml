@@ -287,6 +287,52 @@ jobs:
                   path: "packages/tooling/secret-scanner/*.node"
                   if-no-files-found: "error"
 
+            # --- Upload NAPI loader files (index.js, index.d.ts) once ---
+            # napi build regenerates these on every runner, but the content is
+            # target-agnostic (derived from Rust signatures + napi.targets). Upload
+            # once from x86_64-unknown-linux-gnu so semantic-release.yml can copy
+            # them into the package roots before publish — guarantees the
+            # published .d.ts matches the Rust signatures of the .node binaries.
+            - name: "Upload task-runner loader"
+              if: "matrix.settings.target == 'x86_64-unknown-linux-gnu'"
+              uses: "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a" # v7.0.1
+              with:
+                  name: "loader-task-runner"
+                  path: |
+                      packages/tooling/task-runner/index.js
+                      packages/tooling/task-runner/index.d.ts
+                  if-no-files-found: "error"
+
+            - name: "Upload tui loader"
+              if: "matrix.settings.target == 'x86_64-unknown-linux-gnu'"
+              uses: "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a" # v7.0.1
+              with:
+                  name: "loader-tui"
+                  path: |
+                      packages/terminal/tui/index.js
+                      packages/terminal/tui/index.d.ts
+                  if-no-files-found: "error"
+
+            - name: "Upload vis loader"
+              if: "matrix.settings.target == 'x86_64-unknown-linux-gnu'"
+              uses: "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a" # v7.0.1
+              with:
+                  name: "loader-vis"
+                  path: |
+                      packages/tooling/vis/index.js
+                      packages/tooling/vis/index.d.ts
+                  if-no-files-found: "error"
+
+            - name: "Upload secret-scanner loader"
+              if: "matrix.settings.target == 'x86_64-unknown-linux-gnu'"
+              uses: "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a" # v7.0.1
+              with:
+                  name: "loader-secret-scanner"
+                  path: |
+                      packages/tooling/secret-scanner/index.js
+                      packages/tooling/secret-scanner/index.d.ts
+                  if-no-files-found: "error"
+
             # --- Test native bindings inline (only on targets that can run natively) ---
             - name: "Test task-runner native binding"
               if: "matrix.settings.testable && (github.event_name != 'pull_request' || needs.files-changed.outputs.task-runner == 'true')"

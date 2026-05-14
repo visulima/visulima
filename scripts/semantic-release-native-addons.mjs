@@ -1,6 +1,9 @@
 /**
  * semantic-release plugin that publishes NAPI-style native binding platform
- * packages (under ./npm/<platform>/) before the main package is published.
+ * packages (under ./npm/<platform>/) before the main package is published, and
+ * patches the host package's index.js so the NAPI version-check string matches
+ * the version semantic-release just bumped to (otherwise loaders running with
+ * NAPI_RS_ENFORCE_VERSION_CHECK=1 throw on every install of the new release).
  *
  * Why a plugin instead of @semantic-release/exec?
  * - Runs inside semantic-release's lifecycle with context.{cwd,env,logger},
@@ -116,6 +119,28 @@ const writeNpmrc = (path, token) => {
     writeFileSync(path, `//registry.npmjs.org/:_authToken=${token}\nregistry=${OFFICIAL_REGISTRY}\n`);
 };
 
+// napi-rs hard-codes the host package's version into the runtime version-check
+// error string, generated per platform branch in index.js. The string is emitted
+// by @napi-rs/cli's loader template (see packages/cli/src/api/templates/load-host.ts
+// in napi-rs/napi-rs) — if napi-rs changes that template, this regex needs to
+// follow. We validate that we matched at least one occurrence to fail loudly
+// rather than silently shipping a stale version on the next codegen drift.
+const VERSION_CHECK_PATTERN = /expected \S+ but got \$\{bindingPackageVersion\}/g;
+
+export const patchVersionCheck = (content, version) => {
+    const matches = content.match(VERSION_CHECK_PATTERN);
+
+    if (!matches || matches.length === 0) {
+        throw new Error(
+            "index.js contains no NAPI version-check strings — napi-rs codegen format may have changed. Update VERSION_CHECK_PATTERN in scripts/semantic-release-native-addons.mjs.",
+        );
+    }
+
+    const replacement = `expected ${version} but got \${bindingPackageVersion}`;
+
+    return { count: matches.length, patched: content.replace(VERSION_CHECK_PATTERN, replacement) };
+};
+
 export const verifyConditions = async (_pluginConfig, context) => {
     const { cwd, env, logger } = context;
     const platformDirs = await getPlatformDirs(cwd);
@@ -151,6 +176,18 @@ export const prepare = async (_pluginConfig, context) => {
     const npmDir = join(cwd, "npm");
 
     logger.log(`Publishing ${platformDirs.length} native addon package(s) at version ${version} with tag ${npmTag}`);
+
+    const indexPath = join(cwd, "index.js");
+
+    if (existsSync(indexPath)) {
+        const original = readFileSync(indexPath, "utf-8");
+        const { count, patched } = patchVersionCheck(original, version);
+
+        if (patched !== original) {
+            writeFileSync(indexPath, patched);
+            logger.log(`Patched ${count} NAPI version-check string(s) in index.js to ${version}`);
+        }
+    }
 
     const idToken = await getGithubActionsIdToken(env, logger);
 
