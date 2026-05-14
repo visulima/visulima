@@ -1,3 +1,23 @@
+## @visulima/colorize [2.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/colorize@2.0.0-alpha.10...@visulima/colorize@2.0.0-alpha.11) (2026-05-14)
+
+### Bug Fixes
+
+* **colorize:** rewrite ternary as if/else to satisfy operator-linebreak ([999c115](https://github.com/visulima/visulima/commit/999c115ee078a601167c972404c6e625813fea1b))
+
+### Miscellaneous Chores
+
+* **colorize:** fix lint conflict between eslint and prettier ([b0a316d](https://github.com/visulima/visulima/commit/b0a316d0ba7f6b7969fe14ce0fee9aae55206453))
+* **colorize:** fix lint errors ([7aac22d](https://github.com/visulima/visulima/commit/7aac22d80dffe22a75881bc89460493381cda317))
+* **colorize:** housekeeping cleanup ([69a01ec](https://github.com/visulima/visulima/commit/69a01ec038aa738b1f4a2504c85ea56f5786edc5))
+* **colorize:** upgrade packem to 2.0.0-alpha.76 ([d912a81](https://github.com/visulima/visulima/commit/d912a81321bdb96047b483deea693375030e63a3))
+* re-sort workspace package.json files via vis sort-package-json ([f625696](https://github.com/visulima/visulima/commit/f625696cfac974325774b3243e1a83c3d23acbd7))
+* simplify pnpm-workspace packages list ([7cab221](https://github.com/visulima/visulima/commit/7cab221163632d9b7aa044a6f88c49083103a869))
+
+### Tests
+
+* **colorize:** use packages.colors key in bench ([e87c2db](https://github.com/visulima/visulima/commit/e87c2db66eec4883cb22201982d0820461babd6f))
+* repair cerebro, fs, colorize bench CI runs ([03b530e](https://github.com/visulima/visulima/commit/03b530edc678ca6f5c2869ae283f0f3ca6e86c5e))
+
 ## @visulima/colorize [2.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/colorize@2.0.0-alpha.9...@visulima/colorize@2.0.0-alpha.10) (2026-04-22)
 
 ### Bug Fixes
