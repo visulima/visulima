@@ -3,8 +3,9 @@
  *
  * Budget from the RFC (`packages/tooling/vis/rfc/design-offline-vuln-scanner.md`
  * §Performance budget): `advisoriesQuery` over 2.8k packages must finish
- * inside 80 ms. We assert with 50 % slack (120 ms) so noisy CI hosts don't
- * flake while we still catch a serious regression.
+ * inside 80 ms. We sample N times and assert on the median with 50 % slack
+ * (120 ms) so noisy CI hosts don't flake on a single jittery sample while we
+ * still catch a serious steady-state regression.
  *
  * Companion file: `audit-offline.bench.ts` provides the trend-reporting
  * `bench()` task for `vitest bench`.
@@ -20,6 +21,13 @@ import { createAuditOfflineFixture } from "./audit-offline-fixture";
 const PKG_COUNT = 2800;
 const BUDGET_MS = 80;
 const BUDGET_WITH_SLACK_MS = 120;
+const SAMPLE_COUNT = 11;
+
+const median = (values: readonly number[]): number => {
+    const sorted = [...values].sort((a, b) => a - b);
+
+    return sorted[Math.floor(sorted.length / 2)] as number;
+};
 
 let dbPath: string;
 let queries: AdvisoryQuery[];
@@ -38,7 +46,7 @@ afterAll(() => {
 });
 
 describe("audit-offline · advisoriesQuery 2.8k packages", () => {
-    it(`stays under the ${BUDGET_MS}ms budget (with 50% slack → ${BUDGET_WITH_SLACK_MS}ms)`, () => {
+    it(`median of ${SAMPLE_COUNT} samples stays under the ${BUDGET_MS}ms budget (with 50% slack → ${BUDGET_WITH_SLACK_MS}ms)`, () => {
         expect.assertions(2);
 
         // Warm pass to fault SQLite pages into the OS page cache; the budget
@@ -47,15 +55,21 @@ describe("audit-offline · advisoriesQuery 2.8k packages", () => {
 
         expect(warmHits.length).toBe(PKG_COUNT);
 
-        const start = performance.now();
+        const samples: number[] = [];
 
-        advisoriesQuery(dbPath, queries);
+        for (let index = 0; index < SAMPLE_COUNT; index += 1) {
+            const start = performance.now();
 
-        const elapsed = performance.now() - start;
+            advisoriesQuery(dbPath, queries);
+
+            samples.push(performance.now() - start);
+        }
+
+        const elapsed = median(samples);
 
         expect(
             elapsed,
-            `advisoriesQuery took ${elapsed.toFixed(1)}ms (budget ${BUDGET_MS}ms, slack ${BUDGET_WITH_SLACK_MS}ms)`,
+            `advisoriesQuery median took ${elapsed.toFixed(1)}ms over ${SAMPLE_COUNT} samples (budget ${BUDGET_MS}ms, slack ${BUDGET_WITH_SLACK_MS}ms; samples: [${samples.map((s) => s.toFixed(1)).join(", ")}])`,
         ).toBeLessThan(BUDGET_WITH_SLACK_MS);
     });
 });
