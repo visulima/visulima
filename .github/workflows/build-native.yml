@@ -354,6 +354,11 @@ jobs:
               run: "pnpm run build"
               working-directory: "packages/filesystem/path"
 
+            - name: "Build @visulima/error (secret-scanner dep)"
+              if: "matrix.settings.testable && (github.event_name != 'pull_request' || needs.files-changed.outputs.secret-scanner == 'true')"
+              run: "pnpm run build"
+              working-directory: "packages/error-debugging/error"
+
             - name: "Build @visulima/fs (secret-scanner dep)"
               if: "matrix.settings.testable && (github.event_name != 'pull_request' || needs.files-changed.outputs.secret-scanner == 'true')"
               run: "pnpm run build"
