@@ -1,3 +1,28 @@
+## @visulima/storage [1.0.0-alpha.27](https://github.com/visulima/visulima/compare/@visulima/storage@1.0.0-alpha.26...@visulima/storage@1.0.0-alpha.27) (2026-05-14)
+
+### Features
+
+* **storage:** add Bunny, consumer providers, and S3 client expansions ([c03bad7](https://github.com/visulima/visulima/commit/c03bad782698dfc7f9a19139f5ccf22fcc695132))
+* **storage:** add Files facade and AI tool integrations ([969311a](https://github.com/visulima/visulima/commit/969311a9f1d7c2644bc3d2bbf4fc67a6b232328d))
+* **storage:** clear lint findings across cloud adapters ([42ab8f4](https://github.com/visulima/visulima/commit/42ab8f47013b326c9e602236f819120f2fbf5a74))
+
+### Bug Fixes
+
+* **storage:** align tests and adapters with lint rules ([0b2db31](https://github.com/visulima/visulima/commit/0b2db31cc5d7fca76a43d6bb7d73c9767855df9d))
+
+### Documentation
+
+* **storage:** rewrite docs to lead with Files facade ([0c3a7bf](https://github.com/visulima/visulima/commit/0c3a7bf238a2873226b5d44b4a3e5164f9c634b9))
+
+### Miscellaneous Chores
+
+* upate lock and readme ([a4c331e](https://github.com/visulima/visulima/commit/a4c331e7f7e498d6c23435b18040862f402b7557))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.22
+
 ## @visulima/storage [1.0.0-alpha.26](https://github.com/visulima/visulima/compare/@visulima/storage@1.0.0-alpha.25...@visulima/storage@1.0.0-alpha.26) (2026-05-11)
 
 
