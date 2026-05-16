@@ -5,7 +5,7 @@ description: "Add packages with typosquat detection and security scanning"
 
 # vis add
 
-Add packages using the detected package manager. Before installing, vis runs a **typosquat check** against a curated blocklist of known malicious package names, an offline **marshall pipeline** (author, provenance, metadata, downloads, expired-domains, new-bin, archived-repo), and an optional **Socket.dev security scan**.
+Add packages using the detected package manager. Before installing, vis runs a **typosquat check** against a curated blocklist of known malicious package names, an offline **marshall pipeline** (author, provenance, metadata, downloads, expired-domains, new-bin, archived-repo), and an optional **supply-chain security scan** (Socket.dev and/or Google's deps.dev — whichever providers you've enabled).
 
 ## Secure-by-default behavior
 
@@ -14,7 +14,7 @@ Add packages using the detected package manager. Before installing, vis runs a *
 - the package is listed in `security.policies.installScripts.allow` in `vis.config.ts` (vis runs its scripts post-install), or
 - you pass `--run-scripts` to opt out for one run.
 
-This pairs with the typosquat and Socket.dev checks: even if a malicious package slips past the name and score checks, its install hooks won't execute.
+This pairs with the typosquat and supply-chain checks: even if a malicious package slips past the name and score checks, its install hooks won't execute.
 
 ## Usage
 
@@ -33,7 +33,7 @@ vis add react --auto-install-peers     # Recursively install non-optional peer d
 vis add -g typescript                  # Add globally (uses npm)
 vis add lodash -w                      # Add to workspace root
 vis add esbuild --run-scripts          # Opt out of the universal script block for this run
-vis add lodash --no-socket-check       # Add without Socket.dev check
+vis add lodash --no-socket-check       # Skip the supply-chain provider scan (Socket.dev / deps.dev) for this run
 vis add lodash --no-typosquat-check    # Skip typosquat name check
 vis add lodash --no-marshall-check     # Skip the offline marshall pipeline
 ```
@@ -55,7 +55,7 @@ vis add lodash --no-marshall-check     # Skip the offline marshall pipeline
 | `--run-scripts`        |       | `false` | One-off opt-out: run lifecycle scripts for all packages in this install, overriding the block-by-default policy. The persistent allowlist at `security.policies.installScripts.allow` is the recommended approach for repeated runs. |
 | `--no-typosquat-check` |       | `false` | Skip typosquat name check before adding                                                                                                          |
 | `--no-marshall-check`  |       | `false` | Skip the offline marshall pipeline (author, provenance, metadata, downloads, expired-domains, new-bin, archived-repo). Signatures are opt-in via config and are not run here even when the marshall check is enabled. |
-| `--no-socket-check`    |       | `false` | Skip Socket.dev security check before adding                                                                                                     |
+| `--no-socket-check`    |       | `false` | Skip the enabled supply-chain provider scan (Socket.dev / deps.dev) before adding. Flag name kept for back-compat.                              |
 
 ## How It Works
 
@@ -65,7 +65,7 @@ flowchart TD
     B -- no --> E
     B -- yes --> C["Check names against\nblocklist & heuristics"]
     C --> D{Typosquat\ndetected?}
-    D -- no --> E{Socket.dev\ncheck enabled?}
+    D -- no --> E{Supply-chain\nprovider enabled?}
     D -- yes --> P["Show warning:\n'Did you mean X?'"]
     P --> Q{User choice}
     Q -- "S (suggested)" --> R["Replace with correct\npackage name"]
@@ -73,7 +73,7 @@ flowchart TD
     Q -- "y (keep original)" --> E
     Q -- "N (abort)" --> Z["Exit with code 1"]
     E -- no --> G
-    E -- yes --> F["Fetch security\nreports from Socket.dev"]
+    E -- yes --> F["Fetch security reports\n(Socket.dev / deps.dev)"]
     F --> H{Score below\nthreshold?}
     H -- no --> G["Detect package manager\n(pnpm, npm, yarn, bun, deno)"]
     H -- yes --> I{User\nconfirms?}
@@ -104,11 +104,18 @@ Choosing **S** replaces `axois` with `axios` and continues the add, preserving a
 
 In non-interactive mode (CI, piped stdin), typosquat detection always aborts to prevent automated installation of malicious packages.
 
-## Socket.dev Security Check
+## Supply-chain security check
 
-When Socket.dev is configured (via `vis.config.ts`), each package is scored across multiple dimensions (license, maintenance, quality, supply chain, vulnerability). Packages scoring below the minimum threshold (default: 40%) require explicit confirmation.
+When at least one supply-chain provider is enabled in `vis.config.ts`, each package is scored across multiple dimensions (license, maintenance, quality, supply chain, vulnerability). Packages scoring below the minimum threshold (default: 40%) require explicit confirmation.
 
-See [`vis init`](/docs/commands/init) to configure Socket.dev integration.
+Two providers are supported:
+
+- **Socket.dev** — Basic-auth token (`security.socket.enabled: true` + `VIS_SOCKET_TOKEN`). Rich proprietary score + alert catalog.
+- **deps.dev** — Google's Open Source Insights (`security.depsDev.enabled: true`). No auth required. Surfaces the OpenSSF Scorecard plus GHSA advisories.
+
+You can enable either, or both. With both enabled, the reports are merged: the provider listed in `security.primaryProvider` wins on the overall score; alerts are deduped by id. The `--no-socket-check` flag disables **all** enabled providers for one run (the name is kept for backwards compatibility).
+
+See [`vis init`](/docs/commands/init) to configure either provider, or the [Security audit guide](/docs/guides/security-audit) for a side-by-side comparison.
 
 ## Auto-install peers
 

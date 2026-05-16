@@ -27,6 +27,7 @@
 export type MarshallName
     = | "archivedRepo"
         | "author"
+        | "depsDev"
         | "downloads"
         | "expiredDomains"
         | "firstSeen"
@@ -70,6 +71,7 @@ export const ALL_MARSHALLS: ReadonlyArray<MarshallName> = [
     "metadata",
     "archivedRepo",
     "socket",
+    "depsDev",
 ] as const;
 
 /**

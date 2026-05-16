@@ -5,8 +5,9 @@ import { join } from "@visulima/path";
 import { pail } from "../io/logger";
 import { detectPm } from "../pm/pm-runner";
 import { isMarshallDisabled } from "../security/marshalls/registry";
+import { buildEnabledProviders, fetchAllReports } from "../security/registry";
 import { checkPmNativeConfigDrift, emitSecurityWarnings, enforceScriptSecurity, formatDriftReport, runApprovedScripts } from "../security/security";
-import { buildSocketOptions, fetchSocketReports, formatSecurityOverview } from "../security/socket-security";
+import { formatSecurityOverview } from "../security/socket-security";
 
 const INSTALL_COMMANDS = new Set(["add", "install", "update"]);
 const PM_COMMANDS = new Set(["add", "dedupe", "install", "remove", "update"]);
@@ -104,45 +105,61 @@ const securityEnforcementPlugin: Plugin = {
             }
         }
 
-        // Display Socket.dev security summary after install/update commands
-        const socketOptions = buildSocketOptions(toolbox.visConfig?.security?.socket, toolbox.visConfig?.security?.policies?.score?.minimum);
+        // Display security summary after install/update commands
+        if (INSTALL_COMMANDS.has(command) && toolbox.workspaceRoot) {
+            const disabledProviders = new Set<string>();
 
-        if (INSTALL_COMMANDS.has(command) && socketOptions && toolbox.workspaceRoot && !isMarshallDisabled("socket")) {
-            try {
-                const packages = resolveInstalledPackages(toolbox.workspaceRoot);
+            if (isMarshallDisabled("socket")) {
+                disabledProviders.add("socket");
+            }
 
-                if (packages.length > 0) {
-                    const reports = await fetchSocketReports(packages, socketOptions);
+            if (isMarshallDisabled("depsDev")) {
+                disabledProviders.add("deps-dev");
+            }
 
-                    if (reports.size > 0) {
-                        const overview = formatSecurityOverview(reports, socketOptions.minimumScore);
+            const minimumScore = toolbox.visConfig?.security?.policies?.score?.minimum;
+            const securityProviders = buildEnabledProviders(toolbox.visConfig?.security, {
+                disabled: disabledProviders,
+                minimumScore,
+            });
 
-                        if (overview) {
-                            pail.info("");
-                            pail.info(overview);
+            if (securityProviders.length > 0) {
+                try {
+                    const packages = resolveInstalledPackages(toolbox.workspaceRoot);
 
-                            // Warn about critical/high alerts
-                            let criticalHighCount = 0;
+                    if (packages.length > 0) {
+                        const reports = await fetchAllReports(securityProviders, packages);
 
-                            for (const report of reports.values()) {
-                                for (const alert of report.alerts) {
-                                    if (alert.severity === "critical" || alert.severity === "high") {
-                                        criticalHighCount++;
+                        if (reports.size > 0) {
+                            const overview = formatSecurityOverview(reports, minimumScore);
+
+                            if (overview) {
+                                pail.info("");
+                                pail.info(overview);
+
+                                // Warn about critical/high alerts
+                                let criticalHighCount = 0;
+
+                                for (const report of reports.values()) {
+                                    for (const alert of report.alerts) {
+                                        if (alert.severity === "critical" || alert.severity === "high") {
+                                            criticalHighCount++;
+                                        }
                                     }
                                 }
-                            }
 
-                            if (criticalHighCount > 0) {
-                                pail.warn(
-                                    `${String(criticalHighCount)} critical/high severity alert${criticalHighCount === 1 ? "" : "s"} detected. `
-                                    + "Run 'vis check --security' for details.",
-                                );
+                                if (criticalHighCount > 0) {
+                                    pail.warn(
+                                        `${String(criticalHighCount)} critical/high severity alert${criticalHighCount === 1 ? "" : "s"} detected. `
+                                        + "Run 'vis check --security' for details.",
+                                    );
+                                }
                             }
                         }
                     }
+                } catch {
+                    // Graceful degradation: don't fail the install if a security provider is unreachable
                 }
-            } catch {
-                // Graceful degradation: don't fail the install if Socket.dev is unreachable
             }
         }
     },

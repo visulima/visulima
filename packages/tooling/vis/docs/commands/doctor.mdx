@@ -73,7 +73,7 @@ vis doctor --exit-code --strict
 
 ### Live progress
 
-By default `vis doctor` shows a live multi-line spinner — one row per network-bound scan (outdated catalog deps, OSV vulnerability lookup, Socket.dev reports, codemod availability under `--fix`). Each row finishes with its own status icon (`✓` ok, `⚠` warn, `✗` error) and elapsed time so you can spot the slow scan at a glance.
+By default `vis doctor` shows a live multi-line spinner — one row per network-bound scan (outdated catalog deps, OSV vulnerability lookup, security-provider reports (Socket.dev, deps.dev), codemod availability under `--fix`). Each row finishes with its own status icon (`✓` ok, `⚠` warn, `✗` error) and elapsed time so you can spot the slow scan at a glance.
 
 The progress UI auto-disables in any of these cases:
 
@@ -115,7 +115,7 @@ When [aube](https://github.com/endevco/aube) is the active installer, doctor als
 ### Security
 
 - Known CVEs (OSV.dev) for both outdated and currently installed packages.
-- Optional Socket.dev alerts and low-score packages when the integration is configured (see [`vis audit`](./audit)).
+- Optional security-provider alerts and low-score packages when Socket.dev or deps.dev is configured (see [`vis audit`](./audit)).
 
 ### Optimization
 
@@ -203,14 +203,14 @@ Status fields:
 
 | Mode                    | Fails when                                                                                  |
 | ----------------------- | ------------------------------------------------------------------------------------------- |
-| `--exit-code` (default) | Vulnerabilities or Socket alerts present                                                    |
-| `--exit-code --strict`  | Any of: vulnerabilities, Socket alerts, outdated deps, duplicate versions, runtime warnings |
+| `--exit-code` (default) | Vulnerabilities or provider alerts present                                                    |
+| `--exit-code --strict`  | Any of: vulnerabilities, provider alerts, outdated deps, duplicate versions, runtime warnings |
 
 Without `--exit-code`, doctor always exits `0` so it stays usable as an informational command.
 
 ## Related
 
-- [`vis audit`](./audit) — detailed security analysis (Socket.dev, advisories).
+- [`vis audit`](./audit) — detailed security analysis (Socket.dev, deps.dev, advisories).
 - [`vis optimize`](./optimize) — interactive optimization picker (codemods, overrides).
 - [`vis update`](./update) — update outdated dependencies.
 - [`vis toolchain`](./toolchain) — Node / package-manager version pinning.

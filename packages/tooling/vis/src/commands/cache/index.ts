@@ -14,7 +14,8 @@ const scopeOption = {
 } as const;
 
 const typeOption = {
-    description: "Cache type: 'task' (workspace task cache), 'ai' (AI response cache), 'socket' (Socket.dev report cache), or 'all' (default)",
+    description:
+        "Cache type: 'task' (workspace task cache), 'ai' (AI response cache), 'socket' (Socket.dev reports), 'deps-dev' (Google deps.dev reports), or 'all' (default)",
     name: "type",
     type: String,
 } as const;

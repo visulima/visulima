@@ -15,6 +15,7 @@ import { join } from "@visulima/path";
 
 import type { PolicyName } from "../config/types";
 import { getVisCacheDir } from "../util/vis-paths";
+import type { SecurityProvider } from "./provider";
 
 const SOCKET_API_V0_URL = "https://api.socket.dev/v0/purl?alerts=true";
 
@@ -658,12 +659,37 @@ const formatAcceptedRiskSnippet = (packageName: string, _version: string, score:
     return lines.join("\n");
 };
 
-export type { AcceptedRisk, PackageAlert, PackageAlertProps, PackageReportData, PackageScore, SocketSecurityOptions };
+/**
+ * Wrap the Socket.dev client as a `SecurityProvider` for the registry.
+ * Returns `undefined` when Socket.dev is disabled or unconfigured so the
+ * registry can simply filter falsy entries.
+ */
+const createSocketProvider = (
+    config: SocketConfigLike | undefined,
+    opts: { minimumScore?: number } = {},
+): SecurityProvider | undefined => {
+    const resolved = buildSocketOptions(config, opts.minimumScore);
+
+    if (!resolved) {
+        return undefined;
+    }
+
+    return {
+        clearCache: clearSocketCache,
+        displayName: "Socket.dev",
+        fetchReports: (packages) => fetchSocketReports(packages, resolved),
+        getCacheStats: getSocketCacheStats,
+        id: "socket",
+    };
+};
+
+export type { AcceptedRisk, PackageAlert, PackageAlertProps, PackageReportData, PackageScore, SocketConfigLike, SocketSecurityOptions };
 
 export {
     buildSocketOptions,
     calculateOverallScore,
     clearSocketCache,
+    createSocketProvider,
     DEFAULT_LOW_SCORE_THRESHOLD,
     fetchSocketReports,
     findAcceptedRisk,

@@ -5,7 +5,7 @@ description: "Initialize vis.config.ts with best-practice security defaults"
 
 # vis init
 
-Initialize a `vis.config.ts` configuration file with best-practice security defaults. In interactive mode, guides you through setting up Socket.dev, build script approval, git hooks, and PM config sync.
+Initialize a `vis.config.ts` configuration file with best-practice security defaults. In interactive mode, guides you through setting up supply-chain providers (Socket.dev and/or deps.dev), build script approval, git hooks, and PM config sync.
 
 ## Usage
 
@@ -41,12 +41,13 @@ vis init --sync-native
 
 The wizard walks through:
 
-1. **Socket.dev** — Enable supply-chain security scanning
-2. **Build scripts** — Scan and approve packages with build scripts
-3. **Minimum release age** — Optionally block freshly-published versions. Defaults to **2880 minutes (2 days)** when accepted.
-4. **Git hooks** — Set up pre-commit hooks with lint-staged
-5. **PM sync** — Sync security settings (allowBuilds + minimumReleaseAge) into the native PM config files (pnpm `pnpm-workspace.yaml`, bun `bunfig.toml`/`package.json`, npm `.npmrc`, yarn berry `.yarnrc.yml`)
-6. **Migration detection** — Detect competing monorepo tools (Nx, Turbo) and offer migration
+1. **Socket.dev** — Enable supply-chain security scanning (Basic-auth token; opt-in)
+2. **deps.dev** — Enable Google's OpenSSF Scorecard + GHSA advisory provider (no auth; opt-in). Can run alongside Socket — the two providers merge results, deduped by alert id.
+3. **Build scripts** — Scan and approve packages with build scripts
+4. **Minimum release age** — Optionally block freshly-published versions. Defaults to **2880 minutes (2 days)** when accepted.
+5. **Git hooks** — Set up pre-commit hooks with lint-staged
+6. **PM sync** — Sync security settings (allowBuilds + minimumReleaseAge) into the native PM config files (pnpm `pnpm-workspace.yaml`, bun `bunfig.toml`/`package.json`, npm `.npmrc`, yarn berry `.yarnrc.yml`)
+7. **Migration detection** — Detect competing monorepo tools (Nx, Turbo) and offer migration
 
 ## Static (non-interactive) defaults
 

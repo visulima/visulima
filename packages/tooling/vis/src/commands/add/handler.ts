@@ -13,11 +13,11 @@ import { presentMarshallFindings } from "../../security/marshalls/decision-promp
 import { runMarshallPipeline } from "../../security/marshalls/pipeline";
 import { isMarshallDisabled } from "../../security/marshalls/registry";
 import { resolveExplicitPackages, resolveLatestVersions } from "../../security/marshalls/resolve-explicit";
-import type { AcceptedRisk, PackageReportData, SocketSecurityOptions } from "../../security/socket-security";
+import type { SecurityProvider } from "../../security/provider";
+import { buildEnabledProviders, fetchAllReports } from "../../security/registry";
+import type { AcceptedRisk, PackageReportData } from "../../security/socket-security";
 import {
-    buildSocketOptions,
     DEFAULT_LOW_SCORE_THRESHOLD,
-    fetchSocketReports,
     findAcceptedRisk,
     formatAcceptedRiskSnippet,
     formatReportSummary,
@@ -136,12 +136,12 @@ const confirmLowScorePackages = async (lowScorePackages: PackageReportData[], mi
 };
 
 /**
- * Runs the Socket.dev pre-add security check.
+ * Runs the pre-add security check against every enabled provider.
  * Returns true to proceed, false to abort.
  */
 const runSocketPreCheck = async (
     packages: string[],
-    socketOptions: SocketSecurityOptions,
+    securityProviders: ReadonlyArray<SecurityProvider>,
     minimumScore: number,
     acceptedRisks: Record<string, AcceptedRisk> | undefined,
 ): Promise<boolean> => {
@@ -152,9 +152,9 @@ const runSocketPreCheck = async (
     }
 
     pail.info("");
-    pail.info("Socket.dev security check:");
+    pail.info(`${securityProviders.map((p) => p.displayName).join(" + ")} security check:`);
 
-    const reports = await fetchSocketReports(lookupPackages, socketOptions);
+    const reports = await fetchAllReports(securityProviders, lookupPackages);
 
     if (reports.size === 0) {
         pail.info("  Could not fetch security data. Proceeding.");
@@ -486,14 +486,27 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
         }
     }
 
-    // Socket.dev pre-add check (unless disabled via --no-socket-check or MARSHALL_DISABLE_SOCKET)
-    if ((options as Record<string, unknown>).socketCheck !== false && !isMarshallDisabled("socket")) {
-        const socketOptions = buildSocketOptions(visConfig?.security?.socket, visConfig?.security?.policies?.score?.minimum);
+    // Pre-add security check (unless disabled via --no-socket-check or MARSHALL_DISABLE_SOCKET).
+    // Runs every enabled provider (Socket, deps.dev, …) and blocks on low scores.
+    if ((options as Record<string, unknown>).socketCheck !== false) {
+        const disabledProviders = new Set<string>();
 
-        if (socketOptions) {
-            // `buildSocketOptions` resolves the effective minimum score (config or default),
-            // so we can trust `socketOptions.minimumScore` is always set here.
-            const shouldContinue = await runSocketPreCheck(packages, socketOptions, socketOptions.minimumScore ?? DEFAULT_LOW_SCORE_THRESHOLD, visConfig?.security?.acceptedRisks);
+        if (isMarshallDisabled("socket")) {
+            disabledProviders.add("socket");
+        }
+
+        if (isMarshallDisabled("depsDev")) {
+            disabledProviders.add("deps-dev");
+        }
+
+        const securityProviders = buildEnabledProviders(visConfig?.security, {
+            disabled: disabledProviders,
+            minimumScore: visConfig?.security?.policies?.score?.minimum,
+        });
+
+        if (securityProviders.length > 0) {
+            const minimumScore = visConfig?.security?.policies?.score?.minimum ?? DEFAULT_LOW_SCORE_THRESHOLD;
+            const shouldContinue = await runSocketPreCheck(packages, securityProviders, minimumScore, visConfig?.security?.acceptedRisks);
 
             if (!shouldContinue) {
                 process.exitCode = 1;

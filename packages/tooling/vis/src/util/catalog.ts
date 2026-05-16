@@ -11,8 +11,10 @@ import React from "react";
 import { coerce, parse, rcompare } from "semver";
 
 import { readPnpmWorkspacePatterns, resolveWorkspacePatterns } from "../config/workspace";
-import type { AcceptedRisk, PackageReportData, SocketSecurityOptions } from "../security/socket-security";
-import { DEFAULT_LOW_SCORE_THRESHOLD, fetchSocketReports, findAcceptedRisk } from "../security/socket-security";
+import type { SecurityProvider } from "../security/provider";
+import { fetchAllReports } from "../security/registry";
+import type { AcceptedRisk, PackageReportData } from "../security/socket-security";
+import { DEFAULT_LOW_SCORE_THRESHOLD, findAcceptedRisk } from "../security/socket-security";
 import { resolveIndentForExistingFile } from "./editorconfig";
 
 const PREFIX_REGEX = /^([\^~]|>=|<=|[><=])/;
@@ -1580,7 +1582,7 @@ const formatVersionString = (parsed: ParsedVersion | undefined): string => (pars
 const enrichWithSecurity = async (
     outdated: OutdatedEntry[],
     entries: { catalogName: string; packageName: string; range: string }[],
-    socketOptions?: SocketSecurityOptions,
+    securityProviders?: readonly SecurityProvider[],
     acceptedRisks?: Record<string, AcceptedRisk>,
 ): Promise<void> => {
     // Check current versions for known vulnerabilities
@@ -1594,8 +1596,10 @@ const enrichWithSecurity = async (
         ).values(),
     ].filter((p) => p.version);
 
-    // Fetch OSV vulnerabilities and Socket.dev reports in parallel
-    const socketPromise: Promise<Map<string, PackageReportData>> | undefined = socketOptions ? fetchSocketReports(packagesToScan, socketOptions) : undefined;
+    // Fetch OSV vulnerabilities and per-provider security reports in parallel.
+    // `fetchAllReports` returns an empty map when no providers are configured,
+    // so we always have a Map to read from below.
+    const socketPromise: Promise<Map<string, PackageReportData>> | undefined = securityProviders && securityProviders.length > 0 ? fetchAllReports(securityProviders, packagesToScan) : undefined;
 
     const [vulnMap, socketReports] = await Promise.all([fetchVulnerabilities(packagesToScan), socketPromise]);
 
@@ -1736,10 +1740,11 @@ const checkOutdated = async (
     npmrcConfig?: NpmrcConfig,
     onProgress?: (current: number, total: number) => void,
     workspaceRoot?: string,
-    socketOptions?: SocketSecurityOptions,
+    securityProviders?: readonly SecurityProvider[],
     acceptedRisks?: Record<string, AcceptedRisk>,
 ): Promise<CheckOutdatedResult> => {
-    const hash = computeCacheHash(catalogs, options, Boolean(socketOptions), acceptedRisks ? Object.keys(acceptedRisks) : undefined);
+    const hasSecurityProviders = Boolean(securityProviders && securityProviders.length > 0);
+    const hash = computeCacheHash(catalogs, options, hasSecurityProviders, acceptedRisks ? Object.keys(acceptedRisks) : undefined);
 
     if (workspaceRoot) {
         const cached = readOutdatedCache(workspaceRoot, hash);
@@ -1767,8 +1772,8 @@ const checkOutdated = async (
         filteredByTarget = allLatest.filter((e) => !outdatedNames.has(e.packageName));
     }
 
-    if ((options.security || socketOptions) && outdated.length > 0) {
-        await enrichWithSecurity(outdated, entries, socketOptions, acceptedRisks);
+    if ((options.security || hasSecurityProviders) && outdated.length > 0) {
+        await enrichWithSecurity(outdated, entries, securityProviders, acceptedRisks);
     }
 
     const result = { checkedCount: uniquePackages.length, failed, filteredByTarget, ignored, outdated };

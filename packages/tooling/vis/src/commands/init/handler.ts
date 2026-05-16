@@ -55,6 +55,7 @@ const confirm = async (rl: ReturnType<typeof createInterface>, question: string,
 
 interface ConfigInitOptions {
     allowBuilds: Record<string, boolean>;
+    enableDepsDev: boolean;
     enableSocket: boolean;
     minimumReleaseAge?: number;
     staged: boolean;
@@ -81,6 +82,10 @@ const generateConfigContent = (_pm: string, options: ConfigInitOptions): string 
 
     if (options.enableSocket) {
         securityBlock += `\n        socket: { enabled: true },`;
+    }
+
+    if (options.enableDepsDev) {
+        securityBlock += `\n        depsDev: { enabled: true },`;
     }
 
     sections.push(`    security: {\n${securityBlock}\n    },`);
@@ -116,6 +121,14 @@ const runInteractiveInit = async (cwd: string, pm: { name: string; version: stri
         if (!process.env.VIS_SOCKET_TOKEN) {
             pail.notice("    Set VIS_SOCKET_TOKEN for a custom API token (optional).");
         }
+    }
+
+    // Step 1b: deps.dev (Google Open Source Insights — no token required)
+    pail.info("");
+    const enableDepsDev = await confirm(rl, "  Enable Google deps.dev (OpenSSF Scorecard + GHSA advisories)?");
+
+    if (enableDepsDev) {
+        pail.success("    deps.dev enabled — Scorecard signals and advisories merged into the security report.");
     }
 
     // Step 2: Build script approval
@@ -204,7 +217,7 @@ const runInteractiveInit = async (cwd: string, pm: { name: string; version: stri
             if (isAccessibleSync(configPath)) {
                 pail.success(`Migrated config written to ${configPath}`);
             } else {
-                const content = generateConfigContent(pm.name, { allowBuilds, enableSocket, minimumReleaseAge, staged: setupStaged });
+                const content = generateConfigContent(pm.name, { allowBuilds, enableDepsDev, enableSocket, minimumReleaseAge, staged: setupStaged });
 
                 writeFileSync(configPath, content);
                 pail.success(`Created ${configPath}`);
@@ -220,7 +233,7 @@ const runInteractiveInit = async (cwd: string, pm: { name: string; version: stri
 
     pail.info("");
 
-    const content = generateConfigContent(pm.name, { allowBuilds, enableSocket, minimumReleaseAge, staged: setupStaged });
+    const content = generateConfigContent(pm.name, { allowBuilds, enableDepsDev, enableSocket, minimumReleaseAge, staged: setupStaged });
 
     writeFileSync(configPath, content);
     pail.success(`Created ${configPath}`);
@@ -241,7 +254,9 @@ const runInteractiveInit = async (cwd: string, pm: { name: string; version: stri
     // Summary
     pail.info("");
     pail.info("  Setup complete. Your config:");
-    pail.info(`    Security:      ${enableSocket ? "Socket.dev enabled" : "defaults only"}`);
+    const securitySummary = [enableSocket && "Socket.dev", enableDepsDev && "deps.dev"].filter(Boolean);
+
+    pail.info(`    Security:      ${securitySummary.length > 0 ? `${securitySummary.join(" + ")} enabled` : "defaults only"}`);
     pail.info(`    Build scripts: ${Object.values(allowBuilds).filter(Boolean).length} approved`);
     pail.info(`    Min age:       ${minimumReleaseAge === undefined ? "not enforced" : `${String(minimumReleaseAge)} minutes`}`);
     pail.info(`    Git hooks:     ${setupStaged ? "lint-staged configured" : "not configured"}`);
@@ -256,6 +271,7 @@ const runInteractiveInit = async (cwd: string, pm: { name: string; version: stri
 const runStaticInit = (cwd: string, pm: { name: string; version: string }, options: Record<string, unknown>, configPath: string): void => {
     const content = generateConfigContent(pm.name, {
         allowBuilds: {},
+        enableDepsDev: false,
         enableSocket: false,
         minimumReleaseAge: DEFAULT_MIN_RELEASE_AGE_MINUTES,
         staged: false,

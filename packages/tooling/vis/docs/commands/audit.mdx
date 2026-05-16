@@ -5,7 +5,7 @@ description: "Audit installed packages for known vulnerabilities and supply-chai
 
 # vis audit
 
-`vis audit` scans every installed package (resolved from the lockfile) against the OSV vulnerability database and, when configured, [Socket.dev](https://socket.dev) supply-chain intelligence.
+`vis audit` scans every installed package (resolved from the lockfile) against the OSV vulnerability database and, when configured, one or more supply-chain intelligence providers — [Socket.dev](https://socket.dev) and [Google deps.dev](https://deps.dev) (the latter ships OpenSSF Scorecard signals + GHSA advisories and needs no API token).
 
 It defaults to the local **offline OSV cache** populated by [`vis advisories sync`](./advisories.mdx) — no network access required at scan time. Falls back to the live OSV API when no cache is present.
 
@@ -117,7 +117,7 @@ Run [`vis advisories sync`](./advisories.mdx) to populate the cache.
 
 | Option              | Default | Description                                                                                                                                                                |
 | ------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--backend <name>`  | `auto`  | Vulnerability scanner backend. `auto` delegates to `aube audit` when aube is the active installer; `aube` forces delegation (errors if `aube` is not on `PATH`); `vis` always uses the built-in OSV/Socket scanner. |
+| `--backend <name>`  | `auto`  | Vulnerability scanner backend. `auto` delegates to `aube audit` when aube is the active installer; `aube` forces delegation (errors if `aube` is not on `PATH`); `vis` always uses the built-in OSV scanner (plus any configured providers — Socket.dev, deps.dev). |
 
 Resolution: CLI `--backend` → `VIS_AUDIT_BACKEND` env → `security.audit.backend` in `vis.config.ts` → `auto`.
 
@@ -211,6 +211,16 @@ export default defineConfig({
         socket: {
             enabled: true,
         },
+        depsDev: {
+            // No auth required. Pulls OpenSSF Scorecard signals +
+            // GHSA advisories from api.deps.dev. Heavily cached
+            // (24h project data, 7d versions + advisories).
+            enabled: true,
+        },
+        // When both providers are enabled, this controls which one's
+        // `score` wins on merge. Alerts from the secondary are still
+        // appended and deduped by `key`.
+        primaryProvider: "socket",
         // Workspace-scoped acknowledged risks (shared across all policies).
         acceptedRisks: {
             "some-package": {
