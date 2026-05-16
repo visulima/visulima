@@ -766,6 +766,13 @@
             "additionalProperties": false,
             "description": "Behavior of `vis run` when invoked tasks declare service dependencies that aren't running in the workspace registry. CLI `--services=&lt;mode>` overrides this block."
         },
+        "scopedTasks": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/ScopedTasksBlock"
+            },
+            "description": "Cascading scoped-task blocks. Each block may narrow its tasks to a subset of projects via `match`. Blocks are evaluated in order; later blocks override earlier ones when the same field is set.\n\nMatch predicates are additive — if `match` is omitted, the block applies to every project."
+        },
         "secrets": {
             "type": "object",
             "properties": {
@@ -919,6 +926,13 @@
                     },
                     "description": "Packages whose policy findings have been reviewed and explicitly accepted. Matched against every policy unless `policies` narrows the scope. Replaces the legacy `security.socket.acceptedRisks` map.\n\nKey format: package name (`\"lodash\"`), name@version (`\"lodash@4.17.21\"`), or glob (`\"@myorg/*\"`). Unversioned keys match all versions of that package."
                 },
+                "allowBins": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "boolean"
+                    },
+                    "description": "Map of bin names (or `pkg#bin` qualifiers) blessed for shadowing. When two installed packages expose the same bin name, vis flags the collision in `vis security list` and the post-install drift report — set the bin (or `pkg#bin`) to `true` here to suppress the warning once you've reviewed the conflict.\n\nPort of LavaMoat allow-scripts' experimental `allowBins`. Bare names match any conflicting bin with that name; the `pkg#bin` form scopes the approval to a single package's bin."
+                },
                 "audit": {
                     "type": "object",
                     "properties": {
@@ -936,6 +950,35 @@
                                             "mirror.corp.example.com"
                                         ]
                                     ]
+                                },
+                                "bloom": {
+                                    "type": "object",
+                                    "properties": {
+                                        "allowedHosts": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "description": "Extra hosts permitted as `bloom.source`. The built-in allowlist (`endevco.github.io`) is enforced even if this field is omitted; entries here add to it."
+                                        },
+                                        "mode": {
+                                            "type": "string",
+                                            "enum": [
+                                                "off",
+                                                "on",
+                                                "required"
+                                            ],
+                                            "description": "Prefilter mode:\n- `off`: never run the bloom check.\n- `on`: run when a local filter is cached; on   fetch failure, fall back to the cached filter or   skip the prefilter (audit continues against the   non-bloom path).\n- `required`: hard-fail the audit when the bloom   refresh fails or the local cache is missing.   Use in hardened CI together with   `audit.advisories.source`.",
+                                            "default": "off"
+                                        },
+                                        "source": {
+                                            "type": "string",
+                                            "description": "Bloom mirror base URL (no trailing slash). Defaults to the public `endevco/osv-bloom` GH Pages site. Override only if you mirror the bloom artifacts internally; the hostname must appear in `allowedHosts`.",
+                                            "default": "https://endevco.github.io/osv-bloom"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "Bloom-filter prefilter for OSV `MAL-*` (malicious-package) advisories. Probes a ~380 KB filter fetched from `endevco/osv-bloom` and escalates hits to the existing advisory query path for `(name, version)` confirmation.\n\nCost: ~380 KB on the wire, refreshed every 10 minutes upstream. False-positive rate is ~0.1%, so a typical 1000-package lockfile triggers zero or one extra round trip per audit.\n\nIndependent of `audit.advisories.source` / `verify` — those control the full OSV ingest. The bloom is MAL-* only and aimed at cold-start preflight and ephemeral CI runners that haven't synced the full DB."
                                 },
                                 "refreshIntervalHours": {
                                     "type": "number",
@@ -990,6 +1033,16 @@
                             "additionalProperties": false,
                             "description": "Gates for the auto-fix flow (`vis audit --fix` / `--fix-transitive`). The CLI prompts outside CI; inside CI the flags refuse to run unless `--yes` is set and, for transitives, `apply.transitive.enabled = true`."
                         },
+                        "backend": {
+                            "type": "string",
+                            "enum": [
+                                "aube",
+                                "auto",
+                                "vis"
+                            ],
+                            "description": "Vulnerability scanner backend.\n\n- `auto` (default): delegate to `aube audit` when aube is the   active installer (its scanner reads the same lockfile and   produces equivalent severity ratings); otherwise run vis's   own OSV/Socket scanner.\n- `aube`: always delegate to `aube audit`. Errors if `aube` is   not on PATH.\n- `vis`: always use vis's built-in scanner — never delegate.\n\nDelegation avoids redundant work (aube already has a full-fidelity audit pass that respects its own exclusions via `aube-workspace.yaml::auditConfig`) and lets users get a single, consistent result regardless of which entry point they invoke.",
+                            "default": "auto"
+                        },
                         "offlineByDefault": {
                             "type": "boolean",
                             "description": "When true, `vis audit` skips network calls and queries the offline cache. Equivalent to the CLI `--offline` flag.",
@@ -999,17 +1052,294 @@
                     "additionalProperties": false,
                     "description": "Offline OSV advisory + `vis audit` configuration.\n\nControls `vis audit --offline` and `vis advisories sync` behavior:\n- `audit.advisories.source` is the OSV mirror to download from. It   must be `https://` and resolve to a host in `allowedHosts` (or one   of the built-in defaults).\n- `audit.offlineByDefault` flips the default of `--offline`.\n\nVulnerability severity gating and reachability filtering live under `policies.vulnerability` (see below)."
                 },
-                "allowBins": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "boolean"
-                    },
-                    "description": "Map of bin names (or `pkg#bin` qualifiers) blessed for shadowing. When two installed packages expose the same bin name, vis flags the collision in `vis security list` and the post-install drift report — set the bin (or `pkg#bin`) to `true` here to suppress the warning once you've reviewed the conflict.\n\nPort of LavaMoat allow-scripts' experimental `allowBins`. Bare names match any conflicting bin with that name; the `pkg#bin` form scopes the approval to a single package's bin."
-                },
                 "blockExoticSubdeps": {
                     "type": "boolean",
                     "description": "When true, prevents transitive dependencies from using exotic sources (git repositories, direct tarball URLs). Only direct dependencies may use such sources. Equivalent to pnpm's `blockExoticSubdeps`.",
                     "default": false
+                },
+                "depsDev": {
+                    "type": "object",
+                    "properties": {
+                        "advisoryCacheTtlMs": {
+                            "type": "number",
+                            "description": "Cache TTL for advisory entries (immutable once published).",
+                            "default": "604_800_000 (7 days)"
+                        },
+                        "enabled": {
+                            "type": "boolean",
+                            "description": "Enable deps.dev scanning on install/update/check/audit commands.",
+                            "default": false
+                        },
+                        "projectCacheTtlMs": {
+                            "type": "number",
+                            "description": "Cache TTL for OpenSSF Scorecard project data (refreshes weekly).",
+                            "default": "86_400_000 (24 hours)"
+                        },
+                        "timeoutMs": {
+                            "type": "number",
+                            "description": "Request timeout in milliseconds.",
+                            "default": "15_000"
+                        },
+                        "versionCacheTtlMs": {
+                            "type": "number",
+                            "description": "Cache TTL for npm version metadata (immutable).",
+                            "default": "604_800_000 (7 days)"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "description": "deps.dev (Google Open Source Insights) data-source configuration. Public, unauthenticated; pulls Scorecard data + advisories from `api.deps.dev`. Complements or replaces Socket.dev. Heavily cached."
+                },
+                "marshalls": {
+                    "type": "object",
+                    "properties": {
+                        "archivedRepo": {
+                            "type": "object",
+                            "properties": {
+                                "allowlist": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "description": "Package names to skip."
+                                },
+                                "enabled": {
+                                    "type": "boolean",
+                                    "description": "Default: marshall is on. Set false to disable."
+                                },
+                                "githubToken": {
+                                    "type": "string",
+                                    "description": "GitHub PAT for the API call (5k/hr vs 60/hr)."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "description": "Archived-repo marshall (GitHub repository status)."
+                        },
+                        "author": {
+                            "type": "object",
+                            "properties": {
+                                "allowlist": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "dormantErrorDays": {
+                                    "type": "number",
+                                    "description": "Days since the publisher's last release before flagging as error."
+                                },
+                                "dormantWarnDays": {
+                                    "type": "number",
+                                    "description": "Days since the publisher's last release before flagging as warning."
+                                },
+                                "enabled": {
+                                    "type": "boolean"
+                                },
+                                "newPublisherWindowDays": {
+                                    "type": "number",
+                                    "description": "Window for the \"new publisher on an established package\" check."
+                                },
+                                "recentVersionErrorDays": {
+                                    "type": "number",
+                                    "description": "Days since the resolved version was published — error threshold."
+                                },
+                                "recentVersionWarnDays": {
+                                    "type": "number",
+                                    "description": "Days since the resolved version was published — warning threshold."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "description": "Author / publisher heuristics."
+                        },
+                        "deprecation": {
+                            "type": "object",
+                            "properties": {
+                                "allowlist": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "enabled": {
+                                    "type": "boolean"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "description": "npm `deprecated`-flag check on the resolved version."
+                        },
+                        "downloads": {
+                            "type": "object",
+                            "properties": {
+                                "allowlist": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "enabled": {
+                                    "type": "boolean"
+                                },
+                                "errorThreshold": {
+                                    "type": "number",
+                                    "description": "Below this monthly count → error (default: 20)."
+                                },
+                                "warnThreshold": {
+                                    "type": "number",
+                                    "description": "Below this monthly count → warning (default: 1000)."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "description": "Monthly download-count floor."
+                        },
+                        "expiredDomains": {
+                            "type": "object",
+                            "properties": {
+                                "allowDomains": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "description": "Domains exempted from the check (legacy / internal)."
+                                },
+                                "allowlist": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "dnsServers": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "description": "DNS resolvers to query (default: system)."
+                                },
+                                "enabled": {
+                                    "type": "boolean"
+                                },
+                                "timeoutMs": {
+                                    "type": "number",
+                                    "description": "Per-domain DNS timeout (default: 5000)."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "description": "Maintainer-email-domain NS lookup."
+                        },
+                        "metadata": {
+                            "type": "object",
+                            "properties": {
+                                "allowlist": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "checks": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string",
+                                        "enum": [
+                                            "license",
+                                            "readme",
+                                            "repo"
+                                        ]
+                                    },
+                                    "description": "Subset of checks to run. Default: all three."
+                                },
+                                "enabled": {
+                                    "type": "boolean"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "description": "README / license / repository presence checks."
+                        },
+                        "newBin": {
+                            "type": "object",
+                            "properties": {
+                                "allowlist": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "enabled": {
+                                    "type": "boolean"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "description": "New CLI-bin script introduced in this version."
+                        },
+                        "packageAge": {
+                            "type": "object",
+                            "properties": {
+                                "allowlist": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "enabled": {
+                                    "type": "boolean"
+                                },
+                                "newPackageDays": {
+                                    "type": "number",
+                                    "description": "Package created fewer than this many days ago → error. Default 22."
+                                },
+                                "unmaintainedDays": {
+                                    "type": "number",
+                                    "description": "No publish within this many days → warning. Default 365."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "description": "Whole-package age heuristics (newly created / unmaintained)."
+                        },
+                        "provenance": {
+                            "type": "object",
+                            "properties": {
+                                "allowlist": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "enabled": {
+                                    "type": "boolean"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "description": "Provenance regression check."
+                        },
+                        "signatures": {
+                            "type": "object",
+                            "properties": {
+                                "allowlist": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "enabled": {
+                                    "type": "boolean",
+                                    "description": "Default: marshall is *off*. Set true to enable."
+                                },
+                                "keysUrl": {
+                                    "type": "string",
+                                    "description": "Override the keys endpoint (default: npm registry)."
+                                },
+                                "treatExpiredAs": {
+                                    "type": "string",
+                                    "enum": [
+                                        "error",
+                                        "warning"
+                                    ],
+                                    "description": "How to treat an expired-but-known key. Default: \"warning\"."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "description": "ECDSA P-256 verification against npm's signing keys. Disabled by default because npm coverage still has gaps that produce noisy warnings on legitimate packages."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "description": "Pre-install marshall pipeline — packument-derived supply-chain gates (author, provenance, new-bin, metadata, downloads, expired-domains, signatures, archived-repo) that run before `vis add` / `vis install &lt;pkg>` / `vis update &lt;pkg>` hand off to the underlying package manager. Every entry is optional; omit a key and the marshall runs with defaults. Set `enabled: false` on a specific marshall to skip it without touching env vars."
                 },
                 "pinVersions": {
                     "type": "boolean",
@@ -1252,6 +1582,14 @@
                     "additionalProperties": false,
                     "description": "Supply-chain policy gates. Each sub-block enables one policy and configures its behavior. When a sub-block is omitted the policy is inactive. `acceptedRisks` (above) silences specific packages without disabling a policy globally.\n\nThe 8 policies are inspired by Socket.dev's classification:\n- `malware`            — Socket-flagged malicious packages\n- `firstSeen`         — packages published less than N minutes ago\n- `unexpectedDeps`    — packages outside an allow-list / baseline\n- `publisherChange`   — maintainer set changed between installs\n- `installScripts`    — preinstall/install/postinstall scripts\n- `score`              — Socket overall score below threshold\n- `vulnerability`      — OSV vulnerability findings\n- `license`            — SPDX allow / deny lists"
                 },
+                "primaryProvider": {
+                    "type": "string",
+                    "enum": [
+                        "deps-dev",
+                        "socket"
+                    ],
+                    "description": "Which provider wins merge conflicts when multiple are enabled (e.g. both Socket.dev and deps.dev return data for the same package). The primary provider's `score` is kept; alerts from secondaries are appended and deduped by `key`. Defaults to whichever provider is enabled first in this order: socket → deps-dev."
+                },
                 "socket": {
                     "type": "object",
                     "properties": {
@@ -1277,218 +1615,6 @@
                     },
                     "additionalProperties": false,
                     "description": "Socket.dev data-source configuration. Connection knobs only — score thresholds and accepted-risk overrides moved to `policies.score` and `security.acceptedRisks` respectively."
-                },
-                "marshalls": {
-                    "type": "object",
-                    "properties": {
-                        "archivedRepo": {
-                            "type": "object",
-                            "properties": {
-                                "allowlist": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "string"
-                                    },
-                                    "description": "Package names to skip."
-                                },
-                                "enabled": {
-                                    "type": "boolean",
-                                    "description": "Default: marshall is on. Set false to disable."
-                                },
-                                "githubToken": {
-                                    "type": "string",
-                                    "description": "GitHub PAT for the API call (5k/hr vs 60/hr)."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "description": "Archived-repo marshall (GitHub repository status)."
-                        },
-                        "author": {
-                            "type": "object",
-                            "properties": {
-                                "allowlist": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "string"
-                                    }
-                                },
-                                "dormantErrorDays": {
-                                    "type": "number",
-                                    "description": "Days since the publisher's last release before flagging as error."
-                                },
-                                "dormantWarnDays": {
-                                    "type": "number",
-                                    "description": "Days since the publisher's last release before flagging as warning."
-                                },
-                                "enabled": {
-                                    "type": "boolean"
-                                },
-                                "newPublisherWindowDays": {
-                                    "type": "number",
-                                    "description": "Window for the \"new publisher on an established package\" check."
-                                },
-                                "recentVersionErrorDays": {
-                                    "type": "number",
-                                    "description": "Days since the resolved version was published — error threshold."
-                                },
-                                "recentVersionWarnDays": {
-                                    "type": "number",
-                                    "description": "Days since the resolved version was published — warning threshold."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "description": "Author / publisher heuristics."
-                        },
-                        "downloads": {
-                            "type": "object",
-                            "properties": {
-                                "allowlist": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "string"
-                                    }
-                                },
-                                "enabled": {
-                                    "type": "boolean"
-                                },
-                                "errorThreshold": {
-                                    "type": "number",
-                                    "description": "Below this monthly count → error (default: 20)."
-                                },
-                                "warnThreshold": {
-                                    "type": "number",
-                                    "description": "Below this monthly count → warning (default: 1000)."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "description": "Monthly download-count floor."
-                        },
-                        "expiredDomains": {
-                            "type": "object",
-                            "properties": {
-                                "allowDomains": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "string"
-                                    },
-                                    "description": "Domains exempted from the check (legacy / internal)."
-                                },
-                                "allowlist": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "string"
-                                    }
-                                },
-                                "dnsServers": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "string"
-                                    },
-                                    "description": "DNS resolvers to query (default: system)."
-                                },
-                                "enabled": {
-                                    "type": "boolean"
-                                },
-                                "timeoutMs": {
-                                    "type": "number",
-                                    "description": "Per-domain DNS timeout (default: 5000)."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "description": "Maintainer-email-domain NS lookup."
-                        },
-                        "metadata": {
-                            "type": "object",
-                            "properties": {
-                                "allowlist": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "string"
-                                    }
-                                },
-                                "checks": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "string",
-                                        "enum": [
-                                            "license",
-                                            "readme",
-                                            "repo"
-                                        ]
-                                    },
-                                    "description": "Subset of checks to run. Default: all three."
-                                },
-                                "enabled": {
-                                    "type": "boolean"
-                                }
-                            },
-                            "additionalProperties": false,
-                            "description": "README / license / repository presence checks."
-                        },
-                        "newBin": {
-                            "type": "object",
-                            "properties": {
-                                "allowlist": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "string"
-                                    }
-                                },
-                                "enabled": {
-                                    "type": "boolean"
-                                }
-                            },
-                            "additionalProperties": false,
-                            "description": "New CLI-bin script introduced in this version."
-                        },
-                        "provenance": {
-                            "type": "object",
-                            "properties": {
-                                "allowlist": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "string"
-                                    }
-                                },
-                                "enabled": {
-                                    "type": "boolean"
-                                }
-                            },
-                            "additionalProperties": false,
-                            "description": "Provenance regression check."
-                        },
-                        "signatures": {
-                            "type": "object",
-                            "properties": {
-                                "allowlist": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "string"
-                                    }
-                                },
-                                "enabled": {
-                                    "type": "boolean",
-                                    "description": "Default: marshall is *off*. Set true to enable."
-                                },
-                                "keysUrl": {
-                                    "type": "string",
-                                    "description": "Override the keys endpoint (default: npm registry)."
-                                },
-                                "treatExpiredAs": {
-                                    "type": "string",
-                                    "enum": [
-                                        "error",
-                                        "warning"
-                                    ],
-                                    "description": "How to treat an expired-but-known key. Default: \"warning\"."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "description": "ECDSA P-256 verification against npm's signing keys. Disabled by default because npm coverage still has gaps that produce noisy warnings on legitimate packages."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "description": "Pre-install marshall pipeline — packument-derived supply-chain gates (author, provenance, new-bin, metadata, downloads, expired-domains, signatures, archived-repo) that run before `vis add` / `vis install <pkg>` / `vis update <pkg>` hand off to the underlying package manager. Every entry is optional; omit a key and the marshall runs with defaults. Set `enabled: false` on a specific marshall to skip it without touching env vars."
                 },
                 "typosquatAllowlist": {
                     "type": "array",
@@ -1559,526 +1685,6 @@
             "type": "boolean",
             "description": "When `true`, every task command is scanned for `${VAR}` / `$VAR` references before spawn. If a referenced var is unset in the task's effective env (envFile + service env + per-task `env` + `process.env`), the task fails with an actionable error naming the missing variable, instead of letting the shell silently substitute an empty string.\n\nOverride per run with `--strict-env` / `--no-strict-env`. Override per target with `options.strictEnv`.",
             "default": false
-        },
-        "tasks": {
-            "type": "object",
-            "additionalProperties": {
-                "type": "object",
-                "properties": {
-                    "aliases": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        },
-                        "description": "Alternate names that resolve to this target on the CLI. Useful for shortening long canonical names (`test` ↔ `t`) or for offering migration-friendly aliases when renaming targets. Aliases must be globally unique within the workspace."
-                    },
-                    "description": {
-                        "type": "string",
-                        "description": "One-line description surfaced by `vis list` and (in future) per-task `--help`. Kept short — longer docs belong in project READMEs or vis.config.ts comments."
-                    },
-                    "inferred": {
-                        "type": "boolean",
-                        "description": "True when the target was synthesized by a Project Crystal-style detector (see  {@link  ../inference } ) rather than declared by a package.json script, project.json, or vis.task.ts file. Surfaced by `vis list --inferred` and used by tooling to distinguish implicit defaults from explicit user intent."
-                    },
-                    "options": {
-                        "$ref": "#/$defs/VisTargetOptions",
-                        "description": "Vis-specific target options."
-                    },
-                    "preset": {
-                        "$ref": "#/$defs/TargetPreset",
-                        "description": "Preset applied before user-specified options."
-                    },
-                    "type": {
-                        "$ref": "#/$defs/TargetType",
-                        "description": "Semantic task type. Affects caching defaults and CI filtering.",
-                        "default": "test"
-                    },
-                    "always": {
-                        "type": "boolean",
-                        "description": "When `true`, this target runs after the main task graph completes — even if upstream tasks failed. Useful for cleanup, teardown, notifications, or anything that should fire regardless of build outcome. Always-tasks are not part of the normal dependency graph and never block other tasks."
-                    },
-                    "cache": {
-                        "type": "boolean",
-                        "description": "Whether this target is cacheable"
-                    },
-                    "cacheOnWarning": {
-                        "type": "boolean",
-                        "description": "When `false`, exit-0 runs whose terminal output matched any  {@link  TargetConfiguration.warningPattern }  are not seeded into the cache. Defaults to `true` — warnings are surfaced on the result (`hadWarnings: true`) but caching still happens, matching the \"succeeded with warnings is incremental\" behaviour rush, lage and wireit users have repeatedly asked for."
-                    },
-                    "cacheRestore": {
-                        "type": "object",
-                        "properties": {
-                            "preserveMtime": {
-                                "type": "boolean",
-                                "description": "Restore each file's modification time from the captured tar header (second precision). When `false`, restored files take the current wall-clock time, matching the legacy behaviour."
-                            },
-                            "preservePerms": {
-                                "type": "boolean",
-                                "description": "Restore each file's POSIX mode bits (rwx triplets, low 12 bits). When `false`, restored files take the process umask. Only meaningful on POSIX hosts; Windows ignores tar mode."
-                            }
-                        },
-                        "additionalProperties": false,
-                        "description": "Fine-grained controls over how cached outputs are rehydrated. See  {@link  CacheRestoreOptions } . Both fields default to `true` (faithful restore); flip individually when downstream tooling needs the legacy \"now\"-stamped behaviour."
-                    },
-                    "command": {
-                        "type": "string",
-                        "description": "The command to run (alternative to executor)"
-                    },
-                    "configurations": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "type": "object",
-                            "additionalProperties": {}
-                        },
-                        "description": "Named configurations (e.g., \"production\", \"development\")"
-                    },
-                    "concurrencyGroup": {
-                        "type": "string",
-                        "description": "Workspace-level concurrency group this target opts into. The scheduler caps the *combined* in-flight count of every task whose target carries the same group name to the value declared in  {@link  TaskRunnerOptions.concurrencyGroups } . Use this when several targets share an external resource (a single Postgres, a developer's Docker daemon, an account-wide deploy lock) so the cap follows the resource, not any single target name.\n\nTargets that name a group not declared in `concurrencyGroups` run uncapped — a typo shouldn't deadlock the graph. Caps don't apply to tasks marked `always: true`; those run in a separate finalisation phase outside the scheduler."
-                    },
-                    "dependsOn": {
-                        "type": "array",
-                        "items": {
-                            "anyOf": [
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "dependencies": {
-                                            "type": "boolean",
-                                            "description": "Whether this is a dependency on the same project"
-                                        },
-                                        "params": {
-                                            "type": "string",
-                                            "enum": [
-                                                "forward",
-                                                "ignore"
-                                            ],
-                                            "description": "Params to pass through"
-                                        },
-                                        "projects": {
-                                            "anyOf": [
-                                                {
-                                                    "type": "string"
-                                                },
-                                                {
-                                                    "type": "array",
-                                                    "items": {
-                                                        "type": "string"
-                                                    }
-                                                }
-                                            ],
-                                            "description": "The project name (if different from the current project)"
-                                        },
-                                        "target": {
-                                            "type": "string",
-                                            "description": "The target name"
-                                        }
-                                    },
-                                    "required": [
-                                        "target"
-                                    ],
-                                    "additionalProperties": false,
-                                    "description": "Defines a dependency on another target."
-                                }
-                            ]
-                        },
-                        "description": "Other targets this target depends on"
-                    },
-                    "executor": {
-                        "type": "string",
-                        "description": "The executor/command to run"
-                    },
-                    "inputs": {
-                        "type": "array",
-                        "items": {
-                            "anyOf": [
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "anyOf": [
-                                        {
-                                            "type": "object",
-                                            "properties": {
-                                                "fileset": {
-                                                    "anyOf": [
-                                                        {
-                                                            "type": "object",
-                                                            "properties": {
-                                                                "base": {
-                                                                    "type": "string",
-                                                                    "enum": [
-                                                                        "package",
-                                                                        "workspace"
-                                                                    ],
-                                                                    "description": "Anchor for the pattern."
-                                                                },
-                                                                "pattern": {
-                                                                    "type": "string",
-                                                                    "description": "Glob pattern (may start with `!` for negation)."
-                                                                }
-                                                            },
-                                                            "required": [
-                                                                "base",
-                                                                "pattern"
-                                                            ],
-                                                            "additionalProperties": false,
-                                                            "description": "Object form of a fileset pattern, for anchoring to the workspace root."
-                                                        },
-                                                        {
-                                                            "type": "string"
-                                                        }
-                                                    ]
-                                                }
-                                            },
-                                            "required": [
-                                                "fileset"
-                                            ],
-                                            "additionalProperties": false,
-                                            "description": "An input based on file patterns.\n\n`fileset` may be a bare glob string (package-root relative) or an object form `{ pattern, base }` to anchor explicitly to the workspace root. Negation (`!` prefix) works in both forms."
-                                        },
-                                        {
-                                            "type": "object",
-                                            "properties": {
-                                                "runtime": {
-                                                    "type": "string"
-                                                }
-                                            },
-                                            "required": [
-                                                "runtime"
-                                            ],
-                                            "additionalProperties": false,
-                                            "description": "An input based on a runtime command."
-                                        },
-                                        {
-                                            "type": "object",
-                                            "properties": {
-                                                "env": {
-                                                    "type": "string"
-                                                }
-                                            },
-                                            "required": [
-                                                "env"
-                                            ],
-                                            "additionalProperties": false,
-                                            "description": "An input based on environment variables."
-                                        },
-                                        {
-                                            "type": "object",
-                                            "properties": {
-                                                "externalDependencies": {
-                                                    "type": "array",
-                                                    "items": {
-                                                        "type": "string"
-                                                    }
-                                                }
-                                            },
-                                            "required": [
-                                                "externalDependencies"
-                                            ],
-                                            "additionalProperties": false,
-                                            "description": "An input based on external dependency versions."
-                                        }
-                                    ],
-                                    "description": "Defines an input for cache invalidation."
-                                }
-                            ]
-                        },
-                        "description": "Input patterns for cache invalidation"
-                    },
-                    "maxConcurrent": {
-                        "type": "number",
-                        "description": "Maximum number of in-flight instances of this target across the whole graph. When set, the scheduler refuses to start an additional task whose `target.target` equals this target's name once the running count reaches `maxConcurrent`. Independent of `--parallel`: the global cap still bounds total in-flight tasks, and `maxConcurrent` further bounds the per-target subset.\n\nUse for tests/deploys that share an external resource (DB, port, mock server). Set to `1` to serialize. Values `<= 0` are ignored.\n\nIf multiple projects declare different values for the same target name, the runner uses the smallest declared cap. Caps don't apply to tasks marked `always: true`; those run in a separate finalisation phase outside the scheduler."
-                    },
-                    "outputs": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        },
-                        "description": "Output patterns produced by this target"
-                    },
-                    "parallelism": {
-                        "type": "boolean",
-                        "description": "Whether this target supports parallel execution"
-                    },
-                    "warningPattern": {
-                        "anyOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "type": "array",
-                                "items": {
-                                    "type": "string"
-                                }
-                            }
-                        ],
-                        "description": "Regex source string(s) that mark a successful task as having emitted warnings. The orchestrator scans the task's combined terminal output after a 0-exit and, on first match, sets `hadWarnings` on the result. Combine with `cacheOnWarning: false` to skip caching for warning-tainted runs. Both bare strings and arrays are accepted; arrays are tested in order.\n\n  ```ts   warningPattern: [\"\\\\bwarning\\\\b\", \"TS\\\\d{4}\"]   ```"
-                    },
-                    "when": {
-                        "type": "object",
-                        "properties": {
-                            "branch": {
-                                "anyOf": [
-                                    {
-                                        "type": "string"
-                                    },
-                                    {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "string"
-                                        }
-                                    }
-                                ],
-                                "description": "Match against the current git branch (HEAD)."
-                            },
-                            "ci": {
-                                "type": "boolean",
-                                "description": "Run only when invoked inside CI when `true`, only outside CI when `false`. Detects CI via the `CI` env var (the convention GitHub Actions, GitLab, CircleCI, Jenkins, etc. all share)."
-                            },
-                            "env": {
-                                "anyOf": [
-                                    {
-                                        "anyOf": [
-                                            {
-                                                "type": "string"
-                                            },
-                                            {
-                                                "type": "object",
-                                                "properties": {
-                                                    "equals": {
-                                                        "type": "string",
-                                                        "description": "Match this exact value. Mutually exclusive with `exists`."
-                                                    },
-                                                    "exists": {
-                                                        "type": "boolean",
-                                                        "description": "Assert the variable is set & non-empty (`true`) or unset/empty (`false`)."
-                                                    },
-                                                    "name": {
-                                                        "type": "string",
-                                                        "description": "Variable name."
-                                                    }
-                                                },
-                                                "required": [
-                                                    "name"
-                                                ],
-                                                "additionalProperties": false
-                                            }
-                                        ],
-                                        "description": "An environment-variable match. The string form is shorthand for `{ name, exists: true }` (set + non-empty). The object form supports either presence assertions or exact-value matching."
-                                    },
-                                    {
-                                        "type": "array",
-                                        "items": {
-                                            "anyOf": [
-                                                {
-                                                    "type": "string"
-                                                },
-                                                {
-                                                    "type": "object",
-                                                    "properties": {
-                                                        "equals": {
-                                                            "type": "string",
-                                                            "description": "Match this exact value. Mutually exclusive with `exists`."
-                                                        },
-                                                        "exists": {
-                                                            "type": "boolean",
-                                                            "description": "Assert the variable is set & non-empty (`true`) or unset/empty (`false`)."
-                                                        },
-                                                        "name": {
-                                                            "type": "string",
-                                                            "description": "Variable name."
-                                                        }
-                                                    },
-                                                    "required": [
-                                                        "name"
-                                                    ],
-                                                    "additionalProperties": false
-                                                }
-                                            ],
-                                            "description": "An environment-variable match. The string form is shorthand for `{ name, exists: true }` (set + non-empty). The object form supports either presence assertions or exact-value matching."
-                                        }
-                                    }
-                                ],
-                                "description": "Match against environment variables. A bare string asserts the variable is set and non-empty; the object form lets you match an exact value or just assert presence/absence."
-                            },
-                            "not": {
-                                "type": "object",
-                                "properties": {
-                                    "branch": {
-                                        "anyOf": [
-                                            {
-                                                "type": "string"
-                                            },
-                                            {
-                                                "type": "array",
-                                                "items": {
-                                                    "type": "string"
-                                                }
-                                            }
-                                        ]
-                                    },
-                                    "ci": {
-                                        "type": "boolean"
-                                    },
-                                    "env": {
-                                        "anyOf": [
-                                            {
-                                                "anyOf": [
-                                                    {
-                                                        "type": "string"
-                                                    },
-                                                    {
-                                                        "type": "object",
-                                                        "properties": {
-                                                            "equals": {
-                                                                "type": "string",
-                                                                "description": "Match this exact value. Mutually exclusive with `exists`."
-                                                            },
-                                                            "exists": {
-                                                                "type": "boolean",
-                                                                "description": "Assert the variable is set & non-empty (`true`) or unset/empty (`false`)."
-                                                            },
-                                                            "name": {
-                                                                "type": "string",
-                                                                "description": "Variable name."
-                                                            }
-                                                        },
-                                                        "required": [
-                                                            "name"
-                                                        ],
-                                                        "additionalProperties": false
-                                                    }
-                                                ],
-                                                "description": "An environment-variable match. The string form is shorthand for `{ name, exists: true }` (set + non-empty). The object form supports either presence assertions or exact-value matching."
-                                            },
-                                            {
-                                                "type": "array",
-                                                "items": {
-                                                    "anyOf": [
-                                                        {
-                                                            "type": "string"
-                                                        },
-                                                        {
-                                                            "type": "object",
-                                                            "properties": {
-                                                                "equals": {
-                                                                    "type": "string",
-                                                                    "description": "Match this exact value. Mutually exclusive with `exists`."
-                                                                },
-                                                                "exists": {
-                                                                    "type": "boolean",
-                                                                    "description": "Assert the variable is set & non-empty (`true`) or unset/empty (`false`)."
-                                                                },
-                                                                "name": {
-                                                                    "type": "string",
-                                                                    "description": "Variable name."
-                                                                }
-                                                            },
-                                                            "required": [
-                                                                "name"
-                                                            ],
-                                                            "additionalProperties": false
-                                                        }
-                                                    ],
-                                                    "description": "An environment-variable match. The string form is shorthand for `{ name, exists: true }` (set + non-empty). The object form supports either presence assertions or exact-value matching."
-                                                }
-                                            }
-                                        ]
-                                    },
-                                    "os": {
-                                        "anyOf": [
-                                            {
-                                                "type": "string",
-                                                "enum": [
-                                                    "aix",
-                                                    "darwin",
-                                                    "freebsd",
-                                                    "linux",
-                                                    "openbsd",
-                                                    "sunos",
-                                                    "windows",
-                                                    "win32"
-                                                ],
-                                                "description": "Aliased platform list — `\"windows\"` is sugar for Node's `\"win32\"`."
-                                            },
-                                            {
-                                                "type": "array",
-                                                "items": {
-                                                    "type": "string",
-                                                    "enum": [
-                                                        "aix",
-                                                        "darwin",
-                                                        "freebsd",
-                                                        "linux",
-                                                        "openbsd",
-                                                        "sunos",
-                                                        "windows",
-                                                        "win32"
-                                                    ],
-                                                    "description": "Aliased platform list — `\"windows\"` is sugar for Node's `\"win32\"`."
-                                                }
-                                            }
-                                        ]
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "description": "Negative mirrors. A task runs only when *all* `not.*` clauses fail."
-                            },
-                            "os": {
-                                "anyOf": [
-                                    {
-                                        "type": "string",
-                                        "enum": [
-                                            "aix",
-                                            "darwin",
-                                            "freebsd",
-                                            "linux",
-                                            "openbsd",
-                                            "sunos",
-                                            "windows",
-                                            "win32"
-                                        ],
-                                        "description": "Aliased platform list — `\"windows\"` is sugar for Node's `\"win32\"`."
-                                    },
-                                    {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "string",
-                                            "enum": [
-                                                "aix",
-                                                "darwin",
-                                                "freebsd",
-                                                "linux",
-                                                "openbsd",
-                                                "sunos",
-                                                "windows",
-                                                "win32"
-                                            ],
-                                            "description": "Aliased platform list — `\"windows\"` is sugar for Node's `\"win32\"`."
-                                        }
-                                    }
-                                ],
-                                "description": "Match `process.platform` (`\"linux\" | \"darwin\" | \"win32\" | \"freebsd\" | \"openbsd\" | \"sunos\" | \"aix\"`). Pass `\"windows\"` as an alias for `\"win32\"` — easier to remember and matches what people type."
-                            }
-                        },
-                        "additionalProperties": false,
-                        "description": "Predicate that gates execution. When the condition evaluates to `false` for the current environment, the task is skipped (marked `\"skipped\"`, not failed). Combine with `os`, `env`, `branch`, and `ci` clauses for granular control:\n\n  ```ts   when: { os: \"linux\", ci: true, env: \"DEPLOY_TOKEN\" }   ```"
-                    }
-                },
-                "additionalProperties": false
-            },
-            "description": "Workspace-wide task defaults keyed by target name. Applied universally to every project that exposes a matching target. Use `scopedTasks` when defaults should only apply to a subset of projects."
-        },
-        "scopedTasks": {
-            "type": "array",
-            "items": {
-                "$ref": "#/$defs/ScopedTasksBlock"
-            },
-            "description": "Cascading scoped-task blocks. Each block may narrow its tasks to a subset of projects via `match`. Blocks are evaluated in order; later blocks override earlier ones when the same field is set.\n\nMatch predicates are additive — if `match` is omitted, the block applies to every project."
         },
         "taskGroups": {
             "type": "object",
@@ -2940,6 +2546,519 @@
             "additionalProperties": false,
             "description": "Task runner options forwarded verbatim to `defaultTaskRunner`.\n\nIncludes `remoteCache` (HTTP or REAPI gRPC backend), `cacheDirectory`, `parallel`, `globalEnv`, `globalInputs`, etc. See `TaskRunnerOptions` for the full surface."
         },
+        "tasks": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "object",
+                "properties": {
+                    "aliases": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": "Alternate names that resolve to this target on the CLI. Useful for shortening long canonical names (`test` ↔ `t`) or for offering migration-friendly aliases when renaming targets. Aliases must be globally unique within the workspace."
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "One-line description surfaced by `vis list` and (in future) per-task `--help`. Kept short — longer docs belong in project READMEs or vis.config.ts comments."
+                    },
+                    "inferred": {
+                        "type": "boolean",
+                        "description": "True when the target was synthesized by a Project Crystal-style detector (see  {@link  ../inference } ) rather than declared by a package.json script, project.json, or vis.task.ts file. Surfaced by `vis list --inferred` and used by tooling to distinguish implicit defaults from explicit user intent."
+                    },
+                    "options": {
+                        "$ref": "#/$defs/VisTargetOptions",
+                        "description": "Vis-specific target options."
+                    },
+                    "preset": {
+                        "$ref": "#/$defs/TargetPreset",
+                        "description": "Preset applied before user-specified options."
+                    },
+                    "type": {
+                        "$ref": "#/$defs/TargetType",
+                        "description": "Semantic task type. Affects caching defaults and CI filtering.",
+                        "default": "test"
+                    },
+                    "always": {
+                        "type": "boolean",
+                        "description": "When `true`, this target runs after the main task graph completes — even if upstream tasks failed. Useful for cleanup, teardown, notifications, or anything that should fire regardless of build outcome. Always-tasks are not part of the normal dependency graph and never block other tasks."
+                    },
+                    "cache": {
+                        "type": "boolean",
+                        "description": "Whether this target is cacheable"
+                    },
+                    "cacheOnWarning": {
+                        "type": "boolean",
+                        "description": "When `false`, exit-0 runs whose terminal output matched any  {@link  TargetConfiguration.warningPattern }  are not seeded into the cache. Defaults to `true` — warnings are surfaced on the result (`hadWarnings: true`) but caching still happens, matching the \"succeeded with warnings is incremental\" behaviour rush, lage and wireit users have repeatedly asked for."
+                    },
+                    "cacheRestore": {
+                        "type": "object",
+                        "properties": {
+                            "preserveMtime": {
+                                "type": "boolean",
+                                "description": "Restore each file's modification time from the captured tar header (second precision). When `false`, restored files take the current wall-clock time, matching the legacy behaviour."
+                            },
+                            "preservePerms": {
+                                "type": "boolean",
+                                "description": "Restore each file's POSIX mode bits (rwx triplets, low 12 bits). When `false`, restored files take the process umask. Only meaningful on POSIX hosts; Windows ignores tar mode."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Fine-grained controls over how cached outputs are rehydrated. See  {@link  CacheRestoreOptions } . Both fields default to `true` (faithful restore); flip individually when downstream tooling needs the legacy \"now\"-stamped behaviour."
+                    },
+                    "command": {
+                        "type": "string",
+                        "description": "The command to run (alternative to executor)"
+                    },
+                    "configurations": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "object",
+                            "additionalProperties": {}
+                        },
+                        "description": "Named configurations (e.g., \"production\", \"development\")"
+                    },
+                    "concurrencyGroup": {
+                        "type": "string",
+                        "description": "Workspace-level concurrency group this target opts into. The scheduler caps the *combined* in-flight count of every task whose target carries the same group name to the value declared in  {@link  TaskRunnerOptions.concurrencyGroups } . Use this when several targets share an external resource (a single Postgres, a developer's Docker daemon, an account-wide deploy lock) so the cap follows the resource, not any single target name.\n\nTargets that name a group not declared in `concurrencyGroups` run uncapped — a typo shouldn't deadlock the graph. Caps don't apply to tasks marked `always: true`; those run in a separate finalisation phase outside the scheduler."
+                    },
+                    "dependsOn": {
+                        "type": "array",
+                        "items": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "dependencies": {
+                                            "type": "boolean",
+                                            "description": "Whether this is a dependency on the same project"
+                                        },
+                                        "params": {
+                                            "type": "string",
+                                            "enum": [
+                                                "forward",
+                                                "ignore"
+                                            ],
+                                            "description": "Params to pass through"
+                                        },
+                                        "projects": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "description": "The project name (if different from the current project)"
+                                        },
+                                        "target": {
+                                            "type": "string",
+                                            "description": "The target name"
+                                        }
+                                    },
+                                    "required": [
+                                        "target"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "Defines a dependency on another target."
+                                }
+                            ]
+                        },
+                        "description": "Other targets this target depends on"
+                    },
+                    "executor": {
+                        "type": "string",
+                        "description": "The executor/command to run"
+                    },
+                    "inputs": {
+                        "type": "array",
+                        "items": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "anyOf": [
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "fileset": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "base": {
+                                                                    "type": "string",
+                                                                    "enum": [
+                                                                        "package",
+                                                                        "workspace"
+                                                                    ],
+                                                                    "description": "Anchor for the pattern."
+                                                                },
+                                                                "pattern": {
+                                                                    "type": "string",
+                                                                    "description": "Glob pattern (may start with `!` for negation)."
+                                                                }
+                                                            },
+                                                            "required": [
+                                                                "base",
+                                                                "pattern"
+                                                            ],
+                                                            "additionalProperties": false,
+                                                            "description": "Object form of a fileset pattern, for anchoring to the workspace root."
+                                                        },
+                                                        {
+                                                            "type": "string"
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "fileset"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "An input based on file patterns.\n\n`fileset` may be a bare glob string (package-root relative) or an object form `{ pattern, base }` to anchor explicitly to the workspace root. Negation (`!` prefix) works in both forms."
+                                        },
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "runtime": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": [
+                                                "runtime"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "An input based on a runtime command."
+                                        },
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "env": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": [
+                                                "env"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "An input based on environment variables."
+                                        },
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "externalDependencies": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            },
+                                            "required": [
+                                                "externalDependencies"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "An input based on external dependency versions."
+                                        }
+                                    ],
+                                    "description": "Defines an input for cache invalidation."
+                                }
+                            ]
+                        },
+                        "description": "Input patterns for cache invalidation"
+                    },
+                    "maxConcurrent": {
+                        "type": "number",
+                        "description": "Maximum number of in-flight instances of this target across the whole graph. When set, the scheduler refuses to start an additional task whose `target.target` equals this target's name once the running count reaches `maxConcurrent`. Independent of `--parallel`: the global cap still bounds total in-flight tasks, and `maxConcurrent` further bounds the per-target subset.\n\nUse for tests/deploys that share an external resource (DB, port, mock server). Set to `1` to serialize. Values `<= 0` are ignored.\n\nIf multiple projects declare different values for the same target name, the runner uses the smallest declared cap. Caps don't apply to tasks marked `always: true`; those run in a separate finalisation phase outside the scheduler."
+                    },
+                    "outputs": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": "Output patterns produced by this target"
+                    },
+                    "parallelism": {
+                        "type": "boolean",
+                        "description": "Whether this target supports parallel execution"
+                    },
+                    "warningPattern": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        ],
+                        "description": "Regex source string(s) that mark a successful task as having emitted warnings. The orchestrator scans the task's combined terminal output after a 0-exit and, on first match, sets `hadWarnings` on the result. Combine with `cacheOnWarning: false` to skip caching for warning-tainted runs. Both bare strings and arrays are accepted; arrays are tested in order.\n\n  ```ts   warningPattern: [\"\\\\bwarning\\\\b\", \"TS\\\\d{4}\"]   ```"
+                    },
+                    "when": {
+                        "type": "object",
+                        "properties": {
+                            "branch": {
+                                "anyOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                ],
+                                "description": "Match against the current git branch (HEAD)."
+                            },
+                            "ci": {
+                                "type": "boolean",
+                                "description": "Run only when invoked inside CI when `true`, only outside CI when `false`. Detects CI via the `CI` env var (the convention GitHub Actions, GitLab, CircleCI, Jenkins, etc. all share)."
+                            },
+                            "env": {
+                                "anyOf": [
+                                    {
+                                        "anyOf": [
+                                            {
+                                                "type": "string"
+                                            },
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "equals": {
+                                                        "type": "string",
+                                                        "description": "Match this exact value. Mutually exclusive with `exists`."
+                                                    },
+                                                    "exists": {
+                                                        "type": "boolean",
+                                                        "description": "Assert the variable is set & non-empty (`true`) or unset/empty (`false`)."
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "description": "Variable name."
+                                                    }
+                                                },
+                                                "required": [
+                                                    "name"
+                                                ],
+                                                "additionalProperties": false
+                                            }
+                                        ],
+                                        "description": "An environment-variable match. The string form is shorthand for `{ name, exists: true }` (set + non-empty). The object form supports either presence assertions or exact-value matching."
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "equals": {
+                                                            "type": "string",
+                                                            "description": "Match this exact value. Mutually exclusive with `exists`."
+                                                        },
+                                                        "exists": {
+                                                            "type": "boolean",
+                                                            "description": "Assert the variable is set & non-empty (`true`) or unset/empty (`false`)."
+                                                        },
+                                                        "name": {
+                                                            "type": "string",
+                                                            "description": "Variable name."
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "name"
+                                                    ],
+                                                    "additionalProperties": false
+                                                }
+                                            ],
+                                            "description": "An environment-variable match. The string form is shorthand for `{ name, exists: true }` (set + non-empty). The object form supports either presence assertions or exact-value matching."
+                                        }
+                                    }
+                                ],
+                                "description": "Match against environment variables. A bare string asserts the variable is set and non-empty; the object form lets you match an exact value or just assert presence/absence."
+                            },
+                            "not": {
+                                "type": "object",
+                                "properties": {
+                                    "branch": {
+                                        "anyOf": [
+                                            {
+                                                "type": "string"
+                                            },
+                                            {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        ]
+                                    },
+                                    "ci": {
+                                        "type": "boolean"
+                                    },
+                                    "env": {
+                                        "anyOf": [
+                                            {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "equals": {
+                                                                "type": "string",
+                                                                "description": "Match this exact value. Mutually exclusive with `exists`."
+                                                            },
+                                                            "exists": {
+                                                                "type": "boolean",
+                                                                "description": "Assert the variable is set & non-empty (`true`) or unset/empty (`false`)."
+                                                            },
+                                                            "name": {
+                                                                "type": "string",
+                                                                "description": "Variable name."
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "name"
+                                                        ],
+                                                        "additionalProperties": false
+                                                    }
+                                                ],
+                                                "description": "An environment-variable match. The string form is shorthand for `{ name, exists: true }` (set + non-empty). The object form supports either presence assertions or exact-value matching."
+                                            },
+                                            {
+                                                "type": "array",
+                                                "items": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "string"
+                                                        },
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "equals": {
+                                                                    "type": "string",
+                                                                    "description": "Match this exact value. Mutually exclusive with `exists`."
+                                                                },
+                                                                "exists": {
+                                                                    "type": "boolean",
+                                                                    "description": "Assert the variable is set & non-empty (`true`) or unset/empty (`false`)."
+                                                                },
+                                                                "name": {
+                                                                    "type": "string",
+                                                                    "description": "Variable name."
+                                                                }
+                                                            },
+                                                            "required": [
+                                                                "name"
+                                                            ],
+                                                            "additionalProperties": false
+                                                        }
+                                                    ],
+                                                    "description": "An environment-variable match. The string form is shorthand for `{ name, exists: true }` (set + non-empty). The object form supports either presence assertions or exact-value matching."
+                                                }
+                                            }
+                                        ]
+                                    },
+                                    "os": {
+                                        "anyOf": [
+                                            {
+                                                "type": "string",
+                                                "enum": [
+                                                    "aix",
+                                                    "darwin",
+                                                    "freebsd",
+                                                    "linux",
+                                                    "openbsd",
+                                                    "sunos",
+                                                    "windows",
+                                                    "win32"
+                                                ],
+                                                "description": "Aliased platform list — `\"windows\"` is sugar for Node's `\"win32\"`."
+                                            },
+                                            {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "aix",
+                                                        "darwin",
+                                                        "freebsd",
+                                                        "linux",
+                                                        "openbsd",
+                                                        "sunos",
+                                                        "windows",
+                                                        "win32"
+                                                    ],
+                                                    "description": "Aliased platform list — `\"windows\"` is sugar for Node's `\"win32\"`."
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "description": "Negative mirrors. A task runs only when *all* `not.*` clauses fail."
+                            },
+                            "os": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "enum": [
+                                            "aix",
+                                            "darwin",
+                                            "freebsd",
+                                            "linux",
+                                            "openbsd",
+                                            "sunos",
+                                            "windows",
+                                            "win32"
+                                        ],
+                                        "description": "Aliased platform list — `\"windows\"` is sugar for Node's `\"win32\"`."
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "enum": [
+                                                "aix",
+                                                "darwin",
+                                                "freebsd",
+                                                "linux",
+                                                "openbsd",
+                                                "sunos",
+                                                "windows",
+                                                "win32"
+                                            ],
+                                            "description": "Aliased platform list — `\"windows\"` is sugar for Node's `\"win32\"`."
+                                        }
+                                    }
+                                ],
+                                "description": "Match `process.platform` (`\"linux\" | \"darwin\" | \"win32\" | \"freebsd\" | \"openbsd\" | \"sunos\" | \"aix\"`). Pass `\"windows\"` as an alias for `\"win32\"` — easier to remember and matches what people type."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Predicate that gates execution. When the condition evaluates to `false` for the current environment, the task is skipped (marked `\"skipped\"`, not failed). Combine with `os`, `env`, `branch`, and `ci` clauses for granular control:\n\n  ```ts   when: { os: \"linux\", ci: true, env: \"DEPLOY_TOKEN\" }   ```"
+                    }
+                },
+                "additionalProperties": false
+            },
+            "description": "Workspace-wide task defaults keyed by target name. Applied universally to every project that exposes a matching target. Use `scopedTasks` when defaults should only apply to a subset of projects."
+        },
         "toolchain": {
             "type": "object",
             "additionalProperties": false,
@@ -2964,6 +3083,9 @@
                 "tools": {
                     "type": "object",
                     "properties": {
+                        "aube": {
+                            "type": "string"
+                        },
                         "bun": {
                             "type": "string"
                         },
@@ -3156,6 +3278,23 @@
         "CodeownersConfig": {
             "type": "object",
             "properties": {
+                "blockMarker": {
+                    "type": "object",
+                    "properties": {
+                        "begin": {
+                            "type": "string"
+                        },
+                        "end": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "begin",
+                        "end"
+                    ],
+                    "additionalProperties": false,
+                    "description": "Markers that bracket the generated block when `preserveBlock` is set."
+                },
                 "globalPaths": {
                     "type": "object",
                     "additionalProperties": {
@@ -3166,6 +3305,13 @@
                     },
                     "description": "Workspace-level paths that apply outside any project (e.g., `.github/**`)."
                 },
+                "nestedIncludes": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Glob patterns used to discover nested `CODEOWNERS` files. Defaults to `[\"**\\/CODEOWNERS\"]`."
+                },
                 "orderBy": {
                     "type": "string",
                     "enum": [
@@ -3173,6 +3319,10 @@
                         "project-id"
                     ],
                     "description": "Sort order for generated entries — mirrors moon's `orderBy`."
+                },
+                "preserveBlock": {
+                    "type": "boolean",
+                    "description": "When set, the generated content is spliced between  {@link  CodeownersConfig.blockMarker }  markers in the existing file (markers are appended if missing) instead of overwriting the file."
                 },
                 "provider": {
                     "type": "string",
@@ -3183,9 +3333,29 @@
                         "other"
                     ],
                     "description": "Provider determines whether `channel` is emitted (GitHub supports it via comment)."
+                },
+                "regenerationCommand": {
+                    "type": "string",
+                    "description": "Header instruction shown to reviewers. Replaces the default \"Update each project's project.json `owners` field…\" line. Useful when the canonical regenerate path is a custom script."
+                },
+                "sources": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/CodeownersSource"
+                    },
+                    "description": "Enabled input sources. Defaults to `[\"project-json\"]`."
                 }
             },
             "additionalProperties": false
+        },
+        "CodeownersSource": {
+            "type": "string",
+            "enum": [
+                "nested-codeowners",
+                "package-json-maintainers",
+                "project-json"
+            ],
+            "description": "Recognised input sources for the codeowners aggregator.\n\n- `project-json` — owners declared on each project's `project.json`.   Canonical source; takes precedence over the other two on path conflicts.\n- `nested-codeowners` — `CODEOWNERS` files placed at arbitrary depth   in the workspace tree (excluding the generated root file).\n- `package-json-maintainers` — fallback that reads each project's   `package.json#maintainers` and emits one entry per project root for   projects with no `project.json owners`. GitHub handles are extracted   from each maintainer's `url` (e.g. `https://github.com/&lt;handle&gt;`)."
         },
         "VisPlugin": {
             "type": "object",
@@ -3371,272 +3541,6 @@
             ],
             "additionalProperties": false,
             "description": "One family of upstream-coupled packages.\n\n`members` is an exact-match list. `prefixes` accept any dep whose name starts with the prefix — useful for monorepos that ship many subpackages under one scope (e.g. `@babel/`, `@storybook/`, `@nx/`). A family can use either or both; a dep matching either list belongs to the family."
-        },
-        "PolicyName": {
-            "type": "string",
-            "enum": [
-                "firstSeen",
-                "installScripts",
-                "license",
-                "malware",
-                "publisherChange",
-                "score",
-                "unexpectedDeps",
-                "vulnerability"
-            ]
-        },
-        "StagedConfig": {
-            "type": "object",
-            "additionalProperties": {
-                "$ref": "#/$defs/StagedTask"
-            },
-            "description": "Config object mapping glob patterns (basename or path-style) to tasks. A top-level function form lets the user generate the entire config from the staged file list."
-        },
-        "StagedTask": {
-            "anyOf": [
-                {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                {
-                    "type": "string"
-                },
-                {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            ],
-            "description": "A task value as authored by the user. Command strings are split into argv and invoked with the matched file paths appended. Arrays run serially. Functions receive the matched paths and return further task values (possibly async). `{ title, task }` objects run `task` directly with no argv construction."
-        },
-        "VisTargetOptions": {
-            "type": "object",
-            "properties": {
-                "affectedFiles": {
-                    "$ref": "#/$defs/AffectedFilesMode",
-                    "description": "How to forward affected files to the task process. Only used when invoked via `vis affected &lt;target>`.",
-                    "default": false
-                },
-                "envFile": {
-                    "anyOf": [
-                        {
-                            "type": "boolean"
-                        },
-                        {
-                            "type": "string"
-                        },
-                        {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        }
-                    ],
-                    "description": "Load environment variables from dotenv file(s) before running.\n- `string`: a single file path (relative to project root).\n- `string[]`: multiple files — later entries override earlier ones,   so put more-specific files last (e.g. `[\".env\", \".env.local\"]`).\n- `true`: auto-cascade in the Next/Vite order:   `.env` → `.env.{NODE_ENV}` → `.env.local` → `.env.{NODE_ENV}.local`.   Skips `.env.local` when NODE_ENV is `test`, matching Next.js."
-                },
-                "interactive": {
-                    "type": "boolean",
-                    "description": "When true, the task is serialized with respect to parallel execution and must be run on the main process (claims stdin). Used for commands that read from the terminal.",
-                    "default": false
-                },
-                "internal": {
-                    "type": "boolean",
-                    "description": "When true, the task is hidden from CLI listings and can only be invoked as a dependency of another task.",
-                    "default": false
-                },
-                "killGracePeriodMs": {
-                    "type": "number",
-                    "description": "Milliseconds the timeout watchdog waits between sending SIGTERM and SIGKILL when the `timeout` budget fires. Tasks that ignore SIGTERM (e.g. test runners holding open child processes) get force-killed after this grace window so a stuck task can't outlive its budget.\n\nSet to `0` to skip escalation and rely on SIGTERM only.",
-                    "default": 5000
-                },
-                "mutex": {
-                    "type": "string",
-                    "description": "Serializes all tasks that share the same mutex name. Useful for tasks that contend on a shared resource (e.g., a database migration)."
-                },
-                "outputStyle": {
-                    "type": "string",
-                    "enum": [
-                        "normal",
-                        "quiet"
-                    ],
-                    "description": "Per-target output verbosity. Overrides the global `--output-style` flag for this specific target.\n\n- `\"normal\"` (default): print every task's terminal output\n- `\"quiet\"`: only print output when the task fails. Successful   and cached tasks contribute their status line and timing, but   their captured stdout/stderr is suppressed.\n\nUseful when a routinely-noisy task (a linter or test runner with verbose progress output) should stay quiet during green builds but reveal everything when it fails."
-                },
-                "persistent": {
-                    "type": "boolean",
-                    "description": "When true, the task is a long-running / never-ending process. Persistent tasks are scheduled last, execute after all cacheable tasks complete, and are never cached.",
-                    "default": false
-                },
-                "preset": {
-                    "$ref": "#/$defs/TargetPreset",
-                    "description": "A preset that pre-fills a common bundle of options. User-provided fields always take precedence over the preset."
-                },
-                "pty": {
-                    "type": "boolean",
-                    "description": "Run the task through a pseudo-terminal so color-aware tools (vitest, eslint, biome, …) render as if attached to a real TTY instead of a pipe. Output is captured via task-runner's `TerminalBuffer` so ANSI escapes are normalized into the final rendered state before reaching the reporter.\n\nForces cache to off — PTY output can include timing-dependent frames (spinners) that aren't safe to replay from a cache.",
-                    "default": false
-                },
-                "retryCount": {
-                    "type": "number",
-                    "description": "Number of times to retry the task on failure. Uses an exponential backoff by default (1s, 2s, 4s, ...).",
-                    "default": 0
-                },
-                "retryDelay": {
-                    "anyOf": [
-                        {
-                            "type": "number"
-                        },
-                        {
-                            "type": "string",
-                            "const": "exponential"
-                        }
-                    ],
-                    "description": "Delay between retry attempts in milliseconds, or `\"exponential\"` for 2^attempt * 1000 ms.",
-                    "default": "exponential"
-                },
-                "runFromWorkspaceRoot": {
-                    "type": "boolean",
-                    "description": "When true, the command executes with the workspace root as CWD instead of the project root.",
-                    "default": false
-                },
-                "runInCI": {
-                    "$ref": "#/$defs/RunInCI",
-                    "description": "Controls whether the task runs in CI environments.",
-                    "default": true
-                },
-                "runnerTags": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    },
-                    "description": "Capability tags that gate this task to runners advertising the same tag. The CLI's `--runner-tags=gpu,slow` flag (or `VIS_RUNNER_TAGS` env var) tells vis what the current runner supports; tasks whose `runnerTags` share at least one tag with the runner set are eligible. Untagged tasks (no `runnerTags` or an empty array) are general-purpose and always run.\n\nUse this for special-purpose CI lanes — e.g. a GPU runner that should only pick up visual-regression suites, or a nightly job that runs `slow` integration tests. When neither flag nor env is set, the filter is inactive and every task runs."
-                },
-                "service": {
-                    "$ref": "#/$defs/ServiceConfig",
-                    "description": "Marks this target as a long-lived service that can be started via `vis service start &lt;id>` and auto-attached when other tasks declare it in `dependsOn`. Implies persistent + non-cacheable behaviour (set `preset: \"server\"` to inherit the rest of the bundle).\n\nThe presence of this block — not `preset: \"server\"` alone — is what makes a target eligible for the cross-invocation registry. `preset: \"server\"` without `service` keeps today's in-run-only behaviour."
-                },
-                "shell": {
-                    "type": "string",
-                    "description": "Per-target shell override. When set, the command runs through this shell instead of the platform default."
-                },
-                "strictEnv": {
-                    "type": "boolean",
-                    "description": "Override the workspace `strictEnv` setting for this target. When truthy, the target fails if its command references an env var that resolves to neither the task's effective env nor `process.env`. When `false`, the target opts out of a workspace `strictEnv: true` (e.g. for a one-off command that legitimately tolerates an unset variable)."
-                },
-                "timeout": {
-                    "type": "number",
-                    "description": "Maximum wall-clock milliseconds a single task run is allowed to take before being killed. `0` / `undefined` means no timeout.\n\nWhen the timeout fires the task is sent SIGTERM and, if it has not exited within `killGracePeriodMs`, SIGKILL. The task exits with a failure status carrying the `[timeout]` marker in `terminalOutput`. Retries count per-attempt, not cumulatively.\n\nUse this to prevent runaway tasks from eating CI wall-clock time up to the job-level cutoff."
-                },
-                "unixShell": {
-                    "type": "string",
-                    "description": "Per-target unix shell override, used on Linux and macOS. Takes precedence over `shell` on unix-like systems."
-                },
-                "windowsShell": {
-                    "type": "string",
-                    "description": "Per-target windows shell override, used on Windows. Takes precedence over `shell` on Windows."
-                }
-            },
-            "additionalProperties": false,
-            "description": "Vis-specific target options that extend the task-runner's base `TargetConfiguration`. These live under `target.options` and are interpreted by vis before handing the task off to task-runner.\n\nConditional execution (`when:`) and finally tasks (`always:`) live at the target top level, not under `options` — they're handled by the task-runner orchestrator. See `@visulima/task-runner`'s `WhenCondition`."
-        },
-        "AffectedFilesMode": {
-            "type": [
-                "string",
-                "boolean"
-            ],
-            "enum": [
-                "args",
-                "both",
-                "env",
-                false
-            ],
-            "description": "Controls how affected files are forwarded to a task.\n- `false` (default): Do not forward.\n- `\"args\"`: Append affected paths as additional command arguments.\n- `\"env\"`: Expose them via `VIS_AFFECTED_FILES` environment variable.\n- `\"both\"`: Both of the above."
-        },
-        "TargetPreset": {
-            "type": "string",
-            "enum": [
-                "server",
-                "utility"
-            ],
-            "description": "Preset bundles of target options.\n- `server`: Long-running local dev server — caching off, not in CI,   interactive, persistent.\n- `utility`: Short-lived helper — caching off, not in CI."
-        },
-        "RunInCI": {
-            "anyOf": [
-                {
-                    "type": "string",
-                    "const": "affected"
-                },
-                {
-                    "type": "string",
-                    "const": "always"
-                },
-                {
-                    "type": "boolean"
-                }
-            ],
-            "description": "Controls whether a target runs in CI.\n- `true` (default): Always run.\n- `false`: Never run in CI (local-only).\n- `\"affected\"`: Only when the project is affected by the current change set.\n- `\"always\"`: Always run, even if unaffected."
-        },
-        "ServiceConfig": {
-            "type": "object",
-            "properties": {
-                "env": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "string"
-                    },
-                    "description": "Env vars to expose to dependent tasks when this service is registered. Merged into the dependent task's env after the task's own envFile and before the task's explicit `env` overrides — the dependent task wins on key collisions.\n\nNote: only this `env` map propagates to dependents. The service target's own `envFile` is loaded into the **service process** at start time but is *not* forwarded — dependents must declare any shared values they need either here or in their own envFile. This boundary is intentional: envFiles often contain operator-only secrets (deploy keys, admin tokens) that should not leak into downstream test commands."
-                },
-                "killGracePeriodMs": {
-                    "type": "number",
-                    "description": "Grace period in milliseconds between SIGTERM and SIGKILL when the service is stopped.",
-                    "default": 5000
-                },
-                "port": {
-                    "type": "number",
-                    "description": "Optional port the service listens on. Used as the default for `readiness.tcp.port` when no explicit probe is configured, and surfaced by `vis service list`."
-                },
-                "readiness": {
-                    "type": "object",
-                    "properties": {
-                        "tcp": {
-                            "type": "object",
-                            "properties": {
-                                "host": {
-                                    "type": "string"
-                                },
-                                "port": {
-                                    "type": "number"
-                                },
-                                "timeoutMs": {
-                                    "type": "number"
-                                }
-                            },
-                            "required": [
-                                "port"
-                            ],
-                            "additionalProperties": false
-                        }
-                    },
-                    "required": [
-                        "tcp"
-                    ],
-                    "additionalProperties": false,
-                    "description": "Readiness probe configuration. v1 supports TCP only."
-                }
-            },
-            "additionalProperties": false,
-            "description": "Configuration block declared on a target to mark it as a long-lived \"service\" — eligible to be started/stopped via `vis service` and auto-attached when other tasks depend on it.\n\nTargets must also carry `preset: \"server\"` (or the equivalent `persistent: true`) for the service-mode lifecycle to apply."
-        },
-        "TargetType": {
-            "type": "string",
-            "enum": [
-                "build",
-                "run",
-                "test"
-            ],
-            "description": "Semantic classification for a target.\n- `build`: Generates one or more artifacts; cached by default.\n- `test`: Validation task (lint, typecheck, unit test). Default type.\n- `run`: One-off or long-running process. Not cached by default."
         },
         "ScopedTasksBlock": {
             "type": "object",
@@ -4301,6 +4205,272 @@
             },
             "additionalProperties": false,
             "description": "A predicate used by  {@link  VisConfig.scopedTasks } . All listed constraints must match for the block to apply."
+        },
+        "VisTargetOptions": {
+            "type": "object",
+            "properties": {
+                "affectedFiles": {
+                    "$ref": "#/$defs/AffectedFilesMode",
+                    "description": "How to forward affected files to the task process. Only used when invoked via `vis affected &lt;target>`.",
+                    "default": false
+                },
+                "envFile": {
+                    "anyOf": [
+                        {
+                            "type": "boolean"
+                        },
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "description": "Load environment variables from dotenv file(s) before running.\n- `string`: a single file path (relative to project root).\n- `string[]`: multiple files — later entries override earlier ones,   so put more-specific files last (e.g. `[\".env\", \".env.local\"]`).\n- `true`: auto-cascade in the Next/Vite order:   `.env` → `.env.{NODE_ENV}` → `.env.local` → `.env.{NODE_ENV}.local`.   Skips `.env.local` when NODE_ENV is `test`, matching Next.js."
+                },
+                "interactive": {
+                    "type": "boolean",
+                    "description": "When true, the task is serialized with respect to parallel execution and must be run on the main process (claims stdin). Used for commands that read from the terminal.",
+                    "default": false
+                },
+                "internal": {
+                    "type": "boolean",
+                    "description": "When true, the task is hidden from CLI listings and can only be invoked as a dependency of another task.",
+                    "default": false
+                },
+                "killGracePeriodMs": {
+                    "type": "number",
+                    "description": "Milliseconds the timeout watchdog waits between sending SIGTERM and SIGKILL when the `timeout` budget fires. Tasks that ignore SIGTERM (e.g. test runners holding open child processes) get force-killed after this grace window so a stuck task can't outlive its budget.\n\nSet to `0` to skip escalation and rely on SIGTERM only.",
+                    "default": 5000
+                },
+                "mutex": {
+                    "type": "string",
+                    "description": "Serializes all tasks that share the same mutex name. Useful for tasks that contend on a shared resource (e.g., a database migration)."
+                },
+                "outputStyle": {
+                    "type": "string",
+                    "enum": [
+                        "normal",
+                        "quiet"
+                    ],
+                    "description": "Per-target output verbosity. Overrides the global `--output-style` flag for this specific target.\n\n- `\"normal\"` (default): print every task's terminal output\n- `\"quiet\"`: only print output when the task fails. Successful   and cached tasks contribute their status line and timing, but   their captured stdout/stderr is suppressed.\n\nUseful when a routinely-noisy task (a linter or test runner with verbose progress output) should stay quiet during green builds but reveal everything when it fails."
+                },
+                "persistent": {
+                    "type": "boolean",
+                    "description": "When true, the task is a long-running / never-ending process. Persistent tasks are scheduled last, execute after all cacheable tasks complete, and are never cached.",
+                    "default": false
+                },
+                "preset": {
+                    "$ref": "#/$defs/TargetPreset",
+                    "description": "A preset that pre-fills a common bundle of options. User-provided fields always take precedence over the preset."
+                },
+                "pty": {
+                    "type": "boolean",
+                    "description": "Run the task through a pseudo-terminal so color-aware tools (vitest, eslint, biome, …) render as if attached to a real TTY instead of a pipe. Output is captured via task-runner's `TerminalBuffer` so ANSI escapes are normalized into the final rendered state before reaching the reporter.\n\nForces cache to off — PTY output can include timing-dependent frames (spinners) that aren't safe to replay from a cache.",
+                    "default": false
+                },
+                "retryCount": {
+                    "type": "number",
+                    "description": "Number of times to retry the task on failure. Uses an exponential backoff by default (1s, 2s, 4s, ...).",
+                    "default": 0
+                },
+                "retryDelay": {
+                    "anyOf": [
+                        {
+                            "type": "number"
+                        },
+                        {
+                            "type": "string",
+                            "const": "exponential"
+                        }
+                    ],
+                    "description": "Delay between retry attempts in milliseconds, or `\"exponential\"` for 2^attempt * 1000 ms.",
+                    "default": "exponential"
+                },
+                "runFromWorkspaceRoot": {
+                    "type": "boolean",
+                    "description": "When true, the command executes with the workspace root as CWD instead of the project root.",
+                    "default": false
+                },
+                "runInCI": {
+                    "$ref": "#/$defs/RunInCI",
+                    "description": "Controls whether the task runs in CI environments.",
+                    "default": true
+                },
+                "runnerTags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Capability tags that gate this task to runners advertising the same tag. The CLI's `--runner-tags=gpu,slow` flag (or `VIS_RUNNER_TAGS` env var) tells vis what the current runner supports; tasks whose `runnerTags` share at least one tag with the runner set are eligible. Untagged tasks (no `runnerTags` or an empty array) are general-purpose and always run.\n\nUse this for special-purpose CI lanes — e.g. a GPU runner that should only pick up visual-regression suites, or a nightly job that runs `slow` integration tests. When neither flag nor env is set, the filter is inactive and every task runs."
+                },
+                "service": {
+                    "$ref": "#/$defs/ServiceConfig",
+                    "description": "Marks this target as a long-lived service that can be started via `vis service start &lt;id>` and auto-attached when other tasks declare it in `dependsOn`. Implies persistent + non-cacheable behaviour (set `preset: \"server\"` to inherit the rest of the bundle).\n\nThe presence of this block — not `preset: \"server\"` alone — is what makes a target eligible for the cross-invocation registry. `preset: \"server\"` without `service` keeps today's in-run-only behaviour."
+                },
+                "shell": {
+                    "type": "string",
+                    "description": "Per-target shell override. When set, the command runs through this shell instead of the platform default."
+                },
+                "strictEnv": {
+                    "type": "boolean",
+                    "description": "Override the workspace `strictEnv` setting for this target. When truthy, the target fails if its command references an env var that resolves to neither the task's effective env nor `process.env`. When `false`, the target opts out of a workspace `strictEnv: true` (e.g. for a one-off command that legitimately tolerates an unset variable)."
+                },
+                "timeout": {
+                    "type": "number",
+                    "description": "Maximum wall-clock milliseconds a single task run is allowed to take before being killed. `0` / `undefined` means no timeout.\n\nWhen the timeout fires the task is sent SIGTERM and, if it has not exited within `killGracePeriodMs`, SIGKILL. The task exits with a failure status carrying the `[timeout]` marker in `terminalOutput`. Retries count per-attempt, not cumulatively.\n\nUse this to prevent runaway tasks from eating CI wall-clock time up to the job-level cutoff."
+                },
+                "unixShell": {
+                    "type": "string",
+                    "description": "Per-target unix shell override, used on Linux and macOS. Takes precedence over `shell` on unix-like systems."
+                },
+                "windowsShell": {
+                    "type": "string",
+                    "description": "Per-target windows shell override, used on Windows. Takes precedence over `shell` on Windows."
+                }
+            },
+            "additionalProperties": false,
+            "description": "Vis-specific target options that extend the task-runner's base `TargetConfiguration`. These live under `target.options` and are interpreted by vis before handing the task off to task-runner.\n\nConditional execution (`when:`) and finally tasks (`always:`) live at the target top level, not under `options` — they're handled by the task-runner orchestrator. See `@visulima/task-runner`'s `WhenCondition`."
+        },
+        "AffectedFilesMode": {
+            "type": [
+                "string",
+                "boolean"
+            ],
+            "enum": [
+                "args",
+                "both",
+                "env",
+                false
+            ],
+            "description": "Controls how affected files are forwarded to a task.\n- `false` (default): Do not forward.\n- `\"args\"`: Append affected paths as additional command arguments.\n- `\"env\"`: Expose them via `VIS_AFFECTED_FILES` environment variable.\n- `\"both\"`: Both of the above."
+        },
+        "TargetPreset": {
+            "type": "string",
+            "enum": [
+                "server",
+                "utility"
+            ],
+            "description": "Preset bundles of target options.\n- `server`: Long-running local dev server — caching off, not in CI,   interactive, persistent.\n- `utility`: Short-lived helper — caching off, not in CI."
+        },
+        "RunInCI": {
+            "anyOf": [
+                {
+                    "type": "string",
+                    "const": "affected"
+                },
+                {
+                    "type": "string",
+                    "const": "always"
+                },
+                {
+                    "type": "boolean"
+                }
+            ],
+            "description": "Controls whether a target runs in CI.\n- `true` (default): Always run.\n- `false`: Never run in CI (local-only).\n- `\"affected\"`: Only when the project is affected by the current change set.\n- `\"always\"`: Always run, even if unaffected."
+        },
+        "ServiceConfig": {
+            "type": "object",
+            "properties": {
+                "env": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    },
+                    "description": "Env vars to expose to dependent tasks when this service is registered. Merged into the dependent task's env after the task's own envFile and before the task's explicit `env` overrides — the dependent task wins on key collisions.\n\nNote: only this `env` map propagates to dependents. The service target's own `envFile` is loaded into the **service process** at start time but is *not* forwarded — dependents must declare any shared values they need either here or in their own envFile. This boundary is intentional: envFiles often contain operator-only secrets (deploy keys, admin tokens) that should not leak into downstream test commands."
+                },
+                "killGracePeriodMs": {
+                    "type": "number",
+                    "description": "Grace period in milliseconds between SIGTERM and SIGKILL when the service is stopped.",
+                    "default": 5000
+                },
+                "port": {
+                    "type": "number",
+                    "description": "Optional port the service listens on. Used as the default for `readiness.tcp.port` when no explicit probe is configured, and surfaced by `vis service list`."
+                },
+                "readiness": {
+                    "type": "object",
+                    "properties": {
+                        "tcp": {
+                            "type": "object",
+                            "properties": {
+                                "host": {
+                                    "type": "string"
+                                },
+                                "port": {
+                                    "type": "number"
+                                },
+                                "timeoutMs": {
+                                    "type": "number"
+                                }
+                            },
+                            "required": [
+                                "port"
+                            ],
+                            "additionalProperties": false
+                        }
+                    },
+                    "required": [
+                        "tcp"
+                    ],
+                    "additionalProperties": false,
+                    "description": "Readiness probe configuration. v1 supports TCP only."
+                }
+            },
+            "additionalProperties": false,
+            "description": "Configuration block declared on a target to mark it as a long-lived \"service\" — eligible to be started/stopped via `vis service` and auto-attached when other tasks depend on it.\n\nTargets must also carry `preset: \"server\"` (or the equivalent `persistent: true`) for the service-mode lifecycle to apply."
+        },
+        "TargetType": {
+            "type": "string",
+            "enum": [
+                "build",
+                "run",
+                "test"
+            ],
+            "description": "Semantic classification for a target.\n- `build`: Generates one or more artifacts; cached by default.\n- `test`: Validation task (lint, typecheck, unit test). Default type.\n- `run`: One-off or long-running process. Not cached by default."
+        },
+        "PolicyName": {
+            "type": "string",
+            "enum": [
+                "firstSeen",
+                "installScripts",
+                "license",
+                "malware",
+                "publisherChange",
+                "score",
+                "unexpectedDeps",
+                "vulnerability"
+            ]
+        },
+        "StagedConfig": {
+            "type": "object",
+            "additionalProperties": {
+                "$ref": "#/$defs/StagedTask"
+            },
+            "description": "Config object mapping glob patterns (basename or path-style) to tasks. A top-level function form lets the user generate the entire config from the staged file list."
+        },
+        "StagedTask": {
+            "anyOf": [
+                {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            ],
+            "description": "A task value as authored by the user. Command strings are split into argv and invoked with the matched file paths appended. Arrays run serially. Functions receive the matched paths and return further task values (possibly async). `{ title, task }` objects run `task` directly with no argv construction."
         }
     }
 }

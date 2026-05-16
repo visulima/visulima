@@ -1242,6 +1242,44 @@ export interface VisConfig {
         blockExoticSubdeps?: boolean;
 
         /**
+         * deps.dev (Google Open Source Insights) data-source configuration.
+         * Public, unauthenticated; pulls Scorecard data + advisories from
+         * `api.deps.dev`. Complements or replaces Socket.dev. Heavily cached.
+         * @see https://docs.deps.dev/api/v3/
+         */
+        depsDev?: {
+            /**
+             * Cache TTL for advisory entries (immutable once published).
+             * @default 604_800_000 (7 days)
+             */
+            advisoryCacheTtlMs?: number;
+
+            /**
+             * Enable deps.dev scanning on install/update/check/audit commands.
+             * @default false
+             */
+            enabled?: boolean;
+
+            /**
+             * Cache TTL for OpenSSF Scorecard project data (refreshes weekly).
+             * @default 86_400_000 (24 hours)
+             */
+            projectCacheTtlMs?: number;
+
+            /**
+             * Request timeout in milliseconds.
+             * @default 15_000
+             */
+            timeoutMs?: number;
+
+            /**
+             * Cache TTL for npm version metadata (immutable).
+             * @default 604_800_000 (7 days)
+             */
+            versionCacheTtlMs?: number;
+        };
+
+        /**
          * Pre-install marshall pipeline — packument-derived supply-chain
          * gates (author, provenance, new-bin, metadata, downloads,
          * expired-domains, signatures, archived-repo) that run before
@@ -1275,6 +1313,11 @@ export interface VisConfig {
                 /** Days since the resolved version was published — warning threshold. */
                 recentVersionWarnDays?: number;
             };
+            /** npm `deprecated`-flag check on the resolved version. */
+            deprecation?: {
+                allowlist?: string[];
+                enabled?: boolean;
+            };
             /** Monthly download-count floor. */
             downloads?: {
                 allowlist?: string[];
@@ -1306,6 +1349,15 @@ export interface VisConfig {
             newBin?: {
                 allowlist?: string[];
                 enabled?: boolean;
+            };
+            /** Whole-package age heuristics (newly created / unmaintained). */
+            packageAge?: {
+                allowlist?: string[];
+                enabled?: boolean;
+                /** Package created fewer than this many days ago → error. Default 22. */
+                newPackageDays?: number;
+                /** No publish within this many days → warning. Default 365. */
+                unmaintainedDays?: number;
             };
             /** Provenance regression check. */
             provenance?: {
@@ -1553,29 +1605,6 @@ export interface VisConfig {
                     enabled?: boolean;
                 };
             };
-        };
-
-        /**
-         * deps.dev (Google Open Source Insights) data-source configuration.
-         * Public, unauthenticated; pulls Scorecard data + advisories from
-         * `api.deps.dev`. Complements or replaces Socket.dev. Heavily cached.
-         * @see https://docs.deps.dev/api/v3/
-         */
-        depsDev?: {
-            /** Cache TTL for advisory entries (immutable once published). @default 604_800_000 (7 days) */
-            advisoryCacheTtlMs?: number;
-
-            /** Enable deps.dev scanning on install/update/check/audit commands. @default false */
-            enabled?: boolean;
-
-            /** Cache TTL for OpenSSF Scorecard project data (refreshes weekly). @default 86_400_000 (24 hours) */
-            projectCacheTtlMs?: number;
-
-            /** Request timeout in milliseconds. @default 15_000 */
-            timeoutMs?: number;
-
-            /** Cache TTL for npm version metadata (immutable). @default 604_800_000 (7 days) */
-            versionCacheTtlMs?: number;
         };
 
         /**
