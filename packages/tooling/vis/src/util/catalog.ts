@@ -1582,7 +1582,7 @@ const formatVersionString = (parsed: ParsedVersion | undefined): string => (pars
 const enrichWithSecurity = async (
     outdated: OutdatedEntry[],
     entries: { catalogName: string; packageName: string; range: string }[],
-    securityProviders?: readonly SecurityProvider[],
+    securityProviders?: ReadonlyArray<SecurityProvider>,
     acceptedRisks?: Record<string, AcceptedRisk>,
 ): Promise<void> => {
     // Check current versions for known vulnerabilities
@@ -1740,7 +1740,7 @@ const checkOutdated = async (
     npmrcConfig?: NpmrcConfig,
     onProgress?: (current: number, total: number) => void,
     workspaceRoot?: string,
-    securityProviders?: readonly SecurityProvider[],
+    securityProviders?: ReadonlyArray<SecurityProvider>,
     acceptedRisks?: Record<string, AcceptedRisk>,
 ): Promise<CheckOutdatedResult> => {
     const hasSecurityProviders = Boolean(securityProviders && securityProviders.length > 0);

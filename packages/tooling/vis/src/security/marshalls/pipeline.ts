@@ -20,6 +20,8 @@ import { runArchivedRepoMarshall } from "./archived-repo";
 import type { AuthorFinding } from "./author";
 import { runAuthorMarshall } from "./author";
 import { DEFAULT_MARSHALL_CONCURRENCY, mapWithConcurrency } from "./concurrency";
+import type { DeprecationFinding } from "./deprecation";
+import { runDeprecationMarshall } from "./deprecation";
 import type { DownloadFinding } from "./downloads";
 import { runDownloadsMarshall } from "./downloads";
 import type { ExpiredDomainFinding } from "./expired-domains";
@@ -30,6 +32,8 @@ import type { MetadataFinding } from "./metadata";
 import { runMetadataMarshall } from "./metadata";
 import type { NewBinFinding } from "./new-bin";
 import { runNewBinMarshall } from "./new-bin";
+import type { PackageAgeFinding } from "./package-age";
+import { runPackageAgeMarshall } from "./package-age";
 import { getPackument } from "./packument";
 import type { ProvenanceFinding } from "./provenance";
 import { runProvenanceMarshall } from "./provenance";
@@ -52,10 +56,12 @@ export interface MarshallPipelineConfig {
         recentVersionErrorDays?: number;
         recentVersionWarnDays?: number;
     };
+    deprecation?: { allowlist?: string[]; enabled?: boolean };
     downloads?: { allowlist?: string[]; enabled?: boolean; errorThreshold?: number; warnThreshold?: number };
     expiredDomains?: { allowDomains?: string[]; allowlist?: string[]; dnsServers?: string[]; enabled?: boolean; timeoutMs?: number };
     metadata?: { allowlist?: string[]; checks?: ("license" | "readme" | "repo")[]; enabled?: boolean };
     newBin?: { allowlist?: string[]; enabled?: boolean };
+    packageAge?: { allowlist?: string[]; enabled?: boolean; newPackageDays?: number; unmaintainedDays?: number };
     provenance?: { allowlist?: string[]; enabled?: boolean };
     signatures?: { allowlist?: string[]; enabled?: boolean; keysUrl?: string; treatExpiredAs?: "error" | "warning" };
 }
@@ -84,6 +90,27 @@ const formatProvenanceFinding = (finding: ProvenanceFinding): MarshallFinding =>
         packageName: finding.packageName,
         severity: "error",
         suggestedAction: `Investigate why ${finding.version} dropped sigstore attestations.`,
+    };
+};
+
+const formatDeprecationFinding = (finding: DeprecationFinding): MarshallFinding => {
+    return {
+        marshall: "deprecation",
+        message: `${finding.packageName}@${finding.version} is deprecated: ${finding.reason}`,
+        packageName: finding.packageName,
+        severity: "error",
+        suggestedAction: `Migrate off ${finding.packageName} or add it to security.marshalls.deprecation.allowlist if the deprecation is acceptable.`,
+    };
+};
+
+const formatPackageAgeFinding = (finding: PackageAgeFinding): MarshallFinding => {
+    return {
+        marshall: "packageAge",
+        message: finding.kind === "new-package"
+            ? `Package first published ${String(finding.days)} day${finding.days === 1 ? "" : "s"} ago — brand-new package names are a common typosquat/dependency-confusion signature.`
+            : `No new release in ${String(finding.days)} days — package may be unmaintained.`,
+        packageName: finding.packageName,
+        severity: finding.severity,
     };
 };
 
@@ -161,7 +188,7 @@ const formatArchivedRepoFinding = (finding: { archivedAt?: string; kind: "archiv
  * is disabled we skip the prefetch entirely — no point warming a cache
  * nobody will read.
  */
-const PACKUMENT_READERS = ["author", "provenance", "newBin", "metadata", "expiredDomains", "signatures", "archivedRepo"] as const satisfies ReadonlyArray<keyof MarshallPipelineConfig>;
+const PACKUMENT_READERS = ["author", "provenance", "newBin", "metadata", "deprecation", "packageAge", "expiredDomains", "signatures", "archivedRepo"] as const satisfies ReadonlyArray<keyof MarshallPipelineConfig>;
 
 const anyPackumentReaderEnabled = (config: MarshallPipelineConfig): boolean =>
     PACKUMENT_READERS.some((name) => {
@@ -298,6 +325,34 @@ export const runMarshallPipeline = async (
             });
 
             return results.map((finding) => formatMetadataFinding(finding));
+        });
+    }
+
+    if (config.deprecation?.enabled !== false) {
+        schedule(async () => {
+            const results = await runDeprecationMarshall(packages, {
+                allowlist: config.deprecation?.allowlist,
+                concurrency,
+                workspaceRoot: options.workspaceRoot,
+            });
+
+            return results.map((finding) => formatDeprecationFinding(finding));
+        });
+    }
+
+    if (config.packageAge?.enabled !== false) {
+        schedule(async () => {
+            const results = await runPackageAgeMarshall(packages, {
+                allowlist: config.packageAge?.allowlist,
+                concurrency,
+                thresholds: {
+                    newPackageDays: config.packageAge?.newPackageDays,
+                    unmaintainedDays: config.packageAge?.unmaintainedDays,
+                },
+                workspaceRoot: options.workspaceRoot,
+            });
+
+            return results.map((finding) => formatPackageAgeFinding(finding));
         });
     }
 

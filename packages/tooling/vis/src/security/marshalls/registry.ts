@@ -27,6 +27,7 @@
 export type MarshallName
     = | "archivedRepo"
         | "author"
+        | "deprecation"
         | "depsDev"
         | "downloads"
         | "expiredDomains"
@@ -37,6 +38,7 @@ export type MarshallName
         | "metadata"
         | "minReleaseAge"
         | "newBin"
+        | "packageAge"
         | "provenance"
         | "publisherChange"
         | "score"
@@ -69,6 +71,8 @@ export const ALL_MARSHALLS: ReadonlyArray<MarshallName> = [
     "newBin",
     "downloads",
     "metadata",
+    "deprecation",
+    "packageAge",
     "archivedRepo",
     "socket",
     "depsDev",

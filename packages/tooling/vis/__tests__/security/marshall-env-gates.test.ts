@@ -65,19 +65,17 @@ vi.mock(import("../../src/security/socket-security"), async (importOriginal) => 
 });
 
 const fetchAllReportsMock = vi.fn(async () => new Map());
-const buildEnabledProvidersMock = vi.fn(() => {
-    return [
-        {
-            clearCache: vi.fn(() => 0),
-            displayName: "Socket.dev",
-            fetchReports: vi.fn(async () => new Map()),
-            getCacheStats: vi.fn(() => {
-                return { entries: 0, newestEntry: undefined, oldestEntry: undefined, totalSizeBytes: 0 };
-            }),
-            id: "socket",
-        },
-    ];
-});
+const buildEnabledProvidersMock = vi.fn(() => [
+    {
+        clearCache: vi.fn(() => 0),
+        displayName: "Socket.dev",
+        fetchReports: vi.fn(async () => new Map()),
+        getCacheStats: vi.fn(() => {
+            return { entries: 0, newestEntry: undefined, oldestEntry: undefined, totalSizeBytes: 0 };
+        }),
+        id: "socket",
+    },
+]);
 
 vi.mock(import("../../src/security/registry"), () => {
     return {
