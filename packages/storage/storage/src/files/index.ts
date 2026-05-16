@@ -128,7 +128,7 @@ const toFileObject = (file: StorageFile, fallbackKey?: string): FileObject => {
 /**
  * Files-SDK–style unified facade over a {@link BaseStorage} instance.
  *
- * Provides a small, consistent surface (`upload`, `download`, `head`, `delete`, `copy`,
+ * Provides a small, consistent surface (`upload`, `download`, `head`, `exists`, `delete`, `copy`,
  * `list`, `url`, `signedUploadUrl`) and a `raw` escape hatch to the adapter's native client.
  *
  * The facade uses the user-supplied `key` as both the storage path and the metadata id,
@@ -220,6 +220,16 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
         const file = await this.adapter.getMeta(key);
 
         return toFileObject(file, key);
+    }
+
+    /**
+     * Resolves to `true` when an object exists at `key`, `false` otherwise. Never throws for a
+     * missing object.
+     */
+    public async exists(key: string): Promise<boolean> {
+        BaseStorage.assertSafeId(key);
+
+        return this.adapter.exists({ id: key });
     }
 
     public async delete(key: string): Promise<void> {

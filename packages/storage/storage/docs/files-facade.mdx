@@ -1,6 +1,6 @@
 # `Files` facade
 
-Files-SDK–style unified facade over any `BaseStorage` adapter. Eight methods + a `.raw` escape hatch, web-standard body types, provider-agnostic return shape.
+Files-SDK–style unified facade over any `BaseStorage` adapter. Nine methods + a `.raw` escape hatch, web-standard body types, provider-agnostic return shape.
 
 ```ts
 import { Files } from "@visulima/storage";
@@ -29,6 +29,7 @@ For client-driven uploads (browser forms, large resumable files, chunked transfe
 | `upload`          | `(key, body, opts?) → Promise<FileObject>`           | Accepts any [supported body type](#body-types).                   |
 | `download`        | `(key) → Promise<DownloadResult>`                    | Returns `{ body: Buffer, ...FileObject }`.                        |
 | `head`            | `(key) → Promise<FileObject>`                        | Metadata only.                                                    |
+| `exists`          | `(key) → Promise<boolean>`                           | Never throws for a missing object.                                |
 | `delete`          | `(key) → Promise<void>`                              | Idempotent on most providers.                                     |
 | `copy`            | `(source, destination, opts?) → Promise<FileObject>` | Server-side where supported; download + re-upload otherwise.      |
 | `list`            | `(opts?) → Promise<FileObject[]>`                    | Optional `prefix` filter and `limit`.                             |

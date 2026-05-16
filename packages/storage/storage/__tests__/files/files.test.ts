@@ -154,6 +154,32 @@ describe("files facade", () => {
         });
     });
 
+    describe("exists", () => {
+        it("returns true for an existing object and false for a missing one", async () => {
+            const { facade } = makeFiles(directory);
+
+            await facade.upload("present.txt", "hi");
+
+            await expect(facade.exists("present.txt")).resolves.toBe(true);
+            await expect(facade.exists("absent.txt")).resolves.toBe(false);
+        });
+
+        it("returns false after the object is deleted", async () => {
+            const { facade } = makeFiles(directory);
+
+            await facade.upload("gone.txt", "bye");
+            await facade.delete("gone.txt");
+
+            await expect(facade.exists("gone.txt")).resolves.toBe(false);
+        });
+
+        it("rejects an unsafe key", async () => {
+            const { facade } = makeFiles(directory);
+
+            await expect(facade.exists("../escape.txt")).rejects.toThrow(/Invalid file id|InvalidFileName/);
+        });
+    });
+
     describe("delete + copy + list", () => {
         it("delete() removes the object", async () => {
             const { facade } = makeFiles(directory);
