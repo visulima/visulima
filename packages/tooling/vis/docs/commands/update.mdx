@@ -50,7 +50,7 @@ vis update --rollback               # Restore catalog from last backup
 | `--include`                 |       |          | Glob pattern to include packages (repeatable, catalog)                          |
 | `--exclude`                 |       |          | Glob pattern to exclude packages (repeatable, catalog)                          |
 | `--prerelease`              |       | `false`  | Include prerelease versions (catalog)                                           |
-| `--security`                |       | `false`  | Check for known security vulnerabilities (OSV.dev)                              |
+| `--security` / `--no-security` |    | `true`   | Check for known security vulnerabilities (OSV.dev); `--no-security` to skip     |
 | `--no-catalog`              |       | `false`  | Skip catalog mode, use package manager directly                                 |
 | `--format`                  |       | `table`  | Output format: `table`, `json`, or `minimal`                                    |
 | `--changelog`               |       | `false`  | Show changelog URLs for updated packages                                        |
