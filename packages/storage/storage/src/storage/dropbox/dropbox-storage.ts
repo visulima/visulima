@@ -218,7 +218,7 @@ const resolveAuth = (options: DropboxStorageOptions): ResolvedAuth => {
  * the simple `filesUpload` endpoint up to 150 MB and switch to chunked
  * upload sessions above that threshold.
  *
- * **Auth precedence** (same model as files-sdk's Dropbox adapter):
+ * **Auth precedence**:
  * 1. `client` (pre-built `Dropbox`)
  * 2. `accessToken` (string or `() => string | Promise&lt;string>`)
  * 3. `refreshToken` + `appKey` (+ optional `appSecret`)

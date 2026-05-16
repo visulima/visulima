@@ -1,3 +1,5 @@
+## @visulima/error [6.0.0-alpha.25](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.24...@visulima/error@6.0.0-alpha.25) (2026-05-16)
+
 ## @visulima/error [6.0.0-alpha.24](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.23...@visulima/error@6.0.0-alpha.24) (2026-05-14)
 
 ### Miscellaneous Chores

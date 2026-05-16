@@ -1,3 +1,10 @@
+## @visulima/tsconfig [3.0.0-alpha.23](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.0.0-alpha.22...@visulima/tsconfig@3.0.0-alpha.23) (2026-05-16)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.23
+
 ## @visulima/tsconfig [3.0.0-alpha.22](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.0.0-alpha.21...@visulima/tsconfig@3.0.0-alpha.22) (2026-05-14)
 
 ### Features
