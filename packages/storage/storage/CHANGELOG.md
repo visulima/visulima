@@ -1,3 +1,14 @@
+## @visulima/storage [1.0.0-alpha.28](https://github.com/visulima/visulima/compare/@visulima/storage@1.0.0-alpha.27...@visulima/storage@1.0.0-alpha.28) (2026-05-16)
+
+### Features
+
+* **storage:** add exists() to Files facade ([#633](https://github.com/visulima/visulima/issues/633)) ([86893da](https://github.com/visulima/visulima/commit/86893da4f462b652e6b5821a4eece997f9f9890d))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.23
+
 ## @visulima/storage [1.0.0-alpha.27](https://github.com/visulima/visulima/compare/@visulima/storage@1.0.0-alpha.26...@visulima/storage@1.0.0-alpha.27) (2026-05-14)
 
 ### Features

@@ -66,7 +66,7 @@ const basename = (key: string): string => {
  * keyed by user-supplied `customId` so subsequent operations (delete, signed
  * URL, list) round-trip on the user's key, not UploadThing's internal fileKey.
  *
- * **Limitations** (mirroring files-sdk):
+ * **Limitations**:
  * - No native server-side `copy` — implemented as download + re-upload.
  * - `list` has no server-side prefix filter; prefix filtering happens client-
  *   side within a page.

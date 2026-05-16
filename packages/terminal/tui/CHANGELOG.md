@@ -1,3 +1,14 @@
+## @visulima/tui [1.0.0-alpha.16](https://github.com/visulima/visulima/compare/@visulima/tui@1.0.0-alpha.15...@visulima/tui@1.0.0-alpha.16) (2026-05-16)
+
+### Miscellaneous Chores
+
+* **lint:** clear eslint findings in bench + animation test ([16bba0b](https://github.com/visulima/visulima/commit/16bba0b6a35885904b719a3f4a560da436a997c4))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.25
+
 ## @visulima/tui [1.0.0-alpha.15](https://github.com/visulima/visulima/compare/@visulima/tui@1.0.0-alpha.14...@visulima/tui@1.0.0-alpha.15) (2026-05-14)
 
 ### Bug Fixes
