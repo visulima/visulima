@@ -143,8 +143,7 @@ const update: Command = {
             type: Boolean,
         },
         {
-            defaultValue: false,
-            description: "Check for known security vulnerabilities (via OSV.dev)",
+            description: "Check for known security vulnerabilities via OSV.dev (default: true; --no-security to skip)",
             name: "security",
             type: Boolean,
         },

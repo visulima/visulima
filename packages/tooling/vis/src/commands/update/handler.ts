@@ -302,7 +302,9 @@ const buildCatalogCheckOptions = (
         minimumReleaseAgeExclude: configDefaults.minimumReleaseAgeExclude,
         packageMode: configDefaults.packageMode,
         releaseChannel,
-        security: (options.security as boolean) || (options.ai as boolean) || configDefaults.security || false,
+        // `--security` is on by default; `--no-security` (security === false) is an explicit opt-out.
+        // `--ai` forces it on (AI analysis needs the vuln data); config may disable it when the flag is unset.
+        security: (options.security as boolean | undefined) === false ? false : (options.ai as boolean) || (configDefaults.security ?? true),
         target: target as UpdateTarget,
     };
 };
@@ -607,6 +609,32 @@ const executeCatalogUpdate = async (
 
     const isDryRun = Boolean(options.dryRun);
 
+    // Pre-install marshall pipeline — only on the explicit-args branch.
+    // Blanket `vis update` is a packument fan-out over every installed dep
+    // and would multiply network traffic dramatically; user-typed package
+    // names are the right scope for these checks.
+    //
+    // Must run BEFORE the interactive TUI mounts: the Ink app grabs stdin
+    // in raw mode, so a marshall prompt issued afterwards would never
+    // receive input. Skipped on dry-run since no install can happen.
+    if (!isDryRun && argument.length > 0 && options.marshallCheck !== false) {
+        const resolved = await resolveExplicitPackages(argument);
+
+        if (resolved.length > 0) {
+            const findings = await runMarshallPipeline(resolved, {
+                config: visConfig?.security?.marshalls,
+                workspaceRoot,
+            });
+            const proceed = await presentMarshallFindings(findings);
+
+            if (!proceed) {
+                process.exitCode = 1;
+
+                return;
+            }
+        }
+    }
+
     // Interactive TUI mode: TTY + table format
     if (isTTY && format === "table") {
         const store = new UpdateStore(outdated, aiResult ?? null);
@@ -693,8 +721,9 @@ const executeCatalogUpdate = async (
                     ? ` (${String(totalCatalogEntries)} catalog entries, ${String(totalCatalogEntries - checkedCount)} duplicates)`
                     : "";
 
+            logger.log();
             logger.info(
-                `  Checked ${String(checkedCount)} unique packages${dedupeNote}: ${String(upToDate)} up-to-date${
+                `Checked ${String(checkedCount)} unique packages${dedupeNote}: ${String(upToDate)} up-to-date${
                     failed.length > 0 ? `, ${String(failed.length)} failed` : ""
                 }`,
             );
@@ -977,28 +1006,6 @@ const execute = async ({ argument: rawArgument, logger, options, visConfig, work
         }
 
         return;
-    }
-
-    // Pre-install marshall pipeline — only on the explicit-args branch.
-    // Blanket `vis update` is a packument fan-out over every installed dep
-    // and would multiply network traffic dramatically; user-typed package
-    // names are the right scope for these checks.
-    if (argument.length > 0 && (options as Record<string, unknown>).marshallCheck !== false) {
-        const resolved = await resolveExplicitPackages(argument);
-
-        if (resolved.length > 0) {
-            const findings = await runMarshallPipeline(resolved, {
-                config: visConfig?.security?.marshalls,
-                workspaceRoot,
-            });
-            const proceed = await presentMarshallFindings(findings);
-
-            if (!proceed) {
-                process.exitCode = 1;
-
-                return;
-            }
-        }
     }
 
     // Blanket --latest gate: confirm before upgrading everything to latest.
