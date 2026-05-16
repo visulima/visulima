@@ -54,11 +54,6 @@
     "bugs": {
         "url": "https://github.com/visulima/visulima/issues"
     },
-    "license": "MIT",
-    "author": {
-        "name": "Daniel Bannert",
-        "email": "d.bannert@anolilab.de"
-    },
     "repository": {
         "type": "git",
         "url": "git+https://github.com/visulima/visulima.git",
@@ -74,13 +69,13 @@
             "url": "https://anolilab.com/support"
         }
     ],
-    "files": [
-        "dist",
-        "README.md",
-        "CHANGELOG.md"
-    ],
-    "type": "module",
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
     "sideEffects": false,
+    "type": "module",
     "exports": {
         "./native-string-types": {
             "types": "./dist/native-string-types.d.ts"
@@ -227,10 +222,11 @@
         },
         "./package.json": "./package.json"
     },
-    "publishConfig": {
-        "access": "public",
-        "provenance": true
-    },
+    "files": [
+        "dist",
+        "README.md",
+        "CHANGELOG.md"
+    ],
     "scripts": {
         "build": "pnpm run generate:charmap && packem build --development",
         "build:prod": "pnpm run generate:charmap && packem build --production",
@@ -259,7 +255,7 @@
         "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
         "@total-typescript/ts-reset": "catalog:dev",
         "@types/node": "catalog:types",
-        "@visulima/colorize": "2.0.0-alpha.10",
+        "@visulima/colorize": "2.0.0-alpha.11",
         "@visulima/packem": "catalog:dev",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
@@ -284,5 +280,9 @@
     },
     "engines": {
         "node": "^22.14.0 || >=24.10.0"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
     }
 }
