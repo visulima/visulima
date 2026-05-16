@@ -2,7 +2,7 @@ import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 import { findPackageManagerSync } from "@visulima/package";
 
 import { formatAiAnalysis, runAiAnalysis, validateAnalysisType } from "../../ai/ai-analysis";
-import { buildSocketOptions, fetchSocketReports } from "../../security/socket-security";
+import { buildEnabledProviders, fetchAllReports } from "../../security/registry";
 import type { OutdatedEntry } from "../../util/catalog";
 import { extractPrefix, fetchPackageVersions, fetchVulnerabilities, getUpdateType, parseVersion, readCatalogs } from "../../util/catalog";
 import type { AnalyzeOptions } from "./index";
@@ -100,11 +100,13 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
             entry.vulnerabilities = vulns;
         }
 
-        // Also fetch Socket.dev report if enabled
-        const socketOptions = buildSocketOptions(visConfig?.security?.socket, visConfig?.security?.policies?.score?.minimum);
+        // Also fetch security provider reports if any are enabled.
+        const securityProviders = buildEnabledProviders(visConfig?.security, {
+            minimumScore: visConfig?.security?.policies?.score?.minimum,
+        });
 
-        if (socketOptions) {
-            const reports = await fetchSocketReports([{ name: packageName, version }], socketOptions);
+        if (securityProviders.length > 0) {
+            const reports = await fetchAllReports(securityProviders, [{ name: packageName, version }]);
             const report = reports.get(`${packageName}@${version}`);
 
             if (report) {

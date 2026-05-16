@@ -9,8 +9,9 @@ import { formatAiAnalysis, runAiAnalysis, validateAnalysisType } from "../../ai/
 import { pail } from "../../io/logger";
 import { detectPm } from "../../pm/pm-runner";
 import { isMarshallDisabled } from "../../security/marshalls/registry";
+import { buildEnabledProviders } from "../../security/registry";
 import { previewPnpmSync, printSecurityReport } from "../../security/security";
-import { buildSocketOptions, scoreColor } from "../../security/socket-security";
+import { scoreColor } from "../../security/socket-security";
 import CheckProgressApp from "../../tui/components/check-progress-app";
 import { UpdateStore } from "../../tui/components/update/update-store";
 import VisUpdateApp from "../../tui/components/update/vis-update-app";
@@ -114,9 +115,21 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
         logger.info(`Checking ${String(totalDeps)} catalog dependencies against npm registry...\n`);
     }
 
-    const socketOptions = isMarshallDisabled("socket")
-        ? undefined
-        : buildSocketOptions(visConfig?.security?.socket, visConfig?.security?.policies?.score?.minimum);
+    const disabledProviders = new Set<string>();
+
+    if (isMarshallDisabled("socket")) {
+        disabledProviders.add("socket");
+    }
+
+    if (isMarshallDisabled("depsDev")) {
+        disabledProviders.add("deps-dev");
+    }
+
+    const minimumScore = visConfig?.security?.policies?.score?.minimum;
+    const securityProviders = buildEnabledProviders(visConfig?.security, {
+        disabled: disabledProviders,
+        minimumScore,
+    });
 
     const { failed, outdated } = await checkOutdated(
         catalogs,
@@ -124,7 +137,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
         npmrcConfig,
         onProgress,
         workspaceRoot,
-        socketOptions,
+        securityProviders,
         visConfig?.security?.acceptedRisks,
     );
 
@@ -201,7 +214,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
         }
 
         process.stdout.write("\n");
-        logger.info(formatSummary(outdated, socketOptions?.minimumScore));
+        logger.info(formatSummary(outdated, minimumScore));
     } else if (format === "json") {
         const output: Record<string, unknown> = { failed, outdated };
 
@@ -214,7 +227,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
         process.stdout.write(`${formatOutdatedMinimal(outdated)}\n`);
     } else {
         formatOutdatedTable(outdated, logger);
-        logger.info(formatSummary(outdated, socketOptions?.minimumScore));
+        logger.info(formatSummary(outdated, minimumScore));
 
         if (aiResult) {
             logger.info("");

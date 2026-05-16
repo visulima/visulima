@@ -31,13 +31,12 @@ import { loadOsvBloomHandle, OsvBloomCacheMissError, probeOsvBloomBatch } from "
 import type { PolicyDecision } from "../../security/policies";
 import { evaluatePolicies, getRegisteredPolicyNames, parsePoliciesFlag } from "../../security/policies";
 import { computeReachableVulnerablePackages } from "../../security/reachability";
+import { buildEnabledProviders, fetchAllReports } from "../../security/registry";
 import type { SeverityFilter } from "../../security/severity";
 import { severityPassesFilter } from "../../security/severity";
 import type { AcceptedRisk, PackageReportData } from "../../security/socket-security";
 import {
-    buildSocketOptions,
     DEFAULT_LOW_SCORE_THRESHOLD,
-    fetchSocketReports,
     findAcceptedRisk,
     getFullPackageName,
     scoreLabel,
@@ -302,7 +301,6 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
     const failOn = (options.failOn as SeverityFilter | undefined) ?? policies?.vulnerability?.failOn;
     const showFixes = Boolean(options.showFixes);
     const showAccepted = Boolean(options.showAccepted);
-    const socketConfig = visConfig?.security?.socket;
     const acceptedRisks = visConfig?.security?.acceptedRisks;
     // --no-usage wins over --usage and config; otherwise --usage flag, else config default.
     const usageConfig = policies?.vulnerability?.usage;
@@ -440,13 +438,33 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
         }
     }
 
-    // Offline mode skips every network-bound source; socket.dev is therefore
-    // disabled regardless of socketConfig.enabled. MARSHALL_DISABLE_SOCKET
-    // is the equivalent env-var escape hatch.
-    const socketOptions = isOffline || isMarshallDisabled("socket") ? undefined : buildSocketOptions(socketConfig, policies?.score?.minimum);
+    // Offline mode skips every network-bound source. MARSHALL_DISABLE_SOCKET
+    // (and future MARSHALL_DISABLE_DEPS_DEV) are the per-provider env-var
+    // escape hatches.
+    const disabledProviders = new Set<string>();
+
+    if (isOffline) {
+        disabledProviders.add("socket").add("deps-dev");
+    } else {
+        if (isMarshallDisabled("socket")) {
+            disabledProviders.add("socket");
+        }
+
+        if (isMarshallDisabled("depsDev")) {
+            disabledProviders.add("deps-dev");
+        }
+    }
+
+    const securityProviders = buildEnabledProviders(visConfig?.security, {
+        disabled: disabledProviders,
+        minimumScore: policies?.score?.minimum,
+    });
+    const hasSecurityProviders = securityProviders.length > 0;
+    // Human-readable label for the progress row — "Socket.dev + deps.dev" etc.
+    const providerLabel = securityProviders.map((p) => p.displayName).join(" + ");
     // Resolve the effective low-score threshold once so every filter site below
     // honours `security.policies.score.minimum` (or its default).
-    const scoreMinimum = socketOptions?.minimumScore ?? policies?.score?.minimum ?? DEFAULT_LOW_SCORE_THRESHOLD;
+    const scoreMinimum = policies?.score?.minimum ?? DEFAULT_LOW_SCORE_THRESHOLD;
 
     // findDuplicateDependencies is synchronous — hoist it outside Promise.all
     // so the async fan-out only contains genuine async work.
@@ -456,7 +474,7 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
     // get no progress UI (it would corrupt the output stream).
     const progressTasks = [
         { id: "vulnerabilities", label: isOffline ? "Known vulnerabilities (offline OSV cache)" : "Known vulnerabilities (OSV)" },
-        ...(socketOptions ? [{ id: "socket", label: "Socket.dev supply-chain reports" }] : []),
+        ...(hasSecurityProviders ? [{ id: "security", label: `Supply-chain reports (${providerLabel})` }] : []),
     ];
     const progress = startScanProgress(progressTasks, { live: !quietHeader });
     const startedAt = Date.now();
@@ -471,12 +489,12 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
 
     try {
         const vulnStart = Date.now();
-        const socketStart = Date.now();
+        const securityStart = Date.now();
 
         progress.start("vulnerabilities");
 
-        if (socketOptions) {
-            progress.start("socket");
+        if (hasSecurityProviders) {
+            progress.start("security");
         }
 
         const vulnPromise = isOffline
@@ -541,8 +559,8 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
 
         [vulnMap, socketReports] = await Promise.all([
             vulnPromise,
-            socketOptions
-                ? fetchSocketReports(packagesToScan, socketOptions)
+            hasSecurityProviders
+                ? fetchAllReports(securityProviders, packagesToScan)
                     .then((reports) => {
                         let alerts = 0;
                         let low = 0;
@@ -558,11 +576,11 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
                         const total = alerts + low;
 
                         progress.finish(
-                            "socket",
+                            "security",
                             total > 0 ? "warn" : "ok",
                             total > 0
-                                ? `${String(alerts)} alert${alerts === 1 ? "" : "s"}, ${String(low)} low-score · ${fmtElapsed(socketStart)}`
-                                : `clean · ${fmtElapsed(socketStart)}`,
+                                ? `${String(alerts)} alert${alerts === 1 ? "" : "s"}, ${String(low)} low-score · ${fmtElapsed(securityStart)}`
+                                : `clean · ${fmtElapsed(securityStart)}`,
                         );
 
                         return reports;
@@ -570,7 +588,7 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
                     .catch((error: unknown) => {
                         const message = error instanceof Error ? error.message : String(error);
 
-                        progress.finish("socket", "error", message);
+                        progress.finish("security", "error", message);
 
                         return new Map<string, PackageReportData>();
                     })

@@ -53,17 +53,36 @@ vi.mock(import("../../src/security/security"), () => {
     };
 });
 
-const fetchSocketReportsMock = vi.fn(async () => new Map());
 const formatSecurityOverviewMock = vi.fn(() => "");
-const buildSocketOptionsMock = vi.fn(() => {
-    return { apiKey: "x", minimumScore: 50 };
+
+vi.mock(import("../../src/security/socket-security"), async (importOriginal) => {
+    const actual = await importOriginal();
+
+    return {
+        ...actual,
+        formatSecurityOverview: formatSecurityOverviewMock,
+    };
 });
 
-vi.mock(import("../../src/security/socket-security"), () => {
+const fetchAllReportsMock = vi.fn(async () => new Map());
+const buildEnabledProvidersMock = vi.fn(() => {
+    return [
+        {
+            clearCache: vi.fn(() => 0),
+            displayName: "Socket.dev",
+            fetchReports: vi.fn(async () => new Map()),
+            getCacheStats: vi.fn(() => {
+                return { entries: 0, newestEntry: undefined, oldestEntry: undefined, totalSizeBytes: 0 };
+            }),
+            id: "socket",
+        },
+    ];
+});
+
+vi.mock(import("../../src/security/registry"), () => {
     return {
-        buildSocketOptions: buildSocketOptionsMock,
-        fetchSocketReports: fetchSocketReportsMock,
-        formatSecurityOverview: formatSecurityOverviewMock,
+        buildEnabledProviders: buildEnabledProvidersMock,
+        fetchAllReports: fetchAllReportsMock,
     };
 });
 
@@ -95,8 +114,8 @@ describe("security-enforcement plugin env-var gates", () => {
         emitSecurityWarningsMock.mockClear();
         enforceScriptSecurityMock.mockClear();
         runApprovedScriptsMock.mockClear();
-        fetchSocketReportsMock.mockClear();
-        buildSocketOptionsMock.mockClear();
+        fetchAllReportsMock.mockClear();
+        buildEnabledProvidersMock.mockClear();
 
         delete process.env.MARSHALL_DISABLE_INSTALL_SCRIPTS;
         delete process.env.MARSHALL_DISABLE_SOCKET;
@@ -149,21 +168,26 @@ describe("security-enforcement plugin env-var gates", () => {
         expect(enforceScriptSecurityMock).not.toHaveBeenCalled();
     });
 
-    it("afterCommand fetches Socket reports when env is unset", async () => {
-        expect.assertions(1);
+    it("afterCommand fetches provider reports when env is unset", async () => {
+        expect.assertions(2);
 
         process.argv = ["node", "vis", "install"];
 
         const { default: plugin } = await pluginPromise;
 
-        // visConfig with truthy security shape so buildSocketOptions returns options
+        // visConfig with truthy security shape so buildEnabledProviders returns a provider
         await plugin.afterCommand!(buildToolbox({ visConfig: { security: { socket: { apiKey: "x" } } } }) as never);
 
-        expect(fetchSocketReportsMock).toHaveBeenCalledTimes(1);
+        expect(buildEnabledProvidersMock).toHaveBeenCalledTimes(1);
+        expect(fetchAllReportsMock).toHaveBeenCalledTimes(1);
     });
 
-    it("skips the Socket overview fetch when MARSHALL_DISABLE_SOCKET is set", async () => {
-        expect.assertions(1);
+    it("skips the security overview fetch when MARSHALL_DISABLE_SOCKET disables the only provider", async () => {
+        expect.assertions(2);
+
+        // Socket is the only provider in the default mock, so disabling it
+        // must leave the registry empty — `fetchAllReports` should be skipped.
+        buildEnabledProvidersMock.mockReturnValueOnce([]);
 
         process.argv = ["node", "vis", "install"];
         process.env.MARSHALL_DISABLE_SOCKET = "1";
@@ -172,6 +196,9 @@ describe("security-enforcement plugin env-var gates", () => {
 
         await plugin.afterCommand!(buildToolbox({ visConfig: { security: { socket: { apiKey: "x" } } } }) as never);
 
-        expect(fetchSocketReportsMock).not.toHaveBeenCalled();
+        // buildEnabledProviders is still called (with the disabled set);
+        // fetchAllReports must NOT be called because the registry is empty.
+        expect(buildEnabledProvidersMock).toHaveBeenCalledTimes(1);
+        expect(fetchAllReportsMock).not.toHaveBeenCalled();
     });
 });

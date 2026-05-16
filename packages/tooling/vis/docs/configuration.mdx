@@ -386,6 +386,12 @@ export default defineConfig({
         minimumReleaseAge: 1440, // 24 hours; `vis init` writes 2880 by default
         minimumReleaseAgeExclude: ["@types/node"],
         socket: { enabled: true, minimumScore: 0.4 },
+        // Optional second supply-chain provider (no auth, OpenSSF Scorecard + GHSA).
+        // Off by default. Enable to cross-check Socket findings or replace them.
+        depsDev: { enabled: true },
+        // When both providers are enabled, the "primary" wins score conflicts;
+        // alerts always dedupe by id. Defaults to "socket".
+        primaryProvider: "socket",
         allowBuilds: { esbuild: true, "@prisma/client": true },
         // Optional: match allowBuilds keys as `name@version`. A version bump
         // drops the entry until you re-approve it. See `vis security list`

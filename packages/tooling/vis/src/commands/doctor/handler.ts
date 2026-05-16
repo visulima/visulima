@@ -20,8 +20,9 @@ import type { ScanProgress, ScanTask } from "../../scan/scan-progress";
 import { startScanProgress } from "../../scan/scan-progress";
 import type { InstalledPackage } from "../../security/dependency-scan";
 import { findDuplicateDependencies, lockedPackages } from "../../security/dependency-scan";
+import { buildEnabledProviders, fetchAllReports } from "../../security/registry";
 import type { PackageReportData } from "../../security/socket-security";
-import { buildSocketOptions, DEFAULT_LOW_SCORE_THRESHOLD, fetchSocketReports } from "../../security/socket-security";
+import { DEFAULT_LOW_SCORE_THRESHOLD } from "../../security/socket-security";
 import { DoctorStore } from "../../tui/components/doctor/doctor-store";
 import type { DoctorFinding } from "../../tui/components/doctor/findings";
 import { flattenFindings } from "../../tui/components/doctor/findings";
@@ -162,11 +163,13 @@ const streamScans = async (context: ScanContext): Promise<Omit<DoctorResults, "e
     // Build scan config
     const npmrcConfig = loadNpmrc(workspaceRoot);
     const catalogs = readCatalogs(workspaceRoot, packageManager);
-    const socketOptions = buildSocketOptions(visConfig?.security?.socket, visConfig?.security?.policies?.score?.minimum);
-    // Effective low-score threshold for every doctor check site. `buildSocketOptions`
-    // returns `undefined` when Socket is disabled, so fall back to the config value
-    // (or `DEFAULT_LOW_SCORE_THRESHOLD`) for sites that compute against scores.
-    const scoreMinimum = socketOptions?.minimumScore ?? visConfig?.security?.policies?.score?.minimum ?? DEFAULT_LOW_SCORE_THRESHOLD;
+    const securityProviders = buildEnabledProviders(visConfig?.security, {
+        minimumScore: visConfig?.security?.policies?.score?.minimum,
+    });
+    // Effective low-score threshold for every doctor check site. Resolved from
+    // the policy config (or the hard-coded default) so we don't depend on any
+    // provider being enabled.
+    const scoreMinimum = visConfig?.security?.policies?.score?.minimum ?? DEFAULT_LOW_SCORE_THRESHOLD;
     const acceptedRisks = visConfig?.security?.acceptedRisks;
     const lockText = readLockfileText(workspaceRoot, pm.name);
 
@@ -238,7 +241,7 @@ const streamScans = async (context: ScanContext): Promise<Omit<DoctorResults, "e
         ? tracked(
             progress,
             "outdated",
-            () => checkOutdated(catalogs, checkOptions, npmrcConfig, undefined, workspaceRoot, socketOptions, acceptedRisks),
+            () => checkOutdated(catalogs, checkOptions, npmrcConfig, undefined, workspaceRoot, securityProviders, acceptedRisks),
             (result, ms) => {
                 const count = result.outdated.length;
 
@@ -277,16 +280,16 @@ const streamScans = async (context: ScanContext): Promise<Omit<DoctorResults, "e
             : Promise.resolve(new Map<string, never[]>());
 
     const socketReportsPromise
-        = wantsSec && socketOptions && installed.length > 0
+        = wantsSec && securityProviders.length > 0 && installed.length > 0
             ? tracked(
                 progress,
                 "socket",
                 () =>
-                    fetchSocketReports(
+                    fetchAllReports(
+                        securityProviders,
                         installed.map((p) => {
                             return { name: p.name, version: p.version };
                         }),
-                        socketOptions,
                     ),
                 (reports, ms) => {
                     let alerts = 0;
@@ -456,7 +459,7 @@ const streamScans = async (context: ScanContext): Promise<Omit<DoctorResults, "e
     let socketAlerts = 0;
     let socketLowScore = 0;
 
-    if (wantsSec && socketOptions) {
+    if (wantsSec && securityProviders.length > 0) {
         for (const report of socketReports.values()) {
             socketAlerts += report.alerts.length;
 
@@ -886,7 +889,7 @@ const execute = async ({ logger, options, visConfig, visConfigError, workspaceRo
     const catalogs = readCatalogs(wsRoot, findPackageManagerSync(wsRoot).packageManager);
     const installed = lockedPackages(wsRoot, pm.name);
     const installedCount = installed.length;
-    const socketEnabled = Boolean(buildSocketOptions(visConfig?.security?.socket));
+    const socketEnabled = buildEnabledProviders(visConfig?.security).length > 0;
     // Effective Socket low-score threshold for `applyFilter` and any other
     // post-scan aggregation in `execute`. Sourced from
     // `security.policies.score.minimum` (or the hard-coded default).

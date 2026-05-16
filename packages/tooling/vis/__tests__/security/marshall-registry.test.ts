@@ -135,7 +135,7 @@ describe("aLL_MARSHALLS contents", () => {
 
         const policy: MarshallName[] = ["installScripts", "firstSeen", "publisherChange", "score", "malware", "vulnerability", "license", "unexpectedDeps"];
         const preInstall: MarshallName[] = ["typosquats", "author", "expiredDomains", "signatures", "provenance", "newBin", "downloads", "metadata", "archivedRepo"];
-        const integrations: MarshallName[] = ["minReleaseAge", "socket"];
+        const integrations: MarshallName[] = ["minReleaseAge", "socket", "depsDev"];
 
         expect(new Set([...policy, ...preInstall, ...integrations])).toStrictEqual(new Set(ALL_MARSHALLS));
     });

@@ -23,7 +23,8 @@ import { presentMarshallFindings } from "../../security/marshalls/decision-promp
 import { runMarshallPipeline } from "../../security/marshalls/pipeline";
 import { isMarshallDisabled } from "../../security/marshalls/registry";
 import { resolveExplicitPackages } from "../../security/marshalls/resolve-explicit";
-import { buildSocketOptions, scoreColor } from "../../security/socket-security";
+import { buildEnabledProviders } from "../../security/registry";
+import { scoreColor } from "../../security/socket-security";
 import { runTyposquatCheck, scanDepsForTyposquats } from "../../security/typosquats";
 import CheckProgressApp from "../../tui/components/check-progress-app";
 import { UpdateStore } from "../../tui/components/update/update-store";
@@ -483,9 +484,21 @@ const executeCatalogUpdate = async (
         logger.info(`Checking ${String(totalDeps)} catalog dependencies...\n`);
     }
 
-    const socketOptions = isMarshallDisabled("socket")
-        ? undefined
-        : buildSocketOptions(visConfig.security?.socket, visConfig.security?.policies?.score?.minimum);
+    const disabledProviders = new Set<string>();
+
+    if (isMarshallDisabled("socket")) {
+        disabledProviders.add("socket");
+    }
+
+    if (isMarshallDisabled("depsDev")) {
+        disabledProviders.add("deps-dev");
+    }
+
+    const minimumScore = visConfig.security?.policies?.score?.minimum;
+    const securityProviders = buildEnabledProviders(visConfig.security, {
+        disabled: disabledProviders,
+        minimumScore,
+    });
 
     const { checkedCount, failed, filteredByTarget, ignored, outdated } = await checkOutdated(
         catalogs,
@@ -493,7 +506,7 @@ const executeCatalogUpdate = async (
         npmrcConfig,
         onProgress,
         workspaceRoot,
-        socketOptions,
+        securityProviders,
         visConfig.security?.acceptedRisks,
     );
 
@@ -671,7 +684,7 @@ const executeCatalogUpdate = async (
         }
 
         process.stdout.write("\n");
-        logger.info(formatSummary(outdated, socketOptions?.minimumScore));
+        logger.info(formatSummary(outdated, minimumScore));
 
         if (checkedCount > outdated.length) {
             const totalCatalogEntries = [...catalogs.values()].reduce((sum, deps) => sum + deps.size, 0);
@@ -737,7 +750,7 @@ const executeCatalogUpdate = async (
             process.stdout.write(`${JSON.stringify(output, undefined, 2)}\n`);
         } else {
             logger.info(`Would update ${String(outdated.length)} dependencies:\n`);
-            writeFormattedOutput(outdated, failed, format, logger, socketOptions?.minimumScore);
+            writeFormattedOutput(outdated, failed, format, logger, minimumScore);
 
             if (aiResult) {
                 logger.info("");
@@ -768,7 +781,7 @@ const executeCatalogUpdate = async (
     }
 
     logger.info(`Updating ${String(toApply.length)} catalog dependencies...\n`);
-    writeFormattedOutput(toApply, [], format, logger, socketOptions?.minimumScore);
+    writeFormattedOutput(toApply, [], format, logger, minimumScore);
     logFilteredByTarget(filteredByTarget, logger);
 
     const mergedOptions = { ...options, install: options.install ?? configDefaults.install };

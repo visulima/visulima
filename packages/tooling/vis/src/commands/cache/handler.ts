@@ -12,6 +12,7 @@ import { clearCache as clearAiResponseCache, getCacheStats as getAiCacheStats } 
 import { isCacheDirectoryInsideWorkspace, resolveSharedCacheDirectory } from "../../cache/cache-directory";
 import { pail } from "../../io/logger";
 import { diffHashDetails, findTaskInSummary, readPreviousRunSummary, readRunSummaryById } from "../../report/run-summary-utils";
+import { clearDepsDevCache, getDepsDevCacheStats } from "../../security/deps-dev-security";
 import { clearSocketCache, getSocketCacheStats } from "../../security/socket-security";
 import { getVisRunsDir, getVisWorkspaceDataDir } from "../../util/vis-paths";
 import type { CacheCleanOptions, CacheHashOptions, CacheListOptions, CachePruneOptions, CacheSizeOptions, CacheVerifyOptions, CacheWhyOptions } from "./index";
@@ -230,6 +231,18 @@ export const clearSocketCacheSafe = (): void => {
         }
     } catch (error: unknown) {
         pail.warn(`Failed to clear Socket.dev cache: ${error instanceof Error ? error.message : String(error)}`);
+    }
+};
+
+export const clearDepsDevCacheSafe = (): void => {
+    try {
+        const depsDevDeleted = clearDepsDevCache();
+
+        if (depsDevDeleted > 0) {
+            pail.info(`Cleared ${String(depsDevDeleted)} cached deps.dev record${depsDevDeleted === 1 ? "" : "s"}.`);
+        }
+    } catch (error: unknown) {
+        pail.warn(`Failed to clear deps.dev cache: ${error instanceof Error ? error.message : String(error)}`);
     }
 };
 
@@ -965,11 +978,12 @@ export const runVerify = async (taskId: string, options: RunVerifyOptions, logge
 // Which cache stores does an operation touch? "task" is the workspace task
 // runner cache (resolved with --scope/--cache-dir), "ai" is the global AI
 // response cache under ~/.vis/cache/ai, "socket" is the Socket.dev report
-// cache under ~/.vis/cache/socket-security. "all" means every store.
-type CacheTarget = "all" | "ai" | "socket" | "task";
+// cache under ~/.vis/cache/socket-security, "deps-dev" is the Google
+// deps.dev cache under ~/.vis/cache/deps-dev. "all" means every store.
+type CacheTarget = "all" | "ai" | "deps-dev" | "socket" | "task";
 
 const parseCacheTarget = (raw: string | undefined): CacheTarget => {
-    if (raw === "task" || raw === "ai" || raw === "socket" || raw === "all") {
+    if (raw === "task" || raw === "ai" || raw === "socket" || raw === "deps-dev" || raw === "all") {
         return raw;
     }
 
@@ -1122,6 +1136,16 @@ export const cacheCleanExecute = async ({ options, visConfig, workspaceRoot: wsR
             clearSocketCacheSafe();
         }
     }
+
+    if (includesTarget(target, "deps-dev")) {
+        if (dryRun) {
+            const stats = getDepsDevCacheStats();
+
+            pail.info(`Would clear ${String(stats.entries)} cached deps.dev record${stats.entries === 1 ? "" : "s"}.`);
+        } else {
+            clearDepsDevCacheSafe();
+        }
+    }
 };
 
 export const cachePruneExecute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, CachePruneOptions>): Promise<void> => {
@@ -1234,6 +1258,17 @@ export const cacheSizeExecute = async ({ options, visConfig, workspaceRoot: wsRo
             };
         }
 
+        if (includesTarget(target, "deps-dev")) {
+            const stats = getDepsDevCacheStats();
+
+            payload["deps-dev"] = {
+                entries: stats.entries,
+                newestEntry: isoOrNull(stats.newestEntry),
+                oldestEntry: isoOrNull(stats.oldestEntry),
+                totalBytes: stats.totalSizeBytes,
+            };
+        }
+
         process.stdout.write(`${JSON.stringify(payload, undefined, 2)}\n`);
 
         return;
@@ -1257,6 +1292,10 @@ export const cacheSizeExecute = async ({ options, visConfig, workspaceRoot: wsRo
 
     if (includesTarget(target, "socket")) {
         printAuxStatsBlock("Socket.dev report cache", getSocketCacheStats());
+    }
+
+    if (includesTarget(target, "deps-dev")) {
+        printAuxStatsBlock("deps.dev cache", getDepsDevCacheStats());
     }
 };
 
