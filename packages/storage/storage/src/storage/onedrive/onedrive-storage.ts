@@ -844,4 +844,12 @@ const baseName = (key: string): string => {
     return index === -1 ? trimmed : trimmed.slice(index + 1);
 };
 
+/**
+ * Builds a Microsoft Graph `Client` from the OneDrive auth options (same
+ * precedence as the constructor). Exposed so the SharePoint adapter can
+ * resolve a site/document library to a `driveId` before delegating to an
+ * inner `OneDriveStorage`, without duplicating the auth-building logic.
+ */
+export const buildGraphClient = (options: OneDriveStorageOptions): GraphClient => resolveAuth(options);
+
 export default OneDriveStorage;

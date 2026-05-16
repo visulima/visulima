@@ -233,4 +233,11 @@ export default createConfig(
             "sonarjs/file-name-differ-from-class": "off",
         },
     },
+    {
+        // "idrive-e2" is the provider's product name and cannot be renamed
+        files: ["src/storage/aws/clients/idrive-e2.ts"],
+        rules: {
+            "unicorn/prevent-abbreviations": "off",
+        },
+    },
 );

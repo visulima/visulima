@@ -148,6 +148,22 @@
             "types": "./dist/storage/bunny/index.d.ts",
             "import": "./dist/storage/bunny/index.js"
         },
+        "./provider/cloudinary": {
+            "types": "./dist/storage/cloudinary/index.d.ts",
+            "import": "./dist/storage/cloudinary/index.js"
+        },
+        "./provider/firebase": {
+            "types": "./dist/storage/firebase/index.d.ts",
+            "import": "./dist/storage/firebase/index.js"
+        },
+        "./provider/pocketbase": {
+            "types": "./dist/storage/pocketbase/index.d.ts",
+            "import": "./dist/storage/pocketbase/index.js"
+        },
+        "./provider/sharepoint": {
+            "types": "./dist/storage/sharepoint/index.d.ts",
+            "import": "./dist/storage/sharepoint/index.js"
+        },
         "./openapi": {
             "types": "./dist/openapi/index.d.ts",
             "import": "./dist/openapi/index.js"
@@ -303,6 +319,7 @@
         "aws-sdk-client-mock": "catalog:dev",
         "aws4fetch": "catalog:dev",
         "box-typescript-sdk-gen": "1.19.1",
+        "cloudinary": "2.10.0",
         "cross-fetch": "catalog:dev",
         "dropbox": "10.34.0",
         "esbuild": "catalog:build",
@@ -310,6 +327,7 @@
         "eslint-plugin-zod": "4.2.2",
         "etag": "catalog:dev",
         "express": "catalog:backend",
+        "firebase-admin": "13.10.0",
         "gaxios": "catalog:dev",
         "google-auth-library": "catalog:dev",
         "hono": "catalog:backend",
@@ -320,6 +338,7 @@
         "node-mocks-http": "catalog:dev",
         "openai": "catalog:dev",
         "openapi-types": "catalog:dev",
+        "pocketbase": "0.26.9",
         "prettier": "catalog:lint",
         "rimraf": "catalog:node",
         "semantic-release": "catalog:cli",
@@ -353,13 +372,16 @@
         "aws-crt": ">=1.27.3",
         "aws4fetch": ">=1.0.0",
         "box-typescript-sdk-gen": ">=1.19.0",
+        "cloudinary": ">=2.0.0",
         "dropbox": ">=10.34.0",
+        "firebase-admin": ">=10.0.0",
         "gaxios": ">=7.1.2",
         "google-auth-library": ">=10.4.0",
         "hono": ">=4.0.0",
         "mediabunny": ">=1.23.0",
         "next": ">=15",
         "openai": ">=5.0.0",
+        "pocketbase": ">=0.23.0",
         "sharp": ">=0.34.5",
         "uploadthing": ">=7.0.0"
     },
@@ -430,7 +452,13 @@
         "box-typescript-sdk-gen": {
             "optional": true
         },
+        "cloudinary": {
+            "optional": true
+        },
         "dropbox": {
+            "optional": true
+        },
+        "firebase-admin": {
             "optional": true
         },
         "gaxios": {
@@ -449,6 +477,9 @@
             "optional": true
         },
         "openai": {
+            "optional": true
+        },
+        "pocketbase": {
             "optional": true
         },
         "sharp": {

@@ -117,11 +117,11 @@ Object storage (service credentials, presigned URLs, S3-style):
 
 S3-compatible (branded client configs under `provider/aws/s3/clients`):
 
-- Cloudflare R2 · DigitalOcean Spaces · MinIO · Hetzner · Storj · Backblaze B2 · Tigris · Wasabi · Akamai
+- Cloudflare R2 · DigitalOcean Spaces · MinIO · Hetzner · Storj · Backblaze B2 · Tigris · Wasabi · Akamai · Scaleway · Vultr · Exoscale · Filebase · iDrive e2 · IBM Cloud Object Storage · Oracle Cloud (OCI) · OVHcloud · Alibaba Cloud OSS · Tencent Cloud COS · Yandex Object Storage
 
 Consumer providers (user OAuth or service-credential, all peer-dep gated):
 
-- Dropbox · Google Drive · Microsoft OneDrive · Box · Supabase · UploadThing · Bunny Storage
+- Dropbox · Google Drive · Microsoft OneDrive · SharePoint · Box · Supabase · UploadThing · Bunny Storage · Cloudinary · Firebase Storage · PocketBase
 
 → See the [capability matrix](https://visulima.com/docs/packages/storage/services/capabilities) for what each provider supports (presign, copy, list, signed uploads, …).
 
