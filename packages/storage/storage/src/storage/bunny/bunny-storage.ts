@@ -114,7 +114,7 @@ const wrapBunnyError = (error: unknown, operation: string): UploadError => {
  *
  * Uses `@bunny.net/storage-sdk`. Writes go through the Storage API with an `AccessKey` header; reads either go through `data()` (server-side fetch) or, when a public Pull Zone is configured, through `publicBaseUrl`.
  *
- * **Limitations** (mirroring files-sdk PR #21):
+ * **Limitations**:
  *
  * - No native server-side `copy` — implemented as download + re-upload.
  * - No `signedUploadUrl` / presigned PUT — Bunny has no such primitive.
