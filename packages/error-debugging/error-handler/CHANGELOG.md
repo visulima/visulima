@@ -1,3 +1,10 @@
+## @visulima/error-handler [2.0.0-alpha.24](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.0-alpha.23...@visulima/error-handler@2.0.0-alpha.24) (2026-05-16)
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.25
+
 ## @visulima/error-handler [2.0.0-alpha.23](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.0-alpha.22...@visulima/error-handler@2.0.0-alpha.23) (2026-05-14)
 
 ### Miscellaneous Chores
