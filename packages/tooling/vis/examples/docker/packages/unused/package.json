@@ -6,6 +6,6 @@
         "build": "echo 'unused — should be pruned out of the docker context'"
     },
     "dependencies": {
-        "lodash": "^4.17.21"
+        "lodash": "^4.18.1"
     }
 }
