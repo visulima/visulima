@@ -153,15 +153,15 @@ curl -fsSL https://visulima.com/install.sh | bash
 The script:
 
 1. Checks whether `node` is on PATH.
-2. If not, prompts for a runtime manager (`proto`, `fnm`, `mise`, or `volta` — proto is the default) and installs it via the vendor's official installer.
-3. Uses the chosen manager to install Node LTS.
-4. Installs `@visulima/vis` globally via pnpm (if present) or npm.
-5. If the current directory has workspace pin files (`.nvmrc`, `.prototools`, etc.), runs `vis toolchain install` to match them.
+2. If not, installs **the latest Node LTS directly by default** — the OS package manager (Homebrew / apt / dnf-yum NodeSource) when it can provide it, otherwise the official, SHA256-verified nodejs.org tarball into `~/.vis/node`. A version manager (`proto`, `fnm`, `mise`, or `volta`) is offered as an opt-in alternative, not forced.
+3. Installs `@visulima/vis` globally via pnpm (if present) or npm.
+4. If the current directory has workspace pin files (`.nvmrc`, `.prototools`, etc.), runs `vis toolchain install` to match them.
 
 > **Note on piping.** When you run `curl … | bash`, stdin isn't a TTY and the
-> interactive manager-picker prompt is skipped — the script uses **proto** by
-> default. Override with `--manager=fnm|mise|volta` or the `VIS_MANAGER` env
-> var if you want something else.
+> interactive picker is skipped — the script installs **the latest Node LTS directly**.
+> Pass `--manager=proto|fnm|mise|volta` (or set `VIS_MANAGER`) to take the
+> version-manager path instead, or `VIS_NODE_MAJOR` to install a different
+> Node major.
 
 ### Windows (PowerShell 5.1+)
 
@@ -169,7 +169,7 @@ The script:
 irm https://visulima.com/install.ps1 | iex
 ```
 
-Same flow as the POSIX script, but with the Windows-native installers:
+Same flow as the POSIX script. By default it installs **the latest Node LTS directly** via winget / Chocolatey / scoop, falling back to the official, SHA256-verified nodejs.org zip into `%USERPROFILE%\.vis\node`. The opt-in version managers use Windows-native installers:
 
 - `proto` via `irm https://moonrepo.dev/install/proto.ps1 | iex` (vendor PowerShell installer)
 - `fnm` via `winget install Schniz.fnm` (or `scoop install fnm`)
