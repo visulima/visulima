@@ -281,14 +281,14 @@ vis migrate self --dry-run    # Preview without writing
 
 **Current rename table** (vis 1.x → 2.0):
 
-| Previous                          | New                          |
-| --------------------------------- | ---------------------------- |
-| `VisConfig.targetDefaults`        | `VisConfig.tasks`            |
-| `VisConfig.taskDefaults`          | `VisConfig.scopedTasks`      |
-| `VisConfig.taskRunnerOptions`     | `VisConfig.taskRunner`       |
-| `ScopedTasksBlock.scope`          | `ScopedTasksBlock.match`     |
-| `ScopedTasksBlock.targets`        | `ScopedTasksBlock.tasks`     |
-| `VisTaskConfig.targets`           | `VisTaskConfig.tasks`        |
+| Previous                      | New                      |
+| ----------------------------- | ------------------------ |
+| `VisConfig.targetDefaults`    | `VisConfig.tasks`        |
+| `VisConfig.taskDefaults`      | `VisConfig.scopedTasks`  |
+| `VisConfig.taskRunnerOptions` | `VisConfig.taskRunner`   |
+| `ScopedTasksBlock.scope`      | `ScopedTasksBlock.match` |
+| `ScopedTasksBlock.targets`    | `ScopedTasksBlock.tasks` |
+| `VisTaskConfig.targets`       | `VisTaskConfig.tasks`    |
 
 Rewrites `vis.config.{ts,mts,cts,js,mjs,cjs}` at the workspace root and every `vis.task.{ts,mts,cts,js,mjs,cjs}` overlay found beneath it (`node_modules`, `.git`, `.vis/`, and common build output directories are skipped). Source files are rewritten only when they contain an old key; a `.bak` is created next to each modified file. `--dry-run` lists which files would change without touching disk.
 

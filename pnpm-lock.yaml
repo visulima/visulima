@@ -9857,6 +9857,9 @@ importers:
       '@visulima/tui':
         specifier: 1.0.0-alpha.16
         version: link:../../terminal/tui
+      fb-watchman:
+        specifier: '>=2.0.0'
+        version: 2.0.2
       jiti:
         specifier: catalog:dev
         version: 2.7.0
@@ -12856,7 +12859,7 @@ packages:
     resolution: {integrity: sha512-tXlTi1h/4V7sDe7i97IVP+9re9ZU7wXZZggnR5ucCRclf1+AX6YhGStrR5w8bLj+3Mlyl0pKfBh9gqTqqnGKfQ==}
     engines: {node: '>=20'}
     peerDependencies:
-      hono: '>=4.10.2'
+      hono: '>=4.12.4'
 
   '@hono/swagger-ui@0.6.1':
     resolution: {integrity: sha512-sJTvldu1GPeEPfyeLG7gRj+W4vEuD+JDi+JjJ3TJs/DvMUtBLs0KJO5yokGegWWdy5qrbdnQGekbhgNRmPmYKQ==}

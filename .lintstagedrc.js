@@ -27,6 +27,22 @@ if (originalPkgHandler) {
     };
 }
 
+// Prettier-format staged Markdown / MDX at commit time. Every
+// package's `lint:prettier` already covers `docs/` via `--check .`,
+// but nothing enforced it on commit, so docs could silently drift out
+// of compliance (vis/docs did). Prettier resolves each file's nearest
+// `prettier.config.js` itself. CHANGELOG.md is prettier-ignored
+// repo-wide; __fixtures__ may hold intentionally malformed content.
+config["**/*.{md,mdx}"] = (files) => {
+    const filtered = files.filter((f) => !FIXTURES_PATH_PATTERN.test(f) && !/[/\\]CHANGELOG\.md$/.test(f));
+
+    if (filtered.length === 0) {
+        return [];
+    }
+
+    return [`pnpm exec prettier --write ${filtered.map((f) => JSON.stringify(f)).join(" ")}`];
+};
+
 const E2E_PATH_PATTERN = /__tests__[/\\]e2e[/\\]/;
 
 const withE2eFilter = (originalHandler) => (files) => {

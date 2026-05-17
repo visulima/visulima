@@ -1,8 +1,8 @@
 import { readFileSync } from "node:fs";
 
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
-import { writeFileSync, writeJsonSync } from "@visulima/fs";
-import { join, relative } from "@visulima/path";
+import { ensureDirSync, writeFileSync, writeJsonSync } from "@visulima/fs";
+import { dirname, join, relative } from "@visulima/path";
 import zeptomatch from "zeptomatch";
 
 import type { CodeownersSource } from "../../config/workspace";
@@ -20,6 +20,8 @@ import { resolveIndentForExistingFile } from "../../util/editorconfig";
 import type { SyncFieldsChange } from "../../util/sync-package-json-fields";
 import { applyFieldChanges, computeFieldChanges, DEFAULT_SYNCED_FIELDS } from "../../util/sync-package-json-fields";
 import { collectWorkspaceDirectories, readPkg } from "../../util/workspace-deps";
+import type { RestrictedProject } from "../../util/write-guard";
+import { buildWriteGuardArtifacts } from "../../util/write-guard";
 import type { SyncOptions } from "./index";
 
 const KNOWN_SOURCES: ReadonlySet<CodeownersSource> = new Set(["nested-codeowners", "package-json-maintainers", "project-json"]);
@@ -97,10 +99,82 @@ interface PackageJsonReport {
 
 const matchesAnyGlob = (name: string, globs: string[]): boolean => globs.some((pattern) => zeptomatch(pattern, name));
 
+/**
+ * Emits (or, in check mode, verifies) the GitHub + GitLab Write Guard
+ * CI artefacts for every project flagged `restricted: true`. Runs
+ * independently of the CODEOWNERS sync so it still fires when there
+ * are no `owners` entries. No-ops silently when nothing is restricted.
+ */
+const handleWriteGuard = (
+    logger: Console,
+    root: string,
+    workspace: { projects: Record<string, { restricted?: boolean; root?: string }> },
+    checkMode: boolean,
+): void => {
+    const restricted: RestrictedProject[] = Object.entries(workspace.projects)
+        .filter(([, project]) => project.restricted === true)
+        .map(([name, project]) => {
+            return { name, root: project.root ?? name };
+        });
+
+    const artifacts = buildWriteGuardArtifacts(restricted);
+
+    if (artifacts.length === 0) {
+        logger.info("No projects flagged `restricted: true` in project.json. Skipping Write Guard.");
+
+        return;
+    }
+
+    if (checkMode) {
+        let drift = false;
+
+        for (const artifact of artifacts) {
+            const outPath = join(root, artifact.path);
+
+            let existing = "";
+
+            try {
+                existing = readFileSync(outPath, "utf8");
+            } catch (error: unknown) {
+                if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
+                    throw error;
+                }
+            }
+
+            if (existing.trim() !== artifact.content.trim()) {
+                logger.error(`${artifact.path} is out of date. Run \`vis sync codeowners --write-guard\` to update it.`);
+                drift = true;
+            }
+        }
+
+        if (drift) {
+            process.exitCode = 1;
+        } else {
+            logger.info(`Write Guard CI is up to date (${artifacts.length} files, ${restricted.length} restricted projects).`);
+        }
+
+        return;
+    }
+
+    for (const artifact of artifacts) {
+        const outPath = join(root, artifact.path);
+
+        ensureDirSync(dirname(outPath));
+        writeFileSync(outPath, artifact.content);
+        logger.info(`Wrote ${artifact.path}`);
+    }
+
+    logger.info(`Write Guard CI scoped to ${restricted.length} restricted project${restricted.length === 1 ? "" : "s"}.`);
+};
+
 const runCodeowners = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, SyncOptions>): Promise<void> => {
     const root = wsRoot as string;
     const { workspace } = discoverWorkspace(root, visConfig);
     const codeownersConfig = visConfig?.codeowners;
+
+    if (options.writeGuard === true) {
+        handleWriteGuard(logger, root, workspace, options.check === true);
+    }
 
     const sources = parseCsvOption<CodeownersSource>(options.from, codeownersConfig?.sources ?? ["project-json"], isCodeownersSource);
     const regenerationCommand = options.regenerationCommand ?? codeownersConfig?.regenerationCommand;

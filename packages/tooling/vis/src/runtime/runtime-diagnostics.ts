@@ -1,6 +1,8 @@
 import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 
+import { join } from "@visulima/path";
+
 /**
  * Diagnostics for the watch / signal subsystem surfaced by `vis doctor`.
  *
@@ -435,9 +437,116 @@ const listOrphansWindows = (selfPid: number): number[] => {
 };
 
 /**
- * Runs every diagnostic and returns the results in a stable order.
- * The order matches the doctor's display order: capacity first
- * (most likely to silently break watch), then TTY (informational),
- * then orphans (cleanup).
+ * VCS-scaling hint: Watchman shares one daemon-side crawl across every
+ * watched root, so on large monorepos it sidesteps the per-file
+ * inotify handle that `fs.watch` consumes. `vis` uses it
+ * automatically when present; this surfaces whether the speed-up is
+ * actually in effect.
+ *
+ * `ok` when the `watchman` binary is on PATH, `skip` (with an
+ * actionable hint) otherwise — native `fs.watch` still works for
+ * small/medium repos, so this is never a hard failure.
  */
-export const runRuntimeDiagnostics = (): RuntimeDiagnostic[] => [checkInotifyCapacity(), checkTtyAvailability(), checkOrphanedRunners()];
+export const checkWatchmanAvailability = (): RuntimeDiagnostic => {
+    let version: string | undefined;
+
+    try {
+        const result = spawnSync("watchman", ["--version"], { encoding: "utf8", timeout: 2000 });
+
+        if (result.error || (typeof result.status === "number" && result.status !== 0)) {
+            throw result.error ?? new Error("watchman exited non-zero");
+        }
+
+        version = typeof result.stdout === "string" ? result.stdout.trim() : undefined;
+    } catch {
+        return {
+            id: "watchman",
+            message: "Watchman not found — `vis` uses native fs.watch (fine for small repos). Install Watchman + `fb-watchman` to scale watch mode on large monorepos.",
+            status: "skip",
+        };
+    }
+
+    return {
+        detail: version ? { version } : undefined,
+        id: "watchman",
+        message: version ? `Watchman available (${version}) — scalable watch backend in use.` : "Watchman available — scalable watch backend in use.",
+        status: "ok",
+    };
+};
+
+/**
+ * VCS-scaling hint: a repo that tracks blobs through Git LFS but is
+ * missing the `git-lfs` filter leaves working-tree files as tiny
+ * pointer stubs. Builds then fail in confusing ways (a "PNG" that is
+ * 130 bytes of text). This catches the misconfiguration early.
+ *
+ * `skip` when the repo declares no LFS patterns (the common case),
+ * `warn` when it does but `git-lfs` is not installed, `ok` otherwise.
+ *
+ * `.gitattributes` lives at the workspace root, so the caller must
+ * pass `workspaceRoot` — resolving relative to `process.cwd()` would
+ * silently miss it whenever `vis doctor` runs from a subdirectory and
+ * report a false "no LFS" all-clear.
+ */
+export const checkGitLfsTracking = (workspaceRoot: string = process.cwd()): RuntimeDiagnostic => {
+    let attributes = "";
+
+    try {
+        attributes = readFileSync(join(workspaceRoot, ".gitattributes"), "utf8");
+    } catch (error: unknown) {
+        if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
+            return {
+                id: "git-lfs",
+                message: "Could not read .gitattributes.",
+                status: "warn",
+            };
+        }
+    }
+
+    if (!attributes.includes("filter=lfs")) {
+        return {
+            id: "git-lfs",
+            message: "No Git LFS tracking declared in .gitattributes.",
+            status: "skip",
+        };
+    }
+
+    try {
+        const result = spawnSync("git", ["lfs", "version"], { encoding: "utf8", timeout: 2000 });
+
+        if (result.error || (typeof result.status === "number" && result.status !== 0)) {
+            throw result.error ?? new Error("git-lfs not available");
+        }
+    } catch {
+        return {
+            id: "git-lfs",
+            message: "Repo tracks files via Git LFS but `git-lfs` is not installed — checked-out LFS files are pointer stubs, not real content. Install git-lfs and run `git lfs pull`.",
+            status: "warn",
+        };
+    }
+
+    return {
+        id: "git-lfs",
+        message: "Git LFS tracking declared and `git-lfs` is installed.",
+        status: "ok",
+    };
+};
+
+/**
+ * Runs every diagnostic and returns the results in a stable order.
+ * The order matches the doctor's display order: inotify capacity
+ * first (most likely to silently break watch), then TTY
+ * (informational), then the VCS-scaling hints (Watchman / Git LFS),
+ * then orphans (cleanup).
+ *
+ * `workspaceRoot` is required by the Git LFS check to find the
+ * root-level `.gitattributes`; omit it only in unit tests that don't
+ * exercise that path.
+ */
+export const runRuntimeDiagnostics = (workspaceRoot?: string): RuntimeDiagnostic[] => [
+    checkInotifyCapacity(),
+    checkTtyAvailability(),
+    checkWatchmanAvailability(),
+    checkGitLfsTracking(workspaceRoot),
+    checkOrphanedRunners(),
+];

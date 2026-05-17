@@ -284,6 +284,119 @@ describe("vis sync codeowners", () => {
     });
 });
 
+describe("vis sync codeowners --write-guard", () => {
+    let workspaceRoot: string;
+    let originalExitCode: number | string | undefined;
+
+    beforeEach(() => {
+        workspaceRoot = createTemporaryDirectory("vis-sync-wg-");
+        originalExitCode = process.exitCode;
+
+        writeFileSync(join(workspaceRoot, "pnpm-workspace.yaml"), "packages:\n  - 'packages/*'\n");
+        writeFileSync(join(workspaceRoot, "package.json"), JSON.stringify({ name: "root" }));
+
+        const lockedDir = join(workspaceRoot, "packages", "locked");
+
+        mkdirSync(lockedDir, { recursive: true });
+        writeFileSync(join(lockedDir, "package.json"), JSON.stringify({ name: "@my/locked" }));
+        writeFileSync(
+            join(lockedDir, "project.json"),
+            JSON.stringify({
+                owners: [{ owners: ["@team-sec"], path: "src/**" }],
+                restricted: true,
+            }),
+        );
+    });
+
+    afterEach(() => {
+        cleanupTemporaryDirectory(workspaceRoot);
+        process.exitCode = originalExitCode;
+    });
+
+    it("emits GitHub + GitLab Write Guard artefacts scoped to the restricted project", async () => {
+        expect.assertions(3);
+
+        const { logger } = makeLogger();
+
+        await syncExecute({
+            argument: ["codeowners"],
+            logger,
+            options: { writeGuard: true },
+            runtime: {} as never,
+            visConfig: undefined,
+            workspaceRoot,
+        } as never);
+
+        const github = readFileSync(join(workspaceRoot, ".github/workflows/write-guard.yml"), "utf8");
+        const gitlab = readFileSync(join(workspaceRoot, ".gitlab/write-guard.gitlab-ci.yml"), "utf8");
+
+        expect(github).toContain("geritol/write-guard@v1");
+        expect(github).toContain("packages/locked/**");
+        expect(gitlab).toContain('$CI_PIPELINE_SOURCE == "merge_request_event"');
+    });
+
+    it("--check flags missing artefacts with exitCode=1 and a clean CODEOWNERS does not reset it", async () => {
+        expect.assertions(3);
+
+        // Generate an up-to-date CODEOWNERS first so the codeowners
+        // check that runs *after* handleWriteGuard logs "up to date"
+        // and returns — isolating the exit-code interaction: the
+        // write-guard drift must not be clobbered back to 0.
+        await syncExecute({
+            argument: ["codeowners"],
+            logger: makeLogger().logger,
+            options: {},
+            runtime: {} as never,
+            visConfig: undefined,
+            workspaceRoot,
+        } as never);
+
+        process.exitCode = 0;
+
+        const { calls, logger } = makeLogger();
+
+        await syncExecute({
+            argument: ["codeowners"],
+            logger,
+            options: { check: true, writeGuard: true },
+            runtime: {} as never,
+            visConfig: undefined,
+            workspaceRoot,
+        } as never);
+
+        const text = calls.map((c) => c.slice(1).join(" ")).join("\n");
+
+        expect(process.exitCode).toBe(1);
+        expect(text).toContain("write-guard.yml is out of date");
+        expect(text).toContain("is up to date");
+    });
+
+    it("no-ops with an informational message when no project is restricted", async () => {
+        expect.assertions(2);
+
+        writeFileSync(
+            join(workspaceRoot, "packages", "locked", "project.json"),
+            JSON.stringify({ owners: [{ owners: ["@team-sec"], path: "src/**" }] }),
+        );
+
+        const { calls, logger } = makeLogger();
+
+        await syncExecute({
+            argument: ["codeowners"],
+            logger,
+            options: { writeGuard: true },
+            runtime: {} as never,
+            visConfig: undefined,
+            workspaceRoot,
+        } as never);
+
+        const text = calls.map((c) => c.slice(1).join(" ")).join("\n");
+
+        expect(text).toContain("No projects flagged `restricted: true`");
+        expect(() => readFileSync(join(workspaceRoot, ".github/workflows/write-guard.yml"), "utf8")).toThrow();
+    });
+});
+
 describe("vis sync package-json-fields", () => {
     let workspaceRoot: string;
     let originalExitCode: number | string | undefined;

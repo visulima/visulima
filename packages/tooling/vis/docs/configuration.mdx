@@ -32,11 +32,11 @@ Apply default configuration to all projects that have a matching target.
 
 vis ships four mechanisms for sharing target configuration. Use the smallest one that fits — they compose, so you can mix.
 
-| Tool                | Reach for it when…                                                                                           | Section                                   |
-| ------------------- | ------------------------------------------------------------------------------------------------------------ | ----------------------------------------- |
-| `tasks`             | One target name should behave the same in **every** project (e.g. `build` always declares `^build`).         | This section                              |
-| `scopedTasks`       | Defaults need to apply to a **subset** of projects matched by `tags` / `projectType` / `layer` / `stack` / `language`. | [Scoped Tasks](#scoped-tasks) |
-| `taskGroups`        | The same multi-entry `dependsOn` array repeats across **two or more** targets — name the bundle once, reuse. | [Task Groups](#task-groups)               |
+| Tool                | Reach for it when…                                                                                                             | Section                                              |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------- |
+| `tasks`             | One target name should behave the same in **every** project (e.g. `build` always declares `^build`).                           | This section                                         |
+| `scopedTasks`       | Defaults need to apply to a **subset** of projects matched by `tags` / `projectType` / `layer` / `stack` / `language`.         | [Scoped Tasks](#scoped-tasks)                        |
+| `taskGroups`        | The same multi-entry `dependsOn` array repeats across **two or more** targets — name the bundle once, reuse.                   | [Task Groups](#task-groups)                          |
 | `@inherit` sentinel | A single project needs to **extend** an inherited array (`dependsOn`, `inputs`, `outputs`, `aliases`) instead of replacing it. | [`@inherit` array sentinel](#inherit-array-sentinel) |
 
 Per-target `project.json#targets` (and `vis.task.ts` overlays) override everything above — use them only for project-specific deviations, not as the default home for shared config.

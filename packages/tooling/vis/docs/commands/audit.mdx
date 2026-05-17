@@ -109,15 +109,15 @@ Run [`vis advisories sync`](./advisories.mdx) to populate the cache.
 
 ### Supply-chain policy engine
 
-| Option                | Default               | Description                                                                                                                                                                              |
-| --------------------- | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--policies <names>`  | every configured policy | Comma list of policies to evaluate this run. Pass `none` to skip the engine entirely, `all` to force every known policy. Known: `malware`, `firstSeen`, `unexpectedDeps`, `publisherChange`, `installScripts`, `score`, `vulnerability`, `license`. |
+| Option               | Default                 | Description                                                                                                                                                                                                                                         |
+| -------------------- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--policies <names>` | every configured policy | Comma list of policies to evaluate this run. Pass `none` to skip the engine entirely, `all` to force every known policy. Known: `malware`, `firstSeen`, `unexpectedDeps`, `publisherChange`, `installScripts`, `score`, `vulnerability`, `license`. |
 
 ### Backend selection
 
-| Option              | Default | Description                                                                                                                                                                |
-| ------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--backend <name>`  | `auto`  | Vulnerability scanner backend. `auto` delegates to `aube audit` when aube is the active installer; `aube` forces delegation (errors if `aube` is not on `PATH`); `vis` always uses the built-in OSV scanner (plus any configured providers — Socket.dev, deps.dev). |
+| Option             | Default | Description                                                                                                                                                                                                                                                         |
+| ------------------ | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--backend <name>` | `auto`  | Vulnerability scanner backend. `auto` delegates to `aube audit` when aube is the active installer; `aube` forces delegation (errors if `aube` is not on `PATH`); `vis` always uses the built-in OSV scanner (plus any configured providers — Socket.dev, deps.dev). |
 
 Resolution: CLI `--backend` → `VIS_AUDIT_BACKEND` env → `security.audit.backend` in `vis.config.ts` → `auto`.
 
@@ -131,12 +131,12 @@ findings do.
 
 This release ships four offline-clean policies:
 
-| Policy            | What it does                                                                          |
-| ----------------- | ------------------------------------------------------------------------------------- |
-| `license`         | SPDX allow / deny lists. Deny wins on any sub-expression match in SPDX expressions.   |
-| `installScripts`  | Wraps the existing `allowBuilds` / `strictDepBuilds` scan; surfaces unapproved hooks. |
-| `vulnerability`   | Surfaces OSV findings; `failOn` controls block vs. warn severity.                     |
-| `unexpectedDeps`  | Allow-list of acceptable transitives + baseline lockfile diff.                        |
+| Policy           | What it does                                                                          |
+| ---------------- | ------------------------------------------------------------------------------------- |
+| `license`        | SPDX allow / deny lists. Deny wins on any sub-expression match in SPDX expressions.   |
+| `installScripts` | Wraps the existing `allowBuilds` / `strictDepBuilds` scan; surfaces unapproved hooks. |
+| `vulnerability`  | Surfaces OSV findings; `failOn` controls block vs. warn severity.                     |
+| `unexpectedDeps` | Allow-list of acceptable transitives + baseline lockfile diff.                        |
 
 Network-bound policies (`malware`, `firstSeen`, `publisherChange`, `score`)
 plug into the same engine in a follow-up commit.

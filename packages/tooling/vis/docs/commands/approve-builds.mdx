@@ -24,12 +24,12 @@ vis approve-builds --write          # write the suggested entries into vis.confi
 
 ## Options
 
-| Option          | Default | Description                                                                                                                          |
-| --------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `--all`         | `false` | Approve all pending builds without prompting (pnpm only)                                                                             |
-| `--scan`        | `false` | Force vis scanning even for pnpm (instead of delegating to `pnpm approve-builds`)                                                    |
-| `--sync-native` | `false` | Sync `installScripts.allow` to the native PM config (bun: `trustedDependencies`, npm: `.npmrc`, yarn: `.yarnrc.yml`)                |
-| `--write`       | `false` | Mutate `vis.config.ts` in place — add the unapproved packages to `security.policies.installScripts.allow` (LavaMoat `auto` parity)  |
+| Option          | Default | Description                                                                                                                        |
+| --------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `--all`         | `false` | Approve all pending builds without prompting (pnpm only)                                                                           |
+| `--scan`        | `false` | Force vis scanning even for pnpm (instead of delegating to `pnpm approve-builds`)                                                  |
+| `--sync-native` | `false` | Sync `installScripts.allow` to the native PM config (bun: `trustedDependencies`, npm: `.npmrc`, yarn: `.yarnrc.yml`)               |
+| `--write`       | `false` | Mutate `vis.config.ts` in place — add the unapproved packages to `security.policies.installScripts.allow` (LavaMoat `auto` parity) |
 
 ### `--write` behavior
 

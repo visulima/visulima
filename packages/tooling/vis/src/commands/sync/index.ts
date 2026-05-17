@@ -30,6 +30,7 @@ const sync: Command = {
         ["vis sync codeowners --from=project-json,nested-codeowners", "Also aggregate nested CODEOWNERS files in the tree"],
         ["vis sync codeowners --regeneration-command='pnpm codeowners'", "Set a custom header instruction"],
         ["vis sync codeowners --preserve-block", "Splice the generated block between markers in an existing CODEOWNERS"],
+        ["vis sync codeowners --write-guard", "Also emit GitHub + GitLab Write Guard CI for restricted projects"],
         ["vis sync package-json-fields", "Mirror license/author/repository/bugs/homepage/engines from root to every workspace package"],
         ["vis sync package-json-fields --check", "Fail if any workspace package.json is out of sync"],
         ["vis sync package-json-fields --fields license,engines", "Override the default field list for this run"],
@@ -74,6 +75,13 @@ const sync: Command = {
             type: Boolean,
         },
         {
+            defaultValue: false,
+            description:
+                "Also emit a .github/workflows/write-guard.yml scoped to projects with `restricted: true` in project.json. Codeowners kind only.",
+            name: "write-guard",
+            type: Boolean,
+        },
+        {
             description: "Comma-separated list of fields to mirror from root → workspace packages (package-json-fields kind only). Repeatable.",
             multiple: true,
             name: "fields",
@@ -113,4 +121,5 @@ export type SyncOptions = CreateOptions<{
     "preserve-block": boolean | undefined;
     quiet: boolean | undefined;
     "regeneration-command": string | undefined;
+    "write-guard": boolean | undefined;
 }>;

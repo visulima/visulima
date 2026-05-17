@@ -23,6 +23,8 @@ Aggregates `owners` entries from every project's `project.json` into a single `C
 vis sync codeowners                           # Write to <workspace>/CODEOWNERS
 vis sync codeowners --out=.github/CODEOWNERS  # Custom output path
 vis sync codeowners --check                   # Verify file is up to date (CI guard)
+vis sync codeowners --write-guard             # Also emit Write Guard CI (GitHub + GitLab)
+vis sync codeowners --write-guard --check     # CI: fail if Write Guard files drift
 ```
 
 #### project.json owners
@@ -54,6 +56,59 @@ export default defineConfig({
 });
 ```
 
+#### Write Guard (`--write-guard`)
+
+`--write-guard` is opt-in. On top of generating `CODEOWNERS`, it emits CI that
+**fails a pull / merge request when a project flagged `restricted: true` in its
+`project.json` is touched without going through its CODEOWNERS approval.**
+
+Two artefacts are written so the guard works on both forges, scoped to the
+restricted project roots only — unrelated changes are never blocked:
+
+| Forge  | Output path                         | Mechanism                                                                                        |
+| ------ | ----------------------------------- | ------------------------------------------------------------------------------------------------ |
+| GitHub | `.github/workflows/write-guard.yml` | `pull_request` workflow gated on restricted paths, delegates to the `geritol/write-guard` action |
+| GitLab | `.gitlab/write-guard.gitlab-ci.yml` | Includable MR-gated job; verifies CODEOWNERS is in sync and prints the approval requirement      |
+
+Opt a project in via its `project.json`:
+
+```json
+{
+    "$schema": "https://unpkg.com/@visulima/vis/schemas/project.schema.json",
+    "restricted": true,
+    "owners": [{ "path": "src/**", "owners": ["@myorg/security"] }]
+}
+```
+
+`include` the GitLab file from your root `.gitlab-ci.yml` and pair it with a
+protected-branch CODEOWNERS approval rule for full enforcement. With
+`--write-guard --check`, CI exits non-zero if either generated file drifts from
+what the current `restricted` set would produce — a clean `CODEOWNERS` does
+**not** reset that failure. When no project is flagged `restricted: true`, the
+flag no-ops with an informational message.
+
+Upstream references: the GitHub workflow delegates to the
+[`geritol/write-guard`](https://github.com/marketplace/actions/write-guard)
+action; both forges build on native CODEOWNERS approval —
+[GitHub CODEOWNERS](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners)
+and [GitLab Code Owners](https://docs.gitlab.com/ee/user/project/codeowners/).
+
+```mermaid
+flowchart TD
+    A["vis sync codeowners --write-guard"] --> B["Scan every project.json"]
+    B --> C{"restricted: true?"}
+    C -- none --> Z["Info: nothing restricted, skip"]
+    C -- "1+ projects" --> D["Resolve + dedupe project-root globs"]
+    D --> E["Render GitHub workflow"]
+    D --> F["Render GitLab CI job"]
+    E --> G{"--check?"}
+    F --> G
+    G -- no --> H["Write .github + .gitlab artefacts"]
+    G -- yes --> I{"On-disk content == rendered?"}
+    I -- yes --> J["Info: Write Guard up to date"]
+    I -- no --> K["Error + exitCode=1\n(not reset by clean CODEOWNERS)"]
+```
+
 ### package-json-fields
 
 Mirrors a small set of metadata fields from the **root** `package.json` to every workspace package, so each package keeps a consistent `license`, `author`, `bugs`, `homepage`, `engines`, and `repository`. `repository.directory` is preserved per package — only `type` and `url` are copied from root.
@@ -77,11 +132,12 @@ Fields missing from root are skipped — sync never deletes from a package. Fiel
 
 ## Options
 
-| Option                  | Default                  | Description                                                                        |
-| ----------------------- | ------------------------ | ---------------------------------------------------------------------------------- |
-| `--out`                 | `<workspace>/CODEOWNERS` | Output file path (codeowners only)                                                 |
-| `--check`               | `false`                  | Exit non-zero if drift is found (no writes)                                        |
-| `--fields`              |                          | Comma-separated field list to mirror (package-json-fields only). Repeatable.       |
-| `--ignore-package-name` |                          | Glob of package names to skip (package-json-fields only). Repeatable.              |
-| `--format`              | `human`                  | Output format for package-json-fields: `human` or `json`.                          |
-| `--quiet`               | `false`                  | Suppress per-package log lines; print only the summary (package-json-fields only). |
+| Option                  | Default                  | Description                                                                                |
+| ----------------------- | ------------------------ | ------------------------------------------------------------------------------------------ |
+| `--out`                 | `<workspace>/CODEOWNERS` | Output file path (codeowners only)                                                         |
+| `--check`               | `false`                  | Exit non-zero if drift is found (no writes)                                                |
+| `--write-guard`         | `false`                  | Also emit GitHub + GitLab Write Guard CI for `restricted: true` projects (codeowners only) |
+| `--fields`              |                          | Comma-separated field list to mirror (package-json-fields only). Repeatable.               |
+| `--ignore-package-name` |                          | Glob of package names to skip (package-json-fields only). Repeatable.                      |
+| `--format`              | `human`                  | Output format for package-json-fields: `human` or `json`.                                  |
+| `--quiet`               | `false`                  | Suppress per-package log lines; print only the summary (package-json-fields only).         |

@@ -802,6 +802,7 @@ const discoverWorkspace = (
             owners: projectJson?.owners,
             project: projectJson?.project,
             projectType,
+            restricted: projectJson?.restricted,
             root: projectDirectory,
             sourceRoot: projectJson?.sourceRoot ?? `${projectDirectory}/src`,
             stack: projectJson?.stack,
