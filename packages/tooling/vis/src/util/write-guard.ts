@@ -1,15 +1,21 @@
 /**
  * Write Guard generators.
  *
- * `vis sync codeowners --write-guard` emits CI that fails a pull /
- * merge request when a project flagged `restricted: true` in its
- * project.json is touched without going through its CODEOWNERS. Two
- * artefacts are produced so the guard works on both forges:
+ * `vis sync codeowners --write-guard` emits CI for projects flagged
+ * `restricted: true` in their project.json. Two artefacts are produced
+ * so the guard works on both forges, with deliberately different
+ * enforcement strength:
  *
- *  - GitHub: `.github/workflows/write-guard.yml` (uses the existing
- *    `geritol/write-guard` action, which reads the repo CODEOWNERS).
- *  - GitLab: `.gitlab/write-guard.gitlab-ci.yml`, an includable job
- *    that gates merge requests touching restricted paths.
+ *  - GitHub: `.github/workflows/write-guard.yml` — a **hard gate**.
+ *    Uses the existing `geritol/write-guard` action, which reads the
+ *    repo CODEOWNERS and fails the PR check when a restricted path
+ *    changed without code-owner approval.
+ *  - GitLab: `.gitlab/write-guard.gitlab-ci.yml` — a **soft guard**.
+ *    CI cannot portably gate a merge on code-owner *approval*, so the
+ *    job only verifies CODEOWNERS freshness and loudly states (in a
+ *    file header comment and its own log output) that real
+ *    enforcement requires GitLab's native protected-branch "Require
+ *    approval from Code Owners" setting.
  *
  * Both are scoped to restricted project roots so unrelated changes
  * are never blocked.
@@ -97,14 +103,20 @@ ${guardLines}
 };
 
 /**
- * Renders an includable GitLab CI job. GitLab has no `geritol`
- * equivalent, so the job enforces what CI portably can: on merge
- * requests touching a restricted path it verifies the repo CODEOWNERS
- * is in sync (owners cannot be silently dropped) and prints the
- * native CODEOWNERS approval requirement so reviewers don't bypass it.
+ * Renders an includable GitLab CI job.
  *
- * `include` this file from `.gitlab-ci.yml` and pair it with a
- * protected-branch CODEOWNERS approval rule for full enforcement.
+ * Unlike the GitHub side (a hard gate via `geritol/write-guard`), this
+ * is a deliberate **soft guard**: GitLab CI cannot portably gate a
+ * merge on code-owner *approval* from a job (it needs an API-scoped
+ * token and a pipeline that re-runs on approval). So the job only
+ * verifies the repo CODEOWNERS is in sync and loudly states that real
+ * enforcement requires GitLab's native protected-branch "Require
+ * approval from Code Owners" setting. The generated file says this
+ * prominently in a header comment **and** in the job's own log output
+ * so it can't be silently mistaken for a blocking check.
+ *
+ * `include` this file from `.gitlab-ci.yml` and enable the native
+ * setting for full enforcement.
  */
 export const renderGitlabWriteGuard = (projects: ReadonlyArray<RestrictedProject>): string => {
     const globs = resolveGlobs(projects);
@@ -115,6 +127,16 @@ export const renderGitlabWriteGuard = (projects: ReadonlyArray<RestrictedProject
     const changeLines = globs.map((glob) => `        - "${glob}/*"`).join("\n");
 
     return `# ${GENERATED_NOTE}
+#
+# SOFT GUARD ONLY — this job does NOT block a merge by itself.
+# It verifies the generated CODEOWNERS is in sync and flags that a
+# restricted path changed. GitLab CI cannot portably gate a merge on
+# code-owner *approval* from a job, so REAL ENFORCEMENT REQUIRES the
+# native GitLab setting:
+#   Settings -> Repository -> Protected branches ->
+#   "Require approval from Code Owners"  (GitLab Premium / Ultimate)
+#   https://docs.gitlab.com/ee/user/project/codeowners/
+# Without that setting enabled, this job is advisory only.
 write-guard:
   stage: test
   image: node:22-alpine
@@ -127,7 +149,10 @@ ${changeLines}
     - pnpm install --frozen-lockfile
     - pnpm vis sync codeowners --check
     - >-
-      echo "Restricted paths changed. A CODEOWNERS approval is required to merge."
+      echo "SOFT GUARD: a restricted path changed. This job does NOT enforce
+      code-owner approval. Enable 'Require approval from Code Owners' on the
+      protected branch (GitLab Premium/Ultimate) for a real merge gate:
+      https://docs.gitlab.com/ee/user/project/codeowners/"
 `;
 };
 

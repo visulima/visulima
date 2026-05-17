@@ -38,6 +38,19 @@ describe(renderGitlabWriteGuard, () => {
         expect(yaml).toContain("- \"packages/a/**/*\"");
         expect(yaml).toContain("pnpm vis sync codeowners --check");
     });
+
+    it("loudly documents that it is a soft guard needing the native GitLab setting", () => {
+        expect.assertions(4);
+
+        const yaml = renderGitlabWriteGuard(projects);
+
+        // The asymmetry with the GitHub hard gate must be unmissable:
+        // stated in the file header comment AND the job log output.
+        expect(yaml).toContain("SOFT GUARD ONLY");
+        expect(yaml).toContain("Require approval from Code Owners");
+        expect(yaml).toContain("https://docs.gitlab.com/ee/user/project/codeowners/");
+        expect(yaml).toContain("This job does NOT enforce");
+    });
 });
 
 describe(buildWriteGuardArtifacts, () => {
