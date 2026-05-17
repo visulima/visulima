@@ -1,9 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 
 import {
+    checkGitLfsTracking,
     checkInotifyCapacity,
     checkOrphanedRunners,
     checkTtyAvailability,
+    checkWatchmanAvailability,
     killOrphanedRunners,
     killViaSignal,
     killViaTaskkill,
@@ -150,6 +152,32 @@ describe(checkOrphanedRunners, () => {
         // Self must never appear regardless of whether other orphans exist;
         // the "exclude self" guard is the contract under test.
         expect(pidList).not.toContain(process.pid);
+    });
+});
+
+describe(checkWatchmanAvailability, () => {
+    it("reports the watchman id with ok-or-skip status and a non-empty message", () => {
+        expect.assertions(3);
+
+        const diagnostic = checkWatchmanAvailability();
+
+        expect(diagnostic.id).toBe("watchman");
+        // Never a hard failure — native fs.watch is always a valid
+        // fallback, so the only outcomes are "in use" or "hint".
+        expect(["ok", "skip"]).toContain(diagnostic.status);
+        expect(diagnostic.message.length).toBeGreaterThan(0);
+    });
+});
+
+describe(checkGitLfsTracking, () => {
+    it("reports the git-lfs id with a recognized status and a non-empty message", () => {
+        expect.assertions(3);
+
+        const diagnostic = checkGitLfsTracking();
+
+        expect(diagnostic.id).toBe("git-lfs");
+        expect(["ok", "skip", "warn"]).toContain(diagnostic.status);
+        expect(diagnostic.message.length).toBeGreaterThan(0);
     });
 });
 
@@ -388,17 +416,17 @@ describe("orphans diagnostic id constant", () => {
 });
 
 describe(runRuntimeDiagnostics, () => {
-    it("returns inotify, tty, and orphans diagnostics in a stable order", () => {
+    it("returns inotify, tty, watchman, git-lfs, and orphans diagnostics in a stable order", () => {
         expect.assertions(3);
 
         const diagnostics = runRuntimeDiagnostics();
 
-        expect(diagnostics.map((d) => d.id)).toStrictEqual(["inotify", "tty", "orphans"]);
+        expect(diagnostics.map((d) => d.id)).toStrictEqual(["inotify", "tty", "watchman", "git-lfs", "orphans"]);
         // Every diagnostic must have a recognized status — guards against
         // a future check accidentally returning a typo'd value.
 
         expect(diagnostics.every((d) => ["ok", "skip", "warn"].includes(d.status))).toBe(true);
-        expect(diagnostics).toHaveLength(3);
+        expect(diagnostics).toHaveLength(5);
     });
 
     it("each diagnostic has a non-empty message and id", () => {

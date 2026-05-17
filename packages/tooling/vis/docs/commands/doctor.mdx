@@ -130,11 +130,13 @@ Run [`vis optimize`](./optimize) for an interactive picker, or pass `--fix` to a
 
 The runtime block surfaces watch / signal subsystem state that silently breaks `vis run --watch` when misconfigured.
 
-| Check     | Platform   | What it reports                                                                                                                                                                                                                                                           |
-| --------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `inotify` | Linux only | Reads `/proc/sys/fs/inotify/max_user_watches`. Warns when the limit is below `65536` — large monorepos can exhaust this and `fs.watch` will silently miss events.                                                                                                         |
-| `tty`     | All        | Confirms an interactive TTY is present so [watch keybinds](./run#keybinds) work. Reports `skip` in CI / piped mode (keybinds disabled, file-change reruns still fire).                                                                                                    |
-| `orphans` | All        | Looks for stray `vis run` / task-runner processes left over from prior crashes. Up to two are reported as informational; three or more become a warning with a `kill` snippet. Pass `--fix` to send SIGTERM (or `taskkill` on Windows) to the matched PIDs automatically. |
+| Check      | Platform   | What it reports                                                                                                                                                                                                                                                                                                             |
+| ---------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `inotify`  | Linux only | Reads `/proc/sys/fs/inotify/max_user_watches`. Warns when the limit is below `65536` — large monorepos can exhaust this and `fs.watch` will silently miss events.                                                                                                                                                           |
+| `tty`      | All        | Confirms an interactive TTY is present so [watch keybinds](./run#keybinds) work. Reports `skip` in CI / piped mode (keybinds disabled, file-change reruns still fire).                                                                                                                                                      |
+| `watchman` | All        | Detects whether Facebook's `watchman` binary is on `PATH`. When present, [`vis run --watch`](./run#watch-mode) transparently uses the Watchman backend, which scales recursive watching far past `fs.watch` on large trees. Reports `skip` (with an install hint) when absent — the native watcher is still used.           |
+| `git-lfs`  | All        | Reads `.gitattributes` (relative to the workspace root, so it is found from subdirectories). Warns when LFS-tracked patterns exist but the `git lfs` binary is missing — checkouts would contain pointer files instead of real content. `ok` when LFS is configured and installed, `skip` when no LFS patterns are tracked. |
+| `orphans`  | All        | Looks for stray `vis run` / task-runner processes left over from prior crashes. Up to two are reported as informational; three or more become a warning with a `kill` snippet. Pass `--fix` to send SIGTERM (or `taskkill` on Windows) to the matched PIDs automatically.                                                   |
 
 When the inotify warning fires, the suggested fix is:
 
@@ -143,6 +145,28 @@ sudo sysctl fs.inotify.max_user_watches=524288
 ```
 
 (VS Code and IntelliJ recommend the same value; persist it via `/etc/sysctl.d/`.)
+
+The `inotify`, `watchman`, and `git-lfs` checks together form the **VCS-scaling
+posture** — they tell you whether watch mode and large checkouts will hold up as
+the monorepo grows:
+
+```mermaid
+flowchart TD
+    A["vis doctor (runtime)"] --> B["inotify capacity\n(Linux watch ceiling)"]
+    A --> C["watchman on PATH?"]
+    A --> D[".gitattributes LFS patterns?"]
+    B -- "< 65536" --> B1["warn: bump max_user_watches"]
+    C -- present --> C1["ok: vis run --watch uses\nWatchman daemon backend"]
+    C -- absent --> C2["skip: native fs.watch fallback\n(install hint)"]
+    D -- "LFS tracked + git-lfs missing" --> D1["warn: checkouts get\npointer files, not content"]
+    D -- "LFS tracked + git-lfs present" --> D2["ok"]
+    D -- "no LFS patterns" --> D3["skip"]
+```
+
+Upstream references for the tools these checks probe:
+[inotify (`man 7 inotify`)](https://man7.org/linux/man-pages/man7/inotify.7.html),
+[Watchman](https://facebook.github.io/watchman/), and
+[Git LFS](https://git-lfs.com/).
 
 Runtime warnings flip the exit code to `1` only under `--strict`, since none of them indicate a security issue.
 
@@ -183,6 +207,12 @@ The `orphans` warning is the only runtime check `--fix` can resolve. The auto-re
             "detail": { "maxWatches": 8192 }
         },
         { "id": "tty", "status": "skip", "message": "No TTY on stdin/stdout — running in CI / piped mode (keybinds disabled)." },
+        {
+            "id": "watchman",
+            "status": "skip",
+            "message": "Watchman not found — `vis` uses native fs.watch (fine for small repos). Install Watchman + `fb-watchman` to scale watch mode on large monorepos."
+        },
+        { "id": "git-lfs", "status": "skip", "message": "No Git LFS tracking declared in .gitattributes." },
         { "id": "orphans", "status": "ok", "message": "No orphaned vis/task-runner processes detected." }
     ],
     "packageManager": "pnpm",
@@ -201,8 +231,8 @@ Status fields:
 
 ## Exit Codes
 
-| Mode                    | Fails when                                                                                  |
-| ----------------------- | ------------------------------------------------------------------------------------------- |
+| Mode                    | Fails when                                                                                    |
+| ----------------------- | --------------------------------------------------------------------------------------------- |
 | `--exit-code` (default) | Vulnerabilities or provider alerts present                                                    |
 | `--exit-code --strict`  | Any of: vulnerabilities, provider alerts, outdated deps, duplicate versions, runtime warnings |
 
@@ -214,4 +244,5 @@ Without `--exit-code`, doctor always exits `0` so it stays usable as an informat
 - [`vis optimize`](./optimize) — interactive optimization picker (codemods, overrides).
 - [`vis update`](./update) — update outdated dependencies.
 - [`vis toolchain`](./toolchain) — Node / package-manager version pinning.
-- [`vis run --watch`](./run#watch-mode) — uses the inotify capacity surfaced by the `inotify` runtime check.
+- [`vis run --watch`](./run#watch-mode) — uses the inotify capacity surfaced by the `inotify` runtime check and the Watchman backend surfaced by the `watchman` check.
+- [`vis affected --sparse-checkout`](./affected#sparse-checkout-cone---sparse-checkout) — pairs with the `git-lfs` runtime check for keeping large checkouts fast.

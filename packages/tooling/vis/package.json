@@ -187,13 +187,17 @@
     },
     "peerDependencies": {
         "@gitbeaker/rest": ">=43.8.0",
-        "@octokit/rest": ">=22.0.1"
+        "@octokit/rest": ">=22.0.1",
+        "fb-watchman": ">=2.0.0"
     },
     "peerDependenciesMeta": {
         "@gitbeaker/rest": {
             "optional": true
         },
         "@octokit/rest": {
+            "optional": true
+        },
+        "fb-watchman": {
             "optional": true
         }
     },

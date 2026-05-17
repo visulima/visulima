@@ -119,11 +119,11 @@ A typical pipeline:
 
 ### Exit-code semantics
 
-| Flag                | Exit behaviour                                                                                |
-| ------------------- | --------------------------------------------------------------------------------------------- |
-| _none_              | Always exit 0. Audit is informational by default.                                             |
+| Flag                | Exit behaviour                                                                                 |
+| ------------------- | ---------------------------------------------------------------------------------------------- |
+| _none_              | Always exit 0. Audit is informational by default.                                              |
 | `--exit-code`       | Exit 1 if any actionable finding is present **or** the policy engine emits a `block` decision. |
-| `--fail-on <level>` | Exit 1 when a vulnerability meets `<level>` or higher, **or** when a `block` policy fires.    |
+| `--fail-on <level>` | Exit 1 when a vulnerability meets `<level>` or higher, **or** when a `block` policy fires.     |
 
 Acknowledged risks are excluded from the gate unless `--show-accepted` is set.
 
@@ -155,12 +155,12 @@ they're surfaced via the existing Socket-direct integration.
 
 ### CLI surface
 
-| Flag                  | Behaviour                                                                                  |
-| --------------------- | ------------------------------------------------------------------------------------------ |
-| `--policies <list>`   | Narrow this run to a subset of policies. Comma list. Accepts camelCase or snake_case names. |
-| `--policies all`      | Force every known policy regardless of config.                                             |
-| `--policies none`     | Skip the engine entirely.                                                                  |
-| _no flag_             | Evaluate every policy that has a configured `security.policies.<name>` entry.              |
+| Flag                | Behaviour                                                                                   |
+| ------------------- | ------------------------------------------------------------------------------------------- |
+| `--policies <list>` | Narrow this run to a subset of policies. Comma list. Accepts camelCase or snake_case names. |
+| `--policies all`    | Force every known policy regardless of config.                                              |
+| `--policies none`   | Skip the engine entirely.                                                                   |
+| _no flag_           | Evaluate every policy that has a configured `security.policies.<name>` entry.               |
 
 ### Accepted risks per policy
 
@@ -213,10 +213,10 @@ This writes the accepted risks into the appropriate PM config (`pnpm-workspace.y
 
 `vis` ships a pluggable provider interface for the network-bound supply-chain signals that complement the offline OSV audit. Each provider returns a per-package report (score axes + alerts); when more than one is enabled, results are **merged** rather than replaced.
 
-| Provider                              | Auth                          | Strengths                                                                 |
-| ------------------------------------- | ----------------------------- | ------------------------------------------------------------------------- |
-| **Socket.dev** (`socket`)             | Public token / `VIS_SOCKET_TOKEN` | Five-axis package score (quality, maintenance, supply chain, license, vulnerability), curated alerts (malware, install scripts, telemetry, typosquats), version-scoped data. |
-| **Google deps.dev** (`deps-dev`)      | None                          | OpenSSF Scorecard signals (16 automated checks) + GHSA advisories, no API token, generous rate limits, completely free. |
+| Provider                         | Auth                              | Strengths                                                                                                                                                                    |
+| -------------------------------- | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Socket.dev** (`socket`)        | Public token / `VIS_SOCKET_TOKEN` | Five-axis package score (quality, maintenance, supply chain, license, vulnerability), curated alerts (malware, install scripts, telemetry, typosquats), version-scoped data. |
+| **Google deps.dev** (`deps-dev`) | None                              | OpenSSF Scorecard signals (16 automated checks) + GHSA advisories, no API token, generous rate limits, completely free.                                                      |
 
 ```ts
 // vis.config.ts
@@ -224,8 +224,8 @@ import { defineConfig } from "@visulima/vis/config";
 
 export default defineConfig({
     security: {
-        socket: { enabled: true },          // requires VIS_SOCKET_TOKEN
-        depsDev: { enabled: true },         // no auth — safe to enable in CI
+        socket: { enabled: true }, // requires VIS_SOCKET_TOKEN
+        depsDev: { enabled: true }, // no auth — safe to enable in CI
 
         // Which provider's `score` wins on conflict. Alerts from the other
         // provider are still appended and deduped by `key`.
@@ -245,12 +245,12 @@ When both providers return data for the same package:
 
 ### Per-run escape hatches
 
-| Env var                       | Effect                                                  |
-| ----------------------------- | ------------------------------------------------------- |
-| `MARSHALL_DISABLE_SOCKET=1`   | Skip the Socket.dev provider for the current process.   |
-| `MARSHALL_DISABLE_DEPS_DEV=1` | Skip the deps.dev provider for the current process.     |
-| `MARSHALL_DISABLE_ALL=1`      | Skip every marshall-gated check (including providers).  |
-| `--offline` on `vis audit`    | Disables both providers for this command only.          |
+| Env var                       | Effect                                                 |
+| ----------------------------- | ------------------------------------------------------ |
+| `MARSHALL_DISABLE_SOCKET=1`   | Skip the Socket.dev provider for the current process.  |
+| `MARSHALL_DISABLE_DEPS_DEV=1` | Skip the deps.dev provider for the current process.    |
+| `MARSHALL_DISABLE_ALL=1`      | Skip every marshall-gated check (including providers). |
+| `--offline` on `vis audit`    | Disables both providers for this command only.         |
 
 ### Cache locations
 

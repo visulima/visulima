@@ -177,6 +177,13 @@ export interface ProjectJson {
      * - `tool` — CLI or developer tooling shipped as an executable.
      */
     projectType?: "application" | "library" | "service" | "tool";
+
+    /**
+     * Marks the project as write-restricted. Consumed by
+     * `vis sync codeowners --write-guard` to scope the generated
+     * Write Guard workflow to this project's paths.
+     */
+    restricted?: boolean;
     /** Source root, used for display and language inference. */
     sourceRoot?: string;
     /** Tech stack. */
@@ -1894,6 +1901,8 @@ export interface VisProjectConfiguration extends ProjectConfiguration {
     owners?: OwnersEntry[];
     /** Human-readable metadata block. */
     project?: ProjectJson["project"];
+    /** Whether the project is write-restricted (Write Guard). */
+    restricted?: boolean;
     /** Project stack classification. */
     stack?: ProjectJson["stack"];
     /** Raw targets with vis-specific options retained. */

@@ -298,13 +298,69 @@ Shapes:
 
 ## Watch Mode
 
-With `--watch`, vis runs the target once, then watches all matched project roots for file changes and reruns automatically:
+With `--watch`, vis runs the target once, then watches the matched project roots for file changes and reruns automatically:
 
 ```bash
 vis run :test --watch
 ```
 
 Changes are debounced (150ms). Cache-aware reruns are fast — only tasks whose inputs changed will re-execute.
+
+### Scope: watch never watches the whole workspace
+
+The watch set is **only the selected project set**, never every project in the
+config. Selection flows through the same filters as a normal run before the
+watcher sees a single path — narrow it with `-p` / `--projects` or `--query`:
+
+```bash
+vis run dev --watch -p my-service                    # one project by name
+vis run :dev --watch --query "projectType=service"   # by metadata
+vis run :dev --watch --query "projectType=library"
+vis run :dev --watch --query "projectType=application && stack=backend"
+```
+
+Only projects that also declare the running target survive into the watch set.
+After the first run the watcher narrows **further**: it switches from "project
+roots" mode to **tracked mode**, watching just the directories and files the
+last run actually touched (derived from each task's hash inputs) rather than the
+whole project root. When a run produces no hash inputs it stays on project-roots
+mode. The watcher is rebuilt after every rerun so the set always reflects what
+the newest run cares about.
+
+### Backend: Watchman with native fallback
+
+vis picks the file-watching backend automatically:
+
+- **Watchman** — if both the `fb-watchman` module _and_ the `watchman` binary
+  are present, vis subscribes through the Watchman daemon. One daemon-side crawl
+  is shared across every root, so this scales far past `fs.watch` on large
+  trees. `fb-watchman` is an **optional** peer dependency — install it (and the
+  `watchman` binary) only if you want this path. See the upstream reference:
+  [Watchman](https://facebook.github.io/watchman/) and the
+  [`fb-watchman` client](https://www.npmjs.com/package/fb-watchman).
+- **Native `fs.watch`** — the default fallback. Uses Node's recursive
+  `fs.watch({ recursive: true })` per project root. No extra dependency.
+
+Detection is synchronous and cached, so the backend choice can't lose a race
+against the fallback. Both backends feed the **same** debounce / ignore / filter
+pipeline and emit paths with identical (`fs.watch`-relative) semantics, so
+behaviour is the same regardless of which one is active — Watchman only changes
+throughput, not results. Run [`vis doctor`](./doctor#runtime) to see which
+backend is active (the `watchman` runtime check).
+
+```mermaid
+flowchart TD
+    A["vis run --watch"] --> B["Resolve selected project set\n(-p / --query / target)"]
+    B --> C["First run"]
+    C --> D{"fb-watchman module\n+ watchman binary?"}
+    D -- yes --> E["Watchman daemon\nsubscription per root"]
+    D -- no --> F["Native fs.watch\n(recursive) per root"]
+    E --> G["Shared debounce + ignore\n+ tracked-file filter"]
+    F --> G
+    G --> H["Change detected → rerun\n(cache-aware)"]
+    H --> I["Rebuild watcher in tracked mode\n(only files the run touched)"]
+    I --> G
+```
 
 ### Keybinds
 

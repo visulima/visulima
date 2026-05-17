@@ -31,16 +31,16 @@ vis inspect express --only signatures     # signatures are off by default; opt i
 
 Every marshall is identical to the one run during `vis add` / `vis install` / `vis update`:
 
-| Marshall          | What it checks                                                                              |
-| ----------------- | ------------------------------------------------------------------------------------------- |
-| `author`          | Recent version + new-publisher + dormant-maintainer heuristics from the packument `time`.   |
-| `provenance`      | Regression: prior version had `dist.attestations`, current version dropped them.            |
-| `newBin`          | The new version introduces additional bin scripts not present in the immediately prior one. |
-| `metadata`        | README/license/repository presence, repo URL validity, placeholder README detection.        |
-| `downloads`       | Monthly downloads below a configurable warn/error threshold (npm stats API).                |
-| `expiredDomains`  | Maintainer email domains whose authoritative NS records return NXDOMAIN/ENOTFOUND.          |
-| `signatures`      | ECDSA P-256 verification of `dist.signatures` against `/-/npm/v1/keys`.                     |
-| `archivedRepo`    | The package's GitHub repo is archived (no longer maintained) or returns 404.                |
+| Marshall         | What it checks                                                                              |
+| ---------------- | ------------------------------------------------------------------------------------------- |
+| `author`         | Recent version + new-publisher + dormant-maintainer heuristics from the packument `time`.   |
+| `provenance`     | Regression: prior version had `dist.attestations`, current version dropped them.            |
+| `newBin`         | The new version introduces additional bin scripts not present in the immediately prior one. |
+| `metadata`       | README/license/repository presence, repo URL validity, placeholder README detection.        |
+| `downloads`      | Monthly downloads below a configurable warn/error threshold (npm stats API).                |
+| `expiredDomains` | Maintainer email domains whose authoritative NS records return NXDOMAIN/ENOTFOUND.          |
+| `signatures`     | ECDSA P-256 verification of `dist.signatures` against `/-/npm/v1/keys`.                     |
+| `archivedRepo`   | The package's GitHub repo is archived (no longer maintained) or returns 404.                |
 
 ## Options
 
@@ -79,11 +79,11 @@ vis inspect lodash --only author,signatures
 
 ## Exit codes
 
-| Code | Meaning                                                               |
-| ---- | --------------------------------------------------------------------- |
-| 0    | No error findings (warnings allowed unless `--strict`).               |
-| 1    | At least one error finding (or any finding with `--strict`).          |
-| 2    | Package not found, or `<spec>` did not resolve to a published version.|
+| Code | Meaning                                                                |
+| ---- | ---------------------------------------------------------------------- |
+| 0    | No error findings (warnings allowed unless `--strict`).                |
+| 1    | At least one error finding (or any finding with `--strict`).           |
+| 2    | Package not found, or `<spec>` did not resolve to a published version. |
 
 ## Environment variables
 

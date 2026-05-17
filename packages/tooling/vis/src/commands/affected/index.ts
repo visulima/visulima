@@ -11,6 +11,7 @@ const affected: Command = {
         ["vis affected build", "Run build on affected projects"],
         ["vis affected test --base=main", "Run tests on projects changed since main"],
         ["vis affected destroy --reverse", "Tear down affected projects leaves-first"],
+        ["vis affected build --sparse-checkout", "Print a git sparse-checkout cone set for the affected projects and exit"],
     ],
     group: "Run & Execute",
     loader: () => import("./handler"),
@@ -59,6 +60,13 @@ const affected: Command = {
             type: Boolean,
         },
         {
+            defaultValue: false,
+            description:
+                "Instead of running, print the affected project roots as a git sparse-checkout cone set (one path per line) and exit. Pipe into `git sparse-checkout set --stdin` to shrink huge-monorepo CI checkouts.",
+            name: "sparse-checkout",
+            type: Boolean,
+        },
+        {
             description: "Partition tasks for distributed CI (e.g., \"1/4\" for first of four runners). Falls back to VIS_PARTITION env var.",
             name: "partition",
             type: String,
@@ -97,5 +105,6 @@ export type AffectedCommandOptions = CreateOptions<{
     query: string | undefined;
     reverse: boolean | undefined;
     "runner-tags": string | undefined;
+    "sparse-checkout": boolean | undefined;
     upstream: string | undefined;
 }>;

@@ -69,6 +69,19 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
         }
     }
 
+    if (options.sparseCheckout) {
+        // Emit one project root per line, deduped and sorted, so the
+        // output pipes straight into `git sparse-checkout set --stdin`.
+        // Only paths go to stdout; nothing else is logged so the pipe
+        // stays clean. Falls back to the project name when a project
+        // declares no root (it doubles as the directory by convention).
+        const roots = [...new Set(affectedProjects.map((name) => workspace.projects[name]?.root ?? name))].sort();
+
+        process.stdout.write(`${roots.join("\n")}\n`);
+
+        return;
+    }
+
     logger.info(`Affected projects: ${affectedProjects.join(", ")}`);
 
     if (result.changedFiles.length > 0) {

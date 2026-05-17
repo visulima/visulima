@@ -11,11 +11,11 @@ This page is the narrative companion to [Configuration](/configuration). The ref
 
 ## The three files
 
-| File              | Lives in            | Owns                                                                                                                | Touched by                            |
-| ----------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
-| `vis.config.ts`   | Workspace root      | Workspace-wide policy: tasks, scoped tasks, file groups, named inputs, security, constraints, codeowners, secrets, update rules. | Workspace lead / platform team        |
-| `project.json`    | Each project root   | Per-project **metadata** (`projectType`, `tags`, `layer`, `stack`, `language`, `owners`, `implicitDependencies`, `sourceRoot`) plus optional per-target overrides. | Project owners                        |
-| `vis.task.ts`     | Each project root (opt-in) | Per-project **typed** task overlay — same shape as `project.json#targets` but with full TypeScript inference, autocomplete, and access to runtime helpers. | Project owners who want type safety   |
+| File            | Lives in                   | Owns                                                                                                                                                               | Touched by                          |
+| --------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------- |
+| `vis.config.ts` | Workspace root             | Workspace-wide policy: tasks, scoped tasks, file groups, named inputs, security, constraints, codeowners, secrets, update rules.                                   | Workspace lead / platform team      |
+| `project.json`  | Each project root          | Per-project **metadata** (`projectType`, `tags`, `layer`, `stack`, `language`, `owners`, `implicitDependencies`, `sourceRoot`) plus optional per-target overrides. | Project owners                      |
+| `vis.task.ts`   | Each project root (opt-in) | Per-project **typed** task overlay — same shape as `project.json#targets` but with full TypeScript inference, autocomplete, and access to runtime helpers.         | Project owners who want type safety |
 
 `package.json#scripts` is the fourth, implicit layer: any script vis doesn't find a target for is still runnable as a fallback. You almost never need to edit it for vis's sake — leave it for `npm run` ergonomics.
 
@@ -99,7 +99,7 @@ export default defineConfig({
 });
 ```
 
-**Reach for it when:** frontends build with Vite but libraries build with tsc — the *target name* is the same (`build`) but the *command* differs by project shape. **Skip it when:** the rule applies universally (use `tasks`) or only to one project (override in that project's `project.json`).
+**Reach for it when:** frontends build with Vite but libraries build with tsc — the _target name_ is the same (`build`) but the _command_ differs by project shape. **Skip it when:** the rule applies universally (use `tasks`) or only to one project (override in that project's `project.json`).
 
 ### `taskGroups` — named dependency bundles
 
@@ -163,8 +163,8 @@ every project          vis.config.ts#tasks
 
 `project.json` carries two distinct kinds of data — keep them clean:
 
-- **Metadata** (`projectType`, `tags`, `layer`, `stack`, `language`, `owners`, `implicitDependencies`, `sourceRoot`, `project`) describes *what the project is*. It's read by `vis query`, `vis sync codeowners`, scoped `scopedTasks`, and the constraint engine.
-- **Targets** (`targets`) describes *what the project builds*. It's read by `vis run`.
+- **Metadata** (`projectType`, `tags`, `layer`, `stack`, `language`, `owners`, `implicitDependencies`, `sourceRoot`, `project`) describes _what the project is_. It's read by `vis query`, `vis sync codeowners`, scoped `scopedTasks`, and the constraint engine.
+- **Targets** (`targets`) describes _what the project builds_. It's read by `vis run`.
 
 Putting `tags: ["frontend"]` in `project.json` lets a `scopedTasks` block target it without naming the project explicitly — that's the leverage. The more projects you tag, the more your defaults stay declarative instead of project-list-driven.
 
@@ -172,17 +172,17 @@ Putting `tags: ["frontend"]` in `project.json` lets a `scopedTasks` block target
 
 These don't belong in `tasks` or `scopedTasks` because they don't run as part of a target — they're enforced by other commands:
 
-| Field         | Read by                                      |
-| ------------- | -------------------------------------------- |
+| Field         | Read by                                                                        |
+| ------------- | ------------------------------------------------------------------------------ |
 | `security`    | `vis audit`, `vis add`, `vis install`, `vis update`, `vis check`, `vis doctor` |
-| `policy`      | `vis lint`                                   |
-| `constraints` | `vis run` (graph build), `vis check`         |
-| `codeowners`  | `vis sync codeowners`                        |
-| `secrets`     | `vis secrets`                                |
-| `update`      | `vis update`, `vis outdated`                 |
-| `staged`      | `vis staged` (git pre-commit)                |
-| `install`     | `vis install`, `vis add`, `vis remove`, `vis update`, `vis ci` |
-| `toolchain`   | `vis toolchain`, version-manager activation  |
+| `policy`      | `vis lint`                                                                     |
+| `constraints` | `vis run` (graph build), `vis check`                                           |
+| `codeowners`  | `vis sync codeowners`                                                          |
+| `secrets`     | `vis secrets`                                                                  |
+| `update`      | `vis update`, `vis outdated`                                                   |
+| `staged`      | `vis staged` (git pre-commit)                                                  |
+| `install`     | `vis install`, `vis add`, `vis remove`, `vis update`, `vis ci`                 |
+| `toolchain`   | `vis toolchain`, version-manager activation                                    |
 
 Treat these as top-level workspace policy — one place, one source of truth, edited rarely. Per-command flags always win over config, so CI workflows can override without rewriting `vis.config.ts`.
 

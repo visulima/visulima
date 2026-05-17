@@ -58,22 +58,22 @@ vis install --no-aube
 
 ## Options
 
-| Option                 | Alias | Default | Description                                                                                                                          |
-| ---------------------- | ----- | ------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `--frozen-lockfile`    |       | `false` | Explicitly use frozen lockfile (the default when a lockfile is present)                                                              |
-| `--no-frozen-lockfile` |       | `false` | Opt out of vis's default frozen-lockfile behavior and allow lockfile updates                                                         |
-| `--ci`                 |       | `false` | Clean install: wipes `node_modules` then installs with frozen lockfile (mirrors `npm ci` / `pnpm ci`)                                |
-| `--force`              | `-f`  | `false` | Force re-resolution of all deps                                                                                                      |
-| `--no-optional`        |       | `false` | Skip optional dependencies                                                                                                           |
+| Option                 | Alias | Default | Description                                                                                                                                            |
+| ---------------------- | ----- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `--frozen-lockfile`    |       | `false` | Explicitly use frozen lockfile (the default when a lockfile is present)                                                                                |
+| `--no-frozen-lockfile` |       | `false` | Opt out of vis's default frozen-lockfile behavior and allow lockfile updates                                                                           |
+| `--ci`                 |       | `false` | Clean install: wipes `node_modules` then installs with frozen lockfile (mirrors `npm ci` / `pnpm ci`)                                                  |
+| `--force`              | `-f`  | `false` | Force re-resolution of all deps                                                                                                                        |
+| `--no-optional`        |       | `false` | Skip optional dependencies                                                                                                                             |
 | `--run-scripts`        |       | `false` | Run lifecycle scripts (opts out of the universal block-by-default policy; allowlisted packages still run via `security.policies.installScripts.allow`) |
-| `--lockfile-only`      |       | `false` | Update lockfile without installing                                                                                                   |
-| `--offline`            |       | `false` | Strict offline: fail if any package is missing from the cache                                                                        |
-| `--prefer-offline`     |       | `false` | Cache-first: use cached packages when available, fall back to network for the rest                                                   |
-| `--dev`                | `-D`  | `false` | Install devDependencies only                                                                                                         |
-| `--prod`               | `-P`  | `false` | Skip devDependencies                                                                                                                 |
-| `--filter`             | `-F`  |         | Filter to specific workspace packages                                                                                                |
-| `--installer`          |       | `auto`  | Pick the installer explicitly: `auto`, `aube`, `pnpm`, `npm`, `yarn`, `bun`, `deno`. Overrides `VIS_INSTALLER` and `vis.config`      |
-| `--no-aube`            |       | `false` | Bypass aube and use the lockfile-detected PM. Wins over `--installer`, `VIS_INSTALLER`, and `install.backend`                        |
+| `--lockfile-only`      |       | `false` | Update lockfile without installing                                                                                                                     |
+| `--offline`            |       | `false` | Strict offline: fail if any package is missing from the cache                                                                                          |
+| `--prefer-offline`     |       | `false` | Cache-first: use cached packages when available, fall back to network for the rest                                                                     |
+| `--dev`                | `-D`  | `false` | Install devDependencies only                                                                                                                           |
+| `--prod`               | `-P`  | `false` | Skip devDependencies                                                                                                                                   |
+| `--filter`             | `-F`  |         | Filter to specific workspace packages                                                                                                                  |
+| `--installer`          |       | `auto`  | Pick the installer explicitly: `auto`, `aube`, `pnpm`, `npm`, `yarn`, `bun`, `deno`. Overrides `VIS_INSTALLER` and `vis.config`                        |
+| `--no-aube`            |       | `false` | Bypass aube and use the lockfile-detected PM. Wins over `--installer`, `VIS_INSTALLER`, and `install.backend`                                          |
 
 ## Aube as an installer
 

@@ -192,7 +192,7 @@ const streamScans = async (context: ScanContext): Promise<Omit<DoctorResults, "e
     const e18eNames = new Set(e18eEntries.map((e) => e.packageName));
     const dedupedSocket = socketOverrideEntries.filter((e) => !e18eNames.has(e.packageName));
     const allOptimizations = [...e18eEntries, ...dedupedSocket];
-    const runtime = wantsRuntime ? runRuntimeDiagnostics() : [];
+    const runtime = wantsRuntime ? runRuntimeDiagnostics(workspaceRoot) : [];
 
     // Mark sections running so the TUI tabs show spinners straight away.
     // The messages are rendered as a single dim activity line beneath

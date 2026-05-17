@@ -128,6 +128,39 @@ describe("vis affected --reverse → run forwarding", () => {
         expect(runCall!.argv).toContain("--runner-tags=gpu,slow");
     });
 
+    it("--sparse-checkout prints affected project roots to stdout and skips `run`", async () => {
+        expect.assertions(3);
+
+        const calls: RunCommandCall[] = [];
+        const written: string[] = [];
+        const originalWrite = process.stdout.write.bind(process.stdout);
+
+        process.stdout.write = (chunk: unknown): boolean => {
+            written.push(String(chunk));
+
+            return true;
+        };
+
+        try {
+            await affectedExecute({
+                argument: ["build"],
+                logger: makeLogger(),
+                options: { base: "HEAD~1", head: "HEAD", sparseCheckout: true },
+                runtime: makeRuntime(calls) as never,
+                visConfig: undefined,
+                workspaceRoot,
+            } as never);
+        } finally {
+            process.stdout.write = originalWrite;
+        }
+
+        expect(calls.find((c) => c.name === "run"), "must not delegate to `run` in sparse-checkout mode").toBeUndefined();
+        expect(written.join("")).toContain("packages/lib");
+        // Trailing newline so the stream pipes cleanly into
+        // `git sparse-checkout set --stdin`.
+        expect(written.join("").endsWith("\n")).toBe(true);
+    });
+
     it("omits --runner-tags when neither flag nor empty string is passed (don't bind a phantom filter)", async () => {
         expect.assertions(2);
 

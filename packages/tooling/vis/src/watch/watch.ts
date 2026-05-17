@@ -5,14 +5,17 @@ import { dirname, relative, resolve } from "@visulima/path";
 import type { TaskResults } from "@visulima/task-runner";
 
 import { pail } from "../io/logger";
+import { startWatchmanWatcher } from "./watchman";
 
 /**
  * Debounced multi-directory file watcher. Watches one or more project
  * roots recursively and invokes `onChange` at most once per debounce
  * window. Ignores edits inside `node_modules` and `.git`.
  *
- * `node:fs.watch({ recursive: true })` is supported on Linux, macOS,
- * and Windows since Node 20+, so no additional dependency is needed.
+ * Prefers the Watchman daemon when both the `fb-watchman` module and
+ * the `watchman` binary are available (it scales far better on large
+ * trees), and falls back to `node:fs.watch({ recursive: true })` —
+ * supported on Linux, macOS, and Windows since Node 20+ — otherwise.
  */
 export interface WatchHandle {
     close: () => void;
@@ -137,7 +140,6 @@ const shouldIgnore = (path: string): boolean => {
  */
 export const startWatcher = (options: WatchOptions): WatchHandle => {
     const { debounceMs = 150, filter, onChange, paths } = options;
-    const watchers: FSWatcher[] = [];
     let pendingChanges = new Set<string>();
     let timer: NodeJS.Timeout | undefined;
 
@@ -157,6 +159,43 @@ export const startWatcher = (options: WatchOptions): WatchHandle => {
         });
     };
 
+    // Shared by both backends so ignore rules, the tracked-file
+    // filter, and debouncing behave identically regardless of whether
+    // the event came from Watchman or node:fs.watch.
+    const emit = (filename: string): void => {
+        if (shouldIgnore(filename)) {
+            return;
+        }
+
+        if (filter && !filter(filename)) {
+            return;
+        }
+
+        pendingChanges.add(filename);
+
+        if (timer) {
+            clearTimeout(timer);
+        }
+
+        timer = setTimeout(flush, debounceMs);
+    };
+
+    const watchmanHandle = startWatchmanWatcher(paths, emit);
+
+    if (watchmanHandle) {
+        return {
+            close: () => {
+                if (timer) {
+                    clearTimeout(timer);
+                }
+
+                watchmanHandle.close();
+            },
+        };
+    }
+
+    const watchers: FSWatcher[] = [];
+
     for (const path of paths) {
         try {
             const watcher = watch(path, { recursive: true }, (_eventType, filename) => {
@@ -164,21 +203,7 @@ export const startWatcher = (options: WatchOptions): WatchHandle => {
                     return;
                 }
 
-                if (shouldIgnore(filename)) {
-                    return;
-                }
-
-                if (filter && !filter(filename)) {
-                    return;
-                }
-
-                pendingChanges.add(filename);
-
-                if (timer) {
-                    clearTimeout(timer);
-                }
-
-                timer = setTimeout(flush, debounceMs);
+                emit(filename);
             });
 
             watchers.push(watcher);
