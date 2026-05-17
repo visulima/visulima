@@ -84,7 +84,7 @@
 ### Toolchain & runtime
 
 - **Pluggable installer** — defaults to the lockfile-detected PM (pnpm/npm/yarn/bun); auto-uses [aube](https://github.com/endevco/aube) when on `PATH`, with a single switch (`install.backend` / `--installer` / `--no-aube`) to pin or bypass it
-- **Cold-start one-liner** — `curl -fsSL https://visulima.com/install.sh | bash` (Linux/macOS/WSL) or PowerShell equivalent installs a version manager, Node LTS, and `vis`
+- **Cold-start one-liner** — `curl -fsSL https://visulima.com/install.sh | bash` (Linux/macOS/WSL) or PowerShell equivalent installs the latest Node LTS (or a version manager on request) and `vis`
 - **`vis toolchain`** — delegates to proto / mise / fnm / volta
 - **Built on Cerebro** — robust CLI with built-in help, version, and shell completion
 
@@ -106,7 +106,7 @@ pnpm add @visulima/vis
 
 ### Cold start (no Node? no manager?)
 
-One-liner bootstrap that installs a version manager, Node LTS, and `vis` in one go.
+One-liner bootstrap that installs Node and `vis` in one go. When no Node is found it installs the latest Node LTS directly by default (OS package manager, falling back to the official nodejs.org build); a version manager (proto / fnm / mise / volta) is offered as an opt-in alternative. Pin a specific major with `VIS_NODE_MAJOR`.
 
 **Linux / macOS / WSL** (bash):
 
