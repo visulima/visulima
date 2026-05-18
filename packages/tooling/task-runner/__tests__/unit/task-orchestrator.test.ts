@@ -774,4 +774,93 @@ describe(TaskOrchestrator, () => {
             expect(cached).toBeUndefined();
         });
     });
+
+    describe("auto-only outputs guard", () => {
+        it("skips cache and warns for { auto: true }-only outputs on the non-tracking path", async () => {
+            expect.assertions(4);
+
+            const task: Task = {
+                cache: true,
+                id: "app:build",
+                outputs: [{ auto: true }],
+                overrides: {},
+                projectRoot: "packages/app",
+                target: { project: "app", target: "build" },
+            };
+
+            const printEmptyFingerprintWarning = vi.fn<(task: Task, reason: string) => void>();
+            const orchestrator = createOrchestrator([task], successExecutor, {
+                lifeCycle: { printEmptyFingerprintWarning } as unknown as LifeCycleInterface,
+            });
+
+            const results = await orchestrator.run();
+
+            expect(results.get("app:build")?.status).toBe("success");
+            expect(printEmptyFingerprintWarning).toHaveBeenCalledTimes(1);
+            expect(printEmptyFingerprintWarning.mock.calls[0]?.[1]).toContain("no file writes were captured");
+
+            // Nothing persisted: an auto-only entry with zero captured
+            // writes must not seed a hit that restores nothing.
+            const cached = await new Cache({ workspaceRoot }).getByTaskId("app:build");
+
+            expect(cached).toBeUndefined();
+        });
+
+        it("still caches when a concrete string output is present alongside { auto: true }", async () => {
+            expect.assertions(2);
+
+            const task: Task = {
+                cache: true,
+                id: "app:build",
+                outputs: [{ auto: true }, "packages/app/dist"],
+                overrides: {},
+                projectRoot: "packages/app",
+                target: { project: "app", target: "build" },
+            };
+
+            const printEmptyFingerprintWarning = vi.fn<(task: Task, reason: string) => void>();
+            const orchestrator = createOrchestrator([task], successExecutor, {
+                lifeCycle: { printEmptyFingerprintWarning } as unknown as LifeCycleInterface,
+            });
+
+            const results = await orchestrator.run();
+
+            expect(results.get("app:build")?.status).toBe("success");
+            // Mixed outputs are not auto-only, so the guard must not fire.
+            expect(printEmptyFingerprintWarning).not.toHaveBeenCalled();
+        });
+
+        it("skips cache and warns on the tracking path when auto-only outputs captured no writes", async () => {
+            expect.assertions(3);
+
+            const task: Task = {
+                cache: true,
+                id: "app:build",
+                outputs: [{ auto: true }],
+                overrides: {},
+                projectRoot: "packages/app",
+                target: { project: "app", target: "build" },
+            };
+
+            const printEmptyFingerprintWarning = vi.fn<(task: Task, reason: string) => void>();
+            // autoFingerprint + no resolveCommand → the synthetic-reads
+            // branch of #executeTaskWithTracking: a valid fingerprint is
+            // built from hashed inputs but `autoWrites` is never
+            // populated, so the auto-only guard (not the empty-fingerprint
+            // net) is what must fire.
+            const orchestrator = createOrchestrator([task], successExecutor, {
+                autoFingerprint: true,
+                lifeCycle: { printEmptyFingerprintWarning } as unknown as LifeCycleInterface,
+            });
+
+            const results = await orchestrator.run();
+
+            expect(results.get("app:build")?.status).toBe("success");
+            expect(printEmptyFingerprintWarning.mock.calls[0]?.[1]).toContain("no file writes were captured");
+
+            const cached = await new Cache({ workspaceRoot }).getByTaskId("app:build");
+
+            expect(cached).toBeUndefined();
+        });
+    });
 });

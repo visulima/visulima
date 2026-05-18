@@ -3,6 +3,7 @@ import { join, resolve } from "@visulima/path";
 import type {
     DependencyType,
     InputDefinition,
+    OutputSpec,
     ProjectGraph,
     ProjectGraphDependency,
     ProjectGraphProjectNode,
@@ -560,13 +561,6 @@ const resolveFileGroupInputs = (
 const warnedUnknownDetectorKeys = new Set<string>();
 
 /**
- * Tracks which forced-cold `build` warnings have already been emitted in
- * this process. Keyed by `projectRoot::targetName` so the same target
- * doesn't warn once per discovery pass.
- */
-const warnedForcedColdBuilds = new Set<string>();
-
-/**
  * Resolves the `inferTargets` config to a per-detector predicate, or
  * `undefined` only when inference is explicitly disabled (`false`).
  * Inference is on by default: `undefined` (unset) and `true` both enable
@@ -800,19 +794,6 @@ const discoverWorkspace = (
         //     fall back to the auto-write capture below.
         const detectorEnabled = resolveInferTargetOption(config.inferTargets);
 
-        // Snapshot target names whose `cache:true` predates detector
-        // enrichment (i.e. came from a package.json script, project.json,
-        // or vis.task.ts — not our `defaultCacheForType` auto-derivation).
-        // Only these get a forced-cold warning below: an auto-derived
-        // compound build (eta) flipping cold is by-design and silent;
-        // a *user-requested* cached build that can't restore anything is
-        // surprising and worth a one-time heads-up.
-        const preInferenceCacheTrue = new Set(
-            Object.entries(visTargets)
-                .filter(([, t]) => t.cache === true)
-                .map(([n]) => n),
-        );
-
         if (detectorEnabled !== undefined) {
             const projectRoot = join(workspaceRoot, projectDirectory);
             const enabledDetectors = BUILT_IN_DETECTORS.filter((detector) => detectorEnabled(detector.name));
@@ -853,34 +834,21 @@ const discoverWorkspace = (
             }
         }
 
-        // Safety net: a cacheable `build` target with no declared
-        // outputs is a silent-correctness hazard — a cache hit restores
-        // nothing, so a downstream consumer sees a missing `dist/`. (A
-        // missing *inputs* needs no such net: the hasher falls back to
-        // `{projectRoot}/**/*`, which over-invalidates but never serves
-        // stale.) Force such targets cold rather than wrong. The
-        // guarded enrichment above is what keeps a `"build": "vite
-        // build"` script warm; making compound/custom build scripts
-        // cache zero-config needs auto-write output capture wired
-        // through the task-runner config→graph path (`outputs:
-        // OutputSpec[]`), which is a separate task-runner change.
+        // Zero-config caching for build scripts a detector couldn't
+        // map to precise outputs (compound/custom commands like
+        // `vite build && tsc`, or a build with no recognised tool):
+        // default to `{ auto: true }` so the cache captures whatever
+        // files the task actually wrote, instead of forcing the target
+        // cache-cold. This is safe because the task-runner declines to
+        // seed the cache for an auto-only target when write tracking
+        // recorded nothing (no missing-`dist/` hazard) — so the worst
+        // case is correct-but-cold, the same outcome the old forced
+        // `cache:false` produced, and the common case is now warm.
         for (const [name, target] of Object.entries(visTargets)) {
-            const hasOutputs = Array.isArray(target.outputs) ? target.outputs.length > 0 : target.outputs !== undefined;
+            const hasOutputs = Boolean(target.outputs?.length);
 
             if (target.type === "build" && target.cache === true && !hasOutputs) {
-                visTargets[name] = { ...target, cache: false };
-
-                if (preInferenceCacheTrue.has(name)) {
-                    const dedupKey = `${join(workspaceRoot, projectDirectory)}::${name}`;
-
-                    if (!warnedForcedColdBuilds.has(dedupKey)) {
-                        warnedForcedColdBuilds.add(dedupKey);
-                        process.emitWarning(
-                            `vis: target "${name}" in ${pkg.name ?? projectDirectory} requested cache:true but declares no outputs and no detector could infer them — forcing it cache-cold so a hit can't restore a missing build artifact. Declare \`outputs\` on the target (or align the script with a detected tool) to cache it.`,
-                            "VisConfigWarning",
-                        );
-                    }
-                }
+                visTargets[name] = { ...target, outputs: [{ auto: true }] satisfies OutputSpec[] };
             }
         }
 

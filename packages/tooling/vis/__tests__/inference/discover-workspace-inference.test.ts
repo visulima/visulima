@@ -85,7 +85,7 @@ describe("discoverWorkspace target inference", () => {
         expect(build?.cache).toBe(true);
     });
 
-    it("does not adopt precise outputs for a compound script and forces it cache-cold", () => {
+    it("defaults a compound script to { auto: true } outputs instead of forcing it cache-cold", () => {
         expect.assertions(3);
 
         writeProject(scratch, "eta", {
@@ -98,10 +98,11 @@ describe("discoverWorkspace target inference", () => {
 
         expect(build?.command).toBe("vite build && tsc --emitDeclarationOnly");
         // Compound command → detector's precise dist outputs NOT adopted
-        // (would be incomplete). Until auto-write capture is wired through
-        // task-runner, such a build is forced cold rather than wrong.
-        expect(build?.outputs).toBeUndefined();
-        expect(build?.cache).toBe(false);
+        // (would be incomplete). Auto-write capture now lets the build
+        // cache zero-config: task-runner records whatever it writes and
+        // declines to seed the cache if tracking captured nothing.
+        expect(build?.outputs).toStrictEqual([{ auto: true }]);
+        expect(build?.cache).toBe(true);
     });
 
     it("leaves a script with no matching detector uncached (no footgun)", () => {
@@ -190,8 +191,8 @@ describe("discoverWorkspace target inference", () => {
         expect(build?.inputs).toBeUndefined();
     });
 
-    it("forces an explicit cache:true build with no outputs cache-cold", () => {
-        expect.assertions(1);
+    it("defaults an explicit cache:true build with no outputs to { auto: true }", () => {
+        expect.assertions(2);
 
         writeProject(scratch, "lambda", {
             packageJson: { scripts: { build: "rspack build" } },
@@ -199,10 +200,13 @@ describe("discoverWorkspace target inference", () => {
         });
 
         const { workspace } = discoverWorkspace(scratch, {});
+        const build = workspace.projects["@fix/lambda"]?.targets?.["build"];
 
         // rspack has no detector → no outputs adopted; an explicit
-        // cache:true build with nothing to restore is forced cold.
-        expect(workspace.projects["@fix/lambda"]?.targets?.["build"]?.cache).toBe(false);
+        // cache:true build now defaults to auto-write capture rather
+        // than being forced cold.
+        expect(build?.cache).toBe(true);
+        expect(build?.outputs).toStrictEqual([{ auto: true }]);
     });
 
     it("respects per-detector opt-out via the object form", () => {
