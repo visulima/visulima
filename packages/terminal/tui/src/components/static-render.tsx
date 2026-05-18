@@ -31,12 +31,14 @@ import type { Styles } from "../ink/styles";
 /**
  * @property children Render function invoked once to produce the cached content.
  * @property deps Dependencies that control when the static content is re-rendered. When any dependency changes (shallow, Object.is comparison), the cache is invalidated and children() is invoked again. If omitted, the cache is invalidated whenever the children function reference changes.
+ * @property onRender Callback fired after the static content has been rendered and cached. The node's cachedRender holds the measured width/height — useful for reacting to the cached block's size without setting up a full ResizeObserver.
  * @property style Optional style applied to the static-render container.
  * @property width Optional fixed width for the cached region.
  */
 export type Props = {
     readonly children: () => ReactNode;
     readonly deps?: DependencyList;
+    readonly onRender?: (node: DOMElement) => void;
     readonly style?: Styles;
     readonly width?: number;
 };
@@ -63,7 +65,7 @@ const areDepsEqual = (previousDeps: DependencyList | undefined, nextDeps: Depend
     return true;
 };
 
-const StaticRender = ({ children, deps, style, width }: Props): React.ReactNode => {
+const StaticRender = ({ children, deps, onRender, style, width }: Props): React.ReactNode => {
     const ref = useRef<DOMElement>(null);
     // Track rendered state in a ref to avoid triggering React state updates
     // during the commit phase (prepareYogaTree calls internal_onRendered
@@ -71,6 +73,11 @@ const StaticRender = ({ children, deps, style, width }: Props): React.ReactNode 
     const isRenderedRef = useRef(false);
     const previousDepsRef = useRef(deps);
     const previousChildrenRef = useRef(children);
+    // Keep the latest onRender in a ref so internal_onRendered (invoked during
+    // a later layout pass) always calls the current callback, not a stale one.
+    const onRenderRef = useRef(onRender);
+
+    onRenderRef.current = onRender;
 
     // Detect content change during render and invalidate the cache.
     // Clearing the node's cachedRender is an in-place mutation (not a React
@@ -106,6 +113,7 @@ const StaticRender = ({ children, deps, style, width }: Props): React.ReactNode 
         if (node) {
             node.internal_onRendered = () => {
                 isRenderedRef.current = true;
+                onRenderRef.current?.(node);
             };
         }
     });

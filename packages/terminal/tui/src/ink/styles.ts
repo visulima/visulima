@@ -284,6 +284,27 @@ export type Styles = {
     readonly maxHeight?: number | string;
 
     /**
+     * Caps how far the stable scroll height is allowed to grow beyond the
+     * content currently in the box, in rows. Only applies when both
+     * `stableScrollback` and `overflowToBackbuffer` are enabled.
+     *
+     * Without a cap, `scrollHeight` for a stable-scrollback box never shrinks
+     * and grows monotonically for the lifetime of the box (long-running logs,
+     * streaming output). That makes the scrollbar/scrollTop math treat an
+     * ever-growing region as scrollable even after the content is gone. This
+     * bounds the retained history to at most `maxScrollbackLength` rows past
+     * the current content. Omit for the previous unbounded behavior.
+     *
+     * It also bounds a single-frame backbuffer burst to at most this many rows
+     * on a large `scrollTop` jump. A value of `0` therefore disables
+     * terminal-scrollback emission entirely (scrolled-off lines are still
+     * clipped from the live view, just not flushed to history) — use it to
+     * cap growth without keeping any backbuffer, or omit it for unbounded
+     * retention.
+     */
+    readonly maxScrollbackLength?: number;
+
+    /**
      * Sets a maximum width of the element.
      * Percentages aren't supported yet; see https://github.com/facebook/yoga/issues/872.
      */
@@ -308,13 +329,21 @@ export type Styles = {
 
     /**
      * If true, content that is scrolled out of the top of the box (when overflowY is 'scroll')
-     * will be added to the terminal's scrollback history.
+     * is flushed into the terminal emulator's real scrollback history instead
+     * of being clipped and discarded. Scrolling back up in the terminal reveals
+     * the original lines.
      *
-     * Results are undefined if more than one scrollable region in the app has
-     * overflowToBackbuffer enabled.
+     * Constraints:
+     * - Inline mode only. In alternate-screen mode the terminal has no
+     *   scrollback, so this is a no-op. Non-TTY/piped output is also a no-op
+     *   (content is clipped as before).
+     * - Exactly one scrollable region in the app may enable
+     *   `overflowToBackbuffer`. Results are undefined with more than one.
      *
-     * Note: Scroll height tracking is implemented but actual backbuffer writes
-     * require worker-based rendering (not yet ported).
+     * Each scrolled-off line is emitted exactly once; scrolling back up never
+     * re-emits. Pair with `stableScrollback` to keep `scrollTop` math stable as
+     * history accumulates, and `maxScrollbackLength` to bound a single-frame
+     * burst on a large `scrollTop` jump.
      * @default false
      */
     readonly overflowToBackbuffer?: boolean;
@@ -403,8 +432,8 @@ export type Styles = {
      * will never decrease as long as the existing history remains valid.
      * This prevents the terminal's scrollback from being corrupted when content shrinks.
      *
-     * Note: Scroll height tracking is implemented but actual backbuffer writes
-     * require worker-based rendering (not yet ported).
+     * Growth is bounded by `maxScrollbackLength` (if set); otherwise the stable
+     * height grows monotonically for the lifetime of the box.
      * @default false
      */
     readonly stableScrollback?: boolean;

@@ -19,6 +19,7 @@ import Yoga from "yoga-layout";
 
 import { accessibilityContext as AccessibilityContext } from "../components/accessibility-context";
 import App from "../components/app";
+import { composeBackbufferSlice } from "./backbuffer";
 import * as dom from "./dom";
 import instances from "./instances";
 import type { KittyFlagName, KittyKeyboardOptions } from "./kitty-keyboard";
@@ -353,6 +354,14 @@ export default class Ink {
     // so that it's rerendered every time, not just new static parts, like in non-debug mode
     private fullStaticOutput: string;
 
+    // The single scrollable node with `overflowToBackbuffer` enabled, detected
+    // during the layout/scroll walk. Only one such region is supported.
+    private backbufferNode: dom.DOMElement | undefined;
+
+    // Emit the "multiple overflowToBackbuffer regions" diagnostic at most once
+    // per instance (the layout/scroll walk runs every frame).
+    private backbufferMultiWarned = false;
+
     private readonly exitPromise!: Promise<unknown>;
 
     private exitResult: unknown;
@@ -654,6 +663,10 @@ export default class Ink {
             }
         };
 
+        // Re-detected each layout pass by calculateScrollAndTriggerObservers;
+        // cleared here so an unmounted backbuffer region doesn't linger.
+        this.backbufferNode = undefined;
+
         this.prepareYogaTree(this.rootNode, flushLayoutObservers);
 
         const terminalWidth = getWindowSize(this.options.stdout).columns;
@@ -674,6 +687,18 @@ export default class Ink {
 
             if (overflowX === "scroll" || overflowY === "scroll") {
                 calculateScroll(node);
+
+                if (style.overflowToBackbuffer) {
+                    if (this.backbufferNode && this.backbufferNode !== node && !this.backbufferMultiWarned) {
+                        this.backbufferMultiWarned = true;
+                        // eslint-disable-next-line no-console
+                        console.warn(
+                            "[@visulima/tui] Multiple scrollable regions have `overflowToBackbuffer` enabled; only one is supported. The last one in render order wins.",
+                        );
+                    }
+
+                    this.backbufferNode = node;
+                }
             } else if (node.internal_scrollState) {
                 delete node.internal_scrollState;
             }
@@ -789,6 +814,74 @@ export default class Ink {
         this.fullStaticOutput = "";
     };
 
+    /**
+     * Compute the slice of lines that newly scrolled off the top of the single
+     * `overflowToBackbuffer` region and have not yet been flushed into the
+     * terminal's real scrollback. Advances the monotonic
+     * `internal_maxPushedScrollTop` bookkeeping so each line is emitted exactly
+     * once and scrolling back up is a no-op. Returns a newline-terminated
+     * string to write above the live frame, or "" when there is nothing to do.
+     *
+     * No-op outside inline mode (alternate-screen / non-TTY / non-interactive /
+     * screen-reader / debug), since terminal scrollback only exists for an
+     * inline, in-place-updated live region. Debug mode is excluded because it
+     * re-dumps the full grid every frame and never writes this slice — running
+     * it there would advance the monotonic pointer past lines that were never
+     * emitted.
+     */
+    private computeBackbufferOutput(): string {
+        const node = this.backbufferNode;
+
+        if (
+            !node?.internal_scrollState
+            || !this.interactive
+            || !this.options.stdout.isTTY
+            || this.alternateScreen
+            || this.isScreenReaderEnabled
+            || this.options.debug
+        ) {
+            return "";
+        }
+
+        const scrollTop = Math.round(node.internal_scrollState.scrollTop);
+
+        // The box's top padding pushes content down inside the clip, so the
+        // first still-visible content row is `scrollTop - paddingTop`, not
+        // `scrollTop`. Only rows strictly above that have actually scrolled
+        // off; flushing through `scrollTop` would duplicate the topmost
+        // visible line(s) into terminal history.
+        const paddingTop = node.yogaNode?.getComputedPadding(Yoga.EDGE_TOP) ?? 0;
+        const scrolledOff = Math.max(0, scrollTop - Math.round(paddingTop));
+        const maxPushed = node.internal_maxPushedScrollTop ?? 0;
+        const { maxScrollbackLength } = node.style;
+
+        // Floor the slice start at scrolledOff - maxScrollbackLength so a large
+        // jump in scrollTop emits at most maxScrollbackLength lines in one
+        // frame (bounded burst). Unbounded when the cap is unset.
+        const start
+            = maxScrollbackLength === undefined ? maxPushed : Math.max(maxPushed, scrolledOff - Math.max(0, maxScrollbackLength));
+        const count = scrolledOff - start;
+
+        if (count <= 0) {
+            return "";
+        }
+
+        const slice = composeBackbufferSlice(node, start, count);
+
+        if (slice === "") {
+            // Transient: not laid out / zero inner width this frame. Leave the
+            // pointer unmoved so these rows are retried next frame instead of
+            // being permanently skipped.
+            return "";
+        }
+
+        node.internal_maxPushedScrollTop = scrolledOff;
+
+        // Terminate each emitted block with an SGR reset so a colour/style
+        // left open by the last slice line cannot bleed into the live frame.
+        return `${slice}[0m\n`;
+    }
+
     onRender: () => void = () => {
         this.hasPendingThrottledRender = false;
 
@@ -814,11 +907,21 @@ export default class Ink {
         this.renderedCursorRequested = cursorRequested;
         this.renderedCursorPosition = cursorPosition;
 
+        // Lines that scrolled off the top of an `overflowToBackbuffer` region
+        // this frame. Emitted once, above the live region, so they land in the
+        // terminal's native scrollback. Never accumulated into fullStaticOutput
+        // (they live in the terminal's own history; replay would duplicate).
+        const backbufferOutput = this.computeBackbufferOutput();
+
         // Native renderer path: write buffer directly via Rust diff engine
         if (this.useNativeRenderer && this.nativeLog && outputBuffer && outputWidth) {
             // Handle static output through the normal string path
             if (staticOutput && staticOutput !== "\n") {
                 this.options.stdout.write(staticOutput);
+            }
+
+            if (backbufferOutput) {
+                this.options.stdout.write(backbufferOutput);
             }
 
             this.nativeLog.render(outputBuffer, outputWidth, outputHeight);
@@ -918,7 +1021,7 @@ export default class Ink {
             this.fullStaticOutput += staticOutput;
         }
 
-        this.renderInteractiveFrame(output, outputHeight, hasStaticOutput ? staticOutput : "");
+        this.renderInteractiveFrame(output, outputHeight, hasStaticOutput ? staticOutput : "", backbufferOutput);
     };
 
     // Cache AccessibilityContext value to avoid creating a new object
@@ -1329,8 +1432,14 @@ export default class Ink {
         return this.nextRenderCommit.promise;
     }
 
-    private renderInteractiveFrame(output: string, outputHeight: number, staticOutput: string): void {
-        const hasStaticOutput = staticOutput !== "";
+    private renderInteractiveFrame(output: string, outputHeight: number, staticOutput: string, backbufferOutput = ""): void {
+        // Both <Static> output and scrolled-off backbuffer lines ride the same
+        // "above the live region" channel. backbufferOutput is intentionally
+        // NOT accumulated into this.fullStaticOutput by the caller: those lines
+        // already live in the terminal's own scrollback, so replaying them on a
+        // clear/redraw would duplicate (potentially huge) history.
+        const prepend = staticOutput + backbufferOutput;
+        const hasPrepend = prepend !== "";
         const isTty = this.options.stdout.isTTY;
 
         // Detect fullscreen: output fills or exceeds terminal height.
@@ -1352,12 +1461,12 @@ export default class Ink {
             // Instead, fall through to the normal incremental update path below so that
             // static output is still handled and the log-update diffing takes care of it.
             if (this.options.incrementalRendering) {
-                if (hasStaticOutput) {
+                if (hasPrepend) {
                     this.log.clear();
-                    this.options.stdout.write(staticOutput);
+                    this.options.stdout.write(prepend);
                 }
 
-                if (output !== this.lastOutput || this.log.isCursorDirty() || hasStaticOutput) {
+                if (output !== this.lastOutput || this.log.isCursorDirty() || hasPrepend) {
                     this.throttledLog(outputToRender);
                 }
 
@@ -1380,7 +1489,10 @@ export default class Ink {
             // Microsoft Terminal, WezTerm, Alacritty, Kitty, Ghostty, etc.), destroying
             // the user's history. See vadimdemedes/ink#935 and the upstream fix in
             // vadimdemedes/ink#936.
-            this.options.stdout.write(clearScreenAndHomeCursor + this.fullStaticOutput + output);
+            // backbufferOutput sits above the live output for this frame only;
+            // it is deliberately excluded from this.fullStaticOutput so it is
+            // not replayed (and duplicated) on subsequent clear/redraw cycles.
+            this.options.stdout.write(clearScreenAndHomeCursor + this.fullStaticOutput + backbufferOutput + output);
             this.lastOutput = output;
             this.lastOutputToRender = outputToRender;
             this.lastOutputHeight = outputHeight;
@@ -1393,8 +1505,9 @@ export default class Ink {
             return;
         }
 
-        // To ensure static output is cleanly rendered before main output, clear main output first
-        if (hasStaticOutput) {
+        // To ensure prepended output (static + backbuffer) is cleanly rendered
+        // before main output, clear main output first
+        if (hasPrepend) {
             const sync = this.shouldSync();
 
             if (sync) {
@@ -1402,7 +1515,7 @@ export default class Ink {
             }
 
             this.log.clear();
-            this.options.stdout.write(staticOutput);
+            this.options.stdout.write(prepend);
             this.log(outputToRender);
 
             if (sync) {
