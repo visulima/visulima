@@ -33,9 +33,7 @@ describe("vis migrate self", () => {
             expect.assertions(2);
 
             const source = "export default { targetDefaults: { build: { cache: true } } };";
-            const { applied, output } = rewriteSource(source, [
-                { description: "targetDefaults → tasks", next: "tasks", previous: "targetDefaults" },
-            ]);
+            const { applied, output } = rewriteSource(source, [{ description: "targetDefaults → tasks", next: "tasks", previous: "targetDefaults" }]);
 
             expect(output).toContain("tasks: { build: { cache: true } }");
             expect(applied).toHaveLength(1);
@@ -45,9 +43,7 @@ describe("vis migrate self", () => {
             expect.assertions(1);
 
             const source = `export default { "targetDefaults": { build: {} } };`;
-            const { output } = rewriteSource(source, [
-                { description: "targetDefaults → tasks", next: "tasks", previous: "targetDefaults" },
-            ]);
+            const { output } = rewriteSource(source, [{ description: "targetDefaults → tasks", next: "tasks", previous: "targetDefaults" }]);
 
             expect(output).toContain(`"tasks": { build: {} }`);
         });
@@ -56,9 +52,7 @@ describe("vis migrate self", () => {
             expect.assertions(1);
 
             const source = `export default { description: "see targetDefaults docs" };`;
-            const { applied } = rewriteSource(source, [
-                { description: "targetDefaults → tasks", next: "tasks", previous: "targetDefaults" },
-            ]);
+            const { applied } = rewriteSource(source, [{ description: "targetDefaults → tasks", next: "tasks", previous: "targetDefaults" }]);
 
             expect(applied).toHaveLength(0);
         });
@@ -70,10 +64,7 @@ describe("vis migrate self", () => {
 
             const configPath = join(tmpDir, "vis.config.ts");
 
-            writeFileSync(
-                configPath,
-                "export default {\n    targetDefaults: { build: { cache: true } },\n    taskRunnerOptions: { parallel: 4 },\n};\n",
-            );
+            writeFileSync(configPath, "export default {\n    targetDefaults: { build: { cache: true } },\n    taskRunnerOptions: { parallel: 4 },\n};\n");
 
             const report = createMigrationReport();
 
@@ -118,10 +109,7 @@ describe("vis migrate self", () => {
 
             const configPath = join(tmpDir, "vis.config.ts");
 
-            writeFileSync(
-                configPath,
-                `export default {\n    taskDefaults: [{ scope: { tags: ["app"] }, targets: { build: { cache: true } } }],\n};\n`,
-            );
+            writeFileSync(configPath, `export default {\n    taskDefaults: [{ scope: { tags: ["app"] }, targets: { build: { cache: true } } }],\n};\n`);
 
             migrateSelf(tmpDir, {}, createMockLogger(), createMigrationReport());
 

@@ -1,11 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { MarshallFinding } from "../../src/security/marshalls/findings";
-import {
-    formatMarshallFindingsAsJson,
-    formatMarshallFindingsAsTable,
-    MarshallFindings,
-} from "../../src/security/marshalls/findings";
+import { formatMarshallFindingsAsJson, formatMarshallFindingsAsTable, MarshallFindings } from "../../src/security/marshalls/findings";
 
 const errorFinding = (overrides: Partial<MarshallFinding> = {}): MarshallFinding => {
     return {
@@ -161,9 +157,7 @@ describe(formatMarshallFindingsAsTable, () => {
     it("emits an indented continuation row for suggestedAction", () => {
         expect.assertions(2);
 
-        const lines = formatMarshallFindingsAsTable([
-            errorFinding({ suggestedAction: "Add 'demo' to security.author.allowlist." }),
-        ]);
+        const lines = formatMarshallFindingsAsTable([errorFinding({ suggestedAction: "Add 'demo' to security.author.allowlist." })]);
 
         // header + finding + suggestion = 3 lines
         expect(lines).toHaveLength(3);

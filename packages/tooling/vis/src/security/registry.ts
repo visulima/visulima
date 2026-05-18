@@ -33,10 +33,7 @@ export interface BuildEnabledProvidersOptions {
  * The primary provider (per `security.primaryProvider`, defaulting to
  * `"socket"`) is returned first so it wins merge conflicts.
  */
-export const buildEnabledProviders = (
-    security: VisConfig["security"] | undefined,
-    opts: BuildEnabledProvidersOptions = {},
-): SecurityProvider[] => {
+export const buildEnabledProviders = (security: VisConfig["security"] | undefined, opts: BuildEnabledProvidersOptions = {}): SecurityProvider[] => {
     const { disabled, minimumScore } = opts;
     const providers: SecurityProvider[] = [];
 
@@ -80,10 +77,7 @@ export const buildEnabledProviders = (
  * results. Provider failures are isolated — a rejected provider does not
  * abort the others, it just contributes an empty map.
  */
-export const fetchAllReports = async (
-    providers: ReadonlyArray<SecurityProvider>,
-    packages: PackageRef[],
-): Promise<Map<string, PackageReportData>> => {
+export const fetchAllReports = async (providers: ReadonlyArray<SecurityProvider>, packages: PackageRef[]): Promise<Map<string, PackageReportData>> => {
     if (providers.length === 0 || packages.length === 0) {
         return new Map();
     }

@@ -126,8 +126,7 @@ export interface PolicyModule {
 const REGISTRY: PolicyModule[] = [
     {
         evaluate: evaluateVulnerabilityPolicy,
-        isConfigured: (config) =>
-            config.security?.policies?.vulnerability !== undefined,
+        isConfigured: (config) => config.security?.policies?.vulnerability !== undefined,
         name: "vulnerability",
         offlineSupported: true,
         surfaces: ["audit", "doctor"],
@@ -148,10 +147,7 @@ const REGISTRY: PolicyModule[] = [
         isConfigured: (config) => {
             const installScripts = config.security?.policies?.installScripts;
 
-            return Boolean(
-                installScripts
-                && ((installScripts.allow && Object.keys(installScripts.allow).length > 0) || installScripts.strict === true),
-            );
+            return Boolean(installScripts && ((installScripts.allow && Object.keys(installScripts.allow).length > 0) || installScripts.strict === true));
         },
         name: "installScripts",
         offlineSupported: true,
@@ -162,10 +158,7 @@ const REGISTRY: PolicyModule[] = [
         isConfigured: (config) => {
             const unexpected = config.security?.policies?.unexpectedDeps;
 
-            return Boolean(
-                unexpected
-                && ((unexpected.allow && unexpected.allow.length > 0) || typeof unexpected.baselineLockfile === "string"),
-            );
+            return Boolean(unexpected && ((unexpected.allow && unexpected.allow.length > 0) || typeof unexpected.baselineLockfile === "string"));
         },
         name: "unexpectedDeps",
         offlineSupported: true,
@@ -178,21 +171,18 @@ const REGISTRY: PolicyModule[] = [
  * `isConfigured()` predicate. Order is registry-declaration order so
  * formatter output is stable.
  */
-const selectModules = (
-    surface: PolicySurface,
-    config: VisConfig,
-    enabledPolicies: Set<PolicyName> | undefined,
-): PolicyModule[] => REGISTRY.filter((policyModule) => {
-    if (!policyModule.surfaces.includes(surface)) {
-        return false;
-    }
+const selectModules = (surface: PolicySurface, config: VisConfig, enabledPolicies: Set<PolicyName> | undefined): PolicyModule[] =>
+    REGISTRY.filter((policyModule) => {
+        if (!policyModule.surfaces.includes(surface)) {
+            return false;
+        }
 
-    if (enabledPolicies !== undefined) {
-        return enabledPolicies.has(policyModule.name);
-    }
+        if (enabledPolicies !== undefined) {
+            return enabledPolicies.has(policyModule.name);
+        }
 
-    return policyModule.isConfigured(config);
-});
+        return policyModule.isConfigured(config);
+    });
 
 /**
  * Run every selected policy against `input` and return the flat list of
@@ -206,11 +196,7 @@ const selectModules = (
  * @param options Caller knobs (active config, optional explicit policy
  * allow-list).
  */
-export const evaluatePolicies = async (
-    input: PolicyInput,
-    surface: PolicySurface,
-    options: EvaluateOptions,
-): Promise<PolicyDecision[]> => {
+export const evaluatePolicies = async (input: PolicyInput, surface: PolicySurface, options: EvaluateOptions): Promise<PolicyDecision[]> => {
     const selected = selectModules(surface, options.visConfig, options.enabledPolicies);
     const decisions: PolicyDecision[] = [];
 
@@ -278,10 +264,7 @@ const POLICY_NAME_LOOKUP: Map<string, PolicyName> = (() => {
  */
 export const getRegisteredPolicyNames = (): PolicyName[] => REGISTRY.map((m) => m.name);
 
-export const parsePoliciesFlag = (
-    raw: string | undefined,
-    onUnknown?: (name: string) => void,
-): Set<PolicyName> | undefined => {
+export const parsePoliciesFlag = (raw: string | undefined, onUnknown?: (name: string) => void): Set<PolicyName> | undefined => {
     if (raw === undefined) {
         return undefined;
     }
@@ -298,14 +281,15 @@ export const parsePoliciesFlag = (
 
     const result = new Set<PolicyName>();
 
-    for (const token of raw.split(",").map((s) => s.trim()).filter((s) => s.length > 0)) {
+    for (const token of raw
+        .split(",")
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0)) {
         // Accept both camelCase and snake_case spellings for ergonomics
         // (the CLI surface advertises camelCase; users sometimes type
         // snake_case out of muscle memory). Strip leading underscores
         // and convert `_x` sequences to upper-case.
-        const camel = token
-            .replace(/^_+/, "")
-            .replaceAll(/_+([a-z])/g, (_, c: string) => c.toUpperCase());
+        const camel = token.replace(/^_+/, "").replaceAll(/_+([a-z])/g, (_, c: string) => c.toUpperCase());
         const canonical = POLICY_NAME_LOOKUP.get(camel.toLowerCase());
 
         if (canonical === undefined) {

@@ -164,9 +164,7 @@ describe("inspect handler", () => {
 
         const { default: execute } = await inspectModulePromise;
 
-        vi.mocked(runDownloadsMarshall).mockResolvedValue([
-            { downloadsLastMonth: 5000, kind: "below-warning", packageName: "demo", severity: "warning" },
-        ]);
+        vi.mocked(runDownloadsMarshall).mockResolvedValue([{ downloadsLastMonth: 5000, kind: "below-warning", packageName: "demo", severity: "warning" }]);
 
         await execute(buildToolbox() as never);
 
@@ -178,9 +176,7 @@ describe("inspect handler", () => {
 
         const { default: execute } = await inspectModulePromise;
 
-        vi.mocked(runDownloadsMarshall).mockResolvedValue([
-            { downloadsLastMonth: 5000, kind: "below-warning", packageName: "demo", severity: "warning" },
-        ]);
+        vi.mocked(runDownloadsMarshall).mockResolvedValue([{ downloadsLastMonth: 5000, kind: "below-warning", packageName: "demo", severity: "warning" }]);
 
         await execute(buildToolbox({ options: { strict: true } }) as never);
 
@@ -192,9 +188,7 @@ describe("inspect handler", () => {
 
         const { default: execute } = await inspectModulePromise;
 
-        vi.mocked(runDownloadsMarshall).mockResolvedValue([
-            { downloadsLastMonth: 5000, kind: "below-warning", packageName: "demo", severity: "warning" },
-        ]);
+        vi.mocked(runDownloadsMarshall).mockResolvedValue([{ downloadsLastMonth: 5000, kind: "below-warning", packageName: "demo", severity: "warning" }]);
 
         await execute(buildToolbox({ options: { json: true } }) as never);
 

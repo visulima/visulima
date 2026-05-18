@@ -58,7 +58,9 @@ const enforceScriptSecurity = (pm: PackageManagerName, workspaceRoot: string, co
                 result.warnings.push("npm does not block lifecycle scripts. vis will add --ignore-scripts automatically.");
                 result.extraArgs.push("--ignore-scripts");
             } else if (!hasIgnoreScripts && !hasAllowList) {
-                result.warnings.push("npm does not block lifecycle scripts. Add 'ignore-scripts=true' to .npmrc and configure security.policies.installScripts.allow.");
+                result.warnings.push(
+                    "npm does not block lifecycle scripts. Add 'ignore-scripts=true' to .npmrc and configure security.policies.installScripts.allow.",
+                );
             }
 
             if (hasAllowList) {

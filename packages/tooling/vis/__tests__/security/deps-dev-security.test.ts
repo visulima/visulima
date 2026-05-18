@@ -12,7 +12,8 @@ vi.mock(import("node:os"), async (importOriginal) => {
     return { ...original, homedir: () => TEST_HOME };
 });
 
-const { advisoryToAlert, clearDepsDevCache, createDepsDevProvider, cvssToSeverity, fetchDepsDevReports, scorecardToScore } = await import("../../src/security/deps-dev-security");
+const { advisoryToAlert, clearDepsDevCache, createDepsDevProvider, cvssToSeverity, fetchDepsDevReports, scorecardToScore }
+    = await import("../../src/security/deps-dev-security");
 
 const setupHome = (): void => {
     mkdirSync(TEST_HOME, { recursive: true });
@@ -125,11 +126,7 @@ describe("deps-dev-security", () => {
         it("extracts the CVE alias when present", () => {
             expect.assertions(2);
 
-            const alert = advisoryToAlert(
-                "GHSA-f23m-r3pf-42rh",
-                { aliases: ["CVE-2024-12345", "OSV-2024-001"], cvss3Score: 7.5 },
-                "2024-01-01T00:00:00Z",
-            );
+            const alert = advisoryToAlert("GHSA-f23m-r3pf-42rh", { aliases: ["CVE-2024-12345", "OSV-2024-001"], cvss3Score: 7.5 }, "2024-01-01T00:00:00Z");
 
             expect(alert.severity).toBe("high");
             expect(alert.props?.cveId).toBe("CVE-2024-12345");
@@ -173,34 +170,43 @@ describe("deps-dev-security", () => {
                 const u = typeof url === "string" ? url : url.toString();
 
                 if (u.includes("/versions/")) {
-                    return Response.json({
-                        advisoryKeys: [{ id: "GHSA-test-1234" }],
-                        licenses: ["MIT"],
-                        publishedAt: "2024-01-01T00:00:00Z",
-                        relatedProjects: [{ projectKey: { id: "github.com/example/repo" }, relationType: "SOURCE_REPO" }],
-                        versionKey: { name: "lodash", system: "NPM", version: "4.17.21" },
-                    }, { headers: { "content-type": "application/json" }, status: 200 });
+                    return Response.json(
+                        {
+                            advisoryKeys: [{ id: "GHSA-test-1234" }],
+                            licenses: ["MIT"],
+                            publishedAt: "2024-01-01T00:00:00Z",
+                            relatedProjects: [{ projectKey: { id: "github.com/example/repo" }, relationType: "SOURCE_REPO" }],
+                            versionKey: { name: "lodash", system: "NPM", version: "4.17.21" },
+                        },
+                        { headers: { "content-type": "application/json" }, status: 200 },
+                    );
                 }
 
                 if (u.includes("/projects/")) {
-                    return Response.json({
-                        license: "MIT",
-                        scorecard: {
-                            checks: [
-                                { name: "Maintained", score: 10 },
-                                { name: "License", score: 10 },
-                            ],
-                            overallScore: 8.5,
+                    return Response.json(
+                        {
+                            license: "MIT",
+                            scorecard: {
+                                checks: [
+                                    { name: "Maintained", score: 10 },
+                                    { name: "License", score: 10 },
+                                ],
+                                overallScore: 8.5,
+                            },
                         },
-                    }, { headers: { "content-type": "application/json" }, status: 200 });
+                        { headers: { "content-type": "application/json" }, status: 200 },
+                    );
                 }
 
                 if (u.includes("/advisories/")) {
-                    return Response.json({
-                        aliases: ["CVE-2024-9999"],
-                        cvss3Score: 9.2,
-                        title: "Test vulnerability",
-                    }, { headers: { "content-type": "application/json" }, status: 200 });
+                    return Response.json(
+                        {
+                            aliases: ["CVE-2024-9999"],
+                            cvss3Score: 9.2,
+                            title: "Test vulnerability",
+                        },
+                        { headers: { "content-type": "application/json" }, status: 200 },
+                    );
                 }
 
                 return new Response("not found", { status: 404 });
@@ -226,10 +232,13 @@ describe("deps-dev-security", () => {
                 const u = typeof url === "string" ? url : url.toString();
 
                 if (u.includes("/versions/")) {
-                    return Response.json({
-                        licenses: ["ISC"],
-                        versionKey: { name: "some-pkg", system: "NPM", version: "1.0.0" },
-                    }, { headers: { "content-type": "application/json" }, status: 200 });
+                    return Response.json(
+                        {
+                            licenses: ["ISC"],
+                            versionKey: { name: "some-pkg", system: "NPM", version: "1.0.0" },
+                        },
+                        { headers: { "content-type": "application/json" }, status: 200 },
+                    );
                 }
 
                 return new Response("not found", { status: 404 });
@@ -253,10 +262,13 @@ describe("deps-dev-security", () => {
                 const u = typeof url === "string" ? url : url.toString();
 
                 if (u.includes("/versions/")) {
-                    return Response.json({
-                        licenses: ["MIT"],
-                        versionKey: { name: "@types/node", system: "NPM", version: "20.0.0" },
-                    }, { headers: { "content-type": "application/json" }, status: 200 });
+                    return Response.json(
+                        {
+                            licenses: ["MIT"],
+                            versionKey: { name: "@types/node", system: "NPM", version: "20.0.0" },
+                        },
+                        { headers: { "content-type": "application/json" }, status: 200 },
+                    );
                 }
 
                 return new Response("not found", { status: 404 });

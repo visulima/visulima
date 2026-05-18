@@ -154,7 +154,10 @@ describe("vis affected --reverse → run forwarding", () => {
             process.stdout.write = originalWrite;
         }
 
-        expect(calls.find((c) => c.name === "run"), "must not delegate to `run` in sparse-checkout mode").toBeUndefined();
+        expect(
+            calls.find((c) => c.name === "run"),
+            "must not delegate to `run` in sparse-checkout mode",
+        ).toBeUndefined();
         expect(written.join("")).toContain("packages/lib");
         // Trailing newline so the stream pipes cleanly into
         // `git sparse-checkout set --stdin`.

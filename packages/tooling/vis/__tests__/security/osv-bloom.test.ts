@@ -38,13 +38,13 @@ const stubFetchSequence = (responses: MockResponse[]): ReturnType<typeof vi.fn> 
         const status = response.status ?? 200;
         const ok = status >= 200 && status < 300;
         const bodyText = typeof response.body === "string" ? response.body : "";
-        const bodyBytes = typeof response.body === "string" ? Buffer.from(bodyText, "utf8") : response.body ?? Buffer.alloc(0);
+        const bodyBytes = typeof response.body === "string" ? Buffer.from(bodyText, "utf8") : (response.body ?? Buffer.alloc(0));
 
         return {
             arrayBuffer: async () => bodyBytes.buffer.slice(bodyBytes.byteOffset, bodyBytes.byteOffset + bodyBytes.byteLength),
             body: bodyBytes.length > 0 ? {} : null,
             headers: {
-                get: (key: string) => (key.toLowerCase() === "etag" ? response.etag ?? null : null),
+                get: (key: string) => (key.toLowerCase() === "etag" ? (response.etag ?? null) : null),
             },
             ok,
             status,
@@ -197,10 +197,7 @@ describe(syncOsvBloom, () => {
 
         const { filterBytes, manifestRaw } = buildBloomFixture();
 
-        const handler = stubFetchSequence([
-            { body: manifestRaw },
-            { body: filterBytes, etag: "W/\"first-etag\"" },
-        ]);
+        const handler = stubFetchSequence([{ body: manifestRaw }, { body: filterBytes, etag: "W/\"first-etag\"" }]);
 
         const result = await syncOsvBloom({
             cacheDir,
@@ -223,10 +220,7 @@ describe(syncOsvBloom, () => {
         const setDigest = "ab".repeat(32);
         const { filterBytes, manifestRaw } = buildBloomFixture({ setDigest });
 
-        stubFetchSequence([
-            { body: manifestRaw },
-            { body: filterBytes, etag: "etag-1" },
-        ]);
+        stubFetchSequence([{ body: manifestRaw }, { body: filterBytes, etag: "etag-1" }]);
 
         await syncOsvBloom({ cacheDir, source: DEFAULT_OSV_BLOOM_SOURCE, workspaceRoot: cacheDir });
 
@@ -245,20 +239,14 @@ describe(syncOsvBloom, () => {
         const initialDigest = "11".repeat(32);
         const { filterBytes, manifestRaw: initialManifest } = buildBloomFixture({ setDigest: initialDigest });
 
-        stubFetchSequence([
-            { body: initialManifest },
-            { body: filterBytes, etag: sharedEtag },
-        ]);
+        stubFetchSequence([{ body: initialManifest }, { body: filterBytes, etag: sharedEtag }]);
 
         await syncOsvBloom({ cacheDir, source: DEFAULT_OSV_BLOOM_SOURCE, workspaceRoot: cacheDir });
 
         const rotatedDigest = "22".repeat(32);
         const { manifestRaw: rotatedManifest } = buildBloomFixture({ bytes: filterBytes, setDigest: rotatedDigest });
 
-        const secondHandler = stubFetchSequence([
-            { body: rotatedManifest },
-            { etag: sharedEtag, status: 304 },
-        ]);
+        const secondHandler = stubFetchSequence([{ body: rotatedManifest }, { etag: sharedEtag, status: 304 }]);
 
         const result = await syncOsvBloom({ cacheDir, source: DEFAULT_OSV_BLOOM_SOURCE, workspaceRoot: cacheDir });
 
@@ -273,17 +261,11 @@ describe(syncOsvBloom, () => {
         const setDigest = "cd".repeat(32);
         const { filterBytes, manifestRaw } = buildBloomFixture({ setDigest });
 
-        stubFetchSequence([
-            { body: manifestRaw },
-            { body: filterBytes, etag: "etag-a" },
-        ]);
+        stubFetchSequence([{ body: manifestRaw }, { body: filterBytes, etag: "etag-a" }]);
 
         await syncOsvBloom({ cacheDir, source: DEFAULT_OSV_BLOOM_SOURCE, workspaceRoot: cacheDir });
 
-        const forcedHandler = stubFetchSequence([
-            { body: manifestRaw },
-            { body: filterBytes, etag: "etag-b" },
-        ]);
+        const forcedHandler = stubFetchSequence([{ body: manifestRaw }, { body: filterBytes, etag: "etag-b" }]);
 
         const result = await syncOsvBloom({ cacheDir, force: true, source: DEFAULT_OSV_BLOOM_SOURCE, workspaceRoot: cacheDir });
 
@@ -297,10 +279,7 @@ describe(syncOsvBloom, () => {
         const { manifestRaw } = buildBloomFixture();
         const tamperedBytes = Buffer.from("tampered-payload-bytes-that-do-not-match");
 
-        stubFetchSequence([
-            { body: manifestRaw },
-            { body: tamperedBytes, etag: "evil-etag" },
-        ]);
+        stubFetchSequence([{ body: manifestRaw }, { body: tamperedBytes, etag: "evil-etag" }]);
 
         await expect(syncOsvBloom({ cacheDir, source: DEFAULT_OSV_BLOOM_SOURCE, workspaceRoot: cacheDir })).rejects.toBeInstanceOf(OsvBloomIntegrityError);
     });
@@ -311,10 +290,7 @@ describe(syncOsvBloom, () => {
         const filterBytes = Buffer.from("the-real-bytes");
         const wrongLenManifest = buildBloomFixture({ bytes: filterBytes, overrides: { bloom_byte_len: 9999, filter_sha256: sha256Hex(filterBytes) } });
 
-        stubFetchSequence([
-            { body: wrongLenManifest.manifestRaw },
-            { body: filterBytes, etag: "tagged" },
-        ]);
+        stubFetchSequence([{ body: wrongLenManifest.manifestRaw }, { body: filterBytes, etag: "tagged" }]);
 
         await expect(syncOsvBloom({ cacheDir, source: DEFAULT_OSV_BLOOM_SOURCE, workspaceRoot: cacheDir })).rejects.toBeInstanceOf(OsvBloomManifestError);
     });
@@ -334,9 +310,9 @@ describe(syncOsvBloom, () => {
 
         const handler = stubFetchSequence([]);
 
-        await expect(
-            syncOsvBloom({ cacheDir, source: "https://attacker.example.com", workspaceRoot: cacheDir }),
-        ).rejects.toBeInstanceOf(OsvBloomSourceNotAllowedError);
+        await expect(syncOsvBloom({ cacheDir, source: "https://attacker.example.com", workspaceRoot: cacheDir })).rejects.toBeInstanceOf(
+            OsvBloomSourceNotAllowedError,
+        );
 
         expect(handler).not.toHaveBeenCalled();
     });
@@ -379,10 +355,7 @@ describe(getOsvBloomStatus, () => {
 
         const { filterBytes, manifestRaw } = buildBloomFixture({ setDigest: "ef".repeat(32) });
 
-        stubFetchSequence([
-            { body: manifestRaw },
-            { body: filterBytes, etag: "after-sync" },
-        ]);
+        stubFetchSequence([{ body: manifestRaw }, { body: filterBytes, etag: "after-sync" }]);
 
         await syncOsvBloom({ cacheDir, source: DEFAULT_OSV_BLOOM_SOURCE, workspaceRoot: cacheDir });
 
@@ -430,10 +403,7 @@ describe(clearOsvBloomCache, () => {
         const cacheDir = mkdtempSync(join(tmpdir(), "vis-osv-bloom-clear-"));
         const { filterBytes, manifestRaw } = buildBloomFixture({ setDigest: "01".repeat(32) });
 
-        stubFetchSequence([
-            { body: manifestRaw },
-            { body: filterBytes, etag: "x" },
-        ]);
+        stubFetchSequence([{ body: manifestRaw }, { body: filterBytes, etag: "x" }]);
 
         await syncOsvBloom({ cacheDir, source: DEFAULT_OSV_BLOOM_SOURCE, workspaceRoot: cacheDir });
 

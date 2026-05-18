@@ -116,8 +116,8 @@ export const runSignatureMarshall = async (
             return [];
         }
 
-        const entry = packument.versions[version]
-            ?? packument.versions[resolveLatestVersion(Object.keys(packument.versions), packument["dist-tags"]?.latest) ?? ""];
+        const entry
+            = packument.versions[version] ?? packument.versions[resolveLatestVersion(Object.keys(packument.versions), packument["dist-tags"]?.latest) ?? ""];
 
         if (entry === undefined) {
             return [];
@@ -127,23 +127,27 @@ export const runSignatureMarshall = async (
         const integrity = entry.dist?.integrity;
 
         if (signatures === undefined || signatures.length === 0) {
-            return [{
-                code: "missing-signature",
-                message: `Package ${name}@${version} has no dist.signatures from the registry.`,
-                packageName: name,
-                severity: "warning",
-                version,
-            }];
+            return [
+                {
+                    code: "missing-signature",
+                    message: `Package ${name}@${version} has no dist.signatures from the registry.`,
+                    packageName: name,
+                    severity: "warning",
+                    version,
+                },
+            ];
         }
 
         if (typeof integrity !== "string" || integrity === "") {
-            return [{
-                code: "missing-signature",
-                message: `Package ${name}@${version} has signatures but no dist.integrity to verify against.`,
-                packageName: name,
-                severity: "warning",
-                version,
-            }];
+            return [
+                {
+                    code: "missing-signature",
+                    message: `Package ${name}@${version} has signatures but no dist.integrity to verify against.`,
+                    packageName: name,
+                    severity: "warning",
+                    version,
+                },
+            ];
         }
 
         const signedMessage = buildSignedMessage(name, version, integrity);

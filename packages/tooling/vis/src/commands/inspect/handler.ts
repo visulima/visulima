@@ -182,9 +182,7 @@ const execute = async ({ argument, options, workspaceRoot: wsRoot }: Toolbox<Con
 
             findings.add({
                 marshall: "downloads",
-                message: result.kind === "no-data"
-                    ? `npm stats API returned no monthly download data.`
-                    : `Only ${count} downloads in the past month.`,
+                message: result.kind === "no-data" ? `npm stats API returned no monthly download data.` : `Only ${count} downloads in the past month.`,
                 packageName: result.packageName,
                 severity: result.severity,
             });
@@ -197,9 +195,10 @@ const execute = async ({ argument, options, workspaceRoot: wsRoot }: Toolbox<Con
         for (const result of results) {
             findings.add({
                 marshall: "expiredDomains",
-                message: result.kind === "expired"
-                    ? `Maintainer email domain ${result.domain} (${result.maintainer}) is unregistered — potential hijack risk.`
-                    : `Could not verify maintainer email domain ${result.domain} (${result.maintainer}).`,
+                message:
+                    result.kind === "expired"
+                        ? `Maintainer email domain ${result.domain} (${result.maintainer}) is unregistered — potential hijack risk.`
+                        : `Could not verify maintainer email domain ${result.domain} (${result.maintainer}).`,
                 packageName: result.packageName,
                 severity: result.severity,
             });
@@ -220,9 +219,10 @@ const execute = async ({ argument, options, workspaceRoot: wsRoot }: Toolbox<Con
         for (const result of results) {
             findings.add({
                 marshall: "archivedRepo",
-                message: result.kind === "archived"
-                    ? `Source repo ${result.owner}/${result.repo} is archived${result.archivedAt === undefined ? "" : ` (since ${result.archivedAt})`}.`
-                    : `Source repo ${result.owner}/${result.repo} returned 404 from GitHub.`,
+                message:
+                    result.kind === "archived"
+                        ? `Source repo ${result.owner}/${result.repo} is archived${result.archivedAt === undefined ? "" : ` (since ${result.archivedAt})`}.`
+                        : `Source repo ${result.owner}/${result.repo} returned 404 from GitHub.`,
                 packageName: result.packageName,
                 severity: "warning",
             });
@@ -248,7 +248,9 @@ const execute = async ({ argument, options, workspaceRoot: wsRoot }: Toolbox<Con
             const errorCount = findings.errors().length;
             const warningCount = findings.warnings().length;
 
-            process.stdout.write(`\n${dim("Summary:")} ${red(`${String(errorCount)} error${errorCount === 1 ? "" : "s"}`)}, ${yellow(`${String(warningCount)} warning${warningCount === 1 ? "" : "s"}`)}.\n`);
+            process.stdout.write(
+                `\n${dim("Summary:")} ${red(`${String(errorCount)} error${errorCount === 1 ? "" : "s"}`)}, ${yellow(`${String(warningCount)} warning${warningCount === 1 ? "" : "s"}`)}.\n`,
+            );
         }
     }
 

@@ -142,10 +142,7 @@ describe(runArchivedRepoMarshall, () => {
     it("returns no finding when the repo is live", async () => {
         expect.assertions(1);
 
-        stubFetchSequence([
-            { body: packumentBody("git+https://github.com/example/demo.git") },
-            { body: { archived: false } },
-        ]);
+        stubFetchSequence([{ body: packumentBody("git+https://github.com/example/demo.git") }, { body: { archived: false } }]);
 
         const findings = await runArchivedRepoMarshall([{ name: "demo", version: "1.0.0" }]);
 
@@ -155,10 +152,7 @@ describe(runArchivedRepoMarshall, () => {
     it("emits a missing-repo finding when GitHub returns 404", async () => {
         expect.assertions(2);
 
-        stubFetchSequence([
-            { body: packumentBody("git+https://github.com/example/demo.git") },
-            { status: 404 },
-        ]);
+        stubFetchSequence([{ body: packumentBody("git+https://github.com/example/demo.git") }, { status: 404 }]);
 
         const findings = await runArchivedRepoMarshall([{ name: "demo", version: "1.0.0" }]);
 
@@ -197,10 +191,7 @@ describe(runArchivedRepoMarshall, () => {
     it("degrades silently on transient GitHub errors (5xx, 403)", async () => {
         expect.assertions(1);
 
-        stubFetchSequence([
-            { body: packumentBody("git+https://github.com/example/demo.git") },
-            { status: 403 },
-        ]);
+        stubFetchSequence([{ body: packumentBody("git+https://github.com/example/demo.git") }, { status: 403 }]);
 
         const findings = await runArchivedRepoMarshall([{ name: "demo", version: "1.0.0" }]);
 
@@ -244,10 +235,7 @@ describe(runArchivedRepoMarshall, () => {
     it("sends Authorization when githubToken is provided", async () => {
         expect.assertions(1);
 
-        const fetchSpy = stubFetchSequence([
-            { body: packumentBody("git+https://github.com/example/demo.git") },
-            { body: { archived: false } },
-        ]);
+        const fetchSpy = stubFetchSequence([{ body: packumentBody("git+https://github.com/example/demo.git") }, { body: { archived: false } }]);
 
         await runArchivedRepoMarshall([{ name: "demo", version: "1.0.0" }], { githubToken: "token-abc" });
 
@@ -259,10 +247,7 @@ describe(runArchivedRepoMarshall, () => {
     it("respects the allowlist", async () => {
         expect.assertions(2);
 
-        const fetchSpy = stubFetchSequence([
-            { body: packumentBody("git+https://github.com/example/demo.git") },
-            { body: { archived: true } },
-        ]);
+        const fetchSpy = stubFetchSequence([{ body: packumentBody("git+https://github.com/example/demo.git") }, { body: { archived: true } }]);
 
         const findings = await runArchivedRepoMarshall([{ name: "demo", version: "1.0.0" }], { allowlist: ["demo"] });
 
@@ -381,10 +366,7 @@ describe(clearArchivedRepoCache, () => {
         // But "demo" reuses the same cache key, so only one file. Force a second package:
         clearPackumentCache();
 
-        const second = stubFetchSequence([
-            { body: packumentBody("git+https://github.com/example/other.git") },
-            { body: { archived: false } },
-        ]);
+        const second = stubFetchSequence([{ body: packumentBody("git+https://github.com/example/other.git") }, { body: { archived: false } }]);
 
         await runArchivedRepoMarshall([{ name: "demo", version: "1.0.0" }]);
 

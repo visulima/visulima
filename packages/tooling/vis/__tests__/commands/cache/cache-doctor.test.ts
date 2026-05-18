@@ -116,10 +116,7 @@ describe("cacheDoctorExecute", () => {
             const fetchMock = vi.fn().mockResolvedValue({ status: 200 });
 
             globalThis.fetch = fetchMock;
-            const toolbox = buildToolbox(
-                { url: "https://override.example.com" },
-                { taskRunner: { remoteCache: { url: "https://config.example.com" } } },
-            );
+            const toolbox = buildToolbox({ url: "https://override.example.com" }, { taskRunner: { remoteCache: { url: "https://config.example.com" } } });
 
             await cacheDoctorExecute(toolbox as never);
 

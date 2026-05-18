@@ -106,9 +106,10 @@ const formatDeprecationFinding = (finding: DeprecationFinding): MarshallFinding 
 const formatPackageAgeFinding = (finding: PackageAgeFinding): MarshallFinding => {
     return {
         marshall: "packageAge",
-        message: finding.kind === "new-package"
-            ? `Package first published ${String(finding.days)} day${finding.days === 1 ? "" : "s"} ago — brand-new package names are a common typosquat/dependency-confusion signature.`
-            : `No new release in ${String(finding.days)} days — package may be unmaintained.`,
+        message:
+            finding.kind === "new-package"
+                ? `Package first published ${String(finding.days)} day${finding.days === 1 ? "" : "s"} ago — brand-new package names are a common typosquat/dependency-confusion signature.`
+                : `No new release in ${String(finding.days)} days — package may be unmaintained.`,
         packageName: finding.packageName,
         severity: finding.severity,
     };
@@ -155,9 +156,10 @@ const formatDownloadsFinding = (finding: DownloadFinding): MarshallFinding => {
 const formatExpiredDomainsFinding = (finding: ExpiredDomainFinding): MarshallFinding => {
     return {
         marshall: "expiredDomains",
-        message: finding.kind === "expired"
-            ? `Maintainer email domain ${finding.domain} (${finding.maintainer}) is unregistered — potential hijack risk.`
-            : `Could not verify maintainer email domain ${finding.domain} (${finding.maintainer}).`,
+        message:
+            finding.kind === "expired"
+                ? `Maintainer email domain ${finding.domain} (${finding.maintainer}) is unregistered — potential hijack risk.`
+                : `Could not verify maintainer email domain ${finding.domain} (${finding.maintainer}).`,
         packageName: finding.packageName,
         severity: finding.severity,
     };
@@ -172,12 +174,19 @@ const formatSignatureFinding = (finding: SignatureFinding): MarshallFinding => {
     };
 };
 
-const formatArchivedRepoFinding = (finding: { archivedAt?: string; kind: "archived" | "missing-repo"; owner: string; packageName: string; repo: string }): MarshallFinding => {
+const formatArchivedRepoFinding = (finding: {
+    archivedAt?: string;
+    kind: "archived" | "missing-repo";
+    owner: string;
+    packageName: string;
+    repo: string;
+}): MarshallFinding => {
     return {
         marshall: "archivedRepo",
-        message: finding.kind === "archived"
-            ? `Source repo ${finding.owner}/${finding.repo} is archived${finding.archivedAt === undefined ? "" : ` (since ${finding.archivedAt})`}.`
-            : `Source repo ${finding.owner}/${finding.repo} returned 404 from GitHub.`,
+        message:
+            finding.kind === "archived"
+                ? `Source repo ${finding.owner}/${finding.repo} is archived${finding.archivedAt === undefined ? "" : ` (since ${finding.archivedAt})`}.`
+                : `Source repo ${finding.owner}/${finding.repo} returned 404 from GitHub.`,
         packageName: finding.packageName,
         severity: "warning",
     };
@@ -188,7 +197,17 @@ const formatArchivedRepoFinding = (finding: { archivedAt?: string; kind: "archiv
  * is disabled we skip the prefetch entirely — no point warming a cache
  * nobody will read.
  */
-const PACKUMENT_READERS = ["author", "provenance", "newBin", "metadata", "deprecation", "packageAge", "expiredDomains", "signatures", "archivedRepo"] as const satisfies ReadonlyArray<keyof MarshallPipelineConfig>;
+const PACKUMENT_READERS = [
+    "author",
+    "provenance",
+    "newBin",
+    "metadata",
+    "deprecation",
+    "packageAge",
+    "expiredDomains",
+    "signatures",
+    "archivedRepo",
+] as const satisfies ReadonlyArray<keyof MarshallPipelineConfig>;
 
 const anyPackumentReaderEnabled = (config: MarshallPipelineConfig): boolean =>
     PACKUMENT_READERS.some((name) => {
@@ -266,9 +285,11 @@ export const runMarshallPipeline = async (
         const slot = slots.length;
 
         slots.push([]);
-        tasks.push((async () => {
-            slots[slot] = await factory();
-        })());
+        tasks.push(
+            (async () => {
+                slots[slot] = await factory();
+            })(),
+        );
     };
 
     if (config.author?.enabled !== false) {

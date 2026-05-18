@@ -52,7 +52,9 @@ const checkSecurityConfig = (config: VisConfig, packageManager: string): Securit
     }
 
     if (installScripts?.strict === false) {
-        result.warnings.push("security.policies.installScripts.strict is explicitly disabled. Unapproved build scripts will only produce warnings, not errors.");
+        result.warnings.push(
+            "security.policies.installScripts.strict is explicitly disabled. Unapproved build scripts will only produce warnings, not errors.",
+        );
     }
 
     if (installScripts?.strict && !hasAllow) {
@@ -127,11 +129,15 @@ const printSecurityReport = (config: VisConfig, packageManager: string): void =>
         pail.info(`  policies.publisherChange.ignoreAfter: ${publisherChange?.ignoreAfter ?? "not set"} minutes`);
         pail.info(`  blockExoticSubdeps:                    ${security.blockExoticSubdeps ?? false}`);
         pail.info(`  policies.installScripts.strict:       ${installScripts?.strict ?? false}`);
-        pail.info(`  policies.installScripts.allow:        ${installScripts?.allow ? `${Object.keys(installScripts.allow).length} entries` : "not configured"}`);
+        pail.info(
+            `  policies.installScripts.allow:        ${installScripts?.allow ? `${Object.keys(installScripts.allow).length} entries` : "not configured"}`,
+        );
         pail.info("");
         pail.info("Socket.dev integration:");
         pail.info(`  socket.enabled:                        ${security.socket?.enabled ?? false}`);
-        pail.info(`  socket.apiToken:                       ${security.socket?.apiToken || process.env.VIS_SOCKET_TOKEN ? "configured" : "using public token"}`);
+        pail.info(
+            `  socket.apiToken:                       ${security.socket?.apiToken || process.env.VIS_SOCKET_TOKEN ? "configured" : "using public token"}`,
+        );
         pail.info(`  policies.score.minimum:                ${score?.minimum ?? "default (0.4)"}`);
         pail.info(`  socket.cacheTtlMs:                     ${security.socket?.cacheTtlMs ?? "default (1 hour)"}`);
         pail.info(`  socket.timeoutMs:                      ${security.socket?.timeoutMs ?? "default (15s)"}`);

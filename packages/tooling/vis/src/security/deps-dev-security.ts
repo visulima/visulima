@@ -31,8 +31,7 @@ const DEFAULT_PROJECT_TTL_MS = 24 * 60 * 60 * 1000;
 const DEFAULT_ADVISORY_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const MAX_PARALLEL_REQUESTS = 8;
 
-const getCacheDirectory = (kind: "advisories" | "projects" | "versions"): string =>
-    join(getVisCacheDir(), "deps-dev", kind);
+const getCacheDirectory = (kind: "advisories" | "projects" | "versions"): string => join(getVisCacheDir(), "deps-dev", kind);
 
 /** Map of Scorecard check name → which Socket-style score axis it contributes to. */
 const SCORECARD_AXIS_MAP: Record<string, "license" | "maintenance" | "quality" | "supplyChain" | "vulnerability"> = {
@@ -243,7 +242,15 @@ const scorecardToScore = (scorecard: NonNullable<DepsDevProjectResponse["scoreca
     // uses when it lacks data for a check.
     const avg = (values: number[]): number => (values.length === 0 ? 0.5 : Number((values.reduce((s, v) => s + v, 0) / values.length).toFixed(2)));
 
-    const overall = scorecard?.overallScore === undefined ? Number(((avg(buckets.license) + avg(buckets.maintenance) + avg(buckets.quality) + avg(buckets.supplyChain) + avg(buckets.vulnerability)) / 5).toFixed(2)) : Number((scorecard.overallScore / 10).toFixed(2));
+    const overall
+        = scorecard?.overallScore === undefined
+            ? Number(
+                (
+                    (avg(buckets.license) + avg(buckets.maintenance) + avg(buckets.quality) + avg(buckets.supplyChain) + avg(buckets.vulnerability))
+                    / 5
+                ).toFixed(2),
+            )
+            : Number((scorecard.overallScore / 10).toFixed(2));
 
     return {
         license: avg(buckets.license),

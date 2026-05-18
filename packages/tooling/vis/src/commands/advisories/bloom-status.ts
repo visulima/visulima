@@ -80,10 +80,10 @@ const execute = async ({ options, workspaceRoot }: Toolbox<Console, AdvisoriesBl
 
         pail.info(`Built:  ${manifest.builtAtRfc3339} (${formatRelative(manifest.builtAtRfc3339)})`);
         pail.info(`Fetch:  ${status.fetchedAtIso ?? dim("—")} (${formatRelative(status.fetchedAtIso)})`);
+        pail.info(`Filter: ${green(formatBytes(manifest.bloomByteLen))}   m=${manifest.bloomMBits.toLocaleString()} bits   k=${String(manifest.bloomKHashes)}`);
         pail.info(
-            `Filter: ${green(formatBytes(manifest.bloomByteLen))}   m=${manifest.bloomMBits.toLocaleString()} bits   k=${String(manifest.bloomKHashes)}`,
+            `Set:    ${manifest.entryCount.toLocaleString()} entries from ${manifest.advisoryCount.toLocaleString()} advisories (target FPR ${manifest.targetFpr})`,
         );
-        pail.info(`Set:    ${manifest.entryCount.toLocaleString()} entries from ${manifest.advisoryCount.toLocaleString()} advisories (target FPR ${manifest.targetFpr})`);
         pail.info(dim(`Digest: ${manifest.setDigestSha256}`));
     } else {
         pail.warn("filter.bin present but manifest.json missing — `vis advisories bloom sync` will rewrite the cache.");

@@ -106,9 +106,7 @@ const declaredLicense = (manifest: Pick<PackageManifest, "license" | "licenses">
     }
 
     if (Array.isArray(manifest.licenses) && manifest.licenses.length > 0) {
-        const types = manifest.licenses
-            .map((entry) => (entry && typeof entry.type === "string" ? entry.type.trim() : ""))
-            .filter((t) => t.length > 0);
+        const types = manifest.licenses.map((entry) => (entry && typeof entry.type === "string" ? entry.type.trim() : "")).filter((t) => t.length > 0);
 
         if (types.length > 0) {
             // Legacy `licenses[]` is implicitly an OR.

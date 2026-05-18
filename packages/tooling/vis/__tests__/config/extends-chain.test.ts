@@ -167,14 +167,8 @@ describe("vis.config.ts extends chain", () => {
         // replaced the parent.
         expect.assertions(3);
 
-        writeConfig(
-            join(scratch, "shared.config.ts"),
-            `{ security: { policies: { installScripts: { allow: { "esbuild": true } } } } }`,
-        );
-        writeConfig(
-            join(scratch, "vis.config.ts"),
-            `{ extends: ["./shared.config.ts"], security: { policies: { installScripts: { strict: false } } } }`,
-        );
+        writeConfig(join(scratch, "shared.config.ts"), `{ security: { policies: { installScripts: { allow: { "esbuild": true } } } } }`);
+        writeConfig(join(scratch, "vis.config.ts"), `{ extends: ["./shared.config.ts"], security: { policies: { installScripts: { strict: false } } } }`);
 
         const config = await loadVisConfig(scratch);
 
@@ -187,10 +181,7 @@ describe("vis.config.ts extends chain", () => {
     it("merges acceptedRisks entries across extends (parent + child entries both survive)", async () => {
         expect.assertions(2);
 
-        writeConfig(
-            join(scratch, "shared.config.ts"),
-            `{ security: { acceptedRisks: { "lodash": { reason: "preset", acceptedAt: "2026-01-01" } } } }`,
-        );
+        writeConfig(join(scratch, "shared.config.ts"), `{ security: { acceptedRisks: { "lodash": { reason: "preset", acceptedAt: "2026-01-01" } } } }`);
         writeConfig(
             join(scratch, "vis.config.ts"),
             `{ extends: ["./shared.config.ts"], security: { acceptedRisks: { "left-pad": { reason: "consumer", acceptedAt: "2026-02-01" } } } }`,

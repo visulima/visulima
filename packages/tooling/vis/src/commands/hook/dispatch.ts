@@ -57,8 +57,12 @@ export interface DispatchLogger {
 
 const builtinLoggerFor = (parent: DispatchLogger): BuiltinLogger => {
     return {
-        error: (message: string): void => { parent.error(message); },
-        info: (message: string): void => { parent.info(message); },
+        error: (message: string): void => {
+            parent.error(message);
+        },
+        info: (message: string): void => {
+            parent.info(message);
+        },
     };
 };
 

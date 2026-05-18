@@ -18,12 +18,7 @@ import { pipeline } from "node:stream/promises";
 import { findCacheDirSync } from "@visulima/find-cache-dir";
 
 import type { AdvisoryDbStatus, AdvisoryQueryResult, NativeVulnerabilityJs } from "#native";
-import {
-    advisoriesIngest,
-    advisoriesQuery as nativeQuery,
-    advisoriesStatus as nativeStatus,
-    NATIVE_BINDING_VERSION,
-} from "#native";
+import { advisoriesIngest, advisoriesQuery as nativeQuery, advisoriesStatus as nativeStatus, NATIVE_BINDING_VERSION } from "#native";
 
 const EXPECTED_BINDING_VERSION = 5;
 
@@ -270,7 +265,10 @@ export const queryAdvisories = (packages: { name: string; version: string }[], o
             continue;
         }
 
-        out.set(packageInfo.name, hit.vulnerabilities.map((v) => toSecurityVulnerability(v)));
+        out.set(
+            packageInfo.name,
+            hit.vulnerabilities.map((v) => toSecurityVulnerability(v)),
+        );
     }
 
     return out;

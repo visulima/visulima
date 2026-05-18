@@ -69,8 +69,7 @@ const stubFetch = (response: { body?: unknown; status?: number }): ReturnType<ty
             ok: (response.status ?? 200) < 400,
             status: response.status ?? 200,
         };
-    },
-    );
+    });
 
     vi.stubGlobal("fetch", handler);
 

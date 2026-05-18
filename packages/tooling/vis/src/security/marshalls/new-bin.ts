@@ -46,7 +46,7 @@ export const normalizeBin = (binField: PackumentVersionEntry["bin"], packageName
 
     if (typeof binField === "string") {
         // npm strips the leading scope for the implied name (e.g. `@scope/foo` → `foo`).
-        const inferred = packageName.startsWith("@") ? packageName.split("/").at(1) ?? packageName : packageName;
+        const inferred = packageName.startsWith("@") ? (packageName.split("/").at(1) ?? packageName) : packageName;
 
         return { [inferred]: binField };
     }
@@ -66,10 +66,7 @@ const findImmediatelyPriorVersion = (packument: Packument, installedVersion: str
     return priors[0];
 };
 
-export const runNewBinMarshall = async (
-    packages: { name: string; version: string }[],
-    options: RunNewBinMarshallOptions = {},
-): Promise<NewBinFinding[]> => {
+export const runNewBinMarshall = async (packages: { name: string; version: string }[], options: RunNewBinMarshallOptions = {}): Promise<NewBinFinding[]> => {
     if (isMarshallDisabled("newBin")) {
         return [];
     }
@@ -114,7 +111,9 @@ export const runNewBinMarshall = async (
         const newBins = Object.entries(currentBins)
             .filter(([binName]) => !(binName in priorBins))
             .filter(([binName]) => !allowBins.has(binName))
-            .map(([binName, command]) => { return { command, name: binName }; });
+            .map(([binName, command]) => {
+                return { command, name: binName };
+            });
 
         if (newBins.length === 0) {
             return undefined;

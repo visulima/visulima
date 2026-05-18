@@ -29,9 +29,7 @@ const CONFIG_KEY_RENAMES: ReadonlyArray<KeyRename> = [
     { description: "ScopedTasksBlock.targets → ScopedTasksBlock.tasks", next: "tasks", previous: "targets" },
 ];
 
-const TASK_KEY_RENAMES: ReadonlyArray<KeyRename> = [
-    { description: "VisTaskConfig.targets → VisTaskConfig.tasks", next: "tasks", previous: "targets" },
-];
+const TASK_KEY_RENAMES: ReadonlyArray<KeyRename> = [{ description: "VisTaskConfig.targets → VisTaskConfig.tasks", next: "tasks", previous: "targets" }];
 
 /**
  * Build a regex that matches an unquoted or quoted object key. Matches:
@@ -41,8 +39,7 @@ const TASK_KEY_RENAMES: ReadonlyArray<KeyRename> = [
  * but NOT `foo` inside a string literal that's a value, because the
  * trailing `:` lookahead rules those out.
  */
-const buildKeyRegex = (name: string): RegExp =>
-    new RegExp(String.raw`(^|[\s,{(\[])(["']?)${name}\2(\s*:)`, "gmu");
+const buildKeyRegex = (name: string): RegExp => new RegExp(String.raw`(^|[\s,{(\[])(["']?)${name}\2(\s*:)`, "gmu");
 
 const applyRenames = (source: string, renames: ReadonlyArray<KeyRename>): { applied: KeyRename[]; output: string } => {
     let output = source;

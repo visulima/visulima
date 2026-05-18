@@ -29,15 +29,7 @@ interface WorkspaceLike {
 
 const DEFAULT_NESTED_INCLUDES = ["**/CODEOWNERS"] as const;
 
-const NESTED_IGNORE_BASE = [
-    "**/node_modules/**",
-    "**/dist/**",
-    "**/build/**",
-    "**/coverage/**",
-    "**/.git/**",
-    "**/.next/**",
-    "**/.nuxt/**",
-] as const;
+const NESTED_IGNORE_BASE = ["**/node_modules/**", "**/dist/**", "**/build/**", "**/coverage/**", "**/.git/**", "**/.next/**", "**/.nuxt/**"] as const;
 
 /**
  * Parses a CODEOWNERS file body into resolved lines. Strips `#`

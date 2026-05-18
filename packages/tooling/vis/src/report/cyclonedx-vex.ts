@@ -110,7 +110,9 @@ export const buildCycloneDxVulnerabilities = (findings: CycloneDxVexFinding[], n
 
                     return {
                         ref: headRef,
-                        versions: versions.map((version) => { return { status: "affected" as const, version }; }),
+                        versions: versions.map((version) => {
+                            return { status: "affected" as const, version };
+                        }),
                     };
                 });
 

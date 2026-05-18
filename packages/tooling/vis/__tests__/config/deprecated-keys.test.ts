@@ -38,10 +38,7 @@ describe("vis.config.ts deprecated-key detection", () => {
     it("throws when `taskDefaults` is used and lists the inner `scope`/`targets` renames", async () => {
         expect.assertions(3);
 
-        writeConfig(
-            join(scratch, "vis.config.ts"),
-            `{ taskDefaults: [{ scope: { tags: ["frontend"] }, targets: { build: { cache: true } } }] }`,
-        );
+        writeConfig(join(scratch, "vis.config.ts"), `{ taskDefaults: [{ scope: { tags: ["frontend"] }, targets: { build: { cache: true } } }] }`);
 
         const error = await loadVisConfig(scratch).catch((error_: unknown) => error_);
 
@@ -64,10 +61,7 @@ describe("vis.config.ts deprecated-key detection", () => {
     it("throws when scopedTasks blocks still use the old `scope`/`targets` inner keys", async () => {
         expect.assertions(2);
 
-        writeConfig(
-            join(scratch, "vis.config.ts"),
-            `{ scopedTasks: [{ scope: { tags: ["api"] }, targets: { build: { cache: true } } }] }`,
-        );
+        writeConfig(join(scratch, "vis.config.ts"), `{ scopedTasks: [{ scope: { tags: ["api"] }, targets: { build: { cache: true } } }] }`);
 
         const error = await loadVisConfig(scratch).catch((error_: unknown) => error_);
 

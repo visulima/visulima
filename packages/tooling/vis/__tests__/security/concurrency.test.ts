@@ -119,7 +119,11 @@ describe(mapWithConcurrency, () => {
 
         seen.sort((left, right) => left[1] - right[1]);
 
-        expect(seen).toStrictEqual([["a", 0], ["b", 1], ["c", 2]]);
+        expect(seen).toStrictEqual([
+            ["a", 0],
+            ["b", 1],
+            ["c", 2],
+        ]);
     });
 
     it("exposes a sensible default concurrency", () => {

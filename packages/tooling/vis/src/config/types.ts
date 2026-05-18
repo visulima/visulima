@@ -19,16 +19,7 @@ interface NativeAuditExclusions {
  * can import the runtime array (`POLICY_NAMES`) for iteration without
  * drifting from the union type.
  */
-export const POLICY_NAMES = [
-    "firstSeen",
-    "installScripts",
-    "license",
-    "malware",
-    "publisherChange",
-    "score",
-    "unexpectedDeps",
-    "vulnerability",
-] as const;
+export const POLICY_NAMES = ["firstSeen", "installScripts", "license", "malware", "publisherChange", "score", "unexpectedDeps", "vulnerability"] as const;
 
 export type PolicyName = (typeof POLICY_NAMES)[number];
 

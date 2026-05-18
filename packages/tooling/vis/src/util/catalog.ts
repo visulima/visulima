@@ -1599,7 +1599,8 @@ const enrichWithSecurity = async (
     // Fetch OSV vulnerabilities and per-provider security reports in parallel.
     // `fetchAllReports` returns an empty map when no providers are configured,
     // so we always have a Map to read from below.
-    const socketPromise: Promise<Map<string, PackageReportData>> | undefined = securityProviders && securityProviders.length > 0 ? fetchAllReports(securityProviders, packagesToScan) : undefined;
+    const socketPromise: Promise<Map<string, PackageReportData>> | undefined
+        = securityProviders && securityProviders.length > 0 ? fetchAllReports(securityProviders, packagesToScan) : undefined;
 
     const [vulnMap, socketReports] = await Promise.all([fetchVulnerabilities(packagesToScan), socketPromise]);
 

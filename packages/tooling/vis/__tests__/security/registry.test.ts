@@ -24,7 +24,9 @@ const makeProvider = (id: string, fetchImpl: () => Promise<Map<string, PackageRe
         clearCache: () => 0,
         displayName: id,
         fetchReports: vi.fn(fetchImpl),
-        getCacheStats: () => { return { entries: 0, newestEntry: undefined, oldestEntry: undefined, totalSizeBytes: 0 }; },
+        getCacheStats: () => {
+            return { entries: 0, newestEntry: undefined, oldestEntry: undefined, totalSizeBytes: 0 };
+        },
         id,
     };
 };
@@ -74,10 +76,7 @@ describe(buildEnabledProviders, () => {
     it("filters out providers listed in disabled", () => {
         expect.assertions(1);
 
-        const providers = buildEnabledProviders(
-            { socket: { apiToken: "test-token", enabled: true } },
-            { disabled: new Set(["socket"]) },
-        );
+        const providers = buildEnabledProviders({ socket: { apiToken: "test-token", enabled: true } }, { disabled: new Set(["socket"]) });
 
         expect(providers).toHaveLength(0);
     });
@@ -159,8 +158,15 @@ describe(fetchAllReports, () => {
     it("merges results from multiple providers", async () => {
         expect.assertions(2);
 
-        const p1 = makeProvider("p1", async () => new Map([["foo@1.0.0", makeReport({ alerts: [{ category: "supply-chain", key: "alert-a", severity: "high", type: "didYouMean" }] })]]));
-        const p2 = makeProvider("p2", async () => new Map([["foo@1.0.0", makeReport({ alerts: [{ category: "vulnerability", key: "alert-b", severity: "critical", type: "vulnerability" }] })]]));
+        const p1 = makeProvider(
+            "p1",
+            async () => new Map([["foo@1.0.0", makeReport({ alerts: [{ category: "supply-chain", key: "alert-a", severity: "high", type: "didYouMean" }] })]]),
+        );
+        const p2 = makeProvider(
+            "p2",
+            async () =>
+                new Map([["foo@1.0.0", makeReport({ alerts: [{ category: "vulnerability", key: "alert-b", severity: "critical", type: "vulnerability" }] })]]),
+        );
 
         const result = await fetchAllReports([p1, p2], [{ name: "foo", version: "1.0.0" }]);
 
@@ -178,8 +184,12 @@ describe(mergeReports, () => {
     it("primary provider's score wins on conflict", () => {
         expect.assertions(2);
 
-        const primary = new Map([["foo@1.0.0", makeReport({ score: { license: 1, maintenance: 1, overall: 0.9, quality: 1, supplyChain: 1, vulnerability: 1 } })]]);
-        const secondary = new Map([["foo@1.0.0", makeReport({ score: { license: 0.1, maintenance: 0.1, overall: 0.1, quality: 0.1, supplyChain: 0.1, vulnerability: 0.1 } })]]);
+        const primary = new Map([
+            ["foo@1.0.0", makeReport({ score: { license: 1, maintenance: 1, overall: 0.9, quality: 1, supplyChain: 1, vulnerability: 1 } })],
+        ]);
+        const secondary = new Map([
+            ["foo@1.0.0", makeReport({ score: { license: 0.1, maintenance: 0.1, overall: 0.1, quality: 0.1, supplyChain: 0.1, vulnerability: 0.1 } })],
+        ]);
 
         const result = mergeReports([primary, secondary]);
 
@@ -190,8 +200,12 @@ describe(mergeReports, () => {
     it("dedupes alerts by key when both providers report the same alert", () => {
         expect.assertions(1);
 
-        const primary = new Map([["foo@1.0.0", makeReport({ alerts: [{ category: "vulnerability", key: "CVE-2024-1234", severity: "high", type: "vulnerability" }] })]]);
-        const secondary = new Map([["foo@1.0.0", makeReport({ alerts: [{ category: "vulnerability", key: "CVE-2024-1234", severity: "high", type: "vulnerability" }] })]]);
+        const primary = new Map([
+            ["foo@1.0.0", makeReport({ alerts: [{ category: "vulnerability", key: "CVE-2024-1234", severity: "high", type: "vulnerability" }] })],
+        ]);
+        const secondary = new Map([
+            ["foo@1.0.0", makeReport({ alerts: [{ category: "vulnerability", key: "CVE-2024-1234", severity: "high", type: "vulnerability" }] })],
+        ]);
 
         const result = mergeReports([primary, secondary]);
 

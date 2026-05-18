@@ -63,10 +63,7 @@ describe(readAubeSecurityPosture, () => {
     it("counts allowBuilds entries", () => {
         expect.assertions(1);
 
-        writeFileSync(
-            join(workspaceRoot, "aube-workspace.yaml"),
-            "allowBuilds:\n  esbuild: true\n  sharp: true\n  '@prisma/client': false\n",
-        );
+        writeFileSync(join(workspaceRoot, "aube-workspace.yaml"), "allowBuilds:\n  esbuild: true\n  sharp: true\n  '@prisma/client': false\n");
 
         const posture = readAubeSecurityPosture(workspaceRoot);
 

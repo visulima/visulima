@@ -165,10 +165,7 @@ describe(runSignatureMarshall, () => {
     it("warns when the package is missing signatures", async () => {
         expect.assertions(2);
 
-        stubFetchSequence([
-            { body: keysBody([]) },
-            { body: packumentBody(undefined, "sha512-fakeintegrity==") },
-        ]);
+        stubFetchSequence([{ body: keysBody([]) }, { body: packumentBody(undefined, "sha512-fakeintegrity==") }]);
 
         const findings = await runSignatureMarshall([{ name: "demo", version: "1.0.0" }]);
 

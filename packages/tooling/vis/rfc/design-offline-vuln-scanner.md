@@ -476,16 +476,16 @@ All errors print actionable next-step lines, same shape as the existing `VisConf
 
 Targets the audit-handler must meet on a representative monorepo (this repo: 44 packages, ~2.8k installed lockfile rows, npm ecosystem only):
 
-| Operation                                                | Target   | Notes                                                                                                 |
-| -------------------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------- |
-| `advisories sync` cold — HEAD + GET (download phase)     | < 8 s    | network-bound, ~80 MB OSV npm dump on a 100 Mbps link                                                 |
-| `advisories sync` cold — `advisoriesIngest` (Rust phase) | < 4 s    | zip extract + serde_json + INSERT under WAL; bounded by CPU, not IO                                   |
-| `advisories sync` cold — total wall-clock                | < 12 s   | network-bound; ETag HEAD + atomic rename adds ~1 s over raw download                                  |
-| `advisories sync` ETag short-circuit                     | < 200 ms | HEAD only; no Rust call                                                                               |
-| `advisoriesQuery` 2.8k packages                          | < 80 ms  | prepared statement + single transaction + index on `(ecosystem, package)`                             |
-| `vis audit --offline` end-to-end                         | < 400 ms | lockfile parse (~80 ms) + query (~80 ms) + format + render                                            |
-| `vis audit` online (today's baseline)                    | ~1.2 s   | OSV roundtrip dominates                                                                               |
-| `--usage` pass                                           | < 1.5 s  | walk + scan; bounded by FS, not advisory size                                                         |
+| Operation                                                | Target   | Notes                                                                     |
+| -------------------------------------------------------- | -------- | ------------------------------------------------------------------------- |
+| `advisories sync` cold — HEAD + GET (download phase)     | < 8 s    | network-bound, ~80 MB OSV npm dump on a 100 Mbps link                     |
+| `advisories sync` cold — `advisoriesIngest` (Rust phase) | < 4 s    | zip extract + serde_json + INSERT under WAL; bounded by CPU, not IO       |
+| `advisories sync` cold — total wall-clock                | < 12 s   | network-bound; ETag HEAD + atomic rename adds ~1 s over raw download      |
+| `advisories sync` ETag short-circuit                     | < 200 ms | HEAD only; no Rust call                                                   |
+| `advisoriesQuery` 2.8k packages                          | < 80 ms  | prepared statement + single transaction + index on `(ecosystem, package)` |
+| `vis audit --offline` end-to-end                         | < 400 ms | lockfile parse (~80 ms) + query (~80 ms) + format + render                |
+| `vis audit` online (today's baseline)                    | ~1.2 s   | OSV roundtrip dominates                                                   |
+| `--usage` pass                                           | < 1.5 s  | walk + scan; bounded by FS, not advisory size                             |
 
 Regression test budget: a `__tests__/perf/audit-offline.bench.ts` (Vitest bench) that asserts the 400 ms wall-clock with a 50% slack. Run on CI under `pnpm --filter @visulima/vis run test:perf` (new script, ad-hoc lane).
 

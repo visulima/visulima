@@ -24,7 +24,9 @@ const buildInput = (
         manifestData,
         offline: false,
         packageManager: "pnpm",
-        packages: packages.map((p) => { return { isDev: false, name: p.name, version: p.version }; }),
+        packages: packages.map((p) => {
+            return { isDev: false, name: p.name, version: p.version };
+        }),
         workspaceRoot: "/tmp",
     };
 };

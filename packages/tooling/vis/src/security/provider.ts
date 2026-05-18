@@ -57,9 +57,7 @@ export interface SecurityProvider {
  *  - `license`, `author`, `size` fall back to a later provider only when the
  *    primary's value is empty.
  */
-export const mergeReports = (
-    maps: Iterable<Map<string, PackageReportData>>,
-): Map<string, PackageReportData> => {
+export const mergeReports = (maps: Iterable<Map<string, PackageReportData>>): Map<string, PackageReportData> => {
     const merged = new Map<string, PackageReportData>();
 
     for (const map of maps) {
