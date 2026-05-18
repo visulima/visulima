@@ -1766,7 +1766,7 @@
                 },
                 "autoFingerprint": {
                     "type": "boolean",
-                    "description": "Enable auto-fingerprinting mode (Vite Task-style). When enabled, the task runner automatically tracks which files a task accesses during execution and uses that for cache invalidation instead of requiring manual input configuration.\n\nFalls back to explicit inputs (Nx-style) when file tracking is not supported on the current platform.",
+                    "description": "Enable auto-fingerprinting mode (Vite Task-style). When enabled, the task runner automatically tracks which files a task accesses during execution and uses that for cache invalidation instead of requiring manual input configuration.\n\nFalls back to explicit inputs (Nx-style) when file tracking is not supported on the current platform.\n\nThis is the workspace-wide switch. To opt a single target into traced hashing without flipping it for the whole graph, set  {@link  TargetConfiguration.hashMode }  to `\"trace\"` on that target instead.",
                     "default": false
                 },
                 "cacheDiagnostics": {
@@ -2250,6 +2250,14 @@
                                 "type": "string",
                                 "description": "The executor/command to run"
                             },
+                            "hashMode": {
+                                "type": "string",
+                                "enum": [
+                                    "declared",
+                                    "trace"
+                                ],
+                                "description": "How this target's cache key is derived.\n\n- `\"declared\"` (default): the Nx-style path — the hash is built   up-front from explicitly declared `inputs` (plus named/global   inputs and the lockfile). Deterministic and portable across   machines: two runners with the same workspace state produce the   same key regardless of OS or syscall surface.\n- `\"trace\"`: the task is run under the file-access tracker   (strace on Linux, an fs preload shim elsewhere) and the cache   key is derived from the files it actually *read* during   execution — no `inputs` declaration required. Mirrors the   shipped `{ auto: true }` output capture, but for the input   side. Use for compound or opaque commands whose real input set   is impractical to enumerate.\n\nOpt-in per target precisely because trace mode trades reproducibility for convenience: the observed read set can differ across runners with different syscall surfaces (a static binary on a host without strace records nothing), so a trace key is **not** guaranteed portable between machines. Leave targets on `\"declared\"` whenever the input set can reasonably be listed.\n\nEquivalent to flipping  {@link  TaskRunnerOptions.autoFingerprint }  on for this one target while every other target stays declared."
+                            },
                             "inputs": {
                                 "type": "array",
                                 "items": {
@@ -2368,15 +2376,19 @@
                                             "type": "object",
                                             "properties": {
                                                 "auto": {
+                                                    "type": "boolean",
                                                     "const": true
                                                 }
                                             },
-                                            "required": ["auto"],
+                                            "required": [
+                                                "auto"
+                                            ],
                                             "additionalProperties": false
                                         }
-                                    ]
+                                    ],
+                                    "description": "A single entry in a task's `outputs` list.\n\n- `string` — a literal path *or* a glob pattern relative to the   workspace root. Prefix with `!` to exclude files the positive   patterns would otherwise include (e.g. `\"!dist/cache/**\"`).\n- `{ auto: true }` — use whatever files the task actually wrote   during execution (resolved from the file-access tracker). Lets   authors who don't know their exact output layout cache results   without listing every path. Silently behaves as \"no outputs\" when   tracking isn't active for this task."
                                 },
-                                "description": "Output patterns produced by this target. A string is a glob/path (supports {projectRoot}/{projectName} tokens); { \"auto\": true } caches whatever files the task actually writes (resolved from the file-access tracker)."
+                                "description": "Output patterns produced by this target. Each entry is a literal path, a glob (`\"dist/**\"`), a negative glob (`\"!dist/cache/**\"`), or `{ auto: true }` to cache whatever files the task actually wrote during execution (resolved from the file-access tracker). `{ auto: true }` lets a build script cache zero-config without the author enumerating its output layout; it contributes nothing — and the runner declines to seed the cache — when write tracking isn't available for the task, so a hit can never restore a missing artifact."
                             },
                             "parallelism": {
                                 "type": "boolean",
@@ -2793,6 +2805,14 @@
                         "type": "string",
                         "description": "The executor/command to run"
                     },
+                    "hashMode": {
+                        "type": "string",
+                        "enum": [
+                            "declared",
+                            "trace"
+                        ],
+                        "description": "How this target's cache key is derived.\n\n- `\"declared\"` (default): the Nx-style path — the hash is built   up-front from explicitly declared `inputs` (plus named/global   inputs and the lockfile). Deterministic and portable across   machines: two runners with the same workspace state produce the   same key regardless of OS or syscall surface.\n- `\"trace\"`: the task is run under the file-access tracker   (strace on Linux, an fs preload shim elsewhere) and the cache   key is derived from the files it actually *read* during   execution — no `inputs` declaration required. Mirrors the   shipped `{ auto: true }` output capture, but for the input   side. Use for compound or opaque commands whose real input set   is impractical to enumerate.\n\nOpt-in per target precisely because trace mode trades reproducibility for convenience: the observed read set can differ across runners with different syscall surfaces (a static binary on a host without strace records nothing), so a trace key is **not** guaranteed portable between machines. Leave targets on `\"declared\"` whenever the input set can reasonably be listed.\n\nEquivalent to flipping  {@link  TaskRunnerOptions.autoFingerprint }  on for this one target while every other target stays declared."
+                    },
                     "inputs": {
                         "type": "array",
                         "items": {
@@ -2906,15 +2926,19 @@
                                     "type": "object",
                                     "properties": {
                                         "auto": {
+                                            "type": "boolean",
                                             "const": true
                                         }
                                     },
-                                    "required": ["auto"],
+                                    "required": [
+                                        "auto"
+                                    ],
                                     "additionalProperties": false
                                 }
-                            ]
+                            ],
+                            "description": "A single entry in a task's `outputs` list.\n\n- `string` — a literal path *or* a glob pattern relative to the   workspace root. Prefix with `!` to exclude files the positive   patterns would otherwise include (e.g. `\"!dist/cache/**\"`).\n- `{ auto: true }` — use whatever files the task actually wrote   during execution (resolved from the file-access tracker). Lets   authors who don't know their exact output layout cache results   without listing every path. Silently behaves as \"no outputs\" when   tracking isn't active for this task."
                         },
-                        "description": "Output patterns produced by this target. A string is a glob/path (supports {projectRoot}/{projectName} tokens); { \"auto\": true } caches whatever files the task actually writes (resolved from the file-access tracker)."
+                        "description": "Output patterns produced by this target. Each entry is a literal path, a glob (`\"dist/**\"`), a negative glob (`\"!dist/cache/**\"`), or `{ auto: true }` to cache whatever files the task actually wrote during execution (resolved from the file-access tracker). `{ auto: true }` lets a build script cache zero-config without the author enumerating its output layout; it contributes nothing — and the runner declines to seed the cache — when write tracking isn't available for the task, so a hit can never restore a missing artifact."
                     },
                     "parallelism": {
                         "type": "boolean",
@@ -3810,6 +3834,14 @@
                                 "type": "string",
                                 "description": "The executor/command to run"
                             },
+                            "hashMode": {
+                                "type": "string",
+                                "enum": [
+                                    "declared",
+                                    "trace"
+                                ],
+                                "description": "How this target's cache key is derived.\n\n- `\"declared\"` (default): the Nx-style path — the hash is built   up-front from explicitly declared `inputs` (plus named/global   inputs and the lockfile). Deterministic and portable across   machines: two runners with the same workspace state produce the   same key regardless of OS or syscall surface.\n- `\"trace\"`: the task is run under the file-access tracker   (strace on Linux, an fs preload shim elsewhere) and the cache   key is derived from the files it actually *read* during   execution — no `inputs` declaration required. Mirrors the   shipped `{ auto: true }` output capture, but for the input   side. Use for compound or opaque commands whose real input set   is impractical to enumerate.\n\nOpt-in per target precisely because trace mode trades reproducibility for convenience: the observed read set can differ across runners with different syscall surfaces (a static binary on a host without strace records nothing), so a trace key is **not** guaranteed portable between machines. Leave targets on `\"declared\"` whenever the input set can reasonably be listed.\n\nEquivalent to flipping  {@link  TaskRunnerOptions.autoFingerprint }  on for this one target while every other target stays declared."
+                            },
                             "inputs": {
                                 "type": "array",
                                 "items": {
@@ -3923,15 +3955,19 @@
                                             "type": "object",
                                             "properties": {
                                                 "auto": {
+                                                    "type": "boolean",
                                                     "const": true
                                                 }
                                             },
-                                            "required": ["auto"],
+                                            "required": [
+                                                "auto"
+                                            ],
                                             "additionalProperties": false
                                         }
-                                    ]
+                                    ],
+                                    "description": "A single entry in a task's `outputs` list.\n\n- `string` — a literal path *or* a glob pattern relative to the   workspace root. Prefix with `!` to exclude files the positive   patterns would otherwise include (e.g. `\"!dist/cache/**\"`).\n- `{ auto: true }` — use whatever files the task actually wrote   during execution (resolved from the file-access tracker). Lets   authors who don't know their exact output layout cache results   without listing every path. Silently behaves as \"no outputs\" when   tracking isn't active for this task."
                                 },
-                                "description": "Output patterns produced by this target. A string is a glob/path (supports {projectRoot}/{projectName} tokens); { \"auto\": true } caches whatever files the task actually writes (resolved from the file-access tracker)."
+                                "description": "Output patterns produced by this target. Each entry is a literal path, a glob (`\"dist/**\"`), a negative glob (`\"!dist/cache/**\"`), or `{ auto: true }` to cache whatever files the task actually wrote during execution (resolved from the file-access tracker). `{ auto: true }` lets a build script cache zero-config without the author enumerating its output layout; it contributes nothing — and the runner declines to seed the cache — when write tracking isn't available for the task, so a hit can never restore a missing artifact."
                             },
                             "parallelism": {
                                 "type": "boolean",

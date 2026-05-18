@@ -131,7 +131,7 @@ const detectWarnings = (patterns: string[] | undefined, output: string | undefin
  * config layer otherwise forces cache-cold to avoid).
  */
 const isAutoOnlyOutputs = (outputs: OutputSpec[] | undefined): boolean =>
-    outputs !== undefined && outputs.length > 0 && outputs.every((output) => typeof output !== "string" && output.auto === true);
+    outputs !== undefined && outputs.length > 0 && outputs.every((output) => typeof output !== "string" && output.auto);
 
 const AUTO_OUTPUTS_UNAVAILABLE_REASON
     = "Outputs are `{ auto: true }` only, but no file writes were captured (write tracking unavailable for this task) — not caching, so a later hit can't restore a missing build artifact.";
@@ -237,7 +237,15 @@ class TaskOrchestrator {
             branch: getCurrentBranch(options.workspaceRoot),
         };
 
-        if (this.#autoFingerprint) {
+        // The trace machinery is built when fingerprinting is global
+        // (`autoFingerprint`) OR any single target opted in via
+        // `hashMode: "trace"`. Building it for a per-target opt-in keeps
+        // the rest of the graph on the cheap declared-hash path.
+        const anyTraceTask = this.#taskGraph
+            ? Object.values(this.#taskGraph.tasks).some((t) => t.hashMode === "trace")
+            : false;
+
+        if (this.#autoFingerprint || anyTraceTask) {
             this.#fingerprintManager = new FingerprintManager(options.workspaceRoot);
             this.#trackedExecutor = new TrackedTaskExecutor(options.workspaceRoot);
         } else {
@@ -362,7 +370,7 @@ class TaskOrchestrator {
             for (const task of batch) {
                 const startPromise = this.#shouldSkipForWhen(task)
                     ? Promise.resolve(this.#whenSkipResult(task))
-                    : this.#autoFingerprint
+                    : this.#shouldFingerprint(task)
                         ? this.#processTaskWithFingerprint(task)
                         : this.#processTask(task);
 
@@ -405,6 +413,24 @@ class TaskOrchestrator {
         if (this.#inFlightTasks.size > 0) {
             await Promise.all(this.#inFlightTasks.values());
         }
+    }
+
+    /**
+     * Decides whether a task takes the trace/fingerprint path
+     * (`#processTaskWithFingerprint`) or the declared content-hash path
+     * (`#processTask`). Global `autoFingerprint` routes every task
+     * through tracking; otherwise a task opts in per-target via
+     * `hashMode: "trace"`. The opt-in only takes effect when the
+     * fingerprint machinery was actually built (see constructor) — if
+     * it wasn't, the task safely degrades to the declared path so it
+     * still caches deterministically rather than not at all.
+     */
+    #shouldFingerprint(task: Task): boolean {
+        if (this.#autoFingerprint) {
+            return true;
+        }
+
+        return task.hashMode === "trace" && this.#fingerprintManager !== undefined;
     }
 
     async #processTask(task: Task): Promise<TaskResult> {
@@ -454,6 +480,14 @@ class TaskOrchestrator {
 
     async #processTaskWithFingerprint(task: Task): Promise<TaskResult> {
         const startTime = Date.now();
+
+        // Mirror the declared path: a dry run must never execute the
+        // command. Without this the tracker (or synthetic-reads branch)
+        // would really run it, defeating `--dry-run` for every
+        // autoFingerprint task and any `hashMode: "trace"` opt-in.
+        if (this.#dryRun) {
+            return this.#dryRunResult(task, startTime);
+        }
 
         if (!this.#skipCache && task.cache !== false) {
             const cachedResult = await this.#cache.getByTaskId(task.id);
