@@ -12,7 +12,7 @@
  * 2. **Pre-install / metadata marshalls** — wired into `vis add` /
  *    `vis install` / `vis update` / `vis inspect`:
  *    `typosquats`, `author`, `expiredDomains`, `signatures`, `provenance`,
- *    `newBin`, `downloads`, `metadata`, `archivedRepo`.
+ *    `s1ngularity`, `newBin`, `downloads`, `metadata`, `archivedRepo`.
  *
  * Every marshall calls {@link isMarshallDisabled} at the top of its exported
  * entry point. The helper reads `MARSHALL_DISABLE_&lt;UPPER_SNAKE>` (truthy
@@ -41,6 +41,7 @@ export type MarshallName
         | "packageAge"
         | "provenance"
         | "publisherChange"
+        | "s1ngularity"
         | "score"
         | "signatures"
         | "socket"
@@ -68,6 +69,7 @@ export const ALL_MARSHALLS: ReadonlyArray<MarshallName> = [
     "expiredDomains",
     "signatures",
     "provenance",
+    "s1ngularity",
     "newBin",
     "downloads",
     "metadata",

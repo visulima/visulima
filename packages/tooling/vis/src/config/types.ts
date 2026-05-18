@@ -1279,8 +1279,8 @@ export interface VisConfig {
 
         /**
          * Pre-install marshall pipeline — packument-derived supply-chain
-         * gates (author, provenance, new-bin, metadata, downloads,
-         * expired-domains, signatures, archived-repo) that run before
+         * gates (author, provenance, s1ngularity, new-bin, metadata,
+         * downloads, expired-domains, signatures, archived-repo) that run before
          * `vis add` / `vis install &lt;pkg>` / `vis update &lt;pkg>` hand off to
          * the underlying package manager. Every entry is optional; omit a
          * key and the marshall runs with defaults. Set `enabled: false`
@@ -1359,6 +1359,17 @@ export interface VisConfig {
             };
             /** Provenance regression check. */
             provenance?: {
+                allowlist?: string[];
+                enabled?: boolean;
+            };
+
+            /**
+             * Composite "compromised-publish shape" detector — flags a single
+             * version that simultaneously introduced/changed an install hook
+             * AND dropped the provenance attestation a prior stable version
+             * carried (the August 2025 s1ngularity / Nx fingerprint).
+             */
+            s1ngularity?: {
                 allowlist?: string[];
                 enabled?: boolean;
             };

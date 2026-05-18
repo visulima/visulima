@@ -13,7 +13,7 @@
  * historical readme/changelog text we never read. We keep:
  *
  *   - top-level: `name`, `dist-tags`, `time`, `readme`
- *   - per-version: `version`, `_npmUser`, `maintainers`, `bin`,
+ *   - per-version: `version`, `_npmUser`, `maintainers`, `bin`, `scripts`,
  *     `dist.{signatures,attestations,integrity,tarball}`,
  *     `repository`, `license`, `readme`, `readmeFilename`, `private`,
  *     `deprecated`
@@ -58,6 +58,8 @@ export interface PackumentVersionEntry {
     readme?: string;
     readmeFilename?: string;
     repository?: { directory?: string; type?: string; url?: string };
+    /** Lifecycle scripts from the published package.json — only the install hooks are read (s1ngularity marshall). */
+    scripts?: Record<string, string>;
     version: string;
 }
 
@@ -199,6 +201,10 @@ const stripPackument = (raw: Record<string, unknown>): Packument => {
 
         if (typeof entry.deprecated === "string") {
             stripped.deprecated = entry.deprecated;
+        }
+
+        if (entry.scripts !== undefined && typeof entry.scripts === "object") {
+            stripped.scripts = entry.scripts as Record<string, string>;
         }
 
         versions[version] = stripped;

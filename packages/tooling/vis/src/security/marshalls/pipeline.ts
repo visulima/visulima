@@ -37,6 +37,8 @@ import { runPackageAgeMarshall } from "./package-age";
 import { getPackument } from "./packument";
 import type { ProvenanceFinding } from "./provenance";
 import { runProvenanceMarshall } from "./provenance";
+import type { S1ngularityFinding } from "./s1ngularity";
+import { runS1ngularityMarshall } from "./s1ngularity";
 import type { SignatureFinding } from "./signatures";
 import { runSignatureMarshall } from "./signatures";
 
@@ -63,6 +65,7 @@ export interface MarshallPipelineConfig {
     newBin?: { allowlist?: string[]; enabled?: boolean };
     packageAge?: { allowlist?: string[]; enabled?: boolean; newPackageDays?: number; unmaintainedDays?: number };
     provenance?: { allowlist?: string[]; enabled?: boolean };
+    s1ngularity?: { allowlist?: string[]; enabled?: boolean };
     signatures?: { allowlist?: string[]; enabled?: boolean; keysUrl?: string; treatExpiredAs?: "error" | "warning" };
 }
 
@@ -90,6 +93,18 @@ const formatProvenanceFinding = (finding: ProvenanceFinding): MarshallFinding =>
         packageName: finding.packageName,
         severity: "error",
         suggestedAction: `Investigate why ${finding.version} dropped sigstore attestations.`,
+    };
+};
+
+const formatS1ngularityFinding = (finding: S1ngularityFinding): MarshallFinding => {
+    const hooks = finding.hookChanges.map((change) => `${change.hook} (${change.kind})`).join(", ");
+
+    return {
+        marshall: "s1ngularity",
+        message: `${finding.version} ${finding.hookChanges.length === 1 ? "has an" : "has"} install-script ${finding.hookChanges.length === 1 ? "change" : "changes"} [${hooks}] AND dropped the provenance attestation that ${finding.priorVersion} carried — this is the s1ngularity compromised-publish shape.`,
+        packageName: finding.packageName,
+        severity: "error",
+        suggestedAction: `Do not install ${finding.packageName}@${finding.version}. Verify the publish against the project's release CI; pin to ${finding.priorVersion} until confirmed. Allowlist via security.marshalls.s1ngularity.allowlist only if the conjunction is explained.`,
     };
 };
 
@@ -200,6 +215,7 @@ const formatArchivedRepoFinding = (finding: {
 const PACKUMENT_READERS = [
     "author",
     "provenance",
+    "s1ngularity",
     "newBin",
     "metadata",
     "deprecation",
@@ -321,6 +337,18 @@ export const runMarshallPipeline = async (
             });
 
             return results.map((finding) => formatProvenanceFinding(finding));
+        });
+    }
+
+    if (config.s1ngularity?.enabled !== false) {
+        schedule(async () => {
+            const results = await runS1ngularityMarshall(packages, {
+                allowlist: config.s1ngularity?.allowlist,
+                concurrency,
+                workspaceRoot: options.workspaceRoot,
+            });
+
+            return results.map((finding) => formatS1ngularityFinding(finding));
         });
     }
 

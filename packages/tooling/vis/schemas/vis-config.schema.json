@@ -235,8 +235,8 @@
                     "type": "boolean"
                 }
             ],
-            "description": "Auto-create targets from detected config files (Project Crystal-style). Inferred targets sit *below* explicit ones — anything in `package.json#scripts`, `project.json#targets`, or `vis.task.ts` wins per-key, so opting in never overrides existing setups.\n\nBuilt-in detectors and the targets they synthesize:\n\n- **App frameworks** — `nuxt` (build/dev/preview/generate),   `next` (build/dev/start), `remix` (build/dev/start), `astro`   (build/dev), `gatsby` (build/develop/serve), `docusaurus`   (build/start/serve).\n- **Bundlers** — `vite` (build/dev/preview), `rolldown` (build),   `tsdown` (build), `tsup` (build), `packem` (build), `rollup`   (build), `webpack` (build).\n- **Docs sites** — `vitepress` (docs:build/docs:dev/docs:preview),   `typedoc` (docs).\n- **Server frameworks** — `nest` (build/start/start:dev).\n- **Test runners** — `vitest` (test/test:watch), `jest`   (test/test:watch), `bun` (test), `playwright` (test:e2e),   `cypress` (test:e2e/cypress:open).\n- **Stories** — `storybook` (storybook/build-storybook).\n- **Type checking** — `typescript` (typecheck via `tsc --noEmit`).\n- **Lint / format** — `eslint` (lint), `prettier` (format /   format:check), `biome` (lint, format), `oxlint` (lint),   `oxfmt` (format / format:check), `stylelint` (lint:css),   `knip` (knip).\n- **Runtimes** — `deno` (test/lint/fmt/check).\n- **Database tooling** — `prisma` (db:generate/db:migrate/   db:push/db:studio), `drizzle` (db:generate/db:migrate/   db:push/db:studio).\n- **Codegen / release** — `graphql-codegen` (codegen),   `api-extractor` (api-extract), `changeset` (changeset:version /   changeset:publish / changeset:status).\n\nTrigger: presence of any matching config file in the project root. Most detectors additionally match when their framework appears in `dependencies` / `devDependencies` / `peerDependencies` / `optionalDependencies` — covering convention-only setups (e.g. vitest with default config). Detectors that intentionally require a config file (because the package frequently appears transitively and a dep-only match would synthesize broken commands): `vite`, `rolldown`, `rollup`, `webpack`, `storybook`, `nest`, `remix`, `vitepress`, `bun`, `deno`, `changeset`.\n\nConflict resolution: detectors are evaluated in registration order (see `BUILT_IN_DETECTORS`) and the first to claim a target name wins. Per-name priorities: `build` → nuxt > next > remix > astro > gatsby > docusaurus > vite > nest > rolldown > tsdown > tsup > packem > rollup > webpack; `test` → vitest > jest > bun > deno; `test:e2e` → playwright > cypress; `lint` → eslint > biome > oxlint > deno; `format` → prettier > biome > oxfmt; `db:*` → prisma > drizzle.\n\nAlso accepts an object form (`{ vite: false, vitest: true }`) to opt individual detectors in or out by name. Detectors omitted from the object run at their default (enabled). Useful when one detector misfires for a given workspace without disabling the rest.",
-            "default": false
+            "description": "Auto-create targets from detected config files (Project Crystal-style). On by default; set `false` to disable entirely, or use the object form to disable individual detectors.\n\nInferred targets sit *below* explicit ones — the command from `package.json#scripts`, `project.json#targets`, or `vis.task.ts` always wins per-key, so opting in never changes what runs. As a caching aid, when a `package.json` script's command *is* a detector's command (optionally with extra flags, no shell chaining) and the script declares no `inputs`/`outputs`, the detector's `inputs`/`outputs` are adopted so the script target can cache precisely and restore its artifacts. Customised/compound scripts are left untouched.\n\nBuilt-in detectors and the targets they synthesize:\n\n- **App frameworks** — `nuxt` (build/dev/preview/generate),   `next` (build/dev/start), `remix` (build/dev/start), `astro`   (build/dev), `gatsby` (build/develop/serve), `docusaurus`   (build/start/serve).\n- **Bundlers** — `vite` (build/dev/preview), `rolldown` (build),   `tsdown` (build), `tsup` (build), `packem` (build), `rollup`   (build), `webpack` (build).\n- **Docs sites** — `vitepress` (docs:build/docs:dev/docs:preview),   `typedoc` (docs).\n- **Server frameworks** — `nest` (build/start/start:dev).\n- **Test runners** — `vitest` (test/test:watch), `jest`   (test/test:watch), `bun` (test), `playwright` (test:e2e),   `cypress` (test:e2e/cypress:open).\n- **Stories** — `storybook` (storybook/build-storybook).\n- **Type checking** — `typescript` (typecheck via `tsc --noEmit`).\n- **Lint / format** — `eslint` (lint), `prettier` (format /   format:check), `biome` (lint, format), `oxlint` (lint),   `oxfmt` (format / format:check), `stylelint` (lint:css),   `knip` (knip).\n- **Runtimes** — `deno` (test/lint/fmt/check).\n- **Database tooling** — `prisma` (db:generate/db:migrate/   db:push/db:studio), `drizzle` (db:generate/db:migrate/   db:push/db:studio).\n- **Codegen / release** — `graphql-codegen` (codegen),   `api-extractor` (api-extract), `changeset` (changeset:version /   changeset:publish / changeset:status).\n\nTrigger: presence of any matching config file in the project root. Most detectors additionally match when their framework appears in `dependencies` / `devDependencies` / `peerDependencies` / `optionalDependencies` — covering convention-only setups (e.g. vitest with default config). Detectors that intentionally require a config file (because the package frequently appears transitively and a dep-only match would synthesize broken commands): `vite`, `rolldown`, `rollup`, `webpack`, `storybook`, `nest`, `remix`, `vitepress`, `bun`, `deno`, `changeset`.\n\nConflict resolution: detectors are evaluated in registration order (see `BUILT_IN_DETECTORS`) and the first to claim a target name wins. Per-name priorities: `build` → nuxt > next > remix > astro > gatsby > docusaurus > vite > nest > rolldown > tsdown > tsup > packem > rollup > webpack; `test` → vitest > jest > bun > deno; `test:e2e` → playwright > cypress; `lint` → eslint > biome > oxlint > deno; `format` → prettier > biome > oxfmt; `db:*` → prisma > drizzle.\n\nAlso accepts an object form (`{ vite: false, vitest: true }`) to opt individual detectors in or out by name. Detectors omitted from the object run at their default (enabled). Useful when one detector misfires for a given workspace without disabling the rest.",
+            "default": true
         },
         "install": {
             "type": "object",
@@ -1308,6 +1308,22 @@
                             "additionalProperties": false,
                             "description": "Provenance regression check."
                         },
+                        "s1ngularity": {
+                            "type": "object",
+                            "properties": {
+                                "allowlist": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "enabled": {
+                                    "type": "boolean"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "description": "Composite \"compromised-publish shape\" detector — flags a single version that simultaneously introduced/changed an install hook AND dropped the provenance attestation a prior stable version carried (the August 2025 s1ngularity / Nx fingerprint)."
+                        },
                         "signatures": {
                             "type": "object",
                             "properties": {
@@ -1339,7 +1355,7 @@
                         }
                     },
                     "additionalProperties": false,
-                    "description": "Pre-install marshall pipeline — packument-derived supply-chain gates (author, provenance, new-bin, metadata, downloads, expired-domains, signatures, archived-repo) that run before `vis add` / `vis install &lt;pkg>` / `vis update &lt;pkg>` hand off to the underlying package manager. Every entry is optional; omit a key and the marshall runs with defaults. Set `enabled: false` on a specific marshall to skip it without touching env vars."
+                    "description": "Pre-install marshall pipeline — packument-derived supply-chain gates (author, provenance, s1ngularity, new-bin, metadata, downloads, expired-domains, signatures, archived-repo) that run before `vis add` / `vis install &lt;pkg>` / `vis update &lt;pkg>` hand off to the underlying package manager. Every entry is optional; omit a key and the marshall runs with defaults. Set `enabled: false` on a specific marshall to skip it without touching env vars."
                 },
                 "pinVersions": {
                     "type": "boolean",
@@ -1762,6 +1778,13 @@
                     "type": "string",
                     "description": "Directory for storing cache"
                 },
+                "concurrencyGroups": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "number"
+                    },
+                    "description": "Workspace-level concurrency group caps. Maps a group name to the maximum number of in-flight tasks across every target whose `concurrencyGroup` field equals the same name. Independent of `parallel`: the global cap still bounds total tasks, and group caps further bound the named subset.\n\nCommon shape — one cap per shared resource:\n\n  ```ts   concurrencyGroups: {     \"db-bound\": 2,    // any target hitting the local Postgres     \"deploy-lock\": 1, // any deploy target   }   ```\n\nTargets opt in via  {@link  TargetConfiguration.concurrencyGroup } . Values `&lt;= 0` are ignored."
+                },
                 "dataDirectory": {
                     "type": "string",
                     "description": "Directory used to persist run summaries (`runs/`), `last-summary.json`, and other run-scoped state. Defaults to `{workspaceRoot}/.task-runner` when omitted so standalone task-runner consumers keep their existing layout. Vis sets this to `{workspaceRoot}/.vis` so all per-workspace state lives under a single directory."
@@ -1808,13 +1831,6 @@
                     "type": "boolean",
                     "description": "When `true`, file hashes are cached in a persistent mtime+size indexed snapshot under `node_modules/.cache/task-runner/`. On subsequent runs, unchanged files skip content re-reads — cuts cold-cache fingerprint time dramatically on large workspaces.\n\nChanged or new files still get full content hashing. Safe to leave on by default; overhead when nothing matches is a single `stat` call per file.",
                     "default": false
-                },
-                "concurrencyGroups": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "number"
-                    },
-                    "description": "Workspace-level concurrency group caps. Maps a group name to the maximum number of in-flight tasks across every target whose `concurrencyGroup` field equals the same name. Independent of `parallel`: the global cap still bounds total tasks, and group caps further bound the named subset.\n\nCommon shape — one cap per shared resource:\n\n  ```ts   concurrencyGroups: {     \"db-bound\": 2,    // any target hitting the local Postgres     \"deploy-lock\": 1, // any deploy target   }   ```\n\nTargets opt in via  {@link  TargetConfiguration.concurrencyGroup } . Values `<= 0` are ignored."
                 },
                 "maxCacheAge": {
                     "type": "number",
@@ -1947,6 +1963,92 @@
                         "allowInsecureBearer": {
                             "type": "boolean",
                             "description": "Opt out of the REAPI safety check that refuses to send a bearer token over cleartext gRPC. Required only when the connection terminates inside a trusted boundary (loopback dev cache, mesh mTLS sidecar that strips/re-encrypts on the next hop). Default `false` — production callers should reach for `grpcs://` first.\n\nREAPI-only."
+                        },
+                        "attestation": {
+                            "type": "object",
+                            "properties": {
+                                "expectedIdentity": {
+                                    "anyOf": [
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "github": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "ref": {
+                                                            "type": "string",
+                                                            "description": "Git ref the workflow ran on, e.g. `refs/heads/main` or `refs/tags/v1.2.3`."
+                                                        },
+                                                        "repo": {
+                                                            "type": "string",
+                                                            "description": "`owner/name`, e.g. `visulima/visulima`."
+                                                        },
+                                                        "workflow": {
+                                                            "type": "string",
+                                                            "description": "Workflow path, e.g. `.github/workflows/release.yml`."
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "ref",
+                                                        "repo",
+                                                        "workflow"
+                                                    ],
+                                                    "additionalProperties": false,
+                                                    "description": "GitHub Actions preset. Expands to issuer `https://token.actions.githubusercontent.com` and the anchored SAN `https://github.com/{repo}/{workflow}@{ref}`."
+                                                }
+                                            },
+                                            "required": [
+                                                "github"
+                                            ],
+                                            "additionalProperties": false
+                                        },
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "oidcIssuer": {
+                                                    "type": "string",
+                                                    "description": "Fulcio cert issuer extension, matched exactly."
+                                                },
+                                                "san": {
+                                                    "type": "string",
+                                                    "description": "Literal signer identity (certificate SAN). vis regex-escapes and anchors this — pass the plain URI, e.g. `https://github.com/org/repo/.github/workflows/ci.yml@refs/heads/main`."
+                                                }
+                                            },
+                                            "required": [
+                                                "oidcIssuer",
+                                                "san"
+                                            ],
+                                            "additionalProperties": false
+                                        },
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "oidcIssuer": {
+                                                    "type": "string",
+                                                    "description": "Fulcio cert issuer extension, matched exactly."
+                                                },
+                                                "sanRegex": {
+                                                    "type": "string",
+                                                    "description": "Advanced: raw, unescaped SAN regex. You own anchoring (`^…$`); an unanchored value is substring-matched."
+                                                }
+                                            },
+                                            "required": [
+                                                "oidcIssuer",
+                                                "sanRegex"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    ],
+                                    "description": "Expected keyless signer identity. Serializable so it can live in `vis.config.ts`. task-runner does not consume this — it is config passthrough for the vis-side `verifyArtifact` hook, which must enforce it. Without an expected identity a valid bundle from *any* Fulcio identity over the same digest verifies (integrity, not authenticity), so the vis hook treats \"verify requested without an expected identity\" as a misconfiguration.\n\nThree forms (pick one):\n- `{ github }` — GitHub Actions preset. Expands to the Fulcio   issuer + an escaped, anchored SAN. The ergonomic default.\n- `{ oidcIssuer, san }` — a *literal* signer identity. vis escapes   and anchors it for you; pass the plain URI, not a regex.\n- `{ oidcIssuer, sanRegex }` — advanced: a raw, unescaped regex.   You own anchoring (sigstore-js matches via `String.match`)."
+                                },
+                                "requireOnDownload": {
+                                    "type": "boolean",
+                                    "description": "Reject downloads whose attestation is missing or fails verification. With `verifyArtifact` set but this `false`, a bad attestation is treated as a cache miss (re-execute) rather than a hard failure.",
+                                    "default": false
+                                }
+                            },
+                            "additionalProperties": false,
+                            "description": "HTTP-only: keyless artifact attestation hooks (Sigstore in practice). Layered above `signing` — integrity vs authenticity."
                         },
                         "backend": {
                             "type": "string",
@@ -2081,6 +2183,10 @@
                                 "type": "string",
                                 "description": "The command to run (alternative to executor)"
                             },
+                            "concurrencyGroup": {
+                                "type": "string",
+                                "description": "Workspace-level concurrency group this target opts into. The scheduler caps the *combined* in-flight count of every task whose target carries the same group name to the value declared in  {@link  TaskRunnerOptions.concurrencyGroups } . Use this when several targets share an external resource (a single Postgres, a developer's Docker daemon, an account-wide deploy lock) so the cap follows the resource, not any single target name.\n\nTargets that name a group not declared in `concurrencyGroups` run uncapped — a typo shouldn't deadlock the graph. Caps don't apply to tasks marked `always: true`; those run in a separate finalisation phase outside the scheduler."
+                            },
                             "configurations": {
                                 "type": "object",
                                 "additionalProperties": {
@@ -2088,10 +2194,6 @@
                                     "additionalProperties": {}
                                 },
                                 "description": "Named configurations (e.g., \"production\", \"development\")"
-                            },
-                            "concurrencyGroup": {
-                                "type": "string",
-                                "description": "Workspace-level concurrency group this target opts into. The scheduler caps the *combined* in-flight count of every task whose target carries the same group name to the value declared in  {@link  TaskRunnerOptions.concurrencyGroups } . Use this when several targets share an external resource (a single Postgres, a developer's Docker daemon, an account-wide deploy lock) so the cap follows the resource, not any single target name.\n\nTargets that name a group not declared in `concurrencyGroups` run uncapped — a typo shouldn't deadlock the graph. Caps don't apply to tasks marked `always: true`; those run in a separate finalisation phase outside the scheduler."
                             },
                             "dependsOn": {
                                 "type": "array",
@@ -2246,14 +2348,14 @@
                                 },
                                 "description": "Input patterns for cache invalidation"
                             },
+                            "maxConcurrent": {
+                                "type": "number",
+                                "description": "Maximum number of in-flight instances of this target across the whole graph. When set, the scheduler refuses to start an additional task whose `target.target` equals this target's name once the running count reaches `maxConcurrent`. Independent of `--parallel`: the global cap still bounds total in-flight tasks, and `maxConcurrent` further bounds the per-target subset.\n\nUse for tests/deploys that share an external resource (DB, port, mock server). Set to `1` to serialize. Values `&lt;= 0` are ignored.\n\nIf multiple projects declare different values for the same target name, the runner uses the smallest declared cap. Caps don't apply to tasks marked `always: true`; those run in a separate finalisation phase outside the scheduler."
+                            },
                             "options": {
                                 "type": "object",
                                 "additionalProperties": {},
                                 "description": "Options passed to the executor"
-                            },
-                            "maxConcurrent": {
-                                "type": "number",
-                                "description": "Maximum number of in-flight instances of this target across the whole graph. When set, the scheduler refuses to start an additional task whose `target.target` equals this target's name once the running count reaches `maxConcurrent`. Independent of `--parallel`: the global cap still bounds total in-flight tasks, and `maxConcurrent` further bounds the per-target subset.\n\nUse for tests/deploys that share an external resource (DB, port, mock server). Set to `1` to serialize. Values `<= 0` are ignored.\n\nIf multiple projects declare different values for the same target name, the runner uses the smallest declared cap. Caps don't apply to tasks marked `always: true`; those run in a separate finalisation phase outside the scheduler."
                             },
                             "outputs": {
                                 "type": "array",
@@ -2610,6 +2712,10 @@
                         "type": "string",
                         "description": "The command to run (alternative to executor)"
                     },
+                    "concurrencyGroup": {
+                        "type": "string",
+                        "description": "Workspace-level concurrency group this target opts into. The scheduler caps the *combined* in-flight count of every task whose target carries the same group name to the value declared in  {@link  TaskRunnerOptions.concurrencyGroups } . Use this when several targets share an external resource (a single Postgres, a developer's Docker daemon, an account-wide deploy lock) so the cap follows the resource, not any single target name.\n\nTargets that name a group not declared in `concurrencyGroups` run uncapped — a typo shouldn't deadlock the graph. Caps don't apply to tasks marked `always: true`; those run in a separate finalisation phase outside the scheduler."
+                    },
                     "configurations": {
                         "type": "object",
                         "additionalProperties": {
@@ -2617,10 +2723,6 @@
                             "additionalProperties": {}
                         },
                         "description": "Named configurations (e.g., \"production\", \"development\")"
-                    },
-                    "concurrencyGroup": {
-                        "type": "string",
-                        "description": "Workspace-level concurrency group this target opts into. The scheduler caps the *combined* in-flight count of every task whose target carries the same group name to the value declared in  {@link  TaskRunnerOptions.concurrencyGroups } . Use this when several targets share an external resource (a single Postgres, a developer's Docker daemon, an account-wide deploy lock) so the cap follows the resource, not any single target name.\n\nTargets that name a group not declared in `concurrencyGroups` run uncapped — a typo shouldn't deadlock the graph. Caps don't apply to tasks marked `always: true`; those run in a separate finalisation phase outside the scheduler."
                     },
                     "dependsOn": {
                         "type": "array",
@@ -2777,7 +2879,7 @@
                     },
                     "maxConcurrent": {
                         "type": "number",
-                        "description": "Maximum number of in-flight instances of this target across the whole graph. When set, the scheduler refuses to start an additional task whose `target.target` equals this target's name once the running count reaches `maxConcurrent`. Independent of `--parallel`: the global cap still bounds total in-flight tasks, and `maxConcurrent` further bounds the per-target subset.\n\nUse for tests/deploys that share an external resource (DB, port, mock server). Set to `1` to serialize. Values `<= 0` are ignored.\n\nIf multiple projects declare different values for the same target name, the runner uses the smallest declared cap. Caps don't apply to tasks marked `always: true`; those run in a separate finalisation phase outside the scheduler."
+                        "description": "Maximum number of in-flight instances of this target across the whole graph. When set, the scheduler refuses to start an additional task whose `target.target` equals this target's name once the running count reaches `maxConcurrent`. Independent of `--parallel`: the global cap still bounds total in-flight tasks, and `maxConcurrent` further bounds the per-target subset.\n\nUse for tests/deploys that share an external resource (DB, port, mock server). Set to `1` to serialize. Values `&lt;= 0` are ignored.\n\nIf multiple projects declare different values for the same target name, the runner uses the smallest declared cap. Caps don't apply to tasks marked `always: true`; those run in a separate finalisation phase outside the scheduler."
                     },
                     "outputs": {
                         "type": "array",
@@ -3613,6 +3715,10 @@
                                 "type": "string",
                                 "description": "The command to run (alternative to executor)"
                             },
+                            "concurrencyGroup": {
+                                "type": "string",
+                                "description": "Workspace-level concurrency group this target opts into. The scheduler caps the *combined* in-flight count of every task whose target carries the same group name to the value declared in  {@link  TaskRunnerOptions.concurrencyGroups } . Use this when several targets share an external resource (a single Postgres, a developer's Docker daemon, an account-wide deploy lock) so the cap follows the resource, not any single target name.\n\nTargets that name a group not declared in `concurrencyGroups` run uncapped — a typo shouldn't deadlock the graph. Caps don't apply to tasks marked `always: true`; those run in a separate finalisation phase outside the scheduler."
+                            },
                             "configurations": {
                                 "type": "object",
                                 "additionalProperties": {
@@ -3620,10 +3726,6 @@
                                     "additionalProperties": {}
                                 },
                                 "description": "Named configurations (e.g., \"production\", \"development\")"
-                            },
-                            "concurrencyGroup": {
-                                "type": "string",
-                                "description": "Workspace-level concurrency group this target opts into. The scheduler caps the *combined* in-flight count of every task whose target carries the same group name to the value declared in  {@link  TaskRunnerOptions.concurrencyGroups } . Use this when several targets share an external resource (a single Postgres, a developer's Docker daemon, an account-wide deploy lock) so the cap follows the resource, not any single target name.\n\nTargets that name a group not declared in `concurrencyGroups` run uncapped — a typo shouldn't deadlock the graph. Caps don't apply to tasks marked `always: true`; those run in a separate finalisation phase outside the scheduler."
                             },
                             "dependsOn": {
                                 "type": "array",
@@ -3780,7 +3882,7 @@
                             },
                             "maxConcurrent": {
                                 "type": "number",
-                                "description": "Maximum number of in-flight instances of this target across the whole graph. When set, the scheduler refuses to start an additional task whose `target.target` equals this target's name once the running count reaches `maxConcurrent`. Independent of `--parallel`: the global cap still bounds total in-flight tasks, and `maxConcurrent` further bounds the per-target subset.\n\nUse for tests/deploys that share an external resource (DB, port, mock server). Set to `1` to serialize. Values `<= 0` are ignored.\n\nIf multiple projects declare different values for the same target name, the runner uses the smallest declared cap. Caps don't apply to tasks marked `always: true`; those run in a separate finalisation phase outside the scheduler."
+                                "description": "Maximum number of in-flight instances of this target across the whole graph. When set, the scheduler refuses to start an additional task whose `target.target` equals this target's name once the running count reaches `maxConcurrent`. Independent of `--parallel`: the global cap still bounds total in-flight tasks, and `maxConcurrent` further bounds the per-target subset.\n\nUse for tests/deploys that share an external resource (DB, port, mock server). Set to `1` to serialize. Values `&lt;= 0` are ignored.\n\nIf multiple projects declare different values for the same target name, the runner uses the smallest declared cap. Caps don't apply to tasks marked `always: true`; those run in a separate finalisation phase outside the scheduler."
                             },
                             "outputs": {
                                 "type": "array",
