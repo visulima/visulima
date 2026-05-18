@@ -1,4 +1,4 @@
-import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
+import { parseAllDocuments, stringify as stringifyYaml } from "yaml";
 
 import type { PruneInput, PruneResult } from "./types";
 import { LockfilePruneError } from "./types";
@@ -132,15 +132,42 @@ export const prunePnpmLockfile = (input: PruneInput): PruneResult => {
     const displayName = input.displayName ?? "pnpm-lock.yaml";
     const text = typeof input.lockfileContent === "string" ? input.lockfileContent : input.lockfileContent.toString("utf8");
 
-    let parsed: PnpmLockfile;
+    // pnpm v11 writes a multi-document lockfile: a tiny `@pnpm/exe` self-bootstrap
+    // document followed by the real workspace lockfile. Parse every document and
+    // keep the one with the most package entries (the bootstrap doc has a handful).
+    let rawDocuments;
 
     try {
-        parsed = parseYaml(text) as PnpmLockfile;
+        rawDocuments = parseAllDocuments(text);
     } catch (error) {
         throw new LockfilePruneError(`${displayName}: parse failed — ${(error as Error).message}`);
     }
 
-    if (!parsed || typeof parsed !== "object") {
+    const packageCount = (lockfile: PnpmLockfile): number => (lockfile.packages ? Object.keys(lockfile.packages).length : 0);
+
+    let parsed: PnpmLockfile | undefined;
+
+    for (const lockDocument of rawDocuments) {
+        const [firstError] = lockDocument.errors;
+
+        if (firstError) {
+            throw new LockfilePruneError(`${displayName}: parse failed — ${firstError.message}`);
+        }
+
+        const value = lockDocument.toJS() as unknown;
+
+        if (!value || typeof value !== "object") {
+            continue;
+        }
+
+        const candidate = value as PnpmLockfile;
+
+        if (parsed === undefined || packageCount(candidate) > packageCount(parsed)) {
+            parsed = candidate;
+        }
+    }
+
+    if (parsed === undefined) {
         throw new LockfilePruneError(`${displayName}: top-level value is not an object`);
     }
 

@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 import { parseSyml } from "@yarnpkg/parsers";
 import { describe, expect, it } from "vitest";
-import { parse as parseYaml } from "yaml";
+import { parse as parseYaml, parseAllDocuments } from "yaml";
 
 import type { FocusProject } from "../../src/util/docker-lockfile";
 import { LockfilePruneError, pruneLockfile } from "../../src/util/docker-lockfile";
@@ -516,7 +516,16 @@ describe.skipIf(skipFixtureSuite)("pruneLockfile (visulima monorepo fixture)", (
         expect(result.content).toBeDefined();
 
         const parsed = parseYaml(result.content!) as { importers: Record<string, unknown>; packages?: Record<string, unknown> };
-        const original = parseYaml(lockfileContent) as { importers: Record<string, unknown>; packages?: Record<string, unknown> };
+        // pnpm v11 writes a multi-document lockfile (a tiny `@pnpm/exe` self-bootstrap
+        // doc + the real workspace lockfile); pick the document with the most importers.
+        const originalDocuments = parseAllDocuments(lockfileContent).map((document) => document.toJS() as { importers?: Record<string, unknown> });
+        let original: { importers: Record<string, unknown>; packages?: Record<string, unknown> } = { importers: {} };
+
+        for (const lockDocument of originalDocuments) {
+            if (Object.keys(lockDocument.importers ?? {}).length > Object.keys(original.importers).length) {
+                original = lockDocument as { importers: Record<string, unknown>; packages?: Record<string, unknown> };
+            }
+        }
 
         // Workspace root + the vis importer must survive.
         expect(parsed.importers["."]).toBeDefined();
