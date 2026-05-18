@@ -94,6 +94,17 @@ export interface Task {
     /** Detailed hash information */
     hashDetails?: TaskHashDetails;
 
+    /**
+     * How this task's cache key is derived. Carried over from
+     * {@link TargetConfiguration.hashMode} at task graph creation.
+     * `"trace"` routes the task through the file-access tracker so the
+     * key comes from the files it actually read — the per-target
+     * equivalent of the global {@link TaskRunnerOptions.autoFingerprint}.
+     * Absent / `"declared"` keeps the Nx-style upfront hash from
+     * explicit {@link Task.outputs} and declared inputs.
+     */
+    hashMode?: "declared" | "trace";
+
     /** Unique identifier for the task, typically "project:target:configuration" */
     id: string;
 
@@ -344,6 +355,35 @@ export interface TargetConfiguration {
     dependsOn?: (string | TargetDependencyConfig)[];
     /** The executor/command to run */
     executor?: string;
+
+    /**
+     * How this target's cache key is derived.
+     *
+     * - `"declared"` (default): the Nx-style path — the hash is built
+     *   up-front from explicitly declared `inputs` (plus named/global
+     *   inputs and the lockfile). Deterministic and portable across
+     *   machines: two runners with the same workspace state produce the
+     *   same key regardless of OS or syscall surface.
+     * - `"trace"`: the task is run under the file-access tracker
+     *   (strace on Linux, an fs preload shim elsewhere) and the cache
+     *   key is derived from the files it actually *read* during
+     *   execution — no `inputs` declaration required. Mirrors the
+     *   shipped `{ auto: true }` output capture, but for the input
+     *   side. Use for compound or opaque commands whose real input set
+     *   is impractical to enumerate.
+     *
+     * Opt-in per target precisely because trace mode trades
+     * reproducibility for convenience: the observed read set can differ
+     * across runners with different syscall surfaces (a static binary on
+     * a host without strace records nothing), so a trace key is **not**
+     * guaranteed portable between machines. Leave targets on
+     * `"declared"` whenever the input set can reasonably be listed.
+     *
+     * Equivalent to flipping {@link TaskRunnerOptions.autoFingerprint}
+     * on for this one target while every other target stays declared.
+     */
+    hashMode?: "declared" | "trace";
+
     /** Input patterns for cache invalidation */
     inputs?: (string | InputDefinition)[];
 
@@ -366,6 +406,7 @@ export interface TargetConfiguration {
     maxConcurrent?: number;
     /** Options passed to the executor */
     options?: Record<string, unknown>;
+
     /**
      * Output patterns produced by this target. Each entry is a literal
      * path, a glob (`"dist/**"`), a negative glob (`"!dist/cache/**"`),
@@ -654,6 +695,11 @@ export interface TaskRunnerOptions {
      *
      * Falls back to explicit inputs (Nx-style) when file tracking
      * is not supported on the current platform.
+     *
+     * This is the workspace-wide switch. To opt a single target into
+     * traced hashing without flipping it for the whole graph, set
+     * {@link TargetConfiguration.hashMode} to `"trace"` on that target
+     * instead.
      * @default false
      */
     autoFingerprint?: boolean;

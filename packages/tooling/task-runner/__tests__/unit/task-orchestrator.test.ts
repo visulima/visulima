@@ -51,7 +51,9 @@ describe(TaskOrchestrator, () => {
         options: {
             autoFingerprint?: boolean;
             dependencies?: Record<string, string[]>;
+            dryRun?: boolean;
             lifeCycle?: LifeCycleInterface;
+            resolveCommand?: (task: Task) => string | undefined;
             skipCache?: boolean;
         } = {},
     ) => {
@@ -83,10 +85,13 @@ describe(TaskOrchestrator, () => {
         return new TaskOrchestrator({
             autoFingerprint: options.autoFingerprint,
             cache,
+            dryRun: options.dryRun,
             lifeCycle,
+            resolveCommand: options.resolveCommand,
             scheduler,
             skipCache: options.skipCache,
             taskExecutor: executor,
+            taskGraph,
             taskHasher,
             workspaceRoot,
         });
@@ -861,6 +866,145 @@ describe(TaskOrchestrator, () => {
             const cached = await new Cache({ workspaceRoot }).getByTaskId("app:build");
 
             expect(cached).toBeUndefined();
+        });
+    });
+
+    describe("per-target hashMode: trace", () => {
+        it("routes a hashMode:'trace' task through the fingerprint path even with autoFingerprint off", async () => {
+            expect.assertions(3);
+
+            const task: Task = {
+                cache: true,
+                hashMode: "trace",
+                id: "app:build",
+                outputs: [],
+                overrides: {},
+                projectRoot: "packages/app",
+                target: { project: "app", target: "build" },
+            };
+
+            // No resolveCommand → the tracker can't attach, so
+            // #executeTaskWithTracking takes its synthetic-reads branch:
+            // it still builds a fingerprint from hashed inputs and
+            // persists a task-id-indexed cache entry. A declared-path
+            // task would instead be content-addressed and leave
+            // getByTaskId empty — so a resolvable task-id entry proves
+            // the trace route was taken without the global switch.
+            const orchestrator = createOrchestrator([task], successExecutor);
+            const results = await orchestrator.run();
+
+            expect(results.get("app:build")?.status).toBe("success");
+
+            const cached = await new Cache({ workspaceRoot }).getByTaskId("app:build");
+
+            expect(cached).toBeDefined();
+            expect(cached?.fingerprint).toBeDefined();
+        });
+
+        it("keeps a declared (no hashMode) task on the content-hash path", async () => {
+            expect.assertions(2);
+
+            const task: Task = {
+                cache: true,
+                id: "app:build",
+                outputs: [],
+                overrides: {},
+                projectRoot: "packages/app",
+                target: { project: "app", target: "build" },
+            };
+
+            const orchestrator = createOrchestrator([task], successExecutor);
+            const results = await orchestrator.run();
+
+            expect(results.get("app:build")?.status).toBe("success");
+
+            // Declared path is content-addressed, never task-id indexed.
+            const cached = await new Cache({ workspaceRoot }).getByTaskId("app:build");
+
+            expect(cached).toBeUndefined();
+        });
+
+        it("routes trace and declared tasks independently within one graph", async () => {
+            expect.assertions(4);
+
+            const traceTask: Task = {
+                cache: true,
+                hashMode: "trace",
+                id: "app:build",
+                outputs: [],
+                overrides: {},
+                projectRoot: "packages/app",
+                target: { project: "app", target: "build" },
+            };
+
+            const declaredTask: Task = {
+                cache: true,
+                id: "app:test",
+                outputs: [],
+                overrides: {},
+                projectRoot: "packages/app",
+                target: { project: "app", target: "test" },
+            };
+
+            const orchestrator = createOrchestrator([traceTask, declaredTask], successExecutor);
+            const results = await orchestrator.run();
+
+            expect(results.get("app:build")?.status).toBe("success");
+            expect(results.get("app:test")?.status).toBe("success");
+
+            const cache = new Cache({ workspaceRoot });
+
+            // Only the trace task lands in the task-id index; the
+            // declared one stays content-addressed.
+            await expect(cache.getByTaskId("app:build")).resolves.toBeDefined();
+            await expect(cache.getByTaskId("app:test")).resolves.toBeUndefined();
+        });
+
+        it("a dry run never executes a hashMode:'trace' task", async () => {
+            expect.assertions(2);
+
+            const task: Task = {
+                cache: true,
+                hashMode: "trace",
+                id: "app:build",
+                outputs: [],
+                overrides: {},
+                projectRoot: "packages/app",
+                target: { project: "app", target: "build" },
+            };
+
+            const executor = vi.fn<TaskExecutor>(async () => {
+                return { code: 0, terminalOutput: "ran" };
+            });
+            const results = await createOrchestrator([task], executor, { dryRun: true }).run();
+
+            // The fingerprint path must short-circuit on dry run just like
+            // the declared path — the command is never invoked.
+            expect(executor).not.toHaveBeenCalled();
+            expect(results.get("app:build")?.status).toBe("skipped");
+        });
+
+        it("a second run of a trace task is served from the fingerprint cache", async () => {
+            expect.assertions(2);
+
+            const task: Task = {
+                cache: true,
+                hashMode: "trace",
+                id: "app:build",
+                outputs: [],
+                overrides: {},
+                projectRoot: "packages/app",
+                target: { project: "app", target: "build" },
+            };
+
+            const first = await createOrchestrator([task], successExecutor).run();
+
+            expect(first.get("app:build")?.status).toBe("success");
+
+            // Inputs unchanged → fingerprint validates → cache hit.
+            const second = await createOrchestrator([task], successExecutor).run();
+
+            expect(second.get("app:build")?.status).toBe("local-cache");
         });
     });
 });

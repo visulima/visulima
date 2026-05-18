@@ -195,7 +195,15 @@ const defaultTaskRunner = async (_tasks: Task[], options: TaskRunnerOptions, con
     // Create the scheduler
     const scheduler = new TaskScheduler(scheduledGraph, projectGraph, maxParallel, options.concurrencyGroups);
 
-    // Build command resolver for auto-fingerprint mode
+    // True when at least one target opted into syscall-traced hashing
+    // via `hashMode: "trace"`. Used to wire the trace machinery (command
+    // resolver, framework env-pattern inference) even when the global
+    // `autoFingerprint` switch is off.
+    const anyTraceTask = Object.values(scheduledGraph.tasks).some((task) => task.hashMode === "trace");
+
+    // Build command resolver for the trace/fingerprint path. Always
+    // supplied now: a per-target `hashMode: "trace"` needs to resolve
+    // its shell command even when `autoFingerprint` is off.
     const resolveCommand = (task: Task): string | undefined => {
         const project = projectGraph.nodes[task.target.project];
         const targetConfig = project?.data.targets?.[task.target.target];
@@ -213,7 +221,7 @@ const defaultTaskRunner = async (_tasks: Task[], options: TaskRunnerOptions, con
     // This makes frameworkInference work with both Nx-style and autoFingerprint modes
     let fingerprintEnvPatterns = options.fingerprintEnvPatterns ?? [];
 
-    if (options.frameworkInference && options.autoFingerprint) {
+    if (options.frameworkInference && (options.autoFingerprint || anyTraceTask)) {
         const inferredPatterns = await inferFrameworkEnvPatterns(workspaceRoot, projects);
 
         fingerprintEnvPatterns = [...new Set([...fingerprintEnvPatterns, ...inferredPatterns])];
@@ -235,7 +243,7 @@ const defaultTaskRunner = async (_tasks: Task[], options: TaskRunnerOptions, con
         // observes upload failures regardless of where they originate.
         onRemoteUploadError: options.remoteCache?.onUploadError,
         remoteCache,
-        resolveCommand: options.autoFingerprint ? resolveCommand : undefined,
+        resolveCommand,
         scheduler,
         skipCache: options.skipNxCache,
         summarize: options.summarize,

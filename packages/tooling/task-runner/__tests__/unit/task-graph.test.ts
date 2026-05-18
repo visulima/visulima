@@ -225,6 +225,52 @@ describe(createTaskGraph, () => {
         expect(taskGraph.tasks["app:build"]?.outputs).toStrictEqual([]);
     });
 
+    it("carries hashMode onto expanded dependency tasks", () => {
+        expect.assertions(2);
+
+        const workspaceWithHashMode: WorkspaceConfiguration = {
+            projects: {
+                app: {
+                    root: "apps/app",
+                    targets: {
+                        build: {
+                            command: "vite build",
+                            dependsOn: ["^build"],
+                        },
+                    },
+                },
+                "lib-a": {
+                    root: "packages/lib-a",
+                    targets: {
+                        build: { command: "tsc", hashMode: "trace" },
+                    },
+                },
+            },
+        };
+
+        const graph: ProjectGraph = {
+            dependencies: { app: [{ source: "app", target: "lib-a", type: "static" }], "lib-a": [] },
+            nodes: {
+                app: { data: workspaceWithHashMode.projects["app"]!, name: "app", type: "application" },
+
+                "lib-a": { data: workspaceWithHashMode.projects["lib-a"]!, name: "lib-a", type: "library" },
+            },
+        };
+
+        const appBuild: Task = {
+            id: "app:build",
+            outputs: [],
+            overrides: {},
+            target: { project: "app", target: "build" },
+        };
+
+        const taskGraph = createTaskGraph([appBuild], { projectGraph: graph, workspace: workspaceWithHashMode });
+
+        expect(taskGraph.tasks["lib-a:build"]?.hashMode).toBe("trace");
+        // app:build never set hashMode → stays declared (undefined).
+        expect(taskGraph.tasks["app:build"]?.hashMode).toBeUndefined();
+    });
+
     it("does not propagate overrides to string-form dependsOn deps", () => {
         expect.assertions(2);
 
