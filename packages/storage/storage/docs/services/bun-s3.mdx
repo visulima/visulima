@@ -1,0 +1,84 @@
+# Bun S3
+
+> **Just need ad-hoc uploads?** Wrap this adapter in the [`Files` facade](../files-facade.mdx) for a one-liner API. The reference below shows direct adapter usage and Bun-specific limitations (no resumable multipart, client-side copy).
+
+## Overview
+
+The Bun S3 adapter is backed by the native [`Bun.S3Client`](https://bun.sh/docs/api/s3) instead of the AWS SDK. Use it when you are already running on Bun and want to skip the AWS SDK dependency — the runtime ships its own zero-dependency S3 client.
+
+It works against any S3-compatible backend (AWS S3, Cloudflare R2, MinIO, Tigris, Wasabi, Backblaze B2, …) by pointing `endpoint` at the provider. For Node or edge runtimes use the [`aws`](./amazon-s3.mdx) or [`aws-light`](./aws-light.mdx) provider instead — this adapter requires the Bun runtime (or an injected client).
+
+## Usage
+
+```ts
+import { BunS3Storage } from "@visulima/storage/provider/bun-s3";
+
+const storage = new BunS3Storage({
+    accessKeyId: process.env.S3_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!,
+    bucket: process.env.S3_BUCKET!,
+    region: process.env.S3_REGION,
+    // endpoint: "https://<account>.r2.cloudflarestorage.com", // for R2/MinIO/etc.
+});
+```
+
+Omitted credential fields fall back to Bun's own environment resolution: `S3_ACCESS_KEY_ID` then `AWS_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` then `AWS_SECRET_ACCESS_KEY`, `S3_REGION` then `AWS_REGION`, `S3_BUCKET` then `AWS_BUCKET`, `S3_ENDPOINT` then `AWS_ENDPOINT`.
+
+## Configuration
+
+### Credentials
+
+| Option            | Env (Bun resolution)                             |
+| ----------------- | ------------------------------------------------ |
+| `accessKeyId`     | `S3_ACCESS_KEY_ID` → `AWS_ACCESS_KEY_ID`         |
+| `secretAccessKey` | `S3_SECRET_ACCESS_KEY` → `AWS_SECRET_ACCESS_KEY` |
+| `region`          | `S3_REGION` → `AWS_REGION`                       |
+| `bucket`          | `S3_BUCKET` → `AWS_BUCKET`                       |
+| `endpoint`        | `S3_ENDPOINT` → `AWS_ENDPOINT`                   |
+| `sessionToken`    | —                                                |
+
+Additional options: `acl` (canned ACL applied to uploads, e.g. `"public-read"`), `virtualHostedStyle` (use `https://<bucket>.<host>/…` addressing), and `metaStorageConfig` (local metafile bookkeeping for the upload lifecycle).
+
+### Pre-built client
+
+```ts
+import { S3Client } from "bun";
+import { BunS3Storage } from "@visulima/storage/provider/bun-s3";
+
+const client = new S3Client({
+    accessKeyId: process.env.S3_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!,
+    bucket: process.env.S3_BUCKET!,
+});
+
+const storage = new BunS3Storage({ client });
+```
+
+When `client` is passed, the inline credential options (`accessKeyId`, `secretAccessKey`, `region`, `bucket`, `endpoint`, `sessionToken`, `acl`, `virtualHostedStyle`) are ignored. You can also pass the `Bun.s3` singleton. Outside Bun, the constructor throws unless `client` is supplied.
+
+## URL Generation
+
+### `getReadUrl(key, options?)`
+
+Returns a presigned `GET` URL via `Bun.S3Client`. Supports `expiresIn`, `responseContentType` (mapped to Bun's `type`), and `responseContentDisposition` (mapped to `contentDisposition`).
+
+### `getUploadUrl(key, options?)`
+
+Returns a presigned `PUT` URL. Supports `expiresIn` and `contentType`. A `contentLength` cap **cannot** be enforced — Bun's presign has no max-size policy — and is ignored by design.
+
+## Features
+
+- **Native single-shot writes** — `write()` uploads the part body in one call; Bun handles large-object chunking internally, so no AWS SDK and no manual multipart wiring.
+- **Streaming reads** — `getStream()` returns the object via `S3File.stream()`, bridged to a Node `Readable`.
+- **Presigned GET/PUT** — both read and upload URLs are minted directly by the runtime client.
+- **Idempotent delete** — `delete()` resolves even when the key (or its metadata) is absent, returning a synthetic deleted file.
+- **`raw` escape hatch** — `storage.raw` exposes the underlying `Bun.S3Client` for advanced calls (`list`, `stat`, `presign`, …).
+
+## Limitations
+
+- **No resumable / TUS multipart protocol.** Each `write` uploads the supplied body in one shot. `Bun.S3Client` exposes no low-level multipart primitives (create/upload-part/complete/abort), so resumable uploads are not available — use the [`aws`](./amazon-s3.mdx) or [`aws-light`](./aws-light.mdx) provider for those.
+- **Client-side `copy()` / `move()`** — implemented as read-then-write; Bun has no server-side `CopyObject`.
+- **`getUploadUrl()` cannot enforce `contentLength`** — Bun presign has no max-size policy; the option is ignored.
+- **Checksums are not verified** — `Bun.S3Client.write` has no checksum parameter, so a supplied `checksum`/`checksumAlgorithm` is accepted but not forwarded or enforced server-side (an _unsupported_ algorithm is still rejected up front).
+- **`list()` is single-page** — capped at the requested limit; deep prefix pagination is not surfaced.
+- Requires the **Bun runtime** (or an injected `client`). Not usable on Node or edge runtimes.

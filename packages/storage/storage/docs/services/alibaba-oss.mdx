@@ -1,0 +1,89 @@
+# Alibaba Cloud OSS
+
+> **Just need ad-hoc uploads?** Wrap this adapter in the [`Files` facade](../files-facade.mdx) for a one-liner API. The reference below shows direct adapter usage — pick that path when you're hosting an upload server.
+
+## Overview
+
+Alibaba Cloud Object Storage Service (OSS) is an S3-compatible object storage service. It is accessed through the S3-compatible endpoint, so it works with `S3Storage` plus the bundled `alibaba` client preset, which derives the endpoint from the region code.
+
+## Installation
+
+```sh
+npm install @aws-sdk/client-s3 @aws-sdk/credential-providers @aws-sdk/s3-request-presigner @aws-sdk/signature-v4-crt aws-crt @aws-sdk/types
+```
+
+## Usage
+
+Alibaba OSS is S3-compatible, so use `S3Storage` with the `alibaba` client preset:
+
+```typescript
+import { S3Storage } from "@visulima/storage/provider/aws";
+import { alibaba } from "@visulima/storage/provider/aws/s3/clients";
+
+const clientConfig = alibaba({
+    accessKeyId: process.env.ALIBABA_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.ALIBABA_ACCESS_KEY_SECRET!,
+    region: process.env.ALIBABA_REGION || "cn-hangzhou",
+});
+
+const storage = new S3Storage({
+    bucket: "my-bucket",
+    ...clientConfig,
+});
+```
+
+The endpoint defaults to `https://s3.oss-${region}.aliyuncs.com` with virtual-hosted-style addressing. Pass `endpoint` (or set `ALIBABA_ENDPOINT`) to override it — for example, when using an internal or accelerated endpoint.
+
+## Configuration
+
+### Environment Variables
+
+```typescript
+process.env.ALIBABA_ACCESS_KEY_ID = "your-access-key";
+process.env.ALIBABA_ACCESS_KEY_SECRET = "your-secret-key";
+process.env.ALIBABA_REGION = "cn-hangzhou";
+
+const clientConfig = alibaba(); // Uses environment variables
+const storage = new S3Storage({
+    bucket: "my-bucket",
+    ...clientConfig,
+});
+```
+
+The `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` variables are also accepted as fallbacks. The region is **not** read from `AWS_REGION` — it is part of the endpoint hostname, and `AWS_REGION` is commonly set to an AWS region in dev/CI, which would silently produce a broken endpoint. Use `ALIBABA_REGION` (or pass `region`).
+
+### With Explicit Parameters
+
+```typescript
+const clientConfig = alibaba({
+    accessKeyId: "your-access-key",
+    secretAccessKey: "your-secret-key",
+    region: "cn-hangzhou",
+});
+```
+
+## Regions
+
+Common Alibaba OSS regions:
+
+- `cn-hangzhou` - China (Hangzhou)
+- `cn-shanghai` - China (Shanghai)
+- `cn-beijing` - China (Beijing)
+- `ap-southeast-1` - Asia Pacific SE (Singapore)
+- `us-east-1` - US East (Virginia)
+- `eu-central-1` - EU Central (Frankfurt)
+
+## Features
+
+- **S3-Compatible**: Works through the S3-compatible OSS endpoint
+- **Global Regions**: Data centers across China and worldwide
+- **Lifecycle Management**: Automatic tiering and expiration policies
+- **Presigned URLs**: Direct browser uploads and downloads
+
+## Best Practices
+
+1. **Set `ALIBABA_REGION` explicitly** - it drives the endpoint hostname; never rely on `AWS_REGION`
+2. **Choose the closest region** - reduce latency for your users
+3. **Use lifecycle policies** - automatically transition or expire objects
+4. **Configure CORS** - set up CORS for browser-based uploads
+5. **Use a separate metafiles bucket** - keep upload metadata isolated for resumable uploads

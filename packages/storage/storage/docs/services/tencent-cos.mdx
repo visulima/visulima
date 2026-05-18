@@ -1,0 +1,91 @@
+# Tencent Cloud COS
+
+> **Just need ad-hoc uploads?** Wrap this adapter in the [`Files` facade](../files-facade.mdx) for a one-liner API. The reference below shows direct adapter usage — pick that path when you're hosting an upload server.
+
+## Overview
+
+Tencent Cloud Object Storage (COS) is an S3-compatible object storage service. It is accessed through the S3-compatible endpoint, so it works with `S3Storage` plus the bundled `tencent` client preset, which derives the endpoint from the region code.
+
+## Installation
+
+```sh
+npm install @aws-sdk/client-s3 @aws-sdk/credential-providers @aws-sdk/s3-request-presigner @aws-sdk/signature-v4-crt aws-crt @aws-sdk/types
+```
+
+## Usage
+
+Tencent COS is S3-compatible, so use `S3Storage` with the `tencent` client preset:
+
+```typescript
+import { S3Storage } from "@visulima/storage/provider/aws";
+import { tencent } from "@visulima/storage/provider/aws/s3/clients";
+
+const clientConfig = tencent({
+    accessKeyId: process.env.TENCENT_SECRET_ID!,
+    secretAccessKey: process.env.TENCENT_SECRET_KEY!,
+    region: process.env.TENCENT_REGION || "ap-guangzhou",
+});
+
+const storage = new S3Storage({
+    bucket: "uploads-1250000000",
+    ...clientConfig,
+});
+```
+
+> **Bucket naming:** the bucket name must include the APPID suffix (e.g. `uploads-1250000000`). The S3-compatible API expects the full form — a bare bucket name will not resolve.
+
+The endpoint defaults to `https://cos.${region}.myqcloud.com` with virtual-hosted-style addressing. Pass `endpoint` (or set `TENCENT_ENDPOINT`) to override it.
+
+## Configuration
+
+### Environment Variables
+
+```typescript
+process.env.TENCENT_SECRET_ID = "your-secret-id";
+process.env.TENCENT_SECRET_KEY = "your-secret-key";
+process.env.TENCENT_REGION = "ap-guangzhou";
+
+const clientConfig = tencent(); // Uses environment variables
+const storage = new S3Storage({
+    bucket: "uploads-1250000000",
+    ...clientConfig,
+});
+```
+
+The `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` variables are also accepted as fallbacks. The region is **not** read from `AWS_REGION` — it is part of the endpoint hostname, and `AWS_REGION` is commonly set to an AWS region in dev/CI, which would silently produce a broken endpoint. Use `TENCENT_REGION` (or pass `region`).
+
+### With Explicit Parameters
+
+```typescript
+const clientConfig = tencent({
+    accessKeyId: "your-secret-id",
+    secretAccessKey: "your-secret-key",
+    region: "ap-guangzhou",
+});
+```
+
+## Regions
+
+Common Tencent COS regions:
+
+- `ap-guangzhou` - China (Guangzhou)
+- `ap-shanghai` - China (Shanghai)
+- `ap-beijing` - China (Beijing)
+- `ap-singapore` - Asia Pacific (Singapore)
+- `na-siliconvalley` - North America (Silicon Valley)
+- `eu-frankfurt` - Europe (Frankfurt)
+
+## Features
+
+- **S3-Compatible**: Works through the S3-compatible COS endpoint
+- **Global Regions**: Data centers across China and worldwide
+- **Lifecycle Management**: Automatic tiering and expiration policies
+- **Presigned URLs**: Direct browser uploads and downloads
+
+## Best Practices
+
+1. **Always include the APPID suffix** in the bucket name
+2. **Set `TENCENT_REGION` explicitly** - it drives the endpoint hostname; never rely on `AWS_REGION`
+3. **Choose the closest region** - reduce latency for your users
+4. **Use lifecycle policies** - automatically transition or expire objects
+5. **Configure CORS** - set up CORS for browser-based uploads
