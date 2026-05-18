@@ -167,6 +167,41 @@ describe(getPackument, () => {
         expect(fetchSpy).toHaveBeenCalledTimes(2);
     });
 
+    it("invalidates a legacy entry that predates the cacheVersion field so scripts are no longer blinded", async () => {
+        expect.assertions(3);
+
+        const fetchSpy = stubFetch({
+            body: {
+                name: "demo",
+                versions: { "1.0.0": { scripts: { postinstall: "node telemetry.js" }, version: "1.0.0" } },
+            },
+        });
+
+        await getPackument("demo");
+
+        expect(fetchSpy).toHaveBeenCalledTimes(1);
+
+        // Simulate an on-disk entry written before cache versioning existed:
+        // no `cacheVersion` field at all and a scripts-less packument. Such
+        // an entry must not blind the s1ngularity marshall.
+        const cacheFiles = readdirSync(homeOverride, { recursive: true, withFileTypes: true })
+            .filter((d) => d.isFile() && d.name === "demo.json")
+            .map((d) => join(d.parentPath, d.name));
+        const entry = JSON.parse(readFileSync(cacheFiles[0] as string, "utf8")) as {
+            cacheVersion?: number;
+            packument: { versions: Record<string, { scripts?: unknown }> };
+        };
+
+        delete entry.cacheVersion;
+        delete entry.packument.versions["1.0.0"]!.scripts;
+        writeFileSync(cacheFiles[0] as string, JSON.stringify(entry), "utf8");
+
+        const refetched = await getPackument("demo");
+
+        expect(fetchSpy).toHaveBeenCalledTimes(2);
+        expect(refetched?.versions["1.0.0"]?.scripts).toStrictEqual({ postinstall: "node telemetry.js" });
+    });
+
     it("re-fetches when the cache entry has expired", async () => {
         expect.assertions(1);
 

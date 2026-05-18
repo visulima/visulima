@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { dirname, isAbsolute, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { strip } from "@visulima/ansi";
 import { bold, cyan, dim, red } from "@visulima/colorize";
 import type { Trace } from "@visulima/error";
 import { codeFrame, parseStacktrace } from "@visulima/error";
@@ -14,9 +15,11 @@ export interface RenderFailureOptions {
     cwd: string;
 }
 
-const ANSI_REGEX = /\[[0-9;]*m/g;
-
-const stripAnsi = (value: string): string => value.replaceAll(ANSI_REGEX, "");
+// Use the ansi library's strip rather than a hand-rolled regex: the
+// previous local regex matched only the `[…m` tail and left a stray ESC
+// byte, which kept colorized error headers from matching
+// ERROR_HEADER_REGEX so extraction silently fell back to raw output.
+const stripAnsi = (value: string): string => strip(value);
 
 // A line that opens a JS error: optional leading noise, then `SomeError`
 // or `Some.Error: message`. Kept deliberately conservative — a false

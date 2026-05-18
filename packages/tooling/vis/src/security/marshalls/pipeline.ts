@@ -303,7 +303,14 @@ export const runMarshallPipeline = async (
         slots.push([]);
         tasks.push(
             (async () => {
-                slots[slot] = await factory();
+                try {
+                    slots[slot] = await factory();
+                } catch {
+                    // Every marshall is independent: a transient failure
+                    // (registry 5xx, DNS timeout, etc.) must suppress only
+                    // *this* marshall's finding, not void the whole pipeline.
+                    // The slot stays its initialised empty array.
+                }
             })(),
         );
     };

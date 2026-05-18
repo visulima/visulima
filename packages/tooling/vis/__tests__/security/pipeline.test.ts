@@ -141,6 +141,32 @@ describe(runMarshallPipeline, () => {
         expect(findings.errors()).toHaveLength(1);
         expect(findings.warnings()).toHaveLength(1);
     });
+
+    it("suppresses only the throwing marshall's slot, keeping every other finding", async () => {
+        expect.assertions(3);
+
+        // Simulate a transient registry 5xx surfacing as a thrown error
+        // from one marshall (s1ngularity reads packuments via getPackument,
+        // which throws on 5xx). The pipeline must not let one rejection
+        // void all other marshalls' findings.
+        vi.mocked(runS1ngularityMarshall).mockRejectedValue(new Error("registry 503"));
+        vi.mocked(runAuthorMarshall).mockResolvedValue([
+            {
+                kind: "recent-version",
+                message: "published 2 days ago",
+                packageName: "demo",
+                severity: "error",
+                version: "1.0.0",
+            },
+        ]);
+        vi.mocked(runDownloadsMarshall).mockResolvedValue([{ downloadsLastMonth: 50, kind: "below-warning", packageName: "demo", severity: "warning" }]);
+
+        const findings = await runMarshallPipeline([{ name: "demo", version: "1.0.0" }]);
+
+        expect(findings.all()).toHaveLength(2);
+        expect(findings.errors()).toHaveLength(1);
+        expect(findings.warnings()).toHaveLength(1);
+    });
 });
 
 describe(presentMarshallFindings, () => {

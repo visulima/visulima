@@ -142,6 +142,126 @@ packages:
             }),
         ).toThrow(LockfilePruneError);
     });
+
+    it("selects the real workspace document over the @pnpm/exe bootstrap doc by package count (v11 multi-doc)", () => {
+        expect.assertions(3);
+
+        const bootstrapDocument = `lockfileVersion: '9.0'
+importers:
+  .:
+    dependencies:
+      '@pnpm/exe':
+        specifier: 11.0.0
+        version: 11.0.0
+packages:
+  '@pnpm/exe@11.0.0':
+    resolution: {integrity: sha512-fake}
+snapshots:
+  '@pnpm/exe@11.0.0': {}
+`;
+
+        const realDocument = `lockfileVersion: '9.0'
+importers:
+  .:
+    devDependencies:
+      typescript:
+        specifier: ^5.5.0
+        version: 5.5.0
+  packages/a:
+    dependencies:
+      lodash:
+        specifier: ^4.17.21
+        version: 4.17.21
+  packages/b:
+    dependencies:
+      chalk:
+        specifier: ^5.3.0
+        version: 5.3.0
+packages:
+  lodash@4.17.21:
+    resolution: {integrity: sha512-fake}
+  chalk@5.3.0:
+    resolution: {integrity: sha512-fake}
+  typescript@5.5.0:
+    resolution: {integrity: sha512-fake}
+snapshots:
+  lodash@4.17.21: {}
+  chalk@5.3.0: {}
+  typescript@5.5.0: {}
+`;
+
+        // Bootstrap doc first (1 package) followed by the real lockfile
+        // (3 packages). The pruner must pick the real doc, not the first.
+        const result = pruneLockfile({
+            closure: closure({ deps: undefined, name: "a", relativeRoot: "packages/a" }),
+            lockfileContent: `${bootstrapDocument}---\n${realDocument}`,
+            packageManager: "pnpm",
+        });
+
+        expect(result.status).toBe("pruned");
+
+        const parsed = parseYaml(result.content!) as { importers: Record<string, unknown>; packages: Record<string, unknown> };
+
+        expect(Object.keys(parsed.importers)).toStrictEqual([".", "packages/a"]);
+        expect(Object.keys(parsed.packages)).toContain("lodash@4.17.21");
+    });
+
+    it("skips empty / non-object documents and still prunes the real one", () => {
+        expect.assertions(2);
+
+        const realDocument = `lockfileVersion: '9.0'
+importers:
+  packages/a:
+    dependencies:
+      foo:
+        specifier: ^1.0.0
+        version: 1.0.0
+packages:
+  foo@1.0.0:
+    resolution: {integrity: sha512-fake}
+  unrelated@9.9.9:
+    resolution: {integrity: sha512-fake}
+snapshots:
+  foo@1.0.0: {}
+  unrelated@9.9.9: {}
+`;
+
+        const result = pruneLockfile({
+            closure: closure({ deps: undefined, name: "a", relativeRoot: "packages/a" }),
+            lockfileContent: `null\n---\n${realDocument}`,
+            packageManager: "pnpm",
+        });
+
+        expect(result.status).toBe("pruned");
+
+        const parsed = parseYaml(result.content!) as { packages: Record<string, unknown> };
+
+        expect(Object.keys(parsed.packages)).toContain("foo@1.0.0");
+    });
+
+    it("throws LockfilePruneError when any document in a multi-doc lockfile fails to parse", () => {
+        expect.assertions(1);
+
+        const realDocument = `lockfileVersion: '9.0'
+importers:
+  packages/a:
+    dependencies:
+      foo:
+        specifier: ^1.0.0
+        version: 1.0.0
+packages:
+  foo@1.0.0:
+    resolution: {integrity: sha512-fake}
+`;
+
+        expect(() =>
+            pruneLockfile({
+                closure: closure({ deps: undefined, name: "a", relativeRoot: "packages/a" }),
+                lockfileContent: `${realDocument}---\n  bad:\n - : : :\n`,
+                packageManager: "pnpm",
+            }),
+        ).toThrow(LockfilePruneError);
+    });
 });
 
 describe("pruneLockfile (npm)", () => {

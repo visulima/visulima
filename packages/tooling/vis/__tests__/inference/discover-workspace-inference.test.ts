@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from "nod
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { discoverWorkspace } from "../../src/config/workspace";
 
@@ -224,5 +224,65 @@ describe("discoverWorkspace target inference", () => {
         expect(targets?.["build"]).toBeUndefined();
         // vitest still on by default → `test` is still synthesised.
         expect(targets?.["test"]?.command).toBe("vitest run");
+    });
+
+    it("emits a once-per-process VisConfigWarning for an unknown detector key (typo insurance)", () => {
+        expect.assertions(4);
+
+        const emitWarningSpy = vi.spyOn(process, "emitWarning").mockImplementation(() => {});
+
+        writeProject(scratch, "kappa", {
+            configFile: { contents: "export default {}", path: "vite.config.ts" },
+            packageJson: { scripts: { build: "vite build" } },
+        });
+
+        // `vit` is a typo for `vite` — must surface, not silently no-op.
+        discoverWorkspace(scratch, { inferTargets: { vit: false } });
+
+        expect(emitWarningSpy).toHaveBeenCalledTimes(1);
+
+        const [message, type] = emitWarningSpy.mock.calls[0] as [string, string];
+
+        expect(message).toContain("inferTargets references unknown detector(s): vit");
+        expect(type).toBe("VisConfigWarning");
+
+        // Same unknown key again in-process → deduped, no second warning.
+        discoverWorkspace(scratch, { inferTargets: { vit: false } });
+
+        expect(emitWarningSpy).toHaveBeenCalledTimes(1);
+
+        emitWarningSpy.mockRestore();
+    });
+
+    it("does not adopt detector outputs for a piped script (unsafe shell composition)", () => {
+        expect.assertions(2);
+
+        writeProject(scratch, "lambda", {
+            configFile: { contents: "export default {}", path: "vite.config.ts" },
+            packageJson: { scripts: { build: "vite build | tee build.log" } },
+        });
+
+        const { workspace } = discoverWorkspace(scratch, {});
+        const build = workspace.projects["@fix/lambda"]?.targets?.["build"];
+
+        // A pipe can route artifacts the single-tool detector never
+        // predicted → precise dist outputs are skipped, auto-capture used.
+        expect(build?.command).toBe("vite build | tee build.log");
+        expect(build?.outputs).toStrictEqual([{ auto: true }]);
+    });
+
+    it("does not adopt detector outputs for a script using command substitution", () => {
+        expect.assertions(2);
+
+        writeProject(scratch, "mu", {
+            configFile: { contents: "export default {}", path: "vite.config.ts" },
+            packageJson: { scripts: { build: "vite build --mode $(get-mode)" } },
+        });
+
+        const { workspace } = discoverWorkspace(scratch, {});
+        const build = workspace.projects["@fix/mu"]?.targets?.["build"];
+
+        expect(build?.command).toBe("vite build --mode $(get-mode)");
+        expect(build?.outputs).toStrictEqual([{ auto: true }]);
     });
 });
