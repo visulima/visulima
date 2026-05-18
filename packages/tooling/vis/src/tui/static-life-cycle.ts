@@ -6,6 +6,7 @@ import React from "react";
 import type { VisTargetOptions } from "../task/target-options";
 import CommandSummary from "./components/command-summary";
 import Header from "./components/header";
+import { renderFailureOutput } from "./failure-render";
 import { formatFlags, formatTargetsAndProjects } from "./formatting-utils";
 import { formatMs } from "./pretty-time";
 import type { CiGroupingMode } from "./status-utils";
@@ -187,13 +188,17 @@ export class StaticOutputLifeCycle implements LifeCycleInterface {
             return;
         }
 
+        // Failures get the source-mapped, code-framed render in the CI/non-TUI
+        // human log too; everything else passes through untouched.
+        const rendered = status === "failure" ? renderFailureOutput(terminalOutput, { color: !process.env["NO_COLOR"], cwd: process.cwd() }) : terminalOutput;
+
         if (this.#logReporter) {
-            this.#logReporter.printTaskTerminalOutput(task, status, terminalOutput);
+            this.#logReporter.printTaskTerminalOutput(task, status, rendered);
 
             return;
         }
 
-        logCommandOutputCI(task.id, status, terminalOutput, this.#ciGrouping);
+        logCommandOutputCI(task.id, status, rendered, this.#ciGrouping);
     }
 
     public endCommand(): void {
