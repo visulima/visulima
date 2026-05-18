@@ -1,6 +1,6 @@
 ---
 title: "vis migrate"
-description: "Migrate from other tools (turborepo, nx, moon, husky, lint-staged, nano-staged, gitleaks, kingfisher, secretlint, syncpack, sherif) to vis"
+description: "Migrate from other tools (turborepo, nx, moon, husky, lint-staged, nano-staged, gitleaks, kingfisher, secretlint, syncpack, sherif) to vis, and verify the migration preserved the task graph"
 ---
 
 # vis migrate
@@ -302,8 +302,36 @@ Read-only audit that exits non-zero if it finds any leftover `gitleaks`, `secret
 vis migrate verify
 ```
 
+### verify-graph
+
+Proves a `turbo` / `nx` / `moon` → vis migration preserved the task graph and the cache-key surface. Migration coverage is not migration correctness — `verify-graph` reads the original source config and the migrated `vis.config.*` side by side, normalizes both into a tool-agnostic task graph, and reports every divergence. "Adopt risk-free" is only credible when you can prove the migration kept semantics; this is that proof, and it is CI-gateable.
+
+```bash
+vis migrate verify-graph                              # auto-detect source tool, diff vs vis.config.*
+vis migrate verify-graph --from turbo --format json   # machine-readable report on stdout
+vis migrate verify-graph --fail-on warning            # also gate on additive/extra-target warnings
+```
+
+The source tool is auto-detected when exactly one of `turbo.json`, `nx.json`, or `.moon/` is present; pass `--from turbo|nx|moon` to disambiguate. Each task is compared across six axes:
+
+| Axis         | Meaning                                                          |
+| ------------ | ---------------------------------------------------------------- |
+| `target-set` | A task present in the source is missing from the migrated config |
+| `dependsOn`  | Dependency edges (normalized across `^`/`#`/`^:`/`~:` dialects)  |
+| `inputs`     | Cache-key input globs                                            |
+| `outputs`    | Declared output globs                                            |
+| `env`        | Environment variables that participate in the cache key          |
+| `cache`      | The cache enable/disable flag                                    |
+
+A dropped task, a lost dependency edge, or a narrowed input/output/env set is an **error** (exit 1). A purely additive change in the migrated config (an extra task, a widened input set) is a **warning** and does not fail by default. Turbo `project#task` overrides that the migrator deliberately folds into a base task are reported as a non-fatal `warning` ("skipped by design"). Pass `--fail-on warning` to gate CI on warnings too.
+
+`--format` selects the report shape: `table` (default, human-readable, written to the logger), `json` (a single deterministic object), or `ndjson` (one finding per line). `json` and `ndjson` are written to **stdout only** and are byte-stable across runs, so they can be diffed or piped into other tooling.
+
 ## Options
 
-| Option      | Default | Description                             |
-| ----------- | ------- | --------------------------------------- |
-| `--dry-run` | `false` | Preview changes without writing to disk |
+| Option      | Default         | Applies to        | Description                                                |
+| ----------- | --------------- | ----------------- | ---------------------------------------------------------- |
+| `--dry-run` | `false`         | all but verifiers | Preview changes without writing to disk                    |
+| `--from`    | _auto-detected_ | `verify-graph`    | Source tool to compare against (`turbo` \| `nx` \| `moon`) |
+| `--format`  | `table`         | `verify-graph`    | Report format (`table` \| `json` \| `ndjson`)              |
+| `--fail-on` | `error`         | `verify-graph`    | Exit non-zero on `error` (default) or also on `warning`    |
