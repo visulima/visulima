@@ -117,6 +117,7 @@ catalogs:
     '@aws-sdk/s3-request-presigner': 3.1048.0
     '@aws-sdk/signature-v4-crt': 3.1048.0
     '@aws-sdk/types': 3.973.8
+    '@azure/core-auth': ^1.9.0
     '@azure/storage-blob': ^12.31.0
     '@babel/core': 7.29.0
     '@babel/types': ^7.29.0
