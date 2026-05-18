@@ -177,6 +177,54 @@ describe(createTaskGraph, () => {
         expect(graph.roots).toContain("lib-a:build");
     });
 
+    it("passes { auto: true } outputs through verbatim and token-replaces string outputs", () => {
+        expect.assertions(2);
+
+        const workspaceWithOutputs: WorkspaceConfiguration = {
+            projects: {
+                app: {
+                    root: "apps/app",
+                    targets: {
+                        build: {
+                            command: "vite build",
+                            dependsOn: ["^build"],
+                        },
+                    },
+                },
+                "lib-a": {
+                    root: "packages/lib-a",
+                    targets: {
+                        build: {
+                            command: "tsc",
+                            outputs: [{ auto: true }, "{projectRoot}/dist", "{projectName}.tsbuildinfo"],
+                        },
+                    },
+                },
+            },
+        };
+
+        const graph: ProjectGraph = {
+            dependencies: { app: [{ source: "app", target: "lib-a", type: "static" }], "lib-a": [] },
+            nodes: {
+                app: { data: workspaceWithOutputs.projects["app"]!, name: "app", type: "application" },
+
+                "lib-a": { data: workspaceWithOutputs.projects["lib-a"]!, name: "lib-a", type: "library" },
+            },
+        };
+
+        const appBuild: Task = {
+            id: "app:build",
+            outputs: [],
+            overrides: {},
+            target: { project: "app", target: "build" },
+        };
+
+        const taskGraph = createTaskGraph([appBuild], { projectGraph: graph, workspace: workspaceWithOutputs });
+
+        expect(taskGraph.tasks["lib-a:build"]?.outputs).toStrictEqual([{ auto: true }, "packages/lib-a/dist", "lib-a.tsbuildinfo"]);
+        expect(taskGraph.tasks["app:build"]?.outputs).toStrictEqual([]);
+    });
+
     it("does not propagate overrides to string-form dependsOn deps", () => {
         expect.assertions(2);
 

@@ -12,7 +12,7 @@ import type { TaskHasher } from "./task-hasher";
 import { computeTaskHash } from "./task-hasher";
 import type { TaskScheduler } from "./task-scheduler";
 import { TrackedTaskExecutor } from "./tracked-executor";
-import type { LifeCycleInterface, Task, TaskExecutor, TaskGraph, TaskResult, TaskResults, TaskStatus } from "./types";
+import type { LifeCycleInterface, OutputSpec, Task, TaskExecutor, TaskGraph, TaskResult, TaskResults, TaskStatus } from "./types";
 import { createFailureResult, resolveTaskCwd } from "./utils";
 import type { WhenContext } from "./when-condition";
 import { evaluateWhen, explainWhen, getCurrentBranch } from "./when-condition";
@@ -120,6 +120,21 @@ const detectWarnings = (patterns: string[] | undefined, output: string | undefin
 
     return false;
 };
+
+/**
+ * True when every declared output is an `{ auto: true }` marker (and
+ * there is at least one) — the task relies entirely on captured file
+ * writes and names no literal/glob path. Such a task can only restore
+ * from cache when the file-access tracker actually recorded writes;
+ * committing an entry without them would let a later hit report
+ * success while restoring nothing (the missing-`dist/` hazard the vis
+ * config layer otherwise forces cache-cold to avoid).
+ */
+const isAutoOnlyOutputs = (outputs: OutputSpec[] | undefined): boolean =>
+    outputs !== undefined && outputs.length > 0 && outputs.every((output) => typeof output !== "string" && output.auto === true);
+
+const AUTO_OUTPUTS_UNAVAILABLE_REASON
+    = "Outputs are `{ auto: true }` only, but no file writes were captured (write tracking unavailable for this task) — not caching, so a later hit can't restore a missing build artifact.";
 
 /**
  * A simple deferred promise that can be resolved externally.
@@ -522,6 +537,11 @@ class TaskOrchestrator {
                     result.selfModified = true;
 
                     this.#lifeCycle.printSelfModifyingSkip?.(task, modified);
+                } else if (isAutoOnlyOutputs(task.outputs)) {
+                    // This path never runs the file-access tracker, so
+                    // `{ auto: true }` outputs can't be materialised —
+                    // caching here would store a zero-output entry.
+                    this.#lifeCycle.printEmptyFingerprintWarning?.(task, AUTO_OUTPUTS_UNAVAILABLE_REASON);
                 } else {
                     await this.#cache.put(task.hash, terminalOutput, task.outputs, code);
                 }
@@ -668,6 +688,13 @@ class TaskOrchestrator {
                     result.emptyFingerprint = true;
 
                     this.#lifeCycle.printEmptyFingerprintWarning?.(task, emptyFingerprintReason);
+                } else if (isAutoOnlyOutputs(task.outputs) && (!autoWrites || autoWrites.length === 0)) {
+                    // The fingerprint is valid, but the task declared
+                    // only `{ auto: true }` outputs and the tracker
+                    // captured no writes (synthetic-reads path, or a
+                    // build that genuinely wrote nothing). Seeding the
+                    // cache would let a later hit restore nothing.
+                    this.#lifeCycle.printEmptyFingerprintWarning?.(task, AUTO_OUTPUTS_UNAVAILABLE_REASON);
                 } else {
                     const hash = hashFingerprint(fingerprint);
 

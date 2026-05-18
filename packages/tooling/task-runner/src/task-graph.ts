@@ -1,4 +1,4 @@
-import type { ProjectGraph, TargetConfiguration, TargetDependencyConfig, Task, TaskGraph, TaskTarget, WorkspaceConfiguration } from "./types";
+import type { OutputSpec, ProjectGraph, TargetConfiguration, TargetDependencyConfig, Task, TaskGraph, TaskTarget, WorkspaceConfiguration } from "./types";
 
 interface CreateTaskGraphOptions {
     /** The project graph */
@@ -57,14 +57,19 @@ const getTaskOutputs = (
     targetName: string,
     workspace: WorkspaceConfiguration,
     targetDefaults?: Record<string, Partial<TargetConfiguration>>,
-): string[] => {
+): OutputSpec[] => {
     const project = workspace.projects[projectName];
     const targetConfig = project?.targets?.[targetName];
     const defaultConfig = targetDefaults?.[targetName];
 
     const outputs = targetConfig?.outputs ?? defaultConfig?.outputs ?? [];
 
-    return outputs.map((output) => output.replace("{projectRoot}", project?.root ?? "").replace("{projectName}", projectName));
+    // Only string entries carry `{projectRoot}`/`{projectName}`
+    // tokens; `{ auto: true }` is an opaque marker resolved later
+    // against the file-access tracker, so it passes through verbatim.
+    return outputs.map((output) =>
+        typeof output === "string" ? output.replace("{projectRoot}", project?.root ?? "").replace("{projectName}", projectName) : output,
+    );
 };
 
 /**

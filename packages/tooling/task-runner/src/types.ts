@@ -366,8 +366,18 @@ export interface TargetConfiguration {
     maxConcurrent?: number;
     /** Options passed to the executor */
     options?: Record<string, unknown>;
-    /** Output patterns produced by this target */
-    outputs?: string[];
+    /**
+     * Output patterns produced by this target. Each entry is a literal
+     * path, a glob (`"dist/**"`), a negative glob (`"!dist/cache/**"`),
+     * or `{ auto: true }` to cache whatever files the task actually
+     * wrote during execution (resolved from the file-access tracker).
+     * `{ auto: true }` lets a build script cache zero-config without
+     * the author enumerating its output layout; it contributes nothing
+     * — and the runner declines to seed the cache — when write
+     * tracking isn't available for the task, so a hit can never restore
+     * a missing artifact.
+     */
+    outputs?: OutputSpec[];
     /** Whether this target supports parallel execution */
     parallelism?: boolean;
 

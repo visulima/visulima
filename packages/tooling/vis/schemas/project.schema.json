@@ -342,9 +342,23 @@
                 "outputs": {
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "auto": {
+                                        "const": true
+                                    }
+                                },
+                                "required": ["auto"],
+                                "additionalProperties": false
+                            }
+                        ]
                     },
-                    "description": "Output patterns produced by this target"
+                    "description": "Output patterns produced by this target. A string is a glob/path (supports {projectRoot}/{projectName} tokens); { \"auto\": true } caches whatever files the task actually writes (resolved from the file-access tracker)."
                 },
                 "parallelism": {
                     "type": "boolean",
