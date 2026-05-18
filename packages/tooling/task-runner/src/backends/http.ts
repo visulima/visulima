@@ -8,10 +8,13 @@ import { join } from "@visulima/path";
 
 import { fetchBlobToFile, putBlobFromFile } from "../cas/store";
 import { uniqueId } from "../utils";
-import type { ActionResult, BlobSource, CasDigest, RemoteCacheBackend, RemoteCacheCompression, RemoteCacheOptions } from "./types";
+import type { ActionResult, BlobSource, CasDigest, RemoteCacheAttestation, RemoteCacheBackend, RemoteCacheCompression, RemoteCacheOptions } from "./types";
 
 /** Header carrying the HMAC-SHA256 signature for an artifact upload. */
 const SIGNATURE_HEADER = "X-Artifact-Signature";
+
+/** Header carrying an opaque keyless attestation bundle (Sigstore). */
+const ATTESTATION_HEADER = "X-Artifact-Attestation";
 
 const MIN_SECRET_LENGTH = 16;
 
@@ -118,6 +121,10 @@ class HttpRemoteCache implements RemoteCacheBackend {
 
     readonly #verifyOnDownload: boolean;
 
+    readonly #attestation: RemoteCacheAttestation | undefined;
+
+    readonly #requireAttestation: boolean;
+
     readonly #localCasRoot: string | undefined;
 
     /**
@@ -152,6 +159,9 @@ class HttpRemoteCache implements RemoteCacheBackend {
             this.#signingSecret = undefined;
             this.#verifyOnDownload = false;
         }
+
+        this.#attestation = options.attestation;
+        this.#requireAttestation = options.attestation?.requireOnDownload ?? false;
     }
 
     /**
@@ -251,6 +261,28 @@ class HttpRemoteCache implements RemoteCacheBackend {
                 }
             }
 
+            if (this.#attestation?.verifyArtifact) {
+                const receivedAttestation = response.headers.get(ATTESTATION_HEADER);
+
+                if (receivedAttestation) {
+                    const ok = await this.#attestation.verifyArtifact({
+                        archivePath: stagingPath,
+                        attestation: receivedAttestation,
+                        hash: actionDigest.hash,
+                    });
+
+                    if (!ok) {
+                        this.#attestation.onReject?.(actionDigest.hash, "invalid");
+
+                        return null;
+                    }
+                } else if (this.#requireAttestation) {
+                    this.#attestation.onReject?.(actionDigest.hash, "missing");
+
+                    return null;
+                }
+            }
+
             const blobDigest = await digestFile(stagingPath);
 
             await putBlobFromFile(this.#localCasRoot, blobDigest, stagingPath);
@@ -333,6 +365,14 @@ class HttpRemoteCache implements RemoteCacheBackend {
 
             if (this.#signingSecret) {
                 uploadHeaders[SIGNATURE_HEADER] = await computeArtifactSignatureStream(this.#signingSecret, actionDigest.hash, stagingPath);
+            }
+
+            if (this.#attestation?.signArtifact) {
+                const bundle = await this.#attestation.signArtifact({ archivePath: stagingPath, hash: actionDigest.hash });
+
+                if (bundle !== null) {
+                    uploadHeaders[ATTESTATION_HEADER] = bundle;
+                }
             }
 
             const response = await fetch(artifactUrl, {

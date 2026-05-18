@@ -115,6 +115,108 @@ export interface RemoteCacheSigning {
 }
 
 /**
+ * Keyless artifact attestation hooks for the HTTP backend.
+ *
+ * Layered *above* {@link RemoteCacheSigning}: HMAC proves the bytes
+ * weren't tampered with by anyone lacking the shared secret (integrity);
+ * an attestation proves *who* produced them (authenticity — a Sigstore
+ * keyless bundle in practice). Both can be active at once.
+ *
+ * task-runner stays dependency-free: it never imports Sigstore. The
+ * caller (vis) supplies these callbacks; task-runner only moves the
+ * opaque bundle string through the `X-Artifact-Attestation` header and
+ * decides accept/reject from the boolean the verifier returns. REAPI
+ * does not consume these — REAPI integrity rides on CAS content-
+ * addressing, and authenticity is a server/transport concern there.
+ */
+export interface RemoteCacheAttestation {
+    /**
+     * Expected keyless signer identity. Serializable so it can live in
+     * `vis.config.ts`. task-runner does not consume this — it is config
+     * passthrough for the vis-side `verifyArtifact` hook, which must
+     * enforce it. Without an expected identity a valid bundle from *any*
+     * Fulcio identity over the same digest verifies (integrity, not
+     * authenticity), so the vis hook treats "verify requested without an
+     * expected identity" as a misconfiguration.
+     *
+     * Three forms (pick one):
+     * - `{ github }` — GitHub Actions preset. Expands to the Fulcio
+     *   issuer + an escaped, anchored SAN. The ergonomic default.
+     * - `{ oidcIssuer, san }` — a *literal* signer identity. vis escapes
+     *   and anchors it for you; pass the plain URI, not a regex.
+     * - `{ oidcIssuer, sanRegex }` — advanced: a raw, unescaped regex.
+     *   You own anchoring (sigstore-js matches via `String.match`).
+     */
+    expectedIdentity?:
+        | {
+              /**
+               * GitHub Actions preset. Expands to issuer
+               * `https://token.actions.githubusercontent.com` and the
+               * anchored SAN `https://github.com/{repo}/{workflow}@{ref}`.
+               */
+              github: {
+                  /** Git ref the workflow ran on, e.g. `refs/heads/main` or `refs/tags/v1.2.3`. */
+                  ref: string;
+                  /** `owner/name`, e.g. `visulima/visulima`. */
+                  repo: string;
+                  /** Workflow path, e.g. `.github/workflows/release.yml`. */
+                  workflow: string;
+              };
+          }
+        | {
+              /** Fulcio cert issuer extension, matched exactly. */
+              oidcIssuer: string;
+              /**
+               * Literal signer identity (certificate SAN). vis
+               * regex-escapes and anchors this — pass the plain URI,
+               * e.g. `https://github.com/org/repo/.github/workflows/ci.yml@refs/heads/main`.
+               */
+              san: string;
+          }
+        | {
+              /** Fulcio cert issuer extension, matched exactly. */
+              oidcIssuer: string;
+              /**
+               * Advanced: raw, unescaped SAN regex. You own anchoring
+               * (`^…$`); an unanchored value is substring-matched.
+               */
+              sanRegex: string;
+          };
+
+    /**
+     * Called when a download is rejected (or downgraded to a cache miss)
+     * because its attestation is missing or failed verification. Without
+     * this hook the rejection is silent. Mirrors `onUploadError`.
+     */
+    onReject?: (hash: string, reason: "invalid" | "missing") => void;
+
+    /**
+     * Reject downloads whose attestation is missing or fails
+     * verification. With `verifyArtifact` set but this `false`, a bad
+     * attestation is treated as a cache miss (re-execute) rather than a
+     * hard failure.
+     * @default false
+     */
+    requireOnDownload?: boolean;
+
+    /**
+     * Produce an opaque attestation bundle for the staged artifact,
+     * called after the body is staged and before the PUT. Return `null`
+     * to upload without an attestation (e.g. no ambient OIDC outside
+     * CI). Any returned string is sent verbatim in the
+     * `X-Artifact-Attestation` header.
+     */
+    signArtifact?: (input: { archivePath: string; hash: string }) => Promise<string | null>;
+
+    /**
+     * Verify a received attestation bundle against the staged artifact.
+     * Resolve `false` to reject the cached entry. Only called when the
+     * download carried an `X-Artifact-Attestation` header.
+     */
+    verifyArtifact?: (input: { archivePath: string; attestation: string; hash: string }) => Promise<boolean>;
+}
+
+/**
  * Canonical remote-cache configuration consumed by
  * `createRemoteCacheBackend`. Both `HttpRemoteCache` and
  * `ReapiRemoteCache` accept this shape directly — backend-specific
@@ -137,6 +239,12 @@ export interface RemoteCacheOptions {
      * REAPI-only.
      */
     allowInsecureBearer?: boolean;
+
+    /**
+     * HTTP-only: keyless artifact attestation hooks (Sigstore in
+     * practice). Layered above `signing` — integrity vs authenticity.
+     */
+    attestation?: RemoteCacheAttestation;
 
     /**
      * Wire-protocol selector. `"http"` is the Turborepo-compatible

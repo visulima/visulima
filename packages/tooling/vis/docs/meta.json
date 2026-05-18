@@ -71,6 +71,7 @@
                 "guides/git-hooks",
                 "guides/plugins",
                 "guides/security-audit",
+                "guides/attested-cache",
                 "guides/shell-alias",
                 "guides/ai-integration"
             ]

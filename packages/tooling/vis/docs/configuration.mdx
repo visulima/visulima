@@ -437,6 +437,7 @@ Notable options:
 
 - `autoEnvVars` — when `true`, every task's command text is scanned for `$VAR` / `${VAR}` references and those env vars are automatically added to the cache fingerprint. Catches common mistakes like `curl ${VERCEL_URL}/api` that would otherwise silently return stale cached output.
 - `remoteCache.compression` — `"gzip"` (default) keeps Turborepo protocol compatibility; `"brotli"` reduces upload size at the cost of lock-in to vis clients on both ends.
+- `remoteCache.attestation` — keyless-sign artifacts with Sigstore in CI and pin the signer identity on download (provenance on top of the HMAC `signing` integrity layer). See the [Attested remote cache](./guides/attested-cache.mdx) guide.
 
 ### Strict env
 

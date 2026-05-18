@@ -19,6 +19,7 @@ export type {
     BlobSource,
     CacheMode,
     CasDigest,
+    RemoteCacheAttestation,
     RemoteCacheBackend,
     RemoteCacheCompression,
     RemoteCacheOptions,

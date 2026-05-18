@@ -1,8 +1,8 @@
 # vis — Competitive Feature Gap Analysis
 
-Analysis date: 2026-04-28 (Vite+ §1.4 refreshed 2026-05-10)
+Analysis date: 2026-04-28 (Vite+ §1.4 refreshed 2026-05-10; awesome-monorepo §9 added 2026-05-15)
 Subject: `@visulima/vis` v1.0.0-alpha.17
-Compared against: Nx 21, Turborepo 2.6, moon 2.0 "Phobos", Vite+ alpha + Vite Task (VoidZero, Mar 13 2026), Lage, Rush, Lerna 9, Bazel/Buck2/Pants/Please/Please, Bit, plus point-tools (Knip, syncpack, sherif, manypkg, Wireit, Preconstruct).
+Compared against: Nx 21, Turborepo 2.6, moon 2.0 "Phobos", Vite+ alpha + Vite Task (VoidZero, Mar 13 2026), Lage, Rush, Lerna 9, Bazel/Buck2/Pants/Please/Please, Bit, plus point-tools (Knip, syncpack, sherif, manypkg, Wireit, Preconstruct). Section 9 cross-references the [korfuri/awesome-monorepo](https://github.com/korfuri/awesome-monorepo) curated list and adds gaps not surfaced from competitor-issue mining.
 
 ---
 
@@ -39,7 +39,7 @@ Sources: nx.dev/blog/wrapping-up-2025, nx.dev/blog/nx-2026-roadmap, nx.dev/docs/
 - **Watch mode** with experimental cache writes (`--experimental-write-cache`).
 - **Affected detection** — `--affected`, `TURBO_SCM_BASE/HEAD`, `affectedUsingTaskInputs` future flag for task-level (not just package-level) affected.
 - **Strict env mode** (`TURBO_ENV_MODE=strict`) — tasks only see explicitly listed env vars.
-- **Signed remote cache artifacts** via `TURBO_REMOTE_CACHE_SIGNATURE_KEY` (HMAC-SHA256, integrity not security).
+- **Signed remote cache artifacts** via `TURBO_REMOTE_CACHE_SIGNATURE_KEY` (HMAC-SHA256). **Integrity only, not authenticity** — a shared symmetric secret proves "not corrupted in transit," not "produced by a trusted builder." No SLSA provenance, no keyless signing, no transparency log. This is the _ceiling_ of the supply-chain story across every JS-land runner today (see §8.6).
 - **Fingerprint plugins** (TS extensions to inject custom hash inputs, transform env, etc.).
 - **TUI task search** (2.6) — press `/` to filter.
 - **OpenAPI viewer** for the remote-cache HTTP protocol (2.5).
@@ -142,7 +142,7 @@ Sources: rushjs.io, rushjs.io/pages/maintainer/phased_builds.
 
 ### 1.7 Lerna (Nx-owned, v9 — Sept 2025)
 
-- **OIDC trusted publishing to npm** (no static tokens in CI).
+- **OIDC trusted publishing to npm** (no static tokens in CI). Note: this is _publish-time auth_ (who may push to the registry), **not artifact provenance** (a verifiable, attested record of how/where the artifact was built). The two are often conflated; §8.6 keeps them separate.
 - Removed legacy `lerna add`/`lerna bootstrap`; defers to native pnpm/yarn/npm/Bun workspaces.
 - Defers task running to Nx (parallel + cache).
 - Still uniquely useful: `lerna version` + `lerna publish` semantics across heterogeneous packages, conventional-commit-driven version bumps, fixed/independent modes.
@@ -208,6 +208,10 @@ Sources: github.com/thought-machine/please (v17.30.0, 2026-04-21), please.build,
 - **Manypkg** — sibling rules (workspace protocol, internal-mismatch).
 - **Wireit** — caches npm scripts with declared inputs/outputs, watch with poll fallback, GH Actions cache v2 backend.
 - **Preconstruct** — TS multi-entrypoint library bundler with monorepo dev-redirects, auto DTS, ESM `module: true`.
+- **API Extractor** (microsoft/rushstack) — TypeScript API signature extraction + breaking-change detection + multi-package `.d.ts` rollup. Pairs cleanly with `vis check` / `vis audit` as a "did this PR break the published surface?" gate. No vis analogue today.
+- **Ultra Runner** — smart script runner with file-change tracking for Lerna/Pnpm/Rush/Yarn. Direct lightweight-competitor; the audience that picks Ultra wants what vis ships natively.
+- **Builder (FormidableLabs)** — shared scripts across packages in a Node.js monorepo ("scripts as deps"). Adjacent shape to vis's task templates / `extends` config layering.
+- **Versio** — conventional-commit-driven version updates with changelog + tag generation. Covered by `multi-semantic-release` for vis but worth tracking as a lighter competitor for solo-maintainer monorepos.
 
 ---
 
@@ -232,6 +236,7 @@ Legend: ✓ first-class · ~ partial / experimental / community plugin · — ab
 | Migrators / codemods                      | ✓              | ~               | ✓            | —        | —          | ~             | —                        | ✓           | ✓          |
 | Toolchain version mgmt                    | ~ mise roadmap | —               | ✓ proto      | ✓        | —          | —             | ✓                        | ~           | ✓          |
 | Secret / vuln scanning                    | ~ conformance  | —               | —            | —        | —          | ~ policies    | ~                        | —           | ✓          |
+| Attested provenance / keyless sign        | —              | ~ HMAC          | ~ CAS sha256 | —        | —          | —             | ~ CAS / RBE              | —           | ✓ in+out   |
 | License compliance                        | ~              | —               | —            | —        | —          | ~             | ✓                        | —           | ~          |
 | Test sharding/atomization                 | ✓ Atomizer     | ~               | ~            | ✓        | —          | —             | ✓                        | ✓           | —          |
 | Flake detection / retries                 | ✓              | ~               | ✓            | ✓        | ~          | —             | ~                        | ~           | ✓          |
@@ -276,6 +281,8 @@ These are first-class in vis today and broader than every competitor except Nx:
 - `vis staged` (lint-staged replacement, no peer dep)
 - Audit/check (`vis audit`, `vis check`, OSV.dev)
 - Typosquat detection + Socket Security checks
+- **Inbound provenance verification** (`src/security/marshalls/provenance.ts`) — flags a package whose resolved version dropped `dist.attestations.provenance` despite a prior version having it (the "publisher dropped provenance" / compromised-CI-key regression)
+- **Inbound registry-signature verification** (`src/security/marshalls/signatures.ts`) — ECDSA-verifies each resolved version's `dist.signatures` against npm's published signing keys (missing / unknown-keyid / expired-key / invalid-signature). _Consumer side; the outbound/keyless half (§8.6) now also ships — see roadmap #12._
 - aube installer integration (Rust-native PM)
 - AI commands (`vis ai`, `ai-analysis.ts`, `ai-cache.ts`)
 - `vis analyze`, `vis optimize`
@@ -295,16 +302,17 @@ These are first-class in vis today and broader than every competitor except Nx:
 
 ### Tier 1 — High-leverage gaps (biggest differentiation impact)
 
-| #   | Feature                                                    | Who has it                     | Why it matters                                                                                                                                                                     | Effort                           |
-| --- | ---------------------------------------------------------- | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
-| 1   | **REAPI gRPC v2 remote cache**                             | moon, Bazel/Buck2/Pants/Please | Unlocks bazel-remote, BuildBuddy, BuildBarn, EngFlow as drop-in backends instead of yet-another HTTP protocol. Already in `todo.md` as Tier-3.                                     | High                             |
-| 2   | **Distributed agents** (real-time, resource-aware)         | Nx Agents                      | Pre-bin sharding (Turbo) is the alternative. Lage Cobuilds is the lighter pattern (cooperative via shared cache + Redis lock).                                                     | High → Medium for Cobuilds-style |
-| 3   | **MCP server**                                             | Nx, Bit                        | Exposes graph, generators, run logs to Claude/Cursor/Copilot. Cheap to ship, currently a moat for Nx in JS-land.                                                                   | Low–Medium                       |
-| 4   | **Self-healing CI** (AI fix-on-failure with PR comment)    | Nx (alone)                     | vis already has `vis ai` / `ai-analysis.ts` — extend with a CI PR-comment loop. Strong differentiator vs everyone except Nx.                                                       | Medium                           |
-| 5   | **Inferred tasks / Project Crystal**                       | Nx, Vite+                      | Read `vite.config`, `playwright.config`, `eslint.config`, `tsup.config`, `packem.config` → infer targets without `project.json` boilerplate. `framework-inference.ts` is the seed. | Medium                           |
-| 6   | **Test atomization** (split each spec into its own target) | Nx Atomizer                    | Required to actually shard e2e/test work across distributed agents. Pairs with item 2.                                                                                             | Medium                           |
-| 7   | **Public plugin API** (typed `VisPlugin` w/ stable hooks)  | Nx, moon (WASM), Rush          | Already open in `todo.md`. Without it, items 8 and 11 are blocked from third parties.                                                                                              | Medium                           |
-| 8   | **Conformance / publishable cross-repo rules**             | Nx Polygraph (Enterprise)      | Probably overkill for v1; the seed = make `enforceLayerRelationships` + version constraints publishable as a package and runnable across repos.                                    | Medium                           |
+| #   | Feature                                                      | Who has it                     | Why it matters                                                                                                                                                                                                                                                                                                    | Effort                           |
+| --- | ------------------------------------------------------------ | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
+| 1   | **REAPI gRPC v2 remote cache**                               | moon, Bazel/Buck2/Pants/Please | Unlocks bazel-remote, BuildBuddy, BuildBarn, EngFlow as drop-in backends instead of yet-another HTTP protocol. Already in `todo.md` as Tier-3.                                                                                                                                                                    | High                             |
+| 2   | **Distributed agents** (real-time, resource-aware)           | Nx Agents                      | Pre-bin sharding (Turbo) is the alternative. Lage Cobuilds is the lighter pattern (cooperative via shared cache + Redis lock).                                                                                                                                                                                    | High → Medium for Cobuilds-style |
+| 3   | **MCP server**                                               | Nx, Bit                        | Exposes graph, generators, run logs to Claude/Cursor/Copilot. Cheap to ship, currently a moat for Nx in JS-land.                                                                                                                                                                                                  | Low–Medium                       |
+| 4   | **Self-healing CI** (AI fix-on-failure with PR comment)      | Nx (alone)                     | vis already has `vis ai` / `ai-analysis.ts` — extend with a CI PR-comment loop. Strong differentiator vs everyone except Nx.                                                                                                                                                                                      | Medium                           |
+| 5   | **Inferred tasks / Project Crystal**                         | Nx, Vite+                      | Read `vite.config`, `playwright.config`, `eslint.config`, `tsup.config`, `packem.config` → infer targets without `project.json` boilerplate. `framework-inference.ts` is the seed.                                                                                                                                | Medium                           |
+| 6   | **Test atomization** (split each spec into its own target)   | Nx Atomizer                    | Required to actually shard e2e/test work across distributed agents. Pairs with item 2.                                                                                                                                                                                                                            | Medium                           |
+| 7   | **Public plugin API** (typed `VisPlugin` w/ stable hooks)    | Nx, moon (WASM), Rush          | Already open in `todo.md`. Without it, items 8 and 11 are blocked from third parties.                                                                                                                                                                                                                             | Medium                           |
+| 8   | **Conformance / publishable cross-repo rules**               | Nx Polygraph (Enterprise)      | Probably overkill for v1; the seed = make `enforceLayerRelationships` + version constraints publishable as a package and runnable across repos.                                                                                                                                                                   | Medium                           |
+| 9   | **Attested provenance + keyless-signed cache (Sigstore) ✅** | nobody else in JS-land (novel) | ✅ Shipped (roadmap #12). Outbound half: SLSA v1 provenance for vis-built artifacts (`vis attest`) + Sigstore keyless sign/verify of cache tarballs (authenticity above Turbo-style HMAC integrity) + `vis attest verify` gate composing the inbound marshalls. Inbound half also ships (§3, §8.6). Claimed moat. | Done                             |
 
 ### Tier 2 — Fills checklist parity
 
@@ -368,7 +376,8 @@ Worth reading before committing scope: `framework-inference.ts`, `project-constr
 - Lerna: nx.dev/blog/whats-new-with-lerna-6-5, lerna.js.org/docs/lerna-and-nx
 - Bazel/Buck2/Pants/Please: bazel.build/remote/persistent, bazel.build/remote/rbe, buck2.build/docs/users/remote_execution, pantsbuild.org/dev/docs/using-pants/remote-caching-and-execution/remote-execution, github.com/aspect-build/rules_js, github.com/thought-machine/please, please.build, please.build/quickstart.html, please.build/config.html, please.build/plugins.html, please.build/commands.html
 - Bit: github.com/teambit/bit, bit.dev/reference/reference/scope/scope-overview, bit.dev/reference/change-requests/building-lanes, bit.dev/reference/components/snaps
-- Point tools: knip.dev, github.com/JamieMason/syncpack, github.com/QuiiBz/sherif, github.com/Thinkmill/manypkg, github.com/google/wireit, preconstruct.tools
+- Point tools: knip.dev, github.com/JamieMason/syncpack, github.com/QuiiBz/sherif, github.com/Thinkmill/manypkg, github.com/google/wireit, preconstruct.tools, api-extractor.com, github.com/folke/ultra-runner, github.com/FormidableLabs/builder, github.com/chaaz/versio
+- Awesome-Monorepo cross-reference (§9): github.com/korfuri/awesome-monorepo, github.com/esrlabs/josh, github.com/splitsh/lite, github.com/unravelin/tomono, github.com/shopsys/monorepo-tools, github.com/nikita-skobov/monorepo-git-tools, github.com/facebook/fbshipit, github.com/Microsoft/GVFS, github.com/facebook/watchman, github.com/geritol/write-guard, trunkbaseddevelopment.com, branchbyabstraction.com
 
 ---
 
@@ -872,3 +881,104 @@ Reordered based on combined Section 7 + 8 evidence. The top 5 from 7.4 still hol
 10. **Generator/template introspection MCP tools** (Theme Z) — bundle with the MCP-server priority. moon#2437 explicit: don't ship MCP without `list_templates` / `describe_template` / `list_projects` / `describe_project` or AI agents fly blind. Marginal cost over already-planned MCP server.
 
 Honorable mentions (file but defer): shared services across invocations (Theme R, wireit#580), task-level tags (moon#2099), changed-files-as-argv token (Theme Q), worktree-aware caches (Theme U), standalone non-npm execution (Theme V), interactive/stdin tasks (Theme X), task descriptions (Theme Y), release-from-runner pipelines (Theme AA).
+
+### 8.5 — Cross-cutting axis: agent-first machine-readable output
+
+Themes **M** (surface content hashes / structured manifest output as a first-class artifact for CI logs + dashboards) and **Z** (generator/template introspection so AI agents don't fly blind), plus the recurring `--output-style json` / `--format=json` asks threaded through §8.4 #6 and #10, are not independent point features — they are one design axis observed one issue at a time: **the CLI is a machine surface, and the MCP server + self-healing CI loop (Section 5 strategic bets) are programmatic consumers of it.** Treating them as separate features is what caused the divergence already visible in the shipped CLI (boolean `--json` on some commands, string `--format=json` on others).
+
+This is now stated as **Axis A** in `priority-roadmap.md` (Design axes section), with `--format=table|json|ndjson` as the canonical flag, a stdout-is-machine-only / deterministic / CI-gateable / stable-schema contract, and a deferred conformance gate (roadmap Tier B item 36). Keep new competitor findings about structured output, hash surfacing, or agent introspection mapped to Axis A here rather than spawning new M/Z-style themes — the axis is the consolidation point.
+
+### 8.6 — Attested provenance & keyless artifact signing (added 2026-05-17)
+
+Not issue-mined — this gap comes from the 2026 supply-chain compliance landscape, not competitor trackers (no JS-land runner has enough of this for users to file issues against it; that absence _is_ the signal). Captured here because it is the largest unclaimed differentiator adjacent to vis's existing security surface.
+
+**The axis.** "Supply-chain security" in the matrix (§2) and baseline (§3) currently means SBOM + secrets + OSV + typosquat. Provenance is a distinct, higher rung: a **verifiable, attested record of how and where an artifact was built**, cryptographically bound to the artifact and (ideally) recorded in a public transparency log. The 2026 primitives:
+
+- **npm package provenance** — `npm publish --provenance` (GA). Generates SLSA provenance from the CI run, signs it via Sigstore keyless (Fulcio short-lived cert from CI OIDC), records it in the Rekor transparency log, surfaces as `dist.attestations.provenance` + a registry badge.
+- **GitHub Artifact Attestations** — `actions/attest-build-provenance`; SLSA v1 provenance for _any_ build artifact (not just npm), keyless-signed, verified offline with `gh attestation verify`.
+- **SLSA v1.0** — the provenance schema + build levels (L2/L3) that the above implement.
+- **Sigstore cosign** — `cosign sign-blob` / `verify-blob`: keyless (OIDC → Fulcio → Rekor) signing of arbitrary blobs. The general primitive a runner would use to sign **cache tarballs**.
+
+**Inbound vs outbound — the load-bearing distinction.**
+
+- _Inbound_ (verify what you consume): **vis already owns this.** The `provenance` marshall catches a dependency that dropped its attestation; the `signatures` marshall ECDSA-verifies registry signatures against npm's keys (§3). No competitor task runner ships an equivalent — they delegate entirely to `npm audit` / Socket / Snyk.
+- _Outbound_ (attest what you produce): **nobody else in JS-land ships this — vis now does (roadmap #12, 2026-05-17).** Three pieces, all shipped:
+    1. **Keyless-signed cache artifacts — ✅ shipped.** Turbo's `TURBO_REMOTE_CACHE_SIGNATURE_KEY` is HMAC — a shared symmetric secret = integrity, not authenticity (anyone who can read the cache can forge entries). vis layers Sigstore keyless sign/verify of cache tarballs _above_ the HMAC (item 28) — _authenticity + non-repudiation + transparency_, a strict superset that complements (does not replace) the HMAC. task-runner stays dependency-free (callback hooks + `X-Artifact-Attestation` header); vis owns the Sigstore dep and skips signing outside CI OIDC.
+    2. **SLSA provenance for vis-built artifacts — ✅ shipped.** `vis attest <artifact>` emits an in-toto/SLSA v1 statement bound to its outputs, keyless-signs it, writes a `.sigstore` bundle attachable to `npm publish --provenance` or GitHub Artifact Attestations.
+    3. **A `vis attest verify` gate — ✅ shipped.** One CI-gateable command composing the inbound marshalls, `--format=json|ndjson` for pipeline gating, `--fail-on` severity threshold, non-zero exit on gating findings.
+
+**Competitor positioning.** Nx — none (Nx Cloud is _hosted trust_, not verifiable provenance). Turbo — HMAC integrity only. moon / Bazel-family — REAPI/CAS sha256 is content-addressed integrity, not builder authenticity; Bazel RBE attestation is research-grade, not a shipped JS-land feature. Lerna 9 OIDC is publish-auth, a different layer (§1.7). Net: vis now owns **both** halves (inbound marshalls + outbound keyless cache/`vis attest`); every other runner in the category tops out at HMAC/CAS integrity.
+
+**Why HMAC ≠ this.** Integrity answers "was this corrupted in transit?" Authenticity answers "was this produced by a trusted builder, and can a third party verify that offline, later, without the signer?" Provenance/transparency answers "by which build, from which source, recorded where I can audit it." Roadmap item 28 (HMAC) only reaches the first; this theme is the second and third. They stack.
+
+**Sources:** docs.npmjs.com/generating-provenance-statements, slsa.dev/spec/v1.0, github.com/actions/attest-build-provenance, docs.sigstore.dev/cosign/signing/signing_with_blobs, turborepo.dev/docs/reference/configuration#signature (HMAC scope), §1.2 / §1.7 / §3 / §8.4 #28 cross-refs.
+
+---
+
+## Section 9 — Awesome-Monorepo cross-reference (added 2026-05-15)
+
+Cross-referenced [korfuri/awesome-monorepo](https://github.com/korfuri/awesome-monorepo) against Sections 1–8. The curated list catches a handful of categories that competitor-issue mining (Sections 7–8) did not surface — primarily **repo decomposition / history splitting**, **VCS scaling primitives**, **API-surface review**, and a long tail of niche/legacy runners. The heavy hitters (Nx, Turborepo, moon, Bazel/Buck2/Pants/Please, Bit, Lerna, Rush) are already covered above and not repeated.
+
+Deliberately out of scope and omitted: code-review bots (Pull Review, Rietveld), the "Good reads" / "Notable public monorepos" sections (articles + example repos, not tooling), and CI-platform entries handled under §7.2 Theme G. Repository-management entries (wsrun, monorepo-run, meta, Lank) are folded into §9.5 rather than enumerated individually.
+
+### 9.1 New theme — Repo decomposition (split / extract / merge git history)
+
+Awesome-monorepo lists a cluster of git-history manipulation tools that have no analogue in vis or any other JS-land task runner. These cover the **outbound history extraction** story (the inverse of vis's existing inbound migrators, which only convert config — not history).
+
+- **[josh](https://github.com/josh-project/josh)** — git server proxy that virtualises subrepo views on the fly. Clients clone a virtual subset; pushes are rewritten back to the monorepo. Solves the "team wants their own repo without losing history" ask. (Repo moved `esrlabs/josh` → `josh-project/josh`; the awesome-monorepo list still points at the old redirecting URL.)
+- **[splitsh-lite](https://github.com/splitsh/lite)** — fast `git subtree`-equivalent for one-way read-only package-to-its-own-repo splits. Used heavily by Symfony components.
+- **[git subtree](https://github.com/apenwarr/git-subtree)** + **[git subsplit](https://github.com/dflydev/git-subsplit)** — built-in / classic versions of the same pattern.
+- **[tomono](https://github.com/unravelin/tomono)** — _inbound_ history merge: import N existing repos into one monorepo with full history preserved.
+- **[shopsys/monorepo-tools](https://github.com/shopsys/monorepo-tools)** — full bidirectional split/merge set.
+- **[mgt (monorepo-git-tools)](https://github.com/nikita-skobov/monorepo-git-tools)** — declarative bidirectional sync between mono and split repos.
+- **[FBShipIt](https://github.com/facebook/fbshipit)** / **[adeira/shipit](https://github.com/adeira/shipit)** — Facebook's commit-copy tool (Hack / JS port). Used to mirror internal repos to external public ones.
+
+Concrete vis shape: `vis split <package> --to <repo>` for outbound extraction, `vis import <repo> --as <package>` for inbound merge. Pairs naturally with the **outbound migrator** (7.3 #9) — together they cover both axes of "leave any time": config conversion _and_ history extraction. Effort: shell out to `splitsh-lite` / `josh` rather than reimplement; vis owns the orchestration + project-graph awareness.
+
+### 9.2 New theme — VCS scaling primitives (below vis's abstraction level)
+
+Tools vis should _integrate with_ and _recommend in `vis doctor`_, not replace:
+
+- **Git LFS** — large binary handling. ✅ **SHIPPED**: `vis doctor` `git-lfs` runtime check warns when `.gitattributes` declares `filter=lfs` but `git-lfs` is not installed (working-tree files would be pointer stubs).
+- **git sparse-checkout** + **git clone --filter=blob:none** (partial clones) — for CI runners that only need a subset. ✅ **SHIPPED**: `vis affected --sparse-checkout` prints the affected project roots (deduped, sorted) as a cone set for `git sparse-checkout set --stdin`, returning before `run`.
+- **[GVFS](https://github.com/Microsoft/GVFS)** (Windows) / **[SlothFS](https://gerrit.googlesource.com/gitfs/+/HEAD/docs/manual.md)** (Linux/macOS, read-only) — filesystem-level lazy fetch. Adjacent to the very-large-repo scaling story; not in vis's scope but worth referencing for users at 100k+ files. Note: GVFS is **superseded by [Scalar](https://github.com/microsoft/scalar)** (now upstreamed into Git); the modern path is Git partial-clone + sparse-index, so `vis doctor` should recommend Scalar/sparse-index rather than GVFS. The awesome-monorepo list is stale here.
+- **Watchman** / **Mercurial fsmonitor** — file-system event source. ✅ **SHIPPED**: watch mode prefers the Watchman daemon when `fb-watchman` (optional peer dep) + the `watchman` binary are present, falling back to native `node:fs.watch` otherwise; a `watchman` `vis doctor` check surfaces whether the scalable backend is active.
+
+### 9.3 New theme — API-surface review (separate from secrets/audit)
+
+- **[API Extractor](https://api-extractor.com/)** (rushstack) — TypeScript API extraction + breaking-change detection + `.d.ts` rollup across packages. The "what did this PR change in the published surface?" gate.
+
+Direct vis fit: pair `vis check` (catalog drift) and `vis audit` (vuln/secret) with `vis api-check` — runs API Extractor across all `type:package` projects, surfaces breaking changes, can gate the PR. No JS **task runner** (Nx/Turbo/moon/Rush) wires this into the project graph — Rush ships API Extractor as a separate tool you configure per-package. Bit is the partial exception: it tracks API changes per-component between snaps, but at the component-model level, not as a graph-wide gate over existing `type:package` projects.
+
+### 9.4 New theme — File-level write enforcement (beyond CODEOWNERS)
+
+- **[Write Guard](https://github.com/geritol/write-guard)** — GitHub Actions workflow that enforces file-level _write_ access (not just review). CODEOWNERS is review-only; Write Guard hard-blocks merges.
+
+Pairs with `vis sync codeowners` — extend to emit a Write Guard workflow alongside CODEOWNERS for projects flagged `restricted: true` in `project.json`. Low effort; differentiator no JS-land monorepo runner ships. ✅ **SHIPPED**: opt-in `vis sync codeowners --write-guard` emits **both forges** — `.github/workflows/write-guard.yml` (delegates to `geritol/write-guard`) and an includable `.gitlab/write-guard.gitlab-ci.yml` MR-gated job — scoped to `restricted: true` project roots, with `--check` drift detection.
+
+### 9.5 Niche / legacy / single-language runners — no action
+
+Awesome-monorepo lists many runners that overlap with covered competitors but target smaller audiences or other languages. Tracked here for completeness; not threats:
+
+- **JS / pnpm-yarn-era runners**: Bolt Pkg, OAO, wsrun, monorepo-run, Lank, Builder (FormidableLabs), Ultra Runner, meta. Mostly dormant or pre-pnpm-workspaces. Ultra Runner is the closest live competitor at the lightweight end — addresses the same audience as Lage. Builder's "scripts as shared deps" pattern is interesting; vis already covers it via task templates + `extends`.
+- **Other-language / build-artifact systems**: Spago (PureScript), Symplify/MonorepoBuilder (PHP), Tainted (Go change detection), Versio (language-agnostic version bumper), MBT (differential build), baur (changed-app builds + artifact mgmt), drkns (language-agnostic build), Garment (Farfetch centralized task mgmt), Layer-pack (Webpack inheritable-layers plugin), Nix (reproducible build + remote cache). Reinforce the polyglot signal (Section 1.10 moon WASM, Nx Gradle/.NET/Python) but vis stays JS-first per Section 4 Tier-3.
+- **Package managers (not task runners)**: pnpm, Yarn — vis builds _on top of_ pnpm/Yarn/npm/Bun workspaces, doesn't compete with them. The repo itself is a pnpm-workspaces monorepo. GitLab CI's path-change support is cross-referenced under §7.2 Theme G / §7.3 #10.
+- **Sync helpers**: Syncpack (covered 1.10), shipit/FBShipIt (covered 9.1).
+
+### 9.6 Workflow methodologies (out of scope but worth flagging)
+
+- **[Trunk Based Development](https://trunkbaseddevelopment.com)** + **[Branch By Abstraction](https://www.branchbyabstraction.com)** — vis's affected detection + `vis ci` presuppose trunk-based development. Doc story (not feature work): `docs/guides/trunk-based-development.mdx` walking through how `vis affected --base origin/main` composes with TBD's short-lived branches.
+
+### 9.7 Updated priority candidates — additions from §9
+
+Slotted into Section 8.4 ordering:
+
+11. **`vis api-check` (API Extractor integration)** (§9.3) — pair with `vis check` / `vis audit` for the "did this PR break the published surface?" gate. Mid-effort: shell out to `@microsoft/api-extractor`, surface results across all `type:package` projects. Differentiator nobody bundles into the runner.
+
+12. **`vis split` / `vis import` (git history extraction + merge)** (§9.1) — outbound history story to pair with the outbound-config-migrator (7.3 #9). Shell out to `splitsh-lite` / `josh` / `tomono`; vis owns project-graph awareness so the split set respects layer + dependency boundaries. Anti-lock-in flagship: "you can leave any time, _with history_."
+
+13. ✅ **SHIPPED** — **VCS-scaling integration in `vis doctor`** (§9.2) — Watchman wired into watch mode (with native fallback) + `watchman` doctor check, `git-lfs` doctor check, and `vis affected --sparse-checkout` cone-set emission. Payoff is the 100k-file-repo audience that today picks Bazel.
+
+14. ✅ **SHIPPED** — **Write Guard workflow generator in `vis sync codeowners`** (§9.4) — opt-in `--write-guard` emits GitHub + GitLab Write Guard CI for `restricted: true` projects, with `--check` drift detection. Differentiator no one ships.
+
+Honorable mention (defer): partial clone / sparse checkout templates per-CI-provider (extension of Theme G).
