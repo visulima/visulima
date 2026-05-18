@@ -324,7 +324,7 @@
         "dropbox": "10.34.0",
         "esbuild": "catalog:build",
         "eslint": "catalog:lint",
-        "eslint-plugin-zod": "4.4.0",
+        "eslint-plugin-zod": "4.5.1",
         "etag": "catalog:dev",
         "express": "catalog:backend",
         "firebase-admin": "13.10.0",
