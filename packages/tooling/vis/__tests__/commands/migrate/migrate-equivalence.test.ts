@@ -11,6 +11,7 @@ import {
     equivalenceExitCode,
     formatEquivalenceReport,
 } from "../../../src/commands/migrate/equivalence";
+import { migrateVerifyGraphExecute } from "../../../src/commands/migrate/handler";
 import { cleanupTemporaryDirectory, createMockLogger, createTemporaryDirectory } from "../../test-helpers";
 
 const writeJson = (dir: string, name: string, value: unknown): void => {
@@ -220,5 +221,137 @@ describe("migrate verify-graph equivalence", () => {
 
             expect(detectSourceTool(tmp)).toBeUndefined();
         });
+    });
+
+    describe("source parser edge cases", () => {
+        it("canonicalizes a moon cross-project `project:build` dep into `project#build`", () => {
+            expect.assertions(1);
+
+            mkdirSync(join(tmp, ".moon"), { recursive: true });
+            writeFileSync(join(tmp, ".moon", "tasks.yml"), ["tasks:", "  build:", "    deps:", "      - ui:build"].join("\n"));
+
+            expect(buildSourceModel(tmp, "moon").get("*#build")?.dependsOn).toStrictEqual(["ui#build"]);
+        });
+
+        it("returns an empty model when turbo.json is malformed JSON instead of throwing", () => {
+            expect.assertions(1);
+
+            writeFileSync(join(tmp, "turbo.json"), "{ this is not json");
+
+            expect(buildSourceModel(tmp, "turbo").size).toBe(0);
+        });
+
+        it("returns an empty model when .moon/tasks.yml is malformed YAML", () => {
+            expect.assertions(1);
+
+            mkdirSync(join(tmp, ".moon"), { recursive: true });
+            writeFileSync(join(tmp, ".moon", "tasks.yml"), "tasks:\n  build:\n - : : :\n");
+
+            expect(buildSourceModel(tmp, "moon").size).toBe(0);
+        });
+    });
+});
+
+describe("migrateVerifyGraphExecute (handler guards)", () => {
+    let tmp: string;
+    let savedExitCode: typeof process.exitCode;
+    let stdoutSpy: ReturnType<typeof vi.spyOn>;
+
+    const run = async (options: Record<string, unknown>): Promise<ReturnType<typeof createMockLogger>> => {
+        const logger = createMockLogger();
+
+        await (migrateVerifyGraphExecute as unknown as (toolbox: unknown) => Promise<void>)({ logger, options, workspaceRoot: tmp });
+
+        return logger;
+    };
+
+    beforeEach(() => {
+        tmp = createTemporaryDirectory("vis-equiv-handler-");
+        savedExitCode = process.exitCode;
+        process.exitCode = undefined;
+        stdoutSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+    });
+
+    afterEach(() => {
+        stdoutSpy.mockRestore();
+        process.exitCode = savedExitCode;
+        cleanupTemporaryDirectory(tmp);
+    });
+
+    it("rejects an invalid --format with exit code 1 and a warning", async () => {
+        expect.assertions(2);
+
+        const logger = await run({ format: "yaml" });
+
+        expect(process.exitCode).toBe(1);
+        expect(logger.warnMessages.some((m) => m.includes("Invalid --format"))).toBe(true);
+    });
+
+    it("rejects an invalid --from with exit code 1 and a warning", async () => {
+        expect.assertions(2);
+
+        const logger = await run({ from: "gradle" });
+
+        expect(process.exitCode).toBe(1);
+        expect(logger.warnMessages.some((m) => m.includes("Invalid --from"))).toBe(true);
+    });
+
+    it("warns when the source tool cannot be auto-detected", async () => {
+        expect.assertions(2);
+
+        const logger = await run({});
+
+        expect(process.exitCode).toBe(1);
+        expect(logger.warnMessages.some((m) => m.includes("Could not auto-detect"))).toBe(true);
+    });
+
+    it("warns when the source tool yields an empty task graph", async () => {
+        expect.assertions(2);
+
+        writeJson(tmp, "turbo.json", { tasks: {} });
+
+        const logger = await run({ from: "turbo" });
+
+        expect(process.exitCode).toBe(1);
+        expect(logger.warnMessages.some((m) => m.includes("No turbo task graph found"))).toBe(true);
+    });
+
+    it("warns when no migrated vis task graph exists", async () => {
+        expect.assertions(2);
+
+        writeJson(tmp, "turbo.json", { tasks: { build: { dependsOn: ["^build"] } } });
+
+        const logger = await run({ from: "turbo" });
+
+        expect(process.exitCode).toBe(1);
+        expect(logger.warnMessages.some((m) => m.includes("No migrated vis task graph"))).toBe(true);
+    });
+
+    it("exits 0 on a faithful migration and emits json to stdout", async () => {
+        expect.assertions(2);
+
+        writeJson(tmp, "turbo.json", { tasks: { build: { dependsOn: ["^build"], inputs: ["src/**"] } } });
+        writeVisConfig(tmp, { tasks: { build: { dependsOn: [{ dependencies: true, target: "build" }], inputs: ["src/**"] } } });
+
+        await run({ format: "json", from: "turbo" });
+
+        expect(process.exitCode).toBe(0);
+        expect(stdoutSpy.mock.calls.length).toBeGreaterThan(0);
+    });
+
+    it("gates a purely additive divergence only under --fail-on=warning", async () => {
+        expect.assertions(2);
+
+        writeJson(tmp, "turbo.json", { tasks: { build: {} } });
+        writeVisConfig(tmp, { tasks: { build: {}, extra: {} } });
+
+        await run({ failOn: "warning", format: "json", from: "turbo" });
+
+        expect(process.exitCode).toBe(1);
+
+        process.exitCode = undefined;
+        await run({ failOn: "error", format: "json", from: "turbo" });
+
+        expect(process.exitCode).toBe(0);
     });
 });
