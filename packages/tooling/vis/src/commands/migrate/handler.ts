@@ -2,6 +2,8 @@ import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 
 import { detectPackageManager } from "../hook/migrate";
 import { migrateDeps } from "./deps";
+import type { OutputFormat, SourceTool } from "./equivalence";
+import { buildSourceModel, buildVisModel, detectSourceTool, diffModels, equivalenceExitCode, formatEquivalenceReport, VALID_FORMATS } from "./equivalence";
 import { migrateGitleaks } from "./gitleaks";
 import type {
     MigrateAllOptions,
@@ -17,6 +19,7 @@ import type {
     MigrateSherifOptions,
     MigrateSyncpackOptions,
     MigrateTurborepoOptions,
+    MigrateVerifyGraphOptions,
 } from "./index";
 import { migrateKingfisher } from "./kingfisher";
 import { migrateLintStaged } from "./lint-staged";
@@ -295,6 +298,67 @@ const migrateVerifyExecuteImpl = ({ logger, workspaceRoot }: Toolbox): void => {
     }
 };
 
+const migrateVerifyGraphExecuteImpl = async ({ logger, options, workspaceRoot }: Toolbox<Console, MigrateVerifyGraphOptions>): Promise<void> => {
+    const root = workspaceRoot ?? process.cwd();
+
+    const format = (options.format ?? "table") as OutputFormat;
+
+    if (!VALID_FORMATS.has(format)) {
+        logger.warn(`Invalid --format: ${String(options.format)}. Expected table | json | ndjson.`);
+        process.exitCode = 1;
+
+        return;
+    }
+
+    const failOn = options.failOn === "warning" ? "warning" : "error";
+
+    let tool: SourceTool | undefined;
+
+    if (options.from) {
+        if (options.from !== "turbo" && options.from !== "nx" && options.from !== "moon") {
+            logger.warn(`Invalid --from: ${options.from}. Expected turbo | nx | moon.`);
+            process.exitCode = 1;
+
+            return;
+        }
+
+        tool = options.from;
+    } else {
+        tool = detectSourceTool(root);
+
+        if (!tool) {
+            logger.warn("Could not auto-detect the source tool (need exactly one of turbo.json / nx.json / .moon/tasks.yml). Pass --from <turbo|nx|moon>.");
+            process.exitCode = 1;
+
+            return;
+        }
+    }
+
+    const sourceModel = buildSourceModel(root, tool);
+
+    if (sourceModel.size === 0) {
+        logger.warn(`No ${tool} task graph found at ${root} — nothing to verify.`);
+        process.exitCode = 1;
+
+        return;
+    }
+
+    const visModel = await buildVisModel(root);
+
+    if (visModel.size === 0) {
+        logger.warn("No migrated vis task graph found (vis.config.ts has no tasks). Run the migrator first.");
+        process.exitCode = 1;
+
+        return;
+    }
+
+    const report = diffModels(sourceModel, visModel, tool);
+
+    formatEquivalenceReport(report, format, logger);
+
+    process.exitCode = equivalenceExitCode(report, failOn);
+};
+
 const migrateAllExecuteImpl = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Console, MigrateAllOptions>): Promise<void> => {
     const root = workspaceRoot ?? process.cwd();
     const config = visConfig ?? {};
@@ -375,4 +439,5 @@ export const migrateSyncpackExecute = migrateSyncpackExecuteImpl as CommandExecu
 export const migrateSherifExecute = migrateSherifExecuteImpl as CommandExecute<Toolbox>;
 export const migrateSelfExecute = migrateSelfExecuteImpl as CommandExecute<Toolbox>;
 export const migrateVerifyExecute = migrateVerifyExecuteImpl;
+export const migrateVerifyGraphExecute = migrateVerifyGraphExecuteImpl as CommandExecute<Toolbox>;
 export const migrateAllExecute = migrateAllExecuteImpl as CommandExecute<Toolbox>;

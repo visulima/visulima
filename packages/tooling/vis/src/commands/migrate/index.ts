@@ -182,6 +182,27 @@ const migrateVerify: Command = {
     options: [],
 };
 
+const migrateVerifyGraphCmd: Command = {
+    commandPath: ["migrate"],
+    description: "Prove a turbo/nx/moon → vis migration preserved the task graph + cache-key surface (exit 1 on divergence)",
+    examples: [
+        ["vis migrate verify-graph", "Auto-detect the source tool and diff its task graph against the migrated vis.config.ts"],
+        ["vis migrate verify-graph --from turbo --format json", "Machine-readable equivalence report on stdout (Axis A)"],
+        ["vis migrate verify-graph --fail-on warning", "Also gate CI on additive/extra-target warnings"],
+    ],
+    group: "Migrate",
+    loader: () =>
+        import("./handler").then((m) => {
+            return { default: m.migrateVerifyGraphExecute };
+        }),
+    name: "verify-graph",
+    options: [
+        { description: "Source tool to compare against (turbo|nx|moon). Auto-detected when omitted.", name: "from", type: String },
+        { description: "Output format: table | json | ndjson (default: table)", name: "format", type: String },
+        { description: "Exit non-zero on: error (default) | warning", name: "fail-on", type: String },
+    ],
+};
+
 const migrateAllCmd: Command = {
     commandPath: ["migrate"],
     description: "Run every applicable migration non-interactively (autodetected)",
@@ -213,6 +234,7 @@ const migrateCommands: Command[] = [
     migrateSyncpackCmd,
     migrateSherifCmd,
     migrateVerify,
+    migrateVerifyGraphCmd,
 ];
 
 export default migrateCommands;
@@ -243,3 +265,8 @@ export type MigrateSyncpackOptions = CreateOptions<SharedMigrateOptions>;
 export type MigrateSherifOptions = CreateOptions<SharedMigrateOptions>;
 export type MigrateSelfOptions = CreateOptions<SharedMigrateOptions>;
 export type MigrateAllOptions = CreateOptions<SharedMigrateOptions>;
+export type MigrateVerifyGraphOptions = CreateOptions<{
+    "fail-on": string | undefined;
+    format: string | undefined;
+    from: string | undefined;
+}>;

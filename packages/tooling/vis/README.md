@@ -435,6 +435,8 @@ If you would like to help take a look at the [list of issues](https://github.com
 | [Syncpack](https://github.com/JamieMason/syncpack)         | `vis migrate syncpack`    | Workspace dependency policy |
 | [Sherif](https://github.com/QuiiBz/sherif)                 | `vis migrate sherif`      | Monorepo linter             |
 
+After migrating a task runner, run `vis migrate verify-graph` to prove the migration preserved the task graph and cache-key surface — it diffs the original `turbo` / `nx` / `moon` config against the generated `vis.config.*` across six axes (target set, `dependsOn`, `inputs`, `outputs`, `env`, `cache`) and exits non-zero on any dropped task or narrowed cache key, so it can gate CI.
+
 ## Made with ❤️ at Anolilab
 
 This is an open source project and will always remain free to use. If you think it's cool, please star it 🌟. [Anolilab](https://www.anolilab.com/open-source) is a Development and AI Studio. Contact us at [hello@anolilab.com](mailto:hello@anolilab.com) if you need any help with these technologies or just want to say hi!
