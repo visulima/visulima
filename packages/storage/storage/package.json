@@ -120,6 +120,14 @@
             "types": "./dist/storage/local/index.d.ts",
             "import": "./dist/storage/local/index.js"
         },
+        "./provider/ftp": {
+            "types": "./dist/storage/ftp/index.d.ts",
+            "import": "./dist/storage/ftp/index.js"
+        },
+        "./provider/sftp": {
+            "types": "./dist/storage/sftp/index.d.ts",
+            "import": "./dist/storage/sftp/index.js"
+        },
         "./provider/supabase": {
             "types": "./dist/storage/supabase/index.d.ts",
             "import": "./dist/storage/supabase/index.js"
@@ -309,6 +317,7 @@
         "@types/express": "catalog:types",
         "@types/http-errors": "catalog:types",
         "@types/node": "catalog:types",
+        "@types/ssh2-sftp-client": "9.0.6",
         "@types/supertest": "catalog:types",
         "@types/type-is": "catalog:types",
         "@vercel/blob": "catalog:dev",
@@ -322,6 +331,7 @@
         "aws-crt": "catalog:dev",
         "aws-sdk-client-mock": "catalog:dev",
         "aws4fetch": "catalog:dev",
+        "basic-ftp": "6.0.1",
         "box-typescript-sdk-gen": "1.19.1",
         "cloudinary": "2.10.0",
         "cross-fetch": "catalog:dev",
@@ -347,6 +357,7 @@
         "rimraf": "catalog:node",
         "semantic-release": "catalog:cli",
         "sharp": "catalog:dev",
+        "ssh2-sftp-client": "12.1.1",
         "supertest": "catalog:dev",
         "tempy": "catalog:dev",
         "typescript": "catalog:tsc",
@@ -375,6 +386,7 @@
         "ai": ">=5.0.0",
         "aws-crt": ">=1.27.3",
         "aws4fetch": ">=1.0.0",
+        "basic-ftp": ">=5.0.0",
         "box-typescript-sdk-gen": ">=1.19.0",
         "cloudinary": ">=2.0.0",
         "dropbox": ">=10.34.0",
@@ -387,6 +399,7 @@
         "openai": ">=5.0.0",
         "pocketbase": ">=0.23.0",
         "sharp": ">=0.34.5",
+        "ssh2-sftp-client": ">=11.0.0",
         "uploadthing": ">=7.0.0"
     },
     "peerDependenciesMeta": {
@@ -453,6 +466,9 @@
         "aws4fetch": {
             "optional": true
         },
+        "basic-ftp": {
+            "optional": true
+        },
         "box-typescript-sdk-gen": {
             "optional": true
         },
@@ -487,6 +503,9 @@
             "optional": true
         },
         "sharp": {
+            "optional": true
+        },
+        "ssh2-sftp-client": {
             "optional": true
         },
         "uploadthing": {

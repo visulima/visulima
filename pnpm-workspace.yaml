@@ -28,6 +28,7 @@ allowBuilds:
   aws-crt: true
   core-js: true
   core-js-pure: true
+  cpu-features: false
   dtrace-provider: true
   edgedriver: true
   es5-ext: true
@@ -42,6 +43,7 @@ allowBuilds:
   protobufjs: true
   rs-module-lexer: true
   sharp: true
+  ssh2: false
   svelte-preprocess: true
   tree-sitter: true
   tree-sitter-json: true
