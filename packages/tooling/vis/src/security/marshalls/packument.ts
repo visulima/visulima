@@ -73,10 +73,21 @@ export interface Packument {
 }
 
 interface PackumentCacheEntry {
+    /** Stripped-packument schema version. A mismatch invalidates the entry (see {@link PACKUMENT_CACHE_VERSION}). */
+    cacheVersion: number;
     createdAt: number;
     packument: Packument;
     ttlMs: number;
 }
+
+/**
+ * Bump whenever {@link stripPackument} starts retaining (or stops retaining)
+ * a field a marshall reads. A stale on-disk entry written by an older binary
+ * would otherwise be served for up to its TTL with the new field missing —
+ * e.g. a pre-`scripts` entry silently blinding the s1ngularity marshall.
+ * v2: added per-version `scripts` retention.
+ */
+const PACKUMENT_CACHE_VERSION = 2;
 
 export interface GetPackumentOptions {
     authToken?: string;
@@ -105,6 +116,12 @@ const readCached = (name: string): Packument | undefined => {
     try {
         const entry = readJsonSync(filePath) as unknown as PackumentCacheEntry;
 
+        if (entry.cacheVersion !== PACKUMENT_CACHE_VERSION) {
+            rmSync(filePath, { force: true });
+
+            return undefined;
+        }
+
         if (Date.now() - entry.createdAt > entry.ttlMs) {
             rmSync(filePath, { force: true });
 
@@ -124,6 +141,7 @@ const writeCached = (name: string, packument: Packument, ttlMs: number): void =>
     ensureDirSync(getPackumentCacheDir());
 
     const entry: PackumentCacheEntry = {
+        cacheVersion: PACKUMENT_CACHE_VERSION,
         createdAt: Date.now(),
         packument,
         ttlMs,

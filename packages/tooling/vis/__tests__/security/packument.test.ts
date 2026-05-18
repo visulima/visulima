@@ -1,4 +1,4 @@
-import { existsSync, mkdtempSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -125,6 +125,46 @@ describe(getPackument, () => {
         await getPackument("demo");
 
         expect(fetchSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it("retains per-version install scripts (s1ngularity marshall reads them)", async () => {
+        expect.assertions(1);
+
+        stubFetch({
+            body: {
+                name: "demo",
+                versions: {
+                    "1.0.0": { scripts: { build: "tsc", postinstall: "node telemetry.js" }, version: "1.0.0" },
+                },
+            },
+        });
+
+        const result = await getPackument("demo");
+
+        expect(result?.versions["1.0.0"]?.scripts).toStrictEqual({ build: "tsc", postinstall: "node telemetry.js" });
+    });
+
+    it("invalidates a cache entry written by an older schema version", async () => {
+        expect.assertions(2);
+
+        const fetchSpy = stubFetch({ body: samplePackument });
+
+        await getPackument("demo");
+
+        expect(fetchSpy).toHaveBeenCalledTimes(1);
+
+        // Simulate an entry written by a pre-`scripts` binary (cacheVersion 1).
+        const cacheFiles = readdirSync(homeOverride, { recursive: true, withFileTypes: true })
+            .filter((d) => d.isFile() && d.name === "demo.json")
+            .map((d) => join(d.parentPath, d.name));
+        const stale = JSON.parse(readFileSync(cacheFiles[0] as string, "utf8")) as { cacheVersion: number };
+
+        stale.cacheVersion = 1;
+        writeFileSync(cacheFiles[0] as string, JSON.stringify(stale), "utf8");
+
+        await getPackument("demo");
+
+        expect(fetchSpy).toHaveBeenCalledTimes(2);
     });
 
     it("re-fetches when the cache entry has expired", async () => {
