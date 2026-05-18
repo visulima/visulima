@@ -402,9 +402,18 @@ export interface VisConfig {
 
     /**
      * Auto-create targets from detected config files (Project Crystal-style).
-     * Inferred targets sit *below* explicit ones — anything in
+     * On by default; set `false` to disable entirely, or use the object
+     * form to disable individual detectors.
+     *
+     * Inferred targets sit *below* explicit ones — the command from
      * `package.json#scripts`, `project.json#targets`, or `vis.task.ts`
-     * wins per-key, so opting in never overrides existing setups.
+     * always wins per-key, so opting in never changes what runs. As a
+     * caching aid, when a `package.json` script's command *is* a
+     * detector's command (optionally with extra flags, no shell
+     * chaining) and the script declares no `inputs`/`outputs`, the
+     * detector's `inputs`/`outputs` are adopted so the script target can
+     * cache precisely and restore its artifacts. Customised/compound
+     * scripts are left untouched.
      *
      * Built-in detectors and the targets they synthesize:
      *
@@ -458,7 +467,7 @@ export interface VisConfig {
      * opt individual detectors in or out by name. Detectors omitted from
      * the object run at their default (enabled). Useful when one
      * detector misfires for a given workspace without disabling the rest.
-     * @default false
+     * @default true
      */
     inferTargets?: Record<string, boolean> | boolean;
 

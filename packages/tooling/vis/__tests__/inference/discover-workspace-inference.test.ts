@@ -40,7 +40,7 @@ describe("discoverWorkspace target inference", () => {
         rmSync(scratch, { force: true, recursive: true });
     });
 
-    it("does nothing when inferTargets is not set", () => {
+    it("infers targets by default when inferTargets is not set", () => {
         expect.assertions(1);
 
         writeProject(scratch, "alpha", {
@@ -49,8 +49,74 @@ describe("discoverWorkspace target inference", () => {
 
         const { workspace } = discoverWorkspace(scratch, {});
 
+        // Inference is on by default — vite.config.ts → build target.
+        expect(workspace.projects["@fix/alpha"]?.targets?.["build"]?.command).toBe("vite build");
+    });
+
+    it("does nothing when inferTargets is explicitly false", () => {
+        expect.assertions(1);
+
+        writeProject(scratch, "alpha", {
+            configFile: { contents: "export default {}", path: "vite.config.ts" },
+        });
+
+        const { workspace } = discoverWorkspace(scratch, { inferTargets: false });
+
         // No scripts, no project.json targets, inference off → no targets at all.
         expect(workspace.projects["@fix/alpha"]?.targets).toStrictEqual({});
+    });
+
+    it("enriches a matching script target with detector inputs/outputs", () => {
+        expect.assertions(4);
+
+        writeProject(scratch, "zeta", {
+            configFile: { contents: "export default {}", path: "vite.config.ts" },
+            packageJson: { scripts: { build: "vite build --mode production" } },
+        });
+
+        const { workspace } = discoverWorkspace(scratch, {});
+        const build = workspace.projects["@fix/zeta"]?.targets?.["build"];
+
+        // Script command is preserved verbatim …
+        expect(build?.command).toBe("vite build --mode production");
+        // … but the detector's inputs/outputs are adopted so it caches.
+        expect(build?.outputs).toStrictEqual(["{projectRoot}/dist"]);
+        expect(build?.inputs).toBeDefined();
+        expect(build?.cache).toBe(true);
+    });
+
+    it("does not adopt precise outputs for a compound script and forces it cache-cold", () => {
+        expect.assertions(3);
+
+        writeProject(scratch, "eta", {
+            configFile: { contents: "export default {}", path: "vite.config.ts" },
+            packageJson: { scripts: { build: "vite build && tsc --emitDeclarationOnly" } },
+        });
+
+        const { workspace } = discoverWorkspace(scratch, {});
+        const build = workspace.projects["@fix/eta"]?.targets?.["build"];
+
+        expect(build?.command).toBe("vite build && tsc --emitDeclarationOnly");
+        // Compound command → detector's precise dist outputs NOT adopted
+        // (would be incomplete). Until auto-write capture is wired through
+        // task-runner, such a build is forced cold rather than wrong.
+        expect(build?.outputs).toBeUndefined();
+        expect(build?.cache).toBe(false);
+    });
+
+    it("leaves a script with no matching detector uncached (no footgun)", () => {
+        expect.assertions(2);
+
+        writeProject(scratch, "theta", {
+            packageJson: { scripts: { build: "./scripts/make.sh" } },
+        });
+
+        const { workspace } = discoverWorkspace(scratch, {});
+        const build = workspace.projects["@fix/theta"]?.targets?.["build"];
+
+        expect(build?.command).toBe("./scripts/make.sh");
+        // No tool detected → no type adopted → not cached, not auto-captured.
+        expect(build?.cache).not.toBe(true);
     });
 
     it("synthesises vite targets when inferTargets is true", () => {
@@ -103,6 +169,40 @@ describe("discoverWorkspace target inference", () => {
         const { workspace } = discoverWorkspace(scratch, { inferTargets: true });
 
         expect(workspace.projects["@fix/delta"]?.targets?.["test"]?.command).toBe("vitest run");
+    });
+
+    it("leaves a target that declares its own outputs untouched", () => {
+        expect.assertions(3);
+
+        writeProject(scratch, "kappa", {
+            configFile: { contents: "export default {}", path: "vite.config.ts" },
+            packageJson: { scripts: { build: "vite build" } },
+            projectJson: { targets: { build: { outputs: ["{projectRoot}/custom-out"] } } },
+        });
+
+        const { workspace } = discoverWorkspace(scratch, {});
+        const build = workspace.projects["@fix/kappa"]?.targets?.["build"];
+
+        // Script command preserved, and the user's explicit outputs are
+        // NOT replaced by the detector's `{projectRoot}/dist`.
+        expect(build?.command).toBe("vite build");
+        expect(build?.outputs).toStrictEqual(["{projectRoot}/custom-out"]);
+        expect(build?.inputs).toBeUndefined();
+    });
+
+    it("forces an explicit cache:true build with no outputs cache-cold", () => {
+        expect.assertions(1);
+
+        writeProject(scratch, "lambda", {
+            packageJson: { scripts: { build: "rspack build" } },
+            projectJson: { targets: { build: { cache: true, type: "build" } } },
+        });
+
+        const { workspace } = discoverWorkspace(scratch, {});
+
+        // rspack has no detector → no outputs adopted; an explicit
+        // cache:true build with nothing to restore is forced cold.
+        expect(workspace.projects["@fix/lambda"]?.targets?.["build"]?.cache).toBe(false);
     });
 
     it("respects per-detector opt-out via the object form", () => {

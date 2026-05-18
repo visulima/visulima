@@ -252,7 +252,7 @@ export const expandTaskGroups = (
 const validateWorkspacesField = (raw: PackageJson["workspaces"]): string[] => {
     if (Array.isArray(raw)) {
         if (raw.length === 0) {
-            throw new Error("Invalid package.json `workspaces`: empty array. Add at least one pattern like \"packages/*\" or remove the field.");
+            throw new Error('Invalid package.json `workspaces`: empty array. Add at least one pattern like "packages/*" or remove the field.');
         }
 
         for (const entry of raw) {
@@ -268,7 +268,7 @@ const validateWorkspacesField = (raw: PackageJson["workspaces"]): string[] => {
         const { packages } = raw;
 
         if (packages === undefined) {
-            throw new Error("Invalid package.json `workspaces`: object form requires a `packages` array (e.g. `{ \"packages\": [\"packages/*\"] }`).");
+            throw new Error('Invalid package.json `workspaces`: object form requires a `packages` array (e.g. `{ "packages": ["packages/*"] }`).');
         }
 
         if (!Array.isArray(packages)) {
@@ -560,9 +560,17 @@ const resolveFileGroupInputs = (
 const warnedUnknownDetectorKeys = new Set<string>();
 
 /**
+ * Tracks which forced-cold `build` warnings have already been emitted in
+ * this process. Keyed by `projectRoot::targetName` so the same target
+ * doesn't warn once per discovery pass.
+ */
+const warnedForcedColdBuilds = new Set<string>();
+
+/**
  * Resolves the `inferTargets` config to a per-detector predicate, or
- * `undefined` when inference is disabled entirely. Boolean `true` enables
- * every detector; the object form lets users opt individual detectors in
+ * `undefined` only when inference is explicitly disabled (`false`).
+ * Inference is on by default: `undefined` (unset) and `true` both enable
+ * every detector. The object form lets users opt individual detectors in
  * or out by name (`{ vite: false }` keeps vitest/packem on, drops vite).
  * Detectors omitted from the object run at their default (enabled).
  *
@@ -571,11 +579,11 @@ const warnedUnknownDetectorKeys = new Set<string>();
  * insurance — `{ vit: false }` would otherwise silently no-op).
  */
 const resolveInferTargetOption = (option: VisConfig["inferTargets"]): ((detectorName: string) => boolean) | undefined => {
-    if (option === true) {
+    if (option === true || option === undefined) {
         return () => true;
     }
 
-    if (option === undefined || option === false) {
+    if (option === false) {
         return undefined;
     }
 
@@ -688,6 +696,32 @@ const mergeProjectTargets = (
 };
 
 /**
+ * True when a `package.json` script command is safe to enrich with a
+ * detector's declared `inputs`/`outputs`: the script must *be* the
+ * inferred command (optionally followed by extra flags) and contain no
+ * shell chaining / piping / substitution. A compound command
+ * (`vite build &amp;& tsc`) can write artifacts the single-tool detector
+ * never predicted, so adopting the detector's `outputs` there would
+ * cache an incomplete result — those scripts are left untouched.
+ */
+const scriptMatchesInferredCommand = (scriptCommand: string | undefined, inferredCommand: string | undefined): boolean => {
+    if (typeof scriptCommand !== "string" || typeof inferredCommand !== "string" || inferredCommand.length === 0) {
+        return false;
+    }
+
+    const trimmed = scriptCommand.trim();
+
+    // Reject any shell composition or multi-line script — covers &&, ||,
+    // ;, &, |, backticks, $(...) and embedded CR/LF (a newline-separated
+    // second command would otherwise slip past the prefix check).
+    if (/[\n\r;&|`]|\$\(/.test(trimmed)) {
+        return false;
+    }
+
+    return trimmed === inferredCommand || trimmed.startsWith(`${inferredCommand} `);
+};
+
+/**
  * Discovers all projects in the workspace and builds a WorkspaceConfiguration.
  */
 const discoverWorkspace = (
@@ -748,13 +782,36 @@ const discoverWorkspace = (
         const visTargets = createTargetsFromScripts(pkg.scripts, overlayTargets, defaults, config.fileGroups);
 
         // Project Crystal-style inference. Runs *after* the explicit
-        // pipeline so any target name already declared by a
-        // package.json script, project.json, or vis.task.ts wins. We
-        // funnel the inferred target through `mergeTarget` so the
-        // applied target defaults / preset / fileGroups path is
-        // identical to script-derived targets — no parallel merge code
-        // to drift.
+        // pipeline so the command from a package.json script,
+        // project.json, or vis.task.ts always wins. A brand-new target
+        // name is funnelled through `mergeTarget` so the applied
+        // defaults / preset / fileGroups path is identical to
+        // script-derived targets. When a script already owns the name we
+        // keep its command and:
+        //   - always adopt the detector's `type` (so the script becomes
+        //     cacheable — a detector recognising the toolchain in this
+        //     package is the signal that "build"/"test" here really is a
+        //     build/test, which is safer than a name-only heuristic and
+        //     keeps unknown scripts like `dev`/`clean` uncached);
+        //   - additionally adopt the detector's precise `inputs`/
+        //     `outputs` only when the script command *is* the detector's
+        //     command (guarded — see `scriptMatchesInferredCommand`).
+        //     Compound/customised scripts skip the precise outputs and
+        //     fall back to the auto-write capture below.
         const detectorEnabled = resolveInferTargetOption(config.inferTargets);
+
+        // Snapshot target names whose `cache:true` predates detector
+        // enrichment (i.e. came from a package.json script, project.json,
+        // or vis.task.ts — not our `defaultCacheForType` auto-derivation).
+        // Only these get a forced-cold warning below: an auto-derived
+        // compound build (eta) flipping cold is by-design and silent;
+        // a *user-requested* cached build that can't restore anything is
+        // surprising and worth a one-time heads-up.
+        const preInferenceCacheTrue = new Set(
+            Object.entries(visTargets)
+                .filter(([, t]) => t.cache === true)
+                .map(([n]) => n),
+        );
 
         if (detectorEnabled !== undefined) {
             const projectRoot = join(workspaceRoot, projectDirectory);
@@ -762,14 +819,68 @@ const discoverWorkspace = (
             const inference = inferProjectTargets({ pkg, projectDirectory, projectRoot }, enabledDetectors);
 
             for (const [name, inferredTarget] of Object.entries(inference.targets)) {
-                if (visTargets[name] !== undefined) {
+                const existing = visTargets[name];
+
+                if (existing === undefined) {
+                    visTargets[name] = {
+                        ...mergeTarget(name, inferredTarget.command, inferredTarget, defaults[name], config.fileGroups),
+                        inferred: true,
+                    };
+
                     continue;
                 }
 
-                visTargets[name] = {
-                    ...mergeTarget(name, inferredTarget.command, inferredTarget, defaults[name], config.fileGroups),
-                    inferred: true,
+                // Don't touch a script that already declares its own
+                // inputs/outputs (explicit project.json / vis.task.ts).
+                if (existing.inputs !== undefined || existing.outputs !== undefined) {
+                    continue;
+                }
+
+                const enrichedType = existing.type ?? inferredTarget.type;
+                const commandMatches = scriptMatchesInferredCommand(existing.command, inferredTarget.command);
+                const enriched: VisTargetConfiguration = {
+                    ...existing,
+                    ...(commandMatches && inferredTarget.inputs ? { inputs: resolveFileGroupInputs(inferredTarget.inputs, config.fileGroups) } : {}),
+                    ...(commandMatches && inferredTarget.outputs ? { outputs: inferredTarget.outputs } : {}),
+                    type: enrichedType,
                 };
+
+                if (enriched.cache === undefined) {
+                    enriched.cache = defaultCacheForType(enrichedType);
+                }
+
+                visTargets[name] = enriched;
+            }
+        }
+
+        // Safety net: a cacheable `build` target with no declared
+        // outputs is a silent-correctness hazard — a cache hit restores
+        // nothing, so a downstream consumer sees a missing `dist/`. (A
+        // missing *inputs* needs no such net: the hasher falls back to
+        // `{projectRoot}/**/*`, which over-invalidates but never serves
+        // stale.) Force such targets cold rather than wrong. The
+        // guarded enrichment above is what keeps a `"build": "vite
+        // build"` script warm; making compound/custom build scripts
+        // cache zero-config needs auto-write output capture wired
+        // through the task-runner config→graph path (`outputs:
+        // OutputSpec[]`), which is a separate task-runner change.
+        for (const [name, target] of Object.entries(visTargets)) {
+            const hasOutputs = Array.isArray(target.outputs) ? target.outputs.length > 0 : target.outputs !== undefined;
+
+            if (target.type === "build" && target.cache === true && !hasOutputs) {
+                visTargets[name] = { ...target, cache: false };
+
+                if (preInferenceCacheTrue.has(name)) {
+                    const dedupKey = `${join(workspaceRoot, projectDirectory)}::${name}`;
+
+                    if (!warnedForcedColdBuilds.has(dedupKey)) {
+                        warnedForcedColdBuilds.add(dedupKey);
+                        process.emitWarning(
+                            `vis: target "${name}" in ${pkg.name ?? projectDirectory} requested cache:true but declares no outputs and no detector could infer them — forcing it cache-cold so a hit can't restore a missing build artifact. Declare \`outputs\` on the target (or align the script with a detected tool) to cache it.`,
+                            "VisConfigWarning",
+                        );
+                    }
+                }
             }
         }
 
