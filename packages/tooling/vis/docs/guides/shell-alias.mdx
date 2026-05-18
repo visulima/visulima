@@ -5,7 +5,7 @@ description: "Shadow npm / pnpm / yarn / bun with vis so every install runs thro
 
 # Wrap your package manager
 
-`vis install` and `vis add` pass unknown subcommands straight through to the detected package manager (npm, pnpm, yarn, bun) but run the marshall pipeline first — typosquats, downloads, archived repos, expired domains, dist signatures, provenance, new bin scripts, metadata, and author/publisher heuristics. The cleanest way to get that protection on every install is to alias your package manager to vis.
+`vis install` and `vis add` pass unknown subcommands straight through to the detected package manager (npm, pnpm, yarn, bun) but run the marshall pipeline first — typosquats, downloads, archived repos, expired domains, dist signatures, provenance, the s1ngularity compromised-publish shape, new bin scripts, metadata, and author/publisher heuristics. The cleanest way to get that protection on every install is to alias your package manager to vis.
 
 ## Bash / Zsh
 
@@ -87,6 +87,7 @@ Per-marshall, by environment variable:
 | expiredDomains  | `MARSHALL_DISABLE_EXPIRED_DOMAINS=1`  |
 | signatures      | `MARSHALL_DISABLE_SIGNATURES=1`       |
 | provenance      | `MARSHALL_DISABLE_PROVENANCE=1`       |
+| s1ngularity     | `MARSHALL_DISABLE_S1NGULARITY=1`      |
 | newBin          | `MARSHALL_DISABLE_NEW_BIN=1`          |
 | downloads       | `MARSHALL_DISABLE_DOWNLOADS=1`        |
 | metadata        | `MARSHALL_DISABLE_METADATA=1`         |
