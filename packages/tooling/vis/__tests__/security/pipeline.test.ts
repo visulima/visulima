@@ -10,6 +10,7 @@ import { runMetadataMarshall } from "../../src/security/marshalls/metadata";
 import { runNewBinMarshall } from "../../src/security/marshalls/new-bin";
 import { runMarshallPipeline } from "../../src/security/marshalls/pipeline";
 import { runProvenanceMarshall } from "../../src/security/marshalls/provenance";
+import { runS1ngularityMarshall } from "../../src/security/marshalls/s1ngularity";
 import { runSignatureMarshall } from "../../src/security/marshalls/signatures";
 
 vi.mock(import("../../src/security/marshalls/archived-repo"), () => {
@@ -33,6 +34,9 @@ vi.mock(import("../../src/security/marshalls/new-bin"), () => {
 vi.mock(import("../../src/security/marshalls/provenance"), () => {
     return { runProvenanceMarshall: vi.fn(async () => []) };
 });
+vi.mock(import("../../src/security/marshalls/s1ngularity"), () => {
+    return { runS1ngularityMarshall: vi.fn(async () => []) };
+});
 vi.mock(import("../../src/security/marshalls/signatures"), () => {
     return { runSignatureMarshall: vi.fn(async () => []) };
 });
@@ -45,6 +49,7 @@ describe(runMarshallPipeline, () => {
         vi.clearAllMocks();
         vi.mocked(runAuthorMarshall).mockResolvedValue([]);
         vi.mocked(runProvenanceMarshall).mockResolvedValue([]);
+        vi.mocked(runS1ngularityMarshall).mockResolvedValue([]);
         vi.mocked(runNewBinMarshall).mockResolvedValue([]);
         vi.mocked(runMetadataMarshall).mockResolvedValue([]);
         vi.mocked(runDownloadsMarshall).mockResolvedValue([]);
@@ -63,12 +68,13 @@ describe(runMarshallPipeline, () => {
     });
 
     it("runs every marshall except signatures by default", async () => {
-        expect.assertions(8);
+        expect.assertions(9);
 
         await runMarshallPipeline([{ name: "demo", version: "1.0.0" }]);
 
         expect(vi.mocked(runAuthorMarshall)).toHaveBeenCalledTimes(1);
         expect(vi.mocked(runProvenanceMarshall)).toHaveBeenCalledTimes(1);
+        expect(vi.mocked(runS1ngularityMarshall)).toHaveBeenCalledTimes(1);
         expect(vi.mocked(runNewBinMarshall)).toHaveBeenCalledTimes(1);
         expect(vi.mocked(runMetadataMarshall)).toHaveBeenCalledTimes(1);
         expect(vi.mocked(runDownloadsMarshall)).toHaveBeenCalledTimes(1);
@@ -88,14 +94,15 @@ describe(runMarshallPipeline, () => {
     });
 
     it("skips a marshall when its config block sets enabled: false", async () => {
-        expect.assertions(2);
+        expect.assertions(3);
 
         await runMarshallPipeline([{ name: "demo", version: "1.0.0" }], {
-            config: { author: { enabled: false }, downloads: { enabled: false } },
+            config: { author: { enabled: false }, downloads: { enabled: false }, s1ngularity: { enabled: false } },
         });
 
         expect(vi.mocked(runAuthorMarshall)).not.toHaveBeenCalled();
         expect(vi.mocked(runDownloadsMarshall)).not.toHaveBeenCalled();
+        expect(vi.mocked(runS1ngularityMarshall)).not.toHaveBeenCalled();
     });
 
     it("forwards author thresholds nested under `thresholds`", async () => {
