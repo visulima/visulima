@@ -100,7 +100,9 @@
         "test:watch": "vitest"
     },
     "dependencies": {
+        "@visulima/error": "6.0.0-alpha.25",
         "@visulima/secret-scanner": "1.0.0-alpha.3",
+        "@visulima/source-map": "3.0.0-alpha.9",
         "@visulima/task-runner": "1.0.0-alpha.14",
         "@visulima/tui": "1.0.0-alpha.16",
         "jiti": "catalog:dev",
