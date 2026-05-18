@@ -13,6 +13,7 @@ import { runNewBinMarshall } from "../../security/marshalls/new-bin";
 import { getPackument, resolveVersionRange } from "../../security/marshalls/packument";
 import { runProvenanceMarshall } from "../../security/marshalls/provenance";
 import type { MarshallName } from "../../security/marshalls/registry";
+import { runS1ngularityMarshall } from "../../security/marshalls/s1ngularity";
 import { runSignatureMarshall } from "../../security/marshalls/signatures";
 import type { InspectOptions } from "./index";
 
@@ -29,6 +30,7 @@ const KNOWN_MARSHALLS: ReadonlySet<MarshallName> = new Set([
     "metadata",
     "newBin",
     "provenance",
+    "s1ngularity",
     "signatures",
 ]);
 
@@ -140,6 +142,22 @@ const execute = async ({ argument, options, workspaceRoot: wsRoot }: Toolbox<Con
             findings.add({
                 marshall: "provenance",
                 message: `Prior version ${result.priorVersionWithProvenance} had provenance but ${result.version} does not.`,
+                packageName: result.packageName,
+                severity: "error",
+            });
+        }
+    }
+
+    if (should(only, "s1ngularity")) {
+        const results = await runS1ngularityMarshall(target, { workspaceRoot: wsRoot });
+
+        for (const result of results) {
+            const hooks = result.hookChanges.map((change) => `${change.hook} (${change.kind})`).join(", ");
+            const singular = result.hookChanges.length === 1;
+
+            findings.add({
+                marshall: "s1ngularity",
+                message: `${result.version} ${singular ? "has an" : "has"} install-script ${singular ? "change" : "changes"} [${hooks}] AND dropped the provenance attestation that ${result.priorVersion} carried — this is the s1ngularity compromised-publish shape.`,
                 packageName: result.packageName,
                 severity: "error",
             });

@@ -9,6 +9,7 @@ import { runMetadataMarshall } from "../../../src/security/marshalls/metadata";
 import { runNewBinMarshall } from "../../../src/security/marshalls/new-bin";
 import { getPackument, resolveVersionRange } from "../../../src/security/marshalls/packument";
 import { runProvenanceMarshall } from "../../../src/security/marshalls/provenance";
+import { runS1ngularityMarshall } from "../../../src/security/marshalls/s1ngularity";
 import { runSignatureMarshall } from "../../../src/security/marshalls/signatures";
 
 vi.mock(import("../../../src/security/marshalls/packument"), () => {
@@ -23,6 +24,9 @@ vi.mock(import("../../../src/security/marshalls/author"), () => {
 });
 vi.mock(import("../../../src/security/marshalls/provenance"), () => {
     return { runProvenanceMarshall: vi.fn(async () => []) };
+});
+vi.mock(import("../../../src/security/marshalls/s1ngularity"), () => {
+    return { runS1ngularityMarshall: vi.fn(async () => []) };
 });
 vi.mock(import("../../../src/security/marshalls/new-bin"), () => {
     return { runNewBinMarshall: vi.fn(async () => []) };
@@ -115,6 +119,7 @@ describe("inspect handler", () => {
         // Each marshall defaults to "no findings" — individual tests override.
         vi.mocked(runAuthorMarshall).mockResolvedValue([]);
         vi.mocked(runProvenanceMarshall).mockResolvedValue([]);
+        vi.mocked(runS1ngularityMarshall).mockResolvedValue([]);
         vi.mocked(runNewBinMarshall).mockResolvedValue([]);
         vi.mocked(runMetadataMarshall).mockResolvedValue([]);
         vi.mocked(runDownloadsMarshall).mockResolvedValue([]);
