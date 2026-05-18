@@ -15,6 +15,7 @@ import affectedCommand from "./commands/affected";
 import aiCommands from "./commands/ai";
 import analyzeCommand from "./commands/analyze";
 import approveBuildsCommand from "./commands/approve-builds";
+import attestCommands from "./commands/attest";
 import auditCommand from "./commands/audit";
 import cacheCommands from "./commands/cache";
 import checkCommand from "./commands/check";
@@ -225,6 +226,10 @@ for (const command of serviceCommands) {
 }
 
 for (const command of securityCommands) {
+    cli.addCommand(command);
+}
+
+for (const command of attestCommands) {
     cli.addCommand(command);
 }
 

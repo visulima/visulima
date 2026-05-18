@@ -177,6 +177,7 @@
         "secretlint": "catalog:lint",
         "semantic-release": "catalog:cli",
         "semver": "^7.8.0",
+        "sigstore": "^3.1.0",
         "smol-toml": "catalog:dev",
         "ts-json-schema-generator": "catalog:dev",
         "typescript": "catalog:tsc",
@@ -188,7 +189,8 @@
     "peerDependencies": {
         "@gitbeaker/rest": ">=43.8.0",
         "@octokit/rest": ">=22.0.1",
-        "fb-watchman": ">=2.0.0"
+        "fb-watchman": ">=2.0.0",
+        "sigstore": ">=3.0.0"
     },
     "peerDependenciesMeta": {
         "@gitbeaker/rest": {
@@ -198,6 +200,9 @@
             "optional": true
         },
         "fb-watchman": {
+            "optional": true
+        },
+        "sigstore": {
             "optional": true
         }
     },

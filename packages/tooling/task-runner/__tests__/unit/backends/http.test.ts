@@ -842,6 +842,262 @@ describe(HttpRemoteCache, () => {
         });
     });
 
+    describe("keyless attestation", () => {
+        it("sends the signArtifact bundle in the X-Artifact-Attestation header", async () => {
+            expect.assertions(1);
+
+            const entryDirectory = join(cacheDirectory, "att-up");
+
+            await mkdir(entryDirectory, { recursive: true });
+            await writeFile(join(entryDirectory, ".commit"), "att-up");
+
+            let received = "";
+
+            const { server, url } = await startMockServer((request, response) => {
+                received = String(request.headers["x-artifact-attestation"] ?? "");
+
+                collectRequestBody(request)
+                    .then(() => {
+                        response.writeHead(200);
+                        response.end();
+
+                        return undefined;
+                    })
+                    .catch(() => {
+                        response.writeHead(500);
+                        response.end();
+                    });
+            });
+
+            try {
+                const cache = new HttpRemoteCache({
+                    attestation: { signArtifact: async () => "bundle-json" },
+                    url,
+                });
+
+                await storeByTaskHash(cache, "att-up", cacheDirectory);
+
+                expect(received).toBe("bundle-json");
+            } finally {
+                await closeServer(server);
+            }
+        });
+
+        it("uploads without the header when signArtifact returns null", async () => {
+            expect.assertions(1);
+
+            const entryDirectory = join(cacheDirectory, "att-skip");
+
+            await mkdir(entryDirectory, { recursive: true });
+            await writeFile(join(entryDirectory, ".commit"), "att-skip");
+
+            let hadHeader = true;
+
+            const { server, url } = await startMockServer((request, response) => {
+                hadHeader = "x-artifact-attestation" in request.headers;
+
+                collectRequestBody(request)
+                    .then(() => {
+                        response.writeHead(200);
+                        response.end();
+
+                        return undefined;
+                    })
+                    .catch(() => {
+                        response.writeHead(500);
+                        response.end();
+                    });
+            });
+
+            try {
+                const cache = new HttpRemoteCache({
+                    attestation: { signArtifact: async () => null },
+                    url,
+                });
+
+                await storeByTaskHash(cache, "att-skip", cacheDirectory);
+
+                expect(hadHeader).toBe(false);
+            } finally {
+                await closeServer(server);
+            }
+        });
+
+        it("rejects a download when verifyArtifact returns false", async () => {
+            expect.assertions(2);
+
+            const sourceDirectory = join(cacheDirectory, "att-bad-src");
+
+            await mkdir(sourceDirectory, { recursive: true });
+            await writeFile(join(sourceDirectory, ".commit"), "att-bad");
+
+            const archivePath = join(cacheDirectory, "att-bad.tar.gz");
+
+            await new Promise<void>((resolve, reject) => {
+                execFile("tar", ["-czf", archivePath, "-C", sourceDirectory, "."], (error) => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve();
+                    }
+                });
+            });
+
+            const archive = await readFile(archivePath);
+
+            const { server, url } = await startMockServer((request, response) => {
+                if (request.method === "GET") {
+                    response.writeHead(200, {
+                        "Content-Length": String(archive.length),
+                        "Content-Type": "application/octet-stream",
+                        "X-Artifact-Attestation": "tampered-bundle",
+                    });
+                    response.end(archive);
+                } else {
+                    response.writeHead(404);
+                    response.end();
+                }
+            });
+
+            try {
+                const downloadDirectory = join(cacheDirectory, "att-bad-dl");
+
+                await mkdir(downloadDirectory, { recursive: true });
+
+                const onReject = vi.fn<(hash: string, reason: "invalid" | "missing") => void>();
+                const cache = new HttpRemoteCache({
+                    attestation: { onReject, verifyArtifact: async () => false },
+                    localCasRoot: downloadDirectory,
+                    url,
+                });
+                const retrieved = await retrieveByTaskHash(cache, "att-bad", downloadDirectory);
+
+                expect(retrieved).toBe(false);
+                expect(onReject).toHaveBeenCalledWith(expect.any(String), "invalid");
+            } finally {
+                await closeServer(server);
+            }
+        });
+
+        it("rejects an unattested download when requireOnDownload is true", async () => {
+            expect.assertions(2);
+
+            const sourceDirectory = join(cacheDirectory, "att-req-src");
+
+            await mkdir(sourceDirectory, { recursive: true });
+            await writeFile(join(sourceDirectory, ".commit"), "att-req");
+
+            const archivePath = join(cacheDirectory, "att-req.tar.gz");
+
+            await new Promise<void>((resolve, reject) => {
+                execFile("tar", ["-czf", archivePath, "-C", sourceDirectory, "."], (error) => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve();
+                    }
+                });
+            });
+
+            const archive = await readFile(archivePath);
+
+            const { server, url } = await startMockServer((request, response) => {
+                if (request.method === "GET") {
+                    response.writeHead(200, {
+                        "Content-Length": String(archive.length),
+                        "Content-Type": "application/octet-stream",
+                    });
+                    response.end(archive);
+                } else {
+                    response.writeHead(404);
+                    response.end();
+                }
+            });
+
+            try {
+                const downloadDirectory = join(cacheDirectory, "att-req-dl");
+
+                await mkdir(downloadDirectory, { recursive: true });
+
+                const onReject = vi.fn<(hash: string, reason: "invalid" | "missing") => void>();
+                const cache = new HttpRemoteCache({
+                    attestation: { onReject, requireOnDownload: true, verifyArtifact: async () => true },
+                    localCasRoot: downloadDirectory,
+                    url,
+                });
+                const retrieved = await retrieveByTaskHash(cache, "att-req", downloadDirectory);
+
+                expect(retrieved).toBe(false);
+                expect(onReject).toHaveBeenCalledWith(expect.any(String), "missing");
+            } finally {
+                await closeServer(server);
+            }
+        });
+
+        it("round-trips an attested artifact when verifyArtifact passes", async () => {
+            expect.assertions(2);
+
+            const entryDirectory = join(cacheDirectory, "att-round");
+
+            await mkdir(entryDirectory, { recursive: true });
+            await writeFile(join(entryDirectory, ".commit"), "att-round");
+            await writeFile(join(entryDirectory, "payload.txt"), "data");
+
+            let storedBytes: Buffer = Buffer.alloc(0);
+            let storedAttestation = "";
+
+            const { server, url } = await startMockServer((request, response) => {
+                if (request.method === "PUT") {
+                    storedAttestation = String(request.headers["x-artifact-attestation"] ?? "");
+
+                    collectRequestBody(request)
+                        .then((body) => {
+                            storedBytes = body;
+                            response.writeHead(200);
+                            response.end();
+
+                            return undefined;
+                        })
+                        .catch(() => {
+                            response.writeHead(500);
+                            response.end();
+                        });
+                } else {
+                    response.writeHead(200, {
+                        "Content-Length": String(storedBytes.length),
+                        "Content-Type": "application/octet-stream",
+                        "X-Artifact-Attestation": storedAttestation,
+                    });
+                    response.end(storedBytes);
+                }
+            });
+
+            try {
+                const uploader = new HttpRemoteCache({
+                    attestation: { signArtifact: async () => "ok-bundle" },
+                    url,
+                });
+                const stored = await storeByTaskHash(uploader, "att-round", cacheDirectory);
+
+                const downloadDirectory = join(cacheDirectory, "att-round-dl");
+
+                await mkdir(downloadDirectory, { recursive: true });
+
+                const downloader = new HttpRemoteCache({
+                    attestation: { requireOnDownload: true, verifyArtifact: async ({ attestation }) => attestation === "ok-bundle" },
+                    localCasRoot: downloadDirectory,
+                    url,
+                });
+                const retrieved = await retrieveByTaskHash(downloader, "att-round", downloadDirectory);
+
+                expect(stored).toBe(true);
+                expect(retrieved).toBe(true);
+            } finally {
+                await closeServer(server);
+            }
+        });
+    });
+
     describe(actionDigestForTaskHash, () => {
         it("derives a stable sha256 digest from the task hash", () => {
             expect.assertions(3);
