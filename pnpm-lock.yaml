@@ -9848,9 +9848,15 @@ importers:
 
   packages/tooling/vis:
     dependencies:
+      '@visulima/error':
+        specifier: 6.0.0-alpha.25
+        version: link:../../error-debugging/error
       '@visulima/secret-scanner':
         specifier: 1.0.0-alpha.3
         version: link:../secret-scanner
+      '@visulima/source-map':
+        specifier: 3.0.0-alpha.9
+        version: link:../../error-debugging/source-map
       '@visulima/task-runner':
         specifier: 1.0.0-alpha.14
         version: link:../task-runner
@@ -11498,7 +11504,7 @@ packages:
     resolution: {integrity: sha512-Xa9HaZHUjYXn1T39bTipV5hmguk1vIuDZs3Gc5OYA8X4ohftYbKfyoFtBqVFfB/ii/p1ihuwt+tltraKMcRDsA==}
     peerDependencies:
       tinybench: '>=2.9.0'
-      vite: '>=7.1.11'
+      vite: '>=7.3.2'
       vitest: ^3.2 || ^4
 
   '@colordx/core@5.4.3':
@@ -12866,7 +12872,7 @@ packages:
     resolution: {integrity: sha512-tXlTi1h/4V7sDe7i97IVP+9re9ZU7wXZZggnR5ucCRclf1+AX6YhGStrR5w8bLj+3Mlyl0pKfBh9gqTqqnGKfQ==}
     engines: {node: '>=20'}
     peerDependencies:
-      hono: '>=4.10.2'
+      hono: '>=4.12.4'
 
   '@hono/swagger-ui@0.6.1':
     resolution: {integrity: sha512-sJTvldu1GPeEPfyeLG7gRj+W4vEuD+JDi+JjJ3TJs/DvMUtBLs0KJO5yokGegWWdy5qrbdnQGekbhgNRmPmYKQ==}
@@ -18235,7 +18241,7 @@ packages:
       esbuild: '>=0.25.11'
       rollup: '>=4.59.0'
       storybook: ^10.4.0
-      vite: '>=7.1.11'
+      vite: '>=7.3.2'
       webpack: '*'
     peerDependenciesMeta:
       esbuild:
@@ -18921,7 +18927,7 @@ packages:
       '@vitejs/plugin-rsc': '*'
       react: 19.2.6
       react-dom: 19.2.6
-      vite: '>=7.3.2'
+      vite: '>=7.1.11'
     peerDependenciesMeta:
       '@rsbuild/core':
         optional: true
@@ -18966,7 +18972,7 @@ packages:
     peerDependencies:
       '@rsbuild/core': '>=1.0.2 || ^2.0.0'
       '@tanstack/react-router': ^1.170.4
-      vite: '>=7.3.2'
+      vite: '>=7.1.11'
       vite-plugin-solid: ^2.11.10 || ^3.0.0-0
       webpack: '>=5.92.0'
     peerDependenciesMeta:
@@ -28566,7 +28572,7 @@ packages:
     resolution: {integrity: sha512-ku6YBjF8s4kbDMO7t9vM8dOAj7jJ1tTCHNY6hnBRgx5TvUYqrppZ7RWQIywMyVSntX9UaFGDH5/KFNDEr9zRvw==}
     engines: {node: ^20.18.0 || >=22.12.0}
     peerDependencies:
-      next: '>=16.0.7'
+      next: '>=16.0.9'
 
   next-themes@0.4.6:
     resolution: {integrity: sha512-pZvgD5L0IEvX5/9GWyHMf3m8BKiVQwsCMHfoFosXtXBMnaS0ZnIJ9ST4b4NqLVKDEm8QBxoNNGNaBv2JNF6XNA==}
@@ -52372,7 +52378,7 @@ snapshots:
       eslint: 8.57.1
       eslint-plugin-react: 7.37.5(eslint@8.57.1)
 
-  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.3(eslint@10.4.0(jiti@2.7.0))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@10.4.0(jiti@2.7.0)))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1):
+  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.3(eslint@10.4.0(jiti@2.7.0))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1):
     dependencies:
       eslint: 8.57.1
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.59.3(eslint@10.4.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.4.0(jiti@2.7.0))
@@ -63782,7 +63788,7 @@ snapshots:
   standard@17.1.2(@typescript-eslint/parser@8.59.3(eslint@10.4.0(jiti@2.7.0))(typescript@6.0.3)):
     dependencies:
       eslint: 8.57.1
-      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.3(eslint@10.4.0(jiti@2.7.0))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@10.4.0(jiti@2.7.0)))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)
+      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.3(eslint@10.4.0(jiti@2.7.0))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)
       eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@10.4.0(jiti@2.7.0)))(eslint@8.57.1)
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.59.3(eslint@10.4.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.4.0(jiti@2.7.0))
       eslint-plugin-n: 15.7.0(eslint@8.57.1)
