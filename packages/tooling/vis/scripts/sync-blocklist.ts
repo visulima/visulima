@@ -25,7 +25,6 @@ const MANUAL_FILE = resolve(__dirname, "../data/typosquats-manual.json");
 const CONCURRENCY = 20;
 const REQUEST_TIMEOUT_MS = 10_000;
 
-
 const readBlocklist = (path: string, { optional = false }: { optional?: boolean } = {}): Blocklist => {
     try {
         return JSON.parse(readFileSync(path, "utf8")) as Blocklist;
@@ -79,7 +78,6 @@ const pooled = async <T, R>(items: T[], concurrency: number, fn: (item: T) => Pr
 
     return results;
 };
-
 
 const packages = process.argv.slice(2);
 const data = readBlocklist(DATA_FILE);

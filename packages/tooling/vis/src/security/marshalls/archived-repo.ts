@@ -268,8 +268,8 @@ export const runArchivedRepoMarshall = async (
             return undefined;
         }
 
-        const entry = packument.versions[version]
-            ?? packument.versions[resolveLatestVersion(Object.keys(packument.versions), packument["dist-tags"]?.latest) ?? ""];
+        const entry
+            = packument.versions[version] ?? packument.versions[resolveLatestVersion(Object.keys(packument.versions), packument["dist-tags"]?.latest) ?? ""];
 
         if (entry === undefined) {
             return undefined;

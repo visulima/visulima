@@ -30,11 +30,7 @@ describe(evaluatePolicies, () => {
     it("returns no decisions when no policy is configured", async () => {
         expect.assertions(1);
 
-        const decisions = await evaluatePolicies(
-            { offline: false, packageManager: "pnpm", packages: [], workspaceRoot },
-            "audit",
-            { visConfig: {} },
-        );
+        const decisions = await evaluatePolicies({ offline: false, packageManager: "pnpm", packages: [], workspaceRoot }, "audit", { visConfig: {} });
 
         expect(decisions).toStrictEqual([]);
     });
@@ -151,11 +147,7 @@ describe(evaluatePolicies, () => {
             security: { policies: { unexpectedDeps: { baselineLockfile: "/tmp/nonexistent-baseline.yaml" } } },
         };
 
-        const decisions = await evaluatePolicies(
-            { offline: false, packageManager: "pnpm", packages: [], workspaceRoot },
-            "audit",
-            { visConfig: config },
-        );
+        const decisions = await evaluatePolicies({ offline: false, packageManager: "pnpm", packages: [], workspaceRoot }, "audit", { visConfig: config });
 
         // No throw + empty result is acceptable: baseline unreadable means
         // the policy emits nothing.

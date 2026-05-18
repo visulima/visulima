@@ -35,12 +35,7 @@ import { buildEnabledProviders, fetchAllReports } from "../../security/registry"
 import type { SeverityFilter } from "../../security/severity";
 import { severityPassesFilter } from "../../security/severity";
 import type { AcceptedRisk, PackageReportData } from "../../security/socket-security";
-import {
-    DEFAULT_LOW_SCORE_THRESHOLD,
-    findAcceptedRisk,
-    getFullPackageName,
-    scoreLabel,
-} from "../../security/socket-security";
+import { DEFAULT_LOW_SCORE_THRESHOLD, findAcceptedRisk, getFullPackageName, scoreLabel } from "../../security/socket-security";
 import { applyOverridePlan, buildOverridePlanFromFindings, planOverrideWrite } from "../../security/transitive-fix";
 import type { SecurityVulnerability } from "../../util/catalog";
 import { fetchVulnerabilities } from "../../util/catalog";
@@ -113,8 +108,7 @@ export type AuditBackend = "aube" | "auto" | "vis";
 
 const AUDIT_BACKEND_VALUES: ReadonlySet<AuditBackend> = new Set<AuditBackend>(["aube", "auto", "vis"]);
 
-const isAuditBackend = (value: string | undefined): value is AuditBackend =>
-    value !== undefined && AUDIT_BACKEND_VALUES.has(value as AuditBackend);
+const isAuditBackend = (value: string | undefined): value is AuditBackend => value !== undefined && AUDIT_BACKEND_VALUES.has(value as AuditBackend);
 
 /**
  * Resolve which scanner runs for `vis audit`. Precedence (highest first):
@@ -273,11 +267,7 @@ const runAubeAudit = (workspaceRoot: string, options: Record<string, unknown>, _
 };
 
 const executeAudit = async (workspaceRoot: string, options: Record<string, unknown>, visConfig: VisConfig | undefined, _logger: Console): Promise<void> => {
-    const backend = resolveAuditBackend(
-        options.backend as string | undefined,
-        visConfig?.security?.audit?.backend,
-        visConfig,
-    );
+    const backend = resolveAuditBackend(options.backend as string | undefined, visConfig?.security?.audit?.backend, visConfig);
 
     if (backend === "aube") {
         process.exitCode = runAubeAudit(workspaceRoot, options, visConfig);
@@ -650,7 +640,9 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
 
             try {
                 const ecoVulnMap = queryAdvisories(
-                    ecoPackages.map((p) => { return { name: p.name, version: p.version }; }),
+                    ecoPackages.map((p) => {
+                        return { name: p.name, version: p.version };
+                    }),
                     { dbPath, ecosystem: canonical, workspaceRoot },
                 );
 
@@ -943,11 +935,12 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
                 policyDecisions: policyDecisions.length,
                 total: filtered.length,
             },
-            warnings: unknownPolicyTokens.length > 0
-                ? unknownPolicyTokens.map((token) => {
-                    return { kind: "unknown-policy" as const, token };
-                })
-                : [],
+            warnings:
+                unknownPolicyTokens.length > 0
+                    ? unknownPolicyTokens.map((token) => {
+                        return { kind: "unknown-policy" as const, token };
+                    })
+                    : [],
         };
 
         process.stdout.write(`${JSON.stringify(jsonResult, undefined, 2)}\n`);
@@ -1020,9 +1013,7 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
     }
 
     // Print Socket.dev supply chain issues
-    const socketIssues = filtered.filter(
-        (e) => e.socketReport && (e.socketReport.score.overall < scoreMinimum || e.socketReport.alerts.length > 0),
-    );
+    const socketIssues = filtered.filter((e) => e.socketReport && (e.socketReport.score.overall < scoreMinimum || e.socketReport.alerts.length > 0));
 
     if (socketIssues.length > 0) {
         pail.info(`\n── Socket.dev Supply Chain (${String(socketIssues.length)}) ──`);

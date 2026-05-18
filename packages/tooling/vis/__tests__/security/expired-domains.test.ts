@@ -25,8 +25,7 @@ const stubFetch = (body: unknown): ReturnType<typeof vi.fn> => {
             ok: true,
             status: 200,
         };
-    },
-    );
+    });
 
     vi.stubGlobal("fetch", handler);
 
@@ -58,7 +57,9 @@ interface StubResolverConfig {
     timeout?: Set<string>;
 }
 
-const createStubResolver = (config: StubResolverConfig): {
+const createStubResolver = (
+    config: StubResolverConfig,
+): {
     resolveNs: ReturnType<typeof vi.fn>;
     setServers: ReturnType<typeof vi.fn>;
 } => {
@@ -151,10 +152,7 @@ describe(runExpiredDomainsMarshall, () => {
         stubFetch(packumentBody([{ email: "user@slow.example", name: "user" }]));
         const resolver = createStubResolver({ timeout: new Set(["slow.example"]) });
 
-        const findings = await runExpiredDomainsMarshall(
-            [{ name: "demo", version: "1.0.0" }],
-            { createResolver: () => resolver, perDomainTimeoutMs: 50 },
-        );
+        const findings = await runExpiredDomainsMarshall([{ name: "demo", version: "1.0.0" }], { createResolver: () => resolver, perDomainTimeoutMs: 50 });
 
         expect(findings).toHaveLength(1);
         expect(findings[0]).toStrictEqual({
@@ -228,13 +226,7 @@ describe(runExpiredDomainsMarshall, () => {
     it("skips maintainers without a parseable email", async () => {
         expect.assertions(2);
 
-        stubFetch(
-            packumentBody([
-                { name: "noemail" },
-                { email: "garbage", name: "bad" },
-                { email: "user@", name: "atend" },
-            ]),
-        );
+        stubFetch(packumentBody([{ name: "noemail" }, { email: "garbage", name: "bad" }, { email: "user@", name: "atend" }]));
         const resolver = createStubResolver({});
 
         const findings = await runExpiredDomainsMarshall([{ name: "demo", version: "1.0.0" }], { createResolver: () => resolver });
@@ -249,10 +241,10 @@ describe(runExpiredDomainsMarshall, () => {
         stubFetch(packumentBody([{ email: "user@expired.example", name: "user" }]));
         const resolver = createStubResolver({ nxdomain: new Set(["expired.example"]) });
 
-        const findings = await runExpiredDomainsMarshall(
-            [{ name: "demo", version: "1.0.0" }],
-            { allowDomains: ["expired.example"], createResolver: () => resolver },
-        );
+        const findings = await runExpiredDomainsMarshall([{ name: "demo", version: "1.0.0" }], {
+            allowDomains: ["expired.example"],
+            createResolver: () => resolver,
+        });
 
         expect(findings).toStrictEqual([]);
         expect(resolver.resolveNs).not.toHaveBeenCalled();
@@ -264,10 +256,7 @@ describe(runExpiredDomainsMarshall, () => {
         stubFetch(packumentBody([{ email: "user@expired.example", name: "user" }]));
         const resolver = createStubResolver({ nxdomain: new Set(["expired.example"]) });
 
-        const findings = await runExpiredDomainsMarshall(
-            [{ name: "demo", version: "1.0.0" }],
-            { allowlist: ["demo"], createResolver: () => resolver },
-        );
+        const findings = await runExpiredDomainsMarshall([{ name: "demo", version: "1.0.0" }], { allowlist: ["demo"], createResolver: () => resolver });
 
         expect(findings).toStrictEqual([]);
         expect(resolver.resolveNs).not.toHaveBeenCalled();
@@ -293,20 +282,14 @@ describe(runExpiredDomainsMarshall, () => {
         stubFetch(packumentBody([{ email: "user@slow.example", name: "user" }]));
         const resolver = createStubResolver({ timeout: new Set(["slow.example"]) });
 
-        await runExpiredDomainsMarshall(
-            [{ name: "demo", version: "1.0.0" }],
-            { createResolver: () => resolver, perDomainTimeoutMs: 50 },
-        );
+        await runExpiredDomainsMarshall([{ name: "demo", version: "1.0.0" }], { createResolver: () => resolver, perDomainTimeoutMs: 50 });
         clearPackumentCache();
         stubFetch(packumentBody([{ email: "user@slow.example", name: "user" }]));
         // Replace resolver with a new instance for a fresh call — the in-memory
         // per-run cache is gone, and disk cache must not have stored the failure.
         const fresh = createStubResolver({ timeout: new Set(["slow.example"]) });
 
-        await runExpiredDomainsMarshall(
-            [{ name: "demo", version: "1.0.0" }],
-            { createResolver: () => fresh, perDomainTimeoutMs: 50 },
-        );
+        await runExpiredDomainsMarshall([{ name: "demo", version: "1.0.0" }], { createResolver: () => fresh, perDomainTimeoutMs: 50 });
 
         expect(fresh.resolveNs).toHaveBeenCalledTimes(1);
     });

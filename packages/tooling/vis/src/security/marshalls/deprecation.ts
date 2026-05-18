@@ -47,8 +47,10 @@ const MAX_REASON_LENGTH = 300;
  * the length before it ever reaches the formatter.
  */
 const sanitizeReason = (raw: string): string => {
-    // eslint-disable-next-line no-control-regex -- intentionally matching C0/C1 control bytes to neutralize terminal-escape injection.
-    const stripped = raw.replaceAll(/[\u0000-\u001F\u007F-\u009F]/gu, " ").replaceAll(/\s+/gu, " ").trim();
+    const stripped = raw
+        .replaceAll(/\p{Cc}/gu, " ")
+        .replaceAll(/\s+/gu, " ")
+        .trim();
 
     return stripped.length > MAX_REASON_LENGTH ? `${stripped.slice(0, MAX_REASON_LENGTH - 1)}…` : stripped;
 };

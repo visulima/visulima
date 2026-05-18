@@ -134,8 +134,8 @@ const renderRow = (finding: AuditHtmlFinding): string => {
 export const emitAuditHtml = (options: AuditHtmlEmitOptions): string => {
     const now = options.now ?? new Date();
     const sortedFindings = [...options.findings].sort((a, b) => {
-        const sa = SEVERITY_RANK[(a.vulnerability.severity) ?? "UNKNOWN"] ?? 4;
-        const sb = SEVERITY_RANK[(b.vulnerability.severity) ?? "UNKNOWN"] ?? 4;
+        const sa = SEVERITY_RANK[a.vulnerability.severity ?? "UNKNOWN"] ?? 4;
+        const sb = SEVERITY_RANK[b.vulnerability.severity ?? "UNKNOWN"] ?? 4;
 
         if (sa !== sb) {
             return sa - sb;
@@ -147,7 +147,7 @@ export const emitAuditHtml = (options: AuditHtmlEmitOptions): string => {
     const counts: Record<Severity, number> = { CRITICAL: 0, HIGH: 0, LOW: 0, MODERATE: 0, UNKNOWN: 0 };
 
     for (const finding of sortedFindings) {
-        counts[(finding.vulnerability.severity) ?? "UNKNOWN"] += 1;
+        counts[finding.vulnerability.severity ?? "UNKNOWN"] += 1;
     }
 
     const rows = sortedFindings.map((f) => renderRow(f)).join("\n");

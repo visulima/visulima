@@ -58,9 +58,7 @@ export interface MarshallDecisionOptions {
 
 export type MarshallDecisionReason = "ci-strict" | "errors-present" | "non-tty" | "user-aborted";
 
-export type MarshallDecisionResult
-    = | { proceed: false; reason: MarshallDecisionReason }
-        | { proceed: true };
+export type MarshallDecisionResult = { proceed: false; reason: MarshallDecisionReason } | { proceed: true };
 
 const DEFAULT_COUNTDOWN_SECONDS = 15;
 
@@ -95,10 +93,7 @@ const defaultReadline = async (question: string): Promise<string> => {
     }
 };
 
-const promptYesNo = async (
-    question: string,
-    readline: (question: string) => Promise<string>,
-): Promise<boolean> => {
+const promptYesNo = async (question: string, readline: (question: string) => Promise<string>): Promise<boolean> => {
     const answer = await readline(question);
 
     return answer === "y" || answer === "yes";
@@ -234,7 +229,10 @@ export const presentMarshallDecision = async (
     return completed ? { proceed: true } : { proceed: false, reason: "user-aborted" };
 };
 
-export interface PresentMarshallFindingsOptions extends Pick<MarshallDecisionOptions, "countdownSeconds" | "isCi" | "isTty" | "readline" | "signal" | "strict"> {
+export interface PresentMarshallFindingsOptions extends Pick<
+    MarshallDecisionOptions,
+    "countdownSeconds" | "isCi" | "isTty" | "readline" | "signal" | "strict"
+> {
     /** Stream to flush the human-readable table to. Defaults to stdout. */
     output?: { isTTY?: boolean; write: (chunk: string) => void };
 }
@@ -249,10 +247,7 @@ export interface PresentMarshallFindingsOptions extends Pick<MarshallDecisionOpt
  * is `false` — this helper stays I/O-pure with respect to the parent
  * command's exit semantics.
  */
-export const presentMarshallFindings = async (
-    findings: MarshallFindings,
-    options: PresentMarshallFindingsOptions = {},
-): Promise<boolean> => {
+export const presentMarshallFindings = async (findings: MarshallFindings, options: PresentMarshallFindingsOptions = {}): Promise<boolean> => {
     if (findings.isEmpty()) {
         return true;
     }

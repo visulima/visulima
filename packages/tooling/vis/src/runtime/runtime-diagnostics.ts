@@ -461,7 +461,8 @@ export const checkWatchmanAvailability = (): RuntimeDiagnostic => {
     } catch {
         return {
             id: "watchman",
-            message: "Watchman not found — `vis` uses native fs.watch (fine for small repos). Install Watchman + `fb-watchman` to scale watch mode on large monorepos.",
+            message:
+                "Watchman not found — `vis` uses native fs.watch (fine for small repos). Install Watchman + `fb-watchman` to scale watch mode on large monorepos.",
             status: "skip",
         };
     }
@@ -520,7 +521,8 @@ export const checkGitLfsTracking = (workspaceRoot: string = process.cwd()): Runt
     } catch {
         return {
             id: "git-lfs",
-            message: "Repo tracks files via Git LFS but `git-lfs` is not installed — checked-out LFS files are pointer stubs, not real content. Install git-lfs and run `git lfs pull`.",
+            message:
+                "Repo tracks files via Git LFS but `git-lfs` is not installed — checked-out LFS files are pointer stubs, not real content. Install git-lfs and run `git lfs pull`.",
             status: "warn",
         };
     }

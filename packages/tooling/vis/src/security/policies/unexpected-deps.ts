@@ -108,9 +108,7 @@ export const evaluateUnexpectedDepsPolicy = (input: PolicyInput, config: VisConf
         return [];
     }
 
-    const baselineKeys = baselinePath
-        ? loadBaselineKeys(input.workspaceRoot, baselinePath, input.packageManager)
-        : undefined;
+    const baselineKeys = baselinePath ? loadBaselineKeys(input.workspaceRoot, baselinePath, input.packageManager) : undefined;
     const acceptedRisks = config.security?.acceptedRisks;
     const decisions: PolicyDecision[] = [];
 

@@ -58,9 +58,7 @@ describe(fetchRegistryKeys, () => {
     it("fetches keys on first call and caches the result", async () => {
         expect.assertions(4);
 
-        const fetchSpy = stubFetchSequence([
-            { body: { keys: [{ key: "base64key", keyid: "SHA256:abc" }] } },
-        ]);
+        const fetchSpy = stubFetchSequence([{ body: { keys: [{ key: "base64key", keyid: "SHA256:abc" }] } }]);
 
         const first = await fetchRegistryKeys();
 
@@ -77,9 +75,7 @@ describe(fetchRegistryKeys, () => {
     it("falls back to expired cache when network returns 5xx", async () => {
         expect.assertions(2);
 
-        stubFetchSequence([
-            { body: { keys: [{ key: "base64key", keyid: "SHA256:abc" }] } },
-        ]);
+        stubFetchSequence([{ body: { keys: [{ key: "base64key", keyid: "SHA256:abc" }] } }]);
         await fetchRegistryKeys();
 
         stubFetchSequence([{ status: 503 }]);
@@ -102,9 +98,7 @@ describe(fetchRegistryKeys, () => {
     it("honors keysUrl override", async () => {
         expect.assertions(1);
 
-        const fetchSpy = stubFetchSequence([
-            { body: { keys: [] } },
-        ]);
+        const fetchSpy = stubFetchSequence([{ body: { keys: [] } }]);
 
         await fetchRegistryKeys({ keysUrl: "https://example.test/keys" });
 

@@ -109,7 +109,10 @@ const extractDomain = (email: string | undefined): string | undefined => {
         return undefined;
     }
 
-    const domain = email.slice(atIndex + 1).trim().toLowerCase();
+    const domain = email
+        .slice(atIndex + 1)
+        .trim()
+        .toLowerCase();
 
     return domain === "" ? undefined : domain;
 };
@@ -156,16 +159,12 @@ const isExpiredError = (error: unknown): boolean => {
         return false;
     }
 
-    const { code } = (error as { code?: string });
+    const { code } = error as { code?: string };
 
     return code === "ENOTFOUND" || code === "ENODATA" || code === "NXDOMAIN";
 };
 
-const resolveDomain = async (
-    resolver: Pick<Resolver, "resolveNs">,
-    domain: string,
-    timeoutMs: number,
-): Promise<ResolveOutcome> => {
+const resolveDomain = async (resolver: Pick<Resolver, "resolveNs">, domain: string, timeoutMs: number): Promise<ResolveOutcome> => {
     try {
         const records = await withTimeout(resolver.resolveNs(domain), timeoutMs);
 
@@ -253,8 +252,8 @@ export const runExpiredDomainsMarshall = async (
             return [];
         }
 
-        const entry = packument.versions[version]
-            ?? packument.versions[resolveLatestVersion(Object.keys(packument.versions), packument["dist-tags"]?.latest) ?? ""];
+        const entry
+            = packument.versions[version] ?? packument.versions[resolveLatestVersion(Object.keys(packument.versions), packument["dist-tags"]?.latest) ?? ""];
 
         if (entry === undefined) {
             return [];

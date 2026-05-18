@@ -91,26 +91,27 @@ const buildStoredZip = (entries: ZipEntry[]): Buffer => {
     return Buffer.concat([localBytes, centralBytes, eocd]);
 };
 
-const advisoryJson = (index: number): string => JSON.stringify({
-    affected: [
-        {
-            package: { ecosystem: "npm", name: `bench-pkg-${index}` },
-            ranges: [
-                {
-                    events: [{ introduced: "0" }, { fixed: "2.0.0" }],
-                    type: "SEMVER",
-                },
-            ],
-        },
-    ],
-    aliases: [],
-    database_specific: { cvss_score: 7.5, severity: "HIGH" },
-    id: `GHSA-bench-${index}`,
-    modified: "2026-05-11T00:00:00Z",
-    published: "2026-05-11T00:00:00Z",
-    severity: [],
-    summary: `Synthetic advisory ${index}`,
-});
+const advisoryJson = (index: number): string =>
+    JSON.stringify({
+        affected: [
+            {
+                package: { ecosystem: "npm", name: `bench-pkg-${index}` },
+                ranges: [
+                    {
+                        events: [{ introduced: "0" }, { fixed: "2.0.0" }],
+                        type: "SEMVER",
+                    },
+                ],
+            },
+        ],
+        aliases: [],
+        database_specific: { cvss_score: 7.5, severity: "HIGH" },
+        id: `GHSA-bench-${index}`,
+        modified: "2026-05-11T00:00:00Z",
+        published: "2026-05-11T00:00:00Z",
+        severity: [],
+        summary: `Synthetic advisory ${index}`,
+    });
 
 export interface AuditOfflineFixture {
     dbPath: string;

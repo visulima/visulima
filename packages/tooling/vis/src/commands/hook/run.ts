@@ -59,12 +59,7 @@ const resolveDiscoverMode = (options: RunOptions): DiscoverMode => {
  * `stage` against the discovered files. Returns a non-zero exit code if
  * any hook fails or if the config is absent/invalid.
  */
-const runHookStage = (
-    root: string,
-    hooksDirectory: string,
-    options: RunOptions,
-    logger: RunLogger,
-): number => {
+const runHookStage = (root: string, hooksDirectory: string, options: RunOptions, logger: RunLogger): number => {
     const stage = options.stage ?? DEFAULT_STAGE;
     const config = loadHookConfig(root, hooksDirectory);
 

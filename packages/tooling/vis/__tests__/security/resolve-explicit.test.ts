@@ -24,7 +24,9 @@ describe(resolveLatestVersions, () => {
         expect.assertions(2);
 
         vi.mocked(fetch).mockResolvedValue({
-            json: async () => { return { version: "1.2.3" }; },
+            json: async () => {
+                return { version: "1.2.3" };
+            },
             ok: true,
         } as Response);
 
@@ -77,7 +79,9 @@ describe(resolveExplicitPackages, () => {
         expect.assertions(2);
 
         vi.mocked(fetch).mockResolvedValue({
-            json: async () => { return { version: "4.17.21" }; },
+            json: async () => {
+                return { version: "4.17.21" };
+            },
             ok: true,
         } as Response);
 
@@ -91,7 +95,9 @@ describe(resolveExplicitPackages, () => {
         expect.assertions(2);
 
         vi.mocked(fetch).mockResolvedValue({
-            json: async () => { return { version: "5.0.0" }; },
+            json: async () => {
+                return { version: "5.0.0" };
+            },
             ok: true,
         } as Response);
 

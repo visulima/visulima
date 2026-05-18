@@ -6,6 +6,8 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import syncExecute from "../../../src/commands/sync/handler";
 import { cleanupTemporaryDirectory, createTemporaryDirectory } from "../../test-helpers";
 
+type ExitCode = number | string | undefined;
+
 type LoggerCall = [string, ...unknown[]];
 
 const makeLogger = (): {
@@ -32,7 +34,7 @@ const makeLogger = (): {
 
 describe("vis sync codeowners", () => {
     let workspaceRoot: string;
-    let originalExitCode: number | string | undefined;
+    let originalExitCode: ExitCode;
 
     beforeEach(() => {
         workspaceRoot = createTemporaryDirectory("vis-sync-");
@@ -189,11 +191,7 @@ describe("vis sync codeowners", () => {
     it("--preserve-block splices the generated block into an existing CODEOWNERS file", async () => {
         expect.assertions(4);
 
-        const existing = [
-            "# hand-written header",
-            "/manual/path @manual-team",
-            "",
-        ].join("\n");
+        const existing = ["# hand-written header", "/manual/path @manual-team", ""].join("\n");
 
         writeFileSync(join(workspaceRoot, "CODEOWNERS"), existing);
 
@@ -222,10 +220,7 @@ describe("vis sync codeowners", () => {
         const { logger } = makeLogger();
 
         // First run plants the block in a hand-maintained file.
-        writeFileSync(
-            join(workspaceRoot, "CODEOWNERS"),
-            "# hand-written header\n/manual/path @manual-team\n",
-        );
+        writeFileSync(join(workspaceRoot, "CODEOWNERS"), "# hand-written header\n/manual/path @manual-team\n");
 
         await syncExecute({
             argument: ["codeowners"],
@@ -239,10 +234,7 @@ describe("vis sync codeowners", () => {
         // Drift the project so the block changes, then re-run.
         const aDir = join(workspaceRoot, "packages", "a");
 
-        writeFileSync(
-            join(aDir, "project.json"),
-            JSON.stringify({ owners: [{ owners: ["@team-a-new"], path: "src/**" }] }),
-        );
+        writeFileSync(join(aDir, "project.json"), JSON.stringify({ owners: [{ owners: ["@team-a-new"], path: "src/**" }] }));
 
         await syncExecute({
             argument: ["codeowners"],
@@ -286,7 +278,7 @@ describe("vis sync codeowners", () => {
 
 describe("vis sync codeowners --write-guard", () => {
     let workspaceRoot: string;
-    let originalExitCode: number | string | undefined;
+    let originalExitCode: ExitCode;
 
     beforeEach(() => {
         workspaceRoot = createTemporaryDirectory("vis-sync-wg-");
@@ -332,7 +324,7 @@ describe("vis sync codeowners --write-guard", () => {
 
         expect(github).toContain("geritol/write-guard@v1");
         expect(github).toContain("packages/locked/**");
-        expect(gitlab).toContain('$CI_PIPELINE_SOURCE == "merge_request_event"');
+        expect(gitlab).toContain("$CI_PIPELINE_SOURCE == \"merge_request_event\"");
     });
 
     it("--check flags missing artefacts with exitCode=1 and a clean CODEOWNERS does not reset it", async () => {
@@ -374,10 +366,7 @@ describe("vis sync codeowners --write-guard", () => {
     it("no-ops with an informational message when no project is restricted", async () => {
         expect.assertions(2);
 
-        writeFileSync(
-            join(workspaceRoot, "packages", "locked", "project.json"),
-            JSON.stringify({ owners: [{ owners: ["@team-sec"], path: "src/**" }] }),
-        );
+        writeFileSync(join(workspaceRoot, "packages", "locked", "project.json"), JSON.stringify({ owners: [{ owners: ["@team-sec"], path: "src/**" }] }));
 
         const { calls, logger } = makeLogger();
 
@@ -393,13 +382,13 @@ describe("vis sync codeowners --write-guard", () => {
         const text = calls.map((c) => c.slice(1).join(" ")).join("\n");
 
         expect(text).toContain("No projects flagged `restricted: true`");
-        expect(() => readFileSync(join(workspaceRoot, ".github/workflows/write-guard.yml"), "utf8")).toThrow();
+        expect(() => readFileSync(join(workspaceRoot, ".github/workflows/write-guard.yml"), "utf8")).toThrow(/ENOENT/);
     });
 });
 
 describe("vis sync package-json-fields", () => {
     let workspaceRoot: string;
-    let originalExitCode: number | string | undefined;
+    let originalExitCode: ExitCode;
 
     beforeEach(() => {
         workspaceRoot = createTemporaryDirectory("vis-sync-pkg-");

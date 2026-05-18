@@ -5,19 +5,8 @@ import type { WorkspaceConfiguration } from "@visulima/task-runner";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import type { VisProjectConfiguration } from "../../src/config/workspace";
-import {
-    buildCodeownersLines,
-    DEFAULT_BLOCK_MARKER,
-    mergeIntoExisting,
-    renderCodeowners,
-    renderCodeownersBlock,
-} from "../../src/util/codeowners";
-import {
-    collectMaintainerLines,
-    collectNestedCodeownersLines,
-    extractGitHubHandle,
-    parseCodeownersFile,
-} from "../../src/util/codeowners-sources";
+import { buildCodeownersLines, DEFAULT_BLOCK_MARKER, mergeIntoExisting, renderCodeowners, renderCodeownersBlock } from "../../src/util/codeowners";
+import { collectMaintainerLines, collectNestedCodeownersLines, extractGitHubHandle, parseCodeownersFile } from "../../src/util/codeowners-sources";
 import { cleanupTemporaryDirectory, createTemporaryDirectory } from "../test-helpers";
 
 describe(buildCodeownersLines, () => {
@@ -146,10 +135,7 @@ describe(renderCodeowners, () => {
     it("should replace the second header line with regenerationCommand when provided", () => {
         expect.assertions(2);
 
-        const output = renderCodeowners(
-            [{ owners: ["@team"], path: "/foo/" }],
-            { regenerationCommand: "pnpm owners" },
-        );
+        const output = renderCodeowners([{ owners: ["@team"], path: "/foo/" }], { regenerationCommand: "pnpm owners" });
 
         const outputLines = output.split("\n");
 
@@ -171,9 +157,7 @@ describe(buildCodeownersLines, () => {
             },
         };
 
-        const lines = buildCodeownersLines(workspace, { orderBy: "file-source" }, [
-            { owners: ["@ghost"], path: "/packages/explicit/", source: "nested" },
-        ]);
+        const lines = buildCodeownersLines(workspace, { orderBy: "file-source" }, [{ owners: ["@ghost"], path: "/packages/explicit/", source: "nested" }]);
 
         expect(lines).toHaveLength(1);
         expect(lines[0]!.owners).toStrictEqual(["@canonical"]);
@@ -182,9 +166,7 @@ describe(buildCodeownersLines, () => {
     it("should accept extra-source lines on paths not covered by project.json", () => {
         expect.assertions(2);
 
-        const lines = buildCodeownersLines({ projects: {} }, undefined, [
-            { owners: ["@nested-team"], path: "/services/api/", source: "nested" },
-        ]);
+        const lines = buildCodeownersLines({ projects: {} }, undefined, [{ owners: ["@nested-team"], path: "/services/api/", source: "nested" }]);
 
         expect(lines).toHaveLength(1);
         expect(lines[0]!.owners).toStrictEqual(["@nested-team"]);
@@ -443,11 +425,7 @@ describe(collectMaintainerLines, () => {
         writeFileSync(
             join(dir, "package.json"),
             JSON.stringify({
-                maintainers: [
-                    { url: "https://github.com/janedoe" },
-                    { url: "https://github.com/janedoe" },
-                    { url: "https://github.com/other" },
-                ],
+                maintainers: [{ url: "https://github.com/janedoe" }, { url: "https://github.com/janedoe" }, { url: "https://github.com/other" }],
                 name: "@my/api",
             }),
         );

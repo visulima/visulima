@@ -76,8 +76,7 @@ const sync: Command = {
         },
         {
             defaultValue: false,
-            description:
-                "Also emit a .github/workflows/write-guard.yml scoped to projects with `restricted: true` in project.json. Codeowners kind only.",
+            description: "Also emit a .github/workflows/write-guard.yml scoped to projects with `restricted: true` in project.json. Codeowners kind only.",
             name: "write-guard",
             type: Boolean,
         },

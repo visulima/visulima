@@ -247,10 +247,7 @@ const checkDormantMaintainer = (
     return undefined;
 };
 
-export const runAuthorMarshall = async (
-    packages: { name: string; version: string }[],
-    options: RunAuthorMarshallOptions = {},
-): Promise<AuthorFinding[]> => {
+export const runAuthorMarshall = async (packages: { name: string; version: string }[], options: RunAuthorMarshallOptions = {}): Promise<AuthorFinding[]> => {
     if (isMarshallDisabled("author")) {
         return [];
     }

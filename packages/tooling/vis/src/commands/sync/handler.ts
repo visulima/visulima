@@ -8,13 +8,7 @@ import zeptomatch from "zeptomatch";
 import type { CodeownersSource } from "../../config/workspace";
 import { discoverWorkspace } from "../../config/workspace";
 import type { CodeownersLine } from "../../util/codeowners";
-import {
-    buildCodeownersLines,
-    DEFAULT_BLOCK_MARKER,
-    mergeIntoExisting,
-    renderCodeowners,
-    renderCodeownersBlock,
-} from "../../util/codeowners";
+import { buildCodeownersLines, DEFAULT_BLOCK_MARKER, mergeIntoExisting, renderCodeowners, renderCodeownersBlock } from "../../util/codeowners";
 import { collectMaintainerLines, collectNestedCodeownersLines } from "../../util/codeowners-sources";
 import { resolveIndentForExistingFile } from "../../util/editorconfig";
 import type { SyncFieldsChange } from "../../util/sync-package-json-fields";
@@ -34,11 +28,7 @@ const KNOWN_SOURCES: ReadonlySet<CodeownersSource> = new Set(["nested-codeowners
  * normalised list is empty. The optional `validate` hook rejects unknown
  * tokens (used by `--from` to gate codeowners sources).
  */
-const parseCsvOption = <T extends string>(
-    raw: string[] | undefined,
-    fallback: ReadonlyArray<T>,
-    validate?: (value: string) => value is T,
-): T[] => {
+const parseCsvOption = <T extends string>(raw: string[] | undefined, fallback: ReadonlyArray<T>, validate?: (value: string) => value is T): T[] => {
     const seen = new Set<T>();
     const out: T[] = [];
 
@@ -224,7 +214,9 @@ const runCodeowners = async ({ logger, options, visConfig, workspaceRoot: wsRoot
     }
 
     const renderOptions = { regenerationCommand };
-    const rendered = preserveBlock ? mergeIntoExisting(existing, renderCodeownersBlock(lines, marker, renderOptions), marker) : renderCodeowners(lines, renderOptions);
+    const rendered = preserveBlock
+        ? mergeIntoExisting(existing, renderCodeownersBlock(lines, marker, renderOptions), marker)
+        : renderCodeowners(lines, renderOptions);
 
     if (options.check) {
         if (existing.trim() !== rendered.trim()) {

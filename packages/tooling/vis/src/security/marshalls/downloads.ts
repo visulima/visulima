@@ -136,10 +136,7 @@ const fetchDownloads = async (name: string, signal: AbortSignal | undefined): Pr
     }
 };
 
-export const runDownloadsMarshall = async (
-    packageNames: string[],
-    options: RunDownloadsMarshallOptions = {},
-): Promise<DownloadFinding[]> => {
+export const runDownloadsMarshall = async (packageNames: string[], options: RunDownloadsMarshallOptions = {}): Promise<DownloadFinding[]> => {
     if (isMarshallDisabled("downloads")) {
         return [];
     }

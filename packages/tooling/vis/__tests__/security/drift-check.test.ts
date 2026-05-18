@@ -232,16 +232,9 @@ describe(checkPmNativeConfigDrift, () => {
         it("flags npmPreapprovedPackages differences for yarn berry", () => {
             expect.assertions(2);
 
-            writeFileSync(
-                join(tmpDir, ".yarnrc.yml"),
-                "npmMinimalAgeGate: 2880\nnpmPreapprovedPackages:\n  - typescript\n",
-            );
+            writeFileSync(join(tmpDir, ".yarnrc.yml"), "npmMinimalAgeGate: 2880\nnpmPreapprovedPackages:\n  - typescript\n");
 
-            const report = checkPmNativeConfigDrift(
-                cfg({ minimumReleaseAge: 2880, minimumReleaseAgeExclude: ["typescript", "@types/node"] }),
-                "yarn",
-                tmpDir,
-            );
+            const report = checkPmNativeConfigDrift(cfg({ minimumReleaseAge: 2880, minimumReleaseAgeExclude: ["typescript", "@types/node"] }), "yarn", tmpDir);
 
             expect(report.minReleaseAgeExcludes?.onlyInVis).toStrictEqual(["@types/node"]);
             expect(report.hasDrift).toBe(true);

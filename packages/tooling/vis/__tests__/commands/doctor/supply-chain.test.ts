@@ -149,10 +149,7 @@ describe(buildSupplyChainPosture, () => {
         expect.assertions(3);
 
         writeFileSync(join(workspaceRoot, "package.json"), JSON.stringify({ name: "root" }, undefined, 2));
-        writeFileSync(
-            join(workspaceRoot, "aube-workspace.yaml"),
-            "trustPolicy: off\nblockExoticSubdeps: false\nminimumReleaseAge: 0\n",
-        );
+        writeFileSync(join(workspaceRoot, "aube-workspace.yaml"), "trustPolicy: off\nblockExoticSubdeps: false\nminimumReleaseAge: 0\n");
 
         const result = buildSupplyChainPosture(baseSecurity, { packageManager: "aube", workspaceRoot });
 

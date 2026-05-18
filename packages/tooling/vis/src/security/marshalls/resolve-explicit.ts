@@ -49,28 +49,30 @@ export const resolveLatestVersions = async (packageNames: string[], timeoutMs: n
     }, timeoutMs);
 
     try {
-        await Promise.all(packageNames.map(async (name) => {
-            try {
-                const response = await fetch(`https://registry.npmjs.org/${name}/latest`, {
-                    headers: { Accept: "application/json" },
-                    signal: controller.signal,
-                });
+        await Promise.all(
+            packageNames.map(async (name) => {
+                try {
+                    const response = await fetch(`https://registry.npmjs.org/${name}/latest`, {
+                        headers: { Accept: "application/json" },
+                        signal: controller.signal,
+                    });
 
-                if (response.ok) {
-                    const data = (await response.json()) as { version?: string };
+                    if (response.ok) {
+                        const data = (await response.json()) as { version?: string };
 
-                    if (data.version) {
-                        results.set(name, data.version);
+                        if (data.version) {
+                            results.set(name, data.version);
+                        } else {
+                            pail.debug(`resolveLatestVersions: ${name} returned 200 but no version field; dropping.`);
+                        }
                     } else {
-                        pail.debug(`resolveLatestVersions: ${name} returned 200 but no version field; dropping.`);
+                        pail.debug(`resolveLatestVersions: ${name} returned ${String(response.status)}; dropping.`);
                     }
-                } else {
-                    pail.debug(`resolveLatestVersions: ${name} returned ${String(response.status)}; dropping.`);
+                } catch (error) {
+                    pail.debug(`resolveLatestVersions: ${name} fetch failed (${error instanceof Error ? error.message : String(error)}); dropping.`);
                 }
-            } catch (error) {
-                pail.debug(`resolveLatestVersions: ${name} fetch failed (${error instanceof Error ? error.message : String(error)}); dropping.`);
-            }
-        }));
+            }),
+        );
     } finally {
         clearTimeout(timeout);
     }
@@ -107,7 +109,9 @@ export const resolveExplicitPackages = async (packages: string[]): Promise<{ nam
         if (version) {
             resolved.push({ name: entry.name, version });
         } else {
-            pail.debug(`resolveExplicitPackages: dropping ${entry.name}${entry.versionSpec ? `@${entry.versionSpec}` : ""} — neither semver-coerce nor /latest resolved a version.`);
+            pail.debug(
+                `resolveExplicitPackages: dropping ${entry.name}${entry.versionSpec ? `@${entry.versionSpec}` : ""} — neither semver-coerce nor /latest resolved a version.`,
+            );
         }
     }
 

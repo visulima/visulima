@@ -16,11 +16,7 @@ export const DEFAULT_MARSHALL_CONCURRENCY = 8;
  * any task rejects the whole call — wrap inside `task` if you want
  * per-item error isolation.
  */
-export const mapWithConcurrency = async <T, R>(
-    items: ReadonlyArray<T>,
-    concurrency: number,
-    task: (item: T, index: number) => Promise<R>,
-): Promise<R[]> => {
+export const mapWithConcurrency = async <T, R>(items: ReadonlyArray<T>, concurrency: number, task: (item: T, index: number) => Promise<R>): Promise<R[]> => {
     if (items.length === 0) {
         return [];
     }

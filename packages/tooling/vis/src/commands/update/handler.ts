@@ -426,7 +426,12 @@ const executeCatalogUpdate = async (
     }
 
     // Warn if both are set but differ
-    if (!minReleaseAgeDisabled && configDefaults.minimumReleaseAge !== undefined && pmNativeAge !== undefined && configDefaults.minimumReleaseAge !== pmNativeAge) {
+    if (
+        !minReleaseAgeDisabled
+        && configDefaults.minimumReleaseAge !== undefined
+        && pmNativeAge !== undefined
+        && configDefaults.minimumReleaseAge !== pmNativeAge
+    ) {
         const pmConfigFile = packageManager === "pnpm" ? "pnpm-workspace.yaml" : "bunfig.toml";
 
         logger.warn(

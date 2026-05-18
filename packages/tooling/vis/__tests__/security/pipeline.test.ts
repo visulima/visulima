@@ -126,9 +126,7 @@ describe(runMarshallPipeline, () => {
                 version: "1.0.0",
             },
         ]);
-        vi.mocked(runDownloadsMarshall).mockResolvedValue([
-            { downloadsLastMonth: 50, kind: "below-warning", packageName: "demo", severity: "warning" },
-        ]);
+        vi.mocked(runDownloadsMarshall).mockResolvedValue([{ downloadsLastMonth: 50, kind: "below-warning", packageName: "demo", severity: "warning" }]);
 
         const findings = await runMarshallPipeline([{ name: "demo", version: "1.0.0" }]);
 

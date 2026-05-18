@@ -544,10 +544,7 @@ interface SocketConfigLike {
  * (`vis add`, `audit`, `doctor`, `analyze`) sees the same effective
  * threshold without each one re-resolving the default.
  */
-const buildSocketOptions = (
-    socketConfig: SocketConfigLike | undefined,
-    scoreMinimum?: number,
-): SocketSecurityOptions | undefined => {
+const buildSocketOptions = (socketConfig: SocketConfigLike | undefined, scoreMinimum?: number): SocketSecurityOptions | undefined => {
     if (!socketConfig?.enabled) {
         return undefined;
     }
@@ -664,10 +661,7 @@ const formatAcceptedRiskSnippet = (packageName: string, _version: string, score:
  * Returns `undefined` when Socket.dev is disabled or unconfigured so the
  * registry can simply filter falsy entries.
  */
-const createSocketProvider = (
-    config: SocketConfigLike | undefined,
-    opts: { minimumScore?: number } = {},
-): SecurityProvider | undefined => {
+const createSocketProvider = (config: SocketConfigLike | undefined, opts: { minimumScore?: number } = {}): SecurityProvider | undefined => {
     const resolved = buildSocketOptions(config, opts.minimumScore);
 
     if (!resolved) {

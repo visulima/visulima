@@ -28,8 +28,20 @@ const install: Command = {
     loader: () => import("./handler"),
     name: "install",
     options: [
-        { alias: "P", conflicts: "dev", description: "Skip devDependencies (no positional args) / add as peer (with positional args, npm-style)", name: "prod", type: Boolean },
-        { alias: "D", conflicts: "prod", description: "Install devDependencies only (no positional args) / add as dev (with positional args, npm-style)", name: "dev", type: Boolean },
+        {
+            alias: "P",
+            conflicts: "dev",
+            description: "Skip devDependencies (no positional args) / add as peer (with positional args, npm-style)",
+            name: "prod",
+            type: Boolean,
+        },
+        {
+            alias: "D",
+            conflicts: "prod",
+            description: "Install devDependencies only (no positional args) / add as dev (with positional args, npm-style)",
+            name: "dev",
+            type: Boolean,
+        },
         {
             defaultValue: false,
             description: "Add as optional dependency (only with positional args; mirrors `npm install -O`)",
@@ -66,7 +78,8 @@ const install: Command = {
         { alias: "f", defaultValue: false, description: "Force reinstall all dependencies", name: "force", type: Boolean },
         {
             defaultValue: false,
-            description: "Run lifecycle scripts (opts out of vis's default block-by-default policy; allowlisted packages run via security.policies.installScripts.allow)",
+            description:
+                "Run lifecycle scripts (opts out of vis's default block-by-default policy; allowlisted packages run via security.policies.installScripts.allow)",
             name: "run-scripts",
             type: Boolean,
         },

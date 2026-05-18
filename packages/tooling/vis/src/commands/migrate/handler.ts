@@ -297,7 +297,7 @@ const migrateVerifyExecuteImpl = ({ logger, workspaceRoot }: Toolbox): void => {
 
 const migrateAllExecuteImpl = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Console, MigrateAllOptions>): Promise<void> => {
     const root = workspaceRoot ?? process.cwd();
-    const config = (visConfig ?? {});
+    const config = visConfig ?? {};
     const context = buildProbeContext(root, config);
     const applicable = getApplicableMigrations(context);
 

@@ -299,9 +299,7 @@ export const syncOsvBloom = async (options: OsvBloomSyncOptions): Promise<OsvBlo
     }
 
     if (filterBytes.length !== manifest.bloomByteLen) {
-        throw new OsvBloomManifestError(
-            `filter.bin length ${filterBytes.length} does not match manifest.bloom_byte_len ${manifest.bloomByteLen}`,
-        );
+        throw new OsvBloomManifestError(`filter.bin length ${filterBytes.length} does not match manifest.bloom_byte_len ${manifest.bloomByteLen}`);
     }
 
     const newEtag = filterResponse.headers.get("etag") ?? undefined;
