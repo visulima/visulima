@@ -144,6 +144,10 @@
             "types": "./dist/storage/box/index.d.ts",
             "import": "./dist/storage/box/index.js"
         },
+        "./provider/bun-s3": {
+            "types": "./dist/storage/bun-s3/index.d.ts",
+            "import": "./dist/storage/bun-s3/index.js"
+        },
         "./provider/bunny": {
             "types": "./dist/storage/bunny/index.d.ts",
             "import": "./dist/storage/bunny/index.js"

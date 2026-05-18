@@ -4,9 +4,11 @@
         "capabilities",
         "amazon-s3",
         "aws-light",
+        "alibaba-oss",
         "azure",
         "backblaze-b2",
         "box",
+        "bun-s3",
         "bunny",
         "cloudflare-r2",
         "digital-ocean-spaces",
@@ -20,9 +22,11 @@
         "onedrive",
         "storj",
         "supabase",
+        "tencent-cos",
         "tigris",
         "uploadthing",
         "vercel-blob",
-        "wasabi"
+        "wasabi",
+        "yandex-object-storage"
     ]
 }
