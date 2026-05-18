@@ -142,6 +142,14 @@ export type DOMElement = InkNode & {
     internal_maxScrollTop?: number;
 
     /**
+     * Highest scrollTop whose scrolled-off lines have already been flushed
+     * into the terminal's real scrollback history. Monotonic; used by the
+     * `overflowToBackbuffer` emission path so a given line is pushed exactly
+     * once and scrolling back up never re-emits.
+     */
+    internal_maxPushedScrollTop?: number;
+
+    /**
      * Callback invoked after prepareYogaTree() caches the render output for
      * an ink-static-render node. StaticRender uses this to set `isRendered`
      * state, which prevents React from re-reconciling children once cached.

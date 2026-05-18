@@ -78,7 +78,20 @@ export const calculateScroll = (node: DOMElement): void => {
             node.internal_maxScrollTop = actualMaxScrollTop;
             node.internal_isScrollbackDirty = false;
         } else {
-            node.internal_maxScrollTop = Math.max(node.internal_maxScrollTop ?? 0, actualMaxScrollTop);
+            const grown = Math.max(node.internal_maxScrollTop ?? 0, actualMaxScrollTop);
+            const { maxScrollbackLength } = node.style;
+
+            // Bound retained history so scrollHeight can't grow forever for
+            // long-running stable-scrollback boxes. The cap is relative to the
+            // content currently present, so live content is never clipped.
+            //
+            // Note: this caps scrollHeight relative to `actualMaxScrollTop`,
+            // whereas the backbuffer emission floor (ink.tsx
+            // computeBackbufferOutput) caps the per-frame burst relative to
+            // `scrollTop`. Different reference points, but both guarantee at
+            // most `maxScrollbackLength` extra rows, so they stay consistent.
+            node.internal_maxScrollTop
+                = maxScrollbackLength === undefined ? grown : Math.min(grown, actualMaxScrollTop + Math.max(0, maxScrollbackLength));
         }
 
         scrollHeight = Math.max(actualScrollHeight, (node.internal_maxScrollTop ?? 0) + clientHeight);
