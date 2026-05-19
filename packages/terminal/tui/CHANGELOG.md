@@ -1,3 +1,18 @@
+## @visulima/tui [1.0.0-alpha.17](https://github.com/visulima/visulima/compare/@visulima/tui@1.0.0-alpha.16...@visulima/tui@1.0.0-alpha.17) (2026-05-19)
+
+### Features
+
+* **tui:** flush scrolled-off lines to terminal scrollback ([7856378](https://github.com/visulima/visulima/commit/78563780b60d506651013dee372bbad4a183bcb0))
+
+### Bug Fixes
+
+* **tui:** correct peer deps and runtime type-fest ([ececda1](https://github.com/visulima/visulima/commit/ececda1cf823ff39e0a1a0e4f1d64015088c42ff))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.26
+
 ## @visulima/tui [1.0.0-alpha.16](https://github.com/visulima/visulima/compare/@visulima/tui@1.0.0-alpha.15...@visulima/tui@1.0.0-alpha.16) (2026-05-16)
 
 ### Miscellaneous Chores
