@@ -343,6 +343,7 @@ export const scaffoldDockerContext = (options: ScaffoldOptions): { projects: str
         try {
             const result = pruneLockfile({
                 closure,
+                displayName: file,
                 lockfileContent,
                 packageManager: manager,
             });
