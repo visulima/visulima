@@ -1,3 +1,11 @@
+## @visulima/html [1.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/html@1.0.0-alpha.12...@visulima/html@1.0.0-alpha.13) (2026-05-19)
+
+### Miscellaneous Chores
+
+* **html:** housekeeping cleanup ([2582bc2](https://github.com/visulima/visulima/commit/2582bc220b2eec56acf441dee4654d4b4721381e))
+* **html:** upgrade packem to 2.0.0-alpha.76 ([6de95f0](https://github.com/visulima/visulima/commit/6de95f036c3277d6b65be6728406897b1ffc13ac))
+* re-sort workspace package.json files via vis sort-package-json ([f625696](https://github.com/visulima/visulima/commit/f625696cfac974325774b3243e1a83c3d23acbd7))
+
 ## @visulima/html [1.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/html@1.0.0-alpha.11...@visulima/html@1.0.0-alpha.12) (2026-04-22)
 
 ### Bug Fixes
