@@ -8,11 +8,12 @@
  * the engine wires them through a registry, handles offline-skip and
  * surface filtering uniformly, and returns a flat `PolicyDecision[]`.
  *
- * This commit (Phase 2) ships the four offline-clean policies:
- * `license`, `installScripts`, `vulnerability`, `unexpectedDeps`
- * (baseline mode). Network-bound policies (`malware`, `firstSeen`,
- * `publisherChange`, `score`) land in Phase 3 and plug into the same
- * registry without touching the surfaces.
+ * Offline-clean policies: `license`, `installScripts`, `vulnerability`,
+ * `unexpectedDeps` (baseline mode). Network-bound policies `firstSeen`
+ * and `publisherChange` re-verify the resolved closure against the
+ * registry (publish age / provenance downgrade) — the engine
+ * offline-skips them when `--offline` is set. `malware` / `score`
+ * remain to be wired.
  */
 
 import type { PolicyName, VisConfig } from "../../config/types";
@@ -21,8 +22,10 @@ import type { SecurityVulnerability } from "../../util/catalog";
 import type { InstalledPackage } from "../dependency-scan";
 import type { PackageManifest } from "../manifests";
 import type { AcceptedRisk, PackageReportData } from "../socket-security";
+import { evaluateFirstSeenPolicy } from "./first-seen";
 import { evaluateInstallScriptsPolicy } from "./install-scripts";
 import { evaluateLicensePolicy } from "./license";
+import { evaluatePublisherChangePolicy } from "./publisher-change";
 import { evaluateUnexpectedDepsPolicy } from "./unexpected-deps";
 import { evaluateVulnerabilityPolicy } from "./vulnerability";
 
@@ -162,6 +165,24 @@ const REGISTRY: PolicyModule[] = [
         },
         name: "unexpectedDeps",
         offlineSupported: true,
+        surfaces: ["audit", "doctor", "install"],
+    },
+    {
+        evaluate: evaluateFirstSeenPolicy,
+        isConfigured: (config) => {
+            const minutes = config.security?.policies?.firstSeen?.minutes;
+
+            return typeof minutes === "number" && minutes > 0;
+        },
+        name: "firstSeen",
+        offlineSupported: false,
+        surfaces: ["audit", "doctor", "install"],
+    },
+    {
+        evaluate: evaluatePublisherChangePolicy,
+        isConfigured: (config) => config.security?.policies?.publisherChange?.mode === "no-downgrade",
+        name: "publisherChange",
+        offlineSupported: false,
         surfaces: ["audit", "doctor", "install"],
     },
 ];

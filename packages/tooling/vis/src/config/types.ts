@@ -1249,6 +1249,15 @@ export interface VisConfig {
         blockExoticSubdeps?: boolean;
 
         /**
+         * Package names exempted from the `blockExoticSubdeps` check.
+         * Bare names and a trailing `*` glob (`@scope/*`) are supported.
+         * Use for an internal package legitimately published as a git or
+         * tarball dependency.
+         * @example ["@myorg/legacy", "internal-*"]
+         */
+        exoticSubdepsAllow?: string[];
+
+        /**
          * deps.dev (Google Open Source Insights) data-source configuration.
          * Public, unauthenticated; pulls Scorecard data + advisories from
          * `api.deps.dev`. Complements or replaces Socket.dev. Heavily cached.
