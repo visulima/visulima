@@ -732,6 +732,8 @@ injectWorkspacePackages: false
 
 linkWorkspacePackages: true
 
+minimumReleaseAge: 1440
+
 minimumReleaseAgeExclude:
   - typescript
   - '@types/*'
@@ -914,4 +916,4 @@ strictDepBuilds: true
 
 strictPeerDependencies: false
 
-trustPolicy: accept
+trustPolicy: no-downgrade
