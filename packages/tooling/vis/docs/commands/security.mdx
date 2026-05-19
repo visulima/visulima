@@ -5,7 +5,7 @@ description: "Inspect and sync vis-config security settings to the native packag
 
 # vis security
 
-Inspect the build-script triage and push `vis.config` security settings to the active package manager's native config files. The two subcommands replace ad-hoc one-off commands by giving the same view that the post-install drift report uses.
+Inspect the build-script triage, push `vis.config` security settings to the active package manager's native config files, and verify the resolved lockfile closure against supply-chain policies. The subcommands give the same view that the post-install drift report uses.
 
 ## Usage
 
@@ -93,6 +93,31 @@ Vis canonicalises all durations to **minutes**. The syncer rounds sub-minute fra
 
 Yarn classic (no `.yarnrc.yml`) is silently skipped because it has no equivalent native setting.
 
+### verify-lockfile
+
+Re-validate the **entire resolved lockfile closure** against the supply-chain policies — vis's counterpart to pnpm v11's lockfile-verification phase. Unlike the pre-install marshalls (which only inspect packages being _added_), this catches a tampered/poisoned lockfile even on npm/yarn/bun and even when nothing is being added.
+
+```bash
+vis security verify-lockfile            # re-validate every locked entry; exit non-zero on a violation
+vis security verify-lockfile --offline  # skip network-bound policies (firstSeen, publisherChange)
+vis security verify-lockfile --json     # emit the verification result as JSON for CI
+```
+
+It composes three configured checks into one pass/fail attestation:
+
+- `security.policies.firstSeen.minutes` — block any locked version published less than N minutes ago.
+- `security.policies.publisherChange.mode: "no-downgrade"` — block a locked version that dropped a provenance attestation a prior version carried.
+- `security.blockExoticSubdeps` — flag transitive edges resolving from a git repo or remote tarball (honoring `security.exoticSubdepsAllow`).
+
+When none of the three is configured the run is **skipped** (exit 0). A **missing lockfile fails** the attestation rather than silently passing — the closure cannot be attested. `firstSeen` / `publisherChange` are network-bound and emit an `info`-level skip under `--offline`; `blockExoticSubdeps` is offline-pure and always runs. Output mirrors pnpm's attestation lines:
+
+```
+✓ Lockfile passes supply-chain policies (148 entries, 0.4s)
+✗ Lockfile failed supply-chain policy check (148 entries, 0.4s)
+  [firstSeen] evil@1.0.0 was published 30 min ago — below the 1440 min firstSeen cooldown.
+  [blockExoticSubdeps] git-dep pulled from exotic source by prod-pkg@1.0.0: github:attacker/evil#deadbeef
+```
+
 ## Options
 
 ### `vis security list`
@@ -122,6 +147,13 @@ Yarn classic (no `.yarnrc.yml`) is silently skipped because it has no equivalent
 | `--status` | `false` | Report whether `@lavamoat/preinstall-always-fail` is installed |
 | `--remove` | `false` | Strip `@lavamoat/preinstall-always-fail` from `package.json`   |
 
+### `vis security verify-lockfile`
+
+| Option      | Default | Description                                                         |
+| ----------- | ------- | ------------------------------------------------------------------- |
+| `--json`    | `false` | Emit the verification result as JSON instead of human-readable text |
+| `--offline` | `false` | Skip network-bound policies (`firstSeen`, `publisherChange`)        |
+
 ## Drift report (post-install)
 
 After `vis install` / `vis update` / `vis add`, vis automatically runs the drift check and prints a one-line nudge per drifted field. The hint suggests `vis security sync` as the remediation:
@@ -137,3 +169,4 @@ vis.config and pnpm-native config disagree on security settings:
 
 - `vis approve-builds` — interactive review of unapproved build scripts.
 - `vis init` — bootstrap a `vis.config.ts` with secure defaults and an optional `--sync-native` step.
+- `vis audit` — full supply-chain audit; `verify-lockfile` is the closure-only attestation subset suitable for a single CI gate line.
