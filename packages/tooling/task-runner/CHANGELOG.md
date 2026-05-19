@@ -1,3 +1,11 @@
+## @visulima/task-runner [1.0.0-alpha.15](https://github.com/visulima/visulima/compare/@visulima/task-runner@1.0.0-alpha.14...@visulima/task-runner@1.0.0-alpha.15) (2026-05-19)
+
+### Features
+
+* **task-runner:** auto-capture outputs for compound build scripts ([e084434](https://github.com/visulima/visulima/commit/e0844344cf184177999a82b708299f08fbfd31ec))
+* **task-runner:** per-target hashMode "trace" opt-in ([#643](https://github.com/visulima/visulima/issues/643)) ([32353ff](https://github.com/visulima/visulima/commit/32353ff7a760ae9486e23cc4042fab46a2f2cc11))
+* **vis:** attested keyless-signed remote cache (Sigstore) ([4732610](https://github.com/visulima/visulima/commit/47326103a668ab99fcfc4e21f2c9efeaa5892944))
+
 ## @visulima/task-runner [1.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/task-runner@1.0.0-alpha.13...@visulima/task-runner@1.0.0-alpha.14) (2026-05-14)
 
 ### Bug Fixes
