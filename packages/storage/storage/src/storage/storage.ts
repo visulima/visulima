@@ -1062,30 +1062,38 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
             retryConfig.maxRetries = 0;
         }
 
-        const signals: AbortSignal[] = [];
+        // Instance-level defaults are combined with the per-call options:
+        // the default signal is merged (either source aborts), while a
+        // per-call timeout — including `0`/negative to explicitly disable —
+        // takes precedence over the instance default.
+        const callerSignals: AbortSignal[] = [];
+
+        if (this.genericConfig.defaultSignal) {
+            callerSignals.push(this.genericConfig.defaultSignal);
+        }
 
         if (options?.signal) {
-            signals.push(options.signal);
+            callerSignals.push(options.signal);
         }
 
-        if (typeof options?.timeout === "number" && options.timeout > 0) {
-            signals.push(AbortSignal.timeout(options.timeout));
+        let callerSignal: AbortSignal | undefined;
+
+        if (callerSignals.length === 1) {
+            [callerSignal] = callerSignals;
+        } else if (callerSignals.length > 1) {
+            callerSignal = AbortSignal.any(callerSignals);
         }
 
-        let signal: AbortSignal | undefined;
+        const requestedTimeout = typeof options?.timeout === "number" ? options.timeout : this.genericConfig.defaultTimeout;
+        const timeoutMs = typeof requestedTimeout === "number" && requestedTimeout > 0 ? requestedTimeout : undefined;
 
-        if (signals.length === 1) {
-            [signal] = signals;
-        } else if (signals.length > 1) {
-            signal = AbortSignal.any(signals);
-        }
-
-        // Never retry once aborted — replaying just races the same dead
-        // signal. Layered over (not replacing) any user shouldRetry.
+        // Never retry once the caller's signal is aborted, or once an attempt
+        // has been normalized to an AbortError (caller cancel or per-attempt
+        // timeout). Layered over (not replacing) any user shouldRetry.
         const userShouldRetry = retryConfig.shouldRetry;
 
         retryConfig.shouldRetry = (error: unknown): boolean => {
-            if (signal?.aborted) {
+            if (callerSignal?.aborted) {
                 return false;
             }
 
@@ -1110,8 +1118,29 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
         };
 
         return retry(async () => {
-            if (signal?.aborted) {
-                throw toAbortError(signal.reason);
+            if (callerSignal?.aborted) {
+                throw toAbortError(callerSignal.reason);
+            }
+
+            // Fresh per-attempt timeout: each retry gets the full `timeout`
+            // budget rather than the leftover after earlier attempts and
+            // their backoff sleeps. The caller's signal persists across
+            // attempts; the per-attempt deadline does not. The backoff sleep
+            // sits outside this closure, so the cleared timer never counts
+            // against the next attempt's budget.
+            let timer: ReturnType<typeof setTimeout> | undefined;
+            let signal: AbortSignal | undefined;
+
+            if (timeoutMs === undefined) {
+                signal = callerSignal;
+            } else {
+                const timeoutController = new AbortController();
+
+                timer = setTimeout(() => {
+                    timeoutController.abort(new DOMException(`The operation timed out after ${timeoutMs}ms`, "TimeoutError"));
+                }, timeoutMs);
+
+                signal = callerSignal ? AbortSignal.any([callerSignal, timeoutController.signal]) : timeoutController.signal;
             }
 
             try {
@@ -1120,12 +1149,17 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
                 // The provider may surface our deadline/cancellation as its own
                 // timeout or transport error. Normalize to a non-retryable
                 // AbortError so isRetryableError's network heuristics can't
-                // resurrect a call the caller already cancelled.
+                // resurrect a call the caller already cancelled (or that blew
+                // its per-attempt deadline).
                 if (signal?.aborted) {
                     throw toAbortError(error);
                 }
 
                 throw error;
+            } finally {
+                if (timer) {
+                    clearTimeout(timer);
+                }
             }
         }, retryConfig);
     }
