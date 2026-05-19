@@ -6,6 +6,7 @@ import etag from "etag";
 import { ERRORS, throwErrorCode } from "../../utils/errors";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
+import type { OperationOptions } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import { collectStream, posixDirname, trimSlashes } from "../utils/remote";
@@ -26,6 +27,23 @@ const isNotFoundError = (error: unknown): boolean => {
     const message = error instanceof Error ? error.message : String(error);
 
     return /no such file|not exist|cannot find|file unavailable/i.test(message);
+};
+
+/**
+ * Normalize any value into an `AbortError`. `runOperation` treats an
+ * `AbortError` as non-retryable, so a connection torn down by a caller's
+ * cancellation is not replayed against a dead signal.
+ */
+const toAbortError = (reason: unknown): Error => {
+    if (reason instanceof Error && reason.name === "AbortError") {
+        return reason;
+    }
+
+    const error = new Error(reason instanceof Error && reason.message ? reason.message : "The operation was aborted", { cause: reason });
+
+    error.name = "AbortError";
+
+    return error;
 };
 
 const downloadToBuffer = async (client: Client, path: string): Promise<Buffer> => {
@@ -78,7 +96,7 @@ class FtpStorage extends BaseStorage<FtpFile> {
         this.isReady = true;
     }
 
-    public async create(config: FileInit): Promise<FtpFile> {
+    public async create(config: FileInit, _options?: OperationOptions): Promise<FtpFile> {
         return this.instrumentOperation("create", async () => {
             const file = new FtpFile(config);
 
@@ -107,7 +125,7 @@ class FtpStorage extends BaseStorage<FtpFile> {
         });
     }
 
-    public async write(part: FilePart | FileQuery | FtpFile): Promise<FtpFile> {
+    public async write(part: FilePart | FileQuery | FtpFile, options?: OperationOptions): Promise<FtpFile> {
         return this.instrumentOperation("write", async () => {
             let file: FtpFile;
 
@@ -142,17 +160,24 @@ class FtpStorage extends BaseStorage<FtpFile> {
                     // chunk would overwrite earlier bytes and silently lose
                     // data. Reject resumable/chunked writes outright.
                     if (part.start > 0) {
-                        return throwErrorCode(ERRORS.METHOD_NOT_ALLOWED, "FTP storage does not support chunked or resumable uploads; send the file in a single request.");
+                        return throwErrorCode(
+                            ERRORS.METHOD_NOT_ALLOWED,
+                            "FTP storage does not support chunked or resumable uploads; send the file in a single request.",
+                        );
                     }
 
                     const buffer = await collectStream(part.body);
                     const path = file.path ?? this.keyToPath(file.name || file.id);
 
-                    await this.run(async (client) => {
-                        await this.ensureRemoteDirectory(client, path);
+                    // `buffer` is fully materialized in memory before the upload,
+                    // so a retried attempt re-sends the same bytes safely.
+                    await this.runOperation(options, (signal) =>
+                        this.run(signal, async (client) => {
+                            await this.ensureRemoteDirectory(client, path);
 
-                        await client.uploadFrom(Readable.from(buffer), path);
-                    });
+                            await client.uploadFrom(Readable.from(buffer), path);
+                        }),
+                    );
 
                     file.bytesWritten = buffer.length;
                     file.size = buffer.length;
@@ -171,22 +196,24 @@ class FtpStorage extends BaseStorage<FtpFile> {
         });
     }
 
-    public async get({ id }: FileQuery): Promise<FileReturn> {
+    public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
             const file = await this.checkIfExpired(await this.getMeta(id));
             const path = file.path ?? this.keyToPath(file.name || id);
 
-            const content = await this.run(async (client) => {
-                try {
-                    return await downloadToBuffer(client, path);
-                } catch (error) {
-                    if (isNotFoundError(error)) {
-                        return throwErrorCode(ERRORS.FILE_NOT_FOUND);
-                    }
+            const content = await this.runOperation(options, (signal) =>
+                this.run(signal, async (client) => {
+                    try {
+                        return await downloadToBuffer(client, path);
+                    } catch (error) {
+                        if (isNotFoundError(error)) {
+                            return throwErrorCode(ERRORS.FILE_NOT_FOUND);
+                        }
 
-                    throw error;
-                }
-            });
+                        throw error;
+                    }
+                }),
+            );
 
             return {
                 content,
@@ -203,20 +230,22 @@ class FtpStorage extends BaseStorage<FtpFile> {
         });
     }
 
-    public async delete({ id }: FileQuery): Promise<FtpFile> {
+    public async delete({ id }: FileQuery, options?: OperationOptions): Promise<FtpFile> {
         return this.instrumentOperation("delete", async () => {
             const file = await this.getMeta(id);
             const path = file.path ?? this.keyToPath(file.name || id);
 
-            await this.run(async (client) => {
-                try {
-                    await client.remove(path);
-                } catch (error) {
-                    if (!isNotFoundError(error)) {
-                        throw error;
+            await this.runOperation(options, (signal) =>
+                this.run(signal, async (client) => {
+                    try {
+                        await client.remove(path);
+                    } catch (error) {
+                        if (!isNotFoundError(error)) {
+                            throw error;
+                        }
                     }
-                }
-            });
+                }),
+            );
 
             await this.deleteMeta(id);
 
@@ -228,18 +257,20 @@ class FtpStorage extends BaseStorage<FtpFile> {
         });
     }
 
-    public async copy(name: string, destination: string): Promise<FtpFile> {
+    public async copy(name: string, destination: string, options?: OperationOptions & { storageClass?: string }): Promise<FtpFile> {
         return this.instrumentOperation("copy", async () => {
             const sourceFile = await this.getMeta(name);
             const sourcePath = sourceFile.path ?? this.keyToPath(sourceFile.name || name);
             const targetPath = this.keyToPath(destination);
 
-            await this.run(async (client) => {
-                const buffer = await downloadToBuffer(client, sourcePath);
+            await this.runOperation(options, (signal) =>
+                this.run(signal, async (client) => {
+                    const buffer = await downloadToBuffer(client, sourcePath);
 
-                await this.ensureRemoteDirectory(client, targetPath);
-                await client.uploadFrom(Readable.from(buffer), targetPath);
-            });
+                    await this.ensureRemoteDirectory(client, targetPath);
+                    await client.uploadFrom(Readable.from(buffer), targetPath);
+                }),
+            );
 
             const copiedFile = { ...sourceFile, id: destination, name: destination, path: targetPath } as FtpFile;
 
@@ -249,28 +280,33 @@ class FtpStorage extends BaseStorage<FtpFile> {
         });
     }
 
-    public async move(name: string, destination: string): Promise<FtpFile> {
+    public async move(name: string, destination: string, options?: OperationOptions): Promise<FtpFile> {
         return this.instrumentOperation("move", async () => {
             const sourceFile = await this.getMeta(name);
             const sourcePath = sourceFile.path ?? this.keyToPath(sourceFile.name || name);
             const targetPath = this.keyToPath(destination);
 
-            await this.run(async (client) => {
-                try {
-                    await this.ensureRemoteDirectory(client, targetPath);
-                    await client.rename(sourcePath, targetPath);
-                } catch (renameError) {
+            await this.runOperation(options, (signal) =>
+                this.run(signal, async (client) => {
                     try {
-                        const buffer = await downloadToBuffer(client, sourcePath);
-
                         await this.ensureRemoteDirectory(client, targetPath);
-                        await client.uploadFrom(Readable.from(buffer), targetPath);
-                        await client.remove(sourcePath);
-                    } catch (fallbackError) {
-                        throw new AggregateError([renameError, fallbackError], `FTP move failed: rename and copy+delete fallback both failed for "${sourcePath}" → "${targetPath}"`);
+                        await client.rename(sourcePath, targetPath);
+                    } catch (renameError) {
+                        try {
+                            const buffer = await downloadToBuffer(client, sourcePath);
+
+                            await this.ensureRemoteDirectory(client, targetPath);
+                            await client.uploadFrom(Readable.from(buffer), targetPath);
+                            await client.remove(sourcePath);
+                        } catch (fallbackError) {
+                            throw new AggregateError(
+                                [renameError, fallbackError],
+                                `FTP move failed: rename and copy+delete fallback both failed for "${sourcePath}" → "${targetPath}"`,
+                            );
+                        }
                     }
-                }
-            });
+                }),
+            );
 
             const movedFile = { ...sourceFile, id: destination, name: destination, path: targetPath } as FtpFile;
 
@@ -286,68 +322,23 @@ class FtpStorage extends BaseStorage<FtpFile> {
         });
     }
 
-    public override async list(): Promise<FtpFile[]> {
+    public override async list(_limit = 1000, options?: OperationOptions): Promise<FtpFile[]> {
         return this.instrumentOperation("list", async () => {
             const root = this.keyToPath("");
 
-            return this.run(async (client) => {
-                const files: FtpFile[] = [];
+            return this.runOperation(options, (signal) =>
+                this.run(signal, async (client) => {
+                    const files: FtpFile[] = [];
 
-                const walk = async (directory: string): Promise<void> => {
-                    let entries: Awaited<ReturnType<Client["list"]>>;
+                    await this.walkList(client, root, files);
 
-                    try {
-                        entries = await client.list(directory || ".");
-                    } catch (error) {
-                        if (isNotFoundError(error)) {
-                            return;
-                        }
-
-                        throw error;
-                    }
-
-                    for (const entry of entries) {
-                        const childPath = directory ? `${directory}/${entry.name}` : entry.name;
-
-                        if (entry.isDirectory) {
-                            await walk(childPath);
-
-                            continue;
-                        }
-
-                        if (!entry.isFile) {
-                            continue;
-                        }
-
-                        const key = this.pathToKey(childPath);
-
-                        if (!key) {
-                            continue;
-                        }
-
-                        const file = new FtpFile({ contentType: "application/octet-stream", metadata: {}, originalName: entry.name });
-
-                        file.id = key;
-                        file.name = key;
-                        file.path = childPath;
-                        file.size = entry.size;
-
-                        if (entry.modifiedAt) {
-                            file.modifiedAt = entry.modifiedAt.toISOString();
-                        }
-
-                        files.push(file);
-                    }
-                };
-
-                await walk(root);
-
-                return files;
-            });
+                    return files;
+                }),
+            );
         });
     }
 
-    public override async exists({ id }: FileQuery): Promise<boolean> {
+    public override async exists({ id }: FileQuery, options?: OperationOptions): Promise<boolean> {
         return this.instrumentOperation("exists", async () => {
             let file: FtpFile;
 
@@ -359,30 +350,106 @@ class FtpStorage extends BaseStorage<FtpFile> {
 
             const path = file.path ?? this.keyToPath(file.name || id);
 
-            return this.run(async (client) => {
-                try {
-                    await client.size(path);
+            return this.runOperation(options, (signal) =>
+                this.run(signal, async (client) => {
+                    try {
+                        await client.size(path);
 
-                    return true;
-                } catch (error) {
-                    if (isNotFoundError(error)) {
-                        return false;
+                        return true;
+                    } catch (error) {
+                        if (isNotFoundError(error)) {
+                            return false;
+                        }
+
+                        throw error;
                     }
-
-                    throw error;
-                }
-            });
+                }),
+            );
         });
     }
 
-    private async run<T>(function_: (client: Client) => Promise<T>): Promise<T> {
-        const client = new Client();
-
-        await client.access(this.connection);
+    private async walkList(client: Client, directory: string, files: FtpFile[]): Promise<void> {
+        let entries: Awaited<ReturnType<Client["list"]>>;
 
         try {
+            entries = await client.list(directory || ".");
+        } catch (error) {
+            if (isNotFoundError(error)) {
+                return;
+            }
+
+            throw error;
+        }
+
+        for (const entry of entries) {
+            const childPath = directory ? `${directory}/${entry.name}` : entry.name;
+
+            if (entry.isDirectory) {
+                await this.walkList(client, childPath, files);
+
+                continue;
+            }
+
+            if (!entry.isFile) {
+                continue;
+            }
+
+            const key = this.pathToKey(childPath);
+
+            if (!key) {
+                continue;
+            }
+
+            const file = new FtpFile({ contentType: "application/octet-stream", metadata: {}, originalName: entry.name });
+
+            file.id = key;
+            file.name = key;
+            file.path = childPath;
+            file.size = entry.size;
+
+            if (entry.modifiedAt) {
+                file.modifiedAt = entry.modifiedAt.toISOString();
+            }
+
+            files.push(file);
+        }
+    }
+
+    /**
+     * Opens a fresh single-session FTP connection for one operation. `basic-ftp`
+     * has no `AbortSignal` hook, so cancellation is best-effort: an abort
+     * destroys the control/data connection via `client.close()`, which rejects
+     * any in-flight transfer. The rejection is normalized to an `AbortError`.
+     */
+    private async run<T>(signal: AbortSignal | undefined, function_: (client: Client) => Promise<T>): Promise<T> {
+        const client = new Client();
+
+        if (signal?.aborted) {
+            throw toAbortError(signal.reason);
+        }
+
+        const onAbort = (): void => {
+            client.close();
+        };
+
+        signal?.addEventListener("abort", onAbort, { once: true });
+
+        try {
+            await client.access(this.connection);
+
+            if (signal?.aborted) {
+                throw toAbortError(signal.reason);
+            }
+
             return await function_(client);
+        } catch (error) {
+            if (signal?.aborted) {
+                throw toAbortError(error);
+            }
+
+            throw error;
         } finally {
+            signal?.removeEventListener("abort", onAbort);
             client.close();
         }
     }

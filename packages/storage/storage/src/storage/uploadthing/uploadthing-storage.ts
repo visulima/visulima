@@ -3,6 +3,7 @@ import { UTApi, UTFile } from "uploadthing/server";
 import { ERRORS, throwErrorCode } from "../../utils/errors";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
+import type { OperationOptions } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import type { UploadThingStorageOptions } from "./types";
@@ -71,6 +72,8 @@ const basename = (key: string): string => {
  * - `list` has no server-side prefix filter; prefix filtering happens client-
  *   side within a page.
  * - No `responseContentDisposition` override on signed URLs.
+ * @remarks
+ * - ⚠️ Per-operation `signal`/`timeout` are best-effort: the underlying SDK does not support request cancellation, so an in-flight call may complete server-side even after abort. `retries` is honored.
  */
 class UploadThingStorage extends BaseStorage<UploadThingFile> {
     public static override readonly name: string = "uploadthing";
@@ -119,7 +122,7 @@ class UploadThingStorage extends BaseStorage<UploadThingFile> {
         return this.utapi;
     }
 
-    public async create(config: FileInit): Promise<UploadThingFile> {
+    public async create(config: FileInit, _options?: OperationOptions): Promise<UploadThingFile> {
         return this.instrumentOperation("create", async () => {
             const file = new UploadThingFile(config);
 
@@ -148,7 +151,7 @@ class UploadThingStorage extends BaseStorage<UploadThingFile> {
         });
     }
 
-    public async write(part: FilePart | FileQuery | UploadThingFile): Promise<UploadThingFile> {
+    public async write(part: FilePart | FileQuery | UploadThingFile, options?: OperationOptions): Promise<UploadThingFile> {
         return this.instrumentOperation("write", async () => {
             let file: UploadThingFile;
 
@@ -186,7 +189,7 @@ class UploadThingStorage extends BaseStorage<UploadThingFile> {
                         type: file.contentType,
                     });
 
-                    const result = await this.utapi.uploadFiles(utfile, { acl: this.acl });
+                    const result = await this.runOperation(options, () => this.utapi.uploadFiles(utfile, { acl: this.acl }));
 
                     if (result.error) {
                         throw new Error(result.error.message);
@@ -217,7 +220,7 @@ class UploadThingStorage extends BaseStorage<UploadThingFile> {
         });
     }
 
-    public async delete({ id }: FileQuery): Promise<UploadThingFile> {
+    public async delete({ id }: FileQuery, options?: OperationOptions): Promise<UploadThingFile> {
         return this.instrumentOperation("delete", async () => {
             let file: UploadThingFile | undefined;
 
@@ -229,7 +232,7 @@ class UploadThingStorage extends BaseStorage<UploadThingFile> {
 
             const key = file?.customId ?? file?.name ?? id;
 
-            await this.utapi.deleteFiles(key);
+            await this.runOperation(options, () => this.utapi.deleteFiles(key));
 
             if (file) {
                 file.status = "deleted";
@@ -249,7 +252,7 @@ class UploadThingStorage extends BaseStorage<UploadThingFile> {
         });
     }
 
-    public async get({ id }: FileQuery): Promise<FileReturn> {
+    public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
             let stored: UploadThingFile | undefined;
             let key = id;
@@ -261,8 +264,8 @@ class UploadThingStorage extends BaseStorage<UploadThingFile> {
                 // direct fetch by id
             }
 
-            const url = await this.resolveFetchUrl(key);
-            const response = await fetch(url);
+            const url = await this.resolveFetchUrl(key, options);
+            const response = await this.runOperation(options, () => fetch(url));
 
             if (!response.ok) {
                 throw new Error(`UploadThing: fetch failed: ${response.status} ${response.statusText} for ${key}`);
@@ -285,16 +288,16 @@ class UploadThingStorage extends BaseStorage<UploadThingFile> {
         });
     }
 
-    public async copy(name: string, destination: string): Promise<UploadThingFile> {
+    public async copy(name: string, destination: string, options?: OperationOptions & { storageClass?: string }): Promise<UploadThingFile> {
         return this.instrumentOperation("copy", async () => {
-            const source = await this.get({ id: name });
+            const source = await this.get({ id: name }, options);
             const blob = new Blob([new Uint8Array(source.content)], { type: source.contentType });
             const utfile = new UTFile([blob], basename(destination), {
                 customId: destination,
                 type: source.contentType,
             });
 
-            const result = await this.utapi.uploadFiles(utfile, { acl: this.acl });
+            const result = await this.runOperation(options, () => this.utapi.uploadFiles(utfile, { acl: this.acl }));
 
             if (result.error) {
                 throw new Error(result.error.message);
@@ -318,21 +321,21 @@ class UploadThingStorage extends BaseStorage<UploadThingFile> {
         });
     }
 
-    public async move(name: string, destination: string): Promise<UploadThingFile> {
+    public async move(name: string, destination: string, options?: OperationOptions): Promise<UploadThingFile> {
         return this.instrumentOperation("move", async () => {
-            const file = await this.copy(name, destination);
+            const file = await this.copy(name, destination, options);
 
-            await this.delete({ id: name });
+            await this.delete({ id: name }, options);
 
             return file;
         });
     }
 
-    public override async list(limit = 1000): Promise<UploadThingFile[]> {
+    public override async list(limit = 1000, options?: OperationOptions): Promise<UploadThingFile[]> {
         return this.instrumentOperation(
             "list",
             async () => {
-                const result = await this.utapi.listFiles({ limit });
+                const result = await this.runOperation(options, () => this.utapi.listFiles({ limit }));
 
                 return result.files.map((entry) => {
                     const key = entry.customId ?? entry.key;
@@ -392,15 +395,17 @@ class UploadThingStorage extends BaseStorage<UploadThingFile> {
         );
     }
 
-    private async resolveFetchUrl(key: string): Promise<string> {
+    private async resolveFetchUrl(key: string, options?: OperationOptions): Promise<string> {
         if (this.acl === "public-read") {
             return `https://${this.appId}.ufs.sh/f/${encodeURIComponent(key)}`;
         }
 
-        const { ufsUrl } = await this.utapi.generateSignedURL(key, {
-            expiresIn: this.defaultUrlExpiresIn,
-            keyType: "customId",
-        });
+        const { ufsUrl } = await this.runOperation(options, () =>
+            this.utapi.generateSignedURL(key, {
+                expiresIn: this.defaultUrlExpiresIn,
+                keyType: "customId",
+            }),
+        );
 
         return ufsUrl;
     }

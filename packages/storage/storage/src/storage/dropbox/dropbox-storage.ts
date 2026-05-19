@@ -5,6 +5,7 @@ import { ERRORS, throwErrorCode } from "../../utils/errors";
 import { createOAuthRefreshHandle } from "../../utils/oauth-refresh";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
+import type { OperationOptions } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import DropboxFile from "./dropbox-file";
@@ -231,6 +232,7 @@ const resolveAuth = (options: DropboxStorageOptions): ResolvedAuth => {
  * - `getUploadUrl` is not supported — Dropbox's `files/get_temporary_upload_link`
  *   requires a `POST` with raw body, which doesn't fit a presigned-PUT contract.
  * - `responseContentDisposition` is not supported on signed URLs.
+ * - ⚠️ Per-operation `signal`/`timeout` are best-effort: the underlying SDK does not support request cancellation, so an in-flight call may complete server-side even after abort. `retries` is honored.
  */
 class DropboxStorage extends BaseStorage<DropboxFile> {
     public static override readonly name: string = "dropbox";
@@ -270,7 +272,7 @@ class DropboxStorage extends BaseStorage<DropboxFile> {
         return this.client;
     }
 
-    public async create(config: FileInit): Promise<DropboxFile> {
+    public async create(config: FileInit, _options?: OperationOptions): Promise<DropboxFile> {
         return this.instrumentOperation("create", async () => {
             const file = new DropboxFile(config);
 
@@ -299,7 +301,7 @@ class DropboxStorage extends BaseStorage<DropboxFile> {
         });
     }
 
-    public async write(part: FilePart | FileQuery | DropboxFile): Promise<DropboxFile> {
+    public async write(part: FilePart | FileQuery | DropboxFile, options?: OperationOptions): Promise<DropboxFile> {
         return this.instrumentOperation("write", async () => {
             let file: DropboxFile;
 
@@ -336,7 +338,9 @@ class DropboxStorage extends BaseStorage<DropboxFile> {
                     await this.authHandle.ensureAccessToken();
 
                     const result =
-                        buffer.byteLength <= SIMPLE_UPLOAD_LIMIT_BYTES ? await this.uploadSimple(path, buffer) : await this.uploadSession(path, buffer);
+                        buffer.byteLength <= SIMPLE_UPLOAD_LIMIT_BYTES
+                            ? await this.uploadSimple(path, buffer, options)
+                            : await this.uploadSession(path, buffer, options);
 
                     file.bytesWritten = buffer.length;
                     file.size = buffer.length;
@@ -360,7 +364,7 @@ class DropboxStorage extends BaseStorage<DropboxFile> {
         });
     }
 
-    public async delete({ id }: FileQuery): Promise<DropboxFile> {
+    public async delete({ id }: FileQuery, options?: OperationOptions): Promise<DropboxFile> {
         return this.instrumentOperation("delete", async () => {
             let file: DropboxFile | undefined;
 
@@ -375,7 +379,7 @@ class DropboxStorage extends BaseStorage<DropboxFile> {
             await this.authHandle.ensureAccessToken();
 
             try {
-                await this.client.filesDeleteV2({ path });
+                await this.runOperation(options, () => this.client.filesDeleteV2({ path }));
             } catch (error) {
                 if (!isNotFoundError(error)) {
                     throw error;
@@ -400,7 +404,7 @@ class DropboxStorage extends BaseStorage<DropboxFile> {
         });
     }
 
-    public async get({ id }: FileQuery): Promise<FileReturn> {
+    public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
             let stored: DropboxFile | undefined;
             let path = this.keyToPath(id);
@@ -414,7 +418,7 @@ class DropboxStorage extends BaseStorage<DropboxFile> {
 
             await this.authHandle.ensureAccessToken();
 
-            const response = await this.client.filesDownload({ path });
+            const response = await this.runOperation(options, () => this.client.filesDownload({ path }));
             const data = response.result as files.FileMetadata & { fileBinary?: unknown; fileBlob?: unknown };
 
             let buffer: Buffer;
@@ -442,13 +446,13 @@ class DropboxStorage extends BaseStorage<DropboxFile> {
         });
     }
 
-    public async copy(name: string, destination: string): Promise<DropboxFile> {
+    public async copy(name: string, destination: string, options?: OperationOptions & { storageClass?: string }): Promise<DropboxFile> {
         return this.instrumentOperation("copy", async () => {
             const sourcePath = this.keyToPath(name);
             const targetPath = this.keyToPath(destination);
 
             await this.authHandle.ensureAccessToken();
-            await this.client.filesCopyV2({ from_path: sourcePath, to_path: targetPath });
+            await this.runOperation(options, () => this.client.filesCopyV2({ from_path: sourcePath, to_path: targetPath }));
 
             const file = new DropboxFile({
                 contentType: "application/octet-stream",
@@ -464,13 +468,13 @@ class DropboxStorage extends BaseStorage<DropboxFile> {
         });
     }
 
-    public async move(name: string, destination: string): Promise<DropboxFile> {
+    public async move(name: string, destination: string, options?: OperationOptions): Promise<DropboxFile> {
         return this.instrumentOperation("move", async () => {
             const sourcePath = this.keyToPath(name);
             const targetPath = this.keyToPath(destination);
 
             await this.authHandle.ensureAccessToken();
-            await this.client.filesMoveV2({ from_path: sourcePath, to_path: targetPath });
+            await this.runOperation(options, () => this.client.filesMoveV2({ from_path: sourcePath, to_path: targetPath }));
 
             const file = new DropboxFile({
                 contentType: "application/octet-stream",
@@ -492,17 +496,19 @@ class DropboxStorage extends BaseStorage<DropboxFile> {
         });
     }
 
-    public override async list(limit = 1000): Promise<DropboxFile[]> {
+    public override async list(limit = 1000, options?: OperationOptions): Promise<DropboxFile[]> {
         return this.instrumentOperation(
             "list",
             async () => {
                 await this.authHandle.ensureAccessToken();
 
-                const response = await this.client.filesListFolder({
-                    limit,
-                    path: this.rootFolderPath ? `/${this.rootFolderPath}` : "",
-                    recursive: true,
-                });
+                const response = await this.runOperation(options, () =>
+                    this.client.filesListFolder({
+                        limit,
+                        path: this.rootFolderPath ? `/${this.rootFolderPath}` : "",
+                        recursive: true,
+                    }),
+                );
                 const { result } = response;
                 const files: DropboxFile[] = [];
 
@@ -615,24 +621,28 @@ class DropboxStorage extends BaseStorage<DropboxFile> {
         return inner.startsWith(prefix) ? inner.slice(prefix.length) : inner;
     }
 
-    private async uploadSimple(path: string, data: Buffer): Promise<files.FileMetadata> {
-        const response = await this.client.filesUpload({
-            contents: data,
-            mode: { ".tag": "overwrite" },
-            mute: true,
-            path,
-        });
+    private async uploadSimple(path: string, data: Buffer, options?: OperationOptions): Promise<files.FileMetadata> {
+        const response = await this.runOperation(options, () =>
+            this.client.filesUpload({
+                contents: data,
+                mode: { ".tag": "overwrite" },
+                mute: true,
+                path,
+            }),
+        );
 
         return response.result;
     }
 
-    private async uploadSession(path: string, data: Buffer): Promise<files.FileMetadata> {
+    private async uploadSession(path: string, data: Buffer, options?: OperationOptions): Promise<files.FileMetadata> {
         const total = data.byteLength;
         let offset = 0;
-        const start = await this.client.filesUploadSessionStart({
-            close: false,
-            contents: data.subarray(offset, Math.min(offset + UPLOAD_SESSION_CHUNK_BYTES, total)),
-        });
+        const start = await this.runOperation(options, () =>
+            this.client.filesUploadSessionStart({
+                close: false,
+                contents: data.subarray(offset, Math.min(offset + UPLOAD_SESSION_CHUNK_BYTES, total)),
+            }),
+        );
         const sessionId = start.result.session_id;
 
         offset = Math.min(offset + UPLOAD_SESSION_CHUNK_BYTES, total);
@@ -640,20 +650,24 @@ class DropboxStorage extends BaseStorage<DropboxFile> {
         while (total - offset > UPLOAD_SESSION_CHUNK_BYTES) {
             const chunk = data.subarray(offset, offset + UPLOAD_SESSION_CHUNK_BYTES);
 
-            await this.client.filesUploadSessionAppendV2({
-                close: false,
-                contents: chunk,
-                cursor: { offset, session_id: sessionId },
-            });
+            await this.runOperation(options, () =>
+                this.client.filesUploadSessionAppendV2({
+                    close: false,
+                    contents: chunk,
+                    cursor: { offset, session_id: sessionId },
+                }),
+            );
             offset += UPLOAD_SESSION_CHUNK_BYTES;
         }
 
         const tail = data.subarray(offset, total);
-        const finish = await this.client.filesUploadSessionFinish({
-            commit: { mode: { ".tag": "overwrite" }, mute: true, path },
-            contents: tail,
-            cursor: { offset, session_id: sessionId },
-        });
+        const finish = await this.runOperation(options, () =>
+            this.client.filesUploadSessionFinish({
+                commit: { mode: { ".tag": "overwrite" }, mute: true, path },
+                contents: tail,
+                cursor: { offset, session_id: sessionId },
+            }),
+        );
 
         return finish.result;
     }

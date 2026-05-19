@@ -11,7 +11,7 @@ import type { FtpStorageOptions } from "../../../src/storage/ftp/types";
 import { metadata, storageOptions, testfile } from "../../__helpers__/config";
 
 const { control, store } = vi.hoisted(() => {
-    return { control: { renameThrows: false, uploadThrows: false }, store: new Map<string, Buffer>() };
+    return { control: { renameThrows: false, uploadFailures: 0, uploadThrows: false }, store: new Map<string, Buffer>() };
 });
 
 vi.mock(import("basic-ftp"), () => {
@@ -44,6 +44,16 @@ vi.mock(import("basic-ftp"), () => {
         public async uploadFrom(source: Readable, path: string): Promise<void> {
             if (control.uploadThrows) {
                 throw new Error("553 upload not permitted");
+            }
+
+            if (control.uploadFailures > 0) {
+                control.uploadFailures -= 1;
+
+                const error = new Error("connection reset") as Error & { code: string };
+
+                error.code = "ECONNRESET";
+
+                throw error;
             }
 
             store.set(normalize(path), await drain(source));
@@ -132,6 +142,7 @@ describe(FtpStorage, () => {
         store.clear();
         control.renameThrows = false;
         control.uploadThrows = false;
+        control.uploadFailures = 0;
         metaDirectory = join(tmpdir(), `ftp-meta-${Math.random().toString(36).slice(2)}`);
         storage = makeStorage(metaDirectory);
     });
@@ -268,5 +279,51 @@ describe(FtpStorage, () => {
 
         await expect(storage.move(created.id, "move-target")).rejects.toThrow(AggregateError);
         expect(store.has("uploads/move-target")).toBe(false);
+    });
+
+    it("retries a transient upload failure and eventually succeeds", async () => {
+        expect.assertions(2);
+
+        const created = await storage.create({ contentType: testfile.contentType, metadata });
+
+        control.uploadFailures = 2;
+
+        const written = await storage.write(
+            {
+                body: Readable.from([testfile.asBuffer]),
+                contentLength: testfile.asBuffer.length,
+                id: created.id,
+                size: testfile.asBuffer.length,
+                start: 0,
+            },
+            { retries: { initialDelay: 0, maxRetries: 3 } },
+        );
+
+        expect(written.status).toBe("completed");
+        expect(control.uploadFailures).toBe(0);
+    });
+
+    it("aborts a write when the caller signal is already aborted and does not store the file", async () => {
+        expect.assertions(2);
+
+        const created = await storage.create({ contentType: testfile.contentType, metadata });
+        const controller = new AbortController();
+
+        controller.abort();
+
+        await expect(
+            storage.write(
+                {
+                    body: Readable.from([testfile.asBuffer]),
+                    contentLength: testfile.asBuffer.length,
+                    id: created.id,
+                    size: testfile.asBuffer.length,
+                    start: 0,
+                },
+                { signal: controller.signal },
+            ),
+        ).rejects.toThrow();
+
+        expect(store.has(`uploads/${created.id}`)).toBe(false);
     });
 });

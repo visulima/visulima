@@ -301,6 +301,7 @@
         "@aws-sdk/s3-request-presigner": "catalog:dev",
         "@aws-sdk/signature-v4-crt": "catalog:dev",
         "@aws-sdk/types": "catalog:dev",
+        "@azure/core-auth": "catalog:dev",
         "@azure/storage-blob": "catalog:dev",
         "@bunny.net/storage-sdk": "0.3.1",
         "@googleapis/drive": "20.1.0",
@@ -371,6 +372,7 @@
         "@aws-sdk/s3-request-presigner": ">=3.901.0",
         "@aws-sdk/signature-v4-crt": ">=3.901.0",
         "@aws-sdk/types": ">=3.930.0",
+        "@azure/core-auth": ">=1.9.0",
         "@azure/storage-blob": ">=12.28.0",
         "@bunny.net/storage-sdk": ">=0.3.0",
         "@googleapis/drive": ">=20.0.0",
@@ -419,6 +421,9 @@
             "optional": true
         },
         "@aws-sdk/types": {
+            "optional": true
+        },
+        "@azure/core-auth": {
             "optional": true
         },
         "@azure/storage-blob": {

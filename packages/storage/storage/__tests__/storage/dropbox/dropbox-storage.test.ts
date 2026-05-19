@@ -325,4 +325,51 @@ describe(DropboxStorage, () => {
             await expect(storage.getUploadUrl("file.mp4")).rejects.toThrow(/presigned upload URLs.*POST with a raw body/);
         });
     });
+
+    describe("retry & cancellation", () => {
+        const econnreset = (): Error => {
+            const error = new Error("connection reset") as Error & { code: string };
+
+            error.code = "ECONNRESET";
+
+            return error;
+        };
+
+        it("retries a transient SDK failure and eventually succeeds", async () => {
+            expect.assertions(2);
+
+            const storage = new DropboxStorage({
+                ...(storageOptions as DropboxStorageOptions),
+                accessToken: "tok",
+            });
+
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+
+            mockClient.filesDeleteV2.mockRejectedValueOnce(econnreset()).mockRejectedValueOnce(econnreset()).mockResolvedValueOnce({});
+
+            const result = await storage.delete({ id: "file.mp4" }, { retries: { initialDelay: 0, maxRetries: 3 } });
+
+            expect(result.status).toBe("deleted");
+            expect(mockClient.filesDeleteV2).toHaveBeenCalledTimes(3);
+        });
+
+        it("does not invoke the SDK when the caller signal is already aborted", async () => {
+            expect.assertions(2);
+
+            const storage = new DropboxStorage({
+                ...(storageOptions as DropboxStorageOptions),
+                accessToken: "tok",
+            });
+
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+
+            const controller = new AbortController();
+
+            controller.abort();
+
+            await expect(storage.delete({ id: "file.mp4" }, { signal: controller.signal })).rejects.toThrow();
+
+            expect(mockClient.filesDeleteV2).not.toHaveBeenCalled();
+        });
+    });
 });

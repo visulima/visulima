@@ -14,12 +14,14 @@ import type { ErrorResponses, UploadError } from "../utils/errors";
 import { ErrorMap, ERRORS, throwErrorCode } from "../utils/errors";
 import Locker from "../utils/locker";
 import toMilliseconds from "../utils/primitives/to-milliseconds";
+import type { RetryConfig } from "../utils/retry";
+import { retry } from "../utils/retry";
 import type { HttpError, Metrics, ValidatorConfig } from "../utils/types";
 // @ts-expect-error - ValidationError is used for type checking in error handling
 import ValidationError from "../utils/validation-error";
 import { Validator } from "../utils/validator";
 import type MetaStorage from "./meta-storage";
-import type { BaseStorageOptions, BatchOperationResponse, PurgeList } from "./types";
+import type { BaseStorageOptions, BatchOperationResponse, OperationOptions, PurgeList } from "./types";
 import type { File, FileInit, FilePart, FileQuery } from "./utils/file";
 import { isExpired, updateMetadata } from "./utils/file";
 import type { FileReturn } from "./utils/file/types";
@@ -1009,6 +1011,123 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
         }
 
         return file;
+    }
+
+    /**
+     * Backend-resolved retry configuration that {@link runOperation} layers
+     * per-call overrides on top of. Subclasses that build a `RetryConfig`
+     * (S3, Azure, Netlify, …) override this; the default (`undefined`) makes
+     * `runOperation` fall back to the retry engine's own defaults.
+     */
+    // eslint-disable-next-line class-methods-use-this
+    protected getRetryConfig(): RetryConfig | undefined {
+        return undefined;
+    }
+
+    /**
+     * Runs a backend SDK call with per-operation cancellation, timeout and
+     * retry handling.
+     *
+     * The provided `signal` is the merge of the caller's `options.signal` and
+     * a fresh per-attempt `options.timeout` deadline (via `AbortSignal.any` /
+     * `AbortSignal.timeout`). Pass it to the underlying SDK so the provider
+     * request is actually cancelled rather than merely abandoned.
+     *
+     * Aborted or timed-out calls are never retried. Pass
+     * `{ replayable: false }` for operations whose body is a one-shot stream —
+     * a consumed `Readable`/`ReadableStream` cannot be safely re-sent, so the
+     * retry count is forced to zero.
+     * @param options Per-call overrides (`signal`, `timeout`, `retries`).
+     * @param function_ Receives the merged abort signal for the attempt.
+     * @param operationConfig `replayable: false` disables retries for non-replayable bodies.
+     */
+    protected runOperation<T>(
+        options: OperationOptions | undefined,
+        function_: (signal: AbortSignal | undefined) => Promise<T>,
+        operationConfig?: { replayable?: boolean },
+    ): Promise<T> {
+        let perCall: RetryConfig | undefined;
+
+        if (typeof options?.retries === "number") {
+            perCall = { maxRetries: options.retries };
+        } else if (options?.retries) {
+            perCall = options.retries;
+        }
+
+        const retryConfig: RetryConfig = { ...this.getRetryConfig(), ...perCall };
+
+        // A consumed stream body cannot be replayed; a retry would re-send an
+        // already-drained source and silently upload truncated/empty data.
+        if (operationConfig?.replayable === false) {
+            retryConfig.maxRetries = 0;
+        }
+
+        const signals: AbortSignal[] = [];
+
+        if (options?.signal) {
+            signals.push(options.signal);
+        }
+
+        if (typeof options?.timeout === "number" && options.timeout > 0) {
+            signals.push(AbortSignal.timeout(options.timeout));
+        }
+
+        let signal: AbortSignal | undefined;
+
+        if (signals.length === 1) {
+            [signal] = signals;
+        } else if (signals.length > 1) {
+            signal = AbortSignal.any(signals);
+        }
+
+        // Never retry once aborted — replaying just races the same dead
+        // signal. Layered over (not replacing) any user shouldRetry.
+        const userShouldRetry = retryConfig.shouldRetry;
+
+        retryConfig.shouldRetry = (error: unknown): boolean => {
+            if (signal?.aborted) {
+                return false;
+            }
+
+            if (error instanceof Error && error.name === "AbortError") {
+                return false;
+            }
+
+            return userShouldRetry ? userShouldRetry(error) : false;
+        };
+
+        const toAbortError = (cause: unknown): Error => {
+            if (cause instanceof Error && cause.name === "AbortError") {
+                return cause;
+            }
+
+            const message = cause instanceof Error && cause.message ? cause.message : "The operation was aborted";
+            const aborted = new Error(message, { cause });
+
+            aborted.name = "AbortError";
+
+            return aborted;
+        };
+
+        return retry(async () => {
+            if (signal?.aborted) {
+                throw toAbortError(signal.reason);
+            }
+
+            try {
+                return await function_(signal);
+            } catch (error) {
+                // The provider may surface our deadline/cancellation as its own
+                // timeout or transport error. Normalize to a non-retryable
+                // AbortError so isRetryableError's network heuristics can't
+                // resurrect a call the caller already cancelled.
+                if (signal?.aborted) {
+                    throw toAbortError(error);
+                }
+
+                throw error;
+            }
+        }, retryConfig);
     }
 
     /**

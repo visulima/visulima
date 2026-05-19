@@ -6,6 +6,7 @@ import { BoxCcgAuth, BoxClient as BoxClientImpl, BoxDeveloperTokenAuth, BoxJwtAu
 import { ERRORS, throwErrorCode } from "../../utils/errors";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
+import type { OperationOptions } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import BoxFile from "./box-file";
@@ -227,6 +228,7 @@ const isConflictError = (error: unknown): boolean => {
  *   the simple-upload and chunked-upload paths. Each request handler runs
  *   independently, so concurrent multi-GB writes are bounded by the host's
  *   available memory.
+ * - ⚠️ Per-operation `signal`/`timeout` are best-effort: the underlying SDK does not support request cancellation, so an in-flight call may complete server-side even after abort. `retries` is honored.
  */
 class BoxStorage extends BaseStorage<BoxFile> {
     public static override readonly name: string = "box";
@@ -270,7 +272,7 @@ class BoxStorage extends BaseStorage<BoxFile> {
         return this.client;
     }
 
-    public async create(config: FileInit): Promise<BoxFile> {
+    public async create(config: FileInit, _options?: OperationOptions): Promise<BoxFile> {
         return this.instrumentOperation("create", async () => {
             const file = new BoxFile(config);
 
@@ -298,7 +300,7 @@ class BoxStorage extends BaseStorage<BoxFile> {
         });
     }
 
-    public async write(part: FilePart | FileQuery | BoxFile): Promise<BoxFile> {
+    public async write(part: FilePart | FileQuery | BoxFile, options?: OperationOptions): Promise<BoxFile> {
         return this.instrumentOperation("write", async () => {
             let file: BoxFile;
 
@@ -334,15 +336,15 @@ class BoxStorage extends BaseStorage<BoxFile> {
                     const buffer = await collectStream(part.body);
                     const key = file.name || file.id;
                     const { leaf, parents } = splitKey(key);
-                    const folderId = await this.resolveFolderId(parents, { create: true });
-                    const existingFileId = await this.resolveExistingFileForUpload(key, folderId, leaf);
-                    const item = await this.performUpload(existingFileId, folderId, leaf, buffer);
+                    const folderId = await this.resolveFolderId(parents, { create: true }, options);
+                    const existingFileId = await this.resolveExistingFileForUpload(key, folderId, leaf, options);
+                    const item = await this.performUpload(existingFileId, folderId, leaf, buffer, options);
 
                     if (item.id) {
                         this.fileIdCache.set(key, item.id);
 
                         if (this.publicByDefault) {
-                            await this.ensureSharedLink(item.id);
+                            await this.ensureSharedLink(item.id, options);
                         }
                     }
 
@@ -368,7 +370,7 @@ class BoxStorage extends BaseStorage<BoxFile> {
         });
     }
 
-    public async delete({ id }: FileQuery): Promise<BoxFile> {
+    public async delete({ id }: FileQuery, options?: OperationOptions): Promise<BoxFile> {
         return this.instrumentOperation("delete", async () => {
             let file: BoxFile | undefined;
 
@@ -383,9 +385,9 @@ class BoxStorage extends BaseStorage<BoxFile> {
             await this.authHandle.ensureReady();
 
             try {
-                const fileId = file?.boxFileId ?? (await this.resolveFileId(key));
+                const fileId = file?.boxFileId ?? (await this.resolveFileId(key, options));
 
-                await this.client.files.deleteFileById(fileId);
+                await this.runOperation(options, () => this.client.files.deleteFileById(fileId));
                 this.fileIdCache.delete(key);
             } catch (error) {
                 if (!isNotFoundError(error)) {
@@ -410,7 +412,7 @@ class BoxStorage extends BaseStorage<BoxFile> {
         });
     }
 
-    public async get({ id }: FileQuery): Promise<FileReturn> {
+    public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
             let stored: BoxFile | undefined;
             let key = id;
@@ -424,16 +426,16 @@ class BoxStorage extends BaseStorage<BoxFile> {
 
             await this.authHandle.ensureReady();
 
-            const fileId = stored?.boxFileId ?? (await this.resolveFileId(key));
-            const item = (await this.client.files.getFileById(fileId)) as BoxFileLike;
-            const url = await this.client.downloads.getDownloadFileUrl(fileId);
-            const response = await fetch(url);
+            const fileId = stored?.boxFileId ?? (await this.resolveFileId(key, options));
+            const item = (await this.runOperation(options, () => this.client.files.getFileById(fileId))) as BoxFileLike;
+            const url = await this.runOperation(options, () => this.client.downloads.getDownloadFileUrl(fileId));
+            const response = await this.runOperation(options, () => fetch(url));
 
             if (!response.ok) {
                 throw new Error(`Box: download fetch failed (${response.status})`);
             }
 
-            const arrayBuffer = await response.arrayBuffer();
+            const arrayBuffer = await this.runOperation(options, () => response.arrayBuffer());
             const buffer = Buffer.from(arrayBuffer);
 
             return {
@@ -451,17 +453,19 @@ class BoxStorage extends BaseStorage<BoxFile> {
         });
     }
 
-    public async copy(name: string, destination: string): Promise<BoxFile> {
+    public async copy(name: string, destination: string, options?: OperationOptions & { storageClass?: string }): Promise<BoxFile> {
         return this.instrumentOperation("copy", async () => {
             await this.authHandle.ensureReady();
 
-            const sourceId = await this.resolveFileId(name);
+            const sourceId = await this.resolveFileId(name, options);
             const { leaf, parents } = splitKey(destination);
-            const destinationFolderId = await this.resolveFolderId(parents, { create: true });
-            const created = (await this.client.files.copyFile(sourceId, {
-                name: leaf,
-                parent: { id: destinationFolderId },
-            })) as BoxFileLike;
+            const destinationFolderId = await this.resolveFolderId(parents, { create: true }, options);
+            const created = (await this.runOperation(options, () =>
+                this.client.files.copyFile(sourceId, {
+                    name: leaf,
+                    parent: { id: destinationFolderId },
+                }),
+            )) as BoxFileLike;
 
             if (created.id) {
                 this.fileIdCache.set(destination, created.id);
@@ -483,19 +487,21 @@ class BoxStorage extends BaseStorage<BoxFile> {
         });
     }
 
-    public async move(name: string, destination: string): Promise<BoxFile> {
+    public async move(name: string, destination: string, options?: OperationOptions): Promise<BoxFile> {
         return this.instrumentOperation("move", async () => {
             await this.authHandle.ensureReady();
 
-            const sourceId = await this.resolveFileId(name);
+            const sourceId = await this.resolveFileId(name, options);
             const { leaf, parents } = splitKey(destination);
-            const destinationFolderId = await this.resolveFolderId(parents, { create: true });
-            const updated = (await this.client.files.updateFileById(sourceId, {
-                requestBody: {
-                    name: leaf,
-                    parent: { id: destinationFolderId },
-                },
-            })) as BoxFileLike;
+            const destinationFolderId = await this.resolveFolderId(parents, { create: true }, options);
+            const updated = (await this.runOperation(options, () =>
+                this.client.files.updateFileById(sourceId, {
+                    requestBody: {
+                        name: leaf,
+                        parent: { id: destinationFolderId },
+                    },
+                }),
+            )) as BoxFileLike;
 
             this.fileIdCache.delete(name);
 
@@ -525,7 +531,7 @@ class BoxStorage extends BaseStorage<BoxFile> {
         });
     }
 
-    public override async list(limit = 1000): Promise<BoxFile[]> {
+    public override async list(limit = 1000, options?: OperationOptions): Promise<BoxFile[]> {
         return this.instrumentOperation(
             "list",
             async () => {
@@ -536,13 +542,15 @@ class BoxStorage extends BaseStorage<BoxFile> {
                 const pageLimit = Math.min(limit, 1000);
 
                 while (out.length < limit) {
-                    const page = await this.client.folders.getFolderItems(this.rootFolderId, {
-                        queryParams: {
-                            fields: ["id", "name", "size", "modified_at", "etag", "type"],
-                            limit: pageLimit,
-                            offset,
-                        },
-                    });
+                    const page = await this.runOperation(options, () =>
+                        this.client.folders.getFolderItems(this.rootFolderId, {
+                            queryParams: {
+                                fields: ["id", "name", "size", "modified_at", "etag", "type"],
+                                limit: pageLimit,
+                                offset,
+                            },
+                        }),
+                    );
                     const entries = page.entries ?? [];
 
                     for (const entry of entries) {
@@ -618,14 +626,20 @@ class BoxStorage extends BaseStorage<BoxFile> {
         );
     }
 
-    private async findChildByName(folderId: string, name: string): Promise<{ id: string; type: "file" | "folder" | "web_link" } | undefined> {
+    private async findChildByName(
+        folderId: string,
+        name: string,
+        options?: OperationOptions,
+    ): Promise<{ id: string; type: "file" | "folder" | "web_link" } | undefined> {
         let offset = 0;
         const limit = 1000;
 
         while (true) {
-            const page = await this.client.folders.getFolderItems(folderId, {
-                queryParams: { fields: ["id", "name", "type"], limit, offset },
-            });
+            const page = await this.runOperation(options, () =>
+                this.client.folders.getFolderItems(folderId, {
+                    queryParams: { fields: ["id", "name", "type"], limit, offset },
+                }),
+            );
             const entries = page.entries ?? [];
 
             for (const entry of entries) {
@@ -649,7 +663,7 @@ class BoxStorage extends BaseStorage<BoxFile> {
         return parents.join("/");
     }
 
-    private async resolveFolderId(parents: ReadonlyArray<string>, options: { create: boolean }): Promise<string> {
+    private async resolveFolderId(parents: ReadonlyArray<string>, options: { create: boolean }, operationOptions?: OperationOptions): Promise<string> {
         if (parents.length === 0) {
             return this.rootFolderId;
         }
@@ -675,7 +689,7 @@ class BoxStorage extends BaseStorage<BoxFile> {
                 continue;
             }
 
-            const child = await this.findChildByName(currentId, segment);
+            const child = await this.findChildByName(currentId, segment, operationOptions);
 
             if (child && child.type === "folder") {
                 currentId = child.id;
@@ -692,7 +706,7 @@ class BoxStorage extends BaseStorage<BoxFile> {
             }
 
             try {
-                const created = await this.client.folders.createFolder({ name: segment, parent: { id: currentId } });
+                const created = await this.runOperation(operationOptions, () => this.client.folders.createFolder({ name: segment, parent: { id: currentId } }));
 
                 if (!created.id) {
                     throw new Error(`Box: createFolder did not return an id for "${segment}"`);
@@ -702,7 +716,7 @@ class BoxStorage extends BaseStorage<BoxFile> {
                 this.folderIdCache.set(partialKey, currentId);
             } catch (error) {
                 if (isConflictError(error)) {
-                    const existing = await this.findChildByName(currentId, segment);
+                    const existing = await this.findChildByName(currentId, segment, operationOptions);
 
                     if (existing && existing.type === "folder") {
                         currentId = existing.id;
@@ -720,7 +734,7 @@ class BoxStorage extends BaseStorage<BoxFile> {
         return currentId;
     }
 
-    private async resolveFileId(key: string): Promise<string> {
+    private async resolveFileId(key: string, options?: OperationOptions): Promise<string> {
         const cached = this.fileIdCache.get(key);
 
         if (cached) {
@@ -728,8 +742,8 @@ class BoxStorage extends BaseStorage<BoxFile> {
         }
 
         const { leaf, parents } = splitKey(key);
-        const folderId = await this.resolveFolderId(parents, { create: false });
-        const child = await this.findChildByName(folderId, leaf);
+        const folderId = await this.resolveFolderId(parents, { create: false }, options);
+        const child = await this.findChildByName(folderId, leaf, options);
 
         if (!child || child.type !== "file") {
             throw new Error(`Box: file "${key}" not found`);
@@ -740,14 +754,14 @@ class BoxStorage extends BaseStorage<BoxFile> {
         return child.id;
     }
 
-    private async resolveExistingFileForUpload(key: string, folderId: string, leaf: string): Promise<string | undefined> {
+    private async resolveExistingFileForUpload(key: string, folderId: string, leaf: string, options?: OperationOptions): Promise<string | undefined> {
         const cached = this.fileIdCache.get(key);
 
         if (cached) {
             return cached;
         }
 
-        const existing = await this.findChildByName(folderId, leaf);
+        const existing = await this.findChildByName(folderId, leaf, options);
 
         if (!existing) {
             return undefined;
@@ -762,16 +776,20 @@ class BoxStorage extends BaseStorage<BoxFile> {
         throw new Error(`Box: "${key}" already exists as a non-file (${existing.type})`);
     }
 
-    private async performUpload(fileId: string | undefined, folderId: string, leaf: string, data: Buffer): Promise<BoxFileLike> {
+    private async performUpload(fileId: string | undefined, folderId: string, leaf: string, data: Buffer, options?: OperationOptions): Promise<BoxFileLike> {
         if (data.byteLength > SIMPLE_UPLOAD_LIMIT_BYTES) {
-            return (await this.client.chunkedUploads.uploadBigFile(bufferToReadable(data), leaf, data.byteLength, folderId)) as BoxFileLike;
+            return (await this.runOperation(options, () =>
+                this.client.chunkedUploads.uploadBigFile(bufferToReadable(data), leaf, data.byteLength, folderId),
+            )) as BoxFileLike;
         }
 
         if (fileId) {
-            const response = await this.client.uploads.uploadFileVersion(fileId, {
-                attributes: { name: leaf },
-                file: bufferToReadable(data),
-            });
+            const response = await this.runOperation(options, () =>
+                this.client.uploads.uploadFileVersion(fileId, {
+                    attributes: { name: leaf },
+                    file: bufferToReadable(data),
+                }),
+            );
             const entry = (response.entries ?? [])[0] as BoxFileLike | undefined;
 
             if (!entry) {
@@ -781,10 +799,12 @@ class BoxStorage extends BaseStorage<BoxFile> {
             return entry;
         }
 
-        const response = await this.client.uploads.uploadFile({
-            attributes: { name: leaf, parent: { id: folderId } },
-            file: bufferToReadable(data),
-        });
+        const response = await this.runOperation(options, () =>
+            this.client.uploads.uploadFile({
+                attributes: { name: leaf, parent: { id: folderId } },
+                file: bufferToReadable(data),
+            }),
+        );
         const entry = (response.entries ?? [])[0] as BoxFileLike | undefined;
 
         if (!entry) {
@@ -794,32 +814,32 @@ class BoxStorage extends BaseStorage<BoxFile> {
         return entry;
     }
 
-    private async ensureSharedLink(fileId: string): Promise<string> {
+    private async ensureSharedLink(fileId: string, options?: OperationOptions): Promise<string> {
         try {
-            const file = (await this.client.sharedLinksFiles.addShareLinkToFile(
-                fileId,
-                { sharedLink: { access: "open" } },
-                { fields: "shared_link" },
+            const file = (await this.runOperation(options, () =>
+                this.client.sharedLinksFiles.addShareLinkToFile(fileId, { sharedLink: { access: "open" } }, { fields: "shared_link" }),
             )) as BoxFileLike;
             const link = file.sharedLink;
             const out = link?.downloadUrl ?? link?.url;
 
             if (!out) {
-                return this.fetchSharedLinkUrl(fileId);
+                return this.fetchSharedLinkUrl(fileId, options);
             }
 
             return out;
         } catch (error) {
             if (isConflictError(error)) {
-                return this.fetchSharedLinkUrl(fileId);
+                return this.fetchSharedLinkUrl(fileId, options);
             }
 
             throw error;
         }
     }
 
-    private async fetchSharedLinkUrl(fileId: string): Promise<string> {
-        const file = (await this.client.sharedLinksFiles.getSharedLinkForFile(fileId, { fields: "shared_link" })) as BoxFileLike;
+    private async fetchSharedLinkUrl(fileId: string, options?: OperationOptions): Promise<string> {
+        const file = (await this.runOperation(options, () =>
+            this.client.sharedLinksFiles.getSharedLinkForFile(fileId, { fields: "shared_link" }),
+        )) as BoxFileLike;
         const link = file.sharedLink;
         const out = link?.downloadUrl ?? link?.url;
 

@@ -5,6 +5,7 @@ import { ERRORS, throwErrorCode, wrapStorageError } from "../../utils/errors";
 import { createOAuthRefreshHandle } from "../../utils/oauth-refresh";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
+import type { OperationOptions } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import OneDriveFile from "./onedrive-file";
@@ -251,6 +252,7 @@ const isNotFoundError = (error: unknown): boolean => {
  *   simple `PUT :/content` and upload-session paths. For multi-GB transfers
  *   prefer `getUploadUrl()` and stream chunks directly to the returned
  *   upload-session URL from the client.
+ * - ⚠️ Per-operation `signal`/`timeout` are best-effort: the underlying SDK does not support request cancellation, so an in-flight call may complete server-side even after abort. `retries` is honored.
  */
 class OneDriveStorage extends BaseStorage<OneDriveFile> {
     public static override readonly name: string = "onedrive";
@@ -307,7 +309,7 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
         return this.client;
     }
 
-    public async create(config: FileInit): Promise<OneDriveFile> {
+    public async create(config: FileInit, _options?: OperationOptions): Promise<OneDriveFile> {
         return this.instrumentOperation("create", async () => {
             const file = new OneDriveFile(config);
 
@@ -335,7 +337,7 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
         });
     }
 
-    public async write(part: FilePart | FileQuery | OneDriveFile): Promise<OneDriveFile> {
+    public async write(part: FilePart | FileQuery | OneDriveFile, options?: OperationOptions): Promise<OneDriveFile> {
         return this.instrumentOperation("write", async () => {
             let file: OneDriveFile;
 
@@ -371,8 +373,8 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
 
                     const item =
                         buffer.byteLength <= SIMPLE_UPLOAD_LIMIT_BYTES
-                            ? await this.uploadSimple(key, buffer, file.contentType)
-                            : await this.uploadSession(key, buffer, file.contentType);
+                            ? await this.uploadSimple(key, buffer, file.contentType, options)
+                            : await this.uploadSession(key, buffer, file.contentType, options);
 
                     file.bytesWritten = buffer.length;
                     file.size = buffer.length;
@@ -397,7 +399,7 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
         });
     }
 
-    public async delete({ id }: FileQuery): Promise<OneDriveFile> {
+    public async delete({ id }: FileQuery, options?: OperationOptions): Promise<OneDriveFile> {
         return this.instrumentOperation("delete", async () => {
             let file: OneDriveFile | undefined;
 
@@ -410,7 +412,7 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
             const key = file?.name ?? id;
 
             try {
-                await this.client.api(this.itemApiPath(key)).delete();
+                await this.runOperation(options, () => this.client.api(this.itemApiPath(key)).delete());
             } catch (error) {
                 if (!isNotFoundError(error)) {
                     throw error;
@@ -434,7 +436,7 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
         });
     }
 
-    public async get({ id }: FileQuery): Promise<FileReturn> {
+    public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
             let stored: OneDriveFile | undefined;
             let key = id;
@@ -446,8 +448,10 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
                 // direct path lookup
             }
 
-            const item = (await this.client.api(this.itemApiPath(key)).get()) as DriveItem;
-            const arrayBuffer = (await this.client.api(this.itemActionPath(key, "content")).responseType(ResponseType.ARRAYBUFFER).get()) as ArrayBuffer;
+            const item = (await this.runOperation(options, () => this.client.api(this.itemApiPath(key)).get())) as DriveItem;
+            const arrayBuffer = (await this.runOperation(options, () =>
+                this.client.api(this.itemActionPath(key, "content")).responseType(ResponseType.ARRAYBUFFER).get(),
+            )) as ArrayBuffer;
             const buffer = Buffer.from(arrayBuffer);
 
             return {
@@ -465,7 +469,7 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
         });
     }
 
-    public async copy(name: string, destination: string): Promise<OneDriveFile> {
+    public async copy(name: string, destination: string, options?: OperationOptions & { storageClass?: string }): Promise<OneDriveFile> {
         return this.instrumentOperation("copy", async () => {
             const parentPath = this.parentReferencePath(destination);
             const newName = baseName(destination);
@@ -474,7 +478,9 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
                 parentReference: { path: parentPath },
             };
 
-            const response = (await this.client.api(this.itemActionPath(name, "copy")).responseType(ResponseType.RAW).post(body)) as Response;
+            const response = (await this.runOperation(options, () =>
+                this.client.api(this.itemActionPath(name, "copy")).responseType(ResponseType.RAW).post(body),
+            )) as Response;
 
             if (response.status !== 202) {
                 const text = await response.text().catch(() => "");
@@ -496,7 +502,7 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
                 });
             }
 
-            const resourceId = await this.pollCopyMonitor(monitorUrl);
+            const resourceId = await this.pollCopyMonitor(monitorUrl, options);
 
             const file = new OneDriveFile({
                 contentType: "application/octet-stream",
@@ -512,15 +518,17 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
         });
     }
 
-    public async move(name: string, destination: string): Promise<OneDriveFile> {
+    public async move(name: string, destination: string, options?: OperationOptions): Promise<OneDriveFile> {
         return this.instrumentOperation("move", async () => {
             const parentPath = this.parentReferencePath(destination);
             const newName = baseName(destination);
 
-            const moved = (await this.client.api(this.itemApiPath(name)).patch({
-                name: newName,
-                parentReference: { path: parentPath },
-            })) as DriveItem;
+            const moved = (await this.runOperation(options, () =>
+                this.client.api(this.itemApiPath(name)).patch({
+                    name: newName,
+                    parentReference: { path: parentPath },
+                }),
+            )) as DriveItem;
 
             const file = new OneDriveFile({
                 contentType: "application/octet-stream",
@@ -545,7 +553,7 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
         });
     }
 
-    public override async list(limit = 1000): Promise<OneDriveFile[]> {
+    public override async list(limit = 1000, options?: OperationOptions): Promise<OneDriveFile[]> {
         return this.instrumentOperation(
             "list",
             async () => {
@@ -553,7 +561,10 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
                 let url: string | null = `${this.folderListChildrenPath()}?$top=${Math.min(limit, 1000)}`;
 
                 while (url && files.length < limit) {
-                    const page = (await this.client.api(url).get()) as { "@odata.nextLink"?: string; value: DriveItem[] };
+                    const page = (await this.runOperation(options, () => this.client.api(url as string).get())) as {
+                        "@odata.nextLink"?: string;
+                        value: DriveItem[];
+                    };
 
                     for (const item of page.value) {
                         if (!item.file) {
@@ -736,22 +747,26 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
         return cleanFolder ? `${cleanFolder}/${item.name}` : item.name;
     }
 
-    private async uploadSimple(key: string, data: Buffer, contentType?: string): Promise<DriveItem> {
-        const result = (await this.client
-            .api(`${this.itemActionPath(key, "content")}?@microsoft.graph.conflictBehavior=replace`)
-            .header("Content-Type", contentType ?? "application/octet-stream")
-            .put(data)) as DriveItem;
+    private async uploadSimple(key: string, data: Buffer, contentType?: string, options?: OperationOptions): Promise<DriveItem> {
+        const result = (await this.runOperation(options, () =>
+            this.client
+                .api(`${this.itemActionPath(key, "content")}?@microsoft.graph.conflictBehavior=replace`)
+                .header("Content-Type", contentType ?? "application/octet-stream")
+                .put(data),
+        )) as DriveItem;
 
         return result;
     }
 
-    private async uploadSession(key: string, data: Buffer, contentType?: string): Promise<DriveItem> {
-        const session = (await this.client.api(this.itemActionPath(key, "createUploadSession")).post({
-            item: {
-                "@microsoft.graph.conflictBehavior": "replace",
-                ...(contentType && { file: { mimeType: contentType } }),
-            },
-        })) as UploadSessionResponse;
+    private async uploadSession(key: string, data: Buffer, contentType?: string, options?: OperationOptions): Promise<DriveItem> {
+        const session = (await this.runOperation(options, () =>
+            this.client.api(this.itemActionPath(key, "createUploadSession")).post({
+                item: {
+                    "@microsoft.graph.conflictBehavior": "replace",
+                    ...(contentType && { file: { mimeType: contentType } }),
+                },
+            }),
+        )) as UploadSessionResponse;
 
         const total = data.byteLength;
         let offset = 0;
@@ -761,14 +776,16 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
             const end = Math.min(offset + UPLOAD_SESSION_CHUNK_BYTES, total);
             const chunk = data.subarray(offset, end);
 
-            const response = await fetch(session.uploadUrl, {
-                body: new Uint8Array(chunk),
-                headers: {
-                    "Content-Length": String(chunk.byteLength),
-                    "Content-Range": `bytes ${offset}-${end - 1}/${total}`,
-                },
-                method: "PUT",
-            });
+            const response = await this.runOperation(options, () =>
+                fetch(session.uploadUrl, {
+                    body: new Uint8Array(chunk),
+                    headers: {
+                        "Content-Length": String(chunk.byteLength),
+                        "Content-Range": `bytes ${offset}-${end - 1}/${total}`,
+                    },
+                    method: "PUT",
+                }),
+            );
 
             if (response.status === 200 || response.status === 201) {
                 final = (await response.json()) as DriveItem;
@@ -796,11 +813,11 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
         return final;
     }
 
-    private async pollCopyMonitor(monitorUrl: string): Promise<string | undefined> {
+    private async pollCopyMonitor(monitorUrl: string, options?: OperationOptions): Promise<string | undefined> {
         const deadline = Date.now() + this.copyTimeoutMs;
 
         while (true) {
-            const response = await fetch(monitorUrl);
+            const response = await this.runOperation(options, () => fetch(monitorUrl));
 
             if (!response.ok) {
                 throw wrapStorageError(new Error(response.statusText), {

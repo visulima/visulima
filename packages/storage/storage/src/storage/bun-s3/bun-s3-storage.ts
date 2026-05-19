@@ -5,6 +5,7 @@ import type { UploadError } from "../../utils/errors";
 import { wrapStorageError } from "../../utils/errors";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
+import type { OperationOptions } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import BunS3File from "./bun-s3-file";
@@ -86,6 +87,7 @@ const resolveClient = (config: BunS3StorageOptions): BunS3ClientLike => {
  * - No resumable / TUS multipart protocol. Each `write` uploads the supplied body in one shot (Bun handles large-object chunking internally). For resumable uploads use the `aws` or `aws-light` provider.
  * - `copy` / `move` are client-side read-then-write — Bun has no server-side `CopyObject`.
  * - `getUploadUrl` returns a presigned `PUT`; a `contentLength` cap cannot be enforced (Bun presign has no max-size policy) and is ignored.
+ * - ⚠️ Per-operation `signal`/`timeout` are best-effort: the underlying SDK does not support request cancellation, so an in-flight call may complete server-side even after abort. `retries` is honored.
  */
 class BunS3Storage extends BaseStorage<BunS3File> {
     public static override readonly name: string = "bun-s3";
@@ -106,7 +108,7 @@ class BunS3Storage extends BaseStorage<BunS3File> {
         return this.client;
     }
 
-    public async create(config: FileInit): Promise<BunS3File> {
+    public async create(config: FileInit, _options?: OperationOptions): Promise<BunS3File> {
         return this.instrumentOperation("create", async () => {
             const file = new BunS3File(config);
 
@@ -135,7 +137,7 @@ class BunS3Storage extends BaseStorage<BunS3File> {
         });
     }
 
-    public async write(part: BunS3File | FilePart | FileQuery): Promise<BunS3File> {
+    public async write(part: BunS3File | FilePart | FileQuery, options?: OperationOptions): Promise<BunS3File> {
         return this.instrumentOperation("write", async () => {
             let file: BunS3File;
 
@@ -170,7 +172,7 @@ class BunS3Storage extends BaseStorage<BunS3File> {
                     const key = toKey(file.name || file.id);
 
                     try {
-                        await this.client.write(key, buffer, { type: file.contentType });
+                        await this.runOperation(options, () => this.client.write(key, buffer, { type: file.contentType }));
                     } catch (error) {
                         throw wrapBunS3Error(error, "upload");
                     }
@@ -195,7 +197,7 @@ class BunS3Storage extends BaseStorage<BunS3File> {
         });
     }
 
-    public async delete({ id }: FileQuery): Promise<BunS3File> {
+    public async delete({ id }: FileQuery, options?: OperationOptions): Promise<BunS3File> {
         return this.instrumentOperation("delete", async () => {
             let file: BunS3File | undefined;
 
@@ -208,7 +210,7 @@ class BunS3Storage extends BaseStorage<BunS3File> {
             const key = file?.bunS3Key ?? toKey(file?.name ?? id);
 
             try {
-                await this.client.delete(key);
+                await this.runOperation(options, () => this.client.delete(key));
             } catch (error) {
                 // Idempotent delete: a missing key is treated as success so
                 // removing an already-gone object does not throw.
@@ -237,7 +239,7 @@ class BunS3Storage extends BaseStorage<BunS3File> {
         });
     }
 
-    public async get({ id }: FileQuery): Promise<FileReturn> {
+    public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
             let stored: BunS3File | undefined;
             let key: string;
@@ -259,10 +261,10 @@ class BunS3Storage extends BaseStorage<BunS3File> {
                 // carries contentType/size/ETag, so the extra round-trip is
                 // wasted when it exists.
                 if (!stored) {
-                    stat = await ref.stat();
+                    stat = await this.runOperation(options, () => ref.stat());
                 }
 
-                buffer = Buffer.from(await ref.arrayBuffer());
+                buffer = Buffer.from(await this.runOperation(options, () => ref.arrayBuffer()));
             } catch (error) {
                 throw wrapBunS3Error(error, "get");
             }
@@ -282,7 +284,10 @@ class BunS3Storage extends BaseStorage<BunS3File> {
         });
     }
 
-    public override async getStream({ id }: FileQuery): Promise<{ headers?: Record<string, string>; size?: number; stream: Readable }> {
+    public override async getStream(
+        { id }: FileQuery,
+        options?: OperationOptions,
+    ): Promise<{ headers?: Record<string, string>; size?: number; stream: Readable }> {
         return this.instrumentOperation("getStream", async () => {
             let stored: BunS3File | undefined;
             let key: string;
@@ -300,7 +305,7 @@ class BunS3Storage extends BaseStorage<BunS3File> {
             let webStream: ReadableStream<Uint8Array>;
 
             try {
-                stat = await ref.stat();
+                stat = await this.runOperation(options, () => ref.stat());
                 webStream = ref.stream();
             } catch (error) {
                 throw wrapBunS3Error(error, "getStream");
@@ -324,13 +329,13 @@ class BunS3Storage extends BaseStorage<BunS3File> {
         });
     }
 
-    public async copy(name: string, destination: string): Promise<BunS3File> {
+    public async copy(name: string, destination: string, options?: OperationOptions & { storageClass?: string }): Promise<BunS3File> {
         return this.instrumentOperation("copy", async () => {
-            const source = await this.get({ id: name });
+            const source = await this.get({ id: name }, options);
             const key = toKey(destination);
 
             try {
-                await this.client.write(key, source.content, { type: source.contentType });
+                await this.runOperation(options, () => this.client.write(key, source.content, { type: source.contentType }));
             } catch (error) {
                 throw wrapBunS3Error(error, "copy");
             }
@@ -352,24 +357,24 @@ class BunS3Storage extends BaseStorage<BunS3File> {
         });
     }
 
-    public async move(name: string, destination: string): Promise<BunS3File> {
+    public async move(name: string, destination: string, options?: OperationOptions): Promise<BunS3File> {
         return this.instrumentOperation("move", async () => {
-            const file = await this.copy(name, destination);
+            const file = await this.copy(name, destination, options);
 
-            await this.delete({ id: name });
+            await this.delete({ id: name }, options);
 
             return file;
         });
     }
 
-    public override async list(limit = 1000): Promise<BunS3File[]> {
+    public override async list(limit = 1000, options?: OperationOptions): Promise<BunS3File[]> {
         return this.instrumentOperation(
             "list",
             async () => {
                 let response: Awaited<ReturnType<BunS3ClientLike["list"]>>;
 
                 try {
-                    response = await this.client.list({ maxKeys: limit });
+                    response = await this.runOperation(options, () => this.client.list({ maxKeys: limit }));
                 } catch (error) {
                     throw wrapBunS3Error(error, "list");
                 }

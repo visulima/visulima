@@ -4,6 +4,7 @@ import SftpClient from "ssh2-sftp-client";
 import { ERRORS, throwErrorCode } from "../../utils/errors";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
+import type { OperationOptions } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import { collectStream, posixDirname, trimSlashes } from "../utils/remote";
@@ -18,6 +19,23 @@ const isNotFoundError = (error: unknown): boolean => {
     const message = error instanceof Error ? error.message : String(error);
 
     return code === 2 || code === "ENOENT" || /no such file|not exist|no such path/i.test(message);
+};
+
+/**
+ * Normalize any value into an `AbortError`. `runOperation` treats an
+ * `AbortError` as non-retryable, so a connection torn down by a caller's
+ * cancellation is not replayed against a dead signal.
+ */
+const toAbortError = (reason: unknown): Error => {
+    if (reason instanceof Error && reason.name === "AbortError") {
+        return reason;
+    }
+
+    const error = new Error(reason instanceof Error && reason.message ? reason.message : "The operation was aborted", { cause: reason });
+
+    error.name = "AbortError";
+
+    return error;
 };
 
 /**
@@ -56,7 +74,7 @@ class SftpStorage extends BaseStorage<SftpFile> {
         this.isReady = true;
     }
 
-    public async create(config: FileInit): Promise<SftpFile> {
+    public async create(config: FileInit, _options?: OperationOptions): Promise<SftpFile> {
         return this.instrumentOperation("create", async () => {
             const file = new SftpFile(config);
 
@@ -85,7 +103,7 @@ class SftpStorage extends BaseStorage<SftpFile> {
         });
     }
 
-    public async write(part: FilePart | FileQuery | SftpFile): Promise<SftpFile> {
+    public async write(part: FilePart | FileQuery | SftpFile, options?: OperationOptions): Promise<SftpFile> {
         return this.instrumentOperation("write", async () => {
             let file: SftpFile;
 
@@ -120,21 +138,28 @@ class SftpStorage extends BaseStorage<SftpFile> {
                     // non-initial chunk would overwrite earlier bytes and
                     // silently lose data. Reject resumable/chunked writes.
                     if (part.start > 0) {
-                        return throwErrorCode(ERRORS.METHOD_NOT_ALLOWED, "SFTP storage does not support chunked or resumable uploads; send the file in a single request.");
+                        return throwErrorCode(
+                            ERRORS.METHOD_NOT_ALLOWED,
+                            "SFTP storage does not support chunked or resumable uploads; send the file in a single request.",
+                        );
                     }
 
                     const buffer = await collectStream(part.body);
                     const path = file.path ?? this.keyToPath(file.name || file.id);
 
-                    await this.run(async (client) => {
-                        const directory = posixDirname(path);
+                    // `buffer` is fully materialized in memory before the upload,
+                    // so a retried attempt re-sends the same bytes safely.
+                    await this.runOperation(options, (signal) =>
+                        this.run(signal, async (client) => {
+                            const directory = posixDirname(path);
 
-                        if (directory) {
-                            await client.mkdir(directory, true);
-                        }
+                            if (directory) {
+                                await client.mkdir(directory, true);
+                            }
 
-                        await client.put(buffer, path);
-                    });
+                            await client.put(buffer, path);
+                        }),
+                    );
 
                     file.bytesWritten = buffer.length;
                     file.size = buffer.length;
@@ -153,22 +178,24 @@ class SftpStorage extends BaseStorage<SftpFile> {
         });
     }
 
-    public async get({ id }: FileQuery): Promise<FileReturn> {
+    public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
             const file = await this.checkIfExpired(await this.getMeta(id));
             const path = file.path ?? this.keyToPath(file.name || id);
 
-            const content = await this.run(async (client) => {
-                try {
-                    return (await client.get(path)) as Buffer;
-                } catch (error) {
-                    if (isNotFoundError(error)) {
-                        return throwErrorCode(ERRORS.FILE_NOT_FOUND);
-                    }
+            const content = await this.runOperation(options, (signal) =>
+                this.run(signal, async (client) => {
+                    try {
+                        return (await client.get(path)) as Buffer;
+                    } catch (error) {
+                        if (isNotFoundError(error)) {
+                            return throwErrorCode(ERRORS.FILE_NOT_FOUND);
+                        }
 
-                    throw error;
-                }
-            });
+                        throw error;
+                    }
+                }),
+            );
 
             return {
                 content,
@@ -185,20 +212,22 @@ class SftpStorage extends BaseStorage<SftpFile> {
         });
     }
 
-    public async delete({ id }: FileQuery): Promise<SftpFile> {
+    public async delete({ id }: FileQuery, options?: OperationOptions): Promise<SftpFile> {
         return this.instrumentOperation("delete", async () => {
             const file = await this.getMeta(id);
             const path = file.path ?? this.keyToPath(file.name || id);
 
-            await this.run(async (client) => {
-                try {
-                    await client.delete(path);
-                } catch (error) {
-                    if (!isNotFoundError(error)) {
-                        throw error;
+            await this.runOperation(options, (signal) =>
+                this.run(signal, async (client) => {
+                    try {
+                        await client.delete(path);
+                    } catch (error) {
+                        if (!isNotFoundError(error)) {
+                            throw error;
+                        }
                     }
-                }
-            });
+                }),
+            );
 
             await this.deleteMeta(id);
 
@@ -210,22 +239,24 @@ class SftpStorage extends BaseStorage<SftpFile> {
         });
     }
 
-    public async copy(name: string, destination: string): Promise<SftpFile> {
+    public async copy(name: string, destination: string, options?: OperationOptions & { storageClass?: string }): Promise<SftpFile> {
         return this.instrumentOperation("copy", async () => {
             const sourceFile = await this.getMeta(name);
             const sourcePath = sourceFile.path ?? this.keyToPath(sourceFile.name || name);
             const targetPath = this.keyToPath(destination);
 
-            await this.run(async (client) => {
-                const buffer = (await client.get(sourcePath)) as Buffer;
-                const directory = posixDirname(targetPath);
+            await this.runOperation(options, (signal) =>
+                this.run(signal, async (client) => {
+                    const buffer = (await client.get(sourcePath)) as Buffer;
+                    const directory = posixDirname(targetPath);
 
-                if (directory) {
-                    await client.mkdir(directory, true);
-                }
+                    if (directory) {
+                        await client.mkdir(directory, true);
+                    }
 
-                await client.put(buffer, targetPath);
-            });
+                    await client.put(buffer, targetPath);
+                }),
+            );
 
             const copiedFile = { ...sourceFile, id: destination, name: destination, path: targetPath } as SftpFile;
 
@@ -235,32 +266,37 @@ class SftpStorage extends BaseStorage<SftpFile> {
         });
     }
 
-    public async move(name: string, destination: string): Promise<SftpFile> {
+    public async move(name: string, destination: string, options?: OperationOptions): Promise<SftpFile> {
         return this.instrumentOperation("move", async () => {
             const sourceFile = await this.getMeta(name);
             const sourcePath = sourceFile.path ?? this.keyToPath(sourceFile.name || name);
             const targetPath = this.keyToPath(destination);
 
-            await this.run(async (client) => {
-                const directory = posixDirname(targetPath);
+            await this.runOperation(options, (signal) =>
+                this.run(signal, async (client) => {
+                    const directory = posixDirname(targetPath);
 
-                if (directory) {
-                    await client.mkdir(directory, true);
-                }
-
-                try {
-                    await client.rename(sourcePath, targetPath);
-                } catch (renameError) {
-                    try {
-                        const buffer = (await client.get(sourcePath)) as Buffer;
-
-                        await client.put(buffer, targetPath);
-                        await client.delete(sourcePath);
-                    } catch (fallbackError) {
-                        throw new AggregateError([renameError, fallbackError], `SFTP move failed: rename and copy+delete fallback both failed for "${sourcePath}" → "${targetPath}"`);
+                    if (directory) {
+                        await client.mkdir(directory, true);
                     }
-                }
-            });
+
+                    try {
+                        await client.rename(sourcePath, targetPath);
+                    } catch (renameError) {
+                        try {
+                            const buffer = (await client.get(sourcePath)) as Buffer;
+
+                            await client.put(buffer, targetPath);
+                            await client.delete(sourcePath);
+                        } catch (fallbackError) {
+                            throw new AggregateError(
+                                [renameError, fallbackError],
+                                `SFTP move failed: rename and copy+delete fallback both failed for "${sourcePath}" → "${targetPath}"`,
+                            );
+                        }
+                    }
+                }),
+            );
 
             const movedFile = { ...sourceFile, id: destination, name: destination, path: targetPath } as SftpFile;
 
@@ -276,65 +312,23 @@ class SftpStorage extends BaseStorage<SftpFile> {
         });
     }
 
-    public override async list(): Promise<SftpFile[]> {
+    public override async list(_limit = 1000, options?: OperationOptions): Promise<SftpFile[]> {
         return this.instrumentOperation("list", async () => {
             const root = this.keyToPath("");
 
-            return this.run(async (client) => {
-                const files: SftpFile[] = [];
+            return this.runOperation(options, (signal) =>
+                this.run(signal, async (client) => {
+                    const files: SftpFile[] = [];
 
-                const walk = async (directory: string): Promise<void> => {
-                    let entries: Awaited<ReturnType<SftpClient["list"]>>;
+                    await this.walkList(client, root, files);
 
-                    try {
-                        entries = await client.list(directory || ".");
-                    } catch (error) {
-                        if (isNotFoundError(error)) {
-                            return;
-                        }
-
-                        throw error;
-                    }
-
-                    for (const entry of entries) {
-                        const childPath = directory ? `${directory}/${entry.name}` : entry.name;
-
-                        if (entry.type === "d") {
-                            await walk(childPath);
-
-                            continue;
-                        }
-
-                        if (entry.type !== "-") {
-                            continue;
-                        }
-
-                        const key = this.pathToKey(childPath);
-
-                        if (!key) {
-                            continue;
-                        }
-
-                        const file = new SftpFile({ contentType: "application/octet-stream", metadata: {}, originalName: entry.name });
-
-                        file.id = key;
-                        file.name = key;
-                        file.path = childPath;
-                        file.size = entry.size;
-                        file.modifiedAt = new Date(entry.modifyTime).toISOString();
-
-                        files.push(file);
-                    }
-                };
-
-                await walk(root);
-
-                return files;
-            });
+                    return files;
+                }),
+            );
         });
     }
 
-    public override async exists({ id }: FileQuery): Promise<boolean> {
+    public override async exists({ id }: FileQuery, options?: OperationOptions): Promise<boolean> {
         return this.instrumentOperation("exists", async () => {
             let file: SftpFile;
 
@@ -346,24 +340,98 @@ class SftpStorage extends BaseStorage<SftpFile> {
 
             const path = file.path ?? this.keyToPath(file.name || id);
 
-            return this.run(async (client) => {
-                const type = await client.exists(path);
+            return this.runOperation(options, (signal) =>
+                this.run(signal, async (client) => {
+                    const type = await client.exists(path);
 
-                // "-" regular file, "l" symlink (to a file). "d" means a
-                // directory occupies the path, which is not our object.
-                return type === "-" || type === "l";
-            });
+                    // "-" regular file, "l" symlink (to a file). "d" means a
+                    // directory occupies the path, which is not our object.
+                    return type === "-" || type === "l";
+                }),
+            );
         });
     }
 
-    private async run<T>(function_: (client: SftpClient) => Promise<T>): Promise<T> {
-        const client = new SftpClient();
-
-        await client.connect(this.connection);
+    private async walkList(client: SftpClient, directory: string, files: SftpFile[]): Promise<void> {
+        let entries: Awaited<ReturnType<SftpClient["list"]>>;
 
         try {
+            entries = await client.list(directory || ".");
+        } catch (error) {
+            if (isNotFoundError(error)) {
+                return;
+            }
+
+            throw error;
+        }
+
+        for (const entry of entries) {
+            const childPath = directory ? `${directory}/${entry.name}` : entry.name;
+
+            if (entry.type === "d") {
+                await this.walkList(client, childPath, files);
+
+                continue;
+            }
+
+            if (entry.type !== "-") {
+                continue;
+            }
+
+            const key = this.pathToKey(childPath);
+
+            if (!key) {
+                continue;
+            }
+
+            const file = new SftpFile({ contentType: "application/octet-stream", metadata: {}, originalName: entry.name });
+
+            file.id = key;
+            file.name = key;
+            file.path = childPath;
+            file.size = entry.size;
+            file.modifiedAt = new Date(entry.modifyTime).toISOString();
+
+            files.push(file);
+        }
+    }
+
+    /**
+     * Opens a fresh single-session SFTP connection for one operation.
+     * `ssh2-sftp-client` has no `AbortSignal` hook, so cancellation is
+     * best-effort: an abort ends the SSH channel via `client.end()`, which
+     * rejects any in-flight transfer. The rejection is normalized to an
+     * `AbortError`.
+     */
+    private async run<T>(signal: AbortSignal | undefined, function_: (client: SftpClient) => Promise<T>): Promise<T> {
+        const client = new SftpClient();
+
+        if (signal?.aborted) {
+            throw toAbortError(signal.reason);
+        }
+
+        const onAbort = (): void => {
+            void client.end();
+        };
+
+        signal?.addEventListener("abort", onAbort, { once: true });
+
+        try {
+            await client.connect(this.connection);
+
+            if (signal?.aborted) {
+                throw toAbortError(signal.reason);
+            }
+
             return await function_(client);
+        } catch (error) {
+            if (signal?.aborted) {
+                throw toAbortError(error);
+            }
+
+            throw error;
         } finally {
+            signal?.removeEventListener("abort", onAbort);
             await client.end();
         }
     }

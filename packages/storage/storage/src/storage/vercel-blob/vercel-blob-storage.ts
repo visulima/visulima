@@ -7,6 +7,7 @@ import toMilliseconds from "../../utils/primitives/to-milliseconds";
 import LocalMetaStorage from "../local/local-meta-storage";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
+import type { OperationOptions } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import type { VercelBlobStorageOptions } from "./types";
@@ -31,6 +32,7 @@ import VercelBlobFile from "./vercel-blob-file";
  * - ❌ update: Not implemented (Vercel Blob API doesn't support metadata updates)
  * - ❌ getUrl: Not implemented (Vercel Blob URLs available via Vercel Blob API)
  * - ❌ getUploadUrl: Not implemented (Vercel Blob upload URLs handled internally)
+ * - ⚠️ Per-operation `signal`/`timeout` are best-effort: the underlying SDK does not support request cancellation, so an in-flight call may complete server-side even after abort. `retries` is honored.
  */
 class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
     public static override readonly name: string = "vercel-blob";
@@ -68,7 +70,7 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
         this.isReady = true;
     }
 
-    public async create(config: FileInit): Promise<VercelBlobFile> {
+    public async create(config: FileInit, _options?: OperationOptions): Promise<VercelBlobFile> {
         return this.instrumentOperation("create", async () => {
             // Handle TTL option
             const processedConfig = { ...config };
@@ -108,7 +110,7 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
         });
     }
 
-    public async write(part: FilePart | FileQuery | VercelBlobFile): Promise<VercelBlobFile> {
+    public async write(part: FilePart | FileQuery | VercelBlobFile, options?: OperationOptions): Promise<VercelBlobFile> {
         return this.instrumentOperation("write", async () => {
             let file: VercelBlobFile;
 
@@ -174,10 +176,12 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
                     const blob = new Blob([buffer], { type: file.contentType });
 
                     // Upload to Vercel Blob
-                    const result = await put(file.name, blob, {
-                        access: this.access,
-                        multipart: this.shouldUseMultipart(file),
-                    });
+                    const result = await this.runOperation(options, () =>
+                        put(file.name, blob, {
+                            access: this.access,
+                            multipart: this.shouldUseMultipart(file),
+                        }),
+                    );
 
                     file.url = result.url;
                     file.pathname = result.pathname;
@@ -207,7 +211,7 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
      * @returns Promise resolving to the deleted file object with status: "deleted".
      * @throws {UploadError} If the file metadata cannot be found.
      */
-    public async delete({ id }: FileQuery): Promise<VercelBlobFile> {
+    public async delete({ id }: FileQuery, options?: OperationOptions): Promise<VercelBlobFile> {
         return this.instrumentOperation("delete", async () => {
             const file = await this.getMeta(id);
 
@@ -215,10 +219,12 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
                 throw new Error(`File ${id} does not have a valid URL`);
             }
 
+            const { url } = file;
+
             file.status = "deleted";
 
             try {
-                await del(file.url, { token: this.token });
+                await this.runOperation(options, () => del(url, { token: this.token }));
             } catch (error) {
                 this.logger?.error("Failed to delete blob from Vercel Blob:", error);
 
@@ -243,7 +249,7 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
      * @param query File query containing the file ID to check.
      * @returns Promise resolving to true if both metadata and blob exist, false otherwise.
      */
-    public override async exists({ id }: FileQuery): Promise<boolean> {
+    public override async exists({ id }: FileQuery, options?: OperationOptions): Promise<boolean> {
         return this.instrumentOperation("exists", async () => {
             try {
                 // First check if metadata exists
@@ -253,8 +259,10 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
                     return false;
                 }
 
+                const { url } = file;
+
                 // Then verify the actual blob exists by checking if URL is accessible
-                const response = await fetch(file.url, { method: "HEAD" });
+                const response = await this.runOperation(options, () => fetch(url, { method: "HEAD" }));
 
                 return response.ok;
             } catch {
@@ -264,7 +272,7 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
         });
     }
 
-    public async get({ id }: FileQuery): Promise<FileReturn> {
+    public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
             const file = await this.checkIfExpired(await this.getMeta(id));
 
@@ -272,12 +280,14 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
                 throw new Error("File URL not found");
             }
 
+            const { url } = file;
+
             // For Vercel Blob, we need to fetch the content
             // In a real implementation, you might want to use the blob URL directly
             // and let the client download it, but for compatibility with the interface,
             // we'll fetch the content
-            const response = await fetch(file.url);
-            const content = Buffer.from(await response.arrayBuffer());
+            const response = await this.runOperation(options, () => fetch(url));
+            const content = Buffer.from(await this.runOperation(options, () => response.arrayBuffer()));
 
             return {
                 content,
@@ -301,7 +311,7 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
      * @returns Promise resolving to the copied file object.
      * @throws {UploadError} If the source file cannot be found.
      */
-    public async copy(name: string, destination: string): Promise<VercelBlobFile> {
+    public async copy(name: string, destination: string, options?: OperationOptions & { storageClass?: string }): Promise<VercelBlobFile> {
         return this.instrumentOperation("copy", async () => {
             const sourceFile = await this.getMeta(name);
 
@@ -309,10 +319,14 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
                 throw new Error("Source file URL not found");
             }
 
+            const sourceUrl = sourceFile.url;
+
             // Use Vercel Blob's copy function
-            const result = await copy(sourceFile.url, destination, {
-                access: "public",
-            });
+            const result = await this.runOperation(options, () =>
+                copy(sourceUrl, destination, {
+                    access: "public",
+                }),
+            );
 
             // Convert CopyBlobResult to VercelBlobFile
             return {
@@ -332,21 +346,21 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
      * @returns Promise resolving to the moved file object.
      * @throws {UploadError} If the source file cannot be found.
      */
-    public async move(name: string, destination: string): Promise<VercelBlobFile> {
+    public async move(name: string, destination: string, options?: OperationOptions): Promise<VercelBlobFile> {
         return this.instrumentOperation("move", async () => {
-            const copiedFile = await this.copy(name, destination);
+            const copiedFile = await this.copy(name, destination, options);
 
-            await this.delete({ id: name });
+            await this.delete({ id: name }, options);
 
             return copiedFile;
         });
     }
 
-    public override async list(limit = 1000): Promise<VercelBlobFile[]> {
+    public override async list(limit = 1000, options?: OperationOptions): Promise<VercelBlobFile[]> {
         return this.instrumentOperation(
             "list",
             async () => {
-                const result = await list({ limit });
+                const result = await this.runOperation(options, () => list({ limit }));
 
                 return result.blobs.map((blob) => {
                     const file = new VercelBlobFile({

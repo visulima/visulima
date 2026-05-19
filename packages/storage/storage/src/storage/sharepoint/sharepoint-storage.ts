@@ -7,6 +7,7 @@ import type MetaStorage from "../meta-storage";
 import OneDriveStorage, { buildGraphClient } from "../onedrive/onedrive-storage";
 import type { OneDriveStorageOptions } from "../onedrive/types";
 import { BaseStorage } from "../storage";
+import type { OperationOptions } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import type SharePointFile from "./sharepoint-file";
 import SharePointMetaStorage from "./sharepoint-meta-storage";
@@ -90,6 +91,8 @@ const parseSiteUrl = (siteUrl: string): { hostname: string; sitePath: string } =
  *   clientCredentials: { tenantId, clientId, clientSecret },
  * });
  * ```
+ * @remarks
+ * - ⚠️ Per-operation `signal`/`timeout` are best-effort: the underlying SDK does not support request cancellation, so an in-flight call may complete server-side even after abort. `retries` is honored.
  */
 class SharePointStorage extends BaseStorage<SharePointFile> {
     public static override readonly name: string = "sharepoint";
@@ -156,61 +159,64 @@ class SharePointStorage extends BaseStorage<SharePointFile> {
         return this.client;
     }
 
-    public async create(config: FileInit): Promise<SharePointFile> {
+    public async create(config: FileInit, options?: OperationOptions): Promise<SharePointFile> {
         const inner = await this.getInner();
 
-        return inner.create(config);
+        return inner.create(config, options);
     }
 
-    public async write(part: FilePart | FileQuery | SharePointFile): Promise<SharePointFile> {
+    public async write(part: FilePart | FileQuery | SharePointFile, options?: OperationOptions): Promise<SharePointFile> {
         const inner = await this.getInner();
 
-        return inner.write(part);
+        return inner.write(part, options);
     }
 
-    public async delete(query: FileQuery): Promise<SharePointFile> {
+    public async delete(query: FileQuery, options?: OperationOptions): Promise<SharePointFile> {
         const inner = await this.getInner();
 
-        return inner.delete(query);
+        return inner.delete(query, options);
     }
 
-    public async get(query: FileQuery): Promise<FileReturn> {
+    public async get(query: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         const inner = await this.getInner();
 
-        return inner.get(query);
+        return inner.get(query, options);
     }
 
-    public async copy(name: string, destination: string): Promise<SharePointFile> {
+    public async copy(name: string, destination: string, options?: OperationOptions & { storageClass?: string }): Promise<SharePointFile> {
         const inner = await this.getInner();
 
-        return inner.copy(name, destination);
+        return inner.copy(name, destination, options);
     }
 
-    public async move(name: string, destination: string): Promise<SharePointFile> {
+    public async move(name: string, destination: string, options?: OperationOptions): Promise<SharePointFile> {
         const inner = await this.getInner();
 
-        return inner.move(name, destination);
+        return inner.move(name, destination, options);
     }
 
-    public override async exists(query: FileQuery): Promise<boolean> {
+    public override async exists(query: FileQuery, _options?: OperationOptions): Promise<boolean> {
         const inner = await this.getInner();
 
         return inner.exists(query);
     }
 
-    public override async list(limit = 1000): Promise<SharePointFile[]> {
+    public override async list(limit = 1000, options?: OperationOptions): Promise<SharePointFile[]> {
         const inner = await this.getInner();
 
-        return inner.list(limit);
+        return inner.list(limit, options);
     }
 
-    public override async update(query: FileQuery, metadata: Partial<SharePointFile>): Promise<SharePointFile> {
+    public override async update(query: FileQuery, metadata: Partial<SharePointFile>, _options?: OperationOptions): Promise<SharePointFile> {
         const inner = await this.getInner();
 
         return inner.update(query, metadata);
     }
 
-    public override async getStream(query: FileQuery): Promise<{ headers?: Record<string, string>; size?: number; stream: Readable }> {
+    public override async getStream(
+        query: FileQuery,
+        _options?: OperationOptions,
+    ): Promise<{ headers?: Record<string, string>; size?: number; stream: Readable }> {
         const inner = await this.getInner();
 
         return inner.getStream(query);
@@ -283,9 +289,7 @@ class SharePointStorage extends BaseStorage<SharePointFile> {
             const wanted = config.documentLibrary.toLowerCase();
             const match =
                 (drives.value ?? []).find((drive) => drive.name === config.documentLibrary) ??
-                (drives.value ?? []).find(
-                    (drive) => drive.name?.toLowerCase() === wanted || webUrlLeaf(drive.webUrl)?.toLowerCase() === wanted,
-                );
+                (drives.value ?? []).find((drive) => drive.name?.toLowerCase() === wanted || webUrlLeaf(drive.webUrl)?.toLowerCase() === wanted);
 
             if (!match) {
                 return throwErrorCode(ERRORS.FILE_NOT_FOUND, `SharePoint storage: document library "${config.documentLibrary}" not found in site "${siteId}".`);

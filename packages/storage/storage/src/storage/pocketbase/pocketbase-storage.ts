@@ -3,6 +3,7 @@ import PocketBase, { ClientResponseError } from "pocketbase";
 import { ERRORS, throwErrorCode } from "../../utils/errors";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
+import type { OperationOptions } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import PocketBaseFile from "./pocketbase-file";
@@ -56,6 +57,8 @@ const fileUrl = (client: PocketBaseClientLike, record: PocketBaseRecord, filenam
  *   collection: "uploads",
  * });
  * ```
+ * @remarks
+ * - ⚠️ Per-operation `signal`/`timeout` are best-effort: the underlying SDK does not support request cancellation, so an in-flight call may complete server-side even after abort. `retries` is honored.
  */
 class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
     public static override readonly name: string = "pocketbase";
@@ -141,7 +144,7 @@ class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
         return this.client;
     }
 
-    public async create(config: FileInit): Promise<PocketBaseFile> {
+    public async create(config: FileInit, _options?: OperationOptions): Promise<PocketBaseFile> {
         return this.instrumentOperation("create", async () => {
             const file = new PocketBaseFile(config);
 
@@ -171,7 +174,7 @@ class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
         });
     }
 
-    public async write(part: FilePart | FileQuery | PocketBaseFile): Promise<PocketBaseFile> {
+    public async write(part: FilePart | FileQuery | PocketBaseFile, options?: OperationOptions): Promise<PocketBaseFile> {
         return this.instrumentOperation("write", async () => {
             let file: PocketBaseFile;
 
@@ -205,7 +208,7 @@ class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
                     const buffer = await collectStream(part.body);
                     const key = file.path ?? file.name;
 
-                    await this.putRecord(key, buffer, file.contentType);
+                    await this.putRecord(key, buffer, file.contentType, options);
 
                     file.bytesWritten = buffer.length;
                     file.size = buffer.length;
@@ -227,7 +230,7 @@ class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
         });
     }
 
-    public async delete({ id }: FileQuery): Promise<PocketBaseFile> {
+    public async delete({ id }: FileQuery, options?: OperationOptions): Promise<PocketBaseFile> {
         return this.instrumentOperation("delete", async () => {
             let file: PocketBaseFile | undefined;
 
@@ -242,9 +245,9 @@ class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
             await this.ensureAuth();
 
             try {
-                const record = await this.findRecord(key);
+                const record = await this.findRecord(key, options);
 
-                await this.client.collection(this.collectionName).delete(record.id);
+                await this.runOperation(options, () => this.client.collection(this.collectionName).delete(record.id));
             } catch (error: unknown) {
                 if (!isNotFound(error)) {
                     throw error;
@@ -270,7 +273,7 @@ class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
         });
     }
 
-    public override async exists({ id }: FileQuery): Promise<boolean> {
+    public override async exists({ id }: FileQuery, options?: OperationOptions): Promise<boolean> {
         return this.instrumentOperation("exists", async () => {
             let key = id;
 
@@ -285,7 +288,7 @@ class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
             await this.ensureAuth();
 
             try {
-                await this.findRecord(key);
+                await this.findRecord(key, options);
 
                 return true;
             } catch (error: unknown) {
@@ -298,7 +301,7 @@ class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
         });
     }
 
-    public async get({ id }: FileQuery): Promise<FileReturn> {
+    public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
             let key = id;
             let stored: PocketBaseFile | undefined;
@@ -312,10 +315,10 @@ class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
 
             await this.ensureAuth();
 
-            const record = await this.findRecord(key);
+            const record = await this.findRecord(key, options);
             const filename = String(record[this.fileField] ?? "");
             const url = fileUrl(this.client, record, filename);
-            const response = await fetch(url);
+            const response = await this.runOperation(options, () => fetch(url));
 
             if (!response.ok) {
                 return throwErrorCode(ERRORS.FILE_NOT_FOUND, `PocketBase: object not found at "${key}"`);
@@ -338,17 +341,17 @@ class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
         });
     }
 
-    public async copy(name: string, destination: string): Promise<PocketBaseFile> {
+    public async copy(name: string, destination: string, options?: OperationOptions & { storageClass?: string }): Promise<PocketBaseFile> {
         return this.instrumentOperation("copy", async () => {
             const meta = await this.getMetaSafe(name);
             const source = meta?.path ?? name;
 
             await this.ensureAuth();
 
-            const record = await this.findRecord(source);
+            const record = await this.findRecord(source, options);
             const filename = String(record[this.fileField] ?? "");
             const url = fileUrl(this.client, record, filename);
-            const response = await fetch(url);
+            const response = await this.runOperation(options, () => fetch(url));
 
             if (!response.ok) {
                 return throwErrorCode(ERRORS.FILE_NOT_FOUND, `PocketBase: object not found at "${source}"`);
@@ -357,7 +360,7 @@ class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
             const buffer = Buffer.from(await response.arrayBuffer());
             const contentType = response.headers.get("content-type") ?? "application/octet-stream";
 
-            await this.putRecord(destination, buffer, contentType);
+            await this.putRecord(destination, buffer, contentType, options);
 
             const file = new PocketBaseFile({
                 contentType,
@@ -375,18 +378,18 @@ class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
         });
     }
 
-    public async move(name: string, destination: string): Promise<PocketBaseFile> {
+    public async move(name: string, destination: string, options?: OperationOptions): Promise<PocketBaseFile> {
         return this.instrumentOperation("move", async () => {
-            const file = await this.copy(name, destination);
+            const file = await this.copy(name, destination, options);
             const meta = await this.getMetaSafe(name);
             const source = meta?.path ?? name;
 
             await this.ensureAuth();
 
             try {
-                const record = await this.findRecord(source);
+                const record = await this.findRecord(source, options);
 
-                await this.client.collection(this.collectionName).delete(record.id);
+                await this.runOperation(options, () => this.client.collection(this.collectionName).delete(record.id));
             } catch (error: unknown) {
                 if (!isNotFound(error)) {
                     throw error;
@@ -403,13 +406,13 @@ class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
         });
     }
 
-    public override async list(limit = 1000): Promise<PocketBaseFile[]> {
+    public override async list(limit = 1000, options?: OperationOptions): Promise<PocketBaseFile[]> {
         return this.instrumentOperation(
             "list",
             async () => {
                 await this.ensureAuth();
 
-                const { items } = await this.client.collection(this.collectionName).getList(1, limit);
+                const { items } = await this.runOperation(options, () => this.client.collection(this.collectionName).getList(1, limit));
 
                 return (items ?? []).map((record) => {
                     const key = String(record[this.keyField] ?? record.id);
@@ -466,13 +469,13 @@ class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
         return fileUrl(this.client, record, filename, { token });
     }
 
-    private async findRecord(key: string): Promise<PocketBaseRecord> {
+    private async findRecord(key: string, options?: OperationOptions): Promise<PocketBaseRecord> {
         const filter = this.client.filter(`${this.keyField} = {:k}`, { k: key });
 
-        return this.client.collection(this.collectionName).getFirstListItem(filter);
+        return this.runOperation(options, () => this.client.collection(this.collectionName).getFirstListItem(filter));
     }
 
-    private async putRecord(key: string, buffer: Buffer, contentType: string): Promise<void> {
+    private async putRecord(key: string, buffer: Buffer, contentType: string, options?: OperationOptions): Promise<void> {
         await this.ensureAuth();
 
         const form = new FormData();
@@ -481,15 +484,15 @@ class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
         form.append(this.fileField, new Blob([new Uint8Array(buffer)], { type: contentType }), key);
 
         try {
-            const record = await this.findRecord(key);
+            const record = await this.findRecord(key, options);
 
-            await this.client.collection(this.collectionName).update(record.id, form);
+            await this.runOperation(options, () => this.client.collection(this.collectionName).update(record.id, form));
         } catch (error: unknown) {
             if (!isNotFound(error)) {
                 throw error;
             }
 
-            await this.client.collection(this.collectionName).create(form);
+            await this.runOperation(options, () => this.client.collection(this.collectionName).create(form));
         }
     }
 
