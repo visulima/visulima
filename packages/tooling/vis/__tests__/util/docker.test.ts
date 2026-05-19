@@ -270,6 +270,59 @@ snapshots:
         expect(readFileSync(join(outDir, "workspace", "package-lock.json"), "utf8")).toBe(broken);
         expect(messages.some((m) => m.includes("pruning failed") && m.includes("copying verbatim"))).toBe(true);
     });
+
+    it("ships npm-shrinkwrap.json into the Docker context (not silently dropped)", () => {
+        expect.assertions(2);
+
+        const workspaceRoot = join(tmpDir, "repo");
+
+        mkdirSync(workspaceRoot, { recursive: true });
+        writeFileSync(join(workspaceRoot, "package.json"), JSON.stringify({ name: "root", workspaces: ["packages/a"] }));
+        // npm-shrinkwrap.json shares the package-lock format; before the fix
+        // it wasn't in LOCKFILE_FILES, so a shrinkwrap-only project shipped
+        // no lockfile at all and the in-container `npm ci` had nothing to
+        // install from.
+        writeFileSync(
+            join(workspaceRoot, "npm-shrinkwrap.json"),
+            JSON.stringify({
+                lockfileVersion: 3,
+                name: "root",
+                packages: {
+                    "": { name: "root", workspaces: ["packages/a"] },
+                    "node_modules/lodash": { resolved: "https://r/lodash", version: "4.17.21" },
+                    "packages/a": { dependencies: { lodash: "^4.17.21" }, name: "a", version: "0.0.0" },
+                },
+            }),
+        );
+
+        mkdirSync(join(workspaceRoot, "packages", "a"), { recursive: true });
+        writeFileSync(join(workspaceRoot, "packages", "a", "package.json"), JSON.stringify({ dependencies: { lodash: "^4.17.21" }, name: "a" }));
+
+        const outDir = join(tmpDir, "out");
+        const messages: string[] = [];
+
+        scaffoldDockerContext({
+            focus: ["a"],
+            log: (message) => messages.push(message),
+            outDir,
+            projectGraph: { dependencies: { a: [] }, nodes: {} },
+            workspace: { projects: { a: { root: "packages/a" } } },
+            workspaceRoot,
+        });
+
+        // Written back under the discovered filename, and routed through the
+        // npm pruner — valid JSON with the focus closure retained proves it
+        // was pruned, not skipped or copied verbatim. (The npm pruner's log
+        // message is hardcoded to "package-lock.json:" for all npm input;
+        // that cosmetic quirk is pre-existing and out of scope here.)
+        const out = join(outDir, "workspace", "npm-shrinkwrap.json");
+
+        expect(existsSync(out)).toBe(true);
+
+        const parsed = JSON.parse(readFileSync(out, "utf8")) as { packages?: Record<string, unknown> };
+
+        expect(parsed.packages?.["node_modules/lodash"]).toBeDefined();
+    });
 });
 
 describe(pruneDockerContext, () => {
