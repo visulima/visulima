@@ -1,3 +1,56 @@
+## @visulima/vis [1.0.0-alpha.22](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.21...@visulima/vis@1.0.0-alpha.22) (2026-05-19)
+
+### Features
+
+* **task-runner:** auto-capture outputs for compound build scripts ([e084434](https://github.com/visulima/visulima/commit/e0844344cf184177999a82b708299f08fbfd31ec))
+* **task-runner:** per-target hashMode "trace" opt-in ([#643](https://github.com/visulima/visulima/issues/643)) ([32353ff](https://github.com/visulima/visulima/commit/32353ff7a760ae9486e23cc4042fab46a2f2cc11))
+* **vis:** add composite s1ngularity supply-chain marshall ([44cdeaf](https://github.com/visulima/visulima/commit/44cdeafb58eefcef061ffaab6822d4628cb06b2c))
+* **vis:** add deprecation + package-age marshalls ([5547840](https://github.com/visulima/visulima/commit/5547840b5aef9689f4080c77c44d3884309b0601))
+* **vis:** add deps.dev as supply-chain security provider alongside Socket ([7f752d2](https://github.com/visulima/visulima/commit/7f752d250fa3c96d2ec01ca58bddf911586ea949))
+* **vis:** add lockfile supply-chain verification ([a8c741d](https://github.com/visulima/visulima/commit/a8c741d80b52b275cde11be188ab22c41a11f5f4))
+* **vis:** add migrate verify-graph equivalence verification ([697e2c0](https://github.com/visulima/visulima/commit/697e2c0888c596e4bcee0a12922db76937a29175))
+* **vis:** add Snyk security provider ([aba3571](https://github.com/visulima/visulima/commit/aba35710719d1325b311bf80d81a91c91e75aa1f))
+* **vis:** add write guard, watchman backend, vcs hints ([5127d79](https://github.com/visulima/visulima/commit/5127d79ad2aa523760517601f71fdf38571ca4d3))
+* **vis:** attested keyless-signed remote cache (Sigstore) ([4732610](https://github.com/visulima/visulima/commit/47326103a668ab99fcfc4e21f2c9efeaa5892944))
+* **vis:** default inferTargets on with guarded script enrichment ([29cabd1](https://github.com/visulima/visulima/commit/29cabd1763ce915cbfa6aaa85b1c29a020d72b01))
+* **vis:** harden bootstrap installers + add lint CI ([49ec0a2](https://github.com/visulima/visulima/commit/49ec0a25e76ab5865cd2a2dce49413311fcf389c))
+* **vis:** integrate aube package manager + offline OSV bloom prefilter ([9513e09](https://github.com/visulima/visulima/commit/9513e0930c6fbcdb00e42df2ab9c650194a35eb4))
+* **vis:** scan npm-shrinkwrap.json with precedence ([ae907f1](https://github.com/visulima/visulima/commit/ae907f18e560eed7c80c7738650330909a254148))
+* **vis:** security check on by default for update, add --no-security ([e8db4c8](https://github.com/visulima/visulima/commit/e8db4c88a4c64038ca00c46b2a63083fee224637))
+* **vis:** source-mapped, code-framed task failure rendering ([95b2343](https://github.com/visulima/visulima/commit/95b2343d7299ab8537c5a4ef0205ddeee9146c58))
+
+### Bug Fixes
+
+* **vis:** harden marshall pipeline and failure-render ANSI stripping ([22dc431](https://github.com/visulima/visulima/commit/22dc431ac3e841a2a342f297673b4d5f1a0a8a43))
+* **vis:** make write guard github/gitlab asymmetry explicit ([0202fd9](https://github.com/visulima/visulima/commit/0202fd99e920173cbbb5e9711bb2df9528d25e42))
+* **vis:** parse pnpm v11 multi-document lockfiles ([94024b6](https://github.com/visulima/visulima/commit/94024b65310ab70ef4a3d4fed93f4987203f4a57))
+* **vis:** version the packument cache so stale entries can't blind marshalls ([6741f55](https://github.com/visulima/visulima/commit/6741f551ed9c1a28a2184672ed644dd06344c93b))
+* **vis:** wire s1ngularity into the vis inspect dispatch ([0e355eb](https://github.com/visulima/visulima/commit/0e355eb44acfcf50caf09f7b0954038def735278))
+
+### Documentation
+
+* **vis:** add MARSHALL_DISABLE_S1NGULARITY to shell-alias guide ([fee4979](https://github.com/visulima/visulima/commit/fee4979338cd255ee5c4ff1e52e99e545695e4d7))
+* **vis:** document lockfile supply-chain verification ([05c338f](https://github.com/visulima/visulima/commit/05c338f55f7069ed59018e64be3d24016ab3fb66))
+* **vis:** document s1ngularity marshall in add/update/inspect ([6a14d5c](https://github.com/visulima/visulima/commit/6a14d5c190a6125817abe9c3e35afde87893228a))
+
+### Styles
+
+* **vis:** prettier/eslint conformance sweep ([dd200bd](https://github.com/visulima/visulima/commit/dd200bd84c022f5fd8819ce23bab2c1c4cace1ed))
+
+### Miscellaneous Chores
+
+* **vis:** remove competitive-analysis and priority-roadmap docs ([3116348](https://github.com/visulima/visulima/commit/3116348a5f76772ace9f285d136d352a815c3f0a))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.26
+* **@visulima/task-runner:** upgraded to 1.0.0-alpha.15
+* **@visulima/tui:** upgraded to 1.0.0-alpha.17
+* **@visulima/cerebro:** upgraded to 3.0.0-alpha.25
+* **@visulima/fs:** upgraded to 5.0.0-alpha.24
+* **@visulima/package:** upgraded to 5.0.0-alpha.23
+
 ## @visulima/vis [1.0.0-alpha.21](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.20...@visulima/vis@1.0.0-alpha.21) (2026-05-16)
 
 
