@@ -19,7 +19,7 @@ import { killOrphanedRunners, ORPHANS_DIAGNOSTIC_ID, runRuntimeDiagnostics } fro
 import type { ScanProgress, ScanTask } from "../../scan/scan-progress";
 import { startScanProgress } from "../../scan/scan-progress";
 import type { InstalledPackage } from "../../security/dependency-scan";
-import { findDuplicateDependencies, lockedPackages } from "../../security/dependency-scan";
+import { findDuplicateDependencies, lockedPackages, resolveLockfile } from "../../security/dependency-scan";
 import { buildEnabledProviders, fetchAllReports } from "../../security/registry";
 import type { PackageReportData } from "../../security/socket-security";
 import { DEFAULT_LOW_SCORE_THRESHOLD } from "../../security/socket-security";
@@ -919,14 +919,10 @@ const execute = async ({ logger, options, visConfig, visConfigError, workspaceRo
     // Cache: skip when --fix (mutates workspace) or --no-cache. The
     // lockfile mtime is the primary invalidation signal — if deps
     // didn't change, the catalog/duplicate/security scans return the
-    // same answers.
-    const lockfileNameByPm: Record<string, string> = {
-        bun: "bun.lock",
-        npm: "package-lock.json",
-        pnpm: "pnpm-lock.yaml",
-        yarn: "yarn.lock",
-    };
-    const lockfileFile = lockfileNameByPm[pm.name];
+    // same answers. Resolve via `resolveLockfile` so npm-shrinkwrap
+    // projects key on their real lockfile (a hardcoded package-lock.json
+    // would point at a missing file and never invalidate the cache).
+    const lockfileFile = resolveLockfile(wsRoot, pm.name)?.file;
     const lockfilePath = lockfileFile ? join(wsRoot, lockfileFile) : undefined;
     const configFilePath = findVisConfigFile(wsRoot);
     const cacheEnabled = (options as Record<string, unknown>).cache !== false && !options.fix;
