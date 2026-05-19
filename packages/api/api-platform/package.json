@@ -256,7 +256,7 @@
         "chalk": "catalog:peer",
         "commander": "catalog:peer",
         "cors": "catalog:peer",
-        "express": "^4.22.1",
+        "express": "^5.2.1",
         "fastify": "catalog:backend",
         "koa": "catalog:backend",
         "next": "catalog:peer",

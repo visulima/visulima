@@ -1,91 +1,143 @@
 // eslint-disable-next-line e18e/ban-dependencies -- type-only import; express is a supported integration target for the route-listing CLI
 import type { Express, Router } from "express";
 
-import pathRegexParser from "./path-regex-parser";
-import type { Key, Layer, Parameter, Route, RouteMetaData } from "./types";
+import type { Layer, Parameter, Route, RouteMetaData } from "./types";
+
+const PARAM_NAME_REGEX = /[A-Za-z0-9_]+/y;
 
 /**
- * Parses a route object. Route objects are the leafs of an express router tree.
- * @param layer The layer of this route object - represents the stack of middleware and other metadata
- * @param keys The full set of keys for this particular route
- * @param basePath The base path as it was initial declared for this route
- * @returns A ExpressPath object holding the metadata for a given route
+ * Extracts the path parameters declared in an Express 5 route path string.
+ *
+ * Express 5 (path-to-regexp v8) syntax: `:name` named parameters, `*name`
+ * wildcards, and `{ ... }` groups whose entire contents are optional.
+ * @param routePath The declared route path string
+ * @returns The path parameters with their required flag
  */
-const parseRouteLayer = (layer: Required<Layer>, keys: Key[], basePath: string): RouteMetaData => {
-    const lastRequestHandler = layer.route.stack.at(-1) as Layer;
-    const pathParameters: Parameter[] = keys.map((key) => {
-        return { in: "path", name: key.name, required: !key.optional };
-    });
+const extractParameters = (routePath: string): Parameter[] => {
+    const parameters: Parameter[] = [];
+    let depth = 0;
 
-    const filtered = layer.route.stack.filter((element) => (element.handle as Route).metadata);
+    for (let index = 0; index < routePath.length; index += 1) {
+        const char = routePath[index];
 
-    if (filtered.length > 1) {
+        if (char === "{") {
+            depth += 1;
+        } else if (char === "}") {
+            depth = Math.max(0, depth - 1);
+        } else if (char === ":" || char === "*") {
+            PARAM_NAME_REGEX.lastIndex = index + 1;
+
+            const match = PARAM_NAME_REGEX.exec(routePath);
+
+            if (match && match.index === index + 1) {
+                parameters.push({ in: "path", name: match[0], required: depth === 0 });
+                index = PARAM_NAME_REGEX.lastIndex - 1;
+            }
+        }
+    }
+
+    return parameters;
+};
+
+/**
+ * Renders an Express 5 route path (string | RegExp | array) as a display string.
+ * @param routePath The declared route path
+ * @returns The path rendered as a string
+ */
+const renderPath = (routePath: Route["path"]): string => {
+    if (typeof routePath === "string") {
+        return routePath;
+    }
+
+    if (Array.isArray(routePath)) {
+        return routePath.map((entry) => (typeof entry === "string" ? entry : entry.toString())).join(",");
+    }
+
+    return routePath.toString();
+};
+
+/**
+ * Parses a route layer. Route layers are the leafs of an Express router tree.
+ * @param layer The route layer holding the per-method handler stack and metadata
+ * @returns A RouteMetaData object holding the metadata for a given route
+ */
+const parseRouteLayer = (layer: Layer & { route: Route }): RouteMetaData => {
+    const { route } = layer;
+    const lastRequestHandler = route.stack.at(-1) as Layer;
+
+    const withMetadata = route.stack.filter((element) => (element.handle as Route | undefined)?.metadata !== undefined);
+
+    if (withMetadata.length > 1) {
         throw new Error("Only one metadata middleware is allowed per route");
     }
 
-    const path = (basePath + layer.route.path).replaceAll(/\/{2,}/gu, "/");
+    const path = typeof route.path === "string" ? route.path.replaceAll(/\/{2,}/gu, "/") : renderPath(route.path);
+    const pathParameters = typeof route.path === "string" ? extractParameters(route.path) : [];
 
-    if (filtered.length === 0) {
-        return { method: lastRequestHandler.method, path, pathParams: pathParameters };
+    if (withMetadata.length === 0) {
+        return { method: lastRequestHandler.method as string, path, pathParams: pathParameters };
     }
 
     return {
-        metadata: ((filtered[0] as Layer).handle as Route).metadata,
-        method: lastRequestHandler.method,
+        metadata: ((withMetadata[0] as Layer).handle as Route).metadata,
+        method: lastRequestHandler.method as string,
         path,
         pathParams: pathParameters,
     };
 };
 
 /**
- * Recursive traversal method for the express router and middleware tree.
+ * Recursive traversal of an Express 5 (router@2) layer tree.
+ *
+ * Express 5 no longer stores the declared mount path of `app.use(path, router)`
+ * layers on the built layer (it lives only inside opaque path-to-regexp matcher
+ * closures), so mounted-router prefixes cannot be reconstructed and are omitted
+ * from the listed path.
  * @param routes The array of routes to add to
- * @param path The current path segment that we have traversed so far
- * @param layer The current 'layer' of the router tree
- * @param keys The keys for the parameter's in the current path branch of the traversal
+ * @param layer The current layer of the router tree
  */
-const traverse = (routes: RouteMetaData[], path: string, layer: Layer, keys: Key[]): void => {
-    // eslint-disable-next-line no-param-reassign
-    keys = [...keys, ...layer.keys];
-
-    if (layer.name === "router" && layer.handle?.stack !== undefined) {
-        for (const l of layer.handle.stack) {
-            // eslint-disable-next-line no-param-reassign
-            path = path || "";
-
-            traverse(routes, `${path}/${pathRegexParser(layer.regexp, layer.keys)}`, l as Layer, keys);
+const traverse = (routes: RouteMetaData[], layer: Layer): void => {
+    if (layer.route) {
+        if (layer.route.stack.length === 0) {
+            return;
         }
-    }
 
-    if (!layer.route || layer.route.stack.length === 0) {
+        routes.push(parseRouteLayer(layer as Layer & { route: Route }));
+
         return;
     }
 
-    routes.push(parseRouteLayer(layer as Required<Layer>, keys, path));
+    const childStack = (layer.handle as (Router & { stack?: Layer[] }) | undefined)?.stack;
+
+    if (childStack !== undefined) {
+        for (const child of childStack) {
+            traverse(routes, child);
+        }
+    }
 };
 
-// @TODO use this to parse the express swagger
-
 /**
- * Parses an Express app and generates list of routes with metadata.
+ * Parses an Express 5 app and generates a list of routes with metadata.
  *
- * Can Parse:
- * - Nested Routers and Complex Express Projects
- * - Optional parameters e.g. /:name?
- * - Complex Matching routes e.g. /ma*tch, /ex(ab)?mple
- * - Regex routes e.g. /\/abc|\/xyz/
- * - Array of paths e.g. app.get(['/abc', '/xyz']) -> /abc,xyz/.
+ * Can parse:
+ * - Nested routers and complex Express projects
+ * - Optional parameters e.g. `/test{/:id}`
+ * - Wildcards e.g. `/files/*splat`
+ * - Regex routes e.g. `/\/abc|\/xyz/u`
+ * - Array of paths e.g. `app.get(["/abc", "/xyz"])`
+ *
+ * Mounted-router prefixes (`app.use("/base", router)`) are not recoverable in
+ * Express 5 and are therefore omitted from the reported path.
  * @param app The Express app reference. Must be used after all routes have been attached
- * @returns List of routes for this express app with meta-data that has been picked up
+ * @returns List of routes for this Express app with the meta-data that has been picked up
  */
 const expressPathParser = (app: Express): RouteMetaData[] => {
     // eslint-disable-next-line no-underscore-dangle, @typescript-eslint/no-unsafe-assignment -- express's internal _router is the legacy private accessor used as fallback for older versions; both sides are typed as `any` by upstream express types
     const router: Router = (app as Express & { _router?: Router })._router ?? (app.router as unknown as Router);
     const routes: RouteMetaData[] = [];
 
-    for (const layer of router.stack) {
-        // @TODO: revisit this type assertion
-        traverse(routes, "", layer as unknown as Layer, []);
+    for (const layer of (router as Router & { stack: Layer[] }).stack) {
+        traverse(routes, layer as unknown as Layer);
     }
 
     return routes;
