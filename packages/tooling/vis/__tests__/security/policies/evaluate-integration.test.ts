@@ -137,6 +137,32 @@ describe(evaluatePolicies, () => {
         expect(decisions[0]?.policy).toBe("vulnerability");
     });
 
+    it("offline-skips the network-bound firstSeen / publisherChange policies with an info decision", async () => {
+        expect.assertions(4);
+
+        const config: VisConfig = {
+            security: { policies: { firstSeen: { minutes: 1440 }, publisherChange: { mode: "no-downgrade" } } },
+        };
+
+        const decisions = await evaluatePolicies(
+            {
+                offline: true,
+                packageManager: "npm",
+                packages: [{ isDev: false, name: "evil", version: "1.0.0" }],
+                workspaceRoot,
+            },
+            "install",
+            { visConfig: config },
+        );
+
+        const byPolicy = Object.fromEntries(decisions.map((d) => [d.policy, d]));
+
+        expect(byPolicy.firstSeen?.severity).toBe("info");
+        expect(byPolicy.firstSeen?.reason).toContain("requires network (--offline)");
+        expect(byPolicy.publisherChange?.severity).toBe("info");
+        expect(byPolicy.publisherChange?.reason).toContain("requires network (--offline)");
+    });
+
     it("contains the module exception inside an info decision instead of throwing", async () => {
         expect.assertions(1);
 

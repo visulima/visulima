@@ -96,7 +96,24 @@ const securityKeysRefresh: Command = {
     ],
 };
 
-const securityCommands: Command[] = [securityList, securitySync, securityRun, securityTripwire, securityKeysRefresh];
+const securityVerifyLockfile: Command = {
+    commandPath: ["security"],
+    description: "Verify the entire lockfile closure against supply-chain policies (firstSeen, publisherChange, blockExoticSubdeps)",
+    examples: [
+        ["vis security verify-lockfile", "Re-validate every locked entry; exit non-zero on a policy violation"],
+        ["vis security verify-lockfile --offline", "Verify without network (skips firstSeen / publisherChange)"],
+        ["vis security verify-lockfile --json", "Emit the verification result as JSON for CI"],
+    ],
+    group: "Security & Health",
+    loader: () => import("./verify-lockfile"),
+    name: "verify-lockfile",
+    options: [
+        { defaultValue: false, description: "Emit the result as JSON instead of human-readable text", name: "json", type: Boolean },
+        { defaultValue: false, description: "Skip network-bound policies (firstSeen, publisherChange)", name: "offline", type: Boolean },
+    ],
+};
+
+const securityCommands: Command[] = [securityList, securitySync, securityRun, securityTripwire, securityKeysRefresh, securityVerifyLockfile];
 
 export default securityCommands;
 
@@ -122,4 +139,9 @@ export type SecurityTripwireOptions = CreateOptions<{
 export type SecurityKeysRefreshOptions = CreateOptions<{
     clear: boolean | undefined;
     json: boolean | undefined;
+}>;
+
+export type SecurityVerifyLockfileOptions = CreateOptions<{
+    json: boolean | undefined;
+    offline: boolean | undefined;
 }>;
