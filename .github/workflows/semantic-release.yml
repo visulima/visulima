@@ -66,7 +66,7 @@ jobs:
 
             - name: "Setup resources and environment"
               id: "setup"
-              uses: "anolilab/workflows/step/setup@main"
+              uses: "anolilab/workflows/step/node@3c54b71af67bdd990513c4a17fa2fde078db7b74" # main
               with:
                   node-version: "22"
                   install-node-gyp: "true"
