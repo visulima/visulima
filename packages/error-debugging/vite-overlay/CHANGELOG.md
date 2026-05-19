@@ -1,3 +1,10 @@
+## @visulima/vite-overlay [2.0.0-alpha.28](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.0-alpha.27...@visulima/vite-overlay@2.0.0-alpha.28) (2026-05-19)
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.26
+
 ## @visulima/vite-overlay [2.0.0-alpha.27](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.0-alpha.26...@visulima/vite-overlay@2.0.0-alpha.27) (2026-05-16)
 
 
