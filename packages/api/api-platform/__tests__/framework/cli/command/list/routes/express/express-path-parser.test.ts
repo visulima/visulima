@@ -5,7 +5,7 @@ import express, { Router } from "express";
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { operationObject } from "../../../../../../../__fixtures__/express/const";
-import expressPathParser from "../../../../../../../src/framework/cli/command/list/routes/express/express-path-parser";
+import expressPathParser, { installRouteCapture } from "../../../../../../../src/framework/cli/command/list/routes/express/express-path-parser";
 import type { RouteMetaData } from "../../../../../../../src/framework/cli/command/list/routes/express/types";
 
 const ABC_OR_XYZ_REGEX = /\/abc|\/xyz/u;
@@ -27,15 +27,17 @@ const successResponse: RequestHandler = (_request: Request, response: Response) 
 };
 
 // Express 5 (router@2 / path-to-regexp v8) no longer retains the declared mount
-// path of `app.use("/base", router)` layers on the built layer, so mounted-router
-// prefixes are not part of the listed path — only the leaf route's own declared
-// path is reported.
+// path of `app.use("/base", router)` layers on the built layer. installRouteCapture
+// patches Router.prototype.use to record it at registration time so full paths can
+// be reconstructed; it must run before any routes are attached.
 describe("express-path-parser", () => {
     let app: Express;
     let router: Router;
     let subrouter: Router;
 
     beforeEach(() => {
+        installRouteCapture(Router);
+
         app = express();
         router = Router();
         subrouter = Router();
@@ -74,8 +76,11 @@ describe("express-path-parser", () => {
             {
                 metadata: { hidden: true, operationId: "getResourceByEntity", schema: {} },
                 method: "get",
-                path: "/:resourceId",
-                pathParams: [{ in: "path", name: "resourceId", required: true }],
+                path: "/dashboard/:entity/:resourceId",
+                pathParams: [
+                    { in: "path", name: "entity", required: true },
+                    { in: "path", name: "resourceId", required: true },
+                ],
             },
         ]);
     });
@@ -282,7 +287,7 @@ describe("express-path-parser", () => {
         const parsed = expressPathParser(app);
         const { method, path, pathParams } = parsed[0] as RouteMetaData;
 
-        expect(path).toBe("/endpoint");
+        expect(path).toBe("/test/sub-route/endpoint");
         expect(method).toBe("get");
         expect(pathParams).toStrictEqual([]);
     });
@@ -297,7 +302,7 @@ describe("express-path-parser", () => {
         const parsed = expressPathParser(app);
         const { metadata, method, path, pathParams } = parsed[0] as RouteMetaData;
 
-        expect(path).toBe("/endpoint");
+        expect(path).toBe("/test/sub-route/endpoint");
         expect(method).toBe("get");
         expect(pathParams).toStrictEqual([]);
         expect(metadata).toStrictEqual({ location: "route", operationId: "test", operationObject });
@@ -322,20 +327,29 @@ describe("express-path-parser", () => {
 
         let { method, path, pathParams } = parsed[0] as RouteMetaData;
 
-        expect(path).toBe("/endpoint");
-        expect(pathParams).toStrictEqual([]);
+        expect(path).toBe("/sub-route/:test1/sub-sub-route/:test2/:test3/endpoint");
+        expect(pathParams).toStrictEqual([
+            { in: "path", name: "test1", required: true },
+            { in: "path", name: "test2", required: true },
+            { in: "path", name: "test3", required: true },
+        ]);
         expect(method).toBe("get");
 
         ({ method, path, pathParams } = parsed[1] as RouteMetaData);
 
-        expect(path).toBe("/endpoint2");
-        expect(pathParams).toStrictEqual([]);
+        expect(path).toBe("/sub-route/:test1/sub-sub-route/:test2/:test3/endpoint2");
+        expect(pathParams).toStrictEqual([
+            { in: "path", name: "test1", required: true },
+            { in: "path", name: "test2", required: true },
+            { in: "path", name: "test3", required: true },
+        ]);
         expect(method).toBe("post");
 
         ({ method, path, pathParams } = parsed[2] as RouteMetaData);
 
-        expect(path).toBe("/:name/endpoint2/:id");
+        expect(path).toBe("/sub-route2/:test/qualifier/:name/endpoint2/:id");
         expect(pathParams).toStrictEqual([
+            { in: "path", name: "test", required: true },
             { in: "path", name: "name", required: true },
             { in: "path", name: "id", required: true },
         ]);
