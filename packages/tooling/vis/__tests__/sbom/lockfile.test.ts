@@ -68,6 +68,47 @@ describe(readLockfilePackages, () => {
         expect(readLockfilePackages(workspaceRoot)?.type).toBe("pnpm");
     });
 
+    it("should prefer pnpm-lock.yaml over npm-shrinkwrap.json when both exist", () => {
+        expect.assertions(1);
+
+        const workspaceRoot = join(tmpDir, "repo");
+
+        ensureDirSync(workspaceRoot);
+        writeFileSync(
+            join(workspaceRoot, "pnpm-lock.yaml"),
+            `packages:
+
+  a@1.0.0:
+    resolution: {integrity: sha512-aGVsbG8=}
+`,
+        );
+        writeFileSync(join(workspaceRoot, "npm-shrinkwrap.json"), JSON.stringify({ lockfileVersion: 3, packages: {} }));
+
+        expect(readLockfilePackages(workspaceRoot)?.type).toBe("pnpm");
+    });
+
+    it("should prefer npm-shrinkwrap.json over package-lock.json when both exist", () => {
+        expect.assertions(2);
+
+        const workspaceRoot = join(tmpDir, "repo");
+
+        ensureDirSync(workspaceRoot);
+
+        const npmLock = (pkg: string): string =>
+            JSON.stringify({
+                lockfileVersion: 3,
+                packages: { [`node_modules/${pkg}`]: { version: "1.0.0" } },
+            });
+
+        writeFileSync(join(workspaceRoot, "npm-shrinkwrap.json"), npmLock("from-shrinkwrap"));
+        writeFileSync(join(workspaceRoot, "package-lock.json"), npmLock("from-package-lock"));
+
+        const result = readLockfilePackages(workspaceRoot);
+
+        expect(result?.type).toBe("npm");
+        expect([...(result?.packages.keys() ?? [])]).toStrictEqual(["from-shrinkwrap@1.0.0"]);
+    });
+
     it("should return undefined when no supported lockfile exists at workspaceRoot", () => {
         expect.assertions(1);
 

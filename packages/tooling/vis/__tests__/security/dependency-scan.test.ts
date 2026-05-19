@@ -4,7 +4,18 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { lockedPackages } from "../../src/security/dependency-scan";
+import { findDuplicateDependencies, lockedPackages, resolveLockfile } from "../../src/security/dependency-scan";
+
+const npmLockfileWith = (pkg: string): string =>
+    JSON.stringify({
+        lockfileVersion: 3,
+        name: "fixture",
+        packages: {
+            "": { dependencies: { [pkg]: "1.0.0" }, name: "fixture", version: "0.0.0" },
+            [`node_modules/${pkg}`]: { version: "1.0.0" },
+        },
+        version: "0.0.0",
+    });
 
 const npmLockfileWithDevTransitive = (): string =>
     JSON.stringify(
@@ -97,5 +108,75 @@ describe("lockedPackages with prod-only filter", () => {
         const empty = lockedPackages(join(tmpdir(), "definitely-not-a-workspace"), "npm");
 
         expect(empty).toStrictEqual([]);
+    });
+});
+
+describe("npm-shrinkwrap precedence", () => {
+    let workspace: string;
+
+    beforeEach(() => {
+        workspace = mkdtempSync(join(tmpdir(), "vis-shrinkwrap-"));
+        mkdirSync(workspace, { recursive: true });
+    });
+
+    afterEach(() => {
+        rmSync(workspace, { force: true, recursive: true });
+    });
+
+    it("resolveLockfile picks npm-shrinkwrap.json over package-lock.json when both exist", () => {
+        expect.assertions(1);
+
+        writeFileSync(join(workspace, "npm-shrinkwrap.json"), npmLockfileWith("from-shrinkwrap"));
+        writeFileSync(join(workspace, "package-lock.json"), npmLockfileWith("from-package-lock"));
+
+        expect(resolveLockfile(workspace, "npm")?.file).toBe("npm-shrinkwrap.json");
+    });
+
+    it("resolveLockfile falls back to package-lock.json when only it exists", () => {
+        expect.assertions(1);
+
+        writeFileSync(join(workspace, "package-lock.json"), npmLockfileWith("only-pkg-lock"));
+
+        expect(resolveLockfile(workspace, "npm")?.file).toBe("package-lock.json");
+    });
+
+    it("resolveLockfile returns the canonical entry when neither npm lockfile exists", () => {
+        expect.assertions(1);
+
+        // Lets callers keep their own ENOENT handling on a stable path.
+        expect(resolveLockfile(workspace, "npm")?.file).toBe("package-lock.json");
+    });
+
+    it("lockedPackages reads npm-shrinkwrap.json in preference to package-lock.json", () => {
+        expect.assertions(1);
+
+        writeFileSync(join(workspace, "npm-shrinkwrap.json"), npmLockfileWith("from-shrinkwrap"));
+        writeFileSync(join(workspace, "package-lock.json"), npmLockfileWith("from-package-lock"));
+
+        expect(lockedPackages(workspace, "npm").map((p) => p.name)).toStrictEqual(["from-shrinkwrap"]);
+    });
+
+    it("findDuplicateDependencies reads npm-shrinkwrap.json in preference to package-lock.json", () => {
+        expect.assertions(3);
+
+        const dupLock = JSON.stringify({
+            lockfileVersion: 3,
+            name: "fixture",
+            packages: {
+                "": { name: "fixture", version: "0.0.0" },
+                "node_modules/dup": { version: "1.0.0" },
+                "node_modules/holder/node_modules/dup": { version: "2.0.0" },
+            },
+            version: "0.0.0",
+        });
+
+        writeFileSync(join(workspace, "npm-shrinkwrap.json"), dupLock);
+        writeFileSync(join(workspace, "package-lock.json"), npmLockfileWith("no-dup-here"));
+
+        const dupes = findDuplicateDependencies(workspace, "npm");
+
+        expect(dupes).toHaveLength(1);
+        expect(dupes[0]?.name).toBe("dup");
+        expect([...(dupes[0]?.versions ?? [])].sort()).toStrictEqual(["1.0.0", "2.0.0"]);
     });
 });

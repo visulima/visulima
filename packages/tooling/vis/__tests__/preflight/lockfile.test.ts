@@ -100,6 +100,18 @@ describe("lockfile", () => {
             expect(result.message).toContain("npm install");
         });
 
+        it("should detect npm by npm-shrinkwrap.json and prefer it over package-lock.json", () => {
+            expect.assertions(2);
+
+            writeFile("package-lock.json", "{}\n");
+            writeFile("npm-shrinkwrap.json", "{}\n");
+
+            const result = checkLockfileFreshness(tmp);
+
+            expect(result.detail?.packageManager).toBe("npm");
+            expect(result.detail?.lockfilePath).toBe("npm-shrinkwrap.json");
+        });
+
         it("should recommend `npm ci` when running in CI", () => {
             expect.assertions(1);
 
