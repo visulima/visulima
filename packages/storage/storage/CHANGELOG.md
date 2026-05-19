@@ -1,3 +1,21 @@
+## @visulima/storage [1.0.0-alpha.29](https://github.com/visulima/visulima/compare/@visulima/storage@1.0.0-alpha.28...@visulima/storage@1.0.0-alpha.29) (2026-05-19)
+
+### Features
+
+* **storage:** add Bun-native S3 adapter and S3-compatible docs ([12650a4](https://github.com/visulima/visulima/commit/12650a4d9da7ca93a3d0f86c0952026dcdaa03ed))
+* **storage:** add Cloudinary, Firebase, PocketBase, SharePoint adapters + S3-compat presets ([72e0fc5](https://github.com/visulima/visulima/commit/72e0fc5e0d433f5af0768e7d194a1d533dd46940))
+* **storage:** add FTP and SFTP storage backends ([5631dd2](https://github.com/visulima/visulima/commit/5631dd2d1193bc51decc8cc34a1c71df1220d75a))
+* **storage:** add per-operation signal/timeout/retries ([45797da](https://github.com/visulima/visulima/commit/45797dacb4757ab9a1c857ed4f795e50d41fdbab))
+
+### Bug Fixes
+
+* **storage:** make operation timeout per-attempt ([3610ffa](https://github.com/visulima/visulima/commit/3610ffa498c1bf7ec8515ddf1e556648393c149e))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.24
+
 ## @visulima/storage [1.0.0-alpha.28](https://github.com/visulima/visulima/compare/@visulima/storage@1.0.0-alpha.27...@visulima/storage@1.0.0-alpha.28) (2026-05-16)
 
 ### Features
