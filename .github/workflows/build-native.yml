@@ -177,7 +177,7 @@ jobs:
             - name: "Setup resources and environment"
               if: "steps.need-build.outputs.any == 'true' || (matrix.settings.testable && needs.files-changed.outputs.any-changed == 'true')"
               id: "setup"
-              uses: "anolilab/workflows/step/setup@d41177e2669f36e552713aadcae2d6b455d0999f" # main
+              uses: "anolilab/workflows/step/node@3c54b71af67bdd990513c4a17fa2fde078db7b74" # main
               with:
                   node-version: "22"
                   cache-prefix: "build-native"
@@ -187,15 +187,17 @@ jobs:
 
             - name: "Install Rust toolchain"
               if: "steps.need-build.outputs.any == 'true'"
-              uses: "oxc-project/setup-rust@23f38cfb0c04af97a055f76acee94d5be71c7c82" # v1.0.16
+              uses: "anolilab/workflows/step/rust@3c54b71af67bdd990513c4a17fa2fde078db7b74" # main
               with:
                   cache-key: "build-native"
                   save-cache: "${{ github.ref_name == 'main' }}"
+                  targets: "${{ matrix.settings.target }}"
                   tools: "${{ matrix.settings.cross == '-x' && 'cargo-zigbuild' || '' }}"
-
-            - name: "Add Rust target"
-              if: "steps.need-build.outputs.any == 'true'"
-              run: "rustup target add ${{ matrix.settings.target }}"
+                  workspaces: |
+                      packages/tooling/task-runner/native
+                      packages/terminal/tui/native
+                      packages/tooling/vis/native
+                      packages/tooling/secret-scanner/native
 
             - name: "Install Zig (cross-compilation)"
               if: "steps.need-build.outputs.any == 'true' && matrix.settings.cross == '-x'"
