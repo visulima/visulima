@@ -1630,9 +1630,55 @@ export interface VisConfig {
          * both Socket.dev and deps.dev return data for the same package). The
          * primary provider's `score` is kept; alerts from secondaries are
          * appended and deduped by `key`. Defaults to whichever provider is
-         * enabled first in this order: socket → deps-dev.
+         * enabled first in this order: socket → deps-dev → snyk.
          */
-        primaryProvider?: "deps-dev" | "socket";
+        primaryProvider?: "deps-dev" | "snyk" | "socket";
+
+        /**
+         * Snyk data-source configuration. Snyk only contributes vulnerability
+         * data (no maintenance / quality / supply-chain / license signal);
+         * those axes stay neutral. Requires both an org id and an API token —
+         * if either is missing the provider is skipped.
+         * @see https://docs.snyk.io/snyk-api/using-specific-snyk-apis/issues-list-issues-for-a-package
+         */
+        snyk?: {
+            /**
+             * Snyk API token. Set via VIS_SNYK_TOKEN environment variable or
+             * here.
+             */
+            apiToken?: string;
+
+            /**
+             * Snyk REST API version date sent as the `version` query param.
+             * @default "2024-10-15"
+             */
+            apiVersion?: string;
+
+            /**
+             * Cache TTL in milliseconds for Snyk issue lookups.
+             * @default 21_600_000 (6 hours)
+             */
+            cacheTtlMs?: number;
+
+            /**
+             * Enable Snyk security scanning on install/update/check/audit
+             * commands.
+             * @default false
+             */
+            enabled?: boolean;
+
+            /**
+             * Snyk organization id (the REST endpoint is org-scoped). Set via
+             * VIS_SNYK_ORG environment variable or here.
+             */
+            orgId?: string;
+
+            /**
+             * Request timeout in milliseconds for the Snyk API.
+             * @default 15_000 (15 seconds)
+             */
+            timeoutMs?: number;
+        };
 
         /**
          * Socket.dev data-source configuration. Connection knobs only — score

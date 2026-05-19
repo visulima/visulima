@@ -201,9 +201,9 @@ export const mapSeverityToAube = (severity: SeverityFilter | undefined): string 
 
 /**
  * Spawn `aube audit` with the subset of vis options aube understands.
- * Vis-only flags (offline, socket, sarif/csaf/cyclonedx-vex output,
- * --usage, etc.) are surfaced via a single warning so the user knows
- * which features are skipped when delegating.
+ * Vis-only flags (offline, sarif/csaf/cyclonedx-vex output, --usage, etc.)
+ * are surfaced via a single warning so the user knows which features are
+ * skipped when delegating.
  */
 const runAubeAudit = (workspaceRoot: string, options: Record<string, unknown>, _visConfig: VisConfig | undefined): number => {
     const args: string[] = ["audit"];
@@ -235,10 +235,6 @@ const runAubeAudit = (workspaceRoot: string, options: Record<string, unknown>, _
 
     if (options.offline === true) {
         skipped.push("--offline (aube has its own offline cache)");
-    }
-
-    if (options.socket === true) {
-        skipped.push("--socket (aube uses its own scoring backend)");
     }
 
     if (options.format === "sarif" || options.format === "csaf" || options.format === "cyclonedx" || options.format === "cyclonedx-vex") {

@@ -13,6 +13,7 @@ import { isCacheDirectoryInsideWorkspace, resolveSharedCacheDirectory } from "..
 import { pail } from "../../io/logger";
 import { diffHashDetails, findTaskInSummary, readPreviousRunSummary, readRunSummaryById } from "../../report/run-summary-utils";
 import { clearDepsDevCache, getDepsDevCacheStats } from "../../security/deps-dev-security";
+import { clearSnykCache, getSnykCacheStats } from "../../security/snyk-security";
 import { clearSocketCache, getSocketCacheStats } from "../../security/socket-security";
 import { getVisRunsDir, getVisWorkspaceDataDir } from "../../util/vis-paths";
 import type { CacheCleanOptions, CacheHashOptions, CacheListOptions, CachePruneOptions, CacheSizeOptions, CacheVerifyOptions, CacheWhyOptions } from "./index";
@@ -243,6 +244,18 @@ export const clearDepsDevCacheSafe = (): void => {
         }
     } catch (error: unknown) {
         pail.warn(`Failed to clear deps.dev cache: ${error instanceof Error ? error.message : String(error)}`);
+    }
+};
+
+export const clearSnykCacheSafe = (): void => {
+    try {
+        const snykDeleted = clearSnykCache();
+
+        if (snykDeleted > 0) {
+            pail.info(`Cleared ${String(snykDeleted)} cached Snyk record${snykDeleted === 1 ? "" : "s"}.`);
+        }
+    } catch (error: unknown) {
+        pail.warn(`Failed to clear Snyk cache: ${error instanceof Error ? error.message : String(error)}`);
     }
 };
 
@@ -979,11 +992,12 @@ export const runVerify = async (taskId: string, options: RunVerifyOptions, logge
 // runner cache (resolved with --scope/--cache-dir), "ai" is the global AI
 // response cache under ~/.vis/cache/ai, "socket" is the Socket.dev report
 // cache under ~/.vis/cache/socket-security, "deps-dev" is the Google
-// deps.dev cache under ~/.vis/cache/deps-dev. "all" means every store.
-type CacheTarget = "all" | "ai" | "deps-dev" | "socket" | "task";
+// deps.dev cache under ~/.vis/cache/deps-dev, "snyk" is the Snyk issue
+// cache under ~/.vis/cache/snyk. "all" means every store.
+type CacheTarget = "all" | "ai" | "deps-dev" | "snyk" | "socket" | "task";
 
 const parseCacheTarget = (raw: string | undefined): CacheTarget => {
-    if (raw === "task" || raw === "ai" || raw === "socket" || raw === "deps-dev" || raw === "all") {
+    if (raw === "task" || raw === "ai" || raw === "socket" || raw === "deps-dev" || raw === "snyk" || raw === "all") {
         return raw;
     }
 
@@ -1146,6 +1160,16 @@ export const cacheCleanExecute = async ({ options, visConfig, workspaceRoot: wsR
             clearDepsDevCacheSafe();
         }
     }
+
+    if (includesTarget(target, "snyk")) {
+        if (dryRun) {
+            const stats = getSnykCacheStats();
+
+            pail.info(`Would clear ${String(stats.entries)} cached Snyk record${stats.entries === 1 ? "" : "s"}.`);
+        } else {
+            clearSnykCacheSafe();
+        }
+    }
 };
 
 export const cachePruneExecute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, CachePruneOptions>): Promise<void> => {
@@ -1269,6 +1293,17 @@ export const cacheSizeExecute = async ({ options, visConfig, workspaceRoot: wsRo
             };
         }
 
+        if (includesTarget(target, "snyk")) {
+            const stats = getSnykCacheStats();
+
+            payload.snyk = {
+                entries: stats.entries,
+                newestEntry: isoOrNull(stats.newestEntry),
+                oldestEntry: isoOrNull(stats.oldestEntry),
+                totalBytes: stats.totalSizeBytes,
+            };
+        }
+
         process.stdout.write(`${JSON.stringify(payload, undefined, 2)}\n`);
 
         return;
@@ -1296,6 +1331,10 @@ export const cacheSizeExecute = async ({ options, visConfig, workspaceRoot: wsRo
 
     if (includesTarget(target, "deps-dev")) {
         printAuxStatsBlock("deps.dev cache", getDepsDevCacheStats());
+    }
+
+    if (includesTarget(target, "snyk")) {
+        printAuxStatsBlock("Snyk issue cache", getSnykCacheStats());
     }
 };
 
