@@ -164,6 +164,35 @@ export interface GenericStorageConfig {
 }
 
 /**
+ * Per-operation overrides for cancellation, deadlines and retries.
+ *
+ * Threaded through the public storage operations down to the backend SDK call.
+ * Backends that wrap an SDK with native cancellation honour `signal`/`timeout`
+ * directly; backends without a cancellation primitive still fail fast at the
+ * storage layer, but the provider request may continue in the background.
+ */
+export interface OperationOptions {
+    /**
+     * Retry override for this call. A number is treated as `maxRetries`; an
+     * object is shallow-merged over the backend's configured `RetryConfig`.
+     * Aborted and timed-out operations are never retried regardless of this.
+     */
+    retries?: number | RetryConfig;
+
+    /**
+     * Abort the operation when this signal fires. Merged with any
+     * per-call `timeout` via `AbortSignal.any`.
+     */
+    signal?: AbortSignal;
+
+    /**
+     * Per-operation timeout in milliseconds. `0` or a negative value
+     * disables the timeout. Applied per retry attempt.
+     */
+    timeout?: number;
+}
+
+/**
  * Batch operation result for a single file
  */
 export interface BatchOperationResult<T extends File = File> {
@@ -196,28 +225,31 @@ export interface BatchOperationResponse<T extends File = File> {
  */
 export interface GenericStorageOperations<T extends File = File, TReturn extends FileReturn = FileReturn> {
     /** Copy a file */
-    copy: (source: string, destination: string, options?: { storageClass?: string }) => Promise<T>;
+    copy: (source: string, destination: string, options?: OperationOptions & { storageClass?: string }) => Promise<T>;
 
     /** Copy multiple files */
-    copyBatch?: (operations: { destination: string; options?: { storageClass?: string }; source: string }[]) => Promise<BatchOperationResponse<T>>;
+    copyBatch?: (
+        operations: { destination: string; options?: { storageClass?: string }; source: string }[],
+        options?: OperationOptions,
+    ) => Promise<BatchOperationResponse<T>>;
 
     /** Create a new file upload */
-    create: (config: FileInit) => Promise<T>;
+    create: (config: FileInit, options?: OperationOptions) => Promise<T>;
 
     /** Delete a file */
-    delete: (query: FileQuery) => Promise<T>;
+    delete: (query: FileQuery, options?: OperationOptions) => Promise<T>;
 
     /** Delete multiple files */
-    deleteBatch?: (ids: string[]) => Promise<BatchOperationResponse<T>>;
+    deleteBatch?: (ids: string[], options?: OperationOptions) => Promise<BatchOperationResponse<T>>;
 
     /** Check if file exists */
-    exists: (query: FileQuery) => Promise<boolean>;
+    exists: (query: FileQuery, options?: OperationOptions) => Promise<boolean>;
 
     /** Get file data */
-    get: (query: FileQuery) => Promise<TReturn>;
+    get: (query: FileQuery, options?: OperationOptions) => Promise<TReturn>;
 
     /** Get file as a readable stream */
-    getStream?: (query: FileQuery) => Promise<{ headers?: Record<string, string>; size?: number; stream: Readable }>;
+    getStream?: (query: FileQuery, options?: OperationOptions) => Promise<{ headers?: Record<string, string>; size?: number; stream: Readable }>;
 
     /** Get signed URL for upload (if supported) */
     getUploadUrl?: (query: FileQuery, expiresIn?: number) => Promise<string>;
@@ -226,17 +258,17 @@ export interface GenericStorageOperations<T extends File = File, TReturn extends
     getUrl?: (query: FileQuery, expiresIn?: number) => Promise<string>;
 
     /** List files */
-    list: (limit?: number) => Promise<T[]>;
+    list: (limit?: number, options?: OperationOptions) => Promise<T[]>;
 
     /** Move a file */
-    move: (source: string, destination: string) => Promise<T>;
+    move: (source: string, destination: string, options?: OperationOptions) => Promise<T>;
 
     /** Move multiple files */
-    moveBatch?: (operations: { destination: string; source: string }[]) => Promise<BatchOperationResponse<T>>;
+    moveBatch?: (operations: { destination: string; source: string }[], options?: OperationOptions) => Promise<BatchOperationResponse<T>>;
 
     /** Update file metadata */
-    update: (query: FileQuery, metadata: Partial<T>) => Promise<T>;
+    update: (query: FileQuery, metadata: Partial<T>, options?: OperationOptions) => Promise<T>;
 
     /** Write data to a file */
-    write: (part: FilePart | FileQuery) => Promise<T>;
+    write: (part: FilePart | FileQuery, options?: OperationOptions) => Promise<T>;
 }

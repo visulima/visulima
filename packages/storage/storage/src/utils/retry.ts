@@ -103,6 +103,16 @@ export const isRetryableError = (error: unknown, retryableStatusCodes: number[] 
         const errorCode = errorWithCode.code;
         const errorName = error.name;
 
+        // An aborted operation must never be retried: the cancellation that
+        // produced this error still applies to a replay. `runOperation`
+        // normalizes per-call signal/deadline aborts to `AbortError` before
+        // they reach here. Note we deliberately do NOT block `TimeoutError`:
+        // an SDK socket/network timeout (no abort signal involved) is a
+        // transient failure that should still be retried.
+        if (errorName === "AbortError" || errorCode === "ABORT_ERR") {
+            return false;
+        }
+
         // Network-related errors
         if (
             errorCode === "ECONNRESET" ||

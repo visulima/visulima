@@ -5,6 +5,7 @@ import { fromIni } from "@aws-sdk/credential-providers";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 import type { HttpError } from "../../utils/types";
+import type { OperationOptions } from "../types";
 import type { FileInit, FileQuery } from "../utils/file";
 import { S3BaseStorage } from "./s3-base-storage";
 import S3ClientAdapter from "./s3-client-adapter";
@@ -162,14 +163,20 @@ class S3Storage extends S3BaseStorage {
         return super.update({ id }, metadata);
     }
 
-    public override async getStream({ id }: FileQuery): Promise<{ headers?: Record<string, string>; size?: number; stream: Readable }> {
+    public override async getStream(
+        { id }: FileQuery,
+        options?: OperationOptions,
+    ): Promise<{ headers?: Record<string, string>; size?: number; stream: Readable }> {
         return this.instrumentOperation("getStream", async () => {
             const s3Api = this.getS3Api();
-            const { Body, ContentLength, ContentType, ETag, Expires, LastModified } = await this.retry(() =>
-                s3Api.getObject({
-                    Bucket: this.bucket,
-                    Key: id,
-                }),
+            const { Body, ContentLength, ContentType, ETag, Expires, LastModified } = await this.runOperation(options, (signal) =>
+                s3Api.getObject(
+                    {
+                        Bucket: this.bucket,
+                        Key: id,
+                    },
+                    { signal },
+                ),
             );
 
             await this.checkIfExpired({ expiredAt: Expires } as S3File);

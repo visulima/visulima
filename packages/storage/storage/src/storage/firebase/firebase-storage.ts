@@ -7,6 +7,7 @@ import { getStorage } from "firebase-admin/storage";
 import { ERRORS, throwErrorCode } from "../../utils/errors";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
+import type { OperationOptions } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import FirebaseFile from "./firebase-file";
@@ -57,6 +58,8 @@ const isBucket = (value: unknown): value is FirebaseBucket =>
  *   },
  * });
  * ```
+ * @remarks
+ * - ⚠️ Per-operation `signal`/`timeout` are best-effort: the underlying SDK does not support request cancellation, so an in-flight call may complete server-side even after abort. `retries` is honored.
  */
 class FirebaseStorage extends BaseStorage<FirebaseFile> {
     public static override readonly name: string = "firebase";
@@ -105,7 +108,7 @@ class FirebaseStorage extends BaseStorage<FirebaseFile> {
         return this.bucket;
     }
 
-    public async create(config: FileInit): Promise<FirebaseFile> {
+    public async create(config: FileInit, _options?: OperationOptions): Promise<FirebaseFile> {
         return this.instrumentOperation("create", async () => {
             const file = new FirebaseFile(config);
 
@@ -135,7 +138,7 @@ class FirebaseStorage extends BaseStorage<FirebaseFile> {
         });
     }
 
-    public async write(part: FilePart | FileQuery | FirebaseFile): Promise<FirebaseFile> {
+    public async write(part: FilePart | FileQuery | FirebaseFile, options?: OperationOptions): Promise<FirebaseFile> {
         return this.instrumentOperation("write", async () => {
             let file: FirebaseFile;
 
@@ -169,10 +172,12 @@ class FirebaseStorage extends BaseStorage<FirebaseFile> {
                     const buffer = await collectStream(part.body);
                     const path = file.path ?? file.name;
 
-                    await this.bucket.file(path).save(buffer, {
-                        contentType: file.contentType,
-                        resumable: false,
-                    });
+                    await this.runOperation(options, () =>
+                        this.bucket.file(path).save(buffer, {
+                            contentType: file.contentType,
+                            resumable: false,
+                        }),
+                    );
 
                     file.bytesWritten = buffer.length;
                     file.size = buffer.length;
@@ -194,7 +199,7 @@ class FirebaseStorage extends BaseStorage<FirebaseFile> {
         });
     }
 
-    public async delete({ id }: FileQuery): Promise<FirebaseFile> {
+    public async delete({ id }: FileQuery, options?: OperationOptions): Promise<FirebaseFile> {
         return this.instrumentOperation("delete", async () => {
             let file: FirebaseFile | undefined;
 
@@ -206,7 +211,7 @@ class FirebaseStorage extends BaseStorage<FirebaseFile> {
 
             const path = file?.path ?? file?.name ?? id;
 
-            await this.bucket.file(path).delete({ ignoreNotFound: true });
+            await this.runOperation(options, () => this.bucket.file(path).delete({ ignoreNotFound: true }));
 
             if (file) {
                 file.status = "deleted";
@@ -227,7 +232,7 @@ class FirebaseStorage extends BaseStorage<FirebaseFile> {
         });
     }
 
-    public override async exists({ id }: FileQuery): Promise<boolean> {
+    public override async exists({ id }: FileQuery, options?: OperationOptions): Promise<boolean> {
         return this.instrumentOperation("exists", async () => {
             let path = id;
 
@@ -240,7 +245,7 @@ class FirebaseStorage extends BaseStorage<FirebaseFile> {
             }
 
             try {
-                const [exists] = await this.bucket.file(path).exists();
+                const [exists] = await this.runOperation(options, () => this.bucket.file(path).exists());
 
                 return exists;
             } catch {
@@ -249,7 +254,7 @@ class FirebaseStorage extends BaseStorage<FirebaseFile> {
         });
     }
 
-    public async get({ id }: FileQuery): Promise<FileReturn> {
+    public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
             let path = id;
             let stored: FirebaseFile | undefined;
@@ -262,12 +267,12 @@ class FirebaseStorage extends BaseStorage<FirebaseFile> {
             }
 
             const gcsFile = this.bucket.file(path);
-            const [content] = await gcsFile.download();
+            const [content] = await this.runOperation(options, () => gcsFile.download());
 
             let metadata: Awaited<ReturnType<typeof gcsFile.getMetadata>>[0] = {};
 
             try {
-                [metadata] = await gcsFile.getMetadata();
+                [metadata] = await this.runOperation(options, () => gcsFile.getMetadata());
             } catch {
                 // metadata is best-effort
             }
@@ -287,12 +292,12 @@ class FirebaseStorage extends BaseStorage<FirebaseFile> {
         });
     }
 
-    public async copy(name: string, destination: string): Promise<FirebaseFile> {
+    public async copy(name: string, destination: string, options?: OperationOptions & { storageClass?: string }): Promise<FirebaseFile> {
         return this.instrumentOperation("copy", async () => {
             const meta = await this.getMetaSafe(name);
             const source = meta?.path ?? name;
 
-            await this.bucket.file(source).copy(this.bucket.file(destination));
+            await this.runOperation(options, () => this.bucket.file(source).copy(this.bucket.file(destination)));
 
             const file = new FirebaseFile({
                 contentType: "application/octet-stream",
@@ -309,12 +314,12 @@ class FirebaseStorage extends BaseStorage<FirebaseFile> {
         });
     }
 
-    public async move(name: string, destination: string): Promise<FirebaseFile> {
+    public async move(name: string, destination: string, options?: OperationOptions): Promise<FirebaseFile> {
         return this.instrumentOperation("move", async () => {
             const meta = await this.getMetaSafe(name);
             const source = meta?.path ?? name;
 
-            await this.bucket.file(source).move(destination);
+            await this.runOperation(options, () => this.bucket.file(source).move(destination));
 
             const file = new FirebaseFile({
                 contentType: "application/octet-stream",
@@ -337,11 +342,11 @@ class FirebaseStorage extends BaseStorage<FirebaseFile> {
         });
     }
 
-    public override async list(limit = 1000): Promise<FirebaseFile[]> {
+    public override async list(limit = 1000, options?: OperationOptions): Promise<FirebaseFile[]> {
         return this.instrumentOperation(
             "list",
             async () => {
-                const [files] = await this.bucket.getFiles({ maxResults: limit });
+                const [files] = await this.runOperation(options, () => this.bucket.getFiles({ maxResults: limit }));
 
                 return (files ?? []).map((entry) => {
                     const file = new FirebaseFile({

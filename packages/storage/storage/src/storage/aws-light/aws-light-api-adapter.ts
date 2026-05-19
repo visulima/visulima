@@ -3,7 +3,7 @@ import type { ReadableStream as NodeReadableStream } from "node:stream/web";
 
 import { AwsClient } from "aws4fetch";
 
-import type { Part, S3ApiOperations } from "../aws/s3-base-storage";
+import type { Part, S3ApiOperations, S3CallOptions } from "../aws/s3-base-storage";
 import type { AwsLightClientConfig } from "./types";
 
 /**
@@ -83,13 +83,16 @@ class AwsLightApiAdapter implements S3ApiOperations {
         });
     }
 
-    public async createMultipartUpload(params: {
-        ACL?: string;
-        Bucket: string;
-        ContentType?: string;
-        Key: string;
-        Metadata?: Record<string, string>;
-    }): Promise<{ UploadId: string }> {
+    public async createMultipartUpload(
+        params: {
+            ACL?: string;
+            Bucket: string;
+            ContentType?: string;
+            Key: string;
+            Metadata?: Record<string, string>;
+        },
+        options?: S3CallOptions,
+    ): Promise<{ UploadId: string }> {
         const queryParams: Record<string, string> = { uploads: "" };
         const headers: Record<string, string> = {};
 
@@ -111,6 +114,7 @@ class AwsLightApiAdapter implements S3ApiOperations {
         const response = await this.aws.fetch(url, {
             headers,
             method: "POST",
+            signal: options?.signal,
         });
 
         const xmlText = await response.text();
@@ -132,15 +136,18 @@ class AwsLightApiAdapter implements S3ApiOperations {
         return { UploadId: uploadId };
     }
 
-    public async uploadPart(params: {
-        Body: Readable | ReadableStream | Uint8Array;
-        Bucket: string;
-        ContentLength?: number;
-        ContentMD5?: string;
-        Key: string;
-        PartNumber: number;
-        UploadId: string;
-    }): Promise<{ ETag: string }> {
+    public async uploadPart(
+        params: {
+            Body: Readable | ReadableStream | Uint8Array;
+            Bucket: string;
+            ContentLength?: number;
+            ContentMD5?: string;
+            Key: string;
+            PartNumber: number;
+            UploadId: string;
+        },
+        options?: S3CallOptions,
+    ): Promise<{ ETag: string }> {
         const queryParams: Record<string, string> = {
             partNumber: String(params.PartNumber),
             uploadId: params.UploadId,
@@ -164,6 +171,7 @@ class AwsLightApiAdapter implements S3ApiOperations {
             body,
             headers,
             method: "PUT",
+            signal: options?.signal,
         });
 
         if (!response.ok) {
@@ -184,12 +192,15 @@ class AwsLightApiAdapter implements S3ApiOperations {
         return { ETag: etag.replaceAll(/(^"|"$)/g, "") };
     }
 
-    public async completeMultipartUpload(params: {
-        Bucket: string;
-        Key: string;
-        Parts: { ETag: string; PartNumber: number }[];
-        UploadId: string;
-    }): Promise<{ ETag?: string; Location: string }> {
+    public async completeMultipartUpload(
+        params: {
+            Bucket: string;
+            Key: string;
+            Parts: { ETag: string; PartNumber: number }[];
+            UploadId: string;
+        },
+        options?: S3CallOptions,
+    ): Promise<{ ETag?: string; Location: string }> {
         const queryParams: Record<string, string> = { uploadId: params.UploadId };
 
         // Build XML body for complete multipart upload
@@ -209,6 +220,7 @@ ${partsXml}
                 "Content-Type": "application/xml",
             },
             method: "POST",
+            signal: options?.signal,
         });
 
         const xmlText = await response.text();
@@ -229,11 +241,12 @@ ${partsXml}
         };
     }
 
-    public async abortMultipartUpload(params: { Bucket: string; Key: string; UploadId: string }): Promise<void> {
+    public async abortMultipartUpload(params: { Bucket: string; Key: string; UploadId: string }, options?: S3CallOptions): Promise<void> {
         const queryParams: Record<string, string> = { uploadId: params.UploadId };
         const url = this.buildUrl(params.Key, queryParams);
         const response = await this.aws.fetch(url, {
             method: "DELETE",
+            signal: options?.signal,
         });
 
         if (!response.ok) {
@@ -243,11 +256,12 @@ ${partsXml}
         }
     }
 
-    public async listParts(params: { Bucket: string; Key: string; UploadId: string }): Promise<{ Parts?: Part[] }> {
+    public async listParts(params: { Bucket: string; Key: string; UploadId: string }, options?: S3CallOptions): Promise<{ Parts?: Part[] }> {
         const queryParams: Record<string, string> = { uploadId: params.UploadId };
         const url = this.buildUrl(params.Key, queryParams);
         const response = await this.aws.fetch(url, {
             method: "GET",
+            signal: options?.signal,
         });
 
         const xmlText = await response.text();
@@ -275,7 +289,10 @@ ${partsXml}
         };
     }
 
-    public async getObject(params: { Bucket: string; Key: string }): Promise<{
+    public async getObject(
+        params: { Bucket: string; Key: string },
+        options?: S3CallOptions,
+    ): Promise<{
         Body?: ReadableStream | Readable;
         ContentLength?: number;
         ContentType?: string;
@@ -287,6 +304,7 @@ ${partsXml}
         const url = this.buildUrl(params.Key);
         const response = await this.aws.fetch(url, {
             method: "GET",
+            signal: options?.signal,
         });
 
         if (!response.ok) {
@@ -326,7 +344,10 @@ ${partsXml}
         };
     }
 
-    public async headObject(params: { Bucket: string; Key: string }): Promise<{
+    public async headObject(
+        params: { Bucket: string; Key: string },
+        options?: S3CallOptions,
+    ): Promise<{
         ContentLength?: number;
         ContentType?: string;
         ETag?: string;
@@ -337,6 +358,7 @@ ${partsXml}
         const url = this.buildUrl(params.Key);
         const response = await this.aws.fetch(url, {
             method: "HEAD",
+            signal: options?.signal,
         });
 
         if (!response.ok) {
@@ -371,10 +393,11 @@ ${partsXml}
         };
     }
 
-    public async deleteObject(params: { Bucket: string; Key: string }): Promise<void> {
+    public async deleteObject(params: { Bucket: string; Key: string }, options?: S3CallOptions): Promise<void> {
         const url = this.buildUrl(params.Key);
         const response = await this.aws.fetch(url, {
             method: "DELETE",
+            signal: options?.signal,
         });
 
         if (!response.ok) {
@@ -384,7 +407,7 @@ ${partsXml}
         }
     }
 
-    public async copyObject(params: { Bucket: string; CopySource: string; Key: string; StorageClass?: string }): Promise<void> {
+    public async copyObject(params: { Bucket: string; CopySource: string; Key: string; StorageClass?: string }, options?: S3CallOptions): Promise<void> {
         const headers: Record<string, string> = {
             "x-amz-copy-source": params.CopySource,
         };
@@ -402,6 +425,7 @@ ${partsXml}
         const response = await this.aws.fetch(url, {
             headers,
             method: "PUT",
+            signal: options?.signal,
         });
 
         if (!response.ok) {
@@ -411,7 +435,10 @@ ${partsXml}
         }
     }
 
-    public async listObjectsV2(params: { Bucket: string; ContinuationToken?: string; MaxKeys?: number }): Promise<{
+    public async listObjectsV2(
+        params: { Bucket: string; ContinuationToken?: string; MaxKeys?: number },
+        options?: S3CallOptions,
+    ): Promise<{
         Contents?: { Key?: string; LastModified?: Date }[];
         IsTruncated?: boolean;
         NextContinuationToken?: string;
@@ -431,6 +458,7 @@ ${partsXml}
         const url = this.buildUrl("", queryParams);
         const response = await this.aws.fetch(url, {
             method: "GET",
+            signal: options?.signal,
         });
 
         const xmlText = await response.text();

@@ -213,13 +213,19 @@ describe(GCStorage, async () => {
             });
 
             expect(mockMakeRequest).toHaveBeenCalledTimes(1);
-            expect(mockMakeRequest).toHaveBeenCalledWith({
-                body,
-                headers: expect.objectContaining({ "Content-Range": "bytes 0-63/64" }),
-                method: "PUT",
-                signal: expect.any(AbortSignal),
-                url: uri,
-            });
+            expect(mockMakeRequest).toHaveBeenCalledWith(
+                {
+                    body,
+                    headers: expect.objectContaining({ "Content-Range": "bytes 0-63/64" }),
+                    method: "PUT",
+                    // A streamed upload body is single-use, so internalWrite
+                    // disables the gaxios retry for it.
+                    retry: false,
+                    signal: expect.any(AbortSignal),
+                    url: uri,
+                },
+                undefined,
+            );
             expect(gcsFile).toMatchSnapshot();
         });
 

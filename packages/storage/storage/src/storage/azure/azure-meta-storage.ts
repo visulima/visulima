@@ -1,10 +1,10 @@
-import type { BlobGetPropertiesResponse, BlobItem, ContainerClient, Metadata } from "@azure/storage-blob";
-import { BlobServiceClient, StorageSharedKeyCredential } from "@azure/storage-blob";
+import type { BlobGetPropertiesResponse, BlobItem, BlobServiceClient, ContainerClient, Metadata } from "@azure/storage-blob";
 
 import { ERRORS, throwErrorCode } from "../../utils/errors";
 import MetaStorage from "../meta-storage";
 import type { File } from "../utils/file";
 import { parseMetadata, stringifyMetadata } from "../utils/file/metadata";
+import { createAzureClient } from "./azure-client";
 import type { AzureMetaStorageOptions } from "./types";
 
 class AzureMetaStorage<T extends File = File> extends MetaStorage<T> {
@@ -17,32 +17,7 @@ class AzureMetaStorage<T extends File = File> extends MetaStorage<T> {
 
         const { client, ...metaConfig } = config;
 
-        if (client === undefined) {
-            const connectionString = metaConfig.connectionString || process.env.AZURE_STORAGE_CONNECTION_STRING || undefined;
-
-            if (connectionString) {
-                this.client = BlobServiceClient.fromConnectionString(connectionString);
-            } else {
-                const accountKey: string | undefined = metaConfig.accountKey || process.env.AZURE_STORAGE_ACCOUNT_KEY || undefined;
-                const accountName: string | undefined = metaConfig.accountName || process.env.AZURE_STORAGE_ACCOUNT || undefined;
-
-                // Access key is required if no connection string is provided
-                if (!metaConfig.accountKey) {
-                    throw new Error("Missing required parameter: Azure blob storage account key.");
-                }
-
-                // Account name is required if no connection string is provided
-                if (!metaConfig.accountName) {
-                    throw new Error("Missing required parameter: Azure blob storage account name.");
-                }
-
-                const signedCredentials = new StorageSharedKeyCredential(accountName as string, accountKey as string);
-
-                this.client = new BlobServiceClient(config.endpoint ?? `https://${accountName}.blob.core.windows.net`, signedCredentials);
-            }
-        } else {
-            this.client = client;
-        }
+        this.client = client === undefined ? createAzureClient(metaConfig).client : client;
 
         const containerName = metaConfig.containerName || process.env.AZURE_STORAGE_CONTAINER || undefined;
 

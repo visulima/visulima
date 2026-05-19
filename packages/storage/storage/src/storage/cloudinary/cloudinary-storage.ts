@@ -3,6 +3,7 @@ import { v2 as cloudinary } from "cloudinary";
 import { ERRORS, throwErrorCode } from "../../utils/errors";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
+import type { OperationOptions } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import CloudinaryFile from "./cloudinary-file";
@@ -74,6 +75,8 @@ const parseCloudinaryUrl = (url: string | undefined): { apiKey?: string; apiSecr
  *   apiSecret: process.env.CLOUDINARY_API_SECRET,
  * });
  * ```
+ * @remarks
+ * - ⚠️ Per-operation `signal`/`timeout` are best-effort: the underlying SDK does not support request cancellation, so an in-flight call may complete server-side even after abort. `retries` is honored.
  */
 class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
     public static override readonly name: string = "cloudinary";
@@ -132,7 +135,7 @@ class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
         return this.client;
     }
 
-    public async create(config: FileInit): Promise<CloudinaryFile> {
+    public async create(config: FileInit, _options?: OperationOptions): Promise<CloudinaryFile> {
         return this.instrumentOperation("create", async () => {
             const file = new CloudinaryFile(config);
 
@@ -161,7 +164,7 @@ class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
         });
     }
 
-    public async write(part: CloudinaryFile | FilePart | FileQuery): Promise<CloudinaryFile> {
+    public async write(part: CloudinaryFile | FilePart | FileQuery, options?: OperationOptions): Promise<CloudinaryFile> {
         return this.instrumentOperation("write", async () => {
             let file: CloudinaryFile;
 
@@ -195,27 +198,7 @@ class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
                     const buffer = await collectStream(part.body);
                     const key = file.path ?? file.name;
 
-                    const result = await new Promise<CloudinaryUploadResult>((resolve, reject) => {
-                        const stream = this.client.uploader.upload_stream(
-                            {
-                                overwrite: true,
-                                public_id: key,
-                                resource_type: this.resourceType,
-                                type: this.deliveryType,
-                            },
-                            (error: { message?: string } | undefined, uploaded: CloudinaryUploadResult | undefined) => {
-                                if (error || !uploaded) {
-                                    reject(error instanceof Error ? error : new Error(error?.message ?? "Cloudinary: upload failed"));
-
-                                    return;
-                                }
-
-                                resolve(uploaded);
-                            },
-                        );
-
-                        stream.end(buffer);
-                    });
+                    const result = await this.runOperation(options, () => this.uploadBuffer(key, buffer));
 
                     file.bytesWritten = buffer.length;
                     file.size = buffer.length;
@@ -239,7 +222,7 @@ class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
         });
     }
 
-    public async delete({ id }: FileQuery): Promise<CloudinaryFile> {
+    public async delete({ id }: FileQuery, options?: OperationOptions): Promise<CloudinaryFile> {
         return this.instrumentOperation("delete", async () => {
             let file: CloudinaryFile | undefined;
 
@@ -251,11 +234,13 @@ class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
 
             const key = file?.path ?? file?.name ?? id;
 
-            await this.client.uploader.destroy(key, {
-                invalidate: true,
-                resource_type: this.resourceType,
-                type: this.deliveryType,
-            });
+            await this.runOperation(options, () =>
+                this.client.uploader.destroy(key, {
+                    invalidate: true,
+                    resource_type: this.resourceType,
+                    type: this.deliveryType,
+                }),
+            );
 
             if (file) {
                 file.status = "deleted";
@@ -275,7 +260,7 @@ class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
         });
     }
 
-    public override async exists({ id }: FileQuery): Promise<boolean> {
+    public override async exists({ id }: FileQuery, options?: OperationOptions): Promise<boolean> {
         return this.instrumentOperation("exists", async () => {
             let key = id;
 
@@ -288,10 +273,12 @@ class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
             }
 
             try {
-                await this.client.api.resource(key, {
-                    resource_type: this.resourceType,
-                    type: this.deliveryType,
-                });
+                await this.runOperation(options, () =>
+                    this.client.api.resource(key, {
+                        resource_type: this.resourceType,
+                        type: this.deliveryType,
+                    }),
+                );
 
                 return true;
             } catch {
@@ -300,7 +287,7 @@ class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
         });
     }
 
-    public async get({ id }: FileQuery): Promise<FileReturn> {
+    public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
             let key = id;
             let stored: CloudinaryFile | undefined;
@@ -312,17 +299,21 @@ class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
                 // No metadata — treat `id` as a Cloudinary public id.
             }
 
-            const resource = await this.client.api.resource(key, {
-                resource_type: this.resourceType,
-                type: this.deliveryType,
-            });
-
-            const response = await fetch(
-                this.client.url(key, {
+            const resource = await this.runOperation(options, () =>
+                this.client.api.resource(key, {
                     resource_type: this.resourceType,
-                    secure: this.secure,
                     type: this.deliveryType,
                 }),
+            );
+
+            const response = await this.runOperation(options, () =>
+                fetch(
+                    this.client.url(key, {
+                        resource_type: this.resourceType,
+                        secure: this.secure,
+                        type: this.deliveryType,
+                    }),
+                ),
             );
 
             if (!response.ok) {
@@ -349,7 +340,7 @@ class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
         });
     }
 
-    public async copy(name: string, destination: string): Promise<CloudinaryFile> {
+    public async copy(name: string, destination: string, options?: OperationOptions & { storageClass?: string }): Promise<CloudinaryFile> {
         return this.instrumentOperation("copy", async () => {
             const meta = await this.getMetaSafe(name);
             const source = meta?.path ?? name;
@@ -360,12 +351,14 @@ class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
                 type: this.deliveryType,
             });
 
-            await this.client.uploader.upload(sourceUrl, {
-                overwrite: true,
-                public_id: destination,
-                resource_type: this.resourceType,
-                type: this.deliveryType,
-            });
+            await this.runOperation(options, () =>
+                this.client.uploader.upload(sourceUrl, {
+                    overwrite: true,
+                    public_id: destination,
+                    resource_type: this.resourceType,
+                    type: this.deliveryType,
+                }),
+            );
 
             const file = new CloudinaryFile({
                 contentType: "application/octet-stream",
@@ -381,14 +374,16 @@ class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
         });
     }
 
-    public async move(name: string, destination: string): Promise<CloudinaryFile> {
+    public async move(name: string, destination: string, options?: OperationOptions): Promise<CloudinaryFile> {
         return this.instrumentOperation("move", async () => {
             const meta = await this.getMetaSafe(name);
             const source = meta?.path ?? name;
 
-            await this.client.uploader.rename(source, destination, {
-                resource_type: this.resourceType,
-            });
+            await this.runOperation(options, () =>
+                this.client.uploader.rename(source, destination, {
+                    resource_type: this.resourceType,
+                }),
+            );
 
             const file = new CloudinaryFile({
                 contentType: "application/octet-stream",
@@ -410,15 +405,17 @@ class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
         });
     }
 
-    public override async list(limit = 1000): Promise<CloudinaryFile[]> {
+    public override async list(limit = 1000, options?: OperationOptions): Promise<CloudinaryFile[]> {
         return this.instrumentOperation(
             "list",
             async () => {
-                const { resources } = await this.client.api.resources({
-                    max_results: limit,
-                    resource_type: this.resourceType,
-                    type: this.deliveryType,
-                });
+                const { resources } = await this.runOperation(options, () =>
+                    this.client.api.resources({
+                        max_results: limit,
+                        resource_type: this.resourceType,
+                        type: this.deliveryType,
+                    }),
+                );
 
                 return ((resources ?? []) as CloudinaryResource[]).map((entry) => {
                     const file = new CloudinaryFile({
@@ -466,6 +463,30 @@ class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
         } catch (error: unknown) {
             return throwErrorCode(ERRORS.METHOD_NOT_ALLOWED, error instanceof Error ? error.message : "Cloudinary: private_download_url failed");
         }
+    }
+
+    private uploadBuffer(key: string, buffer: Buffer): Promise<CloudinaryUploadResult> {
+        return new Promise<CloudinaryUploadResult>((resolve, reject) => {
+            const stream = this.client.uploader.upload_stream(
+                {
+                    overwrite: true,
+                    public_id: key,
+                    resource_type: this.resourceType,
+                    type: this.deliveryType,
+                },
+                (error: { message?: string } | undefined, uploaded: CloudinaryUploadResult | undefined) => {
+                    if (error || !uploaded) {
+                        reject(error instanceof Error ? error : new Error(error?.message ?? "Cloudinary: upload failed"));
+
+                        return;
+                    }
+
+                    resolve(uploaded);
+                },
+            );
+
+            stream.end(buffer);
+        });
     }
 
     private async getMetaSafe(id: string): Promise<CloudinaryFile | undefined> {

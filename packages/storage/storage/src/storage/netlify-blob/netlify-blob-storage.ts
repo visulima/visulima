@@ -5,10 +5,10 @@ import { detectFileTypeFromBuffer } from "../../utils/detect-file-type";
 import type { UploadError } from "../../utils/errors";
 import toMilliseconds from "../../utils/primitives/to-milliseconds";
 import type { RetryConfig } from "../../utils/retry";
-import { createRetryWrapper } from "../../utils/retry";
 import LocalMetaStorage from "../local/local-meta-storage";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
+import type { OperationOptions } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateMetadata, updateSize } from "../utils/file";
 import NetlifyBlobFile from "./netlify-blob-file";
@@ -52,7 +52,7 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
 
     private store: ReturnType<typeof getStore>;
 
-    private readonly retry: ReturnType<typeof createRetryWrapper>;
+    private readonly resolvedRetryConfig: RetryConfig;
 
     public constructor(config: NetlifyBlobStorageOptions) {
         super(config);
@@ -94,7 +94,7 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
             ...config.retryConfig,
         };
 
-        this.retry = createRetryWrapper(retryConfig);
+        this.resolvedRetryConfig = retryConfig;
 
         const { metaStorage, metaStorageConfig } = config;
 
@@ -103,7 +103,11 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
         this.isReady = true;
     }
 
-    public async create(config: FileInit): Promise<NetlifyBlobFile> {
+    protected override getRetryConfig(): RetryConfig {
+        return this.resolvedRetryConfig;
+    }
+
+    public async create(config: FileInit, _options?: OperationOptions): Promise<NetlifyBlobFile> {
         return this.instrumentOperation("create", async () => {
             // Handle TTL option
             const processedConfig = { ...config };
@@ -143,7 +147,7 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
         });
     }
 
-    public async write(part: FilePart | FileQuery | NetlifyBlobFile): Promise<NetlifyBlobFile> {
+    public async write(part: FilePart | FileQuery | NetlifyBlobFile, options?: OperationOptions): Promise<NetlifyBlobFile> {
         return this.instrumentOperation("write", async () => {
             let file: NetlifyBlobFile;
 
@@ -211,7 +215,7 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
                     // Spread user metadata first so the canonical `contentType`
                     // we just resolved always wins — otherwise a user-supplied
                     // `metadata.contentType` would override the detected one.
-                    await this.retry(() =>
+                    await this.runOperation(options, () =>
                         this.store.set(file.name, buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength), {
                             metadata: {
                                 ...file.metadata,
@@ -248,7 +252,7 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
      * @returns Promise resolving to the deleted file object with status: "deleted".
      * @throws {UploadError} If the file metadata cannot be found.
      */
-    public async delete({ id }: FileQuery): Promise<NetlifyBlobFile> {
+    public async delete({ id }: FileQuery, options?: OperationOptions): Promise<NetlifyBlobFile> {
         return this.instrumentOperation("delete", async () => {
             const file = await this.getMeta(id);
 
@@ -259,7 +263,7 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
             file.status = "deleted";
 
             try {
-                await this.retry(() => this.store.delete(file.pathname as string));
+                await this.runOperation(options, () => this.store.delete(file.pathname as string));
             } catch (error) {
                 this.logger?.error("Failed to delete blob from Netlify Blob:", error);
 
@@ -284,7 +288,7 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
      * @param query File query containing the file ID to check.
      * @returns Promise resolving to true if both metadata and blob exist, false otherwise.
      */
-    public override async exists({ id }: FileQuery): Promise<boolean> {
+    public override async exists({ id }: FileQuery, options?: OperationOptions): Promise<boolean> {
         return this.instrumentOperation("exists", async () => {
             try {
                 // First check if metadata exists
@@ -295,7 +299,7 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
                 }
 
                 // Then verify the actual blob exists
-                const blob = await this.retry(() => this.store.get(file.pathname as string, { type: "blob" }));
+                const blob = await this.runOperation(options, () => this.store.get(file.pathname as string, { type: "blob" }));
 
                 return blob !== null && blob !== undefined;
             } catch {
@@ -305,7 +309,7 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
         });
     }
 
-    public async get({ id }: FileQuery): Promise<FileReturn> {
+    public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
             const file = await this.checkIfExpired(await this.getMeta(id));
 
@@ -315,7 +319,7 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
 
             // Fetch the blob from Netlify Blob
             // Note: Netlify Blobs returns Blob or null
-            const blob = await this.retry(() => this.store.get(file.pathname as string, { type: "blob" }));
+            const blob = await this.runOperation(options, () => this.store.get(file.pathname as string, { type: "blob" }));
 
             if (!blob) {
                 throw new Error("File not found in Netlify Blob");
@@ -327,7 +331,7 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
             if (typeof blob === "string") {
                 arrayBuffer = Buffer.from(blob, "utf8").buffer;
             } else if (blob && typeof blob === "object" && "arrayBuffer" in blob && typeof blob.arrayBuffer === "function") {
-                arrayBuffer = await this.retry(() => blob.arrayBuffer());
+                arrayBuffer = await this.runOperation(options, () => blob.arrayBuffer());
             } else {
                 throw new Error("Invalid blob type returned from Netlify Blob");
             }
@@ -377,7 +381,7 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
      * @returns Promise resolving to the copied file object.
      * @throws {UploadError} If the source file cannot be found.
      */
-    public async copy(name: string, destination: string): Promise<NetlifyBlobFile> {
+    public async copy(name: string, destination: string, options?: OperationOptions & { storageClass?: string }): Promise<NetlifyBlobFile> {
         return this.instrumentOperation("copy", async () => {
             const sourceFile = await this.getMeta(name);
 
@@ -386,7 +390,7 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
             }
 
             // Get the source blob
-            const sourceBlob = await this.retry(() => this.store.get(sourceFile.pathname as string, { type: "blob" }));
+            const sourceBlob = await this.runOperation(options, () => this.store.get(sourceFile.pathname as string, { type: "blob" }));
 
             if (!sourceBlob) {
                 throw new Error("Source file not found in Netlify Blob");
@@ -416,7 +420,7 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
             } else if (sourceBlob && typeof sourceBlob === "object" && "arrayBuffer" in sourceBlob) {
                 const blobWithArrayBuffer = sourceBlob as { arrayBuffer: () => Promise<ArrayBuffer> };
 
-                arrayBuffer = await this.retry(() => blobWithArrayBuffer.arrayBuffer());
+                arrayBuffer = await this.runOperation(options, () => blobWithArrayBuffer.arrayBuffer());
             } else {
                 throw new Error("Invalid blob type returned from Netlify Blob");
             }
@@ -424,7 +428,7 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
             const buffer = Buffer.from(arrayBuffer);
 
             // Convert Buffer to ArrayBuffer for Netlify Blob API
-            await this.retry(() =>
+            await this.runOperation(options, () =>
                 this.store.set(destination, buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength), {
                     metadata: sourceMetadata || {
                         contentType: sourceFile.contentType,
@@ -456,11 +460,11 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
      * @returns Promise resolving to the moved file object.
      * @throws {UploadError} If the source file cannot be found.
      */
-    public async move(name: string, destination: string): Promise<NetlifyBlobFile> {
+    public async move(name: string, destination: string, options?: OperationOptions): Promise<NetlifyBlobFile> {
         return this.instrumentOperation("move", async () => {
-            const copiedFile = await this.copy(name, destination);
+            const copiedFile = await this.copy(name, destination, options);
 
-            await this.delete({ id: name });
+            await this.delete({ id: name }, options);
 
             return copiedFile;
         });
@@ -480,7 +484,7 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
      * it will be converted to an 'expiredAt' timestamp.
      * TTL can be a number (milliseconds) or string (e.g., "1h", "30m", "7d").
      */
-    public override async update({ id }: FileQuery, metadata: Partial<NetlifyBlobFile>): Promise<NetlifyBlobFile> {
+    public override async update({ id }: FileQuery, metadata: Partial<NetlifyBlobFile>, _options?: OperationOptions): Promise<NetlifyBlobFile> {
         return this.instrumentOperation("update", async () => {
             const file = await this.getMeta(id);
 
@@ -512,13 +516,13 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
         });
     }
 
-    public override async list(limit = 1000): Promise<NetlifyBlobFile[]> {
+    public override async list(limit = 1000, options?: OperationOptions): Promise<NetlifyBlobFile[]> {
         return this.instrumentOperation(
             "list",
             async () => {
                 // Netlify Blob list doesn't support limit option directly
                 // We'll get all results and limit manually if needed
-                const listResult = await this.retry(() => this.store.list());
+                const listResult = await this.runOperation(options, () => this.store.list());
 
                 const files: NetlifyBlobFile[] = [];
 

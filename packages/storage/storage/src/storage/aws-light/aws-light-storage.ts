@@ -5,6 +5,7 @@ import type { AwsClient } from "aws4fetch";
 
 import type { HttpError } from "../../utils/types";
 import { S3BaseStorage } from "../aws/s3-base-storage";
+import type { OperationOptions } from "../types";
 import type { FileInit, FileQuery } from "../utils/file";
 import AwsLightApiAdapter from "./aws-light-api-adapter";
 import AwsLightFile from "./aws-light-file";
@@ -145,14 +146,20 @@ class AwsLightStorage extends S3BaseStorage {
         return super.update({ id }, metadata);
     }
 
-    public override async getStream({ id }: FileQuery): Promise<{ headers?: Record<string, string>; size?: number; stream: Readable }> {
+    public override async getStream(
+        { id }: FileQuery,
+        options?: OperationOptions,
+    ): Promise<{ headers?: Record<string, string>; size?: number; stream: Readable }> {
         return this.instrumentOperation("getStream", async () => {
             const s3Api = this.getS3Api();
-            const { Body, ContentLength, ContentType, ETag, Expires, LastModified } = await this.retry(() =>
-                s3Api.getObject({
-                    Bucket: this.bucket,
-                    Key: id,
-                }),
+            const { Body, ContentLength, ContentType, ETag, Expires, LastModified } = await this.runOperation(options, (signal) =>
+                s3Api.getObject(
+                    {
+                        Bucket: this.bucket,
+                        Key: id,
+                    },
+                    { signal },
+                ),
             );
 
             await this.checkIfExpired({ expiredAt: Expires } as AwsLightFile);

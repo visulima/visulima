@@ -12,6 +12,7 @@ import { createRetryWrapper } from "../../utils/retry";
 import LocalMetaStorage from "../local/local-meta-storage";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
+import type { OperationOptions } from "../types";
 import type { File, FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 
@@ -39,33 +40,50 @@ export interface S3CompatibleFile extends File {
 }
 
 /**
+ * Per-call options forwarded to the underlying AWS SDK send().
+ */
+export interface S3CallOptions {
+    /** Forwarded to `client.send(command, { abortSignal })`. */
+    signal?: AbortSignal;
+}
+
+/**
  * S3 API operations interface that must be implemented by concrete storage classes.
  */
 export interface S3ApiOperations {
-    abortMultipartUpload: (params: { Bucket: string; Key: string; UploadId: string }) => Promise<void>;
+    abortMultipartUpload: (params: { Bucket: string; Key: string; UploadId: string }, options?: S3CallOptions) => Promise<void>;
 
     checkBucketAccess: (params: { Bucket: string }) => Promise<void>;
 
-    completeMultipartUpload: (params: {
-        Bucket: string;
-        Key: string;
-        Parts: { ETag: string; PartNumber: number }[];
-        UploadId: string;
-    }) => Promise<{ ETag?: string; Location: string }>;
+    completeMultipartUpload: (
+        params: {
+            Bucket: string;
+            Key: string;
+            Parts: { ETag: string; PartNumber: number }[];
+            UploadId: string;
+        },
+        options?: S3CallOptions,
+    ) => Promise<{ ETag?: string; Location: string }>;
 
-    copyObject: (params: { Bucket: string; CopySource: string; Key: string; StorageClass?: string }) => Promise<void>;
+    copyObject: (params: { Bucket: string; CopySource: string; Key: string; StorageClass?: string }, options?: S3CallOptions) => Promise<void>;
 
-    createMultipartUpload: (params: {
-        ACL?: string;
-        Bucket: string;
-        ContentType?: string;
-        Key: string;
-        Metadata?: Record<string, string>;
-    }) => Promise<{ UploadId: string }>;
+    createMultipartUpload: (
+        params: {
+            ACL?: string;
+            Bucket: string;
+            ContentType?: string;
+            Key: string;
+            Metadata?: Record<string, string>;
+        },
+        options?: S3CallOptions,
+    ) => Promise<{ UploadId: string }>;
 
-    deleteObject: (params: { Bucket: string; Key: string }) => Promise<void>;
+    deleteObject: (params: { Bucket: string; Key: string }, options?: S3CallOptions) => Promise<void>;
 
-    getObject: (params: { Bucket: string; Key: string }) => Promise<{
+    getObject: (
+        params: { Bucket: string; Key: string },
+        options?: S3CallOptions,
+    ) => Promise<{
         Body?: ReadableStream | Readable;
         ContentLength?: number;
         ContentType?: string;
@@ -77,7 +95,10 @@ export interface S3ApiOperations {
 
     getPresignedUrl: (params: { Bucket: string; expiresIn: number; Key: string; PartNumber: number; UploadId: string }) => Promise<string>;
 
-    headObject: (params: { Bucket: string; Key: string }) => Promise<{
+    headObject: (
+        params: { Bucket: string; Key: string },
+        options?: S3CallOptions,
+    ) => Promise<{
         ContentLength?: number;
         ContentType?: string;
         ETag?: string;
@@ -86,23 +107,29 @@ export interface S3ApiOperations {
         Metadata?: Record<string, string>;
     }>;
 
-    listObjectsV2: (params: { Bucket: string; ContinuationToken?: string; MaxKeys?: number }) => Promise<{
+    listObjectsV2: (
+        params: { Bucket: string; ContinuationToken?: string; MaxKeys?: number },
+        options?: S3CallOptions,
+    ) => Promise<{
         Contents?: { Key?: string; LastModified?: Date }[];
         IsTruncated?: boolean;
         NextContinuationToken?: string;
     }>;
 
-    listParts: (params: { Bucket: string; Key: string; UploadId: string }) => Promise<{ Parts?: Part[] }>;
+    listParts: (params: { Bucket: string; Key: string; UploadId: string }, options?: S3CallOptions) => Promise<{ Parts?: Part[] }>;
 
-    uploadPart: (params: {
-        Body: Readable | ReadableStream | Uint8Array;
-        Bucket: string;
-        ContentLength?: number;
-        ContentMD5?: string;
-        Key: string;
-        PartNumber: number;
-        UploadId: string;
-    }) => Promise<{ ETag: string }>;
+    uploadPart: (
+        params: {
+            Body: Readable | ReadableStream | Uint8Array;
+            Bucket: string;
+            ContentLength?: number;
+            ContentMD5?: string;
+            Key: string;
+            PartNumber: number;
+            UploadId: string;
+        },
+        options?: S3CallOptions,
+    ) => Promise<{ ETag: string }>;
 }
 
 /**
@@ -125,6 +152,8 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
     protected readonly partSize: number;
 
     protected readonly retry: ReturnType<typeof createRetryWrapper>;
+
+    protected readonly resolvedRetryConfig: RetryConfig;
 
     /**
      * Abstract method to get S3 API operations implementation.
@@ -187,6 +216,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
         };
 
         this.retry = createRetryWrapper(retryConfig);
+        this.resolvedRetryConfig = retryConfig;
 
         const { metaStorage, metaStorageConfig } = config;
 
@@ -218,10 +248,14 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
             });
     }
 
+    protected override getRetryConfig(): RetryConfig {
+        return this.resolvedRetryConfig;
+    }
+
     /**
      * Creates a new S3 multipart upload.
      */
-    public async create(config: FileInit): Promise<TFile> {
+    public async create(config: FileInit, options?: OperationOptions): Promise<TFile> {
         return this.instrumentOperation("create", async () => {
             // Handle TTL option
             const processedConfig = { ...config };
@@ -254,14 +288,17 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
             let result;
 
             try {
-                result = await this.retry(() =>
-                    s3Api.createMultipartUpload({
-                        ACL: this.getAcl(),
-                        Bucket: this.bucket,
-                        ContentType: file.contentType,
-                        Key: file.name,
-                        Metadata: mapValues({ originalName: file.originalName, ...file.metadata }, (value) => encodeURI(String(value))),
-                    }),
+                result = await this.runOperation(options, (signal) =>
+                    s3Api.createMultipartUpload(
+                        {
+                            ACL: this.getAcl(),
+                            Bucket: this.bucket,
+                            ContentType: file.contentType,
+                            Key: file.name,
+                            Metadata: mapValues({ originalName: file.originalName, ...file.metadata }, (value) => encodeURI(String(value))),
+                        },
+                        { signal },
+                    ),
                 );
             } catch {
                 return throwErrorCode(ERRORS.FILE_ERROR, "s3 create upload error");
@@ -297,7 +334,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
     /**
      * Writes data to an S3 multipart upload.
      */
-    public async write(part: FilePart | FileQuery | TFile): Promise<TFile> {
+    public async write(part: FilePart | FileQuery | TFile, options?: OperationOptions): Promise<TFile> {
         return this.instrumentOperation("write", async () => {
             let file: TFile;
 
@@ -366,16 +403,28 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                         throw new Error("UploadId is required");
                     }
 
-                    const { ETag } = await this.retry(() =>
-                        s3Api.uploadPart({
-                            Body: part.body as Readable | ReadableStream | Uint8Array,
-                            Bucket: this.bucket,
-                            ContentLength: part.contentLength || 0,
-                            Key: file.name,
-                            PartNumber: partNumber,
-                            UploadId: uploadId,
-                            ...(part.checksumAlgorithm === "md5" ? { ContentMD5: part.checksum } : {}),
-                        }),
+                    const partBody = part.body as Readable | ReadableStream | Uint8Array;
+                    // A Readable/ReadableStream is consumed on first send and
+                    // cannot be replayed; only an in-memory buffer is safe to
+                    // retry. Forces maxRetries=0 for stream bodies.
+                    const replayable = partBody instanceof Uint8Array;
+
+                    const { ETag } = await this.runOperation(
+                        options,
+                        (signal) =>
+                            s3Api.uploadPart(
+                                {
+                                    Body: partBody,
+                                    Bucket: this.bucket,
+                                    ContentLength: part.contentLength || 0,
+                                    Key: file.name,
+                                    PartNumber: partNumber,
+                                    UploadId: uploadId,
+                                    ...(part.checksumAlgorithm === "md5" ? { ContentMD5: part.checksum } : {}),
+                                },
+                                { signal },
+                            ),
+                        { replayable },
                     );
 
                     const uploadPart: Part = { ETag, PartNumber: partNumber, Size: part.contentLength };
@@ -407,7 +456,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
     /**
      * Deletes an upload and its metadata.
      */
-    public async delete({ id }: FileQuery): Promise<TFile> {
+    public async delete({ id }: FileQuery, options?: OperationOptions): Promise<TFile> {
         return this.instrumentOperation("delete", async () => {
             const file = await this.getMeta(id);
 
@@ -415,8 +464,9 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
 
             // Sequence the abort before the metadata delete so a partial failure leaves a recoverable
             // metadata orphan (detectable + retryable) instead of an unreachable multipart upload that
-            // continues to incur storage charges.
-            await this.retry(() => this.abortMultipartUpload(file));
+            // continues to incur storage charges. abortMultipartUpload retries internally via
+            // runOperation, so no extra retry wrapper here.
+            await this.abortMultipartUpload(file, options);
             await this.deleteMeta(file.id);
 
             const deletedFile = { ...file };
@@ -430,7 +480,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
     /**
      * Copies an upload file to a new location.
      */
-    public async copy(name: string, destination: string, options?: { storageClass?: string }): Promise<TFile> {
+    public async copy(name: string, destination: string, options?: OperationOptions & { storageClass?: string }): Promise<TFile> {
         return this.instrumentOperation("copy", async () => {
             S3BaseStorage.assertSafeId(name);
             S3BaseStorage.assertSafeId(destination);
@@ -446,13 +496,16 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
 
             const s3Api = this.getS3Api();
 
-            await this.retry(() =>
-                s3Api.copyObject({
-                    Bucket,
-                    CopySource,
-                    Key,
-                    ...(options?.storageClass && { StorageClass: options.storageClass }),
-                }),
+            await this.runOperation(options, (signal) =>
+                s3Api.copyObject(
+                    {
+                        Bucket,
+                        CopySource,
+                        Key,
+                        ...(options?.storageClass && { StorageClass: options.storageClass }),
+                    },
+                    { signal },
+                ),
             );
 
             return { ...sourceFile, id: Key, name: Key };
@@ -462,13 +515,13 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
     /**
      * Moves an upload file to a new location.
      */
-    public async move(name: string, destination: string): Promise<TFile> {
+    public async move(name: string, destination: string, options?: OperationOptions): Promise<TFile> {
         return this.instrumentOperation("move", async () => {
-            await this.copy(name, destination);
+            await this.copy(name, destination, options);
 
             const s3Api = this.getS3Api();
 
-            await this.retry(() => s3Api.deleteObject({ Bucket: this.bucket, Key: name }));
+            await this.runOperation(options, (signal) => s3Api.deleteObject({ Bucket: this.bucket, Key: name }, { signal }));
 
             return await this.getMeta(destination);
         });
@@ -477,7 +530,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
     /**
      * Lists files in the bucket.
      */
-    public override async list(limit = 1000): Promise<TFile[]> {
+    public override async list(limit = 1000, options?: OperationOptions): Promise<TFile[]> {
         return this.instrumentOperation(
             "list",
 
@@ -494,7 +547,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
 
                 while (truncated && items.length < limit) {
                     try {
-                        const response = await this.retry(() => s3Api.listObjectsV2(parameters));
+                        const response = await this.runOperation(options, (signal) => s3Api.listObjectsV2(parameters, { signal }));
 
                         for (const { Key, LastModified } of response?.Contents || []) {
                             if (items.length >= limit) {
@@ -545,7 +598,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
      * @param query File query containing the file ID to check.
      * @returns Promise resolving to true if both metadata and S3 object exist, false otherwise.
      */
-    public override async exists({ id }: FileQuery): Promise<boolean> {
+    public override async exists({ id }: FileQuery, options?: OperationOptions): Promise<boolean> {
         return this.instrumentOperation("exists", async () => {
             try {
                 // First check if metadata exists
@@ -554,11 +607,14 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                 // Then verify the actual S3 object exists
                 const s3Api = this.getS3Api();
 
-                await this.retry(() =>
-                    s3Api.headObject({
-                        Bucket: this.bucket,
-                        Key: id,
-                    }),
+                await this.runOperation(options, (signal) =>
+                    s3Api.headObject(
+                        {
+                            Bucket: this.bucket,
+                            Key: id,
+                        },
+                        { signal },
+                    ),
                 );
 
                 return true;
@@ -579,14 +635,17 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
     /**
      * Gets an uploaded file by ID.
      */
-    public async get({ id }: FileQuery): Promise<FileReturn> {
+    public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
             const s3Api = this.getS3Api();
-            const { Body, ContentLength, ContentType, ETag, Expires, LastModified, Metadata } = await this.retry(() =>
-                s3Api.getObject({
-                    Bucket: this.bucket,
-                    Key: id,
-                }),
+            const { Body, ContentLength, ContentType, ETag, Expires, LastModified, Metadata } = await this.runOperation(options, (signal) =>
+                s3Api.getObject(
+                    {
+                        Bucket: this.bucket,
+                        Key: id,
+                    },
+                    { signal },
+                ),
             );
 
             await this.checkIfExpired({ expiredAt: Expires } as TFile);
@@ -636,7 +695,10 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
     /**
      * Gets file stream (abstract - must be implemented by subclasses due to stream differences).
      */
-    public abstract override getStream(query: FileQuery): Promise<{ headers?: Record<string, string>; size?: number; stream: Readable }>;
+    public abstract override getStream(
+        query: FileQuery,
+        options?: OperationOptions,
+    ): Promise<{ headers?: Record<string, string>; size?: number; stream: Readable }>;
 
     /**
      * Builds presigned URLs for client uploads.
@@ -711,12 +773,15 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
             throw new Error("UploadId is required");
         }
 
-        const { Parts = [] } = await this.retry(() =>
-            s3Api.listParts({
-                Bucket: this.bucket,
-                Key: file.name,
-                UploadId: uploadId,
-            }),
+        const { Parts = [] } = await this.runOperation(undefined, (signal) =>
+            s3Api.listParts(
+                {
+                    Bucket: this.bucket,
+                    Key: file.name,
+                    UploadId: uploadId,
+                },
+                { signal },
+            ),
         );
 
         return Parts;
@@ -742,20 +807,23 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                 return { ETag, PartNumber };
             }) || [];
 
-        return this.retry(() =>
-            s3Api.completeMultipartUpload({
-                Bucket: this.bucket,
-                Key: file.name,
-                Parts: parts,
-                UploadId: uploadId,
-            }),
+        return this.runOperation(undefined, (signal) =>
+            s3Api.completeMultipartUpload(
+                {
+                    Bucket: this.bucket,
+                    Key: file.name,
+                    Parts: parts,
+                    UploadId: uploadId,
+                },
+                { signal },
+            ),
         );
     }
 
     /**
      * Aborts a multipart upload.
      */
-    protected async abortMultipartUpload(file: TFile): Promise<void> {
+    protected async abortMultipartUpload(file: TFile, options?: OperationOptions): Promise<void> {
         if (file.status === "completed") {
             return;
         }
@@ -768,12 +836,15 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                 return;
             }
 
-            await this.retry(() =>
-                s3Api.abortMultipartUpload({
-                    Bucket: this.bucket,
-                    Key: file.name,
-                    UploadId: uploadId,
-                }),
+            await this.runOperation(options, (signal) =>
+                s3Api.abortMultipartUpload(
+                    {
+                        Bucket: this.bucket,
+                        Key: file.name,
+                        UploadId: uploadId,
+                    },
+                    { signal },
+                ),
             );
         } catch (error) {
             this.logger?.error("abortMultipartUploadError: ", error);

@@ -3,6 +3,7 @@ import { StorageClient } from "@supabase/storage-js";
 import { ERRORS, throwErrorCode } from "../../utils/errors";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
+import type { OperationOptions } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import SupabaseFile from "./supabase-file";
@@ -67,6 +68,8 @@ const collectStream = async (stream: AsyncIterable<Uint8Array | Buffer>): Promis
  *   bucket: "avatars",
  * });
  * ```
+ * @remarks
+ * - ⚠️ Per-operation `signal`/`timeout` are best-effort: the underlying SDK does not support request cancellation, so an in-flight call may complete server-side even after abort. `retries` is honored.
  */
 class SupabaseStorage extends BaseStorage<SupabaseFile> {
     public static override readonly name: string = "supabase";
@@ -122,7 +125,7 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
         return this.storageClient;
     }
 
-    public async create(config: FileInit): Promise<SupabaseFile> {
+    public async create(config: FileInit, _options?: OperationOptions): Promise<SupabaseFile> {
         return this.instrumentOperation("create", async () => {
             const file = new SupabaseFile(config);
 
@@ -152,7 +155,7 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
         });
     }
 
-    public async write(part: FilePart | FileQuery | SupabaseFile): Promise<SupabaseFile> {
+    public async write(part: FilePart | FileQuery | SupabaseFile, options?: OperationOptions): Promise<SupabaseFile> {
         return this.instrumentOperation("write", async () => {
             let file: SupabaseFile;
 
@@ -186,10 +189,12 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
                     const buffer = await collectStream(part.body);
                     const path = file.path ?? file.name;
 
-                    const { data, error } = await this.storageClient.from(this.bucket).upload(path, buffer, {
-                        contentType: file.contentType,
-                        upsert: true,
-                    });
+                    const { data, error } = await this.runOperation(options, () =>
+                        this.storageClient.from(this.bucket).upload(path, buffer, {
+                            contentType: file.contentType,
+                            upsert: true,
+                        }),
+                    );
 
                     if (error) {
                         throw error;
@@ -216,7 +221,7 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
         });
     }
 
-    public async delete({ id }: FileQuery): Promise<SupabaseFile> {
+    public async delete({ id }: FileQuery, options?: OperationOptions): Promise<SupabaseFile> {
         return this.instrumentOperation("delete", async () => {
             let file: SupabaseFile | undefined;
 
@@ -228,7 +233,7 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
 
             const path = file?.path ?? file?.name ?? id;
 
-            const { error } = await this.storageClient.from(this.bucket).remove([path]);
+            const { error } = await this.runOperation(options, () => this.storageClient.from(this.bucket).remove([path]));
 
             // Supabase returns no error for missing files; surface upstream errors only.
             if (error && error.message && !/not.*found/i.test(error.message)) {
@@ -254,7 +259,7 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
         });
     }
 
-    public override async exists({ id }: FileQuery): Promise<boolean> {
+    public override async exists({ id }: FileQuery, options?: OperationOptions): Promise<boolean> {
         return this.instrumentOperation("exists", async () => {
             let path = id;
 
@@ -266,7 +271,7 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
                 // direct path lookup
             }
 
-            const { data, error } = await this.storageClient.from(this.bucket).exists(path);
+            const { data, error } = await this.runOperation(options, () => this.storageClient.from(this.bucket).exists(path));
 
             if (error) {
                 return false;
@@ -276,7 +281,7 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
         });
     }
 
-    public async get({ id }: FileQuery): Promise<FileReturn> {
+    public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
             let path = id;
             let stored: SupabaseFile | undefined;
@@ -288,13 +293,13 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
                 // No metadata — treat `id` as a bucket-relative path.
             }
 
-            const { data, error } = await this.storageClient.from(this.bucket).download(path);
+            const { data, error } = await this.runOperation(options, () => this.storageClient.from(this.bucket).download(path));
 
             if (error || !data) {
                 throw error ?? new Error(`Supabase: object not found at "${path}"`);
             }
 
-            const content = Buffer.from(await data.arrayBuffer());
+            const content = Buffer.from(await this.runOperation(options, () => data.arrayBuffer()));
 
             return {
                 content,
@@ -311,13 +316,13 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
         });
     }
 
-    public async copy(name: string, destination: string): Promise<SupabaseFile> {
+    public async copy(name: string, destination: string, options?: OperationOptions & { storageClass?: string }): Promise<SupabaseFile> {
         return this.instrumentOperation("copy", async () => {
             const meta = await this.getMetaSafe(name);
             const source = meta?.path ?? name;
             const target = destination;
 
-            const { error } = await this.storageClient.from(this.bucket).copy(source, target);
+            const { error } = await this.runOperation(options, () => this.storageClient.from(this.bucket).copy(source, target));
 
             if (error) {
                 throw error;
@@ -338,12 +343,12 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
         });
     }
 
-    public async move(name: string, destination: string): Promise<SupabaseFile> {
+    public async move(name: string, destination: string, options?: OperationOptions): Promise<SupabaseFile> {
         return this.instrumentOperation("move", async () => {
             const meta = await this.getMetaSafe(name);
             const source = meta?.path ?? name;
 
-            const { error } = await this.storageClient.from(this.bucket).move(source, destination);
+            const { error } = await this.runOperation(options, () => this.storageClient.from(this.bucket).move(source, destination));
 
             if (error) {
                 throw error;
@@ -370,13 +375,15 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
         });
     }
 
-    public override async list(limit = 1000): Promise<SupabaseFile[]> {
+    public override async list(limit = 1000, options?: OperationOptions): Promise<SupabaseFile[]> {
         return this.instrumentOperation(
             "list",
             async () => {
-                const { data, error } = await this.storageClient.from(this.bucket).list("", {
-                    limit,
-                });
+                const { data, error } = await this.runOperation(options, () =>
+                    this.storageClient.from(this.bucket).list("", {
+                        limit,
+                    }),
+                );
 
                 if (error) {
                     throw error;

@@ -26,10 +26,13 @@ import {
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
-import type { Part, S3ApiOperations } from "./s3-base-storage";
+import type { Part, S3ApiOperations, S3CallOptions } from "./s3-base-storage";
 
 // Use global ReadableStream type for interface compatibility
 type ReadableStream = globalThis.ReadableStream;
+
+/** AWS SDK v3 `client.send` accepts `{ abortSignal }` as its second argument. */
+const sendOptions = (options?: S3CallOptions): { abortSignal: AbortSignal } | undefined => (options?.signal ? { abortSignal: options.signal } : undefined);
 
 /**
  * Adapter that wraps AWS SDK S3Client to implement S3ApiOperations interface.
@@ -43,13 +46,16 @@ class S3ClientAdapter implements S3ApiOperations {
         // Bucket is stored for potential future use in getSignedUrl calls
     }
 
-    public async createMultipartUpload(params: {
-        ACL?: string;
-        Bucket: string;
-        ContentType?: string;
-        Key: string;
-        Metadata?: Record<string, string>;
-    }): Promise<{ UploadId: string }> {
+    public async createMultipartUpload(
+        params: {
+            ACL?: string;
+            Bucket: string;
+            ContentType?: string;
+            Key: string;
+            Metadata?: Record<string, string>;
+        },
+        options?: S3CallOptions,
+    ): Promise<{ UploadId: string }> {
         const command = new CreateMultipartUploadCommand({
             ACL: params.ACL as ObjectCannedACL | undefined,
             Bucket: params.Bucket,
@@ -58,7 +64,7 @@ class S3ClientAdapter implements S3ApiOperations {
             Metadata: params.Metadata,
         });
 
-        const response = await this.client.send(command);
+        const response = await this.client.send(command, sendOptions(options));
 
         if (!response.UploadId) {
             throw new Error("Failed to create multipart upload");
@@ -67,15 +73,18 @@ class S3ClientAdapter implements S3ApiOperations {
         return { UploadId: response.UploadId };
     }
 
-    public async uploadPart(params: {
-        Body: Readable | ReadableStream | Uint8Array;
-        Bucket: string;
-        ContentLength?: number;
-        ContentMD5?: string;
-        Key: string;
-        PartNumber: number;
-        UploadId: string;
-    }): Promise<{ ETag: string }> {
+    public async uploadPart(
+        params: {
+            Body: Readable | ReadableStream | Uint8Array;
+            Bucket: string;
+            ContentLength?: number;
+            ContentMD5?: string;
+            Key: string;
+            PartNumber: number;
+            UploadId: string;
+        },
+        options?: S3CallOptions,
+    ): Promise<{ ETag: string }> {
         // Convert ReadableStream to Readable if needed
         const body: Readable | Uint8Array = params.Body instanceof NodeReadableStream ? Readable.fromWeb(params.Body) : (params.Body as Readable | Uint8Array);
 
@@ -89,7 +98,7 @@ class S3ClientAdapter implements S3ApiOperations {
             UploadId: params.UploadId,
         });
 
-        const response = await this.client.send(command);
+        const response = await this.client.send(command, sendOptions(options));
 
         if (!response.ETag) {
             throw new Error("Failed to upload part");
@@ -98,12 +107,15 @@ class S3ClientAdapter implements S3ApiOperations {
         return { ETag: response.ETag };
     }
 
-    public async completeMultipartUpload(params: {
-        Bucket: string;
-        Key: string;
-        Parts: { ETag: string; PartNumber: number }[];
-        UploadId: string;
-    }): Promise<{ ETag?: string; Location: string }> {
+    public async completeMultipartUpload(
+        params: {
+            Bucket: string;
+            Key: string;
+            Parts: { ETag: string; PartNumber: number }[];
+            UploadId: string;
+        },
+        options?: S3CallOptions,
+    ): Promise<{ ETag?: string; Location: string }> {
         const command = new CompleteMultipartUploadCommand({
             Bucket: params.Bucket,
             Key: params.Key,
@@ -115,7 +127,7 @@ class S3ClientAdapter implements S3ApiOperations {
             UploadId: params.UploadId,
         });
 
-        const response: CompleteMultipartUploadOutput = await this.client.send(command);
+        const response: CompleteMultipartUploadOutput = await this.client.send(command, sendOptions(options));
 
         if (!response.Location) {
             throw new Error("Failed to complete multipart upload");
@@ -127,24 +139,24 @@ class S3ClientAdapter implements S3ApiOperations {
         };
     }
 
-    public async abortMultipartUpload(params: { Bucket: string; Key: string; UploadId: string }): Promise<void> {
+    public async abortMultipartUpload(params: { Bucket: string; Key: string; UploadId: string }, options?: S3CallOptions): Promise<void> {
         const command = new AbortMultipartUploadCommand({
             Bucket: params.Bucket,
             Key: params.Key,
             UploadId: params.UploadId,
         });
 
-        await this.client.send(command);
+        await this.client.send(command, sendOptions(options));
     }
 
-    public async listParts(params: { Bucket: string; Key: string; UploadId: string }): Promise<{ Parts?: Part[] }> {
+    public async listParts(params: { Bucket: string; Key: string; UploadId: string }, options?: S3CallOptions): Promise<{ Parts?: Part[] }> {
         const command = new ListPartsCommand({
             Bucket: params.Bucket,
             Key: params.Key,
             UploadId: params.UploadId,
         });
 
-        const response: ListPartsCommandOutput = await this.client.send(command);
+        const response: ListPartsCommandOutput = await this.client.send(command, sendOptions(options));
 
         const parts: Part[] = [];
 
@@ -163,7 +175,10 @@ class S3ClientAdapter implements S3ApiOperations {
         return { Parts: parts.length > 0 ? parts : undefined };
     }
 
-    public async getObject(params: { Bucket: string; Key: string }): Promise<{
+    public async getObject(
+        params: { Bucket: string; Key: string },
+        options?: S3CallOptions,
+    ): Promise<{
         Body?: ReadableStream | Readable;
         ContentLength?: number;
         ContentType?: string;
@@ -177,7 +192,7 @@ class S3ClientAdapter implements S3ApiOperations {
             Key: params.Key,
         });
 
-        const response: GetObjectCommandOutput = await this.client.send(command);
+        const response: GetObjectCommandOutput = await this.client.send(command, sendOptions(options));
 
         // Convert SdkStream to Readable
         let body: Readable | ReadableStream | undefined;
@@ -208,7 +223,10 @@ class S3ClientAdapter implements S3ApiOperations {
         };
     }
 
-    public async headObject(params: { Bucket: string; Key: string }): Promise<{
+    public async headObject(
+        params: { Bucket: string; Key: string },
+        options?: S3CallOptions,
+    ): Promise<{
         ContentLength?: number;
         ContentType?: string;
         ETag?: string;
@@ -220,7 +238,7 @@ class S3ClientAdapter implements S3ApiOperations {
             Key: params.Key,
         });
 
-        const response: HeadObjectCommandOutput = await this.client.send(command);
+        const response: HeadObjectCommandOutput = await this.client.send(command, sendOptions(options));
 
         return {
             ContentLength: response.ContentLength,
@@ -231,16 +249,16 @@ class S3ClientAdapter implements S3ApiOperations {
         };
     }
 
-    public async deleteObject(params: { Bucket: string; Key: string }): Promise<void> {
+    public async deleteObject(params: { Bucket: string; Key: string }, options?: S3CallOptions): Promise<void> {
         const command = new DeleteObjectCommand({
             Bucket: params.Bucket,
             Key: params.Key,
         });
 
-        await this.client.send(command);
+        await this.client.send(command, sendOptions(options));
     }
 
-    public async copyObject(params: { Bucket: string; CopySource: string; Key: string; StorageClass?: string }): Promise<void> {
+    public async copyObject(params: { Bucket: string; CopySource: string; Key: string; StorageClass?: string }, options?: S3CallOptions): Promise<void> {
         const commandInput: CopyObjectCommandInput = {
             Bucket: params.Bucket,
             CopySource: params.CopySource,
@@ -253,10 +271,13 @@ class S3ClientAdapter implements S3ApiOperations {
 
         const command = new CopyObjectCommand(commandInput);
 
-        await this.client.send(command);
+        await this.client.send(command, sendOptions(options));
     }
 
-    public async listObjectsV2(params: { Bucket: string; ContinuationToken?: string; MaxKeys?: number }): Promise<{
+    public async listObjectsV2(
+        params: { Bucket: string; ContinuationToken?: string; MaxKeys?: number },
+        options?: S3CallOptions,
+    ): Promise<{
         Contents?: { Key?: string; LastModified?: Date }[];
         IsTruncated?: boolean;
         NextContinuationToken?: string;
@@ -267,7 +288,7 @@ class S3ClientAdapter implements S3ApiOperations {
             MaxKeys: params.MaxKeys,
         });
 
-        const response: ListObjectsV2CommandOutput = await this.client.send(command);
+        const response: ListObjectsV2CommandOutput = await this.client.send(command, sendOptions(options));
 
         return {
             Contents: response.Contents?.map((item) => {

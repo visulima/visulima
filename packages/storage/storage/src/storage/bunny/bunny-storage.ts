@@ -4,6 +4,7 @@ import type { UploadError } from "../../utils/errors";
 import { ERRORS, throwErrorCode, wrapStorageError } from "../../utils/errors";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
+import type { OperationOptions } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import BunnyFile from "./bunny-file";
@@ -121,6 +122,7 @@ const wrapBunnyError = (error: unknown, operation: string): UploadError => {
  * - `getReadUrl` requires `publicBaseUrl` (Pull Zone / CDN hostname) and returns an unsigned URL — Bunny has no signed-read URL primitive, so `expiresIn` is accepted for parity with other adapters but ignored.
  * - `getReadUrl` rejects `responseContentDisposition` — no override exists on Bunny Storage / Pull Zone URLs.
  * - `list` is non-recursive: `BunnyStorageSDK.file.list(client, "/")` returns only the immediate children of the zone root. Directory entries are filtered out client-side; the adapter does not descend.
+ * - ⚠️ Per-operation `signal`/`timeout` are best-effort: the underlying SDK does not support request cancellation, so an in-flight call may complete server-side even after abort. `retries` is honored.
  */
 class BunnyStorage extends BaseStorage<BunnyFile> {
     public static override readonly name: string = "bunny";
@@ -156,7 +158,7 @@ class BunnyStorage extends BaseStorage<BunnyFile> {
         return this.zoneName;
     }
 
-    public async create(config: FileInit): Promise<BunnyFile> {
+    public async create(config: FileInit, _options?: OperationOptions): Promise<BunnyFile> {
         return this.instrumentOperation("create", async () => {
             const file = new BunnyFile(config);
 
@@ -185,7 +187,7 @@ class BunnyStorage extends BaseStorage<BunnyFile> {
         });
     }
 
-    public async write(part: FilePart | FileQuery | BunnyFile): Promise<BunnyFile> {
+    public async write(part: FilePart | FileQuery | BunnyFile, options?: OperationOptions): Promise<BunnyFile> {
         return this.instrumentOperation("write", async () => {
             let file: BunnyFile;
 
@@ -220,10 +222,12 @@ class BunnyStorage extends BaseStorage<BunnyFile> {
                     const path = toBunnyPath(file.name || file.id);
 
                     try {
-                        await BunnyStorageSDK.file.upload(this.client, path, streamFromBuffer(buffer), {
-                            contentType: file.contentType,
-                            ...(part.checksum && part.checksumAlgorithm === "sha256" && { sha256Checksum: part.checksum }),
-                        });
+                        await this.runOperation(options, () =>
+                            BunnyStorageSDK.file.upload(this.client, path, streamFromBuffer(buffer), {
+                                contentType: file.contentType,
+                                ...(part.checksum && part.checksumAlgorithm === "sha256" && { sha256Checksum: part.checksum }),
+                            }),
+                        );
                     } catch (error) {
                         throw wrapBunnyError(error, "upload");
                     }
@@ -253,7 +257,7 @@ class BunnyStorage extends BaseStorage<BunnyFile> {
         });
     }
 
-    public async delete({ id }: FileQuery): Promise<BunnyFile> {
+    public async delete({ id }: FileQuery, options?: OperationOptions): Promise<BunnyFile> {
         return this.instrumentOperation("delete", async () => {
             let file: BunnyFile | undefined;
 
@@ -272,7 +276,7 @@ class BunnyStorage extends BaseStorage<BunnyFile> {
             // unrecoverable from the boolean; idempotent delete is the
             // intended contract here.
             try {
-                await BunnyStorageSDK.file.remove(this.client, path);
+                await this.runOperation(options, () => BunnyStorageSDK.file.remove(this.client, path));
             } catch (error) {
                 throw wrapBunnyError(error, "delete");
             }
@@ -297,7 +301,7 @@ class BunnyStorage extends BaseStorage<BunnyFile> {
         });
     }
 
-    public async get({ id }: FileQuery): Promise<FileReturn> {
+    public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
             let stored: BunnyFile | undefined;
             let path: string;
@@ -312,7 +316,7 @@ class BunnyStorage extends BaseStorage<BunnyFile> {
             let entry: BunnyStorageSDK.file.StorageFile;
 
             try {
-                entry = await BunnyStorageSDK.file.get(this.client, path);
+                entry = await this.runOperation(options, () => BunnyStorageSDK.file.get(this.client, path));
             } catch (error) {
                 throw wrapBunnyError(error, "get");
             }
@@ -320,7 +324,7 @@ class BunnyStorage extends BaseStorage<BunnyFile> {
             let buffer: Buffer;
 
             try {
-                const result = await entry.data();
+                const result = await this.runOperation(options, () => entry.data());
 
                 buffer = await collectFromWebStream(result.stream);
             } catch (error) {
@@ -342,17 +346,19 @@ class BunnyStorage extends BaseStorage<BunnyFile> {
         });
     }
 
-    public async copy(name: string, destination: string): Promise<BunnyFile> {
+    public async copy(name: string, destination: string, options?: OperationOptions & { storageClass?: string }): Promise<BunnyFile> {
         return this.instrumentOperation("copy", async () => {
-            const source = await this.get({ id: name });
+            const source = await this.get({ id: name }, options);
             const path = toBunnyPath(destination);
             const buffer = source.content;
             const size = typeof source.size === "string" ? Number(source.size) : (source.size ?? buffer.length);
 
             try {
-                await BunnyStorageSDK.file.upload(this.client, path, streamFromBuffer(buffer), {
-                    contentType: source.contentType,
-                });
+                await this.runOperation(options, () =>
+                    BunnyStorageSDK.file.upload(this.client, path, streamFromBuffer(buffer), {
+                        contentType: source.contentType,
+                    }),
+                );
             } catch (error) {
                 throw wrapBunnyError(error, "copy");
             }
@@ -374,24 +380,24 @@ class BunnyStorage extends BaseStorage<BunnyFile> {
         });
     }
 
-    public async move(name: string, destination: string): Promise<BunnyFile> {
+    public async move(name: string, destination: string, options?: OperationOptions): Promise<BunnyFile> {
         return this.instrumentOperation("move", async () => {
-            const file = await this.copy(name, destination);
+            const file = await this.copy(name, destination, options);
 
-            await this.delete({ id: name });
+            await this.delete({ id: name }, options);
 
             return file;
         });
     }
 
-    public override async list(limit = 1000): Promise<BunnyFile[]> {
+    public override async list(limit = 1000, options?: OperationOptions): Promise<BunnyFile[]> {
         return this.instrumentOperation(
             "list",
             async () => {
                 let entries: BunnyStorageSDK.file.StorageFile[];
 
                 try {
-                    entries = await BunnyStorageSDK.file.list(this.client, "/");
+                    entries = await this.runOperation(options, () => BunnyStorageSDK.file.list(this.client, "/"));
                 } catch (error) {
                     throw wrapBunnyError(error, "list");
                 }

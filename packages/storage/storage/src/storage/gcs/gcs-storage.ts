@@ -14,6 +14,7 @@ import type { HttpError } from "../../utils/types";
 import LocalMetaStorage from "../local/local-meta-storage";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
+import type { OperationOptions } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch } from "../utils/file";
 import FetchError from "./fetch-error";
@@ -163,7 +164,7 @@ class GCStorage extends BaseStorage<GCSFile> {
         };
     }
 
-    public async create(config: FileInit): Promise<GCSFile> {
+    public async create(config: FileInit, options?: OperationOptions): Promise<GCSFile> {
         return this.instrumentOperation("create", async () => {
             // Handle TTL option
             const processedConfig = { ...config };
@@ -185,7 +186,7 @@ class GCStorage extends BaseStorage<GCSFile> {
             try {
                 const existing = await this.getMeta(file.id);
 
-                existing.bytesWritten = await this.internalWrite(existing);
+                existing.bytesWritten = await this.internalWrite(existing, options);
 
                 return existing;
                 // eslint-disable-next-line no-empty
@@ -199,14 +200,14 @@ class GCStorage extends BaseStorage<GCSFile> {
                 "X-Upload-Content-Type": file.contentType,
             };
 
-            const options: GaxiosOptions = {
+            const requestOptions: GaxiosOptions = {
                 body: JSON.stringify({ metadata: file.metadata }),
                 headers,
                 method: "POST" as const,
                 params: { name: file.name, size: file.size, uploadType: "resumable" },
                 url: this.uploadBaseURI,
             };
-            const response = await this.makeRequest(options);
+            const response = await this.makeRequest(requestOptions, options);
 
             if (response.status !== 200) {
                 throw new Error("Expected 200 response from GCS");
@@ -242,7 +243,7 @@ class GCStorage extends BaseStorage<GCSFile> {
         });
     }
 
-    public async write(part: FilePart | FileQuery | GCSFile): Promise<GCSFile> {
+    public async write(part: FilePart | FileQuery | GCSFile, options?: OperationOptions): Promise<GCSFile> {
         return this.instrumentOperation("write", async () => {
             let file: GCSFile;
 
@@ -291,7 +292,7 @@ class GCStorage extends BaseStorage<GCSFile> {
                     }
                 }
 
-                file.bytesWritten = await this.internalWrite({ ...file, ...part });
+                file.bytesWritten = await this.internalWrite({ ...file, ...part }, options);
 
                 file.status = getFileStatus(file);
 
@@ -315,7 +316,7 @@ class GCStorage extends BaseStorage<GCSFile> {
      * @returns Promise resolving to the deleted file object with status: "deleted".
      * @throws {UploadError} If the file metadata cannot be found.
      */
-    public async delete({ id }: FileQuery): Promise<GCSFile> {
+    public async delete({ id }: FileQuery, options?: OperationOptions): Promise<GCSFile> {
         return this.instrumentOperation("delete", async () => {
             const file = await this.getMeta(id);
 
@@ -327,7 +328,7 @@ class GCStorage extends BaseStorage<GCSFile> {
 
             // Sequence the blob delete before the metadata delete so a partial failure leaves a recoverable
             // metadata orphan instead of an unreachable resumable upload that keeps consuming quota.
-            await this.makeRequest({ method: "DELETE", url: file.uri, validateStatus });
+            await this.makeRequest({ method: "DELETE", url: file.uri, validateStatus }, options);
             await this.deleteMeta(file.id);
 
             const deletedFile = { ...file };
@@ -345,7 +346,7 @@ class GCStorage extends BaseStorage<GCSFile> {
      * @returns Promise resolving to the copied file object.
      * @throws {UploadError} If the source file cannot be found.
      */
-    public async copy(name: string, destination: string): Promise<GCSFile> {
+    public async copy(name: string, destination: string, options?: OperationOptions & { storageClass?: string }): Promise<GCSFile> {
         return this.instrumentOperation("copy", async () => {
             interface CopyProgress {
                 done: boolean;
@@ -375,7 +376,7 @@ class GCStorage extends BaseStorage<GCSFile> {
             do {
                 requestOptions.body = progress.rewriteToken ? JSON.stringify({ rewriteToken: progress.rewriteToken }) : "";
 
-                const response = await this.makeRequest<CopyProgress>(requestOptions);
+                const response = await this.makeRequest<CopyProgress>(requestOptions, options);
 
                 progress = response.data || ({} as CopyProgress);
             } while (progress.rewriteToken);
@@ -392,12 +393,12 @@ class GCStorage extends BaseStorage<GCSFile> {
      * @returns Promise resolving to the moved file object.
      * @throws {UploadError} If the source file cannot be found.
      */
-    public async move(name: string, destination: string): Promise<GCSFile> {
+    public async move(name: string, destination: string, options?: OperationOptions): Promise<GCSFile> {
         return this.instrumentOperation("move", async () => {
-            const copiedFile = await this.copy(name, destination);
+            const copiedFile = await this.copy(name, destination, options);
             const url = `${this.storageBaseURI}/${name}`;
 
-            await this.makeRequest({ method: "DELETE" as const, url });
+            await this.makeRequest({ method: "DELETE" as const, url }, options);
 
             return copiedFile;
         });
@@ -410,9 +411,12 @@ class GCStorage extends BaseStorage<GCSFile> {
      * @returns Promise resolving to file object with content buffer.
      * @throws {UploadError} If the file cannot be found (ERRORS.FILE_NOT_FOUND) or has expired (ERRORS.GONE).
      */
-    public async get({ id }: FileQuery): Promise<FileReturn> {
+    public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
-            const { data } = await this.makeRequest<{ timeDeleted?: string; uri?: string }>({ params: { alt: "json" }, url: `${this.storageBaseURI}/${id}` });
+            const { data } = await this.makeRequest<{ timeDeleted?: string; uri?: string }>(
+                { params: { alt: "json" }, url: `${this.storageBaseURI}/${id}` },
+                options,
+            );
 
             await this.checkIfExpired({ expiredAt: data.timeDeleted } as GCSFile);
 
@@ -420,7 +424,7 @@ class GCStorage extends BaseStorage<GCSFile> {
                 throw new Error("File URI not found");
             }
 
-            const response = await this.makeRequest<{ data: unknown }>({ params: { alt: "media" }, url: data.uri });
+            const response = await this.makeRequest<{ data: unknown }>({ params: { alt: "media" }, url: data.uri }, options);
 
             const responseData = response.data;
             let bufferData: Buffer;
@@ -448,17 +452,20 @@ class GCStorage extends BaseStorage<GCSFile> {
      * @param query File query containing the file ID to check.
      * @returns Promise resolving to true if both metadata and GCS object exist, false otherwise.
      */
-    public override async exists({ id }: FileQuery): Promise<boolean> {
+    public override async exists({ id }: FileQuery, options?: OperationOptions): Promise<boolean> {
         return this.instrumentOperation("exists", async () => {
             try {
                 // First check if metadata exists
                 await this.getMeta(id);
 
                 // Then verify the actual GCS object exists using HEAD request
-                await this.makeRequest({
-                    method: "HEAD",
-                    url: `${this.storageBaseURI}/${id}`,
-                });
+                await this.makeRequest(
+                    {
+                        method: "HEAD",
+                        url: `${this.storageBaseURI}/${id}`,
+                    },
+                    options,
+                );
 
                 return true;
             } catch (error: unknown) {
@@ -476,7 +483,7 @@ class GCStorage extends BaseStorage<GCSFile> {
         });
     }
 
-    public override async list(limit = 1000): Promise<GCSFile[]> {
+    public override async list(limit = 1000, options?: OperationOptions): Promise<GCSFile[]> {
         return this.instrumentOperation(
             "list",
             async () => {
@@ -492,7 +499,7 @@ class GCStorage extends BaseStorage<GCSFile> {
                         const { data } = await this.makeRequest<{
                             items: { metadata?: GCSFile; name: string; timeCreated: string; updated: string }[];
                             nextPageToken?: string;
-                        }>(parameters);
+                        }>(parameters, options);
 
                         for (const { name, timeCreated, updated } of data?.items || []) {
                             if (items.length >= limit) {
@@ -534,10 +541,10 @@ class GCStorage extends BaseStorage<GCSFile> {
         );
     }
 
-    protected async internalWrite(part: GCSFile & Partial<FilePart>): Promise<number> {
+    protected async internalWrite(part: GCSFile & Partial<FilePart>, callOptions?: OperationOptions): Promise<number> {
         const { body, bytesWritten, size, uri = "" } = part;
         const contentRange = buildContentRange(part);
-        const options: Record<string, unknown> = { method: "PUT" };
+        const requestOptions: Record<string, unknown> = { method: "PUT" };
 
         if (body?.on) {
             const abortController = new AbortController();
@@ -546,18 +553,21 @@ class GCStorage extends BaseStorage<GCSFile> {
                 abortController.abort();
             });
 
-            options.body = body;
-            options.signal = abortController.signal;
+            requestOptions.body = body;
+            requestOptions.signal = abortController.signal;
+            // A streamed upload body is single-use: a gaxios retry would
+            // re-send an already-drained source and PUT truncated data.
+            requestOptions.retry = false;
         }
 
-        options.headers = {
+        requestOptions.headers = {
             Accept: "application/json",
             "Content-Range": contentRange,
             ...(size === bytesWritten ? { "X-Goog-Upload-Command": "upload, finalize" } : {}),
         };
 
         try {
-            const response = await this.makeRequest({ url: uri, ...options });
+            const response = await this.makeRequest({ url: uri, ...requestOptions }, callOptions);
 
             if (response.status === 308) {
                 const range = response.headers.get("range");
@@ -584,7 +594,31 @@ class GCStorage extends BaseStorage<GCSFile> {
 
     private internalOnComplete = (file: GCSFile): Promise<void> => this.deleteMeta(file.id);
 
-    private async makeRequest<T = unknown>(data: GaxiosOptions): Promise<GaxiosResponse<T>> {
+    /**
+     * Merge a body-level abort signal with the caller's per-operation
+     * `options.signal` so gaxios cancels the in-flight request on either.
+     * `options.timeout` is handed to gaxios' native `timeout` instead of a
+     * second `AbortSignal.timeout` to avoid two competing deadlines.
+     */
+    private static buildCallSignal(options?: OperationOptions, bodySignal?: AbortSignal): AbortSignal | undefined {
+        const signals: AbortSignal[] = [];
+
+        if (bodySignal) {
+            signals.push(bodySignal);
+        }
+
+        if (options?.signal) {
+            signals.push(options.signal);
+        }
+
+        if (signals.length === 0) {
+            return undefined;
+        }
+
+        return signals.length === 1 ? signals[0] : AbortSignal.any(signals);
+    }
+
+    private async makeRequest<T = unknown>(data: GaxiosOptions, callOptions?: OperationOptions): Promise<GaxiosResponse<T>> {
         if (typeof data.url === "string") {
             data.url = data.url
                 // Some URIs have colon separators.
@@ -592,6 +626,23 @@ class GCStorage extends BaseStorage<GCSFile> {
                 // Good: https://.../projects:list
                 .replaceAll("/:", ":");
         }
+
+        const signal = GCStorage.buildCallSignal(callOptions, data.signal as AbortSignal | undefined);
+
+        // gaxios owns retry/timeout natively, so map the per-call overrides
+        // onto its config rather than layering BaseStorage.runOperation on top
+        // (that would double-retry every request).
+        let retryConfig: RetryConfig = this.retryOptions;
+
+        if (callOptions?.retries !== undefined) {
+            const maxRetries = typeof callOptions.retries === "number" ? callOptions.retries : callOptions.retries.maxRetries;
+
+            if (typeof maxRetries === "number") {
+                retryConfig = { ...this.retryOptions, retry: maxRetries };
+            }
+        }
+
+        const timeout = typeof callOptions?.timeout === "number" && callOptions.timeout > 0 ? callOptions.timeout : 60_000;
 
         // Merge caller-supplied headers/params with our defaults instead of
         // overwriting them — otherwise paginated calls (list pageToken,
@@ -607,9 +658,12 @@ class GCStorage extends BaseStorage<GCSFile> {
                 ...(this.userProject === undefined ? {} : { userProject: this.userProject }),
                 ...data.params,
             },
-            retry: true,
-            retryConfig: this.retryOptions,
-            timeout: 60_000,
+            // An explicit `retry: false` from the caller (e.g. a one-shot
+            // stream upload) wins over the per-call retries override.
+            retry: data.retry === false ? false : callOptions?.retries !== 0,
+            retryConfig,
+            timeout,
+            ...(signal ? { signal } : {}),
         };
 
         if (this.isCustomEndpoint && !this.useAuthWithCustomEndpoint) {
