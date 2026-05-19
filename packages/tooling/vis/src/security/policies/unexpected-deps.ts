@@ -30,8 +30,10 @@ import type { PolicyDecision, PolicyInput } from "./index";
  */
 const detectLockfileType = (path: string): LockFileType | undefined => {
     for (const info of Object.values(LOCKFILE_NAMES)) {
-        if (path === info.file || path.endsWith(`/${info.file}`) || path.endsWith(`.${info.file}`)) {
-            return info.type;
+        for (const name of [info.file, ...(info.aliases ?? [])]) {
+            if (path === name || path.endsWith(`/${name}`) || path.endsWith(`.${name}`)) {
+                return info.type;
+            }
         }
     }
 

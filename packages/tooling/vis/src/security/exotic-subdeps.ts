@@ -26,7 +26,7 @@ import { readFileSync } from "@visulima/fs";
 import { parseLockFileContent } from "@visulima/package";
 import { join } from "@visulima/path";
 
-import { LOCKFILE_NAMES } from "./dependency-scan";
+import { resolveLockfile } from "./dependency-scan";
 
 export interface ExoticSubdepViolation {
     /** Package that declared the exotic edge (the transitive parent). */
@@ -97,7 +97,7 @@ const matchesAllow = (name: string, allow: string[]): boolean => {
  * every exotic edge is allow-listed.
  */
 export const scanExoticSubdeps = (workspaceRoot: string, pmName: string, options: ScanExoticSubdepsOptions = {}): ExoticSubdepViolation[] => {
-    const lockInfo = LOCKFILE_NAMES[pmName];
+    const lockInfo = resolveLockfile(workspaceRoot, pmName);
 
     if (!lockInfo) {
         return [];

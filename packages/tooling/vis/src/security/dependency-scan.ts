@@ -5,7 +5,7 @@
  * import these utilities without coupling their handler chunks together.
  */
 
-import { readFileSync } from "@visulima/fs";
+import { isAccessibleSync, readFileSync } from "@visulima/fs";
 import type { LockFileEntry, LockFileType } from "@visulima/package";
 import { parseLockFileContent } from "@visulima/package";
 import { join } from "@visulima/path";
@@ -26,11 +26,52 @@ export interface DuplicatePackage {
     versions: string[];
 }
 
-export const LOCKFILE_NAMES: Record<string, { file: string; type: LockFileType }> = {
+export const LOCKFILE_NAMES: Record<string, { aliases?: ReadonlyArray<string>; file: string; type: LockFileType }> = {
     bun: { file: "bun.lock", type: "bun" },
-    npm: { file: "package-lock.json", type: "npm" },
+    // `npm-shrinkwrap.json` is npm's published, authoritative lockfile and
+    // takes precedence over `package-lock.json` whenever both are present
+    // (https://docs.npmjs.com/cli/configuring-npm/npm-shrinkwrap-json). It's
+    // also the file that actually ships with a package, so it's the
+    // security-relevant one to scan.
+    // `aliases` MUST share the canonical file's `type` — `lockfileCandidates`
+    // binds every candidate to `info.type`, and `detectLockfileType` relies on
+    // that to stay correct regardless of alias-vs-canonical iteration order.
+    npm: { aliases: ["npm-shrinkwrap.json"], file: "package-lock.json", type: "npm" },
     pnpm: { file: "pnpm-lock.yaml", type: "pnpm" },
     yarn: { file: "yarn.lock", type: "yarn" },
+};
+
+/**
+ * Precedence-ordered candidate lockfiles for a package manager. Aliases
+ * rank above the canonical file, so for npm this yields
+ * `npm-shrinkwrap.json` before `package-lock.json`.
+ */
+const lockfileCandidates = (pmName: string): { file: string; type: LockFileType }[] => {
+    const info = LOCKFILE_NAMES[pmName];
+
+    if (!info) {
+        return [];
+    }
+
+    return [...(info.aliases ?? []), info.file].map((file) => {
+        return { file, type: info.type };
+    });
+};
+
+/**
+ * Resolves the lockfile vis should actually read for `pmName` under
+ * `workspaceRoot`, honouring npm's shrinkwrap precedence. When none of
+ * the candidates exist, the canonical entry is returned so callers keep
+ * their existing missing-file handling.
+ */
+export const resolveLockfile = (workspaceRoot: string, pmName: string): { file: string; type: LockFileType } | undefined => {
+    const candidates = lockfileCandidates(pmName);
+
+    if (candidates.length === 0) {
+        return undefined;
+    }
+
+    return candidates.find((candidate) => isAccessibleSync(join(workspaceRoot, candidate.file))) ?? candidates[candidates.length - 1];
 };
 
 /**
@@ -186,7 +227,7 @@ const computeProdReachable = (workspaceRoot: string, entries: LockFileEntry[]): 
 };
 
 export const lockedPackages = (workspaceRoot: string, pmName: string, options: LockedPackagesOptions = {}): InstalledPackage[] => {
-    const lockInfo = LOCKFILE_NAMES[pmName];
+    const lockInfo = resolveLockfile(workspaceRoot, pmName);
 
     if (!lockInfo) {
         return [];
@@ -235,7 +276,7 @@ export const lockedPackages = (workspaceRoot: string, pmName: string, options: L
  * workspace lockfile via `@visulima/package`.
  */
 export const findDuplicateDependencies = (workspaceRoot: string, pmName: string): DuplicatePackage[] => {
-    const lockInfo = LOCKFILE_NAMES[pmName];
+    const lockInfo = resolveLockfile(workspaceRoot, pmName);
 
     if (!lockInfo) {
         return [];

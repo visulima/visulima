@@ -18,7 +18,7 @@ import { isAccessibleSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
 import type { PolicyName, VisConfig } from "../config/types";
-import { LOCKFILE_NAMES, lockedPackages } from "./dependency-scan";
+import { lockedPackages, resolveLockfile } from "./dependency-scan";
 import { scanExoticSubdeps } from "./exotic-subdeps";
 import type { ExoticSubdepViolation } from "./exotic-subdeps";
 import type { PolicyDecision } from "./policies";
@@ -79,8 +79,12 @@ export const verifyLockfile = async (options: VerifyLockfileOptions): Promise<Lo
         return { decisions: [], durationMs: Date.now() - start, entryCount: 0, exoticViolations: [], lockfileMissing: false, status: "skipped" };
     }
 
-    const lockInfo = LOCKFILE_NAMES[packageManager];
+    const lockInfo = resolveLockfile(workspaceRoot, packageManager);
 
+    // The re-check is intentional, not redundant: when no lockfile exists,
+    // `resolveLockfile` returns the canonical entry (so disk-reading callers
+    // keep their ENOENT handling). Here we must instead force `lockfileMissing`
+    // — an unscannable closure can't be attested, so verification fails.
     if (!lockInfo || !isAccessibleSync(join(workspaceRoot, lockInfo.file))) {
         return { decisions: [], durationMs: Date.now() - start, entryCount: 0, exoticViolations: [], lockfileMissing: true, status: "fail" };
     }

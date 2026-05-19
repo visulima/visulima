@@ -74,8 +74,15 @@ const toResolvedPackage = (entry: LockFileEntry): ResolvedPackage => {
     return resolved;
 };
 
+// `npm-shrinkwrap.json` precedes `package-lock.json`: it's the published,
+// authoritative lockfile and npm itself prefers it when both exist
+// (https://docs.npmjs.com/cli/configuring-npm/npm-shrinkwrap-json). Both
+// share the npm lockfile format, so the parser type is identical. The
+// binary `bun.lockb` is intentionally absent — `@visulima/package` only
+// parses the text `bun.lock`.
 const LOCKFILE_CANDIDATES: ReadonlyArray<{ file: string; type: LockFileType }> = [
     { file: "pnpm-lock.yaml", type: "pnpm" },
+    { file: "npm-shrinkwrap.json", type: "npm" },
     { file: "package-lock.json", type: "npm" },
     { file: "yarn.lock", type: "yarn" },
     { file: "bun.lock", type: "bun" },

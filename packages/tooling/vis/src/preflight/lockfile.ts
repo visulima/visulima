@@ -15,9 +15,16 @@ export interface LockfilePreflightLogger {
 
 /**
  * Lockfile filenames per package manager. Each entry is a list because
- * bun ships both a binary (`bun.lockb`, the historical default) and a
- * text format (`bun.lock`, default in bun 1.2+); the order doesn't
- * matter — first-found wins.
+ * a manager can have multiple lockfile names:
+ *  - bun ships both a binary (`bun.lockb`, the historical default) and a
+ *    text format (`bun.lock`, default in bun 1.2+).
+ *  - npm reads `npm-shrinkwrap.json` in preference to `package-lock.json`
+ *    when both exist (it's the published, authoritative lockfile —
+ *    https://docs.npmjs.com/cli/configuring-npm/npm-shrinkwrap-json).
+ *
+ * Order is significant: it's first-found-wins, so the higher-precedence
+ * name must come first (shrinkwrap before package-lock). For bun the two
+ * are mutually exclusive in practice, so their order is immaterial.
  *
  * Cross-PM precedence (when *multiple* managers' lockfiles coexist —
  * e.g. mid-migration) is determined by the iteration order below:
@@ -31,7 +38,7 @@ export interface LockfilePreflightLogger {
 const LOCKFILE_FILES_BY_MANAGER: Record<LockfilePackageManager, string[]> = {
     aube: ["aube-lock.yaml"],
     bun: ["bun.lock", "bun.lockb"],
-    npm: ["package-lock.json"],
+    npm: ["npm-shrinkwrap.json", "package-lock.json"],
     pnpm: ["pnpm-lock.yaml"],
     yarn: ["yarn.lock"],
 };
