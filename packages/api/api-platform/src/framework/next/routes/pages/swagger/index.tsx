@@ -1,9 +1,12 @@
 import dynamic from "next/dynamic";
 import Head from "next/head";
 import type { InferGetStaticPropsType, NextPage } from "next/types";
-import type { SwaggerUIProps } from "swagger-ui-react";
+import type { ComponentProps } from "react";
+import type SwaggerUIComponent from "swagger-ui-react";
 
 import type getStaticProps from "../get-static-properties-swagger";
+
+type SwaggerUIProps = ComponentProps<typeof SwaggerUIComponent>;
 
 const SwaggerUi = dynamic(async () => await import("swagger-ui-react"), { ssr: false });
 

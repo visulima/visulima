@@ -1,7 +1,7 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 
 import { NodeRouter } from "@visulima/connect";
-// eslint-disable-next-line import/no-namespace -- zod v3 is consumed via its namespace export; switching breaks the AnyZodObject default generic
+// eslint-disable-next-line import/no-namespace -- type-only namespace import mirrors @visulima/connect's `z.ZodObject<any>` generic bound
 import type * as z from "zod";
 
 import type { ErrorHandlers } from "../error-handler/types";
@@ -13,7 +13,8 @@ import serializersMiddleware from "./middleware/serializers-middleware";
 const createNodeRouter = <
     Request extends IncomingMessage,
     Response extends ServerResponse,
-    Schema extends z.AnyZodObject = z.ZodObject<{ body?: z.AnyZodObject; headers?: z.AnyZodObject; query?: z.AnyZodObject }>,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ZodObject requires `any` for generic parameter compatibility, matching @visulima/connect
+    Schema extends z.ZodObject<any> = z.ZodObject<{ body?: z.ZodObject<any>; headers?: z.ZodObject<any>; query?: z.ZodObject<any> }>,
 >(
     options: {
         errorHandlers?: ErrorHandlers;
