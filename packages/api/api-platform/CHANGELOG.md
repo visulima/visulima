@@ -1,3 +1,18 @@
+## @visulima/api-platform [4.0.0-alpha.24](https://github.com/visulima/visulima/compare/@visulima/api-platform@4.0.0-alpha.23...@visulima/api-platform@4.0.0-alpha.24) (2026-05-19)
+
+### Bug Fixes
+
+* **api-platform:** complete express v5 route parser migration ([5f901de](https://github.com/visulima/visulima/commit/5f901de3eddf9240534df7a52d78df637b4784ac))
+* **api-platform:** complete zod v4 + swagger-ui-react v5 migration ([9fe33da](https://github.com/visulima/visulima/commit/9fe33dae61f6b11b260ce531c67f0b52041e12ff))
+* **api-platform:** reconstruct express v5 mount paths via registration-time capture ([93dc260](https://github.com/visulima/visulima/commit/93dc2606dbcf69c6da8e06f5343fd494e6347108))
+
+
+### Dependencies
+
+* **@visulima/connect:** upgraded to 4.0.0-alpha.23
+* **@visulima/fs:** upgraded to 5.0.0-alpha.24
+* **@visulima/jsdoc-open-api:** upgraded to 3.0.0-alpha.23
+
 ## @visulima/api-platform [4.0.0-alpha.23](https://github.com/visulima/visulima/compare/@visulima/api-platform@4.0.0-alpha.22...@visulima/api-platform@4.0.0-alpha.23) (2026-05-16)
 
 
