@@ -174,8 +174,7 @@
         "lodash.merge": "catalog:prod",
         "schema-dts": "catalog:prod",
         "ts-japi": "catalog:prod",
-        "yaml": "catalog:prod",
-        "zod-to-ts": "^2.0.0"
+        "yaml": "catalog:prod"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",
@@ -248,7 +247,7 @@
         "typescript": "catalog:tsc",
         "vitest": "catalog:test",
         "webpack": "catalog:build",
-        "zod": "^4.4.3"
+        "zod": "catalog:utils"
     },
     "peerDependencies": {
         "@hapi/hapi": "catalog:peer",
@@ -268,7 +267,7 @@
         "swagger-ui-dist": "^4.19.1",
         "swagger-ui-react": "^4.19.1",
         "webpack": "catalog:build",
-        "zod": "^3"
+        "zod": "catalog:utils"
     },
     "peerDependenciesMeta": {
         "@hapi/hapi": {
@@ -320,9 +319,6 @@
             "optional": true
         },
         "webpack": {
-            "optional": true
-        },
-        "zod": {
             "optional": true
         }
     },

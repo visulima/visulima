@@ -1,10 +1,5 @@
-import { withGetType } from "zod-to-ts";
+export { zodDateIn as dateIn } from "./date-in-schema";
+export { zodDateOut as dateOut } from "./date-out-schema";
 
-import { ZodDateIn } from "./date-in-schema";
-import { ZodDateOut } from "./date-out-schema";
-
-export const dateIn = (...parameters: Parameters<typeof ZodDateIn.create>): ReturnType<typeof withGetType<ZodDateIn>> =>
-    withGetType(ZodDateIn.create(...parameters), (ts) => ts.factory.createKeywordTypeNode(ts.SyntaxKind.StringKeyword));
-
-export const dateOut = (...parameters: Parameters<typeof ZodDateOut.create>): ReturnType<typeof withGetType<ZodDateOut>> =>
-    withGetType(ZodDateOut.create(...parameters), (ts) => ts.factory.createKeywordTypeNode(ts.SyntaxKind.StringKeyword));
+export type { ZodDateIn } from "./date-in-schema";
+export type { ZodDateOut } from "./date-out-schema";
