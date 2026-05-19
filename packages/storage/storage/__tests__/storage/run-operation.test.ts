@@ -65,6 +65,8 @@ class TestStorage extends BaseStorage {
 
 const makeStorage = (): TestStorage => new TestStorage(storageOptions);
 
+const makeStorageWith = (extra: Partial<typeof storageOptions>): TestStorage => new TestStorage({ ...storageOptions, ...extra });
+
 const econnreset = (): Error => {
     const error = new Error("connection reset");
 
@@ -137,6 +139,175 @@ describe("baseStorage.runOperation", () => {
                     }
                 }),
             ).rejects.toThrow();
+        });
+
+        it("constructs a fresh timeout signal for each retry attempt", async () => {
+            expect.assertions(4);
+
+            const storage = makeStorage();
+            const seen: (AbortSignal | undefined)[] = [];
+            const function_ = vi
+                .fn<(signal: AbortSignal | undefined) => Promise<string>>()
+                .mockImplementationOnce(async (signal) => {
+                    seen.push(signal);
+
+                    throw econnreset();
+                })
+                .mockImplementationOnce(async (signal) => {
+                    seen.push(signal);
+
+                    throw econnreset();
+                })
+                .mockImplementationOnce(async (signal) => {
+                    seen.push(signal);
+
+                    return "ok";
+                });
+
+            await expect(storage.run({ retries: { initialDelay: 0, maxRetries: 3 }, timeout: 10_000 }, function_)).resolves.toBe("ok");
+
+            expect(seen).toHaveLength(3);
+            expect(new Set(seen).size).toBe(3);
+            expect(seen.every((signal) => signal instanceof AbortSignal)).toBe(true);
+        });
+
+        it("gives each attempt the full timeout budget instead of a shared deadline", async () => {
+            expect.assertions(2);
+
+            const storage = makeStorage();
+
+            const sleepThenCheck = async (signal: AbortSignal | undefined, ms: number): Promise<void> => {
+                await new Promise((resolve) => {
+                    setTimeout(resolve, ms);
+                });
+
+                if (signal?.aborted) {
+                    throw signal.reason;
+                }
+            };
+
+            // Each attempt runs 30ms under a 50ms per-attempt timeout. The
+            // cumulative wall time (~60ms + backoff) exceeds 50ms, so the
+            // pre-fix shared `AbortSignal.timeout(50)` would abort attempt 2.
+            const function_ = vi
+                .fn<(signal: AbortSignal | undefined) => Promise<string>>()
+                .mockImplementationOnce(async (signal) => {
+                    await sleepThenCheck(signal, 30);
+
+                    throw econnreset();
+                })
+                .mockImplementationOnce(async (signal) => {
+                    await sleepThenCheck(signal, 30);
+
+                    return "ok";
+                });
+
+            await expect(storage.run({ retries: { initialDelay: 0, maxRetries: 3 }, timeout: 50 }, function_)).resolves.toBe("ok");
+
+            expect(function_).toHaveBeenCalledTimes(2);
+        });
+    });
+
+    describe("instance-level defaults", () => {
+        it("applies the instance default timeout when the call omits one", async () => {
+            expect.assertions(1);
+
+            const storage = makeStorageWith({ defaultTimeout: 5 });
+
+            await expect(
+                storage.run(undefined, async (signal) => {
+                    await new Promise((resolve) => {
+                        setTimeout(resolve, 50);
+                    });
+
+                    if (signal?.aborted) {
+                        throw signal.reason;
+                    }
+                }),
+            ).rejects.toThrow();
+        });
+
+        it("lets a per-call timeout override the instance default", async () => {
+            expect.assertions(1);
+
+            const storage = makeStorageWith({ defaultTimeout: 5 });
+
+            await expect(
+                storage.run({ timeout: 10_000 }, async (signal) => {
+                    await new Promise((resolve) => {
+                        setTimeout(resolve, 20);
+                    });
+
+                    if (signal?.aborted) {
+                        throw signal.reason;
+                    }
+
+                    return "ok";
+                }),
+            ).resolves.toBe("ok");
+        });
+
+        it("lets a per-call timeout of 0 disable the instance default", async () => {
+            expect.assertions(1);
+
+            const storage = makeStorageWith({ defaultTimeout: 5 });
+
+            await expect(
+                storage.run({ timeout: 0 }, async (signal) => {
+                    await new Promise((resolve) => {
+                        setTimeout(resolve, 20);
+                    });
+
+                    if (signal?.aborted) {
+                        throw signal.reason;
+                    }
+
+                    return "ok";
+                }),
+            ).resolves.toBe("ok");
+        });
+
+        it("merges the instance default signal so it can abort the operation", async () => {
+            expect.assertions(2);
+
+            const controller = new AbortController();
+
+            controller.abort();
+
+            const storage = makeStorageWith({ defaultSignal: controller.signal });
+            const function_ = vi.fn(async () => "ok");
+
+            try {
+                await storage.run(undefined, function_);
+
+                expect.fail("should have thrown");
+            } catch (error) {
+                expect((error as Error).name).toBe("AbortError");
+            }
+
+            expect(function_).not.toHaveBeenCalled();
+        });
+
+        it("combines the instance default signal with a per-call signal — either aborts", async () => {
+            expect.assertions(2);
+
+            const instanceController = new AbortController();
+            const storage = makeStorageWith({ defaultSignal: instanceController.signal });
+
+            storage.setRetryConfig({ initialDelay: 0, maxRetries: 5, shouldRetry: () => true });
+
+            const callController = new AbortController();
+            const function_ = vi.fn(async () => {
+                if (function_.mock.calls.length === 1) {
+                    callController.abort();
+                }
+
+                throw econnreset();
+            });
+
+            await expect(storage.run({ signal: callController.signal }, function_)).rejects.toThrow();
+
+            expect(function_).toHaveBeenCalledTimes(1);
         });
     });
 
