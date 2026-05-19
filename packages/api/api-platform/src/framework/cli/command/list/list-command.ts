@@ -12,6 +12,7 @@ import type { FastifyInstance } from "fastify";
 import type Koa from "koa";
 
 import { getRoutes } from "./get-routes";
+import { installRouteCapture } from "./routes/express/express-path-parser";
 import routesGroupBy from "./routes/routes-group-by";
 import routesRender from "./routes/routes-render";
 import type { Route } from "./routes/types";
@@ -110,6 +111,14 @@ const listCommand = async (
                 : frameworkPath;
 
             const dynamicImport = new Function("path", "return import(path)") as (path: string) => Promise<{ default: unknown }>; // eslint-disable-line @typescript-eslint/no-implied-eval -- preserves dynamic import semantics in the CJS build target
+
+            if (framework === "express") {
+                // Express 5 discards declared mount paths once the app is built; capture them
+                // at registration time before the user's app module attaches its routes.
+                const { Router } = (await dynamicImport("express")) as unknown as { Router: Parameters<typeof installRouteCapture>[0] };
+
+                installRouteCapture(Router);
+            }
 
             const { default: defaultExport } = await dynamicImport(appJsFilePath);
 
