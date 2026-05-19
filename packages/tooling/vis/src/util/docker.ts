@@ -61,10 +61,17 @@ const MANIFEST_FILES = ["package.json", "project.json"] as const;
  * Entry order doubles as cross-PM precedence on the rare workspace that
  * has multiple managers' lockfiles coexisting (mid-migration). Mirrors
  * `LOCKFILE_FILES_BY_MANAGER` in `src/preflight/lockfile.ts`.
+ *
+ * `npm-shrinkwrap.json` precedes `package-lock.json`: it's npm's
+ * published, authoritative lockfile and is preferred when both exist
+ * (https://docs.npmjs.com/cli/configuring-npm/npm-shrinkwrap-json). It
+ * shares the package-lock format, so the same npm pruner handles it; the
+ * loop writes pruned output back under the discovered filename.
  */
 const LOCKFILE_FILES: { file: string; manager: LockfilePackageManager }[] = [
     { file: "bun.lock", manager: "bun" },
     { file: "bun.lockb", manager: "bun" },
+    { file: "npm-shrinkwrap.json", manager: "npm" },
     { file: "package-lock.json", manager: "npm" },
     { file: "pnpm-lock.yaml", manager: "pnpm" },
     { file: "yarn.lock", manager: "yarn" },
