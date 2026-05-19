@@ -71,6 +71,9 @@ const collectDepNames = (entry: NpmPackageEntry): string[] => {
 };
 
 export const pruneNpmLockfile = (input: PruneInput): PruneResult => {
+    // `npm-shrinkwrap.json` shares this format; the dispatcher passes the
+    // discovered filename so messages/errors name the file the user has.
+    const displayName = input.displayName ?? "package-lock.json";
     const text = typeof input.lockfileContent === "string" ? input.lockfileContent : input.lockfileContent.toString("utf8");
 
     let parsed: NpmLockfile;
@@ -78,11 +81,11 @@ export const pruneNpmLockfile = (input: PruneInput): PruneResult => {
     try {
         parsed = JSON.parse(text) as NpmLockfile;
     } catch (error) {
-        throw new LockfilePruneError(`package-lock.json: parse failed — ${(error as Error).message}`);
+        throw new LockfilePruneError(`${displayName}: parse failed — ${(error as Error).message}`);
     }
 
     if (!parsed || typeof parsed !== "object") {
-        throw new LockfilePruneError("package-lock.json: top-level value is not an object");
+        throw new LockfilePruneError(`${displayName}: top-level value is not an object`);
     }
 
     const packages = parsed.packages ?? {};
@@ -200,7 +203,7 @@ export const pruneNpmLockfile = (input: PruneInput): PruneResult => {
 
     return {
         content: `${JSON.stringify(result, null, 2)}\n`,
-        message: `package-lock.json: kept ${prunedCount}/${originalCount} entries (dropped ${dropped})`,
+        message: `${displayName}: kept ${prunedCount}/${originalCount} entries (dropped ${dropped})`,
         status: "pruned",
     };
 };

@@ -272,7 +272,7 @@ snapshots:
     });
 
     it("ships npm-shrinkwrap.json into the Docker context (not silently dropped)", () => {
-        expect.assertions(2);
+        expect.assertions(3);
 
         const workspaceRoot = join(tmpDir, "repo");
 
@@ -310,11 +310,10 @@ snapshots:
             workspaceRoot,
         });
 
-        // Written back under the discovered filename, and routed through the
-        // npm pruner — valid JSON with the focus closure retained proves it
-        // was pruned, not skipped or copied verbatim. (The npm pruner's log
-        // message is hardcoded to "package-lock.json:" for all npm input;
-        // that cosmetic quirk is pre-existing and out of scope here.)
+        // Written back under the discovered filename, routed through the npm
+        // pruner (valid JSON with the focus closure retained proves it was
+        // pruned, not skipped/verbatim), and the log message names the file
+        // the user actually has — not a hardcoded "package-lock.json".
         const out = join(outDir, "workspace", "npm-shrinkwrap.json");
 
         expect(existsSync(out)).toBe(true);
@@ -322,6 +321,7 @@ snapshots:
         const parsed = JSON.parse(readFileSync(out, "utf8")) as { packages?: Record<string, unknown> };
 
         expect(parsed.packages?.["node_modules/lodash"]).toBeDefined();
+        expect(messages.some((m) => m.startsWith("npm-shrinkwrap.json:"))).toBe(true);
     });
 });
 
