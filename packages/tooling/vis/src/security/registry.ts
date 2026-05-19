@@ -13,6 +13,7 @@ import type { VisConfig } from "../config/workspace";
 import { createDepsDevProvider } from "./deps-dev-security";
 import type { PackageRef, PackageReportData, SecurityProvider } from "./provider";
 import { mergeReports } from "./provider";
+import { createSnykProvider } from "./snyk-security";
 import { createSocketProvider } from "./socket-security";
 
 /** Options for `buildEnabledProviders`. */
@@ -50,6 +51,14 @@ export const buildEnabledProviders = (security: VisConfig["security"] | undefine
 
         if (depsDev) {
             providers.push(depsDev);
+        }
+    }
+
+    if (!disabled?.has("snyk")) {
+        const snyk = createSnykProvider(security?.snyk);
+
+        if (snyk) {
+            providers.push(snyk);
         }
     }
 
