@@ -383,6 +383,16 @@ export default defineConfig({
         strictDepBuilds: true,
         trustPolicy: "no-downgrade",
         blockExoticSubdeps: true,
+        // Package names exempt from blockExoticSubdeps. Bare names and a
+        // trailing `*` glob (`@scope/*`) are supported.
+        exoticSubdepsAllow: ["@myorg/legacy", "internal-*"],
+        // Re-verify the entire resolved lockfile closure (not just newly
+        // added packages) against these policies. See `vis security
+        // verify-lockfile`.
+        policies: {
+            firstSeen: { minutes: 1440 }, // block versions published < 24h ago
+            publisherChange: { mode: "no-downgrade" }, // block provenance downgrades
+        },
         minimumReleaseAge: 1440, // 24 hours; `vis init` writes 2880 by default
         minimumReleaseAgeExclude: ["@types/node"],
         socket: { enabled: true, minimumScore: 0.4 },
@@ -411,6 +421,8 @@ Key knobs introduced with the build-script triage and drift checker:
 - `minimumReleaseAgeExclude` — package names exempt from the gate. Synced into pnpm and bun (the only PMs with a native excludes list).
 - `pinVersions` — opt-in version-aware allowlist matching, ported from LavaMoat allow-scripts.
 - `allowBins` — opt-in suppression for bin-name shadowing (LavaMoat allow-scripts parity). `vis security list` flags collisions when two or more installed packages declare the same bin name (e.g. both `typescript` and `competitor-ts` shipping `tsc`). Bare keys (`tsc: true`) silence every package owning that bin; qualified keys (`typescript#tsc: true`) only bless one — every other owner must also be blessed, or the conflict still surfaces.
+- `blockExoticSubdeps` / `exoticSubdepsAllow` — flag transitive dependency edges resolving from a git repo or a direct remote tarball instead of the registry. pnpm enforces this natively (vis mirrors the knob into `pnpm-workspace.yaml`); the scanner closes the equivalent gap for **npm / yarn / bun**, whose lockfiles preserve the raw specifier on every edge. `exoticSubdepsAllow` exempts package names (bare or trailing-`*` glob) legitimately published as a git/tarball dependency.
+- `policies.firstSeen` / `policies.publisherChange` — closure-verification policies. Unlike the pre-install marshalls (which only inspect packages being _added_), these re-validate the **entire resolved lockfile closure** every run, so a tampered/poisoned lockfile is caught even on npm/yarn/bun and even when nothing is being added. `firstSeen.minutes` blocks any locked version published less than N minutes ago (lockfile-side counterpart to pnpm's `minimumReleaseAge`); `publisherChange.mode: "no-downgrade"` blocks a locked version that dropped a provenance attestation a prior version carried. Both are network-bound and skipped under `--offline`. Run them on demand with [`vis security verify-lockfile`](./commands/security.mdx#verify-lockfile).
 
 After install/update commands vis automatically prints a **drift report** when `vis.config` and the PM-native config disagree. Run `vis security sync` to push vis-config values to the native config; run `vis security list` to inspect the full triage (approved / unapproved / stale / version-drift).
 
