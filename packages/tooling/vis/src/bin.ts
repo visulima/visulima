@@ -1,5 +1,6 @@
 import { createCerebro } from "@visulima/cerebro";
 import completionCommand from "@visulima/cerebro/command/completion";
+import versionCommand from "@visulima/cerebro/command/version";
 import enableCompileCache from "@visulima/cerebro/compile-cache";
 import { applyHeapTuning } from "@visulima/cerebro/heap-tuning";
 import { errorHandlerPlugin } from "@visulima/cerebro/plugins/error-handler";
@@ -168,6 +169,7 @@ cli.addCommand(dockerCommand);
 cli.addCommand(listCommand);
 cli.addCommand(toolchainCommand);
 cli.addCommand(completionCommand);
+cli.addCommand(versionCommand);
 
 // Package management commands
 cli.addCommand(installCommand);
