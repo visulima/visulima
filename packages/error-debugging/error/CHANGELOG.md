@@ -1,3 +1,9 @@
+## @visulima/error [6.0.0-alpha.27](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.26...@visulima/error@6.0.0-alpha.27) (2026-05-20)
+
+### Tests
+
+* **error:** normalize parse-stacktrace test paths to forward slashes ([64b14c6](https://github.com/visulima/visulima/commit/64b14c6c1fc287c6f2ae0fbda734d2ec397e8413))
+
 ## @visulima/error [6.0.0-alpha.26](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.25...@visulima/error@6.0.0-alpha.26) (2026-05-19)
 
 ## @visulima/error [6.0.0-alpha.25](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.24...@visulima/error@6.0.0-alpha.25) (2026-05-16)
