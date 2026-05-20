@@ -67,7 +67,7 @@ jobs:
                       node_version: "24"
                     - os: "ubuntu-latest"
                       node_version: "25"
-                    - os: "macos-latest"
+                    - os: "macos-15"
                       node_version: "22"
                     - os: "windows-latest"
                       node_version: "22"
@@ -219,7 +219,7 @@ jobs:
                     - browser: "firefox"
                       os: "ubuntu-latest"
                     - browser: "webkit"
-                      os: "macos-latest"
+                      os: "macos-15"
         runs-on: "${{ matrix.os }}"
         timeout-minutes: 30
         env:
