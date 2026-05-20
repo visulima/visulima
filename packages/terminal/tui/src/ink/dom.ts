@@ -137,17 +137,17 @@ export type DOMElement = InkNode & {
     internal_layoutListeners?: Set<LayoutListener>;
 
     /**
-     * Maximum scrollTop ever reached, used with stableScrollback.
-     */
-    internal_maxScrollTop?: number;
-
-    /**
      * Highest scrollTop whose scrolled-off lines have already been flushed
      * into the terminal's real scrollback history. Monotonic; used by the
      * `overflowToBackbuffer` emission path so a given line is pushed exactly
      * once and scrolling back up never re-emits.
      */
     internal_maxPushedScrollTop?: number;
+
+    /**
+     * Maximum scrollTop ever reached, used with stableScrollback.
+     */
+    internal_maxScrollTop?: number;
 
     /**
      * Callback invoked after prepareYogaTree() caches the render output for
