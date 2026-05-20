@@ -70,7 +70,11 @@ jobs:
                   ref: "${{ github.event.pull_request.head.sha }}"
                   repo-token: "${{ secrets.GITHUB_TOKEN }}"
                   wait-interval: 15 # seconds
-                  check-name: "Check Native Build"
+                  # check-regexp keeps polling. checks-discovery-timeout (default 60s) is
+                  # too short: "Check Native Build" only appears after the build-native
+                  # matrix completes (~10min).
+                  check-regexp: "^Check Native Build$"
+                  checks-discovery-timeout: "1200" # 20 minutes
                   allowed-conclusions: "success,skipped,neutral"
 
             - name: "Download native build artifacts"

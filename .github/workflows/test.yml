@@ -134,11 +134,11 @@ jobs:
                   ref: "${{ github.event.pull_request.head.sha || github.sha }}"
                   repo-token: "${{ secrets.GITHUB_TOKEN }}"
                   wait-interval: 15 # seconds
-                  # Use check-regexp (not check-name): regexp keeps polling until the check appears.
-                  # check-name exits immediately if missing — but "Check Native Build" only registers
-                  # after the build-native matrix completes (~10min), so check-name racing was
-                  # exiting before the check existed.
+                  # check-regexp keeps polling until the check appears. checks-discovery-timeout
+                  # (default 60s) is too short: "Check Native Build" only registers after the
+                  # build-native matrix completes (~10min) so we extend the discovery window.
                   check-regexp: "^Check Native Build$"
+                  checks-discovery-timeout: "1200" # 20 minutes — covers full build-native matrix
                   allowed-conclusions: "success,skipped,neutral"
 
             # Pull the host-matching binaries produced by build-native.yml so tests that require
@@ -264,11 +264,11 @@ jobs:
                   ref: "${{ github.event.pull_request.head.sha || github.sha }}"
                   repo-token: "${{ secrets.GITHUB_TOKEN }}"
                   wait-interval: 15 # seconds
-                  # Use check-regexp (not check-name): regexp keeps polling until the check appears.
-                  # check-name exits immediately if missing — but "Check Native Build" only registers
-                  # after the build-native matrix completes (~10min), so check-name racing was
-                  # exiting before the check existed.
+                  # check-regexp keeps polling until the check appears. checks-discovery-timeout
+                  # (default 60s) is too short: "Check Native Build" only registers after the
+                  # build-native matrix completes (~10min) so we extend the discovery window.
                   check-regexp: "^Check Native Build$"
+                  checks-discovery-timeout: "1200" # 20 minutes — covers full build-native matrix
                   allowed-conclusions: "success,skipped,neutral"
 
             # Pull the host-matching binaries produced by build-native.yml so tests that require

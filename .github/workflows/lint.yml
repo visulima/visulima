@@ -248,6 +248,11 @@ jobs:
               with:
                   # The empty shellcheck flag disables shellcheck for a working solution in test.yml
                   shellcheck: ""
+                  # Run the action's `npm install @actions/tool-cache` in a temp dir.
+                  # Default working-directory (= repo root) makes npm read our pnpm
+                  # workspace package.json and fail on `catalog:` deps it can't resolve.
+                  # actionlint still discovers .github/workflows/ from the runner cwd.
+                  working-directory: "${{ runner.temp }}"
 
     rust-fmt:
         if: "needs.files-changed.outputs.rust_lintable == 'true'"
