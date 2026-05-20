@@ -28,11 +28,7 @@ const dashboard: Command = {
     execute: async ({ options, visConfig, workspaceRoot: wsRoot }) => {
         const workspaceRoot = wsRoot ?? process.cwd();
 
-        const taskRunnerOptions = (visConfig?.taskRunnerOptions ?? {}) as {
-            cacheDirectory?: string;
-        };
-
-        const cacheDirectory = resolveCacheDirectory(workspaceRoot, options.cacheDir as string | undefined, taskRunnerOptions.cacheDirectory);
+        const cacheDirectory = resolveCacheDirectory(workspaceRoot, options.cacheDir as string | undefined, visConfig?.taskRunner?.cacheDirectory);
 
         const port = typeof options.port === "number" && Number.isFinite(options.port) ? options.port : 0;
         const host = typeof options.host === "string" && options.host.length > 0 ? options.host : "127.0.0.1";
@@ -82,7 +78,7 @@ const dashboard: Command = {
             type: String,
         },
         {
-            defaultValue: true,
+            defaultValue: false,
             description: "Open the dashboard in the default browser after starting",
             name: "open",
             type: Boolean,
