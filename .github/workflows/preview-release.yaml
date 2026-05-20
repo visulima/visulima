@@ -1,8 +1,12 @@
 name: "Preview Release"
 
 on: # yamllint disable-line rule:truthy
-    # eslint-disable-next-line yml/no-empty-mapping-value
-    pull_request: # yamllint disable-line rule:empty-values
+    pull_request:
+        branches:
+            - "main"
+            - "alpha"
+            - "next"
+            - "beta"
 
 permissions:
     contents: "read" # to fetch code (actions/checkout)
@@ -18,8 +22,10 @@ jobs:
         name: "Preview Release"
         if: "github.repository == 'visulima/visulima'"
         runs-on: "ubuntu-latest"
+        timeout-minutes: 30
         permissions:
-            contents: "write"
+            # pkg-pr-new publish only writes a PR comment — it does not push commits.
+            contents: "read"
             issues: "write"
             checks: "write"
             pull-requests: "write"

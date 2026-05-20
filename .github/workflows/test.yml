@@ -3,9 +3,9 @@
 name: "Tests"
 
 on: # yamllint disable-line rule:truthy
-    # eslint-disable-next-line yml/no-empty-mapping-value
-    pull_request: # yamllint disable-line rule:empty-values
+    pull_request:
         types: ["opened", "synchronize", "reopened"]
+        branches: ["main", "alpha", "next", "beta"]
     merge_group: # yamllint disable-line rule:empty-values
 
 concurrency:
@@ -57,6 +57,7 @@ jobs:
           Test (node-${{ matrix.node_version }}, ${{ matrix.os }}${{ matrix.deno_version && format(', deno {0}', matrix.deno_version) || '' }}${{ matrix.bun_version && format(', bun {0}', matrix.bun_version) || '' }})
         if: "needs.files-changed.outputs.packages == 'true'"
         needs: "files-changed"
+        timeout-minutes: 30
         strategy:
             matrix:
                 include:
@@ -133,7 +134,11 @@ jobs:
                   ref: "${{ github.event.pull_request.head.sha || github.sha }}"
                   repo-token: "${{ secrets.GITHUB_TOKEN }}"
                   wait-interval: 15 # seconds
-                  check-name: "Check Native Build"
+                  # Use check-regexp (not check-name): regexp keeps polling until the check appears.
+                  # check-name exits immediately if missing — but "Check Native Build" only registers
+                  # after the build-native matrix completes (~10min), so check-name racing was
+                  # exiting before the check existed.
+                  check-regexp: "^Check Native Build$"
                   allowed-conclusions: "success,skipped,neutral"
 
             # Pull the host-matching binaries produced by build-native.yml so tests that require
@@ -216,6 +221,7 @@ jobs:
                     - browser: "webkit"
                       os: "macos-latest"
         runs-on: "${{ matrix.os }}"
+        timeout-minutes: 30
         env:
             NODE: "22"
         steps:
@@ -258,7 +264,11 @@ jobs:
                   ref: "${{ github.event.pull_request.head.sha || github.sha }}"
                   repo-token: "${{ secrets.GITHUB_TOKEN }}"
                   wait-interval: 15 # seconds
-                  check-name: "Check Native Build"
+                  # Use check-regexp (not check-name): regexp keeps polling until the check appears.
+                  # check-name exits immediately if missing — but "Check Native Build" only registers
+                  # after the build-native matrix completes (~10min), so check-name racing was
+                  # exiting before the check existed.
+                  check-regexp: "^Check Native Build$"
                   allowed-conclusions: "success,skipped,neutral"
 
             # Pull the host-matching binaries produced by build-native.yml so tests that require
@@ -310,6 +320,7 @@ jobs:
         # This is necessary since a failed/skipped dependent job would cause this job to be skipped
         if: "always() && (needs.test.result == 'success' || needs.test.result == 'skipped') && (needs.browser-test.result == 'success' || needs.browser-test.result == 'skipped')"
         runs-on: "ubuntu-24.04"
+        timeout-minutes: 30
         steps:
             # If any jobs we depend on fail, we will fail since this is a required check
             # NOTE: A timeout is considered a failure

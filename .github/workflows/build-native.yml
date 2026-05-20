@@ -3,8 +3,12 @@
 name: "Build Native"
 
 on: # yamllint disable-line rule:truthy
-    # eslint-disable-next-line yml/no-empty-mapping-value
-    pull_request: # yamllint disable-line rule:empty-values
+    pull_request:
+        branches:
+            - "main"
+            - "next"
+            - "alpha"
+            - "beta"
     push:
         branches:
             - "main"
@@ -81,6 +85,7 @@ jobs:
     build:
         name: "Build native - ${{ matrix.settings.target }}"
         needs: "files-changed"
+        timeout-minutes: 60
         strategy:
             fail-fast: false
             matrix:
@@ -377,6 +382,7 @@ jobs:
         name: "Check Native Build"
         if: "always()"
         runs-on: "ubuntu-24.04"
+        timeout-minutes: 30
         steps:
             - name: "Harden Runner"
               uses: "step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450" # v2.19.1

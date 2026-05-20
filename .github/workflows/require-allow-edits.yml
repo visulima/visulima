@@ -13,6 +13,7 @@ jobs:
         name: "Require “Allow Edits”"
 
         runs-on: "ubuntu-latest"
+        timeout-minutes: 30
 
         steps:
             - name: "Harden Runner"
