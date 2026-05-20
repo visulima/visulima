@@ -39,8 +39,8 @@ describe("tui/TaskStore failure-render wiring", () => {
         rmSync(dir, { force: true, recursive: true });
     });
 
-    it("source-maps + code-frames a failure's terminal output and preserves the raw block", () => {
-        expect.assertions(3);
+    it("stores a failure's terminal output verbatim — the failure block is rendered lazily by the consumer", () => {
+        expect.assertions(2);
 
         const file = join(dir, "boom.js");
 
@@ -49,18 +49,19 @@ describe("tui/TaskStore failure-render wiring", () => {
         const t = task("app:build");
         const store = new TaskStore([t]);
 
-        store.endTasks([result(t, "failure", ["> runner", "", "TypeError: store boom", `    at run (${file}:2:7)`].join("\n"))]);
+        const raw = ["> runner", "", "TypeError: store boom", `    at run (${file}:2:7)`].join("\n");
 
-        const out = strip(store.getSnapshot().outputs.get("app:build") ?? "");
+        store.endTasks([result(t, "failure", raw)]);
 
-        expect(out).toContain("✖ TypeError: store boom");
-        expect(out).toContain("throw new TypeError('store boom');");
-        // Raw runner output is preserved verbatim beneath the rendered block.
-        expect(out).toContain("> runner");
+        const stored = store.getSnapshot().outputs.get("app:build") ?? "";
+
+        expect(strip(stored)).toBe(raw);
+        // Sanity check: the store doesn't pre-render the failure block.
+        expect(stored).not.toContain("✖");
     });
 
-    it("renders previously streamed output when the failure result carries none", () => {
-        expect.assertions(2);
+    it("preserves streamed output when the failure result carries none", () => {
+        expect.assertions(1);
 
         const file = join(dir, "stream.js");
 
@@ -70,14 +71,13 @@ describe("tui/TaskStore failure-render wiring", () => {
         const store = new TaskStore([t]);
 
         // Output arrived incrementally before the result; the result itself
-        // has an empty terminalOutput. endTasks must still render the stream.
-        store.addOutput("app:test", ["Error: streamed", `    at x (${file}:1:7)`].join("\n"));
+        // has an empty terminalOutput. endTasks must keep the stream intact.
+        const streamed = ["Error: streamed", `    at x (${file}:1:7)`].join("\n");
+
+        store.addOutput("app:test", streamed);
         store.endTasks([result(t, "failure", "")]);
 
-        const out = strip(store.getSnapshot().outputs.get("app:test") ?? "");
-
-        expect(out).toContain("✖ Error: streamed");
-        expect(out).toContain("throw new Error('streamed');");
+        expect(strip(store.getSnapshot().outputs.get("app:test") ?? "")).toBe(streamed);
     });
 
     it("stores non-failure output verbatim without rendering", () => {
