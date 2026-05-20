@@ -188,6 +188,12 @@ jobs:
                   # TODO: re-enable once npm arborist fixes alias-name + installed-version mismatch for npm: aliases (e.g. vite-plugin-inspect's "vite": "npm:rolldown-vite@...")
                   run-signatures-audit: false
 
+            - name: "Build vis upstream deps"
+              # Schema generation walks the workspace type graph: VisTargetConfiguration
+              # extends @visulima/task-runner's TargetConfiguration, so we need that
+              # package's d.ts on disk for ts-json-schema-generator to see its fields.
+              run: "pnpm --filter '@visulima/vis^...' run build"
+
             - name: "Regenerate vis schemas and fail on drift"
               run: |
                   pnpm --filter @visulima/vis run check:schemas-drift || {
