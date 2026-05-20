@@ -20,9 +20,9 @@ const openInBrowser = (url: string): void => {
 const dashboard: Command = {
     description: "Open a browser dashboard with cache, run history, and cache-miss diffs",
     examples: [
-        ["vis dashboard", "Start the dashboard on a random port and open the browser"],
+        ["vis dashboard", "Start the dashboard on a random port (server only — does not open a browser)"],
+        ["vis dashboard --open", "Start the dashboard and open it in the default browser"],
         ["vis dashboard --port=7788", "Pin the server to a specific port"],
-        ["vis dashboard --no-open", "Start the server without opening a browser"],
         ["vis dashboard --host=0.0.0.0 --port=7788", "Expose the dashboard on all interfaces"],
     ],
     execute: async ({ options, visConfig, workspaceRoot: wsRoot }) => {
@@ -45,7 +45,7 @@ const dashboard: Command = {
         pail.info(`Cache:     ${cacheDirectory}`);
         pail.info("Press Ctrl+C to stop.");
 
-        if (options.open !== false) {
+        if (options.open === true) {
             openInBrowser(server.url);
         }
 
