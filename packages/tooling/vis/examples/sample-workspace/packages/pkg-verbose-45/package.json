@@ -1,14 +1,14 @@
 {
-    "name": "pkg-verbose-45",
-    "version": "1.0.0",
-    "private": true,
-    "scripts": {
-        "build": "echo 'Building pkg-verbose-45 with verbose output...' && for n in $(seq 1 225); do echo \"  [pkg-verbose-45] Processing file $n/225...\"; done && echo 'pkg-verbose-45 complete!'",
-        "lint": "echo 'pkg-verbose-45 lint OK'",
-        "test": "echo 'Running pkg-verbose-45 test suite...' && for n in $(seq 1 20); do echo \"  test $n: PASS\"; done && echo 'All tests passed.'"
-    },
-    "dependencies": {
-        "lib-fast-8": "1.0.0",
-        "pkg-verbose-42": "1.0.0"
-    }
+  "name": "pkg-verbose-45",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "echo 'Building pkg-verbose-45 with verbose output...' && for n in $(seq 1 225); do echo \"  [pkg-verbose-45] Processing file $n/225...\"; done && echo 'pkg-verbose-45 complete!' && mkdir -p dist && date > dist/.stamp",
+    "lint": "echo 'pkg-verbose-45 lint OK'",
+    "test": "echo 'Running pkg-verbose-45 test suite...' && for n in $(seq 1 20); do echo \"  test $n: PASS\"; done && echo 'All tests passed.'"
+  },
+  "dependencies": {
+    "lib-fast-8": "1.0.0",
+    "pkg-verbose-42": "1.0.0"
+  }
 }

@@ -1,16 +1,16 @@
 {
-    "name": "lib-medium-20",
-    "version": "1.0.0",
-    "private": true,
-    "scripts": {
-        "build": "echo 'Compiling lib-medium-20...' && sleep 2.5 && echo 'Generating types...' && sleep 0.2 && echo 'lib-medium-20 ready!'",
-        "lint": "echo 'ESLint: lib-medium-20...' && sleep 0.1 && echo 'No warnings.'",
-        "dev": "echo 'lib-medium-20 watching...' && while true; do sleep 2; echo '[lib-medium-20] rebuilt in 45ms'; done",
-        "test": "echo 'Running lib-medium-20 tests...' && sleep .7 && echo '  Suite: unit - 5 passed' && echo '  Suite: integration - 3 passed'"
-    },
-    "dependencies": {
-        "lib-fast-10": "1.0.0",
-        "lib-fast-3": "1.0.0",
-        "lib-medium-11": "1.0.0"
-    }
+  "name": "lib-medium-20",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "echo 'Compiling lib-medium-20...' && sleep 2.5 && echo 'Generating types...' && sleep 0.2 && echo 'lib-medium-20 ready!' && mkdir -p dist && date > dist/.stamp",
+    "dev": "echo 'lib-medium-20 watching...' && while true; do sleep 2; echo '[lib-medium-20] rebuilt in 45ms'; done",
+    "lint": "echo 'ESLint: lib-medium-20...' && sleep 0.1 && echo 'No warnings.'",
+    "test": "echo 'Running lib-medium-20 tests...' && sleep .7 && echo '  Suite: unit - 5 passed' && echo '  Suite: integration - 3 passed'"
+  },
+  "dependencies": {
+    "lib-fast-10": "1.0.0",
+    "lib-fast-3": "1.0.0",
+    "lib-medium-11": "1.0.0"
+  }
 }

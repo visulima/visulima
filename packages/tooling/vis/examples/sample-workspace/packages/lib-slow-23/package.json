@@ -1,15 +1,15 @@
 {
-    "name": "lib-slow-23",
-    "version": "1.0.0",
-    "private": true,
-    "scripts": {
-        "build": "echo 'Compiling lib-slow-23 (large package)...' && sleep 3.0 && echo 'Bundling...' && sleep 0.5 && echo 'Minifying...' && sleep 0.3 && echo 'lib-slow-23 done!'",
-        "lint": "echo 'Checking lib-slow-23...' && sleep 0.3 && echo 'TypeScript: OK' && echo 'ESLint: OK'",
-        "dev": "echo 'lib-slow-23 dev mode' && while true; do sleep 3; echo '[lib-slow-23] compiled successfully'; done",
-        "test": "echo 'Test suite: lib-slow-23' && sleep .8 && echo '  PASS src/index.test.ts (8 tests)' && echo '  PASS src/utils.test.ts (12 tests)'"
-    },
-    "dependencies": {
-        "lib-fast-5": "1.0.0",
-        "lib-medium-13": "1.0.0"
-    }
+  "name": "lib-slow-23",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "echo 'Compiling lib-slow-23 (large package)...' && sleep 3.0 && echo 'Bundling...' && sleep 0.5 && echo 'Minifying...' && sleep 0.3 && echo 'lib-slow-23 done!' && mkdir -p dist && date > dist/.stamp",
+    "dev": "echo 'lib-slow-23 dev mode' && while true; do sleep 3; echo '[lib-slow-23] compiled successfully'; done",
+    "lint": "echo 'Checking lib-slow-23...' && sleep 0.3 && echo 'TypeScript: OK' && echo 'ESLint: OK'",
+    "test": "echo 'Test suite: lib-slow-23' && sleep .8 && echo '  PASS src/index.test.ts (8 tests)' && echo '  PASS src/utils.test.ts (12 tests)'"
+  },
+  "dependencies": {
+    "lib-fast-5": "1.0.0",
+    "lib-medium-13": "1.0.0"
+  }
 }
