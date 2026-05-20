@@ -96,6 +96,10 @@ export default createConfig(
             "@typescript-eslint/member-ordering": "off",
             // Forward references between mutually recursive functions are intentional
             "@typescript-eslint/no-use-before-define": ["error", { functions: false }],
+            // Internal TUI framework identifiers (e.g., `maxScrollbackLength`, `internal_maxPushedScrollTop`) trip the entropy heuristic in JSDoc references
+            "no-secrets/no-secrets": "off",
+            // JSDoc inside src is documentation, not strictly aligned indent
+            "jsdoc/check-indentation": "off",
         },
     },
     {

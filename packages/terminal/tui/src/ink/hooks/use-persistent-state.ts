@@ -68,7 +68,7 @@ export const createFileStorage = (namespace: string): PersistentStorage => {
     const load = (): Record<string, string> => {
         try {
             const raw = readFileSync(filePath, "utf8");
-            const parsed = JSON.parse(raw) as unknown;
+            const parsed = JSON.parse(raw);
 
             if (parsed && typeof parsed === "object") {
                 return parsed as Record<string, string>;

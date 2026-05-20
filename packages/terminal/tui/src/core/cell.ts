@@ -1,4 +1,4 @@
-/* eslint-disable jsdoc/check-indentation, jsdoc/lines-before-block, jsdoc/match-description, no-bitwise */
+/* eslint-disable jsdoc/lines-before-block, jsdoc/match-description, no-bitwise */
 /**
  * 2×u32 per-cell back-buffer layout:
  *   buffer[idx * 2]     = charCode  (Unicode codepoint, u32)

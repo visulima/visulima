@@ -1,7 +1,10 @@
-export interface ThrottledFn<T extends (...args: any[]) => any> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyFunction = (...args: any[]) => any;
+
+export interface ThrottledFunction<T extends AnyFunction> {
     (...args: Parameters<T>): ReturnType<T> | undefined;
-    cancel(): void;
-    flush(): ReturnType<T> | undefined;
+    cancel: () => void;
+    flush: () => ReturnType<T> | undefined;
 }
 
 export interface ThrottleOptions {
@@ -15,11 +18,11 @@ export interface ThrottleOptions {
  * delegating to a debounce with `maxWait === wait`, so continuous demand
  * still produces an invocation every `wait` ms.
  */
-export function throttle<T extends (...args: any[]) => any>(
-    fn: T,
+export function throttle<T extends AnyFunction>(
+    function_: T,
     wait: number | undefined = 0,
     options: ThrottleOptions = {},
-): ThrottledFn<T> {
+): ThrottledFunction<T> {
     const leading = options.leading ?? true;
     const trailing = options.trailing ?? true;
 
@@ -36,7 +39,7 @@ export function throttle<T extends (...args: any[]) => any>(
         const args = pendingArgs;
 
         pendingArgs = undefined;
-        lastResult = fn(...args) as ReturnType<T>;
+        lastResult = function_(...args) as ReturnType<T>;
     };
 
     const clearTimer = (): void => {
@@ -62,12 +65,10 @@ export function throttle<T extends (...args: any[]) => any>(
         timerId = setTimeout(onTimerEnd, wait);
     };
 
-    const throttled = function (...args: Parameters<T>): ReturnType<T> | undefined {
+    const throttled = function throttled(...args: Parameters<T>): ReturnType<T> | undefined {
         const now = Date.now();
 
-        if (maxWaitStart === undefined) {
-            maxWaitStart = now;
-        }
+        maxWaitStart ??= now;
 
         // Force an invocation when continuous demand exceeds the throttle
         // window — matches the maxWait behavior of es-toolkit/compat.
@@ -91,7 +92,7 @@ export function throttle<T extends (...args: any[]) => any>(
         }
 
         return lastResult;
-    } as ThrottledFn<T>;
+    } as ThrottledFunction<T>;
 
     throttled.cancel = (): void => {
         clearTimer();

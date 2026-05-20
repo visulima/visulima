@@ -10,10 +10,28 @@ import { exit } from "node:process";
 // `nx affected` reads NX_BASE / NX_HEAD from the env (set by nrwl/nx-set-shas
 // in the workflow). Don't pass --files=<huge list> — that hits the kernel
 // argv size limit on long diffs.
-const json = execSync(`pnpm exec nx show projects --affected --exclude=*-bench,docs,storybook,shared-utils --json`).toString("utf8");
+const rawJson = execSync(`pnpm exec nx show projects --affected --exclude=*-bench,docs,storybook,shared-utils --json`).toString("utf8");
+
+// pnpm prefixes stdout with `[WARN] Unsupported platform...` lines for
+// native-binding optional packages on CI runners. nx prints its JSON on the
+// last non-empty line, so walk the output bottom-up to find it.
+const sliceJson = (raw) => {
+    const lines = raw.split(/\r?\n/);
+
+    for (let index = lines.length - 1; index >= 0; index--) {
+        const line = lines[index].trim();
+
+        if (line.length === 0) continue;
+        if (line.startsWith("[\"") || line.startsWith("[]") || line.startsWith("{\"") || line.startsWith("{}")) {
+            return line;
+        }
+    }
+
+    throw new Error(`Expected JSON in command output, got:\n${raw}`);
+};
 
 /** @type {string[]} */
-const affectedProjects = JSON.parse(json);
+const affectedProjects = JSON.parse(sliceJson(rawJson));
 
 // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -21,7 +39,7 @@ const rootPath = join(__dirname, "..");
 
 const packages = affectedProjects.map((projectName) => {
     // Ask NX for the actual project root, since project names may not match directory paths
-    const projectJson = JSON.parse(execSync(`pnpm exec nx show project ${projectName} --json`, { encoding: "utf8" }));
+    const projectJson = JSON.parse(sliceJson(execSync(`pnpm exec nx show project ${projectName} --json`, { encoding: "utf8" })));
     const projectRoot = join(rootPath, projectJson.root);
     const packageJsonPath = join(projectRoot, "package.json");
 
