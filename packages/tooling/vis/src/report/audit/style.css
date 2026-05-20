@@ -764,20 +764,18 @@
         color: var(--muted);
     }
 
-    .sig-by-link {
-        transition: opacity 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
-    }
-
-    .sig-by-link:hover {
-        opacity: 0.65;
-    }
-
-    /* Inlined wordmark: glyph paths take --fg (pure #000 light / #fff dark),
-       while the two diagonal accent strokes keep the brand lime via their
-       own fill — so this rule must not force-recolor the whole SVG. */
+    /* Anolilab wordmark — brand color pair (fg + lime). The glyph paths
+       inherit `fill` from the root svg (.anolilab-logo); the two diagonal
+       accent strokes opt out via .anolilab-accent. No hover swap — the
+       mark is a stable brand object. */
     .anolilab-logo {
         height: 13px;
+        width: auto;
         fill: var(--fg);
+    }
+
+    .anolilab-accent {
+        fill: #dfff1b;
     }
 }
 
