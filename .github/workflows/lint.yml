@@ -244,15 +244,15 @@ jobs:
                   EMAIL: "github-actions[bot]@users.noreply.github.com"
 
             - name: "Lint github workflows"
-              uses: "raven-actions/actionlint@205b530c5d9fa8f44ae9ed59f341a0db994aa6f8" # v2.1.2
-              with:
-                  # The empty shellcheck flag disables shellcheck for a working solution in test.yml
-                  shellcheck: ""
-                  # Run the action's `npm install @actions/tool-cache` in a temp dir.
-                  # Default working-directory (= repo root) makes npm read our pnpm
-                  # workspace package.json and fail on `catalog:` deps it can't resolve.
-                  # actionlint still discovers .github/workflows/ from the runner cwd.
-                  working-directory: "${{ runner.temp }}"
+              # raven-actions/actionlint shells out to `npm install @actions/tool-cache`
+              # in the repo root, which trips on our pnpm workspace catalog: deps.
+              # Download the actionlint binary directly to sidestep npm entirely.
+              shell: "bash"
+              run: |
+                  set -euo pipefail
+                  bash <(curl --silent --show-error --location \
+                      https://raw.githubusercontent.com/rhysd/actionlint/v1.7.12/scripts/download-actionlint.bash) 1.7.12
+                  ./actionlint -color -shellcheck=
 
     rust-fmt:
         if: "needs.files-changed.outputs.rust_lintable == 'true'"
