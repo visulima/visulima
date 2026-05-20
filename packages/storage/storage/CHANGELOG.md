@@ -1,3 +1,19 @@
+## @visulima/storage [1.0.0-alpha.30](https://github.com/visulima/visulima/compare/@visulima/storage@1.0.0-alpha.29...@visulima/storage@1.0.0-alpha.30) (2026-05-20)
+
+### Features
+
+* **storage:** add Vercel OIDC support to vercel-blob adapter ([f6fbdd9](https://github.com/visulima/visulima/commit/f6fbdd98ac96194a944c10dd9fc4bb54c1669505))
+
+### Continuous Integration
+
+* build vis deps before schema drift + drop nested nuxt exports ([e217fcd](https://github.com/visulima/visulima/commit/e217fcdf3660cb73dd85514a0a387762ee52b873))
+* tighten workflow yaml + restore missing publint dep ([b478f9a](https://github.com/visulima/visulima/commit/b478f9a9329d9c7243e694e3f360d385cc34567c))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.25
+
 ## @visulima/storage [1.0.0-alpha.29](https://github.com/visulima/visulima/compare/@visulima/storage@1.0.0-alpha.28...@visulima/storage@1.0.0-alpha.29) (2026-05-19)
 
 ### Features
