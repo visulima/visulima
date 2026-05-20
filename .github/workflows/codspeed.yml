@@ -5,8 +5,9 @@ name: "CodSpeed"
 on: # yamllint disable-line rule:truthy
     push:
         branches: ["main", "alpha"]
-    pull_request: # yamllint disable-line rule:empty-values
+    pull_request:
         types: ["opened", "synchronize", "reopened"]
+        branches: ["main", "alpha", "next", "beta"]
     workflow_dispatch: # yamllint disable-line rule:empty-values
 
 concurrency:
@@ -98,6 +99,9 @@ jobs:
         if: "${{ needs.discover.outputs.has-benches == 'true' }}"
         runs-on: "ubuntu-latest"
         timeout-minutes: 30
+        # Scope the CodSpeed OIDC token to an environment so secrets and reviewer
+        # rules (configured in repo settings) can apply to benchmark uploads.
+        environment: "benchmarks"
         permissions:
             contents: "read"
             id-token: "write" # required for OIDC authentication with CodSpeed

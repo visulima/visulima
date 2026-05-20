@@ -23,6 +23,10 @@ jobs:
     analysis:
         name: "Scorecard analysis"
         runs-on: "ubuntu-latest"
+        timeout-minutes: 30
+        # OIDC publishes Scorecard results to the OpenSSF REST API — scope the token
+        # to an environment so reviewer rules (configured in repo settings) apply.
+        environment: "scorecards"
         permissions:
             # Needed to upload the results to code-scanning dashboard.
             security-events: "write"
