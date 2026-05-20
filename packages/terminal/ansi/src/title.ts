@@ -2,7 +2,11 @@
 import { BEL, OSC, ST } from "./constants";
 
 /**
- * Validates and sanitizes a title string for use in OSC sequences.
+ * Sanitizes a title string for use in OSC sequences. BEL (U+0007) and ESC
+ * (U+001B) can terminate an OSC payload early — left intact, an
+ * attacker-controlled title could close the title-set sequence and inject
+ * a follow-up OSC (clipboard write, palette change, …). Stripping both
+ * bytes is the cheapest portable defense.
  * @param title The title string to validate
  * @returns The sanitized title string
  */
@@ -14,8 +18,6 @@ const validateTitle = (title: string): string => {
         throw new TypeError("Title must be a string");
     }
 
-    // Remove or escape potentially problematic characters
-    // OSC sequences can be terminated by BEL or ST, so we should escape these
     return title.replaceAll(TITLE_SANITIZE_REGEX, "");
 };
 
@@ -62,7 +64,7 @@ export const setIconNameAndWindowTitle = (title: string): string => `${OSC}0;${v
  * // Sends: "\x1b]1;AppIcon\x07"
  * ```
  */
-export const setIconName = (iconName: string): string => `${OSC}1;${iconName}${BEL}`;
+export const setIconName = (iconName: string): string => `${OSC}1;${validateTitle(iconName)}${BEL}`;
 
 /**
  * Sets the window title using an OSC (Operating System Command) sequence.
@@ -84,7 +86,7 @@ export const setIconName = (iconName: string): string => `${OSC}1;${iconName}${B
  * // Sends: "\x1b]2;Current Document - Editor\x07"
  * ```
  */
-export const setWindowTitle = (title: string): string => `${OSC}2;${title}${BEL}`;
+export const setWindowTitle = (title: string): string => `${OSC}2;${validateTitle(title)}${BEL}`;
 
 /**
  * Sets a DEC Special Window Title (DECSWT) using an OSC sequence.
@@ -113,7 +115,7 @@ export const setWindowTitle = (title: string): string => `${OSC}2;${title}${BEL}
  * // Sends: "\x1b]21;My Special Window\x1b\\"
  * ```
  */
-export const decswt = (title: string): string => `${OSC}21;${title}${ST}`;
+export const decswt = (title: string): string => `${OSC}21;${validateTitle(title)}${ST}`;
 
 /**
  * Sets a DEC Special Icon Name (DECSIN) using an OSC sequence.
@@ -142,7 +144,7 @@ export const decswt = (title: string): string => `${OSC}21;${title}${ST}`;
  * // Sends: "\x1b]2L;SpecialIcon\x1b\\"
  * ```
  */
-export const decsin = (name: string): string => `${OSC}2L;${name}${ST}`;
+export const decsin = (name: string): string => `${OSC}2L;${validateTitle(name)}${ST}`;
 
 /**
  * Sets the icon name and window title using an OSC sequence, terminated with ST (String Terminator).
@@ -164,7 +166,7 @@ export const decsin = (name: string): string => `${OSC}2L;${name}${ST}`;
  * // Sends: "\x1b]0;My App ST\x1b\\"
  * ```
  */
-export const setIconNameAndWindowTitleWithST = (title: string): string => `${OSC}0;${title}${ST}`;
+export const setIconNameAndWindowTitleWithST = (title: string): string => `${OSC}0;${validateTitle(title)}${ST}`;
 
 /**
  * Sets the icon name using an OSC sequence, terminated with ST (String Terminator).
@@ -186,7 +188,7 @@ export const setIconNameAndWindowTitleWithST = (title: string): string => `${OSC
  * // Sends: "\x1b]1;AppIcon ST\x1b\\"
  * ```
  */
-export const setIconNameWithST = (iconName: string): string => `${OSC}1;${iconName}${ST}`;
+export const setIconNameWithST = (iconName: string): string => `${OSC}1;${validateTitle(iconName)}${ST}`;
 
 /**
  * Sets the window title using an OSC sequence, terminated with ST (String Terminator).
@@ -208,4 +210,4 @@ export const setIconNameWithST = (iconName: string): string => `${OSC}1;${iconNa
  * // Sends: "\x1b]2;Document ST - Editor\x1b\\"
  * ```
  */
-export const setWindowTitleWithST = (title: string): string => `${OSC}2;${title}${ST}`;
+export const setWindowTitleWithST = (title: string): string => `${OSC}2;${validateTitle(title)}${ST}`;
