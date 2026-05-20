@@ -1075,8 +1075,8 @@
                     "properties": {
                         "advisoryCacheTtlMs": {
                             "type": "number",
-                            "description": "Cache TTL for advisory entries (immutable once published).",
-                            "default": "604_800_000 (7 days)"
+                            "description": "Cache TTL for advisory entries (immutable once published). 7 days.",
+                            "default": 604800000
                         },
                         "enabled": {
                             "type": "boolean",
@@ -1085,18 +1085,18 @@
                         },
                         "projectCacheTtlMs": {
                             "type": "number",
-                            "description": "Cache TTL for OpenSSF Scorecard project data (refreshes weekly).",
-                            "default": "86_400_000 (24 hours)"
+                            "description": "Cache TTL for OpenSSF Scorecard project data (refreshes weekly). 24 hours.",
+                            "default": 86400000
                         },
                         "timeoutMs": {
                             "type": "number",
                             "description": "Request timeout in milliseconds.",
-                            "default": "15_000"
+                            "default": 15000
                         },
                         "versionCacheTtlMs": {
                             "type": "number",
-                            "description": "Cache TTL for npm version metadata (immutable).",
-                            "default": "604_800_000 (7 days)"
+                            "description": "Cache TTL for npm version metadata (immutable). 7 days.",
+                            "default": 604800000
                         }
                     },
                     "additionalProperties": false,
@@ -1634,8 +1634,8 @@
                         },
                         "cacheTtlMs": {
                             "type": "number",
-                            "description": "Cache TTL in milliseconds for Snyk issue lookups.",
-                            "default": "21_600_000 (6 hours)"
+                            "description": "Cache TTL in milliseconds for Snyk issue lookups. 6 hours.",
+                            "default": 21600000
                         },
                         "enabled": {
                             "type": "boolean",
@@ -1648,8 +1648,8 @@
                         },
                         "timeoutMs": {
                             "type": "number",
-                            "description": "Request timeout in milliseconds for the Snyk API.",
-                            "default": "15_000 (15 seconds)"
+                            "description": "Request timeout in milliseconds for the Snyk API. 15 seconds.",
+                            "default": 15000
                         }
                     },
                     "additionalProperties": false,
@@ -1664,8 +1664,8 @@
                         },
                         "cacheTtlMs": {
                             "type": "number",
-                            "description": "Cache TTL in milliseconds for Socket.dev reports.",
-                            "default": "3_600_000 (1 hour)"
+                            "description": "Cache TTL in milliseconds for Socket.dev reports. 1 hour.",
+                            "default": 3600000
                         },
                         "enabled": {
                             "type": "boolean",
@@ -1674,8 +1674,8 @@
                         },
                         "timeoutMs": {
                             "type": "number",
-                            "description": "Request timeout in milliseconds for the Socket.dev API.",
-                            "default": "15_000 (15 seconds)"
+                            "description": "Request timeout in milliseconds for the Socket.dev API. 15 seconds.",
+                            "default": 15000
                         }
                     },
                     "additionalProperties": false,
