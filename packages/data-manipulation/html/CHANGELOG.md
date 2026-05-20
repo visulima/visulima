@@ -1,3 +1,5 @@
+## @visulima/html [1.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/html@1.0.0-alpha.13...@visulima/html@1.0.0-alpha.14) (2026-05-20)
+
 ## @visulima/html [1.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/html@1.0.0-alpha.12...@visulima/html@1.0.0-alpha.13) (2026-05-19)
 
 ### Miscellaneous Chores
