@@ -274,4 +274,94 @@ describe("sanitize-ansi", () => {
         expect(output).not.toContain("\u008E");
         expect(stripAnsi(output)).toBe("ABC");
     });
+
+    it("strip OSC 0 title-set sequences", () => {
+        expect.assertions(2);
+
+        const output = sanitizeAnsi("A]0;EVILB");
+
+        expect(output).not.toContain("EVIL");
+        expect(stripAnsi(output)).toBe("AB");
+    });
+
+    it("strip OSC 1 icon-name sequences", () => {
+        expect.assertions(2);
+
+        const output = sanitizeAnsi("A]1;EVILB");
+
+        expect(output).not.toContain("EVIL");
+        expect(stripAnsi(output)).toBe("AB");
+    });
+
+    it("strip OSC 2 window-title sequences (BEL terminated)", () => {
+        expect.assertions(2);
+
+        const output = sanitizeAnsi("A]2;HACKEDB");
+
+        expect(output).not.toContain("HACKED");
+        expect(stripAnsi(output)).toBe("AB");
+    });
+
+    it("strip OSC 2 window-title sequences (ST terminated)", () => {
+        expect.assertions(2);
+
+        const output = sanitizeAnsi(String.raw`A]2;HACKED\B`);
+
+        expect(output).not.toContain("HACKED");
+        expect(stripAnsi(output)).toBe("AB");
+    });
+
+    it("strip OSC 52 clipboard-write sequences", () => {
+        expect.assertions(2);
+
+        const output = sanitizeAnsi("A]52;c;ZXZpbA==B");
+
+        expect(output).not.toContain("ZXZpbA==");
+        expect(stripAnsi(output)).toBe("AB");
+    });
+
+    it("strip OSC 4 palette-set sequences", () => {
+        expect.assertions(2);
+
+        const output = sanitizeAnsi("A]4;0;#ff0000B");
+
+        expect(output).not.toContain("#ff0000");
+        expect(stripAnsi(output)).toBe("AB");
+    });
+
+    it("strip OSC 9 notification sequences", () => {
+        expect.assertions(2);
+
+        const output = sanitizeAnsi("A]9;EVILB");
+
+        expect(output).not.toContain("EVIL");
+        expect(stripAnsi(output)).toBe("AB");
+    });
+
+    it("strip C1 OSC non-hyperlink sequences", () => {
+        expect.assertions(2);
+
+        const output = sanitizeAnsi("A\u009D2;HACKED\u009CB");
+
+        expect(output).not.toContain("HACKED");
+        expect(stripAnsi(output)).toBe("AB");
+    });
+
+    it("does not allow OSC 80+ through the OSC 8 prefix check (ESC form)", () => {
+        expect.assertions(2);
+
+        const output = sanitizeAnsi("A]80;evilB");
+
+        expect(output).not.toContain("evil");
+        expect(stripAnsi(output)).toBe("AB");
+    });
+
+    it("does not allow OSC 80+ through the OSC 8 prefix check (C1 form)", () => {
+        expect.assertions(2);
+
+        const output = sanitizeAnsi("A\u009D80;evil\u009CB");
+
+        expect(output).not.toContain("evil");
+        expect(stripAnsi(output)).toBe("AB");
+    });
 });
