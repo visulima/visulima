@@ -53,7 +53,7 @@ jobs:
                   REF: "${{ github.event.pull_request.head.sha || github.sha }}"
                   REPO: "${{ github.repository }}"
                   SELF_CHECK_NAME: "Semantic Release"
-                  IGNORE_CHECKS: '["lock-closed / lock-closed","Socket Security: Pull Request Alerts","Dependabot","Discover affected benches","Bench: boxen-bench","Bench: cerebro-bench","Bench: colorize-bench","Bench: command-line-args-bench","Bench: deep-clone-bench","Bench: fmt-bench","Bench: fs-bench","Bench: inspector-bench","Bench: pail-bench","Bench: redact-bench","Bench: string-bench","Bench: tabular-bench","Bench: task-runner-bench","Bench: tui-bench"]'
+                  IGNORE_CHECKS: "[\"lock-closed / lock-closed\",\"Socket Security: Pull Request Alerts\",\"Dependabot\",\"Discover affected benches\",\"Bench: boxen-bench\",\"Bench: cerebro-bench\",\"Bench: colorize-bench\",\"Bench: command-line-args-bench\",\"Bench: deep-clone-bench\",\"Bench: fmt-bench\",\"Bench: fs-bench\",\"Bench: inspector-bench\",\"Bench: pail-bench\",\"Bench: redact-bench\",\"Bench: string-bench\",\"Bench: tabular-bench\",\"Bench: task-runner-bench\",\"Bench: tui-bench\"]"
               run: |
                   set -euo pipefail
                   deadline=$(( $(date +%s) + 1500 ))
