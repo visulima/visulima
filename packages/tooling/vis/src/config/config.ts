@@ -629,10 +629,12 @@ const defineTaskConfig = (config: VisTaskConfig): VisTaskConfig => config;
 
 /**
  * Type-safe helper for defining vis configuration.
- * Provides full TypeScript autocomplete when used in `vis.config.ts`.
  *
- * Secure defaults are applied automatically — you only need to specify overrides.
- * To see the active defaults, run `vis check --security-config`.
+ * Pure typed-identity — returns its argument unchanged. The point is purely
+ * editor autocomplete and structural type-checking on the literal you pass
+ * in. Secure defaults are applied by `loadVisConfig` at load time, not here,
+ * so wrapping vs. using `satisfies VisConfig` produces the exact same
+ * runtime behavior. To see the active defaults, run `vis check --security-config`.
  * @example
  * ```typescript
  * // vis.config.ts — minimal config, fully secured by defaults
@@ -651,23 +653,8 @@ const defineTaskConfig = (config: VisTaskConfig): VisTaskConfig => config;
  *     },
  * });
  * ```
- * @example
- * ```typescript
- * // vis.config.ts — override a default
- * import { defineConfig } from "@visulima/vis/config";
- *
- * export default defineConfig({
- *     security: {
- *         policies: {
- *             // Relax cooldown to 24 hours instead of the default 14 days
- *             firstSeen: { minutes: 1440 },
- *             installScripts: { allow: { esbuild: true } },
- *         },
- *     },
- * });
- * ```
  */
-const defineConfig = (config: VisConfig): VisConfig => applyDefaults(config);
+const defineConfig = (config: VisConfig): VisConfig => config;
 
 // Ship the OTel plugin from the `/config` subpath so users can
 // `import { otelPlugin } from "@visulima/vis/config"` — same module
