@@ -1,14 +1,14 @@
 {
-    "name": "lib-b",
-    "version": "1.0.0",
-    "private": true,
-    "scripts": {
-        "build": "echo 'Building lib-b...' && sleep 0.8 && echo 'lib-b built!'",
-        "lint": "echo 'Linting lib-b...' && echo 'No lint errors.'",
-        "test": "echo 'Testing lib-b...' && sleep 0.3 && echo 'lib-b tests passed!'"
-    },
-    "dependencies": {
-        "lib-c": "1.0.0",
-        "lib-fast-2": "1.0.0"
-    }
+  "name": "lib-b",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "echo 'Building lib-b...' && sleep 0.8 && echo 'lib-b built!' && mkdir -p dist && date > dist/.stamp",
+    "lint": "echo 'Linting lib-b...' && echo 'No lint errors.'",
+    "test": "echo 'Testing lib-b...' && sleep 0.3 && echo 'lib-b tests passed!'"
+  },
+  "dependencies": {
+    "lib-c": "1.0.0",
+    "lib-fast-2": "1.0.0"
+  }
 }
