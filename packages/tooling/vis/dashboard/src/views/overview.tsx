@@ -1,21 +1,29 @@
 import { useQuery } from "@tanstack/react-query";
-import { AlertTriangle, Clock, Database, Gauge, TimerReset, Zap } from "lucide-react";
 
+import { SegmentedBar } from "@/components/segmented-bar";
 import { Sparkline } from "@/components/sparkline";
 import { StatCard } from "@/components/stat-card";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { api, queryKeys, type TaskMetric } from "@/lib/api";
 import { formatDate, formatMs, formatPercent } from "@/lib/format";
+import { cn } from "@/lib/utils";
+
+const SectionTitle = ({ children, ord }: { children: React.ReactNode; ord: string }) => (
+    <div className="mb-6 flex items-baseline gap-4">
+        <span className="nd-mono text-[11px] tracking-[0.16em] text-faint">{ord}</span>
+        <h2 className="nd-mono text-[11px] uppercase tracking-[0.16em] text-muted">{children}</h2>
+        <span aria-hidden className="h-px flex-1 bg-border" />
+    </div>
+);
 
 const taskRow = (metric: TaskMetric) => (
     <TableRow key={metric.taskId}>
-        <TableCell className="font-mono text-xs">{metric.taskId}</TableCell>
-        <TableCell>{metric.runs}</TableCell>
-        <TableCell>{formatPercent(metric.hitRate)}</TableCell>
-        <TableCell>{formatMs(metric.averageDurationMs)}</TableCell>
-        <TableCell className="text-emerald-400">{formatMs(metric.timeSavedMs)}</TableCell>
+        <TableCell className="nd-mono text-[12px] text-fg">{metric.taskId}</TableCell>
+        <TableCell className="nd-mono text-[13px]">{metric.runs}</TableCell>
+        <TableCell className="nd-mono text-[13px]">{formatPercent(metric.hitRate)}</TableCell>
+        <TableCell className="nd-mono text-[13px]">{formatMs(metric.averageDurationMs)}</TableCell>
+        <TableCell className="nd-mono text-[13px] text-success">{formatMs(metric.timeSavedMs)}</TableCell>
     </TableRow>
 );
 
@@ -23,197 +31,215 @@ export const Overview = () => {
     const overviewQuery = useQuery({ queryKey: queryKeys.overview(), queryFn: api.overview });
 
     if (overviewQuery.isLoading) {
-        return (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                {Array.from({ length: 4 }, (_, i) => (
-                    <Skeleton key={i} className="h-24" />
-                ))}
-            </div>
-        );
+        return <Skeleton label="LOADING OVERVIEW" />;
     }
 
     if (!overviewQuery.data) {
         return (
-            <Card>
-                <CardContent className="py-8 text-center text-muted-foreground">No data yet.</CardContent>
-            </Card>
+            <div className="nd-mono py-16 text-center text-[12px] uppercase tracking-[0.16em] text-muted">
+                [NO DATA]
+            </div>
         );
     }
 
     const { metrics, flaky } = overviewQuery.data;
     const { totals } = metrics;
+    const hitRate = metrics.cacheHitRate ?? 0;
+    const hitTone: "good" | "warn" | "bad" = hitRate >= 0.6 ? "good" : hitRate >= 0.3 ? "warn" : "bad";
 
     return (
-        <div className="flex flex-col gap-6">
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="flex flex-col gap-16">
+            {/* HERO: Cache hit rate */}
+            <section className="grid gap-12 md:grid-cols-[1.4fr_1fr]">
                 <StatCard
-                    label="Cache hit rate"
-                    icon={Database}
-                    tone={(metrics.cacheHitRate ?? 0) > 0.5 ? "good" : "warn"}
-                    value={formatPercent(metrics.cacheHitRate)}
-                    sub={`${totals.cached} / ${totals.tasks} tasks`}
-                />
-                <StatCard
-                    label="Time saved"
-                    icon={Zap}
-                    tone="good"
-                    value={formatMs(totals.estimatedTimeSavedMs)}
-                    sub="Estimated vs. re-execution"
-                />
-                <StatCard
-                    label="Avg run duration"
-                    icon={Clock}
-                    value={formatMs(metrics.averageRunDurationMs)}
-                    sub={`median ${formatMs(metrics.medianRunDurationMs)}`}
-                />
-                <StatCard
-                    label="Recorded runs"
-                    icon={TimerReset}
-                    value={totals.runs}
-                    sub={`${totals.tasks} task executions`}
-                />
-            </div>
+                    label="[01] · CACHE HIT RATE"
+                    variant="hero"
+                    tone={hitTone}
+                    value={`${(hitRate * 100).toFixed(1)}`}
+                    unit="%"
+                    sub={`${totals.cached.toLocaleString()} of ${totals.tasks.toLocaleString()} task executions`}
+                >
+                    <SegmentedBar
+                        value={hitRate}
+                        max={1}
+                        segments={40}
+                        tone={hitTone === "good" ? "good" : hitTone === "warn" ? "warn" : "bad"}
+                        size="hero"
+                        className="mt-4"
+                    />
+                </StatCard>
 
-            <div className="grid gap-4 md:grid-cols-2">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Cache hit rate over time</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <Sparkline points={metrics.hitRateOverTime} stroke="var(--chart-4)" fill="var(--chart-4)" />
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Run duration trend</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <Sparkline points={metrics.durationOverTime} stroke="var(--chart-1)" fill="var(--chart-1)" />
-                    </CardContent>
-                </Card>
-            </div>
+                <div className="flex flex-col">
+                    <StatCard
+                        variant="stat"
+                        label="TIME SAVED"
+                        tone="good"
+                        value={formatMs(totals.estimatedTimeSavedMs)}
+                    />
+                    <StatCard
+                        variant="stat"
+                        label="AVG RUN"
+                        value={formatMs(metrics.averageRunDurationMs)}
+                    />
+                    <StatCard
+                        variant="stat"
+                        label="MEDIAN RUN"
+                        value={formatMs(metrics.medianRunDurationMs)}
+                    />
+                    <StatCard
+                        variant="stat"
+                        label="RECORDED RUNS"
+                        value={totals.runs.toLocaleString()}
+                    />
+                    <StatCard
+                        variant="stat"
+                        label="TASK EXECUTIONS"
+                        value={totals.tasks.toLocaleString()}
+                    />
+                </div>
+            </section>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Most time saved by cache</CardTitle>
-                </CardHeader>
-                <CardContent className="px-0">
-                    {metrics.mostCachedTasks.length === 0 ? (
-                        <div className="px-5 py-6 text-sm text-muted-foreground">No cached tasks yet.</div>
-                    ) : (
+            {/* TRENDS */}
+            <section>
+                <SectionTitle ord="02">TRENDS</SectionTitle>
+                <div className="grid gap-8 md:grid-cols-2">
+                    <div className="border border-border bg-panel p-6">
+                        <div className="nd-label mb-4">CACHE HIT RATE / TIME</div>
+                        <Sparkline points={metrics.hitRateOverTime} height={96} />
+                    </div>
+                    <div className="border border-border bg-panel p-6">
+                        <div className="nd-label mb-4">RUN DURATION / TIME</div>
+                        <Sparkline points={metrics.durationOverTime} height={96} />
+                    </div>
+                </div>
+            </section>
+
+            {/* MOST CACHED */}
+            <section>
+                <SectionTitle ord="03">MOST TIME SAVED · BY TASK</SectionTitle>
+                {metrics.mostCachedTasks.length === 0 ? (
+                    <div className="nd-mono border border-dashed border-border2 px-6 py-8 text-[12px] uppercase tracking-[0.16em] text-faint">
+                        [NO CACHED TASKS YET]
+                    </div>
+                ) : (
+                    <div className="border border-border bg-panel">
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Task</TableHead>
-                                    <TableHead>Runs</TableHead>
-                                    <TableHead>Hit rate</TableHead>
-                                    <TableHead>Avg duration</TableHead>
-                                    <TableHead>Saved</TableHead>
+                                    <TableHead>TASK</TableHead>
+                                    <TableHead>RUNS</TableHead>
+                                    <TableHead>HIT RATE</TableHead>
+                                    <TableHead>AVG DURATION</TableHead>
+                                    <TableHead>SAVED</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>{metrics.mostCachedTasks.map(taskRow)}</TableBody>
                         </Table>
-                    )}
-                </CardContent>
-            </Card>
+                    </div>
+                )}
+            </section>
 
-            <div className="grid gap-4 md:grid-cols-2">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Slowest tasks</CardTitle>
-                    </CardHeader>
-                    <CardContent className="px-0">
-                        {metrics.slowestTasks.length === 0 ? (
-                            <div className="px-5 py-6 text-sm text-muted-foreground">No timing data.</div>
-                        ) : (
+            {/* SLOWEST / INVALIDATED */}
+            <section className="grid gap-8 md:grid-cols-2">
+                <div>
+                    <SectionTitle ord="04">SLOWEST TASKS</SectionTitle>
+                    {metrics.slowestTasks.length === 0 ? (
+                        <div className="nd-mono border border-dashed border-border2 px-6 py-8 text-[12px] uppercase tracking-[0.16em] text-faint">
+                            [NO TIMING DATA]
+                        </div>
+                    ) : (
+                        <div className="border border-border bg-panel">
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>Task</TableHead>
-                                        <TableHead>Avg duration</TableHead>
-                                        <TableHead>Executions</TableHead>
+                                        <TableHead>TASK</TableHead>
+                                        <TableHead>AVG</TableHead>
+                                        <TableHead>EXEC</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {metrics.slowestTasks.map((t) => (
                                         <TableRow key={t.taskId}>
-                                            <TableCell className="font-mono text-xs">{t.taskId}</TableCell>
-                                            <TableCell>{formatMs(t.averageDurationMs)}</TableCell>
-                                            <TableCell>{t.misses}</TableCell>
+                                            <TableCell className="nd-mono text-[12px] text-fg">{t.taskId}</TableCell>
+                                            <TableCell className="nd-mono text-[13px]">{formatMs(t.averageDurationMs)}</TableCell>
+                                            <TableCell className="nd-mono text-[13px]">{t.misses}</TableCell>
                                         </TableRow>
                                     ))}
                                 </TableBody>
                             </Table>
-                        )}
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center gap-2">
-                        <Gauge className="h-4 w-4 text-muted-foreground" />
-                        <CardTitle>Most invalidated</CardTitle>
-                    </CardHeader>
-                    <CardContent className="px-0">
-                        {metrics.mostInvalidatedTasks.length === 0 ? (
-                            <div className="px-5 py-6 text-sm text-muted-foreground">No invalidations tracked yet.</div>
-                        ) : (
+                        </div>
+                    )}
+                </div>
+                <div>
+                    <SectionTitle ord="05">MOST INVALIDATED</SectionTitle>
+                    {metrics.mostInvalidatedTasks.length === 0 ? (
+                        <div className="nd-mono border border-dashed border-border2 px-6 py-8 text-[12px] uppercase tracking-[0.16em] text-faint">
+                            [NO INVALIDATIONS]
+                        </div>
+                    ) : (
+                        <div className="border border-border bg-panel">
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>Task</TableHead>
-                                        <TableHead>Miss rate</TableHead>
-                                        <TableHead>Runs</TableHead>
+                                        <TableHead>TASK</TableHead>
+                                        <TableHead>MISS RATE</TableHead>
+                                        <TableHead>RUNS</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {metrics.mostInvalidatedTasks.map((t) => (
-                                        <TableRow key={t.taskId}>
-                                            <TableCell className="font-mono text-xs">{t.taskId}</TableCell>
-                                            <TableCell className="text-amber-400">
-                                                {formatPercent(t.misses / t.runs)}
-                                            </TableCell>
-                                            <TableCell>{t.runs}</TableCell>
-                                        </TableRow>
-                                    ))}
+                                    {metrics.mostInvalidatedTasks.map((t) => {
+                                        const missRate = t.misses / Math.max(1, t.runs);
+                                        return (
+                                            <TableRow key={t.taskId}>
+                                                <TableCell className="nd-mono text-[12px] text-fg">{t.taskId}</TableCell>
+                                                <TableCell className={cn("nd-mono text-[13px]", missRate > 0.5 ? "text-accent" : "text-warning")}>
+                                                    {formatPercent(missRate)}
+                                                </TableCell>
+                                                <TableCell className="nd-mono text-[13px]">{t.runs}</TableCell>
+                                            </TableRow>
+                                        );
+                                    })}
                                 </TableBody>
                             </Table>
-                        )}
-                    </CardContent>
-                </Card>
-            </div>
+                        </div>
+                    )}
+                </div>
+            </section>
 
+            {/* FLAKY (if present) */}
             {flaky.length > 0 ? (
-                <Card>
-                    <CardHeader className="flex flex-row items-center gap-2">
-                        <AlertTriangle className="h-4 w-4 text-amber-400" />
-                        <CardTitle>Flaky tasks</CardTitle>
-                    </CardHeader>
-                    <CardContent className="px-0">
+                <section>
+                    <div className="mb-6 flex items-baseline gap-4">
+                        <span className="nd-mono text-[11px] tracking-[0.16em] text-faint">06</span>
+                        <h2 className="nd-mono text-[11px] uppercase tracking-[0.16em] text-accent">FLAKY TASKS</h2>
+                        <span aria-hidden className="h-px flex-1 bg-accent/40" />
+                        <span className="nd-mono text-[11px] uppercase tracking-[0.12em] text-accent">[{flaky.length}]</span>
+                    </div>
+                    <div className="border border-accent/60 bg-panel">
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Task</TableHead>
-                                    <TableHead>Runs</TableHead>
-                                    <TableHead>Failures</TableHead>
-                                    <TableHead>Rate</TableHead>
-                                    <TableHead>Last failure</TableHead>
+                                    <TableHead>TASK</TableHead>
+                                    <TableHead>RUNS</TableHead>
+                                    <TableHead>FAILURES</TableHead>
+                                    <TableHead>RATE</TableHead>
+                                    <TableHead>LAST FAILURE</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {flaky.map((f) => (
                                     <TableRow key={f.taskId}>
-                                        <TableCell className="font-mono text-xs">{f.taskId}</TableCell>
-                                        <TableCell>{f.totalRuns}</TableCell>
-                                        <TableCell className="text-red-400">{f.failures}</TableCell>
-                                        <TableCell className="text-red-400">{formatPercent(f.flakinessRate)}</TableCell>
-                                        <TableCell className="text-muted-foreground">
-                                            {formatDate(f.lastFailure)}
-                                        </TableCell>
+                                        <TableCell className="nd-mono text-[12px] text-fg">{f.taskId}</TableCell>
+                                        <TableCell className="nd-mono text-[13px]">{f.totalRuns}</TableCell>
+                                        <TableCell className="nd-mono text-[13px] text-accent">{f.failures}</TableCell>
+                                        <TableCell className="nd-mono text-[13px] text-accent">{formatPercent(f.flakinessRate)}</TableCell>
+                                        <TableCell className="nd-mono text-[12px] text-muted">{formatDate(f.lastFailure)}</TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>
                         </Table>
-                    </CardContent>
-                </Card>
+                    </div>
+                </section>
             ) : null}
         </div>
     );

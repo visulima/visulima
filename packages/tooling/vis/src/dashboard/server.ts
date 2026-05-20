@@ -12,7 +12,7 @@ import { collectCacheEntries } from "../commands/cache/handler";
 import { analyzeFlakiness } from "../report/flakiness";
 import { loadRunSummaries } from "../report/run-report";
 import type { LoadedRunSummary } from "../report/types";
-import { getVisRunsDir } from "../util/vis-paths";
+import { getVisLastSummaryPath, getVisRunsDir } from "../util/vis-paths";
 import { analyzeCacheMiss } from "./cache-diff";
 import { renderDashboardHtml } from "./html";
 import { computeDashboardMetrics } from "./metrics";
@@ -46,12 +46,27 @@ const readRunById = (workspaceRoot: string, id: string): LoadedRunSummary | unde
 
     const path = join(getVisRunsDir(workspaceRoot), `${safe}.json`);
 
-    if (!isAccessibleSync(path)) {
+    if (isAccessibleSync(path)) {
+        try {
+            return readJsonSync(path) as LoadedRunSummary;
+        } catch {
+            return undefined;
+        }
+    }
+
+    // Fallback: `.vis/last-summary.json` is written on every run even
+    // without `--summarize`. If its id matches, surface it so the
+    // /api/runs/:id navigation works for the single-run case too.
+    const lastSummaryPath = getVisLastSummaryPath(workspaceRoot);
+
+    if (!isAccessibleSync(lastSummaryPath)) {
         return undefined;
     }
 
     try {
-        return readJsonSync(path) as LoadedRunSummary;
+        const summary = readJsonSync(lastSummaryPath) as LoadedRunSummary & { id?: string };
+
+        return summary.id === safe ? summary : undefined;
     } catch {
         return undefined;
     }
