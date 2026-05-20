@@ -1,5 +1,5 @@
 name: "AI Moderator"
-on:
+on: # yamllint disable-line rule:truthy
     issues:
         types: ["opened"]
     issue_comment:

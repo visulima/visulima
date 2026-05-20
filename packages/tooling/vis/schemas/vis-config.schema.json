@@ -1057,6 +1057,19 @@
                     "description": "When true, prevents transitive dependencies from using exotic sources (git repositories, direct tarball URLs). Only direct dependencies may use such sources. Equivalent to pnpm's `blockExoticSubdeps`.",
                     "default": false
                 },
+                "exoticSubdepsAllow": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Package names exempted from the `blockExoticSubdeps` check. Bare names and a trailing `*` glob (`@scope/*`) are supported. Use for an internal package legitimately published as a git or tarball dependency.",
+                    "examples": [
+                        [
+                            "@myorg/legacy",
+                            "internal-*"
+                        ]
+                    ]
+                },
                 "depsDev": {
                     "type": "object",
                     "properties": {
@@ -1602,9 +1615,45 @@
                     "type": "string",
                     "enum": [
                         "deps-dev",
+                        "snyk",
                         "socket"
                     ],
-                    "description": "Which provider wins merge conflicts when multiple are enabled (e.g. both Socket.dev and deps.dev return data for the same package). The primary provider's `score` is kept; alerts from secondaries are appended and deduped by `key`. Defaults to whichever provider is enabled first in this order: socket → deps-dev."
+                    "description": "Which provider wins merge conflicts when multiple are enabled (e.g. both Socket.dev and deps.dev return data for the same package). The primary provider's `score` is kept; alerts from secondaries are appended and deduped by `key`. Defaults to whichever provider is enabled first in this order: socket → deps-dev → snyk."
+                },
+                "snyk": {
+                    "type": "object",
+                    "properties": {
+                        "apiToken": {
+                            "type": "string",
+                            "description": "Snyk API token. Set via VIS_SNYK_TOKEN environment variable or here."
+                        },
+                        "apiVersion": {
+                            "type": "string",
+                            "description": "Snyk REST API version date sent as the `version` query param.",
+                            "default": "2024-10-15"
+                        },
+                        "cacheTtlMs": {
+                            "type": "number",
+                            "description": "Cache TTL in milliseconds for Snyk issue lookups.",
+                            "default": "21_600_000 (6 hours)"
+                        },
+                        "enabled": {
+                            "type": "boolean",
+                            "description": "Enable Snyk security scanning on install/update/check/audit commands.",
+                            "default": false
+                        },
+                        "orgId": {
+                            "type": "string",
+                            "description": "Snyk organization id (the REST endpoint is org-scoped). Set via VIS_SNYK_ORG environment variable or here."
+                        },
+                        "timeoutMs": {
+                            "type": "number",
+                            "description": "Request timeout in milliseconds for the Snyk API.",
+                            "default": "15_000 (15 seconds)"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "description": "Snyk data-source configuration. Snyk only contributes vulnerability data (no maintenance / quality / supply-chain / license signal); those axes stay neutral. Requires both an org id and an API token — if either is missing the provider is skipped."
                 },
                 "socket": {
                     "type": "object",
