@@ -384,7 +384,7 @@
         "@solidjs/start": ">=1.1.0",
         "@supabase/storage-js": ">=2.105.0",
         "@tanstack/ai": ">=0.16.0",
-        "@vercel/blob": ">=2.0.0",
+        "@vercel/blob": ">=2.4.0",
         "ai": ">=5.0.0",
         "aws-crt": ">=1.27.3",
         "aws4fetch": ">=1.0.0",

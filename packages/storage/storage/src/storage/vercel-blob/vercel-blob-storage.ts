@@ -34,18 +34,32 @@ import VercelBlobFile from "./vercel-blob-file";
  * - ❌ getUploadUrl: Not implemented (Vercel Blob upload URLs handled internally)
  * - ⚠️ Per-operation `signal`/`timeout` are best-effort: the underlying SDK does not support request cancellation, so an in-flight call may complete server-side even after abort. `retries` is honored.
  */
+
+/**
+ * Auth credentials resolved at construction and forwarded verbatim to every
+ * `@vercel/blob` SDK call. Mirrors the SDK's `BlobCommandOptions` shape so
+ * env-based auto-pickup is never required.
+ */
+type VercelBlobCredentials = { oidcToken: string; storeId: string; token?: never } | { oidcToken?: never; storeId?: never; token: string };
+
 class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
     public static override readonly name: string = "vercel-blob";
 
     public override checksumTypes: string[] = ["md5"];
 
-    public override get raw(): { copy: typeof copy; del: typeof del; list: typeof list; put: typeof put; token: string } {
-        return { copy, del, list, put, token: this.token };
+    public override get raw(): {
+        copy: typeof copy;
+        credentials: VercelBlobCredentials;
+        del: typeof del;
+        list: typeof list;
+        put: typeof put;
+    } {
+        return { copy, credentials: this.credentials, del, list, put };
     }
 
     protected meta: MetaStorage;
 
-    private readonly token: string;
+    private readonly credentials: VercelBlobCredentials;
 
     private readonly multipart: boolean | number;
 
@@ -54,11 +68,7 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
     public constructor(config: VercelBlobStorageOptions) {
         super(config);
 
-        this.token = config.token || process.env.BLOB_READ_WRITE_TOKEN || process.env.VERCEL_BLOB_TOKEN || "";
-
-        if (!this.token) {
-            throw new Error("Vercel Blob token is required. Set BLOB_READ_WRITE_TOKEN or VERCEL_BLOB_TOKEN environment variable, or provide token in config.");
-        }
+        this.credentials = VercelBlobStorage.resolveCredentials(config);
 
         this.multipart = config.multipart ?? false;
         this.access = config.access ?? "public";
@@ -68,6 +78,49 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
         this.meta = metaStorage || new LocalMetaStorage(metaStorageConfig);
 
         this.isReady = true;
+    }
+
+    /**
+     * Resolves auth credentials in the same precedence as `@vercel/blob`:
+     *
+     * 1. Explicit `token` (RW or client token) — always wins.
+     * 2. OIDC pair (`oidcToken` + `storeId`), from options or env.
+     * 3. `BLOB_READ_WRITE_TOKEN` / `VERCEL_BLOB_TOKEN` env.
+     *
+     * Throws if no credentials are found, or if OIDC config is partial (one of
+     * the two values present without the other) so callers fail loudly instead
+     * of silently dropping to anonymous calls that 401 at runtime.
+     */
+    private static resolveCredentials(config: VercelBlobStorageOptions): VercelBlobCredentials {
+        if (config.token) {
+            return { token: config.token };
+        }
+
+        const oidcToken = config.oidcToken ?? process.env.VERCEL_OIDC_TOKEN;
+        const rawStoreId = config.storeId ?? process.env.BLOB_STORE_ID;
+        const storeId = rawStoreId?.startsWith("store_") ? rawStoreId.slice("store_".length) : rawStoreId;
+
+        if (oidcToken && storeId) {
+            return { oidcToken, storeId };
+        }
+
+        if (oidcToken || storeId) {
+            throw new Error(
+                "Vercel Blob OIDC auth requires both `oidcToken` and `storeId` (or `VERCEL_OIDC_TOKEN` and `BLOB_STORE_ID` env vars). " +
+                    `Got: oidcToken=${oidcToken ? "set" : "missing"}, storeId=${storeId ? "set" : "missing"}.`,
+            );
+        }
+
+        const envToken = process.env.BLOB_READ_WRITE_TOKEN || process.env.VERCEL_BLOB_TOKEN;
+
+        if (envToken) {
+            return { token: envToken };
+        }
+
+        throw new Error(
+            "Vercel Blob credentials are required. Provide `token`, an `oidcToken`+`storeId` pair, " +
+                "or set BLOB_READ_WRITE_TOKEN / (VERCEL_OIDC_TOKEN + BLOB_STORE_ID) env vars.",
+        );
     }
 
     public async create(config: FileInit, _options?: OperationOptions): Promise<VercelBlobFile> {
@@ -180,6 +233,7 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
                         put(file.name, blob, {
                             access: this.access,
                             multipart: this.shouldUseMultipart(file),
+                            ...this.credentials,
                         }),
                     );
 
@@ -224,7 +278,7 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
             file.status = "deleted";
 
             try {
-                await this.runOperation(options, () => del(url, { token: this.token }));
+                await this.runOperation(options, () => del(url, { ...this.credentials }));
             } catch (error) {
                 this.logger?.error("Failed to delete blob from Vercel Blob:", error);
 
@@ -325,6 +379,7 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
             const result = await this.runOperation(options, () =>
                 copy(sourceUrl, destination, {
                     access: "public",
+                    ...this.credentials,
                 }),
             );
 
@@ -360,7 +415,7 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
         return this.instrumentOperation(
             "list",
             async () => {
-                const result = await this.runOperation(options, () => list({ limit }));
+                const result = await this.runOperation(options, () => list({ limit, ...this.credentials }));
 
                 return result.blobs.map((blob) => {
                     const file = new VercelBlobFile({
