@@ -63,7 +63,9 @@
     },
     "bin": {
         "v": "./dist/bin.js",
-        "vis": "./dist/bin.js"
+        "vis": "./dist/bin.js",
+        "visx": "./dist/binx.js",
+        "vx": "./dist/binx.js"
     },
     "files": [
         "dist/**",
