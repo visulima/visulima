@@ -95,6 +95,14 @@ const normalizeFramePath = (file: string): string => {
 
 const isUserFrame = (file: string): boolean => !file.includes("node_modules") && !file.startsWith("node:") && !file.startsWith("internal/");
 
+const tryLoadSourceMap = (file: string): ReturnType<typeof loadSourceMap> | undefined => {
+    try {
+        return loadSourceMap(file);
+    } catch {
+        return undefined;
+    }
+};
+
 interface ResolvedFrame {
     column: number | undefined;
     file: string;
@@ -119,13 +127,7 @@ const resolveFrame = (trace: Trace, cwd: string): ResolvedFrame | undefined => {
         return undefined;
     }
 
-    const map = (() => {
-        try {
-            return loadSourceMap(generatedPath);
-        } catch {
-            return undefined;
-        }
-    })();
+    const map = tryLoadSourceMap(generatedPath);
 
     if (map) {
         // V8 stack columns are 1-based; trace-mapping wants 0-based.
