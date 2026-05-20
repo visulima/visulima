@@ -1,3 +1,10 @@
+## @visulima/fs [5.0.0-alpha.25](https://github.com/visulima/visulima/compare/@visulima/fs@5.0.0-alpha.24...@visulima/fs@5.0.0-alpha.25) (2026-05-20)
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.27
+
 ## @visulima/fs [5.0.0-alpha.24](https://github.com/visulima/visulima/compare/@visulima/fs@5.0.0-alpha.23...@visulima/fs@5.0.0-alpha.24) (2026-05-19)
 
 
