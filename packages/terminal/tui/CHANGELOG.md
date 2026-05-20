@@ -1,3 +1,20 @@
+## @visulima/tui [1.0.0-alpha.18](https://github.com/visulima/visulima/compare/@visulima/tui@1.0.0-alpha.17...@visulima/tui@1.0.0-alpha.18) (2026-05-20)
+
+### Bug Fixes
+
+* **tui:** restrict OSC passthrough to OSC 8 hyperlinks ([355f91a](https://github.com/visulima/visulima/commit/355f91aefae0a8e623a6c434b91dddb8d5e3f8d8)), closes [ink#957](https://github.com/visulima/ink/issues/957)
+
+### Continuous Integration
+
+* drop lewagon, fix tui lint, api-platform publint, preview-release JSON ([3801100](https://github.com/visulima/visulima/commit/38011006b2488fd25f186a7638ceda5a6ee65e45))
+* pin macos to 15, fix task-runner indent + backbuffer flake ([61cbf4f](https://github.com/visulima/visulima/commit/61cbf4fb09be40c567a4e0d2d4349ad24ea91afb))
+
+
+### Dependencies
+
+* **@visulima/ansi:** upgraded to 4.0.0-alpha.14
+* **@visulima/error:** upgraded to 6.0.0-alpha.27
+
 ## @visulima/tui [1.0.0-alpha.17](https://github.com/visulima/visulima/compare/@visulima/tui@1.0.0-alpha.16...@visulima/tui@1.0.0-alpha.17) (2026-05-19)
 
 ### Features
