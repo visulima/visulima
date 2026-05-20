@@ -54,7 +54,10 @@
     "sideEffects": false,
     "exports": {
         ".": {
-            "browser": "./dist/index-browser.mjs",
+            "browser": {
+                "types": "./dist/index-server.d.mts",
+                "default": "./dist/index-browser.mjs"
+            },
             "import": {
                 "types": "./dist/index-server.d.mts",
                 "default": "./dist/index-server.mjs"
@@ -65,7 +68,10 @@
             }
         },
         "./next": {
-            "browser": "./dist/framework/next/index-browser.mjs",
+            "browser": {
+                "types": "./dist/framework/next/index-server.d.mts",
+                "default": "./dist/framework/next/index-browser.mjs"
+            },
             "import": {
                 "types": "./dist/framework/next/index-server.d.mts",
                 "default": "./dist/framework/next/index-server.mjs"
@@ -76,7 +82,10 @@
             }
         },
         "./next/pages/swagger": {
-            "browser": "./dist/framework/next/routes/pages/swagger/index.mjs",
+            "browser": {
+                "types": "./dist/framework/next/routes/pages/swagger/index.d.mts",
+                "default": "./dist/framework/next/routes/pages/swagger/index.mjs"
+            },
             "import": {
                 "types": "./dist/framework/next/routes/pages/swagger/index.d.mts",
                 "default": "./dist/framework/next/routes/pages/swagger/index.mjs"
@@ -87,7 +96,10 @@
             }
         },
         "./next/pages/redoc": {
-            "browser": "./dist/framework/next/routes/pages/redoc/index.mjs",
+            "browser": {
+                "types": "./dist/framework/next/routes/pages/redoc/index.d.mts",
+                "default": "./dist/framework/next/routes/pages/redoc/index.mjs"
+            },
             "import": {
                 "types": "./dist/framework/next/routes/pages/redoc/index.d.mts",
                 "default": "./dist/framework/next/routes/pages/redoc/index.mjs"

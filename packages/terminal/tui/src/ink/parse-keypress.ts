@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-misused-spread, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/prefer-nullish-coalescing, e18e/prefer-static-regex, no-bitwise, no-cond-assign, no-control-regex, no-secrets/no-secrets, sonarjs/different-types-comparison, sonarjs/no-control-regex, sonarjs/no-duplicated-branches, sonarjs/no-nested-assignment, unicorn/no-null, unicorn/prefer-code-point */
+/* eslint-disable @typescript-eslint/no-misused-spread, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/prefer-nullish-coalescing, e18e/prefer-static-regex, no-bitwise, no-cond-assign, no-control-regex, sonarjs/different-types-comparison, sonarjs/no-control-regex, sonarjs/no-duplicated-branches, sonarjs/no-nested-assignment, unicorn/no-null, unicorn/prefer-code-point */
 // Copied from https://github.com/enquirer/enquirer/blob/36785f3399a41cd61e9d28d1eb9c2fcd73d69b4c/lib/keypress.js
 import { Buffer } from "node:buffer";
 

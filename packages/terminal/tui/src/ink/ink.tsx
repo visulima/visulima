@@ -5,10 +5,6 @@ import process from "node:process";
 
 import { ALT_SCREEN_OFF, ALT_SCREEN_ON, clearScreenAndHomeCursor, cursorHide, cursorShow, eraseLines } from "@visulima/ansi";
 import { wordWrap } from "@visulima/string";
-// autoBind removed — only methods passed as callbacks need binding,
-// and those are defined as arrow function properties.
-import type { ThrottledFn } from "./utils/throttle";
-import { throttle } from "./utils/throttle";
 import isInCi from "is-in-ci";
 import patchConsole from "patch-console";
 import type { ReactNode } from "react";
@@ -38,6 +34,10 @@ import { measureAndExtractObservers } from "./resize-observer";
 import { calculateScroll } from "./scroll";
 import applyStyles from "./styles";
 import { getWindowSize } from "./utils";
+// autoBind removed — only methods passed as callbacks need binding,
+// and those are defined as arrow function properties.
+import type { ThrottledFunction } from "./utils/throttle";
+import { throttle } from "./utils/throttle";
 import { bsu, esu, shouldSynchronize } from "./write-synchronized";
 
 // Ensure console.Console is available for patch-console (Vitest and some test
@@ -319,7 +319,7 @@ export default class Ink {
 
     private renderedCursorRequested: boolean;
 
-    private readonly throttledLog: LogUpdate | ThrottledFn<(output: string) => void>;
+    private readonly throttledLog: LogUpdate | ThrottledFunction<(output: string) => void>;
 
     private readonly isScreenReaderEnabled: boolean;
 
@@ -372,7 +372,7 @@ export default class Ink {
 
     private unsubscribeResize?: () => void;
 
-    private readonly throttledOnRender?: ThrottledFn<() => void>;
+    private readonly throttledOnRender?: ThrottledFunction<() => void>;
 
     private hasPendingThrottledRender = false;
 

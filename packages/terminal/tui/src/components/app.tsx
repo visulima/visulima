@@ -70,7 +70,6 @@ const App = ({
     writeToStderr,
     writeToStdout,
 }: Props): React.ReactNode => {
-    // eslint-disable-next-line react-x/no-unused-state -- isFocusEnabled is read inside useCallback closures, which the linter doesn't track
     const [isFocusEnabled, setIsFocusEnabled] = useState(true);
     const [activeFocusId, setActiveFocusId] = useState<string | undefined>(undefined);
     // Focusables array is managed internally via setFocusables callback pattern

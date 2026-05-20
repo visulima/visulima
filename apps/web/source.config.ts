@@ -15,6 +15,11 @@ export const docs = defineDocs({
 export default defineConfig({
     mdxOptions: {
         remarkPlugins: [remarkImage],
+        rehypeCodeOptions: {
+            langAlias: {
+                tera: "jinja",
+            },
+        },
     },
     plugins: [lastModified()],
 });

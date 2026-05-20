@@ -355,6 +355,7 @@
         "openapi-types": "catalog:dev",
         "pocketbase": "0.26.9",
         "prettier": "catalog:lint",
+        "publint": "catalog:dev",
         "rimraf": "catalog:node",
         "semantic-release": "catalog:cli",
         "sharp": "catalog:dev",

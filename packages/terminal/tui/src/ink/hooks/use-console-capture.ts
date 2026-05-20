@@ -1,4 +1,4 @@
-/* eslint-disable consistent-return, jsdoc/lines-before-block, no-console, sonarjs/no-alphabetical-sort */
+/* eslint-disable consistent-return, jsdoc/lines-before-block, no-console */
 /**
  * React hook for capturing console output into a buffer.
  *

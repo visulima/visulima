@@ -1,4 +1,4 @@
-/* eslint-disable jsdoc/check-indentation, jsdoc/lines-before-block, jsdoc/match-description */
+/* eslint-disable jsdoc/lines-before-block, jsdoc/match-description */
 /**
  * DevTools — optional development overlay for TUI apps.
  *

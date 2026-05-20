@@ -4,13 +4,25 @@ import { tmpdir } from "node:os";
 import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { CONFIG_FILES, defineConfig, findVisConfigFile, loadVisConfig, SECURITY_DEFAULTS } from "../../src/config/config";
+import { applyDefaults, CONFIG_FILES, defineConfig, findVisConfigFile, loadVisConfig, SECURITY_DEFAULTS } from "../../src/config/config";
 
 describe(defineConfig, () => {
+    it("should return the input config unchanged (typed-identity)", () => {
+        expect.assertions(2);
+
+        const input = { security: { blockExoticSubdeps: false } };
+        const config = defineConfig(input);
+
+        expect(config).toBe(input);
+        expect(config.security?.blockExoticSubdeps).toBe(false);
+    });
+});
+
+describe(applyDefaults, () => {
     it("should apply secure defaults to empty config", () => {
         expect.assertions(7);
 
-        const config = defineConfig({});
+        const config = applyDefaults({});
 
         expect(config.security?.policies?.firstSeen?.minutes).toBeUndefined();
         expect(config.security?.policies?.publisherChange?.mode).toBe("no-downgrade");
@@ -24,7 +36,7 @@ describe(defineConfig, () => {
     it("should preserve user overrides over defaults", () => {
         expect.assertions(3);
 
-        const config = defineConfig({
+        const config = applyDefaults({
             security: {
                 policies: {
                     firstSeen: { minutes: 1440 },
@@ -42,7 +54,7 @@ describe(defineConfig, () => {
     it("should merge user installScripts.allow with defaults", () => {
         expect.assertions(2);
 
-        const config = defineConfig({
+        const config = applyDefaults({
             security: {
                 policies: {
                     installScripts: { allow: { esbuild: true } },
@@ -57,7 +69,7 @@ describe(defineConfig, () => {
     it("should support all config sections", () => {
         expect.assertions(2);
 
-        const config = defineConfig({
+        const config = applyDefaults({
             ai: { priority: { claude: 100 }, provider: "claude" },
             update: { exclude: ["@types/*"], format: "json", install: false, prerelease: true, security: true, target: "patch" },
         });
@@ -69,7 +81,7 @@ describe(defineConfig, () => {
     it("should allow user to explicitly disable a default", () => {
         expect.assertions(2);
 
-        const config = defineConfig({
+        const config = applyDefaults({
             security: {
                 blockExoticSubdeps: false,
                 policies: { publisherChange: { mode: "off" } },

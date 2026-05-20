@@ -1,14 +1,14 @@
 {
-    "name": "lib-fast-5",
-    "version": "1.0.0",
-    "private": true,
-    "scripts": {
-        "build": "echo 'Building lib-fast-5...' && sleep .3 && echo 'lib-fast-5 built!'",
-        "lint": "echo 'Linting lib-fast-5... OK'",
-        "dev": "echo 'lib-fast-5 dev server on port 3005' && while true; do sleep 1; echo '[lib-fast-5] heartbeat'; done",
-        "test": "echo 'Testing lib-fast-5... 3 tests passed'"
-    },
-    "dependencies": {
-        "lib-fast-1": "1.0.0"
-    }
+  "name": "lib-fast-5",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "echo 'Building lib-fast-5...' && sleep .3 && echo 'lib-fast-5 built!' && mkdir -p dist && date > dist/.stamp",
+    "dev": "echo 'lib-fast-5 dev server on port 3005' && while true; do sleep 1; echo '[lib-fast-5] heartbeat'; done",
+    "lint": "echo 'Linting lib-fast-5... OK'",
+    "test": "echo 'Testing lib-fast-5... 3 tests passed'"
+  },
+  "dependencies": {
+    "lib-fast-1": "1.0.0"
+  }
 }

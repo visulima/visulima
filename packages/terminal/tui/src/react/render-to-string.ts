@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment, jsdoc/check-indentation, jsdoc/escape-inline-tags, unicorn/no-null */
+/* eslint-disable @typescript-eslint/ban-ts-comment, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment, jsdoc/escape-inline-tags, unicorn/no-null */
 // @ts-nocheck — reconciler createContainer arity varies between React versions
 import React from "react";
 

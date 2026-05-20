@@ -1,0 +1,33 @@
+{
+    "name": "@visulima/vis-dashboard",
+    "version": "0.0.0",
+    "private": true,
+    "description": "Browser dashboard bundled into @visulima/vis",
+    "type": "module",
+    "scripts": {
+        "build": "vite build",
+        "dev": "vite",
+        "lint:types": "tsc --noEmit"
+    },
+    "dependencies": {
+        "@radix-ui/react-slot": "catalog:frontend",
+        "@tanstack/react-query": "^5.59.0",
+        "class-variance-authority": "catalog:prod",
+        "clsx": "catalog:prod",
+        "lucide-static": "catalog:icons",
+        "react": "catalog:frontend",
+        "react-dom": "catalog:frontend",
+        "tailwind-merge": "catalog:prod",
+        "tailwindcss-animate": "catalog:style"
+    },
+    "devDependencies": {
+        "@tailwindcss/vite": "catalog:build",
+        "@types/react": "catalog:types",
+        "@types/react-dom": "catalog:types",
+        "@vitejs/plugin-react": "catalog:build",
+        "tailwindcss": "catalog:style",
+        "typescript": "catalog:tsc",
+        "vite": "catalog:build",
+        "vite-plugin-singlefile": "^2.0.3"
+    }
+}

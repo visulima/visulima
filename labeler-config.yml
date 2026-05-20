@@ -28,6 +28,9 @@
 "package: crud":
     - changed-files:
           - any-glob-to-any-file: "packages/api/crud/**/*"
+"package: dashboard":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/vis/dashboard/**/*"
 "package: deep-clone":
     - changed-files:
           - any-glob-to-any-file: "packages/data-manipulation/deep-clone/**/*"

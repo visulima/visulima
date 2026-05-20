@@ -1265,8 +1265,8 @@ export interface VisConfig {
          */
         depsDev?: {
             /**
-             * Cache TTL for advisory entries (immutable once published).
-             * @default 604_800_000 (7 days)
+             * Cache TTL for advisory entries (immutable once published). 7 days.
+             * @default 604800000
              */
             advisoryCacheTtlMs?: number;
 
@@ -1277,20 +1277,20 @@ export interface VisConfig {
             enabled?: boolean;
 
             /**
-             * Cache TTL for OpenSSF Scorecard project data (refreshes weekly).
-             * @default 86_400_000 (24 hours)
+             * Cache TTL for OpenSSF Scorecard project data (refreshes weekly). 24 hours.
+             * @default 86400000
              */
             projectCacheTtlMs?: number;
 
             /**
              * Request timeout in milliseconds.
-             * @default 15_000
+             * @default 15000
              */
             timeoutMs?: number;
 
             /**
-             * Cache TTL for npm version metadata (immutable).
-             * @default 604_800_000 (7 days)
+             * Cache TTL for npm version metadata (immutable). 7 days.
+             * @default 604800000
              */
             versionCacheTtlMs?: number;
         };
@@ -1664,8 +1664,8 @@ export interface VisConfig {
             apiVersion?: string;
 
             /**
-             * Cache TTL in milliseconds for Snyk issue lookups.
-             * @default 21_600_000 (6 hours)
+             * Cache TTL in milliseconds for Snyk issue lookups. 6 hours.
+             * @default 21600000
              */
             cacheTtlMs?: number;
 
@@ -1683,8 +1683,8 @@ export interface VisConfig {
             orgId?: string;
 
             /**
-             * Request timeout in milliseconds for the Snyk API.
-             * @default 15_000 (15 seconds)
+             * Request timeout in milliseconds for the Snyk API. 15 seconds.
+             * @default 15000
              */
             timeoutMs?: number;
         };
@@ -1703,8 +1703,8 @@ export interface VisConfig {
             apiToken?: string;
 
             /**
-             * Cache TTL in milliseconds for Socket.dev reports.
-             * @default 3_600_000 (1 hour)
+             * Cache TTL in milliseconds for Socket.dev reports. 1 hour.
+             * @default 3600000
              */
             cacheTtlMs?: number;
 
@@ -1715,8 +1715,8 @@ export interface VisConfig {
             enabled?: boolean;
 
             /**
-             * Request timeout in milliseconds for the Socket.dev API.
-             * @default 15_000 (15 seconds)
+             * Request timeout in milliseconds for the Socket.dev API. 15 seconds.
+             * @default 15000
              */
             timeoutMs?: number;
         };
