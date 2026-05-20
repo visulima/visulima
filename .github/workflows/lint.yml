@@ -252,12 +252,24 @@ jobs:
             - name: "Lint github workflows"
               # raven-actions/actionlint shells out to `npm install @actions/tool-cache`
               # in the repo root, which trips on our pnpm workspace catalog: deps.
-              # Download the actionlint binary directly to sidestep npm entirely.
+              # Download the actionlint release tarball directly and verify it
+              # against the published checksum before executing.
               shell: "bash"
               run: |
                   set -euo pipefail
-                  bash <(curl --silent --show-error --location \
-                      https://raw.githubusercontent.com/rhysd/actionlint/v1.7.12/scripts/download-actionlint.bash) 1.7.12
+                  version="1.7.12"
+                  base="https://github.com/rhysd/actionlint/releases/download/v${version}"
+                  tarball="actionlint_${version}_linux_amd64.tar.gz"
+                  checksums="actionlint_${version}_checksums.txt"
+
+                  curl --fail --silent --show-error --location --output "$tarball" "${base}/${tarball}"
+                  curl --fail --silent --show-error --location --output "$checksums" "${base}/${checksums}"
+
+                  grep " ${tarball}\$" "$checksums" | sha256sum --check --status
+
+                  tar -xzf "$tarball" actionlint
+                  rm -f "$tarball" "$checksums"
+
                   ./actionlint -color -shellcheck=
 
     rust-fmt:

@@ -16,6 +16,7 @@ concurrency:
 
 permissions:
     contents: "read"
+    checks: "read" # to poll Check Native Build via gh api
 
 env:
     NX_BRANCH: "${{ github.event.number || github.ref_name }}"
