@@ -1,3 +1,18 @@
+## @visulima/ansi [4.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/ansi@4.0.0-alpha.13...@visulima/ansi@4.0.0-alpha.14) (2026-05-20)
+
+### Bug Fixes
+
+* **ansi:** sanitize title in every OSC-write helper ([75c579e](https://github.com/visulima/visulima/commit/75c579e9b009d25c4d90f959d06f0bd524c1d07a))
+
+### Miscellaneous Chores
+
+* **ansi:** apply prettier and eslint quote-style auto-fix ([b564048](https://github.com/visulima/visulima/commit/b564048f5fe7c116633358874ca3b5a5a20806a3))
+* **ansi:** housekeeping cleanup ([da5f5d1](https://github.com/visulima/visulima/commit/da5f5d124563ba8809a374f0f6eb9dcb022f330c))
+* **ansi:** upgrade packem to 2.0.0-alpha.76 ([f970913](https://github.com/visulima/visulima/commit/f970913dadd41f5d89ecbc52b481cb5099502c3d))
+* re-sort workspace package.json files via vis sort-package-json ([f625696](https://github.com/visulima/visulima/commit/f625696cfac974325774b3243e1a83c3d23acbd7))
+* simplify pnpm-workspace packages list ([7cab221](https://github.com/visulima/visulima/commit/7cab221163632d9b7aa044a6f88c49083103a869))
+* **terminal:** apply prettier and eslint formatting sweep ([15fd89c](https://github.com/visulima/visulima/commit/15fd89c677eea60866e08e4fd5f5a6bc8f3bd2e5))
+
 ## @visulima/ansi [4.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/ansi@4.0.0-alpha.12...@visulima/ansi@4.0.0-alpha.13) (2026-04-22)
 
 ### Bug Fixes
