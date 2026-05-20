@@ -1,9 +1,9 @@
 import { Window } from "happy-dom";
 import { describe, expect, it } from "vitest";
 
-import { emitAuditHtml } from "../../src/report/audit-html";
-import type { SecurityVulnerability } from "../../src/security/advisories";
-import type { PolicyDecision } from "../../src/security/policies";
+import { emitAuditHtml } from "../../../src/report/audit/html";
+import type { SecurityVulnerability } from "../../../src/security/advisories";
+import type { PolicyDecision } from "../../../src/security/policies";
 
 const vuln = (overrides: Partial<SecurityVulnerability> = {}): SecurityVulnerability => {
     return {

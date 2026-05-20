@@ -4,7 +4,7 @@
     "compilerOptions": {
         "jsx": "react-jsx",
         "moduleResolution": "bundler",
-        "types": ["node"]
+        "types": ["node", "@visulima/packem/files"]
     },
     "include": ["src/**/*", "*.d.ts"],
     "exclude": ["node_modules"]

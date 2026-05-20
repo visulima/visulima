@@ -9,12 +9,13 @@ import isInCi from "is-in-ci";
 
 import { whichBin } from "#native";
 
+import { explainFindings, explainKey, selectTargets } from "../../ai/audit-explain";
 import { isAdvisoryExcluded, isPackageExcluded, readNativeAuditExclusions, syncAcceptedRisksToNativeConfig } from "../../config/audit-config";
 import type { VisConfig } from "../../config/workspace";
 import { buildProjectGraph, discoverWorkspace } from "../../config/workspace";
 import { pail } from "../../io/logger";
 import { detectPm, runAdd } from "../../pm/pm-runner";
-import { emitAuditHtml } from "../../report/audit-html";
+import { emitAuditHtml } from "../../report/audit/html";
 import { emitCsaf } from "../../report/csaf";
 import { emitCycloneDxVex } from "../../report/cyclonedx-vex";
 import { emitSarif } from "../../report/sarif";
@@ -33,7 +34,7 @@ import { evaluatePolicies, getRegisteredPolicyNames, parsePoliciesFlag } from ".
 import { computeReachableVulnerablePackages } from "../../security/reachability";
 import { buildEnabledProviders, fetchAllReports } from "../../security/registry";
 import type { SeverityFilter } from "../../security/severity";
-import { severityPassesFilter } from "../../security/severity";
+import { compareFindingsForDisplay, severityPassesFilter } from "../../security/severity";
 import type { AcceptedRisk, PackageReportData } from "../../security/socket-security";
 import { DEFAULT_LOW_SCORE_THRESHOLD, findAcceptedRisk, getFullPackageName, scoreLabel } from "../../security/socket-security";
 import { applyOverridePlan, buildOverridePlanFromFindings, planOverrideWrite } from "../../security/transitive-fix";
@@ -292,6 +293,26 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
     const usageConfig = policies?.vulnerability?.usage;
     const usageEnabled = options.noUsage ? false : options.usage === undefined ? Boolean(usageConfig?.enabled) : Boolean(options.usage);
     const quietHeader = isJson || isSarif || isCsaf || isCycloneDxVex;
+
+    // `--explain` opts in. command-line-args yields `null` for a bare flag
+    // and omits the key entirely when absent, so `!== undefined` is the
+    // presence test (same contract the severity/db/ecosystem opts rely on).
+    const explainRaw = options.explain as boolean | null | string | undefined;
+    const wantsExplain = explainRaw !== undefined;
+    // Explanations only surface in the human / JSON / HTML paths — the
+    // machine formats (SARIF/CSAF/CycloneDX-VEX) have no field for them.
+    const explainSupported = wantsExplain && !isSarif && !isCsaf && !isCycloneDxVex;
+
+    if (wantsExplain && isOffline) {
+        pail.error("`--explain` needs network access and cannot run in offline mode (--offline or security.audit.offlineByDefault).");
+        process.exitCode = 1;
+
+        return;
+    }
+
+    if (wantsExplain && !explainSupported) {
+        pail.warn(`\`--explain\` has no effect with --format=${format}; explanations are only rendered in table, json, and HTML output.`);
+    }
 
     // Read native PM audit exclusions
     const pm = detectPm(workspaceRoot);
@@ -819,6 +840,43 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
         }
     }
 
+    // AI explanations are fetched here — after the --fix early-returns — so a
+    // run that exits before rendering never spends an AI call. The map is
+    // keyed by `explainKey` and consumed by the table / JSON / HTML paths.
+    const explanations = new Map<string, string>();
+
+    if (explainSupported) {
+        // Sort into the same severity order every surface renders, so a
+        // numeric `--explain <n>` selects the finding the user sees at that
+        // position rather than an arbitrary scan-order one.
+        const explainTargets = selectTargets(
+            findingsForReport()
+                .filter((finding) => !finding.acknowledged)
+                .map((finding) => {
+                    return {
+                        packageName: finding.packageName,
+                        packageVersion: finding.packageVersion,
+                        vulnerability: finding.vulnerability,
+                    };
+                })
+                .sort(compareFindingsForDisplay),
+            explainRaw,
+        );
+
+        const fetched = await explainFindings(explainTargets, visConfig?.ai, {
+            info: (message: string): void => {
+                pail.info(message);
+            },
+            warn: (message: string): void => {
+                pail.warn(message);
+            },
+        });
+
+        for (const [key, value] of fetched) {
+            explanations.set(key, value);
+        }
+    }
+
     // 5a. SARIF output (CI code-scanning uploads)
     if (isSarif) {
         const sarif = emitSarif({
@@ -874,7 +932,13 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
     // 5d. HTML report — writes to disk, optionally also continues the table flow below.
     if (reportPath) {
         const html = emitAuditHtml({
-            findings: findingsForReport(),
+            findings: findingsForReport().map((finding) => {
+                const explanation = explanations.get(
+                    explainKey({ packageName: finding.packageName, packageVersion: finding.packageVersion, vulnerability: finding.vulnerability }),
+                );
+
+                return explanation ? { ...finding, explanation } : finding;
+            }),
             packagesScanned: installed.length,
             policyDecisions,
             tool: { name: "vis-audit", version: "alpha" },
@@ -920,7 +984,11 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
                     socketAlerts: e.socketReport?.alerts ?? [],
                     socketScore: e.socketReport?.score.overall ?? null,
                     version: e.version,
-                    vulnerabilities: e.vulnerabilities,
+                    vulnerabilities: e.vulnerabilities.map((vuln) => {
+                        const explanation = explanations.get(explainKey({ packageName: e.name, packageVersion: e.version, vulnerability: vuln }));
+
+                        return explanation ? { ...vuln, explanation } : vuln;
+                    }),
                 };
             }),
             summary: {
@@ -1004,6 +1072,14 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
 
             if (showFixes && (vuln.fixedVersions ?? []).length > 0) {
                 pail.notice(`    Fix: update to ${vuln.fixedVersions.at(-1)}`);
+            }
+
+            const explanation = explanations.get(explainKey({ packageName: entry.name, packageVersion: entry.version, vulnerability: vuln }));
+
+            if (explanation) {
+                for (const line of explanation.split("\n")) {
+                    pail.info(`    ${line}`);
+                }
             }
         }
     }

@@ -1,0 +1,804 @@
+@import "tailwindcss" source("../../../");
+
+@source "../../../src/report/audit/**/*";
+
+@plugin "@tailwindcss/forms";
+
+/*
+ * Nothing-inspired design language. Monochrome canvas, typographically driven,
+ * red is the only interrupt. Tokens are plain custom properties (not @theme) so
+ * the report switches between OS preference and a persisted manual toggle:
+ * light is the :root default (warm off-white "printed technical manual"),
+ * `prefers-color-scheme: dark` flips to a soft instrument-panel dark, and an
+ * explicit html[data-theme] wins over both. Accent red, status colors,
+ * labels, fonts and spacing are identical across modes.
+ *
+ * Optimization: layout/typography utilities (Tailwind classes) live directly
+ * on the HTML in `audit/html.ts`. This file holds only:
+ *   1. Design tokens + theming (the :root / [data-theme] blocks above).
+ *   2. Properties that read CSS variables (font-family / color / border /
+ *      box-shadow with var(...)), which Tailwind cannot express against our
+ *      token palette without verbose `[color:var(--…)]` arbitrary values.
+ *   3. Pseudo-states (:hover, :focus-within), pseudo-elements (::before),
+ *      dynamic data-attribute selectors, sibling combinators, animations.
+ *   4. `.copyable` — `html.test.ts` asserts the literal `class="copyable"`,
+ *      so utilities for this one component must stay in CSS, not HTML.
+ */
+@layer base {
+    :root {
+        --bg: #f5f5f5;
+        --panel: #ffffff;
+        --panel2: #f0f0f0;
+        --fg: #000000;
+        /* --muted/--faint pass WCAG AA on --bg: #555 = 6.8:1, #707070 = 4.59:1. */
+        --muted: #555555;
+        --faint: #707070;
+        --border: #e0e0e0;
+        --border2: #bdbdbd;
+        --row-hover: #f0f0f0;
+        --accent: #d71921;
+        --accent-soft: rgba(215, 25, 33, 0.05);
+        --link: #0050c0;
+        --critical: #d71921;
+        --high: #8a5a00;
+        --medium: #555555;
+        --low: #707070;
+        --unknown: #707070;
+        --major: #d71921;
+        --minor: #1f7a3d;
+        --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Mono", "Roboto Mono", Menlo, Consolas, monospace;
+        --sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root {
+            /* Soft dark, not OLED black — the instrument-panel feel without the
+               crushed contrast of pure #000. Text contrast stays AA on #141414:
+               #ffffff = 17.4:1, #b8b8b8 = 9.0:1, #8a8a8a = 5.1:1. */
+            --bg: #141414;
+            --panel: #1c1c1c;
+            --panel2: #242424;
+            --fg: #ffffff;
+            --muted: #b8b8b8;
+            --faint: #8a8a8a;
+            --border: #2e2e2e;
+            --border2: #3e3e3e;
+            --row-hover: #1f1f1f;
+            --accent: #ff4d54;
+            --accent-soft: rgba(255, 77, 84, 0.08);
+            --link: #7eb0f9;
+            --critical: #ff4d54;
+            --high: #e0b860;
+            --medium: #b8b8b8;
+            --low: #8a8a8a;
+            --unknown: #8a8a8a;
+            --major: #ff4d54;
+            --minor: #6dbf80;
+        }
+    }
+
+    html[data-theme="light"] {
+        --bg: #f5f5f5;
+        --panel: #ffffff;
+        --panel2: #f0f0f0;
+        --fg: #000000;
+        --muted: #555555;
+        --faint: #707070;
+        --border: #e0e0e0;
+        --border2: #bdbdbd;
+        --row-hover: #f0f0f0;
+        --accent: #d71921;
+        --accent-soft: rgba(215, 25, 33, 0.05);
+        --link: #0050c0;
+        --critical: #d71921;
+        --high: #8a5a00;
+        --medium: #555555;
+        --low: #707070;
+        --unknown: #707070;
+        --major: #d71921;
+        --minor: #1f7a3d;
+    }
+
+    html[data-theme="dark"] {
+        --bg: #141414;
+        --panel: #1c1c1c;
+        --panel2: #242424;
+        --fg: #ffffff;
+        --muted: #b8b8b8;
+        --faint: #8a8a8a;
+        --border: #2e2e2e;
+        --border2: #3e3e3e;
+        --row-hover: #1f1f1f;
+        --accent: #ff4d54;
+        --accent-soft: rgba(255, 77, 84, 0.08);
+        --link: #7eb0f9;
+        --critical: #ff4d54;
+        --high: #e0b860;
+        --medium: #b8b8b8;
+        --low: #8a8a8a;
+        --unknown: #8a8a8a;
+        --major: #ff4d54;
+        --minor: #6dbf80;
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    html {
+        -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+        font-family: var(--sans);
+        /* Dot-matrix motif: a subtle uniform grid, the Nothing signature.
+           Pure CSS, no assets, no network. */
+        background-color: var(--bg);
+        background-image: radial-gradient(circle, var(--border) 0.5px, transparent 0.5px);
+        background-size: 14px 14px;
+        color: var(--fg);
+        margin: 0;
+        padding: 24px;
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+        font-feature-settings: "ss01";
+    }
+
+    a {
+        color: var(--link);
+        text-decoration: none;
+    }
+
+    code {
+        font-family: var(--mono);
+        font-size: 12px;
+    }
+
+    /* Section headings are instrument-panel labels: mono, ALL CAPS, wide
+       tracking, pushed down the hierarchy by color, not size. */
+    h2 {
+        font-family: var(--mono);
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin: 48px 0 14px;
+    }
+}
+
+/*
+ * Component classes. Defined in @layer components (always emitted, never
+ * tree-shaken) because the HTML generator interpolates dynamic class names
+ * (badge-${severity}, marker-${kind}) that Tailwind's source scanner cannot
+ * see. Tests assert on these exact class names, so they must be stable.
+ */
+@layer components {
+    .masthead {
+        border-bottom: 1px solid var(--border);
+    }
+
+    /* Primary layer: the wordmark. Sans, tight tracking, the one place
+       weight does the work. */
+    .brand {
+        font-family: var(--sans);
+        font-size: clamp(30px, 5vw, 52px);
+        font-weight: 600;
+        color: var(--fg);
+    }
+
+    .brand .slash {
+        color: var(--accent);
+    }
+
+    .brand .sub {
+        font-family: var(--mono);
+        letter-spacing: 0.22em;
+        color: var(--faint);
+    }
+
+    /* Chip + ghost button — controls look like controls; no fill, text
+       brightens on hover. Both share an explicit 28px box (`h-7` inlined
+       on the element) so a text label and an icon button read as the same
+       control size. */
+    .chip {
+        font-family: var(--mono);
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        border: 1px solid var(--border2);
+    }
+
+    .tbtn {
+        font-family: var(--mono);
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        border: 1px solid var(--border2);
+        transition:
+            border-color 0.2s cubic-bezier(0.25, 0.1, 0.25, 1),
+            color 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+    }
+
+    .tbtn:hover {
+        color: var(--fg);
+        border-color: var(--fg);
+    }
+
+    /* Theme toggle: pictorial moon/sun. CSS swaps which icon is visible based
+       on the active theme — the icon shown is the mode the click will switch
+       TO (moon in light → switch to dark, sun in dark → switch to light). */
+    .tbtn-theme {
+        min-width: 28px;
+    }
+
+    .tbtn-theme .ticon {
+        line-height: 0;
+    }
+
+    .tbtn-theme .ticon-sun {
+        display: none;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        .tbtn-theme .ticon-moon {
+            display: none;
+        }
+
+        .tbtn-theme .ticon-sun {
+            display: inline-flex;
+        }
+    }
+
+    html[data-theme="light"] .tbtn-theme .ticon-moon {
+        display: inline-flex;
+    }
+
+    html[data-theme="light"] .tbtn-theme .ticon-sun {
+        display: none;
+    }
+
+    html[data-theme="dark"] .tbtn-theme .ticon-moon {
+        display: none;
+    }
+
+    html[data-theme="dark"] .tbtn-theme .ticon-sun {
+        display: inline-flex;
+    }
+
+    /* Primary layer (findings state): the verdict. One absurdly large count,
+       severity-colored — the report's hero, mirroring the clean state's word.
+       The size jump from here to the instrument strip below IS the hierarchy. */
+    .verdict {
+        padding: 56px 0 36px;
+    }
+
+    .verdict .vnum {
+        font-family: var(--mono);
+        font-size: clamp(64px, 14vw, 148px);
+        line-height: 0.85;
+        letter-spacing: -0.04em;
+        color: var(--fg);
+        font-variant-numeric: tabular-nums;
+    }
+
+    .verdict .vsub {
+        font-family: var(--mono);
+        letter-spacing: 0.16em;
+        color: var(--faint);
+    }
+
+    /* Status color lands on the number itself (the value), never the label —
+       red stays the lone interrupt and only when something is critical. */
+    .verdict-crit .vnum {
+        color: var(--accent);
+    }
+
+    .verdict-high .vnum {
+        color: var(--high);
+    }
+
+    /* Instrument strip: metrics read like a hardware panel. Separated by
+       spacing and thin rules, never card fills. */
+    .debugbar {
+        border-bottom: 1px solid var(--border);
+    }
+
+    .dseg + .dseg {
+        padding-left: 1.75rem;
+        border-left: 1px solid var(--border);
+    }
+
+    .dseg .dk {
+        font-family: var(--mono);
+        letter-spacing: 0.13em;
+        color: var(--faint);
+    }
+
+    /* Data is the visual: tabular mono, the brightest ink on the strip. */
+    .dseg .dv {
+        font-family: var(--mono);
+        font-weight: 400;
+        color: var(--fg);
+        font-variant-numeric: tabular-nums;
+        letter-spacing: -0.01em;
+    }
+
+    .dseg .dvsep {
+        color: var(--faint);
+    }
+
+    .dseg .dot {
+        background: var(--unknown);
+    }
+
+    /* Severity is encoded on the count value itself — the lone color cue,
+       no separate marker. */
+    .dseg-critical .dv {
+        color: var(--critical);
+    }
+
+    .dseg-high .dv {
+        color: var(--high);
+    }
+
+    .dseg-moderate .dv {
+        color: var(--medium);
+    }
+
+    .dseg-low .dv {
+        color: var(--low);
+    }
+
+    .dseg-ok .dot {
+        background: var(--minor);
+    }
+
+    .dseg-ok .dv {
+        color: var(--minor);
+    }
+
+    /* Inputs: underline, not box. Focus brightens the rule — no glow ring. */
+    .field {
+        border-bottom: 1px solid var(--border2);
+        background: transparent;
+        transition: border-color 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+    }
+
+    .field:focus-within {
+        border-bottom-color: var(--fg);
+    }
+
+    .field .prompt {
+        font-family: var(--mono);
+        letter-spacing: 0.12em;
+        color: var(--faint);
+    }
+
+    .field input,
+    .field select {
+        font-family: var(--mono);
+        color: var(--fg);
+    }
+
+    .field.sel {
+        margin-left: 32px;
+    }
+
+    .field select {
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-size: 11px;
+    }
+
+    .field select option {
+        background: var(--panel);
+        color: var(--fg);
+        text-transform: none;
+        letter-spacing: 0;
+    }
+
+    .field input::placeholder {
+        color: var(--faint);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-size: 11px;
+    }
+
+    /* Dense findings table. Header is a label row over a visible rule; the
+       severity rail is a flat inset indicator so rows stay <tr> and the
+       table-walking tests keep working. No zebra, no cell fills. */
+    #findings {
+        border-collapse: collapse;
+    }
+
+    #findings thead th {
+        font-family: var(--mono);
+        letter-spacing: 0.11em;
+        color: var(--faint);
+        background: var(--bg);
+        border-bottom: 1px solid var(--border2);
+    }
+
+    #findings td {
+        border-bottom: 1px solid var(--border);
+    }
+
+    #findings tbody tr:last-child td {
+        border-bottom: 1px solid var(--border);
+    }
+
+    .finding-row:hover td {
+        background: var(--row-hover);
+    }
+
+    .sev-cell {
+        box-shadow: inset 2px 0 0 var(--border2);
+    }
+
+    tr[data-severity="CRITICAL"] .sev-cell {
+        box-shadow: inset 2px 0 0 var(--critical);
+    }
+
+    tr[data-severity="HIGH"] .sev-cell {
+        box-shadow: inset 2px 0 0 var(--high);
+    }
+
+    tr[data-severity="MODERATE"] .sev-cell {
+        box-shadow: inset 2px 0 0 var(--medium);
+    }
+
+    tr[data-severity="LOW"] .sev-cell {
+        box-shadow: inset 2px 0 0 var(--low);
+    }
+
+    tr[data-severity="UNKNOWN"] .sev-cell {
+        box-shadow: inset 2px 0 0 var(--unknown);
+    }
+
+    .ack-row td {
+        opacity: 0.4;
+    }
+
+    .ack-row .summary-cell,
+    .ack-row a {
+        color: var(--muted);
+    }
+
+    code.pkg {
+        color: var(--fg);
+    }
+
+    code.ver,
+    code.fix {
+        color: var(--muted);
+    }
+
+    code.fix {
+        color: var(--minor);
+    }
+
+    /* Copyable command: a technical chip, no fill until you reach for it.
+       The class attribute MUST stay `class="copyable"` exactly (html.test
+       asserts the literal substring), so utilities live here, not on the
+       element. */
+    code.copyable {
+        @apply inline-block cursor-copy rounded-[3px] px-2 py-1 text-[12px] whitespace-nowrap;
+        color: var(--fg);
+        border: 1px solid var(--border2);
+        background: transparent;
+        transition:
+            border-color 0.2s cubic-bezier(0.25, 0.1, 0.25, 1),
+            color 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+    }
+
+    code.copyable:hover {
+        border-color: var(--fg);
+    }
+
+    code.copyable.copied {
+        color: var(--minor);
+        border-color: var(--minor);
+    }
+
+    .adv-cell a {
+        font-family: var(--mono);
+        color: var(--link);
+        border-bottom: 1px solid transparent;
+        transition: border-color 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+    }
+
+    .adv-cell a:hover {
+        border-bottom-color: var(--link);
+    }
+
+    .summary-cell {
+        font-family: var(--sans);
+        color: var(--muted);
+        line-height: 1.5;
+    }
+
+    .muted {
+        font-family: var(--mono);
+        letter-spacing: 0.06em;
+        color: var(--faint);
+    }
+
+    .ack {
+        font-family: var(--mono);
+        letter-spacing: 0.12em;
+        color: var(--faint);
+        border: 1px solid var(--border2);
+    }
+
+    /* Severity badge: outline only, dot + label, color on the value. */
+    .badge {
+        font-family: var(--mono);
+        letter-spacing: 0.1em;
+        border: 1px solid currentColor;
+    }
+
+    .badge::before {
+        content: "";
+        @apply size-[5px];
+        background: currentColor;
+    }
+
+    .badge-critical {
+        color: var(--critical);
+    }
+
+    .badge-high {
+        color: var(--high);
+    }
+
+    .badge-moderate {
+        color: var(--medium);
+    }
+
+    .badge-low {
+        color: var(--low);
+    }
+
+    .badge-unknown {
+        color: var(--unknown);
+    }
+
+    /* Upgrade indicator: a short colored word, not an unlabeled shape, so the
+       risk reads without a legend. Class names are asserted by tests. */
+    .marker {
+        font-family: var(--mono);
+        letter-spacing: 0.09em;
+    }
+
+    .marker-major {
+        color: var(--major);
+    }
+
+    .marker-minor-patch {
+        color: var(--minor);
+    }
+
+    .marker-unknown {
+        color: var(--unknown);
+    }
+
+    .empty {
+        font-family: var(--mono);
+        letter-spacing: 0.1em;
+        color: var(--faint);
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+    }
+
+    /* Clean state: the hero. One enormous number-word, vast breathing room,
+       a quiet secondary line. This is the report's primary layer. */
+    .clean {
+        padding-top: 96px;
+        padding-bottom: 96px;
+    }
+
+    .clean .big {
+        font-family: var(--mono);
+        font-size: clamp(56px, 12vw, 128px);
+        letter-spacing: -0.03em;
+        line-height: 1;
+        color: var(--fg);
+    }
+
+    .clean .sub {
+        font-family: var(--mono);
+        letter-spacing: 0.16em;
+        color: var(--faint);
+    }
+
+    #policies {
+        border-collapse: collapse;
+    }
+
+    #policies th {
+        font-family: var(--mono);
+        letter-spacing: 0.12em;
+        color: var(--faint);
+        background: var(--bg);
+        border-bottom: 1px solid var(--border2);
+    }
+
+    #policies td {
+        border-bottom: 1px solid var(--border);
+    }
+
+    #policies tr:last-child td {
+        border-bottom: 1px solid var(--border);
+    }
+
+    #policies code {
+        letter-spacing: 0.04em;
+        color: var(--muted);
+    }
+
+    .policy-badge {
+        font-family: var(--mono);
+        letter-spacing: 0.1em;
+        border: 1px solid currentColor;
+    }
+
+    .policy-badge::before {
+        content: "";
+        @apply size-[5px];
+        background: currentColor;
+    }
+
+    .policy-block {
+        color: var(--accent);
+    }
+
+    .policy-warn {
+        color: var(--high);
+    }
+
+    .policy-info {
+        color: var(--muted);
+    }
+
+    /* Hint + kbd: tertiary text, monospaced. */
+    .hint {
+        font-family: var(--mono);
+        letter-spacing: 0.1em;
+        color: var(--faint);
+    }
+
+    .kbd {
+        font-family: var(--mono);
+        letter-spacing: 0.06em;
+        color: var(--muted);
+        background: var(--panel2);
+        border: 1px solid var(--border2);
+    }
+
+    /* AI intel reads as an annotated continuation of the finding above — no
+       tinted band, no card. Identity comes from the continuous left red rail
+       (extending from the finding's severity rail) and a dotted top border in
+       the accent color, which doubles as the section break AND a visual cue
+       that this content is machine-generated (dot-matrix motif). */
+    .explain-row td {
+        border-top: 1px dotted var(--accent);
+        border-bottom: 1px solid var(--border);
+        box-shadow: inset 2px 0 0 var(--accent);
+        background: transparent;
+    }
+
+    /* Drop the solid bottom on the finding above so the only seam between it
+       and its own AI-intel inset is the inset's own dotted top border. */
+    .finding-row:has(+ .explain-row) td {
+        border-bottom: none;
+    }
+
+    .explain-row details {
+        background: transparent;
+    }
+
+    .explain-row summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .intel-tag {
+        font-family: var(--mono);
+        letter-spacing: 0.16em;
+        color: var(--accent);
+    }
+
+    .intel-hint {
+        font-family: var(--mono);
+        letter-spacing: 0.1em;
+        color: var(--muted);
+    }
+
+    .explain-row details[open] summary .intel-hint::after {
+        content: " [-]";
+    }
+
+    .explain-row details:not([open]) summary .intel-hint::after {
+        content: " [+]";
+    }
+
+    .explain-body {
+        animation: rise 0.2s cubic-bezier(0.25, 0.1, 0.25, 1) both;
+    }
+
+    .intel-key {
+        font-family: var(--mono);
+        letter-spacing: 0.12em;
+        color: var(--accent);
+    }
+
+    .intel-val {
+        font-family: var(--sans);
+        color: var(--fg);
+        line-height: 1.55;
+    }
+
+    /* Unstructured fallback prose collapses to a single column and softens. */
+    .intel-prose {
+        grid-template-columns: 1fr;
+        color: var(--muted);
+    }
+
+    .intel-prose .intel-val {
+        color: var(--muted);
+    }
+
+    /* Tertiary layer: system signature, pushed to the bottom edge. Run meta
+       reads left; the builder attribution + wordmark sit right. */
+    .sig {
+        font-family: var(--mono);
+        letter-spacing: 0.1em;
+        color: var(--faint);
+        border-top: 1px solid var(--border);
+    }
+
+    .sig b {
+        color: var(--muted);
+        font-weight: 500;
+    }
+
+    .sig-by {
+        color: var(--muted);
+    }
+
+    .sig-by-link {
+        transition: opacity 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+    }
+
+    .sig-by-link:hover {
+        opacity: 0.65;
+    }
+
+    /* Inlined wordmark: glyph paths take --fg (pure #000 light / #fff dark),
+       while the two diagonal accent strokes keep the brand lime via their
+       own fill — so this rule must not force-recolor the whole SVG. */
+    .anolilab-logo {
+        height: 13px;
+        fill: var(--fg);
+    }
+}
+
+@layer components {
+    @keyframes rise {
+        from {
+            opacity: 0;
+            transform: translateY(4px);
+        }
+
+        to {
+            opacity: 1;
+            transform: none;
+        }
+    }
+
+    /* Cascade order alone (this @media rule sits after the `.explain-body`
+       animation declaration) is enough — no `!important` needed. */
+    @media (prefers-reduced-motion: reduce) {
+        .explain-body {
+            animation: none;
+        }
+    }
+}
