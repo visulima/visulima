@@ -44,7 +44,7 @@ describe("dashboard server", () => {
         const response = await fetch(`${server.url}/`);
 
         expect(response.headers.get("content-type")).toContain("text/html");
-        expect(await response.text()).toContain("vis dashboard");
+        expect(await response.text()).toContain("vis · dashboard");
     });
 
     it("returns an empty runs list when no runs are recorded", async () => {

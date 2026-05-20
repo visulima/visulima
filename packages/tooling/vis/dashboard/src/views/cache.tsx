@@ -22,6 +22,7 @@ export const CacheView = () => {
     }
 
     const cache = cacheQuery.data;
+    const oldest = cache.entries.at(-1);
 
     if (!cache.exists) {
         return (
@@ -57,7 +58,7 @@ export const CacheView = () => {
                     <StatCard
                         variant="stat"
                         label="OLDEST"
-                        value={cache.entries.at(-1) ? formatDate(cache.entries.at(-1)!.mtimeIso) : "—"}
+                        value={oldest ? formatDate(oldest.mtimeIso) : "—"}
                     />
                     {cache.entries.length > 0 ? (
                         <StatCard

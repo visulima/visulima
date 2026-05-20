@@ -9,7 +9,7 @@ interface SegmentedBarProps {
     className?: string;
 }
 
-const toneToneClass: Record<NonNullable<SegmentedBarProps["tone"]>, string> = {
+const toneClass: Record<NonNullable<SegmentedBarProps["tone"]>, string> = {
     neutral: "bg-fg",
     good: "bg-success",
     warn: "bg-warning",
@@ -50,7 +50,7 @@ export const SegmentedBar = ({
                     key={i}
                     className={cn(
                         "block flex-1",
-                        i < filled ? toneToneClass[tone] : "bg-border2 opacity-40",
+                        i < filled ? toneClass[tone] : "bg-border2 opacity-40",
                     )}
                 />
             ))}
