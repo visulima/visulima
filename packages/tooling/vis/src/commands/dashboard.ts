@@ -1,4 +1,4 @@
-import { exec } from "node:child_process";
+import { execFile } from "node:child_process";
 
 import type { Command } from "@visulima/cerebro";
 
@@ -7,10 +7,14 @@ import { startDashboardServer } from "../dashboard/server";
 import { pail } from "../io/logger";
 
 const openInBrowser = (url: string): void => {
-    const platform = process.platform;
-    const command = platform === "darwin" ? `open ${JSON.stringify(url)}` : platform === "win32" ? `start "" ${JSON.stringify(url)}` : `xdg-open ${JSON.stringify(url)}`;
+    const { platform } = process;
+    const [binary, args] = platform === "darwin"
+        ? ["open", [url]] as const
+        : platform === "win32"
+            ? ["cmd", ["/c", "start", "", url]] as const
+            : ["xdg-open", [url]] as const;
 
-    exec(command, (error) => {
+    execFile(binary, args, (error) => {
         if (error) {
             // Best effort — the URL is already printed to stderr.
         }
@@ -34,10 +38,10 @@ const dashboard: Command = {
         const host = typeof options.host === "string" && options.host.length > 0 ? options.host : "127.0.0.1";
 
         const server = await startDashboardServer({
-            workspaceRoot,
             cacheDirectory,
             host,
             port,
+            workspaceRoot,
         });
 
         pail.success(`Dashboard listening on ${server.url}`);

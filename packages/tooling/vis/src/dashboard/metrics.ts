@@ -6,36 +6,36 @@ import type { LoadedRunSummary } from "../report/types";
  * no filesystem walks beyond what the loader already does.
  */
 export interface DashboardMetrics {
-    totals: {
-        runs: number;
-        tasks: number;
-        succeeded: number;
-        failed: number;
-        cached: number;
-        skipped: number;
-        totalDurationMs: number;
-        estimatedTimeSavedMs: number;
-    };
-    cacheHitRate: number | undefined;
-    averageRunDurationMs: number | undefined;
-    medianRunDurationMs: number | undefined;
-    slowestTasks: TaskMetric[];
+    averageRunDurationMs: number | null;
+    cacheHitRate: number | null;
+    durationOverTime: TimeSeriesPoint[];
+    hitRateOverTime: TimeSeriesPoint[];
+    medianRunDurationMs: number | null;
     mostCachedTasks: TaskMetric[];
     mostInvalidatedTasks: TaskMetric[];
-    hitRateOverTime: TimeSeriesPoint[];
-    durationOverTime: TimeSeriesPoint[];
+    slowestTasks: TaskMetric[];
+    totals: {
+        cached: number;
+        estimatedTimeSavedMs: number;
+        failed: number;
+        runs: number;
+        skipped: number;
+        succeeded: number;
+        tasks: number;
+        totalDurationMs: number;
+    };
 }
 
 export interface TaskMetric {
-    taskId: string;
-    project: string;
-    target: string;
-    runs: number;
-    hits: number;
-    misses: number;
+    averageDurationMs: number;
     failures: number;
     hitRate: number;
-    averageDurationMs: number;
+    hits: number;
+    misses: number;
+    project: string;
+    runs: number;
+    target: string;
+    taskId: string;
     timeSavedMs: number;
 }
 
@@ -96,14 +96,14 @@ const aggregateTaskStats = (summaries: RunSummaryShape[]): Map<string, TaskMetri
     const byTask = new Map<
         string,
         {
-            taskId: string;
-            project: string;
-            target: string;
-            runs: number;
+            durations: number[];
+            failures: number;
             hits: number;
             misses: number;
-            failures: number;
-            durations: number[];
+            project: string;
+            runs: number;
+            target: string;
+            taskId: string;
         }
     >();
 
@@ -118,21 +118,21 @@ const aggregateTaskStats = (summaries: RunSummaryShape[]): Map<string, TaskMetri
             }
 
             const existing = byTask.get(task.taskId) ?? {
-                taskId: task.taskId,
-                project: task.target?.project ?? "",
-                target: task.target?.target ?? "",
-                runs: 0,
+                durations: [] as number[],
+                failures: 0,
                 hits: 0,
                 misses: 0,
-                failures: 0,
-                durations: [] as number[],
+                project: task.target?.project ?? "",
+                runs: 0,
+                target: task.target?.target ?? "",
+                taskId: task.taskId,
             };
 
-            existing.runs += 1;
-
             if (task.cacheStatus === "HIT" || task.cacheStatus === "REMOTE_HIT") {
+                existing.runs += 1;
                 existing.hits += 1;
             } else if (task.cacheStatus === "MISS") {
+                existing.runs += 1;
                 existing.misses += 1;
 
                 if (typeof task.duration === "number" && task.duration > 0) {
@@ -154,15 +154,15 @@ const aggregateTaskStats = (summaries: RunSummaryShape[]): Map<string, TaskMetri
         const avg = stats.durations.length === 0 ? 0 : stats.durations.reduce((a, b) => a + b, 0) / stats.durations.length;
 
         metrics.set(taskId, {
-            taskId,
-            project: stats.project,
-            target: stats.target,
-            runs: stats.runs,
-            hits: stats.hits,
-            misses: stats.misses,
+            averageDurationMs: avg,
             failures: stats.failures,
             hitRate: stats.runs === 0 ? 0 : stats.hits / stats.runs,
-            averageDurationMs: avg,
+            hits: stats.hits,
+            misses: stats.misses,
+            project: stats.project,
+            runs: stats.runs,
+            target: stats.target,
+            taskId,
             timeSavedMs: avg * stats.hits,
         });
     }
@@ -237,23 +237,26 @@ export const computeDashboardMetrics = (summaries: LoadedRunSummary[]): Dashboar
     const estimatedTimeSavedMs = metricsList.reduce((sum, t) => sum + t.timeSavedMs, 0);
 
     return {
-        totals: {
-            runs: runs.length,
-            tasks: totalTasks,
-            succeeded,
-            failed,
-            cached,
-            skipped,
-            totalDurationMs,
-            estimatedTimeSavedMs,
-        },
-        cacheHitRate: totalTasks === 0 ? undefined : cached / totalTasks,
-        averageRunDurationMs: runDurations.length === 0 ? undefined : runDurations.reduce((a, b) => a + b, 0) / runDurations.length,
-        medianRunDurationMs: median(runDurations),
-        slowestTasks,
+        averageRunDurationMs: runDurations.length === 0 ? null : runDurations.reduce((a, b) => a + b, 0) / runDurations.length,
+        // Hit rate is a measure of cache effectiveness for tasks that were candidates for
+        // caching. Skipped tasks (bailed / dependency failures) never had a chance to hit
+        // or miss the cache, so excluding them from the denominator keeps the metric meaningful.
+        cacheHitRate: cached + succeeded + failed === 0 ? null : cached / (cached + succeeded + failed),
+        durationOverTime,
+        hitRateOverTime,
+        medianRunDurationMs: median(runDurations) ?? null,
         mostCachedTasks,
         mostInvalidatedTasks,
-        hitRateOverTime,
-        durationOverTime,
+        slowestTasks,
+        totals: {
+            cached,
+            estimatedTimeSavedMs,
+            failed,
+            runs: runs.length,
+            skipped,
+            succeeded,
+            tasks: totalTasks,
+            totalDurationMs,
+        },
     };
 };

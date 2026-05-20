@@ -19,6 +19,19 @@ export const RunsView = ({ onSelect }: RunsViewProps) => {
         return <Skeleton label="LOADING RUNS" />;
     }
 
+    if (runsQuery.isError) {
+        return (
+            <div className="border border-dashed border-accent bg-panel px-8 py-16" role="alert">
+                <div className="nd-mono mb-3 text-[12px] uppercase tracking-[0.16em] text-accent">
+                    [FAILED TO LOAD RUNS]
+                </div>
+                <p className="text-[14px] text-faint">
+                    {runsQuery.error instanceof Error ? runsQuery.error.message : "Unknown error."}
+                </p>
+            </div>
+        );
+    }
+
     const runs = runsQuery.data?.runs ?? [];
 
     if (runs.length === 0) {
@@ -48,11 +61,23 @@ export const RunsView = ({ onSelect }: RunsViewProps) => {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {runs.map((run) => (
+                    {runs.map((run) => {
+                        const handleRowKeyDown = (event: React.KeyboardEvent<HTMLTableRowElement>): void => {
+                            if (event.key === "Enter" || event.key === " ") {
+                                event.preventDefault();
+                                onSelect(run.id);
+                            }
+                        };
+
+                        return (
                         <TableRow
                             key={run.id}
                             className="cursor-pointer"
+                            tabIndex={0}
+                            role="button"
+                            aria-label={`Open run ${run.id}`}
                             onClick={() => onSelect(run.id)}
+                            onKeyDown={handleRowKeyDown}
                         >
                             <TableCell>
                                 <div className="text-[13px] text-fg">{formatDate(run.startTime)}</div>
@@ -80,7 +105,8 @@ export const RunsView = ({ onSelect }: RunsViewProps) => {
                                 <Icon svg={arrowRightIcon} aria-label="Open run" />
                             </TableCell>
                         </TableRow>
-                    ))}
+                        );
+                    })}
                 </TableBody>
             </Table>
         </div>

@@ -23,7 +23,9 @@ export const useLiveEvents = (): LiveStatus => {
 
         source.addEventListener("open", () => setStatus("open"));
         source.addEventListener("ready", () => setStatus("open"));
-        source.addEventListener("error", () => setStatus("closed"));
+        source.addEventListener("error", () => {
+            setStatus(source.readyState === EventSource.CLOSED ? "closed" : "connecting");
+        });
 
         source.addEventListener("change", () => {
             queryClient.invalidateQueries({ queryKey: queryKeys.overview() });

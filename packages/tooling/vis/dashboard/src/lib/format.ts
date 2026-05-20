@@ -42,7 +42,13 @@ export const formatDate = (iso: string | undefined | null): string => {
         return "—";
     }
 
-    return new Date(iso).toLocaleString();
+    const date = new Date(iso);
+
+    if (Number.isNaN(date.getTime())) {
+        return "—";
+    }
+
+    return date.toLocaleString();
 };
 
 export const formatRelative = (iso: string | undefined | null): string => {
@@ -50,7 +56,13 @@ export const formatRelative = (iso: string | undefined | null): string => {
         return "—";
     }
 
-    const delta = Date.now() - new Date(iso).getTime();
+    const ts = new Date(iso).getTime();
+
+    if (Number.isNaN(ts)) {
+        return "—";
+    }
+
+    const delta = Math.max(0, Date.now() - ts);
     const seconds = Math.floor(delta / 1000);
 
     if (seconds < 60) {
