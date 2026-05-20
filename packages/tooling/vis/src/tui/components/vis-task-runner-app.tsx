@@ -9,6 +9,7 @@ import { useInput } from "@visulima/tui/hooks/use-input";
 import { useWindowSize } from "@visulima/tui/hooks/use-window-size";
 import React, { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 
+import { renderFailureOutput } from "../failure-render";
 import { formatTargetsAndProjects } from "../formatting-utils";
 import { formatMs } from "../pretty-time";
 import { isCacheStatus } from "../status-utils";
@@ -212,7 +213,17 @@ const VisTaskRunnerApp = ({
     const outputTaskId = outputServiceId ? null : (state.pinnedTaskIds[0] ?? selectedTaskId);
     const outputTask = outputTaskId ? state.rows.find((r) => r.taskId === outputTaskId) : null;
     const outputServiceState = watchedServiceState ?? null;
-    const outputContent = outputServiceId ? (outputServiceState?.tailLines ?? []).join("\n") : outputTaskId ? (state.outputs.get(outputTaskId) ?? "") : "";
+    const rawOutputContent = outputServiceId ? (outputServiceState?.tailLines ?? []).join("\n") : outputTaskId ? (state.outputs.get(outputTaskId) ?? "") : "";
+    // Render source-mapped failure block lazily — keeps the store holding
+    // raw text so synthetic retry/kill `endTasks` calls round-trip without
+    // double-rendering, and dodges the cost on tasks the user never opens.
+    const outputContent = useMemo(() => {
+        if (outputTask?.status === "failure" && rawOutputContent) {
+            return renderFailureOutput(rawOutputContent, { color: !process.env["NO_COLOR"], cwd: process.cwd() });
+        }
+
+        return rawOutputContent;
+    }, [outputTask?.status, rawOutputContent]);
     const outputDisplayId = outputServiceId ?? outputTaskId;
     const outputDisplayStatus = outputServiceId
         ? outputServiceState?.status === "crashed" || outputServiceState?.status === "failed"

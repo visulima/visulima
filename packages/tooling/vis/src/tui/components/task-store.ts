@@ -1,7 +1,6 @@
 import type { Task, TaskResult } from "@visulima/task-runner";
 
 import type { VisTargetOptions } from "../../task/target-options";
-import { renderFailureOutput } from "../failure-render";
 import type { TaskRowData } from "./task-row";
 
 export interface TaskState {
@@ -165,17 +164,12 @@ export class TaskStore {
                 // no default
             }
 
-            if (res.status === "failure") {
-                // Failures get the source-mapped, code-framed render — even
-                // when output was streamed — so the pretty block leads and
-                // the raw output is preserved beneath it.
-                const captured = res.terminalOutput || outputs.get(res.task.id) || "";
-
-                if (captured) {
-                    outputs.set(res.task.id, renderFailureOutput(captured, { color: !process.env["NO_COLOR"], cwd: process.cwd() }));
-                }
-            } else if (res.terminalOutput && !outputs.has(res.task.id)) {
-                // Only set output if not already streamed (avoids replacing incremental output)
+            // Only set output if not already streamed (avoids replacing
+            // incremental output). Raw output is stored as-is; the
+            // OutputPanel applies `renderFailureOutput` lazily for failed
+            // tasks so a synthetic retry endTasks call (handler.ts) doesn't
+            // re-render an already-rendered string.
+            if (res.terminalOutput && !outputs.has(res.task.id)) {
                 outputs.set(res.task.id, res.terminalOutput);
             }
 

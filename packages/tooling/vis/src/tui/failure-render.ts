@@ -182,11 +182,11 @@ export const renderFailureOutput = (rawOutput: string, options: RenderFailureOpt
             return rawOutput;
         }
 
-        const synthetic = Object.assign(Object.create(Error.prototype) as Error, {
-            message: block.message,
-            name: block.name,
-            stack: block.stack,
-        });
+        const synthetic = new Error(block.message);
+
+        synthetic.name = block.name;
+        synthetic.stack = block.stack;
+
         const frames: Trace[] = parseStacktrace(synthetic);
 
         if (frames.length === 0) {
