@@ -71,7 +71,7 @@ Legend:
 | S3 / R2 / etc. | static / SSO / EC2 / env (AWS SDK credential chain)                                                  |
 | Azure Blob     | connection string, account key, SAS token, AAD                                                       |
 | GCS            | service-account JSON, ADC, key file, OAuth                                                           |
-| Vercel Blob    | `BLOB_READ_WRITE_TOKEN`                                                                              |
+| Vercel Blob    | OIDC (`VERCEL_OIDC_TOKEN` + `BLOB_STORE_ID`, recommended on Vercel), `BLOB_READ_WRITE_TOKEN`         |
 | Netlify Blobs  | env-injected on Netlify, explicit token otherwise                                                    |
 | Local (disk)   | filesystem permissions                                                                               |
 | Dropbox        | access token, refresh token + app key (+ secret), pre-built `Dropbox`                                |

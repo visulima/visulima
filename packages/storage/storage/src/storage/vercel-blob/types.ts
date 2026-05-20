@@ -35,7 +35,25 @@ export interface VercelBlobStorageOptions extends BaseStorageOptions {
     multipart?: boolean | number;
 
     /**
-     * Vercel Blob read-write token
+     * Vercel OIDC token (`VERCEL_OIDC_TOKEN`). Short-lived, auto-rotated, and the
+     * recommended auth path for projects running on Vercel. Must be paired with
+     * {@link VercelBlobStorageOptions.storeId} (or `BLOB_STORE_ID` env). Provide
+     * explicitly for runtimes that don't expose `process.env` (e.g. Vite).
+     * @see https://vercel.com/docs/vercel-blob/using-blob-sdk#oidc-tokens-recommended
+     */
+    oidcToken?: string;
+
+    /**
+     * Vercel Blob store ID (`BLOB_STORE_ID`). Accepted in either `store_{id}`
+     * or `{id}` form — the `store_` prefix is stripped automatically. Required
+     * when authenticating via {@link VercelBlobStorageOptions.oidcToken}.
+     */
+    storeId?: string;
+
+    /**
+     * Vercel Blob read-write token (`BLOB_READ_WRITE_TOKEN`). Long-lived; prefer
+     * {@link VercelBlobStorageOptions.oidcToken} on Vercel. Always wins over OIDC
+     * when both are supplied.
      */
     token?: string;
 }

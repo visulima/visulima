@@ -141,7 +141,7 @@ catalogs:
     '@sveltejs/kit': ^2.60.1
     '@total-typescript/ts-reset': ^0.6.1
     '@tsconfig/node22': ^22.0.5
-    '@vercel/blob': 2.3.3
+    '@vercel/blob': 2.4.0
     '@visulima/boxen': 3.0.0-alpha.6
     '@visulima/colorize': 2.0.0-alpha.5
     '@visulima/command-line-args': 2.0.0-alpha.4

@@ -22,9 +22,35 @@ pnpm add @vercel/blob
 
 ## Usage
 
+### On Vercel (recommended): OIDC
+
+When a Blob store is connected to a Vercel project, `VERCEL_OIDC_TOKEN` and `BLOB_STORE_ID` are auto-injected. OIDC tokens are short-lived and auto-rotated, so there's no long-lived secret to leak.
+
 ```typescript
 import { VercelBlobStorage } from "@visulima/storage/provider/vercel";
 
+// Zero config — picks up VERCEL_OIDC_TOKEN + BLOB_STORE_ID from process.env.
+const storage = new VercelBlobStorage({
+    metaStorageConfig: { directory: "/tmp/upload-metafiles" },
+});
+```
+
+For runtimes that don't expose `process.env` (Vite, some edge sandboxes), pass the OIDC pair explicitly:
+
+```typescript
+const storage = new VercelBlobStorage({
+    oidcToken: loadOidcToken(),
+    storeId: loadStoreId(), // accepts "store_<id>" or "<id>"
+});
+```
+
+See [Vercel's OIDC docs](https://vercel.com/docs/vercel-blob/using-blob-sdk#oidc-tokens-recommended) for the full background.
+
+### Off Vercel: read-write token
+
+For CI, local dev, or anything not running on Vercel, use a long-lived `BLOB_READ_WRITE_TOKEN`:
+
+```typescript
 const storage = new VercelBlobStorage({
     token: process.env.BLOB_READ_WRITE_TOKEN,
     metaStorageConfig: { directory: "/tmp/upload-metafiles" },
@@ -33,32 +59,35 @@ const storage = new VercelBlobStorage({
 
 ## Configuration
 
+### Credential precedence
+
+The adapter resolves auth credentials in this order — first match wins:
+
+1. Explicit `token` option (RW or client token).
+2. OIDC pair: `oidcToken` + `storeId` (option or `VERCEL_OIDC_TOKEN` + `BLOB_STORE_ID` env).
+3. `BLOB_READ_WRITE_TOKEN` / `VERCEL_BLOB_TOKEN` env.
+
+If no credentials are found, the constructor throws. Partial OIDC config (only one of `oidcToken`/`storeId` set) also throws, so misconfiguration fails loudly instead of silently falling through to anonymous calls.
+
 ### Environment Variables
 
-```typescript
-// Set BLOB_READ_WRITE_TOKEN or VERCEL_BLOB_TOKEN
-process.env.BLOB_READ_WRITE_TOKEN = "vercel_blob_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
-
-const storage = new VercelBlobStorage({
-    // Token is automatically read from environment
-});
-```
-
-### With Token
-
-```typescript
-const storage = new VercelBlobStorage({
-    token: "vercel_blob_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-});
-```
+| Variable                | Purpose                                                                                       |
+| ----------------------- | --------------------------------------------------------------------------------------------- |
+| `VERCEL_OIDC_TOKEN`     | Short-lived OIDC token, auto-injected on Vercel. Must be paired with `BLOB_STORE_ID`.         |
+| `BLOB_STORE_ID`         | Blob store ID, auto-injected on Vercel. Accepted as `store_<id>` or `<id>` (prefix stripped). |
+| `BLOB_READ_WRITE_TOKEN` | Long-lived read-write token. Used as a fallback when no OIDC pair is configured.              |
+| `VERCEL_BLOB_TOKEN`     | Alias for `BLOB_READ_WRITE_TOKEN`, checked second.                                            |
 
 ### Advanced Configuration
 
 ```typescript
 const storage = new VercelBlobStorage({
+    // Auth (pick one of token / oidcToken+storeId; otherwise env vars are used)
     token: process.env.BLOB_READ_WRITE_TOKEN,
+
     multipart: true, // Enable multipart uploads for large files
-    multipart: 10 * 1024 * 1024, // Enable multipart for files > 10MB
+    multipart: 10 * 1024 * 1024, // Or: enable multipart for files > 10MB
+
     retryConfig: {
         maxRetries: 3,
         initialDelay: 1000,
@@ -69,6 +98,10 @@ const storage = new VercelBlobStorage({
     },
 });
 ```
+
+### Peer dependency
+
+OIDC support requires `@vercel/blob >= 2.4.0` (the first release with `oidcToken` and `storeId` on `BlobCommandOptions`).
 
 ## Features
 
@@ -114,8 +147,9 @@ const file = await storage.get({ id: "file-id" });
 
 ## Best Practices
 
-1. **Use environment variables** - Store tokens securely
-2. **Enable multipart for large files** - Better performance for files > 10MB
-3. **Configure retry** - Handle transient failures
-4. **Use CDN URLs** - Leverage Vercel's global CDN
-5. **Monitor usage** - Track storage and bandwidth usage
+1. **Prefer OIDC on Vercel** - Use `VERCEL_OIDC_TOKEN` + `BLOB_STORE_ID` over long-lived `BLOB_READ_WRITE_TOKEN`. OIDC tokens auto-rotate and can't leak from a checked-in env file.
+2. **Use environment variables** - Store tokens securely off Vercel.
+3. **Enable multipart for large files** - Better performance for files > 10MB.
+4. **Configure retry** - Handle transient failures.
+5. **Use CDN URLs** - Leverage Vercel's global CDN.
+6. **Monitor usage** - Track storage and bandwidth usage.
