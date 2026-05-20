@@ -63,10 +63,13 @@
     },
     "bin": {
         "v": "./dist/bin.js",
-        "vis": "./dist/bin.js"
+        "vis": "./dist/bin.js",
+        "visx": "./dist/binx.js",
+        "vx": "./dist/binx.js"
     },
     "files": [
         "dist/**",
+        "dashboard/dist/**",
         "schemas/**",
         "skills/**",
         "templates/**",
@@ -78,10 +81,10 @@
     ],
     "scripts": {
         "bench": "vitest bench __bench__",
-        "build": "packem build --development",
+        "build": "pnpm --filter @visulima/vis-dashboard run build && packem build --development",
         "build:native": "napi build --platform --release --esm --manifest-path native/Cargo.toml --output-dir . --js index.js",
         "build:native:debug": "napi build --platform --esm --manifest-path native/Cargo.toml --output-dir . --js index.js",
-        "build:prod": "packem build --production",
+        "build:prod": "pnpm --filter @visulima/vis-dashboard run build && packem build --production",
         "check:schemas-drift": "node scripts/generate-schemas.ts && git diff --exit-code -- schemas",
         "clean": "rimraf node_modules dist .eslintcache *.node",
         "dev": "pnpm run build --watch",
@@ -102,6 +105,7 @@
     "dependencies": {
         "@floating-ui/core": "1.7.5",
         "@floating-ui/dom": "1.7.6",
+        "@hono/node-server": "catalog:backend",
         "@visulima/error": "6.0.0-alpha.26",
         "@visulima/secret-scanner": "1.0.0-alpha.3",
         "@visulima/source-map": "3.0.0-alpha.9",
@@ -110,6 +114,7 @@
         "graphology": "0.26.0",
         "graphology-layout-forceatlas2": "0.10.1",
         "graphology-types": "0.24.8",
+        "hono": "catalog:backend",
         "jiti": "catalog:dev",
         "module-replacements": "^2.11.0",
         "module-replacements-codemods": "^1.2.1",

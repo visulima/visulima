@@ -1,8 +1,12 @@
 name: "Preview Release"
 
 on: # yamllint disable-line rule:truthy
-    # eslint-disable-next-line yml/no-empty-mapping-value
-    pull_request: # yamllint disable-line rule:empty-values
+    pull_request:
+        branches:
+            - "main"
+            - "alpha"
+            - "next"
+            - "beta"
 
 permissions:
     contents: "read" # to fetch code (actions/checkout)
@@ -18,8 +22,10 @@ jobs:
         name: "Preview Release"
         if: "github.repository == 'visulima/visulima'"
         runs-on: "ubuntu-latest"
+        timeout-minutes: 30
         permissions:
-            contents: "write"
+            # pkg-pr-new publish only writes a PR comment — it does not push commits.
+            contents: "read"
             issues: "write"
             checks: "write"
             pull-requests: "write"
@@ -58,14 +64,46 @@ jobs:
                   run-npm-audit: false
 
             - name: "Wait for Build Native workflow"
-              uses: "lewagon/wait-on-check-action@9312864dfbc9fd208e9c0417843430751c042800" # v1.7.0
+              # Replaces lewagon/wait-on-check-action: its bundler Gemfile.lock pins
+              # darwin-24/25 only, so macOS runners on darwin-23 fail bundle install.
+              # Plain shell + gh api works on every runner without Ruby.
               timeout-minutes: 30
-              with:
-                  ref: "${{ github.event.pull_request.head.sha }}"
-                  repo-token: "${{ secrets.GITHUB_TOKEN }}"
-                  wait-interval: 15 # seconds
-                  check-name: "Check Native Build"
-                  allowed-conclusions: "success,skipped,neutral"
+              shell: "bash"
+              env:
+                  GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+                  REF: "${{ github.event.pull_request.head.sha }}"
+                  REPO: "${{ github.repository }}"
+              run: |
+                  set -euo pipefail
+                  check_name="Check Native Build"
+                  deadline=$(( $(date +%s) + 1500 ))
+                  while :; do
+                      payload=$(gh api -X GET "repos/${REPO}/commits/${REF}/check-runs" -f check_name="$check_name" --jq '.check_runs[0] // empty')
+                      if [ -n "$payload" ]; then
+                          status=$(printf '%s' "$payload" | jq -r '.status')
+                          conclusion=$(printf '%s' "$payload" | jq -r '.conclusion // ""')
+                          if [ "$status" = "completed" ]; then
+                              case "$conclusion" in
+                                  success|skipped|neutral)
+                                      echo "Check '$check_name' completed: $conclusion"
+                                      exit 0
+                                      ;;
+                                  *)
+                                      echo "Check '$check_name' failed: $conclusion"
+                                      exit 1
+                                      ;;
+                              esac
+                          fi
+                          echo "Check '$check_name' status=$status, waiting 15s..."
+                      else
+                          echo "Check '$check_name' not yet registered, waiting 15s..."
+                      fi
+                      if [ "$(date +%s)" -ge "$deadline" ]; then
+                          echo "Timed out waiting for '$check_name' after 25 minutes"
+                          exit 1
+                      fi
+                      sleep 15
+                  done
 
             - name: "Download native build artifacts"
               id: "native-artifacts"

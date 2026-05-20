@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/naming-convention, @typescript-eslint/no-confusing-void-expression, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/prefer-optional-chain, consistent-return, default-case, e18e/prefer-static-regex, jsdoc/check-indentation, jsdoc/match-description, no-control-regex, sonarjs/slow-regex, unicorn/no-null */
+/* eslint-disable @typescript-eslint/naming-convention, @typescript-eslint/no-confusing-void-expression, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/prefer-optional-chain, consistent-return, default-case, e18e/prefer-static-regex, jsdoc/match-description, no-control-regex, sonarjs/slow-regex, unicorn/no-null */
 import type { Context, RefObject } from "react";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 

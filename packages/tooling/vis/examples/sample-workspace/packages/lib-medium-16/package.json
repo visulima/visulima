@@ -1,14 +1,14 @@
 {
-    "name": "lib-medium-16",
-    "version": "1.0.0",
-    "private": true,
-    "scripts": {
-        "build": "echo 'Compiling lib-medium-16...' && sleep 1.7 && echo 'Generating types...' && sleep 0.2 && echo 'lib-medium-16 ready!'",
-        "lint": "echo 'ESLint: lib-medium-16...' && sleep 0.1 && echo 'No warnings.'",
-        "dev": "echo 'lib-medium-16 watching...' && while true; do sleep 2; echo '[lib-medium-16] rebuilt in 45ms'; done",
-        "test": "echo 'Running lib-medium-16 tests...' && sleep .5 && echo '  Suite: unit - 5 passed' && echo '  Suite: integration - 3 passed'"
-    },
-    "dependencies": {
-        "lib-fast-6": "1.0.0"
-    }
+  "name": "lib-medium-16",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "echo 'Compiling lib-medium-16...' && sleep 1.7 && echo 'Generating types...' && sleep 0.2 && echo 'lib-medium-16 ready!' && mkdir -p dist && date > dist/.stamp",
+    "dev": "echo 'lib-medium-16 watching...' && while true; do sleep 2; echo '[lib-medium-16] rebuilt in 45ms'; done",
+    "lint": "echo 'ESLint: lib-medium-16...' && sleep 0.1 && echo 'No warnings.'",
+    "test": "echo 'Running lib-medium-16 tests...' && sleep .5 && echo '  Suite: unit - 5 passed' && echo '  Suite: integration - 3 passed'"
+  },
+  "dependencies": {
+    "lib-fast-6": "1.0.0"
+  }
 }

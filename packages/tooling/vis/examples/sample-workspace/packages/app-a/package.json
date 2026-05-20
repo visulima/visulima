@@ -1,13 +1,13 @@
 {
-    "name": "app-a",
-    "version": "1.0.0",
-    "private": true,
-    "scripts": {
-        "build": "echo 'Building app-a...' && sleep 10.8 && echo 'app-a built!'",
-        "lint": "echo 'Linting app-a...' && echo 'No lint errors.'",
-        "test": "echo 'Testing app-a...' && sleep 0.3 && echo 'app-a tests passed!'"
-    },
-    "dependencies": {
-        "lib-b": "workspace:*"
-    }
+  "name": "app-a",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "echo 'Building app-a...' && sleep 10.8 && echo 'app-a built!' && mkdir -p dist && date > dist/.stamp",
+    "lint": "echo 'Linting app-a...' && echo 'No lint errors.'",
+    "test": "echo 'Testing app-a...' && sleep 0.3 && echo 'app-a tests passed!'"
+  },
+  "dependencies": {
+    "lib-b": "workspace:*"
+  }
 }

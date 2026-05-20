@@ -548,6 +548,7 @@ export class Cli<T extends Console = Console> implements ICli<T> {
             // `#commands.values()` would lose the nested entry.
             if (!newIsNested && existingByName !== undefined && !existingIsFlat) {
                 const existingFullPath = getFullCommandPath(existingByName.name, existingByName.commandPath);
+
                 this.#commands.set(getCommandPathKey(existingFullPath), existingByName);
             }
 

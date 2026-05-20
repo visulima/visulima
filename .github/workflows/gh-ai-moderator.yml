@@ -1,11 +1,11 @@
 name: "AI Moderator"
-on:
+on: # yamllint disable-line rule:truthy
     issues:
-        types: [opened]
+        types: ["opened"]
     issue_comment:
-        types: [created]
+        types: ["created"]
     pull_request_review_comment:
-        types: [created]
+        types: ["created"]
 
 permissions:
     models: "read"
@@ -13,6 +13,7 @@ permissions:
 jobs:
     spam-detection:
         runs-on: "ubuntu-latest"
+        timeout-minutes: 30
         permissions:
             issues: "write"
             pull-requests: "write"

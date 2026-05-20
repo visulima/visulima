@@ -41,18 +41,18 @@ describe("overflowToBackbuffer", () => {
     it("emits scrolled-off lines into scrollback exactly once, above the live frame", async () => {
         expect.assertions(4);
 
-        // Start already scrolled so ROW0000–ROW0004 are NEVER inside a visible
-        // window — their only possible source of output is the backbuffer.
+        // Start at scrollTop=8 in a single render so [0,8) flushes to the
+        // backbuffer in one shot. Splitting into 5→8 was flaky: on slow CI
+        // the live frame for scrollTop=5 (containing ROW0005–ROW0009) got
+        // committed before the rerender, then the rerender's backbuffer
+        // slice re-emitted ROW0005–ROW0007, making each appear twice.
         const stdout = createStdout();
-        const { rerender, unmount } = render(<ScrollApp scrollTop={5} />, { interactive: true, stdout });
+        const { unmount, waitUntilRenderFlush } = render(<ScrollApp scrollTop={8} />, { interactive: true, stdout });
 
-        await waitFor(() => occurrences(stdout, "ROW0000") >= 1);
-
-        rerender(<ScrollApp scrollTop={8} />);
+        await waitUntilRenderFlush();
         await waitFor(() => occurrences(stdout, "ROW0007") >= 1);
 
-        // First frame flushed rows [0,5); the rerender flushed [5,8). None of
-        // these rows are in any visible window, so each appears exactly once.
+        // The single render flushed rows [0,8); each appears exactly once.
         expect(occurrences(stdout, "ROW0000")).toBe(1);
         expect(occurrences(stdout, "ROW0004")).toBe(1);
         expect(occurrences(stdout, "ROW0007")).toBe(1);

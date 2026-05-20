@@ -12,6 +12,7 @@ jobs:
     add-comment-for-user-interest:
         if: "github.event.label.name == 's: waiting for user interest'"
         runs-on: "ubuntu-latest"
+        timeout-minutes: 30
         permissions:
             issues: "write"
         steps:

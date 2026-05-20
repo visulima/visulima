@@ -1,0 +1,7 @@
+{
+    "name": "vis-dashboard",
+    "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/tooling/vis/dashboard/src",
+    "projectType": "application",
+    "tags": ["vis", "type:internal"]
+}

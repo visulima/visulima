@@ -25,6 +25,10 @@ jobs:
         name: "Semantic Release"
         if: "github.repository == 'visulima/visulima'"
         runs-on: "ubuntu-latest"
+        timeout-minutes: 30
+        # Gate npm publishing behind a GitHub Environment so secrets are scoped and
+        # required-reviewer rules (configured in repo settings) can apply.
+        environment: "release"
         permissions:
             contents: "write" # to be able to publish a GitHub release
             issues: "write" # to be able to comment on released issues
@@ -38,15 +42,54 @@ jobs:
                   egress-policy: "audit"
 
             - name: "Wait for tests to succeed"
-              uses: "lewagon/wait-on-check-action@9312864dfbc9fd208e9c0417843430751c042800" # v1.7.0
+              # Replaces lewagon/wait-on-check-action: its bundler Gemfile.lock pins
+              # darwin-24/25 only, so macOS runners on darwin-23 fail bundle install.
+              # Plain shell + gh api waits for every check-run on the commit
+              # except this job and the ignore list to terminate in success.
               timeout-minutes: 30
-              with:
-                  ref: "${{ github.event.pull_request.head.sha || github.sha }}"
-                  repo-token: "${{ secrets.GITHUB_TOKEN }}"
-                  wait-interval: 30 # seconds
-                  running-workflow-name: "Semantic Release" # wait for all other checks to complete
-                  allowed-conclusions: "success,skipped,neutral" # all other checks must pass, being skipped or cancelled is not sufficient
-                  ignore-checks: "lock-closed / lock-closed, Socket Security: Pull Request Alerts, Dependabot, Discover affected benches, Bench: boxen-bench, Bench: cerebro-bench, Bench: colorize-bench, Bench: command-line-args-bench, Bench: deep-clone-bench, Bench: fmt-bench, Bench: fs-bench, Bench: inspector-bench, Bench: pail-bench, Bench: redact-bench, Bench: string-bench, Bench: tabular-bench, Bench: task-runner-bench, Bench: tui-bench"
+              shell: "bash"
+              env:
+                  GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+                  REF: "${{ github.event.pull_request.head.sha || github.sha }}"
+                  REPO: "${{ github.repository }}"
+                  SELF_CHECK_NAME: "Semantic Release"
+                  IGNORE_CHECKS: "[\"lock-closed / lock-closed\",\"Socket Security: Pull Request Alerts\",\"Dependabot\",\"Discover affected benches\",\"Bench: boxen-bench\",\"Bench: cerebro-bench\",\"Bench: colorize-bench\",\"Bench: command-line-args-bench\",\"Bench: deep-clone-bench\",\"Bench: fmt-bench\",\"Bench: fs-bench\",\"Bench: inspector-bench\",\"Bench: pail-bench\",\"Bench: redact-bench\",\"Bench: string-bench\",\"Bench: tabular-bench\",\"Bench: task-runner-bench\",\"Bench: tui-bench\"]"
+              run: |
+                  set -euo pipefail
+                  deadline=$(( $(date +%s) + 1500 ))
+                  while :; do
+                      runs=$(gh api -X GET "repos/${REPO}/commits/${REF}/check-runs" --paginate --jq '.check_runs[] | [.name, .status, .conclusion // ""] | @tsv')
+                      pending=0
+                      failed=""
+                      while IFS=$'\t' read -r name status conclusion; do
+                          [ -z "${name:-}" ] && continue
+                          if [ "$name" = "$SELF_CHECK_NAME" ]; then continue; fi
+                          if jq -e --arg n "$name" --argjson list "$IGNORE_CHECKS" 'any($list[]; . == $n)' <<<"{}" >/dev/null; then continue; fi
+                          if [ "$status" != "completed" ]; then
+                              pending=$((pending + 1))
+                              continue
+                          fi
+                          case "$conclusion" in
+                              success|skipped|neutral) ;;
+                              *) failed+="$name:$conclusion "$'\n' ;;
+                          esac
+                      done <<< "$runs"
+                      if [ -n "$failed" ]; then
+                          echo "Failed checks:"
+                          printf '%s' "$failed"
+                          exit 1
+                      fi
+                      if [ "$pending" -eq 0 ]; then
+                          echo "All checks completed successfully"
+                          exit 0
+                      fi
+                      echo "$pending checks still pending, waiting 30s..."
+                      if [ "$(date +%s)" -ge "$deadline" ]; then
+                          echo "Timed out after 25 minutes"
+                          exit 1
+                      fi
+                      sleep 30
+                  done
 
             # Persist credentials so multi-semantic-release can push tags/commits with
             # the explicitly-passed SEMANTIC_RELEASE_GITHUB_TOKEN.
@@ -196,7 +239,12 @@ jobs:
             - name: "Refresh pnpm-lock.yaml against released manifests"
               if: "success()"
               shell: "bash"
-              run: "pnpm install --lockfile-only --no-frozen-lockfile"
+              # --no-frozen-lockfile is intentional here: this step exists precisely to
+              # regenerate pnpm-lock.yaml after multi-semantic-release bumps versions.
+              # --ignore-scripts prevents any postinstall from running with the release
+              # token in env — --lockfile-only means no install happens anyway, but
+              # belt-and-suspenders for the security scanner.
+              run: "pnpm install --lockfile-only --no-frozen-lockfile --ignore-scripts"
 
             - name: "Commit refreshed lockfile"
               if: "success()"

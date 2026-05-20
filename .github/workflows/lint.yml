@@ -3,9 +3,9 @@
 name: "Lint"
 
 on: # yamllint disable-line rule:truthy
-    # eslint-disable-next-line yml/no-empty-mapping-value
-    pull_request: # yamllint disable-line rule:empty-values
+    pull_request:
         types: ["opened", "synchronize"]
+        branches: ["main", "alpha", "next", "beta"]
     merge_group: # yamllint disable-line rule:empty-values
 
 concurrency:
@@ -63,6 +63,7 @@ jobs:
         needs: "files-changed"
         name: "Lint (eslint, types, attw)"
         runs-on: "ubuntu-latest"
+        timeout-minutes: 30
         steps:
             - name: "Harden Runner"
               uses: "step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450" # v2.19.1
@@ -94,6 +95,8 @@ jobs:
                   cache-prefix: "lint"
                   # TODO: re-enable once pnpm/npm audit works with unpublished @visulima/task-runner-binding-* packages and pnpm registry config
                   run-npm-audit: false
+                  # TODO: re-enable once npm arborist fixes alias-name + installed-version mismatch for npm: aliases (e.g. vite-plugin-inspect's "vite": "npm:rolldown-vite@...")
+                  run-signatures-audit: false
 
             - name: "Build"
               run: "pnpm run build:affected:packages"
@@ -112,6 +115,7 @@ jobs:
         needs: "files-changed"
         name: "Lint (package.json)"
         runs-on: "ubuntu-latest"
+        timeout-minutes: 30
         steps:
             - name: "Harden Runner"
               uses: "step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450" # v2.19.1
@@ -143,6 +147,8 @@ jobs:
                   cache-prefix: "lint"
                   # TODO: re-enable once pnpm/npm audit works with unpublished @visulima/task-runner-binding-* packages and pnpm registry config
                   run-npm-audit: false
+                  # TODO: re-enable once npm arborist fixes alias-name + installed-version mismatch for npm: aliases (e.g. vite-plugin-inspect's "vite": "npm:rolldown-vite@...")
+                  run-signatures-audit: false
 
             - name: "Build"
               run: "pnpm run build:affected:packages"
@@ -155,6 +161,7 @@ jobs:
         needs: "files-changed"
         name: "Lint (vis schemas drift)"
         runs-on: "ubuntu-latest"
+        timeout-minutes: 30
         steps:
             - name: "Harden Runner"
               uses: "step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450" # v2.19.1
@@ -178,6 +185,14 @@ jobs:
                   cache-prefix: "lint"
                   # TODO: re-enable once pnpm/npm audit works with unpublished @visulima/task-runner-binding-* packages and pnpm registry config
                   run-npm-audit: false
+                  # TODO: re-enable once npm arborist fixes alias-name + installed-version mismatch for npm: aliases (e.g. vite-plugin-inspect's "vite": "npm:rolldown-vite@...")
+                  run-signatures-audit: false
+
+            - name: "Build vis upstream deps"
+              # Schema generation walks the workspace type graph: VisTargetConfiguration
+              # extends @visulima/task-runner's TargetConfiguration, so we need that
+              # package's d.ts on disk for ts-json-schema-generator to see its fields.
+              run: "pnpm --filter '@visulima/vis^...' run build"
 
             - name: "Regenerate vis schemas and fail on drift"
               run: |
@@ -191,6 +206,7 @@ jobs:
         needs: "files-changed"
         name: "Lint (yaml)"
         runs-on: "ubuntu-latest"
+        timeout-minutes: 30
         steps:
             - name: "Harden Runner"
               uses: "step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450" # v2.19.1
@@ -217,6 +233,7 @@ jobs:
         if: "needs.files-changed.outputs.yaml_lintable == 'true'"
         needs: "files-changed"
         runs-on: "ubuntu-latest"
+        timeout-minutes: 30
         steps:
             - name: "Harden Runner"
               uses: "step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450" # v2.19.1
@@ -233,16 +250,34 @@ jobs:
                   EMAIL: "github-actions[bot]@users.noreply.github.com"
 
             - name: "Lint github workflows"
-              uses: "raven-actions/actionlint@205b530c5d9fa8f44ae9ed59f341a0db994aa6f8" # v2.1.2
-              with:
-                  # The empty shellcheck flag disables shellcheck for a working solution in test.yml
-                  shellcheck: ""
+              # raven-actions/actionlint shells out to `npm install @actions/tool-cache`
+              # in the repo root, which trips on our pnpm workspace catalog: deps.
+              # Download the actionlint release tarball directly and verify it
+              # against the published checksum before executing.
+              shell: "bash"
+              run: |
+                  set -euo pipefail
+                  version="1.7.12"
+                  base="https://github.com/rhysd/actionlint/releases/download/v${version}"
+                  tarball="actionlint_${version}_linux_amd64.tar.gz"
+                  checksums="actionlint_${version}_checksums.txt"
+
+                  curl --fail --silent --show-error --location --output "$tarball" "${base}/${tarball}"
+                  curl --fail --silent --show-error --location --output "$checksums" "${base}/${checksums}"
+
+                  grep " ${tarball}\$" "$checksums" | sha256sum --check --status
+
+                  tar -xzf "$tarball" actionlint
+                  rm -f "$tarball" "$checksums"
+
+                  ./actionlint -color -shellcheck=
 
     rust-fmt:
         if: "needs.files-changed.outputs.rust_lintable == 'true'"
         needs: "files-changed"
         name: "Lint (rustfmt)"
         runs-on: "ubuntu-latest"
+        timeout-minutes: 30
         steps:
             - name: "Harden Runner"
               uses: "step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450" # v2.19.1
@@ -274,6 +309,7 @@ jobs:
         needs: "files-changed"
         name: "Lint (markdown)"
         runs-on: "ubuntu-latest"
+        timeout-minutes: 30
         steps:
             - name: "Harden Runner"
               uses: "step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450" # v2.19.1

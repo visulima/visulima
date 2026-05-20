@@ -5,8 +5,9 @@ name: "CodSpeed"
 on: # yamllint disable-line rule:truthy
     push:
         branches: ["main", "alpha"]
-    pull_request: # yamllint disable-line rule:empty-values
+    pull_request:
         types: ["opened", "synchronize", "reopened"]
+        branches: ["main", "alpha", "next", "beta"]
     workflow_dispatch: # yamllint disable-line rule:empty-values
 
 concurrency:
@@ -15,6 +16,7 @@ concurrency:
 
 permissions:
     contents: "read"
+    checks: "read" # to poll Check Native Build via gh api
 
 env:
     NX_BRANCH: "${{ github.event.number || github.ref_name }}"
@@ -34,16 +36,47 @@ jobs:
               with:
                   egress-policy: "audit"
 
-            - name: "Wait for other checks to succeed"
-              uses: "lewagon/wait-on-check-action@9312864dfbc9fd208e9c0417843430751c042800" # v1.7.0
+            - name: "Wait for Build Native workflow"
+              # Replaces lewagon/wait-on-check-action: its bundler Gemfile.lock pins
+              # darwin-24/25 only, so macOS runners on darwin-23 fail bundle install.
+              # Plain shell + gh api works on every runner without Ruby.
               timeout-minutes: 30
-              with:
-                  ref: "${{ github.event.pull_request.head.sha || github.sha }}"
-                  repo-token: "${{ secrets.GITHUB_TOKEN }}"
-                  wait-interval: 30 # seconds
-                  running-workflow-name: "Discover affected benches" # wait for all other checks (incl. Build Native) to complete
-                  allowed-conclusions: "success,skipped,neutral"
-                  ignore-checks: "lock-closed / lock-closed, Socket Security: Pull Request Alerts, Dependabot, Semantic Release"
+              shell: "bash"
+              env:
+                  GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+                  REF: "${{ github.event.pull_request.head.sha || github.sha }}"
+                  REPO: "${{ github.repository }}"
+              run: |
+                  set -euo pipefail
+                  check_name="Check Native Build"
+                  deadline=$(( $(date +%s) + 1500 ))
+                  while :; do
+                      payload=$(gh api -X GET "repos/${REPO}/commits/${REF}/check-runs" -f check_name="$check_name" --jq '.check_runs[0] // empty')
+                      if [ -n "$payload" ]; then
+                          status=$(printf '%s' "$payload" | jq -r '.status')
+                          conclusion=$(printf '%s' "$payload" | jq -r '.conclusion // ""')
+                          if [ "$status" = "completed" ]; then
+                              case "$conclusion" in
+                                  success|skipped|neutral)
+                                      echo "Check '$check_name' completed: $conclusion"
+                                      exit 0
+                                      ;;
+                                  *)
+                                      echo "Check '$check_name' failed: $conclusion"
+                                      exit 1
+                                      ;;
+                              esac
+                          fi
+                          echo "Check '$check_name' status=$status, waiting 15s..."
+                      else
+                          echo "Check '$check_name' not yet registered, waiting 15s..."
+                      fi
+                      if [ "$(date +%s)" -ge "$deadline" ]; then
+                          echo "Timed out waiting for '$check_name' after 25 minutes"
+                          exit 1
+                      fi
+                      sleep 15
+                  done
 
             - name: "Git checkout"
               uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
@@ -98,6 +131,9 @@ jobs:
         if: "${{ needs.discover.outputs.has-benches == 'true' }}"
         runs-on: "ubuntu-latest"
         timeout-minutes: 30
+        # Scope the CodSpeed OIDC token to an environment so secrets and reviewer
+        # rules (configured in repo settings) can apply to benchmark uploads.
+        environment: "benchmarks"
         permissions:
             contents: "read"
             id-token: "write" # required for OIDC authentication with CodSpeed

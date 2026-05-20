@@ -279,7 +279,7 @@ const runStaticInit = (cwd: string, pm: { name: string; version: string }, optio
 
     writeFileSync(configPath, content);
     pail.success(`Created ${configPath}`);
-    pail.info("  Secure defaults applied automatically by defineConfig().");
+    pail.info("  Secure defaults are applied automatically by defineConfig().");
 
     if (options.syncNative) {
         for (const action of syncAllowBuildsToNativeConfig(pm.name as PackageManagerName, cwd, {})) {

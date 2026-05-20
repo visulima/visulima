@@ -4,5 +4,5 @@
     "sourceRoot": "packages/tooling/vis/src",
     "projectType": "application",
     "tags": ["vis", "type:package", "category:dev-tools"],
-    "implicitDependencies": ["task-runner"]
+    "implicitDependencies": ["task-runner", "vis-dashboard"]
 }

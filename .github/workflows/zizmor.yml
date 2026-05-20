@@ -8,6 +8,7 @@ on: # yamllint disable-line rule:truthy
     # Path-filtered triggers are skipped — and "skipped" required checks block merges.
     pull_request:
         types: ["opened", "synchronize", "reopened"]
+        branches: ["main", "alpha", "next", "beta"]
     push:
         branches:
             - "main"
@@ -23,6 +24,7 @@ jobs:
     zizmor:
         name: "Zizmor"
         runs-on: "ubuntu-latest"
+        timeout-minutes: 30
         permissions:
             security-events: "write"
         steps:

@@ -4,7 +4,7 @@ import { isAccessibleSync, readJsonSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 import type { TaskResults } from "@visulima/task-runner";
 
-import { getVisRunsDir } from "../util/vis-paths";
+import { getVisLastSummaryPath, getVisRunsDir } from "../util/vis-paths";
 import type { LoadedRunSummary } from "./types";
 
 /**
@@ -71,28 +71,48 @@ export const formatTimingSummary = (results: TaskResults, durationMs: number): s
  * result into the downstream helpers rather than re-reading the
  * directory multiple times.
  *
+ * When the history dir is missing or empty (the common case for users
+ * who haven't passed `--summarize` to `vis run`) we fall back to the
+ * single `.vis/last-summary.json` — that file is written on every run
+ * unconditionally, so the dashboard has *something* to display instead
+ * of [NO DATA]. Once the user opts into history with `--summarize`,
+ * the `runs/` dir wins and last-summary is ignored to avoid double-
+ * counting the most recent run.
+ *
  * Corrupt or unreadable files are skipped silently — a single bad
  * summary shouldn't take down the whole analysis.
  */
 export const loadRunSummaries = (workspaceRoot: string): LoadedRunSummary[] => {
     const runsDir = getVisRunsDir(workspaceRoot);
 
-    if (!isAccessibleSync(runsDir)) {
-        return [];
-    }
+    if (isAccessibleSync(runsDir)) {
+        const files = readdirSync(runsDir).filter((f) => f.endsWith(".json"));
+        const summaries: LoadedRunSummary[] = [];
 
-    const files = readdirSync(runsDir).filter((f) => f.endsWith(".json"));
-    const summaries: LoadedRunSummary[] = [];
+        for (const file of files) {
+            try {
+                summaries.push(readJsonSync(join(runsDir, file)) as LoadedRunSummary);
+            } catch {
+                // Corrupt summary — skip.
+            }
+        }
 
-    for (const file of files) {
-        try {
-            summaries.push(readJsonSync(join(runsDir, file)) as LoadedRunSummary);
-        } catch {
-            // Corrupt summary — skip.
+        if (summaries.length > 0) {
+            return summaries;
         }
     }
 
-    return summaries;
+    const lastSummaryPath = getVisLastSummaryPath(workspaceRoot);
+
+    if (isAccessibleSync(lastSummaryPath)) {
+        try {
+            return [readJsonSync(lastSummaryPath) as LoadedRunSummary];
+        } catch {
+            // Corrupt last-summary — fall through to empty.
+        }
+    }
+
+    return [];
 };
 
 /**

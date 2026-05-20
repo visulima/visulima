@@ -1,5 +1,6 @@
 import { createCerebro } from "@visulima/cerebro";
 import completionCommand from "@visulima/cerebro/command/completion";
+import versionCommand from "@visulima/cerebro/command/version";
 import enableCompileCache from "@visulima/cerebro/compile-cache";
 import { applyHeapTuning } from "@visulima/cerebro/heap-tuning";
 import { errorHandlerPlugin } from "@visulima/cerebro/plugins/error-handler";
@@ -22,6 +23,7 @@ import checkCommand from "./commands/check";
 import ciCommand from "./commands/ci";
 import cleanCommand from "./commands/clean";
 import createCommand from "./commands/create";
+import dashboardCommand from "./commands/dashboard";
 import dedupeCommand from "./commands/dedupe";
 import devcontainerCommand from "./commands/devcontainer";
 import dlxCommand from "./commands/dlx";
@@ -161,11 +163,13 @@ cli.addCommand(analyzeCommand);
 cli.addCommand(sortPackageJsonCommand);
 cli.addCommand(stagedCommand);
 cli.addCommand(statusCommand);
+cli.addCommand(dashboardCommand);
 cli.addCommand(syncCommand);
 cli.addCommand(dockerCommand);
 cli.addCommand(listCommand);
 cli.addCommand(toolchainCommand);
 cli.addCommand(completionCommand);
+cli.addCommand(versionCommand);
 
 // Package management commands
 cli.addCommand(installCommand);

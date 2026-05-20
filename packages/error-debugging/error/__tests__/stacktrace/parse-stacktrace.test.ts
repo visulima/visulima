@@ -8,7 +8,7 @@ import capturedErrors from "../../__fixtures__/captured-errors";
 import { VisulimaError } from "../../src";
 import parseStacktrace from "../../src/stacktrace/parse-stacktrace";
 
-const isWin = process.platform === "win32";
+const testFileDir = dirname(fileURLToPath(import.meta.url)).replaceAll("\\", "/");
 
 describe("parse-stacktrace", () => {
     describe("chromium", () => {
@@ -1290,7 +1290,7 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
             expect(stackFrames).toHaveLength(10);
             expect(stackFrames[0]).toMatchStackFrame([
                 "eval",
-                `${dirname(fileURLToPath(import.meta.url))}${isWin ? "\\" : "/"}parse-stacktrace.test.ts`,
+                `${testFileDir}/parse-stacktrace.test.ts`,
                 1288,
                 49,
                 "eval",
@@ -1298,7 +1298,7 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
             ]);
             expect(stackFrames[1]).toMatchStackFrame([
                 "<unknown>",
-                `${dirname(fileURLToPath(import.meta.url))}${isWin ? "\\" : "/"}parse-stacktrace.test.ts`,
+                `${testFileDir}/parse-stacktrace.test.ts`,
                 1288,
                 49,
             ]);
@@ -1725,7 +1725,7 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
         expect(stackFrames).toHaveLength(10);
         expect(stackFrames[0]).toMatchStackFrame([
             "<unknown>",
-            `${dirname(fileURLToPath(import.meta.url))}${isWin ? "\\" : "/"}parse-stacktrace.test.ts`,
+            `${testFileDir}/parse-stacktrace.test.ts`,
             1723,
             45,
         ]);
@@ -1740,7 +1740,7 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
         expect(stackFrames).toHaveLength(10);
         expect(stackFrames[0]).toMatchStackFrame([
             "<unknown>",
-            `${dirname(fileURLToPath(import.meta.url))}${isWin ? "\\" : "/"}parse-stacktrace.test.ts`,
+            `${testFileDir}/parse-stacktrace.test.ts`,
             1738,
             45,
         ]);
@@ -1758,7 +1758,7 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
         expect(stackFrames).toHaveLength(10);
         expect(stackFrames[0]).toMatchStackFrame([
             "<unknown>",
-            `${dirname(fileURLToPath(import.meta.url))}${isWin ? "\\" : "/"}parse-stacktrace.test.ts`,
+            `${testFileDir}/parse-stacktrace.test.ts`,
             1756,
             45,
         ]);
@@ -1807,7 +1807,7 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
         expect(stackFrames).toHaveLength(10);
         expect(stackFrames[0]).toMatchStackFrame([
             "<unknown>",
-            `${dirname(fileURLToPath(import.meta.url))}${isWin ? "\\" : "/"}parse-stacktrace.test.ts`,
+            `${testFileDir}/parse-stacktrace.test.ts`,
             1801,
             13,
         ]);
@@ -1825,7 +1825,7 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
         expect(stackFrames).toHaveLength(10);
         expect(stackFrames[0]).toMatchStackFrame([
             "<unknown>",
-            `${dirname(fileURLToPath(import.meta.url))}${isWin ? "\\" : "/"}parse-stacktrace.test.ts`,
+            `${testFileDir}/parse-stacktrace.test.ts`,
             1819,
             23,
         ]);

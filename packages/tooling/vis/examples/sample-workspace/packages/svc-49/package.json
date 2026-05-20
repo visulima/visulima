@@ -1,16 +1,16 @@
 {
-    "name": "svc-49",
-    "version": "1.0.0",
-    "private": true,
-    "scripts": {
-        "build": "echo 'svc-49 built' && sleep 0.3",
-        "lint": "echo 'svc-49 lint OK'",
-        "dev": "echo 'svc-49 server starting on port 4049...' && echo 'Ready in 150ms' && while true; do sleep 2; echo \"[$(date +%H:%M:%S)] svc-49: request handled\"; done",
-        "test": "echo 'svc-49 tests OK'"
-    },
-    "dependencies": {
-        "lib-fast-9": "1.0.0",
-        "lib-medium-14": "1.0.0",
-        "lib-slow-25": "1.0.0"
-    }
+  "name": "svc-49",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "echo 'svc-49 built' && sleep 0.3 && mkdir -p dist && date > dist/.stamp",
+    "dev": "echo 'svc-49 server starting on port 4049...' && echo 'Ready in 150ms' && while true; do sleep 2; echo \"[$(date +%H:%M:%S)] svc-49: request handled\"; done",
+    "lint": "echo 'svc-49 lint OK'",
+    "test": "echo 'svc-49 tests OK'"
+  },
+  "dependencies": {
+    "lib-fast-9": "1.0.0",
+    "lib-medium-14": "1.0.0",
+    "lib-slow-25": "1.0.0"
+  }
 }
