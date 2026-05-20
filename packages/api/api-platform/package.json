@@ -1,6 +1,6 @@
 {
     "name": "@visulima/api-platform",
-    "version": "4.0.0-alpha.24",
+    "version": "4.0.0-alpha.25",
     "description": "Visulima API platform is a set of tools to build and consume web APIs",
     "keywords": [
         "accepts",
@@ -128,12 +128,12 @@
     "typesVersions": {
         ">=5.0": {
             ".": [
-                "./dist/index-browser.d.ts",
-                "./dist/index-server.d.ts"
+                "./dist/index-server.d.ts",
+                "./dist/index-browser.d.ts"
             ],
             "next": [
-                "./dist/framework/next/index-browser.d.ts",
-                "./dist/framework/next/index-server.d.ts"
+                "./dist/framework/next/index-server.d.ts",
+                "./dist/framework/next/index-browser.d.ts"
             ],
             "next/pages/swagger": [
                 "./dist/framework/next/routes/pages/swagger/index.d.ts"
@@ -174,9 +174,9 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/connect": "4.0.0-alpha.23",
-        "@visulima/fs": "5.0.0-alpha.24",
-        "@visulima/jsdoc-open-api": "3.0.0-alpha.23",
+        "@visulima/connect": "4.0.0-alpha.24",
+        "@visulima/fs": "5.0.0-alpha.25",
+        "@visulima/jsdoc-open-api": "3.0.0-alpha.24",
         "@visulima/path": "3.0.0-alpha.10",
         "accepts": "catalog:prod",
         "debug": "catalog:prod",

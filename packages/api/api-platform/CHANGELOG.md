@@ -1,3 +1,16 @@
+## @visulima/api-platform [4.0.0-alpha.25](https://github.com/visulima/visulima/compare/@visulima/api-platform@4.0.0-alpha.24...@visulima/api-platform@4.0.0-alpha.25) (2026-05-20)
+
+### Continuous Integration
+
+* drop lewagon, fix tui lint, api-platform publint, preview-release JSON ([3801100](https://github.com/visulima/visulima/commit/38011006b2488fd25f186a7638ceda5a6ee65e45))
+
+
+### Dependencies
+
+* **@visulima/connect:** upgraded to 4.0.0-alpha.24
+* **@visulima/fs:** upgraded to 5.0.0-alpha.25
+* **@visulima/jsdoc-open-api:** upgraded to 3.0.0-alpha.24
+
 ## @visulima/api-platform [4.0.0-alpha.24](https://github.com/visulima/visulima/compare/@visulima/api-platform@4.0.0-alpha.23...@visulima/api-platform@4.0.0-alpha.24) (2026-05-19)
 
 ### Bug Fixes
