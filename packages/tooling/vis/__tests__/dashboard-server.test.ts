@@ -69,6 +69,7 @@ describe("dashboard server", () => {
         writeRun(tmpDir, "old", {
             id: "old",
             startTime: "2026-01-01T00:00:00Z",
+            endTime: "2026-01-01T00:00:01Z",
             duration: 1000,
             stats: { total: 1, cached: 0, succeeded: 1, failed: 0, skipped: 0 },
             tasks: [],
@@ -76,6 +77,7 @@ describe("dashboard server", () => {
         writeRun(tmpDir, "new", {
             id: "new",
             startTime: "2026-01-02T00:00:00Z",
+            endTime: "2026-01-02T00:00:00.500Z",
             duration: 500,
             stats: { total: 1, cached: 1, succeeded: 0, failed: 0, skipped: 0 },
             tasks: [],

@@ -22,6 +22,8 @@ export const CacheView = () => {
     }
 
     const cache = cacheQuery.data;
+    // Server (`collectCacheEntries` in commands/cache/handler.ts) returns entries
+    // sorted by mtime descending — entries[0] is newest, entries.at(-1) is oldest.
     const oldest = cache.entries.at(-1);
 
     if (!cache.exists) {

@@ -18,21 +18,24 @@ import { renderDashboardHtml } from "./html";
 import { computeDashboardMetrics } from "./metrics";
 
 export interface DashboardServerOptions {
-    workspaceRoot: string;
     cacheDirectory: string;
     host: string;
     port: number;
+    workspaceRoot: string;
 }
 
 export interface RunningDashboard {
-    url: string;
-    port: number;
     close: () => Promise<void>;
+    port: number;
+    url: string;
 }
 
 interface ChangeEvent {
-    type: "run-added" | "run-updated";
     id: string;
+    // `fs.watch` reports "rename" for both creates and deletes, so we can't reliably
+    // distinguish add/update/remove from the raw event. The client only invalidates
+    // queries on any change, so a single neutral type is sufficient.
+    type: "run-changed";
 }
 
 type ChangeListener = (event: ChangeEvent) => void;
@@ -79,11 +82,13 @@ const readRunById = (workspaceRoot: string, id: string): LoadedRunSummary | unde
  * so we debounce 200ms to coalesce bursts — the UI only needs to know
  * that something changed, not every syscall.
  *
- * If the directory doesn't exist yet (first run on a fresh workspace)
- * we still create the watcher after the directory appears; callers
- * without a runs dir fall back to manual refresh.
+ * On a fresh workspace we `mkdir -p` the runs dir before attaching the
+ * watcher so the common case "no runs yet" works. If both mkdir and
+ * watch fail (e.g., permission denied), the dashboard still serves but
+ * loses live updates — clients fall back to manual refresh. There is
+ * no deferred retry; restart the dashboard once the issue is resolved.
  */
-const createRunsWatcher = async (workspaceRoot: string): Promise<{ subscribe: (listener: ChangeListener) => () => void; close: () => void }> => {
+const createRunsWatcher = async (workspaceRoot: string): Promise<{ close: () => void; subscribe: (listener: ChangeListener) => () => void }> => {
     const listeners = new Set<ChangeListener>();
     const runsDir = getVisRunsDir(workspaceRoot);
 
@@ -127,27 +132,20 @@ const createRunsWatcher = async (workspaceRoot: string): Promise<{ subscribe: (l
     let watcher: ReturnType<typeof watch> | undefined;
 
     try {
-        watcher = watch(runsDir, (eventType, filename) => {
+        watcher = watch(runsDir, (_eventType, filename) => {
             if (!filename || typeof filename !== "string" || !filename.endsWith(".json")) {
                 return;
             }
 
             const id = filename.slice(0, -".json".length);
 
-            dispatch({ type: eventType === "rename" ? "run-added" : "run-updated", id });
+            dispatch({ id, type: "run-changed" });
         });
     } catch {
         watcher = undefined;
     }
 
     return {
-        subscribe: (listener) => {
-            listeners.add(listener);
-
-            return () => {
-                listeners.delete(listener);
-            };
-        },
         close: () => {
             if (timer) {
                 clearTimeout(timer);
@@ -155,6 +153,13 @@ const createRunsWatcher = async (workspaceRoot: string): Promise<{ subscribe: (l
 
             watcher?.close();
             listeners.clear();
+        },
+        subscribe: (listener) => {
+            listeners.add(listener);
+
+            return () => {
+                listeners.delete(listener);
+            };
         },
     };
 };
@@ -177,27 +182,51 @@ export const createDashboardApp = (
         const metrics = computeDashboardMetrics(summaries);
         const flaky = analyzeFlakiness(options.workspaceRoot, { minRuns: 2 }, summaries);
 
-        return c.json({ metrics, flaky });
+        return c.json({ flaky, metrics });
     });
 
     app.get("/api/runs", (c) => {
         const summaries = loadRunSummaries(options.workspaceRoot) as unknown as {
+            duration?: number;
+            endTime?: string;
             id?: string;
             startTime?: string;
-            endTime?: string;
-            duration?: number;
-            stats?: Record<string, number>;
+            stats?: Record<string, unknown>;
         }[];
 
+        // Drop summaries missing identifying fields so the response matches the
+        // typed contract on the client (RunListItem). Older / partial summary
+        // files would otherwise leak undefined through to UI code that does
+        // `.localeCompare` / arithmetic.
         const runs = summaries
-            .map((s) => ({
-                id: s.id,
-                startTime: s.startTime,
-                endTime: s.endTime,
-                duration: s.duration,
-                stats: s.stats,
-            }))
-            .sort((a, b) => (b.startTime ?? "").localeCompare(a.startTime ?? ""));
+            .filter(
+                (s): s is { duration: number; endTime: string; id: string; startTime: string; stats?: Record<string, unknown> } =>
+                    typeof s.id === "string"
+                    && typeof s.startTime === "string"
+                    && typeof s.endTime === "string"
+                    && typeof s.duration === "number",
+            )
+            .map((s) => {
+                const rawStats = s.stats;
+                const stats = rawStats
+                    ? {
+                        cached: typeof rawStats.cached === "number" ? rawStats.cached : undefined,
+                        failed: typeof rawStats.failed === "number" ? rawStats.failed : undefined,
+                        skipped: typeof rawStats.skipped === "number" ? rawStats.skipped : undefined,
+                        succeeded: typeof rawStats.succeeded === "number" ? rawStats.succeeded : undefined,
+                        total: typeof rawStats.total === "number" ? rawStats.total : undefined,
+                    }
+                    : undefined;
+
+                return {
+                    duration: s.duration,
+                    endTime: s.endTime,
+                    id: s.id,
+                    startTime: s.startTime,
+                    stats,
+                };
+            })
+            .sort((a, b) => b.startTime.localeCompare(a.startTime));
 
         return c.json({ runs });
     });
@@ -214,7 +243,7 @@ export const createDashboardApp = (
 
     app.get("/api/runs/:runId/tasks/:taskId/diff", (c) => {
         const run = readRunById(options.workspaceRoot, c.req.param("runId")) as
-            | { tasks?: { taskId?: string }[]; id?: string }
+            | { id?: string; tasks?: { taskId?: string }[] }
             | undefined;
 
         if (!run) {
@@ -236,7 +265,7 @@ export const createDashboardApp = (
 
     app.get("/api/cache", async (c) => {
         if (!isAccessibleSync(options.cacheDirectory)) {
-            return c.json({ directory: options.cacheDirectory, exists: false, entries: [], totalBytes: 0 });
+            return c.json({ directory: options.cacheDirectory, entries: [], exists: false, totalBytes: 0 });
         }
 
         const entries = await collectCacheEntries(options.cacheDirectory);
@@ -245,26 +274,27 @@ export const createDashboardApp = (
 
         return c.json({
             directory: options.cacheDirectory,
+            entries: entries.map((entry) => {
+                return {
+                    ageMs: now - entry.mtimeMs,
+                    hash: entry.hash,
+                    mtimeIso: new Date(entry.mtimeMs).toISOString(),
+                    sizeBytes: entry.sizeBytes,
+                };
+            }),
             exists: true,
             totalBytes,
-            entries: entries.map((entry) => ({
-                hash: entry.hash,
-                sizeBytes: entry.sizeBytes,
-                ageMs: now - entry.mtimeMs,
-                mtimeIso: new Date(entry.mtimeMs).toISOString(),
-            })),
         });
     });
 
     app.get("/api/environment", (c) =>
         c.json({
-            workspaceRoot: options.workspaceRoot,
+            arch: process.arch,
             cacheDirectory: options.cacheDirectory,
             node: process.version,
             platform: process.platform,
-            arch: process.arch,
-        }),
-    );
+            workspaceRoot: options.workspaceRoot,
+        }));
 
     // Server-Sent Events: pushes `change` events when the runs directory
     // gets a new summary. The UI uses these to invalidate TanStack Query
@@ -297,7 +327,7 @@ export const createDashboardApp = (
             });
 
             // Initial hello so clients know the stream is live.
-            await stream.writeSSE({ event: "ready", data: JSON.stringify({ ok: true }) });
+            await stream.writeSSE({ data: JSON.stringify({ ok: true }), event: "ready" });
 
             const HEARTBEAT_MS = 15_000;
 
@@ -315,7 +345,7 @@ export const createDashboardApp = (
                     }
 
                     if (queue.length === 0) {
-                        await stream.writeSSE({ event: "heartbeat", data: "" });
+                        await stream.writeSSE({ data: "", event: "heartbeat" });
 
                         continue;
                     }
@@ -323,10 +353,9 @@ export const createDashboardApp = (
 
                 const event = queue.shift()!;
 
-                await stream.writeSSE({ event: "change", data: JSON.stringify(event) });
+                await stream.writeSSE({ data: JSON.stringify(event), event: "change" });
             }
-        }),
-    );
+        }));
 
     return app;
 };
@@ -350,18 +379,18 @@ export const startDashboardServer = async (options: DashboardServerOptions): Pro
     });
 
     await new Promise<void>((resolve, reject) => {
-        server.once("listening", () => resolve());
-        server.once("error", (error) => reject(error));
+        server.once("listening", () => { resolve(); });
+        server.once("error", (error) => { reject(error); });
     });
 
     const address = server.address() as AddressInfo;
     const boundPort = typeof address === "object" && address ? address.port : options.port;
-    const displayHost = options.host === "0.0.0.0" ? "localhost" : options.host;
+    // Wildcard binds (IPv4 0.0.0.0, IPv6 ::/::0) aren't valid in a URL — substitute the loopback name.
+    const isWildcard = options.host === "0.0.0.0" || options.host === "::" || options.host === "::0";
+    const displayHost = isWildcard ? "localhost" : options.host;
     const url = `http://${displayHost}:${String(boundPort)}`;
 
     return {
-        url,
-        port: boundPort,
         close: (): Promise<void> =>
             new Promise((resolve, reject) => {
                 watcher.close();
@@ -373,5 +402,7 @@ export const startDashboardServer = async (options: DashboardServerOptions): Pro
                     }
                 });
             }),
+        port: boundPort,
+        url,
     };
 };

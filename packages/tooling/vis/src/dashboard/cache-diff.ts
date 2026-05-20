@@ -8,11 +8,11 @@ import type { LoadedRunSummary } from "../report/types";
  * resolved shell command).
  */
 export interface HashDiffEntry {
-    kind: "command" | "implicitDeps" | "nodes" | "runtime";
-    key: string;
-    previous: string | undefined;
-    current: string | undefined;
     change: "added" | "removed" | "modified";
+    current: string | undefined;
+    key: string;
+    kind: "command" | "implicitDeps" | "nodes" | "runtime";
+    previous: string | undefined;
 }
 
 /**
@@ -22,13 +22,13 @@ export interface HashDiffEntry {
  * changes.
  */
 export interface CacheMissAnalysis {
-    taskId: string;
     currentHash: string | undefined;
+    entries: HashDiffEntry[];
     previousHash: string | undefined;
     previousRunId: string | undefined;
     previousRunStartTime: string | undefined;
     reason: string;
-    entries: HashDiffEntry[];
+    taskId: string;
 }
 
 interface TaskSummaryLike {
@@ -40,8 +40,8 @@ interface TaskSummaryLike {
         nodes?: Record<string, string>;
         runtime?: Record<string, string>;
     };
-    taskId?: string;
     target?: { project: string; target: string };
+    taskId?: string;
 }
 
 interface RunSummaryShape {
@@ -69,11 +69,11 @@ const diffRecords = (
         }
 
         if (p === undefined) {
-            entries.push({ kind, key, previous: undefined, current: c, change: "added" });
+            entries.push({ change: "added", current: c, key, kind, previous: undefined });
         } else if (c === undefined) {
-            entries.push({ kind, key, previous: p, current: undefined, change: "removed" });
+            entries.push({ change: "removed", current: undefined, key, kind, previous: p });
         } else {
-            entries.push({ kind, key, previous: p, current: c, change: "modified" });
+            entries.push({ change: "modified", current: c, key, kind, previous: p });
         }
     }
 
@@ -122,13 +122,21 @@ const findReferenceTask = (
     taskId: string,
     excludeRunId: string | undefined,
 ): { run: RunSummaryShape; task: TaskSummaryLike } | undefined => {
+    const currentStart = summaries.find((s) => s.id === excludeRunId)?.startTime;
     const sorted = [...summaries].sort((a, b) => (b.startTime ?? "").localeCompare(a.startTime ?? ""));
-
-    for (const run of sorted) {
+    const candidates = sorted.filter((run) => {
         if (run.id !== undefined && run.id === excludeRunId) {
-            continue;
+            return false;
         }
 
+        if (currentStart !== undefined && run.startTime !== undefined && run.startTime > currentStart) {
+            return false;
+        }
+
+        return true;
+    });
+
+    for (const run of candidates) {
         const task = run.tasks?.find((t) => t.taskId === taskId);
 
         if (task && (task.cacheStatus === "HIT" || task.cacheStatus === "REMOTE_HIT")) {
@@ -136,14 +144,10 @@ const findReferenceTask = (
         }
     }
 
-    for (const run of sorted) {
-        if (run.id !== undefined && run.id === excludeRunId) {
-            continue;
-        }
-
+    for (const run of candidates) {
         const task = run.tasks?.find((t) => t.taskId === taskId);
 
-        if (task && task.hashDetails) {
+        if (task?.hashDetails) {
             return { run, task };
         }
     }
@@ -173,13 +177,13 @@ export const analyzeCacheMiss = (
 
     if (!reference) {
         return {
-            taskId,
             currentHash: task.hash,
+            entries: [],
             previousHash: undefined,
             previousRunId: undefined,
             previousRunStartTime: undefined,
             reason: "No previous run recorded this task — first observation.",
-            entries: [],
+            taskId,
         };
     }
 
@@ -190,11 +194,11 @@ export const analyzeCacheMiss = (
 
     if (previousCommand !== currentCommand) {
         entries.push({
-            kind: "command",
-            key: "command",
-            previous: previousCommand,
-            current: currentCommand,
             change: previousCommand === undefined ? "added" : currentCommand === undefined ? "removed" : "modified",
+            current: currentCommand,
+            key: "command",
+            kind: "command",
+            previous: previousCommand,
         });
     }
 
@@ -203,12 +207,12 @@ export const analyzeCacheMiss = (
     entries.push(...diffRecords("runtime", reference.task.hashDetails?.runtime, task.hashDetails?.runtime));
 
     return {
-        taskId,
         currentHash: task.hash,
+        entries,
         previousHash: reference.task.hash,
         previousRunId: reference.run.id,
         previousRunStartTime: reference.run.startTime,
         reason: summarize(entries),
-        entries,
+        taskId,
     };
 };

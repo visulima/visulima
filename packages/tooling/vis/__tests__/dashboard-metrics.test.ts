@@ -17,7 +17,7 @@ describe(computeDashboardMetrics, () => {
         const metrics = computeDashboardMetrics([]);
 
         expect(metrics.totals.runs).toBe(0);
-        expect(metrics.cacheHitRate).toBeUndefined();
+        expect(metrics.cacheHitRate).toBeNull();
         expect(metrics.slowestTasks).toStrictEqual([]);
     });
 
