@@ -1,3 +1,14 @@
+## @visulima/cerebro [3.0.0-alpha.26](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.25...@visulima/cerebro@3.0.0-alpha.26) (2026-05-20)
+
+### Bug Fixes
+
+* **cerebro:** add blank line before re-keying nested namesake ([ad40fec](https://github.com/visulima/visulima/commit/ad40fec43b255673fbf09399b6a99c6d596c0d23))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.27
+
 ## @visulima/cerebro [3.0.0-alpha.25](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.24...@visulima/cerebro@3.0.0-alpha.25) (2026-05-19)
 
 
