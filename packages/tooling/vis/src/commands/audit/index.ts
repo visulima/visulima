@@ -34,6 +34,9 @@ const audit: Command = {
         ["vis audit --sync", `Sync accepted risks to native PM config (pnpm-workspace.yaml / .yarnrc.yml)`],
         ["vis audit --policies license,vulnerability", "Run only the named policies (default: every configured policy)"],
         ["vis audit --policies none", "Skip the policy engine entirely"],
+        ["vis audit --explain", "Add a plain-English AI explanation under every finding (auto-detects an installed AI CLI)"],
+        ["vis audit --explain CVE-2021-23337", "Explain only the finding with this CVE/GHSA id"],
+        ["vis audit --explain 2", "Explain only the 2nd finding"],
     ],
     group: "Security & Health",
     loader: () => import("./handler"),
@@ -154,6 +157,12 @@ const audit: Command = {
             name: "backend",
             type: String,
         },
+        {
+            description:
+                "Add a plain-English AI explanation to findings. Bare flag explains all findings at/above --severity; pass a finding index (e.g. 2) or a CVE/GHSA id to explain just one. Auto-detects an installed AI CLI; mutually exclusive with --offline.",
+            name: "explain",
+            type: String,
+        },
     ],
 };
 
@@ -166,6 +175,7 @@ export type AuditOptions = CreateOptions<{
     db: string | undefined;
     ecosystem: string | undefined;
     "exit-code": boolean | undefined;
+    explain: boolean | string | undefined;
     "fail-on": string | undefined;
     fix: boolean | undefined;
     "fix-transitive": boolean | undefined;

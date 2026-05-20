@@ -1,5 +1,7 @@
 import type { BuildConfig } from "@visulima/packem/config";
 import { defineConfig } from "@visulima/packem/config";
+import tailwindcssLoader from "@visulima/packem/css/loader/tailwindcss";
+import cssnanoMinifier from "@visulima/packem/css/minifier/cssnano";
 import transformer from "@visulima/packem/transformer/esbuild";
 
 // eslint-disable-next-line import/no-unused-modules
@@ -7,6 +9,11 @@ export default defineConfig({
     runtime: "node",
     externals: [/^@visulima\/vis(\/|$)/],
     rollup: {
+        css: {
+            mode: "inline",
+            loaders: [tailwindcssLoader],
+            minifier: cssnanoMinifier,
+        },
         dts: {
             oxc: true,
         },

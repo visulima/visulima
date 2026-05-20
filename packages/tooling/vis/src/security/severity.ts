@@ -20,6 +20,22 @@ export const SEVERITY_ORDER: Record<string, number> = {
 };
 
 /**
+ * Canonical display order shared by every surface that lists findings
+ * (terminal table, HTML report, and the numeric `--explain` index): most
+ * severe first, then package name, then version. Keeping one comparator
+ * guarantees `--explain 2` points at the finding the user sees as row 2.
+ */
+export const compareFindingsForDisplay = (
+    a: { packageName: string; packageVersion: string; vulnerability: { severity?: string } },
+    b: { packageName: string; packageVersion: string; vulnerability: { severity?: string } },
+): number => {
+    const sa = SEVERITY_ORDER[(a.vulnerability.severity ?? "UNKNOWN").toUpperCase()] ?? UNKNOWN_LEVEL;
+    const sb = SEVERITY_ORDER[(b.vulnerability.severity ?? "UNKNOWN").toUpperCase()] ?? UNKNOWN_LEVEL;
+
+    return sa - sb || a.packageName.localeCompare(b.packageName) || a.packageVersion.localeCompare(b.packageVersion);
+};
+
+/**
  * `true` when a finding's severity is at or above the configured filter
  * threshold (i.e., should be reported).
  */
