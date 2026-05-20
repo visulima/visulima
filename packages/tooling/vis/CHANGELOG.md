@@ -1,3 +1,53 @@
+## @visulima/vis [1.0.0-alpha.23](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.22...@visulima/vis@1.0.0-alpha.23) (2026-05-20)
+
+### Features
+
+* **vis:** add dashboard command with browser UI for cache and run metrics ([f94fcd9](https://github.com/visulima/visulima/commit/f94fcd94ef04f74e20ce308769d79cbd21d9fd60))
+* **vis:** add HTML graph report ([92865a2](https://github.com/visulima/visulima/commit/92865a2973a36f8c43adaf023ecd68e3859d0c68))
+* **vis:** add visx/vx npx-style entry point ([3802695](https://github.com/visulima/visulima/commit/3802695f3a0cf2776aaf706183ed2032324532bd))
+* **vis:** rebuild dashboard with Hono SSE + Vite + shadcn/ui ([f9df814](https://github.com/visulima/visulima/commit/f9df814683c6a1c967d8cbe15bee1b13959b5ab7))
+* **vis:** redesign audit HTML report + add --explain AI helper ([6b0ab9f](https://github.com/visulima/visulima/commit/6b0ab9ffe36c732a4ac0c05a4ad9453d51fbe89b))
+* **vis:** redesign dashboard with Nothing-inspired UI ([7cfc81d](https://github.com/visulima/visulima/commit/7cfc81d8592cdfda0086700363dbeac39650d1d7))
+
+### Bug Fixes
+
+* **ci:** address review findings — injection, perms, defaults, fetch hardening ([0192278](https://github.com/visulima/visulima/commit/0192278b63a0178262c08a3d77fa0e832d085147))
+* **vis:** address audit findings on dashboard + visx + defineConfig refactor ([1eb8ae5](https://github.com/visulima/visulima/commit/1eb8ae5820d425780b9f5c05f153b68fe74a8a36))
+* **vis:** clean up dashboard audit nits — typos, dead code, redundant calls ([46a5c0e](https://github.com/visulima/visulima/commit/46a5c0ed8116f79c0307d51a1eb7c9d8ae419dde))
+* **vis:** harden dashboard server, metrics, and live UI ([be4c6a1](https://github.com/visulima/visulima/commit/be4c6a134410ef9e2b893d57ee6e2c1b163c4b88))
+* **vis:** key doctor cache on the resolved npm lockfile ([628a21d](https://github.com/visulima/visulima/commit/628a21d62285d6299fe399409783c297c64f9e1b))
+* **vis:** name the actual lockfile in npm pruner messages ([c783683](https://github.com/visulima/visulima/commit/c78368392930c3eafdb6e0c056535217665b2f07))
+* **vis:** prune npm-shrinkwrap.json into the Docker context ([ecfb54c](https://github.com/visulima/visulima/commit/ecfb54c7c515a14509c71458468c99c000b07d21))
+* **vis:** render task failure block lazily at the consumer ([cb35aa7](https://github.com/visulima/visulima/commit/cb35aa78550408b462e9a1ec2af3eddb65a27b87))
+
+### Miscellaneous Chores
+
+* ignore sample-workspace .vis dirs and refresh license artifact ([0f88438](https://github.com/visulima/visulima/commit/0f884380bcc7b25ac0beec5994256cc5b956a167))
+* **vis:** make sample-workspace tasks cacheable ([a1db143](https://github.com/visulima/visulima/commit/a1db143b57a594470b9bf5695c60a0ced18344e3))
+
+### Code Refactoring
+
+* **vis:** extract tryLoadSourceMap helper ([5b06bb6](https://github.com/visulima/visulima/commit/5b06bb69876e4870e75985a75ff22e299c8cf583))
+* **vis:** make defineConfig a pure typed-identity ([28f6f3f](https://github.com/visulima/visulima/commit/28f6f3f909a89103b972ca50a502fb6145d87794))
+
+### Tests
+
+* **vis:** align task-store tests with lazy failure rendering ([9ddf5de](https://github.com/visulima/visulima/commit/9ddf5de95a41d89b4c9a33bbb88e777b909b6aee))
+
+### Continuous Integration
+
+* tighten workflow yaml + restore missing publint dep ([b478f9a](https://github.com/visulima/visulima/commit/b478f9a9329d9c7243e694e3f360d385cc34567c))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.27
+* **@visulima/tui:** upgraded to 1.0.0-alpha.18
+* **@visulima/ansi:** upgraded to 4.0.0-alpha.14
+* **@visulima/cerebro:** upgraded to 3.0.0-alpha.26
+* **@visulima/fs:** upgraded to 5.0.0-alpha.25
+* **@visulima/package:** upgraded to 5.0.0-alpha.24
+
 ## @visulima/vis [1.0.0-alpha.22](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.21...@visulima/vis@1.0.0-alpha.22) (2026-05-19)
 
 ### Features
