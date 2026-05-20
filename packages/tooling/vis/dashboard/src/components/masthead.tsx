@@ -55,7 +55,7 @@ export const Masthead = ({ view, onChange }: MastheadProps) => {
                 onClick={toggle}
                 aria-label="Toggle color theme"
                 title="Toggle color theme"
-                className="nd-tbtn nd-tbtn-theme relative inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-[4px]"
+                className="nd-tbtn relative inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-[4px]"
             >
                 <Icon svg={theme === "dark" ? sunIcon : moonIcon} />
             </button>

@@ -1,5 +1,4 @@
 import { createCerebro } from "@visulima/cerebro";
-import versionCommand from "@visulima/cerebro/command/version";
 import enableCompileCache from "@visulima/cerebro/compile-cache";
 import { applyHeapTuning } from "@visulima/cerebro/heap-tuning";
 import { errorHandlerPlugin } from "@visulima/cerebro/plugins/error-handler";
@@ -19,6 +18,14 @@ applyHeapTuning();
 if (process.argv.includes("--no-color")) {
     process.env["NO_COLOR"] = "1";
     process.env["FORCE_COLOR"] = "0";
+}
+
+// Handle --version / -v / -V before re-routing into the dlx subcommand —
+// otherwise the splice below would force them into `dlx --version` and
+// the user's intent (print the visx version) would never reach cerebro.
+if (process.argv.slice(2).some((argument) => argument === "--version" || argument === "-v" || argument === "-V")) {
+    process.stdout.write(`${pkg.version}\n`);
+    process.exit(0);
 }
 
 // Re-frame the invocation as `vis dlx <args>` so cerebro's parser sees
@@ -44,7 +51,6 @@ cli.addPlugin(
 );
 
 cli.addCommand(dlxCommand);
-cli.addCommand(versionCommand);
 
 // eslint-disable-next-line unicorn/prefer-top-level-await, no-void -- void marks the IIFE promise as intentionally discarded
 void (async () => {
