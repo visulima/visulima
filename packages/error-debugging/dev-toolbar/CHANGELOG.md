@@ -1,3 +1,9 @@
+## @visulima/dev-toolbar [1.0.0-alpha.27](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.0-alpha.26...@visulima/dev-toolbar@1.0.0-alpha.27) (2026-05-20)
+
+### Tests
+
+* **dev-toolbar:** rebind localStorage globals for Node 25 ([ee5e1f8](https://github.com/visulima/visulima/commit/ee5e1f8774cce170c95248d9c4d74d91fafe90e7))
+
 ## @visulima/dev-toolbar [1.0.0-alpha.26](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.0-alpha.25...@visulima/dev-toolbar@1.0.0-alpha.26) (2026-05-19)
 
 ## @visulima/dev-toolbar [1.0.0-alpha.25](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.0-alpha.24...@visulima/dev-toolbar@1.0.0-alpha.25) (2026-05-16)
