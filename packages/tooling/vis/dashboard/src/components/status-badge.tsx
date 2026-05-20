@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 
 interface StatusBadgeProps {
-    status: "HIT" | "MISS" | "REMOTE_HIT" | "SKIPPED" | string;
+    status: string;
 }
 
 export const StatusBadge = ({ status }: StatusBadgeProps) => {

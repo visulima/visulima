@@ -22,7 +22,7 @@ export const Sparkline = ({
     showAverage = true,
     showAxis = true,
 }: SparklineProps) => {
-    if (!points || points.length < 2) {
+    if (points.length < 2) {
         return (
             <div className={cn("nd-mono py-6 text-[12px] uppercase tracking-[0.12em] text-faint", className)}>
                 [INSUFFICIENT DATA]

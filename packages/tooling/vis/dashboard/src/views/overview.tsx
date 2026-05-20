@@ -63,7 +63,7 @@ export const Overview = () => {
                         value={hitRate}
                         max={1}
                         segments={40}
-                        tone={hitTone === "good" ? "good" : hitTone === "warn" ? "warn" : "bad"}
+                        tone={hitTone}
                         size="hero"
                         className="mt-4"
                     />
