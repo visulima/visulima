@@ -73,8 +73,12 @@ dist
 !packages/data-manipulation/iso-locale/src/data/
 !packages/tooling/vis/data/
 
+# Claude
 .claude/settings.local.json
-.playwright-mcp
-.soulforge
-.codex
 .claude/scheduled_tasks.lock
+
+.playwright-mcp
+
+.codex
+
+packages/tooling/vis/examples/**/.vis/
