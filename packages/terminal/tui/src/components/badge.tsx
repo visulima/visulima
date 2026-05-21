@@ -37,7 +37,8 @@ export default function Badge({ children, color = "magenta" }: Props): ReactElem
     return (
         <Text backgroundColor={color}>
             {" "}
-            <Text color="black">{formattedChildren}</Text>{" "}
+            <Text color="black">{formattedChildren}</Text>
+{" "}
         </Text>
     );
 }

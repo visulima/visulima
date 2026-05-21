@@ -51,7 +51,7 @@ export const evaluateFirstSeenPolicy = async (input: PolicyInput, config: VisCon
         return [];
     }
 
-    const minutes = firstSeen.minutes;
+    const { minutes } = firstSeen;
     const exclude = firstSeen.exclude ?? [];
     const acceptedRisks = config.security?.acceptedRisks;
     const thresholdMs = minutes * MS_PER_MINUTE;

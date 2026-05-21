@@ -154,20 +154,22 @@ const Dialog = ({
     const cols = columnsProp ?? (windowSize.columns || 80);
     const termRows = rowsProp ?? (windowSize.rows || 24);
 
-    const bg = backgroundColorProp ?? (paletteLoading ? "black" : (palette?.background ?? "black"));
+    const bg = backgroundColorProp ?? (paletteLoading ? "black" : palette?.background ?? "black");
 
     const resolvedMaxHeight = maxHeightProp <= 1 ? Math.floor(termRows * maxHeightProp) : Math.min(maxHeightProp, termRows - 2);
 
-    const titleElement =
-        typeof title === "string" ? (
+    const titleElement
+        = typeof title === "string"
+            ? (
             <Box marginBottom={1}>
                 <Text bold color={borderColor}>
                     {title}
                 </Text>
             </Box>
-        ) : (
-            (title ?? null)
-        );
+            )
+            : title ?? null
+        ;
+
     return (
         <Box alignItems="center" height={termRows} justifyContent="center" position="absolute" width={cols}>
             <Box

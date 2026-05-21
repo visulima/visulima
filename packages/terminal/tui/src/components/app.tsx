@@ -309,9 +309,9 @@ const App = ({
                         if (!didWarnAboutDeprecatedPasteFallbackRef.current) {
                             didWarnAboutDeprecatedPasteFallbackRef.current = true;
                             writeToStderr(
-                                "Warning: useInput() received bracketed paste because no usePaste() handler is active. " +
-                                    "This fallback is deprecated and will be removed in the next major version. " +
-                                    "Migrate paste handling to usePaste().\n",
+                                "Warning: useInput() received bracketed paste because no usePaste() handler is active. "
+                                + "This fallback is deprecated and will be removed in the next major version. "
+                                + "Migrate paste handling to usePaste().\n",
                             );
                         }
 

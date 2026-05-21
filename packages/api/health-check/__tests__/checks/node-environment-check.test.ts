@@ -54,7 +54,7 @@ describe("node-environment-check", () => {
             displayName: "Node Environment Check",
             health: {
                 healthy: false,
-                message: 'NODE_ENV environment variable is set to "test" instead of "production".',
+                message: "NODE_ENV environment variable is set to \"test\" instead of \"production\".",
 
                 timestamp: expect.any(String),
             },

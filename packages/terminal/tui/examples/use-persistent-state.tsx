@@ -56,10 +56,14 @@ const App = () => {
                 usePersistentState
             </Text>
             <Text>
-                counter: <Text bold>{count}</Text>
+                counter:
+{" "}
+<Text bold>{count}</Text>
             </Text>
             <Text>
-                theme: <Text bold>{theme}</Text>
+                theme:
+{" "}
+<Text bold>{theme}</Text>
             </Text>
             <Text dimColor>Values survive remount; the in-memory store keeps them alive this session.</Text>
         </Box>

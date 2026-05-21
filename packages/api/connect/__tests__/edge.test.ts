@@ -16,8 +16,8 @@ const badFunction = () => {
     // intentionally empty - represents a no-op handler for testing
 };
 
-const createErrorResponseTester =
-    (consoleSpy: ReturnType<typeof vi.spyOn>, error: Error, getIndex: () => number, incrementIndex: () => void) => async (response: Response) => {
+const createErrorResponseTester
+    = (consoleSpy: ReturnType<typeof vi.spyOn>, error: Error, getIndex: () => number, incrementIndex: () => void) => async (response: Response) => {
         expect(response.status, "set 500 status code").toBe(500);
 
         await expect(response.text()).resolves.toBe("Internal Server Error");
@@ -347,7 +347,7 @@ describe("edge", () => {
 
                 await expect(response.text()).resolves.toBe("Internal Server Error");
 
-                expect(consoleSpy.mock.calls[index], 'called console.error with ""').toStrictEqual([""]);
+                expect(consoleSpy.mock.calls[index], "called console.error with \"\"").toStrictEqual([""]);
             });
     });
 

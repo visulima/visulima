@@ -436,12 +436,12 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
 
     // Special handling for Ukrainian and other Cyrillic scripts
     if (
-        locale.startsWith("uk") ||
-        locale.startsWith("ru") ||
-        locale.startsWith("bg") ||
-        locale.startsWith("sr") ||
-        locale.startsWith("mk") ||
-        locale.startsWith("be")
+        locale.startsWith("uk")
+        || locale.startsWith("ru")
+        || locale.startsWith("bg")
+        || locale.startsWith("sr")
+        || locale.startsWith("mk")
+        || locale.startsWith("be")
     ) {
         if (!RE_CYRILLIC.test(s) && !RE_LATIN.test(s)) {
             return [s];
@@ -485,8 +485,8 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
 
             // Split on script transitions or case changes within the same script
             if (
-                (previousType !== currentType && (previousType === 1 || previousType === 2) && (currentType === 1 || currentType === 2)) ||
-                (currentType === previousType && !previousIsUpper && isUpperCaseChar)
+                (previousType !== currentType && (previousType === 1 || previousType === 2) && (currentType === 1 || currentType === 2))
+                || (currentType === previousType && !previousIsUpper && isUpperCaseChar)
             ) {
                 result.push(currentSegment);
                 currentSegment = char;
@@ -508,10 +508,10 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
         // eslint-disable-next-line no-plusplus
         for (let index = 0; index < result.length; index++) {
             if (
-                index < result.length - 1 &&
-                (result[index] as string).length === 1 &&
-                RE_LATIN.test(result[index] as string) &&
-                RE_CYRILLIC.test((result[index + 1] as string)[0] as string)
+                index < result.length - 1
+                && (result[index] as string).length === 1
+                && RE_LATIN.test(result[index] as string)
+                && RE_CYRILLIC.test((result[index + 1] as string)[0] as string)
             ) {
                 finalResult.push((result[index] as string) + (result[index + 1] as string));
                 // Skip the next segment since we merged it by incrementing in the loop
@@ -607,15 +607,15 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
 
         const scriptDetectors: Record<string, (char: string) => boolean> = isJapanese
             ? {
-                  hiragana: (char) => RE_HIRAGANA.test(char),
-                  kanji: (char) => RE_KANJI.test(char),
-                  katakana: (char) => RE_KATAKANA.test(char),
-                  latin: (char) => RE_LATIN.test(char),
-              }
+                hiragana: (char) => RE_HIRAGANA.test(char),
+                kanji: (char) => RE_KANJI.test(char),
+                katakana: (char) => RE_KATAKANA.test(char),
+                latin: (char) => RE_LATIN.test(char),
+            }
             : {
-                  hangul: (char) => RE_HANGUL.test(char),
-                  latin: (char) => RE_LATIN.test(char),
-              };
+                hangul: (char) => RE_HANGUL.test(char),
+                latin: (char) => RE_LATIN.test(char),
+            };
 
         // Pre-compiled Set for Japanese particles - defined once and cached
         const particles = new Set(["が", "で", "と", "に", "の", "は", "へ", "も", "や", "を"]);
@@ -627,12 +627,12 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
                 false,
                 locale,
                 (previousType, currentType) =>
-                    (previousType === "hiragana" && currentType === "katakana") || // hiragana -> katakana
-                    (previousType === "katakana" && currentType === "hiragana") || // katakana -> hiragana
-                    (previousType === "hiragana" && currentType === "latin") || // hiragana -> latin
-                    (previousType === "katakana" && currentType === "latin") || // katakana -> latin
-                    (previousType === "kanji" && currentType === "latin") || // kanji -> latin
-                    (previousType === "latin" && (currentType === "hiragana" || currentType === "katakana" || currentType === "kanji")), // latin -> japanese
+                    (previousType === "hiragana" && currentType === "katakana") // hiragana -> katakana
+                    || (previousType === "katakana" && currentType === "hiragana") // katakana -> hiragana
+                    || (previousType === "hiragana" && currentType === "latin") // hiragana -> latin
+                    || (previousType === "katakana" && currentType === "latin") // katakana -> latin
+                    || (previousType === "kanji" && currentType === "latin") // kanji -> latin
+                    || (previousType === "latin" && (currentType === "hiragana" || currentType === "katakana" || currentType === "kanji")), // latin -> japanese
             );
 
             // Post-process for Japanese particles
@@ -658,8 +658,8 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
             false,
             locale,
             (previousType, currentType) =>
-                (previousType === "hangul" && currentType === "latin") || // hangul -> latin
-                (previousType === "latin" && currentType === "hangul"), // latin -> hangul
+                (previousType === "hangul" && currentType === "latin") // hangul -> latin
+                || (previousType === "latin" && currentType === "hangul"), // latin -> hangul
         );
     }
 
@@ -759,22 +759,22 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
     ) {
         // Helper function to check if a character is Indic
         const isIndicChar = (ch: string): boolean =>
-            RE_DEVANAGARI.test(ch) ||
-            RE_BENGALI.test(ch) ||
-            RE_GUJARATI.test(ch) ||
-            RE_GURMUKHI.test(ch) ||
-            RE_KANNADA.test(ch) ||
-            RE_TAMIL.test(ch) ||
-            RE_TELUGU.test(ch) ||
-            RE_MALAYALAM.test(ch) ||
-            RE_SINHALA.test(ch) ||
-            RE_THAI.test(ch) ||
-            RE_LAO.test(ch) ||
-            RE_TIBETAN.test(ch) ||
-            RE_MYANMAR.test(ch) ||
-            RE_ETHIOPIC.test(ch) ||
-            RE_KHMER.test(ch) ||
-            RE_ORIYA.test(ch);
+            RE_DEVANAGARI.test(ch)
+            || RE_BENGALI.test(ch)
+            || RE_GUJARATI.test(ch)
+            || RE_GURMUKHI.test(ch)
+            || RE_KANNADA.test(ch)
+            || RE_TAMIL.test(ch)
+            || RE_TELUGU.test(ch)
+            || RE_MALAYALAM.test(ch)
+            || RE_SINHALA.test(ch)
+            || RE_THAI.test(ch)
+            || RE_LAO.test(ch)
+            || RE_TIBETAN.test(ch)
+            || RE_MYANMAR.test(ch)
+            || RE_ETHIOPIC.test(ch)
+            || RE_KHMER.test(ch)
+            || RE_ORIYA.test(ch);
 
         return handleScriptTransitions(
             s,

@@ -19,7 +19,7 @@ const { clearPackumentCache } = await import("../../src/security/marshalls/packu
 const stubFetch = (body: unknown): void => {
     vi.stubGlobal(
         "fetch",
-        vi.fn(async () => ({ json: async () => body, ok: true, status: 200 })),
+        vi.fn(async () => { return { json: async () => body, ok: true, status: 200 }; }),
     );
 };
 

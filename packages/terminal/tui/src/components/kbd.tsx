@@ -36,7 +36,8 @@ export default function Kbd({ children, color = "gray", variant = "solid" }: Pro
         return (
             <Text backgroundColor={color} color="black">
                 {" "}
-                {children}{" "}
+                {children}
+{" "}
             </Text>
         );
     }

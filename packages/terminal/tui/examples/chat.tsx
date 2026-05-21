@@ -51,7 +51,8 @@ const ChatApp = () => {
             <Box marginTop={1}>
                 <Text color="yellow">
                     Enter your message:
-                    {input}█
+                    {input}
+█
                 </Text>
             </Box>
         </Box>

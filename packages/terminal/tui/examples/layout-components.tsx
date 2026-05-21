@@ -32,17 +32,21 @@ const App = () => {
             <Heading level={3}>Cards, tags, keys</Heading>
             <Breadcrumb items={[{ label: "Home" }, { label: "Docs" }, { label: "Components" }, { label: "Layout" }]} />
             <Card
-                headerRight={
+                headerRight={(
                     <Tag icon="✨" variant="solid">
                         new
                     </Tag>
-                }
+                  )}
                 subtitle="A bordered container with title and optional footer"
                 title="Card component"
                 width={60}
             >
                 <Paragraph>
-                    Cards group related content. They accept a title, subtitle, right-aligned header content, and a footer. Press <Kbd>Esc</Kbd> to quit.
+                    Cards group related content. They accept a title, subtitle, right-aligned header content, and a footer. Press
+{" "}
+<Kbd>Esc</Kbd>
+{" "}
+to quit.
                 </Paragraph>
                 <Box gap={1}>
                     <Tag color="green">stable</Tag>

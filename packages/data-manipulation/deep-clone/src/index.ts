@@ -69,7 +69,7 @@ export const deepClone = <T>(originalData: T, options?: Options): DeepReadwrite<
 
     const cloner = {
         ...handlers,
-        ...(options?.strict ? { Array: copyArrayStrict, Map: copyMapStrict, Object: copyObjectStrict, RegExp: copyRegExpStrict, Set: copySetStrict } : {}),
+        ...options?.strict ? { Array: copyArrayStrict, Map: copyMapStrict, Object: copyObjectStrict, RegExp: copyRegExpStrict, Set: copySetStrict } : {},
         ...options?.handler,
     };
 
@@ -124,15 +124,15 @@ export const deepClone = <T>(originalData: T, options?: Options): DeepReadwrite<
         }
 
         if (
-            value instanceof Uint8Array ||
-            value instanceof Uint8ClampedArray ||
-            value instanceof Int8Array ||
-            value instanceof Uint16Array ||
-            value instanceof Int16Array ||
-            value instanceof Uint32Array ||
-            value instanceof Int32Array ||
-            value instanceof Float32Array ||
-            value instanceof Float64Array
+            value instanceof Uint8Array
+            || value instanceof Uint8ClampedArray
+            || value instanceof Int8Array
+            || value instanceof Uint16Array
+            || value instanceof Int16Array
+            || value instanceof Uint32Array
+            || value instanceof Int32Array
+            || value instanceof Float32Array
+            || value instanceof Float64Array
         ) {
             const { buffer } = value;
 

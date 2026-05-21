@@ -15,7 +15,11 @@ const Skeleton = ({ className, label = "LOADING", ...props }: SkeletonProps) => 
         {...props}
     >
         <span className="nd-blink inline-block h-[8px] w-[8px] bg-fg" />
-        <span>[{label}]</span>
+        <span>
+[
+{label}
+]
+        </span>
     </div>
 );
 

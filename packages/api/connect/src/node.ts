@@ -171,8 +171,8 @@ export class NodeRouter<
         if (typeof routeOrFunction === "string" && typeof zodOrRouteOrFunction === "function") {
             resolvedFns = [zodOrRouteOrFunction];
         } else if (typeof zodOrRouteOrFunction === "object") {
-            resolvedFns =
-                typeof routeOrFunction === "function"
+            resolvedFns
+                = typeof routeOrFunction === "function"
                     ? [withZod(zodOrRouteOrFunction as Schema, routeOrFunction)]
                     : fns.map((function_) => withZod(zodOrRouteOrFunction as Schema, function_));
         } else if (typeof zodOrRouteOrFunction === "function") {

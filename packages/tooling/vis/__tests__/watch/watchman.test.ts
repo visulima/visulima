@@ -2,7 +2,7 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, expectTypeOf, it } from "vitest";
 
 import { startWatcher } from "../../src/watch/watch";
 import { isWatchmanAvailable, startWatchmanWatcher } from "../../src/watch/watchman";
@@ -20,7 +20,8 @@ describe(isWatchmanAvailable, () => {
         // startWatchmanWatcher fallback test below.
         const first = isWatchmanAvailable();
 
-        expect(typeof first).toBe("boolean");
+        expectTypeOf(first).toBeBoolean();
+
         expect(isWatchmanAvailable()).toBe(first);
     });
 });

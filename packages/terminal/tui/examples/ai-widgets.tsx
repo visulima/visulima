@@ -72,7 +72,8 @@ const App = () => {
                 status="success"
             />
             <ShimmerText text="Generating response…" />
-            {decision === undefined ? (
+            {decision === undefined
+                ? (
                 <ApprovalPrompt
                     description="Claude wants to modify auth.ts"
                     onDecision={setDecision}
@@ -80,12 +81,13 @@ const App = () => {
                     risk="medium"
                     tool="writeFile"
                 />
-            ) : (
+                )
+                : (
                 <Text color="green">
                     decision:
                     {decision}
                 </Text>
-            )}
+                )}
             <StatusLine center={<Text dimColor>Esc to quit</Text>} left={<Text>tokens: 1.2k / 200k</Text>} right={<Text dimColor>cost: $0.003</Text>} />
         </Box>
     );

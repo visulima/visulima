@@ -111,7 +111,11 @@ function LocaleSwitcher({ current }: { current: string }) {
                 return (
                     <Box key={language.code}>
                         <Text color={isActive ? "cyan" : undefined} dimColor={!isActive}>
-                            [{language.hotkey}] {language.name}
+                            [
+{language.hotkey}
+]
+{" "}
+{language.name}
                         </Text>
                     </Box>
                 );

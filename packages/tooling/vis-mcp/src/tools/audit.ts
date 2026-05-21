@@ -54,9 +54,9 @@ export const registerAudit = ({ server }: ToolDeps, context: ToolContext): void 
         {
             annotations: { readOnlyHint: true },
             description:
-                "Audit installed packages for known vulnerabilities and supply-chain risk via `vis audit --format json`. " +
-                "Defaults to the local offline OSV cache when one exists, otherwise falls back to the live OSV API. " +
-                "Returns the parsed audit payload (results, duplicates, summary).",
+                "Audit installed packages for known vulnerabilities and supply-chain risk via `vis audit --format json`. "
+                + "Defaults to the local offline OSV cache when one exists, otherwise falls back to the live OSV API. "
+                + "Returns the parsed audit payload (results, duplicates, summary).",
             inputSchema: {
                 ecosystem: z.string().optional().describe("Comma-separated OSV ecosystems to scan. Defaults to 'npm' (the only matcher wired today)."),
                 offline: z.boolean().optional().describe("Force the local OSV cache. Errors if the cache is missing — run `vis advisories sync` first."),

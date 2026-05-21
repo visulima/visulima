@@ -35,9 +35,9 @@ const UNKNOWN_FUNCTION = "<unknown>";
 // at Module.load (internal/modules/cjs/loader.js:641:32)
 // -----------------
 // Chromium based browsers: Chrome, Brave, new Opera, new Edge
-const CHROMIUM_REGEX =
+const CHROMIUM_REGEX
     // eslint-disable-next-line regexp/no-super-linear-backtracking, sonarjs/slow-regex, sonarjs/regex-complexity
-    /^.*?\s*at\s(?:(.+?\)(?:\s\[.+\])?|\(?.*?)\s?\((?:address\sat\s)?)?(?:async\s)?((?:<anonymous>|[-a-z]+:|.*bundle|\/)?.*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i;
+    = /^.*?\s*at\s(?:(.+?\)(?:\s\[.+\])?|\(?.*?)\s?\((?:address\sat\s)?)?(?:async\s)?((?:<anonymous>|[-a-z]+:|.*bundle|\/)?.*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i;
 
 // eslint-disable-next-line sonarjs/slow-regex
 const CHROMIUM_EVAL_REGEX = /\((\S+)\),\s(<[^>]+>)?:(\d+)?:(\d+)?\)?/;
@@ -115,9 +115,9 @@ const extractSafariExtensionDetails = (methodName: string, url: string): [string
 
     return isSafariExtension || isSafariWebExtension
         ? [
-              methodName.includes("@") ? (methodName.split("@")[0] as string) : UNKNOWN_FUNCTION,
-              isSafariExtension ? `safari-extension:${url}` : `safari-web-extension:${url}`,
-          ]
+            methodName.includes("@") ? (methodName.split("@")[0] as string) : UNKNOWN_FUNCTION,
+            isSafariExtension ? `safari-extension:${url}` : `safari-web-extension:${url}`,
+        ]
         : [methodName, url];
 };
 
@@ -191,10 +191,10 @@ const parseChromium = (line: string): Trace | undefined => {
         let evalOrigin: Trace | undefined;
         let windowsParts:
             | {
-                  column: number | undefined;
-                  file: string | undefined;
-                  line: number | undefined;
-              }
+                column: number | undefined;
+                file: string | undefined;
+                line: number | undefined;
+            }
             | undefined;
 
         if (isEval) {
@@ -354,9 +354,9 @@ const parseFirefox = (line: string, topFrameMeta?: TopFrameMeta): Trace | undefi
         debugLog(`parse firefox error stack line: "${line}"`, `found: ${JSON.stringify(parts)}`);
 
         return {
-            column: parts[4] ? +parts[4] : (topFrameMeta?.column ?? undefined),
+            column: parts[4] ? +parts[4] : topFrameMeta?.column ?? undefined,
             file: parts[2],
-            line: parts[3] ? +parts[3] : (topFrameMeta?.line ?? undefined),
+            line: parts[3] ? +parts[3] : topFrameMeta?.line ?? undefined,
 
             // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- intentionally using || to treat empty string as unknown
             methodName: parts[1] || UNKNOWN_FUNCTION,
@@ -390,7 +390,7 @@ const parseReactAndroidNative = (line: string): Trace | undefined => {
 const parseStacktrace = (error: Error, { filter, frameLimit = 50 }: Partial<{ filter?: (line: string) => boolean; frameLimit: number }> = {}): Trace[] => {
     // Some error types (e.g. Opera) use `stacktrace` instead of `stack`
     const errorRecord = error as unknown as Record<string, unknown>;
-    const rawStack: string = typeof errorRecord.stacktrace === "string" ? errorRecord.stacktrace : (error.stack ?? "");
+    const rawStack: string = typeof errorRecord.stacktrace === "string" ? errorRecord.stacktrace : error.stack ?? "";
 
     let lines: string[] = rawStack
         .split("\n")

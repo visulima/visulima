@@ -54,12 +54,15 @@ const dashboard: Command = {
         }
 
         await new Promise<void>((resolve) => {
-            const shutdown = async (): Promise<void> => {
-                try {
-                    await server.close();
-                } finally {
-                    resolve();
-                }
+            const shutdown = (): void => {
+                // eslint-disable-next-line no-void -- intentional fire-and-forget; satisfies @typescript-eslint/no-floating-promises.
+                void (async () => {
+                    try {
+                        await server.close();
+                    } finally {
+                        resolve();
+                    }
+                })();
             };
 
             process.once("SIGINT", shutdown);

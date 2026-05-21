@@ -10,7 +10,7 @@ const FALLBACK_URL = "#";
 
 // HTML entity mappings for attribute escaping
 const HTML_ENTITIES = {
-    '"': "&quot;",
+    "\"": "&quot;",
     "&": "&amp;",
     "'": "&#39;",
     "<": "&lt;",
@@ -69,7 +69,7 @@ export const sanitizeAttribute = (value: unknown): string => {
         // DOMPurify sanitizes but we need to ensure quotes are escaped for attribute safety
         const sanitized = dompurifySanitize(stringValue);
 
-        return sanitized.replaceAll('"', "&quot;").replaceAll("'", "&#39;");
+        return sanitized.replaceAll("\"", "&quot;").replaceAll("'", "&#39;");
     } catch {
         // Fallback to manual escaping if DOMPurify fails
         return escapeHtml(stringValue);

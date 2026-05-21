@@ -10,9 +10,9 @@ type SwaggerUIProps = ComponentProps<typeof SwaggerUIComponent>;
 
 const SwaggerUi = dynamic(async () => await import("swagger-ui-react"), { ssr: false });
 
-const SwaggerApiDocument: (name: string, swagger?: Exclude<SwaggerUIProps, "spec">) => NextPage<InferGetStaticPropsType<typeof getStaticProps>> =
-    (name, swagger = {}) =>
-    ({ swaggerData }: InferGetStaticPropsType<typeof getStaticProps>) => (
+const SwaggerApiDocument: (name: string, swagger?: Exclude<SwaggerUIProps, "spec">) => NextPage<InferGetStaticPropsType<typeof getStaticProps>>
+    = (name, swagger = {}) =>
+        ({ swaggerData }: InferGetStaticPropsType<typeof getStaticProps>) => (
         <>
             <Head>
                 <title>{name}</title>
@@ -28,6 +28,6 @@ body {
             {/* eslint-disable-next-line react/jsx-props-no-spreading */}
             <SwaggerUi {...swagger} spec={swaggerData} />
         </>
-    );
+        );
 
 export default SwaggerApiDocument;

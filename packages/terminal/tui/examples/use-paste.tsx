@@ -88,7 +88,8 @@ const App = () => {
             </Text>
 
             <Text>
-                paste handler:{" "}
+                paste handler:
+{" "}
                 <Text bold color={pasteActive ? "green" : "yellow"}>
                     {pasteActive ? "active" : "inactive"}
                 </Text>
@@ -101,18 +102,32 @@ const App = () => {
                 <Box borderColor="cyan" borderStyle="round" flexDirection="column" gap={1} paddingX={1} paddingY={1}>
                     <Text bold>What active/inactive means</Text>
                     <Text>
-                        • <Text color="green">active</Text>: paste is delivered as one chunk to <Text color="green">usePaste</Text>
+                        •
+{" "}
+<Text color="green">active</Text>
+: paste is delivered as one chunk to
+{" "}
+<Text color="green">usePaste</Text>
                     </Text>
                     <Text>
-                        • <Text color="yellow">inactive</Text>: no paste listeners, so paste falls back to <Text color="yellow">useInput</Text>
+                        •
+{" "}
+<Text color="yellow">inactive</Text>
+: no paste listeners, so paste falls back to
+{" "}
+<Text color="yellow">useInput</Text>
                     </Text>
                     <Text dim>this keeps old apps working while giving prompts/editors a clean paste channel</Text>
                     <Box flexDirection="row" gap={3}>
                         <Text>
-                            usePaste events: <Text color="green">{pasteCount}</Text>
+                            usePaste events:
+{" "}
+<Text color="green">{pasteCount}</Text>
                         </Text>
                         <Text>
-                            useInput events: <Text color="yellow">{inputCount}</Text>
+                            useInput events:
+{" "}
+<Text color="yellow">{inputCount}</Text>
                         </Text>
                     </Box>
                 </Box>
@@ -128,9 +143,13 @@ const App = () => {
                         return (
                             <Box flexDirection="column" key={item.id}>
                                 <Text bold color={item.source === "usePaste" ? "green" : "yellow"}>
-                                    [{item.source}] len=
-                                    {item.payload.length} lines=
-                                    {lines.length}
+                                    [
+{item.source}
+] len=
+{item.payload.length}
+{" "}
+lines=
+{lines.length}
                                 </Text>
                                 {/* Text nodes are single-line in the current renderer; render payload as explicit lines. */}
                                 <Box flexDirection="column">

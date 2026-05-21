@@ -71,7 +71,7 @@ const extractMainError = (allCauses: unknown[]): Error => {
  * @returns Complete HTML content wrapped in a container div
  */
 const buildHtmlContent = (errorCardHtml: string, stackTraceHtml: string, causesViewerHtml: string, stackTraceContent: string): string => {
-    const htmlParts = ['<div class="flex flex-col gap-6">', errorCardHtml, stackTraceHtml, causesViewerHtml, stackTraceContent, "</div>"];
+    const htmlParts = ["<div class=\"flex flex-col gap-6\">", errorCardHtml, stackTraceHtml, causesViewerHtml, stackTraceContent, "</div>"];
 
     return htmlParts.join("");
 };

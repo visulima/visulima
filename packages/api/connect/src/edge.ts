@@ -77,12 +77,12 @@ export class EdgeRouter<
 
     public constructor(options: HandlerOptions<RoutesExtendedRequestHandler<R, Context, RResponse, Route<Nextable<FunctionLike>>[]>> = {}) {
         this.onNoMatch = options.onNoMatch ?? (onNoMatch as unknown as RoutesExtendedRequestHandler<R, Context, RResponse, Route<Nextable<FunctionLike>>[]>);
-        this.onError =
-            options.onError ??
-            (onError as unknown as (
-                error: unknown,
-                ...arguments_: Parameters<RoutesExtendedRequestHandler<R, Context, RResponse, Route<Nextable<FunctionLike>>[]>>
-            ) => ReturnType<RoutesExtendedRequestHandler<R, Context, RResponse, Route<Nextable<FunctionLike>>[]>>);
+        this.onError
+            = options.onError
+                ?? (onError as unknown as (
+                    error: unknown,
+                    ...arguments_: Parameters<RoutesExtendedRequestHandler<R, Context, RResponse, Route<Nextable<FunctionLike>>[]>>
+                ) => ReturnType<RoutesExtendedRequestHandler<R, Context, RResponse, Route<Nextable<FunctionLike>>[]>>);
     }
 
     public clone(): EdgeRouter<R, Context, RResponse, Schema> {
@@ -169,8 +169,8 @@ export class EdgeRouter<
         if (typeof routeOrFunction === "string" && typeof zodOrRouteOrFunction === "function") {
             resolvedFns = [zodOrRouteOrFunction];
         } else if (typeof zodOrRouteOrFunction === "object") {
-            resolvedFns =
-                typeof routeOrFunction === "function"
+            resolvedFns
+                = typeof routeOrFunction === "function"
                     ? [withZod(zodOrRouteOrFunction as Schema, routeOrFunction)]
                     : fns.map((function_) => withZod(zodOrRouteOrFunction as Schema, function_));
         } else if (typeof zodOrRouteOrFunction === "function") {

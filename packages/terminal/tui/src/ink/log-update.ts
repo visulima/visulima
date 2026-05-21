@@ -254,12 +254,12 @@ const createIncremental = (stream: Writable, { showCursor = false } = {}): LogUp
             }
 
             buffer.push(
-                cursorTo(0) +
-                    nextLines[i] +
-                    eraseLineEnd +
-                    // Don't append newline after the last line when the input
-                    // has no trailing newline (fullscreen mode).
-                    (isLastLine && !hasTrailingNewline ? "" : "\n"),
+                cursorTo(0)
+                + nextLines[i]
+                + eraseLineEnd
+                // Don't append newline after the last line when the input
+                // has no trailing newline (fullscreen mode).
+                + (isLastLine && !hasTrailingNewline ? "" : "\n"),
             );
         }
 

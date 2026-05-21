@@ -155,15 +155,15 @@ export interface CaseOptions extends LocaleOptions {
  * type Result2 = CamelCase<'foo-bar'> // type Result2 = 'fooBar'
  * type Result3 = CamelCase<'foo_bar'> // type Result3 = 'fooBar'
  */
-export type CamelCase<T extends string> =
-    IsStringLiteral<T> extends true
+export type CamelCase<T extends string>
+    = IsStringLiteral<T> extends true
         ? T extends `${infer F}_${infer R}`
             ? `${Lowercase<F>}${Capitalize<CamelCase<R>>}`
             : T extends `${infer F}-${infer R}`
-              ? `${Lowercase<F>}${Capitalize<CamelCase<R>>}`
-              : T extends `${infer F} ${infer R}`
                 ? `${Lowercase<F>}${Capitalize<CamelCase<R>>}`
-                : Lowercase<T>
+                : T extends `${infer F} ${infer R}`
+                    ? `${Lowercase<F>}${Capitalize<CamelCase<R>>}`
+                    : Lowercase<T>
         : string;
 
 /**
@@ -190,8 +190,8 @@ export type PascalCase<T extends string> = IsStringLiteral<T> extends true ? Cap
  * type Result2 = SnakeCase<'foo bar'> // type Result2 = 'foo_bar'
  * type Result3 = SnakeCase<'foo-bar'> // type Result3 = 'foo_bar'
  */
-export type SnakeCase<T extends string> =
-    IsStringLiteral<T> extends true
+export type SnakeCase<T extends string>
+    = IsStringLiteral<T> extends true
         ? T extends `${infer C}${infer Rest}`
             ? C extends Uppercase<C>
                 ? `_${Lowercase<C>}${SnakeCase<Rest>}`
@@ -210,8 +210,8 @@ export type SnakeCase<T extends string> =
  * type Result2 = KebabCase<'foo bar'> // type Result2 = 'foo-bar'
  * type Result3 = KebabCase<'foo_bar'> // type Result3 = 'foo-bar'
  */
-export type KebabCase<T extends string> =
-    IsStringLiteral<T> extends true
+export type KebabCase<T extends string>
+    = IsStringLiteral<T> extends true
         ? T extends `${infer C}${infer Rest}`
             ? C extends Uppercase<C>
                 ? `-${Lowercase<C>}${KebabCase<Rest>}`
@@ -244,8 +244,8 @@ export type FlatCase<T extends string> = IsStringLiteral<T> extends true ? Lower
  * type Result2 = TrainCase<'foo bar'> // type Result2 = 'Foo-Bar'
  * type Result3 = TrainCase<'foo_bar'> // type Result3 = 'Foo-Bar'
  */
-export type TrainCase<T extends string, N extends boolean = false> =
-    IsStringLiteral<T> extends true
+export type TrainCase<T extends string, N extends boolean = false>
+    = IsStringLiteral<T> extends true
         ? T extends `${infer F}${infer R}`
             ? F extends Uppercase<F>
                 ? R extends `${infer Next}${infer Rest}`
@@ -310,8 +310,8 @@ export type LowerFirst<T extends string> = IsStringLiteral<T> extends true ? (T 
  * type Result2 = FlipCase<'Hello World'> // type Result2 = 'hELLO wORLD'
  * type Result3 = FlipCase<'123'> // type Result3 = '123'
  */
-export type FlipCase<T extends string> =
-    IsStringLiteral<T> extends true
+export type FlipCase<T extends string>
+    = IsStringLiteral<T> extends true
         ? T extends `${infer C}${infer Rest}`
             ? `${C extends Uppercase<C> ? Lowercase<C> : Uppercase<C>}${FlipCase<Rest>}`
             : T
@@ -446,29 +446,29 @@ export type PascalSnakeCase<T extends string> = T & {
  * type Case4 = IdentifyCase<'FooBar'> // type Case4 = 'pascal'
  * type Case5 = IdentifyCase<'FOO_BAR'> // type Case5 = 'upper'
  */
-export type IdentifyCase<T extends string> =
-    IsStringLiteral<T> extends true
+export type IdentifyCase<T extends string>
+    = IsStringLiteral<T> extends true
         ? T extends Lowercase<T>
             ? T extends `${string}_${string}`
                 ? "snake"
                 : T extends `${string}-${string}`
-                  ? "kebab"
-                  : T extends `${string}${string}`
-                    ? "flat"
-                    : "lower"
+                    ? "kebab"
+                    : T extends `${string}${string}`
+                        ? "flat"
+                        : "lower"
             : T extends Uppercase<T>
-              ? "upper"
-              : T extends Capitalize<string>
-                ? T extends `${Uppercase<string>}${string}`
-                    ? T extends `${string}-${string}`
-                        ? "train"
-                        : "pascal"
-                    : T extends `${Lowercase<string>}${Capitalize<string>}`
-                      ? "camel"
-                      : T extends `${Capitalize<string>} ${Lowercase<string>}`
-                        ? "title"
-                        : "mixed"
-                : "mixed"
+                ? "upper"
+                : T extends Capitalize<string>
+                    ? T extends `${Uppercase<string>}${string}`
+                        ? T extends `${string}-${string}`
+                            ? "train"
+                            : "pascal"
+                        : T extends `${Lowercase<string>}${Capitalize<string>}`
+                            ? "camel"
+                            : T extends `${Capitalize<string>} ${Lowercase<string>}`
+                                ? "title"
+                                : "mixed"
+                    : "mixed"
         : string;
 
 /**
@@ -493,25 +493,25 @@ export type IdentifyCase<T extends string> =
 export type SplitByCase<T, Separator extends string = SplitterCharacter, Accumulator extends unknown[] = []> = string extends Separator
     ? string[]
     : T extends `${infer F}${infer R}`
-      ? [LastOfArray<Accumulator>] extends [never]
-          ? SplitByCase<R, Separator, [F]>
-          : LastOfArray<Accumulator> extends string
-            ? R extends ""
-                ? SplitByCase<R, Separator, [...RemoveLastOfArray<Accumulator>, `${LastOfArray<Accumulator>}${F}`]>
-                : SameLetterCase<F, FirstOfString<R>> extends true
-                  ? F extends Separator
-                      ? FirstOfString<R> extends Separator
-                          ? SplitByCase<R, Separator, [...Accumulator, ""]>
-                          : IsUpperCase<FirstOfString<R>> extends true
-                            ? SplitByCase<RemoveFirstOfString<R>, Separator, [...Accumulator, FirstOfString<R>]>
-                            : SplitByCase<R, Separator, [...Accumulator, ""]>
-                      : SplitByCase<R, Separator, [...RemoveLastOfArray<Accumulator>, `${LastOfArray<Accumulator>}${F}`]>
-                  : IsLowerCase<F> extends true
-                    ? SplitByCase<RemoveFirstOfString<R>, Separator, [...RemoveLastOfArray<Accumulator>, `${LastOfArray<Accumulator>}${F}`, FirstOfString<R>]>
-                    : SplitByCase<R, Separator, [...Accumulator, F]>
-            : never
-      : Accumulator extends []
-        ? T extends ""
-            ? []
-            : string[]
-        : Accumulator;
+        ? [LastOfArray<Accumulator>] extends [never]
+            ? SplitByCase<R, Separator, [F]>
+            : LastOfArray<Accumulator> extends string
+                ? R extends ""
+                    ? SplitByCase<R, Separator, [...RemoveLastOfArray<Accumulator>, `${LastOfArray<Accumulator>}${F}`]>
+                    : SameLetterCase<F, FirstOfString<R>> extends true
+                        ? F extends Separator
+                            ? FirstOfString<R> extends Separator
+                                ? SplitByCase<R, Separator, [...Accumulator, ""]>
+                                : IsUpperCase<FirstOfString<R>> extends true
+                                    ? SplitByCase<RemoveFirstOfString<R>, Separator, [...Accumulator, FirstOfString<R>]>
+                                    : SplitByCase<R, Separator, [...Accumulator, ""]>
+                            : SplitByCase<R, Separator, [...RemoveLastOfArray<Accumulator>, `${LastOfArray<Accumulator>}${F}`]>
+                        : IsLowerCase<F> extends true
+                            ? SplitByCase<RemoveFirstOfString<R>, Separator, [...RemoveLastOfArray<Accumulator>, `${LastOfArray<Accumulator>}${F}`, FirstOfString<R>]>
+                            : SplitByCase<R, Separator, [...Accumulator, F]>
+                : never
+        : Accumulator extends []
+            ? T extends ""
+                ? []
+                : string[]
+            : Accumulator;

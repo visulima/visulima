@@ -76,8 +76,12 @@ const App = () => {
                 <ConfirmDialog onCancel={() => setShowConfirm(false)} onConfirm={exit} title="All set?" tone="info">
                     <Box flexDirection="column">
                         <Text>
-                            Submit as <Text bold>{submitted?.name ?? ""}</Text> &lt;
-                            {submitted?.email ?? ""}
+                            Submit as
+{" "}
+<Text bold>{submitted?.name ?? ""}</Text>
+{" "}
+&lt;
+{submitted?.email ?? ""}
                             &gt;?
                         </Text>
                     </Box>

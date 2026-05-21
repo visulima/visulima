@@ -60,9 +60,16 @@ const App = () => {
             </Box>
 
             <Text dimColor>
-                {lineCount} line
-                {lineCount === 1 ? "" : "s"} ·{charCount} char
-                {charCount === 1 ? "" : "s"}
+                {lineCount}
+{" "}
+line
+{lineCount === 1 ? "" : "s"}
+{" "}
+·
+{charCount}
+{" "}
+char
+{charCount === 1 ? "" : "s"}
             </Text>
 
             {submitted !== undefined && (

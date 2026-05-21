@@ -3,21 +3,21 @@ import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 interface StatCardProps {
+    children?: ReactNode;
+    className?: string;
     label: string;
-    value: ReactNode;
-    unit?: string;
     sub?: ReactNode;
     tone?: "default" | "good" | "warn" | "bad";
+    unit?: string;
+    value: ReactNode;
     variant?: "hero" | "compact" | "stat";
-    className?: string;
-    children?: ReactNode;
 }
 
 const toneClass: Record<NonNullable<StatCardProps["tone"]>, string> = {
+    bad: "text-accent",
     default: "text-fg",
     good: "text-success",
     warn: "text-warning",
-    bad: "text-accent",
 };
 
 /**
@@ -26,14 +26,14 @@ const toneClass: Record<NonNullable<StatCardProps["tone"]>, string> = {
  * Compact — small bordered block for grid stacks.
  */
 export const StatCard = ({
+    children,
+    className,
     label,
-    value,
-    unit,
     sub,
     tone = "default",
+    unit,
+    value,
     variant = "compact",
-    className,
-    children,
 }: StatCardProps) => {
     if (variant === "hero") {
         return (

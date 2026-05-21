@@ -6,7 +6,7 @@ const tryStringify = (o: any): string => {
     try {
         return JSON.stringify(o);
     } catch {
-        return '"[Circular]"';
+        return "\"[Circular]\"";
     }
 };
 
@@ -67,7 +67,7 @@ export const format = (fmt: Record<string, any> | string, arguments_: any[] = []
     let usedStyle = false;
     let previousCss: CssObject | undefined;
 
-    for (let index = 0; index < fmt.length; ) {
+    for (let index = 0; index < fmt.length;) {
         if (fmt.codePointAt(index) === CHAR_PERCENT && index + 1 < fmt.length) {
             lastPosition = lastPosition > -1 ? lastPosition : 0;
 
@@ -195,8 +195,8 @@ export const format = (fmt: Record<string, any> | string, arguments_: any[] = []
                         result += fmt.slice(lastPosition, index);
                     }
 
-                    result +=
-                        typeof arguments_[a as keyof typeof arguments_] === "object"
+                    result
+                        += typeof arguments_[a as keyof typeof arguments_] === "object"
                             ? stringify(arguments_[a as keyof typeof arguments_])
                             : String(arguments_[a as keyof typeof arguments_]);
                     lastPosition = index + 2;
@@ -243,7 +243,7 @@ export const format = (fmt: Record<string, any> | string, arguments_: any[] = []
 export const build = (
     options: Options = {},
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): ((f: NonNullable<Record<string, any> | string>, arguments_?: any[], formatOptions?: Omit<Options, "formatters">) => string) => {
+): (f: NonNullable<Record<string, any> | string>, arguments_?: any[], formatOptions?: Omit<Options, "formatters">) => string => {
     const formatters: FormatterMap = {};
 
     if (typeof options.formatters === "object") {

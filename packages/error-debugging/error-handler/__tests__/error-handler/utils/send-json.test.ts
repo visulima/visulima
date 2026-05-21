@@ -32,7 +32,7 @@ describe(sendJson, () => {
         sendJson(res, data, "application/custom+json");
 
         // eslint-disable-next-line no-underscore-dangle
-        expect(res._getData()).toBe('{"message":"custom type"}');
+        expect(res._getData()).toBe("{\"message\":\"custom type\"}");
         expect(res.getHeader("content-type")).toBe("application/custom+json");
     });
 
@@ -61,7 +61,7 @@ describe(sendJson, () => {
         sendJson(res, data);
 
         // eslint-disable-next-line no-underscore-dangle
-        expect(res._getData()).toBe('[1,2,3,"test"]');
+        expect(res._getData()).toBe("[1,2,3,\"test\"]");
     });
 
     it("should handle null and undefined values", () => {
@@ -76,7 +76,7 @@ describe(sendJson, () => {
         sendJson(res, data);
 
         // eslint-disable-next-line no-underscore-dangle
-        expect(res._getData()).toBe('{"nullValue":null}'); // undefined values are omitted by JSON.stringify
+        expect(res._getData()).toBe("{\"nullValue\":null}"); // undefined values are omitted by JSON.stringify
     });
 
     it("should handle complex nested objects", () => {

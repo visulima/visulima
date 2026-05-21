@@ -15,8 +15,8 @@
 
 import type { VisConfig } from "../../config/types";
 import { DEFAULT_MARSHALL_CONCURRENCY, mapWithConcurrency } from "../marshalls/concurrency";
-import { findNewestPriorWithAttestations } from "../marshalls/provenance";
 import { getPackument } from "../marshalls/packument";
+import { findNewestPriorWithAttestations } from "../marshalls/provenance";
 import { findAcceptedRisk } from "../socket-security";
 import type { PolicyDecision, PolicyInput } from "./index";
 

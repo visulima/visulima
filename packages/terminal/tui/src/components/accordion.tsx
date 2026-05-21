@@ -151,11 +151,13 @@ export default function Accordion({
                                 {item.title}
                             </Text>
                         </Box>
-                        {isOpen ? (
+                        {isOpen
+                            ? (
                             <Box flexDirection="column" marginBottom={1} marginLeft={4}>
                                 {item.content}
                             </Box>
-                        ) : undefined}
+                            )
+                            : undefined}
                     </Box>
                 );
             })}

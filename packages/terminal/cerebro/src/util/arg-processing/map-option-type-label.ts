@@ -5,7 +5,7 @@ import isBoolean from "./option-is-boolean";
 const getTypeLabel = <OD extends OptionDefinition<any>>(definition: PossibleOptionDefinition<OD>) => {
     let typeLabel = definition.type ? definition.type.name.toLowerCase() : "string";
 
-    const multiple = (definition.multiple ?? definition.lazyMultiple) ? "[]" : "";
+    const multiple = definition.multiple ?? definition.lazyMultiple ? "[]" : "";
 
     if (typeLabel) {
         typeLabel = typeLabel === "boolean" ? "" : `{underline ${typeLabel}${multiple}}`;

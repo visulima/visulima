@@ -8,6 +8,7 @@ expect.extend(matchers);
 // test files resolves to Node's broken global instead of jsdom's per-window
 // implementation. Rebind both Web Storage globals to jsdom so the same tests
 // work on Node 22/24/25.
+// eslint-disable-next-line sonarjs/different-types-comparison -- `globalThis.window` is undefined outside jsdom.
 if (globalThis.window !== undefined && globalThis.localStorage) {
     for (const key of ["localStorage", "sessionStorage"] as const) {
         try {

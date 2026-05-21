@@ -113,7 +113,8 @@ describe("flex-align-items", () => {
             <Box alignItems="baseline" height={3}>
                 <Text>
                     A
-                    <Newline />B
+                    <Newline />
+B
                 </Text>
                 <Text>X</Text>
             </Box>,

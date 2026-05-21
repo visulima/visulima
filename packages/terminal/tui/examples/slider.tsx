@@ -55,7 +55,10 @@ const App = () => {
                         </Text>
                     </Box>
                     <Slider accentColor="green" defaultValue={volume} isFocused={activeIndex === 0} onChange={setVolume} width={30} />
-                    <Text color="green">{String(volume).padStart(3)}%</Text>
+                    <Text color="green">
+{String(volume).padStart(3)}
+%
+                    </Text>
                 </Box>
 
                 <Box gap={1}>
@@ -66,7 +69,10 @@ const App = () => {
                         </Text>
                     </Box>
                     <Slider accentColor="yellow" defaultValue={brightness} isFocused={activeIndex === 1} onChange={setBrightness} width={30} />
-                    <Text color="yellow">{String(brightness).padStart(3)}%</Text>
+                    <Text color="yellow">
+{String(brightness).padStart(3)}
+%
+                    </Text>
                 </Box>
 
                 <Box gap={1}>
@@ -89,7 +95,10 @@ const App = () => {
                         thumbCharacter="O"
                         width={30}
                     />
-                    <Text color="red">{temperature}C</Text>
+                    <Text color="red">
+{temperature}
+C
+                    </Text>
                 </Box>
             </Box>
 

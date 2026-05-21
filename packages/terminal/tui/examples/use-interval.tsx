@@ -47,11 +47,15 @@ const App = () => {
                 useInterval
             </Text>
             <Text>
-                tick: <Text bold>{count}</Text>
+                tick:
+{" "}
+<Text bold>{count}</Text>
             </Text>
             <Text dimColor>
                 status:
-                {running ? "running" : "paused"} — press Space to toggle, r to reset
+                {running ? "running" : "paused"}
+{" "}
+— press Space to toggle, r to reset
             </Text>
         </Box>
     );

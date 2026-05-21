@@ -2,7 +2,7 @@ import type { LiteralUnion } from "type-fest";
 
 import type { ExtendedRfc5424LogLevels } from "../types";
 
-const writeConsoleLogBasedOnLevel = <L extends string = string>(level: LiteralUnion<ExtendedRfc5424LogLevels, L>): ((...data: any[]) => void) => {
+const writeConsoleLogBasedOnLevel = <L extends string = string>(level: LiteralUnion<ExtendedRfc5424LogLevels, L>): (...data: any[]) => void => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const c = console as Record<string, any>;
 

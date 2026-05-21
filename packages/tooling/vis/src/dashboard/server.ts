@@ -379,13 +379,18 @@ export const startDashboardServer = async (options: DashboardServerOptions): Pro
     });
 
     await new Promise<void>((resolve, reject) => {
-        server.once("listening", () => { resolve(); });
-        server.once("error", (error) => { reject(error); });
+        server.once("listening", () => {
+            resolve();
+        });
+        server.once("error", (error: Error) => {
+            reject(error);
+        });
     });
 
     const address = server.address() as AddressInfo;
     const boundPort = typeof address === "object" && address ? address.port : options.port;
     // Wildcard binds (IPv4 0.0.0.0, IPv6 ::/::0) aren't valid in a URL — substitute the loopback name.
+    // eslint-disable-next-line sonarjs/no-hardcoded-ip -- string comparison against canonical wildcard literals, not a binding target.
     const isWildcard = options.host === "0.0.0.0" || options.host === "::" || options.host === "::0";
     const displayHost = isWildcard ? "localhost" : options.host;
     const url = `http://${displayHost}:${String(boundPort)}`;

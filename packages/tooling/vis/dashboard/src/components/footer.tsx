@@ -3,26 +3,26 @@ import type { LiveStatus } from "@/hooks/use-live-events";
 import { cn } from "@/lib/utils";
 
 interface FooterProps {
-    workspaceRoot: string | undefined;
-    node: string | undefined;
-    platform: string | undefined;
     arch: string | undefined;
     live: LiveStatus;
+    node: string | undefined;
+    platform: string | undefined;
+    workspaceRoot: string | undefined;
 }
 
 const liveLabel: Record<LiveStatus, string> = {
-    open: "LIVE",
-    connecting: "CONNECTING",
     closed: "OFFLINE",
+    connecting: "CONNECTING",
+    open: "LIVE",
 };
 
 const liveColor: Record<LiveStatus, string> = {
-    open: "bg-success",
-    connecting: "bg-warning",
     closed: "bg-accent",
+    connecting: "bg-warning",
+    open: "bg-success",
 };
 
-export const Footer = ({ workspaceRoot, node, platform, arch, live }: FooterProps) => {
+export const Footer = ({ arch, live, node, platform, workspaceRoot }: FooterProps) => {
     const platformLabel = platform && arch ? `${platform}/${arch}` : platform ?? "—";
 
     return (
@@ -38,28 +38,35 @@ export const Footer = ({ workspaceRoot, node, platform, arch, live }: FooterProp
                             live === "open" && "nd-blink",
                         )}
                     />
-                    {liveLabel[live]} SSE
+                    {liveLabel[live]}
+{" "}
+SSE
                 </span>
                 <span aria-hidden>·</span>
-                <span>NODE {node ?? "—"}</span>
+                <span>
+NODE
+{node ?? "—"}
+                </span>
                 <span aria-hidden>·</span>
                 <span>{platformLabel}</span>
-                {workspaceRoot ? (
+                {workspaceRoot
+                    ? (
                     <>
                         <span aria-hidden>·</span>
                         <span className="break-all normal-case tracking-normal text-faint">{workspaceRoot}</span>
                     </>
-                ) : null}
+                    )
+                    : null}
             </span>
 
             <span className="nd-sig-by inline-flex items-center gap-2">
                 <span>built by</span>
                 <a
+                    aria-label="Anolilab"
                     className="nd-sig-by-link inline-flex items-center"
                     href="https://anolilab.com"
                     rel="noreferrer noopener"
                     target="_blank"
-                    aria-label="Anolilab"
                 >
                     <AnolilabLogo />
                 </a>

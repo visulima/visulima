@@ -263,7 +263,7 @@ describe("ono class", () => {
 
         const html = await ono.toHTML(error, { openInEditorUrl: "/__open-in-editor" });
 
-        expect(html).toContain('id="editor-selector"');
+        expect(html).toContain("id=\"editor-selector\"");
         expect(html).toContain("/__open-in-editor");
     });
 
@@ -275,7 +275,7 @@ describe("ono class", () => {
 
         const html = await ono.toHTML(error, {});
 
-        expect(html).not.toContain('id="editor-selector"');
+        expect(html).not.toContain("id=\"editor-selector\"");
     });
 
     it("adds nonce to inline style and script tags when cspNonce is provided", async () => {

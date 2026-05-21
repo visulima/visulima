@@ -166,12 +166,12 @@ const colorKeywords: Map<string, string> = new Map<string, string>([
 const HASH_PATTERN = /^#([\dA-F]{2})([\dA-F]{2})([\dA-F]{2})([\dA-F]{2})?$/i;
 // eslint-disable-next-line regexp/optimal-quantifier-concatenation,regexp/no-unused-capturing-group
 const SMALL_HASH_PATTERN = /^#([\dA-F])([\dA-F])([\dA-F])([\dA-F])?$/i;
-const RGB_PATTERN =
+const RGB_PATTERN
     // eslint-disable-next-line regexp/no-unused-capturing-group,sonarjs/regex-complexity
-    /^rgba?\(\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))\s*,\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))\s*,\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))\s*(,\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))\s*)?\)$/;
-const HSL_PATTERN =
+    = /^rgba?\(\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))\s*,\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))\s*,\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))\s*(,\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))\s*)?\)$/;
+const HSL_PATTERN
     // eslint-disable-next-line regexp/no-unused-capturing-group,sonarjs/regex-complexity
-    /^hsla?\(\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))\s*,\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))%\s*,\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))%\s*(,\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))\s*)?\)$/;
+    = /^hsla?\(\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))\s*,\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))%\s*,\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))%\s*(,\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))\s*)?\)$/;
 
 /* eslint-disable unicorn/no-null */
 const getDefaultCss = (): CssObject => {

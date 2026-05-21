@@ -54,16 +54,16 @@ export interface WhenCondition {
  * `{ name, exists: true }` (set + non-empty). The object form
  * supports either presence assertions or exact-value matching.
  */
-export type EnvMatcher =
-    | string
-    | {
-          /** Match this exact value. Mutually exclusive with `exists`. */
-          equals?: string;
-          /** Assert the variable is set & non-empty (`true`) or unset/empty (`false`). */
-          exists?: boolean;
-          /** Variable name. */
-          name: string;
-      };
+export type EnvMatcher
+    = | string
+        | {
+        /** Match this exact value. Mutually exclusive with `exists`. */
+            equals?: string;
+            /** Assert the variable is set & non-empty (`true`) or unset/empty (`false`). */
+            exists?: boolean;
+            /** Variable name. */
+            name: string;
+        };
 
 /** Aliased platform list — `"windows"` is sugar for Node's `"win32"`. */
 export type NodePlatform = "aix" | "darwin" | "freebsd" | "linux" | "openbsd" | "sunos" | "windows" | "win32";

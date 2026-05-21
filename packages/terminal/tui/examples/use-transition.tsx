@@ -60,7 +60,9 @@ const SearchApp = () => {
     return (
         <Box flexDirection="column" padding={1}>
             <Text>
-                Search: {query}
+                Search:
+{" "}
+{query}
                 {isPending ? <Text color="yellow"> (filtering...)</Text> : null}
             </Text>
             <Box flexDirection="column" marginTop={1}>

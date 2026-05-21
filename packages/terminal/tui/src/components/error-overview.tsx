@@ -51,16 +51,24 @@ export default function ErrorOverview({ error }: Props): ReactElement {
             <Box>
                 <Text backgroundColor="red" color="white">
                     {" "}
-                    ERROR{" "}
+                    ERROR
+{" "}
                 </Text>
 
-                <Text> {error.message}</Text>
+                <Text>
+{" "}
+{error.message}
+                </Text>
             </Box>
 
             {origin && filePath ? (
                 <Box marginTop={1}>
                     <Text dimColor>
-                        {filePath}:{origin.line}:{origin.column}
+                        {filePath}
+:
+{origin.line}
+:
+{origin.column}
                     </Text>
                 </Box>
             ) : null}
@@ -76,7 +84,8 @@ export default function ErrorOverview({ error }: Props): ReactElement {
                                     color={line === origin.line ? "white" : undefined}
                                     dimColor={line !== origin.line}
                                 >
-                                    {String(line).padStart(lineWidth, " ")}:
+                                    {String(line).padStart(lineWidth, " ")}
+:
                                 </Text>
                             </Box>
 
@@ -114,7 +123,13 @@ export default function ErrorOverview({ error }: Props): ReactElement {
                                 </Text>
                                 <Text aria-label={`at ${fileLabel} line ${trace.line} column ${trace.column}`} color="gray" dimColor>
                                     {" "}
-                                    ({fileLabel}:{trace.line}:{trace.column})
+                                    (
+{fileLabel}
+:
+{trace.line}
+:
+{trace.column}
+)
                                 </Text>
                             </Box>
                         );

@@ -7,6 +7,7 @@ const STORAGE_KEY = "vis-dashboard-theme";
 const readStored = (): Theme | undefined => {
     try {
         const value = localStorage.getItem(STORAGE_KEY);
+
         return value === "light" || value === "dark" ? value : undefined;
     } catch {
         return undefined;
@@ -14,13 +15,14 @@ const readStored = (): Theme | undefined => {
 };
 
 const systemTheme = (): Theme =>
-    window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    (globalThis.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
 
 export const useTheme = () => {
     const [theme, setTheme] = useState<Theme>(() => readStored() ?? systemTheme());
 
     useEffect(() => {
         document.documentElement.dataset.theme = theme;
+
         try {
             localStorage.setItem(STORAGE_KEY, theme);
         } catch {}
