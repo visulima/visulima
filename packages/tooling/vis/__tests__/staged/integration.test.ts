@@ -258,6 +258,40 @@ describe("runStaged — integration", () => {
         expect(readFileSync(join(sub, "a.txt"), "utf8")).toBe("line-1 staged\nunstaged\n");
     });
 
+    // Regression: GitHub Actions runners set `diff.relative=true` in global git config, which makes
+    // `git diff --name-only --staged` emit cwd-relative paths instead of worktree-relative ones.
+    // The workflow must compensate by running path-discovery commands from the worktree root.
+    it("survives a global diff.relative=true config when invoked from a subdirectory", async () => {
+        expect.assertions(2);
+
+        sh(["config", "diff.relative", "true"], root);
+
+        const sub = join(root, "pkg/child");
+
+        mkdirSync(sub, { recursive: true });
+        writeFileSync(join(sub, "a.txt"), "line-1\n");
+        sh(["add", "pkg/child/a.txt"], root);
+        sh(["commit", "-q", "-m", "chore: init"], root);
+
+        writeFileSync(join(sub, "a.txt"), "line-1 staged\n");
+        sh(["add", "pkg/child/a.txt"], root);
+        writeFileSync(join(sub, "a.txt"), "line-1 staged\nunstaged\n");
+
+        const result = await runStaged({
+            config: {
+                "*.txt": {
+                    task: () => {},
+                    title: "noop",
+                },
+            },
+            cwd: sub,
+            stash: true,
+        });
+
+        expect(result.success).toBe(true);
+        expect(readFileSync(join(sub, "a.txt"), "utf8")).toBe("line-1 staged\nunstaged\n");
+    });
+
     // ----- Flag coverage ------------------------------------------------------
 
     it("fails with --fail-on-changes when a task modifies staged content", async () => {
