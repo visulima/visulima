@@ -48,23 +48,36 @@ const fetchWikipediaPage = async (title: string): Promise<string> => {
     return response.text();
 };
 
+const stripHtmlTagsSafely = (input: string): string => {
+    let previous: string;
+    let current = input;
+
+    do {
+        previous = current;
+        // eslint-disable-next-line sonarjs/slow-regex
+        current = current.replaceAll(/<[^>]+>/g, "");
+    } while (current !== previous);
+
+    return current;
+};
+
 /**
  * Extract text content from HTML, handling nested tags and links.
  */
 const extractTextFromHtml = (html: string): string =>
-    html
-        .replaceAll(/<a[^>]*>([\s\S]*?)<\/a>/gi, "$1") // Extract link text
-        .replaceAll(/<span[^>]*>([\s\S]*?)<\/span>/gi, "$1") // Extract span content
-        // eslint-disable-next-line sonarjs/slow-regex
-        .replaceAll(/<[^>]+>/g, "") // Remove remaining HTML tags
+    stripHtmlTagsSafely(
+        html
+            .replaceAll(/<a[^>]*>([\s\S]*?)<\/a>/gi, "$1") // Extract link text
+            .replaceAll(/<span[^>]*>([\s\S]*?)<\/span>/gi, "$1"), // Extract span content
+    )
         .replaceAll("&nbsp;", " ")
-        .replaceAll("&amp;", "&")
         .replaceAll("&lt;", "<")
         .replaceAll("&gt;", ">")
         .replaceAll("&quot;", "\"")
         .replaceAll("&#91;", "[")
         .replaceAll("&#93;", "]")
         .replaceAll("&#160;", " ")
+        .replaceAll("&amp;", "&")
         .trim();
 
 /**

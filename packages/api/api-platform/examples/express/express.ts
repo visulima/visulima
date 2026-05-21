@@ -1,5 +1,6 @@
 import express from "express";
 import Cors from "cors";
+import rateLimit from "express-rate-limit";
 import { swaggerHandler } from "@visulima/api-platform";
 
 const PORT = process.env.PORT || 3002;
@@ -15,6 +16,11 @@ const cors = Cors({
 });
 
 app.use(cors);
+
+const swaggerRateLimiter = rateLimit({
+    max: 100,
+    windowMs: 15 * 60 * 1000,
+});
 
 app.get("/admin", (_request, response) => response.sendStatus(200));
 app.get("/admin/members", (_request, response) => response.sendStatus(200));
@@ -41,6 +47,7 @@ app.delete("/blog/:id", (_request, response) => response.sendStatus(200));
 
 app.use(
     "/api/swagger",
+    swaggerRateLimiter,
     swaggerHandler({
         allowedMediaTypes: {
             "application/json": true,

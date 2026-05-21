@@ -1,4 +1,4 @@
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import { existsSync, rmSync, statSync } from "node:fs";
 import process from "node:process";
 
@@ -94,8 +94,10 @@ const listCommand = async (
                 // || rm -r ./framework-list removes framework-list directory in case tsc fails
 
                 try {
-                    // eslint-disable-next-line sonarjs/os-command -- tscPath resolved from user's local node_modules; pre-existing CLI behavior
-                    execSync(`${tscPath} --outDir framework-list >&2`, { cwd: appWorkingDirectoryPath });
+                    execFileSync(tscPath, ["--outDir", "framework-list"], {
+                        cwd: appWorkingDirectoryPath,
+                        stdio: ["ignore", "inherit", "inherit"],
+                    });
                 } catch (error) {
                     // eslint-disable-next-line no-console
                     console.log("TSC compilation failed. Please resolve issues in your project.\n");

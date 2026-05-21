@@ -2611,6 +2611,9 @@ importers:
       express:
         specifier: catalog:backend
         version: 5.2.1
+      express-rate-limit:
+        specifier: ^8.4.1
+        version: 8.5.2(express@5.2.1)
       winston:
         specifier: catalog:prod
         version: 3.19.0
@@ -24436,6 +24439,12 @@ packages:
 
   express-rate-limit@8.3.2:
     resolution: {integrity: sha512-77VmFeJkO0/rvimEDuUC5H30oqUC4EyOhyGccfqoLebB0oiEYfM7nwPrsDsBL1gsTpwfzX8SFy2MT3TDyRq+bg==}
+    engines: {node: '>= 16'}
+    peerDependencies:
+      express: '>=4.22.0'
+
+  express-rate-limit@8.5.2:
+    resolution: {integrity: sha512-5Kb34ipNX694DH48vN9irak1Qx30nb0PLYHXfJgw4YEjiC3ZEmZJhwOp+VfiCYwFzvFTdB9QkArYS5kXa2cx2A==}
     engines: {node: '>= 16'}
     peerDependencies:
       express: '>=4.22.0'
@@ -53528,6 +53537,11 @@ snapshots:
       jest-util: 30.3.0
 
   express-rate-limit@8.3.2(express@5.2.1):
+    dependencies:
+      express: 5.2.1
+      ip-address: 10.2.0
+
+  express-rate-limit@8.5.2(express@5.2.1):
     dependencies:
       express: 5.2.1
       ip-address: 10.2.0

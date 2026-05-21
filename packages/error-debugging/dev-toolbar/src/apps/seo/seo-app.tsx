@@ -389,8 +389,20 @@ const validateJsonLd = (schema: Record<string, unknown>): JsonLdValidationMessag
 
     if (!context) {
         msgs.push({ message: "@context is missing — should be 'https://schema.org'", property: "@context", severity: "error" });
-    } else if (!context.includes("schema.org")) {
-        msgs.push({ message: "@context should reference schema.org", property: "@context", severity: "warning" });
+    } else {
+        let isSchemaOrgContext = false;
+
+        try {
+            const host = new URL(context).hostname.toLowerCase();
+
+            isSchemaOrgContext = host === "schema.org" || host.endsWith(".schema.org");
+        } catch {
+            isSchemaOrgContext = false;
+        }
+
+        if (!isSchemaOrgContext) {
+            msgs.push({ message: "@context should reference schema.org", property: "@context", severity: "warning" });
+        }
     }
 
     if (!type) {

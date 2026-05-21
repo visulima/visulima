@@ -160,7 +160,9 @@ async function sanitizeMdx(filePath) {
             const frontmatter = content.substring(3, fmEnd);
             const fixedFm = frontmatter.replace(/^(\w[\w-]*):\s+(?!["'|>])(.+)$/gm, (match, key, value) => {
                 if (/[@:#{}[\],&*?|><!%`]/.test(value)) {
-                    return `${key}: "${value.replace(/"/g, '\\"')}"`;
+                    const escapedValue = value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+
+                    return `${key}: "${escapedValue}"`;
                 }
                 return match;
             });
