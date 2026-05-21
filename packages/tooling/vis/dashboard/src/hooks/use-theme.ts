@@ -14,8 +14,7 @@ const readStored = (): Theme | undefined => {
     }
 };
 
-const systemTheme = (): Theme =>
-    (globalThis.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+const systemTheme = (): Theme => (globalThis.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
 
 export const useTheme = () => {
     const [theme, setTheme] = useState<Theme>(() => readStored() ?? systemTheme());

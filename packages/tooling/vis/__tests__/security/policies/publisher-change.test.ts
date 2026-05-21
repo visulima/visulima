@@ -46,10 +46,7 @@ const packument = (name: string, versions: Record<string, VersionShape>): Record
                 .map(([version, v]) => [version, v.publishedAt]),
         ),
         versions: Object.fromEntries(
-            Object.entries(versions).map(([version, v]) => [
-                version,
-                v.hasProvenance ? { dist: { attestations: { provenance: {} } }, version } : { version },
-            ]),
+            Object.entries(versions).map(([version, v]) => [version, v.hasProvenance ? { dist: { attestations: { provenance: {} } }, version } : { version }]),
         ),
     };
 };

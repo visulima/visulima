@@ -48,54 +48,50 @@ export const evaluatePublisherChangePolicy = async (input: PolicyInput, config: 
     const acceptedRisks = config.security?.acceptedRisks;
     const now = Date.now();
 
-    const perPackage = await mapWithConcurrency(
-        input.packages,
-        DEFAULT_MARSHALL_CONCURRENCY,
-        async (pkg): Promise<PolicyDecision | undefined> => {
-            if (isExcluded(pkg.name, pkg.version, exclude)) {
+    const perPackage = await mapWithConcurrency(input.packages, DEFAULT_MARSHALL_CONCURRENCY, async (pkg): Promise<PolicyDecision | undefined> => {
+        if (isExcluded(pkg.name, pkg.version, exclude)) {
+            return undefined;
+        }
+
+        const packument = await getPackument(pkg.name, { workspaceRoot: input.workspaceRoot });
+
+        if (packument === undefined) {
+            return undefined;
+        }
+
+        if (ignoreAfterMs !== undefined) {
+            const publishedAt = packument.time?.[pkg.version];
+            const publishedMs = publishedAt === undefined ? Number.NaN : Date.parse(publishedAt);
+
+            if (!Number.isNaN(publishedMs) && now - publishedMs > ignoreAfterMs) {
                 return undefined;
             }
+        }
 
-            const packument = await getPackument(pkg.name, { workspaceRoot: input.workspaceRoot });
+        const entry = packument.versions[pkg.version];
 
-            if (packument === undefined) {
-                return undefined;
-            }
+        if (entry?.dist?.attestations?.provenance !== undefined) {
+            return undefined;
+        }
 
-            if (ignoreAfterMs !== undefined) {
-                const publishedAt = packument.time?.[pkg.version];
-                const publishedMs = publishedAt === undefined ? Number.NaN : Date.parse(publishedAt);
+        const priorWithProvenance = findNewestPriorWithAttestations(packument, pkg.version);
 
-                if (!Number.isNaN(publishedMs) && now - publishedMs > ignoreAfterMs) {
-                    return undefined;
-                }
-            }
+        if (priorWithProvenance === undefined) {
+            return undefined;
+        }
 
-            const entry = packument.versions[pkg.version];
-
-            if (entry?.dist?.attestations?.provenance !== undefined) {
-                return undefined;
-            }
-
-            const priorWithProvenance = findNewestPriorWithAttestations(packument, pkg.version);
-
-            if (priorWithProvenance === undefined) {
-                return undefined;
-            }
-
-            return {
-                acceptedRisk: findAcceptedRisk(pkg.name, pkg.version, acceptedRisks, "publisherChange"),
-                data: {
-                    priorVersionWithProvenance: priorWithProvenance,
-                },
-                packageName: pkg.name,
-                policy: "publisherChange",
-                reason: `${pkg.name}@${pkg.version} dropped the provenance attestation that ${pkg.name}@${priorWithProvenance} carried — publisher trust downgrade.`,
-                severity: "block",
-                version: pkg.version,
-            };
-        },
-    );
+        return {
+            acceptedRisk: findAcceptedRisk(pkg.name, pkg.version, acceptedRisks, "publisherChange"),
+            data: {
+                priorVersionWithProvenance: priorWithProvenance,
+            },
+            packageName: pkg.name,
+            policy: "publisherChange",
+            reason: `${pkg.name}@${pkg.version} dropped the provenance attestation that ${pkg.name}@${priorWithProvenance} carried — publisher trust downgrade.`,
+            severity: "block",
+            version: pkg.version,
+        };
+    });
 
     return perPackage.filter((decision): decision is PolicyDecision => decision !== undefined);
 };

@@ -14,11 +14,7 @@ export const CacheView = () => {
     }
 
     if (!cacheQuery.data) {
-        return (
-            <div className="nd-mono py-16 text-center text-[12px] uppercase tracking-[0.16em] text-faint">
-                [NO CACHE DATA]
-            </div>
-        );
+        return <div className="nd-mono py-16 text-center text-[12px] uppercase tracking-[0.16em] text-faint">[NO CACHE DATA]</div>;
     }
 
     const cache = cacheQuery.data;
@@ -29,13 +25,11 @@ export const CacheView = () => {
     if (!cache.exists) {
         return (
             <div className="border border-dashed border-border2 bg-panel px-8 py-16">
-                <div className="nd-mono mb-3 text-[12px] uppercase tracking-[0.16em] text-muted">
-                    [CACHE NOT INITIALIZED]
-                </div>
+                <div className="nd-mono mb-3 text-[12px] uppercase tracking-[0.16em] text-muted">[CACHE NOT INITIALIZED]</div>
                 <p className="text-[14px] text-faint">
                     No cache directory found at
 {" "}
-                    <code className="nd-mono px-1 text-fg">{cache.directory}</code>
+<code className="nd-mono px-1 text-fg">{cache.directory}</code>
 .
                 </p>
             </div>
@@ -46,31 +40,14 @@ export const CacheView = () => {
         <div className="flex flex-col gap-16">
             {/* HERO: Total size */}
             <section className="grid gap-12 md:grid-cols-[1.4fr_1fr]">
-                <StatCard
-                    label="[01] · TOTAL CACHE SIZE"
-                    sub={cache.directory}
-                    value={formatBytes(cache.totalBytes)}
-                    variant="hero"
-                />
+                <StatCard label="[01] · TOTAL CACHE SIZE" sub={cache.directory} value={formatBytes(cache.totalBytes)} variant="hero" />
                 <div className="flex flex-col">
                     <StatCard label="ENTRIES" value={cache.entries.length.toLocaleString()} variant="stat" />
-                    <StatCard
-                        label="NEWEST"
-                        value={cache.entries[0] ? formatDate(cache.entries[0].mtimeIso) : "—"}
-                        variant="stat"
-                    />
-                    <StatCard
-                        label="OLDEST"
-                        value={oldest ? formatDate(oldest.mtimeIso) : "—"}
-                        variant="stat"
-                    />
+                    <StatCard label="NEWEST" value={cache.entries[0] ? formatDate(cache.entries[0].mtimeIso) : "—"} variant="stat" />
+                    <StatCard label="OLDEST" value={oldest ? formatDate(oldest.mtimeIso) : "—"} variant="stat" />
                     {cache.entries.length > 0
                         ? (
-                        <StatCard
-                            label="AVG SIZE"
-                            value={formatBytes(cache.totalBytes / cache.entries.length)}
-                            variant="stat"
-                        />
+                        <StatCard label="AVG SIZE" value={formatBytes(cache.totalBytes / cache.entries.length)} variant="stat" />
                         )
                         : null}
                 </div>
@@ -107,9 +84,7 @@ export const CacheView = () => {
                                     </TableCell>
                                     <TableCell className="nd-mono text-[13px]">{formatBytes(entry.sizeBytes)}</TableCell>
                                     <TableCell className="nd-mono text-[13px]">{formatMs(entry.ageMs)}</TableCell>
-                                    <TableCell className="nd-mono text-[12px] text-muted">
-                                        {formatDate(entry.mtimeIso)}
-                                    </TableCell>
+                                    <TableCell className="nd-mono text-[12px] text-muted">{formatDate(entry.mtimeIso)}</TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>

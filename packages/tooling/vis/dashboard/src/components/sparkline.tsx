@@ -14,20 +14,9 @@ interface SparklineProps {
  * Nothing-style line chart. 1.2px stroke `--fg`, optional dashed faint
  * average line. No fill, no legend, no zebra. Horizontal grid in `--border`.
  */
-export const Sparkline = ({
-    className,
-    height = 64,
-    points,
-    showAverage = true,
-    showAxis = true,
-    stroke = "var(--fg)",
-}: SparklineProps) => {
+export const Sparkline = ({ className, height = 64, points, showAverage = true, showAxis = true, stroke = "var(--fg)" }: SparklineProps) => {
     if (points.length < 2) {
-        return (
-            <div className={cn("nd-mono py-6 text-[12px] uppercase tracking-[0.12em] text-faint", className)}>
-                [INSUFFICIENT DATA]
-            </div>
-        );
+        return <div className={cn("nd-mono py-6 text-[12px] uppercase tracking-[0.12em] text-faint", className)}>[INSUFFICIENT DATA]</div>;
     }
 
     const values = points.map((p) => p.value);
@@ -65,19 +54,7 @@ export const Sparkline = ({
                     </g>
                     )
                     : null}
-                {showAverage
-                    ? (
-                    <line
-                        stroke="var(--faint)"
-                        strokeDasharray="1.5,1.5"
-                        strokeWidth="0.5"
-                        x1="0"
-                        x2="100"
-                        y1={avgY}
-                        y2={avgY}
-                    />
-                    )
-                    : null}
+                {showAverage ? <line stroke="var(--faint)" strokeDasharray="1.5,1.5" strokeWidth="0.5" x1="0" x2="100" y1={avgY} y2={avgY} /> : null}
                 <path d={path} fill="none" stroke={stroke} strokeWidth={1.2} vectorEffect="non-scaling-stroke" />
             </svg>
             {showAxis
@@ -86,10 +63,10 @@ export const Sparkline = ({
                     <span>{min.toFixed(0)}</span>
                     {showAverage
                         ? (
-<span>
-AVG
-{avg.toFixed(1)}
-</span>
+                        <span>
+                            AVG
+                            {avg.toFixed(1)}
+                        </span>
                         )
                         : null}
                     <span>{max.toFixed(0)}</span>

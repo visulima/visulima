@@ -151,7 +151,8 @@ describe(explainFindings, () => {
 
         let inFlight = 0;
         let peak = 0;
-        const targets = Array.from({ length: 12 }, (_, index) => target(`pkg-${String(index)}`, "1.0.0", vuln({ aliases: [], id: `GHSA-conc-${String(index)}` })));
+        const targets = Array.from({ length: 12 }, (_, index) =>
+            target(`pkg-${String(index)}`, "1.0.0", vuln({ aliases: [], id: `GHSA-conc-${String(index)}` })));
 
         const runWithRetry = vi.fn().mockImplementation(async () => {
             inFlight += 1;

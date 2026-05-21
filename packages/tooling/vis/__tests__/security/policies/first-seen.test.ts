@@ -68,9 +68,7 @@ describe(evaluateFirstSeenPolicy, () => {
         expect.assertions(2);
 
         await expect(evaluateFirstSeenPolicy(buildInput(workspaceRoot), {})).resolves.toStrictEqual([]);
-        await expect(
-            evaluateFirstSeenPolicy(buildInput(workspaceRoot), { security: { policies: { firstSeen: { minutes: 0 } } } }),
-        ).resolves.toStrictEqual([]);
+        await expect(evaluateFirstSeenPolicy(buildInput(workspaceRoot), { security: { policies: { firstSeen: { minutes: 0 } } } })).resolves.toStrictEqual([]);
     });
 
     it("blocks a version published inside the cooldown window", async () => {

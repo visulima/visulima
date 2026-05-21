@@ -168,9 +168,7 @@ describe("dashboard server", () => {
             workspaceRoot: tmpDir,
         });
 
-        const response = await fetch(
-            `${server.url}/api/runs/run-2/tasks/${encodeURIComponent("app:build")}/diff`,
-        );
+        const response = await fetch(`${server.url}/api/runs/run-2/tasks/${encodeURIComponent("app:build")}/diff`);
         const body = (await response.json()) as { entries: { change: string; key: string }[]; previousRunId: string };
 
         expect(body.previousRunId).toBe("run-1");

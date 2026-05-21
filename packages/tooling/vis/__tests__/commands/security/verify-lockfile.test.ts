@@ -4,11 +4,17 @@ import type { LockfileVerificationResult } from "../../../src/security/lockfile-
 
 const pailMock = { error: vi.fn(), info: vi.fn(), success: vi.fn(), warn: vi.fn() };
 
-vi.mock(import("../../../src/io/logger"), () => { return { pail: pailMock }; });
+vi.mock(import("../../../src/io/logger"), () => {
+    return { pail: pailMock };
+});
 
-const detectPmMock = vi.fn(() => { return { name: "npm", version: "10.0.0" }; });
+const detectPmMock = vi.fn(() => {
+    return { name: "npm", version: "10.0.0" };
+});
 
-vi.mock(import("../../../src/pm/pm-runner"), () => { return { detectPm: detectPmMock }; });
+vi.mock(import("../../../src/pm/pm-runner"), () => {
+    return { detectPm: detectPmMock };
+});
 
 const verifyLockfileMock = vi.fn();
 

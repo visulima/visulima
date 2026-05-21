@@ -19,10 +19,7 @@ import { fileURLToPath } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
 
-const CANDIDATES = [
-    resolve(here, "..", "..", "dashboard", "dist", "index.html"),
-    resolve(here, "..", "dashboard", "dist", "index.html"),
-];
+const CANDIDATES = [resolve(here, "..", "..", "dashboard", "dist", "index.html"), resolve(here, "..", "dashboard", "dist", "index.html")];
 
 const FALLBACK_HTML = `<!DOCTYPE html>
 <html lang="en">

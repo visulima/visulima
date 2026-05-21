@@ -44,16 +44,19 @@ export const App = () => {
             <main className="flex-1">
                 <div className="w-full px-12 pt-12 pb-12">
                     <header className="mb-10 border-b border-border pb-6">
-                        <h1 className="nd-mono text-[44px] uppercase leading-[0.9] tracking-[-0.02em] text-fg">
-                            {heading}
-                        </h1>
+                        <h1 className="nd-mono text-[44px] uppercase leading-[0.9] tracking-[-0.02em] text-fg">{heading}</h1>
                     </header>
 
                     <div className="nd-fade-in" key={`${view}:${selectedRun ?? ""}`}>
                         {view === "overview" ? <Overview /> : null}
                         {view === "runs" && selectedRun
                             ? (
-                            <RunDetail onBack={() => { setSelectedRun(null); }} runId={selectedRun} />
+                            <RunDetail
+                                onBack={() => {
+                                    setSelectedRun(null);
+                                }}
+                                runId={selectedRun}
+                            />
                             )
                             : null}
                         {view === "runs" && !selectedRun ? <RunsView onSelect={openRun} /> : null}

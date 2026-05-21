@@ -79,10 +79,7 @@ describe(computeDashboardMetrics, () => {
     it("produces time-series points sorted by run start time", () => {
         expect.assertions(2);
 
-        const runs = [
-            makeRun("r2", "2026-01-02", 1200, { cached: 2, total: 4 }),
-            makeRun("r1", "2026-01-01", 1000, { cached: 1, total: 2 }),
-        ];
+        const runs = [makeRun("r2", "2026-01-02", 1200, { cached: 2, total: 4 }), makeRun("r1", "2026-01-01", 1000, { cached: 1, total: 2 })];
 
         const metrics = computeDashboardMetrics(runs);
 

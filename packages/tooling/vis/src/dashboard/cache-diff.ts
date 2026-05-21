@@ -166,11 +166,7 @@ const findReferenceTask = (
  * as a diff view so users can see exactly which input invalidated the
  * cache entry.
  */
-export const analyzeCacheMiss = (
-    summaries: LoadedRunSummary[],
-    currentRunId: string | undefined,
-    task: TaskSummaryLike,
-): CacheMissAnalysis => {
+export const analyzeCacheMiss = (summaries: LoadedRunSummary[], currentRunId: string | undefined, task: TaskSummaryLike): CacheMissAnalysis => {
     const runs = summaries as unknown as RunSummaryShape[];
     const taskId = task.taskId ?? "";
     const reference = findReferenceTask(runs, taskId, currentRunId);

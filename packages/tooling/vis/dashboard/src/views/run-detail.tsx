@@ -44,11 +44,7 @@ export const RunDetail = ({ onBack, runId }: RunDetailProps) => {
     }
 
     if (!runQuery.data) {
-        return (
-            <div className="nd-mono py-16 text-center text-[12px] uppercase tracking-[0.16em] text-muted">
-                [RUN NOT FOUND]
-            </div>
-        );
+        return <div className="nd-mono py-16 text-center text-[12px] uppercase tracking-[0.16em] text-muted">[RUN NOT FOUND]</div>;
     }
 
     const run = runQuery.data;
@@ -84,12 +80,7 @@ export const RunDetail = ({ onBack, runId }: RunDetailProps) => {
                 <StatCard className="border-0 bg-panel" label="TOTAL" value={run.stats.total} />
                 <StatCard className="border-0 bg-panel" label="SUCCEEDED" tone="good" value={run.stats.succeeded} />
                 <StatCard className="border-0 bg-panel" label="CACHED" value={run.stats.cached} />
-                <StatCard
-                    className="border-0 bg-panel"
-                    label="FAILED"
-                    tone={run.stats.failed > 0 ? "bad" : "default"}
-                    value={run.stats.failed}
-                />
+                <StatCard className="border-0 bg-panel" label="FAILED" tone={run.stats.failed > 0 ? "bad" : "default"} value={run.stats.failed} />
             </section>
 
             {/* Task table */}
@@ -123,23 +114,22 @@ export const RunDetail = ({ onBack, runId }: RunDetailProps) => {
                                                 <StatusBadge status={task.cacheStatus} />
                                             </TableCell>
                                             <TableCell className="nd-mono text-[13px]">{formatMs(task.duration)}</TableCell>
-                                            <TableCell className="nd-mono text-[12px] text-muted">
-                                                {task.hash ? `${task.hash.slice(0, 12)}…` : "—"}
-                                            </TableCell>
+                                            <TableCell className="nd-mono text-[12px] text-muted">{task.hash ? `${task.hash.slice(0, 12)}…` : "—"}</TableCell>
                                             <TableCell className="text-right">
                                                 {isMiss
                                                     ? (
                                                     <Button
                                                         aria-controls={`why-missed-${task.taskId}`}
                                                         aria-expanded={isOpen}
-                                                        onClick={() => { toggleExpanded(task.taskId); }}
+                                                        onClick={() => {
+                                                            toggleExpanded(task.taskId);
+                                                        }}
                                                         size="sm"
                                                         variant="technical"
                                                     >
                                                         <Icon svg={searchIcon} />
                                                         WHY MISSED
                                                         <Icon svg={isOpen ? chevronDownIcon : chevronRightIcon} />
-
                                                     </Button>
                                                     )
                                                     : null}

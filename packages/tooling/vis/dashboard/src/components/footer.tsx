@@ -23,7 +23,7 @@ const liveColor: Record<LiveStatus, string> = {
 };
 
 export const Footer = ({ arch, live, node, platform, workspaceRoot }: FooterProps) => {
-    const platformLabel = platform && arch ? `${platform}/${arch}` : platform ?? "—";
+    const platformLabel = platform && arch ? `${platform}/${arch}` : (platform ?? "—");
 
     return (
         <footer className="nd-sig mx-12 mt-12 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 pt-5 pb-8 text-[10px] uppercase">
@@ -31,21 +31,15 @@ export const Footer = ({ arch, live, node, platform, workspaceRoot }: FooterProp
                 <b>vis</b>
                 <span aria-hidden>·</span>
                 <span className="inline-flex items-center gap-2">
-                    <span
-                        className={cn(
-                            "inline-block h-[7px] w-[7px]",
-                            liveColor[live],
-                            live === "open" && "nd-blink",
-                        )}
-                    />
+                    <span className={cn("inline-block h-[7px] w-[7px]", liveColor[live], live === "open" && "nd-blink")} />
                     {liveLabel[live]}
 {" "}
 SSE
                 </span>
                 <span aria-hidden>·</span>
                 <span>
-NODE
-{node ?? "—"}
+                    NODE
+                    {node ?? "—"}
                 </span>
                 <span aria-hidden>·</span>
                 <span>{platformLabel}</span>

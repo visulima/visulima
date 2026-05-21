@@ -38,19 +38,11 @@ export const CacheMissAccordion = ({ runId, taskId }: CacheMissAccordionProps) =
     });
 
     if (diffQuery.isLoading) {
-        return (
-            <div className="nd-mono px-6 py-4 text-[11px] uppercase tracking-[0.16em] text-faint">
-                [ANALYZING DIFF…]
-            </div>
-        );
+        return <div className="nd-mono px-6 py-4 text-[11px] uppercase tracking-[0.16em] text-faint">[ANALYZING DIFF…]</div>;
     }
 
     if (!diffQuery.data) {
-        return (
-            <div className="nd-mono px-6 py-4 text-[11px] uppercase tracking-[0.16em] text-accent">
-                [ERROR: FAILED TO LOAD DIFF]
-            </div>
-        );
+        return <div className="nd-mono px-6 py-4 text-[11px] uppercase tracking-[0.16em] text-accent">[ERROR: FAILED TO LOAD DIFF]</div>;
     }
 
     const { currentHash, entries, previousHash, previousRunStartTime, reason } = diffQuery.data;
@@ -88,13 +80,11 @@ export const CacheMissAccordion = ({ runId, taskId }: CacheMissAccordionProps) =
             {entries.length === 0
                 ? (
                 <div className="border border-dashed border-border2 px-4 py-3">
-                    <div className="nd-mono mb-1 text-[11px] uppercase tracking-[0.16em] text-muted">
-                        [NO INPUT DIFFERENCES DETECTED]
-                    </div>
+                    <div className="nd-mono mb-1 text-[11px] uppercase tracking-[0.16em] text-muted">[NO INPUT DIFFERENCES DETECTED]</div>
                     <p className="text-[12px] text-faint">
                         The previous cache entry may have been evicted by
 {" "}
-                        <code className="nd-mono px-1 text-fg">vis cache prune</code>
+<code className="nd-mono px-1 text-fg">vis cache prune</code>
 {" "}
 or the size limit.
                     </p>

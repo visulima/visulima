@@ -25,16 +25,7 @@ const toneClass: Record<NonNullable<StatCardProps["tone"]>, string> = {
  * Stat  — label/value row with a thin underline.
  * Compact — small bordered block for grid stacks.
  */
-export const StatCard = ({
-    children,
-    className,
-    label,
-    sub,
-    tone = "default",
-    unit,
-    value,
-    variant = "compact",
-}: StatCardProps) => {
+export const StatCard = ({ children, className, label, sub, tone = "default", unit, value, variant = "compact" }: StatCardProps) => {
     if (variant === "hero") {
         return (
             <div className={cn("flex flex-col gap-4", className)}>

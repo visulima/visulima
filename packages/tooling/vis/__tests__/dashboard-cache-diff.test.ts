@@ -105,9 +105,7 @@ describe(analyzeCacheMiss, () => {
     it("ignores the current run when searching for a reference", () => {
         expect.assertions(1);
 
-        const currentRun = makeRun("run-current", "2026-01-02T00:00:00Z", [
-            { ...makeTask(), cacheStatus: "MISS", hash: "current" },
-        ]);
+        const currentRun = makeRun("run-current", "2026-01-02T00:00:00Z", [{ ...makeTask(), cacheStatus: "MISS", hash: "current" }]);
         const prior = makeRun("run-prior", "2026-01-01T00:00:00Z", [
             {
                 ...makeTask(),

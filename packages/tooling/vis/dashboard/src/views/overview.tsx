@@ -36,11 +36,7 @@ export const Overview = () => {
     }
 
     if (!overviewQuery.data) {
-        return (
-            <div className="nd-mono py-16 text-center text-[12px] uppercase tracking-[0.16em] text-muted">
-                [NO DATA]
-            </div>
-        );
+        return <div className="nd-mono py-16 text-center text-[12px] uppercase tracking-[0.16em] text-muted">[NO DATA]</div>;
     }
 
     const { flaky, metrics } = overviewQuery.data;
@@ -60,43 +56,15 @@ export const Overview = () => {
                     value={(hitRate * 100).toFixed(1)}
                     variant="hero"
                 >
-                    <SegmentedBar
-                        className="mt-4"
-                        max={1}
-                        segments={40}
-                        size="hero"
-                        tone={hitTone}
-                        value={hitRate}
-                    />
+                    <SegmentedBar className="mt-4" max={1} segments={40} size="hero" tone={hitTone} value={hitRate} />
                 </StatCard>
 
                 <div className="flex flex-col">
-                    <StatCard
-                        label="TIME SAVED"
-                        tone="good"
-                        value={formatMs(totals.estimatedTimeSavedMs)}
-                        variant="stat"
-                    />
-                    <StatCard
-                        label="AVG RUN"
-                        value={formatMs(metrics.averageRunDurationMs)}
-                        variant="stat"
-                    />
-                    <StatCard
-                        label="MEDIAN RUN"
-                        value={formatMs(metrics.medianRunDurationMs)}
-                        variant="stat"
-                    />
-                    <StatCard
-                        label="RECORDED RUNS"
-                        value={totals.runs.toLocaleString()}
-                        variant="stat"
-                    />
-                    <StatCard
-                        label="TASK EXECUTIONS"
-                        value={totals.tasks.toLocaleString()}
-                        variant="stat"
-                    />
+                    <StatCard label="TIME SAVED" tone="good" value={formatMs(totals.estimatedTimeSavedMs)} variant="stat" />
+                    <StatCard label="AVG RUN" value={formatMs(metrics.averageRunDurationMs)} variant="stat" />
+                    <StatCard label="MEDIAN RUN" value={formatMs(metrics.medianRunDurationMs)} variant="stat" />
+                    <StatCard label="RECORDED RUNS" value={totals.runs.toLocaleString()} variant="stat" />
+                    <StatCard label="TASK EXECUTIONS" value={totals.tasks.toLocaleString()} variant="stat" />
                 </div>
             </section>
 

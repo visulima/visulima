@@ -25,23 +25,20 @@ export const Masthead = ({ onChange, view }: MastheadProps) => {
         <header className="nd-masthead relative flex flex-wrap items-end gap-6 px-12 pt-8 pb-5">
             <div className="nd-brand leading-none">
                 vis
-<span className="nd-slash">/</span>
-dashboard
-<span className="nd-brand-sub mt-3 block text-[11px]">cache &amp; run telemetry</span>
+                <span className="nd-slash">/</span>
+                dashboard
+                <span className="nd-brand-sub mt-3 block text-[11px]">cache &amp; run telemetry</span>
             </div>
 
-            <nav
-                aria-label="Primary"
-                className="pointer-events-none absolute inset-x-0 bottom-5 flex flex-wrap items-center justify-center gap-2"
-            >
+            <nav aria-label="Primary" className="pointer-events-none absolute inset-x-0 bottom-5 flex flex-wrap items-center justify-center gap-2">
                 {items.map((item) => (
                     <button
-                        className={cn(
-                            "nd-navtab pointer-events-auto inline-flex h-7 cursor-pointer items-center rounded-[4px] px-3 text-[11px] uppercase",
-                        )}
+                        className={cn("nd-navtab pointer-events-auto inline-flex h-7 cursor-pointer items-center rounded-[4px] px-3 text-[11px] uppercase")}
                         data-active={view === item.id}
                         key={item.id}
-                        onClick={() => { onChange(item.id); }}
+                        onClick={() => {
+                            onChange(item.id);
+                        }}
                         type="button"
                     >
                         <span className="nd-navtab-ord">{item.ord}</span>

@@ -169,10 +169,7 @@ const createRunsWatcher = async (workspaceRoot: string): Promise<{ close: () => 
  * can exercise the routes via `app.request()` without spinning up a
  * real socket.
  */
-export const createDashboardApp = (
-    options: DashboardServerOptions,
-    subscribe: (listener: ChangeListener) => () => void,
-): Hono => {
+export const createDashboardApp = (options: DashboardServerOptions, subscribe: (listener: ChangeListener) => () => void): Hono => {
     const app = new Hono();
 
     app.get("/", (c) => c.html(renderDashboardHtml()));
@@ -201,10 +198,7 @@ export const createDashboardApp = (
         const runs = summaries
             .filter(
                 (s): s is { duration: number; endTime: string; id: string; startTime: string; stats?: Record<string, unknown> } =>
-                    typeof s.id === "string"
-                    && typeof s.startTime === "string"
-                    && typeof s.endTime === "string"
-                    && typeof s.duration === "number",
+                    typeof s.id === "string" && typeof s.startTime === "string" && typeof s.endTime === "string" && typeof s.duration === "number",
             )
             .map((s) => {
                 const rawStats = s.stats;
@@ -242,9 +236,7 @@ export const createDashboardApp = (
     });
 
     app.get("/api/runs/:runId/tasks/:taskId/diff", (c) => {
-        const run = readRunById(options.workspaceRoot, c.req.param("runId")) as
-            | { id?: string; tasks?: { taskId?: string }[] }
-            | undefined;
+        const run = readRunById(options.workspaceRoot, c.req.param("runId")) as { id?: string; tasks?: { taskId?: string }[] } | undefined;
 
         if (!run) {
             return c.json({ error: "Run not found" }, 404);
