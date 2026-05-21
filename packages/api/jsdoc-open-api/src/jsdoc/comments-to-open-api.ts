@@ -1,7 +1,6 @@
 import type { Spec } from "comment-parser";
 import { parse as parseComments } from "comment-parser";
-// eslint-disable-next-line no-restricted-imports,e18e/ban-dependencies
-import mergeWith from "lodash.mergewith";
+import { mergeWith } from "es-toolkit";
 
 import type { OpenApiObject, PathsObject } from "../exported";
 import customizer from "../util/customizer";
@@ -85,14 +84,14 @@ const parseDescription = (tag: Spec): { description: string | undefined; name: s
 
     let schema: object | undefined = isArray
         ? {
-              items: {
-                  ...rootType,
-              },
-              type: "array",
-          }
+            items: {
+                ...rootType,
+            },
+            type: "array",
+        }
         : {
-              ...rootType,
-          };
+            ...rootType,
+        };
 
     if (parsedType === "") {
         schema = undefined;
@@ -377,7 +376,11 @@ const commentsToOpenApi = (fileContents: string, verbose?: boolean): { loc: numb
             // - Don't count empty lines
             const loc = comment.tags.length + 1;
 
-            const result = mergeWith({}, ...tagsToObjects(comment.tags, verbose), customizer);
+            const result: Record<string, any> = {};
+
+            for (const source of tagsToObjects(comment.tags, verbose)) {
+                mergeWith(result, source as Record<string, any>, customizer);
+            }
 
             fixSecurityObject(result);
 

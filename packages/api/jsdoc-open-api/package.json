@@ -119,7 +119,7 @@
         "@apidevtools/swagger-parser": "catalog:prod",
         "@visulima/fs": "5.0.0-alpha.25",
         "comment-parser": "catalog:prod",
-        "lodash.mergewith": "catalog:prod",
+        "es-toolkit": "catalog:prod",
         "yaml": "catalog:prod"
     },
     "devDependencies": {
@@ -129,7 +129,6 @@
         "@anolilab/semantic-release-preset": "catalog:dev",
         "@types/cli-progress": "catalog:types",
         "@types/http-errors": "catalog:types",
-        "@types/lodash.mergewith": "catalog:types",
         "@types/node": "catalog:types",
         "@types/webpack": "catalog:types",
         "@visulima/packem": "catalog:dev",
