@@ -1,15 +1,15 @@
 {
-  "name": "lib-medium-15",
-  "version": "1.0.0",
-  "private": true,
-  "scripts": {
-    "build": "echo 'Compiling lib-medium-15...' && sleep 1.5 && echo 'Generating types...' && sleep 0.2 && echo 'lib-medium-15 ready!' && mkdir -p dist && date > dist/.stamp",
-    "dev": "echo 'lib-medium-15 watching...' && while true; do sleep 2; echo '[lib-medium-15] rebuilt in 45ms'; done",
-    "lint": "echo 'ESLint: lib-medium-15...' && sleep 0.1 && echo 'No warnings.'",
-    "test": "echo 'Running lib-medium-15 tests...' && sleep .4 && echo '  Suite: unit - 5 passed' && echo '  Suite: integration - 3 passed'"
-  },
-  "dependencies": {
-    "lib-fast-5": "1.0.0",
-    "lib-medium-12": "1.0.0"
-  }
+    "name": "lib-medium-15",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "build": "echo 'Compiling lib-medium-15...' && sleep 1.5 && echo 'Generating types...' && sleep 0.2 && echo 'lib-medium-15 ready!' && mkdir -p dist && date > dist/.stamp",
+        "dev": "echo 'lib-medium-15 watching...' && while true; do sleep 2; echo '[lib-medium-15] rebuilt in 45ms'; done",
+        "lint": "echo 'ESLint: lib-medium-15...' && sleep 0.1 && echo 'No warnings.'",
+        "test": "echo 'Running lib-medium-15 tests...' && sleep .4 && echo '  Suite: unit - 5 passed' && echo '  Suite: integration - 3 passed'"
+    },
+    "dependencies": {
+        "lib-fast-5": "1.0.0",
+        "lib-medium-12": "1.0.0"
+    }
 }

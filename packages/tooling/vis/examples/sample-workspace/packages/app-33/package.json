@@ -1,15 +1,15 @@
 {
-  "name": "app-33",
-  "version": "1.0.0",
-  "private": true,
-  "scripts": {
-    "build": "echo 'Building app app-33...' && sleep 2.5 && echo 'Webpack: compiled successfully' && echo 'app-33 ready!' && mkdir -p dist && date > dist/.stamp",
-    "dev": "echo 'app-33 started on http://localhost:8003' && while true; do sleep 1; echo '[app-33] GET / 200 12ms'; done",
-    "lint": "echo 'Linting app-33...' && sleep 0.2 && echo 'All good!'",
-    "test": "echo 'E2E tests for app-33...' && sleep 0.8 && echo '  12 tests passed, 0 failed'"
-  },
-  "dependencies": {
-    "lib-fast-3": "1.0.0",
-    "lib-slow-13": "1.0.0"
-  }
+    "name": "app-33",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "build": "echo 'Building app app-33...' && sleep 2.5 && echo 'Webpack: compiled successfully' && echo 'app-33 ready!' && mkdir -p dist && date > dist/.stamp",
+        "dev": "echo 'app-33 started on http://localhost:8003' && while true; do sleep 1; echo '[app-33] GET / 200 12ms'; done",
+        "lint": "echo 'Linting app-33...' && sleep 0.2 && echo 'All good!'",
+        "test": "echo 'E2E tests for app-33...' && sleep 0.8 && echo '  12 tests passed, 0 failed'"
+    },
+    "dependencies": {
+        "lib-fast-3": "1.0.0",
+        "lib-slow-13": "1.0.0"
+    }
 }
