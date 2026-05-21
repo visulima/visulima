@@ -150,14 +150,14 @@ function paint(buf: Uint32Array, cols: number, rows: number, frame: number) {
 
     // Stats bar
     const targetMs = (1000 / 60).toFixed(1);
-    const stats
-        = ` frame Δt   `
-            + `cur ${delta.toFixed(2)}ms  `
-            + `avg ${rollingAvg.toFixed(2)}ms  `
-            + `min ${rollingMin.toFixed(2)}ms  `
-            + `max ${rollingMax.toFixed(2)}ms  `
-            + `target ${targetMs}ms  `
-            + `Ctrl+C quit`;
+    const stats =
+        ` frame Δt   ` +
+        `cur ${delta.toFixed(2)}ms  ` +
+        `avg ${rollingAvg.toFixed(2)}ms  ` +
+        `min ${rollingMin.toFixed(2)}ms  ` +
+        `max ${rollingMax.toFixed(2)}ms  ` +
+        `target ${targetMs}ms  ` +
+        `Ctrl+C quit`;
 
     for (let i = 0; i < Math.min(stats.length, cols); i++) {
         setCell(buf, cols, i, rows - 2, stats[i]!, 250, 0);

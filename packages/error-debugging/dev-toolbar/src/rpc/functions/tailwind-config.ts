@@ -119,7 +119,7 @@ const findTailwindCSSFiles = async (root: string): Promise<string[]> => {
                     // eslint-disable-next-line no-await-in-loop
                     const content = await fs.readFile(fullPath, "utf8");
 
-                    if (content.includes("@import") && (content.includes("\"tailwindcss\"") || content.includes("'tailwindcss'"))) {
+                    if (content.includes("@import") && (content.includes('"tailwindcss"') || content.includes("'tailwindcss'"))) {
                         results.push(fullPath);
                     }
                 } catch {

@@ -133,8 +133,8 @@ const detectWarnings = (patterns: string[] | undefined, output: string | undefin
 const isAutoOnlyOutputs = (outputs: OutputSpec[] | undefined): boolean =>
     outputs !== undefined && outputs.length > 0 && outputs.every((output) => typeof output !== "string" && output.auto);
 
-const AUTO_OUTPUTS_UNAVAILABLE_REASON
-    = "Outputs are `{ auto: true }` only, but no file writes were captured (write tracking unavailable for this task) — not caching, so a later hit can't restore a missing build artifact.";
+const AUTO_OUTPUTS_UNAVAILABLE_REASON =
+    "Outputs are `{ auto: true }` only, but no file writes were captured (write tracking unavailable for this task) — not caching, so a later hit can't restore a missing build artifact.";
 
 /**
  * A simple deferred promise that can be resolved externally.
@@ -241,9 +241,7 @@ class TaskOrchestrator {
         // (`autoFingerprint`) OR any single target opted in via
         // `hashMode: "trace"`. Building it for a per-target opt-in keeps
         // the rest of the graph on the cheap declared-hash path.
-        const anyTraceTask = this.#taskGraph
-            ? Object.values(this.#taskGraph.tasks).some((t) => t.hashMode === "trace")
-            : false;
+        const anyTraceTask = this.#taskGraph ? Object.values(this.#taskGraph.tasks).some((t) => t.hashMode === "trace") : false;
 
         if (this.#autoFingerprint || anyTraceTask) {
             this.#fingerprintManager = new FingerprintManager(options.workspaceRoot);
@@ -371,8 +369,8 @@ class TaskOrchestrator {
                 const startPromise = this.#shouldSkipForWhen(task)
                     ? Promise.resolve(this.#whenSkipResult(task))
                     : this.#shouldFingerprint(task)
-                        ? this.#processTaskWithFingerprint(task)
-                        : this.#processTask(task);
+                      ? this.#processTaskWithFingerprint(task)
+                      : this.#processTask(task);
 
                 const taskPromise = startPromise
                     .catch((error: unknown) => {
@@ -776,8 +774,8 @@ class TaskOrchestrator {
             return undefined;
         }
 
-        const hasAnyAccess
-            = Object.keys(fingerprint.fileHashes).length > 0 || Object.keys(fingerprint.directoryListings).length > 0 || fingerprint.missingFiles.length > 0;
+        const hasAnyAccess =
+            Object.keys(fingerprint.fileHashes).length > 0 || Object.keys(fingerprint.directoryListings).length > 0 || fingerprint.missingFiles.length > 0;
 
         if (hasAnyAccess) {
             return undefined;

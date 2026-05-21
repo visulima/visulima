@@ -149,41 +149,41 @@ export interface RemoteCacheAttestation {
      */
     expectedIdentity?:
         | {
-            /**
-             * GitHub Actions preset. Expands to issuer
-             * `https://token.actions.githubusercontent.com` and the
-             * anchored SAN `https://github.com/{repo}/{workflow}@{ref}`.
-             */
-            github: {
-                /** Git ref the workflow ran on, e.g. `refs/heads/main` or `refs/tags/v1.2.3`. */
-                ref: string;
-                /** `owner/name`, e.g. `visulima/visulima`. */
-                repo: string;
-                /** Workflow path, e.g. `.github/workflows/release.yml`. */
-                workflow: string;
-            };
-        }
+              /**
+               * GitHub Actions preset. Expands to issuer
+               * `https://token.actions.githubusercontent.com` and the
+               * anchored SAN `https://github.com/{repo}/{workflow}@{ref}`.
+               */
+              github: {
+                  /** Git ref the workflow ran on, e.g. `refs/heads/main` or `refs/tags/v1.2.3`. */
+                  ref: string;
+                  /** `owner/name`, e.g. `visulima/visulima`. */
+                  repo: string;
+                  /** Workflow path, e.g. `.github/workflows/release.yml`. */
+                  workflow: string;
+              };
+          }
         | {
-            /** Fulcio cert issuer extension, matched exactly. */
-            oidcIssuer: string;
+              /** Fulcio cert issuer extension, matched exactly. */
+              oidcIssuer: string;
 
-            /**
-             * Literal signer identity (certificate SAN). vis
-             * regex-escapes and anchors this — pass the plain URI,
-             * e.g. `https://github.com/org/repo/.github/workflows/ci.yml@refs/heads/main`.
-             */
-            san: string;
-        }
+              /**
+               * Literal signer identity (certificate SAN). vis
+               * regex-escapes and anchors this — pass the plain URI,
+               * e.g. `https://github.com/org/repo/.github/workflows/ci.yml@refs/heads/main`.
+               */
+              san: string;
+          }
         | {
-            /** Fulcio cert issuer extension, matched exactly. */
-            oidcIssuer: string;
+              /** Fulcio cert issuer extension, matched exactly. */
+              oidcIssuer: string;
 
-            /**
-             * Advanced: raw, unescaped SAN regex. You own anchoring
-             * (`^…$`); an unanchored value is substring-matched.
-             */
-            sanRegex: string;
-        };
+              /**
+               * Advanced: raw, unescaped SAN regex. You own anchoring
+               * (`^…$`); an unanchored value is substring-matched.
+               */
+              sanRegex: string;
+          };
 
     /**
      * Called when a download is rejected (or downgraded to a cache miss)

@@ -367,14 +367,7 @@ export default function Textarea({
 
                     return (
                         <Box key={lineNumber}>
-                            {showLineNumbers
-                                ? (
-<Text dimColor>
-{String(lineNumber + 1).padStart(lineNumberWidth)}
-{" "}
-</Text>
-                                )
-                                : undefined}
+                            {showLineNumbers ? <Text dimColor>{String(lineNumber + 1).padStart(lineNumberWidth)} </Text> : undefined}
                             {}
                             <Text dimColor>{line || (lineNumber === 0 && placeholder ? placeholder : "")}</Text>
                         </Box>
@@ -392,26 +385,17 @@ export default function Textarea({
             <Box flexDirection="column">
                 {placeholderLines.map((pLine, index) => (
                     <Box key={index}>
-                        {showLineNumbers
-                            ? (
-<Text dimColor>
-{String(index + 1).padStart(lineNumberWidth)}
-{" "}
-</Text>
-                            )
-                            : undefined}
-                        {index === 0
-                            ? (
+                        {showLineNumbers ? <Text dimColor>{String(index + 1).padStart(lineNumberWidth)} </Text> : undefined}
+                        {index === 0 ? (
                             <Text>
                                 <Text dimColor inverse>
                                     {pLine[0] ?? " "}
                                 </Text>
                                 <Text dimColor>{pLine.slice(1)}</Text>
                             </Text>
-                            )
-                            : (
+                        ) : (
                             <Text dimColor>{pLine}</Text>
-                            )}
+                        )}
                     </Box>
                 ))}
             </Box>
@@ -426,14 +410,7 @@ export default function Textarea({
 
                 return (
                     <Box key={lineNumber}>
-                        {showLineNumbers
-                            ? (
-<Text dimColor={!isCursorLine}>
-{String(lineNumber + 1).padStart(lineNumberWidth)}
-{" "}
-</Text>
-                            )
-                            : undefined}
+                        {showLineNumbers ? <Text dimColor={!isCursorLine}>{String(lineNumber + 1).padStart(lineNumberWidth)} </Text> : undefined}
                         <Text>{renderLine(line, lineNumber, buffer.cursor, sel)}</Text>
                     </Box>
                 );

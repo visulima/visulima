@@ -54,41 +54,23 @@ export const registerAudit = ({ server }: ToolDeps, context: ToolContext): void 
         {
             annotations: { readOnlyHint: true },
             description:
-                "Audit installed packages for known vulnerabilities and supply-chain risk via `vis audit --format json`. "
-                + "Defaults to the local offline OSV cache when one exists, otherwise falls back to the live OSV API. "
-                + "Returns the parsed audit payload (results, duplicates, summary).",
+                "Audit installed packages for known vulnerabilities and supply-chain risk via `vis audit --format json`. " +
+                "Defaults to the local offline OSV cache when one exists, otherwise falls back to the live OSV API. " +
+                "Returns the parsed audit payload (results, duplicates, summary).",
             inputSchema: {
-                ecosystem: z
-                    .string()
-                    .optional()
-                    .describe("Comma-separated OSV ecosystems to scan. Defaults to 'npm' (the only matcher wired today)."),
-                offline: z
-                    .boolean()
-                    .optional()
-                    .describe("Force the local OSV cache. Errors if the cache is missing — run `vis advisories sync` first."),
-                prodOnly: z
-                    .boolean()
-                    .optional()
-                    .describe("Skip devDependencies — scan the production graph only."),
-                severity: z
-                    .enum(SEVERITY_VALUES)
-                    .optional()
-                    .describe("Minimum severity to report. Defaults to 'low'."),
-                showAccepted: z
-                    .boolean()
-                    .optional()
-                    .describe("Include findings already on the workspace's accepted-risk list."),
-                usage: z
-                    .boolean()
-                    .optional()
-                    .describe("Apply the reachability filter — only report vulnerabilities in statically-imported packages."),
+                ecosystem: z.string().optional().describe("Comma-separated OSV ecosystems to scan. Defaults to 'npm' (the only matcher wired today)."),
+                offline: z.boolean().optional().describe("Force the local OSV cache. Errors if the cache is missing — run `vis advisories sync` first."),
+                prodOnly: z.boolean().optional().describe("Skip devDependencies — scan the production graph only."),
+                severity: z.enum(SEVERITY_VALUES).optional().describe("Minimum severity to report. Defaults to 'low'."),
+                showAccepted: z.boolean().optional().describe("Include findings already on the workspace's accepted-risk list."),
+                usage: z.boolean().optional().describe("Apply the reachability filter — only report vulnerabilities in statically-imported packages."),
             },
         },
         async (input: {
             ecosystem?: string;
             offline?: boolean;
             prodOnly?: boolean;
-            severity?: typeof SEVERITY_VALUES[number];
+            severity?: (typeof SEVERITY_VALUES)[number];
             showAccepted?: boolean;
             usage?: boolean;
         }) => {

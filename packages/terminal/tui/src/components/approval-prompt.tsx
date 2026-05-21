@@ -151,36 +151,28 @@ export default function ApprovalPrompt({
             <Box>
                 <Text backgroundColor={riskColor} color="black">
                     {" "}
-                    {RISK_LABEL[risk]}
-{" "}
+                    {RISK_LABEL[risk]}{" "}
                 </Text>
                 <Text>
                     {" "}
                     <Text bold>{tool}</Text>
                 </Text>
             </Box>
-            {description === undefined
-                ? undefined
-                : (
+            {description === undefined ? undefined : (
                 <Box marginTop={1}>
                     <Text>{description}</Text>
                 </Box>
-                )}
-            {parameterEntries.length === 0
-                ? undefined
-                : (
+            )}
+            {parameterEntries.length === 0 ? undefined : (
                 <Box flexDirection="column" marginTop={1}>
                     {parameterEntries.map(([name, value]) => (
                         <Box key={name}>
-                            <Text color="cyan">
-{name}
-=
-                            </Text>
+                            <Text color="cyan">{name}=</Text>
                             <Text wrap="truncate-end">{formatParameterValue(value)}</Text>
                         </Box>
                     ))}
                 </Box>
-                )}
+            )}
             {children === undefined ? undefined : <Box marginTop={1}>{children}</Box>}
             <Box marginTop={1}>
                 <Text>
@@ -188,13 +180,11 @@ export default function ApprovalPrompt({
                     <Text bold color={color}>
                         y
                     </Text>
-                    es /
-{" "}
+                    es /{" "}
                     <Text bold color={color}>
                         a
                     </Text>
-                    lways /
-{" "}
+                    lways /{" "}
                     <Text bold color={color}>
                         n
                     </Text>

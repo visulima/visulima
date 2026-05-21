@@ -73,7 +73,7 @@ const extractTextFromHtml = (html: string): string =>
         .replaceAll("&nbsp;", " ")
         .replaceAll("&lt;", "<")
         .replaceAll("&gt;", ">")
-        .replaceAll("&quot;", "\"")
+        .replaceAll("&quot;", '"')
         .replaceAll("&#91;", "[")
         .replaceAll("&#93;", "]")
         .replaceAll("&#160;", " ")
@@ -382,10 +382,10 @@ describe("wikipedia Validation", () => {
             const ourFirstWord = ourName.split(WHITESPACE_REGEX)[0] ?? "";
 
             // Check if names are similar (either contains the other's first word, or they share common terms)
-            const namesSimilar
-                = ourName.includes(wikiFirstWord)
-                    || wikiName.includes(ourFirstWord)
-                    || (wikiFirstWord.length > 3 && ourFirstWord.length > 3 && (ourName.includes(wikiFirstWord) || wikiName.includes(ourFirstWord)));
+            const namesSimilar =
+                ourName.includes(wikiFirstWord) ||
+                wikiName.includes(ourFirstWord) ||
+                (wikiFirstWord.length > 3 && ourFirstWord.length > 3 && (ourName.includes(wikiFirstWord) || wikiName.includes(ourFirstWord)));
 
             if (!namesSimilar && wikiFirstWord !== ourFirstWord) {
                 issues.push(`Currency ${code}: name mismatch - Wikipedia: "${wikiCurrency.name}", ours: "${ourCurrency.name}"`);

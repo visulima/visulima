@@ -68,15 +68,13 @@ export default function OptionList({ accentColor = "blue", bordered = false, cur
                             </Box>
                             {option.trailing === undefined ? undefined : <Box flexShrink={0}>{option.trailing}</Box>}
                         </Box>
-                        {option.description === undefined
-                            ? undefined
-                            : (
+                        {option.description === undefined ? undefined : (
                             <Box marginLeft={iconColumnWidth}>
                                 <Text dimColor wrap="truncate-end">
                                     {option.description}
                                 </Text>
                             </Box>
-                            )}
+                        )}
                     </Box>
                 );
             })}

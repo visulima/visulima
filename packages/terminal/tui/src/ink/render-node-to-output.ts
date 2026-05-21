@@ -141,8 +141,8 @@ export const renderNodeToScreenReaderOutput = (
     } else if (node.nodeName === "ink-box" || node.nodeName === "ink-root") {
         const separator = node.style.flexDirection === "row" || node.style.flexDirection === "row-reverse" ? " " : "\n";
 
-        const childNodes
-            = node.style.flexDirection === "row-reverse" || node.style.flexDirection === "column-reverse" ? node.childNodes.toReversed() : [...node.childNodes];
+        const childNodes =
+            node.style.flexDirection === "row-reverse" || node.style.flexDirection === "column-reverse" ? node.childNodes.toReversed() : [...node.childNodes];
 
         output = childNodes
             .map((childNode) => {

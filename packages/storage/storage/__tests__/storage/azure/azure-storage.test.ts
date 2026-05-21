@@ -160,9 +160,7 @@ describe("azureStorage authentication & signed URLs", () => {
             return serviceClient;
         });
         // eslint-disable-next-line vitest/prefer-spy-on -- the mocked constructor has no real method to spy on
-        (BlobServiceClient as unknown as { fromConnectionString: ReturnType<typeof vi.fn> }).fromConnectionString = vi
-            .fn()
-            .mockReturnValue(serviceClient);
+        (BlobServiceClient as unknown as { fromConnectionString: ReturnType<typeof vi.fn> }).fromConnectionString = vi.fn().mockReturnValue(serviceClient);
     });
 
     it("signs read/upload URLs with a service SAS when given an account key", async () => {
@@ -264,8 +262,7 @@ describe("azureStorage authentication & signed URLs", () => {
 
         const storage = new AzureStorage({
             ...baseOptions,
-            connectionString:
-                "DefaultEndpointsProtocol=https;AccountName=test-account;AccountKey=dGVzdC1rZXk=;EndpointSuffix=core.windows.net",
+            connectionString: "DefaultEndpointsProtocol=https;AccountName=test-account;AccountKey=dGVzdC1rZXk=;EndpointSuffix=core.windows.net",
         });
 
         const url = await storage.getReadUrl("file.txt");

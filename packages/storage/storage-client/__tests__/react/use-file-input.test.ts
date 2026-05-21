@@ -62,9 +62,9 @@ describe(useFileInput, () => {
         // Create a mock FileList
         const fileList = {
             0: file,
-            item: (index: number) => index === 0 ? file : null,
+            item: (index: number) => (index === 0 ? file : null),
             length: 1,
-            * [Symbol.iterator]() {
+            *[Symbol.iterator]() {
                 yield file;
             },
         } as unknown as FileList;
@@ -109,9 +109,9 @@ describe(useFileInput, () => {
         // Create a mock FileList for dataTransfer
         const fileList = {
             0: file,
-            item: (index: number) => index === 0 ? file : null,
+            item: (index: number) => (index === 0 ? file : null),
             length: 1,
-            * [Symbol.iterator]() {
+            *[Symbol.iterator]() {
                 yield file;
             },
         } as unknown as FileList;
@@ -149,9 +149,9 @@ describe(useFileInput, () => {
         // Create a mock FileList
         const fileList = {
             0: file,
-            item: (index: number) => index === 0 ? file : null,
+            item: (index: number) => (index === 0 ? file : null),
             length: 1,
-            * [Symbol.iterator]() {
+            *[Symbol.iterator]() {
                 yield file;
             },
         } as unknown as FileList;

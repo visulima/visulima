@@ -114,13 +114,13 @@ export class ReapiRemoteCache implements RemoteCacheBackend {
 
     #clientsPromise:
         | Promise<{
-            actionCache: GrpcClientLike;
-            byteStream: GrpcClientLike;
-            capabilities: GrpcClientLike;
-            cas: GrpcClientLike;
-            clients: ReapiGrpcClients;
-            grpc: typeof import("@grpc/grpc-js");
-        }>
+              actionCache: GrpcClientLike;
+              byteStream: GrpcClientLike;
+              capabilities: GrpcClientLike;
+              cas: GrpcClientLike;
+              clients: ReapiGrpcClients;
+              grpc: typeof import("@grpc/grpc-js");
+          }>
         | undefined;
 
     #capabilities: { digestFunctions: ReadonlyArray<string>; maxBatchTotalSizeBytes: number } | undefined;
@@ -142,9 +142,9 @@ export class ReapiRemoteCache implements RemoteCacheBackend {
 
         if (this.#bearerToken !== undefined && !this.#useTls && options.allowInsecureBearer !== true) {
             throw new Error(
-                '[task-runner] remoteCache.backend = "reapi" refuses to send a bearer token over cleartext gRPC. '
-                + "Use `grpcs://` (or terminate TLS at a reverse proxy), or pass `allowInsecureBearer: true` "
-                + "for trusted-boundary deployments (loopback, mesh mTLS sidecar).",
+                '[task-runner] remoteCache.backend = "reapi" refuses to send a bearer token over cleartext gRPC. ' +
+                    "Use `grpcs://` (or terminate TLS at a reverse proxy), or pass `allowInsecureBearer: true` " +
+                    "for trusted-boundary deployments (loopback, mesh mTLS sidecar).",
             );
         }
     }
@@ -452,8 +452,8 @@ export class ReapiRemoteCache implements RemoteCacheBackend {
 
         if (!supportsSha256) {
             throw new Error(
-                `[task-runner] REAPI server does not advertise SHA256 in cache_capabilities.digest_functions (got: ${digestFunctions.join(", ")}). `
-                + "vis pins sha256 for action digests; a server expecting a different digest function would reject every request.",
+                `[task-runner] REAPI server does not advertise SHA256 in cache_capabilities.digest_functions (got: ${digestFunctions.join(", ")}). ` +
+                    "vis pins sha256 for action digests; a server expecting a different digest function would reject every request.",
             );
         }
     }

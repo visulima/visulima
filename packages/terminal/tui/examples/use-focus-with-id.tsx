@@ -48,9 +48,7 @@ const Item = ({ id, label }: { id: string; label: string }) => {
 
     return (
         <Text>
-            {label}
-{" "}
-{isFocused ? <Text color="green">(focused)</Text> : ""}
+            {label} {isFocused ? <Text color="green">(focused)</Text> : ""}
         </Text>
     );
 };

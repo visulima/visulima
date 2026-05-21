@@ -154,11 +154,7 @@ export function TreeView<T = Record<string, unknown>>({
             {isScreenReaderEnabled && <Text aria-label={ariaLabel} />}
             {state.hasScrollUp && (
                 <Text aria-label={`${state.viewportFromIndex} more items above`} dimColor>
-                    {"  "}
-↑
-{state.viewportFromIndex}
-{" "}
-more above
+                    {"  "}↑{state.viewportFromIndex} more above
                 </Text>
             )}
             {state.viewportNodes.map(({ node, state: nodeState }) => {
@@ -192,11 +188,7 @@ more above
             })}
             {state.hasScrollDown && (
                 <Text aria-label={`${state.visibleCount - state.viewportToIndex} more items below`} dimColor>
-                    {"  "}
-↓
-{state.visibleCount - state.viewportToIndex}
-{" "}
-more below
+                    {"  "}↓{state.visibleCount - state.viewportToIndex} more below
                 </Text>
             )}
         </Box>

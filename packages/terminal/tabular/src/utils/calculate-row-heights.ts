@@ -176,9 +176,9 @@ const calculateRowHeights = (
                         // All rows in span are fixed, content won't fit.
                         // eslint-disable-next-line no-console
                         console.warn(
-                            `[calculateRowHeights] Content of spanning cell exceeds fixed height allocated. `
-                            + `Cell: ${JSON.stringify(cell.content)}, `
-                            + `Required: ${String(requiredTotalHeight)}, Allocated: ${String(currentAllocatedHeight)} (fixed).`,
+                            `[calculateRowHeights] Content of spanning cell exceeds fixed height allocated. ` +
+                                `Cell: ${JSON.stringify(cell.content)}, ` +
+                                `Required: ${String(requiredTotalHeight)}, Allocated: ${String(currentAllocatedHeight)} (fixed).`,
                         );
                     }
                 }

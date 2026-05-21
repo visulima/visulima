@@ -8,7 +8,7 @@ expect.extend(matchers);
 // test files resolves to Node's broken global instead of jsdom's per-window
 // implementation. Rebind both Web Storage globals to jsdom so the same tests
 // work on Node 22/24/25.
-if (typeof window !== "undefined" && window.localStorage) {
+if (globalThis.window !== undefined && globalThis.localStorage) {
     for (const key of ["localStorage", "sessionStorage"] as const) {
         try {
             // Plain assignment first — works when the global is writable.

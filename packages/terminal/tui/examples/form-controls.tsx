@@ -43,9 +43,7 @@ const App = () => {
             </Text>
             <Divider label="Button" length={40} />
             <Button autoFocus onPress={() => setPressed((n) => n + 1)}>
-                Click me (
-{pressed}
-)
+                Click me ({pressed})
             </Button>
             <Divider label="Checkbox & Switch" length={40} />
             <Box gap={2}>

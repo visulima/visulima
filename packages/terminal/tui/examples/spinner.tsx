@@ -51,13 +51,11 @@ const App = () => {
                 Spinner demo
             </Text>
             <Text dim>
-                +/= faster · - slower · current interval
-{" "}
+                +/= faster · - slower · current interval{" "}
                 <Text color="yellow">
                     {intervalMs}
                     ms
-                </Text>
-{" "}
+                </Text>{" "}
                 · q quit
             </Text>
 
@@ -79,12 +77,7 @@ const App = () => {
             </Box>
 
             <Text>
-                uptime:
-{" "}
-<Text color="green">
-{seconds}
-s
-</Text>
+                uptime: <Text color="green">{seconds}s</Text>
             </Text>
         </Box>
     );

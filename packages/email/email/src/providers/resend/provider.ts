@@ -146,7 +146,7 @@ const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailOptions>
              */
             async initialize(): Promise<void> {
                 await providerState.ensureInitialized(async () => {
-                    if (!await this.isAvailable()) {
+                    if (!(await this.isAvailable())) {
                         throw new EmailError(PROVIDER_NAME, "Resend API not available or invalid API key");
                     }
 
@@ -181,13 +181,13 @@ const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailOptions>
                     });
 
                     if (
-                        result.data
-                        && typeof result.data === "object"
-                        && "body" in result.data
-                        && result.data.body
-                        && typeof result.data.body === "object"
-                        && "name" in result.data.body
-                        && result.data.body.name === "restricted_api_key"
+                        result.data &&
+                        typeof result.data === "object" &&
+                        "body" in result.data &&
+                        result.data.body &&
+                        typeof result.data.body === "object" &&
+                        "name" in result.data.body &&
+                        result.data.body.name === "restricted_api_key"
                     ) {
                         logger.debug("API key is valid but restricted to only sending emails");
 
@@ -202,13 +202,13 @@ const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailOptions>
                     });
 
                     return Boolean(
-                        result.success
-                        && result.data
-                        && typeof result.data === "object"
-                        && "statusCode" in result.data
-                        && typeof (result.data as { statusCode?: unknown }).statusCode === "number"
-                        && (result.data as { statusCode: number }).statusCode >= 200
-                        && (result.data as { statusCode: number }).statusCode < 300,
+                        result.success &&
+                        result.data &&
+                        typeof result.data === "object" &&
+                        "statusCode" in result.data &&
+                        typeof (result.data as { statusCode?: unknown }).statusCode === "number" &&
+                        (result.data as { statusCode: number }).statusCode >= 200 &&
+                        (result.data as { statusCode: number }).statusCode < 300,
                     );
                 } catch (error) {
                     logger.debug("Error checking availability:", error);
@@ -324,7 +324,7 @@ const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailOptions>
                                     content,
                                     content_type: attachment.contentType,
                                     filename: attachment.filename,
-                                    ...attachment.path && { path: attachment.path },
+                                    ...(attachment.path && { path: attachment.path }),
                                 };
                             }),
                         );
@@ -364,9 +364,9 @@ const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailOptions>
                     }
 
                     const responseData = result.data as { body?: { id?: string } };
-                    const messageId
+                    const messageId =
                         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-                        = responseData?.body && typeof responseData.body === "object" && responseData.body.id ? responseData.body.id : generateMessageId();
+                        responseData?.body && typeof responseData.body === "object" && responseData.body.id ? responseData.body.id : generateMessageId();
 
                     logger.debug("Email sent successfully", { messageId });
 

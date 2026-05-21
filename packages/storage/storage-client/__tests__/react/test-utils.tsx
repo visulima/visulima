@@ -29,7 +29,7 @@ export const createTestQueryClient = (): QueryClient =>
  * Wrapper component for React Query Provider.
  */
 // eslint-disable-next-line react-refresh/only-export-components
-export const createWrapper = (queryClient?: QueryClient): (props: { children: ReactNode }) => React.JSX.Element => {
+export const createWrapper = (queryClient?: QueryClient): ((props: { children: ReactNode }) => React.JSX.Element) => {
     const client = queryClient || createTestQueryClient();
 
     // eslint-disable-next-line solid/no-destructure

@@ -48,6 +48,6 @@ describe(validateAdapterMethods, () => {
         // @ts-expect-error -- InvalidAdapter intentionally lacks required methods to test validation
         expect(() => {
             validateAdapterMethods(new InvalidAdapter());
-        }).toThrow("Adapter must implement the \"create\" method.");
+        }).toThrow('Adapter must implement the "create" method.');
     });
 });

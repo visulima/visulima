@@ -38,9 +38,7 @@ const App = () => {
             <Box flexDirection="column" gap={1}>
                 <TextInput onChange={setValue} onSubmit={(v) => setSubmitted(v)} placeholder="Start typing..." />
                 <Text>
-                    Input value: "
-<Text color="green">{value}</Text>
-"
+                    Input value: "<Text color="green">{value}</Text>"
                 </Text>
                 {submitted !== undefined && (
                     <Text>

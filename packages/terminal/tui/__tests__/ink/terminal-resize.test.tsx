@@ -24,9 +24,7 @@ describe("terminal-resize", () => {
 
             return (
                 <Text>
-                    {columns}
-x
-{rows}
+                    {columns}x{rows}
                 </Text>
             );
         };
@@ -57,9 +55,7 @@ x
 
             return (
                 <Text>
-                    {columns}
-x
-{rows}
+                    {columns}x{rows}
                 </Text>
             );
         };
@@ -88,9 +84,7 @@ x
 
             return (
                 <Text>
-                    {columns}
-x
-{rows}
+                    {columns}x{rows}
                 </Text>
             );
         };

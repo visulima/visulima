@@ -68,8 +68,7 @@ const App = () => {
             </Text>
 
             <Text>
-                OSC 52 support:
-{" "}
+                OSC 52 support:{" "}
                 <Text bold color={isSupported ? "green" : "red"}>
                     {isSupported ? "yes" : "no"}
                 </Text>
@@ -80,8 +79,7 @@ const App = () => {
 
             <Box borderColor="gray" borderStyle="round" flexDirection="column" paddingX={2} paddingY={1}>
                 <Text bold>Last copied:</Text>
-                {lastCopied
-                    ? (
+                {lastCopied ? (
                     <Box flexDirection="column">
                         {lastCopied.split("\n").map((line, index) => (
                             <Text color="green" key={index}>
@@ -89,10 +87,9 @@ const App = () => {
                             </Text>
                         ))}
                     </Box>
-                    )
-                    : (
+                ) : (
                     <Text dimColor>(nothing copied yet — press 1, 2, or 3)</Text>
-                    )}
+                )}
             </Box>
 
             {lastCopied && <Text dimColor>Try pasting (Ctrl+V / Cmd+V) in another application to verify!</Text>}

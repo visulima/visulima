@@ -44,8 +44,8 @@ const sortObjectKeys = (object: Record<string, unknown>): Record<string, unknown
     for (const key of Object.keys(object).toSorted()) {
         const value = object[key];
 
-        sorted[key]
-            = value !== undefined && value !== null && typeof value === "object" && !Array.isArray(value)
+        sorted[key] =
+            value !== undefined && value !== null && typeof value === "object" && !Array.isArray(value)
                 ? sortObjectKeys(value as Record<string, unknown>)
                 : value;
     }

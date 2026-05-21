@@ -297,9 +297,7 @@ describe(BunS3Storage, () => {
             const url = await storage.getReadUrl("file.mp4", { expiresIn: 120, responseContentDisposition: "attachment" });
 
             expect(url).toBe("https://signed.example/get");
-            expect(client.__fileRef.presign).toHaveBeenCalledWith(
-                expect.objectContaining({ contentDisposition: "attachment", expiresIn: 120, method: "GET" }),
-            );
+            expect(client.__fileRef.presign).toHaveBeenCalledWith(expect.objectContaining({ contentDisposition: "attachment", expiresIn: 120, method: "GET" }));
         });
 
         it("getUploadUrl presigns a PUT via the client", async () => {

@@ -80,8 +80,7 @@ function renderInlineTokens(tokens: InlineToken[] | Token[] | undefined): ReactN
                 return (
                     <Text inverse key={index}>
                         {" "}
-                        {token.text}
-{" "}
+                        {token.text}{" "}
                     </Text>
                 );
             }
@@ -111,10 +110,7 @@ function renderInlineTokens(tokens: InlineToken[] | Token[] | undefined): ReactN
 
                 return (
                     <Text dimColor key={index}>
-                        [image:
-{" "}
-{img.text || img.href}
-]
+                        [image: {img.text || img.href}]
                     </Text>
                 );
             }

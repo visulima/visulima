@@ -23,9 +23,7 @@ const Item = ({ autoFocus, disabled = false, label }: ItemProps) => {
 
     return (
         <Text>
-            {label}
-{" "}
-{isFocused ? "✔" : null}
+            {label} {isFocused ? "✔" : null}
         </Text>
     );
 };
@@ -504,9 +502,7 @@ describe("focus", () => {
 
         return (
             <Text>
-                {label}
-{" "}
-{isFocused ? "✔" : null}
+                {label} {isFocused ? "✔" : null}
             </Text>
         );
     };

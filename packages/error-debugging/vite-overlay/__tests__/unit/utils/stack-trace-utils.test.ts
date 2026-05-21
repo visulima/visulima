@@ -205,7 +205,7 @@ describe(isValidStackFrame, () => {
         });
     });
 
-    it("should reject lines that do not start with \"at\"", () => {
+    it('should reject lines that do not start with "at"', () => {
         expect.assertions(3);
 
         const invalidFrames = [

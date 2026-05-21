@@ -156,8 +156,8 @@ const spawnCommand = (
         index,
         kill: child.pid
             ? (signal?: string) => {
-                killTree(child.pid!, signal ?? "SIGTERM");
-            }
+                  killTree(child.pid!, signal ?? "SIGTERM");
+              }
             : undefined,
         kind: "started",
         pid: child.pid,
@@ -466,14 +466,14 @@ export const runConcurrentFallback = (commands: ConcurrentCommandConfig[], optio
                 const cmdIndex = pending.shift()!;
                 const config = commands[cmdIndex]!;
 
-                const proc
-                    = config.stdin === "pty"
+                const proc =
+                    config.stdin === "pty"
                         ? spawnCommandPty(cmdIndex, config, options.shellPath, onEvent, (ce) => {
-                            handleClose(cmdIndex, ce);
-                        })
+                              handleClose(cmdIndex, ce);
+                          })
                         : spawnCommand(cmdIndex, config, options.shellPath, onEvent, (ce) => {
-                            handleClose(cmdIndex, ce);
-                        });
+                              handleClose(cmdIndex, ce);
+                          });
 
                 active.push(proc);
             }

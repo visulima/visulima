@@ -17,9 +17,9 @@ const DECLARED_PATH = Symbol("api-platform.declaredPath");
 type DeclaredPath = RegExp | string | (RegExp | string)[];
 
 const isPathArgument = (value: unknown): value is DeclaredPath =>
-    typeof value === "string"
-    || value instanceof RegExp
-    || (Array.isArray(value) && value.every((entry) => typeof entry === "string" || entry instanceof RegExp));
+    typeof value === "string" ||
+    value instanceof RegExp ||
+    (Array.isArray(value) && value.every((entry) => typeof entry === "string" || entry instanceof RegExp));
 
 /**
  * Patches `Router.prototype.use` so every mounted layer records the path it was
@@ -159,7 +159,7 @@ const parseRouteLayer = (layer: Layer & { route: Route }, basePath: string, base
     }
 
     const path = normalizePath(`${basePath}/${renderPath(route.path)}`);
-    const pathParameters = [...baseParameters, ...typeof route.path === "string" ? extractParameters(route.path) : []];
+    const pathParameters = [...baseParameters, ...(typeof route.path === "string" ? extractParameters(route.path) : [])];
 
     if (withMetadata.length === 0) {
         return { method: lastRequestHandler.method as string, path, pathParams: pathParameters };
@@ -204,8 +204,7 @@ const traverse = (routes: RouteMetaData[], layer: Layer, basePath: string, baseP
     const declaredPath = (layer as Layer & Record<PropertyKey, unknown>)[DECLARED_PATH] as DeclaredPath | undefined;
     const segment = declaredPath === undefined ? "" : renderPath(declaredPath);
     const nextBasePath = normalizePath(`${basePath}/${segment}`);
-    const nextParameters
-        = typeof declaredPath === "string" ? [...baseParameters, ...extractParameters(declaredPath)] : baseParameters;
+    const nextParameters = typeof declaredPath === "string" ? [...baseParameters, ...extractParameters(declaredPath)] : baseParameters;
 
     for (const child of childStack) {
         traverse(routes, child, nextBasePath, nextParameters);

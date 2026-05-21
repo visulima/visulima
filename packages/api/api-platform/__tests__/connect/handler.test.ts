@@ -51,7 +51,7 @@ describe("connect/handler", () => {
         // eslint-disable-next-line no-underscore-dangle
         expect(res._getStatusCode()).toBe(400);
         // eslint-disable-next-line no-underscore-dangle
-        expect(res._getData()).toBe("{\"type\":\"https://tools.ietf.org/html/rfc2616#section-10\",\"title\":\"Bad Request\",\"details\":\"Bad Request\"}");
+        expect(res._getData()).toBe('{"type":"https://tools.ietf.org/html/rfc2616#section-10","title":"Bad Request","details":"Bad Request"}');
     });
 
     it("should call onError with accept", async () => {
@@ -69,7 +69,7 @@ describe("connect/handler", () => {
         // eslint-disable-next-line no-underscore-dangle
         expect(res._getStatusCode()).toBe(400);
         // eslint-disable-next-line no-underscore-dangle
-        expect(res._getData()).toBe("{\"errors\":[{\"code\":400,\"title\":\"Bad Request\",\"detail\":\"Bad Request\"}]}");
+        expect(res._getData()).toBe('{"errors":[{"code":400,"title":"Bad Request","detail":"Bad Request"}]}');
     });
 
     it("should call onError with new added error handler", async () => {

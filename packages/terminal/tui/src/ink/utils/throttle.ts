@@ -18,11 +18,7 @@ export interface ThrottleOptions {
  * delegating to a debounce with `maxWait === wait`, so continuous demand
  * still produces an invocation every `wait` ms.
  */
-export function throttle<T extends AnyFunction>(
-    function_: T,
-    wait: number | undefined = 0,
-    options: ThrottleOptions = {},
-): ThrottledFunction<T> {
+export function throttle<T extends AnyFunction>(function_: T, wait: number | undefined = 0, options: ThrottleOptions = {}): ThrottledFunction<T> {
     const leading = options.leading ?? true;
     const trailing = options.trailing ?? true;
 

@@ -7,9 +7,9 @@ describe(escapeHtml, () => {
         it("should escape HTML special characters in content", () => {
             expect.assertions(1);
 
-            const result = escapeHtml("<script>alert(\"xss\")</script>");
+            const result = escapeHtml('<script>alert("xss")</script>');
 
-            expect(result).toBe("&lt;script>alert(\"xss\")&lt;/script>");
+            expect(result).toBe('&lt;script>alert("xss")&lt;/script>');
         });
 
         it("should escape ampersand in content", () => {
@@ -39,9 +39,9 @@ describe(escapeHtml, () => {
         it("should not escape double quotes in content", () => {
             expect.assertions(1);
 
-            const result = escapeHtml("value=\"test\"");
+            const result = escapeHtml('value="test"');
 
-            expect(result).toBe("value=\"test\"");
+            expect(result).toBe('value="test"');
         });
 
         it("should handle empty string", () => {
@@ -97,7 +97,7 @@ describe(escapeHtml, () => {
         it("should escape HTML special characters in attributes", () => {
             expect.assertions(1);
 
-            const result = escapeHtml("<script>alert(\"xss\")</script>", true);
+            const result = escapeHtml('<script>alert("xss")</script>', true);
 
             expect(result).toBe("&lt;script>alert(&quot;xss&quot;)&lt;/script>");
         });
@@ -105,7 +105,7 @@ describe(escapeHtml, () => {
         it("should escape double quotes in attributes", () => {
             expect.assertions(1);
 
-            const result = escapeHtml("value=\"test\"", true);
+            const result = escapeHtml('value="test"', true);
 
             expect(result).toBe("value=&quot;test&quot;");
         });
@@ -129,7 +129,7 @@ describe(escapeHtml, () => {
         it("should handle boolean isAttr parameter", () => {
             expect.assertions(1);
 
-            const result = escapeHtml("value=\"test\"", true);
+            const result = escapeHtml('value="test"', true);
 
             expect(result).toBe("value=&quot;test&quot;");
         });
@@ -161,7 +161,7 @@ describe(escapeHtml, () => {
         it("should handle multiple special characters in attributes", () => {
             expect.assertions(1);
 
-            const result = escapeHtml("& < \" & < \"", true);
+            const result = escapeHtml('& < " & < "', true);
 
             expect(result).toBe("&amp; &lt; &quot; &amp; &lt; &quot;");
         });
@@ -187,7 +187,7 @@ describe(escapeHtml, () => {
         it("should handle strings with only double quote in attribute mode", () => {
             expect.assertions(1);
 
-            const result = escapeHtml("\"", true);
+            const result = escapeHtml('"', true);
 
             expect(result).toBe("&quot;");
         });

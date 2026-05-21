@@ -32,8 +32,8 @@ export const headerTabs = (tabs: HeaderTab[]): { html: string; script: string } 
     const html = `<nav class="flex gap-1 p-1 rounded-[var(--ono-radius-md)] bg-[var(--ono-surface-muted)] shadow-[var(--ono-elevation-1)]" role="tablist">
     ${tabs
         .map((t) => {
-            const base
-                = "relative px-3 py-1.5 rounded-[var(--ono-radius-md)] text-sm font-medium cursor-pointer text-[var(--ono-text-muted)] dark:text-[var(--ono-neutral)] transition-all duration-150 hover:text-[var(--ono-text)] hover:bg-[var(--ono-surface)] focus:outline-hidden focus:ring-2 ring-[var(--ono-red-orange)] inline-flex gap-2 items-center";
+            const base =
+                "relative px-3 py-1.5 rounded-[var(--ono-radius-md)] text-sm font-medium cursor-pointer text-[var(--ono-text-muted)] dark:text-[var(--ono-neutral)] transition-all duration-150 hover:text-[var(--ono-text)] hover:bg-[var(--ono-surface)] focus:outline-hidden focus:ring-2 ring-[var(--ono-red-orange)] inline-flex gap-2 items-center";
             const active = "active:bg-[var(--ono-surface)] active:text-[var(--ono-text)] active:shadow-[var(--ono-elevation-1)] active:ring-2";
 
             const classes = cn(base, active, t.selected ? "active" : "", "[:>svg]:size-4");

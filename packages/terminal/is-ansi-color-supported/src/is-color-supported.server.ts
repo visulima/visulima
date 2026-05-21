@@ -54,7 +54,7 @@ const isColorSupportedFactory = (stdName: "err" | "out"): ColorSupportLevel => {
         // Deno requires the permission for the access to env, use the `--allow-env` flag: deno run --allow-env ./app.js
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
-        environment = isDeno ? proc.env.toObject() : proc.env ?? {};
+        environment = isDeno ? proc.env.toObject() : (proc.env ?? {});
     } catch {
         // Deno: if interactive permission is not granted, do nothing, no colors
     }

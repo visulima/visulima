@@ -11,9 +11,9 @@ const isPlainObject = (value: unknown): value is Record<string, unknown> => {
     const prototype = Object.getPrototypeOf(value) as object | null;
 
     return (
-        (prototype === null || prototype === Object.prototype || Object.getPrototypeOf(prototype) === null)
-        && !(Symbol.toStringTag in value)
-        && !(Symbol.iterator in value)
+        (prototype === null || prototype === Object.prototype || Object.getPrototypeOf(prototype) === null) &&
+        !(Symbol.toStringTag in value) &&
+        !(Symbol.iterator in value)
     );
 };
 

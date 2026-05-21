@@ -57,34 +57,28 @@ export default function MessageBubble({ children, color, flat = false, label, me
 
     return (
         <Box alignSelf={preset.align} flexDirection="column" marginBottom={1}>
-            {label === undefined && meta === undefined
-                ? undefined
-                : (
+            {label === undefined && meta === undefined ? undefined : (
                 <Box gap={1} paddingX={1}>
-                    {label === undefined
-                        ? undefined
-                        : (
+                    {label === undefined ? undefined : (
                         <Text bold color={accent}>
                             {label}
                         </Text>
-                        )}
+                    )}
                     {meta === undefined ? undefined : <Text dimColor>{meta}</Text>}
                 </Box>
-                )}
-            {flat
-                ? (
+            )}
+            {flat ? (
                 <Box paddingX={1}>
                     <Text color={accent}>│ </Text>
                     <Box flexDirection="column" flexGrow={1}>
                         {typeof children === "string" ? <Text>{children}</Text> : children}
                     </Box>
                 </Box>
-                )
-                : (
+            ) : (
                 <Box borderColor={accent} borderStyle="round" flexDirection="column" paddingX={1}>
                     {typeof children === "string" ? <Text>{children}</Text> : children}
                 </Box>
-                )}
+            )}
         </Box>
     );
 }

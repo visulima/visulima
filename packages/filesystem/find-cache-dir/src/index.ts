@@ -50,15 +50,15 @@ const findCacheDirectory = async (name: string, options?: Options): Promise<stri
     // Otherwise, if node_modules/.cache exists: If it is writeable, return node_modules/.cache/${name}, otherwise return undefined
     // Otherwise: If node_modules is writeable, return node_modules/.cache/${name}, otherwise return undefined
 
-    if (existsSync(cacheNameDirectory) && !await isAccessible(cacheNameDirectory, W_OK)) {
+    if (existsSync(cacheNameDirectory) && !(await isAccessible(cacheNameDirectory, W_OK))) {
         return undefined;
     }
 
-    if (existsSync(cacheDirectory) && !await isAccessible(cacheDirectory, W_OK)) {
+    if (existsSync(cacheDirectory) && !(await isAccessible(cacheDirectory, W_OK))) {
         return undefined;
     }
 
-    if (existsSync(nodeModulesDirectory) && !await isAccessible(nodeModulesDirectory, W_OK)) {
+    if (existsSync(nodeModulesDirectory) && !(await isAccessible(nodeModulesDirectory, W_OK))) {
         return undefined;
     }
 

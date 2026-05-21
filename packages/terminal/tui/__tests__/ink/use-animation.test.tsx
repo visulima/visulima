@@ -90,9 +90,7 @@ describe(useAnimation, () => {
 
             return (
                 <Text>
-                    {String(frame1)}
-,
-{String(frame2)}
+                    {String(frame1)},{String(frame2)}
                 </Text>
             );
         };
@@ -139,9 +137,7 @@ describe(useAnimation, () => {
 
                     return (
                         <Text>
-                            {String(frame1)}
-,
-{String(frame2)}
+                            {String(frame1)},{String(frame2)}
                         </Text>
                     );
                 };
@@ -180,9 +176,7 @@ describe(useAnimation, () => {
 
                     return (
                         <Text>
-                            {String(fastFrame)}
-,
-{String(slowFrame)}
+                            {String(fastFrame)},{String(slowFrame)}
                         </Text>
                     );
                 };
@@ -364,9 +358,7 @@ describe(useAnimation, () => {
 
                     return (
                         <Text>
-                            {String(firstFrame)}
-,
-{String(secondFrame)}
+                            {String(firstFrame)},{String(secondFrame)}
                         </Text>
                     );
                 };
@@ -971,11 +963,7 @@ describe(useAnimation, () => {
 
                 return (
                     <Text>
-                        {String(frame)}
-,
-{String(Math.round(time))}
-,
-{String(Math.round(delta))}
+                        {String(frame)},{String(Math.round(time))},{String(Math.round(delta))}
                     </Text>
                 );
             };
@@ -1009,11 +997,7 @@ describe(useAnimation, () => {
 
                 return (
                     <Text>
-                        {String(frame)}
-,
-{String(Math.round(time))}
-,
-{String(Math.round(delta))}
+                        {String(frame)},{String(Math.round(time))},{String(Math.round(delta))}
                     </Text>
                 );
             };
@@ -1052,11 +1036,7 @@ describe(useAnimation, () => {
 
                 return (
                     <Text>
-                        {String(frame)}
-,
-{String(Math.round(time))}
-,
-{String(Math.round(delta))}
+                        {String(frame)},{String(Math.round(time))},{String(Math.round(delta))}
                     </Text>
                 );
             };
@@ -1400,9 +1380,7 @@ describe(useAnimation, () => {
 
             return (
                 <Text>
-                    {String(fast)}
-,
-{String(slow)}
+                    {String(fast)},{String(slow)}
                 </Text>
             );
         };
