@@ -204,8 +204,7 @@ const traverse = (routes: RouteMetaData[], layer: Layer, basePath: string, baseP
     const declaredPath = (layer as Layer & Record<PropertyKey, unknown>)[DECLARED_PATH] as DeclaredPath | undefined;
     const segment = declaredPath === undefined ? "" : renderPath(declaredPath);
     const nextBasePath = normalizePath(`${basePath}/${segment}`);
-    const nextParameters
-        = typeof declaredPath === "string" ? [...baseParameters, ...extractParameters(declaredPath)] : baseParameters;
+    const nextParameters = typeof declaredPath === "string" ? [...baseParameters, ...extractParameters(declaredPath)] : baseParameters;
 
     for (const child of childStack) {
         traverse(routes, child, nextBasePath, nextParameters);

@@ -10,12 +10,12 @@ export const StatusBadge = ({ status }: StatusBadgeProps) => {
             return <Badge variant="success">HIT</Badge>;
         }
 
-        case "REMOTE_HIT": {
-            return <Badge variant="info">REMOTE</Badge>;
-        }
-
         case "MISS": {
             return <Badge variant="warning">MISS</Badge>;
+        }
+
+        case "REMOTE_HIT": {
+            return <Badge variant="info">REMOTE</Badge>;
         }
 
         case "SKIPPED": {

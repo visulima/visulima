@@ -148,4 +148,49 @@ export default createConfig(
             "no-secrets/no-secrets": "off",
         },
     },
+    {
+        // Tailwind v4 stylesheets — `@import "tailwindcss"` and theme tokens
+        // sit at the top level by design; layer wrapping is handled by
+        // Tailwind itself.
+        files: ["**/*.css"],
+        rules: {
+            "css/use-baseline": "off",
+            "css/use-layers": "off",
+        },
+    },
+    {
+        // Vis dashboard is a self-contained Vite/React UI with shadcn-style
+        // primitives (prop spreading is the API surface, forwardRef remains
+        // for downstream compat) and pre-Node-22-stable browser globals.
+        files: ["dashboard/**/*.{ts,tsx}"],
+        rules: {
+            "@stylistic/max-statements-per-line": "off",
+            "@typescript-eslint/no-explicit-any": "off",
+            "@typescript-eslint/no-floating-promises": "off",
+            "@typescript-eslint/no-misused-promises": "off",
+            "@typescript-eslint/no-unsafe-argument": "off",
+            "@typescript-eslint/no-unsafe-return": "off",
+            "@typescript-eslint/no-unsafe-spread": "off",
+            "@typescript-eslint/restrict-plus-operands": "off",
+            "import/no-namespace": "off",
+            "n/no-unsupported-features/node-builtins": "off",
+            "no-empty": "off",
+            "react-x/no-forward-ref": "off",
+            "react/jsx-props-no-spreading": "off",
+            "unicorn/filename-case": "off",
+            "unicorn/no-array-callback-reference": "off",
+        },
+    },
+    {
+        // Tests legitimately stub partial shapes and assert on dynamic
+        // payloads — relax the strictest type/format rules.
+        files: ["__tests__/**/*.ts", "__tests__/**/*.tsx"],
+        rules: {
+            "@stylistic/max-statements-per-line": "off",
+            "@typescript-eslint/no-explicit-any": "off",
+            "@typescript-eslint/no-floating-promises": "off",
+            "@typescript-eslint/no-unsafe-argument": "off",
+            "@typescript-eslint/no-unsafe-return": "off",
+        },
+    },
 );

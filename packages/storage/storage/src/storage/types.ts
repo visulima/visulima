@@ -153,6 +153,7 @@ export interface GenericStorageConfig {
     cacheTTL?: number;
     /** Supported checksum algorithms */
     checksumTypes?: string[];
+
     /**
      * Default abort signal merged into every operation. A per-call
      * `OperationOptions.signal` is combined with this, not replaced — either
@@ -160,6 +161,7 @@ export interface GenericStorageConfig {
      * lifetime: once it aborts, every subsequent operation fails fast.
      */
     defaultSignal?: AbortSignal;
+
     /**
      * Default per-operation timeout in milliseconds, applied per retry
      * attempt when a call omits `OperationOptions.timeout`. A per-call

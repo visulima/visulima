@@ -348,13 +348,23 @@
    ──────────────────────────────────────────────────────────────────────────── */
 
 @keyframes nd-blink {
-    0%, 49% { opacity: 1; }
-    50%, 100% { opacity: 0.15; }
+    0%,
+    49% {
+        opacity: 1;
+    }
+    50%,
+    100% {
+        opacity: 0.15;
+    }
 }
 
 @keyframes nd-fade-in {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
 .nd-blink {
@@ -369,11 +379,27 @@
     animation: nd-fade-in 350ms var(--ease-out) both;
 }
 
-.nd-stagger > *:nth-child(1) { animation-delay: 0ms; }
-.nd-stagger > *:nth-child(2) { animation-delay: 60ms; }
-.nd-stagger > *:nth-child(3) { animation-delay: 120ms; }
-.nd-stagger > *:nth-child(4) { animation-delay: 180ms; }
-.nd-stagger > *:nth-child(5) { animation-delay: 240ms; }
-.nd-stagger > *:nth-child(6) { animation-delay: 300ms; }
-.nd-stagger > *:nth-child(7) { animation-delay: 360ms; }
-.nd-stagger > *:nth-child(8) { animation-delay: 420ms; }
+.nd-stagger > *:nth-child(1) {
+    animation-delay: 0ms;
+}
+.nd-stagger > *:nth-child(2) {
+    animation-delay: 60ms;
+}
+.nd-stagger > *:nth-child(3) {
+    animation-delay: 120ms;
+}
+.nd-stagger > *:nth-child(4) {
+    animation-delay: 180ms;
+}
+.nd-stagger > *:nth-child(5) {
+    animation-delay: 240ms;
+}
+.nd-stagger > *:nth-child(6) {
+    animation-delay: 300ms;
+}
+.nd-stagger > *:nth-child(7) {
+    animation-delay: 360ms;
+}
+.nd-stagger > *:nth-child(8) {
+    animation-delay: 420ms;
+}

@@ -17,12 +17,12 @@ import { formatDate, formatMs } from "@/lib/format";
 import { CacheMissAccordion } from "./cache-miss-accordion";
 
 interface RunDetailProps {
-    runId: string;
     onBack: () => void;
+    runId: string;
 }
 
-export const RunDetail = ({ runId, onBack }: RunDetailProps) => {
-    const runQuery = useQuery({ queryKey: queryKeys.run(runId), queryFn: () => api.run(runId) });
+export const RunDetail = ({ onBack, runId }: RunDetailProps) => {
+    const runQuery = useQuery({ queryFn: () => api.run(runId), queryKey: queryKeys.run(runId) });
     const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
 
     const toggleExpanded = useCallback((taskId: string) => {
@@ -44,11 +44,7 @@ export const RunDetail = ({ runId, onBack }: RunDetailProps) => {
     }
 
     if (!runQuery.data) {
-        return (
-            <div className="nd-mono py-16 text-center text-[12px] uppercase tracking-[0.16em] text-muted">
-                [RUN NOT FOUND]
-            </div>
-        );
+        return <div className="nd-mono py-16 text-center text-[12px] uppercase tracking-[0.16em] text-muted">[RUN NOT FOUND]</div>;
     }
 
     const run = runQuery.data;
@@ -58,7 +54,7 @@ export const RunDetail = ({ runId, onBack }: RunDetailProps) => {
             {/* Back nav + identifier */}
             <div className="flex items-baseline justify-between gap-4 border-b border-border pb-6">
                 <div className="flex items-baseline gap-6">
-                    <Button variant="ghost" size="sm" onClick={onBack}>
+                    <Button onClick={onBack} size="sm" variant="ghost">
                         <Icon svg={arrowLeftIcon} />
                         ALL RUNS
                     </Button>
@@ -81,15 +77,10 @@ export const RunDetail = ({ runId, onBack }: RunDetailProps) => {
 
             {/* Stats grid */}
             <section className="grid grid-cols-2 gap-px bg-border md:grid-cols-4">
-                <StatCard label="TOTAL" value={run.stats.total} className="border-0 bg-panel" />
-                <StatCard label="SUCCEEDED" tone="good" value={run.stats.succeeded} className="border-0 bg-panel" />
-                <StatCard label="CACHED" value={run.stats.cached} className="border-0 bg-panel" />
-                <StatCard
-                    label="FAILED"
-                    tone={run.stats.failed > 0 ? "bad" : "default"}
-                    value={run.stats.failed}
-                    className="border-0 bg-panel"
-                />
+                <StatCard className="border-0 bg-panel" label="TOTAL" value={run.stats.total} />
+                <StatCard className="border-0 bg-panel" label="SUCCEEDED" tone="good" value={run.stats.succeeded} />
+                <StatCard className="border-0 bg-panel" label="CACHED" value={run.stats.cached} />
+                <StatCard className="border-0 bg-panel" label="FAILED" tone={run.stats.failed > 0 ? "bad" : "default"} value={run.stats.failed} />
             </section>
 
             {/* Task table */}
@@ -123,33 +114,36 @@ export const RunDetail = ({ runId, onBack }: RunDetailProps) => {
                                                 <StatusBadge status={task.cacheStatus} />
                                             </TableCell>
                                             <TableCell className="nd-mono text-[13px]">{formatMs(task.duration)}</TableCell>
-                                            <TableCell className="nd-mono text-[12px] text-muted">
-                                                {task.hash ? `${task.hash.slice(0, 12)}…` : "—"}
-                                            </TableCell>
+                                            <TableCell className="nd-mono text-[12px] text-muted">{task.hash ? `${task.hash.slice(0, 12)}…` : "—"}</TableCell>
                                             <TableCell className="text-right">
-                                                {isMiss ? (
+                                                {isMiss
+                                                    ? (
                                                     <Button
-                                                        variant="technical"
-                                                        size="sm"
-                                                        aria-expanded={isOpen}
                                                         aria-controls={`why-missed-${task.taskId}`}
-                                                        onClick={() => toggleExpanded(task.taskId)}
+                                                        aria-expanded={isOpen}
+                                                        onClick={() => {
+                                                            toggleExpanded(task.taskId);
+                                                        }}
+                                                        size="sm"
+                                                        variant="technical"
                                                     >
                                                         <Icon svg={searchIcon} />
                                                         WHY MISSED
                                                         <Icon svg={isOpen ? chevronDownIcon : chevronRightIcon} />
-
                                                     </Button>
-                                                ) : null}
+                                                    )
+                                                    : null}
                                             </TableCell>
                                         </TableRow>
-                                        {isMiss && isOpen ? (
-                                            <tr id={`why-missed-${task.taskId}`} className="bg-bg/40">
-                                                <td colSpan={5} className="border-b border-border p-0">
+                                        {isMiss && isOpen
+                                            ? (
+                                            <tr className="bg-bg/40" id={`why-missed-${task.taskId}`}>
+                                                <td className="border-b border-border p-0" colSpan={5}>
                                                     <CacheMissAccordion runId={runId} taskId={task.taskId} />
                                                 </td>
                                             </tr>
-                                        ) : null}
+                                            )
+                                            : null}
                                     </Fragment>
                                 );
                             })}

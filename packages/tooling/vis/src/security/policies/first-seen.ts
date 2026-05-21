@@ -51,61 +51,57 @@ export const evaluateFirstSeenPolicy = async (input: PolicyInput, config: VisCon
         return [];
     }
 
-    const minutes = firstSeen.minutes;
+    const { minutes } = firstSeen;
     const exclude = firstSeen.exclude ?? [];
     const acceptedRisks = config.security?.acceptedRisks;
     const thresholdMs = minutes * MS_PER_MINUTE;
     const now = Date.now();
 
-    const perPackage = await mapWithConcurrency(
-        input.packages,
-        DEFAULT_MARSHALL_CONCURRENCY,
-        async (pkg): Promise<PolicyDecision | undefined> => {
-            if (isExcluded(pkg.name, pkg.version, exclude)) {
-                return undefined;
-            }
+    const perPackage = await mapWithConcurrency(input.packages, DEFAULT_MARSHALL_CONCURRENCY, async (pkg): Promise<PolicyDecision | undefined> => {
+        if (isExcluded(pkg.name, pkg.version, exclude)) {
+            return undefined;
+        }
 
-            const packument = await getPackument(pkg.name, { workspaceRoot: input.workspaceRoot });
+        const packument = await getPackument(pkg.name, { workspaceRoot: input.workspaceRoot });
 
-            if (packument === undefined) {
-                return undefined;
-            }
+        if (packument === undefined) {
+            return undefined;
+        }
 
-            const publishedAt = packument.time?.[pkg.version];
+        const publishedAt = packument.time?.[pkg.version];
 
-            if (publishedAt === undefined) {
-                return undefined;
-            }
+        if (publishedAt === undefined) {
+            return undefined;
+        }
 
-            const publishedMs = Date.parse(publishedAt);
+        const publishedMs = Date.parse(publishedAt);
 
-            if (Number.isNaN(publishedMs)) {
-                return undefined;
-            }
+        if (Number.isNaN(publishedMs)) {
+            return undefined;
+        }
 
-            const ageMs = now - publishedMs;
+        const ageMs = now - publishedMs;
 
-            if (ageMs >= thresholdMs) {
-                return undefined;
-            }
+        if (ageMs >= thresholdMs) {
+            return undefined;
+        }
 
-            const ageMinutes = Math.max(0, Math.floor(ageMs / MS_PER_MINUTE));
+        const ageMinutes = Math.max(0, Math.floor(ageMs / MS_PER_MINUTE));
 
-            return {
-                acceptedRisk: findAcceptedRisk(pkg.name, pkg.version, acceptedRisks, "firstSeen"),
-                data: {
-                    ageMinutes,
-                    minimumMinutes: minutes,
-                    publishedAt,
-                },
-                packageName: pkg.name,
-                policy: "firstSeen",
-                reason: `${pkg.name}@${pkg.version} was published ${String(ageMinutes)} min ago — below the ${String(minutes)} min firstSeen cooldown.`,
-                severity: "block",
-                version: pkg.version,
-            };
-        },
-    );
+        return {
+            acceptedRisk: findAcceptedRisk(pkg.name, pkg.version, acceptedRisks, "firstSeen"),
+            data: {
+                ageMinutes,
+                minimumMinutes: minutes,
+                publishedAt,
+            },
+            packageName: pkg.name,
+            policy: "firstSeen",
+            reason: `${pkg.name}@${pkg.version} was published ${String(ageMinutes)} min ago — below the ${String(minutes)} min firstSeen cooldown.`,
+            severity: "block",
+            version: pkg.version,
+        };
+    });
 
     return perPackage.filter((decision): decision is PolicyDecision => decision !== undefined);
 };

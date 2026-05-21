@@ -61,12 +61,7 @@ export interface BunS3ClientLike {
     delete: (key: string) => Promise<void>;
     exists: (key: string) => Promise<boolean>;
     file: (key: string) => BunS3FileRef;
-    list: (input?: {
-        continuationToken?: string;
-        maxKeys?: number;
-        prefix?: string;
-        startAfter?: string;
-    }) => Promise<{
+    list: (input?: { continuationToken?: string; maxKeys?: number; prefix?: string; startAfter?: string }) => Promise<{
         contents?: BunS3ListEntry[];
         isTruncated?: boolean;
         nextContinuationToken?: string;

@@ -6,8 +6,7 @@ import { modelsToOpenApi } from "@visulima/crud";
 import { join } from "@visulima/path";
 // eslint-disable-next-line e18e/ban-dependencies -- debug is a stable runtime dep used for swagger crud preview tooling; obug migration tracked separately
 import debug from "debug";
-// eslint-disable-next-line no-restricted-imports, e18e/ban-dependencies -- lodash.merge is the established deep-merge utility for swagger spec extension; native alternatives lack equivalent semantics
-import merge from "lodash.merge";
+import { merge } from "es-toolkit";
 import type { OpenAPIV3 } from "openapi-types";
 
 import yamlTransformer from "../../serializers/transformer/yaml";

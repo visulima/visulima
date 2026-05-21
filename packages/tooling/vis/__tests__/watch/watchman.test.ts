@@ -2,14 +2,14 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, expectTypeOf, it } from "vitest";
 
 import { startWatcher } from "../../src/watch/watch";
 import { isWatchmanAvailable, startWatchmanWatcher } from "../../src/watch/watchman";
 
 describe(isWatchmanAvailable, () => {
     it("returns a stable boolean (the result is probed once and cached)", () => {
-        expect.assertions(2);
+        expect.assertions(1);
 
         // Outcome is environment-dependent: `fb-watchman` is an
         // installed optional peer dep, so availability hinges on
@@ -20,7 +20,10 @@ describe(isWatchmanAvailable, () => {
         // startWatchmanWatcher fallback test below.
         const first = isWatchmanAvailable();
 
-        expect(typeof first).toBe("boolean");
+        // `expectTypeOf` is a compile-time check; it does not count
+        // toward the runtime assertion budget.
+        expectTypeOf(first).toBeBoolean();
+
         expect(isWatchmanAvailable()).toBe(first);
     });
 });

@@ -1,13 +1,13 @@
 {
-  "name": "pkg-verbose-42",
-  "version": "1.0.0",
-  "private": true,
-  "scripts": {
-    "build": "echo 'Building pkg-verbose-42 with verbose output...' && for n in $(seq 1 210); do echo \"  [pkg-verbose-42] Processing file $n/210...\"; done && echo 'pkg-verbose-42 complete!' && mkdir -p dist && date > dist/.stamp",
-    "lint": "echo 'pkg-verbose-42 lint OK'",
-    "test": "echo 'Running pkg-verbose-42 test suite...' && for n in $(seq 1 20); do echo \"  test $n: PASS\"; done && echo 'All tests passed.'"
-  },
-  "dependencies": {
-    "lib-medium-16": "1.0.0"
-  }
+    "name": "pkg-verbose-42",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "build": "echo 'Building pkg-verbose-42 with verbose output...' && for n in $(seq 1 210); do echo \"  [pkg-verbose-42] Processing file $n/210...\"; done && echo 'pkg-verbose-42 complete!' && mkdir -p dist && date > dist/.stamp",
+        "lint": "echo 'pkg-verbose-42 lint OK'",
+        "test": "echo 'Running pkg-verbose-42 test suite...' && for n in $(seq 1 20); do echo \"  test $n: PASS\"; done && echo 'All tests passed.'"
+    },
+    "dependencies": {
+        "lib-medium-16": "1.0.0"
+    }
 }

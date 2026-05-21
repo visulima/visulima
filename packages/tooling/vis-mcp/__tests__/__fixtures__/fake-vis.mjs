@@ -127,9 +127,7 @@ if (argv[0] === "advisories" && argv[1] === "status" && argv.includes("--format"
         exists: true,
         schemaVersion: 2,
         sizeBytes: 1024,
-        ecosystems: [
-            { name: "npm", advisoryCount: 5000, lastSyncIso: "2026-05-01T00:00:00Z", manifestEtag: "etag-abc" },
-        ],
+        ecosystems: [{ name: "npm", advisoryCount: 5000, lastSyncIso: "2026-05-01T00:00:00Z", manifestEtag: "etag-abc" }],
     });
     process.exit(0);
 }

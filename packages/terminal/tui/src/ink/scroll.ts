@@ -90,8 +90,7 @@ export const calculateScroll = (node: DOMElement): void => {
             // computeBackbufferOutput) caps the per-frame burst relative to
             // `scrollTop`. Different reference points, but both guarantee at
             // most `maxScrollbackLength` extra rows, so they stay consistent.
-            node.internal_maxScrollTop
-                = maxScrollbackLength === undefined ? grown : Math.min(grown, actualMaxScrollTop + Math.max(0, maxScrollbackLength));
+            node.internal_maxScrollTop = maxScrollbackLength === undefined ? grown : Math.min(grown, actualMaxScrollTop + Math.max(0, maxScrollbackLength));
         }
 
         scrollHeight = Math.max(actualScrollHeight, (node.internal_maxScrollTop ?? 0) + clientHeight);

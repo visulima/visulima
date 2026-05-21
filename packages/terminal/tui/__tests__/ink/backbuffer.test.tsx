@@ -30,7 +30,16 @@ const occurrences = (stdout: FakeStdout, token: string): number => {
 type AppProperties = { alternateScreen?: boolean; maxScrollbackLength?: number; scrollTop: number };
 
 const ScrollApp = ({ maxScrollbackLength, scrollTop }: AppProperties) => (
-    <Box flexDirection="column" height={5} maxScrollbackLength={maxScrollbackLength} overflowToBackbuffer overflowY="scroll" scrollTop={scrollTop} stableScrollback width={20}>
+    <Box
+        flexDirection="column"
+        height={5}
+        maxScrollbackLength={maxScrollbackLength}
+        overflowToBackbuffer
+        overflowY="scroll"
+        scrollTop={scrollTop}
+        stableScrollback
+        width={20}
+    >
         <Box flexDirection="column" flexShrink={0}>
             <Text>{CONTENT}</Text>
         </Box>
@@ -124,7 +133,17 @@ describe("overflowToBackbuffer", () => {
         // duplicated the topmost visible line (ROW0009) into history.
         const stdout = createStdout();
         const { unmount } = render(
-            <Box borderStyle="round" flexDirection="column" height={7} overflowToBackbuffer overflowY="scroll" padding={1} scrollTop={10} stableScrollback width={20}>
+            <Box
+                borderStyle="round"
+                flexDirection="column"
+                height={7}
+                overflowToBackbuffer
+                overflowY="scroll"
+                padding={1}
+                scrollTop={10}
+                stableScrollback
+                width={20}
+            >
                 <Box flexDirection="column" flexShrink={0}>
                     <Text>{CONTENT}</Text>
                 </Box>

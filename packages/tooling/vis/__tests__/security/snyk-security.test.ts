@@ -12,9 +12,7 @@ vi.mock(import("node:os"), async (importOriginal) => {
     return { ...original, homedir: () => TEST_HOME };
 });
 
-const { buildReport, clearSnykCache, createSnykProvider, fetchSnykReports, issueSeverity, issueToAlert } = await import(
-    "../../src/security/snyk-security"
-);
+const { buildReport, clearSnykCache, createSnykProvider, fetchSnykReports, issueSeverity, issueToAlert } = await import("../../src/security/snyk-security");
 
 const setupHome = (): void => {
     mkdirSync(TEST_HOME, { recursive: true });
@@ -56,7 +54,12 @@ describe("snyk-security", () => {
 
             expect(
                 issueSeverity({
-                    attributes: { severities: [{ level: "medium", type: "secondary" }, { level: "high", type: "primary" }] },
+                    attributes: {
+                        severities: [
+                            { level: "medium", type: "secondary" },
+                            { level: "high", type: "primary" },
+                        ],
+                    },
                     id: "x",
                 }),
             ).toBe("high");

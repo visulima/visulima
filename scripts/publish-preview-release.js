@@ -10,11 +10,9 @@ import { exit } from "node:process";
 // `nx affected` reads NX_BASE / NX_HEAD from the env (set by nrwl/nx-set-shas
 // in the workflow). Don't pass --files=<huge list> — that hits the kernel
 // argv size limit on long diffs.
-const rawJson = execFileSync(
-    "pnpm",
-    ["exec", "nx", "show", "projects", "--affected", "--exclude=*-bench,docs,storybook,shared-utils", "--json"],
-    { encoding: "utf8" },
-);
+const rawJson = execFileSync("pnpm", ["exec", "nx", "show", "projects", "--affected", "--exclude=*-bench,docs,storybook,shared-utils", "--json"], {
+    encoding: "utf8",
+});
 
 // pnpm prefixes stdout with `[WARN] Unsupported platform...` lines for
 // native-binding optional packages on CI runners. nx prints its JSON on the
@@ -26,7 +24,7 @@ const sliceJson = (raw) => {
         const line = lines[index].trim();
 
         if (line.length === 0) continue;
-        if (line.startsWith("[\"") || line.startsWith("[]") || line.startsWith("{\"") || line.startsWith("{}")) {
+        if (line.startsWith('["') || line.startsWith("[]") || line.startsWith('{"') || line.startsWith("{}")) {
             return line;
         }
     }
@@ -43,9 +41,7 @@ const rootPath = join(__dirname, "..");
 
 const packages = affectedProjects.map((projectName) => {
     // Ask NX for the actual project root, since project names may not match directory paths
-    const projectJson = JSON.parse(
-        sliceJson(execFileSync("pnpm", ["exec", "nx", "show", "project", projectName, "--json"], { encoding: "utf8" })),
-    );
+    const projectJson = JSON.parse(sliceJson(execFileSync("pnpm", ["exec", "nx", "show", "project", projectName, "--json"], { encoding: "utf8" })));
     const projectRoot = join(rootPath, projectJson.root);
     const packageJsonPath = join(projectRoot, "package.json");
 

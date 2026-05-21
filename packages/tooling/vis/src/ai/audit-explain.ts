@@ -85,8 +85,10 @@ Respond ONLY with valid JSON in this exact structure, each value 1-3 plain sente
  * prompt when the explanation is rendered.
  */
 const sanitize = (text: string): string =>
-    // eslint-disable-next-line no-control-regex
-    stripVTControlCharacters(text).replaceAll(/[\u0000-\u0008\u000B-\u001F\u007F]/gu, "").trim();
+    stripVTControlCharacters(text)
+        // eslint-disable-next-line no-control-regex -- intentional: strips C0/DEL controls from untrusted model output (tab/newline preserved by the gap in the range).
+        .replaceAll(/[\u0000-\u0008\u000B-\u001F\u007F]/gu, "")
+        .trim();
 
 const formatExplanation = (parts: { areYouAtRisk: string; whatItIs: string; whatToDo: string }): string =>
     `What it is: ${parts.whatItIs}\nAre you at risk: ${parts.areYouAtRisk}\nWhat to do: ${parts.whatToDo}`;

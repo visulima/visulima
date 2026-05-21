@@ -25,6 +25,7 @@ if (process.argv.includes("--no-color")) {
 // the user's intent (print the visx version) would never reach cerebro.
 if (process.argv.slice(2).some((argument) => argument === "--version" || argument === "-v" || argument === "-V")) {
     process.stdout.write(`${pkg.version}\n`);
+    // eslint-disable-next-line unicorn/no-process-exit -- binx is the CLI entry; exit short-circuits the cerebro re-dispatch below.
     process.exit(0);
 }
 

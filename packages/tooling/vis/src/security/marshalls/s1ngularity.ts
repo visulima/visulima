@@ -66,8 +66,7 @@ export interface RunS1ngularityMarshallOptions {
     workspaceRoot?: string;
 }
 
-const hasProvenance = (packument: Packument, version: string): boolean =>
-    packument.versions[version]?.dist?.attestations?.provenance !== undefined;
+const hasProvenance = (packument: Packument, version: string): boolean => packument.versions[version]?.dist?.attestations?.provenance !== undefined;
 
 /**
  * Newest published stable version strictly less than `installedVersion`.
@@ -84,10 +83,7 @@ export const findNewestPriorStable = (packument: Packument, installedVersion: st
         .sort((a, b) => (semverLt(a, b) ? 1 : -1))[0];
 };
 
-const installHookChanges = (
-    current: Record<string, string> | undefined,
-    prior: Record<string, string> | undefined,
-): S1ngularityHookChange[] => {
+const installHookChanges = (current: Record<string, string> | undefined, prior: Record<string, string> | undefined): S1ngularityHookChange[] => {
     const currentScripts = current ?? {};
     const priorScripts = prior ?? {};
     const changes: S1ngularityHookChange[] = [];

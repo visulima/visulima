@@ -131,11 +131,7 @@ describe("tui/failure-render", () => {
     it("renders header + stack but no code frame when every frame is in node_modules", () => {
         expect.assertions(3);
 
-        const raw = [
-            "Error: deep",
-            "    at fn (/repo/node_modules/dep/index.js:10:3)",
-            "    at node:internal/process/task_queues:95:5",
-        ].join("\n");
+        const raw = ["Error: deep", "    at fn (/repo/node_modules/dep/index.js:10:3)", "    at node:internal/process/task_queues:95:5"].join("\n");
 
         const out = strip(renderFailureOutput(raw, { color: false, cwd: dir }));
 

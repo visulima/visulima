@@ -32,9 +32,7 @@ const stubFetch = (response: { body?: unknown; status?: number }): ReturnType<ty
     return handler;
 };
 
-const packumentWith = (
-    versions: Record<string, { hasProvenance?: boolean; scripts?: Record<string, string> }>,
-): Record<string, unknown> => {
+const packumentWith = (versions: Record<string, { hasProvenance?: boolean; scripts?: Record<string, string> }>): Record<string, unknown> => {
     return {
         name: "demo",
         versions: Object.fromEntries(

@@ -19,11 +19,13 @@ vi.mock(import("node:os"), async (importOriginal) => {
 const { clearPackumentCache } = await import("../../../src/security/marshalls/packument");
 
 const stubFetch = (body: unknown): ReturnType<typeof vi.fn> => {
-    const handler = vi.fn(async () => ({
-        json: async () => body,
-        ok: true,
-        status: 200,
-    }));
+    const handler = vi.fn(async () => {
+        return {
+            json: async () => body,
+            ok: true,
+            status: 200,
+        };
+    });
 
     vi.stubGlobal("fetch", handler);
 
@@ -35,27 +37,28 @@ interface VersionShape {
     publishedAt?: string;
 }
 
-const packument = (name: string, versions: Record<string, VersionShape>): Record<string, unknown> => ({
-    name,
-    time: Object.fromEntries(
-        Object.entries(versions)
-            .filter(([, v]) => v.publishedAt !== undefined)
-            .map(([version, v]) => [version, v.publishedAt]),
-    ),
-    versions: Object.fromEntries(
-        Object.entries(versions).map(([version, v]) => [
-            version,
-            v.hasProvenance ? { dist: { attestations: { provenance: {} } }, version } : { version },
-        ]),
-    ),
-});
+const packument = (name: string, versions: Record<string, VersionShape>): Record<string, unknown> => {
+    return {
+        name,
+        time: Object.fromEntries(
+            Object.entries(versions)
+                .filter(([, v]) => v.publishedAt !== undefined)
+                .map(([version, v]) => [version, v.publishedAt]),
+        ),
+        versions: Object.fromEntries(
+            Object.entries(versions).map(([version, v]) => [version, v.hasProvenance ? { dist: { attestations: { provenance: {} } }, version } : { version }]),
+        ),
+    };
+};
 
-const buildInput = (workspaceRoot: string): PolicyInput => ({
-    offline: false,
-    packageManager: "npm",
-    packages: [{ isDev: false, name: "evil", version: "2.0.0" }],
-    workspaceRoot,
-});
+const buildInput = (workspaceRoot: string): PolicyInput => {
+    return {
+        offline: false,
+        packageManager: "npm",
+        packages: [{ isDev: false, name: "evil", version: "2.0.0" }],
+        workspaceRoot,
+    };
+};
 
 describe(evaluatePublisherChangePolicy, () => {
     let workspaceRoot: string;
@@ -76,12 +79,12 @@ describe(evaluatePublisherChangePolicy, () => {
     it("emits nothing when mode is not no-downgrade", async () => {
         expect.assertions(2);
 
-        expect(await evaluatePublisherChangePolicy(buildInput(workspaceRoot), {})).toStrictEqual([]);
-        expect(
-            await evaluatePublisherChangePolicy(buildInput(workspaceRoot), {
+        await expect(evaluatePublisherChangePolicy(buildInput(workspaceRoot), {})).resolves.toStrictEqual([]);
+        await expect(
+            evaluatePublisherChangePolicy(buildInput(workspaceRoot), {
                 security: { policies: { publisherChange: { mode: "warn-only" } } },
             } as unknown as VisConfig),
-        ).toStrictEqual([]);
+        ).resolves.toStrictEqual([]);
     });
 
     it("blocks a version that dropped provenance carried by a prior version", async () => {

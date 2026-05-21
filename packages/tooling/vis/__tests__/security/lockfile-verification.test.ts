@@ -19,7 +19,9 @@ const { clearPackumentCache } = await import("../../src/security/marshalls/packu
 const stubFetch = (body: unknown): void => {
     vi.stubGlobal(
         "fetch",
-        vi.fn(async () => ({ json: async () => body, ok: true, status: 200 })),
+        vi.fn(async () => {
+            return { json: async () => body, ok: true, status: 200 };
+        }),
     );
 };
 
@@ -112,9 +114,7 @@ describe(verifyLockfile, () => {
         });
 
         expect(result.status).toBe("fail");
-        expect(result.exoticViolations).toStrictEqual([
-            { declaredBy: "prod-pkg@1.0.0", packageName: "git-dep", source: "github:attacker/evil#deadbeef" },
-        ]);
+        expect(result.exoticViolations).toStrictEqual([{ declaredBy: "prod-pkg@1.0.0", packageName: "git-dep", source: "github:attacker/evil#deadbeef" }]);
 
         const lines = formatLockfileVerification(result);
 

@@ -4,11 +4,17 @@ import type { LockfileVerificationResult } from "../../../src/security/lockfile-
 
 const pailMock = { error: vi.fn(), info: vi.fn(), success: vi.fn(), warn: vi.fn() };
 
-vi.mock(import("../../../src/io/logger"), () => ({ pail: pailMock }));
+vi.mock(import("../../../src/io/logger"), () => {
+    return { pail: pailMock };
+});
 
-const detectPmMock = vi.fn(() => ({ name: "npm", version: "10.0.0" }));
+const detectPmMock = vi.fn(() => {
+    return { name: "npm", version: "10.0.0" };
+});
 
-vi.mock(import("../../../src/pm/pm-runner"), () => ({ detectPm: detectPmMock }));
+vi.mock(import("../../../src/pm/pm-runner"), () => {
+    return { detectPm: detectPmMock };
+});
 
 const verifyLockfileMock = vi.fn();
 
@@ -20,21 +26,25 @@ vi.mock(import("../../../src/security/lockfile-verification"), async (importOrig
 
 const handlerPromise = import("../../../src/commands/security/verify-lockfile");
 
-const buildToolbox = (options: { json?: boolean; offline?: boolean } = {}): unknown => ({
-    options,
-    visConfig: {},
-    workspaceRoot: "/tmp/ws",
-});
+const buildToolbox = (options: { json?: boolean; offline?: boolean } = {}): unknown => {
+    return {
+        options,
+        visConfig: {},
+        workspaceRoot: "/tmp/ws",
+    };
+};
 
-const result = (over: Partial<LockfileVerificationResult>): LockfileVerificationResult => ({
-    decisions: [],
-    durationMs: 5,
-    entryCount: 3,
-    exoticViolations: [],
-    lockfileMissing: false,
-    status: "pass",
-    ...over,
-});
+const result = (over: Partial<LockfileVerificationResult>): LockfileVerificationResult => {
+    return {
+        decisions: [],
+        durationMs: 5,
+        entryCount: 3,
+        exoticViolations: [],
+        lockfileMissing: false,
+        status: "pass",
+        ...over,
+    };
+};
 
 describe("security verify-lockfile handler", () => {
     let writeSpy: ReturnType<typeof vi.spyOn>;
@@ -138,7 +148,7 @@ describe("security verify-lockfile handler", () => {
     it("--json emits the raw result and sets exit 1 on failure without using pail", async () => {
         expect.assertions(3);
 
-        const payload = result({ lockfileMissing: true, status: "fail", entryCount: 0 });
+        const payload = result({ entryCount: 0, lockfileMissing: true, status: "fail" });
 
         verifyLockfileMock.mockResolvedValue(payload);
 

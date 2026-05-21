@@ -584,7 +584,7 @@ describe("pruneLockfile (dispatcher)", () => {
             pruneLockfile({
                 closure: closure(),
                 lockfileContent: "",
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
                 packageManager: "bogus" as any,
             }),
         ).toThrow(/unsupported|unknown|invalid/i);

@@ -204,11 +204,13 @@ const projectGraphToJson = (
 };
 
 const projectGraphToHtml = (projectGraph: ProjectGraph): string => {
-    const nodes = Object.values(projectGraph.nodes).map((node) => ({
-        name: node.name,
-        path: node.data?.root,
-        type: node.type,
-    }));
+    const nodes = Object.values(projectGraph.nodes).map((node) => {
+        return {
+            name: node.name,
+            path: node.data?.root,
+            type: node.type,
+        };
+    });
 
     const edges: { source: string; target: string; type: string }[] = [];
 

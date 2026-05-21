@@ -7,13 +7,25 @@ import { viteSingleFile } from "vite-plugin-singlefile";
 
 const here = (path: string): string => fileURLToPath(new URL(path, import.meta.url));
 
-// eslint-disable-next-line import/no-unused-modules
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, process.cwd(), "");
     const apiPort = env.VIS_DASHBOARD_API_PORT ?? "7788";
     const apiTarget = env.VIS_DASHBOARD_API_URL ?? `http://127.0.0.1:${apiPort}`;
 
     return {
+        build: {
+            assetsInlineLimit: 100_000_000,
+            cssCodeSplit: false,
+            emptyOutDir: true,
+            outDir: here("./dist"),
+            reportCompressedSize: false,
+            rollupOptions: {
+                output: {
+                    inlineDynamicImports: true,
+                },
+            },
+            target: "es2022",
+        },
         plugins: [react(), tailwindcss(), viteSingleFile()],
         resolve: {
             alias: {
@@ -23,9 +35,7 @@ export default defineConfig(({ mode }) => {
         server: {
             proxy: {
                 "/api": {
-                    target: apiTarget,
                     changeOrigin: true,
-                    ws: true,
                     configure: (proxy) => {
                         proxy.on("proxyReq", (proxyReq, req) => {
                             if (req.url?.startsWith("/api/events")) {
@@ -33,19 +43,8 @@ export default defineConfig(({ mode }) => {
                             }
                         });
                     },
-                },
-            },
-        },
-        build: {
-            outDir: here("./dist"),
-            emptyOutDir: true,
-            cssCodeSplit: false,
-            assetsInlineLimit: 100_000_000,
-            target: "es2022",
-            reportCompressedSize: false,
-            rollupOptions: {
-                output: {
-                    inlineDynamicImports: true,
+                    target: apiTarget,
+                    ws: true,
                 },
             },
         },

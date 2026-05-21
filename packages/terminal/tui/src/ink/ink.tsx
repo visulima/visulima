@@ -858,8 +858,7 @@ export default class Ink {
         // Floor the slice start at scrolledOff - maxScrollbackLength so a large
         // jump in scrollTop emits at most maxScrollbackLength lines in one
         // frame (bounded burst). Unbounded when the cap is unset.
-        const start
-            = maxScrollbackLength === undefined ? maxPushed : Math.max(maxPushed, scrolledOff - Math.max(0, maxScrollbackLength));
+        const start = maxScrollbackLength === undefined ? maxPushed : Math.max(maxPushed, scrolledOff - Math.max(0, maxScrollbackLength));
         const count = scrolledOff - start;
 
         if (count <= 0) {
