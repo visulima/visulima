@@ -11,7 +11,10 @@ const ignoreNullCustomizer = (a: unknown, b: unknown): unknown => {
 
 /**
  * A recursive deep-merge that ignores null values when merging.
- * This returns the merged object and does not mutate the inputs.
+ * Returns a new top-level merged object. Note: nested objects inside `first`
+ * may still be mutated because their references are shared with the returned
+ * target during the deep merge — pass cloned inputs if you need full
+ * immutability.
  * @param first the first object to get merged
  * @param second the second object to get merged
  */

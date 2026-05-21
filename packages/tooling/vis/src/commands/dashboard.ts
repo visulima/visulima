@@ -8,11 +8,12 @@ import { pail } from "../io/logger";
 
 const openInBrowser = (url: string): void => {
     const { platform } = process;
-    const [binary, args] = platform === "darwin"
-        ? ["open", [url]] as const
-        : platform === "win32"
-            ? ["cmd", ["/c", "start", "", url]] as const
-            : ["xdg-open", [url]] as const;
+    const [binary, args]
+        = platform === "darwin"
+            ? (["open", [url]] as const)
+            : platform === "win32"
+                ? (["cmd", ["/c", "start", "", url]] as const)
+                : (["xdg-open", [url]] as const);
 
     execFile(binary, args, (error) => {
         if (error) {
@@ -54,11 +55,21 @@ const dashboard: Command = {
         }
 
         await new Promise<void>((resolve) => {
+            let shuttingDown = false;
             const shutdown = (): void => {
+                if (shuttingDown) {
+                    return;
+                }
+
+                shuttingDown = true;
+                process.off("SIGINT", shutdown);
+                process.off("SIGTERM", shutdown);
                 // eslint-disable-next-line no-void -- intentional fire-and-forget; satisfies @typescript-eslint/no-floating-promises.
                 void (async () => {
                     try {
                         await server.close();
+                    } catch {
+                        // Best effort during shutdown — swallow so the second signal can't escape as an unhandled rejection.
                     } finally {
                         resolve();
                     }
