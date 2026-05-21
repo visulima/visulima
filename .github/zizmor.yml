@@ -1,0 +1,32 @@
+# Zizmor static analyzer config.
+# https://docs.zizmor.sh/configuration/
+
+rules:
+    dangerous-triggers:
+        # These workflows use pull_request_target for write perms but do not
+        # check out PR-controlled refs, so fork-takeover doesn't apply.
+        ignore:
+            - "allo-allo.yaml"
+            - "labeler.yml"
+            - "semantic-pull-request.yml"
+
+    excessive-permissions:
+        # Reusable workflows declare the permissions they need internally;
+        # the caller's permissions: block is the union/superset.
+        ignore:
+            - "cache-clear.yml"
+            - "stale-issues.yml"
+
+    unpinned-uses:
+        # Workflows with intentionally unpinned action references (typically
+        # org-internal callers or upstream-managed templates).
+        ignore:
+            - "allo-allo.yaml"
+            - "cache-clear.yml"
+            - "lint.yml"
+            - "lock-file-maintenance.yml"
+            - "lock-issues.yaml"
+            - "preview-release.yaml"
+            - "semantic-release.yml"
+            - "stale-issues.yml"
+            - "test.yml"
