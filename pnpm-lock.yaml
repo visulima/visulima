@@ -8671,6 +8671,9 @@ importers:
       '@types/node':
         specifier: catalog:types
         version: 25.8.0
+      '@visulima/tabular':
+        specifier: workspace:*
+        version: link:..
       cli-table:
         specifier: catalog:dev
         version: 0.3.11
