@@ -9,7 +9,7 @@ import { isWatchmanAvailable, startWatchmanWatcher } from "../../src/watch/watch
 
 describe(isWatchmanAvailable, () => {
     it("returns a stable boolean (the result is probed once and cached)", () => {
-        expect.assertions(2);
+        expect.assertions(1);
 
         // Outcome is environment-dependent: `fb-watchman` is an
         // installed optional peer dep, so availability hinges on
@@ -20,6 +20,8 @@ describe(isWatchmanAvailable, () => {
         // startWatchmanWatcher fallback test below.
         const first = isWatchmanAvailable();
 
+        // `expectTypeOf` is a compile-time check; it does not count
+        // toward the runtime assertion budget.
         expectTypeOf(first).toBeBoolean();
 
         expect(isWatchmanAvailable()).toBe(first);

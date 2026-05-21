@@ -1718,7 +1718,7 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
         const stackFrames = parseStacktrace(new AggregateError([new Error("foo"), new Error("bar"), new Error("baz")], "test"));
 
         expect(stackFrames).toHaveLength(10);
-        expect(stackFrames[0]).toMatchStackFrame(["<unknown>", `${testFileDirectory}/parse-stacktrace.test.ts`, 1723, 45]);
+        expect(stackFrames[0]).toMatchStackFrame(["<unknown>", `${testFileDirectory}/parse-stacktrace.test.ts`, 1718, 45]);
     });
 
     it.skipIf(!globalThis.AggregateError)("should parse AggregateError stack with empty message", () => {
@@ -1728,7 +1728,7 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
         const stackFrames = parseStacktrace(new AggregateError([new Error("foo"), new Error("bar"), new Error("baz")]));
 
         expect(stackFrames).toHaveLength(10);
-        expect(stackFrames[0]).toMatchStackFrame(["<unknown>", `${testFileDirectory}/parse-stacktrace.test.ts`, 1738, 45]);
+        expect(stackFrames[0]).toMatchStackFrame(["<unknown>", `${testFileDirectory}/parse-stacktrace.test.ts`, 1728, 45]);
     });
 
     it.skipIf(!globalThis.AggregateError)("should parse AggregateError stack with nested AggregateError", () => {
@@ -1741,7 +1741,7 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
         const stackFrames = parseStacktrace(new AggregateError([nestedError]));
 
         expect(stackFrames).toHaveLength(10);
-        expect(stackFrames[0]).toMatchStackFrame(["<unknown>", `${testFileDirectory}/parse-stacktrace.test.ts`, 1756, 45]);
+        expect(stackFrames[0]).toMatchStackFrame(["<unknown>", `${testFileDirectory}/parse-stacktrace.test.ts`, 1741, 45]);
     });
 
     it("should parse a stack trace with a single frame", () => {
@@ -1785,7 +1785,7 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
         );
 
         expect(stackFrames).toHaveLength(10);
-        expect(stackFrames[0]).toMatchStackFrame(["<unknown>", `${testFileDirectory}/parse-stacktrace.test.ts`, 1801, 13]);
+        expect(stackFrames[0]).toMatchStackFrame(["<unknown>", `${testFileDirectory}/parse-stacktrace.test.ts`, 1781, 13]);
     });
 
     it("should parse a stack trace with a custom error name", () => {
@@ -1798,7 +1798,7 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
         const stackFrames = parseStacktrace(error);
 
         expect(stackFrames).toHaveLength(10);
-        expect(stackFrames[0]).toMatchStackFrame(["<unknown>", `${testFileDirectory}/parse-stacktrace.test.ts`, 1819, 23]);
+        expect(stackFrames[0]).toMatchStackFrame(["<unknown>", `${testFileDirectory}/parse-stacktrace.test.ts`, 1794, 23]);
     });
 
     it("should not create a stacktrace if the stack is broken", () => {
