@@ -1,7 +1,7 @@
 import { platform } from "node:os";
 
 import { isAccessibleSync, readFileSync } from "@visulima/fs";
-import { join } from "@visulima/path";
+import { isAbsolute, join } from "@visulima/path";
 
 import type { TargetOsType, TargetPreset, TargetType, VisTargetConfiguration, VisTargetOptions } from "./types";
 
@@ -185,7 +185,10 @@ const resolveEnvCascade = (nodeEnv: string | undefined): string[] => {
 };
 
 const loadSingleEnvFile = (projectRoot: string, envFile: string): Record<string, string> => {
-    const absolutePath = envFile.startsWith("/") ? envFile : join(projectRoot, envFile);
+    // `startsWith("/")` only recognised POSIX absolute paths — a Windows
+    // absolute path like `C:\foo\.env` would fall through and get joined
+    // onto `projectRoot`, breaking the absolute-path branch on Windows.
+    const absolutePath = isAbsolute(envFile) ? envFile : join(projectRoot, envFile);
 
     if (!isAccessibleSync(absolutePath)) {
         return {};

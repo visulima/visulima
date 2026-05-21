@@ -1,5 +1,7 @@
+import { writeFile } from "node:fs/promises";
 import { createServer } from "node:net";
 
+import { join } from "@visulima/path";
 import type { Task, TaskGraph } from "@visulima/task-runner";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
@@ -14,6 +16,18 @@ const sleep = (ms: number): Promise<void> =>
     new Promise((resolve) => {
         setTimeout(resolve, ms);
     });
+
+// Inline `node -e "..."` payloads get shredded by cmd.exe's argument
+// parser on Windows once nested quotes enter the picture. Writing the
+// child source to a file and invoking `node <file>` sidesteps the entire
+// escape chain.
+const writeChildScript = async (directory: string, name: string, source: string): Promise<string> => {
+    const path = join(directory, name);
+
+    await writeFile(path, source, "utf8");
+
+    return path;
+};
 
 const findFreePort = async (): Promise<number> =>
     new Promise((resolve, reject) => {
@@ -70,13 +84,19 @@ describe("services/lifecycle — end-to-end", () => {
     let workspaceRoot: string;
     let homeOverride: string;
     let originalHome: string | undefined;
+    let originalUserprofile: string | undefined;
     let toCleanup: number[];
 
     beforeEach(() => {
+        // On Windows `os.homedir()` reads `USERPROFILE`, not `HOME` —
+        // override both so the registry directory lives in our fixture
+        // on every platform.
         workspaceRoot = createTemporaryDirectory("vis-int-lc-ws-");
         homeOverride = createTemporaryDirectory("vis-int-lc-home-");
         originalHome = process.env["HOME"];
+        originalUserprofile = process.env["USERPROFILE"];
         process.env["HOME"] = homeOverride;
+        process.env["USERPROFILE"] = homeOverride;
         toCleanup = [];
     });
 
@@ -95,6 +115,12 @@ describe("services/lifecycle — end-to-end", () => {
             process.env["HOME"] = originalHome;
         }
 
+        if (originalUserprofile === undefined) {
+            delete process.env["USERPROFILE"];
+        } else {
+            process.env["USERPROFILE"] = originalUserprofile;
+        }
+
         // Give the kernel a tick so reaped PIDs don't bleed into the
         // next test's `isAlive` check.
         await sleep(50);
@@ -111,8 +137,13 @@ describe("services/lifecycle — end-to-end", () => {
 
         // 1) start — boot a real TCP listener as the "service" and
         //    register it. Also stamps env that should reach dependents.
+        const childPath = await writeChildScript(
+            workspaceRoot,
+            "listener-e2e.js",
+            `require('net').createServer(() => {}).listen(${String(port)}, '127.0.0.1');`,
+        );
         const startResult = await startService({
-            command: `node -e "require('net').createServer(()=>{}).listen(${String(port)}, '127.0.0.1')"`,
+            command: `node ${JSON.stringify(childPath)}`,
             config: {
                 env: { DB_URL: `postgres://127.0.0.1:${String(port)}/app` },
                 readiness: { tcp: { port, timeoutMs: 5000 } },

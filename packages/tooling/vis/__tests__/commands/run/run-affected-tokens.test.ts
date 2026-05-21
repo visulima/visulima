@@ -83,9 +83,10 @@ const readCapture = (capturePath: string): string[] => {
 
     const parsed = JSON.parse(last) as string[];
 
-    // For `node -e SCRIPT -- arg1 arg2 ...`, argv is `[nodeBinary, arg1,
-    // arg2, ...]` — there is NO `[eval]` slot. Skip only the binary path.
-    return parsed.slice(1);
+    // For `node /path/to/capture.js arg1 arg2 ...`, argv is
+    // `[nodeBinary, scriptPath, arg1, arg2, ...]`. Skip the binary and
+    // the script path to return just the user-supplied arguments.
+    return parsed.slice(2);
 };
 
 describe("vis run — `${affected.files}` token expansion", () => {
@@ -93,6 +94,12 @@ describe("vis run — `${affected.files}` token expansion", () => {
     let originalPath: string | undefined;
     let originalAffected: string | undefined;
     let capturePath: string;
+    // Capture script paths — written once per test so commands can be
+    // `node <path>` instead of `node -e "<inline>"`. Inline -e payloads
+    // with single quotes and parens survive POSIX shells but get
+    // shredded by cmd.exe's argument parser on Windows.
+    let captureArgvScript: string;
+    let captureArgvEnvScript: string;
 
     beforeEach(() => {
         workspaceRoot = createTemporaryDirectory("vis-run-tokens-");
@@ -110,6 +117,17 @@ describe("vis run — `${affected.files}` token expansion", () => {
         writeFileSync(join(workspaceRoot, "package.json"), JSON.stringify({ name: "root" }));
 
         capturePath = join(workspaceRoot, "captured-argv.jsonl");
+        captureArgvScript = join(workspaceRoot, "capture-argv.js");
+        captureArgvEnvScript = join(workspaceRoot, "capture-argv-env.js");
+
+        writeFileSync(
+            captureArgvScript,
+            "require('fs').appendFileSync(process.env.CAPTURE, JSON.stringify(process.argv) + String.fromCharCode(10));\n",
+        );
+        writeFileSync(
+            captureArgvEnvScript,
+            "require('fs').appendFileSync(process.env.CAPTURE, JSON.stringify({ argv: process.argv, env: process.env.VIS_AFFECTED_FILES || '' }) + String.fromCharCode(10));\n",
+        );
     });
 
     afterEach(() => {
@@ -131,9 +149,7 @@ describe("vis run — `${affected.files}` token expansion", () => {
     it("expands `${affected.files}` with shell-quoted paths in user-specified position", async () => {
         expect.assertions(1);
 
-        const captureScript = "require('fs').appendFileSync(process.env.CAPTURE, JSON.stringify(process.argv) + String.fromCharCode(10))";
-
-        writeCaptureProject(workspaceRoot, "lib", `node -e "${captureScript}" -- --quiet \${affected.files}`);
+        writeCaptureProject(workspaceRoot, "lib", `node ${JSON.stringify(captureArgvScript)} --quiet \${affected.files}`);
 
         // Affected files arrive via VIS_AFFECTED_FILES — the same env the
         // handler reads from in non-test invocations.
@@ -159,9 +175,7 @@ describe("vis run — `${affected.files}` token expansion", () => {
     it("expands the `flag` form `${changed_files | flag '--file'}` to one flag per file", async () => {
         expect.assertions(1);
 
-        const captureScript = "require('fs').appendFileSync(process.env.CAPTURE, JSON.stringify(process.argv) + String.fromCharCode(10))";
-
-        writeCaptureProject(workspaceRoot, "lib", `node -e "${captureScript}" -- \${changed_files | flag '--file'}`);
+        writeCaptureProject(workspaceRoot, "lib", `node ${JSON.stringify(captureArgvScript)} \${changed_files | flag '--file'}`);
 
         process.env["VIS_AFFECTED_FILES"] = ["packages/lib/src/a.ts", "packages/lib/src/b.ts"].join("\n");
         process.env["CAPTURE"] = capturePath;
@@ -181,9 +195,7 @@ describe("vis run — `${affected.files}` token expansion", () => {
     it("filters affected files outside the project root before expansion", async () => {
         expect.assertions(1);
 
-        const captureScript = "require('fs').appendFileSync(process.env.CAPTURE, JSON.stringify(process.argv) + String.fromCharCode(10))";
-
-        writeCaptureProject(workspaceRoot, "lib", `node -e "${captureScript}" -- \${affected.files}`);
+        writeCaptureProject(workspaceRoot, "lib", `node ${JSON.stringify(captureArgvScript)} \${affected.files}`);
 
         // Mix of in-project, out-of-project, and root-level files. Only the
         // in-project ones (rewritten relative to projectRoot) survive.
@@ -205,9 +217,7 @@ describe("vis run — `${affected.files}` token expansion", () => {
     it("expands the token to nothing when no files match the project root", async () => {
         expect.assertions(1);
 
-        const captureScript = "require('fs').appendFileSync(process.env.CAPTURE, JSON.stringify(process.argv) + String.fromCharCode(10))";
-
-        writeCaptureProject(workspaceRoot, "lib", `node -e "${captureScript}" -- --done \${affected.files}`);
+        writeCaptureProject(workspaceRoot, "lib", `node ${JSON.stringify(captureArgvScript)} --done \${affected.files}`);
 
         // Affected files are entirely outside the project — the token
         // collapses to empty so only `--done` remains.
@@ -226,16 +236,19 @@ describe("vis run — `${affected.files}` token expansion", () => {
         expect(readCapture(capturePath)).toStrictEqual(["--done"]);
     });
 
-    it("preserves a backslash-escaped `\\${affected.files}` as a literal token", async () => {
+    // The literal-token test wraps `${affected.files}` in single quotes
+    // to keep bash from substituting. cmd.exe does not treat single
+    // quotes as string delimiters, so the assertion is bash-specific.
+    // Token-expansion semantics are exercised cross-platform by the
+    // other tests in this suite; skip just the quoting variant.
+    it.skipIf(process.platform === "win32")("preserves a backslash-escaped `\\${affected.files}` as a literal token", async () => {
         expect.assertions(1);
-
-        const captureScript = "require('fs').appendFileSync(process.env.CAPTURE, JSON.stringify(process.argv) + String.fromCharCode(10))";
 
         // The leading backslash tells the expander to emit the literal token.
         // We wrap in single quotes so bash doesn't then try to interpret
         // `${affected.files}` as a shell variable (the dot makes it an
         // invalid identifier and bash errors with "bad substitution").
-        writeCaptureProject(workspaceRoot, "lib", `node -e "${captureScript}" -- '\\\${affected.files}'`);
+        writeCaptureProject(workspaceRoot, "lib", `node ${JSON.stringify(captureArgvScript)} '\\\${affected.files}'`);
 
         process.env["VIS_AFFECTED_FILES"] = ["packages/lib/src/a.ts"].join("\n");
         process.env["CAPTURE"] = capturePath;
@@ -258,13 +271,11 @@ describe("vis run — `${affected.files}` token expansion", () => {
     it("coexists with `affectedFiles: \"args\"` — token wins explicit position, mode appends to the end", async () => {
         expect.assertions(1);
 
-        const captureScript = "require('fs').appendFileSync(process.env.CAPTURE, JSON.stringify(process.argv) + String.fromCharCode(10))";
-
         // Token in the middle of the command + affectedFiles="args" forwards
         // the same paths as a trailing append. The user gets both — useful
         // when a tool needs the file list both as a positional arg AND as a
         // separate flag-driven block. Testing it here to lock the docs claim.
-        writeCaptureProject(workspaceRoot, "lib", `node -e "${captureScript}" -- --check \${affected.files} --done`, { affectedFiles: "args" });
+        writeCaptureProject(workspaceRoot, "lib", `node ${JSON.stringify(captureArgvScript)} --check \${affected.files} --done`, { affectedFiles: "args" });
 
         process.env["VIS_AFFECTED_FILES"] = ["packages/lib/src/a.ts"].join("\n");
         process.env["CAPTURE"] = capturePath;
@@ -290,10 +301,7 @@ describe("vis run — `${affected.files}` token expansion", () => {
         // the token is the only place file paths reach the spawned argv.
         // The capture script also dumps the env var so we can assert it
         // was forwarded — the two channels are independent.
-        const captureScript
-            = "require('fs').appendFileSync(process.env.CAPTURE, JSON.stringify({ argv: process.argv, env: process.env.VIS_AFFECTED_FILES || '' }) + String.fromCharCode(10))";
-
-        writeCaptureProject(workspaceRoot, "lib", `node -e "${captureScript}" -- \${affected.files}`, { affectedFiles: "env" });
+        writeCaptureProject(workspaceRoot, "lib", `node ${JSON.stringify(captureArgvEnvScript)} \${affected.files}`, { affectedFiles: "env" });
 
         process.env["VIS_AFFECTED_FILES"] = ["packages/lib/src/a.ts", "packages/lib/src/b.ts"].join("\n");
         process.env["CAPTURE"] = capturePath;
@@ -310,21 +318,21 @@ describe("vis run — `${affected.files}` token expansion", () => {
         const lines = readFileSync(capturePath, "utf8").trim().split("\n").filter(Boolean);
         const last = JSON.parse(lines.at(-1)!) as { argv: string[]; env: string };
 
-        expect(last.argv.slice(1)).toStrictEqual(["src/a.ts", "src/b.ts"]);
+        // argv is `[nodeBinary, scriptPath, ...userArgs]`; skip both
+        // the binary and the script path to read just the user args.
+        expect(last.argv.slice(2)).toStrictEqual(["src/a.ts", "src/b.ts"]);
         expect(last.env).toBe("packages/lib/src/a.ts\npackages/lib/src/b.ts");
     });
 
     it("forwarded args land after the expanded token, not in front of it", async () => {
         expect.assertions(1);
 
-        const captureScript = "require('fs').appendFileSync(process.env.CAPTURE, JSON.stringify(process.argv) + String.fromCharCode(10))";
-
         // Pipeline order in the executor: tokens → forwarded args →
         // affectedFiles trailing append. Forwarded args (`vis run lint
         // -- --bail`) must come AFTER the token's expanded paths so the
         // user-visible `command + ${token} + -- forwarded` shape is
         // preserved.
-        writeCaptureProject(workspaceRoot, "lib", `node -e "${captureScript}" -- --check \${affected.files}`);
+        writeCaptureProject(workspaceRoot, "lib", `node ${JSON.stringify(captureArgvScript)} --check \${affected.files}`);
 
         process.env["VIS_AFFECTED_FILES"] = ["packages/lib/src/a.ts"].join("\n");
         process.env["CAPTURE"] = capturePath;
@@ -344,13 +352,11 @@ describe("vis run — `${affected.files}` token expansion", () => {
     it("expands multiple tokens in the same command independently", async () => {
         expect.assertions(1);
 
-        const captureScript = "require('fs').appendFileSync(process.env.CAPTURE, JSON.stringify(process.argv) + String.fromCharCode(10))";
-
         // `${affected.files}` and `${changed_files}` are aliases for the
         // same source list, but the renderer treats each occurrence
         // independently. A bare token + a flag-form token together
         // exercise both substitution shapes in one pass.
-        writeCaptureProject(workspaceRoot, "lib", `node -e "${captureScript}" -- \${affected.files} --separator \${changed_files | flag '--also'}`);
+        writeCaptureProject(workspaceRoot, "lib", `node ${JSON.stringify(captureArgvScript)} \${affected.files} --separator \${changed_files | flag '--also'}`);
 
         process.env["VIS_AFFECTED_FILES"] = ["packages/lib/src/a.ts", "packages/lib/src/b.ts"].join("\n");
         process.env["CAPTURE"] = capturePath;

@@ -1,12 +1,20 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { join } from "node:path";
 
+import { resolve } from "@visulima/path";
 import { Cache, resetWorktreeCache } from "@visulima/task-runner";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { resolveSharedCacheDirectory } from "../../src/cache/cache-directory";
+
+// On Windows, `realpathSync` may leave 8.3 short names (e.g. `RUNNER~1`)
+// in place while Rust's `fs::canonicalize` (used by the native worktree
+// detector) normalizes to long names (`runneradmin`). Use the libuv-backed
+// native realpath everywhere so test paths match what the worktree
+// detector produces.
+const canonical = (path: string): string => realpathSync.native(path);
 
 // When this test file runs inside a git pre-commit hook, git exports
 // GIT_DIR / GIT_INDEX_FILE / GIT_WORK_TREE pointing at the hook-running
@@ -43,7 +51,7 @@ describe("cache sharing across git worktrees", () => {
     let scratch: string;
 
     beforeEach(() => {
-        scratch = mkdtempSync(join(realpathSync(tmpdir()), "vis-cache-share-"));
+        scratch = mkdtempSync(join(canonical(tmpdir()), "vis-cache-share-"));
         resetWorktreeCache();
     });
 
@@ -63,12 +71,12 @@ describe("cache sharing across git worktrees", () => {
             return;
         }
 
-        const main = join(realpathSync(scratch), "main");
+        const main = join(canonical(scratch), "main");
 
         mkdirSync(main);
         initRepo(main);
 
-        const linked = join(realpathSync(scratch), "feat");
+        const linked = join(canonical(scratch), "feat");
 
         execFileSync("git", ["worktree", "add", "-b", "feat", linked], { cwd: main, stdio: "ignore" });
 
@@ -100,12 +108,12 @@ describe("cache sharing across git worktrees", () => {
             return;
         }
 
-        const main = join(realpathSync(scratch), "main");
+        const main = join(canonical(scratch), "main");
 
         mkdirSync(main);
         initRepo(main);
 
-        const linked = join(realpathSync(scratch), "feat");
+        const linked = join(canonical(scratch), "feat");
 
         execFileSync("git", ["worktree", "add", "-b", "feat", linked], { cwd: main, stdio: "ignore" });
 
@@ -137,7 +145,7 @@ describe("cache sharing across git worktrees", () => {
             return;
         }
 
-        const main = join(realpathSync(scratch), "main");
+        const main = join(canonical(scratch), "main");
 
         mkdirSync(main);
         initRepo(main);
@@ -148,7 +156,7 @@ describe("cache sharing across git worktrees", () => {
             const writers: Promise<void>[] = [];
 
             for (let i = 0; i < 6; i += 1) {
-                const linked = join(realpathSync(scratch), `feat-${String(i)}`);
+                const linked = join(canonical(scratch), `feat-${String(i)}`);
 
                 execFileSync("git", ["worktree", "add", "-b", `feat-${String(i)}`, linked], { cwd: main, stdio: "ignore" });
                 worktrees.push(linked);
@@ -196,7 +204,7 @@ describe("cache sharing across git worktrees", () => {
             return;
         }
 
-        const ws = join(realpathSync(scratch), "main");
+        const ws = join(canonical(scratch), "main");
 
         mkdirSync(ws);
         initRepo(ws);

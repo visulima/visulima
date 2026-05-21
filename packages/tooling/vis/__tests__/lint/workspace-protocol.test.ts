@@ -1,6 +1,10 @@
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+
+// `applyWorkspaceProtocolFixes` returns paths via `@visulima/path` (forward
+// slashes on every platform). Use the same `join` here so equality against
+// the result matches on Windows, where `node:path` would produce backslashes.
+import { join } from "@visulima/path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 

@@ -149,7 +149,12 @@ describe(postPrComment, () => {
         expect(result.error).toContain("CI_API_V4_URL");
     });
 
-    it("should annotate via buildkite-agent CLI when it succeeds", async () => {
+    // The CLI-success path uses POSIX `/bin/true` as the stand-in for
+    // `buildkite-agent annotate` exiting 0. Windows has no equivalent
+    // tiny zero-exit binary on PATH by default, and the surrounding
+    // logic (spawn ok → method=buildkite-cli, REST never invoked) has
+    // no platform-specific code worth re-verifying — skip on Windows.
+    it.skipIf(process.platform === "win32")("should annotate via buildkite-agent CLI when it succeeds", async () => {
         expect.assertions(3);
 
         const fetchImpl = vi.fn(async () => new Response("{}", { status: 200 }));

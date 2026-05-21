@@ -1,4 +1,4 @@
-import { readFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 
 import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, expectTypeOf, it } from "vitest";
@@ -11,6 +11,17 @@ const sleep = (ms: number): Promise<void> =>
     new Promise((resolve) => {
         setTimeout(resolve, ms);
     });
+
+// Writing the JS into a script file and invoking `node <file>` sidesteps
+// the deeply layered shell-escape rules (cmd.exe → Node CRT → JS literal)
+// that mangle inline `node -e "..."` payloads on Windows.
+const writeChildScript = async (directory: string, name: string, source: string): Promise<string> => {
+    const path = join(directory, name);
+
+    await writeFile(path, source, "utf8");
+
+    return path;
+};
 
 describe(spawnDetached, () => {
     let temporaryDirectory: string;
@@ -27,9 +38,14 @@ describe(spawnDetached, () => {
         expect.assertions(1);
 
         const logFile = join(temporaryDirectory, "test.log");
+        const childPath = await writeChildScript(
+            temporaryDirectory,
+            "child-alive.js",
+            "setInterval(() => {}, 1000);",
+        );
 
         const { pid } = await spawnDetached({
-            command: "node -e \"setInterval(()=>{}, 1000)\"",
+            command: `node ${JSON.stringify(childPath)}`,
             cwd: temporaryDirectory,
             env: {},
             logFile,
@@ -53,9 +69,14 @@ describe(spawnDetached, () => {
         expect.assertions(1);
 
         const logFile = join(temporaryDirectory, "out.log");
+        const childPath = await writeChildScript(
+            temporaryDirectory,
+            "child-stdout.js",
+            "console.log('hello-from-child'); setInterval(() => {}, 1000);",
+        );
 
         const { pid } = await spawnDetached({
-            command: "node -e \"console.log('hello-from-child'); setInterval(()=>{}, 1000)\"",
+            command: `node ${JSON.stringify(childPath)}`,
             cwd: temporaryDirectory,
             env: {},
             logFile,

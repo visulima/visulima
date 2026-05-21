@@ -43,25 +43,30 @@ export const spawnDetached = async (input: SpawnDetachedInput): Promise<SpawnDet
     // tokens, OAuth secrets) private to the owning user on shared hosts.
     const logHandle = await open(logFile, "a", REGISTRY_FILE_MODE);
 
+    await logHandle.close().catch(() => {});
+
     let child: ChildProcess;
 
-    try {
-        const shell = isWindows ? "cmd" : "/bin/sh";
-        const args = isWindows ? ["/d", "/s", "/c", command] : ["-c", command];
+    // Inheriting a Node-opened fd into a Windows detached child is
+    // unreliable — the duplicated handle is occasionally lost between
+    // the parent close and the child write, dropping the captured
+    // output. Use the shell's own append-redirection so the child opens
+    // its log file directly (POSIX honors the same syntax).
+    const redirectedCommand = isWindows
+        ? `${command} >> "${logFile}" 2>&1`
+        : `${command} >> ${JSON.stringify(logFile)} 2>&1`;
+    const shell = isWindows ? "cmd" : "/bin/sh";
+    const args = isWindows ? ["/d", "/s", "/c", redirectedCommand] : ["-c", redirectedCommand];
 
-        child = spawn(shell, args, {
-            cwd,
-            detached: true,
-            env: { ...process.env, ...env },
-            stdio: ["ignore", logHandle.fd, logHandle.fd],
-            // Windows: spawn in a new console so the child isn't tied
-            // to this terminal's lifetime.
-            windowsHide: true,
-        });
-    } finally {
-        // The fd has been duped into the child; we can close our handle.
-        await logHandle.close().catch(() => {});
-    }
+    child = spawn(shell, args, {
+        cwd,
+        detached: true,
+        env: { ...process.env, ...env },
+        stdio: "ignore",
+        // Windows: spawn in a new console so the child isn't tied
+        // to this terminal's lifetime.
+        windowsHide: true,
+    });
 
     if (child.pid === undefined) {
         // `spawn` only resolves PID after the OS confirms the fork. If

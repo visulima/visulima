@@ -1,5 +1,7 @@
+import { writeFile } from "node:fs/promises";
 import { createServer } from "node:net";
 
+import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { startService, stopService } from "../../src/services/lifecycle";
@@ -10,6 +12,18 @@ const sleep = (ms: number): Promise<void> =>
     new Promise((resolve) => {
         setTimeout(resolve, ms);
     });
+
+// Inline `node -e "..."` payloads get shredded by cmd.exe's argument
+// parser on Windows once nested quotes enter the picture. Writing the
+// child source to a file and invoking `node <file>` sidesteps the entire
+// escape chain.
+const writeChildScript = async (directory: string, name: string, source: string): Promise<string> => {
+    const path = join(directory, name);
+
+    await writeFile(path, source, "utf8");
+
+    return path;
+};
 
 const findFreePort = async (): Promise<number> =>
     new Promise((resolve, reject) => {
@@ -37,13 +51,19 @@ describe("services/lifecycle", () => {
     let workspaceRoot: string;
     let homeOverride: string;
     let originalHome: string | undefined;
+    let originalUserprofile: string | undefined;
     let toCleanup: number[];
 
     beforeEach(() => {
+        // Per-test HOME/USERPROFILE so each registry directory lives under
+        // a fresh tmp tree. On Windows `os.homedir()` reads `USERPROFILE`,
+        // not `HOME` — override both for cross-platform isolation.
         workspaceRoot = createTemporaryDirectory("vis-test-lc-ws-");
         homeOverride = createTemporaryDirectory("vis-test-lc-home-");
         originalHome = process.env["HOME"];
+        originalUserprofile = process.env["USERPROFILE"];
         process.env["HOME"] = homeOverride;
+        process.env["USERPROFILE"] = homeOverride;
         toCleanup = [];
     });
 
@@ -62,6 +82,12 @@ describe("services/lifecycle", () => {
             process.env["HOME"] = originalHome;
         }
 
+        if (originalUserprofile === undefined) {
+            delete process.env["USERPROFILE"];
+        } else {
+            process.env["USERPROFILE"] = originalUserprofile;
+        }
+
         cleanupTemporaryDirectory(workspaceRoot);
         cleanupTemporaryDirectory(homeOverride);
     });
@@ -70,9 +96,14 @@ describe("services/lifecycle", () => {
         expect.assertions(5);
 
         const port = await findFreePort();
+        const childPath = await writeChildScript(
+            workspaceRoot,
+            "listener-clean.js",
+            `require('net').createServer(() => {}).listen(${String(port)}, '127.0.0.1');`,
+        );
 
         const startResult = await startService({
-            command: `node -e "require('net').createServer(()=>{}).listen(${String(port)}, '127.0.0.1')"`,
+            command: `node ${JSON.stringify(childPath)}`,
             config: { readiness: { tcp: { port, timeoutMs: 5000 } } },
             cwd: workspaceRoot,
             env: {},
@@ -104,9 +135,19 @@ describe("services/lifecycle", () => {
         expect.assertions(1);
 
         const port = await findFreePort();
+        const childPath = await writeChildScript(
+            workspaceRoot,
+            "listener-already.js",
+            `require('net').createServer(() => {}).listen(${String(port)}, '127.0.0.1');`,
+        );
+        const idleChildPath = await writeChildScript(
+            workspaceRoot,
+            "idle.js",
+            "setInterval(() => {}, 1000);",
+        );
 
         const startResult = await startService({
-            command: `node -e "require('net').createServer(()=>{}).listen(${String(port)}, '127.0.0.1')"`,
+            command: `node ${JSON.stringify(childPath)}`,
             config: { readiness: { tcp: { port, timeoutMs: 5000 } } },
             cwd: workspaceRoot,
             env: {},
@@ -118,7 +159,7 @@ describe("services/lifecycle", () => {
 
         await expect(
             startService({
-                command: "node -e \"setInterval(()=>{},1000)\"",
+                command: `node ${JSON.stringify(idleChildPath)}`,
                 config: {},
                 cwd: workspaceRoot,
                 env: {},
@@ -142,13 +183,18 @@ describe("services/lifecycle", () => {
         expect.assertions(2);
 
         const port = await findFreePort();
+        const idleChildPath = await writeChildScript(
+            workspaceRoot,
+            "idle-readiness.js",
+            "setInterval(() => {}, 1000);",
+        );
 
         // Probe at port that nothing ever listens on. The spawned child is a
         // do-nothing sleep — readiness times out fast, lifecycle should
         // SIGKILL the orphan and unregister.
         await expect(
             startService({
-                command: "node -e \"setInterval(()=>{},1000)\"",
+                command: `node ${JSON.stringify(idleChildPath)}`,
                 config: { readiness: { tcp: { port, timeoutMs: 300 } } },
                 cwd: workspaceRoot,
                 env: {},

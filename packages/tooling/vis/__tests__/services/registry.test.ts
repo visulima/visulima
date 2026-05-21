@@ -38,14 +38,19 @@ describe("services/registry", () => {
     let workspaceRoot: string;
     let homeOverride: string;
     let originalHome: string | undefined;
+    let originalUserprofile: string | undefined;
 
     beforeEach(() => {
         // Per-test HOME so each registry directory lives under a fresh
-        // tmp tree — keeps the user's real ~/.vis untouched.
+        // tmp tree — keeps the user's real ~/.vis untouched. On Windows
+        // `os.homedir()` reads from `USERPROFILE`, not `HOME`, so override
+        // both to keep the fixture isolated on every platform.
         workspaceRoot = createTemporaryDirectory("vis-test-ws-");
         homeOverride = createTemporaryDirectory("vis-test-home-");
         originalHome = process.env["HOME"];
+        originalUserprofile = process.env["USERPROFILE"];
         process.env["HOME"] = homeOverride;
+        process.env["USERPROFILE"] = homeOverride;
     });
 
     afterEach(() => {
@@ -53,6 +58,12 @@ describe("services/registry", () => {
             delete process.env["HOME"];
         } else {
             process.env["HOME"] = originalHome;
+        }
+
+        if (originalUserprofile === undefined) {
+            delete process.env["USERPROFILE"];
+        } else {
+            process.env["USERPROFILE"] = originalUserprofile;
         }
 
         cleanupTemporaryDirectory(workspaceRoot);
@@ -222,6 +233,17 @@ describe("services/registry", () => {
 
         it("writes entry files with mode 0o600 (owner-only)", async () => {
             expect.assertions(1);
+
+            // Windows reports mode 0o666 regardless of what we pass to
+            // `writeFile` — there is no Unix-style permission bit for
+            // owner-only access. The security guarantee on Windows is
+            // ACL-based and lives outside Node's `fs.Stats.mode`.
+            // eslint-disable-next-line vitest/no-conditional-in-test -- skip on Windows where 0o600 mode bits are not honored
+            if (process.platform === "win32") {
+                expect(true).toBe(true);
+
+                return;
+            }
 
             await writeEntry(workspaceRoot, buildEntry({ id: "perm:svc" }));
 

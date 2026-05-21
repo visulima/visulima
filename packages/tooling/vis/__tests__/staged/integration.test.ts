@@ -1,8 +1,9 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, lstatSync, mkdirSync, readFileSync, readlinkSync, realpathSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { basename } from "node:path";
 
+import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { ApplyEmptyCommitError, ConfigError, runStaged } from "../../src/staged";
@@ -21,12 +22,19 @@ const initRepo = (): string => {
     // git's `rev-parse --show-toplevel` resolves that symlink, so the worktree path the workflow
     // reports differs from the path produced by `join(tmpdir(), ...)`. Resolve once at creation
     // time so every later `join(root, ...)` lines up with what git emits.
-    const resolved = realpathSync(directory);
+    //
+    // Use `.native` so Windows 8.3 short names (`RUNNER~1`) are normalized to
+    // their long form — git's `rev-parse --show-toplevel` returns the long form
+    // and we want test paths to match.
+    const resolved = realpathSync.native(directory);
 
     sh(["init", "-q", "-b", "main"], resolved);
     sh(["config", "user.email", "test@example.com"], resolved);
     sh(["config", "user.name", "Vis Test"], resolved);
     sh(["config", "commit.gpgsign", "false"], resolved);
+    // Windows default is `core.autocrlf=true`, which rewrites `\n` to `\r\n`
+    // on checkout. Tests assert exact LF content, so opt out per-fixture.
+    sh(["config", "core.autocrlf", "false"], resolved);
 
     return resolved;
 };
@@ -1135,7 +1143,16 @@ describe("runStaged — integration", () => {
 
         const marker = join(root, "task-started.txt");
         // Long-running node command; cancelSignal will kill it when SIGINT fires.
-        const longRunner = `${JSON.stringify(process.execPath)} -e "require('fs').writeFileSync(${JSON.stringify(marker).replaceAll("\"", String.raw`\"`)}, 'go'); setTimeout(() => process.exit(0), 60000)"`;
+        //
+        // On Windows the marker path contains `\` separators. The command string
+        // travels through cmd.exe and Node's CRT argv parser — each one strips a
+        // round of escaping, so the `\\` produced by JSON.stringify is reduced to
+        // `\` by the time node's `-e` evaluates the JS literal. That turns `\t`
+        // into a TAB character and silently mangles the path. Pass a POSIX-form
+        // path instead (Node's `fs` accepts both separators on Windows) so the
+        // payload is escape-free.
+        const markerPosix = marker.replaceAll("\\", "/");
+        const longRunner = `${JSON.stringify(process.execPath)} -e "require('fs').writeFileSync(${JSON.stringify(markerPosix).replaceAll("\"", String.raw`\"`)}, 'go'); setTimeout(() => process.exit(0), 60000)"`;
 
         const preListeners = new Set(process.listeners("SIGINT"));
 
@@ -1186,7 +1203,10 @@ describe("runStaged — integration", () => {
         sh(["commit", "-q", "-m", "chore: outer init"], root);
 
         // Spin up a tiny in-tree "submodule" repo.
-        const submoduleSource = join(root, "..", `${root.split("/").pop() ?? "sm"}-submodule`);
+        // `basename` works on both POSIX and Windows separators — the previous
+        // `root.split("/").pop()` returned the whole `root` on Windows because
+        // there are no forward slashes in a Windows path.
+        const submoduleSource = join(root, "..", `${basename(root)}-submodule`);
 
         mkdirSync(submoduleSource, { recursive: true });
         sh(["init", "-q", "-b", "main"], submoduleSource);
