@@ -209,7 +209,7 @@ ${categories.map((c) => `    ${JSON.stringify(c)},`).join("\n")}
 
 export type Category = (typeof categories)[number];
 
-const categoryColors: Record<string, AccentColor> = ${JSON.stringify(categoryColors, null, 4).replace(/\n/g, "\n")};
+const categoryColors: Record<string, AccentColor> = ${JSON.stringify(categoryColors, null, 4)};
 
 export const packages: PackageInfo[] = [
 ${packages

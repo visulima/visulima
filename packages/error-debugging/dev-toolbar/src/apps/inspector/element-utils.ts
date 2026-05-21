@@ -292,8 +292,15 @@ export const getElementLabel = (element: Element): string => {
     if (tag === "a") {
         const href = (element as HTMLAnchorElement).getAttribute("href");
         const text = element.textContent?.trim().slice(0, 30);
+        const normalizedHref = href?.trim().toLowerCase();
 
-        if (href && !href.startsWith("javascript:")) {
+        if (
+            href
+            && normalizedHref
+            && !normalizedHref.startsWith("javascript:")
+            && !normalizedHref.startsWith("data:")
+            && !normalizedHref.startsWith("vbscript:")
+        ) {
             return text ? `link "${text}" to ${href}` : `link to ${href}`;
         }
 

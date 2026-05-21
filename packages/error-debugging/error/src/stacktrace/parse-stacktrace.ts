@@ -81,8 +81,6 @@ const WEBPACK_ERROR_REGEXP = /\(error: (.*)\)/;
 const AT_PREFIX_REGEX = /at\s/;
 const CHROMIUM_EVAL_SPLIT_REGEX = /^(\S+):(\d+):(\d+)$|^(\S+):(\d+)$/;
 // eslint-disable-next-line sonarjs/slow-regex
-const TRIM_REGEX = /^\s+|\s+$/g;
-// eslint-disable-next-line sonarjs/slow-regex
 const ERROR_LINE_REGEX = /\S*(?:Error: |AggregateError:)/;
 const ANONYMOUS_FUNCTION_REGEX = /^Anonymous function$/;
 const NODE_LINE_REGEX = /^\s*in\s.*/;
@@ -401,7 +399,7 @@ const parseStacktrace = (error: Error, { filter, frameLimit = 50 }: Partial<{ fi
             // Remove webpack (error: *) wrappers
             const cleanedLine = WEBPACK_ERROR_REGEXP.test(line) ? line.replace(WEBPACK_ERROR_REGEXP, "$1") : line;
 
-            return cleanedLine.replaceAll(TRIM_REGEX, "");
+            return cleanedLine.trim();
         })
         // https://github.com/getsentry/sentry-javascript/issues/7813
         // Skip Error: lines
