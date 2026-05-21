@@ -24,11 +24,18 @@ const badgeVariants = cva("nd-mono inline-flex items-center whitespace-nowrap bo
 
 export type BadgeProps = React.HTMLAttributes<HTMLSpanElement> & VariantProps<typeof badgeVariants>;
 
+/**
+ * Compact bracketed label with variant-driven mono styling.
+ * @param props Span attributes plus the variant prop selecting the colorway.
+ * @param props.children Label content wrapped in brackets.
+ * @param props.className Extra utility classes merged onto the badge root.
+ * @param props.variant Visual variant; defaults to "default".
+ * @returns A span element rendering the bracketed label.
+ */
 const Badge = ({ children, className, variant, ...props }: BadgeProps) => (
     <span className={cn(badgeVariants({ variant }), className)} {...props}>
-        [
-{children}
-]
+        {/* eslint-disable-next-line @stylistic/jsx-one-expression-per-line -- compact bracket rendering avoids JSX text-node whitespace */}
+        [{children}]
     </span>
 );
 

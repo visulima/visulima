@@ -13,6 +13,14 @@ interface SparklineProps {
 /**
  * Nothing-style line chart. 1.2px stroke `--fg`, optional dashed faint
  * average line. No fill, no legend, no zebra. Horizontal grid in `--border`.
+ * @param props Time-series points plus chart display options.
+ * @param props.className Extra utility classes merged onto the chart wrapper.
+ * @param props.height Chart height in px; defaults to 64.
+ * @param props.points Time-series data; rendered as a polyline.
+ * @param props.showAverage Render the dashed average guide line; defaults to true.
+ * @param props.showAxis Render the horizontal grid and min/max/avg axis labels; defaults to true.
+ * @param props.stroke Path stroke color; defaults to `var(--fg)`.
+ * @returns An svg line chart, or a placeholder when fewer than 2 points are supplied.
  */
 export const Sparkline = ({ className, height = 64, points, showAverage = true, showAxis = true, stroke = "var(--fg)" }: SparklineProps) => {
     if (points.length < 2) {
@@ -47,30 +55,32 @@ export const Sparkline = ({ className, height = 64, points, showAverage = true, 
             >
                 {showAxis
                     ? (
-                    <g>
-                        <line stroke="var(--border)" strokeWidth="0.5" x1="0" x2="100" y1="0" y2="0" />
-                        <line stroke="var(--border)" strokeDasharray="0.5,1" strokeWidth="0.3" x1="0" x2="100" y1={height / 2} y2={height / 2} />
-                        <line stroke="var(--border)" strokeWidth="0.5" x1="0" x2="100" y1={height} y2={height} />
-                    </g>
+                            <g>
+                                <line stroke="var(--border)" strokeWidth="0.5" x1="0" x2="100" y1="0" y2="0" />
+                                <line stroke="var(--border)" strokeDasharray="0.5,1" strokeWidth="0.3" x1="0" x2="100" y1={height / 2} y2={height / 2} />
+                                <line stroke="var(--border)" strokeWidth="0.5" x1="0" x2="100" y1={height} y2={height} />
+                            </g>
                     )
                     : null}
-                {showAverage ? <line stroke="var(--faint)" strokeDasharray="1.5,1.5" strokeWidth="0.5" x1="0" x2="100" y1={avgY} y2={avgY} /> : null}
+                {showAverage
+                    ? <line stroke="var(--faint)" strokeDasharray="1.5,1.5" strokeWidth="0.5" x1="0" x2="100" y1={avgY} y2={avgY} />
+                    : null}
                 <path d={path} fill="none" stroke={stroke} strokeWidth={1.2} vectorEffect="non-scaling-stroke" />
             </svg>
             {showAxis
                 ? (
-                <div className="nd-label flex justify-between text-faint">
-                    <span>{min.toFixed(0)}</span>
-                    {showAverage
-                        ? (
-                        <span>
-                            AVG
-                            {avg.toFixed(1)}
-                        </span>
-                        )
-                        : null}
-                    <span>{max.toFixed(0)}</span>
-                </div>
+                        <div className="nd-label flex justify-between text-faint">
+                            <span>{min.toFixed(0)}</span>
+                            {showAverage
+                                ? (
+                                        <span>
+                                            AVG
+                                            {avg.toFixed(1)}
+                                        </span>
+                                )
+                                : null}
+                            <span>{max.toFixed(0)}</span>
+                        </div>
                 )
                 : null}
         </div>

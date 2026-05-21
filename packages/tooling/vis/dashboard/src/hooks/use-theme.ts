@@ -14,7 +14,13 @@ const readStored = (): Theme | undefined => {
     }
 };
 
-const systemTheme = (): Theme => (globalThis.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+const systemTheme = (): Theme => {
+    if (typeof globalThis.matchMedia !== "function") {
+        return "light";
+    }
+
+    return globalThis.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+};
 
 export const useTheme = () => {
     const [theme, setTheme] = useState<Theme>(() => readStored() ?? systemTheme());

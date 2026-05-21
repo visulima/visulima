@@ -34,6 +34,12 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
     asChild?: boolean;
 }
 
+/**
+ * Styled button primitive with variant/size support; renders a `Slot` when `asChild` is true so callers can compose with anchor or custom elements.
+ * @param props Button HTML props plus `asChild`, `size`, and `variant` style controls.
+ * @param ref Forwarded ref to the underlying button (or slotted element).
+ * @returns A button or composed Slot element.
+ */
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({ asChild = false, className, size, variant, ...props }, ref) => {
     const Comp = asChild ? Slot : "button";
 

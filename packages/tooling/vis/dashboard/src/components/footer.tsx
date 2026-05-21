@@ -22,6 +22,16 @@ const liveColor: Record<LiveStatus, string> = {
     open: "bg-success",
 };
 
+/**
+ * Dashboard footer with runtime metadata (node/platform/workspace) and SSE live-status indicator.
+ * @param props Runtime metadata plus the current SSE {@link LiveStatus}.
+ * @param props.arch CPU architecture string (e.g. "x64").
+ * @param props.live Current SSE connection status.
+ * @param props.node Node.js version string.
+ * @param props.platform Host platform string (e.g. "linux").
+ * @param props.workspaceRoot Absolute path of the active workspace, when known.
+ * @returns The dashboard footer element.
+ */
 export const Footer = ({ arch, live, node, platform, workspaceRoot }: FooterProps) => {
     const platformLabel = platform && arch ? `${platform}/${arch}` : (platform ?? "—");
 
@@ -32,9 +42,8 @@ export const Footer = ({ arch, live, node, platform, workspaceRoot }: FooterProp
                 <span aria-hidden>·</span>
                 <span className="inline-flex items-center gap-2">
                     <span className={cn("inline-block h-[7px] w-[7px]", liveColor[live], live === "open" && "nd-blink")} />
-                    {liveLabel[live]}
-{" "}
-SSE
+                    {/* eslint-disable-next-line @stylistic/jsx-one-expression-per-line -- inline live status label */}
+                    {liveLabel[live]} SSE
                 </span>
                 <span aria-hidden>·</span>
                 <span>
@@ -45,10 +54,10 @@ SSE
                 <span>{platformLabel}</span>
                 {workspaceRoot
                     ? (
-                    <>
-                        <span aria-hidden>·</span>
-                        <span className="break-all normal-case tracking-normal text-faint">{workspaceRoot}</span>
-                    </>
+                            <>
+                                <span aria-hidden>·</span>
+                                <span className="break-all normal-case tracking-normal text-faint">{workspaceRoot}</span>
+                            </>
                     )
                     : null}
             </span>
