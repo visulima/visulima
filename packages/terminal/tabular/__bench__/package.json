@@ -10,6 +10,7 @@
         "@codspeed/vitest-plugin": "catalog:test",
         "@types/cli-table": "catalog:types",
         "@types/node": "catalog:types",
+        "@visulima/tabular": "workspace:*",
         "cli-table": "catalog:dev",
         "cli-table3": "catalog:dev",
         "table": "catalog:dev",

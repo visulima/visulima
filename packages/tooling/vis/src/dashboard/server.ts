@@ -169,10 +169,7 @@ const createRunsWatcher = async (workspaceRoot: string): Promise<{ close: () => 
  * can exercise the routes via `app.request()` without spinning up a
  * real socket.
  */
-export const createDashboardApp = (
-    options: DashboardServerOptions,
-    subscribe: (listener: ChangeListener) => () => void,
-): Hono => {
+export const createDashboardApp = (options: DashboardServerOptions, subscribe: (listener: ChangeListener) => () => void): Hono => {
     const app = new Hono();
 
     app.get("/", (c) => c.html(renderDashboardHtml()));
@@ -201,10 +198,7 @@ export const createDashboardApp = (
         const runs = summaries
             .filter(
                 (s): s is { duration: number; endTime: string; id: string; startTime: string; stats?: Record<string, unknown> } =>
-                    typeof s.id === "string"
-                    && typeof s.startTime === "string"
-                    && typeof s.endTime === "string"
-                    && typeof s.duration === "number",
+                    typeof s.id === "string" && typeof s.startTime === "string" && typeof s.endTime === "string" && typeof s.duration === "number",
             )
             .map((s) => {
                 const rawStats = s.stats;
@@ -242,9 +236,7 @@ export const createDashboardApp = (
     });
 
     app.get("/api/runs/:runId/tasks/:taskId/diff", (c) => {
-        const run = readRunById(options.workspaceRoot, c.req.param("runId")) as
-            | { id?: string; tasks?: { taskId?: string }[] }
-            | undefined;
+        const run = readRunById(options.workspaceRoot, c.req.param("runId")) as { id?: string; tasks?: { taskId?: string }[] } | undefined;
 
         if (!run) {
             return c.json({ error: "Run not found" }, 404);
@@ -379,13 +371,18 @@ export const startDashboardServer = async (options: DashboardServerOptions): Pro
     });
 
     await new Promise<void>((resolve, reject) => {
-        server.once("listening", () => { resolve(); });
-        server.once("error", (error) => { reject(error); });
+        server.once("listening", () => {
+            resolve();
+        });
+        server.once("error", (error: Error) => {
+            reject(error);
+        });
     });
 
     const address = server.address() as AddressInfo;
     const boundPort = typeof address === "object" && address ? address.port : options.port;
     // Wildcard binds (IPv4 0.0.0.0, IPv6 ::/::0) aren't valid in a URL — substitute the loopback name.
+    // eslint-disable-next-line sonarjs/no-hardcoded-ip -- string comparison against canonical wildcard literals, not a binding target.
     const isWildcard = options.host === "0.0.0.0" || options.host === "::" || options.host === "::0";
     const displayHost = isWildcard ? "localhost" : options.host;
     const url = `http://${displayHost}:${String(boundPort)}`;

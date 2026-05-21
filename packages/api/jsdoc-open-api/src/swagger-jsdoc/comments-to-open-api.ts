@@ -1,7 +1,6 @@
 import type { Spec } from "comment-parser";
 import { parse as parseComments } from "comment-parser";
-// eslint-disable-next-line no-restricted-imports,e18e/ban-dependencies
-import mergeWith from "lodash.mergewith";
+import { mergeWith } from "es-toolkit";
 import type { YAMLError } from "yaml";
 import yaml from "yaml";
 
@@ -78,7 +77,11 @@ const commentsToOpenApi = (fileContents: string, verbose?: boolean): { loc: numb
         // - Don't count line-breaking due to long descriptions
         // - Don't count empty lines
         const loc = comment.tags.length + 1;
-        const result = mergeWith({}, ...tagsToObjects(comment.tags, verbose), customizer);
+        const result: Record<string, any> = {};
+
+        for (const source of tagsToObjects(comment.tags, verbose)) {
+            mergeWith(result, source, customizer);
+        }
 
         ["definitions", "responses", "parameters", "securityDefinitions", "components", "tags"].forEach((property) => {
             if (result[property] !== undefined && hasEmptyProperty(result[property])) {

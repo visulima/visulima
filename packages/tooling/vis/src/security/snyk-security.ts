@@ -184,7 +184,8 @@ const fetchIssues = async (
 
     const { apiToken, apiVersion, cacheTtlMs, orgId, timeoutMs } = options;
 
-    let next: string | undefined = `${SNYK_API_BASE}/rest/orgs/${encodeURIComponent(orgId)}/packages/${toPurl(name, version)}/issues?version=${encodeURIComponent(apiVersion)}&limit=${String(PAGE_LIMIT)}`;
+    let next: string | undefined
+        = `${SNYK_API_BASE}/rest/orgs/${encodeURIComponent(orgId)}/packages/${toPurl(name, version)}/issues?version=${encodeURIComponent(apiVersion)}&limit=${String(PAGE_LIMIT)}`;
     const issues: SnykIssue[] = [];
 
     for (let page = 0; next && page < MAX_PAGES; page += 1) {
@@ -231,7 +232,9 @@ const issueToAlert = (issue: SnykIssue): PackageAlert => {
     const cve = problems.find((p) => p.source === "CVE" || p.id.startsWith("CVE-"));
     const cwes = problems
         .filter((p) => p.source === "CWE" || p.id.startsWith("CWE-"))
-        .map((p) => { return { id: p.id as `CWE-${string}` }; });
+        .map((p) => {
+            return { id: p.id as `CWE-${string}` };
+        });
 
     const alert: PackageAlert = {
         category: "vulnerability",

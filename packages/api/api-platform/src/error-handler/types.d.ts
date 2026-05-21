@@ -5,6 +5,7 @@ export type ErrorHandler = <Request extends IncomingMessage, Response extends Se
     error: unknown,
     request: Request,
     response: Response,
+    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type -- handlers may return either sync (void) or a Promise.
 ) => void | Promise<unknown>;
 
 export type ErrorHandlers = {

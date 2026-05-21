@@ -15,6 +15,7 @@ const Skeleton = ({ className, label = "LOADING", ...props }: SkeletonProps) => 
         {...props}
     >
         <span className="nd-blink inline-block h-[8px] w-[8px] bg-fg" />
+        {/* eslint-disable-next-line @stylistic/jsx-one-expression-per-line -- compact bracket rendering avoids JSX text-node whitespace */}
         <span>[{label}]</span>
     </div>
 );

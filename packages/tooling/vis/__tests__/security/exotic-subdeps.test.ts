@@ -50,9 +50,7 @@ describe(scanExoticSubdeps, () => {
 
         writeFileSync(join(ws, "package-lock.json"), npmLock());
 
-        expect(scanExoticSubdeps(ws, "npm")).toStrictEqual([
-            { declaredBy: "prod-pkg@1.0.0", packageName: "git-dep", source: "github:attacker/evil#deadbeef" },
-        ]);
+        expect(scanExoticSubdeps(ws, "npm")).toStrictEqual([{ declaredBy: "prod-pkg@1.0.0", packageName: "git-dep", source: "github:attacker/evil#deadbeef" }]);
     });
 
     it("exempts an allow-listed dependency name", () => {

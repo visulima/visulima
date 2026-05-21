@@ -1057,19 +1057,6 @@
                     "description": "When true, prevents transitive dependencies from using exotic sources (git repositories, direct tarball URLs). Only direct dependencies may use such sources. Equivalent to pnpm's `blockExoticSubdeps`.",
                     "default": false
                 },
-                "exoticSubdepsAllow": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    },
-                    "description": "Package names exempted from the `blockExoticSubdeps` check. Bare names and a trailing `*` glob (`@scope/*`) are supported. Use for an internal package legitimately published as a git or tarball dependency.",
-                    "examples": [
-                        [
-                            "@myorg/legacy",
-                            "internal-*"
-                        ]
-                    ]
-                },
                 "depsDev": {
                     "type": "object",
                     "properties": {
@@ -1101,6 +1088,19 @@
                     },
                     "additionalProperties": false,
                     "description": "deps.dev (Google Open Source Insights) data-source configuration. Public, unauthenticated; pulls Scorecard data + advisories from `api.deps.dev`. Complements or replaces Socket.dev. Heavily cached."
+                },
+                "exoticSubdepsAllow": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Package names exempted from the `blockExoticSubdeps` check. Bare names and a trailing `*` glob (`@scope/*`) are supported. Use for an internal package legitimately published as a git or tarball dependency.",
+                    "examples": [
+                        [
+                            "@myorg/legacy",
+                            "internal-*"
+                        ]
+                    ]
                 },
                 "marshalls": {
                     "type": "object",

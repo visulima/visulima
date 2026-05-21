@@ -3,21 +3,21 @@ import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 interface StatCardProps {
+    children?: ReactNode;
+    className?: string;
     label: string;
-    value: ReactNode;
-    unit?: string;
     sub?: ReactNode;
     tone?: "default" | "good" | "warn" | "bad";
+    unit?: string;
+    value: ReactNode;
     variant?: "hero" | "compact" | "stat";
-    className?: string;
-    children?: ReactNode;
 }
 
 const toneClass: Record<NonNullable<StatCardProps["tone"]>, string> = {
+    bad: "text-accent",
     default: "text-fg",
     good: "text-success",
     warn: "text-warning",
-    bad: "text-accent",
 };
 
 /**
@@ -25,16 +25,7 @@ const toneClass: Record<NonNullable<StatCardProps["tone"]>, string> = {
  * Stat  — label/value row with a thin underline.
  * Compact — small bordered block for grid stacks.
  */
-export const StatCard = ({
-    label,
-    value,
-    unit,
-    sub,
-    tone = "default",
-    variant = "compact",
-    className,
-    children,
-}: StatCardProps) => {
+export const StatCard = ({ children, className, label, sub, tone = "default", unit, value, variant = "compact" }: StatCardProps) => {
     if (variant === "hero") {
         return (
             <div className={cn("flex flex-col gap-4", className)}>

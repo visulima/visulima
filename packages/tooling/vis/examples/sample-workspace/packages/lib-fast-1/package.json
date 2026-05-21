@@ -1,11 +1,11 @@
 {
-  "name": "lib-fast-1",
-  "version": "1.0.0",
-  "private": true,
-  "scripts": {
-    "build": "echo 'Building lib-fast-1...' && sleep .1 && echo 'lib-fast-1 built!' && mkdir -p dist && date > dist/.stamp",
-    "dev": "echo 'lib-fast-1 dev server on port 3001' && while true; do sleep 1; echo '[lib-fast-1] heartbeat'; done",
-    "lint": "echo 'Linting lib-fast-1... OK'",
-    "test": "echo 'Testing lib-fast-1... 3 tests passed'"
-  }
+    "name": "lib-fast-1",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "build": "echo 'Building lib-fast-1...' && sleep .1 && echo 'lib-fast-1 built!' && mkdir -p dist && date > dist/.stamp",
+        "dev": "echo 'lib-fast-1 dev server on port 3001' && while true; do sleep 1; echo '[lib-fast-1] heartbeat'; done",
+        "lint": "echo 'Linting lib-fast-1... OK'",
+        "test": "echo 'Testing lib-fast-1... 3 tests passed'"
+    }
 }

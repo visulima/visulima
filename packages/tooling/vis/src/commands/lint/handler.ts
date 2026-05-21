@@ -827,6 +827,11 @@ const resolveSelection = (options: LintOptions): LintSelection => {
     const typesInDeps = flag(raw, "typesInDeps", "types-in-deps");
     const similarDeps = flag(raw, "similarDeps", "similar-deps");
 
+    // Prettier reflows this chain to trailing operators with an 8-space
+    // continuation indent; @stylistic/indent-binary-ops expects 12 (one indent
+    // past `const anySelected`). Leading `||` plus the manual indent is the form
+    // both tools agree on once prettier leaves it alone.
+    // prettier-ignore
     const anySelected
         = workspaceProtocol
             || redefineRoot

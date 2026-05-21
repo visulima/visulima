@@ -37,11 +37,7 @@ export const registerAdvisoryStatus = ({ server }: ToolDeps, context: ToolContex
                 + "DB path, schema version, per-ecosystem advisory counts, last sync timestamp, and ETag. "
                 + "Use this to detect whether the offline cache is stale before running an `audit` in offline mode.",
             inputSchema: {
-                db: z
-                    .string()
-                    .min(1)
-                    .optional()
-                    .describe("Override the cache DB path (default: <cache>/vis/advisories/db.sqlite)."),
+                db: z.string().min(1).optional().describe("Override the cache DB path (default: <cache>/vis/advisories/db.sqlite)."),
             },
         },
         async (input: { db?: string }) => {

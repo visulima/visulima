@@ -241,9 +241,7 @@ class TaskOrchestrator {
         // (`autoFingerprint`) OR any single target opted in via
         // `hashMode: "trace"`. Building it for a per-target opt-in keeps
         // the rest of the graph on the cheap declared-hash path.
-        const anyTraceTask = this.#taskGraph
-            ? Object.values(this.#taskGraph.tasks).some((t) => t.hashMode === "trace")
-            : false;
+        const anyTraceTask = this.#taskGraph ? Object.values(this.#taskGraph.tasks).some((t) => t.hashMode === "trace") : false;
 
         if (this.#autoFingerprint || anyTraceTask) {
             this.#fingerprintManager = new FingerprintManager(options.workspaceRoot);

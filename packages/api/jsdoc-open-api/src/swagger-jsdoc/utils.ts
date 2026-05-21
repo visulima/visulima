@@ -1,21 +1,28 @@
 import type { Spec } from "comment-parser";
-// eslint-disable-next-line no-restricted-imports,e18e/ban-dependencies
-import mergeWith from "lodash.mergewith";
+import { mergeWith } from "es-toolkit";
+
+const ignoreNullCustomizer = (a: unknown, b: unknown): unknown => {
+    if (b === null) {
+        return a;
+    }
+
+    return undefined;
+};
 
 /**
  * A recursive deep-merge that ignores null values when merging.
- * This returns the merged object and does not mutate.
+ * Returns a new top-level merged object. Note: nested objects inside `first`
+ * may still be mutated because their references are shared with the returned
+ * target during the deep merge — pass cloned inputs if you need full
+ * immutability.
  * @param first the first object to get merged
  * @param second the second object to get merged
  */
-export const mergeDeep = (first?: object, second?: object): object =>
-    mergeWith({}, first, second, (a, b) => {
-        if (b === null) {
-            return a;
-        }
+export const mergeDeep = (first?: object, second?: object): object => {
+    const target = mergeWith({} as Record<string, any>, (first ?? {}) as Record<string, any>, ignoreNullCustomizer);
 
-        return undefined;
-    });
+    return mergeWith(target, (second ?? {}) as Record<string, any>, ignoreNullCustomizer);
+};
 
 /**
  * Checks if there is any properties of the input object which are an empty object.

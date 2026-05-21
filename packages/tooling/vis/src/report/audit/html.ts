@@ -227,7 +227,9 @@ export const emitAuditHtml = (options: AuditHtmlEmitOptions): string => {
         }</span></div>`,
         sevChips.length > 0 ? `<span class="flex-auto"></span>` : "",
         ...sevChips,
-        clean ? `<div class="dseg dseg-ok"><span class="dot inline-block size-[7px] self-center"></span><span class="dk text-[10px] font-medium uppercase">status</span><span class="dv text-[22px]">CLEAN</span></div>` : "",
+        clean
+            ? `<div class="dseg dseg-ok"><span class="dot inline-block size-[7px] self-center"></span><span class="dk text-[10px] font-medium uppercase">status</span><span class="dv text-[22px]">CLEAN</span></div>`
+            : "",
     ].join("");
 
     const statusKind = clean ? "ok" : counts.CRITICAL > 0 ? "crit" : counts.HIGH > 0 ? "high" : "warn";

@@ -1,15 +1,15 @@
 {
-  "name": "app-32",
-  "version": "1.0.0",
-  "private": true,
-  "scripts": {
-    "build": "echo 'Building app app-32...' && sleep 2.0 && echo 'Webpack: compiled successfully' && echo 'app-32 ready!' && mkdir -p dist && date > dist/.stamp",
-    "dev": "echo 'app-32 started on http://localhost:8002' && while true; do sleep 1; echo '[app-32] GET / 200 12ms'; done",
-    "lint": "echo 'Linting app-32...' && sleep 0.2 && echo 'All good!'",
-    "test": "echo 'E2E tests for app-32...' && sleep 0.8 && echo '  12 tests passed, 0 failed'"
-  },
-  "dependencies": {
-    "lib-fast-2": "1.0.0",
-    "lib-slow-12": "1.0.0"
-  }
+    "name": "app-32",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "build": "echo 'Building app app-32...' && sleep 2.0 && echo 'Webpack: compiled successfully' && echo 'app-32 ready!' && mkdir -p dist && date > dist/.stamp",
+        "dev": "echo 'app-32 started on http://localhost:8002' && while true; do sleep 1; echo '[app-32] GET / 200 12ms'; done",
+        "lint": "echo 'Linting app-32...' && sleep 0.2 && echo 'All good!'",
+        "test": "echo 'E2E tests for app-32...' && sleep 0.8 && echo '  12 tests passed, 0 failed'"
+    },
+    "dependencies": {
+        "lib-fast-2": "1.0.0",
+        "lib-slow-12": "1.0.0"
+    }
 }

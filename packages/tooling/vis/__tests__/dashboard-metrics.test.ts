@@ -2,13 +2,15 @@ import { describe, expect, it } from "vitest";
 
 import { computeDashboardMetrics } from "../src/dashboard/metrics";
 
-const makeRun = (id: string, startTime: string, duration: number, stats: Record<string, number>, tasks: unknown[] = []): any => ({
-    id,
-    startTime,
-    duration,
-    stats,
-    tasks,
-});
+const makeRun = (id: string, startTime: string, duration: number, stats: Record<string, number>, tasks: unknown[] = []): any => {
+    return {
+        duration,
+        id,
+        startTime,
+        stats,
+        tasks,
+    };
+};
 
 describe(computeDashboardMetrics, () => {
     it("returns zeroed totals for an empty history", () => {
@@ -25,8 +27,8 @@ describe(computeDashboardMetrics, () => {
         expect.assertions(2);
 
         const metrics = computeDashboardMetrics([
-            makeRun("r1", "2026-01-01", 1000, { total: 4, cached: 2, succeeded: 2, failed: 0, skipped: 0 }),
-            makeRun("r2", "2026-01-02", 1200, { total: 6, cached: 4, succeeded: 2, failed: 0, skipped: 0 }),
+            makeRun("r1", "2026-01-01", 1000, { cached: 2, failed: 0, skipped: 0, succeeded: 2, total: 4 }),
+            makeRun("r2", "2026-01-02", 1200, { cached: 4, failed: 0, skipped: 0, succeeded: 2, total: 6 }),
         ]);
 
         expect(metrics.totals.tasks).toBe(10);
@@ -37,13 +39,13 @@ describe(computeDashboardMetrics, () => {
         expect.assertions(2);
 
         const runs = [
-            makeRun("r1", "2026-01-01", 5000, { total: 2, cached: 0 }, [
-                { taskId: "a:build", cacheStatus: "MISS", duration: 4000, target: { project: "a", target: "build" } },
-                { taskId: "b:build", cacheStatus: "MISS", duration: 1000, target: { project: "b", target: "build" } },
+            makeRun("r1", "2026-01-01", 5000, { cached: 0, total: 2 }, [
+                { cacheStatus: "MISS", duration: 4000, target: { project: "a", target: "build" }, taskId: "a:build" },
+                { cacheStatus: "MISS", duration: 1000, target: { project: "b", target: "build" }, taskId: "b:build" },
             ]),
-            makeRun("r2", "2026-01-02", 5000, { total: 2, cached: 0 }, [
-                { taskId: "a:build", cacheStatus: "MISS", duration: 4200, target: { project: "a", target: "build" } },
-                { taskId: "b:build", cacheStatus: "MISS", duration: 1200, target: { project: "b", target: "build" } },
+            makeRun("r2", "2026-01-02", 5000, { cached: 0, total: 2 }, [
+                { cacheStatus: "MISS", duration: 4200, target: { project: "a", target: "build" }, taskId: "a:build" },
+                { cacheStatus: "MISS", duration: 1200, target: { project: "b", target: "build" }, taskId: "b:build" },
             ]),
         ];
 
@@ -57,14 +59,14 @@ describe(computeDashboardMetrics, () => {
         expect.assertions(1);
 
         const runs = [
-            makeRun("r1", "2026-01-01", 3000, { total: 1, cached: 0 }, [
-                { taskId: "a:build", cacheStatus: "MISS", duration: 2000, target: { project: "a", target: "build" } },
+            makeRun("r1", "2026-01-01", 3000, { cached: 0, total: 1 }, [
+                { cacheStatus: "MISS", duration: 2000, target: { project: "a", target: "build" }, taskId: "a:build" },
             ]),
-            makeRun("r2", "2026-01-02", 100, { total: 1, cached: 1 }, [
-                { taskId: "a:build", cacheStatus: "HIT", duration: 10, target: { project: "a", target: "build" } },
+            makeRun("r2", "2026-01-02", 100, { cached: 1, total: 1 }, [
+                { cacheStatus: "HIT", duration: 10, target: { project: "a", target: "build" }, taskId: "a:build" },
             ]),
-            makeRun("r3", "2026-01-03", 100, { total: 1, cached: 1 }, [
-                { taskId: "a:build", cacheStatus: "HIT", duration: 12, target: { project: "a", target: "build" } },
+            makeRun("r3", "2026-01-03", 100, { cached: 1, total: 1 }, [
+                { cacheStatus: "HIT", duration: 12, target: { project: "a", target: "build" }, taskId: "a:build" },
             ]),
         ];
 
@@ -77,10 +79,7 @@ describe(computeDashboardMetrics, () => {
     it("produces time-series points sorted by run start time", () => {
         expect.assertions(2);
 
-        const runs = [
-            makeRun("r2", "2026-01-02", 1200, { total: 4, cached: 2 }),
-            makeRun("r1", "2026-01-01", 1000, { total: 2, cached: 1 }),
-        ];
+        const runs = [makeRun("r2", "2026-01-02", 1200, { cached: 2, total: 4 }), makeRun("r1", "2026-01-01", 1000, { cached: 1, total: 2 })];
 
         const metrics = computeDashboardMetrics(runs);
 
@@ -92,21 +91,20 @@ describe(computeDashboardMetrics, () => {
         expect.assertions(1);
 
         const runs = Array.from({ length: 5 }, (_, i) =>
-            makeRun(`r${String(i)}`, `2026-01-0${String(i + 1)}`, 1000, { total: 2, cached: 0 }, [
+            makeRun(`r${String(i)}`, `2026-01-0${String(i + 1)}`, 1000, { cached: 0, total: 2 }, [
                 {
-                    taskId: "flaky:build",
                     cacheStatus: i % 2 === 0 ? "MISS" : "HIT",
                     duration: 500,
                     target: { project: "flaky", target: "build" },
+                    taskId: "flaky:build",
                 },
                 {
-                    taskId: "stable:build",
                     cacheStatus: i === 0 ? "MISS" : "HIT",
                     duration: 500,
                     target: { project: "stable", target: "build" },
+                    taskId: "stable:build",
                 },
-            ]),
-        );
+            ]));
 
         const metrics = computeDashboardMetrics(runs);
 

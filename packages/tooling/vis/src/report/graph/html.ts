@@ -25,7 +25,7 @@ import styleCss from "./style.css";
 
 const css = styleCss as unknown as string;
 
-const require_ = createRequire(import.meta.url);
+const requireFromGraph = createRequire(import.meta.url);
 
 /**
  * Inlined UMD bundles for sigma + graphology. We can't ask Node's resolver
@@ -33,7 +33,7 @@ const require_ = createRequire(import.meta.url);
  * so we resolve each package's main entry and target its sibling `dist/` file.
  */
 const readUmd = (packageName: string, filename: string): string => {
-    const mainPath = require_.resolve(packageName);
+    const mainPath = requireFromGraph.resolve(packageName);
 
     return readFileSync(join(dirname(mainPath), filename), "utf8");
 };
@@ -80,10 +80,10 @@ export interface GraphHtmlEmitOptions {
 interface PositionedNode {
     name: string;
     path?: string;
+    size: number;
     type: string;
     x: number;
     y: number;
-    size: number;
 }
 
 const APP_SIZE = 9;
@@ -100,12 +100,13 @@ const computeLayout = (nodes: GraphHtmlNode[], edges: GraphHtmlEdge[]): Position
         // Seed positions on a unit circle so forceAtlas2 has a deterministic
         // starting layout — without this every run yields a different graph.
         const angle = (graph.order / nodes.length) * Math.PI * 2;
+
         graph.addNode(node.name, {
-            type: node.type,
             path: node.path,
+            size: node.type === "application" ? APP_SIZE : LIB_SIZE,
+            type: node.type,
             x: Math.cos(angle),
             y: Math.sin(angle),
-            size: node.type === "application" ? APP_SIZE : LIB_SIZE,
         });
     }
 
@@ -119,6 +120,7 @@ const computeLayout = (nodes: GraphHtmlNode[], edges: GraphHtmlEdge[]): Position
     // hub packages spread out, strong gravity so disconnected components
     // don't drift off-screen, scaling tuned so the layout fills the viewport.
     const settings = forceAtlas2.inferSettings(graph);
+
     forceAtlas2.assign(graph, {
         iterations: 600,
         settings: {
@@ -138,10 +140,10 @@ const computeLayout = (nodes: GraphHtmlNode[], edges: GraphHtmlEdge[]): Position
         positioned.push({
             name,
             path: attributes.path as string | undefined,
+            size: attributes.size as number,
             type: attributes.type as string,
             x: attributes.x as number,
             y: attributes.y as number,
-            size: attributes.size as number,
         });
     });
 
@@ -161,8 +163,8 @@ export const emitGraphHtml = (options: GraphHtmlEmitOptions): string => {
     const filteredEdges = options.edges.filter((e) => knownNodes.has(e.source) && knownNodes.has(e.target));
 
     const graphData = {
-        nodes: positioned,
         edges: filteredEdges,
+        nodes: positioned,
     };
 
     const isEmpty = options.nodes.length === 0;
@@ -171,8 +173,8 @@ export const emitGraphHtml = (options: GraphHtmlEmitOptions): string => {
     // record now; these constants exist only to keep the markup readable.
     const C = {
         chip: "font-mono tracking-[0.08em] text-muted border border-border2 inline-flex h-7 items-center justify-center rounded-[4px] px-3 text-[11px] font-medium uppercase",
-        labelMono: "font-mono text-[10px] uppercase tracking-[0.15em] text-faint",
         dvNum: "font-mono text-[22px] font-medium text-fg leading-none",
+        labelMono: "font-mono text-[10px] uppercase tracking-[0.15em] text-faint",
     };
 
     return `<!doctype html>
@@ -214,9 +216,9 @@ export const emitGraphHtml = (options: GraphHtmlEmitOptions): string => {
   </div>
 </div>
 <main class="relative flex-1 min-h-[480px]">${
-        isEmpty
-            ? `<div class="flex flex-col items-center justify-center min-h-[400px] gap-4 text-center"><div class="font-sans text-[72px] font-semibold text-fg leading-none tracking-tight">NONE</div><div class="font-mono text-faint text-[12px] uppercase tracking-[0.15em]">No projects discovered in this workspace.</div></div>`
-            : `<div id="graph" class="absolute inset-0"></div>
+    isEmpty
+        ? `<div class="flex flex-col items-center justify-center min-h-[400px] gap-4 text-center"><div class="font-sans text-[72px] font-semibold text-fg leading-none tracking-tight">NONE</div><div class="font-mono text-faint text-[12px] uppercase tracking-[0.15em]">No projects discovered in this workspace.</div></div>`
+        : `<div id="graph" class="absolute inset-0"></div>
 <div id="tooltip" data-pinned="false" class="fixed z-30 top-0 left-0 hidden bg-panel border border-border2 px-4 py-3 max-w-[380px] pointer-events-none font-sans shadow-[0_8px_24px_rgba(0,0,0,0.12)] data-[pinned=true]:pointer-events-auto data-[pinned=true]:border-accent"></div>
 <div id="legend" class="absolute top-4 right-4 bg-panel/95 backdrop-blur-sm border border-border px-4 py-3 min-w-[200px]">
   <div class="${C.labelMono} mb-2">Filter</div>
@@ -231,7 +233,7 @@ export const emitGraphHtml = (options: GraphHtmlEmitOptions): string => {
   <div class="flex items-center gap-2"><span class="inline-flex h-5 min-w-5 items-center justify-center px-1.5 border border-border2 rounded text-fg bg-panel2 normal-case tracking-normal text-[10px]">R</span><span>Fit view</span></div>
   <div class="flex items-center gap-2"><span class="inline-flex h-5 min-w-5 items-center justify-center px-1.5 border border-border2 rounded text-fg bg-panel2 normal-case tracking-normal text-[10px]">Click</span><span>Pin · click empty to unpin</span></div>
 </div>`
-    }</main>
+}</main>
 <footer class="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 px-8 py-4 text-[10px] uppercase border-t border-border font-mono text-faint tracking-[0.1em]">
   <span><b class="text-fg font-semibold">${escapeHtml(options.tool.name)}</b> ${escapeHtml(options.tool.version)} · generated ${escapeHtml(now.toISOString())}</span>
   <span class="inline-flex items-center gap-2"><span>built by</span><a class="sig-by-link inline-flex items-center" href="https://anolilab.com" rel="noreferrer noopener" target="_blank" aria-label="Anolilab">${ANOLILAB_LOGO}</a></span>

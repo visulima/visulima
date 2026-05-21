@@ -387,9 +387,7 @@ const validateJsonLd = (schema: Record<string, unknown>): JsonLdValidationMessag
     const context = String(schema["@context"] ?? "");
     const type = String(schema["@type"] ?? "");
 
-    if (!context) {
-        msgs.push({ message: "@context is missing — should be 'https://schema.org'", property: "@context", severity: "error" });
-    } else {
+    if (context) {
         let isSchemaOrgContext = false;
 
         try {
@@ -397,12 +395,14 @@ const validateJsonLd = (schema: Record<string, unknown>): JsonLdValidationMessag
 
             isSchemaOrgContext = host === "schema.org" || host.endsWith(".schema.org");
         } catch {
-            isSchemaOrgContext = false;
+            // Invalid URL — leave isSchemaOrgContext as false.
         }
 
         if (!isSchemaOrgContext) {
             msgs.push({ message: "@context should reference schema.org", property: "@context", severity: "warning" });
         }
+    } else {
+        msgs.push({ message: "@context is missing — should be 'https://schema.org'", property: "@context", severity: "error" });
     }
 
     if (!type) {

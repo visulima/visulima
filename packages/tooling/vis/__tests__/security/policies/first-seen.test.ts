@@ -4,7 +4,6 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { VisConfig } from "../../../src/config/types";
 import type { PolicyInput } from "../../../src/security/policies";
 import { evaluateFirstSeenPolicy } from "../../../src/security/policies/first-seen";
 
@@ -19,29 +18,35 @@ vi.mock(import("node:os"), async (importOriginal) => {
 const { clearPackumentCache } = await import("../../../src/security/marshalls/packument");
 
 const stubFetch = (body: unknown): ReturnType<typeof vi.fn> => {
-    const handler = vi.fn(async () => ({
-        json: async () => body,
-        ok: true,
-        status: 200,
-    }));
+    const handler = vi.fn(async () => {
+        return {
+            json: async () => body,
+            ok: true,
+            status: 200,
+        };
+    });
 
     vi.stubGlobal("fetch", handler);
 
     return handler;
 };
 
-const packument = (name: string, time: Record<string, string>): Record<string, unknown> => ({
-    name,
-    time,
-    versions: Object.fromEntries(Object.keys(time).map((v) => [v, { version: v }])),
-});
+const packument = (name: string, time: Record<string, string>): Record<string, unknown> => {
+    return {
+        name,
+        time,
+        versions: Object.fromEntries(Object.keys(time).map((v) => [v, { version: v }])),
+    };
+};
 
-const buildInput = (workspaceRoot: string): PolicyInput => ({
-    offline: false,
-    packageManager: "npm",
-    packages: [{ isDev: false, name: "evil", version: "1.0.0" }],
-    workspaceRoot,
-});
+const buildInput = (workspaceRoot: string): PolicyInput => {
+    return {
+        offline: false,
+        packageManager: "npm",
+        packages: [{ isDev: false, name: "evil", version: "1.0.0" }],
+        workspaceRoot,
+    };
+};
 
 describe(evaluateFirstSeenPolicy, () => {
     let workspaceRoot: string;
@@ -62,10 +67,8 @@ describe(evaluateFirstSeenPolicy, () => {
     it("emits nothing when firstSeen.minutes is unset or zero", async () => {
         expect.assertions(2);
 
-        expect(await evaluateFirstSeenPolicy(buildInput(workspaceRoot), {})).toStrictEqual([]);
-        expect(
-            await evaluateFirstSeenPolicy(buildInput(workspaceRoot), { security: { policies: { firstSeen: { minutes: 0 } } } } as VisConfig),
-        ).toStrictEqual([]);
+        await expect(evaluateFirstSeenPolicy(buildInput(workspaceRoot), {})).resolves.toStrictEqual([]);
+        await expect(evaluateFirstSeenPolicy(buildInput(workspaceRoot), { security: { policies: { firstSeen: { minutes: 0 } } } })).resolves.toStrictEqual([]);
     });
 
     it("blocks a version published inside the cooldown window", async () => {

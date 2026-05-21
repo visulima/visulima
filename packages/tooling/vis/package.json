@@ -131,6 +131,7 @@
         "@arethetypeswrong/cli": "catalog:dev",
         "@bomb.sh/tab": "catalog:dev",
         "@eslint-react/eslint-plugin": "catalog:lint",
+        "@eslint/css": "1.2.0",
         "@gitbeaker/rest": "^43.8.0",
         "@napi-rs/cli": "catalog:dev",
         "@nkzw/safe-word-list": "^3.1.2",

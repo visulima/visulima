@@ -35,26 +35,26 @@ describe("dashboard server", () => {
         expect.assertions(2);
 
         server = await startDashboardServer({
-            workspaceRoot: tmpDir,
             cacheDirectory: join(tmpDir, ".task-runner-cache"),
             host: "127.0.0.1",
             port: 0,
+            workspaceRoot: tmpDir,
         });
 
         const response = await fetch(`${server.url}/`);
 
         expect(response.headers.get("content-type")).toContain("text/html");
-        expect(await response.text()).toContain("vis · dashboard");
+        await expect(response.text()).resolves.toContain("vis · dashboard");
     });
 
     it("returns an empty runs list when no runs are recorded", async () => {
         expect.assertions(1);
 
         server = await startDashboardServer({
-            workspaceRoot: tmpDir,
             cacheDirectory: join(tmpDir, ".task-runner-cache"),
             host: "127.0.0.1",
             port: 0,
+            workspaceRoot: tmpDir,
         });
 
         const response = await fetch(`${server.url}/api/runs`);
@@ -67,27 +67,27 @@ describe("dashboard server", () => {
         expect.assertions(2);
 
         writeRun(tmpDir, "old", {
+            duration: 1000,
+            endTime: "2026-01-01T00:00:01Z",
             id: "old",
             startTime: "2026-01-01T00:00:00Z",
-            endTime: "2026-01-01T00:00:01Z",
-            duration: 1000,
-            stats: { total: 1, cached: 0, succeeded: 1, failed: 0, skipped: 0 },
+            stats: { cached: 0, failed: 0, skipped: 0, succeeded: 1, total: 1 },
             tasks: [],
         });
         writeRun(tmpDir, "new", {
+            duration: 500,
+            endTime: "2026-01-02T00:00:00.500Z",
             id: "new",
             startTime: "2026-01-02T00:00:00Z",
-            endTime: "2026-01-02T00:00:00.500Z",
-            duration: 500,
-            stats: { total: 1, cached: 1, succeeded: 0, failed: 0, skipped: 0 },
+            stats: { cached: 1, failed: 0, skipped: 0, succeeded: 0, total: 1 },
             tasks: [],
         });
 
         server = await startDashboardServer({
-            workspaceRoot: tmpDir,
             cacheDirectory: join(tmpDir, ".task-runner-cache"),
             host: "127.0.0.1",
             port: 0,
+            workspaceRoot: tmpDir,
         });
 
         const response = await fetch(`${server.url}/api/runs`);
@@ -101,10 +101,10 @@ describe("dashboard server", () => {
         expect.assertions(1);
 
         server = await startDashboardServer({
-            workspaceRoot: tmpDir,
             cacheDirectory: join(tmpDir, ".task-runner-cache"),
             host: "127.0.0.1",
             port: 0,
+            workspaceRoot: tmpDir,
         });
 
         const response = await fetch(`${server.url}/api/runs/does-not-exist`);
@@ -116,10 +116,10 @@ describe("dashboard server", () => {
         expect.assertions(1);
 
         server = await startDashboardServer({
-            workspaceRoot: tmpDir,
             cacheDirectory: join(tmpDir, ".task-runner-cache"),
             host: "127.0.0.1",
             port: 0,
+            workspaceRoot: tmpDir,
         });
 
         const response = await fetch(`${server.url}/api/runs/${encodeURIComponent("../../etc/passwd")}`);
@@ -131,47 +131,45 @@ describe("dashboard server", () => {
         expect.assertions(2);
 
         writeRun(tmpDir, "run-1", {
+            duration: 100,
             id: "run-1",
             startTime: "2026-01-01T00:00:00Z",
-            duration: 100,
-            stats: { total: 1, cached: 1, succeeded: 0, failed: 0, skipped: 0 },
+            stats: { cached: 1, failed: 0, skipped: 0, succeeded: 0, total: 1 },
             tasks: [
                 {
-                    taskId: "app:build",
                     cacheStatus: "HIT",
                     hash: "old",
+                    hashDetails: { command: "tsc", implicitDeps: {}, nodes: { "a.ts": "x" }, runtime: {} },
                     target: { project: "app", target: "build" },
-                    hashDetails: { command: "tsc", nodes: { "a.ts": "x" }, implicitDeps: {}, runtime: {} },
+                    taskId: "app:build",
                 },
             ],
         });
         writeRun(tmpDir, "run-2", {
+            duration: 200,
             id: "run-2",
             startTime: "2026-01-02T00:00:00Z",
-            duration: 200,
-            stats: { total: 1, cached: 0, succeeded: 1, failed: 0, skipped: 0 },
+            stats: { cached: 0, failed: 0, skipped: 0, succeeded: 1, total: 1 },
             tasks: [
                 {
-                    taskId: "app:build",
                     cacheStatus: "MISS",
                     hash: "new",
+                    hashDetails: { command: "tsc", implicitDeps: {}, nodes: { "a.ts": "y" }, runtime: {} },
                     target: { project: "app", target: "build" },
-                    hashDetails: { command: "tsc", nodes: { "a.ts": "y" }, implicitDeps: {}, runtime: {} },
+                    taskId: "app:build",
                 },
             ],
         });
 
         server = await startDashboardServer({
-            workspaceRoot: tmpDir,
             cacheDirectory: join(tmpDir, ".task-runner-cache"),
             host: "127.0.0.1",
             port: 0,
+            workspaceRoot: tmpDir,
         });
 
-        const response = await fetch(
-            `${server.url}/api/runs/run-2/tasks/${encodeURIComponent("app:build")}/diff`,
-        );
-        const body = (await response.json()) as { entries: { key: string; change: string }[]; previousRunId: string };
+        const response = await fetch(`${server.url}/api/runs/run-2/tasks/${encodeURIComponent("app:build")}/diff`);
+        const body = (await response.json()) as { entries: { change: string; key: string }[]; previousRunId: string };
 
         expect(body.previousRunId).toBe("run-1");
         expect(body.entries.some((e) => e.key === "a.ts" && e.change === "modified")).toBe(true);
@@ -181,14 +179,14 @@ describe("dashboard server", () => {
         expect.assertions(2);
 
         server = await startDashboardServer({
-            workspaceRoot: tmpDir,
             cacheDirectory: join(tmpDir, ".task-runner-cache"),
             host: "127.0.0.1",
             port: 0,
+            workspaceRoot: tmpDir,
         });
 
         const response = await fetch(`${server.url}/api/environment`);
-        const body = (await response.json()) as { workspaceRoot: string; node: string };
+        const body = (await response.json()) as { node: string; workspaceRoot: string };
 
         expect(body.workspaceRoot).toBe(tmpDir);
         expect(body.node).toBe(process.version);
@@ -198,18 +196,18 @@ describe("dashboard server", () => {
         expect.assertions(1);
 
         server = await startDashboardServer({
-            workspaceRoot: tmpDir,
             cacheDirectory: join(tmpDir, ".task-runner-cache"),
             host: "127.0.0.1",
             port: 0,
+            workspaceRoot: tmpDir,
         });
 
         const controller = new AbortController();
 
         try {
             const response = await fetch(`${server.url}/api/events`, {
-                signal: controller.signal,
                 headers: { accept: "text/event-stream" },
+                signal: controller.signal,
             });
 
             expect(response.headers.get("content-type")).toContain("text/event-stream");

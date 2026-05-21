@@ -9,13 +9,13 @@ import { App } from "./App";
 const queryClient = new QueryClient({
     defaultOptions: {
         queries: {
-            staleTime: 10_000,
             refetchOnWindowFocus: false,
+            staleTime: 10_000,
         },
     },
 });
 
-const root = document.getElementById("root");
+const root = document.querySelector("#root");
 
 if (!root) {
     throw new Error("#root element is missing from index.html");

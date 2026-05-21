@@ -121,11 +121,7 @@ export default function ErrorOverview({ error }: Props): ReactElement {
                                 <Text bold dimColor>
                                     {trace.methodName ?? "<anonymous>"}
                                 </Text>
-                                <Text
-                                    aria-label={`at ${fileLabel} line ${trace.line} column ${trace.column}`}
-                                    color="gray"
-                                    dimColor
-                                >
+                                <Text aria-label={`at ${fileLabel} line ${trace.line} column ${trace.column}`} color="gray" dimColor>
                                     {" "}
                                     (
 {fileLabel}

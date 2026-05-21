@@ -19,8 +19,8 @@ import { join } from "@visulima/path";
 
 import type { PolicyName, VisConfig } from "../config/types";
 import { lockedPackages, resolveLockfile } from "./dependency-scan";
-import { scanExoticSubdeps } from "./exotic-subdeps";
 import type { ExoticSubdepViolation } from "./exotic-subdeps";
+import { scanExoticSubdeps } from "./exotic-subdeps";
 import type { PolicyDecision } from "./policies";
 import { evaluatePolicies } from "./policies";
 
@@ -37,6 +37,7 @@ export interface LockfileVerificationResult {
     entryCount: number;
     /** Exotic transitive-source violations, when blockExoticSubdeps is on. */
     exoticViolations: ExoticSubdepViolation[];
+
     /**
      * `true` when a supply-chain policy was configured but the lockfile
      * file is absent (or the PM has no lockfile vis understands). The
@@ -44,6 +45,7 @@ export interface LockfileVerificationResult {
      * rather than a misleading zero-entry `pass`.
      */
     lockfileMissing: boolean;
+
     /**
      * `skipped` — no supply-chain policy is configured, nothing verified.
      * `fail`    — at least one gating (unaccepted block) violation.

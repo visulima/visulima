@@ -21,8 +21,12 @@ export const useLiveEvents = (): LiveStatus => {
     useEffect(() => {
         const source = new EventSource("/api/events");
 
-        source.addEventListener("open", () => setStatus("open"));
-        source.addEventListener("ready", () => setStatus("open"));
+        source.addEventListener("open", () => {
+            setStatus("open");
+        });
+        source.addEventListener("ready", () => {
+            setStatus("open");
+        });
         source.addEventListener("error", () => {
             setStatus(source.readyState === EventSource.CLOSED ? "closed" : "connecting");
         });
