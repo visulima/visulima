@@ -1,3 +1,6 @@
+import { existsSync, readFileSync } from "node:fs";
+import { dirname, relative, sep } from "node:path";
+
 import { defineConfig } from "@anolilab/lint-staged-config";
 
 // Examples are standalone apps requiring their own `pnpm install` before
@@ -45,24 +48,85 @@ config["**/*.{md,mdx}"] = (files) => {
 
 const E2E_PATH_PATTERN = /__tests__[/\\]e2e[/\\]/;
 
-const withE2eFilter = (originalHandler) => (files) => {
+// Group staged test files by their owning package and run vitest from that
+// package's directory (via `pnpm --filter <name>`). The upstream shared config
+// emits a single `vitest related --run <abs paths>` command that runs from the
+// repo root — but the root `vitest.config.ts` is intentionally minimal and
+// doesn't load per-package setup files, so custom matchers (e.g.
+// `toMatchStackFrame` in @visulima/error) report as "Invalid Chai property".
+// Filtering through pnpm restores the per-package config + setup.
+const VITEST_TEST_PATTERN = "**/?(*.){test,spec}.?(c|m)[jt]s?(x)";
+const VITEST_TESTS_DIR_PATTERN = "**/__tests__/**/*.?(c|m)[jt]s?(x)";
+
+const findOwningPackage = (file) => {
+    let dir = dirname(file);
+
+    while (dir.length > 1 && dir !== sep) {
+        const pkgJsonPath = `${dir}/package.json`;
+
+        if (existsSync(pkgJsonPath) && existsSync(`${dir}/vitest.config.ts`)) {
+            try {
+                const { name } = JSON.parse(readFileSync(pkgJsonPath, "utf8"));
+
+                if (typeof name === "string" && name.length > 0) {
+                    return { name, root: dir };
+                }
+            } catch {
+                return null;
+            }
+        }
+
+        dir = dirname(dir);
+    }
+
+    return null;
+};
+
+const groupVitestFilesByPackage = (files) => {
+    const groups = new Map();
+
+    for (const file of files) {
+        const owner = findOwningPackage(file);
+
+        if (!owner) {
+            continue;
+        }
+
+        if (!groups.has(owner.name)) {
+            groups.set(owner.name, { files: [], root: owner.root });
+        }
+
+        groups.get(owner.name).files.push(file);
+    }
+
+    return groups;
+};
+
+const vitestPerPackage = (files) => {
     const filtered = files.filter((f) => !E2E_PATH_PATTERN.test(f));
 
     if (filtered.length === 0) {
         return [];
     }
 
-    if (Array.isArray(originalHandler)) {
-        return originalHandler.map((cmd) => `${cmd} ${filtered.join(" ")}`);
+    const groups = groupVitestFilesByPackage(filtered);
+
+    if (groups.size === 0) {
+        return [];
     }
 
-    return originalHandler(filtered);
+    const commands = [];
+
+    for (const [pkgName, { files: pkgFiles, root }] of groups) {
+        const rels = pkgFiles.map((f) => JSON.stringify(relative(root, f))).join(" ");
+
+        commands.push(`pnpm --filter ${JSON.stringify(pkgName)} exec vitest related --run ${rels}`);
+    }
+
+    return commands;
 };
 
-for (const [pattern, handler] of Object.entries(config)) {
-    if (pattern === "**/?(*.){test,spec}.?(c|m)[jt]s?(x)" || pattern === "**/__tests__/**/*.?(c|m)[jt]s?(x)") {
-        config[pattern] = withE2eFilter(handler);
-    }
-}
+config[VITEST_TEST_PATTERN] = vitestPerPackage;
+config[VITEST_TESTS_DIR_PATTERN] = vitestPerPackage;
 
 export default config;
