@@ -741,12 +741,14 @@ minimumReleaseAgeExclude:
   - svelte@5.55.7
   - next@16.2.6
   - devalue@5.8.1
-  - lodash.set@4.3.3
   - brace-expansion@5.0.6
   - ws@8.20.1
   - nuxt@4.4.6
   - protobufjs@8.2.0
   - '@nuxt/nitro-server@4.4.6'
+  - '@sveltejs/kit@2.60.1'
+  - uuid@11.1.1
+  - js-cookie@3.0.6
 
 overrides:
   '@anthropic-ai/sdk@>=0.79.0 <0.91.1': ^0.91.1
@@ -760,6 +762,7 @@ overrides:
   '@modelcontextprotocol/sdk@>=1.10.0 <=1.25.3': '>=1.26.0'
   '@nuxt/nitro-server@>=4.2.0 <=4.4.5': ^4.4.6
   '@sveltejs/kit@<=2.57.0': '>=2.57.1'
+  '@sveltejs/kit@>=2.38.0 <=2.60.0': ^2.60.1
   '@sveltejs/kit@>=2.49.0 <=2.52.1': '>=2.52.2'
   '@tootallnate/once@<3.0.1': ^3.0.1
   # @yarnpkg/parsers@3.x calls js-yaml.safeLoad (a v3 API removed in v4); pin
@@ -824,6 +827,7 @@ overrides:
   hono@>=4.8.0 <4.9.6: '>=4.10.2'
   immutable@<4.3.8: '>=4.3.8'
   ip-address@<=10.1.0: ^10.1.1
+  js-cookie@<=3.0.5: ^3.0.6
   js-yaml@<3.14.2: '>=3.14.2'
   js-yaml@>=4.0.0 <4.1.1: '>=4.1.1'
   jws@=4.0.0: '>=4.0.1'
@@ -886,6 +890,7 @@ overrides:
   undici@>=7.0.0 <7.24.0: '>=7.24.0'
   undici@>=7.17.0 <7.24.0: '>=7.24.0'
   unhead@<2.1.13: '>=2.1.13'
+  uuid@<11.1.1: ^11.1.1
   uuid@>=11.0.0 <11.1.1: ^11.1.1
   uuid@>=13.0.0 <13.0.1: ^13.0.1
   valibot@>=0.31.0 <1.2.0: '>=1.2.0'
