@@ -1,43 +1,11 @@
-# Dependency Review Action
-#
-# This Action will scan dependency manifest files that change as part of a Pull Request,
-# surfacing known-vulnerable versions of the packages declared or updated in the PR.
-# Once installed, if the workflow run is marked as required,
-# PRs introducing known-vulnerable packages will be blocked from merging.
-#
-# Source repository: https://github.com/actions/dependency-review-action
-name: "Dependency Review"
-
-on: # yamllint disable-line rule:truthy
+name: "Dependency review"
+on:
     pull_request:
-        branches:
-            - "main"
-            - "alpha"
-            - "next"
-            - "beta"
-    merge_group: # yamllint disable-line rule:empty-values
-
-permissions:
-    contents: "read"
-
+        branches: ["main", "alpha", "next", "beta"]
+permissions: {}
 jobs:
     dependency-review:
-        runs-on: "ubuntu-latest"
-        timeout-minutes: 30
-        steps:
-            - name: "Harden Runner"
-              uses: "step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411" # v2.19.4
-              with:
-                  egress-policy: "audit"
-
-            - name: "Git checkout"
-              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
-              with:
-                  persist-credentials: false
-              env:
-                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
-                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
-                  EMAIL: "github-actions[bot]@users.noreply.github.com"
-
-            - name: "Dependency Review"
-              uses: "actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294" # v5.0.0
+        permissions:
+            contents: "read"
+            pull-requests: "write"
+        uses: "anolilab/workflows/.github/workflows/dependency-review.yml@3bd9e3be8b2c419cf0e9237c1e78ab9a5e68bafa" # v15.1.3+
