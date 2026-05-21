@@ -6274,6 +6274,8 @@ importers:
         specifier: catalog:test
         version: 4.1.6(@opentelemetry/api@1.9.1)(@types/node@25.8.0)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(happy-dom@20.9.0)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@25.8.0)(typescript@6.0.3))(vite@8.0.13(@types/node@25.8.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.1)(yaml@2.9.0))
 
+  packages/filesystem/fs/__bench__/fixtures/a/b: {}
+
   packages/filesystem/fs/__fixtures__/find-up: {}
 
   packages/filesystem/fs/__fixtures__/package/cjs:
