@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { existsSync, lstatSync, mkdirSync, readFileSync, readlinkSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from "node:fs";
+import { existsSync, lstatSync, mkdirSync, readFileSync, readlinkSync, realpathSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -16,12 +16,19 @@ const initRepo = (): string => {
     const directory = join(tmpdir(), `vis-staged-integration-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
 
     mkdirSync(directory, { recursive: true });
-    sh(["init", "-q", "-b", "main"], directory);
-    sh(["config", "user.email", "test@example.com"], directory);
-    sh(["config", "user.name", "Vis Test"], directory);
-    sh(["config", "commit.gpgsign", "false"], directory);
 
-    return directory;
+    // macOS' tmpdir() returns `/var/folders/...` but `/var` is a symlink to `/private/var`.
+    // git's `rev-parse --show-toplevel` resolves that symlink, so the worktree path the workflow
+    // reports differs from the path produced by `join(tmpdir(), ...)`. Resolve once at creation
+    // time so every later `join(root, ...)` lines up with what git emits.
+    const resolved = realpathSync(directory);
+
+    sh(["init", "-q", "-b", "main"], resolved);
+    sh(["config", "user.email", "test@example.com"], resolved);
+    sh(["config", "user.name", "Vis Test"], resolved);
+    sh(["config", "commit.gpgsign", "false"], resolved);
+
+    return resolved;
 };
 
 describe("runStaged — integration", () => {
