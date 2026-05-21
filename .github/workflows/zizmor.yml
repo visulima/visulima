@@ -1,0 +1,15 @@
+name: "Zizmor"
+on:
+    push:
+        branches: ["main", "alpha"]
+    pull_request:
+        branches: ["main", "alpha"]
+permissions: {}
+jobs:
+    zizmor:
+        permissions:
+            security-events: "write"
+            contents: "read"
+        uses: "anolilab/workflows/.github/workflows/zizmor.yml@3bd9e3be8b2c419cf0e9237c1e78ab9a5e68bafa" # v15.1.3+
+        with:
+            min_severity: "medium"
