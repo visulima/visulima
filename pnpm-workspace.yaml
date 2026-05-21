@@ -582,7 +582,7 @@ catalogs:
     picocolors: ^1.1.1
     pingman: ^2.1.0
     pino: ^10.3.1
-    pkg-pr-new: ^0.0.73
+    pkg-pr-new: ^0.0.75
     plain-object-clone: ^2.0.1
     plop: ^4.0.5
     posthog-js: 1.373.5
@@ -655,7 +655,7 @@ catalogs:
     next-test-api-route-handler: 5.0.5
     playwright: ^1.60.0
     test-runner: 0.11.1
-    vitest: 4.1.6
+    vitest: 4.1.7
   tsc:
     typescript: 6.0.3
   types:
@@ -689,7 +689,7 @@ catalogs:
     '@types/minimist': 1.2.5
     '@types/mjml': ^5.0.0
     '@types/ms': ^2.1.0
-    '@types/node': 25.8.0
+    '@types/node': 25.9.1
     '@types/nodemailer': ^8.0.0
     '@types/normalize-package-data': ^2.4.4
     '@types/object-inspect': ^1.13.0
