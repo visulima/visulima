@@ -35,7 +35,7 @@ jobs:
         timeout-minutes: 5
         steps:
             - name: "Harden Runner"
-              uses: "step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450" # v2.19.1
+              uses: "step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411" # v2.19.4
               with:
                   egress-policy: "audit"
 
@@ -45,7 +45,7 @@ jobs:
                   persist-credentials: false
 
             - name: "Run ShellCheck"
-              uses: "ludeeus/action-shellcheck@00cae500b08a931fb5698e11e79bfbd38e612a38" # v2.0.0
+              uses: "ludeeus/action-shellcheck@00cae500b08a931fb5698e11e79bfbd38e612a38" # 2.0.0
               with:
                   scandir: "packages/tooling/vis/scripts"
                   severity: "warning"
@@ -58,7 +58,7 @@ jobs:
         timeout-minutes: 5
         steps:
             - name: "Harden Runner"
-              uses: "step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450" # v2.19.1
+              uses: "step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411" # v2.19.4
               with:
                   egress-policy: "audit"
 

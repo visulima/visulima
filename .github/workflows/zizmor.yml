@@ -29,7 +29,7 @@ jobs:
             security-events: "write"
         steps:
             - name: "Harden Runner"
-              uses: "step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450" # v2.19.1
+              uses: "step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411" # v2.19.4
               with:
                   egress-policy: "audit"
 
@@ -39,7 +39,7 @@ jobs:
                   persist-credentials: false
 
             - name: "Install zizmor"
-              uses: "taiki-e/install-action@c070f87102a1c75b3183910f391c1cb887fe13c8" # v2.77.6
+              uses: "taiki-e/install-action@65851e10cd6c377f11a60e600abc07cb08643468" # v2.79.3
               with:
                   tool: "zizmor"
 
@@ -52,7 +52,7 @@ jobs:
 
             - name: "Upload SARIF file"
               if: "always()"
-              uses: "github/codeql-action/upload-sarif@7fd177fa680c9881b53cdab4d346d32574c9f7f4" # v3.35.4
+              uses: "github/codeql-action/upload-sarif@9e0d7b8d25671d64c341c19c0152d693099fb5ba" # v4.35.5
               with:
                   sarif_file: "results.sarif"
                   category: "zizmor"
