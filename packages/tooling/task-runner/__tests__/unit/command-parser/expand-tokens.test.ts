@@ -80,14 +80,8 @@ describe(expandTokensInString, () => {
         expect(out).toBe("eslint src/a.ts src/b.ts");
     });
 
-    it("escapes single quotes inside paths (POSIX)", () => {
+    it.skipIf(process.platform === "win32")("escapes single quotes inside paths (POSIX)", () => {
         expect.assertions(1);
-
-        // The cmd.exe form uses different quoting, so this single-quote
-        // escape rule is asserted only on POSIX shells.
-        if (process.platform === "win32") {
-            return;
-        }
 
         const out = expandTokensInString("ls ${affected.files}", {
             affectedFiles: ["a'b.ts"],

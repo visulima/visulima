@@ -191,7 +191,9 @@ describe(expandArguments, () => {
 
         const result = expandArguments(makeConfig("echo {1}"), ["it's"]);
 
-        expect(result.command).toBe(String.raw`echo 'it'\''s'`);
+        const expected = process.platform === "win32" ? String.raw`echo "it's"` : String.raw`echo 'it'\''s'`;
+
+        expect(result.command).toBe(expected);
     });
 
     it("should handle multiple placeholders", () => {
@@ -199,7 +201,9 @@ describe(expandArguments, () => {
 
         const result = expandArguments(makeConfig("{1} && {2}"), ["echo a", "echo b"]);
 
-        expect(result.command).toBe("'echo a' && 'echo b'");
+        const expected = process.platform === "win32" ? `"echo a" && "echo b"` : `'echo a' && 'echo b'`;
+
+        expect(result.command).toBe(expected);
     });
 });
 
