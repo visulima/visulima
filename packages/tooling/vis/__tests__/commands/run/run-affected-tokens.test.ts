@@ -1,4 +1,5 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { delimiter as pathDelimiter } from "node:path";
 
 import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -107,11 +108,14 @@ describe("vis run — `${affected.files}` token expansion", () => {
         originalAffected = process.env["VIS_AFFECTED_FILES"];
 
         // Toolchain pre-flight is opted out via skipToolchain, but keep PATH
-        // narrowed defensively — matching the run-cache-hit pattern.
+        // narrowed defensively — matching the run-cache-hit pattern. Use
+        // `pathDelimiter` so the separator is `;` on Windows and `:` on POSIX;
+        // a hard-coded `:` collapses the whole list into one unreadable
+        // directory on Windows and `node` can't be found.
         const binDir = join(workspaceRoot, "bin");
 
         mkdirSync(binDir, { recursive: true });
-        process.env["PATH"] = `${binDir}:${process.env["PATH"] ?? ""}`;
+        process.env["PATH"] = `${binDir}${pathDelimiter}${process.env["PATH"] ?? ""}`;
 
         writeFileSync(join(workspaceRoot, "pnpm-workspace.yaml"), "packages:\n  - 'packages/*'\n");
         writeFileSync(join(workspaceRoot, "package.json"), JSON.stringify({ name: "root" }));

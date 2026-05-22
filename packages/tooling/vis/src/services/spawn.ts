@@ -66,6 +66,12 @@ export const spawnDetached = async (input: SpawnDetachedInput): Promise<SpawnDet
         // Windows: spawn in a new console so the child isn't tied
         // to this terminal's lifetime.
         windowsHide: true,
+        // `redirectedCommand` carries the embedded quotes that wrap the
+        // log path. Node's default Windows arg quoting escapes inner `"`
+        // as `\"` — which cmd.exe doesn't understand, so the child never
+        // starts. Verbatim mode passes the string through unchanged; the
+        // `/s /c` pair below preserves it.
+        ...(isWindows ? { windowsVerbatimArguments: true } : {}),
     });
 
     if (child.pid === undefined) {
