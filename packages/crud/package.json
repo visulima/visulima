@@ -94,7 +94,7 @@
         "@eslint-react/eslint-plugin": "2.3.7",
         "@opentelemetry/api": "^1.9.0",
         "@prisma/client": "7.0.0",
-        "@testing-library/react": "^16.3.0",
+        "@testing-library/react": "^16.3.2",
         "@types/http-errors": "^2.0.5",
         "@types/json-schema": "7.0.15",
         "@types/node": "24.10.1",

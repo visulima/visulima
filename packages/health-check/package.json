@@ -81,7 +81,7 @@
         "@arethetypeswrong/cli": "^0.18.2",
         "@eslint-react/eslint-plugin": "2.3.7",
         "@rushstack/eslint-plugin-security": "^0.13.0",
-        "@testing-library/react": "^16.3.0",
+        "@testing-library/react": "^16.3.2",
         "@types/node": "24.10.1",
         "@visulima/packem": "2.0.0-alpha.37",
         "@vitest/coverage-v8": "^4.0.13",
