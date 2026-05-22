@@ -96,7 +96,7 @@ describe(runConcurrentFallback, () => {
         expect(completionOrder).toStrictEqual([0, 1, 2]);
     });
 
-    it("should support success condition 'first'", async () => {
+    it.skipIf(process.platform === "win32")("should support success condition 'first'", async () => {
         expect.assertions(1);
 
         const result = await runConcurrentFallback([makeConfig("echo ok"), makeConfig("sleep 0.1 && exit 1")], { successCondition: "first" });
@@ -105,7 +105,7 @@ describe(runConcurrentFallback, () => {
         expect(result.success).toBe(true);
     });
 
-    it("should kill others on failure", async () => {
+    it.skipIf(process.platform === "win32")("should kill others on failure", async () => {
         expect.assertions(3);
 
         const start = Date.now();
@@ -139,14 +139,16 @@ describe(runConcurrentFallback, () => {
 
         const events: ProcessEvent[] = [];
 
-        await runConcurrentFallback([{ command: "echo $MY_TEST_VAR", env: { MY_TEST_VAR: "hello_test" } }], { onEvent: (event) => events.push(event) });
+        const command = process.platform === "win32" ? "echo %MY_TEST_VAR%" : "echo $MY_TEST_VAR";
+
+        await runConcurrentFallback([{ command, env: { MY_TEST_VAR: "hello_test" } }], { onEvent: (event) => events.push(event) });
 
         const stdoutEvents = events.filter((e) => e.kind === "stdout");
 
         expect(stdoutEvents.some((e) => e.text === "hello_test")).toBe(true);
     });
 
-    it("should track duration in close events", async () => {
+    it.skipIf(process.platform === "win32")("should track duration in close events", async () => {
         expect.assertions(1);
 
         const result = await runConcurrentFallback([makeConfig("sleep 0.1")], {});
@@ -164,11 +166,13 @@ describe(runConcurrentFallback, () => {
         expect(result.success).toBe(true);
     });
 
-    it("should execute directly when shell is false", async () => {
+    it.skipIf(process.platform === "win32")("should execute directly when shell is false", async () => {
         expect.assertions(2);
 
         const events: ProcessEvent[] = [];
 
+        // echo is a shell builtin on Windows; direct execution (shell: false)
+        // is only meaningful on POSIX where /usr/bin/echo exists as a binary.
         const result = await runConcurrentFallback([{ command: "echo hello", shell: false }], { onEvent: (event) => events.push(event) });
 
         expect(result.success).toBe(true);
@@ -247,12 +251,14 @@ describe(runConcurrentFallback, () => {
         expect(stdoutEvents.some((e) => e.text?.includes("pty-hello"))).toBe(true);
     });
 
-    it("should flush partial lines after 100ms timeout", async () => {
+    it.skipIf(process.platform === "win32")("should flush partial lines after 100ms timeout", async () => {
         expect.assertions(1);
 
         const events: ProcessEvent[] = [];
 
-        // printf writes without trailing newline — should be flushed by timer
+        // printf writes without trailing newline — should be flushed by timer.
+        // printf is POSIX-only; cmd.exe `echo` always appends CRLF, so this
+        // test is platform-gated.
         await runConcurrentFallback([makeConfig("printf 'no-newline'")], {
             onEvent: (event) => events.push(event),
         });
@@ -262,7 +268,7 @@ describe(runConcurrentFallback, () => {
         expect(stdoutEvents.some((e) => e.text === "no-newline")).toBe(true);
     });
 
-    it("should handle PTY with interactive read prompt", async () => {
+    it.skipIf(process.platform === "win32")("should handle PTY with interactive read prompt", async () => {
         expect.assertions(3);
 
         const events: ProcessEvent[] = [];
@@ -289,7 +295,7 @@ describe(runConcurrentFallback, () => {
         expect(stdoutText).toContain("Got: Alice");
     }, 10_000);
 
-    it("should kill PTY processes in killAll", async () => {
+    it.skipIf(process.platform === "win32")("should kill PTY processes in killAll", async () => {
         expect.assertions(3);
 
         const start = Date.now();

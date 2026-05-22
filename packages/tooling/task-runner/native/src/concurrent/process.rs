@@ -235,12 +235,19 @@ fn shell_command(command: &str, shell_path: Option<&str>) -> (String, Vec<String
 
     #[cfg(windows)]
     {
+        // Pass the command verbatim and let Rust's Windows arg-encoder
+        // wrap it in `"..."` when it contains whitespace. cmd.exe `/s`
+        // then strips those outer quotes before parsing. Pre-wrapping in
+        // `"..."` ourselves would force Rust to escape the inner quotes
+        // as `\"`, which cmd.exe does not understand (it expects `""` for
+        // a literal quote inside a quoted section), so the shell ends up
+        // running a mangled command and the child exits non-zero.
         (
             "cmd.exe".to_string(),
             vec![
                 "/s".to_string(),
                 "/c".to_string(),
-                format!("\"{}\"", command),
+                command.to_string(),
             ],
         )
     }
