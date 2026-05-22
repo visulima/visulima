@@ -42,6 +42,29 @@ const closeServer = (server: Server): Promise<void> =>
         });
     });
 
+/**
+ * Run `tar -czf <archive> -C <dir> .` in a way that works on Windows.
+ *
+ * Windows tar (libarchive/bsdtar) treats `:` in a path as the `host:path`
+ * separator for rsh-style remote operation, so `C:\foo` becomes "try to
+ * connect to host `C`". Forward-slash paths bypass that check and are
+ * accepted by every tar in the matrix (GNU tar, bsdtar, Windows tar).
+ */
+const tarball = (archivePath: string, sourceDirectory: string): Promise<void> => {
+    const archive = archivePath.replace(/\\/g, "/");
+    const source = sourceDirectory.replace(/\\/g, "/");
+
+    return new Promise((resolve, reject) => {
+        execFile("tar", ["-czf", archive, "-C", source, "."], (error) => {
+            if (error) {
+                reject(error);
+            } else {
+                resolve();
+            }
+        });
+    });
+};
+
 const collectRequestBody = (request: IncomingMessage): Promise<Buffer> => {
     const chunks: Buffer[] = [];
 
@@ -483,15 +506,7 @@ describe(HttpRemoteCache, () => {
 
             const archivePath = join(cacheDirectory, "artifact.tar.gz");
 
-            await new Promise<void>((resolve, reject) => {
-                execFile("tar", ["-czf", archivePath, "-C", sourceDirectory, "."], (error) => {
-                    if (error) {
-                        reject(error);
-                    } else {
-                        resolve();
-                    }
-                });
-            });
+            await tarball(archivePath, sourceDirectory);
 
             const archiveContent = await readFile(archivePath);
 
@@ -634,15 +649,7 @@ describe(HttpRemoteCache, () => {
 
             const archivePath = join(cacheDirectory, "tampered.tar.gz");
 
-            await new Promise<void>((resolve, reject) => {
-                execFile("tar", ["-czf", archivePath, "-C", sourceDirectory, "."], (error) => {
-                    if (error) {
-                        reject(error);
-                    } else {
-                        resolve();
-                    }
-                });
-            });
+            await tarball(archivePath, sourceDirectory);
 
             const archive = await readFile(archivePath);
 
@@ -748,15 +755,7 @@ describe(HttpRemoteCache, () => {
 
             const archivePath = join(cacheDirectory, "lax.tar.gz");
 
-            await new Promise<void>((resolve, reject) => {
-                execFile("tar", ["-czf", archivePath, "-C", sourceDirectory, "."], (error) => {
-                    if (error) {
-                        reject(error);
-                    } else {
-                        resolve();
-                    }
-                });
-            });
+            await tarball(archivePath, sourceDirectory);
 
             const archive = await readFile(archivePath);
 
@@ -798,15 +797,7 @@ describe(HttpRemoteCache, () => {
 
             const archivePath = join(cacheDirectory, "strict.tar.gz");
 
-            await new Promise<void>((resolve, reject) => {
-                execFile("tar", ["-czf", archivePath, "-C", sourceDirectory, "."], (error) => {
-                    if (error) {
-                        reject(error);
-                    } else {
-                        resolve();
-                    }
-                });
-            });
+            await tarball(archivePath, sourceDirectory);
 
             const archive = await readFile(archivePath);
 
@@ -933,15 +924,7 @@ describe(HttpRemoteCache, () => {
 
             const archivePath = join(cacheDirectory, "att-bad.tar.gz");
 
-            await new Promise<void>((resolve, reject) => {
-                execFile("tar", ["-czf", archivePath, "-C", sourceDirectory, "."], (error) => {
-                    if (error) {
-                        reject(error);
-                    } else {
-                        resolve();
-                    }
-                });
-            });
+            await tarball(archivePath, sourceDirectory);
 
             const archive = await readFile(archivePath);
 
@@ -989,15 +972,7 @@ describe(HttpRemoteCache, () => {
 
             const archivePath = join(cacheDirectory, "att-req.tar.gz");
 
-            await new Promise<void>((resolve, reject) => {
-                execFile("tar", ["-czf", archivePath, "-C", sourceDirectory, "."], (error) => {
-                    if (error) {
-                        reject(error);
-                    } else {
-                        resolve();
-                    }
-                });
-            });
+            await tarball(archivePath, sourceDirectory);
 
             const archive = await readFile(archivePath);
 

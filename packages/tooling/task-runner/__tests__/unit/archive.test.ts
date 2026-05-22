@@ -50,7 +50,9 @@ describe("archive round-trip fidelity", () => {
         expect(restoredContent).toBe("console.log('hello');\n");
     });
 
-    it("preserves file mode bits across round-trip", async () => {
+    // POSIX-only: Windows does not honor POSIX mode bits on fs.stat — only
+    // the read-only bit is mapped, so we cannot assert 0o755 round-trip.
+    it.skipIf(process.platform === "win32")("preserves file mode bits across round-trip", async () => {
         expect.assertions(1);
 
         const sourceDirectory = join(workspaceRoot, "src");
@@ -99,7 +101,8 @@ describe("archive round-trip fidelity", () => {
         expect(restoredStat.mtimeMs).toBeGreaterThanOrEqual(beforeRestoreMs - 1000);
     });
 
-    it("falls back to umask-derived mode when preservePerms is disabled", async () => {
+    // POSIX-only: Windows does not honor POSIX mode bits / process.umask.
+    it.skipIf(process.platform === "win32")("falls back to umask-derived mode when preservePerms is disabled", async () => {
         expect.assertions(2);
 
         const sourceDirectory = join(workspaceRoot, "src");
