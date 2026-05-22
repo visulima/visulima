@@ -82,3 +82,6 @@ dist
 .codex
 
 packages/tooling/vis/examples/**/.vis/
+
+# Local git worktrees (Agent tool isolation)
+.worktrees/
