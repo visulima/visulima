@@ -491,12 +491,30 @@ const getTaskOptions = (task: Task): VisTargetOptions | undefined => {
 };
 
 /**
- * Wraps a string in single quotes for safe shell execution, escaping
- * any internal single quotes using the standard `'\''` pattern. Unlike
- * double quotes, single quotes prevent shell expansion of `$VAR`, `\n`,
- * and backticks.
+ * Wraps a string in single quotes for safe POSIX shell execution.
+ * Used when we know the consumer is a POSIX shell — e.g. when forwarding
+ * a value as the argument of `<shell> -c <value>` regardless of OS.
  */
 const singleQuoteEscape = (value: string): string => `'${value.replaceAll("'", String.raw`'\''`)}'`;
+
+/**
+ * Wraps a string for safe shell execution by the platform's default
+ * shell. POSIX uses single quotes (prevents `$VAR` / `\n` / backtick
+ * expansion). Windows cmd.exe treats single quotes as literal characters
+ * — they would survive into the child process's argv — so we use
+ * double-quote escaping with inner `"` doubled per cmd.exe parsing rules.
+ */
+const shellQuote = (value: string): string => {
+    if (process.platform === "win32") {
+        if (value.length > 0 && !/[\s"&|<>^()%!]/.test(value)) {
+            return value;
+        }
+
+        return `"${value.replaceAll('"', '""')}"`;
+    }
+
+    return singleQuoteEscape(value);
+};
 
 /** Builds the command args list for `affectedFiles` forwarding. */
 const buildAffectedFilesArgs = (command: string, affectedFiles: string[] | undefined, mode: VisTargetOptions["affectedFiles"]): string => {
@@ -505,7 +523,7 @@ const buildAffectedFilesArgs = (command: string, affectedFiles: string[] | undef
     }
 
     if (mode === "args" || mode === "both") {
-        const quoted = affectedFiles.map((file) => singleQuoteEscape(file)).join(" ");
+        const quoted = affectedFiles.map((file) => shellQuote(file)).join(" ");
 
         return `${command} ${quoted}`;
     }
@@ -529,7 +547,7 @@ const appendForwardedArgs = (command: string, task: Task): string => {
         return command;
     }
 
-    const quoted = (args as string[]).map((argument) => singleQuoteEscape(argument)).join(" ");
+    const quoted = (args as string[]).map((argument) => shellQuote(argument)).join(" ");
 
     return `${command} ${quoted}`;
 };

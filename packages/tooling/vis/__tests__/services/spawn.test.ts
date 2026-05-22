@@ -83,11 +83,22 @@ describe(spawnDetached, () => {
         });
 
         try {
-            // Give the child a beat to actually flush its line — spawn only
-            // resolves once the OS has a PID, not once the child has written.
-            await sleep(300);
+            // Poll for the captured line — spawn resolves on PID assignment,
+            // not after the child has written. Windows in particular can
+            // take 1–2 s to launch `node.exe` via cmd.exe and flush the
+            // first `console.log`. POSIX usually lands in <100 ms.
+            const deadline = Date.now() + 5000;
+            let contents = "";
 
-            const contents = await readFile(logFile, "utf8");
+            while (Date.now() < deadline) {
+                contents = await readFile(logFile, "utf8");
+
+                if (contents.includes("hello-from-child")) {
+                    break;
+                }
+
+                await sleep(100);
+            }
 
             expect(contents).toContain("hello-from-child");
         } finally {

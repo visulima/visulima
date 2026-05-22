@@ -257,10 +257,18 @@ describe("services/lifecycle — end-to-end", () => {
 
         // Kill the listener but DON'T call stopService — we want the
         // registry entry to outlive the actual server, simulating a
-        // crash mid-session. Group-kill so the shell wrapper goes
-        // along with the node child.
+        // crash mid-session. On POSIX, `process.kill(-pid)` group-kills
+        // the shell wrapper and its node child together. Windows has no
+        // process groups, so use `taskkill /F /T` instead — same effect:
+        // terminates the wrapper and every descendant.
         try {
-            process.kill(-startResult.entry.pid, "SIGKILL");
+            if (process.platform === "win32") {
+                const { execFileSync } = await import("node:child_process");
+
+                execFileSync("taskkill", ["/F", "/T", "/PID", String(startResult.entry.pid)], { stdio: "ignore" });
+            } else {
+                process.kill(-startResult.entry.pid, "SIGKILL");
+            }
         } catch {
             // already gone, fine
         }
