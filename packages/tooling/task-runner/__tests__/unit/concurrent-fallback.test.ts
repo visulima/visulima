@@ -125,13 +125,17 @@ describe(runConcurrentFallback, () => {
 
         const events: ProcessEvent[] = [];
 
+        // cmd.exe's `echo error >&2` emits "error " (note the trailing
+        // space — cmd includes the whitespace before `>` in the echo
+        // argument). Trim before comparing so the assertion checks the
+        // capture pipeline rather than echo's whitespace quirks.
         await runConcurrentFallback([makeConfig("echo error >&2")], {
             onEvent: (event) => events.push(event),
         });
 
         const stderrEvents = events.filter((e) => e.kind === "stderr");
 
-        expect(stderrEvents.some((e) => e.text === "error")).toBe(true);
+        expect(stderrEvents.some((e) => e.text.trim() === "error")).toBe(true);
     });
 
     it("should pass environment variables to child processes", async () => {

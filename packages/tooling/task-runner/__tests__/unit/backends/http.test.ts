@@ -45,17 +45,16 @@ const closeServer = (server: Server): Promise<void> =>
 /**
  * Run `tar -czf <archive> -C <dir> .` in a way that works on Windows.
  *
- * Windows tar (libarchive/bsdtar) treats `:` in a path as the `host:path`
- * separator for rsh-style remote operation, so `C:\foo` becomes "try to
- * connect to host `C`". Forward-slash paths bypass that check and are
- * accepted by every tar in the matrix (GNU tar, bsdtar, Windows tar).
+ * Windows GNU tar treats `:` in a path as the `host:path` separator for
+ * rsh-style remote operation, so `C:\foo` (or `C:/foo`) becomes "try to
+ * connect to host `C`". `--force-local` is the GNU-tar flag that opts out
+ * of that interpretation; bsdtar tolerates the flag too. Without it, the
+ * GitHub Windows runner's bundled tar fails with
+ * "Cannot connect to C: resolve failed".
  */
-const tarball = (archivePath: string, sourceDirectory: string): Promise<void> => {
-    const archive = archivePath.replace(/\\/g, "/");
-    const source = sourceDirectory.replace(/\\/g, "/");
-
-    return new Promise((resolve, reject) => {
-        execFile("tar", ["-czf", archive, "-C", source, "."], (error) => {
+const tarball = (archivePath: string, sourceDirectory: string): Promise<void> =>
+    new Promise((resolve, reject) => {
+        execFile("tar", ["--force-local", "-czf", archivePath, "-C", sourceDirectory, "."], (error) => {
             if (error) {
                 reject(error);
             } else {
@@ -63,7 +62,6 @@ const tarball = (archivePath: string, sourceDirectory: string): Promise<void> =>
             }
         });
     });
-};
 
 const collectRequestBody = (request: IncomingMessage): Promise<Buffer> => {
     const chunks: Buffer[] = [];
