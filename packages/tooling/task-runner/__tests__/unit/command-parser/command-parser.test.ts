@@ -133,7 +133,7 @@ describe(expandArguments, () => {
 
         const result = expandArguments(makeConfig("echo {1}"), ["hello"]);
 
-        expect(result.command).toBe("echo 'hello'");
+        expect(result.command).toBe("echo hello");
     });
 
     it("should replace {2} with second argument", () => {
@@ -141,7 +141,7 @@ describe(expandArguments, () => {
 
         const result = expandArguments(makeConfig("echo {2}"), ["a", "b"]);
 
-        expect(result.command).toBe("echo 'b'");
+        expect(result.command).toBe("echo b");
     });
 
     it("should replace {@} with all arguments individually quoted", () => {
@@ -149,15 +149,17 @@ describe(expandArguments, () => {
 
         const result = expandArguments(makeConfig("echo {@}"), ["a", "b", "c"]);
 
-        expect(result.command).toBe("echo 'a' 'b' 'c'");
+        expect(result.command).toBe("echo a b c");
     });
 
     it("should replace {*} with all arguments as single quoted string", () => {
+        // The joined form contains a space and so still needs quoting;
+        // POSIX picks single quotes, Windows picks double quotes.
         expect.assertions(1);
 
         const result = expandArguments(makeConfig("echo {*}"), ["a", "b", "c"]);
 
-        expect(result.command).toBe("echo 'a b c'");
+        expect(result.command).toBe(process.platform === "win32" ? "echo \"a b c\"" : "echo 'a b c'");
     });
 
     it("should handle escaped placeholders", () => {
@@ -481,7 +483,7 @@ describe(parseCommands, () => {
         const result = parseCommands(["echo {1}"], { additionalArguments: ["world"] });
 
         expect(result).toHaveLength(1);
-        expect(result[0]!.command).toBe("echo 'world'");
+        expect(result[0]!.command).toBe("echo world");
     });
 
     it("should handle empty input", () => {

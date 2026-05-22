@@ -5,14 +5,14 @@ import { expandTokens, expandTokensInString } from "../../../src/command-parser/
 import { parseCommands } from "../../../src/command-parser/index";
 
 describe(expandTokensInString, () => {
-    it("substitutes ${affected.files} with shell-quoted paths", () => {
+    it("substitutes ${affected.files} with bare paths when they need no escaping", () => {
         expect.assertions(1);
 
         const out = expandTokensInString("eslint ${affected.files}", {
             affectedFiles: ["src/a.ts", "src/b.ts"],
         });
 
-        expect(out).toBe("eslint 'src/a.ts' 'src/b.ts'");
+        expect(out).toBe("eslint src/a.ts src/b.ts");
     });
 
     it("supports the changed_files alias", () => {
@@ -22,7 +22,7 @@ describe(expandTokensInString, () => {
             affectedFiles: ["pkg/x.ts"],
         });
 
-        expect(out).toBe("prettier 'pkg/x.ts'");
+        expect(out).toBe("prettier pkg/x.ts");
     });
 
     it("expands ${... | flag '--file'} into per-file flag pairs", () => {
@@ -32,7 +32,7 @@ describe(expandTokensInString, () => {
             affectedFiles: ["a.js", "b.js"],
         });
 
-        expect(out).toBe("nyc --file 'a.js' --file 'b.js'");
+        expect(out).toBe("nyc --file a.js --file b.js");
     });
 
     it("supports double-quoted flag form", () => {
@@ -42,7 +42,7 @@ describe(expandTokensInString, () => {
             affectedFiles: ["a", "b"],
         });
 
-        expect(out).toBe("tool -f 'a' -f 'b'");
+        expect(out).toBe("tool -f a -f b");
     });
 
     it("returns an empty token expansion when no files match", () => {
@@ -77,11 +77,17 @@ describe(expandTokensInString, () => {
             projectRoot: "packages/app",
         });
 
-        expect(out).toBe("eslint 'src/a.ts' 'src/b.ts'");
+        expect(out).toBe("eslint src/a.ts src/b.ts");
     });
 
-    it("escapes single quotes inside paths", () => {
+    it("escapes single quotes inside paths (POSIX)", () => {
         expect.assertions(1);
+
+        // The cmd.exe form uses different quoting, so this single-quote
+        // escape rule is asserted only on POSIX shells.
+        if (process.platform === "win32") {
+            return;
+        }
 
         const out = expandTokensInString("ls ${affected.files}", {
             affectedFiles: ["a'b.ts"],
@@ -105,7 +111,7 @@ describe(expandTokensInString, () => {
             affectedFiles: ["a.ts", "b.ts"],
         });
 
-        expect(out).toBe("eslint 'a.ts' 'b.ts' --ignore 'a.ts' 'b.ts'");
+        expect(out).toBe("eslint a.ts b.ts --ignore a.ts b.ts");
     });
 
     it("mixes flag and bare forms in one command", () => {
@@ -115,7 +121,7 @@ describe(expandTokensInString, () => {
             affectedFiles: ["a.ts"],
         });
 
-        expect(out).toBe("nyc --file 'a.ts' -- mocha 'a.ts'");
+        expect(out).toBe("nyc --file a.ts -- mocha a.ts");
     });
 
     it("emits paths cleanly when followed by literal text", () => {
@@ -125,7 +131,7 @@ describe(expandTokensInString, () => {
             affectedFiles: ["a.ts"],
         });
 
-        expect(out).toBe("eslint 'a.ts' --quiet");
+        expect(out).toBe("eslint a.ts --quiet");
     });
 });
 
@@ -147,7 +153,7 @@ describe(expandTokens, () => {
         const out = expandTokens(input, { affectedFiles: ["a"] });
 
         expect(out).not.toBe(input);
-        expect(out.command).toBe("lint 'a'");
+        expect(out.command).toBe("lint a");
     });
 });
 
@@ -160,7 +166,7 @@ describe("parseCommands token integration", () => {
             tokens: { affectedFiles: ["a.ts"] },
         });
 
-        expect(out?.command).toBe("lint 'a.ts' '--quiet'");
+        expect(out?.command).toBe("lint a.ts --quiet");
     });
 
     it("does nothing when no tokens are passed", () => {
