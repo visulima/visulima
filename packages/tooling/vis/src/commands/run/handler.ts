@@ -2706,7 +2706,29 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
             }
 
             if (hasFailure || failOnRetry) {
-                throw new Error(failOnRetry && !hasFailure ? "Some tasks succeeded only after retry (--fail-on-retry)." : "Some tasks failed.");
+                const headline = failOnRetry && !hasFailure ? "Some tasks succeeded only after retry (--fail-on-retry)." : "Some tasks failed.";
+
+                // Tail the captured terminal output of every failed task into
+                // the thrown error so callers (especially programmatic ones
+                // like vitest runs that mute the logger) see *why* a task
+                // failed, not just *that* one did. Cap each tail so a runaway
+                // log doesn't drown the stack trace.
+                const TAIL_BYTES = 2000;
+                const failureDetails: string[] = [];
+
+                for (const [taskId, result] of firstRun.results) {
+                    if (result.status !== "failure") {
+                        continue;
+                    }
+
+                    const output = result.terminalOutput ?? "";
+                    const tail = output.length > TAIL_BYTES ? `…${output.slice(-TAIL_BYTES)}` : output;
+                    const code = result.code ?? "?";
+
+                    failureDetails.push(`  ${taskId} (exit ${String(code)}):\n${tail.split("\n").map((l) => `    ${l}`).join("\n")}`);
+                }
+
+                throw new Error(failureDetails.length > 0 ? `${headline}\n${failureDetails.join("\n")}` : headline);
             }
 
             if (persistentTasks.length > 0 && !options.failFast) {
