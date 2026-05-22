@@ -12,9 +12,9 @@
         "@visulima/command-line-args": "workspace:*",
         "argparse": "^2.0.1",
         "args": "^5.0.3",
-        "args-tokens": "^0.23.0",
-        "command-line-args": "^6.0.1",
-        "jackspeak": "^4.1.1",
+        "args-tokens": "^0.23.1",
+        "command-line-args": "^6.0.2",
+        "jackspeak": "^4.1.2",
         "minimist": "^1.2.8",
         "mri": "^1.2.0",
         "yargs-parser": "^22.0.0"

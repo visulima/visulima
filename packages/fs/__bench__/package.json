@@ -8,10 +8,10 @@
     },
     "dependencies": {
         "@visulima/fs": "workspace:*",
-        "empathic": "2.0.0",
+        "empathic": "2.0.1",
         "find-up": "8.0.0",
         "find-up-simple": "1.0.1",
-        "fs-extra": "11.3.2",
+        "fs-extra": "11.3.5",
         "walk": "2.3.15"
     },
     "devDependencies": {
