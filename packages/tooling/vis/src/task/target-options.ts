@@ -130,7 +130,10 @@ export const resolveTaskCwd = (workspaceRoot: string, projectRoot: string | unde
         return workspaceRoot;
     }
 
-    return projectRoot.startsWith("/") ? projectRoot : `${workspaceRoot}/${projectRoot}`;
+    // `startsWith("/")` misses Windows absolute paths (`C:/...`), which
+    // then got concatenated with `workspaceRoot` and yielded a bogus
+    // cwd — every spawn died with UV_ENOENT (-4058) on Windows CI.
+    return isAbsolute(projectRoot) ? projectRoot : join(workspaceRoot, projectRoot);
 };
 
 /**

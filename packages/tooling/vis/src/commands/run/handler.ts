@@ -2283,8 +2283,7 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
                     const command = task?.overrides["command"] as string | undefined;
 
                     if (task && command) {
-                        const taskCwd = task.projectRoot ?? workspaceRoot;
-                        const resolvedCwd = taskCwd.startsWith("/") ? taskCwd : `${workspaceRoot}/${taskCwd}`;
+                        const resolvedCwd = resolveTaskCwd(workspaceRoot, task.projectRoot, false);
 
                         lifeCycle.startTasks?.([task]);
 
