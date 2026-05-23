@@ -21,7 +21,23 @@ jobs:
               with:
                   egress-policy: "audit"
 
-            - uses: "actions/labeler@f27b608878404679385c85cfa523b85ccb86e213" # v6.1.0
+            # `secrets.GITHUB_TOKEN` returns transient HTTP 401 mid-call;
+            # wrap with a two-shot retry (same pattern as cargo-test.yml).
+            - id: "labeler"
+              continue-on-error: true
+              uses: "actions/labeler@f27b608878404679385c85cfa523b85ccb86e213" # v6.1.0
+              with:
+                  repo-token: "${{ secrets.GITHUB_TOKEN }}"
+                  configuration-path: "labeler-config.yml"
+
+            - name: "Wait before retrying labeler"
+              if: "steps.labeler.outcome == 'failure'"
+              shell: "bash"
+              run: "sleep 15"
+
+            - name: "Labeler (retry)"
+              if: "steps.labeler.outcome == 'failure'"
+              uses: "actions/labeler@f27b608878404679385c85cfa523b85ccb86e213" # v6.1.0
               with:
                   repo-token: "${{ secrets.GITHUB_TOKEN }}"
                   configuration-path: "labeler-config.yml"
