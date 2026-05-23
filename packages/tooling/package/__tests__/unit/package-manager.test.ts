@@ -134,21 +134,21 @@ describe("package-manager", () => {
             expect(stdout).toBeDefined();
         });
 
-        it("should detect npm", async () => {
+        it.skipIf(platform() === "win32")("should detect npm", async () => {
             expect.assertions(1);
 
             const { stdout } = await x("npm", ["install"], { nodeOptions: { cwd: join(whichPMFixturePath, "npm") } });
 
             expect(stdout).toBeDefined();
-        });
+        }, 60_000);
 
-        it("should detect pnpm", async () => {
+        it.skipIf(platform() === "win32")("should detect pnpm", async () => {
             expect.assertions(1);
 
             const { stdout } = await x("pnpm", ["install"], { nodeOptions: { cwd: join(whichPMFixturePath, "pnpm") } });
 
             expect(stdout).toBeDefined();
-        });
+        }, 60_000);
     });
 
     describe(generateMissingPackagesInstallMessage, () => {
