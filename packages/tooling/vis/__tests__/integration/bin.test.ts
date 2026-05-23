@@ -22,8 +22,8 @@ const runBin = (binPath: string, args: string[], cwd: string): { code: number; s
 
     return {
         code: result.status ?? -1,
-        stderr: (result.stderr ?? "").replace(TRAILING_NEWLINE_RE, ""),
-        stdout: (result.stdout ?? "").replace(TRAILING_NEWLINE_RE, ""),
+        stderr: result.stderr.replace(TRAILING_NEWLINE_RE, ""),
+        stdout: result.stdout.replace(TRAILING_NEWLINE_RE, ""),
     };
 };
 
