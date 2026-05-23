@@ -4,7 +4,7 @@ const { exit } = require("node:process");
 // eslint-disable-next-line import/no-extraneous-dependencies
 const { Command } = require("commander");
 
-const { generateCommand, initCommand } = require("../dist/cli/commander");
+const { generateCommand, initCommand } = require("../dist/cli/commander/index.cjs");
 
 // eslint-disable-next-line no-underscore-dangle
 const package_ = require("../package.json");
