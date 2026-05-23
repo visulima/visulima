@@ -85,9 +85,7 @@ pub fn spawn_process(
                 #[cfg(unix)]
                 {
                     use std::os::unix::process::ExitStatusExt;
-                    s.code().unwrap_or_else(|| {
-                        s.signal().map(|sig| -(sig as i32)).unwrap_or(-1)
-                    })
+                    s.code().unwrap_or_else(|| s.signal().map(|sig| -(sig as i32)).unwrap_or(-1))
                 }
                 #[cfg(windows)]
                 {
@@ -152,11 +150,8 @@ pub struct ProcessInfo {
 fn build_command(config: &ConcurrentCommandConfig, shell_path: Option<&str>) -> Command {
     let use_shell = config.shell.unwrap_or(true);
 
-    let (program, args) = if use_shell {
-        shell_command(&config.command, shell_path)
-    } else {
-        direct_command(&config.command)
-    };
+    let (program, args) =
+        if use_shell { shell_command(&config.command, shell_path) } else { direct_command(&config.command) };
 
     let mut cmd = Command::new(&program);
     cmd.args(&args);
@@ -219,18 +214,12 @@ fn shell_command(command: &str, shell_path: Option<&str>) -> (String, Vec<String
         // Custom shell (e.g. from npm script-shell config).
         // Always use POSIX-style -c invocation since custom shells
         // are typically bash/sh-compatible (Git Bash, zsh, fish, etc.)
-        return (
-            custom_shell.to_string(),
-            vec!["-c".to_string(), command.to_string()],
-        );
+        return (custom_shell.to_string(), vec!["-c".to_string(), command.to_string()]);
     }
 
     #[cfg(unix)]
     {
-        (
-            "/bin/sh".to_string(),
-            vec!["-c".to_string(), command.to_string()],
-        )
+        ("/bin/sh".to_string(), vec!["-c".to_string(), command.to_string()])
     }
 
     #[cfg(windows)]
@@ -242,14 +231,7 @@ fn shell_command(command: &str, shell_path: Option<&str>) -> (String, Vec<String
         // as `\"`, which cmd.exe does not understand (it expects `""` for
         // a literal quote inside a quoted section), so the shell ends up
         // running a mangled command and the child exits non-zero.
-        (
-            "cmd.exe".to_string(),
-            vec![
-                "/s".to_string(),
-                "/c".to_string(),
-                command.to_string(),
-            ],
-        )
+        ("cmd.exe".to_string(), vec!["/s".to_string(), "/c".to_string(), command.to_string()])
     }
 }
 

@@ -4,9 +4,7 @@ use napi_derive::napi;
 use tokio::sync::mpsc;
 
 use super::runner::ConcurrentRunner;
-use super::types::{
-    ConcurrentCommandConfig, ConcurrentRunResult, ConcurrentRunnerOptions, ProcessEvent,
-};
+use super::types::{ConcurrentCommandConfig, ConcurrentRunResult, ConcurrentRunnerOptions, ProcessEvent};
 
 /// Run commands concurrently with real-time event streaming.
 ///
@@ -54,8 +52,9 @@ pub async fn run_concurrent(
 pub async fn run_concurrent_batch(
     commands: Vec<ConcurrentCommandConfig>,
     options: ConcurrentRunnerOptions,
-    #[napi(ts_arg_type = "((event: ProcessEvent) => void) | undefined | null")]
-    on_lifecycle: Option<ThreadsafeFunction<ProcessEvent>>,
+    #[napi(ts_arg_type = "((event: ProcessEvent) => void) | undefined | null")] on_lifecycle: Option<
+        ThreadsafeFunction<ProcessEvent>,
+    >,
 ) -> Result<ConcurrentRunResult> {
     let runner = ConcurrentRunner::new(commands, &options);
 
@@ -79,9 +78,7 @@ pub async fn run_concurrent_batch(
                     }
                 }
             }
-            None => {
-                while event_rx.recv().await.is_some() {}
-            }
+            None => while event_rx.recv().await.is_some() {},
         }
     });
 

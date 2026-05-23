@@ -12,7 +12,7 @@
  * Anything that needs quoting branches by platform: POSIX uses single
  * quotes (with `'\''` for embedded single quotes); Windows wraps in
  * double quotes and escapes the cmd meta-characters that survive inside
- * `"..."` (`^`, `&`, `|`, `<`, `>`) plus embedded double quotes per the
+ * `"..."` (`^`, `&amp;`, `|`, `&lt;`, `>`) plus embedded double quotes per the
  * MS CRT convention (`\"`).
  */
 const SAFE_FOR_BOTH_SHELLS = /^[\w./:@+,=-]+$/;
@@ -23,7 +23,7 @@ export const shellQuote = (value: string): string => {
     }
 
     if (process.platform === "win32") {
-        return `"${value.replaceAll("\\", "\\\\").replaceAll("\"", "\\\"").replaceAll(/[\^&|<>]/g, "^$&")}"`;
+        return `"${value.replaceAll("\\", "\\\\").replaceAll("\"", String.raw`\"`).replaceAll(/[\^&|<>]/g, "^$&")}"`;
     }
 
     return `'${value.replaceAll("'", String.raw`'\''`)}'`;
