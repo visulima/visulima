@@ -199,6 +199,11 @@ jobs:
                   if_no_artifact_found: "warn"
                   allow_forks: false
 
+            - name: "Wait before retrying artifact download"
+              if: "steps.download_native_artifacts.outcome == 'failure'"
+              shell: "bash"
+              run: "sleep 30"
+
             - name: "Download native build artifacts (retry)"
               if: "steps.download_native_artifacts.outcome == 'failure'"
               uses: "dawidd6/action-download-artifact@b6e2e70617bc3265edd6dab6c906732b2f1ae151" # v21
@@ -382,6 +387,11 @@ jobs:
                   path: "artifacts"
                   if_no_artifact_found: "warn"
                   allow_forks: false
+
+            - name: "Wait before retrying artifact download"
+              if: "steps.download_native_artifacts.outcome == 'failure'"
+              shell: "bash"
+              run: "sleep 30"
 
             - name: "Download native build artifacts (retry)"
               if: "steps.download_native_artifacts.outcome == 'failure'"
