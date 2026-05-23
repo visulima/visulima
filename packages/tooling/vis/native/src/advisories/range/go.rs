@@ -76,11 +76,7 @@ mod tests {
     fn pseudo_version_sorts_below_release() {
         let m = GoMatcher;
         // v0.0.0-20210101000000-abc is a prerelease, sorts below v0.0.0.
-        assert!(m.matches(
-            "v0.0.0-20210101000000-abcdef012345",
-            "0",
-            Some("v1.0.0")
-        ));
+        assert!(m.matches("v0.0.0-20210101000000-abcdef012345", "0", Some("v1.0.0")));
     }
 
     #[test]

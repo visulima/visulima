@@ -32,11 +32,7 @@ pub const WILDCARD_BUCKET: &str = "*";
 pub fn version_bucket(version_str: &str) -> Option<String> {
     let v = Version::parse(version_str.trim()).ok()?;
 
-    Some(if v.major >= 1 {
-        v.major.to_string()
-    } else {
-        format!("0.{}", v.minor)
-    })
+    Some(if v.major >= 1 { v.major.to_string() } else { format!("0.{}", v.minor) })
 }
 
 #[cfg(test)]

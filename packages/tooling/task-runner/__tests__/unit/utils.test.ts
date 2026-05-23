@@ -1,9 +1,8 @@
 import { mkdir, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 
-import { join } from "@visulima/path";
-
 import { xxh3Hash } from "@shared/xxh3";
+import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { collectFiles, createFailureResult, hashFile, hashStrings, readPackageDeps, resolveTaskCwd, sortObjectKeys } from "../../src/utils";

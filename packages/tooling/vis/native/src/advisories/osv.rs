@@ -91,40 +91,25 @@ impl Range {
         for event in &self.events {
             if let Some(intro) = &event.introduced {
                 if let Some(prev) = current_introduced.take() {
-                    out.push(RangePair {
-                        introduced: prev,
-                        fixed: None,
-                    });
+                    out.push(RangePair { introduced: prev, fixed: None });
                 }
                 current_introduced = Some(intro.clone());
             } else if let Some(fixed) = &event.fixed {
                 if let Some(prev) = current_introduced.take() {
-                    out.push(RangePair {
-                        introduced: prev,
-                        fixed: Some(fixed.clone()),
-                    });
+                    out.push(RangePair { introduced: prev, fixed: Some(fixed.clone()) });
                 }
             } else if let Some(last) = &event.last_affected {
                 if let Some(prev) = current_introduced.take() {
-                    out.push(RangePair {
-                        introduced: prev,
-                        fixed: Some(last.clone()),
-                    });
+                    out.push(RangePair { introduced: prev, fixed: Some(last.clone()) });
                 }
             } else if event.limit.is_some() {
                 if let Some(prev) = current_introduced.take() {
-                    out.push(RangePair {
-                        introduced: prev,
-                        fixed: None,
-                    });
+                    out.push(RangePair { introduced: prev, fixed: None });
                 }
             }
         }
         if let Some(intro) = current_introduced.take() {
-            out.push(RangePair {
-                introduced: intro,
-                fixed: None,
-            });
+            out.push(RangePair { introduced: intro, fixed: None });
         }
         out
     }
@@ -139,15 +124,8 @@ pub fn normalized_severity(adv: &Advisory) -> (String, Option<f64>) {
     if let Some(ds) = &adv.database_specific {
         if let Some(label) = &ds.severity {
             let normalized = label.to_uppercase();
-            if matches!(
-                normalized.as_str(),
-                "CRITICAL" | "HIGH" | "MODERATE" | "MEDIUM" | "LOW"
-            ) {
-                let canonical = if normalized == "MEDIUM" {
-                    "MODERATE".to_string()
-                } else {
-                    normalized
-                };
+            if matches!(normalized.as_str(), "CRITICAL" | "HIGH" | "MODERATE" | "MEDIUM" | "LOW") {
+                let canonical = if normalized == "MEDIUM" { "MODERATE".to_string() } else { normalized };
                 let score = ds.cvss_score.or_else(|| extract_cvss_base_score(&adv.severity));
                 return (canonical, score);
             }
@@ -209,18 +187,8 @@ mod tests {
         let r = Range {
             kind: "SEMVER".into(),
             events: vec![
-                Event {
-                    introduced: Some("0".into()),
-                    fixed: None,
-                    last_affected: None,
-                    limit: None,
-                },
-                Event {
-                    introduced: None,
-                    fixed: Some("1.2.3".into()),
-                    last_affected: None,
-                    limit: None,
-                },
+                Event { introduced: Some("0".into()), fixed: None, last_affected: None, limit: None },
+                Event { introduced: None, fixed: Some("1.2.3".into()), last_affected: None, limit: None },
             ],
         };
         let pairs = r.to_pairs();
@@ -236,18 +204,8 @@ mod tests {
         let r = Range {
             kind: "SEMVER".into(),
             events: vec![
-                Event {
-                    introduced: Some("1.0.0".into()),
-                    fixed: None,
-                    last_affected: None,
-                    limit: None,
-                },
-                Event {
-                    introduced: None,
-                    fixed: None,
-                    last_affected: Some("1.5.9".into()),
-                    limit: None,
-                },
+                Event { introduced: Some("1.0.0".into()), fixed: None, last_affected: None, limit: None },
+                Event { introduced: None, fixed: None, last_affected: Some("1.5.9".into()), limit: None },
             ],
         };
         let pairs = r.to_pairs();
@@ -260,12 +218,7 @@ mod tests {
     fn range_open_high_emits_pair_without_fixed() {
         let r = Range {
             kind: "SEMVER".into(),
-            events: vec![Event {
-                introduced: Some("2.0.0".into()),
-                fixed: None,
-                last_affected: None,
-                limit: None,
-            }],
+            events: vec![Event { introduced: Some("2.0.0".into()), fixed: None, last_affected: None, limit: None }],
         };
         let pairs = r.to_pairs();
         assert_eq!(pairs.len(), 1);
@@ -277,30 +230,10 @@ mod tests {
         let r = Range {
             kind: "SEMVER".into(),
             events: vec![
-                Event {
-                    introduced: Some("0".into()),
-                    fixed: None,
-                    last_affected: None,
-                    limit: None,
-                },
-                Event {
-                    introduced: None,
-                    fixed: Some("1.5.0".into()),
-                    last_affected: None,
-                    limit: None,
-                },
-                Event {
-                    introduced: Some("2.0.0".into()),
-                    fixed: None,
-                    last_affected: None,
-                    limit: None,
-                },
-                Event {
-                    introduced: None,
-                    fixed: Some("2.3.4".into()),
-                    last_affected: None,
-                    limit: None,
-                },
+                Event { introduced: Some("0".into()), fixed: None, last_affected: None, limit: None },
+                Event { introduced: None, fixed: Some("1.5.0".into()), last_affected: None, limit: None },
+                Event { introduced: Some("2.0.0".into()), fixed: None, last_affected: None, limit: None },
+                Event { introduced: None, fixed: Some("2.3.4".into()), last_affected: None, limit: None },
             ],
         };
         let pairs = r.to_pairs();
@@ -318,10 +251,7 @@ mod tests {
             published: None,
             modified: None,
             severity: vec![],
-            database_specific: Some(DatabaseSpecific {
-                severity: Some("HIGH".into()),
-                cvss_score: None,
-            }),
+            database_specific: Some(DatabaseSpecific { severity: Some("HIGH".into()), cvss_score: None }),
             affected: vec![],
         };
         let (label, _) = normalized_severity(&adv);
@@ -337,10 +267,7 @@ mod tests {
             published: None,
             modified: None,
             severity: vec![],
-            database_specific: Some(DatabaseSpecific {
-                severity: Some("medium".into()),
-                cvss_score: None,
-            }),
+            database_specific: Some(DatabaseSpecific { severity: Some("medium".into()), cvss_score: None }),
             affected: vec![],
         };
         let (label, _) = normalized_severity(&adv);

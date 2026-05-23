@@ -43,7 +43,7 @@ const closeServer = (server: Server): Promise<void> =>
     });
 
 /**
- * Run `tar -czf <archive> -C <dir> .` in a way that works on Windows.
+ * Run `tar -czf &lt;archive> -C &lt;dir> .` in a way that works on Windows.
  *
  * Windows GNU tar treats `:` in a path as the `host:path` separator for
  * rsh-style remote operation, so `C:\foo` (or `C:/foo`) becomes "try to

@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 use std::path::Path;
 
-use rusqlite::{Connection, OpenFlags, params};
+use rusqlite::{params, Connection, OpenFlags};
 
 use super::range::matcher_for;
 use super::schema::check_schema;
@@ -42,9 +42,7 @@ impl std::fmt::Display for QueryError {
         match self {
             Self::Schema(e) => write!(f, "{e}"),
             Self::Sqlite(e) => match e {
-                rusqlite::Error::SqliteFailure(err, _)
-                    if err.code == rusqlite::ErrorCode::DatabaseCorrupt =>
-                {
+                rusqlite::Error::SqliteFailure(err, _) if err.code == rusqlite::ErrorCode::DatabaseCorrupt => {
                     write!(f, "Advisory DB is corrupt. Run 'vis advisories sync --force'.")
                 }
                 rusqlite::Error::SqliteFailure(err, _)
@@ -78,10 +76,7 @@ impl From<rusqlite::Error> for QueryError {
     }
 }
 
-pub fn query<P: AsRef<Path>>(
-    db_path: P,
-    queries: &[QueryInput],
-) -> Result<Vec<AdvisoryHit>, QueryError> {
+pub fn query<P: AsRef<Path>>(db_path: P, queries: &[QueryInput]) -> Result<Vec<AdvisoryHit>, QueryError> {
     let path = db_path.as_ref();
     if !path.exists() {
         return Err(QueryError::DbNotFound(path.display().to_string()));
@@ -99,8 +94,7 @@ pub fn query<P: AsRef<Path>>(
          JOIN advisory a ON a.id = f.advisory_id \
          WHERE f.ecosystem = ?1 AND f.package = ?2",
     )?;
-    let mut stmt_aliases =
-        conn.prepare("SELECT alias FROM advisory_alias WHERE advisory_id = ?1")?;
+    let mut stmt_aliases = conn.prepare("SELECT alias FROM advisory_alias WHERE advisory_id = ?1")?;
 
     let mut results: Vec<AdvisoryHit> = Vec::with_capacity(queries.len());
 
@@ -120,11 +114,11 @@ pub fn query<P: AsRef<Path>>(
         let package_norm = q.name.to_lowercase();
         let rows = stmt.query_map(params![q.ecosystem, package_norm], |row| {
             Ok((
-                row.get::<_, String>(0)?,        // id
-                row.get::<_, String>(1)?,        // summary
-                row.get::<_, String>(2)?,        // severity
-                row.get::<_, Option<f64>>(3)?,   // cvss_score
-                row.get::<_, String>(4)?,        // introduced
+                row.get::<_, String>(0)?,         // id
+                row.get::<_, String>(1)?,         // summary
+                row.get::<_, String>(2)?,         // severity
+                row.get::<_, Option<f64>>(3)?,    // cvss_score
+                row.get::<_, String>(4)?,         // introduced
                 row.get::<_, Option<String>>(5)?, // fixed
             ))
         })?;
@@ -161,11 +155,7 @@ pub fn query<P: AsRef<Path>>(
         }
 
         let vulnerabilities: Vec<NativeVulnerability> = by_id.into_values().collect();
-        results.push(AdvisoryHit {
-            name: q.name.clone(),
-            version: q.version.clone(),
-            vulnerabilities,
-        });
+        results.push(AdvisoryHit { name: q.name.clone(), version: q.version.clone(), vulnerabilities });
     }
 
     Ok(results)
@@ -186,11 +176,8 @@ mod tests {
             [],
         )
         .unwrap();
-        conn.execute(
-            "INSERT INTO advisory_alias (advisory_id, alias) VALUES ('GHSA-test', 'CVE-2019-10744')",
-            [],
-        )
-        .unwrap();
+        conn.execute("INSERT INTO advisory_alias (advisory_id, alias) VALUES ('GHSA-test', 'CVE-2019-10744')", [])
+            .unwrap();
         conn.execute(
             "INSERT INTO affected (advisory_id, ecosystem, package, introduced, fixed, range_index) \
              VALUES ('GHSA-test', 'npm', 'lodash', '0', '4.17.12', 0)",
@@ -204,11 +191,7 @@ mod tests {
         let tmp = tempfile_path();
         seed_db(&tmp);
 
-        let inputs = vec![QueryInput {
-            ecosystem: "npm".into(),
-            name: "lodash".into(),
-            version: "4.17.10".into(),
-        }];
+        let inputs = vec![QueryInput { ecosystem: "npm".into(), name: "lodash".into(), version: "4.17.10".into() }];
         let hits = query(&tmp, &inputs).unwrap();
         assert_eq!(hits.len(), 1);
         assert_eq!(hits[0].vulnerabilities.len(), 1);
@@ -223,11 +206,7 @@ mod tests {
         let tmp = tempfile_path();
         seed_db(&tmp);
 
-        let inputs = vec![QueryInput {
-            ecosystem: "npm".into(),
-            name: "lodash".into(),
-            version: "4.17.12".into(),
-        }];
+        let inputs = vec![QueryInput { ecosystem: "npm".into(), name: "lodash".into(), version: "4.17.12".into() }];
         let hits = query(&tmp, &inputs).unwrap();
         assert_eq!(hits.len(), 1);
         assert_eq!(hits[0].vulnerabilities.len(), 0);
@@ -235,16 +214,9 @@ mod tests {
 
     #[test]
     fn query_missing_db_errors_clearly() {
-        let tmp = std::env::temp_dir().join(format!(
-            "vis-advisories-missing-{}.sqlite",
-            std::process::id()
-        ));
+        let tmp = std::env::temp_dir().join(format!("vis-advisories-missing-{}.sqlite", std::process::id()));
         let _ = std::fs::remove_file(&tmp);
-        let inputs = vec![QueryInput {
-            ecosystem: "npm".into(),
-            name: "x".into(),
-            version: "1.0.0".into(),
-        }];
+        let inputs = vec![QueryInput { ecosystem: "npm".into(), name: "x".into(), version: "1.0.0".into() }];
         let err = query(&tmp, &inputs).unwrap_err();
         assert!(matches!(err, QueryError::DbNotFound(_)));
     }
@@ -254,11 +226,7 @@ mod tests {
         let tmp = tempfile_path();
         seed_db(&tmp);
 
-        let inputs = vec![QueryInput {
-            ecosystem: "PyPI".into(),
-            name: "lodash".into(),
-            version: "4.17.10".into(),
-        }];
+        let inputs = vec![QueryInput { ecosystem: "PyPI".into(), name: "lodash".into(), version: "4.17.10".into() }];
         let hits = query(&tmp, &inputs).unwrap();
         assert_eq!(hits.len(), 1);
         assert!(hits[0].vulnerabilities.is_empty());
@@ -266,10 +234,7 @@ mod tests {
 
     fn tempfile_path() -> std::path::PathBuf {
         let pid = std::process::id();
-        let nanos = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap()
-            .as_nanos();
+        let nanos = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos();
         let path = std::env::temp_dir().join(format!("vis-advisories-test-{pid}-{nanos}.sqlite"));
         let _ = std::fs::remove_file(&path);
         path

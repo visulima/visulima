@@ -4,7 +4,7 @@ use std::io::Read;
 use std::path::Path;
 use std::time::Instant;
 
-use rusqlite::{Connection, params};
+use rusqlite::{params, Connection};
 use zip::ZipArchive;
 
 use super::osv;
@@ -121,10 +121,7 @@ pub fn ingest<P: AsRef<Path>>(
     // advisories. Reversing the order would cascade-drop other ecosystems'
     // `affected` rows for the same advisory id.
     tx.execute("DELETE FROM affected WHERE ecosystem = ?1", params![ecosystem])?;
-    tx.execute(
-        "DELETE FROM advisory WHERE id NOT IN (SELECT advisory_id FROM affected)",
-        [],
-    )?;
+    tx.execute("DELETE FROM advisory WHERE id NOT IN (SELECT advisory_id FROM affected)", [])?;
 
     let mut ingested = 0usize;
     let mut total_bytes = 0u64;
@@ -134,9 +131,8 @@ pub fn ingest<P: AsRef<Path>>(
             "INSERT OR REPLACE INTO advisory (id, summary, severity, cvss_score, published, modified) \
              VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
         )?;
-        let mut insert_alias = tx.prepare(
-            "INSERT OR IGNORE INTO advisory_alias (advisory_id, alias) VALUES (?1, ?2)",
-        )?;
+        let mut insert_alias =
+            tx.prepare("INSERT OR IGNORE INTO advisory_alias (advisory_id, alias) VALUES (?1, ?2)")?;
         let mut insert_affected = tx.prepare(
             "INSERT OR REPLACE INTO affected (advisory_id, ecosystem, package, introduced, fixed, range_index) \
              VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
@@ -149,39 +145,24 @@ pub fn ingest<P: AsRef<Path>>(
             }
             let size = entry.size();
             if size > MAX_ENTRY_BYTES {
-                return Err(IngestError::OversizedEntry {
-                    name: entry.name().to_string(),
-                    observed: size,
-                });
+                return Err(IngestError::OversizedEntry { name: entry.name().to_string(), observed: size });
             }
             total_bytes = total_bytes.saturating_add(size);
             if total_bytes > MAX_TOTAL_BYTES {
-                return Err(IngestError::TotalSizeExceeded {
-                    observed: total_bytes,
-                });
+                return Err(IngestError::TotalSizeExceeded { observed: total_bytes });
             }
 
             let mut buf = Vec::with_capacity(size as usize);
             entry.read_to_end(&mut buf)?;
 
-            let advisory: osv::Advisory =
-                serde_json::from_slice(&buf).map_err(|e| IngestError::BadJson {
-                    entry: entry.name().to_string(),
-                    message: e.to_string(),
-                })?;
+            let advisory: osv::Advisory = serde_json::from_slice(&buf)
+                .map_err(|e| IngestError::BadJson { entry: entry.name().to_string(), message: e.to_string() })?;
 
             let (severity, cvss_score) = osv::normalized_severity(&advisory);
             let published = advisory.published.clone().unwrap_or_default();
             let modified = advisory.modified.clone().unwrap_or_default();
 
-            insert_adv.execute(params![
-                advisory.id,
-                advisory.summary,
-                severity,
-                cvss_score,
-                published,
-                modified,
-            ])?;
+            insert_adv.execute(params![advisory.id, advisory.summary, severity, cvss_score, published, modified,])?;
 
             for alias in &advisory.aliases {
                 insert_alias.execute(params![advisory.id, alias])?;
@@ -238,18 +219,10 @@ pub fn ingest<P: AsRef<Path>>(
 
     let _ = std::fs::remove_file(zip_path.as_ref());
 
-    Ok(IngestStats {
-        advisories_ingested: ingested,
-        duration_ms: started.elapsed().as_millis(),
-    })
+    Ok(IngestStats { advisories_ingested: ingested, duration_ms: started.elapsed().as_millis() })
 }
 
-fn upsert_meta(
-    conn: &Connection,
-    ecosystem: &str,
-    key: &str,
-    value: &str,
-) -> Result<(), rusqlite::Error> {
+fn upsert_meta(conn: &Connection, ecosystem: &str, key: &str, value: &str) -> Result<(), rusqlite::Error> {
     conn.execute(
         "INSERT INTO meta (ecosystem, key, value) VALUES (?1, ?2, ?3) \
          ON CONFLICT(ecosystem, key) DO UPDATE SET value = excluded.value",
@@ -262,10 +235,7 @@ fn upsert_meta(
 /// `YYYY-MM-DDTHH:MM:SSZ` is well-defined and we don't need sub-second precision.
 fn chrono_iso_now() -> String {
     use std::time::{SystemTime, UNIX_EPOCH};
-    let secs = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .map(|d| d.as_secs())
-        .unwrap_or(0);
+    let secs = SystemTime::now().duration_since(UNIX_EPOCH).map(|d| d.as_secs()).unwrap_or(0);
     format_iso8601(secs)
 }
 
@@ -287,10 +257,7 @@ fn format_iso8601(unix_secs: u64) -> String {
     let hour = sod / 3600;
     let minute = (sod % 3600) / 60;
     let second = sod % 60;
-    format!(
-        "{year:04}-{:02}-{:02}T{:02}:{:02}:{:02}Z",
-        m, d, hour, minute, second
-    )
+    format!("{year:04}-{:02}-{:02}T{:02}:{:02}:{:02}Z", m, d, hour, minute, second)
 }
 
 #[cfg(test)]
