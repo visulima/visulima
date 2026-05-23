@@ -1,9 +1,33 @@
+import { execFileSync } from "node:child_process";
 import { writeFile } from "node:fs/promises";
 import { createServer } from "node:net";
 
 import { join } from "@visulima/path";
 import type { Task, TaskGraph } from "@visulima/task-runner";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+
+const killTree = (pid: number): void => {
+    if (process.platform === "win32") {
+        // No POSIX process groups on Windows — `process.kill(-pid)`
+        // throws ESRCH and the shell wrapper survives, keeping a handle
+        // on the workspace tempdir and causing rmSync EBUSY in the next
+        // afterEach. `taskkill /T` walks the spawn tree via the Windows
+        // job-object chain instead.
+        try {
+            execFileSync("taskkill", ["/F", "/T", "/PID", String(pid)], { stdio: "ignore" });
+        } catch {
+            // already gone
+        }
+
+        return;
+    }
+
+    try {
+        process.kill(-pid, "SIGKILL");
+    } catch {
+        // already gone
+    }
+};
 
 import { applyServiceRegistry } from "../../src/commands/run/apply-service-registry";
 import { startService, stopService } from "../../src/services/lifecycle";
@@ -102,11 +126,7 @@ describe("services/lifecycle — end-to-end", () => {
 
     afterEach(async () => {
         for (const pid of toCleanup) {
-            try {
-                process.kill(-pid, "SIGKILL");
-            } catch {
-                // already gone
-            }
+            killTree(pid);
         }
 
         if (originalHome === undefined) {
@@ -257,21 +277,8 @@ describe("services/lifecycle — end-to-end", () => {
 
         // Kill the listener but DON'T call stopService — we want the
         // registry entry to outlive the actual server, simulating a
-        // crash mid-session. On POSIX, `process.kill(-pid)` group-kills
-        // the shell wrapper and its node child together. Windows has no
-        // process groups, so use `taskkill /F /T` instead — same effect:
-        // terminates the wrapper and every descendant.
-        try {
-            if (process.platform === "win32") {
-                const { execFileSync } = await import("node:child_process");
-
-                execFileSync("taskkill", ["/F", "/T", "/PID", String(startResult.entry.pid)], { stdio: "ignore" });
-            } else {
-                process.kill(-startResult.entry.pid, "SIGKILL");
-            }
-        } catch {
-            // already gone, fine
-        }
+        // crash mid-session. `killTree` handles the POSIX/Windows split.
+        killTree(startResult.entry.pid);
 
         await sleep(200);
 
