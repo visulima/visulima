@@ -28,7 +28,7 @@ export const ptyAvailable: boolean = (() => {
         const probe = probeSpawn(process.platform === "win32" ? "cmd.exe" : "/bin/sh", process.platform === "win32" ? ["/c", "exit"] : ["-c", "exit 0"], {
             cols: 80,
             cwd: fixturesDirectory,
-            env: process.env as Record<string, string>,
+            env: process.env,
             name: "xterm-color",
             rows: 24,
         });
