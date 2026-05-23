@@ -143,7 +143,15 @@ jobs:
                   check_name="Check Native Build"
                   deadline=$(( $(date +%s) + 1500 ))
                   while :; do
-                      payload=$(gh api -X GET "repos/${REPO}/commits/${REF}/check-runs" -f check_name="$check_name" --jq '.check_runs[0] // empty')
+                      # Transient HTTP 401s on secrets.GITHUB_TOKEN happen
+                      # mid-poll (the token gets briefly rotated by Actions).
+                      # `set -e` would then kill the whole job before the next
+                      # iteration can retry — swallow the exit so the loop
+                      # keeps going.
+                      if ! payload=$(gh api -X GET "repos/${REPO}/commits/${REF}/check-runs" -f check_name="$check_name" --jq '.check_runs[0] // empty' 2>&1); then
+                          echo "Transient gh api error, retrying in 15s: $payload"
+                          payload=""
+                      fi
                       if [ -n "$payload" ]; then
                           status=$(printf '%s' "$payload" | jq -r '.status')
                           conclusion=$(printf '%s' "$payload" | jq -r '.conclusion // ""')
@@ -161,7 +169,7 @@ jobs:
                           fi
                           echo "Check '$check_name' status=$status, waiting 15s..."
                       else
-                          echo "Check '$check_name' not yet registered, waiting 15s..."
+                          echo "Check '$check_name' not yet registered or token blip, waiting 15s..."
                       fi
                       if [ "$(date +%s)" -ge "$deadline" ]; then
                           echo "Timed out waiting for '$check_name' after 25 minutes"
@@ -301,7 +309,15 @@ jobs:
                   check_name="Check Native Build"
                   deadline=$(( $(date +%s) + 1500 ))
                   while :; do
-                      payload=$(gh api -X GET "repos/${REPO}/commits/${REF}/check-runs" -f check_name="$check_name" --jq '.check_runs[0] // empty')
+                      # Transient HTTP 401s on secrets.GITHUB_TOKEN happen
+                      # mid-poll (the token gets briefly rotated by Actions).
+                      # `set -e` would then kill the whole job before the next
+                      # iteration can retry — swallow the exit so the loop
+                      # keeps going.
+                      if ! payload=$(gh api -X GET "repos/${REPO}/commits/${REF}/check-runs" -f check_name="$check_name" --jq '.check_runs[0] // empty' 2>&1); then
+                          echo "Transient gh api error, retrying in 15s: $payload"
+                          payload=""
+                      fi
                       if [ -n "$payload" ]; then
                           status=$(printf '%s' "$payload" | jq -r '.status')
                           conclusion=$(printf '%s' "$payload" | jq -r '.conclusion // ""')
@@ -319,7 +335,7 @@ jobs:
                           fi
                           echo "Check '$check_name' status=$status, waiting 15s..."
                       else
-                          echo "Check '$check_name' not yet registered, waiting 15s..."
+                          echo "Check '$check_name' not yet registered or token blip, waiting 15s..."
                       fi
                       if [ "$(date +%s)" -ge "$deadline" ]; then
                           echo "Timed out waiting for '$check_name' after 25 minutes"
