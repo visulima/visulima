@@ -7,7 +7,7 @@ const { Command } = require("commander");
 
 const { generateCommand, initCommand } = require("@visulima/jsdoc-open-api/cli/commander");
 
-const { listCommand } = require("../dist/framework/cli/commander");
+const { listCommand } = require("../dist/framework/cli/index.cjs");
 
 // eslint-disable-next-line no-underscore-dangle
 const package_ = require("../package.json");

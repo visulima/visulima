@@ -1,4 +1,4 @@
-import { execFileSync, execSync } from "node:child_process";
+import { execFileSync, execSync, spawnSync } from "node:child_process";
 
 const TRAILING_NEWLINE_RE = /\n$/;
 
@@ -35,4 +35,29 @@ export const typeCheckFixture = (packageRoot: string, tsconfigRelative: string):
 
         return { code: execError.status ?? 1, output: `${stdout}${stderr}` };
     }
+};
+
+export interface BinResult {
+    code: number;
+    stderr: string;
+    stdout: string;
+}
+
+/**
+ * Spawn a bin script with the current node and capture stdout/stderr/exit code.
+ * Pipes empty stdin so stdio-based servers exit immediately on EOF.
+ */
+export const execBin = (binPath: string, args: string[] = [], options: { cwd?: string; timeout?: number } = {}): BinResult => {
+    const result = spawnSync(process.execPath, [binPath, ...args], {
+        cwd: options.cwd,
+        encoding: "utf8",
+        input: "",
+        timeout: options.timeout ?? 15_000,
+    });
+
+    return {
+        code: result.status ?? -1,
+        stderr: (result.stderr ?? "").replace(TRAILING_NEWLINE_RE, ""),
+        stdout: (result.stdout ?? "").replace(TRAILING_NEWLINE_RE, ""),
+    };
 };
