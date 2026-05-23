@@ -57,7 +57,7 @@ export const execBin = (binPath: string, args: string[] = [], options: { cwd?: s
 
     return {
         code: result.status ?? -1,
-        stderr: (result.stderr ?? "").replace(TRAILING_NEWLINE_RE, ""),
-        stdout: (result.stdout ?? "").replace(TRAILING_NEWLINE_RE, ""),
+        stderr: result.stderr.replace(TRAILING_NEWLINE_RE, ""),
+        stdout: result.stdout.replace(TRAILING_NEWLINE_RE, ""),
     };
 };
