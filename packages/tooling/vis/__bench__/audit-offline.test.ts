@@ -48,6 +48,12 @@ afterAll(() => {
     cleanup?.();
 });
 
+// Per-it timeout = warmup + (SAMPLE_COUNT + 1) × BUDGET_WITH_SLACK_MS plus
+// generous overhead. Under CI contention each sample has been seen up to
+// ~570 ms, and the default 5 s vitest timeout kills the whole it() before
+// all 11 samples land — even when the median itself is well under budget.
+const TEST_TIMEOUT_MS = (SAMPLE_COUNT + 2) * BUDGET_WITH_SLACK_MS + 5000;
+
 describe("audit-offline · advisoriesQuery 2.8k packages", () => {
     it(`median of ${SAMPLE_COUNT} samples stays under the ${BUDGET_MS}ms budget (with 10× slack for CI hosts → ${BUDGET_WITH_SLACK_MS}ms)`, () => {
         expect.assertions(2);
@@ -74,5 +80,5 @@ describe("audit-offline · advisoriesQuery 2.8k packages", () => {
             elapsed,
             `advisoriesQuery median took ${elapsed.toFixed(1)}ms over ${SAMPLE_COUNT} samples (budget ${BUDGET_MS}ms, ceiling ${BUDGET_WITH_SLACK_MS}ms; samples: [${samples.map((s) => s.toFixed(1)).join(", ")}])`,
         ).toBeLessThan(BUDGET_WITH_SLACK_MS);
-    });
+    }, TEST_TIMEOUT_MS);
 });

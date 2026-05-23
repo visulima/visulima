@@ -74,6 +74,7 @@ const patchMissingMethods = (current: Storage, replacement: Storage): void => {
             });
         } catch {
             try {
+                // eslint-disable-next-line no-param-reassign -- patching storage polyfill methods intentionally mutates the passed-in object
                 (current as unknown as Record<string, unknown>)[method] = bound;
             } catch {
                 // native is fully locked; nothing more we can do
@@ -82,7 +83,7 @@ const patchMissingMethods = (current: Storage, replacement: Storage): void => {
     }
 };
 
-const mirrorOntoWindow = (jsdomWindow: Window & typeof globalThis, key: string, replacement: Storage): void => {
+const mirrorOntoWindow = (jsdomWindow: typeof globalThis & Window, key: string, replacement: Storage): void => {
     try {
         Object.defineProperty(jsdomWindow, key, {
             configurable: true,
@@ -104,7 +105,7 @@ const pickReplacement = (existing: Storage | undefined): Storage => {
 };
 
 const installStoragePolyfill = (): void => {
-    const jsdomWindow = (globalThis as { window?: Window & typeof globalThis }).window;
+    const jsdomWindow = (globalThis as { window?: typeof globalThis & Window }).window;
 
     if (jsdomWindow === undefined) {
         return;
