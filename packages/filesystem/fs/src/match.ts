@@ -14,40 +14,40 @@ import picomatch from "picomatch";
 // output `match.d.ts`. Keeping the surface explicit also makes the public
 // option list visible without cross-package navigation.
 export interface MatchOptions {
-    basename?: boolean | undefined;
-    bash?: boolean | undefined;
-    capture?: boolean | undefined;
-    contains?: boolean | undefined;
-    debug?: boolean | undefined;
-    dot?: boolean | undefined;
+    basename?: boolean;
+    bash?: boolean;
+    capture?: boolean;
+    contains?: boolean;
+    debug?: boolean;
+    dot?: boolean;
     expandRange?:
         | ((from: string, to: string, options: MatchOptions) => string)
         | ((from: string, to: string, step: string, options: MatchOptions) => string);
-    fastpaths?: boolean | undefined;
-    flags?: string | undefined;
-    format?: ((string_: string) => string) | undefined;
-    ignore?: string | string[] | undefined;
-    keepQuotes?: boolean | undefined;
-    literalBrackets?: boolean | undefined;
-    matchBase?: boolean | undefined;
-    maxLength?: number | undefined;
-    nobrace?: boolean | undefined;
-    nobracket?: boolean | undefined;
-    nocase?: boolean | undefined;
-    noext?: boolean | undefined;
-    noextglob?: boolean | undefined;
-    noglobstar?: boolean | undefined;
-    nonegate?: boolean | undefined;
-    onIgnore?: ((result: unknown) => void) | undefined;
-    onMatch?: ((result: unknown) => void) | undefined;
-    onResult?: ((result: unknown) => void) | undefined;
-    posix?: boolean | undefined;
-    prepend?: boolean | undefined;
-    regex?: boolean | undefined;
-    strictBrackets?: boolean | undefined;
-    strictSlashes?: boolean | undefined;
-    unescape?: boolean | undefined;
-    windows?: boolean | undefined;
+    fastpaths?: boolean;
+    flags?: string;
+    format?: (string_: string) => string;
+    ignore?: string | string[];
+    keepQuotes?: boolean;
+    literalBrackets?: boolean;
+    matchBase?: boolean;
+    maxLength?: number;
+    nobrace?: boolean;
+    nobracket?: boolean;
+    nocase?: boolean;
+    noext?: boolean;
+    noextglob?: boolean;
+    noglobstar?: boolean;
+    nonegate?: boolean;
+    onIgnore?: (result: unknown) => void;
+    onMatch?: (result: unknown) => void;
+    onResult?: (result: unknown) => void;
+    posix?: boolean;
+    prepend?: boolean;
+    regex?: boolean;
+    strictBrackets?: boolean;
+    strictSlashes?: boolean;
+    unescape?: boolean;
+    windows?: boolean;
 }
 
 /**
