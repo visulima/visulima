@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "@visulima/path";
 import { describe, expect, it } from "vitest";
 
-import { execScriptSync } from "../helpers";
+import { execScriptSync, typeCheckFixture } from "../helpers";
 
 describe("usage `@visulima/boxen` npm package", () => {
     it(`should work as CommonJS package`, () => {
@@ -24,5 +24,15 @@ describe("usage `@visulima/boxen` npm package", () => {
         const received = execScriptSync(filename);
 
         expect(received).toMatchSnapshot();
+    });
+
+    it(`should expose correct types via dist/*.d.ts`, () => {
+        expect.assertions(2);
+
+        const packageRoot = join(dirname(fileURLToPath(import.meta.url)), "../..");
+        const result = typeCheckFixture(packageRoot, "__fixtures__/package/types/tsconfig.json");
+
+        expect(result.output).toBe("");
+        expect(result.code).toBe(0);
     });
 });

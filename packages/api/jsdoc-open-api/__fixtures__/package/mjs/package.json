@@ -1,0 +1,10 @@
+{
+    "name": "jsdoc-open-api-mjs",
+    "version": "0.0.0",
+    "private": true,
+    "description": "Runtime smoke test fixture (ESM)",
+    "type": "module",
+    "dependencies": {
+        "@visulima/jsdoc-open-api": "workspace:*"
+    }
+}

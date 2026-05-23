@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
-import { esc, execScriptSync } from "../helpers";
+import { esc, execScriptSync, typeCheckFixture } from "../helpers";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -17,5 +17,15 @@ describe("usage `@visulima/redact` npm package", () => {
         const received = execScriptSync(filename);
 
         expect(esc(received)).toBe("<FIRSTNAME> <LASTNAME> will be 30 on <DATE>.\n<FIRSTNAME> <LASTNAME> will be 30 on <DATE>.");
+    });
+
+    it(`should expose correct types via dist/*.d.ts`, () => {
+        expect.assertions(2);
+
+        const packageRoot = join(__dirname, "..", "..");
+        const result = typeCheckFixture(packageRoot, "__fixtures__/package/types/tsconfig.json");
+
+        expect(result.output).toBe("");
+        expect(result.code).toBe(0);
     });
 });

@@ -1,0 +1,10 @@
+{
+    "name": "object-mjs",
+    "version": "0.0.0",
+    "private": true,
+    "description": "Runtime smoke test fixture (ESM)",
+    "type": "module",
+    "dependencies": {
+        "@visulima/object": "workspace:*"
+    }
+}

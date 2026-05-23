@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { dirname, resolve } from "node:path";
 
 import { x, xSync } from "tinyexec";
@@ -13,7 +14,7 @@ const TRAILING_NEWLINE_REGEX = /\n$/;
  * Escape the slash `\` in ESC-symbol.
  * Use it to show by an error the received ESC sequence string in console output.
  */
-export const esc = (string_: string): string => string_.replaceAll("", String.raw`\x1b`);
+export const esc = (string_: string): string => string_.replaceAll("", String.raw`\x1b`);
 
 /**
  * Return output of javascript file.
@@ -44,6 +45,30 @@ export const getTscTsconfig = async (cwd: string, filePath?: string): Promise<Ts
     }
 
     return JSON.parse(output.stdout) as TsConfigJson;
+};
+
+/**
+ * Spawn `tsc --noEmit` against a fixture tsconfig so a broken dist/*.d.ts surfaces
+ * as a failed test. Invokes the package's own `typescript` devDependency directly via
+ * `node_modules/.bin/tsc` to avoid pnpm's auto-install lifecycle on stale lockfiles.
+ */
+export const typeCheckFixture = (packageRoot: string, tsconfigRelative: string): { code: number; output: string } => {
+    const tscBin = process.platform === "win32" ? "node_modules/.bin/tsc.cmd" : "node_modules/.bin/tsc";
+
+    try {
+        execFileSync(tscBin, ["--noEmit", "-p", tsconfigRelative], {
+            cwd: packageRoot,
+            stdio: "pipe",
+        });
+
+        return { code: 0, output: "" };
+    } catch (error) {
+        const execError = error as { status?: number; stderr?: Buffer; stdout?: Buffer };
+        const stdout = execError.stdout?.toString() ?? "";
+        const stderr = execError.stderr?.toString() ?? "";
+
+        return { code: execError.status ?? 1, output: `${stdout}${stderr}` };
+    }
 };
 
 export const parseVersion = (version: string): Options["tscCompatible"] | undefined => {
