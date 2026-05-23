@@ -87,6 +87,8 @@ jobs:
                   done
 
             - name: "Git checkout"
+              id: "checkout"
+              continue-on-error: true
               uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
               env:
                   GIT_COMMITTER_NAME: "GitHub Actions Shell"
@@ -95,6 +97,22 @@ jobs:
               with:
                   persist-credentials: false
                   # Pulls all commits (needed for NX affected)
+                  fetch-depth: 0
+
+            - name: "Wait before retrying checkout"
+              if: "steps.checkout.outcome == 'failure'"
+              shell: "bash"
+              run: "sleep 15"
+
+            - name: "Git checkout (retry)"
+              if: "steps.checkout.outcome == 'failure'"
+              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+              env:
+                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
+                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
+                  EMAIL: "github-actions[bot]@users.noreply.github.com"
+              with:
+                  persist-credentials: false
                   fetch-depth: 0
 
             - name: "Derive appropriate SHAs for base and head for `nx affected` commands"
@@ -155,6 +173,23 @@ jobs:
                   egress-policy: "audit"
 
             - name: "Git checkout"
+              id: "checkout"
+              continue-on-error: true
+              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+              env:
+                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
+                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
+                  EMAIL: "github-actions[bot]@users.noreply.github.com"
+              with:
+                  persist-credentials: false
+
+            - name: "Wait before retrying checkout"
+              if: "steps.checkout.outcome == 'failure'"
+              shell: "bash"
+              run: "sleep 15"
+
+            - name: "Git checkout (retry)"
+              if: "steps.checkout.outcome == 'failure'"
               uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
               env:
                   GIT_COMMITTER_NAME: "GitHub Actions Shell"
