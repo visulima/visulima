@@ -3,12 +3,12 @@
  *
  * Budget from the RFC (`packages/tooling/vis/rfc/design-offline-vuln-scanner.md`
  * §Performance budget): `advisoriesQuery` over 2.8k packages must finish
- * inside 80 ms. We sample N times and assert on the median against 5× the
- * budget (400 ms) — GitHub-hosted runners measured ~200–360 ms per sample
- * (median ~290 ms) on identical code that runs well under 80 ms locally,
- * so a tighter gate would flake constantly. CodSpeed runs on tuned hardware
- * and provides the real trend signal; this it() is the catastrophic-regression
- * backstop that still works on standard CI hosts.
+ * inside 80 ms. We sample N times and assert on the median against 10× the
+ * budget (800 ms) — GitHub-hosted runners measured 175-566 ms per sample
+ * (median ~478 ms under contention) on identical code that runs well under
+ * 80 ms locally, so a tighter gate flakes constantly. CodSpeed runs on tuned
+ * hardware and provides the real trend signal; this it() is the
+ * catastrophic-regression backstop that still works on standard CI hosts.
  *
  * Companion file: `audit-offline.bench.ts` provides the trend-reporting
  * `bench()` task for `vitest bench`.
@@ -23,7 +23,7 @@ import { createAuditOfflineFixture } from "./audit-offline-fixture";
 
 const PKG_COUNT = 2800;
 const BUDGET_MS = 80;
-const BUDGET_WITH_SLACK_MS = 400;
+const BUDGET_WITH_SLACK_MS = 800;
 const SAMPLE_COUNT = 11;
 
 const median = (values: readonly number[]): number => {
@@ -49,7 +49,7 @@ afterAll(() => {
 });
 
 describe("audit-offline · advisoriesQuery 2.8k packages", () => {
-    it(`median of ${SAMPLE_COUNT} samples stays under the ${BUDGET_MS}ms budget (with 5× slack for CI hosts → ${BUDGET_WITH_SLACK_MS}ms)`, () => {
+    it(`median of ${SAMPLE_COUNT} samples stays under the ${BUDGET_MS}ms budget (with 10× slack for CI hosts → ${BUDGET_WITH_SLACK_MS}ms)`, () => {
         expect.assertions(2);
 
         // Warm pass to fault SQLite pages into the OS page cache; the budget
