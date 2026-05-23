@@ -6,7 +6,7 @@ import { describe, expect, expectTypeOf, it, vi } from "vitest";
 
 // Bun cannot load napi-rs native addons, so tests that assert the binding
 // is loaded must be skipped on the bun runtime.
-const isBun = typeof (globalThis as { Bun?: unknown }).Bun !== "undefined";
+const isBun = (globalThis as { Bun?: unknown }).Bun !== undefined;
 
 describe("native-binding", () => {
     describe("loadNativeBindings", () => {
