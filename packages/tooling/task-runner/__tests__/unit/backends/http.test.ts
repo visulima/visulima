@@ -47,14 +47,18 @@ const closeServer = (server: Server): Promise<void> =>
  *
  * Windows GNU tar treats `:` in a path as the `host:path` separator for
  * rsh-style remote operation, so `C:\foo` (or `C:/foo`) becomes "try to
- * connect to host `C`". `--force-local` is the GNU-tar flag that opts out
- * of that interpretation; bsdtar tolerates the flag too. Without it, the
- * GitHub Windows runner's bundled tar fails with
- * "Cannot connect to C: resolve failed".
+ * connect to host `C`". `--force-local` is the GNU-tar flag that opts
+ * out of that interpretation. macOS ships bsdtar by default, which does
+ * NOT recognize `--force-local` and errors with "Option --force-local
+ * is not supported", so the flag has to be Windows-only.
  */
 const tarball = (archivePath: string, sourceDirectory: string): Promise<void> =>
     new Promise((resolve, reject) => {
-        execFile("tar", ["--force-local", "-czf", archivePath, "-C", sourceDirectory, "."], (error) => {
+        const args = process.platform === "win32"
+            ? ["--force-local", "-czf", archivePath, "-C", sourceDirectory, "."]
+            : ["-czf", archivePath, "-C", sourceDirectory, "."];
+
+        execFile("tar", args, (error) => {
             if (error) {
                 reject(error);
             } else {
