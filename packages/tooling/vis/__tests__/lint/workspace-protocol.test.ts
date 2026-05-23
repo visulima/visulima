@@ -5,7 +5,6 @@ import { tmpdir } from "node:os";
 // slashes on every platform). Use the same `join` here so equality against
 // the result matches on Windows, where `node:path` would produce backslashes.
 import { join } from "@visulima/path";
-
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { applyWorkspaceProtocolFixes, lintWorkspaceProtocol } from "../../src/lint/workspace-protocol";

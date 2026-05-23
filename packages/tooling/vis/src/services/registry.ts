@@ -160,7 +160,7 @@ export const writeEntry = async (workspaceRoot: string, entry: ServiceEntry): Pr
 };
 
 /** Errno codes that indicate a transient AV/file-locking race on Windows. */
-const TRANSIENT_RENAME_CODES = new Set(["EPERM", "EACCES", "EBUSY"]);
+const TRANSIENT_RENAME_CODES = new Set(["EACCES", "EBUSY", "EPERM"]);
 const RENAME_MAX_ATTEMPTS = 8;
 const RENAME_INITIAL_BACKOFF_MS = 20;
 
@@ -173,7 +173,7 @@ const renameWithRetry = async (from: string, to: string): Promise<void> => {
 
             return;
         } catch (error) {
-            const code = (error as NodeJS.ErrnoException).code;
+            const { code } = (error as NodeJS.ErrnoException);
             const isTransient = code !== undefined && TRANSIENT_RENAME_CODES.has(code);
 
             if (!isTransient || attempt >= RENAME_MAX_ATTEMPTS) {

@@ -298,7 +298,7 @@ export class ServiceEventBridge {
             // crash on boot) but short enough that a *successful* respawn
             // — which keeps running indefinitely — doesn't hang dispose.
             await Promise.race([
-                Promise.all([...this.#pendingRespawns]),
+                Promise.all(this.#pendingRespawns),
                 new Promise<void>((resolve) => {
                     setTimeout(resolve, 2000);
                 }),

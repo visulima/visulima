@@ -6,6 +6,13 @@ import { join } from "@visulima/path";
 import type { Task, TaskGraph } from "@visulima/task-runner";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
+import { applyServiceRegistry } from "../../src/commands/run/apply-service-registry";
+import { startService, stopService } from "../../src/services/lifecycle";
+import { runReadiness } from "../../src/services/readiness";
+import { isAlive, readAllEntries, readEntry } from "../../src/services/registry";
+import type { VisTargetOptions } from "../../src/task/target-options";
+import { cleanupTemporaryDirectory, createTemporaryDirectory } from "../test-helpers";
+
 const killTree = (pid: number): void => {
     if (process.platform === "win32") {
         // No POSIX process groups on Windows — `process.kill(-pid)`
@@ -28,13 +35,6 @@ const killTree = (pid: number): void => {
         // already gone
     }
 };
-
-import { applyServiceRegistry } from "../../src/commands/run/apply-service-registry";
-import { startService, stopService } from "../../src/services/lifecycle";
-import { runReadiness } from "../../src/services/readiness";
-import { isAlive, readAllEntries, readEntry } from "../../src/services/registry";
-import type { VisTargetOptions } from "../../src/task/target-options";
-import { cleanupTemporaryDirectory, createTemporaryDirectory } from "../test-helpers";
 
 const sleep = (ms: number): Promise<void> =>
     new Promise((resolve) => {

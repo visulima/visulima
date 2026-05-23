@@ -7,14 +7,14 @@ import { resolve } from "@visulima/path";
 import { resetWorktreeCache } from "@visulima/task-runner";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { cacheListExecute, cacheSizeExecute } from "../../../src/commands/cache/handler";
+
 // On Windows, `realpathSync` may leave 8.3 short names (e.g. `RUNNER~1`)
 // in place while Rust's `fs::canonicalize` (used by the native worktree
 // detector) normalizes to long names (`runneradmin`). Use the libuv-backed
 // native realpath everywhere so test paths match what the worktree
 // detector produces.
 const canonical = (path: string): string => realpathSync.native(path);
-
-import { cacheListExecute, cacheSizeExecute } from "../../../src/commands/cache/handler";
 
 // When this test file runs inside a git pre-commit hook, git exports
 // GIT_DIR / GIT_INDEX_FILE / GIT_WORK_TREE pointing at the hook-running

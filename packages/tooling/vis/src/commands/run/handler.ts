@@ -493,7 +493,7 @@ const getTaskOptions = (task: Task): VisTargetOptions | undefined => {
 /**
  * Wraps a string in single quotes for safe POSIX shell execution.
  * Used when we know the consumer is a POSIX shell — e.g. when forwarding
- * a value as the argument of `<shell> -c <value>` regardless of OS.
+ * a value as the argument of `&lt;shell> -c &lt;value>` regardless of OS.
  */
 const singleQuoteEscape = (value: string): string => `'${value.replaceAll("'", String.raw`'\''`)}'`;
 
@@ -510,7 +510,7 @@ const shellQuote = (value: string): string => {
             return value;
         }
 
-        return `"${value.replaceAll('"', '""')}"`;
+        return `"${value.replaceAll("\"", "\"\"")}"`;
     }
 
     return singleQuoteEscape(value);

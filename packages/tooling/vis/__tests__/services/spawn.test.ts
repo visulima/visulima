@@ -93,7 +93,7 @@ describe(spawnDetached, () => {
                 // default 5 s budget. `signal` aborts cleanly when vitest
                 // does decide to give up, so the trailing expect() can't
                 // leak into the next test's assertion counter.
-                const deadline = Date.now() + 20000;
+                const deadline = Date.now() + 20_000;
                 let contents = "";
 
                 while (Date.now() < deadline && !signal.aborted) {
@@ -115,7 +115,7 @@ describe(spawnDetached, () => {
                 }
             }
         },
-        30000,
+        30_000,
     );
 
     it("rejects when the command fails to spawn", async () => {

@@ -231,19 +231,11 @@ describe("services/registry", () => {
             expect(final?.command.startsWith("cmd-")).toBe(true);
         });
 
-        it("writes entry files with mode 0o600 (owner-only)", async () => {
+        // Windows reports mode 0o666 regardless of what we pass to `writeFile` —
+        // there is no Unix-style permission bit for owner-only access. The security
+        // guarantee on Windows is ACL-based and lives outside Node's `fs.Stats.mode`.
+        it.skipIf(process.platform === "win32")("writes entry files with mode 0o600 (owner-only)", async () => {
             expect.assertions(1);
-
-            // Windows reports mode 0o666 regardless of what we pass to
-            // `writeFile` — there is no Unix-style permission bit for
-            // owner-only access. The security guarantee on Windows is
-            // ACL-based and lives outside Node's `fs.Stats.mode`.
-            // eslint-disable-next-line vitest/no-conditional-in-test -- skip on Windows where 0o600 mode bits are not honored
-            if (process.platform === "win32") {
-                expect(true).toBe(true);
-
-                return;
-            }
 
             await writeEntry(workspaceRoot, buildEntry({ id: "perm:svc" }));
 
