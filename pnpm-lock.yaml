@@ -11826,7 +11826,7 @@ packages:
   '@cloudflare/vite-plugin@1.37.1':
     resolution: {integrity: sha512-FldhsmkXyLsX3yI+p0aJDo/kGyY69pDdynz2JjcuH3eCiQ+G9XaY3CrN+UYEfCbWv8CiR2wL95lNg0fT/HfwWA==}
     peerDependencies:
-      vite: '>=6.4.2'
+      vite: '>=7.1.11'
       wrangler: ^4.92.0
 
   '@cloudflare/workerd-darwin-64@1.20260515.1':
@@ -18679,7 +18679,7 @@ packages:
   '@tailwindcss/vite@4.3.0':
     resolution: {integrity: sha512-t6J3OrB5Fc0ExuhohouH0fWUGMYL6PTLhW+E7zIk/pdbnJARZDCwjBznFnkh5ynRnIRSI4YjtTH0t6USjJISrw==}
     peerDependencies:
-      vite: '>=7.3.2'
+      vite: '>=7.1.11'
 
   '@tanstack/ai-event-client@0.3.2':
     resolution: {integrity: sha512-4GhqHFU6W00Uo10dgKZyHKwtTENtpIFmqy6jW2HmZpW6NrOBhwG71dspiwmQ+4NPn4foADfbEBnzdt0W5Ik0Jw==}
@@ -18809,7 +18809,7 @@ packages:
       '@vitejs/plugin-rsc': '*'
       react: 19.2.6
       react-dom: 19.2.6
-      vite: '>=7.3.2'
+      vite: '>=7.1.11'
     peerDependenciesMeta:
       '@rsbuild/core':
         optional: true
