@@ -47,4 +47,4 @@ export const typeCheckFixture = (packageRoot: string, tsconfigRelative: string):
     }
 };
 
-export const esc = (string_: string): string => string_.replaceAll("", String.raw`\x1b`);
+export const esc = (string_: string): string => string_.replaceAll("\u001B", String.raw`\x1b`);

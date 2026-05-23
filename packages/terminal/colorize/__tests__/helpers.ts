@@ -4,7 +4,7 @@ import { execFileSync, execSync } from "node:child_process";
  * Escape the slash `\` in ESC-symbol.
  * Use it to show by an error the received ESC sequence string in console output.
  */
-const esc = (string_: string): string => string_.replaceAll("", String.raw`\x1b`);
+const esc = (string_: string): string => string_.replaceAll("\u001B", String.raw`\x1b`);
 
 const TRAILING_NEWLINE_REGEX = /\n$/;
 
