@@ -78,15 +78,22 @@ describe(sanitize, () => {
     });
 
     describe("restricted suffixes", () => {
-        it("should trim trailing spaces but preserve periods", () => {
+        it("should preserve trailing periods on unix and trim trailing spaces", () => {
             expect.assertions(4);
 
-            // Trailing periods are preserved (not removed by current implementation)
-            expect(sanitize("mr.")).toBe("mr.");
-            expect(sanitize("mr..")).toBe("mr..");
-            // Trailing spaces are trimmed
-            expect(sanitize("mr ")).toBe("mr");
-            expect(sanitize("mr  ")).toBe("mr");
+            expect(sanitize("mr.", { filesystem: "unix" })).toBe("mr.");
+            expect(sanitize("mr..", { filesystem: "unix" })).toBe("mr..");
+            expect(sanitize("mr ", { filesystem: "unix" })).toBe("mr");
+            expect(sanitize("mr  ", { filesystem: "unix" })).toBe("mr");
+        });
+
+        it("should strip trailing periods and spaces on win32", () => {
+            expect.assertions(4);
+
+            expect(sanitize("mr.", { filesystem: "win32" })).toBe("mr");
+            expect(sanitize("mr..", { filesystem: "win32" })).toBe("mr");
+            expect(sanitize("mr ", { filesystem: "win32" })).toBe("mr");
+            expect(sanitize("mr  ", { filesystem: "win32" })).toBe("mr");
         });
     });
 
