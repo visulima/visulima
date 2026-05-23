@@ -22,10 +22,21 @@ const getSpawn = (): (typeof import("node-pty"))["spawn"] => {
 // when the test actually tries to spawn. Smoke-test an actual spawn here so
 // every PTY-based test file can guard with `it.skipIf(!ptyAvailable)` and
 // the suite passes on hosts where PTY allocation is broken.
+//
+// Windows GitHub-hosted runners hit a separate failure: the conpty cleanup
+// agent (`conpty_console_list_agent.js`) calls `AttachConsole` in a spawned
+// child, which the runner session denies — and that error crashes the test
+// runner process even when the parent probe succeeds. Skip outright on win32
+// so the suite stays green; local Windows developers with working conpty can
+// flip this off locally if they want to exercise PTY paths.
 export const ptyAvailable: boolean = (() => {
+    if (process.platform === "win32") {
+        return false;
+    }
+
     try {
         const probeSpawn = getSpawn();
-        const probe = probeSpawn(process.platform === "win32" ? "cmd.exe" : "/bin/sh", process.platform === "win32" ? ["/c", "exit"] : ["-c", "exit 0"], {
+        const probe = probeSpawn("/bin/sh", ["-c", "exit 0"], {
             cols: 80,
             cwd: fixturesDirectory,
             env: process.env,
