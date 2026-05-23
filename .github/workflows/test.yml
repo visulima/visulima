@@ -182,7 +182,25 @@ jobs:
             # a compiled native binding (e.g. @visulima/secret-scanner) can load it. Without this
             # the .node files only exist in the build-native runner — test runs fail at
             # require('./<pkg>-native.linux-x64-gnu.node').
+            #
+            # `secrets.GITHUB_TOKEN` returns transient HTTP 401 mid-download
+            # (observed on multi-MB artifact runs); dawidd6's v21 doesn't
+            # retry on auth failure, so wrap the step with a two-shot retry.
             - name: "Download native build artifacts"
+              id: "download_native_artifacts"
+              continue-on-error: true
+              uses: "dawidd6/action-download-artifact@b6e2e70617bc3265edd6dab6c906732b2f1ae151" # v21
+              with:
+                  workflow: "build-native.yml"
+                  commit: "${{ github.event.pull_request.head.sha || github.sha }}"
+                  name: "bindings-(.+)"
+                  name_is_regexp: true
+                  path: "artifacts"
+                  if_no_artifact_found: "warn"
+                  allow_forks: false
+
+            - name: "Download native build artifacts (retry)"
+              if: "steps.download_native_artifacts.outcome == 'failure'"
               uses: "dawidd6/action-download-artifact@b6e2e70617bc3265edd6dab6c906732b2f1ae151" # v21
               with:
                   workflow: "build-native.yml"
@@ -348,7 +366,25 @@ jobs:
             # a compiled native binding (e.g. @visulima/secret-scanner) can load it. Without this
             # the .node files only exist in the build-native runner — test runs fail at
             # require('./<pkg>-native.linux-x64-gnu.node').
+            #
+            # `secrets.GITHUB_TOKEN` returns transient HTTP 401 mid-download
+            # (observed on multi-MB artifact runs); dawidd6's v21 doesn't
+            # retry on auth failure, so wrap the step with a two-shot retry.
             - name: "Download native build artifacts"
+              id: "download_native_artifacts"
+              continue-on-error: true
+              uses: "dawidd6/action-download-artifact@b6e2e70617bc3265edd6dab6c906732b2f1ae151" # v21
+              with:
+                  workflow: "build-native.yml"
+                  commit: "${{ github.event.pull_request.head.sha || github.sha }}"
+                  name: "bindings-(.+)"
+                  name_is_regexp: true
+                  path: "artifacts"
+                  if_no_artifact_found: "warn"
+                  allow_forks: false
+
+            - name: "Download native build artifacts (retry)"
+              if: "steps.download_native_artifacts.outcome == 'failure'"
               uses: "dawidd6/action-download-artifact@b6e2e70617bc3265edd6dab6c906732b2f1ae151" # v21
               with:
                   workflow: "build-native.yml"
