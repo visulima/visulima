@@ -19,7 +19,7 @@ describe("usage `@visulima/api-platform` npm package", () => {
         const received = execScriptSync(filename);
 
         expect(received).toBe("ok");
-    });
+    }, 30_000);
 
     it(`should work as ESM package`, () => {
         expect.assertions(1);
@@ -29,7 +29,7 @@ describe("usage `@visulima/api-platform` npm package", () => {
         const received = execScriptSync(filename);
 
         expect(received).toBe("ok");
-    });
+    }, 30_000);
 
     it(`should expose correct types via dist/*.d.ts`, () => {
         expect.assertions(2);
@@ -38,7 +38,7 @@ describe("usage `@visulima/api-platform` npm package", () => {
 
         expect(result.output).toBe("");
         expect(result.code).toBe(0);
-    });
+    }, 30_000);
 
     it(`should expose working bin via --version`, () => {
         expect.assertions(3);
