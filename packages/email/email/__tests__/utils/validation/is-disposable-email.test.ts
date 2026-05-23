@@ -6,16 +6,16 @@ describe(isDisposableEmail, () => {
     it("should detect disposable email addresses from exact matches", () => {
         expect.assertions(3);
 
-        expect(isDisposableEmail("user@gmagl.com")).toBe(true);
-        expect(isDisposableEmail("user@trashmail.com")).toBe(true);
-        expect(isDisposableEmail("user@33mail.com")).toBe(true);
+        expect(isDisposableEmail("user@10minutemail.com")).toBe(true);
+        expect(isDisposableEmail("user@mailinator.com")).toBe(true);
+        expect(isDisposableEmail("user@guerrillamail.com")).toBe(true);
     });
 
     it("should detect disposable email addresses from wildcard matches", () => {
         expect.assertions(2);
 
-        expect(isDisposableEmail("user@subdomain.33mail.com")).toBe(true);
-        expect(isDisposableEmail("user@anything.33mail.com")).toBe(true);
+        expect(isDisposableEmail("user@subdomain.10minutemail.com")).toBe(true);
+        expect(isDisposableEmail("user@anything.10minutemail.com")).toBe(true);
     });
 
     it("should not detect regular email addresses as disposable", () => {
@@ -30,9 +30,9 @@ describe(isDisposableEmail, () => {
     it("should be case-insensitive", () => {
         expect.assertions(3);
 
-        expect(isDisposableEmail("user@GMAGL.com")).toBe(true);
-        expect(isDisposableEmail("USER@trashmail.com")).toBe(true);
-        expect(isDisposableEmail("User@TrashMail.Com")).toBe(true);
+        expect(isDisposableEmail("user@10MINUTEMAIL.com")).toBe(true);
+        expect(isDisposableEmail("USER@mailinator.com")).toBe(true);
+        expect(isDisposableEmail("User@Mailinator.Com")).toBe(true);
     });
 
     it("should handle custom disposable domains", () => {
@@ -49,14 +49,14 @@ describe(isDisposableEmail, () => {
 
         expect(isDisposableEmail("")).toBe(false);
         expect(isDisposableEmail("invalid")).toBe(false);
-        expect(isDisposableEmail("@gmagl.com")).toBe(false);
+        expect(isDisposableEmail("@10minutemail.com")).toBe(false);
         expect(isDisposableEmail("user@")).toBe(false);
     });
 
     it("should handle whitespace", () => {
         expect.assertions(2);
 
-        expect(isDisposableEmail("  user@gmagl.com  ")).toBe(true);
-        expect(isDisposableEmail("\tuser@gmagl.com\n")).toBe(true);
+        expect(isDisposableEmail("  user@10minutemail.com  ")).toBe(true);
+        expect(isDisposableEmail("\tuser@10minutemail.com\n")).toBe(true);
     });
 });
