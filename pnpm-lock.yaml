@@ -2593,6 +2593,24 @@ importers:
         specifier: catalog:utils
         version: 4.4.3
 
+  packages/api/api-platform/__fixtures__/package/cjs:
+    dependencies:
+      '@visulima/api-platform':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/api/api-platform/__fixtures__/package/mjs:
+    dependencies:
+      '@visulima/api-platform':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/api/api-platform/__fixtures__/package/types:
+    dependencies:
+      '@visulima/api-platform':
+        specifier: workspace:*
+        version: link:../../..
+
   packages/api/api-platform/examples/express:
     dependencies:
       '@visulima/api-platform':
@@ -2711,6 +2729,24 @@ importers:
       zod:
         specifier: catalog:utils
         version: 4.4.3
+
+  packages/api/connect/__fixtures__/package/cjs:
+    dependencies:
+      '@visulima/connect':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/api/connect/__fixtures__/package/mjs:
+    dependencies:
+      '@visulima/connect':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/api/connect/__fixtures__/package/types:
+    dependencies:
+      '@visulima/connect':
+        specifier: workspace:*
+        version: link:../../..
 
   packages/api/crud:
     dependencies:
@@ -2845,6 +2881,24 @@ importers:
         specifier: catalog:test
         version: 4.1.7(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(happy-dom@20.9.0)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@25.9.1)(typescript@6.0.3))(vite@8.0.13(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.1)(yaml@2.8.3))
 
+  packages/api/crud/__fixtures__/package/cjs:
+    dependencies:
+      '@visulima/crud':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/api/crud/__fixtures__/package/mjs:
+    dependencies:
+      '@visulima/crud':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/api/crud/__fixtures__/package/types:
+    dependencies:
+      '@visulima/crud':
+        specifier: workspace:*
+        version: link:../../..
+
   packages/api/health-check:
     dependencies:
       cacheable-lookup:
@@ -2963,6 +3017,18 @@ importers:
         specifier: catalog:test
         version: 4.1.7(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(happy-dom@20.9.0)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@25.9.1)(typescript@6.0.3))(vite@8.0.13(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.1)(yaml@2.8.3))
 
+  packages/api/health-check/__fixtures__/package/mjs:
+    dependencies:
+      '@visulima/health-check':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/api/health-check/__fixtures__/package/types:
+    dependencies:
+      '@visulima/health-check':
+        specifier: workspace:*
+        version: link:../../..
+
   packages/api/jsdoc-open-api:
     dependencies:
       '@apidevtools/swagger-parser':
@@ -3054,6 +3120,24 @@ importers:
 
   packages/api/jsdoc-open-api/__fixtures__: {}
 
+  packages/api/jsdoc-open-api/__fixtures__/package/cjs:
+    dependencies:
+      '@visulima/jsdoc-open-api':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/api/jsdoc-open-api/__fixtures__/package/mjs:
+    dependencies:
+      '@visulima/jsdoc-open-api':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/api/jsdoc-open-api/__fixtures__/package/types:
+    dependencies:
+      '@visulima/jsdoc-open-api':
+        specifier: workspace:*
+        version: link:../../..
+
   packages/api/pagination:
     devDependencies:
       '@anolilab/eslint-config':
@@ -3116,6 +3200,18 @@ importers:
       vitest:
         specifier: catalog:test
         version: 4.1.7(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(happy-dom@20.9.0)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@25.9.1)(typescript@6.0.3))(vite@8.0.13(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.1)(yaml@2.8.3))
+
+  packages/api/pagination/__fixtures__/package/mjs:
+    dependencies:
+      '@visulima/pagination':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/api/pagination/__fixtures__/package/types:
+    dependencies:
+      '@visulima/pagination':
+        specifier: workspace:*
+        version: link:../../..
 
   packages/data-manipulation/bytes:
     devDependencies:
@@ -3186,6 +3282,18 @@ importers:
         specifier: catalog:test
         version: 4.1.7(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(happy-dom@20.9.0)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@25.9.1)(typescript@6.0.3))(vite@8.0.13(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.1)(yaml@2.8.3))
 
+  packages/data-manipulation/bytes/__fixtures__/package/mjs:
+    dependencies:
+      '@visulima/bytes':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/data-manipulation/bytes/__fixtures__/package/types:
+    dependencies:
+      '@visulima/bytes':
+        specifier: workspace:*
+        version: link:../../..
+
   packages/data-manipulation/content-safety:
     devDependencies:
       '@anolilab/eslint-config':
@@ -3248,6 +3356,18 @@ importers:
       vitest:
         specifier: catalog:test
         version: 4.1.7(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(happy-dom@20.9.0)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@25.9.1)(typescript@6.0.3))(vite@8.0.13(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.1)(yaml@2.8.3))
+
+  packages/data-manipulation/content-safety/__fixtures__/package/mjs:
+    dependencies:
+      '@visulima/content-safety':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/data-manipulation/content-safety/__fixtures__/package/types:
+    dependencies:
+      '@visulima/content-safety':
+        specifier: workspace:*
+        version: link:../../..
 
   packages/data-manipulation/deep-clone:
     devDependencies:
@@ -3367,6 +3487,18 @@ importers:
         specifier: catalog:test
         version: 4.1.7(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(happy-dom@20.9.0)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@25.9.1)(typescript@6.0.3))(vite@8.0.13(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.1)(yaml@2.9.0))
 
+  packages/data-manipulation/deep-clone/__fixtures__/package/mjs:
+    dependencies:
+      '@visulima/deep-clone':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/data-manipulation/deep-clone/__fixtures__/package/types:
+    dependencies:
+      '@visulima/deep-clone':
+        specifier: workspace:*
+        version: link:../../..
+
   packages/data-manipulation/html:
     dependencies:
       csstype:
@@ -3458,6 +3590,18 @@ importers:
         specifier: catalog:test
         version: 4.1.7(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(happy-dom@20.9.0)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@25.9.1)(typescript@6.0.3))(vite@8.0.13(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.1)(yaml@2.8.3))
 
+  packages/data-manipulation/html/__fixtures__/package/mjs:
+    dependencies:
+      '@visulima/html':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/data-manipulation/html/__fixtures__/package/types:
+    dependencies:
+      '@visulima/html':
+        specifier: workspace:*
+        version: link:../../..
+
   packages/data-manipulation/humanizer:
     devDependencies:
       '@anolilab/eslint-config':
@@ -3542,6 +3686,12 @@ importers:
         specifier: workspace:*
         version: link:../../..
 
+  packages/data-manipulation/humanizer/__fixtures__/package/types:
+    dependencies:
+      '@visulima/humanizer':
+        specifier: workspace:*
+        version: link:../../..
+
   packages/data-manipulation/iso-locale:
     devDependencies:
       '@anolilab/eslint-config':
@@ -3604,6 +3754,18 @@ importers:
       vitest:
         specifier: catalog:test
         version: 4.1.7(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(happy-dom@20.9.0)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@25.9.1)(typescript@6.0.3))(vite@8.0.13(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.1)(yaml@2.8.3))
+
+  packages/data-manipulation/iso-locale/__fixtures__/package/mjs:
+    dependencies:
+      '@visulima/iso-locale':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/data-manipulation/iso-locale/__fixtures__/package/types:
+    dependencies:
+      '@visulima/iso-locale':
+        specifier: workspace:*
+        version: link:../../..
 
   packages/data-manipulation/object:
     devDependencies:
@@ -3685,6 +3847,18 @@ importers:
       vitest:
         specifier: catalog:test
         version: 4.1.7(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(happy-dom@20.9.0)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@25.9.1)(typescript@6.0.3))(vite@8.0.13(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.1)(yaml@2.8.3))
+
+  packages/data-manipulation/object/__fixtures__/package/mjs:
+    dependencies:
+      '@visulima/object':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/data-manipulation/object/__fixtures__/package/types:
+    dependencies:
+      '@visulima/object':
+        specifier: workspace:*
+        version: link:../../..
 
   packages/data-manipulation/redact:
     dependencies:
@@ -3785,6 +3959,12 @@ importers:
         version: 4.1.7(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(happy-dom@20.9.0)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@25.9.1)(typescript@6.0.3))(vite@8.0.13(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.1)(yaml@2.9.0))
 
   packages/data-manipulation/redact/__fixtures__/package/mjs:
+    dependencies:
+      '@visulima/redact':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/data-manipulation/redact/__fixtures__/package/types:
     dependencies:
       '@visulima/redact':
         specifier: workspace:*
@@ -3956,6 +4136,18 @@ importers:
         specifier: catalog:test
         version: 4.1.7(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(happy-dom@20.9.0)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@25.9.1)(typescript@6.0.3))(vite@8.0.13(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.1)(yaml@2.9.0))
 
+  packages/data-manipulation/string/__fixtures__/package/mjs:
+    dependencies:
+      '@visulima/string':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/data-manipulation/string/__fixtures__/package/types:
+    dependencies:
+      '@visulima/string':
+        specifier: workspace:*
+        version: link:../../..
+
   packages/email/disposable-email-domains:
     devDependencies:
       '@anolilab/eslint-config':
@@ -4024,6 +4216,18 @@ importers:
       vitest:
         specifier: catalog:test
         version: 4.1.7(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(happy-dom@20.9.0)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@25.9.1)(typescript@6.0.3))(vite@8.0.13(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.1)(yaml@2.8.3))
+
+  packages/email/disposable-email-domains/__fixtures__/package/mjs:
+    dependencies:
+      '@visulima/disposable-email-domains':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/email/disposable-email-domains/__fixtures__/package/types:
+    dependencies:
+      '@visulima/disposable-email-domains':
+        specifier: workspace:*
+        version: link:../../..
 
   packages/email/email:
     dependencies:
@@ -4151,6 +4355,18 @@ importers:
       vitest:
         specifier: catalog:test
         version: 4.1.7(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(happy-dom@20.9.0)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@25.9.1)(typescript@6.0.3))(vite@8.0.13(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.1)(yaml@2.8.3))
+
+  packages/email/email/__fixtures__/package/mjs:
+    dependencies:
+      '@visulima/email':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/email/email/__fixtures__/package/types:
+    dependencies:
+      '@visulima/email':
+        specifier: workspace:*
+        version: link:../../..
 
   packages/email/email/examples/nodemailer:
     dependencies:
@@ -4868,6 +5084,18 @@ importers:
         specifier: catalog:test
         version: 4.1.7(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(happy-dom@20.9.0)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@25.9.1)(typescript@6.0.3))(vite@8.0.13(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.1)(yaml@2.8.3))
 
+  packages/error-debugging/error-handler/__fixtures__/package/mjs:
+    dependencies:
+      '@visulima/error-handler':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/error-debugging/error-handler/__fixtures__/package/types:
+    dependencies:
+      '@visulima/error-handler':
+        specifier: workspace:*
+        version: link:../../..
+
   packages/error-debugging/error-handler/examples/cli:
     dependencies:
       '@visulima/colorize':
@@ -4894,6 +5122,18 @@ importers:
       '@visulima/error-handler':
         specifier: workspace:*
         version: link:../..
+
+  packages/error-debugging/error/__fixtures__/package/mjs:
+    dependencies:
+      '@visulima/error':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/error-debugging/error/__fixtures__/package/types:
+    dependencies:
+      '@visulima/error':
+        specifier: workspace:*
+        version: link:../../..
 
   packages/error-debugging/error/examples/node:
     dependencies:
@@ -5006,6 +5246,24 @@ importers:
       vitest:
         specifier: catalog:test
         version: 4.1.7(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(happy-dom@20.9.0)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@25.9.1)(typescript@6.0.3))(vite@8.0.13(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.1)(yaml@2.9.0))
+
+  packages/error-debugging/inspector/__fixtures__/package/cjs:
+    dependencies:
+      '@visulima/inspector':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/error-debugging/inspector/__fixtures__/package/mjs:
+    dependencies:
+      '@visulima/inspector':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/error-debugging/inspector/__fixtures__/package/types:
+    dependencies:
+      '@visulima/inspector':
+        specifier: workspace:*
+        version: link:../../..
 
   packages/error-debugging/ono:
     dependencies:
@@ -5145,6 +5403,18 @@ importers:
       vitest:
         specifier: catalog:test
         version: 4.1.7(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(happy-dom@20.9.0)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@25.9.1)(typescript@6.0.3))(vite@8.0.13(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.1)(yaml@2.8.3))
+
+  packages/error-debugging/ono/__fixtures__/package/mjs:
+    dependencies:
+      '@visulima/ono':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/error-debugging/ono/__fixtures__/package/types:
+    dependencies:
+      '@visulima/ono':
+        specifier: workspace:*
+        version: link:../../..
 
   packages/error-debugging/ono/examples/bun:
     dependencies:
@@ -5359,6 +5629,12 @@ importers:
         specifier: workspace:*
         version: link:../../..
 
+  packages/error-debugging/pail/__fixtures__/package/types:
+    dependencies:
+      '@visulima/pail':
+        specifier: workspace:*
+        version: link:../../..
+
   packages/error-debugging/pail/examples/bun:
     dependencies:
       '@visulima/pail':
@@ -5486,6 +5762,18 @@ importers:
       vitest:
         specifier: catalog:test
         version: 4.1.7(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(happy-dom@20.9.0)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@25.9.1)(typescript@6.0.3))(vite@8.0.13(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.1)(yaml@2.8.3))
+
+  packages/error-debugging/source-map/__fixtures__/package/mjs:
+    dependencies:
+      '@visulima/source-map':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/error-debugging/source-map/__fixtures__/package/types:
+    dependencies:
+      '@visulima/source-map':
+        specifier: workspace:*
+        version: link:../../..
 
   packages/error-debugging/vite-overlay:
     dependencies:
@@ -6097,6 +6385,12 @@ importers:
         specifier: catalog:test
         version: 4.1.7(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(happy-dom@20.9.0)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@25.9.1)(typescript@6.0.3))(vite@8.0.13(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.1)(yaml@2.9.0))
 
+  packages/filesystem/find-cache-dir/__fixtures__/package/types:
+    dependencies:
+      '@visulima/find-cache-dir':
+        specifier: workspace:*
+        version: link:../../..
+
   packages/filesystem/fs:
     dependencies:
       '@visulima/path':
@@ -6283,6 +6577,12 @@ importers:
         specifier: workspace:*
         version: link:../../..
 
+  packages/filesystem/fs/__fixtures__/package/types:
+    dependencies:
+      '@visulima/fs':
+        specifier: workspace:*
+        version: link:../../..
+
   packages/filesystem/path:
     devDependencies:
       '@anolilab/eslint-config':
@@ -6359,6 +6659,12 @@ importers:
         version: link:../../..
 
   packages/filesystem/path/__fixtures__/package/mjs:
+    dependencies:
+      '@visulima/path':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/filesystem/path/__fixtures__/package/types:
     dependencies:
       '@visulima/path':
         specifier: workspace:*
@@ -6779,6 +7085,18 @@ importers:
         specifier: catalog:lint
         version: 10.4.0(eslint@10.4.0(jiti@2.7.0))
 
+  packages/storage/storage-client/__fixtures__/package/mjs:
+    dependencies:
+      '@visulima/storage-client':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/storage/storage-client/__fixtures__/package/types:
+    dependencies:
+      '@visulima/storage-client':
+        specifier: workspace:*
+        version: link:../../..
+
   packages/storage/storage-client/examples/nextjs:
     dependencies:
       '@visulima/storage':
@@ -7015,6 +7333,18 @@ importers:
       vue-tsc:
         specifier: catalog:lint
         version: 3.2.9(typescript@6.0.3)
+
+  packages/storage/storage/__fixtures__/package/mjs:
+    dependencies:
+      '@visulima/storage':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/storage/storage/__fixtures__/package/types:
+    dependencies:
+      '@visulima/storage':
+        specifier: workspace:*
+        version: link:../../..
 
   packages/storage/storage/dist/adapter/nuxt:
     dependencies:
@@ -7618,6 +7948,12 @@ importers:
         specifier: workspace:*
         version: link:../../..
 
+  packages/terminal/ansi/__fixtures__/package/types:
+    dependencies:
+      '@visulima/ansi':
+        specifier: workspace:*
+        version: link:../../..
+
   packages/terminal/boxen:
     devDependencies:
       '@anolilab/eslint-config':
@@ -7709,6 +8045,12 @@ importers:
         version: link:../../..
 
   packages/terminal/boxen/__fixtures__/package/mjs:
+    dependencies:
+      '@visulima/boxen':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/terminal/boxen/__fixtures__/package/types:
     dependencies:
       '@visulima/boxen':
         specifier: workspace:*
@@ -7858,6 +8200,12 @@ importers:
         version: 4.1.7(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(happy-dom@20.9.0)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@25.9.1)(typescript@6.0.3))(vite@8.0.13(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.1)(yaml@2.9.0))
 
   packages/terminal/cerebro/__fixtures__/package/mjs:
+    dependencies:
+      '@visulima/cerebro':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/terminal/cerebro/__fixtures__/package/types:
     dependencies:
       '@visulima/cerebro':
         specifier: workspace:*
@@ -8055,6 +8403,12 @@ importers:
         specifier: workspace:*
         version: link:../../..
 
+  packages/terminal/colorize/__fixtures__/package/types:
+    dependencies:
+      '@visulima/colorize':
+        specifier: workspace:*
+        version: link:../../..
+
   packages/terminal/colorize/examples/nextjs:
     dependencies:
       '@visulima/colorize':
@@ -8228,6 +8582,18 @@ importers:
         specifier: catalog:test
         version: 4.1.7(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(happy-dom@20.9.0)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@25.9.1)(typescript@6.0.3))(vite@8.0.13(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.1)(yaml@2.9.0))
 
+  packages/terminal/command-line-args/__fixtures__/package/mjs:
+    dependencies:
+      '@visulima/command-line-args':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/terminal/command-line-args/__fixtures__/package/types:
+    dependencies:
+      '@visulima/command-line-args':
+        specifier: workspace:*
+        version: link:../../..
+
   packages/terminal/fmt:
     devDependencies:
       '@anolilab/eslint-config':
@@ -8304,6 +8670,24 @@ importers:
         specifier: catalog:test
         version: 4.1.7(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(happy-dom@20.9.0)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@25.9.1)(typescript@6.0.3))(vite@8.0.13(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.1)(yaml@2.9.0))
 
+  packages/terminal/fmt/__fixtures__/package/cjs:
+    dependencies:
+      '@visulima/fmt':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/terminal/fmt/__fixtures__/package/mjs:
+    dependencies:
+      '@visulima/fmt':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/terminal/fmt/__fixtures__/package/types:
+    dependencies:
+      '@visulima/fmt':
+        specifier: workspace:*
+        version: link:../../..
+
   packages/terminal/interactive-manager:
     devDependencies:
       '@anolilab/eslint-config':
@@ -8376,6 +8760,18 @@ importers:
         specifier: catalog:test
         version: 4.1.7(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(happy-dom@20.9.0)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@25.9.1)(typescript@6.0.3))(vite@8.0.13(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.1)(yaml@2.8.3))
 
+  packages/terminal/interactive-manager/__fixtures__/package/mjs:
+    dependencies:
+      '@visulima/interactive-manager':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/terminal/interactive-manager/__fixtures__/package/types:
+    dependencies:
+      '@visulima/interactive-manager':
+        specifier: workspace:*
+        version: link:../../..
+
   packages/terminal/is-ansi-color-supported:
     devDependencies:
       '@anolilab/eslint-config':
@@ -8438,6 +8834,24 @@ importers:
       vitest:
         specifier: catalog:test
         version: 4.1.7(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(happy-dom@20.9.0)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@25.9.1)(typescript@6.0.3))(vite@8.0.13(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.1)(yaml@2.8.3))
+
+  packages/terminal/is-ansi-color-supported/__fixtures__/package/cjs:
+    dependencies:
+      '@visulima/is-ansi-color-supported':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/terminal/is-ansi-color-supported/__fixtures__/package/mjs:
+    dependencies:
+      '@visulima/is-ansi-color-supported':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/terminal/is-ansi-color-supported/__fixtures__/package/types:
+    dependencies:
+      '@visulima/is-ansi-color-supported':
+        specifier: workspace:*
+        version: link:../../..
 
   packages/terminal/progress-bar:
     dependencies:
@@ -8505,6 +8919,18 @@ importers:
       vitest:
         specifier: catalog:test
         version: 4.1.7(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(happy-dom@20.9.0)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@25.9.1)(typescript@6.0.3))(vite@8.0.13(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.1)(yaml@2.8.3))
+
+  packages/terminal/progress-bar/__fixtures__/package/mjs:
+    dependencies:
+      '@visulima/progress-bar':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/terminal/progress-bar/__fixtures__/package/types:
+    dependencies:
+      '@visulima/progress-bar':
+        specifier: workspace:*
+        version: link:../../..
 
   packages/terminal/spinner:
     dependencies:
@@ -8575,6 +9001,18 @@ importers:
       vitest:
         specifier: catalog:test
         version: 4.1.7(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(happy-dom@20.9.0)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@25.9.1)(typescript@6.0.3))(vite@8.0.13(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.1)(yaml@2.8.3))
+
+  packages/terminal/spinner/__fixtures__/package/mjs:
+    dependencies:
+      '@visulima/spinner':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/terminal/spinner/__fixtures__/package/types:
+    dependencies:
+      '@visulima/spinner':
+        specifier: workspace:*
+        version: link:../../..
 
   packages/terminal/tabular:
     devDependencies:
@@ -8692,6 +9130,18 @@ importers:
       vitest:
         specifier: catalog:test
         version: 4.1.7(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(happy-dom@20.9.0)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@25.9.1)(typescript@6.0.3))(vite@8.0.13(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.1)(yaml@2.9.0))
+
+  packages/terminal/tabular/__fixtures__/package/mjs:
+    dependencies:
+      '@visulima/tabular':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/terminal/tabular/__fixtures__/package/types:
+    dependencies:
+      '@visulima/tabular':
+        specifier: workspace:*
+        version: link:../../..
 
   packages/terminal/tui:
     dependencies:
@@ -9154,6 +9604,12 @@ importers:
         specifier: workspace:*
         version: link:../../..
 
+  packages/tooling/package/__fixtures__/package/types:
+    dependencies:
+      '@visulima/package':
+        specifier: workspace:*
+        version: link:../../..
+
   packages/tooling/prisma-dmmf-transformer:
     dependencies:
       '@prisma/generator-helper':
@@ -9238,6 +9694,24 @@ importers:
       vitest:
         specifier: catalog:test
         version: 4.1.7(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(happy-dom@20.9.0)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@25.9.1)(typescript@6.0.3))(vite@8.0.13(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.1)(yaml@2.8.3))
+
+  packages/tooling/prisma-dmmf-transformer/__fixtures__/package/cjs:
+    dependencies:
+      '@visulima/prisma-dmmf-transformer':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/tooling/prisma-dmmf-transformer/__fixtures__/package/mjs:
+    dependencies:
+      '@visulima/prisma-dmmf-transformer':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/tooling/prisma-dmmf-transformer/__fixtures__/package/types:
+    dependencies:
+      '@visulima/prisma-dmmf-transformer':
+        specifier: workspace:*
+        version: link:../../..
 
   packages/tooling/secret-scanner:
     dependencies:
@@ -9653,6 +10127,12 @@ importers:
         version: link:../../..
 
   packages/tooling/tsconfig/__fixtures__/package/mjs:
+    dependencies:
+      '@visulima/tsconfig':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/tooling/tsconfig/__fixtures__/package/types:
     dependencies:
       '@visulima/tsconfig':
         specifier: workspace:*

@@ -1,0 +1,10 @@
+{
+    "name": "source-map-types",
+    "version": "0.0.0",
+    "private": true,
+    "description": "Typings smoke test fixture",
+    "type": "module",
+    "dependencies": {
+        "@visulima/source-map": "workspace:*"
+    }
+}

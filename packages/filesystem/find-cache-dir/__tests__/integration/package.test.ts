@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "@visulima/path";
 import { describe, expect, it } from "vitest";
 
-import { execScriptSync } from "../helpers";
+import { execScriptSync, typeCheckFixture } from "../helpers";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -27,5 +27,15 @@ describe("usage `@visulima/find-cache-directory` npm package", () => {
         const received = execScriptSync(filename);
 
         expect(received).toStrictEqual(join(__dirname, "..", "..", "node_modules", ".cache"));
+    });
+
+    it(`should expose correct types via dist/*.d.ts`, () => {
+        expect.assertions(2);
+
+        const packageRoot = join(__dirname, "..", "..");
+        const result = typeCheckFixture(packageRoot, "__fixtures__/package/types/tsconfig.json");
+
+        expect(result.output).toBe("");
+        expect(result.code).toBe(0);
     });
 });

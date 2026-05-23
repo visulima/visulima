@@ -62,14 +62,11 @@ Repository: git+https://github.com/colinhacks/zod.git
 <!-- TYPE_DEPENDENCIES -->
 
 # Licenses of bundled types
-
 The published @visulima/api-platform artifact additionally contains code with the following licenses:
 ISC, MIT
 
 # Bundled types:
-
 ## @types/cors
-
 License: MIT
 By: Alan Plum, Gaurav Sharma, Sebastian Beltran
 Repository: https://github.com/DefinitelyTyped/DefinitelyTyped.git
@@ -96,10 +93,9 @@ Repository: https://github.com/DefinitelyTyped/DefinitelyTyped.git
 >     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 >     SOFTWARE
 
----
+---------------------------------------
 
 ## @visulima/crud
-
 License: MIT
 By: Daniel Bannert
 Repository: https://github.com/visulima/visulima.git
@@ -129,14 +125,11 @@ Repository: https://github.com/visulima/visulima.git
 > <!-- DEPENDENCIES -->
 >
 > # Licenses of bundled dependencies
->
 > The published @visulima/crud artifact additionally contains code with the following licenses:
 > MIT
 >
 > # Bundled dependencies:
->
 > ## dot-prop
->
 > License: MIT
 > By: Sindre Sorhus
 > Repository: sindresorhus/dot-prop
@@ -153,15 +146,14 @@ Repository: https://github.com/visulima/visulima.git
 >
 > <!-- /DEPENDENCIES -->
 >
-> # Licenses of bundled types
 >
+>
+> # Licenses of bundled types
 > The published @visulima/crud artifact additionally contains code with the following licenses:
 > MIT
 >
 > # Bundled types:
->
 > ## next
->
 > License: MIT
 > Repository: vercel/next.js
 >
@@ -187,10 +179,9 @@ Repository: https://github.com/visulima/visulima.git
 > > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > > SOFTWARE.
 
----
+---------------------------------------
 
 ## rate-limiter-flexible
-
 License: ISC
 By: animir
 Repository: git+https://github.com/animir/node-rate-limiter-flexible.git

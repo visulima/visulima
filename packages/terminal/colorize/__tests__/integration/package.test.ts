@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
-import { esc, execScriptSync } from "../helpers";
+import { esc, execScriptSync, typeCheckFixture } from "../helpers";
 
 describe("usage `@visulima/colorize` npm package", () => {
     it(`should work as CommonJS package`, () => {
@@ -49,5 +49,15 @@ describe("usage `@visulima/colorize` npm package", () => {
                 + "striped:  green text";
 
         expect(esc(received)).toStrictEqual(esc(expected));
+    });
+
+    it(`should expose correct types via dist/*.d.ts`, () => {
+        expect.assertions(2);
+
+        const packageRoot = join(dirname(fileURLToPath(import.meta.url)), "../..");
+        const result = typeCheckFixture(packageRoot, "__fixtures__/package/types/tsconfig.json");
+
+        expect(result.output).toBe("");
+        expect(result.code).toBe(0);
     });
 });

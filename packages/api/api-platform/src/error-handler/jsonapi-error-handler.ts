@@ -1,6 +1,13 @@
-import { HttpError } from "http-errors";
+// http-errors is a CJS module that attaches named class exports as properties of its default
+// `createHttpError` function. A named ESM import (`import { HttpError } from "http-errors"`)
+// produces an ESM bundle that Node refuses to load with "Named export 'HttpError' not found".
+// Read the class off the default import instead so packem emits a CJS-compatible shape.
+import createHttpError from "http-errors";
 import { getReasonPhrase } from "http-status-codes";
 import tsJapi from "ts-japi";
+
+const HttpError: typeof createHttpError.HttpError = createHttpError.HttpError;
+type HttpError = InstanceType<typeof createHttpError.HttpError>;
 
 import type { ErrorHandler } from "./types";
 import { addStatusCodeToResponse, sendJson, setErrorHeaders } from "./utils";
