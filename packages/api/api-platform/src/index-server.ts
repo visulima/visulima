@@ -24,46 +24,56 @@ export type {
     ValueOrPromise,
 } from "@visulima/connect";
 export { createEdgeRouter, EdgeRouter, expressWrapper, NodeRouter, Router, sendJson, withZod } from "@visulima/connect";
-export {
-    BadGateway,
-    BadRequest,
-    BandwidthLimitExceeded,
-    Conflict,
-    default as createHttpError,
-    ExpectationFailed,
-    FailedDependency,
-    Forbidden,
-    GatewayTimeout,
-    Gone,
-    HTTPVersionNotSupported,
-    ImATeapot,
-    InsufficientStorage,
-    InternalServerError,
-    LengthRequired,
-    Locked,
-    LoopDetected,
-    MethodNotAllowed,
-    MisdirectedRequest,
-    NetworkAuthenticationRequire,
-    NotAcceptable,
-    NotExtended,
-    NotFound,
-    NotImplemented,
-    PayloadTooLarge,
-    PaymentRequired,
-    PreconditionFailed,
-    PreconditionRequired,
-    ProxyAuthenticationRequired,
-    RangeNotSatisfiable,
-    RequestHeaderFieldsTooLarge,
-    RequestTimeout,
-    ServiceUnavailable,
-    TooManyRequests,
-    Unauthorized,
-    UnavailableForLegalReasons,
-    UnprocessableEntity,
-    UnsupportedMediaType,
-    UpgradeRequired,
-    URITooLong,
-    VariantAlsoNegotiates,
-} from "http-errors";
+// http-errors is a CJS module that attaches its named error classes as properties of the
+// default `createHttpError` function. Re-exporting those names directly via `export … from
+// "http-errors"` produces an ESM bundle that Node refuses to load with "Named export not
+// found". Read each class off the default import so packem emits a CJS-compatible shape.
+import createHttpError from "http-errors";
+
+export const BadGateway: typeof createHttpError.BadGateway = createHttpError.BadGateway;
+export const BadRequest: typeof createHttpError.BadRequest = createHttpError.BadRequest;
+export const BandwidthLimitExceeded: typeof createHttpError.BandwidthLimitExceeded = createHttpError.BandwidthLimitExceeded;
+export const Conflict: typeof createHttpError.Conflict = createHttpError.Conflict;
+export const ExpectationFailed: typeof createHttpError.ExpectationFailed = createHttpError.ExpectationFailed;
+export const FailedDependency: typeof createHttpError.FailedDependency = createHttpError.FailedDependency;
+export const Forbidden: typeof createHttpError.Forbidden = createHttpError.Forbidden;
+export const GatewayTimeout: typeof createHttpError.GatewayTimeout = createHttpError.GatewayTimeout;
+export const Gone: typeof createHttpError.Gone = createHttpError.Gone;
+export const HTTPVersionNotSupported: typeof createHttpError.HTTPVersionNotSupported = createHttpError.HTTPVersionNotSupported;
+export const ImATeapot: typeof createHttpError.ImATeapot = createHttpError.ImATeapot;
+export const InsufficientStorage: typeof createHttpError.InsufficientStorage = createHttpError.InsufficientStorage;
+export const InternalServerError: typeof createHttpError.InternalServerError = createHttpError.InternalServerError;
+export const LengthRequired: typeof createHttpError.LengthRequired = createHttpError.LengthRequired;
+export const Locked: typeof createHttpError.Locked = createHttpError.Locked;
+export const LoopDetected: typeof createHttpError.LoopDetected = createHttpError.LoopDetected;
+export const MethodNotAllowed: typeof createHttpError.MethodNotAllowed = createHttpError.MethodNotAllowed;
+export const MisdirectedRequest: typeof createHttpError.MisdirectedRequest = createHttpError.MisdirectedRequest;
+// `@types/http-errors` declares `NetworkAuthenticationRequire` (typo) while runtime
+// http-errors exposes `NetworkAuthenticationRequired`. Match the type name for API
+// compatibility but read from the actual runtime property so the value isn't undefined.
+export const NetworkAuthenticationRequire: typeof createHttpError.NetworkAuthenticationRequire = (
+    createHttpError as unknown as { NetworkAuthenticationRequired: typeof createHttpError.NetworkAuthenticationRequire }
+).NetworkAuthenticationRequired;
+export const NotAcceptable: typeof createHttpError.NotAcceptable = createHttpError.NotAcceptable;
+export const NotExtended: typeof createHttpError.NotExtended = createHttpError.NotExtended;
+export const NotFound: typeof createHttpError.NotFound = createHttpError.NotFound;
+export const NotImplemented: typeof createHttpError.NotImplemented = createHttpError.NotImplemented;
+export const PayloadTooLarge: typeof createHttpError.PayloadTooLarge = createHttpError.PayloadTooLarge;
+export const PaymentRequired: typeof createHttpError.PaymentRequired = createHttpError.PaymentRequired;
+export const PreconditionFailed: typeof createHttpError.PreconditionFailed = createHttpError.PreconditionFailed;
+export const PreconditionRequired: typeof createHttpError.PreconditionRequired = createHttpError.PreconditionRequired;
+export const ProxyAuthenticationRequired: typeof createHttpError.ProxyAuthenticationRequired = createHttpError.ProxyAuthenticationRequired;
+export const RangeNotSatisfiable: typeof createHttpError.RangeNotSatisfiable = createHttpError.RangeNotSatisfiable;
+export const RequestHeaderFieldsTooLarge: typeof createHttpError.RequestHeaderFieldsTooLarge = createHttpError.RequestHeaderFieldsTooLarge;
+export const RequestTimeout: typeof createHttpError.RequestTimeout = createHttpError.RequestTimeout;
+export const ServiceUnavailable: typeof createHttpError.ServiceUnavailable = createHttpError.ServiceUnavailable;
+export const TooManyRequests: typeof createHttpError.TooManyRequests = createHttpError.TooManyRequests;
+export const Unauthorized: typeof createHttpError.Unauthorized = createHttpError.Unauthorized;
+export const UnavailableForLegalReasons: typeof createHttpError.UnavailableForLegalReasons = createHttpError.UnavailableForLegalReasons;
+export const UnprocessableEntity: typeof createHttpError.UnprocessableEntity = createHttpError.UnprocessableEntity;
+export const UnsupportedMediaType: typeof createHttpError.UnsupportedMediaType = createHttpError.UnsupportedMediaType;
+export const UpgradeRequired: typeof createHttpError.UpgradeRequired = createHttpError.UpgradeRequired;
+export const URITooLong: typeof createHttpError.URITooLong = createHttpError.URITooLong;
+export const VariantAlsoNegotiates: typeof createHttpError.VariantAlsoNegotiates = createHttpError.VariantAlsoNegotiates;
+
+export { createHttpError };

@@ -1,0 +1,10 @@
+{
+    "name": "fmt-cjs",
+    "version": "0.0.0",
+    "private": true,
+    "description": "Runtime smoke test fixture (CJS)",
+    "type": "commonjs",
+    "dependencies": {
+        "@visulima/fmt": "workspace:*"
+    }
+}
