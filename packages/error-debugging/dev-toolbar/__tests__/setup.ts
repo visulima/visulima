@@ -1,57 +1,124 @@
 import * as matchers from "@testing-library/jest-dom/matchers";
-import { expect } from "vitest";
+import { beforeEach, expect } from "vitest";
 
 expect.extend(matchers);
 
-// Node 25 ships a built-in `localStorage`/`sessionStorage` global (gated on
+// Node 25 ships a partial `localStorage`/`sessionStorage` (gated on
 // `--experimental-webstorage`/`--localstorage-file`) that shadows jsdom's
-// per-window Storage. The native object may be a partial implementation
-// missing methods like `clear`, and CI prints
-//   `--localstorage-file was provided without a valid path`
-// before any of these tests run. Force jsdom's Storage onto globalThis so
-// bare `localStorage.*` calls in test files work on Node 22/24/25.
-//
-// We can't always replace the descriptor — Node may install localStorage as a
-// non-configurable accessor — so as a last resort we monkey-patch the missing
-// Storage methods onto whatever the native global already exposes.
-// eslint-disable-next-line sonarjs/different-types-comparison -- `globalThis.window` is undefined outside jsdom.
-if (globalThis.window !== undefined) {
+// per-window Storage. The native stub is missing methods like `clear`/`key`
+// and may be non-configurable on globalThis, so even Object.defineProperty
+// can't replace it. We install a Map-backed Storage polyfill on `window`
+// AND mirror it onto `globalThis` so bare `localStorage.*` calls work.
+
+class MapStorage implements Storage {
+    // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
+    readonly #map = new Map<string, string>();
+
+    get length(): number {
+        return this.#map.size;
+    }
+
+    clear(): void {
+        this.#map.clear();
+    }
+
+    getItem(key: string): string | null {
+        return this.#map.get(key) ?? null;
+    }
+
+    key(index: number): string | null {
+        return [...this.#map.keys()][index] ?? null;
+    }
+
+    removeItem(key: string): void {
+        this.#map.delete(key);
+    }
+
+    setItem(key: string, value: string): void {
+        this.#map.set(key, String(value));
+    }
+
+    [name: string]: unknown;
+}
+
+const STORAGE_KEYS = ["localStorage", "sessionStorage"] as const;
+
+const installStoragePolyfill = (): void => {
+    // eslint-disable-next-line sonarjs/different-types-comparison -- `globalThis.window` is undefined outside jsdom.
+    if (typeof globalThis.window === "undefined") {
+        return;
+    }
+
     const jsdomWindow = globalThis.window;
 
-    for (const key of ["localStorage", "sessionStorage"] as const) {
+    for (const key of STORAGE_KEYS) {
+        // Prefer jsdom's Storage; fall back to MapStorage if jsdom didn't install one.
         const jsdomStorage = jsdomWindow[key];
+        // eslint-disable-next-line sonarjs/different-types-comparison
+        const replacement: Storage = jsdomStorage !== undefined && typeof jsdomStorage.clear === "function"
+            ? jsdomStorage
+            : new MapStorage();
 
-        // Strategy 1: replace the descriptor outright. Works when the native
-        // global is configurable (most current Node 25 builds) or unset.
+        // Strategy 1: replace globalThis descriptor outright (works when configurable).
+        let installed = false;
+
         try {
             Object.defineProperty(globalThis, key, {
                 configurable: true,
-                get: () => jsdomStorage,
+                enumerable: true,
+                value: replacement,
+                writable: true,
             });
+            installed = true;
         } catch {
-            // Strategy 2: plain assignment for writable data descriptors.
-            try {
-                (globalThis as unknown as Record<string, Storage>)[key] = jsdomStorage;
-            } catch {
-                // ignore — fall through to monkey-patch below.
-            }
+            // ignore — fall through to per-method patch
         }
 
-        // Strategy 3: if globalThis[key] still isn't jsdom's Storage (e.g. Node
-        // pinned a non-configurable, non-writable accessor), patch the native
-        // object so the public Storage surface delegates to jsdom.
-        const current = (globalThis as unknown as Record<string, Storage | undefined>)[key];
+        // Strategy 2: native global is non-configurable; patch missing methods.
+        if (!installed) {
+            const current = (globalThis as unknown as Record<string, Storage | undefined>)[key];
 
-        if (current !== undefined && current !== jsdomStorage) {
-            for (const method of ["clear", "getItem", "key", "removeItem", "setItem"] as const) {
-                if (typeof (current as unknown as Record<string, unknown>)[method] !== "function") {
+            if (current !== undefined && current !== replacement) {
+                for (const method of ["clear", "getItem", "key", "removeItem", "setItem"] as const) {
+                    if (typeof (current as unknown as Record<string, unknown>)[method] === "function") {
+                        continue;
+                    }
+
                     try {
-                        (current as unknown as Record<string, unknown>)[method] = (jsdomStorage[method] as (...arguments_: unknown[]) => unknown).bind(jsdomStorage);
+                        Object.defineProperty(current, method, {
+                            configurable: true,
+                            value: (replacement[method] as (...arguments_: unknown[]) => unknown).bind(replacement),
+                            writable: true,
+                        });
                     } catch {
-                        // ignore — at this point the native is fully locked down.
+                        // last resort: plain assignment
+                        try {
+                            (current as unknown as Record<string, unknown>)[method] = (replacement[method] as (...arguments_: unknown[]) => unknown).bind(replacement);
+                        } catch {
+                            // native is fully locked; nothing more we can do
+                        }
                     }
                 }
             }
         }
+
+        // Mirror onto window so `window.localStorage` and bare `localStorage` agree.
+        try {
+            Object.defineProperty(jsdomWindow, key, {
+                configurable: true,
+                enumerable: true,
+                value: replacement,
+                writable: true,
+            });
+        } catch {
+            // ignore
+        }
     }
-}
+};
+
+installStoragePolyfill();
+
+// Re-install before each test in case vitest's module isolation resets globals.
+beforeEach(() => {
+    installStoragePolyfill();
+});
