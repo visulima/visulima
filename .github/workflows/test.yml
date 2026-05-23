@@ -299,8 +299,12 @@ jobs:
                       pnpm run test:affected
                   fi
 
+            # Coverage upload is best-effort: when only workflow/config files
+            # change, test:affected runs no tests → no coverage files → codecov
+            # CLI exits non-zero. Don't fail the job for that.
             - name: "Upload code coverage to codecov"
               if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 22 && !matrix.deno_version && !matrix.bun_version"
+              continue-on-error: true
               uses: "anolilab/workflows/step/codecov@3c54b71af67bdd990513c4a17fa2fde078db7b74" # main
               with:
                   run-lint: "needs.files-changed.outputs.codecov == 'true'"
