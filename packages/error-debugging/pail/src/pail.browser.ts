@@ -234,6 +234,12 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
             // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
             (this.force as any)[type] = this.logger.bind(this, type as T, false, true);
         }
+
+        // `raw` is a prototype method that reads `this.disabled`. Callers like
+        // `(logger.raw ?? logger.log)(...)` extract it as a value, which would
+        // strip the receiver — bind it on the instance to keep parity with the
+        // type-keyed methods above.
+        this.raw = this.raw.bind(this);
     }
 
     /**
