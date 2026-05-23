@@ -126,6 +126,16 @@ export class ServiceEventBridge {
 
     readonly #liveness = new Map<string, LivenessHandle>();
 
+    /**
+     * Children spawned by `#retryEphemeral` we still need to await on
+     * dispose. In production the respawn is fire-and-forget, but in
+     * tests the spawned child can briefly hold the cwd directory open
+     * after exit on Windows, causing `rmSync` to fail with EBUSY. The
+     * dispose path drains this set with a short timeout so test cleanup
+     * is deterministic without breaking real respawns.
+     */
+    readonly #pendingRespawns = new Set<Promise<void>>();
+
     public constructor(input: ServiceEventBridgeInput) {
         this.#indexToId = input.indexToId;
         this.#services = new Map(input.services);
@@ -281,6 +291,19 @@ export class ServiceEventBridge {
     public async dispose(): Promise<void> {
         for (const id of [...this.#tails.keys(), ...this.#liveness.keys()]) {
             this.#stopWatchers(id);
+        }
+
+        if (this.#pendingRespawns.size > 0) {
+            // 2 s is plenty for a respawn that's exiting (no-such-script,
+            // crash on boot) but short enough that a *successful* respawn
+            // — which keeps running indefinitely — doesn't hang dispose.
+            await Promise.race([
+                Promise.all([...this.#pendingRespawns]),
+                new Promise<void>((resolve) => {
+                    setTimeout(resolve, 2000);
+                }),
+            ]);
+            this.#pendingRespawns.clear();
         }
 
         this.#partialLines.clear();
@@ -526,6 +549,18 @@ export class ServiceEventBridge {
         child.on("error", (error) => {
             this.#sink.failed(id, "respawn-error", { message: error.message });
         });
+
+        const exited = new Promise<void>((resolve) => {
+            const settle = (): void => {
+                this.#pendingRespawns.delete(exited);
+                resolve();
+            };
+
+            child.once("exit", settle);
+            child.once("error", settle);
+        });
+
+        this.#pendingRespawns.add(exited);
     }
 
     #feedRespawnStream(id: string, chunk: Buffer): void {

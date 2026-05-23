@@ -1,6 +1,6 @@
 import type { ChildProcess } from "node:child_process";
 import { spawn } from "node:child_process";
-import { open } from "node:fs/promises";
+import { closeSync, openSync } from "node:fs";
 
 import { REGISTRY_FILE_MODE } from "./registry";
 
@@ -41,38 +41,36 @@ export const spawnDetached = async (input: SpawnDetachedInput): Promise<SpawnDet
     // forensic trail; truncating would lose the crash output. Mode
     // 0o600 keeps the captured stdout (which often contains DB URLs,
     // tokens, OAuth secrets) private to the owning user on shared hosts.
-    const logHandle = await open(logFile, "a", REGISTRY_FILE_MODE);
-
-    await logHandle.close().catch(() => {});
+    //
+    // The fd is handed straight to `stdio[1]/[2]` so the child inherits
+    // it as its stdout/stderr. We previously used the shell's own `>>`
+    // redirect, but `detached + stdio: "ignore"` on Windows starves
+    // cmd.exe of the parent handles it needs to set up the redirect,
+    // and the log silently stays empty. Passing an explicit fd skips
+    // cmd's redirect machinery entirely.
+    const logFd = openSync(logFile, "a", REGISTRY_FILE_MODE);
 
     let child: ChildProcess;
 
-    // Inheriting a Node-opened fd into a Windows detached child is
-    // unreliable — the duplicated handle is occasionally lost between
-    // the parent close and the child write, dropping the captured
-    // output. Use the shell's own append-redirection so the child opens
-    // its log file directly (POSIX honors the same syntax).
-    const redirectedCommand = isWindows
-        ? `${command} >> "${logFile}" 2>&1`
-        : `${command} >> ${JSON.stringify(logFile)} 2>&1`;
     const shell = isWindows ? "cmd" : "/bin/sh";
-    const args = isWindows ? ["/d", "/s", "/c", redirectedCommand] : ["-c", redirectedCommand];
+    const args = isWindows ? ["/d", "/s", "/c", command] : ["-c", command];
 
-    child = spawn(shell, args, {
-        cwd,
-        detached: true,
-        env: { ...process.env, ...env },
-        stdio: "ignore",
-        // Windows: spawn in a new console so the child isn't tied
-        // to this terminal's lifetime.
-        windowsHide: true,
-        // `redirectedCommand` carries the embedded quotes that wrap the
-        // log path. Node's default Windows arg quoting escapes inner `"`
-        // as `\"` — which cmd.exe doesn't understand, so the child never
-        // starts. Verbatim mode passes the string through unchanged; the
-        // `/s /c` pair below preserves it.
-        ...(isWindows ? { windowsVerbatimArguments: true } : {}),
-    });
+    try {
+        child = spawn(shell, args, {
+            cwd,
+            detached: true,
+            env: { ...process.env, ...env },
+            stdio: ["ignore", logFd, logFd],
+            // Windows: spawn in a new console so the child isn't tied
+            // to this terminal's lifetime.
+            windowsHide: true,
+        });
+    } finally {
+        // The child has its own duplicated handle by the time spawn
+        // returns; closing here releases the parent's reference so
+        // GC / file locks don't linger past this function.
+        closeSync(logFd);
+    }
 
     if (child.pid === undefined) {
         // `spawn` only resolves PID after the OS confirms the fork. If
