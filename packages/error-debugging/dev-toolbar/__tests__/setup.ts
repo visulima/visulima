@@ -11,114 +11,122 @@ expect.extend(matchers);
 // AND mirror it onto `globalThis` so bare `localStorage.*` calls work.
 
 class MapStorage implements Storage {
-    // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
     readonly #map = new Map<string, string>();
 
-    get length(): number {
+    public get length(): number {
         return this.#map.size;
     }
 
-    clear(): void {
+    public clear(): void {
         this.#map.clear();
     }
 
-    getItem(key: string): string | null {
+    public getItem(key: string): string | null {
         return this.#map.get(key) ?? null;
     }
 
-    key(index: number): string | null {
+    public key(index: number): string | null {
         return [...this.#map.keys()][index] ?? null;
     }
 
-    removeItem(key: string): void {
+    public removeItem(key: string): void {
         this.#map.delete(key);
     }
 
-    setItem(key: string, value: string): void {
-        this.#map.set(key, String(value));
+    public setItem(key: string, value: string): void {
+        this.#map.set(key, value);
     }
 
     [name: string]: unknown;
 }
 
 const STORAGE_KEYS = ["localStorage", "sessionStorage"] as const;
+const STORAGE_METHODS = ["clear", "getItem", "key", "removeItem", "setItem"] as const;
+
+const tryDefineGlobal = (key: string, replacement: Storage): boolean => {
+    try {
+        Object.defineProperty(globalThis, key, {
+            configurable: true,
+            enumerable: true,
+            value: replacement,
+            writable: true,
+        });
+
+        return true;
+    } catch {
+        return false;
+    }
+};
+
+const patchMissingMethods = (current: Storage, replacement: Storage): void => {
+    for (const method of STORAGE_METHODS) {
+        if (typeof (current as unknown as Record<string, unknown>)[method] === "function") {
+            continue;
+        }
+
+        const bound = (replacement[method] as (...arguments_: unknown[]) => unknown).bind(replacement);
+
+        try {
+            Object.defineProperty(current, method, {
+                configurable: true,
+                value: bound,
+                writable: true,
+            });
+        } catch {
+            try {
+                (current as unknown as Record<string, unknown>)[method] = bound;
+            } catch {
+                // native is fully locked; nothing more we can do
+            }
+        }
+    }
+};
+
+const mirrorOntoWindow = (jsdomWindow: Window & typeof globalThis, key: string, replacement: Storage): void => {
+    try {
+        Object.defineProperty(jsdomWindow, key, {
+            configurable: true,
+            enumerable: true,
+            value: replacement,
+            writable: true,
+        });
+    } catch {
+        // ignore
+    }
+};
+
+const pickReplacement = (existing: Storage | undefined): Storage => {
+    if (existing !== undefined && typeof existing.clear === "function") {
+        return existing;
+    }
+
+    return new MapStorage();
+};
 
 const installStoragePolyfill = (): void => {
-    // eslint-disable-next-line sonarjs/different-types-comparison -- `globalThis.window` is undefined outside jsdom.
-    if (typeof globalThis.window === "undefined") {
+    const jsdomWindow = (globalThis as { window?: Window & typeof globalThis }).window;
+
+    if (jsdomWindow === undefined) {
         return;
     }
 
-    const jsdomWindow = globalThis.window;
-
     for (const key of STORAGE_KEYS) {
-        // Prefer jsdom's Storage; fall back to MapStorage if jsdom didn't install one.
-        const jsdomStorage = jsdomWindow[key];
-        // eslint-disable-next-line sonarjs/different-types-comparison
-        const replacement: Storage = jsdomStorage !== undefined && typeof jsdomStorage.clear === "function"
-            ? jsdomStorage
-            : new MapStorage();
+        const replacement = pickReplacement(jsdomWindow[key]);
 
-        // Strategy 1: replace globalThis descriptor outright (works when configurable).
-        let installed = false;
-
-        try {
-            Object.defineProperty(globalThis, key, {
-                configurable: true,
-                enumerable: true,
-                value: replacement,
-                writable: true,
-            });
-            installed = true;
-        } catch {
-            // ignore — fall through to per-method patch
-        }
-
-        // Strategy 2: native global is non-configurable; patch missing methods.
-        if (!installed) {
+        if (!tryDefineGlobal(key, replacement)) {
             const current = (globalThis as unknown as Record<string, Storage | undefined>)[key];
 
             if (current !== undefined && current !== replacement) {
-                for (const method of ["clear", "getItem", "key", "removeItem", "setItem"] as const) {
-                    if (typeof (current as unknown as Record<string, unknown>)[method] === "function") {
-                        continue;
-                    }
-
-                    try {
-                        Object.defineProperty(current, method, {
-                            configurable: true,
-                            value: (replacement[method] as (...arguments_: unknown[]) => unknown).bind(replacement),
-                            writable: true,
-                        });
-                    } catch {
-                        // last resort: plain assignment
-                        try {
-                            (current as unknown as Record<string, unknown>)[method] = (replacement[method] as (...arguments_: unknown[]) => unknown).bind(replacement);
-                        } catch {
-                            // native is fully locked; nothing more we can do
-                        }
-                    }
-                }
+                patchMissingMethods(current, replacement);
             }
         }
 
-        // Mirror onto window so `window.localStorage` and bare `localStorage` agree.
-        try {
-            Object.defineProperty(jsdomWindow, key, {
-                configurable: true,
-                enumerable: true,
-                value: replacement,
-                writable: true,
-            });
-        } catch {
-            // ignore
-        }
+        mirrorOntoWindow(jsdomWindow, key, replacement);
     }
 };
 
 installStoragePolyfill();
 
-// Re-install before each test in case vitest's module isolation resets globals.
 beforeEach(() => {
     installStoragePolyfill();
 });
