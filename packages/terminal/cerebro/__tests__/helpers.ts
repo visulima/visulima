@@ -22,6 +22,7 @@ export const execScriptSync = (file: string, flags: string[] = [], environment: 
  * Escape the slash `\` in ESC-symbol.
  * Use it to show by an error the received ESC sequence string in console output.
  */
+
 /**
  * Spawn `tsc --noEmit` against a fixture tsconfig so a broken dist/*.d.ts surfaces
  * as a failed test. Invokes the package's own `typescript` devDependency directly via
