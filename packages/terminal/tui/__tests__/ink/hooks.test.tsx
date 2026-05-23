@@ -1,20 +1,8 @@
-import { createRequire } from "node:module";
-
 import { strip as stripAnsi } from "@visulima/ansi";
 import { describe, expect, it } from "vitest";
 
+import { ptyAvailable } from "../helpers/ink-run";
 import term from "../helpers/ink-term";
-
-const ptyRequire = createRequire(import.meta.url);
-const ptyAvailable = (() => {
-    try {
-        ptyRequire("node-pty");
-
-        return true;
-    } catch {
-        return false;
-    }
-})();
 
 describe("hooks", () => {
     it.skipIf(!ptyAvailable)("useInput - ignore input if not active", async () => {

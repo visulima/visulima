@@ -1,4 +1,3 @@
-import { createRequire } from "node:module";
 import { join } from "node:path";
 import process from "node:process";
 import url from "node:url";
@@ -12,18 +11,8 @@ import { Text } from "../../src/components/index";
 import { useAnimation } from "../../src/ink/hooks/use-animation";
 import { render } from "../../src/ink/index";
 import createStdout from "../helpers/ink-create-stdout";
+import { ptyAvailable } from "../helpers/ink-run";
 import mockTimerCalls from "../helpers/mock-timer-calls";
-
-const _request = createRequire(import.meta.url);
-const ptyAvailable = (() => {
-    try {
-        _request("node-pty");
-
-        return true;
-    } catch {
-        return false;
-    }
-})();
 
 const __dirname = url.fileURLToPath(new URL(".", import.meta.url));
 

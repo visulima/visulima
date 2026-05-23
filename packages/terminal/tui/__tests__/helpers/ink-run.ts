@@ -17,9 +17,32 @@ const getSpawn = (): (typeof import("node-pty"))["spawn"] => {
     }
 };
 
+// Require-success isn't enough on macOS-15 GitHub-hosted runners: node-pty
+// loads but the native UnixTerminal constructor throws "posix_spawnp failed"
+// when the test actually tries to spawn. Smoke-test an actual spawn here so
+// every PTY-based test file can guard with `it.skipIf(!ptyAvailable)` and
+// the suite passes on hosts where PTY allocation is broken.
+export const ptyAvailable: boolean = (() => {
+    try {
+        const probeSpawn = getSpawn();
+        const probe = probeSpawn(process.platform === "win32" ? "cmd.exe" : "/bin/sh", process.platform === "win32" ? ["/c", "exit"] : ["-c", "exit 0"], {
+            cols: 80,
+            cwd: fixturesDirectory,
+            env: process.env as Record<string, string>,
+            name: "xterm-color",
+            rows: 24,
+        });
+
+        probe.kill();
+
+        return true;
+    } catch {
+        return false;
+    }
+})();
+
 type Run = (fixture: string, props?: { args?: string[]; columns?: number; env?: Record<string, string>; rows?: number }) => Promise<string>;
 
-// eslint-disable-next-line import/prefer-default-export
 export const run: Run = async (fixture, props) => {
     const spawn = getSpawn();
 
