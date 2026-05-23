@@ -175,7 +175,34 @@ jobs:
 
             # Pull the host-matching binaries produced by build-native.yml so benches that require
             # a compiled native binding (e.g. @visulima/tui, @visulima/task-runner) can load it.
+            #
+            # `secrets.GITHUB_TOKEN` returns transient HTTP 401 mid-download
+            # (observed on multi-MB artifact runs); dawidd6's v21 doesn't
+            # retry on auth failure, so wrap the step with a two-shot retry.
             - name: "Download native build artifacts"
+              id: "download_native_artifacts"
+              continue-on-error: true
+              uses: "dawidd6/action-download-artifact@b6e2e70617bc3265edd6dab6c906732b2f1ae151" # v21
+              with:
+                  workflow: "build-native.yml"
+                  commit: "${{ github.event.pull_request.head.sha || github.sha }}"
+                  name: "bindings-(.+)"
+                  name_is_regexp: true
+                  path: "artifacts"
+                  if_no_artifact_found: "warn"
+                  allow_forks: false
+
+            - name: "Wait before retrying artifact download"
+              if: "steps.download_native_artifacts.outcome == 'failure'"
+              shell: "bash"
+              run: "sleep 30"
+
+            - name: "Download native build artifacts (retry)"
+              if: "steps.download_native_artifacts.outcome == 'failure'"
+              # If the retry also 401s, distribute below will detect the
+              # missing artifacts dir and continue — preferable to failing
+              # the entire bench job on a transient token rotation.
+              continue-on-error: true
               uses: "dawidd6/action-download-artifact@b6e2e70617bc3265edd6dab6c906732b2f1ae151" # v21
               with:
                   workflow: "build-native.yml"
