@@ -1,7 +1,11 @@
 import { execFileSync } from "node:child_process";
 import { existsSync } from "node:fs";
+import { platform } from "node:os";
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
+const IS_WINDOWS = platform() === "win32";
+const WHICH_CMD = IS_WINDOWS ? "where" : "which";
 
 import type { AiProviderInfo } from "../src/index";
 import { buildCliArgs, detectAllProviders, detectAvailableProviders, detectProvider, PROVIDER_NAMES, PROVIDERS, runProvider } from "../src/index";
@@ -144,7 +148,7 @@ describe(detectProvider, () => {
         expect.assertions(4);
 
         mockExecFileSync.mockImplementation((cmd: string, args?: ReadonlyArray<string>) => {
-            if (cmd === "which" && args?.[0] === "claude") {
+            if (cmd === WHICH_CMD && args?.[0] === "claude") {
                 return "/usr/local/bin/claude\n";
             }
 
@@ -167,7 +171,7 @@ describe(detectProvider, () => {
         expect.assertions(2);
 
         mockExecFileSync.mockImplementation((cmd: string, args?: ReadonlyArray<string>) => {
-            if (cmd === "which" && args?.[0] === "openai-codex") {
+            if (cmd === WHICH_CMD && args?.[0] === "openai-codex") {
                 return "/usr/local/bin/openai-codex\n";
             }
 
@@ -188,7 +192,7 @@ describe(detectProvider, () => {
         expect.assertions(1);
 
         mockExecFileSync.mockImplementation((cmd: string, args?: ReadonlyArray<string>) => {
-            if (cmd === "which" && args?.[0] === "qwen-code") {
+            if (cmd === WHICH_CMD && args?.[0] === "qwen-code") {
                 return "/usr/local/bin/qwen-code\n";
             }
 
@@ -200,7 +204,7 @@ describe(detectProvider, () => {
         expect(result.available).toBe(true);
     });
 
-    it("should detect via known paths", () => {
+    it.skipIf(IS_WINDOWS)("should detect via known paths", () => {
         expect.assertions(3);
 
         mockExecFileSync.mockImplementation((_cmd: string, args?: ReadonlyArray<string>) => {
@@ -223,7 +227,7 @@ describe(detectProvider, () => {
         expect.assertions(2);
 
         mockExecFileSync.mockImplementation((cmd: string, args?: ReadonlyArray<string>) => {
-            if (cmd === "which" && args?.[0] === "claude") {
+            if (cmd === WHICH_CMD && args?.[0] === "claude") {
                 return "/usr/local/bin/claude\n";
             }
 
@@ -240,7 +244,7 @@ describe(detectProvider, () => {
         expect.assertions(1);
 
         mockExecFileSync.mockImplementation((cmd: string, args?: ReadonlyArray<string>) => {
-            if (cmd === "which" && args?.[0] === "gemini") {
+            if (cmd === WHICH_CMD && args?.[0] === "gemini") {
                 return "/usr/bin/gemini\n";
             }
 
@@ -260,7 +264,7 @@ describe(detectProvider, () => {
         expect.assertions(1);
 
         mockExecFileSync.mockImplementation((cmd: string, args?: ReadonlyArray<string>) => {
-            if (cmd === "which" && args?.[0] === "claude") {
+            if (cmd === WHICH_CMD && args?.[0] === "claude") {
                 return "/usr/bin/claude\n";
             }
 
@@ -280,7 +284,7 @@ describe(detectProvider, () => {
         expect.assertions(2);
 
         mockExecFileSync.mockImplementation((cmd: string, args?: ReadonlyArray<string>) => {
-            if (cmd === "which" && args?.[0] === "amp") {
+            if (cmd === WHICH_CMD && args?.[0] === "amp") {
                 return "/usr/local/bin/amp\n";
             }
 
@@ -359,7 +363,7 @@ describe(detectAvailableProviders, () => {
         expect.assertions(2);
 
         mockExecFileSync.mockImplementation((cmd: string, args?: ReadonlyArray<string>) => {
-            if (cmd === "which" && args?.[0] === "claude") {
+            if (cmd === WHICH_CMD && args?.[0] === "claude") {
                 return "/usr/bin/claude\n";
             }
 
@@ -376,7 +380,7 @@ describe(detectAvailableProviders, () => {
         expect.assertions(3);
 
         mockExecFileSync.mockImplementation((cmd: string, args?: ReadonlyArray<string>) => {
-            if (cmd === "which" && (args?.[0] === "claude" || args?.[0] === "amp")) {
+            if (cmd === WHICH_CMD && (args?.[0] === "claude" || args?.[0] === "amp")) {
                 return `/usr/bin/${args[0] as string}\n`;
             }
 
