@@ -92,7 +92,9 @@ describe("services/lifecycle", () => {
         cleanupTemporaryDirectory(homeOverride);
     });
 
-    it("starts a service, registers it, and stops it cleanly", async () => {
+    // 30s timeout: cmd.exe + node cold-start on Windows CI can exceed the
+    // vitest 5s default before the TCP readiness probe even runs.
+    it("starts a service, registers it, and stops it cleanly", { timeout: 30_000 }, async () => {
         expect.assertions(5);
 
         const port = await findFreePort();
@@ -131,7 +133,7 @@ describe("services/lifecycle", () => {
         await expect(readEntry(workspaceRoot, "fixture:db")).resolves.toBeUndefined();
     });
 
-    it("refuses to start a service that is already running", async () => {
+    it("refuses to start a service that is already running", { timeout: 30_000 }, async () => {
         expect.assertions(1);
 
         const port = await findFreePort();

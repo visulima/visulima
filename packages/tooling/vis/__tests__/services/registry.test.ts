@@ -280,24 +280,29 @@ describe("services/registry", () => {
             expect.assertions(1);
 
             // Same workspace, different ids → independent locks → must
-            // run concurrently (verified by total wall time < 2 × delay).
-            const start = Date.now();
+            // run concurrently. Earlier this asserted wall-clock < 180ms,
+            // but Windows CI saw 401ms purely from spawn/timer overhead
+            // even when both critical sections were genuinely overlapping.
+            // Track maxActive instead — it's 2 iff both locks were held
+            // at the same instant, regardless of how slow the runner is.
+            let active = 0;
+            let maxActive = 0;
+
+            const work = async (): Promise<void> => {
+                active += 1;
+                maxActive = Math.max(maxActive, active);
+                await new Promise((resolve) => {
+                    setTimeout(resolve, 100);
+                });
+                active -= 1;
+            };
 
             await Promise.all([
-                withServiceLock(workspaceRoot, "lock:a", async () => {
-                    await new Promise((resolve) => {
-                        setTimeout(resolve, 100);
-                    });
-                }),
-                withServiceLock(workspaceRoot, "lock:b", async () => {
-                    await new Promise((resolve) => {
-                        setTimeout(resolve, 100);
-                    });
-                }),
+                withServiceLock(workspaceRoot, "lock:a", work),
+                withServiceLock(workspaceRoot, "lock:b", work),
             ]);
 
-            // Generous slack for slow CI; serial would be > 200ms.
-            expect(Date.now() - start).toBeLessThan(180);
+            expect(maxActive).toBe(2);
         });
 
         it("releases the lock when the wrapped function throws", async () => {

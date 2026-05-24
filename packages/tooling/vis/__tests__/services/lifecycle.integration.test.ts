@@ -148,7 +148,11 @@ describe("services/lifecycle — end-to-end", () => {
         cleanupTemporaryDirectory(homeOverride);
     });
 
-    it("walks the full lifecycle: start → list → attach → stop → re-attach diagnostics", async () => {
+    // 30s timeout: this test spawns a node child + runs two readiness
+    // probes + a stop + sleep + a second attach. Windows CI cmd.exe +
+    // node cold-start can exceed the vitest 5s default before any of
+    // those finish.
+    it("walks the full lifecycle: start → list → attach → stop → re-attach diagnostics", { timeout: 30_000 }, async () => {
         expect.assertions(14);
 
         const port = await findFreePort();
@@ -251,7 +255,7 @@ describe("services/lifecycle — end-to-end", () => {
         expect(reAttach.diagnostics[0]?.message).toMatch(/vis service start/);
     });
 
-    it("demotes a registered service whose port is unreachable to the restart-service path", async () => {
+    it("demotes a registered service whose port is unreachable to the restart-service path", { timeout: 30_000 }, async () => {
         expect.assertions(4);
 
         // Start the service successfully, then immediately kill the
