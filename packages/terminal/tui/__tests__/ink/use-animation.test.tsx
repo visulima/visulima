@@ -1441,7 +1441,9 @@ describe(useAnimation, () => {
         unmount();
     });
 
-    it("delta approximates interval on each tick", async () => {
+    // Windows runners frequently don't deliver the first 50ms tick within an
+    // 80ms wait — the captured delta is 0 because Ink hasn't re-rendered yet.
+    it.skipIf(process.platform === "win32")("delta approximates interval on each tick", async () => {
         expect.assertions(3);
 
         const DeltaDisplay = () => {
@@ -1470,7 +1472,9 @@ describe(useAnimation, () => {
         unmount();
     });
 
-    it("delta accounts for throttled ticks", async () => {
+    // Windows runners can fail to flush a render within the 350ms throttle
+    // window, so lastRenderedDelta stays at 0 (initial value).
+    it.skipIf(process.platform === "win32")("delta accounts for throttled ticks", async () => {
         expect.assertions(2);
 
         let lastRenderedDelta = 0;
