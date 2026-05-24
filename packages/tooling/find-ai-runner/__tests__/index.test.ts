@@ -4,11 +4,11 @@ import { platform } from "node:os";
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const IS_WINDOWS = platform() === "win32";
-const WHICH_CMD = IS_WINDOWS ? "where" : "which";
-
 import type { AiProviderInfo } from "../src/index";
 import { buildCliArgs, detectAllProviders, detectAvailableProviders, detectProvider, PROVIDER_NAMES, PROVIDERS, runProvider } from "../src/index";
+
+const IS_WINDOWS = platform() === "win32";
+const WHICH_CMD = IS_WINDOWS ? "where" : "which";
 
 vi.mock(import("node:child_process"), () => {
     return {

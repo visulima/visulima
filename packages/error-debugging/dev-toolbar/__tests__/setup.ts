@@ -96,13 +96,11 @@ const mirrorOntoWindow = (jsdomWindow: typeof globalThis & Window, key: string, 
     }
 };
 
-const pickReplacement = (existing: Storage | undefined): Storage => {
-    if (existing !== undefined && typeof existing.clear === "function") {
-        return existing;
-    }
-
-    return new MapStorage();
-};
+// Always hand out a fresh MapStorage so per-test state isolation is uniform
+// across Node 22/24 (jsdom Storage with full surface) and Node 25 (experimental
+// stub with missing methods). Keeping the existing instance would persist state
+// across tests until something explicitly called clear().
+const pickReplacement = (_existing: Storage | undefined): Storage => new MapStorage();
 
 const installStoragePolyfill = (): void => {
     const jsdomWindow = (globalThis as { window?: typeof globalThis & Window }).window;

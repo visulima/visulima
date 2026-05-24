@@ -245,10 +245,9 @@ jobs:
 
             - name: "Download native build artifacts (retry)"
               if: "steps.download_native_artifacts.outcome == 'failure'"
-              # If the retry also 401s, distribute below will detect the
-              # missing artifacts dir and continue — preferable to failing
-              # the entire matrix shard on a transient token rotation.
-              continue-on-error: true
+              # No continue-on-error here: if the retry also fails, fail loud
+              # rather than silently running native-binding-dependent tests
+              # (secret-scanner, task-runner, etc.) against missing bindings.
               uses: "dawidd6/action-download-artifact@b6e2e70617bc3265edd6dab6c906732b2f1ae151" # v21
               with:
                   workflow: "build-native.yml"
@@ -465,10 +464,9 @@ jobs:
 
             - name: "Download native build artifacts (retry)"
               if: "steps.download_native_artifacts.outcome == 'failure'"
-              # If the retry also 401s, distribute below will detect the
-              # missing artifacts dir and continue — preferable to failing
-              # the entire matrix shard on a transient token rotation.
-              continue-on-error: true
+              # No continue-on-error here: if the retry also fails, fail loud
+              # rather than silently running native-binding-dependent tests
+              # (secret-scanner, task-runner, etc.) against missing bindings.
               uses: "dawidd6/action-download-artifact@b6e2e70617bc3265edd6dab6c906732b2f1ae151" # v21
               with:
                   workflow: "build-native.yml"
