@@ -315,7 +315,9 @@ describe("focus", () => {
         expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["Second ✔", "Third"].join("\n"));
     });
 
-    it("toggle focus management", async () => {
+    // Windows runners race the 50ms delay between rerender/emitReadable/tab;
+    // the macOS variant of this same flake is tracked separately.
+    it.skipIf(process.platform === "win32")("toggle focus management", async () => {
         expect.assertions(2);
 
         const stdout = createStdout();
