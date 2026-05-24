@@ -262,7 +262,7 @@ describe(createGetFileList, () => {
         }
 
         expect(mockFetch.mock.calls.length).toBeGreaterThanOrEqual(2);
-    }, 15000);
+    }, 15_000);
 
     it("should handle error response", async () => {
         expect.assertions(1);
