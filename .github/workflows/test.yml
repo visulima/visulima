@@ -164,7 +164,12 @@ jobs:
               uses: "denoland/setup-deno@667a34cdef165d8d2b2e98dde39547c9daac7282" # v2.0.4
               with:
                   deno-version: "${{ matrix.deno_version }}"
-                  cache: true
+                  # cache: true would tell the action's post-step to save
+                  # $DENO_DIR, but nothing in this job actually invokes deno
+                  # (the matrix entry only makes the binary available — tests
+                  # still run via node/vitest). The empty cache path then
+                  # fails Post Setup Deno with "Path Validation Error".
+                  cache: false
             - name: "Setup Bun"
               if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 22 && matrix.bun_version"
               uses: "oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6" # v2.2.0

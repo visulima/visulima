@@ -26,7 +26,11 @@ class CustomMockXMLHttpRequest extends MockXMLHttpRequest {
             }
         }, 10);
 
-        // Fire load event after upload completes (longer delay for this test)
+        // Fire load event after upload completes. Windows CI rerenders
+        // slowly enough that the 100ms gap between progress (10ms) and
+        // load (100ms) closed before waitFor() observed progress > 0 —
+        // the onSuccess handler reset progress back to 0. 500ms keeps
+        // the observable progress window wide enough for slow runners.
         setTimeout(() => {
             this.readyState = 4;
             this.status = 200;
@@ -39,7 +43,7 @@ class CustomMockXMLHttpRequest extends MockXMLHttpRequest {
                     handler(new Event("load"));
                 });
             }
-        }, 100);
+        }, 500);
     });
 
     public override getResponseHeader = vi.fn((header: string) => {
