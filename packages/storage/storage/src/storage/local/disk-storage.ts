@@ -4,7 +4,7 @@ import type { Readable } from "node:stream";
 import { pipeline } from "node:stream";
 
 import { ensureDir, ensureFile, move, readFile, remove, walk } from "@visulima/fs";
-import { isAbsolute, join, sep } from "@visulima/path";
+import { isAbsolute, join } from "@visulima/path";
 import etag from "etag";
 
 import { detectFileTypeFromStream } from "../../utils/detect-file-type";
@@ -542,10 +542,13 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
             const uploads: TFile[] = [];
 
             const { directory } = this;
-            // Normalize separators so the id is stable across OSes. On Windows, walk()
-            // may yield native backslash paths while `directory` could be either form,
-            // and a naive replace() would leave the absolute path intact when slashes diverge.
-            const normalizedDirectory = directory.split(sep).join("/");
+            // walk() yields native-separator paths (backslash on Windows); the storage
+            // `directory` is whatever the caller passed in (often native too). Normalize
+            // both to forward slashes so the relative id is `/a/b.txt` instead of the
+            // full drive-rooted absolute path on Windows. Note: `@visulima/path`'s `sep`
+            // is hardcoded to `/` cross-platform, so we replace `\\` directly here.
+            const toPosix = (value: string): string => value.replaceAll("\\", "/");
+            const normalizedDirectory = toPosix(directory);
 
             for await (const founding of walk(directory, config)) {
                 const { suffix } = this.meta;
@@ -553,7 +556,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
 
                 if (!path.includes(suffix)) {
                     const { birthtime, ctime, mtime } = await stat(path);
-                    const normalizedPath = path.split(sep).join("/");
+                    const normalizedPath = toPosix(path);
                     const id = normalizedPath.startsWith(normalizedDirectory)
                         ? normalizedPath.slice(normalizedDirectory.length)
                         : normalizedPath;
