@@ -1277,7 +1277,10 @@ describe(useAnimation, () => {
                 stdout,
             });
 
-            await delay(130);
+            // 50ms interval ticks; 130ms was too tight on loaded macOS-15 CI
+            // where React Suspense setup occasionally consumed the first tick
+            // window. 250ms guarantees ≥4 tick opportunities before sampling.
+            await delay(250);
             const frameBeforeSuspend = Number.parseInt(stdout.get(), 10);
 
             expect(frameBeforeSuspend).toBeGreaterThanOrEqual(1);
@@ -1294,7 +1297,7 @@ describe(useAnimation, () => {
 
             expect(frameAfterSuspend).toBeGreaterThanOrEqual(frameBeforeSuspend);
 
-            await delay(120);
+            await delay(250);
 
             expect(Number.parseInt(stdout.get(), 10)).toBeGreaterThan(frameAfterSuspend);
         } finally {
