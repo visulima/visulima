@@ -660,7 +660,9 @@ describe(DiskStorage, () => {
 
     describe("error conditions and edge cases", () => {
         describe("filesystem permissions", () => {
-            it("should handle EACCES permission errors during create", async () => {
+            // Windows does not enforce POSIX-style chmod 0o444, so the readonly directory
+            // remains writable and these EACCES expectations cannot be reproduced there.
+            it.skipIf(process.platform === "win32")("should handle EACCES permission errors during create", async () => {
                 expect.assertions(1);
 
                 const { cleanup, storage: readonlyStorage } = await createReadonlyStorage();
@@ -672,7 +674,7 @@ describe(DiskStorage, () => {
                 }
             });
 
-            it("should handle EACCES permission errors during write", async () => {
+            it.skipIf(process.platform === "win32")("should handle EACCES permission errors during write", async () => {
                 expect.assertions(1);
 
                 const { cleanup, storage: readonlyStorage } = await createReadonlyStorage();
