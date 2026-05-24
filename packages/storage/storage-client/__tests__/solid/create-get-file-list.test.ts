@@ -181,6 +181,8 @@ describe(createGetFileList, () => {
         expect(mockFetch).not.toHaveBeenCalled();
     });
 
+    // Windows runners exceed the 5s default while waiting for two TanStack
+    // Query refetch cycles — bump to 15s so the polling loops finish.
     it("should handle reactive limit and page", async () => {
         expect.assertions(2);
 
@@ -260,7 +262,7 @@ describe(createGetFileList, () => {
         }
 
         expect(mockFetch.mock.calls.length).toBeGreaterThanOrEqual(2);
-    });
+    }, 15000);
 
     it("should handle error response", async () => {
         expect.assertions(1);

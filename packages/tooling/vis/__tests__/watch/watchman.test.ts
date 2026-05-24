@@ -73,8 +73,12 @@ describe(startWatcher, () => {
         writeFileSync(join(directory, "a.txt"), "1");
         writeFileSync(join(directory, "b.txt"), "2");
 
+        // 400ms was too tight on macOS-15 — fs.watch sometimes hadn't
+        // delivered the first event before the wait expired, leaving
+        // changed.length at 0. 1500ms gives the native watcher time to
+        // register and debounce.
         await new Promise((resolve) => {
-            setTimeout(resolve, 400);
+            setTimeout(resolve, 1500);
         });
 
         handle.close();
