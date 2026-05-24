@@ -6,7 +6,7 @@ import type { ConcurrentCommandConfig, ProcessEvent } from "../../src/types";
 // Bun's child_process kill semantics differ from Node — the killTimeout
 // path doesn't propagate SIGTERM to the sleep subprocess fast enough,
 // so the "kill others on failure" test exceeds its 5s budget.
-const isBun = typeof (globalThis as { Bun?: unknown }).Bun !== "undefined";
+const isBun = (globalThis as { Bun?: unknown }).Bun !== undefined;
 
 const makeConfig = (command: string, name?: string): ConcurrentCommandConfig => {
     return {
