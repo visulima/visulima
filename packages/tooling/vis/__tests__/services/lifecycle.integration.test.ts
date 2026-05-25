@@ -257,80 +257,84 @@ describe("services/lifecycle — end-to-end", () => {
 
     // TODO(windows): skipped for the same TCP-readiness reason as the
     // full-lifecycle test above.
-    it.skipIf(process.platform === "win32")("demotes a registered service whose port is unreachable to the restart-service path", { timeout: 90_000 }, async () => {
-        expect.assertions(4);
+    it.skipIf(process.platform === "win32")(
+        "demotes a registered service whose port is unreachable to the restart-service path",
+        { timeout: 90_000 },
+        async () => {
+            expect.assertions(4);
 
-        // Start the service successfully, then immediately kill the
-        // child while *leaving the registry entry in place*. This is
-        // the "wrapper PID alive but server crashed" scenario that the
-        // probe-on-attach guard exists to catch.
-        const port = await findFreePort();
-        const dbId = "@app/api:db";
+            // Start the service successfully, then immediately kill the
+            // child while *leaving the registry entry in place*. This is
+            // the "wrapper PID alive but server crashed" scenario that the
+            // probe-on-attach guard exists to catch.
+            const port = await findFreePort();
+            const dbId = "@app/api:db";
 
-        const startResult = await startService({
-            command: `node -e "require('net').createServer(()=>{}).listen(${String(port)}, '127.0.0.1')"`,
-            config: {
+            const startResult = await startService({
+                command: `node -e "require('net').createServer(()=>{}).listen(${String(port)}, '127.0.0.1')"`,
+                config: {
+                    env: { DB_URL: `postgres://127.0.0.1:${String(port)}/app` },
+                    readiness: { tcp: { port, timeoutMs: 60_000 } },
+                },
+                cwd: workspaceRoot,
                 env: { DB_URL: `postgres://127.0.0.1:${String(port)}/app` },
-                readiness: { tcp: { port, timeoutMs: 60_000 } },
-            },
-            cwd: workspaceRoot,
-            env: { DB_URL: `postgres://127.0.0.1:${String(port)}/app` },
-            id: dbId,
-            workspaceRoot,
-        });
+                id: dbId,
+                workspaceRoot,
+            });
 
-        toCleanup.push(startResult.entry.pid);
+            toCleanup.push(startResult.entry.pid);
 
-        // Kill the listener but DON'T call stopService — we want the
-        // registry entry to outlive the actual server, simulating a
-        // crash mid-session. `killTree` handles the POSIX/Windows split.
-        killTree(startResult.entry.pid);
+            // Kill the listener but DON'T call stopService — we want the
+            // registry entry to outlive the actual server, simulating a
+            // crash mid-session. `killTree` handles the POSIX/Windows split.
+            killTree(startResult.entry.pid);
 
-        await sleep(200);
+            await sleep(200);
 
-        // Force-recreate the registry entry as if the wrapper were
-        // still alive — point it at *this* test process so isAlive()
-        // reports true. Without this, the dead-PID branch would prune
-        // the entry before the probe ever runs.
-        const allEntries = await readAllEntries(workspaceRoot);
-        const stillRegistered = allEntries.find((e) => e.id === dbId);
+            // Force-recreate the registry entry as if the wrapper were
+            // still alive — point it at *this* test process so isAlive()
+            // reports true. Without this, the dead-PID branch would prune
+            // the entry before the probe ever runs.
+            const allEntries = await readAllEntries(workspaceRoot);
+            const stillRegistered = allEntries.find((e) => e.id === dbId);
 
-        expect(stillRegistered).toBeDefined();
+            expect(stillRegistered).toBeDefined();
 
-        const fakedAlive = stillRegistered ? { ...stillRegistered, pid: process.pid } : undefined;
+            const fakedAlive = stillRegistered ? { ...stillRegistered, pid: process.pid } : undefined;
 
-        const testTask = buildTask("@app/api:test");
-        const dbTask = buildTask(dbId, {
-            service: { port, readiness: { tcp: { port, timeoutMs: 500 } } },
-        });
-        const taskGraph: TaskGraph = {
-            dependencies: { "@app/api:test": [dbId], [dbId]: [] },
-            roots: ["@app/api:test"],
-            tasks: { "@app/api:test": testTask, [dbId]: dbTask },
-        };
+            const testTask = buildTask("@app/api:test");
+            const dbTask = buildTask(dbId, {
+                service: { port, readiness: { tcp: { port, timeoutMs: 500 } } },
+            });
+            const taskGraph: TaskGraph = {
+                dependencies: { "@app/api:test": [dbId], [dbId]: [] },
+                roots: ["@app/api:test"],
+                tasks: { "@app/api:test": testTask, [dbId]: dbTask },
+            };
 
-        const attachResult = await applyServiceRegistry({
-            initialTasks: [testTask],
-            probe: async (entry) => {
-                try {
-                    await runReadiness(entry.config, { timeoutMs: 500 });
+            const attachResult = await applyServiceRegistry({
+                initialTasks: [testTask],
+                probe: async (entry) => {
+                    try {
+                        await runReadiness(entry.config, { timeoutMs: 500 });
 
-                    return true;
-                } catch {
-                    return false;
-                }
-            },
-            registeredEntries: fakedAlive ? [fakedAlive] : [],
-            taskGraph,
-            visVersion: startResult.entry.visVersion,
-        });
+                        return true;
+                    } catch {
+                        return false;
+                    }
+                },
+                registeredEntries: fakedAlive ? [fakedAlive] : [],
+                taskGraph,
+                visVersion: startResult.entry.visVersion,
+            });
 
-        // PID looks alive, port doesn't — probe rejects → diagnostic
-        // distinct from the missing-entry path: we tell the operator to
-        // *restart* (the wrapper is alive but the server is gone), not
-        // to *start*.
-        expect(attachResult.diagnostics).toHaveLength(1);
-        expect(attachResult.diagnostics[0]?.message).toMatch(/vis service restart/);
-        expect(attachResult.satisfiedServices).toStrictEqual([]);
-    });
+            // PID looks alive, port doesn't — probe rejects → diagnostic
+            // distinct from the missing-entry path: we tell the operator to
+            // *restart* (the wrapper is alive but the server is gone), not
+            // to *start*.
+            expect(attachResult.diagnostics).toHaveLength(1);
+            expect(attachResult.diagnostics[0]?.message).toMatch(/vis service restart/);
+            expect(attachResult.satisfiedServices).toStrictEqual([]);
+        },
+    );
 });

@@ -277,50 +277,58 @@ describe(runConcurrentFallback, () => {
         expect(stdoutEvents.some((e) => e.text === "no-newline")).toBe(true);
     });
 
-    it.skipIf(process.platform === "win32")("should handle PTY with interactive read prompt", async () => {
-        expect.assertions(3);
+    it.skipIf(process.platform === "win32")(
+        "should handle PTY with interactive read prompt",
+        async () => {
+            expect.assertions(3);
 
-        const events: ProcessEvent[] = [];
+            const events: ProcessEvent[] = [];
 
-        const result = await runConcurrentFallback([{ command: 'read -p "Name: " name && echo "Got: $name"', stdin: "pty" }], {
-            onEvent: (event) => {
-                events.push(event);
+            const result = await runConcurrentFallback([{ command: 'read -p "Name: " name && echo "Got: $name"', stdin: "pty" }], {
+                onEvent: (event) => {
+                    events.push(event);
 
-                if (event.kind === "started" && event.write) {
-                    // Wait for prompt to appear, then send input
-                    setTimeout(event.write, 500, "Alice\r");
-                }
-            },
-        });
+                    if (event.kind === "started" && event.write) {
+                        // Wait for prompt to appear, then send input
+                        setTimeout(event.write, 500, "Alice\r");
+                    }
+                },
+            });
 
-        expect(result.success).toBe(true);
+            expect(result.success).toBe(true);
 
-        const stdoutText = events
-            .filter((e) => e.kind === "stdout")
-            .map((e) => e.text)
-            .join("");
+            const stdoutText = events
+                .filter((e) => e.kind === "stdout")
+                .map((e) => e.text)
+                .join("");
 
-        expect(stdoutText).toContain("Name:");
-        expect(stdoutText).toContain("Got: Alice");
-    }, 10_000);
+            expect(stdoutText).toContain("Name:");
+            expect(stdoutText).toContain("Got: Alice");
+        },
+        10_000,
+    );
 
-    it.skipIf(process.platform === "win32")("should kill PTY processes in killAll", async () => {
-        expect.assertions(3);
+    it.skipIf(process.platform === "win32")(
+        "should kill PTY processes in killAll",
+        async () => {
+            expect.assertions(3);
 
-        const start = Date.now();
+            const start = Date.now();
 
-        const result = await runConcurrentFallback(
-            [
-                { command: "exit 1", name: "failer", stdin: "pty" },
-                { command: "sleep 30", name: "sleeper", stdin: "pty" },
-            ],
-            { killOthers: ["failure"] },
-        );
+            const result = await runConcurrentFallback(
+                [
+                    { command: "exit 1", name: "failer", stdin: "pty" },
+                    { command: "sleep 30", name: "sleeper", stdin: "pty" },
+                ],
+                { killOthers: ["failure"] },
+            );
 
-        const elapsed = Date.now() - start;
+            const elapsed = Date.now() - start;
 
-        expect(result.success).toBe(false);
-        expect(result.closeEvents).toHaveLength(2);
-        expect(elapsed).toBeLessThan(10_000);
-    }, 15_000);
+            expect(result.success).toBe(false);
+            expect(result.closeEvents).toHaveLength(2);
+            expect(elapsed).toBeLessThan(10_000);
+        },
+        15_000,
+    );
 });

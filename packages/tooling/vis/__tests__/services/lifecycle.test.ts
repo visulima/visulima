@@ -146,11 +146,7 @@ describe("services/lifecycle", () => {
             "listener-already.js",
             `require('net').createServer(() => {}).listen(${String(port)}, '127.0.0.1');`,
         );
-        const idleChildPath = await writeChildScript(
-            workspaceRoot,
-            "idle.js",
-            "setInterval(() => {}, 1000);",
-        );
+        const idleChildPath = await writeChildScript(workspaceRoot, "idle.js", "setInterval(() => {}, 1000);");
 
         const startResult = await startService({
             command: `node ${JSON.stringify(childPath)}`,
@@ -192,11 +188,7 @@ describe("services/lifecycle", () => {
         expect.assertions(2);
 
         const port = await findFreePort();
-        const idleChildPath = await writeChildScript(
-            workspaceRoot,
-            "idle-readiness.js",
-            "setInterval(() => {}, 1000);",
-        );
+        const idleChildPath = await writeChildScript(workspaceRoot, "idle-readiness.js", "setInterval(() => {}, 1000);");
 
         // Probe at port that nothing ever listens on. The spawned child is a
         // do-nothing sleep — readiness times out fast, lifecycle should

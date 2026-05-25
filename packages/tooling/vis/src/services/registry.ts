@@ -173,7 +173,7 @@ const renameWithRetry = async (from: string, to: string): Promise<void> => {
 
             return;
         } catch (error) {
-            const { code } = (error as NodeJS.ErrnoException);
+            const { code } = error as NodeJS.ErrnoException;
             const isTransient = code !== undefined && TRANSIENT_RENAME_CODES.has(code);
 
             if (!isTransient || attempt >= RENAME_MAX_ATTEMPTS) {

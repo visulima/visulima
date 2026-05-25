@@ -124,10 +124,7 @@ describe("vis run — `${affected.files}` token expansion", () => {
         captureArgvScript = join(workspaceRoot, "capture-argv.js");
         captureArgvEnvScript = join(workspaceRoot, "capture-argv-env.js");
 
-        writeFileSync(
-            captureArgvScript,
-            "require('fs').appendFileSync(process.env.CAPTURE, JSON.stringify(process.argv) + String.fromCharCode(10));\n",
-        );
+        writeFileSync(captureArgvScript, "require('fs').appendFileSync(process.env.CAPTURE, JSON.stringify(process.argv) + String.fromCharCode(10));\n");
         writeFileSync(
             captureArgvEnvScript,
             "require('fs').appendFileSync(process.env.CAPTURE, JSON.stringify({ argv: process.argv, env: process.env.VIS_AFFECTED_FILES || '' }) + String.fromCharCode(10));\n",

@@ -2742,7 +2742,12 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
                     const tail = output.length > TAIL_BYTES ? `…${output.slice(-TAIL_BYTES)}` : output;
                     const code = result.code ?? "?";
 
-                    failureDetails.push(`  ${taskId} (exit ${String(code)}):\n${tail.split("\n").map((l) => `    ${l}`).join("\n")}`);
+                    failureDetails.push(
+                        `  ${taskId} (exit ${String(code)}):\n${tail
+                            .split("\n")
+                            .map((l) => `    ${l}`)
+                            .join("\n")}`,
+                    );
                 }
 
                 throw new Error(failureDetails.length > 0 ? `${headline}\n${failureDetails.join("\n")}` : headline);

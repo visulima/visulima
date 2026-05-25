@@ -38,11 +38,7 @@ describe(spawnDetached, () => {
         expect.assertions(1);
 
         const logFile = join(temporaryDirectory, "test.log");
-        const childPath = await writeChildScript(
-            temporaryDirectory,
-            "child-alive.js",
-            "setInterval(() => {}, 1000);",
-        );
+        const childPath = await writeChildScript(temporaryDirectory, "child-alive.js", "setInterval(() => {}, 1000);");
 
         const { pid } = await spawnDetached({
             command: `node ${JSON.stringify(childPath)}`,
@@ -78,11 +74,7 @@ describe(spawnDetached, () => {
             expect.assertions(1);
 
             const logFile = join(temporaryDirectory, "out.log");
-            const childPath = await writeChildScript(
-                temporaryDirectory,
-                "child-stdout.js",
-                "console.log('hello-from-child'); setInterval(() => {}, 1000);",
-            );
+            const childPath = await writeChildScript(temporaryDirectory, "child-stdout.js", "console.log('hello-from-child'); setInterval(() => {}, 1000);");
 
             const { pid } = await spawnDetached({
                 command: `node ${JSON.stringify(childPath)}`,

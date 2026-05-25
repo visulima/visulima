@@ -557,9 +557,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
                 if (!path.includes(suffix)) {
                     const { birthtime, ctime, mtime } = await stat(path);
                     const normalizedPath = toPosix(path);
-                    const id = normalizedPath.startsWith(normalizedDirectory)
-                        ? normalizedPath.slice(normalizedDirectory.length)
-                        : normalizedPath;
+                    const id = normalizedPath.startsWith(normalizedDirectory) ? normalizedPath.slice(normalizedDirectory.length) : normalizedPath;
 
                     uploads.push({ createdAt: birthtime || ctime, id, modifiedAt: mtime } as TFile);
                 }

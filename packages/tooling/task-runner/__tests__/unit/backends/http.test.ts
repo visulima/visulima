@@ -54,9 +54,10 @@ const closeServer = (server: Server): Promise<void> =>
  */
 const tarball = (archivePath: string, sourceDirectory: string): Promise<void> =>
     new Promise((resolve, reject) => {
-        const args = process.platform === "win32"
-            ? ["--force-local", "-czf", archivePath, "-C", sourceDirectory, "."]
-            : ["-czf", archivePath, "-C", sourceDirectory, "."];
+        const args
+            = process.platform === "win32"
+                ? ["--force-local", "-czf", archivePath, "-C", sourceDirectory, "."]
+                : ["-czf", archivePath, "-C", sourceDirectory, "."];
 
         execFile("tar", args, (error) => {
             if (error) {

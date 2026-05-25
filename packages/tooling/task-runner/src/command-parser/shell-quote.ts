@@ -23,7 +23,10 @@ export const shellQuote = (value: string): string => {
     }
 
     if (process.platform === "win32") {
-        return `"${value.replaceAll("\\", "\\\\").replaceAll("\"", String.raw`\"`).replaceAll(/[\^&|<>]/g, "^$&")}"`;
+        return `"${value
+            .replaceAll("\\", "\\\\")
+            .replaceAll('"', String.raw`\"`)
+            .replaceAll(/[\^&|<>]/g, "^$&")}"`;
     }
 
     return `'${value.replaceAll("'", String.raw`'\''`)}'`;

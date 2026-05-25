@@ -20,9 +20,7 @@ export interface MatchOptions {
     contains?: boolean;
     debug?: boolean;
     dot?: boolean;
-    expandRange?:
-        | ((from: string, to: string, options: MatchOptions) => string)
-        | ((from: string, to: string, step: string, options: MatchOptions) => string);
+    expandRange?: ((from: string, to: string, options: MatchOptions) => string) | ((from: string, to: string, step: string, options: MatchOptions) => string);
     fastpaths?: boolean;
     flags?: string;
     format?: (string_: string) => string;

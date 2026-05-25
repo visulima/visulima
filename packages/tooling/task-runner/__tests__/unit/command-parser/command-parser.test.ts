@@ -159,7 +159,7 @@ describe(expandArguments, () => {
 
         const result = expandArguments(makeConfig("echo {*}"), ["a", "b", "c"]);
 
-        expect(result.command).toBe(process.platform === "win32" ? "echo \"a b c\"" : "echo 'a b c'");
+        expect(result.command).toBe(process.platform === "win32" ? 'echo "a b c"' : "echo 'a b c'");
     });
 
     it("should handle escaped placeholders", () => {

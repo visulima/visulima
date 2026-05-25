@@ -297,10 +297,7 @@ describe("services/registry", () => {
                 active -= 1;
             };
 
-            await Promise.all([
-                withServiceLock(workspaceRoot, "lock:a", work),
-                withServiceLock(workspaceRoot, "lock:b", work),
-            ]);
+            await Promise.all([withServiceLock(workspaceRoot, "lock:a", work), withServiceLock(workspaceRoot, "lock:b", work)]);
 
             expect(maxActive).toBe(2);
         });

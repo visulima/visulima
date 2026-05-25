@@ -55,30 +55,34 @@ afterAll(() => {
 const TEST_TIMEOUT_MS = (SAMPLE_COUNT + 2) * BUDGET_WITH_SLACK_MS + 5000;
 
 describe("audit-offline · advisoriesQuery 2.8k packages", () => {
-    it(`median of ${SAMPLE_COUNT} samples stays under the ${BUDGET_MS}ms budget (with 10× slack for CI hosts → ${BUDGET_WITH_SLACK_MS}ms)`, () => {
-        expect.assertions(2);
+    it(
+        `median of ${SAMPLE_COUNT} samples stays under the ${BUDGET_MS}ms budget (with 10× slack for CI hosts → ${BUDGET_WITH_SLACK_MS}ms)`,
+        () => {
+            expect.assertions(2);
 
-        // Warm pass to fault SQLite pages into the OS page cache; the budget
-        // describes steady-state query latency, not cold-cache open costs.
-        const warmHits = advisoriesQuery(dbPath, queries);
+            // Warm pass to fault SQLite pages into the OS page cache; the budget
+            // describes steady-state query latency, not cold-cache open costs.
+            const warmHits = advisoriesQuery(dbPath, queries);
 
-        expect(warmHits.length).toBe(PKG_COUNT);
+            expect(warmHits.length).toBe(PKG_COUNT);
 
-        const samples: number[] = [];
+            const samples: number[] = [];
 
-        for (let index = 0; index < SAMPLE_COUNT; index += 1) {
-            const start = performance.now();
+            for (let index = 0; index < SAMPLE_COUNT; index += 1) {
+                const start = performance.now();
 
-            advisoriesQuery(dbPath, queries);
+                advisoriesQuery(dbPath, queries);
 
-            samples.push(performance.now() - start);
-        }
+                samples.push(performance.now() - start);
+            }
 
-        const elapsed = median(samples);
+            const elapsed = median(samples);
 
-        expect(
-            elapsed,
-            `advisoriesQuery median took ${elapsed.toFixed(1)}ms over ${SAMPLE_COUNT} samples (budget ${BUDGET_MS}ms, ceiling ${BUDGET_WITH_SLACK_MS}ms; samples: [${samples.map((s) => s.toFixed(1)).join(", ")}])`,
-        ).toBeLessThan(BUDGET_WITH_SLACK_MS);
-    }, TEST_TIMEOUT_MS);
+            expect(
+                elapsed,
+                `advisoriesQuery median took ${elapsed.toFixed(1)}ms over ${SAMPLE_COUNT} samples (budget ${BUDGET_MS}ms, ceiling ${BUDGET_WITH_SLACK_MS}ms; samples: [${samples.map((s) => s.toFixed(1)).join(", ")}])`,
+            ).toBeLessThan(BUDGET_WITH_SLACK_MS);
+        },
+        TEST_TIMEOUT_MS,
+    );
 });
