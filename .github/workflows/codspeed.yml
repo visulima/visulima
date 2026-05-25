@@ -26,7 +26,10 @@ jobs:
     discover:
         name: "Discover affected benches"
         runs-on: "ubuntu-latest"
-        timeout-minutes: 30
+        # Wait-for-Build-Native can burn up to 55 min when runner queues
+        # back up; the discover work itself is fast (~2 min). 65 absorbs
+        # both with cushion.
+        timeout-minutes: 65
         outputs:
             matrix: "${{ steps.affected.outputs.matrix }}"
             has-benches: "${{ steps.affected.outputs.has-benches }}"
@@ -40,7 +43,11 @@ jobs:
               # Replaces lewagon/wait-on-check-action: its bundler Gemfile.lock pins
               # darwin-24/25 only, so macOS runners on darwin-23 fail bundle install.
               # Plain shell + gh api works on every runner without Ruby.
-              timeout-minutes: 30
+              # GitHub-hosted runner queue depth occasionally pushes the
+              # gate job's start time 30+ minutes past the last build
+              # completion. 55-min step ceiling + 50-min internal deadline
+              # gives enough slack to ride that out.
+              timeout-minutes: 55
               shell: "bash"
               env:
                   GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
@@ -49,7 +56,7 @@ jobs:
               run: |
                   set -euo pipefail
                   check_name="Check Native Build"
-                  deadline=$(( $(date +%s) + 1500 ))
+                  deadline=$(( $(date +%s) + 3000 ))
                   while :; do
                       # Transient HTTP 401s on secrets.GITHUB_TOKEN happen
                       # mid-poll (the token gets briefly rotated by Actions).
@@ -80,7 +87,7 @@ jobs:
                           echo "Check '$check_name' not yet registered, waiting 15s..."
                       fi
                       if [ "$(date +%s)" -ge "$deadline" ]; then
-                          echo "Timed out waiting for '$check_name' after 25 minutes"
+                          echo "Timed out waiting for '$check_name' after 50 minutes"
                           exit 1
                       fi
                       sleep 15
