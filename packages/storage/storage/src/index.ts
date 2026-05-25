@@ -1,4 +1,21 @@
-export type { DownloadResult, FileBody, FileObject, FilesOptions, ListOptions, SignedReadUrlOptions, SignedUploadUrlOptions, UploadOptions } from "./files";
+export type {
+    BulkDeleteResult,
+    BulkDownloadResult,
+    BulkError,
+    BulkExistsResult,
+    BulkHeadResult,
+    BulkOptions,
+    BulkUploadItem,
+    BulkUploadResult,
+    DownloadResult,
+    FileBody,
+    FileObject,
+    FilesOptions,
+    ListOptions,
+    SignedReadUrlOptions,
+    SignedUploadUrlOptions,
+    UploadOptions,
+} from "./files";
 export { Files } from "./files";
 export { waitForStorage } from "./handler/utils/storage-utils";
 export { NoOpMetrics, OpenTelemetryMetrics } from "./metrics";

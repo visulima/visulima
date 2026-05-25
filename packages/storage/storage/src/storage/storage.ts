@@ -332,7 +332,7 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
      */
     public async getReadUrl(
         _key: string,
-        _options?: { expiresIn?: number; responseContentDisposition?: string; responseContentType?: string },
+        _options?: OperationOptions & { expiresIn?: number; responseContentDisposition?: string; responseContentType?: string },
     ): Promise<string> {
         return throwErrorCode(ERRORS.METHOD_NOT_ALLOWED, `${this.constructor.name} does not implement getReadUrl()`);
     }
@@ -341,9 +341,12 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
      * Returns a presigned URL for uploading a single object to `key`.
      * Throws `ERRORS.METHOD_NOT_ALLOWED` when the adapter has no native presign support.
      * @param _key Storage key.
-     * @param _options Optional content type, expiry, and content length hints.
+     * @param _options Optional content type, expiry, and content length hints, plus per-call signal/timeout/retries.
      */
-    public async getUploadUrl(_key: string, _options?: { contentLength?: number; contentType?: string; expiresIn?: number }): Promise<string> {
+    public async getUploadUrl(
+        _key: string,
+        _options?: OperationOptions & { contentLength?: number; contentType?: string; expiresIn?: number },
+    ): Promise<string> {
         return throwErrorCode(ERRORS.METHOD_NOT_ALLOWED, `${this.constructor.name} does not implement getUploadUrl()`);
     }
 
@@ -374,10 +377,10 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
      * @returns Promise resolving to true if file exists, false otherwise.
      * @remarks This method does not throw errors - it returns false if the file is not found.
      */
-    public async exists(query: FileQuery): Promise<boolean> {
+    public async exists(query: FileQuery, options?: OperationOptions): Promise<boolean> {
         return this.instrumentOperation("exists", async () => {
             try {
-                await this.getMeta(query.id);
+                await this.getMeta(query.id, options);
 
                 return true;
             } catch {
@@ -476,7 +479,7 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
      * @throws {UploadError} If the file metadata cannot be found (ERRORS.FILE_NOT_FOUND).
      * @remarks Caches the retrieved metadata for faster subsequent access.
      */
-    public async getMeta(id: string): Promise<TFile> {
+    public async getMeta(id: string, _options?: OperationOptions): Promise<TFile> {
         try {
             const file = await this.meta.get(id);
 
@@ -563,11 +566,12 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
      * Gets an uploaded file by ID.
      * @param query File query containing the file ID to retrieve.
      * @param query.id File ID to retrieve.
+     * @param options Optional per-call signal/timeout/retries.
      * @returns Promise resolving to the file data including content.
      * @throws {UploadError} If the file cannot be found (ERRORS.FILE_NOT_FOUND) or has expired (ERRORS.GONE).
      * @remarks This method loads the entire file content into memory. For large files, use getStream() instead.
      */
-    public abstract get({ id }: FileQuery): Promise<TFileReturn>;
+    public abstract get({ id }: FileQuery, options?: OperationOptions): Promise<TFileReturn>;
 
     /**
      * Gets an uploaded file as a readable stream for efficient large file handling.
@@ -607,7 +611,7 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
      * @throws {Error} If not implemented by the storage backend.
      * @remarks Storage implementations must override this method.
      */
-    public async list(_limit = 1000): Promise<TFile[]> {
+    public async list(_limit = 1000, _options?: OperationOptions): Promise<TFile[]> {
         return this.instrumentOperation("list", async () => {
             throw new Error("Not implemented");
         });
@@ -658,44 +662,48 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
     /**
      * Creates a new upload and saves its metadata.
      * @param file File initialization configuration.
+     * @param options Optional per-call signal/timeout/retries.
      * @returns Promise resolving to the created file object.
      */
-    public abstract create(file: FileInit): Promise<TFile>;
+    public abstract create(file: FileInit, options?: OperationOptions): Promise<TFile>;
 
     /**
      * Writes part and/or returns status of an upload.
      * @param part File part, query, or full file object to write.
+     * @param options Optional per-call signal/timeout/retries.
      * @returns Promise resolving to the updated file object.
      */
-    public abstract write(part: FilePart | FileQuery | TFile): Promise<TFile>;
+    public abstract write(part: FilePart | FileQuery | TFile, options?: OperationOptions): Promise<TFile>;
 
     /**
      * Deletes an upload and its metadata.
      * @param query File query containing the file ID to delete.
      * @param query.id File ID to delete.
+     * @param options Optional per-call signal/timeout/retries.
      * @returns Promise resolving to the deleted file object with status: "deleted".
      * @throws {UploadError} If the file metadata cannot be found.
      */
-    public abstract delete(query: FileQuery): Promise<TFile>;
+    public abstract delete(query: FileQuery, options?: OperationOptions): Promise<TFile>;
 
     /**
      * Copies an upload file to a new location.
      * @param name Source file name/ID.
      * @param destination Destination file name/ID.
-     * @param options Optional copy options including storage class.
+     * @param options Optional copy options including storage class plus per-call signal/timeout/retries.
      * @returns Promise resolving to the copied file object.
      * @throws {UploadError} If the source file cannot be found.
      */
-    public abstract copy(name: string, destination: string, options?: { storageClass?: string }): Promise<TFile>;
+    public abstract copy(name: string, destination: string, options?: OperationOptions & { storageClass?: string }): Promise<TFile>;
 
     /**
      * Moves an upload file to a new location.
      * @param name Source file name/ID.
      * @param destination Destination file name/ID.
+     * @param options Optional per-call signal/timeout/retries.
      * @returns Promise resolving to the moved file object.
      * @throws {UploadError} If the source file cannot be found.
      */
-    public abstract move(name: string, destination: string): Promise<TFile>;
+    public abstract move(name: string, destination: string, options?: OperationOptions): Promise<TFile>;
 
     /**
      * Deletes multiple files in a single batch operation.
@@ -708,7 +716,7 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
      * Metrics are recorded for the batch operation and individual failures.
      * Returns both successful and failed operations with detailed error information.
      */
-    public async deleteBatch(ids: string[]): Promise<BatchOperationResponse<TFile>> {
+    public async deleteBatch(ids: string[], options?: OperationOptions): Promise<BatchOperationResponse<TFile>> {
         const startTime = Date.now();
         const storageType = this.constructor.name.toLowerCase().replace("storage", "");
 
@@ -723,7 +731,7 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
         // Process all deletions in parallel using Promise.allSettled
         const deletePromises = ids.map(async (id) => {
             try {
-                const file = await this.delete({ id });
+                const file = await this.delete({ id }, options);
 
                 return { file, id, success: true as const };
             } catch (error: unknown) {
