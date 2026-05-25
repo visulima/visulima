@@ -80,7 +80,7 @@
         "clean": "rimraf node_modules dist .eslintcache",
         "dev:hono": "packem build --development --watch --onSuccess 'node ./examples/hono/index.js'",
         "dev:node": "packem build --development --watch --onSuccess 'node ./examples/node/index.js'",
-        "lint:attw": "attw --pack",
+        "lint:attw": "attw --pack --profile esm-only",
         "lint:eslint": "eslint . --cache --concurrency auto",
         "lint:eslint:fix": "eslint . --cache --concurrency auto --fix",
         "lint:package-json": "publint --strict",

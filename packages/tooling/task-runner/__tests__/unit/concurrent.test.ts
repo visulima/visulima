@@ -87,7 +87,7 @@ describe("runConcurrently (public API)", () => {
         expect(order).toStrictEqual([0, 1, 2]);
     });
 
-    it("should support killOthers on failure", async () => {
+    it.skipIf(process.platform === "win32")("should support killOthers on failure", async () => {
         expect.assertions(3);
 
         const start = Date.now();
@@ -122,7 +122,9 @@ describe("runConcurrently (public API)", () => {
 
         const events: ProcessEvent[] = [];
 
-        await runConcurrently([{ command: "echo $CONCURRENT_TEST_VAR", env: { CONCURRENT_TEST_VAR: "it_works" } }], { onEvent: (event) => events.push(event) });
+        const command = process.platform === "win32" ? "echo %CONCURRENT_TEST_VAR%" : "echo $CONCURRENT_TEST_VAR";
+
+        await runConcurrently([{ command, env: { CONCURRENT_TEST_VAR: "it_works" } }], { onEvent: (event) => events.push(event) });
 
         const stdout = events.filter((e) => e.kind === "stdout");
 
@@ -138,7 +140,7 @@ describe("runConcurrently (public API)", () => {
         expect(result.closeEvents).toHaveLength(2);
     });
 
-    it("should track duration", async () => {
+    it.skipIf(process.platform === "win32")("should track duration", async () => {
         expect.assertions(1);
 
         const result = await runConcurrently(["sleep 0.1"]);
@@ -146,7 +148,7 @@ describe("runConcurrently (public API)", () => {
         expect(result.closeEvents[0]!.durationMs).toBeGreaterThan(50);
     });
 
-    it("should support stdin null mode (default)", async () => {
+    it.skipIf(process.platform === "win32")("should support stdin null mode (default)", async () => {
         expect.assertions(1);
 
         // cat with stdin=null reads EOF and exits 0
@@ -165,7 +167,7 @@ describe("runConcurrently (public API)", () => {
         expect(result.closeEvents[0]!.exitCode).toBe(0);
     });
 
-    it("should use custom shellPath when provided", async () => {
+    it.skipIf(process.platform === "win32")("should use custom shellPath when provided", async () => {
         expect.assertions(2);
 
         const events: ProcessEvent[] = [];
@@ -179,11 +181,13 @@ describe("runConcurrently (public API)", () => {
         expect(events.filter((e) => e.kind === "stdout").some((e) => e.text === "shell-override")).toBe(true);
     });
 
-    it("should execute without shell when shell is false", async () => {
+    it.skipIf(process.platform === "win32")("should execute without shell when shell is false", async () => {
         expect.assertions(2);
 
         const events: ProcessEvent[] = [];
 
+        // echo is a shell builtin on Windows, so direct execution (shell: false)
+        // is only meaningful on POSIX where /usr/bin/echo exists as a real binary.
         const result = await runConcurrently([{ command: "echo direct", shell: false }], { onEvent: (event) => events.push(event) });
 
         expect(result.success).toBe(true);

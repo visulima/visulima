@@ -27,21 +27,42 @@ jobs:
         if: "github.repository == 'visulima/visulima'"
         runs-on: "ubuntu-24.04"
         timeout-minutes: 3
-        # Map a step output to a job output
+        # Map a step output to a job output. dorny/paths-filter calls the
+        # GitHub API on first run, which intermittently 401s on the rotating
+        # secrets.GITHUB_TOKEN — fall back to the retry step's outputs.
         outputs:
-            frontend_lintable: "${{ steps.changes.outputs.frontend_lintable }}"
-            markdown_lintable: "${{ steps.changes.outputs.markdown_lintable }}"
-            yaml_lintable: "${{ steps.changes.outputs.yaml_lintable }}"
-            package_json_lintable: "${{ steps.changes.outputs.package_json_lintable }}"
-            rust_lintable: "${{ steps.changes.outputs.rust_lintable }}"
-            vis_schemas_lintable: "${{ steps.changes.outputs.vis_schemas_lintable }}"
+            frontend_lintable: "${{ steps.changes.outputs.frontend_lintable || steps.changes_retry.outputs.frontend_lintable }}"
+            markdown_lintable: "${{ steps.changes.outputs.markdown_lintable || steps.changes_retry.outputs.markdown_lintable }}"
+            yaml_lintable: "${{ steps.changes.outputs.yaml_lintable || steps.changes_retry.outputs.yaml_lintable }}"
+            package_json_lintable: "${{ steps.changes.outputs.package_json_lintable || steps.changes_retry.outputs.package_json_lintable }}"
+            rust_lintable: "${{ steps.changes.outputs.rust_lintable || steps.changes_retry.outputs.rust_lintable }}"
+            vis_schemas_lintable: "${{ steps.changes.outputs.vis_schemas_lintable || steps.changes_retry.outputs.vis_schemas_lintable }}"
         steps:
             - name: "Harden Runner"
               uses: "step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411" # v2.19.4
               with:
                   egress-policy: "audit"
 
+            # `secrets.GITHUB_TOKEN` returns transient HTTP 401 mid-checkout;
+            # wrap with a two-shot retry (same pattern as test.yml).
             - name: "Git checkout"
+              id: "checkout"
+              continue-on-error: true
+              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+              with:
+                  persist-credentials: false
+              env:
+                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
+                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
+                  EMAIL: "github-actions[bot]@users.noreply.github.com"
+
+            - name: "Wait before retrying checkout"
+              if: "steps.checkout.outcome == 'failure'"
+              shell: "bash"
+              run: "sleep 15"
+
+            - name: "Git checkout (retry)"
+              if: "steps.checkout.outcome == 'failure'"
               uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
               with:
                   persist-credentials: false
@@ -53,6 +74,20 @@ jobs:
             - name: "Check for file changes"
               uses: "dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d" # v4.0.1
               id: "changes"
+              continue-on-error: true
+              with:
+                  token: "${{ github.token }}"
+                  filters: ".github/file-filters.yml"
+
+            - name: "Wait before retrying path filter"
+              if: "steps.changes.outcome == 'failure'"
+              shell: "bash"
+              run: "sleep 30"
+
+            - name: "Check for file changes (retry)"
+              if: "steps.changes.outcome == 'failure'"
+              uses: "dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d" # v4.0.1
+              id: "changes_retry"
               with:
                   token: "${{ github.token }}"
                   filters: ".github/file-filters.yml"
@@ -70,12 +105,32 @@ jobs:
               with:
                   egress-policy: "audit"
 
+            # `secrets.GITHUB_TOKEN` returns transient HTTP 401 mid-checkout;
+            # wrap with a two-shot retry (same pattern as test.yml).
             - name: "Git checkout ${{ env.HEAD_REPOSITORY }}:${{ env.HEAD_REF }}"
+              id: "checkout"
+              continue-on-error: true
               uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
               with:
                   persist-credentials: false
                   # Number of commits to fetch. 0 indicates all history for all branches and tags.
                   # Pulls all commits (needed for NX)
+                  fetch-depth: 0
+              env:
+                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
+                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
+                  EMAIL: "github-actions[bot]@users.noreply.github.com"
+
+            - name: "Wait before retrying checkout"
+              if: "steps.checkout.outcome == 'failure'"
+              shell: "bash"
+              run: "sleep 15"
+
+            - name: "Git checkout ${{ env.HEAD_REPOSITORY }}:${{ env.HEAD_REF }} (retry)"
+              if: "steps.checkout.outcome == 'failure'"
+              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+              with:
+                  persist-credentials: false
                   fetch-depth: 0
               env:
                   GIT_COMMITTER_NAME: "GitHub Actions Shell"
@@ -122,12 +177,32 @@ jobs:
               with:
                   egress-policy: "audit"
 
+            # `secrets.GITHUB_TOKEN` returns transient HTTP 401 mid-checkout;
+            # wrap with a two-shot retry (same pattern as test.yml).
             - name: "Git checkout ${{ env.HEAD_REPOSITORY }}:${{ env.HEAD_REF }}"
+              id: "checkout"
+              continue-on-error: true
               uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
               with:
                   persist-credentials: false
                   # Number of commits to fetch. 0 indicates all history for all branches and tags.
                   # Pulls all commits (needed for NX)
+                  fetch-depth: 0
+              env:
+                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
+                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
+                  EMAIL: "github-actions[bot]@users.noreply.github.com"
+
+            - name: "Wait before retrying checkout"
+              if: "steps.checkout.outcome == 'failure'"
+              shell: "bash"
+              run: "sleep 15"
+
+            - name: "Git checkout ${{ env.HEAD_REPOSITORY }}:${{ env.HEAD_REF }} (retry)"
+              if: "steps.checkout.outcome == 'failure'"
+              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+              with:
+                  persist-credentials: false
                   fetch-depth: 0
               env:
                   GIT_COMMITTER_NAME: "GitHub Actions Shell"
@@ -168,7 +243,26 @@ jobs:
               with:
                   egress-policy: "audit"
 
+            # `secrets.GITHUB_TOKEN` returns transient HTTP 401 mid-checkout;
+            # wrap with a two-shot retry (same pattern as test.yml).
             - name: "Git checkout ${{ env.HEAD_REPOSITORY }}:${{ env.HEAD_REF }}"
+              id: "checkout"
+              continue-on-error: true
+              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+              with:
+                  persist-credentials: false
+              env:
+                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
+                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
+                  EMAIL: "github-actions[bot]@users.noreply.github.com"
+
+            - name: "Wait before retrying checkout"
+              if: "steps.checkout.outcome == 'failure'"
+              shell: "bash"
+              run: "sleep 15"
+
+            - name: "Git checkout ${{ env.HEAD_REPOSITORY }}:${{ env.HEAD_REF }} (retry)"
+              if: "steps.checkout.outcome == 'failure'"
               uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
               with:
                   persist-credentials: false
@@ -213,7 +307,26 @@ jobs:
               with:
                   egress-policy: "audit"
 
+            # `secrets.GITHUB_TOKEN` returns transient HTTP 401 mid-checkout;
+            # wrap with a two-shot retry (same pattern as test.yml).
             - name: "Git checkout ${{ env.HEAD_REPOSITORY }}:${{ env.HEAD_REF }}"
+              id: "checkout"
+              continue-on-error: true
+              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+              with:
+                  persist-credentials: false
+              env:
+                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
+                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
+                  EMAIL: "github-actions[bot]@users.noreply.github.com"
+
+            - name: "Wait before retrying checkout"
+              if: "steps.checkout.outcome == 'failure'"
+              shell: "bash"
+              run: "sleep 15"
+
+            - name: "Git checkout ${{ env.HEAD_REPOSITORY }}:${{ env.HEAD_REF }} (retry)"
+              if: "steps.checkout.outcome == 'failure'"
               uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
               with:
                   persist-credentials: false
@@ -240,7 +353,26 @@ jobs:
               with:
                   egress-policy: "audit"
 
+            # `secrets.GITHUB_TOKEN` returns transient HTTP 401 mid-checkout;
+            # wrap with a two-shot retry (same pattern as cargo-test.yml).
             - name: "Git checkout"
+              id: "checkout"
+              continue-on-error: true
+              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+              with:
+                  persist-credentials: false
+              env:
+                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
+                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
+                  EMAIL: "github-actions[bot]@users.noreply.github.com"
+
+            - name: "Wait before retrying checkout"
+              if: "steps.checkout.outcome == 'failure'"
+              shell: "bash"
+              run: "sleep 15"
+
+            - name: "Git checkout (retry)"
+              if: "steps.checkout.outcome == 'failure'"
               uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
               with:
                   persist-credentials: false
@@ -284,7 +416,22 @@ jobs:
               with:
                   egress-policy: "audit"
 
+            # `secrets.GITHUB_TOKEN` returns transient HTTP 401 mid-checkout;
+            # wrap with a two-shot retry (same pattern as cargo-test.yml).
             - name: "Git checkout"
+              id: "checkout"
+              continue-on-error: true
+              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+              with:
+                  persist-credentials: false
+
+            - name: "Wait before retrying checkout"
+              if: "steps.checkout.outcome == 'failure'"
+              shell: "bash"
+              run: "sleep 15"
+
+            - name: "Git checkout (retry)"
+              if: "steps.checkout.outcome == 'failure'"
               uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
               with:
                   persist-credentials: false

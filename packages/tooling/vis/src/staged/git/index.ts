@@ -100,8 +100,12 @@ export class GitWorkflow {
         this.workTree = await getWorkTree(this.cwd);
         this.gitDir = await getGitDirectory(this.cwd);
 
-        this.stagedFiles = await getFiles({ cwd: this.cwd, diff: this.options.diff, diffFilter: this.options.diffFilter, workTree: this.workTree });
-        this.partiallyStaged = this.stagedFiles.length === 0 ? [] : await getPartiallyStagedFiles(this.cwd);
+        // Run path-discovery git commands from the worktree root so the output is consistently worktree-relative.
+        // `git diff --name-only` and `git status --porcelain` both emit paths relative to cwd, and `diff.relative=true`
+        // in a runner's global config (observed on GitHub Actions) makes a subdir cwd silently strip the prefix —
+        // see the "subdirectory of the repo" integration test, which staged `pkg/child/a.txt` but received `a.txt`.
+        this.stagedFiles = await getFiles({ cwd: this.workTree, diff: this.options.diff, diffFilter: this.options.diffFilter, workTree: this.workTree });
+        this.partiallyStaged = this.stagedFiles.length === 0 ? [] : await getPartiallyStagedFiles(this.workTree);
 
         this.snapshotMergeState();
 

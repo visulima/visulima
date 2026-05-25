@@ -103,7 +103,10 @@ fn is_in_allow_region(regions: &[(usize, usize)], offset: usize) -> bool {
 }
 
 pub fn scan_text(ruleset: &CompiledRuleset, path: &Path, content: &str) -> Vec<RawFinding> {
-    let path_str = path.to_string_lossy().to_string();
+    // Normalise to forward slashes so user-authored path regexes (rule `path`
+    // and `allowlists.paths`) match consistently on Windows. Without this,
+    // a Windows path like `test\fixtures\x.kdbx` would never match `(?:^|/)test/`.
+    let path_str = path.to_string_lossy().replace('\\', "/");
     let allow_regions = find_allow_regions(content);
 
     // 1) Candidate rules via AC keyword prefilter on the whole file. Empty-keywords rules

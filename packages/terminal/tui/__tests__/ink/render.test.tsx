@@ -16,21 +16,10 @@ import { Box, Text } from "../../src/components/index";
 import { useApp } from "../../src/ink/hooks/use-app";
 import { render } from "../../src/ink/index";
 import createStdout from "../helpers/ink-create-stdout";
-import { run } from "../helpers/ink-run";
+import { ptyAvailable, run } from "../helpers/ink-run";
 import waitFor from "../helpers/wait-for";
 
 const require = createRequire(import.meta.url);
-
-const _request = createRequire(import.meta.url);
-const ptyAvailable = (() => {
-    try {
-        _request("node-pty");
-
-        return true;
-    } catch {
-        return false;
-    }
-})();
 
 let _spawn: (typeof import("node-pty"))["spawn"] | undefined;
 const getSpawn = () => {

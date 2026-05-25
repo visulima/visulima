@@ -4,7 +4,7 @@ import { execFileSync, execSync } from "node:child_process";
  * Escape the slash `\` in ESC-symbol.
  * Use it to show by an error the received ESC sequence string in console output.
  */
-const esc = (string_: string): string => string_.replaceAll("", String.raw`\x1b`);
+const esc = (string_: string): string => string_.replaceAll("\u001B", String.raw`\x1b`);
 
 const TRAILING_NEWLINE_REGEX = /\n$/;
 
@@ -27,10 +27,10 @@ const execScriptSync = (file: string, flags: string[] = [], environment: string[
  * `node_modules/.bin/tsc` to avoid pnpm's auto-install lifecycle on stale lockfiles.
  */
 const typeCheckFixture = (packageRoot: string, tsconfigRelative: string): { code: number; output: string } => {
-    const tscBin = process.platform === "win32" ? "node_modules/.bin/tsc.cmd" : "node_modules/.bin/tsc";
+    const tscJs = "node_modules/typescript/bin/tsc";
 
     try {
-        execFileSync(tscBin, ["--noEmit", "-p", tsconfigRelative], {
+        execFileSync(process.execPath, [tscJs, "--noEmit", "-p", tsconfigRelative], {
             cwd: packageRoot,
             stdio: "pipe",
         });

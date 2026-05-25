@@ -1,4 +1,5 @@
 import { mkdirSync, utimesSync, writeFileSync } from "node:fs";
+import { delimiter as pathDelimiter } from "node:path";
 
 import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -65,10 +66,13 @@ describe("vis run lockfile preflight wiring", () => {
         workspaceRoot = createTemporaryDirectory("vis-run-preflight-");
         originalPath = process.env["PATH"];
 
+        // Prepend instead of replace — wiping PATH leaves Windows
+        // unable to resolve cmd.exe / System32 paths that the shell
+        // spawn layer needs to launch the `echo hi` command.
         const binDir = join(workspaceRoot, "bin");
 
         mkdirSync(binDir, { recursive: true });
-        process.env["PATH"] = binDir;
+        process.env["PATH"] = `${binDir}${pathDelimiter}${process.env["PATH"] ?? ""}`;
 
         writeFileSync(join(workspaceRoot, "pnpm-workspace.yaml"), "packages:\n  - 'packages/*'\n");
         writeFileSync(join(workspaceRoot, "package.json"), JSON.stringify({ name: "root" }));

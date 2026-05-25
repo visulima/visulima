@@ -49,11 +49,7 @@ fn parse_lenient(raw: &str) -> Option<Version> {
         2 => format!("{}.{}.0", core_parts[0], core_parts[1]),
         _ => parts[0].to_string(),
     };
-    let normalized = if parts.len() > 1 {
-        format!("{core}-{}", parts[1..].join("-"))
-    } else {
-        core
-    };
+    let normalized = if parts.len() > 1 { format!("{core}-{}", parts[1..].join("-")) } else { core };
     Version::parse(&normalized).ok()
 }
 

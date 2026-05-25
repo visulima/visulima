@@ -38,14 +38,19 @@ describe("services/registry", () => {
     let workspaceRoot: string;
     let homeOverride: string;
     let originalHome: string | undefined;
+    let originalUserprofile: string | undefined;
 
     beforeEach(() => {
         // Per-test HOME so each registry directory lives under a fresh
-        // tmp tree — keeps the user's real ~/.vis untouched.
+        // tmp tree — keeps the user's real ~/.vis untouched. On Windows
+        // `os.homedir()` reads from `USERPROFILE`, not `HOME`, so override
+        // both to keep the fixture isolated on every platform.
         workspaceRoot = createTemporaryDirectory("vis-test-ws-");
         homeOverride = createTemporaryDirectory("vis-test-home-");
         originalHome = process.env["HOME"];
+        originalUserprofile = process.env["USERPROFILE"];
         process.env["HOME"] = homeOverride;
+        process.env["USERPROFILE"] = homeOverride;
     });
 
     afterEach(() => {
@@ -53,6 +58,12 @@ describe("services/registry", () => {
             delete process.env["HOME"];
         } else {
             process.env["HOME"] = originalHome;
+        }
+
+        if (originalUserprofile === undefined) {
+            delete process.env["USERPROFILE"];
+        } else {
+            process.env["USERPROFILE"] = originalUserprofile;
         }
 
         cleanupTemporaryDirectory(workspaceRoot);
@@ -220,7 +231,10 @@ describe("services/registry", () => {
             expect(final?.command.startsWith("cmd-")).toBe(true);
         });
 
-        it("writes entry files with mode 0o600 (owner-only)", async () => {
+        // Windows reports mode 0o666 regardless of what we pass to `writeFile` —
+        // there is no Unix-style permission bit for owner-only access. The security
+        // guarantee on Windows is ACL-based and lives outside Node's `fs.Stats.mode`.
+        it.skipIf(process.platform === "win32")("writes entry files with mode 0o600 (owner-only)", async () => {
             expect.assertions(1);
 
             await writeEntry(workspaceRoot, buildEntry({ id: "perm:svc" }));
@@ -266,24 +280,26 @@ describe("services/registry", () => {
             expect.assertions(1);
 
             // Same workspace, different ids → independent locks → must
-            // run concurrently (verified by total wall time < 2 × delay).
-            const start = Date.now();
+            // run concurrently. Earlier this asserted wall-clock < 180ms,
+            // but Windows CI saw 401ms purely from spawn/timer overhead
+            // even when both critical sections were genuinely overlapping.
+            // Track maxActive instead — it's 2 iff both locks were held
+            // at the same instant, regardless of how slow the runner is.
+            let active = 0;
+            let maxActive = 0;
 
-            await Promise.all([
-                withServiceLock(workspaceRoot, "lock:a", async () => {
-                    await new Promise((resolve) => {
-                        setTimeout(resolve, 100);
-                    });
-                }),
-                withServiceLock(workspaceRoot, "lock:b", async () => {
-                    await new Promise((resolve) => {
-                        setTimeout(resolve, 100);
-                    });
-                }),
-            ]);
+            const work = async (): Promise<void> => {
+                active += 1;
+                maxActive = Math.max(maxActive, active);
+                await new Promise((resolve) => {
+                    setTimeout(resolve, 100);
+                });
+                active -= 1;
+            };
 
-            // Generous slack for slow CI; serial would be > 200ms.
-            expect(Date.now() - start).toBeLessThan(180);
+            await Promise.all([withServiceLock(workspaceRoot, "lock:a", work), withServiceLock(workspaceRoot, "lock:b", work)]);
+
+            expect(maxActive).toBe(2);
         });
 
         it("releases the lock when the wrapped function throws", async () => {

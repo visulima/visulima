@@ -1,19 +1,7 @@
-import { createRequire } from "node:module";
-
 import { describe, expect, it } from "vitest";
 
+import { ptyAvailable } from "../helpers/ink-run";
 import term from "../helpers/ink-term";
-
-const ptyRequire = createRequire(import.meta.url);
-const ptyAvailable = (() => {
-    try {
-        ptyRequire("node-pty");
-
-        return true;
-    } catch {
-        return false;
-    }
-})();
 
 describe("hooks-use-input-kitty", () => {
     it.skipIf(!ptyAvailable)("useInput - handle kitty protocol super modifier", async () => {

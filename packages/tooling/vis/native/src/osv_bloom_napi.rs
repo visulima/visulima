@@ -67,12 +67,10 @@ impl OsvBloomHandle {
 /// JS-side cache invalidates.
 #[napi]
 pub fn osv_bloom_decode(bytes: Buffer) -> Result<OsvBloomHandle> {
-    let filter = BloomFilter::decode(bytes.as_ref())
-        .map_err(|e| Error::from_reason(format!("osv-bloom decode failed: {e}")))?;
+    let filter =
+        BloomFilter::decode(bytes.as_ref()).map_err(|e| Error::from_reason(format!("osv-bloom decode failed: {e}")))?;
 
-    Ok(OsvBloomHandle {
-        inner: Arc::new(filter),
-    })
+    Ok(OsvBloomHandle { inner: Arc::new(filter) })
 }
 
 /// Probe a single `(name, version)` pair. Returns `true` when the pair
@@ -108,10 +106,7 @@ pub struct OsvBloomBatchHit {
 /// (`Vec<bool>` of length N) would dominate the cost. Order of returned
 /// hits matches input order.
 #[napi]
-pub fn osv_bloom_probe_batch(
-    handle: &OsvBloomHandle,
-    queries: Vec<OsvBloomBatchQuery>,
-) -> Vec<OsvBloomBatchHit> {
+pub fn osv_bloom_probe_batch(handle: &OsvBloomHandle, queries: Vec<OsvBloomBatchQuery>) -> Vec<OsvBloomBatchHit> {
     let filter = handle.inner.as_ref();
     let mut hits = Vec::new();
 

@@ -34,7 +34,6 @@ fn is_pnpm_v11_plus(version: &str) -> Option<bool> {
     parse_major(version).map(|major| major >= 11)
 }
 
-
 #[napi(object)]
 pub struct InstallOptions {
     pub frozen_lockfile: bool,
@@ -204,7 +203,8 @@ pub fn resolve_install(pm: String, version: String, opts: InstallOptions) -> nap
                 args.push("--frozen".into());
             }
             if opts.lockfile_only {
-                warnings.push("deno does not support --lockfile-only; the lockfile is updated as part of install.".into());
+                warnings
+                    .push("deno does not support --lockfile-only; the lockfile is updated as part of install.".into());
             }
             if opts.offline {
                 args.push("--cached-only".into());
@@ -235,7 +235,6 @@ pub fn resolve_install(pm: String, version: String, opts: InstallOptions) -> nap
 
     Ok(ResolvedCommand { bin: pm, args, warnings })
 }
-
 
 #[napi(object)]
 pub struct AddOptions {
@@ -403,11 +402,14 @@ pub fn resolve_add(pm: String, version: String, opts: AddOptions) -> napi::Resul
                 args.push("install".into());
                 args.push("-g".into());
                 if opts.exact {
-                    warnings.push("deno install has no --exact flag; the requested version is pinned as written.".into());
+                    warnings
+                        .push("deno install has no --exact flag; the requested version is pinned as written.".into());
                 }
                 if opts.save_dev || opts.peer || opts.optional {
-                    warnings
-                        .push("deno install (global) ignores dependency-section flags (--save-dev / --peer / --optional).".into());
+                    warnings.push(
+                        "deno install (global) ignores dependency-section flags (--save-dev / --peer / --optional)."
+                            .into(),
+                    );
                 }
                 args.extend(opts.packages);
             } else {
@@ -435,7 +437,6 @@ pub fn resolve_add(pm: String, version: String, opts: AddOptions) -> napi::Resul
 
     Ok(ResolvedCommand { bin: pm, args, warnings })
 }
-
 
 #[napi(object)]
 pub struct RemoveOptions {
@@ -557,7 +558,6 @@ pub fn resolve_remove(pm: String, version: String, opts: RemoveOptions) -> napi:
     Ok(ResolvedCommand { bin: pm, args, warnings })
 }
 
-
 #[napi(catch_unwind)]
 pub fn resolve_dedupe(pm: String, version: String, check: bool) -> napi::Result<ResolvedCommand> {
     validate_pm(&pm)?;
@@ -604,7 +604,6 @@ pub fn resolve_dedupe(pm: String, version: String, check: bool) -> napi::Result<
 
     Ok(ResolvedCommand { bin: pm, args, warnings })
 }
-
 
 #[napi(object)]
 pub struct WhyOptions {
@@ -711,7 +710,9 @@ pub fn resolve_why(pm: String, version: String, opts: WhyOptions) -> napi::Resul
             // prints a dependency graph but is module-rooted, not
             // package-rooted, so the output shape diverges. Surface a
             // warning and best-effort dispatch.
-            warnings.push("deno does not have a `why` subcommand; falling back to `deno info` (module dependency graph).".into());
+            warnings.push(
+                "deno does not have a `why` subcommand; falling back to `deno info` (module dependency graph).".into(),
+            );
             args.push("info".into());
             if opts.json {
                 args.push("--json".into());
@@ -723,7 +724,6 @@ pub fn resolve_why(pm: String, version: String, opts: WhyOptions) -> napi::Resul
 
     Ok(ResolvedCommand { bin: pm, args, warnings })
 }
-
 
 #[napi(object)]
 pub struct OutdatedOptions {
@@ -854,7 +854,6 @@ pub fn resolve_outdated(pm: String, version: String, opts: OutdatedOptions) -> n
     Ok(ResolvedCommand { bin: pm, args, warnings })
 }
 
-
 /// Returns `true` when the target looks like a filesystem path (absolute,
 /// relative, or Windows-style) rather than a bare package name.
 fn is_path_like(target: &str) -> bool {
@@ -873,18 +872,15 @@ fn is_path_like(target: &str) -> bool {
 }
 
 #[napi(catch_unwind)]
-pub fn resolve_link(
-    pm: String,
-    version: String,
-    target: Option<String>,
-) -> napi::Result<ResolvedCommand> {
+pub fn resolve_link(pm: String, version: String, target: Option<String>) -> napi::Result<ResolvedCommand> {
     validate_pm(&pm)?;
 
     // Deno has no `link` subcommand. Treat the call as unsupported and
     // fall back to a no-op so callers can choose to skip the run rather
     // than executing an erroring command.
     if pm == "deno" {
-        let mut warnings = vec!["deno does not support `link`. Use `deno add ./relative/path` to depend on a local package.".into()];
+        let mut warnings =
+            vec!["deno does not support `link`. Use `deno add ./relative/path` to depend on a local package.".into()];
         if target.is_some() {
             warnings.push("Ignoring link target on deno.".into());
         }
@@ -938,11 +934,7 @@ pub fn resolve_link(
         args.push(t);
     }
 
-    Ok(ResolvedCommand {
-        bin: pm,
-        args,
-        warnings,
-    })
+    Ok(ResolvedCommand { bin: pm, args, warnings })
 }
 
 #[napi(catch_unwind)]
@@ -1004,7 +996,6 @@ pub fn resolve_unlink(
 
     Ok(ResolvedCommand { bin: pm, args, warnings })
 }
-
 
 #[napi(object)]
 pub struct DlxOptions {
@@ -1145,7 +1136,6 @@ pub fn resolve_dlx(pm: String, version: String, opts: DlxOptions) -> napi::Resul
     Ok(ResolvedCommand { bin, args, warnings })
 }
 
-
 #[napi(object)]
 pub struct ExecOptions {
     pub command: String,
@@ -1255,7 +1245,6 @@ pub fn resolve_exec(pm: String, version: String, opts: ExecOptions) -> napi::Res
     Ok(ResolvedCommand { bin, args, warnings })
 }
 
-
 #[napi(catch_unwind)]
 pub fn resolve_pm_command(
     pm: String,
@@ -1315,11 +1304,13 @@ pub fn resolve_pm_command(
                 match sub {
                     Some("dir") => {
                         args.push("info".into());
-                        warnings.push("deno has no `cache dir`; printing `deno info` (DENO_DIR is in the output).".into());
+                        warnings
+                            .push("deno has no `cache dir`; printing `deno info` (DENO_DIR is in the output).".into());
                     }
                     Some("clean") => {
-                        warnings
-                            .push("deno has no `cache clean`. Remove DENO_DIR (default: ~/.cache/deno) manually.".into());
+                        warnings.push(
+                            "deno has no `cache clean`. Remove DENO_DIR (default: ~/.cache/deno) manually.".into(),
+                        );
                         args.push("--help".into());
                     }
                     _ => {
@@ -1373,7 +1364,9 @@ pub fn resolve_pm_command(
                 return Ok(ResolvedCommand { bin: "bun".into(), args, warnings });
             }
             "deno" => {
-                warnings.push("deno does not support `pack`. Use `deno publish --dry-run` to preview a JSR publish.".into());
+                warnings.push(
+                    "deno does not support `pack`. Use `deno publish --dry-run` to preview a JSR publish.".into(),
+                );
                 args.push("publish".into());
                 args.push("--dry-run".into());
                 return Ok(ResolvedCommand { bin: "deno".into(), args, warnings });

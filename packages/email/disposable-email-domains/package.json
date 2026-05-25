@@ -59,7 +59,7 @@
         "clean": "rimraf node_modules dist .eslintcache",
         "dev": "pnpm run build --watch",
         "generate:domains": "node ./scripts/sync-domains.js",
-        "lint:attw": "attw --pack",
+        "lint:attw": "attw --pack --profile esm-only",
         "lint:eslint": "eslint .",
         "lint:eslint:fix": "eslint . --cache --concurrency auto --fix",
         "lint:package-json": "publint --strict",

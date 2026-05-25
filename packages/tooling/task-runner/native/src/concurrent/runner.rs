@@ -6,8 +6,7 @@ use super::completion::SuccessCondition;
 use super::process::{spawn_process, CompletionMessage, ProcessInfo};
 use super::signal;
 use super::types::{
-    ConcurrentCloseEvent, ConcurrentCommandConfig, ConcurrentRunResult, ConcurrentRunnerOptions,
-    ProcessEvent,
+    ConcurrentCloseEvent, ConcurrentCommandConfig, ConcurrentRunResult, ConcurrentRunnerOptions, ProcessEvent,
 };
 
 /// Orchestrates concurrent execution of multiple commands.
@@ -24,19 +23,12 @@ pub struct ConcurrentRunner {
 impl ConcurrentRunner {
     pub fn new(commands: Vec<ConcurrentCommandConfig>, options: &ConcurrentRunnerOptions) -> Self {
         let max_processes = options.max_processes.unwrap_or(0) as usize;
-        let max_processes = if max_processes == 0 {
-            commands.len()
-        } else {
-            max_processes
-        };
+        let max_processes = if max_processes == 0 { commands.len() } else { max_processes };
 
         Self {
             commands,
             max_processes,
-            kill_signal: options
-                .kill_signal
-                .clone()
-                .unwrap_or_else(|| "SIGTERM".to_string()),
+            kill_signal: options.kill_signal.clone().unwrap_or_else(|| "SIGTERM".to_string()),
             kill_others: options.kill_others.clone().unwrap_or_default(),
             success_condition: options
                 .success_condition
@@ -51,10 +43,7 @@ impl ConcurrentRunner {
     /// Run all commands concurrently with real-time event streaming.
     /// Events are sent to `event_tx` as they occur.
     /// Returns the final result after all processes complete.
-    pub async fn run(
-        &self,
-        event_tx: mpsc::UnboundedSender<ProcessEvent>,
-    ) -> ConcurrentRunResult {
+    pub async fn run(&self, event_tx: mpsc::UnboundedSender<ProcessEvent>) -> ConcurrentRunResult {
         let (_signal_tx, mut signal_rx) = signal::create_signal_handler();
         use super::signal::ReceivedSignal;
 
@@ -142,10 +131,7 @@ impl ConcurrentRunner {
 
         let success = self.success_condition.evaluate(&close_events);
 
-        ConcurrentRunResult {
-            close_events,
-            success,
-        }
+        ConcurrentRunResult { close_events, success }
     }
 
     /// Run all commands and collect results without streaming events.
@@ -178,10 +164,7 @@ impl ConcurrentRunner {
                     }
                     Err(e) => {
                         // Send error event
-                        let _ = event_tx.send(ProcessEvent::error(
-                            cmd_index as u32,
-                            format!("Failed to spawn: {}", e),
-                        ));
+                        let _ = event_tx.send(ProcessEvent::error(cmd_index as u32, format!("Failed to spawn: {}", e)));
                         // Send synthetic close event so this command appears in results
                         let _ = completion_tx.send(CompletionMessage {
                             index: cmd_index as u32,

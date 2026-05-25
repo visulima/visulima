@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { readFileSync, mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -22,8 +22,8 @@ const runBin = (binPath: string, args: string[], cwd: string): { code: number; s
 
     return {
         code: result.status ?? -1,
-        stderr: (result.stderr ?? "").replace(TRAILING_NEWLINE_RE, ""),
-        stdout: (result.stdout ?? "").replace(TRAILING_NEWLINE_RE, ""),
+        stderr: result.stderr.replace(TRAILING_NEWLINE_RE, ""),
+        stdout: result.stdout.replace(TRAILING_NEWLINE_RE, ""),
     };
 };
 
@@ -38,7 +38,9 @@ describe("usage `@visulima/vis` bin entries", () => {
         rmSync(cleanCwd, { force: true, recursive: true });
     });
 
-    it(`should expose working \`vis\` bin via --version`, () => {
+    // 30s test timeout matches the spawnSync timeout — vis bin startup
+    // (node + the bundled CLI) can exceed the 5s default on cold CI runners.
+    it(`should expose working \`vis\` bin via --version`, { timeout: 30_000 }, () => {
         expect.assertions(2);
 
         const result = runBin(join(packageRoot, "dist/bin.js"), ["--version"], cleanCwd);
@@ -47,7 +49,7 @@ describe("usage `@visulima/vis` bin entries", () => {
         expect(result.stdout).toBe(packageJson.version);
     });
 
-    it(`should expose working \`visx\` bin via --version`, () => {
+    it(`should expose working \`visx\` bin via --version`, { timeout: 30_000 }, () => {
         expect.assertions(2);
 
         const result = runBin(join(packageRoot, "dist/binx.js"), ["--version"], cleanCwd);

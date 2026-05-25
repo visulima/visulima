@@ -70,12 +70,25 @@ describe(startWatcher, () => {
             paths: [directory],
         });
 
+        // node:fs.watch returns synchronously but on macOS the underlying
+        // FSEvents stream is asynchronous — writes issued before it's
+        // fully attached are dropped. 200ms is enough on macOS-15 CI.
+        await new Promise((resolve) => {
+            setTimeout(resolve, 200);
+        });
+
         writeFileSync(join(directory, "a.txt"), "1");
         writeFileSync(join(directory, "b.txt"), "2");
 
-        await new Promise((resolve) => {
-            setTimeout(resolve, 400);
-        });
+        // Poll for the debounced delivery instead of a fixed sleep so we
+        // don't pessimise the fast path or starve a slow runner.
+        const deadline = Date.now() + 3000;
+
+        while (changed.length === 0 && Date.now() < deadline) {
+            await new Promise((resolve) => {
+                setTimeout(resolve, 50);
+            });
+        }
 
         handle.close();
 

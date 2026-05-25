@@ -23,12 +23,8 @@ impl SuccessCondition {
             "all" => Self::All,
             "first" => Self::First,
             "last" => Self::Last,
-            s if s.starts_with("!command-") => {
-                Self::NegatedCommand(s.trim_start_matches("!command-").to_string())
-            }
-            s if s.starts_with("command-") => {
-                Self::Command(s.trim_start_matches("command-").to_string())
-            }
+            s if s.starts_with("!command-") => Self::NegatedCommand(s.trim_start_matches("!command-").to_string()),
+            s if s.starts_with("command-") => Self::Command(s.trim_start_matches("command-").to_string()),
             _ => Self::All,
         }
     }
@@ -44,10 +40,7 @@ impl SuccessCondition {
             Self::First => events.first().map_or(true, |e| e.exit_code == 0),
             Self::Last => events.last().map_or(true, |e| e.exit_code == 0),
             Self::Command(target) => {
-                let matching: Vec<_> = events
-                    .iter()
-                    .filter(|e| Self::matches_target(e, target))
-                    .collect();
+                let matching: Vec<_> = events.iter().filter(|e| Self::matches_target(e, target)).collect();
 
                 if matching.is_empty() {
                     false
@@ -55,10 +48,9 @@ impl SuccessCondition {
                     matching.iter().all(|e| e.exit_code == 0)
                 }
             }
-            Self::NegatedCommand(target) => events
-                .iter()
-                .filter(|e| !Self::matches_target(e, target))
-                .all(|e| e.exit_code == 0),
+            Self::NegatedCommand(target) => {
+                events.iter().filter(|e| !Self::matches_target(e, target)).all(|e| e.exit_code == 0)
+            }
         }
     }
 
@@ -131,10 +123,7 @@ mod tests {
     #[test]
     fn test_command_by_name() {
         let cond = SuccessCondition::Command("server".to_string());
-        let events = vec![
-            make_event(0, Some("server"), 0),
-            make_event(1, Some("client"), 1),
-        ];
+        let events = vec![make_event(0, Some("server"), 0), make_event(1, Some("client"), 1)];
         assert!(cond.evaluate(&events));
     }
 
@@ -148,10 +137,7 @@ mod tests {
     #[test]
     fn test_negated_command() {
         let cond = SuccessCondition::NegatedCommand("server".to_string());
-        let events = vec![
-            make_event(0, Some("server"), 1),
-            make_event(1, Some("client"), 0),
-        ];
+        let events = vec![make_event(0, Some("server"), 1), make_event(1, Some("client"), 0)];
         assert!(cond.evaluate(&events));
     }
 
@@ -160,14 +146,8 @@ mod tests {
         assert!(matches!(SuccessCondition::parse("all"), SuccessCondition::All));
         assert!(matches!(SuccessCondition::parse("first"), SuccessCondition::First));
         assert!(matches!(SuccessCondition::parse("last"), SuccessCondition::Last));
-        assert!(matches!(
-            SuccessCondition::parse("command-server"),
-            SuccessCondition::Command(_)
-        ));
-        assert!(matches!(
-            SuccessCondition::parse("!command-server"),
-            SuccessCondition::NegatedCommand(_)
-        ));
+        assert!(matches!(SuccessCondition::parse("command-server"), SuccessCondition::Command(_)));
+        assert!(matches!(SuccessCondition::parse("!command-server"), SuccessCondition::NegatedCommand(_)));
     }
 
     #[test]
@@ -188,20 +168,14 @@ mod tests {
     fn test_command_multiple_matching() {
         // Two commands with the same name, both must succeed
         let cond = SuccessCondition::Command("worker".to_string());
-        let events = vec![
-            make_event(0, Some("worker"), 0),
-            make_event(1, Some("worker"), 0),
-        ];
+        let events = vec![make_event(0, Some("worker"), 0), make_event(1, Some("worker"), 0)];
         assert!(cond.evaluate(&events));
     }
 
     #[test]
     fn test_command_multiple_matching_one_fails() {
         let cond = SuccessCondition::Command("worker".to_string());
-        let events = vec![
-            make_event(0, Some("worker"), 0),
-            make_event(1, Some("worker"), 1),
-        ];
+        let events = vec![make_event(0, Some("worker"), 0), make_event(1, Some("worker"), 1)];
         assert!(!cond.evaluate(&events));
     }
 
@@ -257,10 +231,7 @@ mod tests {
     fn test_command_by_index_with_named_events() {
         // Index matching should work even when events have names
         let cond = SuccessCondition::Command("0".to_string());
-        let events = vec![
-            make_event(0, Some("server"), 0),
-            make_event(1, Some("client"), 1),
-        ];
+        let events = vec![make_event(0, Some("server"), 0), make_event(1, Some("client"), 1)];
         assert!(cond.evaluate(&events));
     }
 

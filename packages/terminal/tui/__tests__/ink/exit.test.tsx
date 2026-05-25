@@ -6,18 +6,9 @@ import url from "node:url";
 import { strip as stripAnsi } from "@visulima/ansi";
 import { describe, expect, it } from "vitest";
 
-import { run } from "../helpers/ink-run";
+import { ptyAvailable, run } from "../helpers/ink-run";
 
 const ptyRequire = createRequire(import.meta.url);
-const ptyAvailable = (() => {
-    try {
-        ptyRequire("node-pty");
-
-        return true;
-    } catch {
-        return false;
-    }
-})();
 
 let cachedSpawn: (typeof import("node-pty"))["spawn"] | undefined;
 const getSpawn = () => {

@@ -54,10 +54,10 @@ export const Footer = ({ arch, live, node, platform, workspaceRoot }: FooterProp
                 <span>{platformLabel}</span>
                 {workspaceRoot
                     ? (
-                            <>
-                                <span aria-hidden>·</span>
-                                <span className="break-all normal-case tracking-normal text-faint">{workspaceRoot}</span>
-                            </>
+                    <>
+                        <span aria-hidden>·</span>
+                        <span className="break-all normal-case tracking-normal text-faint">{workspaceRoot}</span>
+                    </>
                     )
                     : null}
             </span>

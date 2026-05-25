@@ -66,6 +66,12 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+# Write-Information is the lint-clean replacement for Write-Host; it's
+# only printed when InformationPreference is Continue (the default is
+# SilentlyContinue, so installer output would otherwise vanish).
+$InformationPreference = 'Continue'
+# Escape byte for ANSI colors. PS 5.1 lacks `e, so use [char]27.
+$Script:VIS_ESC = [char]27
 
 # $NodeMajor 0 means "resolve the latest LTS at install time" (the
 # default). VIS_NODE_MAJOR / -NodeMajor pins a specific major instead.
@@ -83,12 +89,21 @@ if ($env:VIS_MANAGER) {
 }
 
 # -- Output helpers --------------------------------------------------
+#
+# Write-Information (rather than Write-Host) so PSScriptAnalyzer stays
+# happy. Color comes from raw ANSI escapes since Write-Information has
+# no -ForegroundColor; on Windows Terminal / PS 5.1+ VT mode these render
+# the same way -ForegroundColor did.
 
-function Write-Info   ($m) { Write-Host ("info:  " + $m)  -ForegroundColor Blue }
-function Write-Warn   ($m) { Write-Host ("warn:  " + $m)  -ForegroundColor Yellow }
-function Write-Err    ($m) { Write-Host ("error: " + $m)  -ForegroundColor Red }
-function Write-Ok     ($m) { Write-Host ("[ok]  " + $m)   -ForegroundColor Green }
-function Write-Dim    ($m) { Write-Host $m                 -ForegroundColor DarkGray }
+function Write-Color ($Message, $Code) {
+    Write-Information ("{0}[{1}m{2}{0}[0m" -f $Script:VIS_ESC, $Code, $Message)
+}
+
+function Write-Info   ($m) { Write-Color ("info:  " + $m) '34' }   # Blue
+function Write-Warn   ($m) { Write-Color ("warn:  " + $m) '33' }   # Yellow
+function Write-Err    ($m) { Write-Color ("error: " + $m) '31' }   # Red
+function Write-Ok     ($m) { Write-Color ("[ok]  " + $m)  '32' }   # Green
+function Write-Dim    ($m) { Write-Color $m               '90' }   # DarkGray
 
 if ($Help) {
     @'
@@ -113,7 +128,7 @@ Environment:
   VIS_NODE_MAJOR           Pin a specific Node major (default: latest LTS).
 
 Requires PowerShell 5.1+. For WSL, use install.sh instead.
-'@ | Write-Host
+'@ | Write-Information
     exit 0
 }
 
@@ -461,7 +476,7 @@ function Install-NodeViaManager([string]$mgr) {
             }
 
             # fnm installs into the user's standard package-manager
-            # location, already on PATH after install — but this process
+            # location, already on PATH after install -- but this process
             # didn't inherit the registry update. Refresh by APPENDING
             # User+Machine PATH to the session, then de-duplicate.
             $userPath = [System.Environment]::GetEnvironmentVariable("PATH", "User")
@@ -536,10 +551,10 @@ function Invoke-VersionManagerOffer {
     $mgr = $Manager
 
     if (-not $ManagerExplicit -and -not $Yes -and [Environment]::UserInteractive) {
-        Write-Host "  1. proto (recommended -- multi-language, reads .prototools / .nvmrc / engines.node)"
-        Write-Host "  2. fnm   (Node only, fastest shell activation)"
-        Write-Host "  3. volta (Node + JS package managers, package.json-driven)"
-        Write-Host ""
+        Write-Information "  1. proto (recommended -- multi-language, reads .prototools / .nvmrc / engines.node)"
+        Write-Information "  2. fnm   (Node only, fastest shell activation)"
+        Write-Information "  3. volta (Node + JS package managers, package.json-driven)"
+        Write-Information ""
         $choice = Read-Host "Which version manager? [1-3, default: 1]"
 
         switch ($choice) {
@@ -563,10 +578,11 @@ function Invoke-VersionManagerOffer {
 
 # -- Main flow -------------------------------------------------------
 
-Write-Host ""
-Write-Host "vis" -ForegroundColor White -NoNewline
-Write-Host " -- bootstrap installer (Windows)"
-Write-Host ""
+Write-Information ""
+# Title line: "vis" in bright white then plain caption. -NoNewline doesn't
+# exist on Write-Information, so concatenate into one ANSI-styled string.
+Write-Information ("{0}[97mvis{0}[0m -- bootstrap installer (Windows)" -f $Script:VIS_ESC)
+Write-Information ""
 
 # 1. Node detection
 if (Test-NodeSupported) {
@@ -595,9 +611,9 @@ else {
         $useManager = $true
     }
     elseif (-not $Yes -and [Environment]::UserInteractive) {
-        Write-Host "  1. Install the latest Node LTS directly (recommended -- no extra tooling)"
-        Write-Host "  2. Set up a version manager instead (proto / fnm / volta)"
-        Write-Host ""
+        Write-Information "  1. Install the latest Node LTS directly (recommended -- no extra tooling)"
+        Write-Information "  2. Set up a version manager instead (proto / fnm / volta)"
+        Write-Information ""
         $nodeChoice = Read-Host "How would you like to get Node? [1-2, default: 1]"
 
         if ($nodeChoice -eq '2') { $useManager = $true }
@@ -625,10 +641,10 @@ else {
     }
     else {
         if (-not $ManagerExplicit -and -not $Yes -and [Environment]::UserInteractive) {
-            Write-Host "  1. proto (recommended -- multi-language, reads .prototools / .nvmrc / engines.node)"
-            Write-Host "  2. fnm   (Node only, fastest shell activation)"
-            Write-Host "  3. volta (Node + JS package managers, package.json-driven)"
-            Write-Host ""
+            Write-Information "  1. proto (recommended -- multi-language, reads .prototools / .nvmrc / engines.node)"
+            Write-Information "  2. fnm   (Node only, fastest shell activation)"
+            Write-Information "  3. volta (Node + JS package managers, package.json-driven)"
+            Write-Information ""
             $choice = Read-Host "Which version manager? [1-3, default: 1]"
 
             switch ($choice) {
@@ -734,9 +750,9 @@ if (-not $NoToolchainInstall) {
     }
 }
 
-Write-Host ""
-Write-Host "Next steps:" -ForegroundColor White
+Write-Information ""
+Write-Information ("{0}[97mNext steps:{0}[0m" -f $Script:VIS_ESC)
 Write-Dim "  vis doctor            -- full project health check"
 Write-Dim "  vis toolchain status  -- report tool versions"
 Write-Dim "  vis run build         -- run a workspace target"
-Write-Host ""
+Write-Information ""

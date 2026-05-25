@@ -352,8 +352,16 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
                 ...storageOptions,
                 directory: deferredExpiredDirectory,
                 expiration: {
-                    maxAge: "50ms",
-                    purgeInterval: "100ms",
+                    // 50ms was too tight on Windows CI: vitest's per-test
+                    // overhead exceeded the maxAge between this group's POST
+                    // (test 1) and PATCH (test 2), so the PATCH saw 410
+                    // instead of 204. The other groups create a per-test file
+                    // inside one it() and aren't affected.
+                    maxAge: "500ms",
+                    // Bumped so the expired-but-not-purged window is wide
+                    // enough for test 3 (waits 600ms) to observe 410 rather
+                    // than 404 after a purge sweep removed the file.
+                    purgeInterval: "10000ms",
                 },
             });
 
@@ -419,11 +427,13 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
         it("should return 410 for expired deferred upload", async () => {
             expect.assertions(1);
 
-            // Wait for expiration
+            // Wait for expiration (maxAge is 500ms above; 600ms gives a margin
+            // while staying well under the 10s purgeInterval so the file is
+            // still on disk and we get 410 instead of 404).
             await new Promise<void>((resolve) => {
                 setTimeout(() => {
                     resolve();
-                }, 100);
+                }, 600);
             });
 
             const response = await deferredAgent

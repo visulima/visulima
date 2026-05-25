@@ -89,7 +89,7 @@
         "clean": "rimraf node_modules dist .eslintcache *.node",
         "dev": "pnpm run build --watch",
         "generate:schemas": "node scripts/generate-schemas.ts",
-        "lint:attw": "attw --pack",
+        "lint:attw": "attw --pack --profile esm-only",
         "lint:eslint": "eslint . --cache --concurrency auto",
         "lint:eslint:fix": "eslint . --cache --concurrency auto --fix",
         "lint:package-json": "publint --strict",

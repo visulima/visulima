@@ -1,5 +1,6 @@
 import { existsSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { join as pathJoin } from "node:path";
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -328,6 +329,6 @@ describe("readme-command", () => {
 
         await readmeCommand.execute(mockToolbox);
 
-        expect(vi.mocked(mkdir)).toHaveBeenCalledWith(expect.stringContaining("docs/commands"), { recursive: true });
+        expect(vi.mocked(mkdir)).toHaveBeenCalledWith(expect.stringContaining(pathJoin("docs", "commands")), { recursive: true });
     });
 });

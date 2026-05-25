@@ -81,7 +81,9 @@ describe(useGetFileMeta, () => {
     });
 
     it("should call onSuccess callback", async () => {
-        expect.assertions(2);
+        // waitFor() retries can drift the assertion count on node-25 CI;
+        // use hasAssertions() instead of a fixed expect.assertions(N).
+        expect.hasAssertions();
 
         const onSuccess = vi.fn();
         const mockData = {

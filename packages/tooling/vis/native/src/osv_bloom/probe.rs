@@ -65,15 +65,7 @@ pub(crate) fn build_for_tests(seed: [u8; 32], m: u64, k: u32, entries: &[(&str, 
         }
     }
 
-    BloomFilter {
-        format_version: 1,
-        m,
-        k,
-        n: entries.len() as u32,
-        built_at_unix_seconds: 0,
-        seed,
-        bitset,
-    }
+    BloomFilter { format_version: 1, m, k, n: entries.len() as u32, built_at_unix_seconds: 0, seed, bitset }
 }
 
 #[cfg(test)]
@@ -82,12 +74,7 @@ mod tests {
 
     #[test]
     fn finds_inserted_entries() {
-        let filter = build_for_tests(
-            [0x42; 32],
-            8192,
-            7,
-            &[("evil-pkg", "1"), ("trojan", "0.3"), ("backdoor", "*")],
-        );
+        let filter = build_for_tests([0x42; 32], 8192, 7, &[("evil-pkg", "1"), ("trojan", "0.3"), ("backdoor", "*")]);
 
         assert!(contains(&filter, "evil-pkg", "1"));
         assert!(contains(&filter, "trojan", "0.3"));

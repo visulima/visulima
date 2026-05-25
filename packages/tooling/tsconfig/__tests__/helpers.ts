@@ -14,7 +14,7 @@ const TRAILING_NEWLINE_REGEX = /\n$/;
  * Escape the slash `\` in ESC-symbol.
  * Use it to show by an error the received ESC sequence string in console output.
  */
-export const esc = (string_: string): string => string_.replaceAll("", String.raw`\x1b`);
+export const esc = (string_: string): string => string_.replaceAll("\u001B", String.raw`\x1b`);
 
 /**
  * Return output of javascript file.
@@ -49,14 +49,14 @@ export const getTscTsconfig = async (cwd: string, filePath?: string): Promise<Ts
 
 /**
  * Spawn `tsc --noEmit` against a fixture tsconfig so a broken dist/*.d.ts surfaces
- * as a failed test. Invokes the package's own `typescript` devDependency directly via
- * `node_modules/.bin/tsc` to avoid pnpm's auto-install lifecycle on stale lockfiles.
+ * as a failed test. Invokes typescript's JS entry directly via `process.execPath`
+ * to avoid Windows' shell-required `.cmd` shim (CVE-2024-27980 / Node 20+).
  */
 export const typeCheckFixture = (packageRoot: string, tsconfigRelative: string): { code: number; output: string } => {
-    const tscBin = process.platform === "win32" ? "node_modules/.bin/tsc.cmd" : "node_modules/.bin/tsc";
+    const tscJs = "node_modules/typescript/bin/tsc";
 
     try {
-        execFileSync(tscBin, ["--noEmit", "-p", tsconfigRelative], {
+        execFileSync(process.execPath, [tscJs, "--noEmit", "-p", tsconfigRelative], {
             cwd: packageRoot,
             stdio: "pipe",
         });

@@ -47,9 +47,8 @@ mod windows {
     use windows_sys::Win32::Foundation::{CloseHandle, HANDLE, INVALID_HANDLE_VALUE};
     use windows_sys::Win32::System::Console::{GenerateConsoleCtrlEvent, CTRL_BREAK_EVENT};
     use windows_sys::Win32::System::JobObjects::{
-        AssignProcessToJobObject, CreateJobObjectW, SetInformationJobObject,
-        TerminateJobObject, JobObjectExtendedLimitInformation,
-        JOBOBJECT_EXTENDED_LIMIT_INFORMATION, JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE,
+        AssignProcessToJobObject, CreateJobObjectW, JobObjectExtendedLimitInformation, SetInformationJobObject,
+        TerminateJobObject, JOBOBJECT_EXTENDED_LIMIT_INFORMATION, JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE,
     };
     use windows_sys::Win32::System::Threading::{OpenProcess, PROCESS_SET_QUOTA, PROCESS_TERMINATE};
 
@@ -155,9 +154,7 @@ pub fn kill_tree(pid: u32, signal: &str) -> std::io::Result<()> {
         // On Windows, if we have a Job Object, termination happens via the Job.
         // This fallback kills just the process if no Job Object is available.
         let _ = signal;
-        let output = std::process::Command::new("taskkill")
-            .args(["/F", "/T", "/PID", &pid.to_string()])
-            .output()?;
+        let output = std::process::Command::new("taskkill").args(["/F", "/T", "/PID", &pid.to_string()]).output()?;
         if output.status.success() {
             Ok(())
         } else {

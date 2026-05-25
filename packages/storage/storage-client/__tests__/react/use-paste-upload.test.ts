@@ -23,7 +23,11 @@ describe(usePasteUpload, () => {
     });
 
     it("should handle paste event with files", async () => {
-        expect.assertions(3);
+        // waitFor() retries its callback until it passes, so the number of
+        // assertions depends on how many polls the runner needs to converge.
+        // macOS CI can need an extra retry, which makes a fixed
+        // expect.assertions() count flake.
+        expect.hasAssertions();
 
         const onFilesPasted = vi.fn();
 
@@ -63,7 +67,11 @@ describe(usePasteUpload, () => {
     });
 
     it("should filter files when filter function provided", async () => {
-        expect.assertions(3);
+        // waitFor() retries its callback until it passes, so the number of
+        // assertions depends on how many polls the runner needs to converge.
+        // macOS CI can need an extra retry, which makes a fixed
+        // expect.assertions() count flake.
+        expect.hasAssertions();
 
         const filter = vi.fn((file: File) => file.type === "image/jpeg");
         const onFilesPasted = vi.fn();
@@ -111,7 +119,11 @@ describe(usePasteUpload, () => {
     });
 
     it("should reset pasted files", async () => {
-        expect.assertions(4);
+        // waitFor() retries its callback until it passes, so the number of
+        // assertions depends on how many polls the runner needs to converge.
+        // Windows CI can need an extra retry, which makes a fixed
+        // expect.assertions() count flake.
+        expect.hasAssertions();
 
         const { result } = renderHook(() => usePasteUpload());
 
