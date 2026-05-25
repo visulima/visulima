@@ -22,7 +22,7 @@ jobs:
         name: "Preview Release"
         if: "github.repository == 'visulima/visulima'"
         runs-on: "ubuntu-latest"
-        timeout-minutes: 30
+        timeout-minutes: 60
         permissions:
             # pkg-pr-new publish only writes a PR comment — it does not push commits.
             contents: "read"
