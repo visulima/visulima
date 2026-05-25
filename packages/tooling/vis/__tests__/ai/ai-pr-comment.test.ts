@@ -149,7 +149,19 @@ describe(postPrComment, () => {
         expect(result.error).toContain("CI_API_V4_URL");
     });
 
-    it("should annotate via buildkite-agent CLI when it succeeds", async () => {
+    // The CLI-success path uses POSIX `/bin/true` as the stand-in for
+    // `buildkite-agent annotate` exiting 0.
+    //
+    // - Windows has no equivalent tiny zero-exit binary on PATH by default.
+    // - macOS GitHub runners race on the stdin pipe: `/bin/true` exits
+    //   before the parent's `stdin.end(body)` lands, the child is killed
+    //   by SIGPIPE under the hood, and Node's `close` event reports
+    //   `code === null`. `code ?? -1` then surfaces as a non-zero exit
+    //   and the helper falls back to REST.
+    //
+    // The fall-back-to-REST path is exercised by the next test on every
+    // platform, so skip the happy-path assertion where it's flaky.
+    it.skipIf(process.platform === "win32" || process.platform === "darwin")("should annotate via buildkite-agent CLI when it succeeds", async () => {
         expect.assertions(3);
 
         const fetchImpl = vi.fn(async () => new Response("{}", { status: 200 }));

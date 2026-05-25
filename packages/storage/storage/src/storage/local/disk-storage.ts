@@ -542,6 +542,13 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
             const uploads: TFile[] = [];
 
             const { directory } = this;
+            // walk() yields native-separator paths (backslash on Windows); the storage
+            // `directory` is whatever the caller passed in (often native too). Normalize
+            // both to forward slashes so the relative id is `/a/b.txt` instead of the
+            // full drive-rooted absolute path on Windows. Note: `@visulima/path`'s `sep`
+            // is hardcoded to `/` cross-platform, so we replace `\\` directly here.
+            const toPosix = (value: string): string => value.replaceAll("\\", "/");
+            const normalizedDirectory = toPosix(directory);
 
             for await (const founding of walk(directory, config)) {
                 const { suffix } = this.meta;
@@ -549,8 +556,10 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
 
                 if (!path.includes(suffix)) {
                     const { birthtime, ctime, mtime } = await stat(path);
+                    const normalizedPath = toPosix(path);
+                    const id = normalizedPath.startsWith(normalizedDirectory) ? normalizedPath.slice(normalizedDirectory.length) : normalizedPath;
 
-                    uploads.push({ createdAt: birthtime || ctime, id: path.replace(directory, ""), modifiedAt: mtime } as TFile);
+                    uploads.push({ createdAt: birthtime || ctime, id, modifiedAt: mtime } as TFile);
                 }
             }
 

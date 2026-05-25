@@ -1,6 +1,6 @@
 name: "Scorecards supply-chain security"
 on:
-    branch_protection_rule:
+    branch_protection_rule: ~
     schedule:
         - cron: "37 14 * * 6"
     push:

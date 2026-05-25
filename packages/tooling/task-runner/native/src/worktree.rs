@@ -31,9 +31,9 @@ pub fn get_main_worktree_root(workspace_root: String) -> Result<Option<String>> 
     let canonical = canonicalize(&workspace_root);
 
     {
-        let read = cache().read().map_err(|e| {
-            Error::new(Status::GenericFailure, format!("worktree cache poisoned: {}", e))
-        })?;
+        let read = cache()
+            .read()
+            .map_err(|e| Error::new(Status::GenericFailure, format!("worktree cache poisoned: {}", e)))?;
 
         if let Some(cached) = read.get(&canonical) {
             return Ok(cached.as_ref().map(|p| p.to_string_lossy().into_owned()));
@@ -43,9 +43,9 @@ pub fn get_main_worktree_root(workspace_root: String) -> Result<Option<String>> 
     let resolved = detect_main_worktree(&canonical);
 
     {
-        let mut write = cache().write().map_err(|e| {
-            Error::new(Status::GenericFailure, format!("worktree cache poisoned: {}", e))
-        })?;
+        let mut write = cache()
+            .write()
+            .map_err(|e| Error::new(Status::GenericFailure, format!("worktree cache poisoned: {}", e)))?;
 
         write.insert(canonical, resolved.clone());
     }
@@ -93,11 +93,8 @@ fn detect_main_worktree(workspace_root: &Path) -> Option<PathBuf> {
         return None;
     }
 
-    let output = Command::new("git")
-        .args(["rev-parse", "--git-common-dir"])
-        .current_dir(workspace_root)
-        .output()
-        .ok()?;
+    let output =
+        Command::new("git").args(["rev-parse", "--git-common-dir"]).current_dir(workspace_root).output().ok()?;
 
     if !output.status.success() {
         return None;
@@ -110,11 +107,8 @@ fn detect_main_worktree(workspace_root: &Path) -> Option<PathBuf> {
         return None;
     }
 
-    let common_dir_path = if Path::new(common_dir).is_absolute() {
-        PathBuf::from(common_dir)
-    } else {
-        workspace_root.join(common_dir)
-    };
+    let common_dir_path =
+        if Path::new(common_dir).is_absolute() { PathBuf::from(common_dir) } else { workspace_root.join(common_dir) };
 
     let main_root = common_dir_path.parent()?.to_path_buf();
     let canonical_main = canonicalize_existing(&main_root)?;

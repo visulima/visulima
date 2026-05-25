@@ -135,7 +135,8 @@ describe(TrackedTaskExecutor, () => {
                 env: { CUSTOM_VAR: "custom_value" },
             };
 
-            const result = await executor.execute(task, options, 'echo "$CUSTOM_VAR"');
+            const command = process.platform === "win32" ? "echo %CUSTOM_VAR%" : 'echo "$CUSTOM_VAR"';
+            const result = await executor.execute(task, options, command);
 
             expect(result.terminalOutput).toContain("custom_value");
         });

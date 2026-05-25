@@ -136,12 +136,7 @@ pub fn detect_package_manager(
 
     // Default: pnpm
     let is_workspace = detect_workspace(&path, "pnpm", None);
-    Ok(DetectedPackageManager {
-        name: "pnpm".to_string(),
-        version: None,
-        build_meta: None,
-        is_workspace,
-    })
+    Ok(DetectedPackageManager { name: "pnpm".to_string(), version: None, build_meta: None, is_workspace })
 }
 
 fn detect_from_package_json(dir: &Path) -> Option<PmInfo> {
@@ -236,12 +231,7 @@ fn detect_from_user_agent() -> Option<PmInfo> {
         _ => return None,
     };
 
-    Some(PmInfo {
-        name,
-        version: raw_version.map(String::from),
-        build_meta: None,
-        pkg_json: None,
-    })
+    Some(PmInfo { name, version: raw_version.map(String::from), build_meta: None, pkg_json: None })
 }
 
 /// Detects if the project is a workspace/monorepo.

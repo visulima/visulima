@@ -36,17 +36,35 @@ jobs:
         name: "Detect Rust source changes"
         runs-on: "ubuntu-24.04"
         timeout-minutes: 3
+        # dorny/paths-filter calls the GitHub API on first run, which
+        # intermittently 401s on the rotating secrets.GITHUB_TOKEN — fall back
+        # to the retry step's outputs.
         outputs:
-            task-runner: "${{ steps.changes.outputs.task-runner }}"
-            tui: "${{ steps.changes.outputs.tui }}"
-            vis: "${{ steps.changes.outputs.vis }}"
+            task-runner: "${{ steps.changes.outputs.task-runner || steps.changes_retry.outputs.task-runner }}"
+            tui: "${{ steps.changes.outputs.tui || steps.changes_retry.outputs.tui }}"
+            vis: "${{ steps.changes.outputs.vis || steps.changes_retry.outputs.vis }}"
         steps:
             - name: "Harden Runner"
               uses: "step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411" # v2.19.4
               with:
                   egress-policy: "audit"
 
+            # `secrets.GITHUB_TOKEN` returns transient HTTP 401 mid-checkout;
+            # wrap with a two-shot retry (same pattern as test.yml).
             - name: "Git checkout"
+              id: "checkout"
+              continue-on-error: true
+              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+              with:
+                  persist-credentials: false
+
+            - name: "Wait before retrying checkout"
+              if: "steps.checkout.outcome == 'failure'"
+              shell: "bash"
+              run: "sleep 15"
+
+            - name: "Git checkout (retry)"
+              if: "steps.checkout.outcome == 'failure'"
               uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
               with:
                   persist-credentials: false
@@ -54,7 +72,34 @@ jobs:
             - name: "Check for Rust source changes"
               uses: "dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d" # v4.0.1
               id: "changes"
+              continue-on-error: true
               with:
+                  token: "${{ github.token }}"
+                  filters: |
+                      task-runner:
+                        - 'packages/tooling/task-runner/native/src/**'
+                        - 'packages/tooling/task-runner/native/Cargo.toml'
+                        - 'packages/tooling/task-runner/native/Cargo.lock'
+                      tui:
+                        - 'packages/terminal/tui/native/src/**'
+                        - 'packages/terminal/tui/native/Cargo.toml'
+                        - 'packages/terminal/tui/native/Cargo.lock'
+                      vis:
+                        - 'packages/tooling/vis/native/src/**'
+                        - 'packages/tooling/vis/native/Cargo.toml'
+                        - 'packages/tooling/vis/native/Cargo.lock'
+
+            - name: "Wait before retrying path filter"
+              if: "steps.changes.outcome == 'failure'"
+              shell: "bash"
+              run: "sleep 30"
+
+            - name: "Check for Rust source changes (retry)"
+              uses: "dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d" # v4.0.1
+              id: "changes_retry"
+              if: "steps.changes.outcome == 'failure'"
+              with:
+                  token: "${{ github.token }}"
                   filters: |
                       task-runner:
                         - 'packages/tooling/task-runner/native/src/**'
@@ -101,7 +146,22 @@ jobs:
               with:
                   egress-policy: "audit"
 
+            # `secrets.GITHUB_TOKEN` returns transient HTTP 401 mid-checkout;
+            # wrap with a two-shot retry (same pattern as test.yml).
             - name: "Git checkout"
+              id: "checkout"
+              continue-on-error: true
+              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+              with:
+                  persist-credentials: false
+
+            - name: "Wait before retrying checkout"
+              if: "steps.checkout.outcome == 'failure'"
+              shell: "bash"
+              run: "sleep 15"
+
+            - name: "Git checkout (retry)"
+              if: "steps.checkout.outcome == 'failure'"
               uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
               with:
                   persist-credentials: false

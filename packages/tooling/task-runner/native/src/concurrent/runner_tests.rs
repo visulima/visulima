@@ -3,9 +3,7 @@ mod tests {
     use tokio::sync::mpsc;
 
     use crate::concurrent::runner::ConcurrentRunner;
-    use crate::concurrent::types::{
-        ConcurrentCommandConfig, ConcurrentRunnerOptions, ProcessEvent,
-    };
+    use crate::concurrent::types::{ConcurrentCommandConfig, ConcurrentRunnerOptions, ProcessEvent};
 
     fn make_config(command: &str, name: Option<&str>) -> ConcurrentCommandConfig {
         ConcurrentCommandConfig {
@@ -89,14 +87,8 @@ mod tests {
         assert_eq!(started.len(), 1, "expected exactly one started event");
         assert_eq!(started[0].index, 0);
         assert!(started[0].pid.is_some(), "started event should carry a pid");
-        assert!(
-            started[0].pid.unwrap() > 0,
-            "pid should be a positive integer"
-        );
-        assert!(
-            !close_seen_before_started,
-            "started event must arrive before close event"
-        );
+        assert!(started[0].pid.unwrap() > 0, "pid should be a positive integer");
+        assert!(!close_seen_before_started, "started event must arrive before close event");
     }
 
     #[tokio::test]
@@ -129,10 +121,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_mixed_success_and_failure() {
-        let commands = vec![
-            make_config("echo ok", Some("good")),
-            make_config("exit 1", Some("bad")),
-        ];
+        let commands = vec![make_config("echo ok", Some("good")), make_config("exit 1", Some("bad"))];
         let runner = ConcurrentRunner::new(commands, &default_options());
         let result = runner.run_batch().await;
 
@@ -142,10 +131,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_success_condition_first() {
-        let commands = vec![
-            make_config("echo ok", Some("fast")),
-            make_config("sleep 0.1 && exit 1", Some("slow")),
-        ];
+        let commands = vec![make_config("echo ok", Some("fast")), make_config("sleep 0.1 && exit 1", Some("slow"))];
         let mut opts = default_options();
         opts.success_condition = Some("first".to_string());
         let runner = ConcurrentRunner::new(commands, &opts);
@@ -158,11 +144,8 @@ mod tests {
     #[tokio::test]
     async fn test_max_processes_queuing() {
         // With maxProcesses=1, commands run sequentially
-        let commands = vec![
-            make_config("echo one", None),
-            make_config("echo two", None),
-            make_config("echo three", None),
-        ];
+        let commands =
+            vec![make_config("echo one", None), make_config("echo two", None), make_config("echo three", None)];
         let mut opts = default_options();
         opts.max_processes = Some(1);
         let runner = ConcurrentRunner::new(commands, &opts);
@@ -178,10 +161,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_kill_others_on_failure() {
-        let commands = vec![
-            make_config("exit 1", Some("fails-fast")),
-            make_config("sleep 10", Some("long-running")),
-        ];
+        let commands = vec![make_config("exit 1", Some("fails-fast")), make_config("sleep 10", Some("long-running"))];
         let mut opts = default_options();
         opts.kill_others = Some(vec!["failure".to_string()]);
         opts.kill_timeout = Some(1000);
@@ -194,11 +174,7 @@ mod tests {
         assert!(!result.success);
         assert_eq!(result.close_events.len(), 2);
         // Should complete much faster than 10 seconds
-        assert!(
-            elapsed.as_secs() < 5,
-            "kill-others should have killed the long-running process, took {:?}",
-            elapsed
-        );
+        assert!(elapsed.as_secs() < 5, "kill-others should have killed the long-running process, took {:?}", elapsed);
     }
 
     #[tokio::test]
@@ -326,10 +302,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_success_condition_command_by_name() {
-        let commands = vec![
-            make_config("exit 1", Some("irrelevant")),
-            make_config("echo ok", Some("important")),
-        ];
+        let commands = vec![make_config("exit 1", Some("irrelevant")), make_config("echo ok", Some("important"))];
         let mut opts = default_options();
         opts.success_condition = Some("command-important".to_string());
         let runner = ConcurrentRunner::new(commands, &opts);

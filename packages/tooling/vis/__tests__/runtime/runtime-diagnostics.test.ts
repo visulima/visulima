@@ -136,7 +136,9 @@ describe(checkInotifyCapacity, () => {
 });
 
 describe(checkOrphanedRunners, () => {
-    it("emits the orphans id and never lists the current process", () => {
+    // 30s timeout: checkOrphanedRunners shells out to `tasklist` on Windows
+    // which can exceed vitest's 5s default on a cold CI runner.
+    it("emits the orphans id and never lists the current process", { timeout: 30_000 }, () => {
         expect.assertions(2);
 
         const diagnostic = checkOrphanedRunners();
@@ -182,7 +184,9 @@ describe(checkGitLfsTracking, () => {
 });
 
 describe(listOrphanPids, () => {
-    it("excludes the current process and never throws", () => {
+    // 30s timeout: on Windows this shells out to `tasklist` which can
+    // exceed vitest's 5s default on a cold CI runner.
+    it("excludes the current process and never throws", { timeout: 30_000 }, () => {
         expect.assertions(2);
 
         const pids = listOrphanPids();
@@ -268,14 +272,16 @@ describe(killOrphanedRunners, () => {
         expect(result.killed.length + result.failed.length).toBe(3);
     });
 
-    it("falls back to listOrphanPids when no enumerate is supplied — without crashing on real ps/tasklist output", () => {
+    it("falls back to listOrphanPids when no enumerate is supplied — without crashing on real ps/tasklist output", { timeout: 30_000 }, () => {
         // Live `listOrphanPids` invocation. It excludes self and may
         // return zero or more PIDs depending on test environment. We're
         // not asserting on which PIDs, only that the call completes
         // (no thrown error from the fallback path) and every kill the
         // loop attempted received SIGTERM, not SIGKILL. Using
         // hasAssertions() instead of a fixed count because the loop body
-        // is conditional on the live process table.
+        // is conditional on the live process table. 30s timeout because
+        // listOrphanPids shells out to tasklist on Windows which can
+        // be slow on cold CI runners.
         expect.hasAssertions();
 
         const killSpy = vi.fn();
@@ -403,7 +409,9 @@ describe(killViaSignal, () => {
 });
 
 describe("orphans diagnostic id constant", () => {
-    it("matches the id every orphan diagnostic emits", () => {
+    // 60s timeout: checkOrphanedRunners shells out to `tasklist` on
+    // Windows; 30s wasn't enough on cold CI runners (run 26414217132).
+    it("matches the id every orphan diagnostic emits", { timeout: 60_000 }, () => {
         expect.assertions(1);
 
         // Sanity check: refactoring the constant must not desync from
@@ -416,7 +424,9 @@ describe("orphans diagnostic id constant", () => {
 });
 
 describe(runRuntimeDiagnostics, () => {
-    it("returns inotify, tty, watchman, git-lfs, and orphans diagnostics in a stable order", () => {
+    // 60s timeout: the orphans diagnostic shells out to `tasklist` on
+    // Windows; 30s wasn't enough on cold CI runners (run 26414217132).
+    it("returns inotify, tty, watchman, git-lfs, and orphans diagnostics in a stable order", { timeout: 60_000 }, () => {
         expect.assertions(3);
 
         const diagnostics = runRuntimeDiagnostics();
@@ -429,7 +439,7 @@ describe(runRuntimeDiagnostics, () => {
         expect(diagnostics).toHaveLength(5);
     });
 
-    it("each diagnostic has a non-empty message and id", () => {
+    it("each diagnostic has a non-empty message and id", { timeout: 60_000 }, () => {
         expect.assertions(2);
 
         const diagnostics = runRuntimeDiagnostics();

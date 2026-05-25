@@ -94,7 +94,9 @@ describe(useFileInput, () => {
     });
 
     it("should handle drag and drop", async () => {
-        expect.assertions(3);
+        // waitFor() retries can drift the assertion count on Windows CI;
+        // use hasAssertions() instead of a fixed expect.assertions(N).
+        expect.hasAssertions();
 
         const onFilesSelected = vi.fn();
 

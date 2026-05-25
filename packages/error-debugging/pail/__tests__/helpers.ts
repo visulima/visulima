@@ -30,10 +30,10 @@ const execScriptSync = async (file: string, flags: string[] = [], environment: s
  * `node_modules/.bin/tsc` to avoid pnpm's auto-install lifecycle on stale lockfiles.
  */
 const typeCheckFixture = (packageRoot: string, tsconfigRelative: string): { code: number; output: string } => {
-    const tscBin = process.platform === "win32" ? "node_modules/.bin/tsc.cmd" : "node_modules/.bin/tsc";
+    const tscJs = "node_modules/typescript/bin/tsc";
 
     try {
-        execFileSync(tscBin, ["--noEmit", "-p", tsconfigRelative], {
+        execFileSync(process.execPath, [tscJs, "--noEmit", "-p", tsconfigRelative], {
             cwd: packageRoot,
             stdio: "pipe",
         });

@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -68,13 +68,13 @@ describe(ServiceEventBridge, () => {
             process.env["HOME"] = originalHome;
         }
 
-        if (existsSync(tempRoot)) {
-            rmSync(tempRoot, { force: true, recursive: true });
-        }
-
-        if (existsSync(homeOverride)) {
-            rmSync(homeOverride, { force: true, recursive: true });
-        }
+        // `force: true` swallows ENOENT, so the existsSync guard is
+        // redundant; `maxRetries` is the Windows-only piece — a brief
+        // file-handle/AV race on the runner sporadically fails the rmdir
+        // with EBUSY, and Node's built-in linear backoff (100, 200, 300
+        // ms…) is enough to ride it out.
+        rmSync(tempRoot, { force: true, maxRetries: 5, recursive: true, retryDelay: 100 });
+        rmSync(homeOverride, { force: true, maxRetries: 5, recursive: true, retryDelay: 100 });
     });
 
     describe("marker parsing", () => {

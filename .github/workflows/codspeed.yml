@@ -26,7 +26,10 @@ jobs:
     discover:
         name: "Discover affected benches"
         runs-on: "ubuntu-latest"
-        timeout-minutes: 30
+        # Wait-for-Build-Native can burn up to 55 min when runner queues
+        # back up; the discover work itself is fast (~2 min). 65 absorbs
+        # both with cushion.
+        timeout-minutes: 65
         outputs:
             matrix: "${{ steps.affected.outputs.matrix }}"
             has-benches: "${{ steps.affected.outputs.has-benches }}"
@@ -40,7 +43,11 @@ jobs:
               # Replaces lewagon/wait-on-check-action: its bundler Gemfile.lock pins
               # darwin-24/25 only, so macOS runners on darwin-23 fail bundle install.
               # Plain shell + gh api works on every runner without Ruby.
-              timeout-minutes: 30
+              # GitHub-hosted runner queue depth occasionally pushes the
+              # gate job's start time 30+ minutes past the last build
+              # completion. 55-min step ceiling + 50-min internal deadline
+              # gives enough slack to ride that out.
+              timeout-minutes: 55
               shell: "bash"
               env:
                   GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
@@ -49,9 +56,17 @@ jobs:
               run: |
                   set -euo pipefail
                   check_name="Check Native Build"
-                  deadline=$(( $(date +%s) + 1500 ))
+                  deadline=$(( $(date +%s) + 3000 ))
                   while :; do
-                      payload=$(gh api -X GET "repos/${REPO}/commits/${REF}/check-runs" -f check_name="$check_name" --jq '.check_runs[0] // empty')
+                      # Transient HTTP 401s on secrets.GITHUB_TOKEN happen
+                      # mid-poll (the token gets briefly rotated by Actions).
+                      # `set -e` would then kill the whole job before the next
+                      # iteration can retry — swallow the exit so the loop
+                      # keeps going.
+                      if ! payload=$(gh api -X GET "repos/${REPO}/commits/${REF}/check-runs" -f check_name="$check_name" --jq '.check_runs[0] // empty' 2>&1); then
+                          echo "Transient gh api error, retrying in 15s: $payload"
+                          payload=""
+                      fi
                       if [ -n "$payload" ]; then
                           status=$(printf '%s' "$payload" | jq -r '.status')
                           conclusion=$(printf '%s' "$payload" | jq -r '.conclusion // ""')
@@ -72,13 +87,15 @@ jobs:
                           echo "Check '$check_name' not yet registered, waiting 15s..."
                       fi
                       if [ "$(date +%s)" -ge "$deadline" ]; then
-                          echo "Timed out waiting for '$check_name' after 25 minutes"
+                          echo "Timed out waiting for '$check_name' after 50 minutes"
                           exit 1
                       fi
                       sleep 15
                   done
 
             - name: "Git checkout"
+              id: "checkout"
+              continue-on-error: true
               uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
               env:
                   GIT_COMMITTER_NAME: "GitHub Actions Shell"
@@ -87,6 +104,22 @@ jobs:
               with:
                   persist-credentials: false
                   # Pulls all commits (needed for NX affected)
+                  fetch-depth: 0
+
+            - name: "Wait before retrying checkout"
+              if: "steps.checkout.outcome == 'failure'"
+              shell: "bash"
+              run: "sleep 15"
+
+            - name: "Git checkout (retry)"
+              if: "steps.checkout.outcome == 'failure'"
+              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+              env:
+                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
+                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
+                  EMAIL: "github-actions[bot]@users.noreply.github.com"
+              with:
+                  persist-credentials: false
                   fetch-depth: 0
 
             - name: "Derive appropriate SHAs for base and head for `nx affected` commands"
@@ -147,6 +180,23 @@ jobs:
                   egress-policy: "audit"
 
             - name: "Git checkout"
+              id: "checkout"
+              continue-on-error: true
+              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+              env:
+                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
+                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
+                  EMAIL: "github-actions[bot]@users.noreply.github.com"
+              with:
+                  persist-credentials: false
+
+            - name: "Wait before retrying checkout"
+              if: "steps.checkout.outcome == 'failure'"
+              shell: "bash"
+              run: "sleep 15"
+
+            - name: "Git checkout (retry)"
+              if: "steps.checkout.outcome == 'failure'"
               uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
               env:
                   GIT_COMMITTER_NAME: "GitHub Actions Shell"
@@ -167,7 +217,34 @@ jobs:
 
             # Pull the host-matching binaries produced by build-native.yml so benches that require
             # a compiled native binding (e.g. @visulima/tui, @visulima/task-runner) can load it.
+            #
+            # `secrets.GITHUB_TOKEN` returns transient HTTP 401 mid-download
+            # (observed on multi-MB artifact runs); dawidd6's v21 doesn't
+            # retry on auth failure, so wrap the step with a two-shot retry.
             - name: "Download native build artifacts"
+              id: "download_native_artifacts"
+              continue-on-error: true
+              uses: "dawidd6/action-download-artifact@b6e2e70617bc3265edd6dab6c906732b2f1ae151" # v21
+              with:
+                  workflow: "build-native.yml"
+                  commit: "${{ github.event.pull_request.head.sha || github.sha }}"
+                  name: "bindings-(.+)"
+                  name_is_regexp: true
+                  path: "artifacts"
+                  if_no_artifact_found: "warn"
+                  allow_forks: false
+
+            - name: "Wait before retrying artifact download"
+              if: "steps.download_native_artifacts.outcome == 'failure'"
+              shell: "bash"
+              run: "sleep 30"
+
+            - name: "Download native build artifacts (retry)"
+              if: "steps.download_native_artifacts.outcome == 'failure'"
+              # If the retry also 401s, distribute below will detect the
+              # missing artifacts dir and continue — preferable to failing
+              # the entire bench job on a transient token rotation.
+              continue-on-error: true
               uses: "dawidd6/action-download-artifact@b6e2e70617bc3265edd6dab6c906732b2f1ae151" # v21
               with:
                   workflow: "build-native.yml"

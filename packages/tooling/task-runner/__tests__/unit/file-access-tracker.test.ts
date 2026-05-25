@@ -133,7 +133,8 @@ describe(FileAccessTracker, () => {
             expect.assertions(1);
 
             const tracker = new FileAccessTracker(workspaceRoot);
-            const result = await tracker.track('echo "$MY_TEST_VAR"', {
+            const command = process.platform === "win32" ? "echo %MY_TEST_VAR%" : 'echo "$MY_TEST_VAR"';
+            const result = await tracker.track(command, {
                 cwd: workspaceRoot,
                 env: { MY_TEST_VAR: "test_value_123" },
             });

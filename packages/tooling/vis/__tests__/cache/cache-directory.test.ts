@@ -1,5 +1,4 @@
-import { resolve } from "node:path";
-
+import { resolve } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { DEFAULT_WORKSPACE_CACHE_DIRECTORY, isCacheDirectoryInsideWorkspace, resolveCacheDirectory } from "../../src/cache/cache-directory";

@@ -164,13 +164,16 @@ const spawnCommand = (
         write: child.stdin ? (data: string) => child.stdin!.write(data) : undefined,
     });
 
-    // Stream stdout line by line, with flush timer for partial lines
+    // Stream stdout line by line, with flush timer for partial lines.
+    // Windows cmd.exe ends lines with `\r\n`, so we strip a trailing `\r`
+    // after splitting on `\n` — otherwise downstream consumers see `text`
+    // containing a carriage return.
     let stdoutBuffer = "";
     let stdoutFlushTimer: ReturnType<typeof setTimeout> | undefined;
 
     const flushStdoutBuffer = (): void => {
         if (stdoutBuffer) {
-            onEvent({ index, kind: "stdout", text: stdoutBuffer });
+            onEvent({ index, kind: "stdout", text: stdoutBuffer.replace(/\r$/, "") });
             stdoutBuffer = "";
         }
     };
@@ -187,7 +190,7 @@ const spawnCommand = (
         stdoutBuffer = lines.pop() ?? "";
 
         for (const line of lines) {
-            onEvent({ index, kind: "stdout", text: line });
+            onEvent({ index, kind: "stdout", text: line.replace(/\r$/, "") });
         }
 
         if (stdoutBuffer) {
@@ -204,13 +207,14 @@ const spawnCommand = (
         flushStdoutBuffer();
     });
 
-    // Stream stderr line by line, with partial-line flush
+    // Stream stderr line by line, with partial-line flush.
+    // See stdout above for the `\r$` strip rationale.
     let stderrBuffer = "";
     let stderrFlushTimer: ReturnType<typeof setTimeout> | undefined;
 
     const flushStderrBuffer = (): void => {
         if (stderrBuffer) {
-            onEvent({ index, kind: "stderr", text: stderrBuffer });
+            onEvent({ index, kind: "stderr", text: stderrBuffer.replace(/\r$/, "") });
             stderrBuffer = "";
         }
     };
@@ -227,7 +231,7 @@ const spawnCommand = (
         stderrBuffer = lines.pop() ?? "";
 
         for (const line of lines) {
-            onEvent({ index, kind: "stderr", text: line });
+            onEvent({ index, kind: "stderr", text: line.replace(/\r$/, "") });
         }
 
         if (stderrBuffer) {

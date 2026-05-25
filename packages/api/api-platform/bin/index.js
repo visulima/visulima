@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* eslint-disable @typescript-eslint/no-require-imports, import/extensions, import/no-unresolved -- CJS launcher loads the built dist; module resolution is validated at runtime, not at lint time */
+/* eslint-disable @typescript-eslint/no-require-imports -- CJS launcher loads the built dist via require() */
 
 const { exit } = require("node:process");
 

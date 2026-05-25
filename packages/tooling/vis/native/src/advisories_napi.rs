@@ -10,9 +10,8 @@ use napi::threadsafe_function::{ThreadsafeFunction, ThreadsafeFunctionCallMode};
 use napi_derive::napi;
 
 use crate::advisories::{
-    self, AdvisoryHit, DbStatus, EcosystemStatus, NATIVE_KNOWN_VERSION, QueryInput,
-    ingest::IngestProgress,
-    query::NativeVulnerability,
+    self, ingest::IngestProgress, query::NativeVulnerability, AdvisoryHit, DbStatus, EcosystemStatus, QueryInput,
+    NATIVE_KNOWN_VERSION,
 };
 
 #[napi(object)]
@@ -79,8 +78,7 @@ pub struct AdvisoryDbStatus {
 #[napi]
 pub async fn advisories_ingest(
     options: AdvisoryIngestOptions,
-    #[napi(ts_arg_type = "(current: number, total: number) => void")]
-    on_progress: ThreadsafeFunction<ProgressPayload>,
+    #[napi(ts_arg_type = "(current: number, total: number) => void")] on_progress: ThreadsafeFunction<ProgressPayload>,
 ) -> Result<AdvisoryIngestResult> {
     let zip_path = options.zip_path;
     let db_path = options.db_path;
@@ -98,10 +96,7 @@ pub async fn advisories_ingest(
             if let Ok(guard) = self.cb.lock() {
                 if let Some(cb) = guard.as_ref() {
                     cb.call(
-                        Ok(ProgressPayload {
-                            current: current as u32,
-                            total: total as u32,
-                        }),
+                        Ok(ProgressPayload { current: current as u32, total: total as u32 }),
                         ThreadsafeFunctionCallMode::NonBlocking,
                     );
                 }
@@ -109,9 +104,7 @@ pub async fn advisories_ingest(
         }
     }
 
-    let bridge = Bridge {
-        cb: Arc::new(Mutex::new(Some(on_progress))),
-    };
+    let bridge = Bridge { cb: Arc::new(Mutex::new(Some(on_progress))) };
 
     // The ingest pipeline (zip → JSON → INSERT) is blocking but we're already
     // on a napi async worker, not the JS thread. Call directly.
@@ -133,37 +126,23 @@ pub async fn advisories_ingest(
 /// Synchronous query path. Returns one `AdvisoryQueryResult` per input,
 /// preserving order, so callers can zip back to their lockfile rows by index.
 #[napi]
-pub fn advisories_query(
-    db_path: String,
-    queries: Vec<AdvisoryQuery>,
-) -> Result<Vec<AdvisoryQueryResult>> {
-    let inputs: Vec<QueryInput> = queries
-        .into_iter()
-        .map(|q| QueryInput {
-            ecosystem: q.ecosystem,
-            name: q.name,
-            version: q.version,
-        })
-        .collect();
+pub fn advisories_query(db_path: String, queries: Vec<AdvisoryQuery>) -> Result<Vec<AdvisoryQueryResult>> {
+    let inputs: Vec<QueryInput> =
+        queries.into_iter().map(|q| QueryInput { ecosystem: q.ecosystem, name: q.name, version: q.version }).collect();
 
-    let hits: Vec<AdvisoryHit> = advisories::query(&db_path, &inputs)
-        .map_err(|e| Error::from_reason(e.to_string()))?;
+    let hits: Vec<AdvisoryHit> = advisories::query(&db_path, &inputs).map_err(|e| Error::from_reason(e.to_string()))?;
 
     Ok(hits.into_iter().map(hit_to_js).collect())
 }
 
 #[napi]
 pub fn advisories_status(db_path: String) -> Result<AdvisoryDbStatus> {
-    let status: DbStatus = advisories::status(&db_path)
-        .map_err(|e| Error::from_reason(format!("Advisory status read failed: {e}")))?;
+    let status: DbStatus =
+        advisories::status(&db_path).map_err(|e| Error::from_reason(format!("Advisory status read failed: {e}")))?;
 
     Ok(AdvisoryDbStatus {
         exists: status.exists,
-        ecosystems: status
-            .ecosystems
-            .into_iter()
-            .map(eco_to_js)
-            .collect(),
+        ecosystems: status.ecosystems.into_iter().map(eco_to_js).collect(),
         // Clamp to u32::MAX (~4 GB) so the value fits a JS Number without
         // precision loss. The advisory DB is single-digit MB in practice.
         size_bytes: status.size_bytes.min(u32::MAX as u64) as u32,

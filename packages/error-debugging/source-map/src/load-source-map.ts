@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { dirname, resolve, toNamespacedPath } from "node:path";
+import { pathToFileURL } from "node:url";
 
 import type { TraceMap } from "@jridgewell/trace-mapping";
 import { AnyMap } from "@jridgewell/trace-mapping";
@@ -78,7 +79,9 @@ const loadSourceMap = (filename: string): TraceMap | undefined => {
     }
 
     try {
-        return new AnyMap(traceMapContent as string, sourceMapUrl);
+        const mapBaseUrl = isInlineMap(sourceMapUrl) ? sourceMapUrl : pathToFileURL(sourceMapUrl).href;
+
+        return new AnyMap(traceMapContent as string, mapBaseUrl);
     } catch (error: unknown) {
         enhanceError(error, `Error parsing sourcemap for file "${toNamespacedPath(filename)}"`);
     }

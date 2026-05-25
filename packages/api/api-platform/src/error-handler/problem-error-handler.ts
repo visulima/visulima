@@ -5,11 +5,13 @@
 import createHttpError from "http-errors";
 import { getReasonPhrase } from "http-status-codes";
 
-const HttpError: typeof createHttpError.HttpError = createHttpError.HttpError;
-type HttpError = InstanceType<typeof createHttpError.HttpError>;
-
 import type { ErrorHandler } from "./types";
 import { addStatusCodeToResponse, sendJson, setErrorHeaders } from "./utils";
+
+// eslint-disable-next-line prefer-destructuring -- destructuring `const { HttpError } = createHttpError` infers `HttpError | undefined` when http-errors' default type does not enumerate static class properties exhaustively; the explicit type annotation preserves the narrow type.
+const HttpError: typeof createHttpError.HttpError = createHttpError.HttpError;
+
+type HttpError = InstanceType<typeof createHttpError.HttpError>;
 
 const defaultType = "https://tools.ietf.org/html/rfc2616#section-10";
 const defaultTitle = "An error occurred";

@@ -34,8 +34,6 @@ const assertWalkPaths = async (rootPath: string, expectedPaths: string[], option
     expect(entries).toHaveLength(result.length);
 };
 
-const isWindows = process.platform === "win32" || /^(?:msys|cygwin)$/.test(<string>process.env.OSTYPE);
-
 describe(walk, () => {
     it("should return a valid WalkEntry with correct properties and methods", async () => {
         expect.assertions(6);
@@ -129,7 +127,7 @@ describe(walk, () => {
         expect.assertions(2);
 
         await assertWalkPaths("match", ["x", "y"], {
-            match: isWindows ? [String.raw`**\x`, String.raw`**\y`] : ["**/x", "**/y"],
+            match: ["**/x", "**/y"],
         });
     });
 
@@ -145,7 +143,7 @@ describe(walk, () => {
         expect.assertions(2);
 
         await assertWalkPaths("match", [".", "z"], {
-            skip: isWindows ? [String.raw`**\x`, String.raw`**\y`] : ["**/x", "**/y"],
+            skip: ["**/x", "**/y"],
         });
     });
 
@@ -237,7 +235,7 @@ describe(walk, () => {
         expect.assertions(2);
 
         await assertWalkPaths("match", ["x", "y"], {
-            match: isWindows ? [String.raw`**\[xy]`] : ["**/[xy]"],
+            match: ["**/[xy]"],
         });
     });
 
@@ -245,7 +243,7 @@ describe(walk, () => {
         expect.assertions(2);
 
         await assertWalkPaths("match", [".", "z"], {
-            skip: isWindows ? [String.raw`**\[xy]`] : ["**/[xy]"],
+            skip: ["**/[xy]"],
         });
     });
 

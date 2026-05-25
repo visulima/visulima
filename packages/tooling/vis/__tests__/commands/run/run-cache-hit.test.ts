@@ -1,4 +1,5 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { delimiter as pathDelimiter } from "node:path";
 
 import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -40,11 +41,13 @@ describe("vis run end-to-end cache hit", () => {
         // Scope PATH to a stub bin dir so the toolchain preflight cannot
         // shell out to corepack / mise / proto on the host. Even with
         // skipToolchain we keep this defensive — some upstream code paths
-        // probe `which` independently.
+        // probe `which` independently. Prepend rather than replace: a
+        // bare-`binDir` PATH on Windows leaves Node unable to resolve
+        // cmd.exe / System32 paths the shell-spawn layer needs.
         const binDir = join(workspaceRoot, "bin");
 
         mkdirSync(binDir, { recursive: true });
-        process.env["PATH"] = binDir;
+        process.env["PATH"] = `${binDir}${pathDelimiter}${process.env["PATH"] ?? ""}`;
 
         writeFileSync(join(workspaceRoot, "pnpm-workspace.yaml"), "packages:\n  - 'packages/*'\n");
         writeFileSync(join(workspaceRoot, "package.json"), JSON.stringify({ name: "root" }));

@@ -3,11 +3,14 @@ const walkInclude = (path: string, extensions?: string[], match?: RegExp[], skip
         return false;
     }
 
-    if (match && !match.some((pattern): boolean => pattern.test(path))) {
+    // Glob patterns use forward slashes; normalize backslash separators on Windows.
+    const matchPath = path.includes("\\") ? path.replaceAll("\\", "/") : path;
+
+    if (match && !match.some((pattern): boolean => pattern.test(matchPath))) {
         return false;
     }
 
-    return !skip?.some((pattern): boolean => pattern.test(path));
+    return !skip?.some((pattern): boolean => pattern.test(matchPath));
 };
 
 export default walkInclude;

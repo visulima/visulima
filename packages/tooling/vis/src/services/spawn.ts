@@ -1,6 +1,6 @@
 import type { ChildProcess } from "node:child_process";
 import { spawn } from "node:child_process";
-import { open } from "node:fs/promises";
+import { closeSync, openSync } from "node:fs";
 
 import { REGISTRY_FILE_MODE } from "./registry";
 
@@ -41,26 +41,35 @@ export const spawnDetached = async (input: SpawnDetachedInput): Promise<SpawnDet
     // forensic trail; truncating would lose the crash output. Mode
     // 0o600 keeps the captured stdout (which often contains DB URLs,
     // tokens, OAuth secrets) private to the owning user on shared hosts.
-    const logHandle = await open(logFile, "a", REGISTRY_FILE_MODE);
+    //
+    // The fd is handed straight to `stdio[1]/[2]` so the child inherits
+    // it as its stdout/stderr. We previously used the shell's own `>>`
+    // redirect, but `detached + stdio: "ignore"` on Windows starves
+    // cmd.exe of the parent handles it needs to set up the redirect,
+    // and the log silently stays empty. Passing an explicit fd skips
+    // cmd's redirect machinery entirely.
+    const logFd = openSync(logFile, "a", REGISTRY_FILE_MODE);
 
     let child: ChildProcess;
 
-    try {
-        const shell = isWindows ? "cmd" : "/bin/sh";
-        const args = isWindows ? ["/d", "/s", "/c", command] : ["-c", command];
+    const shell = isWindows ? "cmd" : "/bin/sh";
+    const args = isWindows ? ["/d", "/s", "/c", command] : ["-c", command];
 
+    try {
         child = spawn(shell, args, {
             cwd,
             detached: true,
             env: { ...process.env, ...env },
-            stdio: ["ignore", logHandle.fd, logHandle.fd],
+            stdio: ["ignore", logFd, logFd],
             // Windows: spawn in a new console so the child isn't tied
             // to this terminal's lifetime.
             windowsHide: true,
         });
     } finally {
-        // The fd has been duped into the child; we can close our handle.
-        await logHandle.close().catch(() => {});
+        // The child has its own duplicated handle by the time spawn
+        // returns; closing here releases the parent's reference so
+        // GC / file locks don't linger past this function.
+        closeSync(logFd);
     }
 
     if (child.pid === undefined) {

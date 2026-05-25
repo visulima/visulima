@@ -137,6 +137,11 @@ export const readAllEntries = async (workspaceRoot: string): Promise<ServiceEntr
  * used in `task-runner/src/cas/action-cache.ts` so concurrent writers
  * never observe a half-written entry. Files are written with mode 0o600
  * to keep service env / metadata private to the owning user.
+ *
+ * On Windows, `rename` can fail with EPERM/EACCES when antivirus is
+ * scanning the staging file or another writer has the target briefly
+ * open. The rename is retried with a short backoff before we surface
+ * the error — only on errno codes that match the AV/sharing scenarios.
  */
 export const writeEntry = async (workspaceRoot: string, entry: ServiceEntry): Promise<void> => {
     const directory = await getRegistryDir(workspaceRoot);
@@ -146,11 +151,43 @@ export const writeEntry = async (workspaceRoot: string, entry: ServiceEntry): Pr
     await writeFile(stagingPath, `${JSON.stringify(entry, undefined, 2)}\n`, { mode: REGISTRY_FILE_MODE });
 
     try {
-        await rename(stagingPath, finalPath);
+        await renameWithRetry(stagingPath, finalPath);
     } catch (error) {
         await rm(stagingPath, { force: true }).catch(() => {});
 
         throw error;
+    }
+};
+
+/** Errno codes that indicate a transient AV/file-locking race on Windows. */
+const TRANSIENT_RENAME_CODES = new Set(["EACCES", "EBUSY", "EPERM"]);
+const RENAME_MAX_ATTEMPTS = 8;
+const RENAME_INITIAL_BACKOFF_MS = 20;
+
+const renameWithRetry = async (from: string, to: string): Promise<void> => {
+    let attempt = 0;
+
+    while (true) {
+        try {
+            await rename(from, to);
+
+            return;
+        } catch (error) {
+            const { code } = error as NodeJS.ErrnoException;
+            const isTransient = code !== undefined && TRANSIENT_RENAME_CODES.has(code);
+
+            if (!isTransient || attempt >= RENAME_MAX_ATTEMPTS) {
+                throw error;
+            }
+
+            const delay = RENAME_INITIAL_BACKOFF_MS * 2 ** attempt;
+
+            await new Promise<void>((resolve) => {
+                setTimeout(resolve, delay);
+            });
+
+            attempt += 1;
+        }
     }
 };
 

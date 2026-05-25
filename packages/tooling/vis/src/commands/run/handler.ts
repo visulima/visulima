@@ -491,12 +491,30 @@ const getTaskOptions = (task: Task): VisTargetOptions | undefined => {
 };
 
 /**
- * Wraps a string in single quotes for safe shell execution, escaping
- * any internal single quotes using the standard `'\''` pattern. Unlike
- * double quotes, single quotes prevent shell expansion of `$VAR`, `\n`,
- * and backticks.
+ * Wraps a string in single quotes for safe POSIX shell execution.
+ * Used when we know the consumer is a POSIX shell — e.g. when forwarding
+ * a value as the argument of `&lt;shell> -c &lt;value>` regardless of OS.
  */
 const singleQuoteEscape = (value: string): string => `'${value.replaceAll("'", String.raw`'\''`)}'`;
+
+/**
+ * Wraps a string for safe shell execution by the platform's default
+ * shell. POSIX uses single quotes (prevents `$VAR` / `\n` / backtick
+ * expansion). Windows cmd.exe treats single quotes as literal characters
+ * — they would survive into the child process's argv — so we use
+ * double-quote escaping with inner `"` doubled per cmd.exe parsing rules.
+ */
+const shellQuote = (value: string): string => {
+    if (process.platform === "win32") {
+        if (value.length > 0 && !/[\s"&|<>^()%!]/.test(value)) {
+            return value;
+        }
+
+        return `"${value.replaceAll("\"", "\"\"")}"`;
+    }
+
+    return singleQuoteEscape(value);
+};
 
 /** Builds the command args list for `affectedFiles` forwarding. */
 const buildAffectedFilesArgs = (command: string, affectedFiles: string[] | undefined, mode: VisTargetOptions["affectedFiles"]): string => {
@@ -505,7 +523,7 @@ const buildAffectedFilesArgs = (command: string, affectedFiles: string[] | undef
     }
 
     if (mode === "args" || mode === "both") {
-        const quoted = affectedFiles.map((file) => singleQuoteEscape(file)).join(" ");
+        const quoted = affectedFiles.map((file) => shellQuote(file)).join(" ");
 
         return `${command} ${quoted}`;
     }
@@ -529,7 +547,7 @@ const appendForwardedArgs = (command: string, task: Task): string => {
         return command;
     }
 
-    const quoted = (args as string[]).map((argument) => singleQuoteEscape(argument)).join(" ");
+    const quoted = (args as string[]).map((argument) => shellQuote(argument)).join(" ");
 
     return `${command} ${quoted}`;
 };
@@ -2283,8 +2301,7 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
                     const command = task?.overrides["command"] as string | undefined;
 
                     if (task && command) {
-                        const taskCwd = task.projectRoot ?? workspaceRoot;
-                        const resolvedCwd = taskCwd.startsWith("/") ? taskCwd : `${workspaceRoot}/${taskCwd}`;
+                        const resolvedCwd = resolveTaskCwd(workspaceRoot, task.projectRoot, false);
 
                         lifeCycle.startTasks?.([task]);
 
@@ -2706,7 +2723,34 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
             }
 
             if (hasFailure || failOnRetry) {
-                throw new Error(failOnRetry && !hasFailure ? "Some tasks succeeded only after retry (--fail-on-retry)." : "Some tasks failed.");
+                const headline = failOnRetry && !hasFailure ? "Some tasks succeeded only after retry (--fail-on-retry)." : "Some tasks failed.";
+
+                // Tail the captured terminal output of every failed task into
+                // the thrown error so callers (especially programmatic ones
+                // like vitest runs that mute the logger) see *why* a task
+                // failed, not just *that* one did. Cap each tail so a runaway
+                // log doesn't drown the stack trace.
+                const TAIL_BYTES = 2000;
+                const failureDetails: string[] = [];
+
+                for (const [taskId, result] of firstRun.results) {
+                    if (result.status !== "failure") {
+                        continue;
+                    }
+
+                    const output = result.terminalOutput ?? "";
+                    const tail = output.length > TAIL_BYTES ? `…${output.slice(-TAIL_BYTES)}` : output;
+                    const code = result.code ?? "?";
+
+                    failureDetails.push(
+                        `  ${taskId} (exit ${String(code)}):\n${tail
+                            .split("\n")
+                            .map((l) => `    ${l}`)
+                            .join("\n")}`,
+                    );
+                }
+
+                throw new Error(failureDetails.length > 0 ? `${headline}\n${failureDetails.join("\n")}` : headline);
             }
 
             if (persistentTasks.length > 0 && !options.failFast) {

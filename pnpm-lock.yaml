@@ -11824,7 +11824,7 @@ packages:
   '@cloudflare/vite-plugin@1.37.1':
     resolution: {integrity: sha512-FldhsmkXyLsX3yI+p0aJDo/kGyY69pDdynz2JjcuH3eCiQ+G9XaY3CrN+UYEfCbWv8CiR2wL95lNg0fT/HfwWA==}
     peerDependencies:
-      vite: '>=7.1.11'
+      vite: '>=6.4.2'
       wrangler: ^4.92.0
 
   '@cloudflare/workerd-darwin-64@1.20260515.1':

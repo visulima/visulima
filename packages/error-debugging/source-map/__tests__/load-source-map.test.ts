@@ -1,5 +1,5 @@
 import { dirname, join, toNamespacedPath } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 import type { TraceMap } from "@jridgewell/trace-mapping";
 import { originalPositionFor } from "@jridgewell/trace-mapping";
@@ -36,7 +36,7 @@ describe("load-source-map", () => {
 
         const generated = { column: 13, line: 30 };
 
-        const expected = { column: 9, line: 15, name: "setState", source: join(FIXTURES_DIR, "src", "example.js") };
+        const expected = { column: 9, line: 15, name: "setState", source: pathToFileURL(join(FIXTURES_DIR, "src", "example.js")).href };
 
         expect(originalPositionFor(result as TraceMap, generated), "should have correct source mapping").toStrictEqual(expected);
     });
@@ -46,8 +46,8 @@ describe("load-source-map", () => {
 
         const path = join(FIXTURES_DIR, "missingSourcemap.js");
         const namespacedPath = toNamespacedPath(path);
-        const namespacedMapPath = toNamespacedPath(path.replace("missingSourcemap.js", "missing.js.map"));
-        const expectedError = `Error reading sourcemap for file "${namespacedPath}":\nENOENT: no such file or directory, open '${namespacedMapPath}'`;
+        const mapPath = path.replace("missingSourcemap.js", "missing.js.map");
+        const expectedError = `Error reading sourcemap for file "${namespacedPath}":\nENOENT: no such file or directory, open '${mapPath}'`;
 
         expect(() => loadSourceMap(path)).toThrow(expectedError);
     });
@@ -77,7 +77,7 @@ describe("load-source-map", () => {
 
         const path = join(FIXTURES_DIR, "nonExistant.js");
         const namespacedPath = toNamespacedPath(path);
-        const expectedError = `Error reading sourcemap for file "${namespacedPath}":\nENOENT: no such file or directory, open '${namespacedPath}'`;
+        const expectedError = `Error reading sourcemap for file "${namespacedPath}":\nENOENT: no such file or directory, open '${path}'`;
 
         expect(() => loadSourceMap(path)).toThrow(expectedError);
     });

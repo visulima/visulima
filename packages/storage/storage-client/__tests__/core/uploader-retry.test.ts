@@ -140,9 +140,27 @@ describe("uploader Retry Operations", () => {
     beforeEach(() => {
         originalXHR = globalThis.XMLHttpRequest;
         vi.clearAllMocks();
+        // Expected: the failing-XHR mocks make the uploader emit
+        // `console.error("[Uploader] …")`. Silencing keeps post-teardown
+        // log writes from racing with the vitest worker shutdown
+        // (EnvironmentTeardownError: Closing rpc while "onUserConsoleLog"
+        // was pending).
+        vi.spyOn(console, "error").mockImplementation(() => {});
     });
 
-    afterEach(() => {
+    afterEach(async () => {
+        // Drain any in-flight XHR timers (mock ones fire at +10ms; real
+        // happy-dom XHR in tests that don't set a mock will ECONNREFUSE
+        // localhost:3000 a few ms later). Letting them settle here means
+        // the uploader's `console.error` lands on the still-active spy
+        // instead of racing the vitest worker shutdown
+        // (EnvironmentTeardownError: Closing rpc while "onUserConsoleLog"
+        // was pending).
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, 50);
+        });
         globalThis.XMLHttpRequest = originalXHR;
         vi.restoreAllMocks();
     });
@@ -210,11 +228,13 @@ describe("uploader Retry Operations", () => {
 
         uploader.retryItem(itemId);
 
-        // Wait a bit
+        // Wait long enough for the mock XHR's 10ms error timer to fire
+        // inside the test, otherwise the post-teardown error callback
+        // triggers console.error after the worker has started closing.
         await new Promise<void>((resolve) => {
             setTimeout(() => {
                 resolve();
-            }, 5);
+            }, 25);
         });
 
         const item = uploader.getItem(itemId);
@@ -257,6 +277,15 @@ describe("uploader Retry Operations", () => {
         const batch = uploader.getBatch(batchId!);
 
         expect(batch?.status).toBe("uploading");
+
+        // Let the retry's 10ms error timers fire inside the test so the
+        // post-teardown console.error in the uploader's error path doesn't
+        // race the worker shutdown.
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, 25);
+        });
     });
 
     it("should not retry non-error items", () => {

@@ -1,4 +1,4 @@
-use rusqlite::{Connection, params};
+use rusqlite::{params, Connection};
 
 /// Schema version that this build of `vis-native` writes.
 pub const NATIVE_KNOWN_VERSION: u32 = 1;
@@ -80,19 +80,14 @@ pub fn ensure_schema(conn: &Connection) -> rusqlite::Result<()> {
 }
 
 pub fn read_schema_version(conn: &Connection) -> Result<u32, AdvisorySchemaError> {
-    let value: Result<String, rusqlite::Error> = conn.query_row(
-        "SELECT value FROM meta WHERE ecosystem = '' AND key = 'schema_version'",
-        [],
-        |row| row.get(0),
-    );
+    let value: Result<String, rusqlite::Error> =
+        conn.query_row("SELECT value FROM meta WHERE ecosystem = '' AND key = 'schema_version'", [], |row| row.get(0));
 
     match value {
-        Ok(s) => s
-            .parse::<u32>()
-            .map_err(|e| AdvisorySchemaError::Corrupt(format!("non-numeric schema_version: {e}"))),
-        Err(rusqlite::Error::QueryReturnedNoRows) => Err(AdvisorySchemaError::Corrupt(
-            "missing schema_version meta row".to_string(),
-        )),
+        Ok(s) => s.parse::<u32>().map_err(|e| AdvisorySchemaError::Corrupt(format!("non-numeric schema_version: {e}"))),
+        Err(rusqlite::Error::QueryReturnedNoRows) => {
+            Err(AdvisorySchemaError::Corrupt("missing schema_version meta row".to_string()))
+        }
         Err(e) => Err(AdvisorySchemaError::Corrupt(e.to_string())),
     }
 }
@@ -125,11 +120,7 @@ mod tests {
     fn check_rejects_too_new() {
         let conn = Connection::open_in_memory().unwrap();
         ensure_schema(&conn).unwrap();
-        conn.execute(
-            "UPDATE meta SET value = '999' WHERE ecosystem = '' AND key = 'schema_version'",
-            [],
-        )
-        .unwrap();
+        conn.execute("UPDATE meta SET value = '999' WHERE ecosystem = '' AND key = 'schema_version'", []).unwrap();
         let err = check_schema(&conn).unwrap_err();
         assert!(matches!(err, AdvisorySchemaError::TooNew { observed: 999 }));
     }
@@ -138,11 +129,7 @@ mod tests {
     fn check_rejects_too_old() {
         let conn = Connection::open_in_memory().unwrap();
         ensure_schema(&conn).unwrap();
-        conn.execute(
-            "UPDATE meta SET value = '0' WHERE ecosystem = '' AND key = 'schema_version'",
-            [],
-        )
-        .unwrap();
+        conn.execute("UPDATE meta SET value = '0' WHERE ecosystem = '' AND key = 'schema_version'", []).unwrap();
         let err = check_schema(&conn).unwrap_err();
         assert!(matches!(err, AdvisorySchemaError::TooOld { observed: 0 }));
     }

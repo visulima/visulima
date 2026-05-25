@@ -55,32 +55,30 @@ export const Sparkline = ({ className, height = 64, points, showAverage = true, 
             >
                 {showAxis
                     ? (
-                            <g>
-                                <line stroke="var(--border)" strokeWidth="0.5" x1="0" x2="100" y1="0" y2="0" />
-                                <line stroke="var(--border)" strokeDasharray="0.5,1" strokeWidth="0.3" x1="0" x2="100" y1={height / 2} y2={height / 2} />
-                                <line stroke="var(--border)" strokeWidth="0.5" x1="0" x2="100" y1={height} y2={height} />
-                            </g>
+                    <g>
+                        <line stroke="var(--border)" strokeWidth="0.5" x1="0" x2="100" y1="0" y2="0" />
+                        <line stroke="var(--border)" strokeDasharray="0.5,1" strokeWidth="0.3" x1="0" x2="100" y1={height / 2} y2={height / 2} />
+                        <line stroke="var(--border)" strokeWidth="0.5" x1="0" x2="100" y1={height} y2={height} />
+                    </g>
                     )
                     : null}
-                {showAverage
-                    ? <line stroke="var(--faint)" strokeDasharray="1.5,1.5" strokeWidth="0.5" x1="0" x2="100" y1={avgY} y2={avgY} />
-                    : null}
+                {showAverage ? <line stroke="var(--faint)" strokeDasharray="1.5,1.5" strokeWidth="0.5" x1="0" x2="100" y1={avgY} y2={avgY} /> : null}
                 <path d={path} fill="none" stroke={stroke} strokeWidth={1.2} vectorEffect="non-scaling-stroke" />
             </svg>
             {showAxis
                 ? (
-                        <div className="nd-label flex justify-between text-faint">
-                            <span>{min.toFixed(0)}</span>
-                            {showAverage
-                                ? (
-                                        <span>
-                                            AVG
-                                            {avg.toFixed(1)}
-                                        </span>
-                                )
-                                : null}
-                            <span>{max.toFixed(0)}</span>
-                        </div>
+                <div className="nd-label flex justify-between text-faint">
+                    <span>{min.toFixed(0)}</span>
+                    {showAverage
+                        ? (
+                        <span>
+                            AVG
+                            {avg.toFixed(1)}
+                        </span>
+                        )
+                        : null}
+                    <span>{max.toFixed(0)}</span>
+                </div>
                 )
                 : null}
         </div>

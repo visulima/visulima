@@ -25,11 +25,13 @@ interface PackageJsonShape {
 }
 
 /**
- * Resolve the user's installed `@visulima/vis` CLI from a workspace root.
- * `createRequire` honours that workspace's `node_modules`, so a globally
- * installed `vis-mcp` still finds the project-local vis. Falls back to
- * `VIS_MCP_VIS_BIN` for environments where the package isn't resolvable
- * (linked checkouts, custom monorepos).
+ * Resolve the user's installed `vis` CLI from a workspace root. Tries the
+ * workspace's `node_modules` first (the install-time path used by consumers
+ * of `@visulima/vis` + `@visulima/vis-mcp`), then falls back to `vis-mcp`'s
+ * own install directory to pick up pnpm-workspace symlinks and peerDep
+ * hoisting when the workspace root itself doesn't declare a direct dep on
+ * vis. `VIS_MCP_VIS_BIN` short-circuits both for linked checkouts or
+ * custom layouts where neither resolution succeeds.
  */
 const resolveVisBin = (workspaceRoot: string): string => {
     const override = process.env.VIS_MCP_VIS_BIN;
@@ -38,19 +40,32 @@ const resolveVisBin = (workspaceRoot: string): string => {
         return resolve(override);
     }
 
-    const requireFromWorkspace = createRequire(pathToFileURL(`${workspaceRoot}/package.json`));
+    const candidates: { label: string; require: ReturnType<typeof createRequire> }[] = [
+        { label: workspaceRoot, require: createRequire(pathToFileURL(`${workspaceRoot}/package.json`)) },
+        { label: "vis-mcp install location", require: createRequire(import.meta.url) },
+    ];
 
-    let visPkgJsonPath: string;
-    let visPkg: PackageJsonShape;
+    const errors: { error: unknown; label: string }[] = [];
+    let visPkgJsonPath: string | undefined;
+    let visPkg: PackageJsonShape | undefined;
 
-    try {
-        visPkgJsonPath = requireFromWorkspace.resolve("@visulima/vis/package.json");
-        visPkg = requireFromWorkspace("@visulima/vis/package.json") as PackageJsonShape;
-    } catch (error) {
-        throw new Error(
-            `Cannot resolve \`@visulima/vis\` from ${workspaceRoot}. Install it as a workspace dependency, or set VIS_MCP_VIS_BIN to a vis CLI path.`,
-            { cause: error },
-        );
+    for (const { label, require: request } of candidates) {
+        try {
+            visPkgJsonPath = request.resolve("@visulima/vis/package.json");
+            visPkg = request("@visulima/vis/package.json") as PackageJsonShape;
+            break;
+        } catch (error) {
+            errors.push({ error, label });
+        }
+    }
+
+    if (!visPkgJsonPath || !visPkg) {
+        const lastError = errors.at(-1)?.error;
+        const tried = errors.map((entry) => entry.label).join(", ");
+
+        throw new Error(`Cannot resolve \`@visulima/vis\` (tried: ${tried}). Install it as a workspace dependency, or set VIS_MCP_VIS_BIN to a vis CLI path.`, {
+            cause: lastError,
+        });
     }
 
     const binEntry = typeof visPkg.bin === "string" ? visPkg.bin : visPkg.bin?.vis;

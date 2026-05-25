@@ -1,5 +1,4 @@
 import EventEmitter from "node:events";
-import { createRequire as createRequireForPty } from "node:module";
 
 import { eraseLines, hyperlink as createHyperlink, strip } from "@visulima/ansi";
 import { green, red } from "@visulima/colorize";
@@ -13,21 +12,10 @@ import { render } from "../../src/ink/index";
 import { emitReadable } from "../helpers/ink-create-stdin";
 import createStdout from "../helpers/ink-create-stdout";
 import { renderToString, renderToStringAsync } from "../helpers/ink-render";
-import { run } from "../helpers/ink-run";
+import { ptyAvailable, run } from "../helpers/ink-run";
 import { renderAsync } from "../helpers/ink-test-renderer";
 
 const TRAILING_NEWLINE_RE = /\n$/;
-
-const ptyRequest = createRequireForPty(import.meta.url);
-const ptyAvailable = (() => {
-    try {
-        ptyRequest("node-pty");
-
-        return true;
-    } catch {
-        return false;
-    }
-})();
 
 describe("components", () => {
     it("text", () => {

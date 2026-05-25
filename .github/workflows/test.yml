@@ -27,10 +27,12 @@ jobs:
         name: "Detect what files changed"
         runs-on: "ubuntu-24.04"
         timeout-minutes: 3
-        # Map a step output to a job output
+        # Map a step output to a job output. dorny/paths-filter calls the
+        # GitHub API on first run, which intermittently 401s on the rotating
+        # secrets.GITHUB_TOKEN — fall back to the retry step's outputs.
         outputs:
-            packages: "${{ steps.changes.outputs.packages }}"
-            codecov: "${{ steps.changes.outputs.codecov }}"
+            packages: "${{ steps.changes.outputs.packages || steps.changes_retry.outputs.packages }}"
+            codecov: "${{ steps.changes.outputs.codecov || steps.changes_retry.outputs.codecov }}"
         steps:
             - name: "Harden Runner"
               uses: "step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411" # v2.19.4
@@ -49,6 +51,20 @@ jobs:
             - name: "Check for file changes"
               uses: "dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d" # v4.0.1
               id: "changes"
+              continue-on-error: true
+              with:
+                  token: "${{ github.token }}"
+                  filters: ".github/file-filters.yml"
+
+            - name: "Wait before retrying path filter"
+              if: "steps.changes.outcome == 'failure'"
+              shell: "bash"
+              run: "sleep 30"
+
+            - name: "Check for file changes (retry)"
+              if: "steps.changes.outcome == 'failure'"
+              uses: "dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d" # v4.0.1
+              id: "changes_retry"
               with:
                   token: "${{ github.token }}"
                   filters: ".github/file-filters.yml"
@@ -58,7 +74,11 @@ jobs:
           Test (node-${{ matrix.node_version }}, ${{ matrix.os }}${{ matrix.deno_version && format(', deno {0}', matrix.deno_version) || '' }}${{ matrix.bun_version && format(', bun {0}', matrix.bun_version) || '' }})
         if: "needs.files-changed.outputs.packages == 'true'"
         needs: "files-changed"
-        timeout-minutes: 30
+        # "Wait for Build Native workflow" routinely burns 17-22 min on this
+        # job before tests even start; runner-queue spikes have pushed that
+        # past 30. 90 min absorbs a 50-min wait (with cushion) plus the
+        # ~20-min test phase, without cancelling the matrix mid-tests.
+        timeout-minutes: 90
         strategy:
             matrix:
                 include:
@@ -88,7 +108,14 @@ jobs:
               with:
                   egress-policy: "audit"
 
+            # `secrets.GITHUB_TOKEN` returns transient HTTP 401 mid-checkout
+            # (observed on macos-15 runners during the initial fetch); the
+            # checkout action surfaces this as "could not read Username for
+            # 'https://github.com': terminal prompts disabled". Wrap with a
+            # two-shot retry.
             - name: "Git checkout ${{ env.HEAD_REPOSITORY }}:${{ env.HEAD_REF }}"
+              id: "checkout"
+              continue-on-error: true
               uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
               env:
                   GIT_COMMITTER_NAME: "GitHub Actions Shell"
@@ -98,6 +125,22 @@ jobs:
                   persist-credentials: false
                   # Number of commits to fetch. 0 indicates all history for all branches and tags.
                   # Pulls all commits (needed for NX)
+                  fetch-depth: 0
+
+            - name: "Wait before retrying checkout"
+              if: "steps.checkout.outcome == 'failure'"
+              shell: "bash"
+              run: "sleep 15"
+
+            - name: "Git checkout ${{ env.HEAD_REPOSITORY }}:${{ env.HEAD_REF }} (retry)"
+              if: "steps.checkout.outcome == 'failure'"
+              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+              env:
+                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
+                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
+                  EMAIL: "github-actions[bot]@users.noreply.github.com"
+              with:
+                  persist-credentials: false
                   fetch-depth: 0
 
             - name: "Derive appropriate SHAs for base and head for `nx affected` commands"
@@ -121,7 +164,12 @@ jobs:
               uses: "denoland/setup-deno@667a34cdef165d8d2b2e98dde39547c9daac7282" # v2.0.4
               with:
                   deno-version: "${{ matrix.deno_version }}"
-                  cache: true
+                  # cache: true would tell the action's post-step to save
+                  # $DENO_DIR, but nothing in this job actually invokes deno
+                  # (the matrix entry only makes the binary available — tests
+                  # still run via node/vitest). The empty cache path then
+                  # fails Post Setup Deno with "Path Validation Error".
+                  cache: false
             - name: "Setup Bun"
               if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 22 && matrix.bun_version"
               uses: "oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6" # v2.2.0
@@ -132,7 +180,11 @@ jobs:
               # Replaces lewagon/wait-on-check-action: its bundler Gemfile.lock pins
               # darwin-24/25 only, so macOS runners on darwin-23 fail bundle install.
               # Plain shell + gh api works on every runner without Ruby.
-              timeout-minutes: 30
+              # GitHub-hosted runner queue depth occasionally pushes the
+              # gate job's start time 30+ minutes past the last build
+              # completion. 55-min step ceiling + 50-min internal deadline
+              # gives enough slack to ride that out.
+              timeout-minutes: 55
               shell: "bash"
               env:
                   GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
@@ -141,9 +193,17 @@ jobs:
               run: |
                   set -euo pipefail
                   check_name="Check Native Build"
-                  deadline=$(( $(date +%s) + 1500 ))
+                  deadline=$(( $(date +%s) + 3000 ))
                   while :; do
-                      payload=$(gh api -X GET "repos/${REPO}/commits/${REF}/check-runs" -f check_name="$check_name" --jq '.check_runs[0] // empty')
+                      # Transient HTTP 401s on secrets.GITHUB_TOKEN happen
+                      # mid-poll (the token gets briefly rotated by Actions).
+                      # `set -e` would then kill the whole job before the next
+                      # iteration can retry — swallow the exit so the loop
+                      # keeps going.
+                      if ! payload=$(gh api -X GET "repos/${REPO}/commits/${REF}/check-runs" -f check_name="$check_name" --jq '.check_runs[0] // empty' 2>&1); then
+                          echo "Transient gh api error, retrying in 15s: $payload"
+                          payload=""
+                      fi
                       if [ -n "$payload" ]; then
                           status=$(printf '%s' "$payload" | jq -r '.status')
                           conclusion=$(printf '%s' "$payload" | jq -r '.conclusion // ""')
@@ -161,10 +221,10 @@ jobs:
                           fi
                           echo "Check '$check_name' status=$status, waiting 15s..."
                       else
-                          echo "Check '$check_name' not yet registered, waiting 15s..."
+                          echo "Check '$check_name' not yet registered or token blip, waiting 15s..."
                       fi
                       if [ "$(date +%s)" -ge "$deadline" ]; then
-                          echo "Timed out waiting for '$check_name' after 25 minutes"
+                          echo "Timed out waiting for '$check_name' after 50 minutes"
                           exit 1
                       fi
                       sleep 15
@@ -174,7 +234,33 @@ jobs:
             # a compiled native binding (e.g. @visulima/secret-scanner) can load it. Without this
             # the .node files only exist in the build-native runner — test runs fail at
             # require('./<pkg>-native.linux-x64-gnu.node').
+            #
+            # `secrets.GITHUB_TOKEN` returns transient HTTP 401 mid-download
+            # (observed on multi-MB artifact runs); dawidd6's v21 doesn't
+            # retry on auth failure, so wrap the step with a two-shot retry.
             - name: "Download native build artifacts"
+              id: "download_native_artifacts"
+              continue-on-error: true
+              uses: "dawidd6/action-download-artifact@b6e2e70617bc3265edd6dab6c906732b2f1ae151" # v21
+              with:
+                  workflow: "build-native.yml"
+                  commit: "${{ github.event.pull_request.head.sha || github.sha }}"
+                  name: "bindings-(.+)"
+                  name_is_regexp: true
+                  path: "artifacts"
+                  if_no_artifact_found: "warn"
+                  allow_forks: false
+
+            - name: "Wait before retrying artifact download"
+              if: "steps.download_native_artifacts.outcome == 'failure'"
+              shell: "bash"
+              run: "sleep 30"
+
+            - name: "Download native build artifacts (retry)"
+              if: "steps.download_native_artifacts.outcome == 'failure'"
+              # No continue-on-error here: if the retry also fails, fail loud
+              # rather than silently running native-binding-dependent tests
+              # (secret-scanner, task-runner, etc.) against missing bindings.
               uses: "dawidd6/action-download-artifact@b6e2e70617bc3265edd6dab6c906732b2f1ae151" # v21
               with:
                   workflow: "build-native.yml"
@@ -225,15 +311,69 @@ jobs:
                       pnpm run test:affected
                   fi
 
+            # Inlined replacement for `anolilab/workflows/step/codecov`.
+            # Upstream discovers projects via `pnpm nx show projects --projects "packages/*"`,
+            # which (a) returns nothing here because our packages live at
+            # `packages/<category>/<name>/`, and (b) leaks pnpm
+            # platform-mismatch warnings (one per NAPI subpackage) into the
+            # captured array so warning lines become fake "projects" and
+            # codecov fails with `--fail-on-error` against a path that
+            # doesn't exist. The filesystem walk also exits 0 on
+            # config-only PRs where no coverage was produced.
+            # Tracking upstream fix at anolilab/workflows#397.
+            - name: "Validate codecov.yml"
+              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 22 && !matrix.deno_version && !matrix.bun_version && needs.files-changed.outputs.codecov == 'true'"
+              shell: "bash"
+              run: "curl --fail-with-body --data-binary @codecov.yml https://codecov.io/validate"
+
+            - name: "Download and verify Codecov CLI"
+              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 22 && !matrix.deno_version && !matrix.bun_version"
+              shell: "bash"
+              run: |
+                  curl -Os https://cli.codecov.io/latest/linux/codecov
+                  curl -Os https://cli.codecov.io/latest/linux/codecov.SHA256SUM
+                  curl -Os https://cli.codecov.io/latest/linux/codecov.SHA256SUM.sig
+                  curl https://keybase.io/codecovsecurity/pgp_keys.asc | gpg --no-default-keyring --keyring trustedkeys.gpg --import
+                  gpgv codecov.SHA256SUM.sig codecov.SHA256SUM
+                  shasum -a 256 -c codecov.SHA256SUM
+                  sudo chmod +x codecov
+
             - name: "Upload code coverage to codecov"
               if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 22 && !matrix.deno_version && !matrix.bun_version"
-              uses: "anolilab/workflows/step/codecov@3c54b71af67bdd990513c4a17fa2fde078db7b74" # main
-              with:
-                  run-lint: "needs.files-changed.outputs.codecov == 'true'"
-                  codecov-token: "${{ secrets.CODECOV_TOKEN }}"
-                  use-affected: "true"
-                  affected-files: "${{ steps.files.outputs.all_changed_files }}"
-                  exclude-affected-projects: "pail-bench,redact-bench,colorize-bench,inspector-bench,docs,storybook"
+              shell: "bash"
+              env:
+                  CODECOV_TOKEN: "${{ secrets.CODECOV_TOKEN }}"
+                  RUN_ID: "${{ github.run_id }}"
+                  EXCLUDE_PROJECTS: "pail-bench,redact-bench,colorize-bench,inspector-bench,docs,storybook"
+              run: |
+                  set -euo pipefail
+                  shopt -s nullglob
+                  IFS=',' read -ra excludes <<< "${EXCLUDE_PROJECTS}"
+                  uploaded=0
+                  skipped=0
+                  for cov_dir in packages/*/*/coverage; do
+                      [[ -d "${cov_dir}" ]] || continue
+                      pkg_dir="$(dirname "${cov_dir}")"
+                      project="$(basename "${pkg_dir}")"
+                      excluded=0
+                      for excl in "${excludes[@]:-}"; do
+                          excl_trimmed="$(echo "${excl}" | tr -d '[:space:]')"
+                          if [[ -n "${excl_trimmed}" && "${project}" == "${excl_trimmed}" ]]; then
+                              excluded=1
+                              break
+                          fi
+                      done
+                      if (( excluded )); then
+                          echo "Skipping excluded project: ${project}"
+                          skipped=$((skipped + 1))
+                          continue
+                      fi
+                      echo "Running codecov in ${pkg_dir}"
+                      ./codecov --codecov-yml-path codecov.yml --verbose upload-process --fail-on-error \
+                          --dir "${pkg_dir}" -t "${CODECOV_TOKEN}" -F "${project}" -n "${project}-${RUN_ID}" || true
+                      uploaded=$((uploaded + 1))
+                  done
+                  echo "Codecov uploads: ${uploaded} (skipped ${skipped})"
 
     browser-test:
         name: "Browser Test (${{ matrix.browser }})"
@@ -250,7 +390,10 @@ jobs:
                     - browser: "webkit"
                       os: "macos-15"
         runs-on: "${{ matrix.os }}"
-        timeout-minutes: 30
+        # Mirrors the `test` job ceiling: Build Native wait may eat up to
+        # 55 min when runner queues back up; browser tests + install need
+        # the remaining buffer. 90 min absorbs both without cancelling.
+        timeout-minutes: 90
         env:
             NODE: "22"
         steps:
@@ -259,7 +402,14 @@ jobs:
               with:
                   egress-policy: "audit"
 
+            # `secrets.GITHUB_TOKEN` returns transient HTTP 401 mid-checkout
+            # (observed on macos-15 runners during the initial fetch); the
+            # checkout action surfaces this as "could not read Username for
+            # 'https://github.com': terminal prompts disabled". Wrap with a
+            # two-shot retry.
             - name: "Git checkout ${{ env.HEAD_REPOSITORY }}:${{ env.HEAD_REF }}"
+              id: "checkout"
+              continue-on-error: true
               uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
               env:
                   GIT_COMMITTER_NAME: "GitHub Actions Shell"
@@ -269,6 +419,22 @@ jobs:
                   persist-credentials: false
                   # Number of commits to fetch. 0 indicates all history for all branches and tags.
                   # Pulls all commits (needed for NX)
+                  fetch-depth: 0
+
+            - name: "Wait before retrying checkout"
+              if: "steps.checkout.outcome == 'failure'"
+              shell: "bash"
+              run: "sleep 15"
+
+            - name: "Git checkout ${{ env.HEAD_REPOSITORY }}:${{ env.HEAD_REF }} (retry)"
+              if: "steps.checkout.outcome == 'failure'"
+              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+              env:
+                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
+                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
+                  EMAIL: "github-actions[bot]@users.noreply.github.com"
+              with:
+                  persist-credentials: false
                   fetch-depth: 0
 
             - name: "Derive appropriate SHAs for base and head for `nx affected` commands"
@@ -290,7 +456,11 @@ jobs:
               # Replaces lewagon/wait-on-check-action: its bundler Gemfile.lock pins
               # darwin-24/25 only, so macOS runners on darwin-23 fail bundle install.
               # Plain shell + gh api works on every runner without Ruby.
-              timeout-minutes: 30
+              # GitHub-hosted runner queue depth occasionally pushes the
+              # gate job's start time 30+ minutes past the last build
+              # completion. 55-min step ceiling + 50-min internal deadline
+              # gives enough slack to ride that out.
+              timeout-minutes: 55
               shell: "bash"
               env:
                   GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
@@ -299,9 +469,17 @@ jobs:
               run: |
                   set -euo pipefail
                   check_name="Check Native Build"
-                  deadline=$(( $(date +%s) + 1500 ))
+                  deadline=$(( $(date +%s) + 3000 ))
                   while :; do
-                      payload=$(gh api -X GET "repos/${REPO}/commits/${REF}/check-runs" -f check_name="$check_name" --jq '.check_runs[0] // empty')
+                      # Transient HTTP 401s on secrets.GITHUB_TOKEN happen
+                      # mid-poll (the token gets briefly rotated by Actions).
+                      # `set -e` would then kill the whole job before the next
+                      # iteration can retry — swallow the exit so the loop
+                      # keeps going.
+                      if ! payload=$(gh api -X GET "repos/${REPO}/commits/${REF}/check-runs" -f check_name="$check_name" --jq '.check_runs[0] // empty' 2>&1); then
+                          echo "Transient gh api error, retrying in 15s: $payload"
+                          payload=""
+                      fi
                       if [ -n "$payload" ]; then
                           status=$(printf '%s' "$payload" | jq -r '.status')
                           conclusion=$(printf '%s' "$payload" | jq -r '.conclusion // ""')
@@ -319,10 +497,10 @@ jobs:
                           fi
                           echo "Check '$check_name' status=$status, waiting 15s..."
                       else
-                          echo "Check '$check_name' not yet registered, waiting 15s..."
+                          echo "Check '$check_name' not yet registered or token blip, waiting 15s..."
                       fi
                       if [ "$(date +%s)" -ge "$deadline" ]; then
-                          echo "Timed out waiting for '$check_name' after 25 minutes"
+                          echo "Timed out waiting for '$check_name' after 50 minutes"
                           exit 1
                       fi
                       sleep 15
@@ -332,7 +510,33 @@ jobs:
             # a compiled native binding (e.g. @visulima/secret-scanner) can load it. Without this
             # the .node files only exist in the build-native runner — test runs fail at
             # require('./<pkg>-native.linux-x64-gnu.node').
+            #
+            # `secrets.GITHUB_TOKEN` returns transient HTTP 401 mid-download
+            # (observed on multi-MB artifact runs); dawidd6's v21 doesn't
+            # retry on auth failure, so wrap the step with a two-shot retry.
             - name: "Download native build artifacts"
+              id: "download_native_artifacts"
+              continue-on-error: true
+              uses: "dawidd6/action-download-artifact@b6e2e70617bc3265edd6dab6c906732b2f1ae151" # v21
+              with:
+                  workflow: "build-native.yml"
+                  commit: "${{ github.event.pull_request.head.sha || github.sha }}"
+                  name: "bindings-(.+)"
+                  name_is_regexp: true
+                  path: "artifacts"
+                  if_no_artifact_found: "warn"
+                  allow_forks: false
+
+            - name: "Wait before retrying artifact download"
+              if: "steps.download_native_artifacts.outcome == 'failure'"
+              shell: "bash"
+              run: "sleep 30"
+
+            - name: "Download native build artifacts (retry)"
+              if: "steps.download_native_artifacts.outcome == 'failure'"
+              # No continue-on-error here: if the retry also fails, fail loud
+              # rather than silently running native-binding-dependent tests
+              # (secret-scanner, task-runner, etc.) against missing bindings.
               uses: "dawidd6/action-download-artifact@b6e2e70617bc3265edd6dab6c906732b2f1ae151" # v21
               with:
                   workflow: "build-native.yml"

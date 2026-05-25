@@ -18,17 +18,18 @@ pub fn resolve_editorconfig_defaults(file_path: String) -> EditorconfigDefaults 
     let cfg = match ec4rs::properties_of(&file_path) {
         Ok(c) => c,
         Err(_) => {
-            return EditorconfigDefaults {
-                indent: None,
-                line_ending: None,
-            };
-        },
+            return EditorconfigDefaults { indent: None, line_ending: None };
+        }
     };
 
     let indent = if matches!(cfg.get::<IndentStyle>(), Ok(IndentStyle::Tabs)) {
         Some("\t".to_string())
     } else if let Ok(IndentSize::Value(n)) = cfg.get::<IndentSize>() {
-        if n > 0 { Some(" ".repeat(n)) } else { None }
+        if n > 0 {
+            Some(" ".repeat(n))
+        } else {
+            None
+        }
     } else {
         None
     };

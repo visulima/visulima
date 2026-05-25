@@ -1,7 +1,7 @@
 import { platform } from "node:os";
 
 import { isAccessibleSync, readFileSync } from "@visulima/fs";
-import { join } from "@visulima/path";
+import { isAbsolute, join } from "@visulima/path";
 
 import type { TargetOsType, TargetPreset, TargetType, VisTargetConfiguration, VisTargetOptions } from "./types";
 
@@ -130,7 +130,10 @@ export const resolveTaskCwd = (workspaceRoot: string, projectRoot: string | unde
         return workspaceRoot;
     }
 
-    return projectRoot.startsWith("/") ? projectRoot : `${workspaceRoot}/${projectRoot}`;
+    // `startsWith("/")` misses Windows absolute paths (`C:/...`), which
+    // then got concatenated with `workspaceRoot` and yielded a bogus
+    // cwd — every spawn died with UV_ENOENT (-4058) on Windows CI.
+    return isAbsolute(projectRoot) ? projectRoot : join(workspaceRoot, projectRoot);
 };
 
 /**
@@ -185,7 +188,10 @@ const resolveEnvCascade = (nodeEnv: string | undefined): string[] => {
 };
 
 const loadSingleEnvFile = (projectRoot: string, envFile: string): Record<string, string> => {
-    const absolutePath = envFile.startsWith("/") ? envFile : join(projectRoot, envFile);
+    // `startsWith("/")` only recognised POSIX absolute paths — a Windows
+    // absolute path like `C:\foo\.env` would fall through and get joined
+    // onto `projectRoot`, breaking the absolute-path branch on Windows.
+    const absolutePath = isAbsolute(envFile) ? envFile : join(projectRoot, envFile);
 
     if (!isAccessibleSync(absolutePath)) {
         return {};

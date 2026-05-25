@@ -1,3 +1,4 @@
+/* eslint-disable import/exports-last, import/first, unicorn/prefer-export-from, prefer-destructuring -- http-errors is a CJS module whose named error classes are properties of its default function. Re-exporting via `export ... from "http-errors"` produces an ESM bundle Node rejects with "Named export not found", and destructuring with `export const { X } = createHttpError` trips TS9019 under --isolatedDeclarations. Read each class off the default import with an explicit type annotation so packem emits a CJS-compatible shape. */
 export { default as createNodeRouter } from "./connect/create-node-router";
 export { onError, onNoMatch } from "./connect/handler";
 export { default as corsMiddleware } from "./connect/middleware/cors-middleware";

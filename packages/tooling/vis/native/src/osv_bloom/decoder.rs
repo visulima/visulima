@@ -51,10 +51,7 @@ impl fmt::Display for BloomDecodeError {
                 write!(f, "Bloom header truncated: got {got} bytes, need at least {HEADER_BYTES}")
             }
             Self::BadMagic { got } => {
-                write!(
-                    f,
-                    "Bloom magic mismatch: got {got:02x?}, expected {MAGIC:02x?} ('OSVB')"
-                )
+                write!(f, "Bloom magic mismatch: got {got:02x?}, expected {MAGIC:02x?} ('OSVB')")
             }
             Self::UnsupportedFormatVersion { got, supported } => {
                 write!(
@@ -65,10 +62,7 @@ impl fmt::Display for BloomDecodeError {
             Self::EmptyBitset => write!(f, "Bloom header reports m=0 bits (empty filter)."),
             Self::NoHashFunctions => write!(f, "Bloom header reports k=0 hash functions."),
             Self::BitsetLengthMismatch { expected, got } => {
-                write!(
-                    f,
-                    "Bloom bitset length mismatch: header says {expected} bytes, got {got}"
-                )
+                write!(f, "Bloom bitset length mismatch: header says {expected} bytes, got {got}")
             }
         }
     }
@@ -143,23 +137,12 @@ impl BloomFilter {
         let expected_total = HEADER_BYTES + expected_bitset_bytes;
 
         if bytes.len() != expected_total {
-            return Err(BloomDecodeError::BitsetLengthMismatch {
-                expected: expected_total,
-                got: bytes.len(),
-            });
+            return Err(BloomDecodeError::BitsetLengthMismatch { expected: expected_total, got: bytes.len() });
         }
 
         let bitset = bytes[HEADER_BYTES..].to_vec();
 
-        Ok(Self {
-            format_version,
-            m,
-            k,
-            n,
-            built_at_unix_seconds,
-            seed,
-            bitset,
-        })
+        Ok(Self { format_version, m, k, n, built_at_unix_seconds, seed, bitset })
     }
 }
 
@@ -204,10 +187,7 @@ mod tests {
     fn rejects_truncated_header() {
         let result = BloomFilter::decode(&[0; 60]);
 
-        assert!(matches!(
-            result,
-            Err(BloomDecodeError::HeaderTooShort { got: 60 })
-        ));
+        assert!(matches!(result, Err(BloomDecodeError::HeaderTooShort { got: 60 })));
     }
 
     #[test]
@@ -227,10 +207,7 @@ mod tests {
 
         let result = BloomFilter::decode(&buf);
 
-        assert!(matches!(
-            result,
-            Err(BloomDecodeError::UnsupportedFormatVersion { got: 99, supported: 1 })
-        ));
+        assert!(matches!(result, Err(BloomDecodeError::UnsupportedFormatVersion { got: 99, supported: 1 })));
     }
 
     #[test]
@@ -262,9 +239,6 @@ mod tests {
 
         let result = BloomFilter::decode(&buf);
 
-        assert!(matches!(
-            result,
-            Err(BloomDecodeError::BitsetLengthMismatch { expected: 72, got: 68 })
-        ));
+        assert!(matches!(result, Err(BloomDecodeError::BitsetLengthMismatch { expected: 72, got: 68 })));
     }
 }

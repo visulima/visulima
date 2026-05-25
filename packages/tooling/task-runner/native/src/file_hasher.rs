@@ -125,15 +125,17 @@ pub fn hash_files_batch(file_paths: Vec<String>, workspace_root: String) -> Resu
     Ok(results)
 }
 
-/// Makes a path relative to the workspace root.
+/// Makes a path relative to the workspace root. Always emits forward slashes
+/// so JS-side consumers see consistent path keys across POSIX and Windows.
 fn make_relative(path: &str, workspace_root: &str) -> String {
-    let normalized_root =
-        if workspace_root.ends_with('/') { workspace_root.to_string() } else { format!("{}/", workspace_root) };
+    let path_fwd = path.replace('\\', "/");
+    let root_fwd = workspace_root.replace('\\', "/");
+    let normalized_root = if root_fwd.ends_with('/') { root_fwd } else { format!("{}/", root_fwd) };
 
-    if path.starts_with(&normalized_root) {
-        path[normalized_root.len()..].to_string()
+    if path_fwd.starts_with(&normalized_root) {
+        path_fwd[normalized_root.len()..].to_string()
     } else {
-        path.to_string()
+        path_fwd
     }
 }
 

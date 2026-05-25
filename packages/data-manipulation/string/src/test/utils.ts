@@ -20,7 +20,7 @@ export const formatAnsiString = (ansiString: string): { ansi: string; json: stri
         // String with ANSI codes stripped
         stripped,
         // String with ANSI escape codes shown as visible characters
-        visible: ansiString.replaceAll("", String.raw`\u001B`),
+        visible: ansiString.replaceAll("\u001B", String.raw`\u001B`),
     };
 };
 

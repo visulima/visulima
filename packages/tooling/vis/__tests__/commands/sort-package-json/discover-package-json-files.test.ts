@@ -8,6 +8,16 @@ import { discoverPackageJsonFiles } from "../../../src/commands/sort-package-jso
 
 let cwd: string;
 
+// `discoverPackageJsonFiles` returns paths joined via `@visulima/path`
+// (forward slashes everywhere). On Windows `mkdtempSync` hands back a
+// path with backslashes, so we have to forward-slash-normalize the
+// prefix before stripping it.
+const stripCwd = (path: string): string => {
+    const normalizedCwd = cwd.replaceAll("\\", "/");
+
+    return path.replace(`${normalizedCwd}/`, "");
+};
+
 const writeFile = (relativePath: string, content: string): void => {
     const fullPath = join(cwd, relativePath);
 
@@ -60,7 +70,7 @@ describe(discoverPackageJsonFiles, () => {
         // `allFiles > files` to prove the per-file gitignore filter was
         // doing work; with the resolver-level filter that's no longer
         // a meaningful invariant.
-        expect(result.files.map((f) => f.replace(`${cwd}/`, ""))).toStrictEqual(["package.json", "packages/foo/package.json"]);
+        expect(result.files.map((f) => stripCwd(f))).toStrictEqual(["package.json", "packages/foo/package.json"]);
     });
 
     it("skips package.json files inside workspace !-exclusions", () => {
@@ -73,7 +83,7 @@ describe(discoverPackageJsonFiles, () => {
 
         const result = discoverPackageJsonFiles(cwd, []);
 
-        expect(result.files.map((f) => f.replace(`${cwd}/`, ""))).toStrictEqual(["package.json", "packages/foo/package.json"]);
+        expect(result.files.map((f) => stripCwd(f))).toStrictEqual(["package.json", "packages/foo/package.json"]);
     });
 
     it("layers --ignore on top of gitignore + workspace exclusions", () => {
@@ -87,7 +97,7 @@ describe(discoverPackageJsonFiles, () => {
 
         const result = discoverPackageJsonFiles(cwd, ["**/skip-me/**"]);
 
-        expect(result.files.map((f) => f.replace(`${cwd}/`, ""))).toStrictEqual(["package.json", "packages/keep/package.json"]);
+        expect(result.files.map((f) => stripCwd(f))).toStrictEqual(["package.json", "packages/keep/package.json"]);
     });
 
     it("honors !-exclusions from npm-style package.json#workspaces", () => {
@@ -102,6 +112,6 @@ describe(discoverPackageJsonFiles, () => {
 
         const result = discoverPackageJsonFiles(cwd, []);
 
-        expect(result.files.map((f) => f.replace(`${cwd}/`, ""))).toStrictEqual(["package.json", "packages/foo/package.json"]);
+        expect(result.files.map((f) => stripCwd(f))).toStrictEqual(["package.json", "packages/foo/package.json"]);
     });
 });

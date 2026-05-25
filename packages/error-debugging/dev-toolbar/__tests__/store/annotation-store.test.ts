@@ -33,9 +33,11 @@ describe("annotation-store", () => {
 
             const paths = resolvePaths("/root");
 
-            expect(paths.base).toBe("/root/.devtoolbar");
-            expect(paths.annotationsFile).toBe("/root/.devtoolbar/annotations.json");
-            expect(paths.screenshotsDir).toBe("/root/.devtoolbar/screenshots");
+            // resolvePaths uses node:path which yields backslash separators
+            // on Windows; compare against path.join() so the test is OS-agnostic.
+            expect(paths.base).toBe(path.join("/root", ".devtoolbar"));
+            expect(paths.annotationsFile).toBe(path.join("/root", ".devtoolbar", "annotations.json"));
+            expect(paths.screenshotsDir).toBe(path.join("/root", ".devtoolbar", "screenshots"));
         });
     });
 

@@ -1,6 +1,6 @@
 import { QueryClient } from "@tanstack/react-query";
 import { waitFor } from "@testing-library/react";
-import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { useChunkedRestUpload } from "../../src/react/use-chunked-rest-upload";
 import { renderHookWithQueryClient } from "./test-utils";
@@ -22,6 +22,14 @@ describe(useChunkedRestUpload, () => {
         });
         globalThis.fetch = mockFetch;
         mockFetch.mockReset();
+    });
+
+    afterEach(() => {
+        // Cancel any in-flight queries/mutations so they don't escape the
+        // mock and hit the real network with `api.example.com` — node-25
+        // would otherwise hang on undici DNS lookups and fail to terminate
+        // the vitest worker.
+        queryClient.clear();
     });
 
     afterAll(() => {

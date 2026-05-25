@@ -1,20 +1,8 @@
-import { createRequire } from "node:module";
-
 import { describe, expect, it } from "vitest";
 
+import { ptyAvailable } from "../helpers/ink-run";
 import term from "../helpers/ink-term";
 import waitFor from "../helpers/wait-for";
-
-const ptyRequire = createRequire(import.meta.url);
-const ptyAvailable = (() => {
-    try {
-        ptyRequire("node-pty");
-
-        return true;
-    } catch {
-        return false;
-    }
-})();
 
 describe("hooks-use-input", () => {
     it.skipIf(!ptyAvailable)(

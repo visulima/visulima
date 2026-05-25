@@ -90,7 +90,9 @@ describe(useBatchUpload, () => {
     });
 
     it("should update progress during upload", async () => {
-        expect.assertions(4);
+        // waitFor() retries can drift the assertion count on Windows CI;
+        // use hasAssertions() instead of a fixed expect.assertions(N).
+        expect.hasAssertions();
 
         const { result, unmount } = renderHookWithQueryClient(() =>
             useBatchUpload({

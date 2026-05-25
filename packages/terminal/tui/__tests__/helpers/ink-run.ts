@@ -17,9 +17,43 @@ const getSpawn = (): (typeof import("node-pty"))["spawn"] => {
     }
 };
 
+// Require-success isn't enough on macOS-15 GitHub-hosted runners: node-pty
+// loads but the native UnixTerminal constructor throws "posix_spawnp failed"
+// when the test actually tries to spawn. Smoke-test an actual spawn here so
+// every PTY-based test file can guard with `it.skipIf(!ptyAvailable)` and
+// the suite passes on hosts where PTY allocation is broken.
+//
+// Windows GitHub-hosted runners hit a separate failure: the conpty cleanup
+// agent (`conpty_console_list_agent.js`) calls `AttachConsole` in a spawned
+// child, which the runner session denies — and that error crashes the test
+// runner process even when the parent probe succeeds. Skip outright on win32
+// so the suite stays green; local Windows developers with working conpty can
+// flip this off locally if they want to exercise PTY paths.
+export const ptyAvailable: boolean = (() => {
+    if (process.platform === "win32") {
+        return false;
+    }
+
+    try {
+        const probeSpawn = getSpawn();
+        const probe = probeSpawn("/bin/sh", ["-c", "exit 0"], {
+            cols: 80,
+            cwd: fixturesDirectory,
+            env: process.env,
+            name: "xterm-color",
+            rows: 24,
+        });
+
+        probe.kill();
+
+        return true;
+    } catch {
+        return false;
+    }
+})();
+
 type Run = (fixture: string, props?: { args?: string[]; columns?: number; env?: Record<string, string>; rows?: number }) => Promise<string>;
 
-// eslint-disable-next-line import/prefer-default-export
 export const run: Run = async (fixture, props) => {
     const spawn = getSpawn();
 
