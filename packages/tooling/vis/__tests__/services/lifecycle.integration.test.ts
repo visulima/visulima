@@ -152,7 +152,10 @@ describe("services/lifecycle — end-to-end", () => {
     // probes + a stop + sleep + a second attach. Windows CI cmd.exe +
     // node cold-start can exceed the vitest 5s default before any of
     // those finish.
-    it("walks the full lifecycle: start → list → attach → stop → re-attach diagnostics", { timeout: 30_000 }, async () => {
+    // 45s wrapper + 30s readiness: cmd.exe + node cold-start on Windows CI
+    // can exceed 20s before the TCP listener accepts. Wrapper needs headroom
+    // for the multi-step attach/stop/re-attach flow.
+    it("walks the full lifecycle: start → list → attach → stop → re-attach diagnostics", { timeout: 45_000 }, async () => {
         expect.assertions(14);
 
         const port = await findFreePort();
@@ -170,7 +173,7 @@ describe("services/lifecycle — end-to-end", () => {
             command: `node ${JSON.stringify(childPath)}`,
             config: {
                 env: { DB_URL: `postgres://127.0.0.1:${String(port)}/app` },
-                readiness: { tcp: { port, timeoutMs: 20_000 } },
+                readiness: { tcp: { port, timeoutMs: 30_000 } },
             },
             cwd: workspaceRoot,
             env: { DB_URL: `postgres://127.0.0.1:${String(port)}/app` },
@@ -194,7 +197,7 @@ describe("services/lifecycle — end-to-end", () => {
         //    where the test task depends on the db service. The probe
         //    is the *exact* one wired in src/commands/run/handler.ts.
         const dbTask = buildTask(dbId, {
-            service: { port, readiness: { tcp: { port, timeoutMs: 20_000 } } },
+            service: { port, readiness: { tcp: { port, timeoutMs: 30_000 } } },
         });
         const testTask = buildTask(testId);
         const taskGraph: TaskGraph = {
@@ -255,7 +258,9 @@ describe("services/lifecycle — end-to-end", () => {
         expect(reAttach.diagnostics[0]?.message).toMatch(/vis service start/);
     });
 
-    it("demotes a registered service whose port is unreachable to the restart-service path", { timeout: 30_000 }, async () => {
+    // 45s wrapper + 30s readiness: cmd.exe + node cold-start on Windows CI
+    // can exceed 20s before the TCP listener accepts.
+    it("demotes a registered service whose port is unreachable to the restart-service path", { timeout: 45_000 }, async () => {
         expect.assertions(4);
 
         // Start the service successfully, then immediately kill the
@@ -269,7 +274,7 @@ describe("services/lifecycle — end-to-end", () => {
             command: `node -e "require('net').createServer(()=>{}).listen(${String(port)}, '127.0.0.1')"`,
             config: {
                 env: { DB_URL: `postgres://127.0.0.1:${String(port)}/app` },
-                readiness: { tcp: { port, timeoutMs: 20_000 } },
+                readiness: { tcp: { port, timeoutMs: 30_000 } },
             },
             cwd: workspaceRoot,
             env: { DB_URL: `postgres://127.0.0.1:${String(port)}/app` },

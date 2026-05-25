@@ -272,14 +272,16 @@ describe(killOrphanedRunners, () => {
         expect(result.killed.length + result.failed.length).toBe(3);
     });
 
-    it("falls back to listOrphanPids when no enumerate is supplied — without crashing on real ps/tasklist output", () => {
+    it("falls back to listOrphanPids when no enumerate is supplied — without crashing on real ps/tasklist output", { timeout: 30_000 }, () => {
         // Live `listOrphanPids` invocation. It excludes self and may
         // return zero or more PIDs depending on test environment. We're
         // not asserting on which PIDs, only that the call completes
         // (no thrown error from the fallback path) and every kill the
         // loop attempted received SIGTERM, not SIGKILL. Using
         // hasAssertions() instead of a fixed count because the loop body
-        // is conditional on the live process table.
+        // is conditional on the live process table. 30s timeout because
+        // listOrphanPids shells out to tasklist on Windows which can
+        // be slow on cold CI runners.
         expect.hasAssertions();
 
         const killSpy = vi.fn();
