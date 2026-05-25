@@ -307,19 +307,69 @@ jobs:
                       pnpm run test:affected
                   fi
 
-            # Coverage upload is best-effort: when only workflow/config files
-            # change, test:affected runs no tests → no coverage files → codecov
-            # CLI exits non-zero. Don't fail the job for that.
+            # Inlined replacement for `anolilab/workflows/step/codecov`.
+            # Upstream discovers projects via `pnpm nx show projects --projects "packages/*"`,
+            # which (a) returns nothing here because our packages live at
+            # `packages/<category>/<name>/`, and (b) leaks pnpm
+            # platform-mismatch warnings (one per NAPI subpackage) into the
+            # captured array so warning lines become fake "projects" and
+            # codecov fails with `--fail-on-error` against a path that
+            # doesn't exist. The filesystem walk also exits 0 on
+            # config-only PRs where no coverage was produced.
+            # Tracking upstream fix at anolilab/workflows#397.
+            - name: "Validate codecov.yml"
+              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 22 && !matrix.deno_version && !matrix.bun_version && needs.files-changed.outputs.codecov == 'true'"
+              shell: "bash"
+              run: "curl --fail-with-body --data-binary @codecov.yml https://codecov.io/validate"
+
+            - name: "Download and verify Codecov CLI"
+              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 22 && !matrix.deno_version && !matrix.bun_version"
+              shell: "bash"
+              run: |
+                  curl -Os https://cli.codecov.io/latest/linux/codecov
+                  curl -Os https://cli.codecov.io/latest/linux/codecov.SHA256SUM
+                  curl -Os https://cli.codecov.io/latest/linux/codecov.SHA256SUM.sig
+                  curl https://keybase.io/codecovsecurity/pgp_keys.asc | gpg --no-default-keyring --keyring trustedkeys.gpg --import
+                  gpgv codecov.SHA256SUM.sig codecov.SHA256SUM
+                  shasum -a 256 -c codecov.SHA256SUM
+                  sudo chmod +x codecov
+
             - name: "Upload code coverage to codecov"
               if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 22 && !matrix.deno_version && !matrix.bun_version"
-              continue-on-error: true
-              uses: "anolilab/workflows/step/codecov@3c54b71af67bdd990513c4a17fa2fde078db7b74" # main
-              with:
-                  run-lint: "needs.files-changed.outputs.codecov == 'true'"
-                  codecov-token: "${{ secrets.CODECOV_TOKEN }}"
-                  use-affected: "true"
-                  affected-files: "${{ steps.files.outputs.all_changed_files }}"
-                  exclude-affected-projects: "pail-bench,redact-bench,colorize-bench,inspector-bench,docs,storybook"
+              shell: "bash"
+              env:
+                  CODECOV_TOKEN: "${{ secrets.CODECOV_TOKEN }}"
+                  RUN_ID: "${{ github.run_id }}"
+                  EXCLUDE_PROJECTS: "pail-bench,redact-bench,colorize-bench,inspector-bench,docs,storybook"
+              run: |
+                  set -euo pipefail
+                  shopt -s nullglob
+                  IFS=',' read -ra excludes <<< "${EXCLUDE_PROJECTS}"
+                  uploaded=0
+                  skipped=0
+                  for cov_dir in packages/*/*/coverage; do
+                      [[ -d "${cov_dir}" ]] || continue
+                      pkg_dir="$(dirname "${cov_dir}")"
+                      project="$(basename "${pkg_dir}")"
+                      excluded=0
+                      for excl in "${excludes[@]:-}"; do
+                          excl_trimmed="$(echo "${excl}" | tr -d '[:space:]')"
+                          if [[ -n "${excl_trimmed}" && "${project}" == "${excl_trimmed}" ]]; then
+                              excluded=1
+                              break
+                          fi
+                      done
+                      if (( excluded )); then
+                          echo "Skipping excluded project: ${project}"
+                          skipped=$((skipped + 1))
+                          continue
+                      fi
+                      echo "Running codecov in ${pkg_dir}"
+                      ./codecov --codecov-yml-path codecov.yml --verbose upload-process --fail-on-error \
+                          --dir "${pkg_dir}" -t "${CODECOV_TOKEN}" -F "${project}" -n "${project}-${RUN_ID}" || true
+                      uploaded=$((uploaded + 1))
+                  done
+                  echo "Codecov uploads: ${uploaded} (skipped ${skipped})"
 
     browser-test:
         name: "Browser Test (${{ matrix.browser }})"
