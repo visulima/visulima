@@ -1,4 +1,3 @@
-import { execFileSync } from "node:child_process";
 import { createInterface } from "node:readline";
 
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
@@ -47,6 +46,8 @@ import {
     restoreFromBackup,
     toFilterArray,
 } from "../../util/catalog";
+import { hasPeerDependencyWarnings, PEER_HINT } from "../../util/peer-warnings";
+import { spawnTee } from "../../util/spawn-tee";
 import { parsePackageArgument } from "../../util/utils";
 import type { UpdateOptions } from "./index";
 
@@ -371,11 +372,13 @@ const applyCatalogAndInstall = async (
         logger.info(`Running ${installBin} ${installArgs.join(" ")}...\n`);
 
         try {
-            execFileSync(installBin, installArgs, {
-                cwd: workspaceRoot,
-                env: process.env,
-                stdio: "inherit",
-            });
+            const { code, output } = await spawnTee(installBin, installArgs, { cwd: workspaceRoot, env: process.env });
+
+            if (code !== 0) {
+                logger.warn(`${installBin} ${installArgs.join(" ")} failed. You may need to run it manually.`);
+            } else if (options.peer !== true && hasPeerDependencyWarnings(output)) {
+                logger.info(PEER_HINT);
+            }
         } catch {
             logger.warn(`${installBin} ${installArgs.join(" ")} failed. You may need to run it manually.`);
         }
@@ -823,14 +826,14 @@ const executeCatalogUpdate = async (
     await applyCatalogAndInstall(workspaceRoot, packageManager, toApply, mergedOptions, logger, npmrcConfig);
 };
 
-const executePmWrapper = (
+const executePmWrapper = async (
     workspaceRoot: string,
     packageManager: "aube" | "bun" | "deno" | "npm" | "pnpm" | "yarn",
     version: string,
     options: Record<string, unknown>,
     argument: string[],
     logger: Console,
-): void => {
+): Promise<void> => {
     const updateOptions: UpdateCommandOptions = {
         dev: options.dev as boolean,
         filters: toFilterArray(options.filter as FilterOption),
@@ -862,11 +865,24 @@ const executePmWrapper = (
     logger.info(`Running: ${fullCommand}`);
 
     try {
-        execFileSync(command.bin, command.args, {
-            cwd: workspaceRoot,
-            env: process.env,
-            stdio: "inherit",
-        });
+        const { code, output } = await spawnTee(command.bin, command.args, { cwd: workspaceRoot, env: process.env });
+
+        if (code !== 0) {
+            logger.error(`\n${red("✖")} Update failed (exit code ${String(code)})`);
+            logger.error(`  Command: ${fullCommand}`);
+            logger.error(`  Directory: ${workspaceRoot}\n`);
+
+            process.exitCode = code;
+
+            return;
+        }
+
+        // Already-skipped on `--peer` updates: re-running the same hint would
+        // just point users back at the command they already ran. The catalog
+        // path uses the same guard for the same reason.
+        if (options.peer !== true && hasPeerDependencyWarnings(output)) {
+            logger.info(PEER_HINT);
+        }
     } catch (error: unknown) {
         const execError = error as { status?: number };
         const exitCode = execError.status ?? 1;
@@ -1038,7 +1054,7 @@ const execute = async ({ argument: rawArgument, logger, options, visConfig, work
         const installer = resolveInstaller(workspaceRoot, { configBackend: visConfig?.install?.backend, configCorepack: visConfig?.install?.corepack });
         const installerVersion = installer.name === "aube" ? "" : getPackageManagerVersion(installer.name);
 
-        executePmWrapper(workspaceRoot, installer.name, installerVersion, options, argument, logger);
+        await executePmWrapper(workspaceRoot, installer.name, installerVersion, options, argument, logger);
     }
 };
 

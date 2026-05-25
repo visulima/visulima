@@ -29,7 +29,9 @@ vi.mock(import("../../src/pm/pm-runner"), () => {
         resolveInstaller: vi.fn(() => {
             return { name: "pnpm", version: "10.0.0" };
         }),
-        runInstall: vi.fn(() => 0),
+        runInstallCaptured: vi.fn(async () => {
+            return { code: 0, output: "" };
+        }),
     };
 });
 
