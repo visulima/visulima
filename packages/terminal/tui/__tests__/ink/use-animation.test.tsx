@@ -1229,7 +1229,12 @@ describe(useAnimation, () => {
         }
     });
 
-    it("suspended transitions do not reset the committed animation before commit", async () => {
+    // Windows-only skip: 50ms intervals don't tick reliably within a 250ms
+    // sampling window on Windows CI — the test routinely sees frame=0 where
+    // macOS/Linux see ≥1. The same timing-sensitivity already forced
+    // `delta approximates interval` and `delta accounts for throttled ticks`
+    // to be skipped on Windows below.
+    it.skipIf(process.platform === "win32")("suspended transitions do not reset the committed animation before commit", async () => {
         expect.assertions(3);
 
         let resolveSuspense!: () => void;
