@@ -1,8 +1,8 @@
 import { Readable } from "node:stream";
 
 import { BaseStorage } from "../storage/storage";
-import type { File as StorageFile, FilePart } from "../storage/utils/file";
 import type { OperationOptions } from "../storage/types";
+import type { File as StorageFile, FilePart } from "../storage/utils/file";
 
 /**
  * Web-standard and Node-native body types accepted by {@link Files.upload}.
@@ -367,9 +367,11 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
         return this.prefix ? `${this.prefix}/${key}` : key;
     }
 
-    /** Strip the constructor prefix off a key returned by the adapter. Returns `null` when the key
+    /**
+     * Strip the constructor prefix off a key returned by the adapter. Returns `null` when the key
      * is outside the prefix or is the bare prefix itself (used to filter `list()` results on a path
-     * boundary and drop any synthetic directory entry the adapter may emit). */
+     * boundary and drop any synthetic directory entry the adapter may emit).
+     */
     private stripPrefix(rawKey: string): string | null {
         const key = rawKey.startsWith("/") ? rawKey.slice(1) : rawKey;
 
@@ -499,7 +501,7 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
 
     public async download(keyOrKeys: string[] | string, options?: BulkOptions | OperationOptions): Promise<BulkDownloadResult | DownloadResult> {
         if (Array.isArray(keyOrKeys)) {
-            return this.downloadMany(keyOrKeys, options as BulkOptions | undefined);
+            return this.downloadMany(keyOrKeys, options);
         }
 
         return this.downloadOne(keyOrKeys, options);
@@ -564,7 +566,7 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
 
     public async head(keyOrKeys: string[] | string, options?: BulkOptions | OperationOptions): Promise<BulkHeadResult | FileObject> {
         if (Array.isArray(keyOrKeys)) {
-            return this.headMany(keyOrKeys, options as BulkOptions | undefined);
+            return this.headMany(keyOrKeys, options);
         }
 
         return this.headOne(keyOrKeys, options);
@@ -625,7 +627,7 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
 
     public async exists(keyOrKeys: string[] | string, options?: BulkOptions | OperationOptions): Promise<BulkExistsResult | boolean> {
         if (Array.isArray(keyOrKeys)) {
-            return this.existsMany(keyOrKeys, options as BulkOptions | undefined);
+            return this.existsMany(keyOrKeys, options);
         }
 
         return this.existsOne(keyOrKeys, options);
@@ -687,7 +689,7 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
 
     public async delete(keyOrKeys: string[] | string, options?: BulkOptions | OperationOptions): Promise<BulkDeleteResult | void> {
         if (Array.isArray(keyOrKeys)) {
-            return this.deleteMany(keyOrKeys, options as BulkOptions | undefined);
+            return this.deleteMany(keyOrKeys, options);
         }
 
         await this.deleteOne(keyOrKeys, options);
