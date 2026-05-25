@@ -1071,7 +1071,9 @@ describe("runStaged — integration", () => {
         expect(sh(["status", "--porcelain", "generated.txt"], root)).toMatch(/^\?\? +generated\.txt$/);
     });
 
-    it("--hide-all hides untracked files and restores them after the run", async () => {
+    // 30s timeout: Windows test runners can exceed the 5s default while
+    // walking the stash + reapply cycle on cold runners.
+    it("--hide-all hides untracked files and restores them after the run", { timeout: 30_000 }, async () => {
         expect.assertions(3);
 
         writeFileSync(join(root, "tracked.txt"), "tracked\n");
@@ -1147,7 +1149,10 @@ describe("runStaged — integration", () => {
         expect(readlinkSync(join(root, "link.txt"))).toBe("target.txt");
     });
 
-    it("sIGINT during a running task cancels the run and restores pre-run state", async () => {
+    // 30s timeout: the SIGINT path waits up to 5s for the marker plus the
+    // signal handler to fire, then runStaged unwinds; on cold Windows
+    // runners that easily exceeds vitest's 5s default.
+    it("sIGINT during a running task cancels the run and restores pre-run state", { timeout: 30_000 }, async () => {
         expect.assertions(4);
 
         writeFileSync(join(root, "a.txt"), "seed\n");

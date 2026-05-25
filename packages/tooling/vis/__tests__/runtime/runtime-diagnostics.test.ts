@@ -136,7 +136,9 @@ describe(checkInotifyCapacity, () => {
 });
 
 describe(checkOrphanedRunners, () => {
-    it("emits the orphans id and never lists the current process", () => {
+    // 30s timeout: checkOrphanedRunners shells out to `tasklist` on Windows
+    // which can exceed vitest's 5s default on a cold CI runner.
+    it("emits the orphans id and never lists the current process", { timeout: 30_000 }, () => {
         expect.assertions(2);
 
         const diagnostic = checkOrphanedRunners();
