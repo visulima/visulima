@@ -111,6 +111,10 @@ export default createConfig(
     {
         files: ["**/*.test.ts"],
         rules: {
+            // it.skipIf wrapping makes files appear empty to sonarjs (entire
+            // suite is platform-skipped — the test calls aren't statically
+            // recognizable).
+            "sonarjs/no-empty-test-file": "off",
             // tests use tmpdir() for fixtures — safe outside test runner
             "sonarjs/publicly-writable-directories": "off",
             "vitest/require-mock-type-parameters": "off",
