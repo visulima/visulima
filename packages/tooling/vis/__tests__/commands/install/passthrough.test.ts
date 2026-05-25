@@ -22,7 +22,7 @@ const detectPmMock = vi.fn(() => {
 const resolveInstallerMock = vi.fn(() => {
     return { name: "pnpm", version: "10.0.0" };
 });
-const runInstallMock = vi.fn(() => 0);
+const runInstallCapturedMock = vi.fn(async () => { return { code: 0, output: "" }; });
 const detectLockfileDriftMock = vi.fn(() => undefined);
 
 vi.mock(import("../../../src/pm/pm-runner"), () => {
@@ -30,7 +30,7 @@ vi.mock(import("../../../src/pm/pm-runner"), () => {
         detectLockfileDrift: detectLockfileDriftMock,
         detectPm: detectPmMock,
         resolveInstaller: resolveInstallerMock,
-        runInstall: runInstallMock,
+        runInstallCaptured: runInstallCapturedMock,
     };
 });
 
@@ -59,7 +59,7 @@ describe("install passthrough to add", () => {
     beforeEach(() => {
         addExecuteMock.mockClear();
         scanDepsForTyposquatsMock.mockClear();
-        runInstallMock.mockClear();
+        runInstallCapturedMock.mockClear();
         detectPmMock.mockClear();
         resolveInstallerMock.mockClear();
     });
@@ -76,7 +76,7 @@ describe("install passthrough to add", () => {
         await install(buildToolbox({ argument: ["react"], options: { dev: true } }) as never);
 
         expect(addExecuteMock).toHaveBeenCalledTimes(1);
-        expect(runInstallMock).not.toHaveBeenCalled();
+        expect(runInstallCapturedMock).not.toHaveBeenCalled();
 
         const passedToolbox = addExecuteMock.mock.calls[0]?.[0] as { argument: string[]; options: Record<string, unknown> };
 
@@ -180,6 +180,6 @@ describe("install passthrough to add", () => {
         await install(buildToolbox({ argument: [], options: {} }) as never);
 
         expect(addExecuteMock).not.toHaveBeenCalled();
-        expect(runInstallMock).toHaveBeenCalledTimes(1);
+        expect(runInstallCapturedMock).toHaveBeenCalledTimes(1);
     });
 });
