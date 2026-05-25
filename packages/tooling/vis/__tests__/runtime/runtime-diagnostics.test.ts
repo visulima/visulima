@@ -409,9 +409,9 @@ describe(killViaSignal, () => {
 });
 
 describe("orphans diagnostic id constant", () => {
-    // 30s timeout: checkOrphanedRunners shells out to `tasklist` on
-    // Windows; Windows runner cold-start can blow the 5s default.
-    it("matches the id every orphan diagnostic emits", { timeout: 30_000 }, () => {
+    // 60s timeout: checkOrphanedRunners shells out to `tasklist` on
+    // Windows; 30s wasn't enough on cold CI runners (run 26414217132).
+    it("matches the id every orphan diagnostic emits", { timeout: 60_000 }, () => {
         expect.assertions(1);
 
         // Sanity check: refactoring the constant must not desync from
@@ -424,9 +424,9 @@ describe("orphans diagnostic id constant", () => {
 });
 
 describe(runRuntimeDiagnostics, () => {
-    // 30s timeout: the orphans diagnostic shells out to `tasklist` on
-    // Windows; cold-runner startup overhead blows the 5s default.
-    it("returns inotify, tty, watchman, git-lfs, and orphans diagnostics in a stable order", { timeout: 30_000 }, () => {
+    // 60s timeout: the orphans diagnostic shells out to `tasklist` on
+    // Windows; 30s wasn't enough on cold CI runners (run 26414217132).
+    it("returns inotify, tty, watchman, git-lfs, and orphans diagnostics in a stable order", { timeout: 60_000 }, () => {
         expect.assertions(3);
 
         const diagnostics = runRuntimeDiagnostics();
@@ -439,7 +439,7 @@ describe(runRuntimeDiagnostics, () => {
         expect(diagnostics).toHaveLength(5);
     });
 
-    it("each diagnostic has a non-empty message and id", { timeout: 30_000 }, () => {
+    it("each diagnostic has a non-empty message and id", { timeout: 60_000 }, () => {
         expect.assertions(2);
 
         const diagnostics = runRuntimeDiagnostics();

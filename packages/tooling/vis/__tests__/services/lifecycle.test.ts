@@ -92,10 +92,10 @@ describe("services/lifecycle", () => {
         cleanupTemporaryDirectory(homeOverride);
     });
 
-    // 45s timeout + 30s readiness: cmd.exe + node cold-start on Windows CI
-    // can exceed 20s before the TCP listener is even reachable, and we still
-    // need ~10-15s headroom in the wrapper for stopService + registry I/O.
-    it("starts a service, registers it, and stops it cleanly", { timeout: 45_000 }, async () => {
+    // 90s timeout + 60s readiness: cmd.exe + node cold-start on Windows CI
+    // exceeded 30s on run 26414217132 — bumping the readiness budget and the
+    // wrapper to absorb runner cold-start variance.
+    it("starts a service, registers it, and stops it cleanly", { timeout: 90_000 }, async () => {
         expect.assertions(5);
 
         const port = await findFreePort();
@@ -107,7 +107,7 @@ describe("services/lifecycle", () => {
 
         const startResult = await startService({
             command: `node ${JSON.stringify(childPath)}`,
-            config: { readiness: { tcp: { port, timeoutMs: 30_000 } } },
+            config: { readiness: { tcp: { port, timeoutMs: 60_000 } } },
             cwd: workspaceRoot,
             env: {},
             id: "fixture:db",
@@ -134,9 +134,9 @@ describe("services/lifecycle", () => {
         await expect(readEntry(workspaceRoot, "fixture:db")).resolves.toBeUndefined();
     });
 
-    // 45s/30s: same rationale as the start+stop test above — Windows CI
-    // can take >20s for cmd.exe → node → TCP listen on a cold runner.
-    it("refuses to start a service that is already running", { timeout: 45_000 }, async () => {
+    // 90s/60s: same rationale as the start+stop test above — Windows CI
+    // exceeded 30s on run 26414217132 for cmd.exe → node → TCP listen.
+    it("refuses to start a service that is already running", { timeout: 90_000 }, async () => {
         expect.assertions(1);
 
         const port = await findFreePort();
@@ -153,7 +153,7 @@ describe("services/lifecycle", () => {
 
         const startResult = await startService({
             command: `node ${JSON.stringify(childPath)}`,
-            config: { readiness: { tcp: { port, timeoutMs: 30_000 } } },
+            config: { readiness: { tcp: { port, timeoutMs: 60_000 } } },
             cwd: workspaceRoot,
             env: {},
             id: "fixture:db",
