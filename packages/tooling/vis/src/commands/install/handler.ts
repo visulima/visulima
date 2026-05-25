@@ -6,8 +6,9 @@ import { dirname, join, parse as parsePath } from "@visulima/path";
 
 import { pail } from "../../io/logger";
 import type { InstallBackend } from "../../pm/pm-runner";
-import { detectLockfileDrift, detectPm, resolveInstaller, runInstall } from "../../pm/pm-runner";
+import { detectLockfileDrift, detectPm, resolveInstaller, runInstallCaptured } from "../../pm/pm-runner";
 import { scanDepsForTyposquats } from "../../security/typosquats";
+import { hasPeerDependencyWarnings, PEER_HINT } from "../../util/peer-warnings";
 import { toStringArray } from "../../util/utils";
 import type { InstallOptions } from "./index";
 
@@ -170,7 +171,7 @@ const execute = async (toolbox: Toolbox<Console, InstallOptions>): Promise<void>
         }
     }
 
-    const code = runInstall(
+    const { code, output } = await runInstallCaptured(
         pm,
         {
             dev: options.dev || false,
@@ -198,6 +199,14 @@ const execute = async (toolbox: Toolbox<Console, InstallOptions>): Promise<void>
 
     if (code !== 0) {
         process.exitCode = code;
+    }
+
+    // Surfaced after the PM finishes streaming its own report so the hint
+    // lands underneath the warning tree the user just read — and only when
+    // we actually saw the warning text, to avoid noisy false positives on
+    // green installs.
+    if (code === 0 && !options.silent && hasPeerDependencyWarnings(output)) {
+        pail.info(PEER_HINT);
     }
 };
 

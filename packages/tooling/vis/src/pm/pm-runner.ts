@@ -36,6 +36,7 @@ import {
     resolveAubeUnlink,
     resolveAubeWhy,
 } from "../util/aube-resolver";
+import { spawnTee } from "../util/spawn-tee";
 import { dispatchSubcommand } from "./pm-subcommand-dispatch";
 
 /**
@@ -463,7 +464,7 @@ const applyImmutableCache = (resolved: ResolvedCommand, pm: InstallerInfo["name"
     return { ...resolved, args: [...resolved.args, "--immutable-cache"] };
 };
 
-const runInstall = (pm: InstallerInfo, options: InstallOptions, cwd: string, logger: Console, extras: RunInstallExtras = {}): number => {
+const resolveInstallCommand = (pm: InstallerInfo, options: InstallOptions, extras: RunInstallExtras): ResolvedCommand => {
     // `silent` is wired into the native `InstallOptions` ABI, so we
     // merge it into `options` rather than post-processing — the Rust
     // resolver controls flag emission per PM. Add/remove use the
@@ -485,7 +486,52 @@ const runInstall = (pm: InstallerInfo, options: InstallOptions, cwd: string, log
         resolved = applyImmutableCache(resolved, pm.name, pm.version);
     }
 
+    return resolved;
+};
+
+const runInstall = (pm: InstallerInfo, options: InstallOptions, cwd: string, logger: Console, extras: RunInstallExtras = {}): number => {
+    const resolved = resolveInstallCommand(pm, options, extras);
+
     return runWithNativeDryRun(pm, resolved, cwd, logger, { dry: extras.dry, env: extras.env });
+};
+
+/**
+ * Same as {@link runInstall} but routes through {@link spawnTee} so the
+ * caller can read the combined stdout/stderr after the install completes.
+ *
+ * Used by `vis install` / `vis update` to grep for PM-emitted peer
+ * dependency warnings and show a hint pointing at `vis update --peer`.
+ * Sticks to async/await because Node's tee-style pipe + close handlers
+ * are inherently asynchronous; the install handlers are already async,
+ * so this is a no-op for callers.
+ *
+ * Dry-run is honored by logging the resolved command and returning
+ * `{ code: 0, output: "" }` — same shape as a successful no-op run,
+ * which matches the behavior of {@link runResolved}'s dry path.
+ */
+const runInstallCaptured = async (
+    pm: InstallerInfo,
+    options: InstallOptions,
+    cwd: string,
+    logger: Console,
+    extras: RunInstallExtras = {},
+): Promise<{ code: number; output: string }> => {
+    const resolved = applyCorepack(resolveInstallCommand(pm, options, extras), pm);
+
+    for (const warning of resolved.warnings) {
+        logger.warn(`warning: ${warning}`);
+    }
+
+    if (extras.dry) {
+        logger.log(`[dry-run] ${resolved.bin} ${resolved.args.join(" ")}`);
+
+        return { code: 0, output: "" };
+    }
+
+    return spawnTee(resolved.bin, resolved.args, {
+        cwd,
+        env: extras.env ? { ...process.env, ...extras.env } : process.env,
+    });
 };
 
 /**
@@ -1085,6 +1131,7 @@ export {
     runExec,
     runInfo,
     runInstall,
+    runInstallCaptured,
     runLink,
     runOutdated,
     runPmSubcommand,
