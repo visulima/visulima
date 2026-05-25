@@ -289,10 +289,10 @@ describe("files facade", () => {
 
     describe("constructor prefix", () => {
         const makePrefixed = (
-            dir: string,
+            directoryPath: string,
             prefix: string,
         ): { adapter: DiskStorage; facade: Files<DiskStorage> } => {
-            const adapter = new DiskStorage<File>({ directory: dir, maxUploadSize: "100MB" });
+            const adapter = new DiskStorage<File>({ directory: directoryPath, maxUploadSize: "100MB" });
 
             return { adapter, facade: new Files({ adapter, prefix }) };
         };
@@ -338,7 +338,8 @@ describe("files facade", () => {
             await seed.upload("users-archive/c.txt", "3");
 
             const users = new Files({ adapter, prefix: "users" });
-            const listed = (await users.list()).map((file) => file.key).toSorted();
+            const result = await users.list();
+            const listed = result.map((file) => file.key).toSorted();
 
             expect(listed).toEqual(["a.txt", "b.txt"]);
         });
@@ -347,7 +348,7 @@ describe("files facade", () => {
     describe("per-call OperationOptions", () => {
         // A DiskStorage subclass that records the `options` argument passed to getMeta. Lets us
         // assert the signal/timeout actually reach the adapter, not just that the call type-checks.
-        class CapturingDiskStorage extends DiskStorage<File> {
+        class CapturingDiskStorage extends DiskStorage {
             public readonly captured: { retries?: number; signal?: AbortSignal; timeout?: number }[] = [];
 
             public override async getMeta(
@@ -539,14 +540,14 @@ describe("files facade", () => {
         it("respects a custom concurrency limit", async () => {
             const { facade } = makeFiles(directory);
 
-            const items = Array.from({ length: 12 }, (_, index) => ({
+            const items = Array.from({ length: 12 }, (_, index) => { return {
                 body: String(index),
                 key: `c/${index}.txt`,
-            }));
+            }; });
 
             const result = await facade.upload(items, { concurrency: 3 });
 
-            expect(result.uploaded.length).toBe(12);
+            expect(result.uploaded).toHaveLength(12);
         });
 
         it("bulk operations work under a constructor prefix and strip the prefix from results", async () => {
