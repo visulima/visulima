@@ -170,7 +170,7 @@ describe("services/lifecycle — end-to-end", () => {
             command: `node ${JSON.stringify(childPath)}`,
             config: {
                 env: { DB_URL: `postgres://127.0.0.1:${String(port)}/app` },
-                readiness: { tcp: { port, timeoutMs: 5000 } },
+                readiness: { tcp: { port, timeoutMs: 20_000 } },
             },
             cwd: workspaceRoot,
             env: { DB_URL: `postgres://127.0.0.1:${String(port)}/app` },
@@ -194,7 +194,7 @@ describe("services/lifecycle — end-to-end", () => {
         //    where the test task depends on the db service. The probe
         //    is the *exact* one wired in src/commands/run/handler.ts.
         const dbTask = buildTask(dbId, {
-            service: { port, readiness: { tcp: { port, timeoutMs: 5000 } } },
+            service: { port, readiness: { tcp: { port, timeoutMs: 20_000 } } },
         });
         const testTask = buildTask(testId);
         const taskGraph: TaskGraph = {
@@ -269,7 +269,7 @@ describe("services/lifecycle — end-to-end", () => {
             command: `node -e "require('net').createServer(()=>{}).listen(${String(port)}, '127.0.0.1')"`,
             config: {
                 env: { DB_URL: `postgres://127.0.0.1:${String(port)}/app` },
-                readiness: { tcp: { port, timeoutMs: 5000 } },
+                readiness: { tcp: { port, timeoutMs: 20_000 } },
             },
             cwd: workspaceRoot,
             env: { DB_URL: `postgres://127.0.0.1:${String(port)}/app` },

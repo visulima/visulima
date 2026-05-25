@@ -182,7 +182,9 @@ describe(checkGitLfsTracking, () => {
 });
 
 describe(listOrphanPids, () => {
-    it("excludes the current process and never throws", () => {
+    // 30s timeout: on Windows this shells out to `tasklist` which can
+    // exceed vitest's 5s default on a cold CI runner.
+    it("excludes the current process and never throws", { timeout: 30_000 }, () => {
         expect.assertions(2);
 
         const pids = listOrphanPids();
@@ -403,7 +405,9 @@ describe(killViaSignal, () => {
 });
 
 describe("orphans diagnostic id constant", () => {
-    it("matches the id every orphan diagnostic emits", () => {
+    // 30s timeout: checkOrphanedRunners shells out to `tasklist` on
+    // Windows; Windows runner cold-start can blow the 5s default.
+    it("matches the id every orphan diagnostic emits", { timeout: 30_000 }, () => {
         expect.assertions(1);
 
         // Sanity check: refactoring the constant must not desync from
@@ -416,7 +420,9 @@ describe("orphans diagnostic id constant", () => {
 });
 
 describe(runRuntimeDiagnostics, () => {
-    it("returns inotify, tty, watchman, git-lfs, and orphans diagnostics in a stable order", () => {
+    // 30s timeout: the orphans diagnostic shells out to `tasklist` on
+    // Windows; cold-runner startup overhead blows the 5s default.
+    it("returns inotify, tty, watchman, git-lfs, and orphans diagnostics in a stable order", { timeout: 30_000 }, () => {
         expect.assertions(3);
 
         const diagnostics = runRuntimeDiagnostics();
@@ -429,7 +435,7 @@ describe(runRuntimeDiagnostics, () => {
         expect(diagnostics).toHaveLength(5);
     });
 
-    it("each diagnostic has a non-empty message and id", () => {
+    it("each diagnostic has a non-empty message and id", { timeout: 30_000 }, () => {
         expect.assertions(2);
 
         const diagnostics = runRuntimeDiagnostics();

@@ -106,7 +106,7 @@ describe("services/lifecycle", () => {
 
         const startResult = await startService({
             command: `node ${JSON.stringify(childPath)}`,
-            config: { readiness: { tcp: { port, timeoutMs: 5000 } } },
+            config: { readiness: { tcp: { port, timeoutMs: 20_000 } } },
             cwd: workspaceRoot,
             env: {},
             id: "fixture:db",
@@ -150,7 +150,7 @@ describe("services/lifecycle", () => {
 
         const startResult = await startService({
             command: `node ${JSON.stringify(childPath)}`,
-            config: { readiness: { tcp: { port, timeoutMs: 5000 } } },
+            config: { readiness: { tcp: { port, timeoutMs: 20_000 } } },
             cwd: workspaceRoot,
             env: {},
             id: "fixture:db",
