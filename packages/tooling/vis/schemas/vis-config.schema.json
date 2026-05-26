@@ -36,6 +36,11 @@
             "$ref": "#/$defs/CodeownersConfig",
             "description": "Code ownership configuration. Controls how `vis sync codeowners` renders the generated CODEOWNERS file."
         },
+        "defaultBase": {
+            "type": "string",
+            "description": "Default base branch used by `vis affected`, `vis ci`, and `vis run --affected` when no explicit `--base` is passed and no CI smart-resolver fires.\n\nResolved as `origin/<defaultBase>` against the local clone; should be a branch name (not a fully-qualified ref) such as `main`, `master`, or `trunk`. Falls back to `main` when omitted.\n\nMigrated automatically from `nx.json#affected.defaultBase` / `nx.json#defaultBase` by `vis migrate nx`.",
+            "default": "main"
+        },
         "constraints": {
             "type": "object",
             "properties": {
