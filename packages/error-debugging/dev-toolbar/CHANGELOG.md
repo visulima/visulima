@@ -1,3 +1,9 @@
+## @visulima/dev-toolbar [1.0.0-alpha.29](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.0-alpha.28...@visulima/dev-toolbar@1.0.0-alpha.29) (2026-05-26)
+
+### Miscellaneous Chores
+
+* sorted package.json ([b47c545](https://github.com/visulima/visulima/commit/b47c545591600fdab17d5cd3a3fbc68b61e199da))
+
 ## @visulima/dev-toolbar [1.0.0-alpha.28](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.0-alpha.27...@visulima/dev-toolbar@1.0.0-alpha.28) (2026-05-26)
 
 ### Bug Fixes
