@@ -690,6 +690,7 @@ Place a `project.json` in each workspace package for per-project configuration. 
 ```json
 {
     "$schema": "https://unpkg.com/@visulima/vis/schemas/project.schema.json",
+    "name": "my-library",
     "projectType": "library",
     "layer": "library",
     "stack": "frontend",
@@ -719,19 +720,33 @@ Place a `project.json` in each workspace package for per-project configuration. 
 
 ### Fields
 
-| Field                  | Type       | Description                                                                    |
-| ---------------------- | ---------- | ------------------------------------------------------------------------------ |
-| `$schema`              | `string`   | JSON Schema for editor autocomplete                                            |
-| `projectType`          | `string`   | `"library"` or `"application"`                                                 |
-| `layer`                | `string`   | `configuration`, `library`, `scaffolding`, `tool`, `automation`, `application` |
-| `stack`                | `string`   | `backend`, `frontend`, `data`, `infrastructure`, `systems`                     |
-| `language`             | `string`   | Primary language (e.g. `typescript`, `rust`)                                   |
-| `tags`                 | `string[]` | Filterable tags for queries and constraints                                    |
-| `sourceRoot`           | `string`   | Source root directory (default: `src`)                                         |
-| `implicitDependencies` | `string[]` | Projects this project implicitly depends on                                    |
-| `owners`               | `object[]` | Code ownership declarations (see [vis sync](/commands/sync))                   |
-| `project`              | `object`   | Human-readable metadata (title, description, owner)                            |
-| `targets`              | `object`   | Target definitions (see [vis run](/commands/run#target-options))               |
+| Field                  | Type       | Description                                                                                                                                 |
+| ---------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `$schema`              | `string`   | JSON Schema for editor autocomplete                                                                                                         |
+| `name`                 | `string`   | Project identity in the workspace graph and CLI filters. Falls back to `package.json#name` when omitted (see [Project name](#project-name)) |
+| `projectType`          | `string`   | `"library"` or `"application"`                                                                                                              |
+| `layer`                | `string`   | `configuration`, `library`, `scaffolding`, `tool`, `automation`, `application`                                                              |
+| `stack`                | `string`   | `backend`, `frontend`, `data`, `infrastructure`, `systems`                                                                                  |
+| `language`             | `string`   | Primary language (e.g. `typescript`, `rust`)                                                                                                |
+| `tags`                 | `string[]` | Filterable tags for queries and constraints                                                                                                 |
+| `sourceRoot`           | `string`   | Source root directory (default: `src`)                                                                                                      |
+| `implicitDependencies` | `string[]` | Projects this project implicitly depends on                                                                                                 |
+| `owners`               | `object[]` | Code ownership declarations (see [vis sync](/commands/sync))                                                                                |
+| `project`              | `object`   | Human-readable metadata (title, description, owner)                                                                                         |
+| `targets`              | `object`   | Target definitions (see [vis run](/commands/run#target-options))                                                                            |
+
+### Project name
+
+`project.json#name`, when set, becomes the project's identity in the workspace graph — it's what shows up in `vis list`, what `vis run <name>:build` matches, and the key the project graph uses internally. If omitted, vis falls back to `package.json#name`, matching the historic behaviour, so existing workspaces keep working without change.
+
+Use it when:
+
+- The npm name and the project name should differ — e.g. publish as `@myorg/web` but address it as `web` from the CLI.
+- You're migrating from Nx — Nx workspaces declare project names in `project.json` and vis now reads them natively.
+
+A `package.json` is still required alongside `project.json` — `name`-only projects without a `package.json` aren't supported.
+
+Cross-project dependency edges still resolve through `package.json#dependencies` by their **npm name**, so an aliased project remains reachable from sibling packages without rewriting their dependency lists.
 
 ### Implicit Dependencies
 

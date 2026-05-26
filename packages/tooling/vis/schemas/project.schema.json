@@ -28,6 +28,10 @@
             ],
             "description": "Project layer, used for constraint inheritance and query filtering."
         },
+        "name": {
+            "type": "string",
+            "description": "Project name. When set, takes precedence over `package.json#name` as the project's identity in the workspace graph and CLI filters. Falls back to `package.json#name` when omitted."
+        },
         "owners": {
             "type": "array",
             "items": {

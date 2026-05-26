@@ -11,11 +11,11 @@ This page is the narrative companion to [Configuration](/configuration). The ref
 
 ## The three files
 
-| File            | Lives in                   | Owns                                                                                                                                                               | Touched by                          |
-| --------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------- |
-| `vis.config.ts` | Workspace root             | Workspace-wide policy: tasks, scoped tasks, file groups, named inputs, security, constraints, codeowners, secrets, update rules.                                   | Workspace lead / platform team      |
-| `project.json`  | Each project root          | Per-project **metadata** (`projectType`, `tags`, `layer`, `stack`, `language`, `owners`, `implicitDependencies`, `sourceRoot`) plus optional per-target overrides. | Project owners                      |
-| `vis.task.ts`   | Each project root (opt-in) | Per-project **typed** task overlay — same shape as `project.json#targets` but with full TypeScript inference, autocomplete, and access to runtime helpers.         | Project owners who want type safety |
+| File            | Lives in                   | Owns                                                                                                                                                                       | Touched by                          |
+| --------------- | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
+| `vis.config.ts` | Workspace root             | Workspace-wide policy: tasks, scoped tasks, file groups, named inputs, security, constraints, codeowners, secrets, update rules.                                           | Workspace lead / platform team      |
+| `project.json`  | Each project root          | Per-project **metadata** (`name`, `projectType`, `tags`, `layer`, `stack`, `language`, `owners`, `implicitDependencies`, `sourceRoot`) plus optional per-target overrides. | Project owners                      |
+| `vis.task.ts`   | Each project root (opt-in) | Per-project **typed** task overlay — same shape as `project.json#targets` but with full TypeScript inference, autocomplete, and access to runtime helpers.                 | Project owners who want type safety |
 
 `package.json#scripts` is the fourth, implicit layer: any script vis doesn't find a target for is still runnable as a fallback. You almost never need to edit it for vis's sake — leave it for `npm run` ergonomics.
 
@@ -163,7 +163,7 @@ every project          vis.config.ts#tasks
 
 `project.json` carries two distinct kinds of data — keep them clean:
 
-- **Metadata** (`projectType`, `tags`, `layer`, `stack`, `language`, `owners`, `implicitDependencies`, `sourceRoot`, `project`) describes _what the project is_. It's read by `vis query`, `vis sync codeowners`, scoped `scopedTasks`, and the constraint engine.
+- **Metadata** (`name`, `projectType`, `tags`, `layer`, `stack`, `language`, `owners`, `implicitDependencies`, `sourceRoot`, `project`) describes _what the project is_. It's read by `vis query`, `vis sync codeowners`, scoped `scopedTasks`, and the constraint engine. `name` is optional and falls back to `package.json#name` — see [Project name](/configuration#project-name).
 - **Targets** (`targets`) describes _what the project builds_. It's read by `vis run`.
 
 Putting `tags: ["frontend"]` in `project.json` lets a `scopedTasks` block target it without naming the project explicitly — that's the leverage. The more projects you tag, the more your defaults stay declarative instead of project-list-driven.
