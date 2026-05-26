@@ -1,6 +1,6 @@
 {
     "name": "@visulima/tui",
-    "version": "1.0.0-alpha.18",
+    "version": "1.0.0-alpha.19",
     "description": "React-based TUI library powered by a native Rust diff engine, drop-in Ink-compatible API",
     "keywords": [
         "cli",
@@ -592,7 +592,7 @@
     "dependencies": {
         "@visulima/ansi": "4.0.0-alpha.14",
         "@visulima/colorize": "2.0.0-alpha.11",
-        "@visulima/error": "6.0.0-alpha.27",
+        "@visulima/error": "6.0.0-alpha.28",
         "@visulima/spinner": "1.0.0-alpha.1",
         "@visulima/string": "3.0.0-alpha.13",
         "cli-boxes": "catalog:prod",
