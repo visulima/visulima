@@ -1,3 +1,21 @@
+## @visulima/iso-locale [1.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/iso-locale@1.0.0-alpha.8...@visulima/iso-locale@1.0.0-alpha.9) (2026-05-26)
+
+### Bug Fixes
+
+* **security:** address codeql findings across packages ([3366f9c](https://github.com/visulima/visulima/commit/3366f9c07d54bdde5242fbd90780baa4634de179))
+
+### Miscellaneous Chores
+
+* **ci-stability:** green CI across vis, native, lint, tests, attw ([#651](https://github.com/visulima/visulima/issues/651)) ([d4eb684](https://github.com/visulima/visulima/commit/d4eb684b5f75c818c9251048c605a0ed54a268e3))
+* **iso-locale:** housekeeping cleanup ([326d3e4](https://github.com/visulima/visulima/commit/326d3e4be152fdcb828da32a67341fae0c274709))
+* **iso-locale:** upgrade packem to 2.0.0-alpha.76 ([9908d9c](https://github.com/visulima/visulima/commit/9908d9c57641ade481016ea711981e03d53c746c))
+* re-sort workspace package.json files via vis sort-package-json ([f625696](https://github.com/visulima/visulima/commit/f625696cfac974325774b3243e1a83c3d23acbd7))
+* **repo:** sort package.json keys across all packages ([e1fd9ab](https://github.com/visulima/visulima/commit/e1fd9ab467ef96a98c777da1572ff6a50fcf7e71))
+
+### Tests
+
+* **repo:** add dist runtime + types integration tests ([32ee300](https://github.com/visulima/visulima/commit/32ee300b7184117a0ddf9f9d390f75f8932d5ed9))
+
 ## @visulima/iso-locale [1.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/iso-locale@1.0.0-alpha.7...@visulima/iso-locale@1.0.0-alpha.8) (2026-04-22)
 
 ### Bug Fixes
