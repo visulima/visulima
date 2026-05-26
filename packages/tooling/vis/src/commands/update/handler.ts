@@ -388,6 +388,21 @@ const applyCatalogAndInstall = async (
     }
 };
 
+/**
+ * Outcome shape returned by the catalog/PM-wrapper paths so the ecosystem
+ * stage can decide whether to apply, preview, or skip:
+ *   - `applied` — at least one update was written to disk
+ *   - `canceled` — user explicitly opted out (e.g. ESC from the TUI)
+ *   - `nothingToDo` — the path ran cleanly but found nothing to update
+ */
+interface UpdatePathResult {
+    readonly applied: boolean;
+    readonly canceled: boolean;
+    readonly jsonEmitted: boolean;
+}
+
+const RESULT_NOTHING: UpdatePathResult = { applied: false, canceled: false, jsonEmitted: false };
+
 const executeCatalogUpdate = async (
     workspaceRoot: string,
     packageManager: CatalogPackageManager,
@@ -395,7 +410,7 @@ const executeCatalogUpdate = async (
     options: Record<string, unknown>,
     argument: string[],
     logger: Console,
-): Promise<void> => {
+): Promise<UpdatePathResult> => {
     const configDefaults = visConfig.update ?? {};
 
     // Warn about flags that have no effect in catalog mode
@@ -460,7 +475,7 @@ const executeCatalogUpdate = async (
     if (catalogs.size === 0) {
         logger.info("No catalogs found.");
 
-        return;
+        return RESULT_NOTHING;
     }
 
     const resolvedDefaults = { ...configDefaults, minimumReleaseAge: effectiveAge, minimumReleaseAgeExclude: effectiveExcludes };
@@ -604,7 +619,7 @@ const executeCatalogUpdate = async (
             logger.info("All catalog dependencies are up to date.");
         }
 
-        return;
+        return RESULT_NOTHING;
     }
 
     const format = (options.format as string) ?? configDefaults.format ?? "table";
@@ -641,7 +656,7 @@ const executeCatalogUpdate = async (
             if (!proceed) {
                 process.exitCode = 1;
 
-                return;
+                return { applied: false, canceled: true, jsonEmitted: false };
             }
         }
     }
@@ -773,9 +788,13 @@ const executeCatalogUpdate = async (
             const mergedOptions = { ...options, install: options.install ?? configDefaults.install };
 
             await applyCatalogAndInstall(workspaceRoot, packageManager, toApply, mergedOptions, logger, npmrcConfig, visConfig.editorconfig ?? true);
+
+            return { applied: true, canceled: false, jsonEmitted: false };
         }
 
-        return;
+        // Empty toApply means the user dismissed the TUI without selecting
+        // anything — that's a deliberate cancellation, not a no-op.
+        return { applied: false, canceled: toApply.length === 0, jsonEmitted: false };
     }
 
     // Static output mode (non-TTY, CI, json, minimal)
@@ -800,7 +819,7 @@ const executeCatalogUpdate = async (
             logFilteredByTarget(filteredByTarget, logger);
         }
 
-        return;
+        return { applied: false, canceled: false, jsonEmitted: format === "json" };
     }
 
     if (aiResult && format !== "json") {
@@ -816,7 +835,7 @@ const executeCatalogUpdate = async (
         if (toApply.length === 0) {
             logger.info("No updates selected.");
 
-            return;
+            return { applied: false, canceled: true, jsonEmitted: false };
         }
     }
 
@@ -827,6 +846,8 @@ const executeCatalogUpdate = async (
     const mergedOptions = { ...options, install: options.install ?? configDefaults.install };
 
     await applyCatalogAndInstall(workspaceRoot, packageManager, toApply, mergedOptions, logger, npmrcConfig);
+
+    return { applied: true, canceled: false, jsonEmitted: format === "json" };
 };
 
 const executePmWrapper = async (
@@ -836,7 +857,7 @@ const executePmWrapper = async (
     options: Record<string, unknown>,
     argument: string[],
     logger: Console,
-): Promise<void> => {
+): Promise<UpdatePathResult> => {
     const updateOptions: UpdateCommandOptions = {
         dev: options.dev as boolean,
         filters: toFilterArray(options.filter as FilterOption),
@@ -862,7 +883,7 @@ const executePmWrapper = async (
     if (options.dryRun) {
         logger.info(`Would run: ${fullCommand}`);
 
-        return;
+        return RESULT_NOTHING;
     }
 
     logger.info(`Running: ${fullCommand}`);
@@ -877,7 +898,7 @@ const executePmWrapper = async (
 
             process.exitCode = code;
 
-            return;
+            return { applied: false, canceled: false, jsonEmitted: false };
         }
 
         // Already-skipped on `--peer` updates: re-running the same hint would
@@ -895,7 +916,11 @@ const executePmWrapper = async (
         logger.error(`  Directory: ${workspaceRoot}\n`);
 
         process.exitCode = exitCode;
+
+        return { applied: false, canceled: false, jsonEmitted: false };
     }
+
+    return { applied: true, canceled: false, jsonEmitted: false };
 };
 
 /**
@@ -995,7 +1020,15 @@ const buildEcosystemOptions = (options: Record<string, unknown>, visConfig: VisC
     }
 
     const targetMode = options.latest === true ? "latest" : ((options.target as string | undefined) ?? "latest");
-    const mode = targetMode === "minor" || targetMode === "patch" ? targetMode : "latest";
+
+    if (targetMode !== "latest" && targetMode !== "minor" && targetMode !== "patch") {
+        // Mirror the catalog path's validation (handler.ts buildCatalogCheckOptions)
+        // so `--target=major` doesn't silently become `latest` when the
+        // catalog path is skipped (`--no-catalog` or no catalogs in repo).
+        throw new Error(`Invalid target "${targetMode}". Use: latest, minor, or patch.`);
+    }
+
+    const mode = targetMode;
     const configDefaults = visConfig.update ?? {};
 
     return {
@@ -1020,6 +1053,53 @@ const buildEcosystemOptions = (options: Record<string, unknown>, visConfig: VisC
 };
 
 /**
+ * Decides whether the ecosystem stage should apply updates to disk.
+ *
+ * Plain `vis update` (no args, no `--yes`, no `--interactive`) defaults
+ * to **preview only** — it must never silently mutate CI files when the
+ * user didn't opt in. The user can apply by re-running with `--yes`.
+ *
+ * Apply is permitted when:
+ *   - `--yes` was passed (explicit opt-in)
+ *   - `--interactive` was passed AND catalog committed updates (the user
+ *     has already engaged with the apply flow once this run)
+ *   - The catalog path itself applied updates AND we're in a TTY
+ *     (a non-CI session where the user can see the report)
+ *
+ * Apply is refused outright when:
+ *   - `--dry-run` was passed
+ *   - The catalog/PM stage failed (`process.exitCode` is non-zero)
+ *   - The catalog TUI was canceled (user said no)
+ */
+const shouldApplyEcosystem = (options: Record<string, unknown>, catalogResult: UpdatePathResult): boolean => {
+    if (options.dryRun === true) {
+        return false;
+    }
+
+    if (process.exitCode !== undefined && process.exitCode !== 0) {
+        return false;
+    }
+
+    if (catalogResult.canceled) {
+        return false;
+    }
+
+    if (options.yes === true) {
+        return true;
+    }
+
+    if (options.interactive === true && catalogResult.applied) {
+        return true;
+    }
+
+    if (catalogResult.applied && Boolean(process.stdout.isTTY) && !isInCi) {
+        return true;
+    }
+
+    return false;
+};
+
+/**
  * Runs the ecosystem-update flow alongside the npm/catalog path. This
  * is best-effort: failures in the ecosystem scan must NOT prevent the
  * catalog flow from completing, so the orchestrator catches its own
@@ -1034,6 +1114,7 @@ export const runEcosystemUpdate = async (
     options: Record<string, unknown>,
     visConfig: VisConfig,
     logger: Console,
+    catalogResult: UpdatePathResult,
 ): Promise<EcosystemCheckResult | undefined> => {
     const ecosystemOptions = buildEcosystemOptions(options, visConfig);
     const allDisabled = ecosystemOptions.disabled.size === 3;
@@ -1060,7 +1141,20 @@ export const runEcosystemUpdate = async (
     const isDryRun = Boolean(options.dryRun);
 
     if (format === "json") {
-        process.stdout.write(`${formatEcosystemJson(result)}\n`);
+        // The catalog path may have already written a JSON document to
+        // stdout. Emitting a second top-level JSON document would break
+        // any consumer piping through `jq`. When that happened we log
+        // to stderr instead and the user can rerun with --format=table
+        // (or --no-catalog) to get the ecosystem JSON.
+        if (catalogResult.jsonEmitted) {
+            logger.warn(
+                `${yellow("⚠")} ${String(result.updates.length)} ecosystem update${result.updates.length === 1 ? "" : "s"} available `
+                + "but not emitted in --format=json (catalog already wrote one JSON document). Rerun with --format=table or "
+                + "--no-catalog to see them.",
+            );
+        } else {
+            process.stdout.write(`${formatEcosystemJson(result)}\n`);
+        }
     } else if (format !== "minimal") {
         const report = formatEcosystemReport(result, { showIgnored: options.interactive === true });
 
@@ -1070,6 +1164,18 @@ export const runEcosystemUpdate = async (
     }
 
     if (isDryRun || result.updates.length === 0) {
+        return result;
+    }
+
+    if (!shouldApplyEcosystem(options, catalogResult)) {
+        // Show a clear hint so users know how to opt in. We intentionally
+        // do NOT exit non-zero here — having outdated CI references is
+        // not a failure, it's information.
+        logger.info(
+            `\n${yellow("ℹ")} ${String(result.updates.length)} ecosystem reference${result.updates.length === 1 ? "" : "s"} can be bumped. `
+            + "Re-run with `--yes` to apply (or `--no-actions` / `--no-docker` / `--no-gitlab` to silence by ecosystem).",
+        );
+
         return result;
     }
 
@@ -1090,10 +1196,33 @@ export const runEcosystemUpdate = async (
     return result;
 };
 
+/**
+ * Validates ecosystem-flag shapes BEFORE catalog/PM runs. The ecosystem
+ * path can throw on bad input (`--style shaa`, `--target major`); doing
+ * that after the catalog has already mutated `package.json` /
+ * `pnpm-workspace.yaml` would leave the user with a half-finished
+ * update and an opaque stack trace.
+ */
+const validateEcosystemFlags = (options: Record<string, unknown>): void => {
+    const style = options.style as string | undefined;
+
+    if (style !== undefined && style !== "sha" && style !== "preserve") {
+        throw new Error(`Invalid --style "${style}". Use: sha or preserve.`);
+    }
+
+    const target = options.target as string | undefined;
+
+    if (target !== undefined && target !== "latest" && target !== "minor" && target !== "patch") {
+        throw new Error(`Invalid --target "${target}". Use: latest, minor, or patch.`);
+    }
+};
+
 const execute = async ({ argument: rawArgument, logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, UpdateOptions>): Promise<void> => {
     if (!wsRoot) {
         throw new Error("Could not determine workspace root. Run this command inside a monorepo.");
     }
+
+    validateEcosystemFlags(options as Record<string, unknown>);
 
     let argument = rawArgument;
 
@@ -1175,15 +1304,17 @@ const execute = async ({ argument: rawArgument, logger, options, visConfig, work
     // on its own — it inherits whatever pnpm-workspace.yaml the project has.
     const useCatalogMode = (options as Record<string, unknown>).catalog !== false && hasCatalogs(workspaceRoot, packageManager);
 
+    let catalogResult: UpdatePathResult;
+
     if (useCatalogMode) {
-        await executeCatalogUpdate(workspaceRoot, packageManager, visConfig ?? {}, options, argument, logger);
+        catalogResult = await executeCatalogUpdate(workspaceRoot, packageManager, visConfig ?? {}, options, argument, logger);
     } else {
         // Non-catalog updates honor `install.backend` so users who opted
         // into aube get `aube update` instead of the lockfile-detected PM.
         const installer = resolveInstaller(workspaceRoot, { configBackend: visConfig?.install?.backend, configCorepack: visConfig?.install?.corepack });
         const installerVersion = installer.name === "aube" ? "" : getPackageManagerVersion(installer.name);
 
-        await executePmWrapper(workspaceRoot, installer.name, installerVersion, options, argument, logger);
+        catalogResult = await executePmWrapper(workspaceRoot, installer.name, installerVersion, options, argument, logger);
     }
 
     // Ecosystem updates run after the npm/catalog path so the catalog
@@ -1192,8 +1323,12 @@ const execute = async ({ argument: rawArgument, logger, options, visConfig, work
     // targeting a specific npm dep — skip the ecosystem scan in that
     // case to avoid surprise edits to workflow / Dockerfile / GitLab CI
     // files when the user only asked to bump `lodash`.
+    //
+    // We also pass the catalog/PM result so `runEcosystemUpdate` can
+    // refuse to apply when the npm stage failed, was canceled in the
+    // TUI, or already produced a JSON document on stdout.
     if (argument.length === 0) {
-        await runEcosystemUpdate(workspaceRoot, options as Record<string, unknown>, visConfig ?? {}, logger);
+        await runEcosystemUpdate(workspaceRoot, options as Record<string, unknown>, visConfig ?? {}, logger, catalogResult);
     }
 };
 

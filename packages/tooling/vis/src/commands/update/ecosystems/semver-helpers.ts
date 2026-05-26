@@ -66,8 +66,16 @@ export const compareTagsDesc = (a: ParsedTag, b: ParsedTag): number => rcompare(
  *   - respect `mode`: `latest` allows any newer ref, `minor` constrains to
  *     same major, `patch` constrains to same major+minor.
  *
- * Returns `undefined` when nothing qualifies (already up-to-date or only
- * pre-releases are newer and the caller opted out).
+ * When `current` is undefined (e.g. a SHA pin with no version-hint
+ * comment) we *only* accept the constraint-free `latest` mode — otherwise
+ * minor/patch constraints would be silently bypassed and a `--target=patch`
+ * run could jump multiple majors. Callers in modes other than `latest`
+ * receive `undefined` and are expected to surface a "needs version hint"
+ * skip rather than guess.
+ *
+ * Returns `undefined` when nothing qualifies (already up-to-date, only
+ * pre-releases are newer and the caller opted out, or `current` is
+ * unknown in a constrained mode).
  */
 export const pickBestTag = (
     candidates: ParsedTag[],
@@ -75,6 +83,10 @@ export const pickBestTag = (
     mode: "latest" | "minor" | "patch",
     includePrerelease: boolean,
 ): ParsedTag | undefined => {
+    if (!current && mode !== "latest") {
+        return undefined;
+    }
+
     const filtered = candidates.filter((tag) => {
         if (!includePrerelease && tag.prerelease) {
             return false;

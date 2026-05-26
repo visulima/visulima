@@ -82,12 +82,13 @@ const loadDependabot = (workspaceRoot: string, rules: DependabotIgnoreRules): vo
             parsed = parseYaml(readFileSync(path)) as DependabotYaml | undefined;
         } catch {
             // A malformed dependabot config shouldn't crash the update run;
-            // skip silently and proceed without ignore rules from this file.
-            return;
+            // skip this file and try the next candidate (some repos keep
+            // a placeholder `.yml` next to the real `.yaml`).
+            continue;
         }
 
         if (!parsed?.updates) {
-            return;
+            continue;
         }
 
         for (const block of parsed.updates) {
@@ -106,6 +107,7 @@ const loadDependabot = (workspaceRoot: string, rules: DependabotIgnoreRules): vo
             }
         }
 
+        // First file with `updates` wins; later candidates are ignored.
         return;
     }
 };
@@ -154,6 +156,76 @@ const addAll = (target: Set<string>, values: string[] | undefined): void => {
     }
 };
 
+/**
+ * Strips `//` line comments and `/* … *\/` block comments from JSON5 text
+ * **without** touching content inside string literals. A naive
+ * `/\/\/.*$/g` would happily chew through `"url": "https://example.com"`
+ * — corrupting any renovate config that references a URL.
+ *
+ * The state machine tracks whether we're inside a string and skips
+ * escapes (`\"`, `\\`) so quoted forward-slash sequences are preserved.
+ */
+const stripJsonComments = (source: string): string => {
+    let out = "";
+    let index = 0;
+    const length = source.length;
+    let inString = false;
+    let stringQuote = "";
+
+    while (index < length) {
+        const char = source[index] ?? "";
+
+        if (inString) {
+            out += char;
+
+            if (char === "\\" && index + 1 < length) {
+                out += source[index + 1] ?? "";
+                index += 2;
+                continue;
+            }
+
+            if (char === stringQuote) {
+                inString = false;
+            }
+
+            index += 1;
+            continue;
+        }
+
+        if (char === "\"" || char === "'") {
+            inString = true;
+            stringQuote = char;
+            out += char;
+            index += 1;
+            continue;
+        }
+
+        if (char === "/" && source[index + 1] === "/") {
+            while (index < length && source[index] !== "\n") {
+                index += 1;
+            }
+
+            continue;
+        }
+
+        if (char === "/" && source[index + 1] === "*") {
+            index += 2;
+
+            while (index < length && !(source[index] === "*" && source[index + 1] === "/")) {
+                index += 1;
+            }
+
+            index += 2;
+            continue;
+        }
+
+        out += char;
+        index += 1;
+    }
+
+    return out;
+};
+
 const loadRenovate = (workspaceRoot: string, rules: DependabotIgnoreRules): void => {
     const candidates = ["renovate.json", "renovate.json5", ".renovaterc", ".renovaterc.json"];
 
@@ -167,22 +239,20 @@ const loadRenovate = (workspaceRoot: string, rules: DependabotIgnoreRules): void
         let parsed: RenovateConfig | undefined;
 
         try {
-            // JSON5 / .renovaterc are JSON-with-comments in practice. We use
-            // a tolerant strip-comments + JSON.parse pass instead of pulling
-            // in json5 just for this — Renovate itself ships JSON5 support
-            // but we only need the keys above.
+            // JSON5 / .renovaterc are JSON-with-comments in practice. We
+            // strip comments with a string-aware walker so `//` inside a
+            // URL value (`"https://..."`) is preserved.
             const raw = readFileSync(path);
-            const stripped = raw
-                .replace(/\/\/.*$/gm, "")
-                .replace(/\/\*[\s\S]*?\*\//g, "");
 
-            parsed = JSON.parse(stripped) as RenovateConfig;
+            parsed = JSON.parse(stripJsonComments(raw)) as RenovateConfig;
         } catch {
-            return;
+            // Try the next candidate — some repos ship a placeholder
+            // `renovate.json` alongside the real `renovate.json5`.
+            continue;
         }
 
         if (!parsed) {
-            return;
+            continue;
         }
 
         // Top-level ignoreDeps applies to every ecosystem.

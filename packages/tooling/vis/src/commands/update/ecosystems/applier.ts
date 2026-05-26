@@ -72,11 +72,13 @@ export const applyEcosystemUpdates = (updates: EcosystemUpdate[]): ApplyResult =
             continue;
         }
 
-        const lines = content.split(/\r?\n/);
-        // Detect the trailing newline so we round-trip the file unchanged
-        // when nothing else differs.
-        const hadTrailingNewline = content.endsWith("\n");
         const newline = content.includes("\r\n") ? "\r\n" : "\n";
+        // `split` on `/\r?\n/` already produces a trailing empty element
+        // for a file that ends with a newline, so `lines.join(newline)`
+        // reproduces the trailing newline naturally. We must NOT append
+        // an extra newline afterwards or every applied file accumulates
+        // blank lines at EOF on each invocation.
+        const lines = content.split(/\r?\n/);
         const success: EcosystemUpdate[] = [];
 
         for (const update of fileUpdates) {
@@ -100,12 +102,17 @@ export const applyEcosystemUpdates = (updates: EcosystemUpdate[]): ApplyResult =
 
             // When the new replacement carries its own `# vN.M.P` hint,
             // strip a pre-existing version-hint comment so we don't end
-            // up with two. Non-version comments (e.g. `# pinned for CI`)
-            // are preserved — they're user intent, not bookkeeping.
+            // up with two. Non-version comments (e.g. `# pinned for CI`,
+            // `# v3.5.3 keep pinned for SOC2`) are preserved — they're
+            // user intent, not bookkeeping. The strip is intentionally
+            // narrow: it only fires when the trailing comment is *just*
+            // a bare version token (optionally with `v`/`V` prefix and
+            // patch/prerelease suffix) followed by nothing else.
             const head = line.slice(0, originalIndex);
             const tail = line.slice(originalIndex + update.original.length);
             const replacementHasVersionHint = /#\s*v?\d/.test(update.replacement);
-            const cleanedTail = replacementHasVersionHint ? tail.replace(/^\s*#\s*v?\d[^\n]*$/, "") : tail;
+            const bareVersionTail = /^\s*#\s*v?\d[\w.+-]*\s*$/i;
+            const cleanedTail = replacementHasVersionHint && bareVersionTail.test(tail) ? "" : tail;
 
             lines[lineIndex] = `${head}${update.replacement}${cleanedTail}`;
             success.push(update);
@@ -115,7 +122,7 @@ export const applyEcosystemUpdates = (updates: EcosystemUpdate[]): ApplyResult =
             continue;
         }
 
-        const next = lines.join(newline) + (hadTrailingNewline ? newline : "");
+        const next = lines.join(newline);
 
         try {
             writeFileSync(file, next);

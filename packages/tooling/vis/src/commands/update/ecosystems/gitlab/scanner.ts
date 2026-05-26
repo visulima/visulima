@@ -76,15 +76,26 @@ export const extractFromGitlabCi = (filePath: string, content: string): { includ
     for (let index = 0; index < lines.length; index++) {
         const line = lines[index] ?? "";
         const trimmed = line.trim();
+        const trimmedIsCommentOnly = trimmed === "" || trimmed.startsWith("#");
 
-        if (IGNORE_NEXT_RE.test(line)) {
+        // The next-line directive must live on its own line — when it's a
+        // trailing comment on an `image:` / `ref:` line, it's the inline
+        // form (handled by IGNORE_INLINE_RE below) and the directive
+        // mustn't leak to the line that follows.
+        if (IGNORE_NEXT_RE.test(line) && trimmedIsCommentOnly) {
             pendingIgnore = true;
             continue;
         }
 
-        if (/^services:\s*$/.test(line) || /^services:\s*#/.test(line)) {
+        // `services:` can appear at any indentation — per-job nested
+        // blocks (`test:\n  services:\n    - postgres:14`) are the
+        // canonical form. The previous `^services:` anchor missed them
+        // and left `insideServices` stuck at `false`.
+        const servicesMatch = /^(\s*)services:\s*(?:#.*)?$/.exec(line);
+
+        if (servicesMatch) {
             insideServices = true;
-            servicesIndent = line.indexOf("services:");
+            servicesIndent = servicesMatch[1]?.length ?? 0;
             continue;
         }
 
@@ -158,7 +169,10 @@ export const extractFromGitlabCi = (filePath: string, content: string): { includ
 
         if (projectMatch) {
             pendingProject = { line: index + 1, project: projectMatch[3] ?? "" };
-            pendingIgnore = false;
+            // Deliberately keep `pendingIgnore` alive across project: lines
+            // — a `# vis-update-ignore-next-line` on the previous line
+            // should apply to the whole include block, not just the
+            // project: line (which we don't rewrite anyway).
             continue;
         }
 

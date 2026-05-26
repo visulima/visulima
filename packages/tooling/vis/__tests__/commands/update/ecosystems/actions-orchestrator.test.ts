@@ -25,6 +25,7 @@ const makeReference = (overrides: Partial<UsesReference> = {}): UsesReference =>
     line: 5,
     original: "actions/checkout@v3.5.0",
     owner: "actions",
+    quote: "",
     ref: "v3.5.0",
     repo: "checkout",
     slug: "actions/checkout",

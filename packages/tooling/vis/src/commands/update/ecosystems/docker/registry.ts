@@ -179,6 +179,83 @@ export class DockerRegistry {
  * registry that uses Basic auth (we don't try to prompt for creds — the
  * user can pass a bearer token instead).
  */
+/**
+ * Splits a `Www-Authenticate` parameter list (`k1="v1",k2="v2,with,commas",k3=v3`)
+ * into `key,value` pairs, respecting quoted values that legitimately
+ * contain commas (e.g. multi-action scopes like
+ * `scope="repository:foo:pull,push"`). A naive `.split(",")` would shred
+ * the scope and trigger silent auth failures.
+ */
+const splitAuthParams = (input: string): { key: string; value: string }[] => {
+    const params: { key: string; value: string }[] = [];
+    let index = 0;
+    const length = input.length;
+
+    while (index < length) {
+        // Skip leading whitespace.
+        while (index < length && /\s/.test(input[index] ?? "")) {
+            index += 1;
+        }
+
+        const keyStart = index;
+
+        while (index < length && input[index] !== "=" && input[index] !== ",") {
+            index += 1;
+        }
+
+        const key = input.slice(keyStart, index).trim();
+
+        if (input[index] !== "=") {
+            // No value — skip past the next `,` if any.
+            while (index < length && input[index] !== ",") {
+                index += 1;
+            }
+
+            index += 1;
+            continue;
+        }
+
+        index += 1; // consume `=`
+
+        let value = "";
+
+        if (input[index] === "\"") {
+            index += 1;
+
+            while (index < length && input[index] !== "\"") {
+                if (input[index] === "\\" && index + 1 < length) {
+                    value += input[index + 1] ?? "";
+                    index += 2;
+                    continue;
+                }
+
+                value += input[index] ?? "";
+                index += 1;
+            }
+
+            index += 1; // consume closing `"`
+        } else {
+            while (index < length && input[index] !== ",") {
+                value += input[index] ?? "";
+                index += 1;
+            }
+
+            value = value.trim();
+        }
+
+        if (key.length > 0) {
+            params.push({ key, value });
+        }
+
+        // Skip trailing whitespace and the separator comma.
+        while (index < length && (/\s/.test(input[index] ?? "") || input[index] === ",")) {
+            index += 1;
+        }
+    }
+
+    return params;
+};
+
 const parseAuthenticate = (header: string | null | undefined): AuthInfo | undefined => {
     if (!header) {
         return undefined;
@@ -192,12 +269,8 @@ const parseAuthenticate = (header: string | null | undefined): AuthInfo | undefi
 
     const entries = new Map<string, string>();
 
-    for (const fragment of (match[1] ?? "").split(",")) {
-        const [key, value] = fragment.split("=");
-
-        if (key && value) {
-            entries.set(key.trim().toLowerCase(), value.trim().replace(/^"|"$/g, ""));
-        }
+    for (const { key, value } of splitAuthParams(match[1] ?? "")) {
+        entries.set(key.toLowerCase(), value);
     }
 
     const realm = entries.get("realm");

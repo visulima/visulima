@@ -62,7 +62,8 @@ describe(extractUsesFromContent, () => {
         const references = extractUsesFromContent("/tmp/workflow.yml", WORKFLOW);
         const cache = references.find((reference) => reference.slug === "actions/cache");
 
-        expect(cache?.ignoreReason).toContain("actions-up-ignore");
+        // The reason captured after `actions-up-ignore:` is exposed verbatim.
+        expect(cache?.ignoreReason).toBe("pinned for compatibility");
     });
 
     it("does NOT treat the SHA version-hint comment as an ignore directive", () => {
