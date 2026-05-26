@@ -1,22 +1,41 @@
 export type {
     BulkDeleteResult,
+    BulkDownloadOptions,
     BulkDownloadResult,
     BulkError,
     BulkExistsResult,
     BulkHeadResult,
+    BulkMoveItem,
+    BulkMoveResult,
     BulkOptions,
     BulkUploadItem,
+    BulkUploadOptions,
     BulkUploadResult,
+    DownloadOptions,
+    DownloadRange,
     DownloadResult,
     FileBody,
     FileObject,
+    FilesHooks,
     FilesOptions,
+    HookActionType,
+    HookEvent,
+    ListAllOptions,
     ListOptions,
+    MultipartOptions,
     SignedReadUrlOptions,
     SignedUploadUrlOptions,
+    TransferOptions,
+    TransferProgress,
+    TransferResult,
     UploadOptions,
+    UploadProgress,
+    UploadProgressCallback,
 } from "./files";
-export { Files } from "./files";
+export { Files, transfer } from "./files";
+export { default as MemoryMetaStorage } from "./storage/memory/memory-meta-storage";
+export type { MemoryStorageOptions } from "./storage/memory/memory-storage";
+export { default as MemoryStorage } from "./storage/memory/memory-storage";
 export { waitForStorage } from "./handler/utils/storage-utils";
 export { NoOpMetrics, OpenTelemetryMetrics } from "./metrics";
 export { default as DiskStorage } from "./storage/local/disk-storage";

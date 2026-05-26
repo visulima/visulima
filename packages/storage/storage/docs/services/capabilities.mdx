@@ -27,6 +27,7 @@ Legend:
 | Supabase       | ✅ `createSignedUrl` (≤ 7 d)                             | ✅ `createSignedUploadUrl`             |
 | UploadThing    | ✅ CDN URL (public ACL) or `generateSignedURL` (private) | ❌                                     |
 | Bunny Storage  | 🟡 via `publicBaseUrl` (Pull Zone)                       | ❌                                     |
+| Memory         | 🟡 synthetic `memory://${key}`                           | 🟡 synthetic `memory://${key}`         |
 
 ## URL options
 
@@ -45,6 +46,7 @@ Legend:
 | Supabase       | 7 d             | 🟡 mapped to Supabase `download` option (filename round-trips when present) |
 | UploadThing    | 7 d             | ❌ — no override on UFS/CDN URLs                                            |
 | Bunny Storage  | n/a (public)    | ❌ — no override on Storage / Pull Zone URLs                                |
+| Memory         | n/a             | ❌                                                                          |
 
 ## Server-side operations
 
@@ -63,6 +65,7 @@ Legend:
 | Supabase       | ✅ bucket.copy         | ✅ bucket.move       | ❌ root only (per page limit)  |
 | UploadThing    | 🔁 download + reupload | 🔁 copy + delete     | 🟡 client-side prefix filter   |
 | Bunny Storage  | 🔁 download + reupload | 🔁 copy + delete     | 🟡 root listing, client-side   |
+| Memory         | ✅ Map clone           | ✅ copy + delete     | ✅ in-memory prefix scan       |
 
 ## Auth model
 
@@ -81,6 +84,7 @@ Legend:
 | Supabase       | service-role key (env or explicit), pre-built `StorageClient`                                        |
 | UploadThing    | dashboard token (base64 JSON with `apiKey` + `appId`)                                                |
 | Bunny Storage  | zone + access key + region (env or explicit), pre-built `StorageZone`                                |
+| Memory         | none (in-process only)                                                                               |
 
 ## Error normalization
 

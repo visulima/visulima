@@ -17,7 +17,7 @@ import toMilliseconds from "../../utils/primitives/to-milliseconds";
 import type { HttpError } from "../../utils/types";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage, defaultFilesystemFileNameValidation } from "../storage";
-import type { DiskStorageOptions } from "../types";
+import type { DiskStorageOptions, OperationOptions } from "../types";
 import type { FileInit, FilePart, FileQuery, UploadEventType } from "../utils/file";
 import { File, getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import type { FileReturn } from "../utils/file/types";
@@ -45,6 +45,8 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
     public static override readonly name: string = "disk";
 
     public override checksumTypes: string[] = ["md5", "sha1"];
+
+    public override readonly supportsRange: boolean = true;
 
     public override get raw(): { directory: string } {
         return { directory: this.directory };
@@ -333,7 +335,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
      * For large files, consider using getStream() instead.
      * Includes ETag (MD5 hash) for content verification.
      */
-    public async get({ id }: FileQuery): Promise<FileReturn> {
+    public async get({ id }: FileQuery, options?: OperationOptions & { range?: { end?: number; start: number } }): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
             const file = await this.checkIfExpired(await this.meta.get(id));
             const { bytesWritten, contentType, expiredAt, metadata, modifiedAt, name, originalName, size } = file;
@@ -359,17 +361,31 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
                 throw error;
             }
 
+            const eTag = etag(content);
+            const range = options?.range;
+
+            if (range) {
+                const start = Math.max(0, range.start);
+                const end = range.end === undefined ? content.length - 1 : Math.min(content.length - 1, range.end);
+
+                if (start > end || start >= content.length) {
+                    return throwErrorCode(ERRORS.BAD_REQUEST, `Invalid range ${start}-${range.end ?? ""}`);
+                }
+
+                content = content.subarray(start, end + 1);
+            }
+
             return {
                 content,
                 contentType,
-                ETag: etag(content),
+                ETag: eTag,
                 expiredAt,
                 id,
                 metadata,
                 modifiedAt,
                 name,
                 originalName,
-                size: size || bytesWritten,
+                size: range ? content.length : size || bytesWritten,
             };
         });
     }

@@ -1,17 +1,69 @@
-import { Readable } from "node:stream";
+import { PassThrough, Readable } from "node:stream";
 
 import { BaseStorage } from "../storage/storage";
 import type { OperationOptions } from "../storage/types";
 import type { File as StorageFile, FilePart } from "../storage/utils/file";
+import type { RetryConfig } from "../utils/retry";
 
 /**
  * Web-standard and Node-native body types accepted by {@link Files.upload}.
  */
 export type FileBody = ArrayBuffer | ArrayBufferView | Blob | Buffer | NodeJS.ReadableStream | ReadableStream<Uint8Array> | string;
 
+/**
+ * Byte range for {@link Files.download}. Both bounds are 0-based and `end` is
+ * **inclusive**, mirroring the HTTP `Range: bytes=start-end` header. Omit `end`
+ * to read from `start` to EOF (e.g. resume an interrupted download).
+ */
+export interface DownloadRange {
+    end?: number;
+    start: number;
+}
+
+/**
+ * Realtime upload progress report. `total` is omitted for streaming bodies of
+ * unknown length. The optional `key` is set on the bulk array form so a single
+ * callback can drive a multi-row UI.
+ */
+export interface UploadProgress {
+    key?: string;
+    loaded: number;
+    total?: number;
+}
+
+export type UploadProgressCallback = (event: UploadProgress) => void;
+
+/**
+ * Multipart tuning for {@link Files.upload}. `true` enables multipart with
+ * adapter defaults; an object lets the caller tune the per-part size and the
+ * number of parts uploaded in parallel.
+ */
+export interface MultipartOptions {
+    /** In-flight parts. Adapter-defined default. */
+    concurrency?: number;
+    /** Per-part size in bytes. Adapter-defined default. */
+    partSize?: number;
+}
+
 export interface UploadOptions {
     contentType?: string;
     metadata?: Record<string, unknown>;
+
+    /**
+     * Enable multipart/chunked upload for large bodies. `true` uses the
+     * adapter's defaults; pass an object to tune. Adapters that don't have a
+     * multipart primitive ignore this option.
+     */
+    multipart?: MultipartOptions | boolean;
+
+    /**
+     * Realtime progress reporter. For buffered bodies a coarse start/done pair
+     * is emitted. For streaming bodies each chunk is reported as it leaves the
+     * facade. Adapters that report progress natively (`reportsUploadProgress`)
+     * supersede this with byte-accurate events. A throwing callback can never
+     * fail the upload — exceptions are swallowed.
+     */
+    onProgress?: UploadProgressCallback;
 
     /**
      * Explicit byte length. Required for {@link NodeJS.ReadableStream} and Web `ReadableStream`
@@ -38,6 +90,21 @@ export interface ListOptions {
     prefix?: string;
 }
 
+export interface ListAllOptions {
+    /** Per-page size requested from the adapter. */
+    limit?: number;
+    prefix?: string;
+}
+
+export interface DownloadOptions extends OperationOptions {
+    /**
+     * Fetch a contiguous byte slice instead of the whole object. Throws
+     * `METHOD_NOT_ALLOWED` when the underlying adapter has `supportsRange =
+     * false`, so the bandwidth saving is never silently lost client-side.
+     */
+    range?: DownloadRange;
+}
+
 /**
  * Provider-agnostic metadata-only view of an object.
  */
@@ -54,6 +121,54 @@ export interface DownloadResult extends FileObject {
     body: Buffer;
 }
 
+/**
+ * Caller-facing event for {@link FilesOptions.hooks}. Mirrors what runs through
+ * the facade (the public `key`/`keys` and the operation type) without leaking
+ * adapter internals.
+ */
+export interface HookEvent {
+    durationMs?: number;
+    error?: Error;
+    /** Source key for `copy`/`move`. */
+    from?: string;
+    key?: string;
+    keys?: string[];
+    /** Destination key for `copy`/`move`. */
+    to?: string;
+    type: HookActionType;
+}
+
+export type HookActionType =
+    | "copy"
+    | "delete"
+    | "download"
+    | "exists"
+    | "head"
+    | "list"
+    | "listAll"
+    | "move"
+    | "signedUploadUrl"
+    | "transfer"
+    | "upload"
+    | "url";
+
+/**
+ * Lifecycle hooks observed by the Files facade. Every hook is fire-and-forget —
+ * called, not awaited — and exceptions are swallowed so a hook can never fail
+ * the operation it observes.
+ */
+export interface FilesHooks {
+    /** Called once per successful operation, with timing and result keys. */
+    onAction?: (event: HookEvent) => void;
+    /** Called once per failed operation, with the error attached. */
+    onError?: (event: HookEvent & { error: Error }) => void;
+    /**
+     * Called when the underlying adapter retries an operation. Receives the
+     * attempt number (1-based) and the error that triggered the retry.
+     */
+    onRetry?: (event: HookEvent & { attempt: number; error: Error }) => void;
+}
+
 export interface FilesOptions<TStorage extends BaseStorage = BaseStorage> {
     adapter: TStorage;
 
@@ -63,6 +178,12 @@ export interface FilesOptions<TStorage extends BaseStorage = BaseStorage> {
      * `AbortSignal.any`, so either one aborts the operation.
      */
     defaults?: OperationOptions;
+
+    /**
+     * Lifecycle hooks observed by every operation. Fire-and-forget — a throwing
+     * hook is silently swallowed and never fails the call it observes.
+     */
+    hooks?: FilesHooks;
 
     /**
      * Namespace every key under this prefix. Reads, writes, copies, listings, URLs, and signed
@@ -103,6 +224,15 @@ export interface BulkOptions extends OperationOptions {
     stopOnError?: boolean;
 }
 
+export interface BulkDownloadOptions extends BulkOptions {
+    range?: DownloadRange;
+}
+
+export interface BulkUploadOptions extends BulkOptions {
+    multipart?: MultipartOptions | boolean;
+    onProgress?: UploadProgressCallback;
+}
+
 export interface BulkError {
     error: Error;
     key: string;
@@ -132,6 +262,16 @@ export interface BulkExistsResult {
 export interface BulkDeleteResult {
     deleted: string[];
     errors?: BulkError[];
+}
+
+export interface BulkMoveItem {
+    from: string;
+    to: string;
+}
+
+export interface BulkMoveResult {
+    errors?: BulkError[];
+    moved: FileObject[];
 }
 
 const DEFAULT_BULK_CONCURRENCY = 8;
@@ -307,10 +447,27 @@ const toBulkError = (key: string, reason: unknown): BulkError => {
 };
 
 /**
+ * `Throws` cannot escape — hook contract is fire-and-forget.
+ */
+const safeInvoke = (callback: ((arg: unknown) => void) | undefined, value: unknown): void => {
+    if (!callback) {
+        return;
+    }
+
+    try {
+        callback(value);
+    } catch {
+        // Hook contract: a throwing callback can never fail the operation it observes.
+    }
+};
+
+/**
  * Provider-agnostic facade over a {@link BaseStorage} instance.
  *
  * Provides a small, consistent surface (`upload`, `download`, `head`, `exists`, `delete`, `copy`,
- * `list`, `url`, `signedUploadUrl`) and a `raw` escape hatch to the adapter's native client.
+ * `move`, `list`, `listAll`, `url`, `signedUploadUrl`) and a `raw` escape hatch to the adapter's native
+ * client. A separate {@link transfer} top-level export streams every object from one Files instance
+ * to another for cross-provider migration.
  *
  * Each operation accepts per-call `signal`, `timeout`, and `retries` via {@link OperationOptions};
  * defaults set on the constructor are merged in (per-call wins). Single-key methods also accept an
@@ -319,6 +476,9 @@ const toBulkError = (key: string, reason: unknown): BulkError => {
  *
  * When constructed with a `prefix`, every key is resolved relative to the prefix and the prefix is
  * stripped back off the keys returned in results — application code works in its own namespace.
+ *
+ * Pass `hooks: { onAction, onError, onRetry }` to observe activity. Hooks are fire-and-forget and
+ * never fail the operation they observe.
  * @example
  * ```ts
  * import { Files, S3Storage } from "@visulima/storage";
@@ -327,16 +487,14 @@ const toBulkError = (key: string, reason: unknown): BulkError => {
  *   adapter: new S3Storage({ bucket: "uploads", region: "us-east-1" }),
  *   prefix: "users",
  *   defaults: { timeout: 30_000 },
+ *   hooks: { onAction: (event) => console.log(event.type, event.key) },
  * });
  *
  * await files.upload("123/avatar.png", buffer, { contentType: "image/png" });
- * const head = await files.head("123/avatar.png"); // reads users/123/avatar.png
- * const url = await files.url("123/avatar.png", { expiresIn: 900 });
- *
- * const { uploaded, errors } = await files.upload([
- *   { key: "a.png", body: a, contentType: "image/png" },
- *   { key: "b.png", body: b },
- * ], { concurrency: 4 });
+ * const head = await files.head("123/avatar.png");
+ * for await (const file of files.listAll({ prefix: "123/" })) {
+ *   console.log(file.key, file.size);
+ * }
  * ```
  */
 export class Files<TStorage extends BaseStorage = BaseStorage> {
@@ -344,11 +502,14 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
 
     private readonly defaults: OperationOptions;
 
+    private readonly hooks: FilesHooks;
+
     private readonly prefix: string;
 
     public constructor(options: FilesOptions<TStorage>) {
         this.adapter = options.adapter;
         this.defaults = options.defaults ?? {};
+        this.hooks = options.hooks ?? {};
         this.prefix = normalizePrefix(options.prefix ?? "");
     }
 
@@ -388,8 +549,84 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
         return null;
     }
 
-    private mergeOptions(perCall?: OperationOptions): OperationOptions | undefined {
-        return mergeOperationOptions(this.defaults, perCall);
+    /**
+     * Merge constructor defaults with per-call options. When `hooks.onRetry` is configured,
+     * fold a wrapped `onRetry` into the per-call retry config so the hook fires with
+     * facade-level context (type, key, from/to) for each retry attempt the adapter performs.
+     */
+    private mergeOptions(perCall?: OperationOptions, hookContext?: Omit<HookEvent, "durationMs" | "error" | "type"> & { type: HookActionType }): OperationOptions | undefined {
+        const merged = mergeOperationOptions(this.defaults, perCall);
+
+        if (!hookContext || !this.hooks.onRetry) {
+            return merged;
+        }
+
+        const existing = merged?.retries;
+        const retries: RetryConfig = typeof existing === "number" ? { maxRetries: existing } : { ...(existing ?? {}) };
+        const userOnRetry = retries.onRetry;
+        const hookOnRetry = this.hooks.onRetry;
+
+        retries.onRetry = (attempt: number, error: unknown): void => {
+            if (userOnRetry) {
+                try {
+                    userOnRetry(attempt, error);
+                } catch {
+                    // user-provided onRetry is also fire-and-forget
+                }
+            }
+
+            try {
+                const normalized = error instanceof Error ? error : new Error(typeof error === "string" ? error : "Unknown error", { cause: error });
+
+                hookOnRetry({ ...hookContext, attempt, error: normalized });
+            } catch {
+                // hook contract: fire-and-forget
+            }
+        };
+
+        return { ...(merged ?? {}), retries };
+    }
+
+    private emitAction(type: HookActionType, partial: Omit<HookEvent, "type">): void {
+        if (!this.hooks.onAction) {
+            return;
+        }
+
+        try {
+            this.hooks.onAction({ type, ...partial });
+        } catch {
+            // fire-and-forget
+        }
+    }
+
+    private emitError(type: HookActionType, partial: Omit<HookEvent, "error" | "type">, error: Error): void {
+        if (!this.hooks.onError) {
+            return;
+        }
+
+        try {
+            this.hooks.onError({ error, type, ...partial });
+        } catch {
+            // fire-and-forget
+        }
+    }
+
+    private async withHooks<R>(type: HookActionType, partial: Omit<HookEvent, "durationMs" | "error" | "type">, run: () => Promise<R>): Promise<R> {
+        const started = Date.now();
+
+        try {
+            const result = await run();
+
+            this.emitAction(type, { ...partial, durationMs: Date.now() - started });
+
+            return result;
+        } catch (error: unknown) {
+            const normalized = error instanceof Error ? error : new Error(typeof error === "string" ? error : "Unknown error", { cause: error });
+
+            this.emitError(type, { ...partial, durationMs: Date.now() - started }, normalized);
+
+            throw normalized;
+        }
     }
 
     /**
@@ -398,74 +635,119 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
      */
     public upload(key: string, body: FileBody, options?: OperationOptions & UploadOptions): Promise<FileObject>;
 
-    public upload(items: BulkUploadItem[], options?: BulkOptions): Promise<BulkUploadResult>;
+    public upload(items: BulkUploadItem[], options?: BulkUploadOptions): Promise<BulkUploadResult>;
 
     public async upload(
         keyOrItems: BulkUploadItem[] | string,
-        bodyOrOptions?: BulkOptions | FileBody,
+        bodyOrOptions?: BulkUploadOptions | FileBody,
         maybeOptions?: OperationOptions & UploadOptions,
     ): Promise<BulkUploadResult | FileObject> {
         if (Array.isArray(keyOrItems)) {
-            return this.uploadMany(keyOrItems, bodyOrOptions as BulkOptions | undefined);
+            return this.uploadMany(keyOrItems, bodyOrOptions as BulkUploadOptions | undefined);
         }
 
         return this.uploadOne(keyOrItems, bodyOrOptions as FileBody, maybeOptions);
     }
 
     private async uploadOne(key: string, body: FileBody, options: (OperationOptions & UploadOptions) | undefined): Promise<FileObject> {
-        const resolved = this.resolveKey(key);
+        return this.withHooks("upload", { key }, async () => {
+            const resolved = this.resolveKey(key);
 
-        BaseStorage.assertSafeId(resolved);
+            BaseStorage.assertSafeId(resolved);
 
-        const { size: normalizedSize, stream } = await normalizeBody(body, options?.size);
-        const size = options?.size ?? normalizedSize;
+            const { size: normalizedSize, stream } = await normalizeBody(body, options?.size);
+            const size = options?.size ?? normalizedSize;
 
-        const userMetadata = options?.metadata ?? {};
-        const metadata = {
-            ...userMetadata,
-            name: resolved,
-            ...(options?.contentType ? { type: options.contentType } : {}),
-            ...(size === undefined ? {} : { size }),
-        };
+            const userMetadata = options?.metadata ?? {};
+            const metadata = {
+                ...userMetadata,
+                name: resolved,
+                ...(options?.contentType ? { type: options.contentType } : {}),
+                ...(size === undefined ? {} : { size }),
+            };
 
-        const operationOptions = this.mergeOptions(options);
+            const operationOptions = this.mergeOptions(options, { key, type: "upload" });
+            const multipart = options?.multipart;
 
-        const file = await this.adapter.create(
-            {
-                contentType: options?.contentType,
-                id: resolved,
-                metadata,
-                originalName: resolved,
-                size,
-                storageClass: options?.storageClass,
-            },
-            operationOptions,
-        );
+            const file = await this.adapter.create(
+                {
+                    contentType: options?.contentType,
+                    id: resolved,
+                    metadata,
+                    originalName: resolved,
+                    size,
+                    storageClass: options?.storageClass,
+                },
+                operationOptions,
+            );
 
-        const part: FilePart = {
-            body: stream,
-            contentLength: size,
-            id: file.id,
-            start: 0,
-        };
+            // If the caller wants progress and the adapter doesn't report its own, wrap the body
+            // in a PassThrough that emits per-chunk byte counts. For buffered bodies whose total
+            // length is known up-front, also emit a coarse start/done pair so a single callback
+            // can drive any UI without sniffing for chunk-level deltas.
+            const reportsNatively = this.adapter.reportsUploadProgress;
+            const wantsProgress = !!options?.onProgress;
+            let progressStream: Readable = stream;
 
-        const written = await this.adapter.write(part, operationOptions);
-        const result = toFileObject(written, resolved);
-        const stripped = this.stripPrefix(result.key);
+            if (wantsProgress && !reportsNatively) {
+                const callback = options?.onProgress as UploadProgressCallback;
+                let loaded = 0;
+                const passthrough = new PassThrough();
 
-        if (stripped !== null) {
-            result.key = stripped;
-        }
+                // Emit the synthetic `loaded: 0` start event **before** attaching the data listener so
+                // callers always see the ordering start → chunk[1] → chunk[2] → ... — even if a stream
+                // happens to emit synchronously the moment we pipe.
+                if (size !== undefined) {
+                    safeInvoke(callback as (arg: unknown) => void, { loaded: 0, total: size });
+                }
 
-        return result;
+                stream.on("data", (chunk: Buffer | Uint8Array | string) => {
+                    const chunkSize = typeof chunk === "string" ? Buffer.byteLength(chunk) : (chunk as Buffer | Uint8Array).byteLength;
+
+                    loaded += chunkSize;
+                    safeInvoke(callback as (arg: unknown) => void, { loaded, total: size });
+                });
+
+                stream.pipe(passthrough);
+                progressStream = passthrough;
+            }
+
+            const part: FilePart & { multipart?: MultipartOptions | boolean; onProgress?: UploadProgressCallback } = {
+                body: progressStream,
+                contentLength: size,
+                id: file.id,
+                start: 0,
+                ...(multipart !== undefined && { multipart }),
+                ...(reportsNatively && wantsProgress && { onProgress: options?.onProgress as UploadProgressCallback }),
+            };
+
+            const written = await this.adapter.write(part, operationOptions);
+            const result = toFileObject(written, resolved);
+            const stripped = this.stripPrefix(result.key);
+
+            if (stripped !== null) {
+                result.key = stripped;
+            }
+
+            return result;
+        });
     }
 
-    private async uploadMany(items: BulkUploadItem[], bulkOptions: BulkOptions | undefined): Promise<BulkUploadResult> {
-        const { concurrency = DEFAULT_BULK_CONCURRENCY, stopOnError = false, ...rest } = bulkOptions ?? {};
+    private async uploadMany(items: BulkUploadItem[], bulkOptions: BulkUploadOptions | undefined): Promise<BulkUploadResult> {
+        const { concurrency = DEFAULT_BULK_CONCURRENCY, multipart, onProgress, stopOnError = false, ...rest } = bulkOptions ?? {};
 
         const settled = await runConcurrent(
             items,
-            async ({ body, key, ...uploadOptions }) => this.uploadOne(key, body, { ...rest, ...uploadOptions }),
+            async ({ body, key, ...uploadOptions }) => {
+                const perItemProgress = uploadOptions.onProgress ?? (onProgress ? (event: UploadProgress) => onProgress({ ...event, key }) : undefined);
+
+                return this.uploadOne(key, body, {
+                    ...rest,
+                    multipart,
+                    ...uploadOptions,
+                    ...(perItemProgress && { onProgress: perItemProgress }),
+                });
+            },
             { concurrency, signal: rest.signal, stopOnError },
         );
 
@@ -495,40 +777,64 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
      * Download a single object, or — when passed an array of keys — bulk-download many in one
      * call with bounded concurrency.
      */
-    public download(key: string, options?: OperationOptions): Promise<DownloadResult>;
+    public download(key: string, options?: DownloadOptions): Promise<DownloadResult>;
 
-    public download(keys: string[], options?: BulkOptions): Promise<BulkDownloadResult>;
+    public download(keys: string[], options?: BulkDownloadOptions): Promise<BulkDownloadResult>;
 
-    public async download(keyOrKeys: string[] | string, options?: BulkOptions | OperationOptions): Promise<BulkDownloadResult | DownloadResult> {
+    public async download(keyOrKeys: string[] | string, options?: BulkDownloadOptions | DownloadOptions): Promise<BulkDownloadResult | DownloadResult> {
         if (Array.isArray(keyOrKeys)) {
-            return this.downloadMany(keyOrKeys, options);
+            return this.downloadMany(keyOrKeys, options as BulkDownloadOptions | undefined);
         }
 
-        return this.downloadOne(keyOrKeys, options);
+        return this.downloadOne(keyOrKeys, options as DownloadOptions | undefined);
     }
 
-    private async downloadOne(key: string, options: OperationOptions | undefined): Promise<DownloadResult> {
-        const resolved = this.resolveKey(key);
+    private assertRangeSupported(range: DownloadRange | undefined): void {
+        if (!range) {
+            return;
+        }
 
-        BaseStorage.assertSafeId(resolved);
+        if (!Number.isFinite(range.start) || range.start < 0) {
+            throw new TypeError(`Invalid range.start: ${String(range.start)}`);
+        }
 
-        const file = await this.adapter.get({ id: resolved }, this.mergeOptions(options));
+        if (range.end !== undefined && (!Number.isFinite(range.end) || range.end < range.start)) {
+            throw new TypeError(`Invalid range.end: ${String(range.end)}`);
+        }
 
-        return {
-            body: file.content,
-            contentType: file.contentType ?? "application/octet-stream",
-            etag: file.ETag,
-            key,
-            lastModified: file.modifiedAt,
-            metadata: file.metadata,
-            size: typeof file.size === "number" ? file.size : undefined,
-        };
+        if (!this.adapter.supportsRange) {
+            throw new Error(`Adapter ${this.adapter.constructor.name} does not support range downloads`);
+        }
     }
 
-    private async downloadMany(keys: string[], bulkOptions: BulkOptions | undefined): Promise<BulkDownloadResult> {
-        const { concurrency = DEFAULT_BULK_CONCURRENCY, stopOnError = false, ...rest } = bulkOptions ?? {};
+    private async downloadOne(key: string, options: DownloadOptions | undefined): Promise<DownloadResult> {
+        return this.withHooks("download", { key }, async () => {
+            const resolved = this.resolveKey(key);
 
-        const settled = await runConcurrent(keys, async (key) => this.downloadOne(key, rest), {
+            BaseStorage.assertSafeId(resolved);
+            this.assertRangeSupported(options?.range);
+
+            const merged = this.mergeOptions(options, { key, type: "download" }) ?? {};
+            const adapterOptions = options?.range ? { ...merged, range: options.range } : merged;
+
+            const file = await this.adapter.get({ id: resolved }, adapterOptions);
+
+            return {
+                body: file.content,
+                contentType: file.contentType ?? "application/octet-stream",
+                etag: file.ETag,
+                key,
+                lastModified: file.modifiedAt,
+                metadata: file.metadata,
+                size: typeof file.size === "number" ? file.size : undefined,
+            };
+        });
+    }
+
+    private async downloadMany(keys: string[], bulkOptions: BulkDownloadOptions | undefined): Promise<BulkDownloadResult> {
+        const { concurrency = DEFAULT_BULK_CONCURRENCY, range, stopOnError = false, ...rest } = bulkOptions ?? {};
+
+        const settled = await runConcurrent(keys, async (key) => this.downloadOne(key, range ? { ...rest, range } : rest), {
             concurrency,
             signal: rest.signal,
             stopOnError,
@@ -573,16 +879,18 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
     }
 
     private async headOne(key: string, options: OperationOptions | undefined): Promise<FileObject> {
-        const resolved = this.resolveKey(key);
+        return this.withHooks("head", { key }, async () => {
+            const resolved = this.resolveKey(key);
 
-        BaseStorage.assertSafeId(resolved);
+            BaseStorage.assertSafeId(resolved);
 
-        const file = await this.adapter.getMeta(resolved, this.mergeOptions(options));
-        const result = toFileObject(file, resolved);
+            const file = await this.adapter.getMeta(resolved, this.mergeOptions(options, { key, type: "head" }));
+            const result = toFileObject(file, resolved);
 
-        result.key = key;
+            result.key = key;
 
-        return result;
+            return result;
+        });
     }
 
     private async headMany(keys: string[], bulkOptions: BulkOptions | undefined): Promise<BulkHeadResult> {
@@ -634,11 +942,13 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
     }
 
     private async existsOne(key: string, options: OperationOptions | undefined): Promise<boolean> {
-        const resolved = this.resolveKey(key);
+        return this.withHooks("exists", { key }, async () => {
+            const resolved = this.resolveKey(key);
 
-        BaseStorage.assertSafeId(resolved);
+            BaseStorage.assertSafeId(resolved);
 
-        return this.adapter.exists({ id: resolved }, this.mergeOptions(options));
+            return this.adapter.exists({ id: resolved }, this.mergeOptions(options, { key, type: "exists" }));
+        });
     }
 
     private async existsMany(keys: string[], bulkOptions: BulkOptions | undefined): Promise<BulkExistsResult> {
@@ -698,16 +1008,18 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
     }
 
     private async deleteOne(key: string, options: OperationOptions | undefined): Promise<void> {
-        const resolved = this.resolveKey(key);
+        await this.withHooks("delete", { key }, async () => {
+            const resolved = this.resolveKey(key);
 
-        BaseStorage.assertSafeId(resolved);
+            BaseStorage.assertSafeId(resolved);
 
-        await this.adapter.delete({ id: resolved }, this.mergeOptions(options));
+            await this.adapter.delete({ id: resolved }, this.mergeOptions(options, { key, type: "delete" }));
+        });
     }
 
     private async deleteMany(keys: string[], bulkOptions: BulkOptions | undefined): Promise<BulkDeleteResult> {
         const { concurrency = DEFAULT_BULK_CONCURRENCY, stopOnError = false, ...rest } = bulkOptions ?? {};
-        const operationOptions = this.mergeOptions(rest);
+        const operationOptions = this.mergeOptions(rest, { keys, type: "delete" });
 
         // Prefer the adapter's native bulk primitive when present and the caller hasn't asked for
         // stop-on-first-error semantics (deleteBatch always attempts every key).
@@ -728,27 +1040,29 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
                 }
             }
 
-            const response = resolvedIds.length > 0
-                ? await this.adapter.deleteBatch(resolvedIds, operationOptions)
-                : { failed: [], successful: [] };
-            const idIndex = new Map(resolvedIds.map((id, index) => [id, index]));
+            return this.withHooks("delete", { keys: validKeys }, async () => {
+                const response = resolvedIds.length > 0
+                    ? await this.adapter.deleteBatch(resolvedIds, operationOptions)
+                    : { failed: [], successful: [] };
+                const idIndex = new Map(resolvedIds.map((id, index) => [id, index]));
 
-            const deleted: string[] = response.successful.map((file) => {
-                const stripped = this.stripPrefix(file.id);
+                const deleted: string[] = response.successful.map((file) => {
+                    const stripped = this.stripPrefix(file.id);
 
-                return stripped ?? file.id;
+                    return stripped ?? file.id;
+                });
+                const errors: BulkError[] = [
+                    ...earlyErrors,
+                    ...response.failed.map(({ error, id }) => {
+                        const index = idIndex.get(id);
+                        const callerKey = index === undefined ? id : (validKeys[index] as string);
+
+                        return toBulkError(callerKey, new Error(error));
+                    }),
+                ];
+
+                return errors.length > 0 ? { deleted, errors } : { deleted };
             });
-            const errors: BulkError[] = [
-                ...earlyErrors,
-                ...response.failed.map(({ error, id }) => {
-                    const index = idIndex.get(id);
-                    const callerKey = index === undefined ? id : (validKeys[index] as string);
-
-                    return toBulkError(callerKey, new Error(error));
-                }),
-            ];
-
-            return errors.length > 0 ? { deleted, errors } : { deleted };
         }
 
         const settled = await runConcurrent(keys, async (key) => this.deleteOne(key, rest), {
@@ -784,21 +1098,110 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
      * destination object's metadata with the caller-facing (un-prefixed) key.
      */
     public async copy(source: string, destination: string, options?: OperationOptions & { storageClass?: string }): Promise<FileObject> {
-        const resolvedSource = this.resolveKey(source);
-        const resolvedDestination = this.resolveKey(destination);
+        return this.withHooks("copy", { from: source, to: destination }, async () => {
+            const resolvedSource = this.resolveKey(source);
+            const resolvedDestination = this.resolveKey(destination);
 
-        BaseStorage.assertSafeId(resolvedSource);
-        BaseStorage.assertSafeId(resolvedDestination);
+            BaseStorage.assertSafeId(resolvedSource);
+            BaseStorage.assertSafeId(resolvedDestination);
 
-        const file = await this.adapter.copy(resolvedSource, resolvedDestination, {
-            ...this.mergeOptions(options),
-            storageClass: options?.storageClass,
+            const file = await this.adapter.copy(resolvedSource, resolvedDestination, {
+                ...this.mergeOptions(options, { from: source, to: destination, type: "copy" }),
+                storageClass: options?.storageClass,
+            });
+            const result = toFileObject(file, resolvedDestination);
+
+            result.key = destination;
+
+            return result;
         });
-        const result = toFileObject(file, resolvedDestination);
+    }
 
-        result.key = destination;
+    /**
+     * Rename `source` to `destination`. Uses the adapter's native rename where one exists
+     * (DiskStorage atomic move, Cloudinary server-side rename) and falls back to
+     * `copy` + `delete` otherwise. Moving a key onto itself is a no-op. Also accepts an array of
+     * `{ from, to }` items for bounded-concurrency bulk moves; per-item failures land in `errors`.
+     */
+    public move(from: string, to: string, options?: OperationOptions & { storageClass?: string }): Promise<FileObject>;
 
-        return result;
+    public move(items: BulkMoveItem[], options?: BulkOptions): Promise<BulkMoveResult>;
+
+    public async move(
+        fromOrItems: BulkMoveItem[] | string,
+        toOrOptions?: BulkOptions | string,
+        maybeOptions?: OperationOptions & { storageClass?: string },
+    ): Promise<BulkMoveResult | FileObject> {
+        if (Array.isArray(fromOrItems)) {
+            return this.moveMany(fromOrItems, toOrOptions as BulkOptions | undefined);
+        }
+
+        return this.moveOne(fromOrItems, toOrOptions as string, maybeOptions);
+    }
+
+    private async moveOne(from: string, to: string, options: (OperationOptions & { storageClass?: string }) | undefined): Promise<FileObject> {
+        return this.withHooks("move", { from, to }, async () => {
+            const resolvedFrom = this.resolveKey(from);
+
+            BaseStorage.assertSafeId(resolvedFrom);
+
+            // No-op when source and destination match: read meta directly so we don't emit a
+            // second `head` hook event for what the caller invoked as a `move`.
+            if (from === to) {
+                const file = await this.adapter.getMeta(resolvedFrom, this.mergeOptions(options, { from, to, type: "move" }));
+                const result = toFileObject(file, resolvedFrom);
+
+                result.key = from;
+
+                return result;
+            }
+
+            const resolvedTo = this.resolveKey(to);
+
+            BaseStorage.assertSafeId(resolvedTo);
+
+            const adapterOptions: OperationOptions & { storageClass?: string } = {
+                ...this.mergeOptions(options, { from, to, type: "move" }),
+                ...(options?.storageClass !== undefined && { storageClass: options.storageClass }),
+            };
+            const file = await this.adapter.move(resolvedFrom, resolvedTo, adapterOptions);
+            const result = toFileObject(file, resolvedTo);
+
+            result.key = to;
+
+            return result;
+        });
+    }
+
+    private async moveMany(items: BulkMoveItem[], bulkOptions: BulkOptions | undefined): Promise<BulkMoveResult> {
+        const { concurrency = DEFAULT_BULK_CONCURRENCY, stopOnError = false, ...rest } = bulkOptions ?? {};
+
+        const settled = await runConcurrent(items, async ({ from, to }) => this.moveOne(from, to, rest), {
+            concurrency,
+            signal: rest.signal,
+            stopOnError,
+        });
+
+        const moved: FileObject[] = [];
+        const errors: BulkError[] = [];
+
+        for (const [index, result] of settled.entries()) {
+            const item = items[index] as BulkMoveItem;
+
+            if (!result) {
+                errors.push(toBulkError(item.from, new Error("Operation skipped (stopOnError)")));
+
+                continue;
+            }
+
+            if (result.status === "fulfilled") {
+                moved.push(result.value);
+            } else {
+                errors.push(toBulkError(item.from, result.reason));
+            }
+        }
+
+        return errors.length > 0 ? { errors, moved } : { moved };
     }
 
     /**
@@ -808,50 +1211,346 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
      *
      * **Caveat with constructor prefix**: `limit` is applied by the underlying adapter *before*
      * the path-boundary filter runs, so the returned array may contain fewer than `limit` items
-     * even when more in-namespace objects exist. Page through with adapter-specific APIs when you
-     * need an exact in-namespace count.
+     * even when more in-namespace objects exist. Use {@link Files.listAll} when you need every
+     * in-namespace object.
      */
     public async list(options: ListOptions & OperationOptions = {}): Promise<FileObject[]> {
-        const { limit, prefix: callerPrefix, ...operationOptions } = options;
-        const files = await this.adapter.list(limit ?? 1000, this.mergeOptions(operationOptions));
+        return this.withHooks("list", {}, async () => {
+            const { limit, prefix: callerPrefix, ...operationOptions } = options;
+            const files = await this.adapter.list(limit ?? 1000, this.mergeOptions(operationOptions, { type: "list" }));
 
-        const mapped: FileObject[] = [];
+            const mapped: FileObject[] = [];
 
-        for (const file of files) {
-            const object = toFileObject(file);
-            const stripped = this.stripPrefix(object.key);
+            for (const file of files) {
+                const object = toFileObject(file);
+                const stripped = this.stripPrefix(object.key);
 
-            // Outside our prefix namespace (e.g. `users-archive/` when prefix is `users`).
-            if (stripped === null) {
-                continue;
+                // Outside our prefix namespace (e.g. `users-archive/` when prefix is `users`).
+                if (stripped === null) {
+                    continue;
+                }
+
+                object.key = stripped;
+                mapped.push(object);
             }
 
-            object.key = stripped;
-            mapped.push(object);
-        }
+            if (callerPrefix) {
+                return mapped.filter((file) => file.key.startsWith(callerPrefix));
+            }
 
-        if (callerPrefix) {
-            return mapped.filter((file) => file.key.startsWith(callerPrefix));
-        }
+            return mapped;
+        });
+    }
 
-        return mapped;
+    /**
+     * Walk every object in the bucket. Yields one {@link FileObject} at a time as an async
+     * iterable; pages internally so callers don't have to thread a cursor. Returned keys have any
+     * constructor prefix stripped off and out-of-namespace keys are filtered out, just like
+     * {@link Files.list}.
+     *
+     * Most adapters return all objects in a single `list()` call (the default `limit` is 1000),
+     * so this is effectively `list` + iteration for them. Adapters that paginate natively can
+     * override `list` to honour the per-page `limit` and `listAll` will keep pulling pages until
+     * the page is short.
+     *
+     * @example
+     * ```ts
+     * for await (const file of files.listAll({ prefix: "avatars/" })) {
+     *   console.log(file.key, file.size);
+     * }
+     * ```
+     */
+    public async *listAll(options: ListAllOptions & OperationOptions = {}): AsyncGenerator<FileObject, void, void> {
+        const { limit, prefix: callerPrefix, ...operationOptions } = options;
+        const pageSize = Math.max(1, limit ?? 1000);
+        const started = Date.now();
+        const seen = new Set<string>();
+
+        let errored: Error | undefined;
+
+        try {
+            // Most adapters answer with everything in a single call; a few paginate. We can't rely
+            // on `page.length < pageSize` to terminate — the abstract list() contract doesn't
+            // require honoring the limit, and several adapters (memory, disk) ignore it entirely.
+            // Terminate when an iteration yields zero *new* keys instead. Per-key dedup also guards
+            // against adapters that hand back the same set on each call.
+            // eslint-disable-next-line no-constant-condition
+            while (true) {
+                const page = await this.adapter.list(pageSize, this.mergeOptions(operationOptions, { type: "listAll" }));
+                let yielded = 0;
+
+                for (const file of page) {
+                    const object = toFileObject(file);
+                    const stripped = this.stripPrefix(object.key);
+
+                    if (stripped === null) {
+                        continue;
+                    }
+
+                    object.key = stripped;
+
+                    if (callerPrefix && !object.key.startsWith(callerPrefix)) {
+                        continue;
+                    }
+
+                    if (seen.has(object.key)) {
+                        continue;
+                    }
+
+                    seen.add(object.key);
+                    yielded += 1;
+                    yield object;
+                }
+
+                // Exit once a page contributes no new keys: either the adapter is single-shot
+                // (`list` returns the whole set every call) or pagination is exhausted.
+                if (yielded === 0 || page.length < pageSize) {
+                    break;
+                }
+            }
+        } catch (error: unknown) {
+            errored = error instanceof Error ? error : new Error(typeof error === "string" ? error : "Unknown error", { cause: error });
+
+            throw errored;
+        } finally {
+            // Emit a single terminal hook event whether the walk completed, threw, or was abandoned
+            // by an early `break` in the consumer's `for await` loop.
+            const durationMs = Date.now() - started;
+
+            if (errored) {
+                this.emitError("listAll", { durationMs }, errored);
+            } else {
+                this.emitAction("listAll", { durationMs });
+            }
+        }
     }
 
     public async url(key: string, options?: OperationOptions & SignedReadUrlOptions): Promise<string> {
-        const resolved = this.resolveKey(key);
+        return this.withHooks("url", { key }, async () => {
+            const resolved = this.resolveKey(key);
 
-        BaseStorage.assertSafeId(resolved);
+            BaseStorage.assertSafeId(resolved);
 
-        return this.adapter.getReadUrl(resolved, { ...this.mergeOptions(options), ...options });
+            return this.adapter.getReadUrl(resolved, { ...this.mergeOptions(options, { key, type: "url" }), ...options });
+        });
     }
 
     public async signedUploadUrl(key: string, options?: OperationOptions & SignedUploadUrlOptions): Promise<string> {
-        const resolved = this.resolveKey(key);
+        return this.withHooks("signedUploadUrl", { key }, async () => {
+            const resolved = this.resolveKey(key);
 
-        BaseStorage.assertSafeId(resolved);
+            BaseStorage.assertSafeId(resolved);
 
-        return this.adapter.getUploadUrl(resolved, { ...this.mergeOptions(options), ...options });
+            return this.adapter.getUploadUrl(resolved, { ...this.mergeOptions(options, { key, type: "signedUploadUrl" }), ...options });
+        });
     }
 }
+
+/**
+ * Per-key event reported to {@link TransferOptions.onProgress}.
+ */
+export interface TransferProgress {
+    /** 1-based index of the current key in walk order. */
+    done: number;
+    error?: Error;
+    key: string;
+    status: "errored" | "skipped" | "transferred";
+}
+
+export interface TransferOptions extends OperationOptions {
+    /**
+     * In-flight key transfers.
+     * @default 8
+     */
+    concurrency?: number;
+
+    /** Per-page size requested from the source adapter while walking. */
+    limit?: number;
+
+    /** Fire-and-forget progress reporter. Throws are swallowed. */
+    onProgress?: (event: TransferProgress) => void;
+
+    /**
+     * When `true`, the first failing transfer rejects {@link transfer} instead of being
+     * collected in `errors`.
+     * @default false
+     */
+    stopOnError?: boolean;
+
+    /** Transform each source key into the destination key. Defaults to identity. */
+    transformKey?: (key: string) => string;
+
+    /**
+     * When `false`, skip keys that already exist at the destination. When `true`, always upload.
+     * @default false
+     */
+    overwrite?: boolean;
+
+    /** Restrict the walk to this prefix on the source. */
+    prefix?: string;
+}
+
+export interface TransferResult {
+    errors?: BulkError[];
+    skipped: string[];
+    transferred: string[];
+}
+
+/**
+ * Streams every object from `source` to `destination` for cross-provider migration.
+ * Built entirely on the public {@link Files} surface — no adapter implements anything new.
+ *
+ * Each object is downloaded and re-uploaded with bounded concurrency. By default missing
+ * destination keys are uploaded and existing keys are skipped — pass `overwrite: true` to force
+ * re-upload. Body, content type, and user metadata travel; `etag`/`lastModified` are
+ * destination-assigned.
+ *
+ * Like the other bulk methods, `transfer` doesn't throw on partial failure: results come back as
+ * `{ transferred, skipped, errors? }`.
+ *
+ * @example
+ * ```ts
+ * const from = new Files({ adapter: new S3Storage({ bucket: "old", ... }) });
+ * const to = new Files({ adapter: new GCSStorage({ bucket: "new", ... }) });
+ *
+ * const { transferred, skipped, errors } = await transfer(from, to, {
+ *   prefix: "uploads/",
+ *   onProgress: ({ done, key, status }) => console.log(done, key, status),
+ * });
+ * ```
+ */
+export const transfer = async (
+    source: Files,
+    destination: Files,
+    options: TransferOptions = {},
+): Promise<TransferResult> => {
+    const {
+        concurrency = DEFAULT_BULK_CONCURRENCY,
+        limit,
+        onProgress,
+        overwrite = false,
+        prefix,
+        signal,
+        stopOnError = false,
+        transformKey,
+    } = options;
+
+    const transferred: string[] = [];
+    const skipped: string[] = [];
+    const errors: BulkError[] = [];
+
+    let stopped = false;
+    let done = 0;
+
+    const emit = (event: TransferProgress): void => {
+        if (!onProgress) {
+            return;
+        }
+
+        try {
+            onProgress(event);
+        } catch {
+            // fire-and-forget
+        }
+    };
+
+    const walk = source.listAll({ ...(prefix !== undefined && { prefix }), ...(limit !== undefined && { limit }) });
+
+    const transferOne = async (sourceKey: string): Promise<void> => {
+        if (stopped || signal?.aborted) {
+            return;
+        }
+
+        const destinationKey = transformKey ? transformKey(sourceKey) : sourceKey;
+
+        try {
+            if (!overwrite) {
+                const exists = await destination.exists(destinationKey, { signal });
+
+                if (exists) {
+                    skipped.push(sourceKey);
+                    done += 1;
+                    emit({ done, key: sourceKey, status: "skipped" });
+
+                    return;
+                }
+            }
+
+            const downloaded = await source.download(sourceKey, { signal });
+
+            await destination.upload(destinationKey, downloaded.body, {
+                ...(downloaded.contentType && { contentType: downloaded.contentType }),
+                ...(downloaded.metadata && { metadata: downloaded.metadata }),
+                signal,
+            });
+
+            transferred.push(sourceKey);
+            done += 1;
+            emit({ done, key: sourceKey, status: "transferred" });
+        } catch (error: unknown) {
+            const bulk = toBulkError(sourceKey, error);
+
+            errors.push(bulk);
+            done += 1;
+            emit({ done, error: bulk.error, key: sourceKey, status: "errored" });
+
+            if (stopOnError) {
+                stopped = true;
+
+                throw bulk.error;
+            }
+        }
+    };
+
+    if (stopOnError) {
+        // Sequential when stop-on-error so failure semantics are deterministic.
+        try {
+            for await (const file of walk) {
+                if (stopped || signal?.aborted) {
+                    break;
+                }
+
+                try {
+                    await transferOne(file.key);
+                } catch {
+                    break;
+                }
+            }
+        } finally {
+            // Make sure the underlying listAll generator's `finally` runs (and emits its hook) even
+            // if we broke out early. AsyncIterators don't auto-`return()` from a `for await` that
+            // exits via `break`/`throw` when the iterator is held in a variable.
+            await walk.return?.();
+        }
+
+        return errors.length > 0 ? { errors, skipped, transferred } : { skipped, transferred };
+    }
+
+    // Streaming worker pool: N workers pull the next key from the shared async iterator. Avoids
+    // buffering every key from a large bucket in memory before any transfer begins.
+    const width = Math.max(1, concurrency);
+
+    const worker = async (): Promise<void> => {
+        while (!stopped && !signal?.aborted) {
+            // Sequential pull from a shared iterator — workers race on `next()`, the runtime
+            // serializes them so each key is handed out exactly once.
+            const next = await walk.next();
+
+            if (next.done) {
+                return;
+            }
+
+            await transferOne(next.value.key);
+        }
+    };
+
+    try {
+        await Promise.all(Array.from({ length: width }, () => worker()));
+    } finally {
+        await walk.return?.();
+    }
+
+    return errors.length > 0 ? { errors, skipped, transferred } : { skipped, transferred };
+};
 
 export default Files;

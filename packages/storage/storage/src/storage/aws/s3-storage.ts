@@ -7,7 +7,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import type { HttpError } from "../../utils/types";
 import type { OperationOptions } from "../types";
 import type { FileInit, FileQuery } from "../utils/file";
-import { S3BaseStorage } from "./s3-base-storage";
+import { buildRangeHeader, S3BaseStorage } from "./s3-base-storage";
 import S3ClientAdapter from "./s3-client-adapter";
 import S3File from "./s3-file";
 import S3MetaStorage from "./s3-meta-storage";
@@ -165,15 +165,17 @@ class S3Storage extends S3BaseStorage {
 
     public override async getStream(
         { id }: FileQuery,
-        options?: OperationOptions,
+        options?: OperationOptions & { range?: { end?: number; start: number } },
     ): Promise<{ headers?: Record<string, string>; size?: number; stream: Readable }> {
         return this.instrumentOperation("getStream", async () => {
             const s3Api = this.getS3Api();
+            const rangeHeader = buildRangeHeader(options?.range);
             const { Body, ContentLength, ContentType, ETag, Expires, LastModified } = await this.runOperation(options, (signal) =>
                 s3Api.getObject(
                     {
                         Bucket: this.bucket,
                         Key: id,
+                        ...(rangeHeader !== undefined && { Range: rangeHeader }),
                     },
                     { signal },
                 ),

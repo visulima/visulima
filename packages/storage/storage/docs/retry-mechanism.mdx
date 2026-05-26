@@ -93,8 +93,58 @@ interface RetryConfig {
 
     /** Custom function to calculate delay for a specific retry attempt */
     calculateDelay?: (attempt: number, error: unknown) => number | undefined;
+
+    /**
+     * Fire-and-forget hook invoked before each retry attempt's backoff sleep. `attempt` is 1-based
+     * (1 = first retry, after the initial call failed). Exceptions thrown by this callback are
+     * swallowed so an observability hook can never fail the underlying operation.
+     */
+    onRetry?: (attempt: number, error: unknown) => void;
 }
 ```
+
+## Per-call retries via the `Files` facade
+
+Every `Files` method accepts `retries` per call via `OperationOptions`. Facade-wide defaults set on the constructor are merged in; per-call wins.
+
+```typescript
+import { Files } from "@visulima/storage";
+
+const files = new Files({
+    adapter,
+    defaults: { retries: { maxRetries: 5, initialDelay: 500 } },
+});
+
+// Use the facade defaults.
+await files.download("k.txt");
+
+// Override for a single call — accepts either a plain number or a full RetryConfig.
+await files.download("flaky.txt", { retries: 1 });
+await files.download("critical.txt", {
+    retries: {
+        maxRetries: 10,
+        shouldRetry: (error) => isMyCustomTransient(error),
+    },
+});
+```
+
+## Observing retries with the `onRetry` hook
+
+The `Files` facade wires its `hooks.onRetry` through `RetryConfig.onRetry` so retry events surface with facade-level operation context (`type`, `key`, `from`/`to`):
+
+```typescript
+const files = new Files({
+    adapter,
+    defaults: { retries: { maxRetries: 5 } },
+    hooks: {
+        onRetry: ({ type, key, attempt, error }) => {
+            log.warn(`${type} ${key} retry ${attempt}: ${error.message}`);
+        },
+    },
+});
+```
+
+If the caller also passes a custom `retries.onRetry`, both callbacks fire — user-provided first, facade hook second — and both are wrapped in try/catch.
 
 ## Using Retry Utilities Directly
 
