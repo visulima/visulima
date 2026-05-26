@@ -169,9 +169,11 @@ describe("vis ci", () => {
     it("auto-detects refs from GITHUB_BASE_REF / GITHUB_SHA", async () => {
         expect.assertions(2);
 
+        const originalActions = process.env["GITHUB_ACTIONS"];
         const originalBase = process.env["GITHUB_BASE_REF"];
         const originalSha = process.env["GITHUB_SHA"];
 
+        process.env["GITHUB_ACTIONS"] = "true";
         process.env["GITHUB_BASE_REF"] = "main";
         process.env["GITHUB_SHA"] = "abc123";
 
@@ -193,6 +195,12 @@ describe("vis ci", () => {
             expect(affectedCall.argv).toContain("--base=origin/main");
             expect(affectedCall.argv).toContain("--head=abc123");
         } finally {
+            if (originalActions === undefined) {
+                delete process.env["GITHUB_ACTIONS"];
+            } else {
+                process.env["GITHUB_ACTIONS"] = originalActions;
+            }
+
             if (originalBase === undefined) {
                 delete process.env["GITHUB_BASE_REF"];
             } else {
@@ -210,15 +218,17 @@ describe("vis ci", () => {
     it("auto-detects refs from BUILDKITE_PULL_REQUEST_BASE_BRANCH / BUILDKITE_COMMIT", async () => {
         expect.assertions(2);
 
+        const originalBuildkite = process.env["BUILDKITE"];
         const originalBase = process.env["BUILDKITE_PULL_REQUEST_BASE_BRANCH"];
         const originalCommit = process.env["BUILDKITE_COMMIT"];
-        const originalGhBase = process.env["GITHUB_BASE_REF"];
-        const originalGitlabBase = process.env["CI_MERGE_REQUEST_TARGET_BRANCH_NAME"];
+        const originalGhActions = process.env["GITHUB_ACTIONS"];
+        const originalGitlabCi = process.env["GITLAB_CI"];
 
-        // Higher-priority detectors (GH, GitLab) come first in the chain;
+        // Higher-priority providers (GH, GitLab) come first in the chain;
         // make sure neither is set so the Buildkite branch actually runs.
-        delete process.env["GITHUB_BASE_REF"];
-        delete process.env["CI_MERGE_REQUEST_TARGET_BRANCH_NAME"];
+        delete process.env["GITHUB_ACTIONS"];
+        delete process.env["GITLAB_CI"];
+        process.env["BUILDKITE"] = "true";
         process.env["BUILDKITE_PULL_REQUEST_BASE_BRANCH"] = "trunk";
         process.env["BUILDKITE_COMMIT"] = "deadbeef";
 
@@ -240,6 +250,12 @@ describe("vis ci", () => {
             expect(affectedCall.argv).toContain("--base=origin/trunk");
             expect(affectedCall.argv).toContain("--head=deadbeef");
         } finally {
+            if (originalBuildkite === undefined) {
+                delete process.env["BUILDKITE"];
+            } else {
+                process.env["BUILDKITE"] = originalBuildkite;
+            }
+
             if (originalBase === undefined) {
                 delete process.env["BUILDKITE_PULL_REQUEST_BASE_BRANCH"];
             } else {
@@ -252,12 +268,12 @@ describe("vis ci", () => {
                 process.env["BUILDKITE_COMMIT"] = originalCommit;
             }
 
-            if (originalGhBase !== undefined) {
-                process.env["GITHUB_BASE_REF"] = originalGhBase;
+            if (originalGhActions !== undefined) {
+                process.env["GITHUB_ACTIONS"] = originalGhActions;
             }
 
-            if (originalGitlabBase !== undefined) {
-                process.env["CI_MERGE_REQUEST_TARGET_BRANCH_NAME"] = originalGitlabBase;
+            if (originalGitlabCi !== undefined) {
+                process.env["GITLAB_CI"] = originalGitlabCi;
             }
         }
     });

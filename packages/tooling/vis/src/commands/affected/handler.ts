@@ -3,6 +3,7 @@ import type { AffectedOptions, AffectedScope } from "@visulima/task-runner";
 import { getAffectedProjects } from "@visulima/task-runner";
 
 import { buildProjectGraph, discoverWorkspace } from "../../config/workspace";
+import { resolveAffectedShas } from "../../runtime/affected-shas";
 import { filterProjectsByQuery } from "../../task/selectors";
 import type { AffectedCommandOptions } from "./index";
 
@@ -33,10 +34,25 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
         throw new Error(`Invalid --upstream value: "${upstreamValue}". Must be "none", "direct", or "deep".`);
     }
 
+    let base = options.base;
+    let head = options.head;
+
+    if (!base || !head) {
+        const resolved = resolveAffectedShas({
+            defaultBase: visConfig?.defaultBase,
+            workspaceRoot,
+        });
+
+        base = base ?? resolved.base;
+        head = head ?? resolved.head;
+
+        logger.info(`▸ Resolved affected refs from ${resolved.provider} (${resolved.notes.join("; ")})`);
+    }
+
     const affectedOptions: AffectedOptions = {
-        base: options.base,
+        base,
         downstream: downstreamValue as AffectedScope,
-        head: options.head,
+        head,
         projectGraph,
         projects: workspace.projects,
         upstream: upstreamValue as AffectedScope,

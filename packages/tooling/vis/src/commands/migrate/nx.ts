@@ -43,6 +43,16 @@ interface NxProjectTarget {
     syncGenerators?: string[];
 }
 
+/**
+ * Format an absolute workspace path as workspace-relative for terser
+ * output in punch lists, log lines, and warnings.
+ */
+const relativeFromRoot = (workspaceRoot: string, abs: string): string => {
+    const rel = relative(workspaceRoot, abs);
+
+    return rel.startsWith("..") ? abs : rel.split(sep).join("/");
+};
+
 const SKIP_DIRECTORIES = new Set([
     ".cache",
     ".git",
@@ -125,25 +135,67 @@ const NX_EXECUTOR_HINTS: Record<string, string> = {
 };
 
 /**
- * Strip namespaced executor keys (anything containing `:`) from `targetDefaults`.
- * vis only understands script-name targets — namespaced keys like `@nx/js:tsc`
- * pass through as broken config otherwise.
+ * Subset of NxTargetDefault fields that translate cleanly onto a vis
+ * script-name target. Anything else (executor, options, …) is nx-specific
+ * and is silently dropped during the translation hop.
  */
-const stripNamespacedTargetDefaults = (targetDefaults: Record<string, NxTargetDefault>, report: MigrationReport): Record<string, NxTargetDefault> => {
+const TRANSLATABLE_TARGET_FIELDS = ["cache", "dependsOn", "inputs", "outputs", "persistent"] as const;
+
+/**
+ * Translate namespaced executor keys (e.g. `@nx/js:tsc`) into their
+ * script-name equivalent (e.g. `build`) using NX_EXECUTOR_HINTS, carrying
+ * over cache/dependsOn/inputs/outputs/persistent fields. Keys with no
+ * known hint are dropped with a warning. When a translation collides with
+ * an explicit script-name entry, the explicit one wins and the namespaced
+ * key is dropped with a warning.
+ */
+const translateNamespacedTargetDefaults = (
+    targetDefaults: Record<string, NxTargetDefault>,
+    report: MigrationReport,
+    logger?: MigrateLogger,
+): Record<string, NxTargetDefault> => {
     const cleaned: Record<string, NxTargetDefault> = {};
 
     for (const [key, value] of Object.entries(targetDefaults)) {
         if (!key.includes(":")) {
             cleaned[key] = value;
+        }
+    }
+
+    for (const [key, value] of Object.entries(targetDefaults)) {
+        if (!key.includes(":")) {
             continue;
         }
 
         const hint = NX_EXECUTOR_HINTS[key];
-        const message = hint
-            ? `Dropped \`${key}\` from tasks — vis uses package.json scripts as targets. Move its settings to \`${hint}\` if appropriate.`
-            : `Dropped \`${key}\` from tasks — vis only supports script-name targets, not nx-namespaced executors.`;
 
-        report.warnings.push(message);
+        if (!hint) {
+            report.warnings.push(`Dropped \`${key}\` from tasks — vis only supports script-name targets, not nx-namespaced executors.`);
+
+            continue;
+        }
+
+        if (cleaned[hint]) {
+            report.warnings.push(`Dropped \`${key}\` from tasks — \`${hint}\` already has an explicit entry; the explicit one was kept.`);
+
+            continue;
+        }
+
+        const translated: NxTargetDefault = {};
+        const carried: string[] = [];
+
+        for (const field of TRANSLATABLE_TARGET_FIELDS) {
+            if (value[field] !== undefined) {
+                (translated as Record<string, unknown>)[field] = value[field];
+                carried.push(field);
+            }
+        }
+
+        cleaned[hint] = translated;
+
+        const carriedNote = carried.length > 0 ? `carried ${carried.join(", ")}` : "no settings to carry";
+
+        logger?.info(`Translated \`${key}\` → \`${hint}\` in tasks (${carriedNote}).`);
     }
 
     return cleaned;
@@ -151,6 +203,12 @@ const stripNamespacedTargetDefaults = (targetDefaults: Record<string, NxTargetDe
 
 const renderVisConfig = (nx: NxJson, workspaceRoot: string, useEditorconfig?: boolean): string => {
     const configObject: Record<string, unknown> = {};
+
+    const nxDefaultBase = nx.affected?.defaultBase ?? nx.defaultBase;
+
+    if (typeof nxDefaultBase === "string" && nxDefaultBase.length > 0 && nxDefaultBase !== "main") {
+        configObject.defaultBase = nxDefaultBase;
+    }
 
     if (nx.namedInputs && Object.keys(nx.namedInputs).length > 0) {
         configObject.namedInputs = nx.namedInputs;
@@ -702,20 +760,25 @@ interface ProjectTargetReport {
 }
 
 /**
- * Translate `targets` blocks in project.json: when every entry is an
- * `nx:run-script` shim, drop the whole block (vis reads package.json
- * scripts directly). Otherwise leave the block in place and surface a
- * punch list of targets needing manual review. Also detects
- * `syncGenerators` keys (#7) and reports them — vis has no equivalent
- * pre-target hook system yet.
+ * Translate `targets` blocks in project.json:
+ * - All entries are `nx:run-script` shims → drop the whole block (vis
+ *   reads package.json scripts directly).
+ * - Mixed shims + non-shims → strip only the shim entries; the surviving
+ *   non-shim entries land on the punch list for manual review.
+ * - All non-shims → block untouched; whole punch list entry.
+ *
+ * Also detects `syncGenerators` keys (#7) and surfaces them — vis has no
+ * equivalent pre-target hook system yet, so they go on the punch list.
  */
 const translateProjectJsonTargets = (
     projectJsonPaths: string[],
     options: { dryRun?: boolean; useEditorconfig?: boolean },
     logger: MigrateLogger,
     report: MigrationReport,
-): { droppedTargetBlocks: number; punchList: ProjectTargetReport[] } => {
+): { droppedTargetBlocks: number; partialTargetBlocks: number; punchList: ProjectTargetReport[]; strippedShimEntries: number } => {
     let droppedTargetBlocks = 0;
+    let partialTargetBlocks = 0;
+    let strippedShimEntries = 0;
     const punchList: ProjectTargetReport[] = [];
 
     for (const filePath of projectJsonPaths) {
@@ -727,6 +790,7 @@ const translateProjectJsonTargets = (
 
         const projectName = data.name ?? "<unnamed>";
         const nonShimTargets: string[] = [];
+        const shimTargets: string[] = [];
         const syncGenerators: { sync: string[]; target: string }[] = [];
 
         for (const [name, target] of Object.entries(data.targets)) {
@@ -734,12 +798,15 @@ const translateProjectJsonTargets = (
                 syncGenerators.push({ sync: [...target.syncGenerators], target: name });
             }
 
-            if (!isNxRunScriptShim(target)) {
+            if (isNxRunScriptShim(target)) {
+                shimTargets.push(name);
+            } else {
                 nonShimTargets.push(name);
             }
         }
 
-        const allShims = nonShimTargets.length === 0;
+        const allShims = nonShimTargets.length === 0 && shimTargets.length > 0;
+        const hasShims = shimTargets.length > 0;
 
         if (allShims) {
             // Safe to drop the entire targets block.
@@ -764,13 +831,42 @@ const translateProjectJsonTargets = (
 
                 droppedTargetBlocks += 1;
             }
-        } else {
-            punchList.push({ file: filePath, name: projectName, nonShimTargets, syncGenerators });
-        }
 
-        if (allShims && syncGenerators.length > 0) {
-            // Targets block is gone but we still need to surface the syncGenerators.
-            punchList.push({ file: filePath, name: projectName, nonShimTargets: [], syncGenerators });
+            if (syncGenerators.length > 0) {
+                // Targets block is gone but we still need to surface the syncGenerators.
+                punchList.push({ file: filePath, name: projectName, nonShimTargets: [], syncGenerators });
+            }
+        } else if (hasShims) {
+            // Mixed: strip only the shim entries, keep the rest for review.
+            if (options.dryRun) {
+                logger.info(
+                    `Would strip ${String(shimTargets.length)} nx:run-script shim entr(y/ies) from ${filePath} (non-shim entries kept: ${nonShimTargets.join(", ")}).`,
+                );
+            } else {
+                editJsonFile<ProjectJson>(
+                    filePath,
+                    (current) => {
+                        if (!current.targets) {
+                            return undefined;
+                        }
+
+                        for (const shimName of shimTargets) {
+                            delete current.targets[shimName];
+                        }
+
+                        return current;
+                    },
+                    report,
+                    { useEditorconfig: options.useEditorconfig },
+                );
+            }
+
+            partialTargetBlocks += 1;
+            strippedShimEntries += shimTargets.length;
+            punchList.push({ file: filePath, name: projectName, nonShimTargets, syncGenerators });
+        } else {
+            // No shims at all — block stays untouched, punch list captures non-shim targets.
+            punchList.push({ file: filePath, name: projectName, nonShimTargets, syncGenerators });
         }
     }
 
@@ -778,7 +874,13 @@ const translateProjectJsonTargets = (
         logger.info(`Removed targets block from ${String(droppedTargetBlocks)} project.json file(s) (entries were nx:run-script shims).`);
     }
 
-    return { droppedTargetBlocks, punchList };
+    if (strippedShimEntries > 0 && !options.dryRun) {
+        logger.info(
+            `Stripped ${String(strippedShimEntries)} nx:run-script shim entr(y/ies) across ${String(partialTargetBlocks)} project.json file(s) (non-shim entries remain for manual review).`,
+        );
+    }
+
+    return { droppedTargetBlocks, partialTargetBlocks, punchList, strippedShimEntries };
 };
 
 /**
@@ -878,6 +980,272 @@ const cleanPnpmWorkspaceYaml = (
     }
 
     return { catalogEntriesRemoved, onlyBuiltRemoved };
+};
+
+interface SyncGeneratorRewriteResult {
+    /** Pre-script name added (e.g. "prebuild"). */
+    preScript: string;
+    /** Workspace-relative path to the touched package.json. */
+    pkgPath: string;
+}
+
+/**
+ * For a single project.json target with `syncGenerators`, add a matching
+ * `pre<target>` script to the sibling package.json containing a TODO that
+ * names the original generator(s). The script intentionally `exit 1`s so
+ * CI fails loudly until the user wires up a real replacement.
+ *
+ * Skipped (with a falsy return) when:
+ * - the sibling package.json doesn't exist,
+ * - the pre-script already exists (we never clobber user scripts).
+ */
+const rewriteSyncGeneratorToPreScript = (
+    projectJsonPath: string,
+    workspaceRoot: string,
+    target: string,
+    generators: string[],
+    options: { dryRun?: boolean; useEditorconfig?: boolean },
+    logger: MigrateLogger,
+    report: MigrationReport,
+): SyncGeneratorRewriteResult | { reason: string } => {
+    const pkgPath = join(dirname(projectJsonPath), "package.json");
+
+    if (!isAccessibleSync(pkgPath)) {
+        return { reason: "no sibling package.json" };
+    }
+
+    const preScript = `pre${target}`;
+    const todo = `echo "TODO(vis): replace with logic equivalent to nx syncGenerators: ${generators.join(", ")}" && exit 1`;
+
+    if (options.dryRun) {
+        let existing: Record<string, string> | undefined;
+
+        try {
+            const parsed = JSON.parse(readFileSync(pkgPath)) as { scripts?: Record<string, string> };
+
+            existing = parsed.scripts;
+        } catch {
+            return { reason: "package.json unreadable" };
+        }
+
+        if (existing?.[preScript]) {
+            return { reason: `\`${preScript}\` script already exists in ${relativeFromRoot(workspaceRoot, pkgPath)}` };
+        }
+
+        logger.info(
+            `Would add \`${preScript}\` script to ${relativeFromRoot(workspaceRoot, pkgPath)} (TODO for nx syncGenerators: ${generators.join(", ")}).`,
+        );
+
+        return { pkgPath: relativeFromRoot(workspaceRoot, pkgPath), preScript };
+    }
+
+    let skipReason: string | undefined;
+
+    const wrote = editJsonFile<{ scripts?: Record<string, string> }>(
+        pkgPath,
+        (current) => {
+            if (current.scripts?.[preScript]) {
+                skipReason = `\`${preScript}\` script already exists in ${relativeFromRoot(workspaceRoot, pkgPath)}`;
+
+                return undefined;
+            }
+
+            current.scripts = { ...(current.scripts ?? {}), [preScript]: todo };
+
+            return current;
+        },
+        report,
+        { useEditorconfig: options.useEditorconfig },
+    );
+
+    if (!wrote) {
+        return { reason: skipReason ?? "package.json unwritable" };
+    }
+
+    logger.info(`Added \`${preScript}\` script (TODO) to ${relativeFromRoot(workspaceRoot, pkgPath)} — wire up replacement for: ${generators.join(", ")}.`);
+
+    return { pkgPath: relativeFromRoot(workspaceRoot, pkgPath), preScript };
+};
+
+interface AggressiveCleanupResult {
+    deletedFiles: string[];
+    rewrittenScripts: { from: string; name: string; to: string }[];
+    skippedScripts: string[];
+    strippedDevDeps: string[];
+}
+
+const NX_SUBCOMMAND_RE = /^nx\s+(?:run-many|run|affected|reset|repair)\b|^nx\s+exec\b/u;
+const NX_SCRIPT_DENYLIST = new Set(["affected", "exec", "repair", "reset", "run", "run-many"]);
+
+/**
+ * Rewrite a single `nx run-many|run|affected` script value into its
+ * vis-equivalent when the pattern is unambiguous. Returns undefined when
+ * the script is too complex to rewrite safely (chained commands, unknown
+ * flags, configurations, ...) - the caller leaves the script untouched and
+ * surfaces it on the checklist instead.
+ */
+const rewriteNxScript = (value: string, knownProjects: Set<string>): string | undefined => {
+    const trimmed = value.trim();
+
+    // Chained commands (`nx run-many ... && pnpm test`) or shell quoting are
+    // out of scope. We only touch the simple "single nx invocation" case.
+    if (/[;&|]|"|'/u.test(trimmed)) {
+        return undefined;
+    }
+
+    // `nx run-many -t <target>` / `nx run-many --target=<target>`
+    const runMany = /^nx\s+run-many\s+(?:-t|--target=?)\s*([\w:-]+)\s*$/u.exec(trimmed);
+
+    if (runMany) {
+        return `vis run ${runMany[1]}`;
+    }
+
+    // `nx affected -t <target>` / `nx affected --target=<target>`
+    const affected = /^nx\s+affected\s+(?:-t|--target=?)\s*([\w:-]+)\s*$/u.exec(trimmed);
+
+    if (affected) {
+        return `vis run ${affected[1]} --affected`;
+    }
+
+    // `nx run <project>:<target>` - project must be known so we can map it.
+    const runProject = /^nx\s+run\s+([\w@/-]+):([\w:-]+)\s*$/u.exec(trimmed);
+
+    if (runProject?.[1] && runProject[2] && knownProjects.has(runProject[1])) {
+        return `vis run ${runProject[2]} --projects=${runProject[1]}`;
+    }
+
+    // `nx <target>` shorthand (single positional, no flags) - vis equivalent.
+    const bareNx = /^nx\s+([\w:-]+)\s*$/u.exec(trimmed);
+
+    if (bareNx?.[1] && !NX_SCRIPT_DENYLIST.has(bareNx[1])) {
+        return `vis run ${bareNx[1]}`;
+    }
+
+    return undefined;
+};
+
+/**
+ * Apply the safe cleanup items that `--aggressive` opts into:
+ *   1. Remove `.github/ignore-files-for-nx-affected.yml`.
+ *   2. Strip `nx`, `@nx/*`, `@nrwl/*` from root package.json devDependencies.
+ *   3. Rewrite mechanical `nx run-many|run|affected` package.json scripts
+ *      to their `vis run` equivalent. Complex/chained scripts stay on the
+ *      checklist for manual review.
+ *
+ * `nx.json` removal lives in `migrateNx` itself (gated on `force`, which
+ * `--aggressive` also turns on) so the backup happens alongside the rest.
+ */
+const applyAggressiveCleanup = (
+    workspaceRoot: string,
+    knownProjects: Set<string>,
+    options: { dryRun?: boolean; useEditorconfig?: boolean },
+    logger: MigrateLogger,
+    report: MigrationReport,
+): AggressiveCleanupResult => {
+    const result: AggressiveCleanupResult = {
+        deletedFiles: [],
+        rewrittenScripts: [],
+        skippedScripts: [],
+        strippedDevDeps: [],
+    };
+
+    const ignoreFilePath = join(workspaceRoot, ".github", "ignore-files-for-nx-affected.yml");
+
+    if (isAccessibleSync(ignoreFilePath)) {
+        if (options.dryRun) {
+            logger.info(`Would delete ${relativeFromRoot(workspaceRoot, ignoreFilePath)}.`);
+            result.deletedFiles.push(relativeFromRoot(workspaceRoot, ignoreFilePath));
+        } else {
+            backupFile(ignoreFilePath, report);
+
+            try {
+                unlinkSync(ignoreFilePath);
+                logger.info(`Removed ${relativeFromRoot(workspaceRoot, ignoreFilePath)} (backup at \`${relativeFromRoot(workspaceRoot, ignoreFilePath)}.bak\`).`);
+                result.deletedFiles.push(relativeFromRoot(workspaceRoot, ignoreFilePath));
+            } catch {
+                // Non-critical - leave it on disk.
+            }
+        }
+    }
+
+    const pkgPath = join(workspaceRoot, "package.json");
+
+    if (!isAccessibleSync(pkgPath)) {
+        return result;
+    }
+
+    editJsonFile<{ devDependencies?: Record<string, string>; scripts?: Record<string, string> }>(
+        pkgPath,
+        (current) => {
+            let modified = false;
+
+            if (current.devDependencies) {
+                for (const dep of Object.keys(current.devDependencies)) {
+                    if (dep === "nx" || dep.startsWith("@nx/") || dep.startsWith("@nrwl/")) {
+                        if (!options.dryRun) {
+                            delete current.devDependencies[dep];
+                        }
+
+                        result.strippedDevDeps.push(dep);
+                        modified = true;
+                    }
+                }
+            }
+
+            if (current.scripts) {
+                for (const [name, value] of Object.entries(current.scripts)) {
+                    if (typeof value !== "string") {
+                        continue;
+                    }
+
+                    const looksLikeNxInvocation = NX_SUBCOMMAND_RE.test(value) || value.startsWith("nx ");
+
+                    if (!looksLikeNxInvocation) {
+                        continue;
+                    }
+
+                    const rewritten = rewriteNxScript(value, knownProjects);
+
+                    if (rewritten === undefined) {
+                        result.skippedScripts.push(name);
+
+                        continue;
+                    }
+
+                    if (!options.dryRun) {
+                        current.scripts[name] = rewritten;
+                    }
+
+                    result.rewrittenScripts.push({ from: value, name, to: rewritten });
+                    modified = true;
+                }
+            }
+
+            return modified ? current : undefined;
+        },
+        options.dryRun ? undefined : report,
+        { useEditorconfig: options.useEditorconfig },
+    );
+
+    if (result.strippedDevDeps.length > 0) {
+        const verb = options.dryRun ? "Would strip" : "Stripped";
+
+        logger.info(`${verb} ${String(result.strippedDevDeps.length)} nx-related devDependenc(y/ies) from package.json: ${result.strippedDevDeps.join(", ")}.`);
+    }
+
+    for (const rewrite of result.rewrittenScripts) {
+        const verb = options.dryRun ? "Would rewrite" : "Rewrote";
+
+        logger.info(`${verb} \`scripts.${rewrite.name}\`: \`${rewrite.from}\` -> \`${rewrite.to}\``);
+    }
+
+    if (result.skippedScripts.length > 0) {
+        report.manualSteps.push(
+            `--aggressive could not rewrite these package.json scripts (they have shell complexity or unknown flags): ${result.skippedScripts.join(", ")}. Rewrite them manually to use \`vis run\`.`,
+        );
+    }
+
+    return result;
 };
 
 interface CleanupChecklist {
@@ -1050,34 +1418,33 @@ const printChecklist = (lines: string[], logger: MigrateLogger): void => {
 };
 
 /**
- * Format a project.json target path as workspace-relative for terser
- * output in punch lists.
- */
-const relativeFromRoot = (workspaceRoot: string, abs: string): string => {
-    const rel = relative(workspaceRoot, abs);
-
-    return rel.startsWith("..") ? abs : rel.split(sep).join("/");
-};
-
-/**
  * Translates an `nx.json` into a `vis.config.ts` and applies the rest of
  * the cleanup the migrator can do safely (project.json $schema rewrite,
  * targets-block stripping, pnpm-workspace.yaml cleanup), then prints a
  * checklist of work that still needs human review.
  * @param workspaceRoot Absolute workspace root path.
  * @param options Migration options.
+ * @param options.aggressive When true, auto-apply the safe cleanup items the migrator would otherwise leave on the checklist (delete nx.json + ignore file, strip nx/`@nx/*`/`@nrwl/*` devDeps, rewrite mechanical `nx run-many|run|affected` scripts). Implies `force` and `rewriteSyncGenerators`.
  * @param options.dryRun When true, render/preview but skip writes.
  * @param options.force Overwrite existing vis.config.ts (a `.bak` is taken first).
+ * @param options.rewriteSyncGenerators When true, also add a `pre<target>` script (with TODO) to sibling package.json for each project.json `syncGenerators`.
  * @param options.useEditorconfig When false, skip `.editorconfig` discovery for indent.
  * @param logger Logger for user feedback.
  * @param report Migration report to append manual steps and warnings.
  */
 export const migrateNx = (
     workspaceRoot: string,
-    options: { dryRun?: boolean; force?: boolean; useEditorconfig?: boolean },
+    options: { aggressive?: boolean; dryRun?: boolean; force?: boolean; rewriteSyncGenerators?: boolean; useEditorconfig?: boolean },
     logger: MigrateLogger,
     report: MigrationReport,
 ): void => {
+    // `--aggressive` implies `--force` and `--rewriteSyncGenerators`. Apply
+    // the implication here so callers that bypass the CLI handler still get
+    // the expected behaviour.
+    if (options.aggressive) {
+        options = { ...options, force: true, rewriteSyncGenerators: true };
+    }
+
     const nx = readJsonConfig<NxJson>(workspaceRoot, "nx.json");
 
     if (!nx) {
@@ -1088,7 +1455,7 @@ export const migrateNx = (
     }
 
     if (nx.targetDefaults) {
-        nx.targetDefaults = stripNamespacedTargetDefaults(nx.targetDefaults, report);
+        nx.targetDefaults = translateNamespacedTargetDefaults(nx.targetDefaults, report, logger);
     }
 
     const projectJsonPaths = findProjectJsonFiles(workspaceRoot);
@@ -1122,22 +1489,44 @@ export const migrateNx = (
         }
 
         for (const sg of item.syncGenerators) {
+            if (options.rewriteSyncGenerators) {
+                const result = rewriteSyncGeneratorToPreScript(item.file, workspaceRoot, sg.target, sg.sync, options, logger, report);
+
+                if ("preScript" in result) {
+                    report.manualSteps.push(
+                        `${result.pkgPath} now has a \`${result.preScript}\` script that fails with a TODO. Replace it with the real equivalent of nx syncGenerators: ${sg.sync.join(", ")}.`,
+                    );
+
+                    continue;
+                }
+
+                report.warnings.push(
+                    `syncGenerators on \`${item.name}#${sg.target}\` (${relativeFromRoot(workspaceRoot, item.file)}) not auto-rewritten — ${result.reason}. Move ${sg.sync.join(", ")} into a \`pre${sg.target}\` script in package.json manually.`,
+                );
+
+                continue;
+            }
+
             report.warnings.push(
-                `syncGenerators on \`${item.name}#${sg.target}\` (${relativeFromRoot(workspaceRoot, item.file)}) has no vis equivalent. Move ${sg.sync.join(", ")} into a \`prebuild\` script in package.json or a vis plugin.`,
+                `syncGenerators on \`${item.name}#${sg.target}\` (${relativeFromRoot(workspaceRoot, item.file)}) has no vis equivalent. Move ${sg.sync.join(", ")} into a \`pre${sg.target}\` script in package.json (or re-run with --rewrite-sync-generators to insert a TODO automatically).`,
             );
         }
     }
 
     cleanPnpmWorkspaceYaml(workspaceRoot, options, logger, report);
 
+    if (options.aggressive) {
+        applyAggressiveCleanup(workspaceRoot, nameMap.knownProjects, options, logger, report);
+    }
+
     report.manualSteps.push(
         "vis adds two task primitives nx doesn't expose declaratively: `when: { os, env, branch, ci, not.* }` for conditional execution (replaces ad-hoc `configurations`) and `always: true` for finally/teardown tasks that run even when upstream fails. See docs/guides/conditional-and-finally-tasks.mdx.",
     );
 
-    if (nx.affected?.defaultBase || nx.defaultBase) {
-        report.manualSteps.push(
-            `nx's default base branch (${nx.affected?.defaultBase ?? nx.defaultBase}) is honoured by vis via the --base flag; no vis config change needed.`,
-        );
+    const nxDefaultBase = nx.affected?.defaultBase ?? nx.defaultBase;
+
+    if (typeof nxDefaultBase === "string" && nxDefaultBase.length > 0 && nxDefaultBase !== "main") {
+        logger.info(`Translated nx's default base branch (${nxDefaultBase}) into vis.config.ts#defaultBase.`);
     }
 
     const checklist = collectCleanupChecklist(workspaceRoot);
@@ -1165,6 +1554,7 @@ export const migrateNx = (
 
 // Internal helpers exposed for tests. Not part of the public API.
 export {
+    applyAggressiveCleanup as applyAggressiveCleanupForTesting,
     applyPnpmFilterScriptRewrites as applyPnpmFilterScriptRewritesForTesting,
     cleanPnpmWorkspaceYaml as cleanPnpmWorkspaceYamlForTesting,
     collectCleanupChecklist as collectCleanupChecklistForTesting,
@@ -1177,7 +1567,9 @@ export {
     NX_PROJECT_SCHEMA_RE,
     parsePnpmFilterCommand as parsePnpmFilterCommandForTesting,
     PERSISTENT_TARGET_NAMES,
+    rewriteNxScript as rewriteNxScriptForTesting,
     rewriteProjectJsonSchemas as rewriteProjectJsonSchemasForTesting,
-    stripNamespacedTargetDefaults as stripNamespacedTargetDefaultsForTesting,
+    rewriteSyncGeneratorToPreScript as rewriteSyncGeneratorToPreScriptForTesting,
+    translateNamespacedTargetDefaults as translateNamespacedTargetDefaultsForTesting,
     translateProjectJsonTargets as translateProjectJsonTargetsForTesting,
 };

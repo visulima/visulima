@@ -4,6 +4,7 @@ import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import {
+    applyAggressiveCleanupForTesting,
     applyPnpmFilterScriptRewritesForTesting,
     discoverPackageToProjectMapForTesting,
     ensurePersistentTargetDefaultsForTesting,
@@ -11,6 +12,7 @@ import {
     isNxRunScriptShimForTesting,
     migrateNx,
     parsePnpmFilterCommandForTesting,
+    rewriteNxScriptForTesting,
 } from "../../../src/commands/migrate/nx";
 import { createMigrationReport } from "../../../src/commands/migrate/types";
 import { cleanupTemporaryDirectory, createMockLogger, createTemporaryDirectory } from "../../test-helpers";
@@ -63,7 +65,7 @@ describe("migrate-nx", () => {
             expect(content).toContain("tasks");
         });
 
-        it("should note default base branch when present", () => {
+        it("translates nx.defaultBase into vis.config.ts#defaultBase when it differs from main", () => {
             expect.assertions(3);
 
             writeJson(join(tmpDir, "nx.json"), { defaultBase: "develop" });
@@ -72,21 +74,51 @@ describe("migrate-nx", () => {
 
             migrateNx(tmpDir, {}, createMockLogger(), report);
 
-            const baseStep = report.manualSteps.find((s) => s.includes("default base branch"));
+            const content = readFileSync(join(tmpDir, "vis.config.ts"), "utf8");
 
-            expect(baseStep).toBeDefined();
-            expect(baseStep).toContain("develop");
-            expect(baseStep).toContain("--base");
+            expect(content).toContain("defaultBase");
+            expect(content).toContain("develop");
+            expect(report.manualSteps.find((s) => s.includes("default base branch"))).toBeUndefined();
         });
 
-        it("strips namespaced executor keys from targetDefaults and warns about each", () => {
-            expect.assertions(3);
+        it("translates nx.affected.defaultBase (preferred over nx.defaultBase) into vis.config.ts#defaultBase", () => {
+            expect.assertions(2);
+
+            writeJson(join(tmpDir, "nx.json"), { affected: { defaultBase: "trunk" }, defaultBase: "develop" });
+
+            const report = createMigrationReport();
+
+            migrateNx(tmpDir, {}, createMockLogger(), report);
+
+            const content = readFileSync(join(tmpDir, "vis.config.ts"), "utf8");
+
+            expect(content).toContain("trunk");
+            expect(content).not.toContain("develop");
+        });
+
+        it("omits defaultBase from vis.config.ts when nx already uses main", () => {
+            expect.assertions(1);
+
+            writeJson(join(tmpDir, "nx.json"), { defaultBase: "main" });
+
+            const report = createMigrationReport();
+
+            migrateNx(tmpDir, {}, createMockLogger(), report);
+
+            const content = readFileSync(join(tmpDir, "vis.config.ts"), "utf8");
+
+            expect(content).not.toContain("defaultBase");
+        });
+
+        it("translates namespaced executor keys into their hint targets and keeps explicit entries on conflict", () => {
+            expect.assertions(6);
 
             writeJson(join(tmpDir, "nx.json"), {
                 targetDefaults: {
-                    "@nx/eslint:lint": { cache: true },
+                    "@nx/eslint:lint": { cache: true, inputs: ["{projectRoot}/**/*.ts"] },
                     "@nx/js:tsc": { cache: true, dependsOn: ["^build"] },
                     build: { cache: true },
+                    "some-plugin:weird": { cache: false },
                 },
             });
 
@@ -96,12 +128,56 @@ describe("migrate-nx", () => {
 
             const content = readFileSync(join(tmpDir, "vis.config.ts"), "utf8");
 
-            // Bare-named target survives.
+            // Explicit `build` entry preserved.
             expect(content).toContain("build:");
-            // Namespaced keys do not.
+            // Namespaced keys do not appear in the output.
             expect(content).not.toContain("@nx/js:tsc");
-            // Both stripped keys produce a warning.
-            expect(report.warnings.filter((w) => w.includes("tasks"))).toHaveLength(2);
+            expect(content).not.toContain("@nx/eslint:lint");
+            // `@nx/eslint:lint` → `lint:eslint` carries cache+inputs.
+            expect(content).toMatch(/"lint:eslint"|lint:eslint:/u);
+            // `@nx/js:tsc` collides with explicit `build` → dropped with warning.
+            const conflictWarning = report.warnings.find((w) => w.includes("@nx/js:tsc") && w.includes("explicit"));
+
+            expect(conflictWarning).toBeDefined();
+            // Unknown executor with no hint → dropped with warning.
+            const unknownWarning = report.warnings.find((w) => w.includes("some-plugin:weird"));
+
+            expect(unknownWarning).toBeDefined();
+        });
+
+        it("strips shim entries from a mixed targets block but keeps the non-shim entries", () => {
+            expect.assertions(4);
+
+            writeJson(join(tmpDir, "nx.json"), {});
+            mkdirSync(join(tmpDir, "apps", "web"), { recursive: true });
+
+            writeJson(join(tmpDir, "apps", "web", "project.json"), {
+                name: "web",
+                targets: {
+                    build: { executor: "nx:run-script", options: { script: "build" } },
+                    "custom-gen": {
+                        executor: "@nx/devkit:run-generator",
+                        options: { name: "tools:custom" },
+                    },
+                    test: { executor: "nx:run-script" },
+                },
+            });
+
+            const report = createMigrationReport();
+
+            migrateNx(tmpDir, {}, createMockLogger(), report);
+
+            const updated = JSON.parse(readFileSync(join(tmpDir, "apps", "web", "project.json"), "utf8")) as {
+                targets?: Record<string, unknown>;
+            };
+
+            // Shim entries gone.
+            expect(updated.targets?.build).toBeUndefined();
+            expect(updated.targets?.test).toBeUndefined();
+            // Non-shim entry kept.
+            expect(updated.targets?.["custom-gen"]).toBeDefined();
+            // Non-shim entry surfaced on the punch list.
+            expect(report.manualSteps.some((s) => s.includes("non-shim targets") && s.includes("custom-gen"))).toBe(true);
         });
 
         it("rewrites $schema in project.json files to point at vis", () => {
@@ -208,6 +284,106 @@ describe("migrate-nx", () => {
 
             expect(warning).toBeDefined();
             expect(warning).toContain("tailwind-sync-plugin:update-tailwind-globs");
+        });
+
+        it("with --rewrite-sync-generators, adds a `pre<target>` TODO script to sibling package.json", () => {
+            expect.assertions(4);
+
+            writeJson(join(tmpDir, "nx.json"), {});
+            mkdirSync(join(tmpDir, "apps", "web"), { recursive: true });
+
+            writeJson(join(tmpDir, "apps", "web", "project.json"), {
+                name: "web",
+                targets: {
+                    build: {
+                        executor: "nx:run-script",
+                        options: { script: "build" },
+                        syncGenerators: ["tailwind-sync-plugin:update-tailwind-globs"],
+                    },
+                },
+            });
+            writeJson(join(tmpDir, "apps", "web", "package.json"), { name: "@app/web", scripts: { build: "vite build" } });
+
+            const report = createMigrationReport();
+
+            migrateNx(tmpDir, { rewriteSyncGenerators: true }, createMockLogger(), report);
+
+            const pkg = JSON.parse(readFileSync(join(tmpDir, "apps", "web", "package.json"), "utf8")) as {
+                scripts?: Record<string, string>;
+            };
+
+            // pre<target> script inserted with TODO.
+            expect(pkg.scripts?.prebuild).toContain("TODO(vis)");
+            expect(pkg.scripts?.prebuild).toContain("tailwind-sync-plugin:update-tailwind-globs");
+            // Existing build script preserved.
+            expect(pkg.scripts?.build).toBe("vite build");
+            // Manual step naming the inserted script.
+            expect(report.manualSteps.some((s) => s.includes("prebuild") && s.includes("tailwind-sync-plugin:update-tailwind-globs"))).toBe(true);
+        });
+
+        it("with --rewrite-sync-generators, falls back to a warning when there is no sibling package.json", () => {
+            expect.assertions(2);
+
+            writeJson(join(tmpDir, "nx.json"), {});
+            mkdirSync(join(tmpDir, "apps", "web"), { recursive: true });
+
+            writeJson(join(tmpDir, "apps", "web", "project.json"), {
+                name: "web",
+                targets: {
+                    build: {
+                        executor: "nx:run-script",
+                        options: { script: "build" },
+                        syncGenerators: ["tailwind-sync-plugin:update-tailwind-globs"],
+                    },
+                },
+            });
+
+            const report = createMigrationReport();
+
+            migrateNx(tmpDir, { rewriteSyncGenerators: true }, createMockLogger(), report);
+
+            const warning = report.warnings.find((w) => w.includes("syncGenerators") && w.includes("not auto-rewritten"));
+
+            expect(warning).toBeDefined();
+            expect(warning).toContain("no sibling package.json");
+        });
+
+        it("with --rewrite-sync-generators, refuses to clobber an existing pre<target> script", () => {
+            expect.assertions(3);
+
+            writeJson(join(tmpDir, "nx.json"), {});
+            mkdirSync(join(tmpDir, "apps", "web"), { recursive: true });
+
+            writeJson(join(tmpDir, "apps", "web", "project.json"), {
+                name: "web",
+                targets: {
+                    build: {
+                        executor: "nx:run-script",
+                        options: { script: "build" },
+                        syncGenerators: ["tailwind-sync-plugin:update-tailwind-globs"],
+                    },
+                },
+            });
+            writeJson(join(tmpDir, "apps", "web", "package.json"), {
+                name: "@app/web",
+                scripts: { build: "vite build", prebuild: "existing-prebuild-step" },
+            });
+
+            const report = createMigrationReport();
+
+            migrateNx(tmpDir, { rewriteSyncGenerators: true }, createMockLogger(), report);
+
+            const pkg = JSON.parse(readFileSync(join(tmpDir, "apps", "web", "package.json"), "utf8")) as {
+                scripts?: Record<string, string>;
+            };
+
+            // Existing prebuild script is preserved verbatim.
+            expect(pkg.scripts?.prebuild).toBe("existing-prebuild-step");
+
+            const warning = report.warnings.find((w) => w.includes("syncGenerators") && w.includes("not auto-rewritten"));
+
+            expect(warning).toBeDefined();
+            expect(warning).toContain("already exists");
         });
 
         it("removes nx and @nx/* entries from pnpm-workspace.yaml catalogs and onlyBuiltDependencies", () => {
@@ -561,6 +737,179 @@ describe("migrate-nx", () => {
             const found = findProjectJsonFilesForTesting(tmpDir);
 
             expect(found).toStrictEqual([join(tmpDir, "apps", "web", "project.json")]);
+        });
+    });
+
+    describe("--aggressive cleanup", () => {
+        describe(rewriteNxScriptForTesting, () => {
+            it("rewrites `nx run-many -t <target>` to `vis run <target>`", () => {
+                expect.assertions(2);
+
+                expect(rewriteNxScriptForTesting("nx run-many -t build", new Set())).toBe("vis run build");
+                expect(rewriteNxScriptForTesting("nx run-many --target=test", new Set())).toBe("vis run test");
+            });
+
+            it("rewrites `nx affected -t <target>` to `vis run <target> --affected`", () => {
+                expect.assertions(2);
+
+                expect(rewriteNxScriptForTesting("nx affected -t build", new Set())).toBe("vis run build --affected");
+                expect(rewriteNxScriptForTesting("nx affected --target=lint", new Set())).toBe("vis run lint --affected");
+            });
+
+            it("rewrites `nx run <project>:<target>` only when the project is known", () => {
+                expect.assertions(2);
+
+                expect(rewriteNxScriptForTesting("nx run web:build", new Set(["web"]))).toBe("vis run build --projects=web");
+                // Unknown project → no rewrite (caller leaves it on the checklist).
+                expect(rewriteNxScriptForTesting("nx run unknown:build", new Set(["web"]))).toBeUndefined();
+            });
+
+            it("rewrites `nx <target>` shorthand but not reserved subcommands", () => {
+                expect.assertions(3);
+
+                expect(rewriteNxScriptForTesting("nx build", new Set())).toBe("vis run build");
+                expect(rewriteNxScriptForTesting("nx reset", new Set())).toBeUndefined();
+                expect(rewriteNxScriptForTesting("nx repair", new Set())).toBeUndefined();
+            });
+
+            it("returns undefined for shell-complex commands", () => {
+                expect.assertions(3);
+
+                expect(rewriteNxScriptForTesting("nx run-many -t build && echo done", new Set())).toBeUndefined();
+                expect(rewriteNxScriptForTesting("nx run-many -t build --parallel 4", new Set())).toBeUndefined();
+                expect(rewriteNxScriptForTesting("nx run web:build --configuration=production", new Set(["web"]))).toBeUndefined();
+            });
+        });
+
+        it("strips nx/@nx/*/@nrwl/* devDependencies from package.json", () => {
+            expect.assertions(3);
+
+            writeJson(join(tmpDir, "package.json"), {
+                devDependencies: {
+                    "@nrwl/cli": "20.0.0",
+                    "@nx/devkit": "20.0.0",
+                    "@nx/eslint": "20.0.0",
+                    nx: "20.0.0",
+                    typescript: "5.7.0",
+                },
+                name: "monorepo",
+            });
+
+            const report = createMigrationReport();
+
+            const result = applyAggressiveCleanupForTesting(tmpDir, new Set(), {}, createMockLogger(), report);
+
+            const pkg = JSON.parse(readFileSync(join(tmpDir, "package.json"), "utf8")) as {
+                devDependencies?: Record<string, string>;
+            };
+
+            expect(pkg.devDependencies).toStrictEqual({ typescript: "5.7.0" });
+            expect(result.strippedDevDeps.sort()).toStrictEqual(["@nrwl/cli", "@nx/devkit", "@nx/eslint", "nx"]);
+            expect(report.backupsCreated.some((b) => b.endsWith("package.json.bak"))).toBe(true);
+        });
+
+        it("rewrites mechanical `nx run-many|run|affected` scripts and leaves complex ones on the checklist", () => {
+            expect.assertions(4);
+
+            writeJson(join(tmpDir, "package.json"), {
+                name: "monorepo",
+                scripts: {
+                    affected: "nx affected -t test",
+                    build: "nx run-many -t build",
+                    "build:web": "nx run web:build",
+                    complex: "nx run web:build --configuration=production",
+                    typecheck: "tsc --noEmit",
+                },
+            });
+
+            const report = createMigrationReport();
+
+            const result = applyAggressiveCleanupForTesting(tmpDir, new Set(["web"]), {}, createMockLogger(), report);
+
+            const pkg = JSON.parse(readFileSync(join(tmpDir, "package.json"), "utf8")) as {
+                scripts?: Record<string, string>;
+            };
+
+            expect(pkg.scripts).toStrictEqual({
+                affected: "vis run test --affected",
+                build: "vis run build",
+                "build:web": "vis run build --projects=web",
+                complex: "nx run web:build --configuration=production",
+                typecheck: "tsc --noEmit",
+            });
+            expect(result.rewrittenScripts.map((r) => r.name).sort()).toStrictEqual(["affected", "build", "build:web"]);
+            expect(result.skippedScripts).toStrictEqual(["complex"]);
+            expect(report.manualSteps.some((s) => s.includes("complex"))).toBe(true);
+        });
+
+        it("deletes .github/ignore-files-for-nx-affected.yml with a .bak backup", () => {
+            expect.assertions(3);
+
+            mkdirSync(join(tmpDir, ".github"), { recursive: true });
+            writeFileSync(join(tmpDir, ".github", "ignore-files-for-nx-affected.yml"), "files:\n  - 'docs/**'\n", "utf8");
+
+            const report = createMigrationReport();
+
+            const result = applyAggressiveCleanupForTesting(tmpDir, new Set(), {}, createMockLogger(), report);
+
+            expect(existsSync(join(tmpDir, ".github", "ignore-files-for-nx-affected.yml"))).toBe(false);
+            expect(result.deletedFiles.some((f) => f.includes("ignore-files-for-nx-affected.yml"))).toBe(true);
+            expect(report.backupsCreated.some((b) => b.endsWith("ignore-files-for-nx-affected.yml.bak"))).toBe(true);
+        });
+
+        it("dry-run reports changes without touching files", () => {
+            expect.assertions(4);
+
+            writeJson(join(tmpDir, "package.json"), {
+                devDependencies: { nx: "20.0.0", typescript: "5.7.0" },
+                name: "monorepo",
+                scripts: { build: "nx run-many -t build" },
+            });
+
+            const report = createMigrationReport();
+
+            const result = applyAggressiveCleanupForTesting(tmpDir, new Set(), { dryRun: true }, createMockLogger(), report);
+
+            const pkg = JSON.parse(readFileSync(join(tmpDir, "package.json"), "utf8")) as {
+                devDependencies?: Record<string, string>;
+                scripts?: Record<string, string>;
+            };
+
+            // File untouched.
+            expect(pkg.devDependencies?.nx).toBe("20.0.0");
+            expect(pkg.scripts?.build).toBe("nx run-many -t build");
+            // But the result still describes what *would* change.
+            expect(result.strippedDevDeps).toContain("nx");
+            expect(result.rewrittenScripts.map((r) => r.name)).toContain("build");
+        });
+
+        it("end-to-end: --aggressive removes nx.json, ignore file, devDeps, and rewrites scripts in one pass", () => {
+            expect.assertions(5);
+
+            writeJson(join(tmpDir, "nx.json"), {});
+            mkdirSync(join(tmpDir, ".github"), { recursive: true });
+            writeFileSync(join(tmpDir, ".github", "ignore-files-for-nx-affected.yml"), "files: []\n", "utf8");
+            writeJson(join(tmpDir, "package.json"), {
+                devDependencies: { "@nx/devkit": "20.0.0", nx: "20.0.0" },
+                name: "monorepo",
+                scripts: { build: "nx run-many -t build" },
+            });
+
+            const report = createMigrationReport();
+
+            migrateNx(tmpDir, { aggressive: true }, createMockLogger(), report);
+
+            const pkg = JSON.parse(readFileSync(join(tmpDir, "package.json"), "utf8")) as {
+                devDependencies?: Record<string, string>;
+                scripts?: Record<string, string>;
+            };
+
+            expect(existsSync(join(tmpDir, "nx.json"))).toBe(false);
+            expect(existsSync(join(tmpDir, ".github", "ignore-files-for-nx-affected.yml"))).toBe(false);
+            expect(pkg.devDependencies).toStrictEqual({});
+            expect(pkg.scripts).toStrictEqual({ build: "vis run build" });
+            // Backups taken for everything mutated.
+            expect(report.backupsCreated.length).toBeGreaterThanOrEqual(3);
         });
     });
 });

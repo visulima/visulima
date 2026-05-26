@@ -18,6 +18,7 @@ const init: Command = {
         ["vis init --no-interactive", "Create minimal config without prompts"],
         ["vis init --force", "Overwrite existing config"],
         ["vis init --sync-native", "Also sync to native PM config files"],
+        ["vis init --schema", "Print the workspace-relative `$schema` refs to paste into project.json and vis.config.ts"],
     ],
     group: "Scaffold & Config",
     loader: () => import("./handler"),
@@ -26,6 +27,7 @@ const init: Command = {
         { defaultValue: false, description: "Overwrite existing config file", name: "force", type: Boolean },
         { defaultValue: false, description: "Skip interactive prompts", name: "no-interactive", type: Boolean },
         { defaultValue: false, description: "Sync settings to native PM config files", name: "sync-native", type: Boolean },
+        { defaultValue: false, description: "Print workspace-relative $schema paths for project.json and vis.config.ts, then exit", name: "schema", type: Boolean },
     ],
 };
 
@@ -34,5 +36,6 @@ export default init;
 export type InitOptions = CreateOptions<{
     force: boolean | undefined;
     "no-interactive": boolean | undefined;
+    schema: boolean | undefined;
     "sync-native": boolean | undefined;
 }>;

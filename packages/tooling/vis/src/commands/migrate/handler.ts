@@ -171,7 +171,22 @@ const migrateNxExecuteImpl = async ({ logger, options, visConfig, workspaceRoot 
     announceDryRun(ctx);
 
     logger.info("── Migrating nx ──");
-    migrateNx(ctx.root, { dryRun: ctx.dryRun, force: Boolean(options.force), useEditorconfig: ctx.useEditorconfig }, logger, ctx.report);
+    const aggressive = Boolean(options.aggressive);
+
+    migrateNx(
+        ctx.root,
+        {
+            aggressive,
+            dryRun: ctx.dryRun,
+            // --aggressive implies --force.
+            force: aggressive || Boolean(options.force),
+            // --aggressive implies --rewrite-sync-generators.
+            rewriteSyncGenerators: aggressive || Boolean(options.rewriteSyncGenerators),
+            useEditorconfig: ctx.useEditorconfig,
+        },
+        logger,
+        ctx.report,
+    );
     logger.info("");
 
     printSummary(ctx.report, logger);

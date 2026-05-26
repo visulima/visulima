@@ -65,6 +65,19 @@ const migrateNxCmd: Command = {
     options: [
         ...sharedMigrateOptions,
         { defaultValue: false, description: "Overwrite an existing vis.config.ts (a .bak is taken first)", name: "force", type: Boolean },
+        {
+            defaultValue: false,
+            description: "For each project.json `syncGenerators`, add a `pre<target>` script to sibling package.json (with a TODO for the user to wire up)",
+            name: "rewrite-sync-generators",
+            type: Boolean,
+        },
+        {
+            defaultValue: false,
+            description:
+                "Auto-apply the safe cleanup items the migrator would otherwise leave on the checklist: delete nx.json + ignore-files-for-nx-affected.yml, strip nx/@nx/*/@nrwl/* devDependencies, rewrite mechanical `nx run-many|run|affected` scripts. Implies --force.",
+            name: "aggressive",
+            type: Boolean,
+        },
     ],
 };
 
@@ -250,7 +263,9 @@ export type MigrateNanoStagedOptions = CreateOptions<SharedMigrateOptions>;
 export type MigrateTurborepoOptions = CreateOptions<SharedMigrateOptions>;
 export type MigrateNxOptions = CreateOptions<
     SharedMigrateOptions & {
+        aggressive: boolean | undefined;
         force: boolean | undefined;
+        "rewrite-sync-generators": boolean | undefined;
     }
 >;
 export type MigrateMoonOptions = CreateOptions<
