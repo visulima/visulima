@@ -54,10 +54,6 @@
     "sideEffects": false,
     "exports": {
         ".": {
-            "browser": {
-                "types": "./dist/index-server.d.mts",
-                "default": "./dist/index-browser.mjs"
-            },
             "import": {
                 "types": "./dist/index-server.d.mts",
                 "default": "./dist/index-server.mjs"
@@ -65,13 +61,13 @@
             "require": {
                 "types": "./dist/index-server.d.cts",
                 "default": "./dist/index-server.cjs"
+            },
+            "browser": {
+                "types": "./dist/index-server.d.mts",
+                "default": "./dist/index-browser.mjs"
             }
         },
         "./next": {
-            "browser": {
-                "types": "./dist/framework/next/index-server.d.mts",
-                "default": "./dist/framework/next/index-browser.mjs"
-            },
             "import": {
                 "types": "./dist/framework/next/index-server.d.mts",
                 "default": "./dist/framework/next/index-server.mjs"
@@ -79,13 +75,13 @@
             "require": {
                 "types": "./dist/framework/next/index-server.d.cts",
                 "default": "./dist/framework/next/index-server.cjs"
+            },
+            "browser": {
+                "types": "./dist/framework/next/index-server.d.mts",
+                "default": "./dist/framework/next/index-browser.mjs"
             }
         },
         "./next/pages/swagger": {
-            "browser": {
-                "types": "./dist/framework/next/routes/pages/swagger/index.d.mts",
-                "default": "./dist/framework/next/routes/pages/swagger/index.mjs"
-            },
             "import": {
                 "types": "./dist/framework/next/routes/pages/swagger/index.d.mts",
                 "default": "./dist/framework/next/routes/pages/swagger/index.mjs"
@@ -93,13 +89,13 @@
             "require": {
                 "types": "./dist/framework/next/routes/pages/swagger/index.d.cts",
                 "default": "./dist/framework/next/routes/pages/swagger/index.cjs"
+            },
+            "browser": {
+                "types": "./dist/framework/next/routes/pages/swagger/index.d.mts",
+                "default": "./dist/framework/next/routes/pages/swagger/index.mjs"
             }
         },
         "./next/pages/redoc": {
-            "browser": {
-                "types": "./dist/framework/next/routes/pages/redoc/index.d.mts",
-                "default": "./dist/framework/next/routes/pages/redoc/index.mjs"
-            },
             "import": {
                 "types": "./dist/framework/next/routes/pages/redoc/index.d.mts",
                 "default": "./dist/framework/next/routes/pages/redoc/index.mjs"
@@ -107,6 +103,10 @@
             "require": {
                 "types": "./dist/framework/next/routes/pages/redoc/index.d.cts",
                 "default": "./dist/framework/next/routes/pages/redoc/index.cjs"
+            },
+            "browser": {
+                "types": "./dist/framework/next/routes/pages/redoc/index.d.mts",
+                "default": "./dist/framework/next/routes/pages/redoc/index.mjs"
             }
         },
         "./cli": {

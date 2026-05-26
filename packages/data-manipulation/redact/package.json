@@ -25,9 +25,7 @@
         "visulima"
     ],
     "homepage": "https://visulima.com/packages/redact/",
-    "bugs": {
-        "url": "https://github.com/visulima/visulima/issues"
-    },
+    "bugs": "https://github.com/visulima/visulima/issues",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/visulima/visulima.git",
@@ -52,11 +50,11 @@
     "type": "module",
     "exports": {
         ".": {
-            "browser": "./dist/index.js",
             "import": {
                 "types": "./dist/index.d.ts",
                 "default": "./dist/index.js"
-            }
+            },
+            "browser": "./dist/index.js"
         },
         "./package.json": "./package.json"
     },

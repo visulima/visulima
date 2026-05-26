@@ -56,9 +56,7 @@
         "winston"
     ],
     "homepage": "https://visulima.com/packages/pail/",
-    "bugs": {
-        "url": "https://github.com/visulima/visulima/issues"
-    },
+    "bugs": "https://github.com/visulima/visulima/issues",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/visulima/visulima.git",
@@ -84,11 +82,11 @@
     "type": "module",
     "exports": {
         ".": {
-            "browser": "./dist/index.browser.js",
             "import": {
                 "types": "./dist/index.server.d.ts",
                 "default": "./dist/index.server.js"
-            }
+            },
+            "browser": "./dist/index.browser.js"
         },
         "./browser": {
             "types": "./dist/index.browser.d.ts",
@@ -143,11 +141,11 @@
             }
         },
         "./reporter/json": {
-            "browser": "./dist/reporter/json/index.browser.js",
             "import": {
                 "types": "./dist/reporter/json/index.d.ts",
                 "default": "./dist/reporter/json/index.js"
-            }
+            },
+            "browser": "./dist/reporter/json/index.browser.js"
         },
         "./server/reporter/pretty": {
             "import": {
@@ -162,11 +160,11 @@
             }
         },
         "./reporter/pretty": {
-            "browser": "./dist/reporter/pretty/index.browser.js",
             "import": {
                 "types": "./dist/reporter/pretty/index.d.ts",
                 "default": "./dist/reporter/pretty/index.js"
-            }
+            },
+            "browser": "./dist/reporter/pretty/index.browser.js"
         },
         "./reporter/simple": {
             "types": "./dist/reporter/simple/simple-reporter.server.d.ts",
@@ -177,15 +175,15 @@
             "default": "./dist/reporter/http/abstract-http-reporter.js"
         },
         "./reporter/http": {
+            "import": {
+                "types": "./dist/reporter/http/http-reporter.d.ts",
+                "default": "./dist/reporter/http/http-reporter.js"
+            },
             "edge-light": {
                 "types": "./dist/reporter/http/http-reporter.edge-light.d.ts",
                 "default": "./dist/reporter/http/http-reporter.edge-light.js"
             },
             "browser": {
-                "types": "./dist/reporter/http/http-reporter.d.ts",
-                "default": "./dist/reporter/http/http-reporter.js"
-            },
-            "import": {
                 "types": "./dist/reporter/http/http-reporter.d.ts",
                 "default": "./dist/reporter/http/http-reporter.js"
             }
