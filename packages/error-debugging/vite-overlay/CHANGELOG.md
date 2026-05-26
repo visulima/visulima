@@ -1,3 +1,15 @@
+## @visulima/vite-overlay [2.0.0-alpha.30](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.0-alpha.29...@visulima/vite-overlay@2.0.0-alpha.30) (2026-05-26)
+
+### Miscellaneous Chores
+
+* **ci-stability:** green CI across vis, native, lint, tests, attw ([#651](https://github.com/visulima/visulima/issues/651)) ([d4eb684](https://github.com/visulima/visulima/commit/d4eb684b5f75c818c9251048c605a0ed54a268e3))
+* **repo:** sort package.json keys across all packages ([e1fd9ab](https://github.com/visulima/visulima/commit/e1fd9ab467ef96a98c777da1572ff6a50fcf7e71))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.28
+
 ## @visulima/vite-overlay [2.0.0-alpha.29](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.0-alpha.28...@visulima/vite-overlay@2.0.0-alpha.29) (2026-05-20)
 
 
