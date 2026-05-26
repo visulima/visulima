@@ -753,14 +753,22 @@ const discoverWorkspace = (
         const packageJsonPath = join(workspaceRoot, projectDirectory, "package.json");
         const pkg = readJsonFileSafe<PackageJson>(packageJsonPath);
 
-        if (!pkg?.name) {
+        if (!pkg) {
             continue;
         }
 
-        packageJsons.set(pkg.name, pkg);
-
         const projectJsonPath = join(workspaceRoot, projectDirectory, "project.json");
         const projectJson = readJsonFileSafe<ProjectJson>(projectJsonPath);
+
+        // project.json#name takes precedence over package.json#name; fall
+        // back to package.json#name so existing workspaces keep working.
+        const projectName = projectJson?.name ?? pkg.name;
+
+        if (!projectName) {
+            continue;
+        }
+
+        packageJsons.set(projectName, pkg);
 
         let projectType: ProjectType = "library";
 
@@ -852,7 +860,7 @@ const discoverWorkspace = (
             }
         }
 
-        projectOptions.set(pkg.name, visTargets);
+        projectOptions.set(projectName, visTargets);
 
         const sanitizedTargets: Record<string, TargetConfiguration> = {};
 
@@ -874,7 +882,7 @@ const discoverWorkspace = (
             };
         }
 
-        projects[pkg.name] = {
+        projects[projectName] = {
             implicitDependencies: projectJson?.implicitDependencies,
             language: projectJson?.language,
             layer: projectJson?.layer,
@@ -906,6 +914,27 @@ const buildProjectGraph = (workspaceRoot: string, workspace: WorkspaceConfigurat
     const dependencies: Record<string, ProjectGraphDependency[]> = {};
     const projectNames = new Set(Object.keys(workspace.projects));
 
+    // Single pass to (1) cache each project's package.json so the dep
+    // walk doesn't re-read it, and (2) build an npm-name → project-name
+    // index that lets the walker resolve a `package.json#dependencies`
+    // entry even when `project.json#name` aliases the project.
+    const pkgByProject = new Map<string, PackageJson>();
+    const pkgNameToProjectName = new Map<string, string>();
+
+    for (const [name, config] of Object.entries(workspace.projects)) {
+        const pkg = packageJsons?.get(name) ?? readJsonFileSafe<PackageJson>(join(workspaceRoot, config.root, "package.json"));
+
+        if (!pkg) {
+            continue;
+        }
+
+        pkgByProject.set(name, pkg);
+
+        if (pkg.name) {
+            pkgNameToProjectName.set(pkg.name, name);
+        }
+    }
+
     for (const [name, config] of Object.entries(workspace.projects)) {
         nodes[name] = {
             data: config,
@@ -915,7 +944,7 @@ const buildProjectGraph = (workspaceRoot: string, workspace: WorkspaceConfigurat
 
         dependencies[name] = [];
 
-        const pkg = packageJsons?.get(name) ?? readJsonFileSafe<PackageJson>(join(workspaceRoot, config.root, "package.json"));
+        const pkg = pkgByProject.get(name);
 
         if (!pkg) {
             continue;
@@ -935,11 +964,13 @@ const buildProjectGraph = (workspaceRoot: string, workspace: WorkspaceConfigurat
             }
 
             for (const depName of Object.keys(deps)) {
-                if (projectNames.has(depName) && !seen.has(depName)) {
-                    seen.add(depName);
+                const targetName = projectNames.has(depName) ? depName : pkgNameToProjectName.get(depName);
+
+                if (targetName && !seen.has(targetName)) {
+                    seen.add(targetName);
                     dependencies[name]?.push({
                         source: name,
-                        target: depName,
+                        target: targetName,
                         type: depType,
                     });
                 }
@@ -983,12 +1014,17 @@ const loadVisTaskConfigsForWorkspace = async (workspaceRoot: string): Promise<Vi
     await Promise.all(
         projectDirectories.map(async (projectDirectory) => {
             const pkg = readJsonFileSafe<PackageJson>(join(workspaceRoot, projectDirectory, "package.json"));
+            const projectJson = readJsonFileSafe<ProjectJson>(join(workspaceRoot, projectDirectory, "project.json"));
+            const projectName = projectJson?.name ?? pkg?.name;
 
-            if (!pkg?.name) {
+            // Match the skip semantics in discoverWorkspace so we never
+            // load an overlay for a directory that won't appear in the
+            // workspace graph.
+            if (!projectName || !pkg) {
                 return;
             }
 
-            const overlay = await loadVisTaskConfig(workspaceRoot, join(workspaceRoot, projectDirectory), pkg.name);
+            const overlay = await loadVisTaskConfig(workspaceRoot, join(workspaceRoot, projectDirectory), projectName);
 
             if (overlay !== undefined) {
                 result.set(projectDirectory, overlay);

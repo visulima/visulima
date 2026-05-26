@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { discoverWorkspace, loadVisTaskConfigsForWorkspace } from "../../src/config/workspace";
+import { buildProjectGraph, discoverWorkspace, loadVisTaskConfigsForWorkspace } from "../../src/config/workspace";
 
 const writeProject = (
     root: string,
@@ -162,5 +162,54 @@ describe("vis.task.ts per-package overlay", () => {
 
         expect(target?.when).toStrictEqual({ ci: true });
         expect(target?.always).toBe(false);
+    });
+
+    it("uses project.json#name as the project key when set, overriding package.json#name", async () => {
+        expect.assertions(3);
+
+        writeProject(scratch, "zeta", {
+            packageJson: { name: "@fix/zeta" },
+            projectJson: { name: "zeta-aliased", targets: { build: { command: "echo build" } } },
+        });
+
+        const { packageJsons, workspace } = discoverWorkspace(scratch);
+
+        expect(workspace.projects["zeta-aliased"]).toBeDefined();
+        expect(workspace.projects["@fix/zeta"]).toBeUndefined();
+        expect(packageJsons.get("zeta-aliased")?.name).toBe("@fix/zeta");
+    });
+
+    it("falls back to package.json#name when project.json omits name", async () => {
+        expect.assertions(1);
+
+        writeProject(scratch, "eta", {
+            projectJson: { targets: { build: { command: "echo build" } } },
+        });
+
+        const { workspace } = discoverWorkspace(scratch);
+
+        expect(workspace.projects["@fix/eta"]).toBeDefined();
+    });
+
+    it("resolves workspace dependencies by npm name even when project.json aliases the name", async () => {
+        expect.assertions(3);
+
+        writeProject(scratch, "lib", {
+            packageJson: { name: "@fix/lib" },
+            projectJson: { name: "lib-aliased" },
+        });
+        writeProject(scratch, "app", {
+            packageJson: { dependencies: { "@fix/lib": "workspace:*" }, name: "@fix/app" },
+            projectJson: { name: "app-aliased" },
+        });
+
+        const { packageJsons, workspace } = discoverWorkspace(scratch);
+        const graph = buildProjectGraph(scratch, workspace, packageJsons);
+
+        expect(graph.nodes["app-aliased"]).toBeDefined();
+        expect(graph.nodes["lib-aliased"]).toBeDefined();
+        expect(graph.dependencies["app-aliased"]).toStrictEqual([
+            { source: "app-aliased", target: "lib-aliased", type: "static" },
+        ]);
     });
 });

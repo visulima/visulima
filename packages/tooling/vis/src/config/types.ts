@@ -148,6 +148,12 @@ export interface ProjectJson {
     language?: string;
     /** Project layer, used for constraint inheritance and query filtering. */
     layer?: "application" | "automation" | "configuration" | "library" | "scaffolding" | "tool";
+    /**
+     * Project name. When set, takes precedence over `package.json#name`
+     * as the project's identity in the workspace graph and CLI filters.
+     * Falls back to `package.json#name` when omitted.
+     */
+    name?: string;
     /** Code owners for paths inside this project. */
     owners?: OwnersEntry[];
     /** Project-level metadata. */
