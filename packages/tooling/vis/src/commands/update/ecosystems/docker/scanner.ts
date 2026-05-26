@@ -180,7 +180,13 @@ const extractFromDockerfile = (filePath: string, content: string): ImageReferenc
         const trailingComment = match[4]?.trim();
         let ignoreReason = pendingIgnore ? "vis-update-ignore-next-line" : undefined;
 
-        if (trailingComment && IGNORE_INLINE_RE.test(trailingComment)) {
+        if (trailingComment && IGNORE_NEXT_RE.test(trailingComment)) {
+            // `# vis-update-ignore-next-line` on the same line as the
+            // ref collapses to an inline (this-line) ignore — there is
+            // no "next line" to attach to, and the user clearly meant
+            // THIS one.
+            ignoreReason = ignoreReason ?? "vis-update-ignore-next-line";
+        } else if (trailingComment && IGNORE_INLINE_RE.test(trailingComment)) {
             ignoreReason = ignoreReason ?? "vis-update-ignore";
         }
 
@@ -243,7 +249,13 @@ const extractFromCompose = (filePath: string, content: string): ImageReference[]
         const trailingComment = match[4]?.trim();
         let ignoreReason = pendingIgnore ? "vis-update-ignore-next-line" : undefined;
 
-        if (trailingComment && IGNORE_INLINE_RE.test(trailingComment)) {
+        if (trailingComment && IGNORE_NEXT_RE.test(trailingComment)) {
+            // `# vis-update-ignore-next-line` on the same line as the
+            // ref collapses to an inline (this-line) ignore — there is
+            // no "next line" to attach to, and the user clearly meant
+            // THIS one.
+            ignoreReason = ignoreReason ?? "vis-update-ignore-next-line";
+        } else if (trailingComment && IGNORE_INLINE_RE.test(trailingComment)) {
             ignoreReason = ignoreReason ?? "vis-update-ignore";
         }
 
@@ -289,7 +301,10 @@ const isComposeFile = (name: string): boolean => {
 
 const SKIP_DIRS = new Set([".git", "node_modules", ".pnpm-store", ".turbo", ".nx", "dist", "build", ".cache"]);
 
-const SKIP_RE = /^(?:\.git|node_modules|\.pnpm-store|\.turbo|\.nx|dist|build|\.cache)$/;
+// `walkSync` runs `skip` patterns against the full resolved path, not the
+// entry name alone. Match any path segment so e.g. `…/node_modules/sub/…`
+// is pruned.
+const SKIP_RE = /(?:^|\/)(?:\.git|node_modules|\.pnpm-store|\.turbo|\.nx|dist|build|\.cache)(?:\/|$)/;
 
 /**
  * Scans the workspace for Dockerfiles (any case, any suffix) and compose

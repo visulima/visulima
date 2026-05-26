@@ -51,6 +51,7 @@ import { spawnTee } from "../../util/spawn-tee";
 import { parsePackageArgument } from "../../util/utils";
 import type { EcosystemCheckResult, EcosystemId, EcosystemUpdateOptions } from "./ecosystems/index";
 import { applyEcosystemUpdates, checkEcosystems } from "./ecosystems/index";
+import { promptEcosystemSelection } from "./ecosystems/prompt";
 import { formatEcosystemJson, formatEcosystemReport } from "./ecosystems/report";
 import type { UpdateOptions } from "./index";
 
@@ -1179,7 +1180,23 @@ export const runEcosystemUpdate = async (
         return result;
     }
 
-    const { applied, skipped } = applyEcosystemUpdates(result.updates);
+    let toApply = result.updates;
+
+    if (options.interactive === true && Boolean(process.stdout.isTTY) && !isInCi) {
+        // Mirrors the catalog path's interactive picker so the user can
+        // de-select major bumps before they hit disk. `--yes` bypasses
+        // the picker (apply all) by virtue of options.interactive being
+        // false in that case.
+        toApply = await promptEcosystemSelection(result.updates);
+
+        if (toApply.length === 0) {
+            logger.info(`${yellow("ℹ")} No ecosystem updates selected.`);
+
+            return result;
+        }
+    }
+
+    const { applied, skipped } = applyEcosystemUpdates(toApply);
 
     if (applied.length > 0) {
         logger.info(`\n${String(applied.length)} ecosystem reference${applied.length === 1 ? "" : "s"} updated.`);

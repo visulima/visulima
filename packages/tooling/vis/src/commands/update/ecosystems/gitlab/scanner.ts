@@ -232,7 +232,14 @@ export const extractFromGitlabCi = (filePath: string, content: string): { includ
             continue;
         }
 
-        if (trimmed !== "" && !trimmed.startsWith("#")) {
+        // YAML key-only lines (`include:`, `services:`, `some-job:`) sit
+        // between a `# vis-update-ignore-next-line` directive and the
+        // value-bearing line that the user actually wants to ignore.
+        // Treat them like comments for the purpose of the lookahead so
+        // the directive survives to the next `ref:` / `image:` line.
+        const isKeyOnlyLine = /^\s*-?\s*[a-z_][\w-]*:\s*(?:#.*)?$/i.test(line);
+
+        if (trimmed !== "" && !trimmed.startsWith("#") && !isKeyOnlyLine) {
             pendingIgnore = false;
         }
     }

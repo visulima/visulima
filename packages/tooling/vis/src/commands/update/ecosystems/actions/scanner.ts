@@ -215,9 +215,9 @@ const isWorkflowFile = (name: string): boolean => name.endsWith(".yml") || name.
 
 /**
  * Walks the workspace looking for action references:
- *   - `.github/workflows/*.yml` (and .yaml)
- *   - `.github/actions/*/action.yml` (and .yaml)
- *   - Root `action.yml` / `action.yaml` (the action repo itself)
+ *   - .github/workflows/<file>.yml (and .yaml)
+ *   - .github/actions/<name>/action.yml (and .yaml)
+ *   - Root action.yml / action.yaml (the action repo itself)
  *
  * `extraDirs` can be passed to scan additional directories, mirroring
  * actions-up's `--dir` flag.

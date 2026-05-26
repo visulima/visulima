@@ -77,12 +77,12 @@ export const compareTagsDesc = (a: ParsedTag, b: ParsedTag): number => rcompare(
  * pre-releases are newer and the caller opted out, or `current` is
  * unknown in a constrained mode).
  */
-export const pickBestTag = (
-    candidates: ParsedTag[],
+export const pickBestTag = <T extends ParsedTag>(
+    candidates: T[],
     current: ParsedTag | undefined,
     mode: "latest" | "minor" | "patch",
     includePrerelease: boolean,
-): ParsedTag | undefined => {
+): T | undefined => {
     if (!current && mode !== "latest") {
         return undefined;
     }

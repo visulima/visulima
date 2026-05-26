@@ -88,7 +88,7 @@ const buildReplacement = (reference: UsesReference, newSha: string, newTag: stri
  * The returned updates are not applied — `applyEcosystemUpdates` does
  * that in a separate pass so dry-run / interactive modes can preview.
  */
-export const checkActions = async (workspaceRoot: string, context: CheckActionsContext): Promise<CheckActionsResult> => {
+export const checkActions = async (_workspaceRoot: string, context: CheckActionsContext): Promise<CheckActionsResult> => {
     const { ignoreRules, options, references, resolverOptions } = context;
     const updates: EcosystemUpdate[] = [];
     const ignoredList: EcosystemUpdate[] = [];
