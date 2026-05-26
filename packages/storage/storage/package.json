@@ -120,6 +120,10 @@
             "types": "./dist/storage/local/index.d.ts",
             "import": "./dist/storage/local/index.js"
         },
+        "./provider/memory": {
+            "types": "./dist/storage/memory/index.d.ts",
+            "import": "./dist/storage/memory/index.js"
+        },
         "./provider/ftp": {
             "types": "./dist/storage/ftp/index.d.ts",
             "import": "./dist/storage/ftp/index.js"

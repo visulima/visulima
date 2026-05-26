@@ -1,10 +1,70 @@
 # Batch Operations
 
-Perform multiple file operations in a single request for improved efficiency and reduced API calls.
+Perform multiple file operations in a single request for improved efficiency and reduced API calls. The package offers three layers, each fit for a different surface:
 
-## Batch Delete
+- **`Files` facade bulk overloads** — pass an array to `upload` / `download` / `head` / `exists` / `delete` / `move`, get back a structured `{ …, errors? }` result with bounded concurrency.
+- **Cross-provider migration** — `transfer(source, destination, opts?)` streams every object from one `Files` instance to another.
+- **Adapter-level batch primitives** — `deleteBatch` / `copyBatch` / `moveBatch` on the underlying `BaseStorage`.
+- **HTTP handler batch endpoints** — `DELETE /files?ids=…` for browser clients.
 
-Delete multiple files in a single request using the REST handler.
+## `Files` facade bulk overloads
+
+Each single-key method has a bulk-array overload. The bulk form runs the operations with bounded concurrency (default `8`), never throws on partial failure, and returns per-item failures in `errors`.
+
+```typescript
+import { Files } from "@visulima/storage";
+
+const files = new Files({ adapter });
+
+const { uploaded, errors } = await files.upload(
+    [
+        { key: "a.txt", body: "A" },
+        { key: "b.txt", body: "B" },
+        { key: "c.txt", body: "C" },
+    ],
+    { concurrency: 4 },
+);
+
+const { downloaded } = await files.download(["a.txt", "b.txt"]);
+const { existing, missing } = await files.exists(["a.txt", "missing.txt"]);
+const { deleted } = await files.delete(["a.txt", "b.txt"]);
+
+const { moved } = await files.move(
+    [
+        { from: "tmp/a.txt", to: "final/a.txt" },
+        { from: "tmp/b.txt", to: "final/b.txt" },
+    ],
+    { stopOnError: false },
+);
+```
+
+`stopOnError: true` switches the call to short-circuit on the first failure (in-flight operations still complete). `delete` prefers the adapter's native bulk primitive (S3 `DeleteObjects`, Supabase `remove`, UploadThing `deleteFiles`) when one exists and `stopOnError` is not set; otherwise the keys are fanned out with bounded concurrency.
+
+## Cross-provider migration: `transfer`
+
+`transfer(source, destination, opts?)` is built on top of the facade's public surface — no adapter implements anything new — and streams every object from one `Files` instance to another with bounded concurrency. Pull keys directly from `source.listAll()` so very large buckets transfer in constant memory.
+
+```typescript
+import { Files, transfer } from "@visulima/storage";
+import { S3Storage } from "@visulima/storage/provider/aws";
+import { BunnyStorage } from "@visulima/storage/provider/bunny";
+
+const from = new Files({ adapter: new S3Storage({ bucket: "old", region: "us-east-1" }) });
+const to = new Files({ adapter: new BunnyStorage({ zone, accessKey, region: "de" }) });
+
+const { transferred, skipped, errors } = await transfer(from, to, {
+    prefix: "uploads/",
+    concurrency: 8,
+    onProgress: ({ done, key, status }) => log.info(done, key, status),
+    transformKey: (key) => `archive/${key}`,
+});
+```
+
+By default missing destination keys are uploaded and existing keys are skipped — pass `overwrite: true` to force re-upload. `stopOnError` switches to sequential execution and aborts on the first failure; `signal` aborts mid-walk.
+
+## HTTP Batch Delete
+
+Delete multiple files in a single request using the REST handler. For programmatic batch deletes from server code, prefer `files.delete(keys)` — the HTTP form is for browser clients hitting your upload server.
 
 ### Query Parameter Method
 

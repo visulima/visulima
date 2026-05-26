@@ -20,6 +20,22 @@ const MIN_PART_SIZE = 5 * 1024 * 1024;
 const PART_SIZE = 16 * 1024 * 1024;
 
 /**
+ * Build the HTTP `Range` header value (`bytes=start-end`) from a structured range.
+ *
+ * Returns `undefined` for an absent range so call sites can spread it conditionally
+ * (omit the `Range` field entirely rather than send `Range: undefined`). `start` is
+ * clamped to `0` because S3 rejects negative offsets and an `end` of `undefined`
+ * renders as the open-ended `bytes=start-` form (read to EOF).
+ */
+export const buildRangeHeader = (range: { end?: number; start: number } | undefined): string | undefined => {
+    if (!range) {
+        return undefined;
+    }
+
+    return `bytes=${Math.max(0, range.start)}-${range.end === undefined ? "" : range.end}`;
+};
+
+/**
  * Part interface for multipart uploads.
  */
 export interface Part {
@@ -81,7 +97,7 @@ export interface S3ApiOperations {
     deleteObject: (params: { Bucket: string; Key: string }, options?: S3CallOptions) => Promise<void>;
 
     getObject: (
-        params: { Bucket: string; Key: string },
+        params: { Bucket: string; Key: string; Range?: string },
         options?: S3CallOptions,
     ) => Promise<{
         Body?: ReadableStream | Readable;
@@ -139,6 +155,8 @@ export interface S3ApiOperations {
  */
 export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3CompatibleFile> extends BaseStorage<TFile> {
     public override checksumTypes: string[] = ["md5", "crc32", "crc32c", "sha1", "sha256"];
+
+    public override readonly supportsRange: boolean = true;
 
     protected bucket: string;
 
@@ -635,14 +653,16 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
     /**
      * Gets an uploaded file by ID.
      */
-    public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
+    public async get({ id }: FileQuery, options?: OperationOptions & { range?: { end?: number; start: number } }): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
             const s3Api = this.getS3Api();
+            const rangeHeader = buildRangeHeader(options?.range);
             const { Body, ContentLength, ContentType, ETag, Expires, LastModified, Metadata } = await this.runOperation(options, (signal) =>
                 s3Api.getObject(
                     {
                         Bucket: this.bucket,
                         Key: id,
+                        ...(rangeHeader !== undefined && { Range: rangeHeader }),
                     },
                     { signal },
                 ),

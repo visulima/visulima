@@ -1,6 +1,11 @@
 # Observability & Metrics
 
-The storage package provides comprehensive observability through structured metrics, allowing you to monitor storage operations, track performance, and identify issues in production.
+The storage package provides two complementary observability layers:
+
+- **Adapter-level metrics** — structured counts, durations, and gauges emitted from every `BaseStorage` operation, with built-in OpenTelemetry support.
+- **Facade-level hooks** — fire-and-forget `onAction` / `onError` / `onRetry` callbacks on the `Files` facade, carrying per-operation context (`type`, `key`, `from`/`to`, `durationMs`, `attempt`, `error`).
+
+Pick the layer that matches what you need: metrics for aggregation and dashboards; hooks for structured logs and tracing at the application boundary.
 
 ## Overview
 
@@ -11,6 +16,44 @@ Metrics are collected for all storage operations including:
 - **Error rates** - Monitor failures by operation type
 - **File sizes** - Track file size distributions
 - **Batch operation metrics** - Monitor batch operation performance
+
+## `Files` facade hooks
+
+The `Files` facade exposes three fire-and-forget hooks. Hooks are called, not awaited; exceptions thrown by a hook are swallowed so a hook can never fail the operation it observes.
+
+```typescript
+import { Files } from "@visulima/storage";
+
+const files = new Files({
+    adapter,
+    hooks: {
+        onAction: ({ type, key, durationMs }) => log.info(type, key, durationMs),
+        onError: ({ type, key, error, durationMs }) => log.error(type, key, error.message, durationMs),
+        onRetry: ({ type, key, attempt, error }) => log.warn(type, key, "retry", attempt, error.message),
+    },
+});
+```
+
+Each event carries:
+
+| Field         | Present on             | Description                                                                                                                                      |
+| ------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `type`        | every event            | `upload` \| `download` \| `head` \| `exists` \| `delete` \| `copy` \| `move` \| `list` \| `listAll` \| `url` \| `signedUploadUrl` \| `transfer`. |
+| `key`         | single-key operations  | Caller-facing key (constructor prefix stripped off).                                                                                             |
+| `keys`        | bulk-delete            | All caller-facing keys included in the batch.                                                                                                    |
+| `from` / `to` | `copy` / `move`        | Source / destination keys.                                                                                                                       |
+| `durationMs`  | `onAction` / `onError` | Wall-clock time from the start of the operation to completion or failure.                                                                        |
+| `attempt`     | `onRetry`              | 1-based retry attempt number (1 = first retry).                                                                                                  |
+| `error`       | `onError`, `onRetry`   | Normalized `Error`.                                                                                                                              |
+
+The `listAll` terminal event fires once at the end of the async-iterable walk — including the case where the consumer breaks out of the `for await` early.
+
+When to use hooks vs. adapter metrics:
+
+- Use **hooks** when you want per-call structured logs with the caller's key, or a tracing span keyed by `type` + `key`.
+- Use **adapter metrics** when you want aggregate counters and histograms for dashboards and alerts.
+
+Both layers can be enabled at once — they observe different concerns.
 
 ## Metrics Interface
 

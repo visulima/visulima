@@ -28,7 +28,7 @@
 
 ## Two surfaces, one library
 
-- **`Files`** — one-liner API for ad-hoc storage operations. Web-standard body types (`Blob`, `Uint8Array`, `ReadableStream`), eight methods, and a `.raw` escape hatch. Use this when you just need to put files somewhere.
+- **`Files`** — one-liner API for ad-hoc storage operations. Web-standard body types (`Blob`, `Uint8Array`, `ReadableStream`), bulk-array overloads, per-call retry/timeout/abort, lifecycle hooks, and a `.raw` escape hatch. Use this when you just need to put files somewhere.
 - **`BaseStorage` adapters** (`S3Storage`, `DiskStorage`, `BunnyStorage`, …) — the full upload-server framework. TUS / multipart / REST handlers, lifecycle hooks, validators, image / video / audio transformers, OpenAPI export. Use this when you're hosting an upload service.
 
 Both surfaces wrap the same adapters — swap providers without touching call sites.
@@ -68,7 +68,7 @@ new Files({ adapter: new DiskStorage({ directory: "./uploads" }) });
 new Files({ adapter: new BunnyStorage({ zone, accessKey, region: "de" }) });
 ```
 
-→ See the [Files facade reference](https://visulima.com/docs/packages/storage/files-facade) for the full method surface (`upload`, `download`, `head`, `delete`, `copy`, `list`, `url`, `signedUploadUrl`, `.raw`) and body-type matrix.
+→ See the [Files facade reference](https://visulima.com/docs/packages/storage/files-facade) for the full method surface (`upload`, `download`, `head`, `exists`, `delete`, `copy`, `move`, `list`, `listAll`, `url`, `signedUploadUrl`, `.raw`) and body-type matrix. Top-level `transfer(source, destination)` streams whole buckets between adapters.
 
 ## Building an upload server?
 

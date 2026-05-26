@@ -1,6 +1,6 @@
 # `Files` facade
 
-Files-SDK–style unified facade over any `BaseStorage` adapter. Nine methods + a `.raw` escape hatch, web-standard body types, provider-agnostic return shape.
+Files-SDK–style unified facade over any `BaseStorage` adapter. One small surface (`upload`, `download`, `head`, `exists`, `delete`, `copy`, `move`, `list`, `listAll`, `url`, `signedUploadUrl`) plus a `.raw` escape hatch — works against every adapter the package ships, including the in-memory adapter for tests.
 
 ```ts
 import { Files } from "@visulima/storage";
@@ -17,6 +17,7 @@ The user-supplied `key` is both the storage path and the metadata id — subsequ
 
 - One-shot puts and gets (uploading a `Blob`, fetching a `Buffer`).
 - Provider-portable code — swap `S3Storage` for `BunnyStorage` without changing call sites.
+- Bulk operations and cross-provider migrations (`upload([...])`, `delete([...])`, `transfer(from, to)`).
 - AI-agent and LLM tool integrations (the `@visulima/storage/ai/*` subpaths build on top of `Files`).
 - Quick scripts, serverless functions, and small services that don't need TUS / multipart / lifecycle hooks.
 
@@ -24,18 +25,66 @@ For client-driven uploads (browser forms, large resumable files, chunked transfe
 
 ## Method surface
 
-| Method            | Signature                                            | Notes                                                             |
-| ----------------- | ---------------------------------------------------- | ----------------------------------------------------------------- |
-| `upload`          | `(key, body, opts?) → Promise<FileObject>`           | Accepts any [supported body type](#body-types).                   |
-| `download`        | `(key) → Promise<DownloadResult>`                    | Returns `{ body: Buffer, ...FileObject }`.                        |
-| `head`            | `(key) → Promise<FileObject>`                        | Metadata only.                                                    |
-| `exists`          | `(key) → Promise<boolean>`                           | Never throws for a missing object.                                |
-| `delete`          | `(key) → Promise<void>`                              | Idempotent on most providers.                                     |
-| `copy`            | `(source, destination, opts?) → Promise<FileObject>` | Server-side where supported; download + re-upload otherwise.      |
-| `list`            | `(opts?) → Promise<FileObject[]>`                    | Optional `prefix` filter and `limit`.                             |
-| `url`             | `(key, opts?) → Promise<string>`                     | Signed-read URL when the provider supports it.                    |
-| `signedUploadUrl` | `(key, opts?) → Promise<string>`                     | Presigned-PUT URL for direct-from-browser uploads.                |
-| `raw` (getter)    | `→ unknown`                                          | The adapter's native client (`S3Client`, `BlobServiceClient`, …). |
+| Method            | Single-key signature                                 | Bulk-array signature                            | Notes                                                             |
+| ----------------- | ---------------------------------------------------- | ----------------------------------------------- | ----------------------------------------------------------------- |
+| `upload`          | `(key, body, opts?) → Promise<FileObject>`           | `(items: BulkUploadItem[], opts?) → Promise<…>` | Accepts any [supported body type](#body-types).                   |
+| `download`        | `(key, opts?) → Promise<DownloadResult>`             | `(keys: string[], opts?) → Promise<…>`          | Optional `range` for byte slices.                                 |
+| `head`            | `(key, opts?) → Promise<FileObject>`                 | `(keys: string[], opts?) → Promise<…>`          | Metadata only.                                                    |
+| `exists`          | `(key, opts?) → Promise<boolean>`                    | `(keys: string[], opts?) → Promise<…>`          | Never throws for a missing object.                                |
+| `delete`          | `(key, opts?) → Promise<void>`                       | `(keys: string[], opts?) → Promise<…>`          | Uses the adapter's native bulk primitive when present.            |
+| `copy`            | `(source, destination, opts?) → Promise<FileObject>` | —                                               | Server-side where supported; download + re-upload otherwise.      |
+| `move`            | `(from, to, opts?) → Promise<FileObject>`            | `(items: BulkMoveItem[], opts?) → Promise<…>`   | Uses native rename where one exists, otherwise `copy` + `delete`. |
+| `list`            | `(opts?) → Promise<FileObject[]>`                    | —                                               | Optional `prefix` filter and `limit`. Single page.                |
+| `listAll`         | `(opts?) → AsyncGenerator<FileObject>`               | —                                               | Pages internally; yields one at a time.                           |
+| `url`             | `(key, opts?) → Promise<string>`                     | —                                               | Signed-read URL when the provider supports it.                    |
+| `signedUploadUrl` | `(key, opts?) → Promise<string>`                     | —                                               | Presigned-PUT URL for direct-from-browser uploads.                |
+| `raw` (getter)    | `→ unknown`                                          | —                                               | The adapter's native client (`S3Client`, `BlobServiceClient`, …). |
+
+## Per-call `OperationOptions`
+
+Every method accepts `signal`, `timeout`, and `retries` per call. Defaults set on the constructor are merged in, per-call wins; the signal is combined with any constructor signal via `AbortSignal.any` so either one aborts the operation.
+
+```ts
+const files = new Files({
+    adapter,
+    defaults: { timeout: 30_000, retries: { maxRetries: 5 } },
+});
+
+const ac = new AbortController();
+await files.download("k", { signal: ac.signal, timeout: 5_000 });
+```
+
+See the [Retry mechanism](./retry-mechanism.mdx) page for the full `RetryConfig` shape and how `onRetry` integrates with the facade hooks.
+
+## Constructor `prefix`
+
+Namespace every key under a prefix. Reads, writes, copies, listings, URLs, and signed uploads all resolve keys as `${prefix}/${key}`; returned keys (including from `list()` / `listAll()`) have the prefix stripped back off. Leading/trailing slashes are normalized so `"/users/"` and `"users"` behave identically.
+
+```ts
+const files = new Files({ adapter, prefix: "tenant-x" });
+
+await files.upload("docs/report.pdf", buffer); // → tenant-x/docs/report.pdf
+const objects = await files.list({ prefix: "docs/" }); // result keys are un-prefixed
+```
+
+`list()` and `listAll()` scope results on a path boundary, so `prefix: "users"` never matches the sibling `users-archive/`.
+
+## Lifecycle hooks
+
+Pass `hooks: { onAction, onError, onRetry }` to observe activity. Hooks are fire-and-forget — called, not awaited — and exceptions are swallowed so a hook can never fail the operation it observes.
+
+```ts
+const files = new Files({
+    adapter,
+    hooks: {
+        onAction: (event) => log.info(event.type, event.key, event.durationMs),
+        onError: (event) => log.error(event.type, event.key, event.error.message),
+        onRetry: (event) => log.warn(event.type, event.key, "retry attempt", event.attempt),
+    },
+});
+```
+
+Every event carries `type` (one of `upload`, `download`, `head`, `exists`, `delete`, `copy`, `move`, `list`, `listAll`, `url`, `signedUploadUrl`, `transfer`) plus the relevant `key` / `keys` / `from` / `to` fields. `onAction` / `onError` include `durationMs`; `onRetry` adds `attempt` (1-based) and `error`. The `listAll` terminal event fires even when the consumer breaks out of the `for await` early.
 
 ## Body types
 
@@ -88,7 +137,7 @@ const s3: S3Client = files.raw;
 await s3.send(/* …adapter-specific call… */);
 ```
 
-Adapters without a native client (e.g. `DiskStorage`) return `undefined` from `raw`.
+Adapters without a native client (e.g. `DiskStorage`) return `undefined` from `raw`. The in-memory adapter exposes its backing `Map` via `raw`.
 
 ## Examples
 
@@ -112,6 +161,50 @@ response.setHeader("Content-Type", contentType);
 response.setHeader("Content-Length", String(size));
 response.end(body);
 ```
+
+### Download a byte range
+
+```ts
+// Fetch only the first 1 KiB to inspect a magic-number header without pulling the whole object.
+const { body } = await files.download("video.mp4", { range: { start: 0, end: 1023 } });
+
+// Resume from a saved offset — omit `end` to read to EOF.
+const { body: tail } = await files.download("video.mp4", { range: { start: 8 * 1024 * 1024 } });
+```
+
+`range` is the HTTP `bytes=start-end` semantics: both bounds 0-based, `end` inclusive. The facade checks `adapter.supportsRange` and throws synchronously for adapters that don't opt in, so the bandwidth saving is never silently lost client-side.
+
+### Upload with progress
+
+```ts
+import { createReadStream } from "node:fs";
+import { stat } from "node:fs/promises";
+
+const { size } = await stat(path);
+
+await files.upload(key, createReadStream(path), {
+    contentType: "video/mp4",
+    size,
+    onProgress: ({ loaded, total }) => {
+        const percent = total ? Math.round((loaded / total) * 100) : "?";
+
+        log.info(`uploaded ${loaded} / ${total ?? "?"} bytes (${percent}%)`);
+    },
+});
+```
+
+For buffered bodies a coarse start/done pair is emitted. For streaming bodies each chunk reports `loaded` cumulatively. A throwing callback can never fail the upload — exceptions are swallowed. Adapters that report progress natively (`reportsUploadProgress = true`) supersede the facade's PassThrough wrap with byte-accurate events.
+
+### Multipart upload for large objects
+
+```ts
+await files.upload("backups/db-2026-05.tar.gz", stream, {
+    size,
+    multipart: { partSize: 16 * 1024 * 1024, concurrency: 4 },
+});
+```
+
+`multipart: true` uses the adapter's defaults; pass an object to tune the per-part size and the number of parts uploaded in parallel. Adapters that don't have a multipart primitive ignore the option.
 
 ### Mint a signed URL for a private object
 
@@ -138,36 +231,108 @@ return Response.json({ uploadUrl });
 
 Not every adapter supports presigned PUT. Adapters without a primitive (UploadThing, Bunny) throw `UploadError(METHOD_NOT_ALLOWED)` with a message pointing to the supported alternative.
 
-### Stream a large upload
-
-```ts
-import { createReadStream } from "node:fs";
-import { stat } from "node:fs/promises";
-
-const { size } = await stat(path);
-
-await files.upload(key, createReadStream(path), {
-    contentType: "video/mp4",
-    size,
-});
-```
-
-### List with a prefix
+### List a single page
 
 ```ts
 const userFiles = await files.list({ prefix: `users/${userId}/`, limit: 100 });
 ```
 
-`list()` is intentionally simple: it asks the adapter for up to `limit` files (default `1000`), then filters by `prefix` in memory. Server-side prefix scoping isn't exposed through `BaseStorage.list` — if you need it (e.g. S3 `ListObjectsV2` with a `Prefix`), reach for `files.adapter.raw` and call the native SDK directly.
+`list()` is intentionally simple: one page from the adapter, then filter by `prefix` in memory. Use `listAll` for full-bucket walks.
 
-### Copy across keys
+### Walk every object (paginated async iterable)
+
+```ts
+for await (const file of files.listAll({ prefix: "avatars/" })) {
+    if (file.size && file.size > 5 * 1024 * 1024) {
+        log.warn("oversized avatar", file.key);
+    }
+}
+```
+
+`listAll` pages internally so callers don't have to thread a cursor. Returned keys have any constructor prefix stripped off; out-of-namespace keys are filtered out, mirroring `list()`. Breaking out of the `for await` early still emits the terminal `onAction` / `onError` hook event.
+
+### Copy and rename
 
 ```ts
 await files.copy(`tmp/${id}`, `final/${id}`);
-await files.delete(`tmp/${id}`);
+await files.move(`tmp/${id}`, `final/${id}`); // copy + delete, or native rename
 ```
 
-For providers without server-side copy (Bunny, UploadThing), `copy` is a download + re-upload roundtrip and `move = copy + delete` is non-atomic — a failed delete leaves the source behind.
+For providers without server-side copy (Bunny, UploadThing), `copy` is a download + re-upload roundtrip and `move = copy + delete` is non-atomic — a failed delete leaves the source behind. Moving a key onto itself (`move("k", "k")`) is a no-op and returns the existing metadata without emitting a second hook event.
+
+### Bulk operations
+
+Every single-key method has a bulk-array overload that runs the keys with bounded concurrency and returns a structured result instead of throwing on partial failure.
+
+```ts
+const { uploaded, errors } = await files.upload([
+    { key: "a.txt", body: "A" },
+    { key: "b.txt", body: "B" },
+    { key: "c.txt", body: "C" },
+]);
+
+const { downloaded, errors: dErr } = await files.download(["a.txt", "b.txt", "c.txt"], {
+    concurrency: 4,
+});
+
+const { deleted } = await files.delete(["a.txt", "b.txt"]);
+
+const { moved } = await files.move([
+    { from: "tmp/a.txt", to: "final/a.txt" },
+    { from: "tmp/b.txt", to: "final/b.txt" },
+]);
+
+const { existing, missing } = await files.exists(["a.txt", "b.txt", "missing.txt"]);
+```
+
+Each bulk call accepts `concurrency` (default `8`) and `stopOnError` (default `false`). When `false`, every key is attempted and per-key failures land in `errors`; when `true`, dispatching stops on the first failure (in-flight operations still complete). `delete` prefers the adapter's native bulk primitive (S3 `DeleteObjects`, Supabase `remove`, UploadThing `deleteFiles`) when one exists and `stopOnError` isn't set.
+
+## Cross-provider migration: `transfer(source, destination, opts?)`
+
+Stream every object from one `Files` instance to another. Built entirely on the public surface — no adapter implements anything new.
+
+```ts
+import { Files, transfer } from "@visulima/storage";
+import { S3Storage } from "@visulima/storage/provider/aws";
+import { BunnyStorage } from "@visulima/storage/provider/bunny";
+
+const from = new Files({ adapter: new S3Storage({ bucket: "old", region: "us-east-1" }) });
+const to = new Files({ adapter: new BunnyStorage({ zone, accessKey, region: "de" }) });
+
+const { transferred, skipped, errors } = await transfer(from, to, {
+    prefix: "uploads/",
+    concurrency: 8,
+    onProgress: ({ done, key, status }) => log.info(done, key, status),
+});
+```
+
+Each object is downloaded and re-uploaded with bounded concurrency. By default keys that already exist at the destination are skipped — pass `overwrite: true` to force re-upload. `transformKey` rewrites the destination key, `stopOnError` switches to sequential execution and aborts on the first failure, `signal` aborts mid-walk. Body, content type, and user metadata travel; `etag`/`lastModified` are destination-assigned.
+
+The walk pulls from `source.listAll()` directly via N concurrent workers — no eager buffering of keys, so very large buckets transfer in constant memory.
+
+## In-memory adapter for tests
+
+`MemoryStorage` is a `BaseStorage` adapter backed by a `Map<string, MemoryEntry>`. It implements the full surface (including ranged reads) without touching disk or any external service — useful for tests, ephemeral environments, and as a reference implementation.
+
+```ts
+import { Files } from "@visulima/storage";
+import MemoryStorage from "@visulima/storage/provider/memory";
+
+const files = new Files({
+    adapter: new MemoryStorage({
+        initial: {
+            "users/1.json": '{"id":1}',
+            "users/2.json": '{"id":2}',
+        },
+    }),
+});
+
+await files.upload("docs/x.txt", "x");
+// `raw` exposes the backing Map for direct inspection / reset:
+files.raw.clear();
+```
+
+`supportsRange` is `true`, so `download({ range })` works against the in-memory store.
 
 ## Errors
 
@@ -195,10 +360,9 @@ Adapters normalize provider-specific error shapes into the same enum: `FILE_NOT_
 The facade is intentionally narrow. Reach for the adapter (`files.adapter`) when you need:
 
 - **Resumable uploads** — `BaseStorage.write(part)` takes a `FilePart` with `start` offsets; `Files.upload` is one-shot only.
-- **Lifecycle hooks** — `onCreate`, `onUpdate`, `onComplete`, `onDelete`, `onError` are configured on the adapter.
+- **Lifecycle hooks** — `onCreate`, `onUpdate`, `onComplete`, `onDelete`, `onError` are configured on the adapter (distinct from the facade `onAction` / `onError` / `onRetry` hooks).
 - **Validators / locking** — file-type, size, and MIME validation; lock tokens for concurrent writers.
 - **Expiration / purge** — the adapter's `expiration` config.
-- **Batch ops** — `deleteBatch`, `copyBatch`, `moveBatch` with per-item error capture.
 - **OpenAPI export** — schema generation against the adapter, not the facade.
 - **Transformers** — `ImageTransformer`, `VideoTransformer`, `AudioTransformer`, `MediaTransformer` all take an adapter.
 

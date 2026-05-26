@@ -206,6 +206,23 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
 
     public checksumTypes: string[] = [];
 
+    /**
+     * Adapter capability flag: when `true`, the adapter honours
+     * `OperationOptions.range` on {@link BaseStorage.get} and
+     * {@link BaseStorage.getStream}, returning only the requested byte slice.
+     * The `Files` facade gates `download({ range })` on this flag and throws
+     * `METHOD_NOT_ALLOWED` for adapters that haven't opted in.
+     */
+    public readonly supportsRange: boolean = false;
+
+    /**
+     * Adapter capability flag: when `true`, the adapter reports its own
+     * byte-level `onProgress` events during `write`. The `Files` facade skips
+     * its coarse "start/done" emission for adapters that report progress
+     * natively, so callers see one consistent stream of events.
+     */
+    public readonly reportsUploadProgress: boolean = false;
+
     public maxUploadSize: number;
 
     protected expiration?: { maxAge?: string | number; purgeInterval?: string | number; rolling?: boolean };

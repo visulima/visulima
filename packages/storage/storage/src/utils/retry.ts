@@ -1,12 +1,16 @@
 /**
  * Default retry configuration
  */
-const defaultRetryConfig: Required<Omit<RetryConfig, "calculateDelay">> & { calculateDelay?: RetryConfig["calculateDelay"] } = {
+const defaultRetryConfig: Required<Omit<RetryConfig, "calculateDelay" | "onRetry">> & {
+    calculateDelay?: RetryConfig["calculateDelay"];
+    onRetry?: RetryConfig["onRetry"];
+} = {
     backoffMultiplier: 2,
     calculateDelay: undefined,
     initialDelay: 1000,
     maxDelay: 30_000,
     maxRetries: 3,
+    onRetry: undefined,
     retryableStatusCodes: [408, 429, 500, 502, 503, 504],
     // Default to `false` so the retry decision falls through to `isRetryableError`, which knows
     // about the network/AWS/Azure patterns. The previous `() => true` short-circuited that and
@@ -75,6 +79,14 @@ export interface RetryConfig {
      * @default 3
      */
     maxRetries?: number;
+
+    /**
+     * Fire-and-forget hook invoked **before** each retry attempt's backoff sleep.
+     * `attempt` is 1-based (1 = first retry, i.e. after the initial call failed).
+     * Exceptions thrown by this callback are swallowed so an observability hook
+     * can never fail the underlying operation.
+     */
+    onRetry?: (attempt: number, error: unknown) => void;
 
     /**
      * HTTP status codes that should trigger a retry
@@ -178,6 +190,7 @@ export const retry = async <T>(function_: () => Promise<T>, config: RetryConfig 
         initialDelay = defaultRetryConfig.initialDelay,
         maxDelay = defaultRetryConfig.maxDelay,
         maxRetries = defaultRetryConfig.maxRetries,
+        onRetry,
         retryableStatusCodes = defaultRetryConfig.retryableStatusCodes,
         shouldRetry = defaultRetryConfig.shouldRetry,
     } = config;
@@ -206,6 +219,17 @@ export const retry = async <T>(function_: () => Promise<T>, config: RetryConfig 
 
             // Calculate delay for this retry attempt
             const delay = calculateDelay ? calculateDelay(attempt, error) : calculateExponentialBackoff(attempt, initialDelay, backoffMultiplier, maxDelay);
+
+            // Fire-and-forget retry hook. Invoked once per *retry* attempt — never for the
+            // first try. `attempt` is 1-based for observability consumers. Throws are
+            // swallowed so a hook can never fail the operation it observes.
+            if (onRetry) {
+                try {
+                    onRetry(attempt + 1, error);
+                } catch {
+                    // hook contract: fire-and-forget
+                }
+            }
 
             if (delay !== undefined && delay > 0) {
                 // Sequential delay is intentional for retry logic

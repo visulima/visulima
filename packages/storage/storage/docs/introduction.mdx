@@ -2,7 +2,7 @@
 
 Unified file storage for Node.js, edge runtimes, and modern web frameworks. One library, two surfaces:
 
-- **`Files`** — one-liner API for ad-hoc storage operations. Web-standard body types (`Blob`, `Uint8Array`, `ReadableStream`), eight methods, and a `.raw` escape hatch. Use this when you just need to put files somewhere.
+- **`Files`** — one-liner API for ad-hoc storage operations. Web-standard body types (`Blob`, `Uint8Array`, `ReadableStream`), a compact set of provider-agnostic methods, bulk-array overloads, lifecycle hooks (`onAction` / `onError` / `onRetry`), ranged downloads, upload progress, async-iterable listings, and a cross-provider `transfer()` for migrations. Use this when you just need to put files somewhere.
 - **`BaseStorage` adapters** (`S3Storage`, `DiskStorage`, `BunnyStorage`, …) — the full upload-server framework. TUS / multipart / REST handlers, lifecycle hooks, validators, image / video / audio transformers, OpenAPI export. Use this when you're hosting an upload service.
 
 Both surfaces wrap the same adapters — swap providers without touching call sites.
@@ -22,12 +22,36 @@ import { S3Storage } from "@visulima/storage/provider/aws";
 
 const files = new Files({
     adapter: new S3Storage({ bucket: "uploads", region: "us-east-1" }),
+    defaults: { timeout: 30_000, retries: { maxRetries: 5 } },
+    hooks: {
+        onAction: ({ type, key, durationMs }) => log.info(type, key, durationMs),
+        onRetry: ({ type, key, attempt }) => log.warn(type, key, "retry", attempt),
+    },
 });
 
 await files.upload("avatars/abc.png", buffer, { contentType: "image/png" });
 
 const url = await files.url("avatars/abc.png", { expiresIn: 900 });
-const { body } = await files.download("avatars/abc.png");
+const { body } = await files.download("avatars/abc.png", { range: { start: 0, end: 1023 } });
+
+// Bulk: upload / download / delete / move accept an array and return a structured result.
+const { uploaded, errors } = await files.upload([
+    { key: "a.txt", body: "A" },
+    { key: "b.txt", body: "B" },
+]);
+
+// Walk every object as an async iterable — pages internally.
+for await (const file of files.listAll({ prefix: "avatars/" })) {
+    log.info(file.key, file.size);
+}
+```
+
+For ephemeral environments and tests, an in-memory adapter ships out of the box:
+
+```ts
+import MemoryStorage from "@visulima/storage/provider/memory";
+
+const files = new Files({ adapter: new MemoryStorage({ initial: { "k.txt": "x" } }) });
 ```
 
 Swap the adapter to change provider — everything else stays the same:
@@ -89,15 +113,19 @@ Three handlers cover the common upload patterns:
 
 ## Choosing your surface
 
-| You want to…                                           | Use                                         |
-| ------------------------------------------------------ | ------------------------------------------- |
-| Save a `Blob` / `Buffer` to S3 and get a signed URL    | `Files`                                     |
-| Drop in a file picker / "import from cloud" flow       | `Files` with a consumer provider adapter    |
-| Expose ad-hoc storage to an AI agent or LLM tool       | `Files` + `@visulima/storage/ai/*` subpaths |
-| Build a TUS / multipart / chunked upload endpoint      | adapter + handler                           |
-| Transform images / video / audio on the fly            | adapter + [transformer](./transformers.mdx) |
-| Hook `onCreate` / `onComplete` / `onDelete` lifecycles | adapter                                     |
-| Export OpenAPI for an upload endpoint                  | adapter + [OpenAPI export](./openapi.mdx)   |
+| You want to…                                                 | Use                                         |
+| ------------------------------------------------------------ | ------------------------------------------- |
+| Save a `Blob` / `Buffer` to S3 and get a signed URL          | `Files`                                     |
+| Bulk-upload / bulk-delete a list of keys                     | `Files` (array overload on every method)    |
+| Migrate every object from one provider to another            | `transfer(source, dest)` on `Files`         |
+| Walk every object in a bucket as an async iterable           | `files.listAll({ prefix })`                 |
+| Observe operation counts, durations, retries from the facade | `Files` with `hooks: { onAction, onRetry }` |
+| Drop in a file picker / "import from cloud" flow             | `Files` with a consumer provider adapter    |
+| Expose ad-hoc storage to an AI agent or LLM tool             | `Files` + `@visulima/storage/ai/*` subpaths |
+| Build a TUS / multipart / chunked upload endpoint            | adapter + handler                           |
+| Transform images / video / audio on the fly                  | adapter + [transformer](./transformers.mdx) |
+| Hook adapter-level `onCreate` / `onComplete` / `onDelete`    | adapter                                     |
+| Export OpenAPI for an upload endpoint                        | adapter + [OpenAPI export](./openapi.mdx)   |
 
 ## Providers
 
@@ -109,6 +137,7 @@ Object storage (service credentials, presigned URLs, S3-style):
 - Vercel Blob (`VercelBlobStorage`)
 - Netlify Blobs (`NetlifyBlobStorage`)
 - Local filesystem (`DiskStorage`, `DiskStorageWithChecksum`)
+- In-memory (`MemoryStorage`) — for tests and ephemeral environments
 
 S3-compatible (branded client configs under `provider/aws/s3/clients`): Cloudflare R2, DigitalOcean Spaces, MinIO, Hetzner, Storj, Backblaze B2, Tigris, Wasabi, Akamai.
 
@@ -137,8 +166,9 @@ The `Files` facade is intentionally small. Features below live on the adapter an
 
 ## Next steps
 
-- [Files facade reference](./files-facade.mdx) — the eight-method surface in detail.
+- [Files facade reference](./files-facade.mdx) — full surface (single + bulk, hooks, ranges, progress, `transfer`).
 - [Storage services](./services/capabilities.mdx) — per-provider configuration and capability matrix.
 - [Custom storage](./custom-storage.mdx) — write your own adapter against `BaseStorage`.
+- [Retry mechanism](./retry-mechanism.mdx) — backoff, custom `shouldRetry`, `onRetry` hook.
 - [Error handling](./error-handling.mdx) — `UploadError`, `ERRORS` enum, and `wrapStorageError`.
 - [Observability](./observability.mdx) — metrics, OpenTelemetry, structured logs.

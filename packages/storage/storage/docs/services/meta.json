@@ -17,6 +17,7 @@
         "google-drive",
         "hetzner",
         "local-disk",
+        "memory",
         "minio",
         "netlify-blob",
         "onedrive",

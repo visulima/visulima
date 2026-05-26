@@ -176,7 +176,7 @@ class S3ClientAdapter implements S3ApiOperations {
     }
 
     public async getObject(
-        params: { Bucket: string; Key: string },
+        params: { Bucket: string; Key: string; Range?: string },
         options?: S3CallOptions,
     ): Promise<{
         Body?: ReadableStream | Readable;
@@ -190,6 +190,7 @@ class S3ClientAdapter implements S3ApiOperations {
         const command = new GetObjectCommand({
             Bucket: params.Bucket,
             Key: params.Key,
+            ...(params.Range !== undefined && { Range: params.Range }),
         });
 
         const response: GetObjectCommandOutput = await this.client.send(command, sendOptions(options));
