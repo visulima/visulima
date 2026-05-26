@@ -49,6 +49,9 @@ import {
 import { hasPeerDependencyWarnings, PEER_HINT } from "../../util/peer-warnings";
 import { spawnTee } from "../../util/spawn-tee";
 import { parsePackageArgument } from "../../util/utils";
+import type { EcosystemCheckResult, EcosystemId, EcosystemUpdateOptions } from "./ecosystems/index";
+import { applyEcosystemUpdates, checkEcosystems } from "./ecosystems/index";
+import { formatEcosystemJson, formatEcosystemReport } from "./ecosystems/report";
 import type { UpdateOptions } from "./index";
 
 type CatalogPackageManager = "bun" | "npm" | "pnpm" | "yarn";
@@ -961,6 +964,132 @@ export const requireBlanketUpdateConfirmation = async (options: Partial<UpdateOp
     }
 };
 
+/**
+ * Builds the {@link EcosystemUpdateOptions} from the parsed CLI options.
+ * The catalog options re-use the same `include`/`exclude` arrays — they
+ * apply to both the npm side and the ecosystem side, so a user pinning
+ * `actions/checkout` via `--exclude` doesn't have to specify twice.
+ */
+const buildEcosystemOptions = (options: Record<string, unknown>, visConfig: VisConfig): EcosystemUpdateOptions => {
+    const disabled = new Set<EcosystemId>();
+
+    // Cerebro auto-creates the non-negated counterpart of `--no-foo`
+    // flags and maps it to `foo: false` after parsing. We rely on that
+    // mapping rather than reading the raw `--no-foo` key.
+    if (options.actions === false) {
+        disabled.add("actions");
+    }
+
+    if (options.docker === false) {
+        disabled.add("docker");
+    }
+
+    if (options.gitlab === false) {
+        disabled.add("gitlab");
+    }
+
+    const styleRaw = (options.style as string | undefined) ?? "sha";
+
+    if (styleRaw !== "sha" && styleRaw !== "preserve") {
+        throw new Error(`Invalid --style "${styleRaw}". Use: sha or preserve.`);
+    }
+
+    const targetMode = options.latest === true ? "latest" : ((options.target as string | undefined) ?? "latest");
+    const mode = targetMode === "minor" || targetMode === "patch" ? targetMode : "latest";
+    const configDefaults = visConfig.update ?? {};
+
+    return {
+        disabled,
+        exclude: [...toFilterArray(options.exclude as FilterOption), ...toFilterArray(configDefaults.exclude)],
+        githubToken: (options.actionsToken as string | undefined) ?? undefined,
+        gitlabToken: (options.gitlabToken as string | undefined) ?? undefined,
+        include: toFilterArray(options.include as FilterOption),
+        includeBranches: options.includeBranches === true,
+        maxConcurrentRequests:
+            typeof options.maxConcurrentRequests === "number" && options.maxConcurrentRequests > 0
+                ? options.maxConcurrentRequests
+                : 8,
+        minAgeDays:
+            typeof configDefaults.minimumReleaseAge === "number" && configDefaults.minimumReleaseAge > 0
+                ? configDefaults.minimumReleaseAge / (60 * 24)
+                : undefined,
+        mode,
+        respectDependabotConfig: true,
+        style: styleRaw,
+    };
+};
+
+/**
+ * Runs the ecosystem-update flow alongside the npm/catalog path. This
+ * is best-effort: failures in the ecosystem scan must NOT prevent the
+ * catalog flow from completing, so the orchestrator catches its own
+ * errors and surfaces them as warnings.
+ *
+ * Returns `true` when at least one ecosystem was scanned, so the caller
+ * can suppress the "nothing to update" message when the npm path also
+ * found nothing.
+ */
+export const runEcosystemUpdate = async (
+    workspaceRoot: string,
+    options: Record<string, unknown>,
+    visConfig: VisConfig,
+    logger: Console,
+): Promise<EcosystemCheckResult | undefined> => {
+    const ecosystemOptions = buildEcosystemOptions(options, visConfig);
+    const allDisabled = ecosystemOptions.disabled.size === 3;
+
+    if (allDisabled) {
+        return undefined;
+    }
+
+    let result: EcosystemCheckResult;
+
+    try {
+        result = await checkEcosystems({ options: ecosystemOptions, workspaceRoot });
+    } catch (error) {
+        logger.warn(`${yellow("⚠")} Ecosystem update scan failed: ${(error as Error).message}`);
+
+        return undefined;
+    }
+
+    if (result.scanned === 0) {
+        return result;
+    }
+
+    const format = (options.format as string | undefined) ?? "table";
+    const isDryRun = Boolean(options.dryRun);
+
+    if (format === "json") {
+        process.stdout.write(`${formatEcosystemJson(result)}\n`);
+    } else if (format !== "minimal") {
+        const report = formatEcosystemReport(result, { showIgnored: options.interactive === true });
+
+        if (report) {
+            logger.info(report);
+        }
+    }
+
+    if (isDryRun || result.updates.length === 0) {
+        return result;
+    }
+
+    const { applied, skipped } = applyEcosystemUpdates(result.updates);
+
+    if (applied.length > 0) {
+        logger.info(`\n${String(applied.length)} ecosystem reference${applied.length === 1 ? "" : "s"} updated.`);
+    }
+
+    if (skipped.length > 0) {
+        logger.warn(`${yellow("⚠")} ${String(skipped.length)} ecosystem update${skipped.length === 1 ? "" : "s"} skipped:`);
+
+        for (const item of skipped) {
+            logger.warn(`    ${item.update.name} (${item.update.file}:${String(item.update.line)}): ${item.reason}`);
+        }
+    }
+
+    return result;
+};
+
 const execute = async ({ argument: rawArgument, logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, UpdateOptions>): Promise<void> => {
     if (!wsRoot) {
         throw new Error("Could not determine workspace root. Run this command inside a monorepo.");
@@ -1055,6 +1184,16 @@ const execute = async ({ argument: rawArgument, logger, options, visConfig, work
         const installerVersion = installer.name === "aube" ? "" : getPackageManagerVersion(installer.name);
 
         await executePmWrapper(workspaceRoot, installer.name, installerVersion, options, argument, logger);
+    }
+
+    // Ecosystem updates run after the npm/catalog path so the catalog
+    // exit codes / interactive flows aren't disturbed by the extra
+    // network work. Explicit package arguments mean the user is
+    // targeting a specific npm dep — skip the ecosystem scan in that
+    // case to avoid surprise edits to workflow / Dockerfile / GitLab CI
+    // files when the user only asked to bump `lodash`.
+    if (argument.length === 0) {
+        await runEcosystemUpdate(workspaceRoot, options as Record<string, unknown>, visConfig ?? {}, logger);
     }
 };
 
