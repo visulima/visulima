@@ -85,7 +85,7 @@ const buildReplacement = (reference: ImageReference, newTag: string): string => 
     return `${head}:${newTag}`;
 };
 
-export const checkDocker = async (workspaceRoot: string, context: CheckDockerContext): Promise<CheckDockerResult> => {
+export const checkDocker = async (_workspaceRoot: string, context: CheckDockerContext): Promise<CheckDockerResult> => {
     const { ignoreRules, options, references, registryOptions } = context;
     const updates: EcosystemUpdate[] = [];
     const ignoredList: EcosystemUpdate[] = [];

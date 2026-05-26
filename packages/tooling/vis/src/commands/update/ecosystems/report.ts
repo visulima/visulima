@@ -1,4 +1,4 @@
-import { cyan, dim, green, red, yellow } from "@visulima/colorize";
+import { bold, cyan, dim, green, red, yellow } from "@visulima/colorize";
 
 import type { EcosystemCheckResult } from "./index";
 import type { EcosystemId, EcosystemUpdate, EcosystemUpdateType } from "./types";
@@ -8,6 +8,13 @@ const ECOSYSTEM_LABEL: Record<EcosystemId, string> = {
     docker: "Docker",
     gitlab: "GitLab CI",
 };
+
+/**
+ * True when the update crosses a major boundary. Used to decide whether
+ * to surface it in the breaking-changes callout and to gate the [s]afe
+ * choice in the interactive picker.
+ */
+export const isBreakingUpdate = (update: EcosystemUpdate): boolean => update.updateType === "major";
 
 const colorForUpdateType = (type: EcosystemUpdateType): ((text: string) => string) => {
     switch (type) {
@@ -54,6 +61,20 @@ export const formatEcosystemReport = (result: EcosystemCheckResult, options: { s
     }
 
     lines.push(`\n${cyan("Ecosystem updates")} — ${String(totalUpdates)} reference${totalUpdates === 1 ? "" : "s"} can be bumped:`);
+
+    const breaking = result.updates.filter((update) => isBreakingUpdate(update));
+
+    if (breaking.length > 0) {
+        // Surface major bumps up-front so they don't get lost between
+        // minor/patch entries. They still appear inside the per-ecosystem
+        // section below — this is a callout, not a relocation.
+        lines.push(`\n  ${red(bold(`⚠ Breaking changes (${String(breaking.length)})`))}`);
+        lines.push(`  ${dim("Review release notes before applying — these cross a major-version boundary.")}`);
+
+        for (const update of breaking) {
+            lines.push(formatUpdateLine(update));
+        }
+    }
 
     for (const ecosystem of Object.keys(result.perEcosystem) as EcosystemId[]) {
         const bucket = result.perEcosystem[ecosystem];
