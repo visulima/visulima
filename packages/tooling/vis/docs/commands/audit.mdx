@@ -26,9 +26,11 @@ vis audit --severity high
 
 # CI / pipeline output
 vis audit --format json
-vis audit --format sarif      # GitHub code-scanning
-vis audit --format csaf       # Enterprise VEX pipelines
+vis audit --format sarif          # GitHub code-scanning
+vis audit --format csaf           # Enterprise VEX pipelines
 vis audit --format cyclonedx-vex  # SBOM + VEX in one document
+vis audit --format gitlab         # GitLab CI dependency-scanning widget
+vis audit --format junit          # JUnit XML (GitLab/Actions/Jenkins test reporters)
 
 # Self-contained HTML report (auto-opens in a TTY)
 vis audit --report ./audit-report.html
@@ -71,14 +73,16 @@ vis audit --policies none                   # skip the policy engine entirely
 
 ### Output formats
 
-| Option                   | Description                                                                                                      |
-| ------------------------ | ---------------------------------------------------------------------------------------------------------------- |
-| `--format table`         | Default human-readable output.                                                                                   |
-| `--format json`          | Machine-readable JSON (for CI integration).                                                                      |
-| `--format sarif`         | [SARIF 2.1.0](https://docs.oasis-open.org/sarif/sarif/v2.1.0/) — for GitHub / GitLab code-scanning.              |
-| `--format csaf`          | [CSAF 2.0](https://oasis-open.github.io/csaf-documentation/) `csaf_vex` profile.                                 |
-| `--format cyclonedx-vex` | [CycloneDX 1.7](https://cyclonedx.org/specification/) BOM with `vulnerabilities[]` (SBOM + VEX in one document). |
-| `--report <path>`        | Write a self-contained HTML report to `<path>`. Auto-opens in a TTY when not in CI.                              |
+| Option                   | Description                                                                                                                                                         |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--format table`         | Default human-readable output.                                                                                                                                      |
+| `--format json`          | Machine-readable JSON (for CI integration).                                                                                                                         |
+| `--format sarif`         | [SARIF 2.1.0](https://docs.oasis-open.org/sarif/sarif/v2.1.0/) — for GitHub / GitLab code-scanning.                                                                 |
+| `--format csaf`          | [CSAF 2.0](https://oasis-open.github.io/csaf-documentation/) `csaf_vex` profile.                                                                                    |
+| `--format cyclonedx-vex` | [CycloneDX 1.7](https://cyclonedx.org/specification/) BOM with `vulnerabilities[]` (SBOM + VEX in one document).                                                    |
+| `--format gitlab`        | [GitLab dependency-scanning report](https://docs.gitlab.com/ee/development/integrations/secure.html) v15.2.1 — picked up by the Secure stage's Dependencies widget. |
+| `--format junit`         | Surefire-flavoured JUnit XML — parsed by GitLab, GitHub Actions test-reporter, Jenkins, etc., without a plugin.                                                     |
+| `--report <path>`        | Write a self-contained HTML report to `<path>`. Auto-opens in a TTY when not in CI.                                                                                 |
 
 ### Offline cache
 
@@ -121,7 +125,7 @@ Run [`vis advisories sync`](./advisories.mdx) to populate the cache.
 
 Resolution: CLI `--backend` → `VIS_AUDIT_BACKEND` env → `security.audit.backend` in `vis.config.ts` → `auto`.
 
-Vis-only features (`--report`, `--fix-transitive`, `--usage`, `--policies`, `--format sarif|csaf|cyclonedx-vex`, `--ecosystem` beyond `npm`) print a warning and are dropped when delegating; pass `--backend vis` if you need them.
+Vis-only features (`--report`, `--fix-transitive`, `--usage`, `--policies`, `--format sarif|csaf|cyclonedx-vex|gitlab|junit`, `--ecosystem` beyond `npm`) print a warning and are dropped when delegating; pass `--backend vis` if you need them.
 
 The policy engine wraps eight Socket.dev-style supply-chain gates. Each policy
 is opt-in via the corresponding `security.policies.<name>` field — leaving the

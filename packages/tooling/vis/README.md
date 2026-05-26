@@ -196,7 +196,7 @@ When aube is the active installer, `vis audit` delegates to `aube audit` so a si
 3. `security.audit.backend` in `vis.config.ts`.
 4. Defaults to `auto` — delegates only when `install.backend` (or `VIS_INSTALLER`) resolves to aube AND `aube` is on `PATH`.
 
-Vis-only features (`--report`, `--fix-transitive`, `--usage`, `--policies`, `--format sarif|csaf|cyclonedx-vex`, `--ecosystem` beyond npm) print a warning and are dropped when delegating; pass `--backend vis` to force the built-in OSV/Socket scanner.
+Vis-only features (`--report`, `--fix-transitive`, `--usage`, `--policies`, `--format sarif|csaf|cyclonedx-vex|gitlab|junit`, `--ecosystem` beyond npm) print a warning and are dropped when delegating; pass `--backend vis` to force the built-in OSV/Socket scanner.
 
 ### Doctor visibility
 

@@ -17,6 +17,8 @@ const audit: Command = {
         ["vis audit --format sarif", "Output SARIF 2.1.0 for code-scanning uploads"],
         ["vis audit --format csaf", "Output CSAF 2.0 csaf_vex for enterprise vuln pipelines"],
         ["vis audit --format cyclonedx-vex", "Output a CycloneDX 1.7 BOM with vulnerabilities[] (SBOM + VEX)"],
+        ["vis audit --format gitlab", "Output a GitLab dependency-scanning report (gl-dependency-scanning.json)"],
+        ["vis audit --format junit", "Output a Surefire-compatible JUnit XML report"],
         ["vis audit --report report.html", "Write a self-contained HTML report to ./report.html"],
         ["vis audit --usage", "Only report vulnerabilities in statically-imported packages"],
         ["vis audit --offline", "Query the local OSV cache only (no network)"],
@@ -48,7 +50,7 @@ const audit: Command = {
             type: String,
         },
         {
-            description: "Output format: table, json, sarif, csaf, or cyclonedx-vex (default: table)",
+            description: "Output format: table, json, sarif, csaf, cyclonedx-vex, gitlab, or junit (default: table)",
             name: "format",
             type: String,
         },
