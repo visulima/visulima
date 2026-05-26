@@ -11,6 +11,7 @@ import { parseLockFileContent } from "@visulima/package";
 import { join } from "@visulima/path";
 
 import { readPnpmWorkspacePatterns, resolveWorkspacePatterns } from "../config/workspace";
+import type { DependencyPathNode, LockfileGraph } from "./dependency-paths";
 
 export interface InstalledPackage {
     isDev: boolean;
@@ -317,4 +318,61 @@ export const findDuplicateDependencies = (workspaceRoot: string, pmName: string)
     }
 
     return duplicates.sort((a, b) => a.name.localeCompare(b.name));
+};
+
+/**
+ * Build a `LockfileGraph` the dependency-path walker can DFS over.
+ *
+ * `roots` are the workspace's declared deps (every variant: dependencies,
+ * devDependencies, peerDependencies, optionalDependencies). The walker
+ * resolves each root's specifier to a concrete installed version via
+ * `resolveRootNode`, so we surface the raw specifier as `version` here.
+ *
+ * Returns `undefined` when the lockfile is missing or unparseable —
+ * callers fall back to empty `dependencyPaths` in that case.
+ */
+export const loadLockfileGraph = (workspaceRoot: string, pmName: string): LockfileGraph | undefined => {
+    const lockInfo = resolveLockfile(workspaceRoot, pmName);
+
+    if (!lockInfo) {
+        return undefined;
+    }
+
+    let lockContent: string;
+
+    try {
+        lockContent = readFileSync(join(workspaceRoot, lockInfo.file));
+    } catch {
+        return undefined;
+    }
+
+    const entries = parseLockFileContent(lockContent, lockInfo.type);
+
+    if (entries.length === 0) {
+        return undefined;
+    }
+
+    const roots: DependencyPathNode[] = [];
+    const seen = new Set<string>();
+
+    for (const pkg of collectWorkspacePackageJsons(workspaceRoot)) {
+        for (const map of [pkg.dependencies, pkg.devDependencies, pkg.peerDependencies, pkg.optionalDependencies]) {
+            if (!map) {
+                continue;
+            }
+
+            for (const [name, specifier] of Object.entries(map)) {
+                const key = `${name}@${specifier}`;
+
+                if (seen.has(key)) {
+                    continue;
+                }
+
+                seen.add(key);
+                roots.push({ name, version: specifier });
+            }
+        }
+    }
+
+    return { entries, roots };
 };

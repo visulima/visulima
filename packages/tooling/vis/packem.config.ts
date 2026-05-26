@@ -66,6 +66,7 @@ export default defineConfig({
                     "v8-compile-cache",
                     "fastest-levenshtein",
                     "terminal-size",
+                    "@jridgewell/trace-mapping"
                 ],
             },
         },

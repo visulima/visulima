@@ -9,6 +9,7 @@
  */
 
 import type { SecurityVulnerability } from "../security/advisories";
+import { advisoryUri, cvssScore } from "./finding";
 
 export interface CsafFinding {
     acknowledged: boolean;
@@ -119,27 +120,7 @@ const SEVERITY_TO_CVSS_LABEL: Record<string, CsafCvss3["baseSeverity"]> = {
     UNKNOWN: "NONE",
 };
 
-const SEVERITY_TO_FALLBACK_SCORE: Record<string, number> = {
-    CRITICAL: 9.5,
-    HIGH: 8,
-    LOW: 2.5,
-    MODERATE: 5.5,
-    UNKNOWN: 0,
-};
-
 const productId = (name: string, version: string): string => `pkg:npm/${name}@${version}`;
-
-const advisoryUri = (id: string): string => {
-    if (id.startsWith("CVE-")) {
-        return `https://nvd.nist.gov/vuln/detail/${id}`;
-    }
-
-    if (id.startsWith("GHSA-")) {
-        return `https://github.com/advisories/${id}`;
-    }
-
-    return `https://osv.dev/vulnerability/${id}`;
-};
 
 const groupBy = <T, K extends string | number>(items: T[], key: (item: T) => K): Map<K, T[]> => {
     const map = new Map<K, T[]>();
@@ -214,10 +195,7 @@ export const emitCsaf = (options: CsafEmitOptions): CsafDocument => {
                     };
                 });
 
-            const score
-                = typeof sample.cvssScore === "number" && Number.isFinite(sample.cvssScore)
-                    ? sample.cvssScore
-                    : (SEVERITY_TO_FALLBACK_SCORE[sample.severity] ?? 0);
+            const score = cvssScore(sample);
 
             const acknowledgedProducts = findings.filter((f) => f.acknowledged).map((f) => productId(f.packageName, f.packageVersion));
 

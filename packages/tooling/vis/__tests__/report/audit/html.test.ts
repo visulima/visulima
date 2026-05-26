@@ -259,6 +259,146 @@ describe(emitAuditHtml, () => {
         expect(html).not.toContain("Policy Decisions");
     });
 
+    it("renders a Duplicate Versions section when the canonical report carries duplicates", async () => {
+        expect.assertions(4);
+
+        const html = emitAuditHtml({
+            ...baseOptions,
+            findings: [],
+            report: {
+                bloomHits: [],
+                duplicates: [
+                    { name: "lodash", versionCount: 2, versions: ["4.17.20", "4.17.21"] },
+                    { name: "axios", versionCount: 3, versions: ["0.21.0", "0.27.2", "1.6.0"] },
+                ],
+                generatedAt: "2026-05-11T12:00:00.000Z",
+                packages: 100,
+                policies: [],
+                results: [],
+                schemaVersion: "1.0",
+                summary: { accepted: 0, duplicatePackages: 2, issues: 0, policyBlocks: 0, policyDecisions: 0, total: 0 },
+                tool: { name: "vis-audit", version: "alpha" },
+                warnings: [],
+                workspaceRoot: "/repo",
+            },
+        });
+
+        expect(html).toContain("Duplicate Versions (2)");
+        expect(html).toContain("4.17.20, 4.17.21");
+
+        const window = new Window();
+        const parser = new window.DOMParser();
+        const document = parser.parseFromString(html, "text/html");
+        const rows = document.querySelectorAll("table#duplicates tbody tr");
+
+        expect(rows).toHaveLength(2);
+        // Rows sorted by name → axios sits before lodash.
+        expect(rows[0]?.textContent).toContain("axios");
+
+        await window.happyDOM.close();
+    });
+
+    it("omits the Duplicate Versions section when no duplicates are reported", () => {
+        expect.assertions(1);
+
+        const html = emitAuditHtml({ ...baseOptions, findings: [] });
+
+        expect(html).not.toContain("Duplicate Versions");
+    });
+
+    it("renders a fixable chip counting unacknowledged findings with at least one fix", async () => {
+        expect.assertions(3);
+
+        const html = emitAuditHtml({
+            ...baseOptions,
+            findings: [
+                { acknowledged: false, packageName: "a", packageVersion: "1.0.0", vulnerability: vuln({ fixedVersions: ["1.0.1"], id: "GHSA-a" }) },
+                { acknowledged: false, packageName: "b", packageVersion: "1.0.0", vulnerability: vuln({ fixedVersions: [], id: "GHSA-b" }) },
+                { acknowledged: true, packageName: "c", packageVersion: "1.0.0", vulnerability: vuln({ fixedVersions: ["2.0.0"], id: "GHSA-c" }) },
+            ],
+        });
+
+        const window = new Window();
+        const parser = new window.DOMParser();
+        const document = parser.parseFromString(html, "text/html");
+
+        const chip = document.querySelector(".dseg-fixable");
+
+        expect(chip).not.toBeNull();
+        expect(chip?.textContent).toContain("fixable");
+        // 1 fixable / 2 unacknowledged — acknowledged GHSA-c excluded from both counts.
+        expect(chip?.textContent?.replaceAll(/\s+/g, "")).toContain("1/2");
+
+        await window.happyDOM.close();
+    });
+
+    it("omits the fixable chip when all findings are acknowledged", () => {
+        expect.assertions(1);
+
+        const html = emitAuditHtml({
+            ...baseOptions,
+            findings: [{ acknowledged: true, packageName: "a", packageVersion: "1.0.0", vulnerability: vuln() }],
+        });
+
+        expect(html).not.toContain("dseg-fixable");
+    });
+
+    it("renders a paths-row below a finding when dependencyPaths are supplied", async () => {
+        expect.assertions(4);
+
+        const html = emitAuditHtml({
+            ...baseOptions,
+            findings: [
+                {
+                    acknowledged: false,
+                    dependencyPaths: [
+                        [
+                            { name: "root", version: "1.0.0" },
+                            { name: "axios", version: "0.21.0" },
+                            { name: "lodash", version: "4.17.20" },
+                        ],
+                        [
+                            { name: "root", version: "1.0.0" },
+                            { name: "lodash", version: "4.17.20" },
+                        ],
+                    ],
+                    packageName: "lodash",
+                    packageVersion: "4.17.20",
+                    vulnerability: vuln(),
+                },
+            ],
+        });
+
+        const window = new Window();
+        const parser = new window.DOMParser();
+        const document = parser.parseFromString(html, "text/html");
+
+        const pathsRows = document.querySelectorAll("tr.paths-row");
+
+        expect(pathsRows).toHaveLength(1);
+        expect(pathsRows[0]?.textContent).toContain("DEPENDENCY PATHS");
+        expect(pathsRows[0]?.textContent).toContain("root@1.0.0");
+        expect(pathsRows[0]?.textContent).toContain("axios@0.21.0");
+
+        await window.happyDOM.close();
+    });
+
+    it("omits the paths-row when dependencyPaths is empty or absent", () => {
+        expect.assertions(2);
+
+        const htmlAbsent = emitAuditHtml({
+            ...baseOptions,
+            findings: [{ acknowledged: false, packageName: "lodash", packageVersion: "4.17.20", vulnerability: vuln() }],
+        });
+        const htmlEmpty = emitAuditHtml({
+            ...baseOptions,
+            findings: [{ acknowledged: false, dependencyPaths: [], packageName: "lodash", packageVersion: "4.17.20", vulnerability: vuln() }],
+        });
+
+        expect(htmlAbsent).not.toContain("paths-row");
+        expect(htmlEmpty).not.toContain("paths-row");
+    });
+
     it("renders no <script> for XSS payloads and keeps them as inert text nodes", async () => {
         expect.assertions(3);
 

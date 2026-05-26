@@ -11,6 +11,7 @@
 import { toNpmPurl } from "../sbom/purl";
 import type { CycloneDxBom, CycloneDxSeverity, CycloneDxVulnerability } from "../sbom/types";
 import type { SecurityVulnerability } from "../security/advisories";
+import { advisorySourceName, advisoryUri, cvssScore } from "./finding";
 
 export interface CycloneDxVexFinding {
     acknowledged: boolean;
@@ -33,37 +34,6 @@ const SEVERITY_MAP: Record<string, CycloneDxSeverity> = {
     UNKNOWN: "unknown",
 };
 
-const SEVERITY_FALLBACK_SCORE: Record<string, number> = {
-    CRITICAL: 9.5,
-    HIGH: 8,
-    LOW: 2.5,
-    MODERATE: 5.5,
-    UNKNOWN: 0,
-};
-
-const advisoryUri = (id: string): string => {
-    if (id.startsWith("CVE-")) {
-        return `https://nvd.nist.gov/vuln/detail/${id}`;
-    }
-
-    if (id.startsWith("GHSA-")) {
-        return `https://github.com/advisories/${id}`;
-    }
-
-    return `https://osv.dev/vulnerability/${id}`;
-};
-
-const advisorySourceName = (id: string): string => {
-    if (id.startsWith("CVE-")) {
-        return "NVD";
-    }
-
-    if (id.startsWith("GHSA-")) {
-        return "GitHub Advisory Database";
-    }
-
-    return "OSV";
-};
 
 const groupBy = <T, K extends string | number>(items: T[], key: (item: T) => K): Map<K, T[]> => {
     const map = new Map<K, T[]>();
@@ -95,8 +65,7 @@ export const buildCycloneDxVulnerabilities = (findings: CycloneDxVexFinding[], n
         .map(([advisoryId, group]): CycloneDxVulnerability => {
             const sample = group[0]!.vulnerability;
             const severity = SEVERITY_MAP[sample.severity] ?? "unknown";
-            const score
-                = typeof sample.cvssScore === "number" && Number.isFinite(sample.cvssScore) ? sample.cvssScore : (SEVERITY_FALLBACK_SCORE[sample.severity] ?? 0);
+            const score = cvssScore(sample);
 
             const affectsByPkg = groupBy(group, (f) => f.packageName);
 

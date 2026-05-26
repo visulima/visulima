@@ -15,16 +15,21 @@ import type { VisConfig } from "../../config/workspace";
 import { buildProjectGraph, discoverWorkspace } from "../../config/workspace";
 import { pail } from "../../io/logger";
 import { detectPm, runAdd } from "../../pm/pm-runner";
+import { buildAuditReport } from "../../report/audit/build-report";
 import { emitAuditHtml } from "../../report/audit/html";
 import { emitCsaf } from "../../report/csaf";
 import { emitCycloneDxVex } from "../../report/cyclonedx-vex";
+import { emitGitlabDepScan } from "../../report/gitlab-dep-scan";
+import { emitJUnitAudit } from "../../report/junit-audit";
 import { emitSarif } from "../../report/sarif";
 import { buildCycloneDxBom } from "../../sbom/cyclonedx";
 import { startScanProgress } from "../../scan/scan-progress";
 import { AdvisoryDbNotFoundError, queryAdvisories, resolveAdvisoryDbPath } from "../../security/advisories";
 import type { DirectApplyPlan } from "../../security/apply-direct";
 import { buildDirectApplyPlan, formatDirectApplyPlan } from "../../security/apply-direct";
-import { findDuplicateDependencies, lockedPackages } from "../../security/dependency-scan";
+import type { DependencyPath } from "../../security/dependency-paths";
+import { buildDependencyPaths } from "../../security/dependency-paths";
+import { findDuplicateDependencies, loadLockfileGraph, lockedPackages } from "../../security/dependency-scan";
 import { readNodeModulesManifests } from "../../security/manifests";
 import { isMarshallDisabled } from "../../security/marshalls/registry";
 import { canonicalEcosystem, lockedPackagesForEcosystem } from "../../security/multi-eco-lockfiles";
@@ -238,7 +243,14 @@ const runAubeAudit = (workspaceRoot: string, options: Record<string, unknown>, _
         skipped.push("--offline (aube has its own offline cache)");
     }
 
-    if (options.format === "sarif" || options.format === "csaf" || options.format === "cyclonedx" || options.format === "cyclonedx-vex") {
+    if (
+        options.format === "sarif"
+        || options.format === "csaf"
+        || options.format === "cyclonedx"
+        || options.format === "cyclonedx-vex"
+        || options.format === "gitlab"
+        || options.format === "junit"
+    ) {
         skipped.push(`--format=${String(options.format)} (only json/text is forwarded to aube)`);
     }
 
@@ -779,16 +791,32 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
         }
     }
 
+    // Compute root → vulnerable resolution paths from the lockfile graph
+    // once per filtered entry. The path-walker is bounded (`maxPathsPerTarget`
+    // capped at 5 by default) so a pathological lockfile can't blow up the
+    // audit run. Threaded through `findingsForReport` so every downstream
+    // surface (SARIF, CSAF, VEX, HTML, JSON) sees the same paths.
+    const lockfileGraph = loadLockfileGraph(workspaceRoot, pm.name);
+    const filteredWithPaths = lockfileGraph
+        ? filtered.map((entry) => {
+            const paths: DependencyPath[] = buildDependencyPaths(lockfileGraph, { name: entry.name, version: entry.version });
+
+            return { ...entry, dependencyPaths: paths };
+        })
+        : filtered.map((entry) => ({ ...entry, dependencyPaths: [] as DependencyPath[] }));
+
     const findingsForReport = (): {
         acknowledged: boolean;
+        dependencyPaths: DependencyPath[];
         packageName: string;
         packageVersion: string;
         vulnerability: SecurityVulnerability;
     }[] =>
-        filtered.flatMap((entry) =>
+        filteredWithPaths.flatMap((entry) =>
             entry.vulnerabilities.map((vuln) => {
                 return {
                     acknowledged: Boolean(entry.acceptedRisk) || isAdvisoryExcluded(vuln.id, nativeExclusions, vuln.aliases),
+                    dependencyPaths: entry.dependencyPaths,
                     packageName: entry.name,
                     packageVersion: entry.version,
                     vulnerability: vuln,
@@ -929,6 +957,22 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
         return;
     }
 
+    // Single canonical report drives both `--format json` and the HTML
+    // payload — keeps machine-readable surfaces in lockstep with the
+    // human-facing one. See `src/report/audit/build-report.ts`.
+    const auditReportTool = { informationUri: "https://github.com/visulima/visulima", name: "vis-audit", version: "alpha" } as const;
+    const auditReport = buildAuditReport({
+        bloomHits,
+        duplicates,
+        explanations,
+        filtered: filteredWithPaths,
+        packagesScanned: installed.length,
+        policyDecisions,
+        tool: auditReportTool,
+        unknownPolicyTokens,
+        workspaceRoot,
+    });
+
     // 5d. HTML report — writes to disk, optionally also continues the table flow below.
     if (reportPath) {
         const html = emitAuditHtml({
@@ -941,7 +985,8 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
             }),
             packagesScanned: installed.length,
             policyDecisions,
-            tool: { name: "vis-audit", version: "alpha" },
+            report: auditReport,
+            tool: { name: auditReportTool.name, version: auditReportTool.version },
             workspaceRoot,
         });
 
@@ -956,60 +1001,9 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
 
     // 5. JSON output
     if (isJson) {
-        const jsonResult = {
-            bloomHits,
-            duplicates: duplicates.map((d) => {
-                return {
-                    name: d.name,
-                    versionCount: d.versions.length,
-                    versions: d.versions,
-                };
-            }),
-            packages: installed.length,
-            policies: policyDecisions.map((d) => {
-                return {
-                    acceptedRisk: d.acceptedRisk ?? null,
-                    data: d.data ?? null,
-                    packageName: d.packageName,
-                    policy: d.policy,
-                    reason: d.reason,
-                    severity: d.severity,
-                    version: d.version,
-                };
-            }),
-            results: filtered.map((e) => {
-                return {
-                    acceptedRisk: e.acceptedRisk ?? null,
-                    name: e.name,
-                    socketAlerts: e.socketReport?.alerts ?? [],
-                    socketScore: e.socketReport?.score.overall ?? null,
-                    version: e.version,
-                    vulnerabilities: e.vulnerabilities.map((vuln) => {
-                        const explanation = explanations.get(explainKey({ packageName: e.name, packageVersion: e.version, vulnerability: vuln }));
+        process.stdout.write(`${JSON.stringify(auditReport, undefined, 2)}\n`);
 
-                        return explanation ? { ...vuln, explanation } : vuln;
-                    }),
-                };
-            }),
-            summary: {
-                accepted: filtered.filter((e) => e.acceptedRisk).length,
-                duplicatePackages: duplicates.length,
-                issues: filtered.filter((e) => !e.acceptedRisk).length,
-                policyBlocks: policyDecisions.filter((d) => d.severity === "block" && !d.acceptedRisk).length,
-                policyDecisions: policyDecisions.length,
-                total: filtered.length,
-            },
-            warnings:
-                unknownPolicyTokens.length > 0
-                    ? unknownPolicyTokens.map((token) => {
-                        return { kind: "unknown-policy" as const, token };
-                    })
-                    : [],
-        };
-
-        process.stdout.write(`${JSON.stringify(jsonResult, undefined, 2)}\n`);
-
-        if (options.exitCode && (jsonResult.summary.issues > 0 || jsonResult.summary.policyBlocks > 0)) {
+        if (options.exitCode && (auditReport.summary.issues > 0 || auditReport.summary.policyBlocks > 0)) {
             process.exitCode = 1;
         }
 
