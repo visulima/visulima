@@ -1,3 +1,20 @@
+## @visulima/vis-mcp [1.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/vis-mcp@1.0.0-alpha.13...@visulima/vis-mcp@1.0.0-alpha.14) (2026-05-26)
+
+### Miscellaneous Chores
+
+* **ci-stability:** green CI across vis, native, lint, tests, attw ([#651](https://github.com/visulima/visulima/issues/651)) ([d4eb684](https://github.com/visulima/visulima/commit/d4eb684b5f75c818c9251048c605a0ed54a268e3))
+* **repo:** apply eslint --fix and prettier --fix across packages ([#650](https://github.com/visulima/visulima/issues/650)) ([2e26a84](https://github.com/visulima/visulima/commit/2e26a84774f218f21345e9a8ecd68236b6542743)), closes [#620](https://github.com/visulima/visulima/issues/620)
+
+### Tests
+
+* **repo:** cover bin entry points in dist integration suite ([7479ef1](https://github.com/visulima/visulima/commit/7479ef113cf5ccef25692619082afb1b6a0eecab))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.26
+* **@visulima/vis:** upgraded to 1.0.0-alpha.24
+
 ## @visulima/vis-mcp [1.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/vis-mcp@1.0.0-alpha.12...@visulima/vis-mcp@1.0.0-alpha.13) (2026-05-20)
 
 
