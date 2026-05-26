@@ -52,13 +52,14 @@ const displayName = (reference: ImageReference): string => {
 };
 
 /**
- * Builds the replacement token written back into the file. Preserves the
- * digest pin: if the original was `image:tag@sha256:…`, the new ref
- * keeps the `:tag@sha256:…` shape but with the resolved digest from the
- * registry. We can't fetch digests cheaply for every tag, so for now
- * the digest is dropped on update (a follow-up could re-fetch it via
- * `HEAD /v2/<name>/manifests/<tag>` for users who want strict pinning).
+ * Returns true when the reference has a `@sha256:…` digest pin. Digest
+ * pins are an explicit supply-chain guarantee from the user — we can't
+ * cheaply resolve a fresh digest for the new tag (it would require a
+ * `HEAD /v2/<name>/manifests/<tag>` call per update), so the safe
+ * default is to skip the update with a clear reason rather than silently
+ * strip the pin.
  */
+const hasDigestPin = (reference: ImageReference): boolean => reference.digest !== undefined && reference.digest.length > 0;
 /**
  * Best-effort registry browse URL for the report. Docker Hub uses a
  * different path shape for library vs. user images, and other registries
@@ -163,6 +164,31 @@ export const checkDocker = async (workspaceRoot: string, context: CheckDockerCon
                     reason: ignoreReason,
                     replacement: reference.original,
                     updateType: "unknown",
+                });
+
+                continue;
+            }
+
+            // Digest-pinned images (`image:tag@sha256:…`) carry an
+            // explicit supply-chain pin from the user. Rewriting the tag
+            // without re-resolving the digest would silently strip the
+            // pin, so we skip with a clear reason rather than corrupt
+            // the user's security posture.
+            if (hasDigestPin(reference)) {
+                ignoredList.push({
+                    currentRef: reference.tag,
+                    currentVersion: reference.tag,
+                    ecosystem: "docker",
+                    file: reference.file,
+                    ignored: true,
+                    line: reference.line,
+                    name: fullName,
+                    newRef: reference.tag,
+                    newVersion: undefined,
+                    original: reference.original,
+                    reason: "digest-pinned image (refresh the pin manually to update)",
+                    replacement: reference.original,
+                    updateType: "digest",
                 });
 
                 continue;

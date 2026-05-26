@@ -24,6 +24,8 @@ export interface UsesReference {
     readonly line: number;
     /** Exact original token as it appeared after `uses:`, sans surrounding whitespace/quotes. */
     readonly original: string;
+    /** Quote character the original value was wrapped in, or `""` when unquoted. The applier re-emits the new value inside the same quote style so trailing `# vN.M.P` hints don't end up *inside* the YAML string. */
+    readonly quote: "" | "'" | "\"";
     /** Whether the existing ref is already a 40-char hex SHA. */
     readonly isSha: boolean;
     /** Inline comment trailing the `uses:` line (e.g. `# v3.5.3`). Used to preserve the version hint when re-pinning. */
@@ -51,7 +53,6 @@ const USES_LINE_RE = /^(\s*-?\s*uses:\s*)(['"]?)([^'"\s#]+)\2(\s*#\s*(.+))?\s*$/
 const SHA_RE = /^[a-f0-9]{40}$/i;
 
 const IGNORE_NEXT_RE = /actions-up-ignore-next-line(?::\s*(.+))?/i;
-const IGNORE_INLINE_RE = /actions-up-ignore(?::\s*(.+))?/i;
 const IGNORE_BLOCK_START_RE = /actions-up-ignore-start/i;
 const IGNORE_BLOCK_END_RE = /actions-up-ignore-end/i;
 
@@ -73,18 +74,6 @@ const splitSlug = (slug: string): { owner: string; repo: string; subpath: string
         repo,
         subpath: rest.length > 0 ? rest.join("/") : undefined,
     };
-};
-
-/**
- * Strip surrounding single/double quotes from a YAML scalar. We accept
- * both styles up-front but the applier mirrors whatever the user wrote.
- */
-const stripQuotes = (raw: string): string => {
-    if (raw.length >= 2 && (raw[0] === "'" || raw[0] === "\"") && raw[raw.length - 1] === raw[0]) {
-        return raw.slice(1, -1);
-    }
-
-    return raw;
 };
 
 /**
@@ -118,7 +107,13 @@ export const extractUsesFromContent = (filePath: string, content: string): UsesR
         }
 
         // Lookahead form: `# actions-up-ignore-next-line` on the previous line.
-        const ignoreNextMatch = IGNORE_NEXT_RE.exec(line);
+        // The directive must live on a line by itself; when it appears as a
+        // trailing comment on a `uses:` line we treat it as the inline
+        // (this-line) ignore form below — otherwise the line that follows
+        // silently inherits an ignore the user never asked for.
+        const trimmedLine = line.trim();
+        const isCommentOnly = trimmedLine === "" || trimmedLine.startsWith("#");
+        const ignoreNextMatch = isCommentOnly ? IGNORE_NEXT_RE.exec(line) : undefined;
 
         if (ignoreNextMatch) {
             pendingIgnoreReason = ignoreNextMatch[1] ?? "actions-up-ignore-next-line";
@@ -135,7 +130,14 @@ export const extractUsesFromContent = (filePath: string, content: string): UsesR
             continue;
         }
 
-        const value = stripQuotes(match[3] ?? "");
+        // match[2] is the original quote character (`'`, `"`, or empty);
+        // match[3] is the already-unquoted value. We capture the quote
+        // separately so the applier can re-emit the same quoting style
+        // and the trailing `# vN.M.P` hint never lands *inside* the YAML
+        // string.
+        const rawQuote = match[2] ?? "";
+        const quote: "" | "'" | "\"" = rawQuote === "'" || rawQuote === "\"" ? rawQuote : "";
+        const value = match[3] ?? "";
         const trailingComment = match[5]?.trim();
 
         // Local actions and docker:// urls are out of scope.
@@ -166,17 +168,18 @@ export const extractUsesFromContent = (filePath: string, content: string): UsesR
         }
 
         let ignoreReason = pendingIgnoreReason ?? (blockIgnore ? "actions-up-ignore-block" : undefined);
-        const inlineMatch = trailingComment ? IGNORE_INLINE_RE.exec(trailingComment) : undefined;
         // Only treat the inline directive as an ignore when it appears as
-        // a standalone token — a trailing `# v3.1.0` mustn't be parsed as
-        // an ignore even though `IGNORE_INLINE_RE` is permissive.
-        // We require the directive to start the trailing comment.
-        if (
-            inlineMatch
-            && trailingComment
-            && /^actions-up-ignore(?::|\s|$)/i.test(trailingComment)
-        ) {
-            ignoreReason = ignoreReason ?? (inlineMatch[1] ?? "actions-up-ignore");
+        // a standalone token starting the trailing comment — a trailing
+        // `# v3.1.0` mustn't be parsed as an ignore. Both
+        // `actions-up-ignore` and `actions-up-ignore-next-line` on the
+        // same line as `uses:` are treated as inline ignores (matching
+        // how `eslint-disable-next-line` applies to the line it sits on).
+        if (trailingComment) {
+            const startInline = /^actions-up-ignore(?:-next-line)?(?::\s*(.+))?(?:\s|$)/i.exec(trailingComment);
+
+            if (startInline) {
+                ignoreReason = ignoreReason ?? (startInline[1] ?? "actions-up-ignore");
+            }
         }
 
         pendingIgnoreReason = undefined;
@@ -186,8 +189,14 @@ export const extractUsesFromContent = (filePath: string, content: string): UsesR
             ignoreReason,
             isSha: SHA_RE.test(ref),
             line: index + 1,
-            original: value,
+            // `original` includes the surrounding quotes when present, so the
+            // applier's `line.indexOf(original)` lands on the whole token
+            // (including the closing quote) and the replacement re-supplies
+            // both quotes — keeping any trailing `# vN.M.P` outside the YAML
+            // string literal.
+            original: `${quote}${value}${quote}`,
             owner: parts.owner,
+            quote,
             ref,
             repo: parts.repo,
             slug,

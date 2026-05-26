@@ -61,4 +61,17 @@ describe(extractFromGitlabCi, () => {
         expect(component?.project).toBe("gitlab.com/group/components/ci");
         expect(component?.ref).toBe("2.0.0");
     });
+
+    it("propagates `# vis-update-ignore-next-line` to the include block that follows", () => {
+        expect.assertions(1);
+
+        const { includes } = extractFromGitlabCi("/tmp/.gitlab-ci.yml", GITLAB_YAML);
+        const ignored = includes.find((include) => include.project === "group/ignored");
+
+        // The fixture has `# vis-update-ignore-next-line` above the
+        // ignored include. The directive must survive across the
+        // `project:` line and land on the `ref:` line so the include is
+        // emitted as ignored.
+        expect(ignored?.ignoreReason).toBeDefined();
+    });
 });

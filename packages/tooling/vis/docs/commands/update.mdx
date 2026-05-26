@@ -166,7 +166,11 @@ Per-package or per-pattern update target overrides. Keys can be:
 
 ## Non-npm ecosystem updates
 
-In addition to npm/pnpm/bun catalogs, `vis update` auto-detects and updates references in:
+In addition to npm/pnpm/bun catalogs, `vis update` auto-detects and **previews** updates to non-npm references. The preview always runs; **applying the changes requires explicit opt-in** so a plain `vis update` can never silently rewrite CI files:
+
+- `--yes` applies the previewed ecosystem updates in one shot.
+- `--interactive` plus an explicit catalog selection step opts you in.
+- A `--dry-run` invocation, a failed PM install, or a TUI cancellation will leave CI files untouched even when updates were available.
 
 ### GitHub Actions
 
@@ -174,9 +178,11 @@ Scans `.github/workflows/*.yml`, `.github/actions/*/action.yml`, and root `actio
 
 - Lists tags via the GitHub REST API (`/repos/{owner}/{repo}/tags`)
 - Default-pins to the commit SHA with a `# vN.M.P` version-hint comment for readability
+- Preserves the original YAML quote style (`uses: 'actions/checkout@v3'` round-trips quoted)
 - Supports `--style preserve` to keep the existing tag-style reference
 - Skips branch refs (`@main`, `@master`) unless `--include-branches` is passed
-- Honours inline ignore directives: `# actions-up-ignore`, `# actions-up-ignore-next-line`, and block `# actions-up-ignore-start` / `# actions-up-ignore-end`
+- Refuses to bump SHA pins lacking a `# vN.M.P` version-hint comment under `--target=minor|patch` (no current version → no constrained bump)
+- Honours inline ignore directives: `# actions-up-ignore`, `# actions-up-ignore-next-line` (both on a line by themselves AND inline on the same `uses:` line), and block `# actions-up-ignore-start` / `# actions-up-ignore-end`
 - Dedupes per `owner/repo` so a workflow with N references to the same action costs one API round-trip
 
 Set `GITHUB_TOKEN` (or pass `--actions-token`) to raise the rate limit from 60 to 5000 requests/hour.
@@ -187,9 +193,10 @@ Scans every Dockerfile (any name matching `Dockerfile*` / `*.dockerfile`) and co
 
 - Resolves tags from Docker Hub (`docker.io`), GHCR (`ghcr.io`), and any v2-compatible registry
 - Handles registry bearer-token challenges automatically
+- Handles BuildKit `FROM --platform=… node:18` flag lines correctly (multi-arch Dockerfiles work)
 - Skips `latest`, `nightly`, and other non-semver tags unless `--include-branches` is passed
-- Honours `# vis-update-ignore` and `# vis-update-ignore-next-line` directives
-- Supports digest-pinned images (`image:tag@sha256:…`) — the new tag is written without the stale digest
+- Honours `# vis-update-ignore` and `# vis-update-ignore-next-line` directives (inline AND on a line by themselves)
+- Refuses to update digest-pinned images (`image:tag@sha256:…`) — the supply-chain pin would be silently lost; refresh the digest manually instead
 
 ### GitLab CI
 

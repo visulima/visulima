@@ -64,15 +64,20 @@ const matchesPattern = (name: string, patterns: string[]): boolean => {
  * Builds the full token (slug + ref + optional version comment) that
  * replaces the original `uses:` value. SHA pinning appends a version
  * hint comment so the bumped line stays readable.
+ *
+ * When the user wrote the value quoted (`uses: 'actions/checkout@v3'`),
+ * the version-hint comment is appended **outside** the closing quote so
+ * YAML doesn't try to parse `# vN.M.P` as part of the action reference.
  */
 const buildReplacement = (reference: UsesReference, newSha: string, newTag: string, style: "preserve" | "sha"): string => {
     const pinToSha = style === "sha" || reference.isSha;
+    const { quote } = reference;
 
     if (pinToSha) {
-        return `${reference.slug}@${newSha} # ${newTag}`;
+        return `${quote}${reference.slug}@${newSha}${quote} # ${newTag}`;
     }
 
-    return `${reference.slug}@${newTag}`;
+    return `${quote}${reference.slug}@${newTag}${quote}`;
 };
 
 /**
@@ -203,6 +208,32 @@ export const checkActions = async (workspaceRoot: string, context: CheckActionsC
             // comment when present (`actions/checkout@<sha> # v3.5.3`).
             const currentTagSource = reference.isSha ? (reference.trailingComment?.replace(/^#\s*/, "").split(/\s+/)[0] ?? "") : reference.ref;
             const currentParsed = parseTag(currentTagSource);
+
+            // A SHA pin without a parseable version hint can't be
+            // constrained by mode=minor/patch — `pickBestTag` returns
+            // undefined in that case (so an unconstrained --target=patch
+            // run can't silently major-bump it). Surface it as an
+            // ignored entry with a clear reason so the user knows why
+            // the pin was left alone.
+            if (reference.isSha && !currentParsed && options.mode !== "latest") {
+                ignoredList.push({
+                    currentRef: reference.ref,
+                    currentVersion: undefined,
+                    ecosystem: "actions",
+                    file: reference.file,
+                    ignored: true,
+                    line: reference.line,
+                    name: fullName,
+                    newRef: reference.ref,
+                    newVersion: undefined,
+                    original: reference.original,
+                    reason: `SHA pin has no version-hint comment; cannot apply --target=${options.mode}`,
+                    replacement: reference.original,
+                    updateType: "unknown",
+                });
+
+                continue;
+            }
 
             const best = pickBestTag(tagsResult.parsed, currentParsed, options.mode, false);
 

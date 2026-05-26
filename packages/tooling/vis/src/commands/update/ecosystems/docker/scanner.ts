@@ -115,11 +115,28 @@ const IGNORE_NEXT_RE = /vis-update-ignore-next-line/i;
 const IGNORE_INLINE_RE = /vis-update-ignore(?:\s|$|:)/i;
 
 /**
+ * True when the line is a comment-only line (the `# vis-update-ignore-next-line`
+ * directive is *meant* to live on a line by itself, the way `eslint-disable-next-line`
+ * does). When the marker appears as a trailing comment on a real `FROM` /
+ * `uses:` line we treat it as the inline (this-line) ignore form instead —
+ * otherwise the line below silently inherits the ignore.
+ */
+const isCommentOnlyLine = (line: string): boolean => {
+    const trimmed = line.trim();
+
+    return trimmed === "" || trimmed.startsWith("#");
+};
+
+/**
  * Regex for a Dockerfile `FROM` line. Captures the image reference and
  * an optional trailing alias. Multi-stage builds use
  * `FROM base AS stage` — `AS` is captured separately so it round-trips.
+ *
+ * BuildKit allows flags before the image (`FROM --platform=$BUILDPLATFORM node:18`).
+ * The leading `(?:--\S+\s+)*` consumes any number of `--key=value` flags
+ * so the image captured in group 2 is the actual image, not the flag.
  */
-const FROM_LINE_RE = /^(\s*FROM\s+)([^\s#]+)(\s+AS\s+\S+)?(\s*#.*)?$/i;
+const FROM_LINE_RE = /^(\s*FROM\s+(?:--\S+\s+)*)([^\s#]+)(\s+AS\s+\S+)?(\s*#.*)?$/i;
 
 const extractFromDockerfile = (filePath: string, content: string): ImageReference[] => {
     const lines = content.split(/\r?\n/);
@@ -130,7 +147,10 @@ const extractFromDockerfile = (filePath: string, content: string): ImageReferenc
     for (let index = 0; index < lines.length; index++) {
         const line = lines[index] ?? "";
 
-        if (IGNORE_NEXT_RE.test(line)) {
+        // The next-line directive must live on its own line. When the
+        // marker appears on a `FROM` line itself it's the inline form —
+        // handled below via IGNORE_INLINE_RE on the trailing comment.
+        if (IGNORE_NEXT_RE.test(line) && isCommentOnlyLine(line)) {
             pendingIgnore = true;
 
             continue;
@@ -203,7 +223,7 @@ const extractFromCompose = (filePath: string, content: string): ImageReference[]
     for (let index = 0; index < lines.length; index++) {
         const line = lines[index] ?? "";
 
-        if (IGNORE_NEXT_RE.test(line)) {
+        if (IGNORE_NEXT_RE.test(line) && isCommentOnlyLine(line)) {
             pendingIgnore = true;
 
             continue;

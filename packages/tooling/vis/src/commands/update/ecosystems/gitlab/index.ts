@@ -58,12 +58,17 @@ export const checkGitlab = async (workspaceRoot: string, context: CheckGitlabCon
             registryOptions,
         });
 
+        // checkDocker labels updates with `ecosystem: "docker"` AND a
+        // docker.io / GHCR registry URL via buildRegistryUrl. When we
+        // re-attribute them to gitlab we must also drop the url — a
+        // GitLab CI image update reported with a docker.io URL misleads
+        // both the human report and any JSON consumer.
         for (const update of dockerResult.updates) {
-            updates.push({ ...update, ecosystem: "gitlab" });
+            updates.push({ ...update, ecosystem: "gitlab", url: undefined });
         }
 
         for (const update of dockerResult.ignored) {
-            ignoredList.push({ ...update, ecosystem: "gitlab" });
+            ignoredList.push({ ...update, ecosystem: "gitlab", url: undefined });
         }
 
         failed.push(...dockerResult.failed);

@@ -114,7 +114,12 @@ export class ActionsResolver {
     }
 
     private async fetchTags(owner: string, repo: string): Promise<RepoTags> {
-        const url = `${this.apiBase}/repos/${owner}/${repo}/tags?per_page=100`;
+        // Encode each segment — workflow files in PRs from outside
+        // contributors may contain slugs with reserved URL characters
+        // (`..`, `%2f`, etc.) that would otherwise let a malformed slug
+        // path-traverse to a different repo with the user's bearer
+        // token attached.
+        const url = `${this.apiBase}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/tags?per_page=100`;
         const empty: RepoTags = { tags: [], parsed: [] };
 
         try {
@@ -151,7 +156,7 @@ export class ActionsResolver {
     }
 
     private async fetchCommit(owner: string, repo: string, ref: string): Promise<CommitInfo | undefined> {
-        const url = `${this.apiBase}/repos/${owner}/${repo}/commits/${encodeURIComponent(ref)}`;
+        const url = `${this.apiBase}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/commits/${encodeURIComponent(ref)}`;
 
         try {
             const response = await this.fetchImpl(url, { headers: this.buildHeaders() });
