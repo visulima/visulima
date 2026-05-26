@@ -83,7 +83,7 @@ describe(checkDocker, () => {
     });
 
     it("drops updates younger than --min-age-days when Docker Hub reports last_updated", async () => {
-        expect.assertions(3);
+        expect.assertions(4);
 
         const today = new Date().toISOString();
 
@@ -96,6 +96,9 @@ describe(checkDocker, () => {
         expect(result.updates).toHaveLength(0);
         expect(result.ignored[0]?.reason).toBe("release younger than 7 days");
         expect(result.ignored[0]?.newVersion).toBe("22");
+        // newRef must mirror newVersion (post-bump candidate), not the
+        // current reference — pre-bump newRef would confuse --show-ignored.
+        expect(result.ignored[0]?.newRef).toBe("22");
     });
 
     it("keeps updates older than --min-age-days", async () => {

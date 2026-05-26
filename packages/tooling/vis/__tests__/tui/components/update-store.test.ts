@@ -123,6 +123,25 @@ describe("UpdateStore (sort cycle)", () => {
         expect(store.getFilteredEntries().map((entry) => entry.packageName)).toEqual(["m", "n", "p"]);
     });
 
+    it("setSortMode preserves the highlighted package across a re-sort", () => {
+        expect.assertions(2);
+
+        const store = new UpdateStore([
+            makeOutdated({ packageName: "zebra" }),
+            makeOutdated({ packageName: "alpha" }),
+            makeOutdated({ packageName: "mango" }),
+        ]);
+
+        // Highlight "alpha" (index 1 in default order).
+        store.setSelectedIndex(1);
+        expect(store.getSnapshot().selectedIndex).toBe(1);
+
+        // After name-sort the order is alpha, mango, zebra → "alpha" sits
+        // at index 0, not at the old index 1.
+        store.setSortMode("name");
+        expect(store.getSnapshot().selectedIndex).toBe(0);
+    });
+
     it("cycleSortMode rotates default → name → updateType → severity → default", () => {
         expect.assertions(5);
 
