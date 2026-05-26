@@ -289,6 +289,8 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
     const isSarif = format === "sarif";
     const isCsaf = format === "csaf";
     const isCycloneDxVex = format === "cyclonedx-vex" || format === "cyclonedx";
+    const isGitlab = format === "gitlab";
+    const isJunit = format === "junit";
     const isJson = format === "json" || Boolean(options.json);
     const reportPath = options.report as string | undefined;
     const auditConfig = visConfig?.security?.audit;
@@ -304,7 +306,7 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
     // --no-usage wins over --usage and config; otherwise --usage flag, else config default.
     const usageConfig = policies?.vulnerability?.usage;
     const usageEnabled = options.noUsage ? false : options.usage === undefined ? Boolean(usageConfig?.enabled) : Boolean(options.usage);
-    const quietHeader = isJson || isSarif || isCsaf || isCycloneDxVex;
+    const quietHeader = isJson || isSarif || isCsaf || isCycloneDxVex || isGitlab || isJunit;
 
     // `--explain` opts in. command-line-args yields `null` for a bare flag
     // and omits the key entirely when absent, so `!== undefined` is the
@@ -313,7 +315,7 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
     const wantsExplain = explainRaw !== undefined;
     // Explanations only surface in the human / JSON / HTML paths — the
     // machine formats (SARIF/CSAF/CycloneDX-VEX) have no field for them.
-    const explainSupported = wantsExplain && !isSarif && !isCsaf && !isCycloneDxVex;
+    const explainSupported = wantsExplain && !isSarif && !isCsaf && !isCycloneDxVex && !isGitlab && !isJunit;
 
     if (wantsExplain && isOffline) {
         pail.error("`--explain` needs network access and cannot run in offline mode (--offline or security.audit.offlineByDefault).");
@@ -957,6 +959,36 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
         return;
     }
 
+    // 5d. GitLab dependency-scanning report (Secure stage ingest)
+    if (isGitlab) {
+        const gitlab = emitGitlabDepScan({
+            findings: findingsForReport(),
+            policyDecisions,
+            tool: { informationUri: "https://github.com/visulima/visulima", name: "vis-audit", version: "alpha" },
+            workspaceRoot,
+        });
+
+        process.stdout.write(`${JSON.stringify(gitlab, undefined, 2)}\n`);
+
+        applyExitGate(filtered, nativeExclusions, options.exitCode, failOn, policyDecisions);
+
+        return;
+    }
+
+    // 5e. JUnit XML (Surefire-compatible — GitLab/Actions/Jenkins test reporters)
+    if (isJunit) {
+        const junit = emitJUnitAudit({
+            findings: findingsForReport(),
+            policyDecisions,
+        });
+
+        process.stdout.write(junit);
+
+        applyExitGate(filtered, nativeExclusions, options.exitCode, failOn, policyDecisions);
+
+        return;
+    }
+
     // Single canonical report drives both `--format json` and the HTML
     // payload — keeps machine-readable surfaces in lockstep with the
     // human-facing one. See `src/report/audit/build-report.ts`.
@@ -973,7 +1005,7 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
         workspaceRoot,
     });
 
-    // 5d. HTML report — writes to disk, optionally also continues the table flow below.
+    // 5f. HTML report — writes to disk, optionally also continues the table flow below.
     if (reportPath) {
         const html = emitAuditHtml({
             findings: findingsForReport().map((finding) => {

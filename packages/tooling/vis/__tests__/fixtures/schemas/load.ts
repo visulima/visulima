@@ -22,6 +22,7 @@ const readSchema = (name: string): Record<string, unknown> => JSON.parse(readFil
 let sarif: ValidateFunction | undefined;
 let cyclonedx: ValidateFunction | undefined;
 let csaf: ValidateFunction | undefined;
+let gitlabDepScan: ValidateFunction | undefined;
 
 export const sarifValidator = (): ValidateFunction => {
     if (sarif === undefined) {
@@ -94,6 +95,17 @@ export const csafValidator = (): ValidateFunction => {
     }
 
     return csaf;
+};
+
+export const gitlabDepScanValidator = (): ValidateFunction => {
+    if (gitlabDepScan === undefined) {
+        const ajv = new Ajv({ allErrors: true, strict: false });
+
+        addFormats(ajv);
+        gitlabDepScan = ajv.compile(readSchema("gitlab-dep-scan-15.2.1.json"));
+    }
+
+    return gitlabDepScan;
 };
 
 export const formatErrors = (validate: ValidateFunction): string =>

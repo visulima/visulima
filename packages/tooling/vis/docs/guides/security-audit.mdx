@@ -46,9 +46,11 @@ vis audit --usage               # reachability filter — only statically-import
 
 # For non-human consumers
 vis audit --format json
-vis audit --format sarif        # GitHub / GitLab code-scanning uploads
-vis audit --format csaf         # CSAF 2.0 csaf_vex profile
+vis audit --format sarif         # GitHub / GitLab code-scanning uploads
+vis audit --format csaf          # CSAF 2.0 csaf_vex profile
 vis audit --format cyclonedx-vex # CycloneDX 1.7 SBOM + VEX
+vis audit --format gitlab        # GitLab dependency-scanning report (Secure stage)
+vis audit --format junit         # JUnit XML (Surefire-compatible)
 vis audit --report ./report.html # self-contained HTML
 ```
 
@@ -116,6 +118,28 @@ A typical pipeline:
 # Hard gate the build on high+ findings
 - run: pnpm exec vis audit --offline --fail-on high
 ```
+
+### GitLab CI
+
+The `gitlab` and `junit` formats land artifacts that GitLab's Secure stage and merge-request widgets pick up natively:
+
+```yaml
+# .gitlab-ci.yml
+audit:
+    image: node:24
+    script:
+        - pnpm install --frozen-lockfile
+        - pnpm exec vis advisories sync
+        - pnpm exec vis audit --offline --format gitlab > gl-dependency-scanning.json
+        - pnpm exec vis audit --offline --format junit  > junit.xml
+        - pnpm exec vis audit --offline --fail-on high # hard gate
+    artifacts:
+        reports:
+            dependency_scanning: gl-dependency-scanning.json
+            junit: junit.xml
+```
+
+The `--severity` flag is the equivalent of `osv2gitlab`'s `--threshold`: `vis audit --severity high --format gitlab` keeps only `high`/`critical` findings in the GitLab report.
 
 ### Exit-code semantics
 
