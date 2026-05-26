@@ -2,6 +2,7 @@ import type { DependabotIgnoreRules } from "../dependabot";
 import { isIgnored } from "../dependabot";
 import { classifyUpdate, parseTag, pickBestTag } from "../semver-helpers";
 import type { EcosystemUpdate, EcosystemUpdateOptions } from "../types";
+import { decorateActionsAdvisories } from "./advisories";
 import type { ActionsResolverOptions } from "./resolver";
 import { ActionsResolver } from "./resolver";
 import type { UsesReference } from "./scanner";
@@ -88,7 +89,7 @@ const buildReplacement = (reference: UsesReference, newSha: string, newTag: stri
  * The returned updates are not applied — `applyEcosystemUpdates` does
  * that in a separate pass so dry-run / interactive modes can preview.
  */
-export const checkActions = async (_workspaceRoot: string, context: CheckActionsContext): Promise<CheckActionsResult> => {
+export const checkActions = async (workspaceRoot: string, context: CheckActionsContext): Promise<CheckActionsResult> => {
     const { ignoreRules, options, references, resolverOptions } = context;
     const updates: EcosystemUpdate[] = [];
     const ignoredList: EcosystemUpdate[] = [];
@@ -318,7 +319,9 @@ export const checkActions = async (_workspaceRoot: string, context: CheckActions
 
     await Promise.all(workers);
 
-    return { failed, ignored: ignoredList, updates };
+    const decoratedUpdates = decorateActionsAdvisories(workspaceRoot, updates);
+
+    return { failed, ignored: ignoredList, updates: decoratedUpdates };
 };
 
 export { scanActionsRepository };

@@ -35,6 +35,14 @@ const reference = (overrides: Partial<ImageReference> = {}): ImageReference => (
 const fetchHubTags = (tags: string[]): typeof fetch =>
     vi.fn(async () => new Response(JSON.stringify({ next: null, results: tags.map((tag) => ({ name: tag })) }), { status: 200 })) as typeof fetch;
 
+const fetchHubTagsWithDates = (entries: { name: string; lastUpdated: string }[]): typeof fetch =>
+    vi.fn(
+        async () =>
+            new Response(JSON.stringify({ next: null, results: entries.map((entry) => ({ last_updated: entry.lastUpdated, name: entry.name })) }), {
+                status: 200,
+            }),
+    ) as typeof fetch;
+
 describe(checkDocker, () => {
     it("emits an update with the docker.io display name and a hub.docker.com URL", async () => {
         expect.assertions(3);
@@ -72,5 +80,47 @@ describe(checkDocker, () => {
         });
 
         expect(result.updates[0]?.updateType).toBe("major");
+    });
+
+    it("drops updates younger than --min-age-days when Docker Hub reports last_updated", async () => {
+        expect.assertions(3);
+
+        const today = new Date().toISOString();
+
+        const result = await checkDocker("/tmp", {
+            options: { ...baseOptions, minAgeDays: 7 },
+            references: [reference()],
+            registryOptions: { fetch: fetchHubTagsWithDates([{ lastUpdated: today, name: "22" }]) },
+        });
+
+        expect(result.updates).toHaveLength(0);
+        expect(result.ignored[0]?.reason).toBe("release younger than 7 days");
+        expect(result.ignored[0]?.newVersion).toBe("22");
+    });
+
+    it("keeps updates older than --min-age-days", async () => {
+        expect.assertions(1);
+
+        const ancient = new Date(Date.now() - 30 * 86_400_000).toISOString();
+
+        const result = await checkDocker("/tmp", {
+            options: { ...baseOptions, minAgeDays: 7 },
+            references: [reference()],
+            registryOptions: { fetch: fetchHubTagsWithDates([{ lastUpdated: ancient, name: "22" }]) },
+        });
+
+        expect(result.updates).toHaveLength(1);
+    });
+
+    it("falls through the min-age gate silently when the registry omits a timestamp (v2)", async () => {
+        expect.assertions(1);
+
+        const result = await checkDocker("/tmp", {
+            options: { ...baseOptions, minAgeDays: 7 },
+            references: [reference()],
+            registryOptions: { fetch: fetchHubTags(["22"]) },
+        });
+
+        expect(result.updates).toHaveLength(1);
     });
 });

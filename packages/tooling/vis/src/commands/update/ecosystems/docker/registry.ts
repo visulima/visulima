@@ -1,9 +1,19 @@
 import type { ParsedTag } from "../semver-helpers";
 import { parseTag } from "../semver-helpers";
 
+/**
+ * Docker-specific tag entry. Carries the registry-reported publish time
+ * so the min-age gate can drop releases that are too fresh without
+ * spending an extra round-trip. v2 registries that don't expose a
+ * timestamp leave `lastUpdated` undefined and the gate skips silently.
+ */
+export interface DockerParsedTag extends ParsedTag {
+    readonly lastUpdated: number | undefined;
+}
+
 interface RegistryTagListing {
     readonly raw: string[];
-    readonly parsed: ParsedTag[];
+    readonly parsed: DockerParsedTag[];
 }
 
 export interface DockerRegistryOptions {
@@ -64,6 +74,7 @@ export class DockerRegistry {
     private async listDockerHubTags(namespace: string, image: string): Promise<RegistryTagListing> {
         const empty: RegistryTagListing = { parsed: [], raw: [] };
         const tags: string[] = [];
+        const lastUpdatedByTag = new Map<string, number>();
         let url: string | undefined = `https://hub.docker.com/v2/repositories/${encodeURIComponent(namespace)}/${encodeURIComponent(image)}/tags?page_size=100`;
         let pages = 0;
 
@@ -75,12 +86,22 @@ export class DockerRegistry {
                     break;
                 }
 
-                const json = (await response.json()) as { next?: string | null; results?: { name?: string }[] };
+                const json = (await response.json()) as { next?: string | null; results?: { last_updated?: string; name?: string }[] };
 
                 if (Array.isArray(json.results)) {
                     for (const entry of json.results) {
-                        if (typeof entry.name === "string") {
-                            tags.push(entry.name);
+                        if (typeof entry.name !== "string") {
+                            continue;
+                        }
+
+                        tags.push(entry.name);
+
+                        if (typeof entry.last_updated === "string") {
+                            const epoch = Date.parse(entry.last_updated);
+
+                            if (!Number.isNaN(epoch)) {
+                                lastUpdatedByTag.set(entry.name, epoch);
+                            }
                         }
                     }
                 }
@@ -97,7 +118,17 @@ export class DockerRegistry {
             return empty;
         }
 
-        const parsed = tags.map((tag) => parseTag(tag)).filter((tag): tag is ParsedTag => tag !== undefined);
+        const parsed = tags
+            .map((tag) => {
+                const base = parseTag(tag);
+
+                if (!base) {
+                    return undefined;
+                }
+
+                return { ...base, lastUpdated: lastUpdatedByTag.get(tag) };
+            })
+            .filter((tag): tag is DockerParsedTag => tag !== undefined);
 
         return { parsed, raw: tags };
     }
@@ -145,7 +176,19 @@ export class DockerRegistry {
                 return empty;
             }
 
-            const parsed = json.tags.map((tag) => parseTag(tag)).filter((tag): tag is ParsedTag => tag !== undefined);
+            // Imperative loop — `parsed.map(...).filter(predicate)` infers
+            // the literal-`undefined` `lastUpdated` as a non-assignable
+            // subtype of `DockerParsedTag` (TS2677). Pushing into the
+            // typed array sidesteps the inference issue.
+            const parsed: DockerParsedTag[] = [];
+
+            for (const tag of json.tags) {
+                const base = parseTag(tag);
+
+                if (base) {
+                    parsed.push({ ...base, lastUpdated: undefined });
+                }
+            }
 
             return { parsed, raw: json.tags };
         } catch {
