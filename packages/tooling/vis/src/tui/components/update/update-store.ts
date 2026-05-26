@@ -1,8 +1,67 @@
 import type { AiAnalysisResult, AiRecommendation } from "../../../ai/ai-analysis";
+import type { EcosystemUpdate } from "../../../commands/update/ecosystems";
 import type { OutdatedEntry } from "../../../util/catalog";
 
 export type FilterType = "all" | "major" | "minor" | "patch" | "security";
 export type UpdatePhase = "applying" | "browsing" | "done" | "error";
+/**
+ * Sort order for the visible entry list. `default` is whatever order the
+ * caller passed in (catalog grouping); the others cycle via `s` so users
+ * can quickly re-stack the list by what matters to them right now.
+ */
+export type SortMode = "default" | "name" | "severity" | "updateType";
+
+const SORT_CYCLE: readonly SortMode[] = ["default", "name", "updateType", "severity"];
+
+/** Stable severity rank — higher comes first when sorting by severity. */
+const severityRank = (entry: OutdatedEntry): number => {
+    const vulnSeverities = entry.vulnerabilities?.map((vulnerability) => vulnerability.severity) ?? [];
+
+    if (vulnSeverities.includes("CRITICAL")) {
+        return 4;
+    }
+
+    if (vulnSeverities.includes("HIGH")) {
+        return 3;
+    }
+
+    if (vulnSeverities.includes("MODERATE")) {
+        return 2;
+    }
+
+    if (vulnSeverities.includes("LOW")) {
+        return 1;
+    }
+
+    return 0;
+};
+
+const UPDATE_TYPE_RANK: Record<string, number> = { digest: 0, major: 3, minor: 2, patch: 1, pin: 0, unknown: 0 };
+
+const sortEntries = (entries: OutdatedEntry[], mode: SortMode): OutdatedEntry[] => {
+    if (mode === "default") {
+        return entries;
+    }
+
+    const copy = [...entries];
+
+    if (mode === "name") {
+        copy.sort((a, b) => a.packageName.localeCompare(b.packageName));
+    } else if (mode === "updateType") {
+        copy.sort((a, b) => (UPDATE_TYPE_RANK[b.updateType] ?? 0) - (UPDATE_TYPE_RANK[a.updateType] ?? 0) || a.packageName.localeCompare(b.packageName));
+    } else {
+        copy.sort((a, b) => severityRank(b) - severityRank(a) || a.packageName.localeCompare(b.packageName));
+    }
+
+    return copy;
+};
+
+/**
+ * Stable per-entry key used to track check state for ecosystem updates.
+ * Mirrors the (file, line) anchor the applier rewrites by and the
+ * display name the user sees in the picker.
+ */
+export const ecosystemEntryKey = (entry: EcosystemUpdate): string => `${entry.ecosystem}|${entry.file}:${String(entry.line)}|${entry.name}`;
 
 export interface UpdateState {
     /** AI analysis result (null if not requested). */
@@ -13,10 +72,21 @@ export interface UpdateState {
     applyProgress: { current: number; total: number } | null;
     /** Set of checked package names for selective apply. */
     checkedEntries: Set<string>;
+    /** Set of `ecosystemEntryKey()`s the user has checked for apply. */
+    checkedEcosystemKeys: Set<string>;
+    /**
+     * Non-npm ecosystem entries (GitHub Actions, Docker, GitLab CI).
+     * Plumbed through the store + accessible via `getCheckedEcosystemEntries()`,
+     * but the picker UI is npm-only today — a future `--ecosystem` view in
+     * `vis-update-app.tsx` will render these.
+     */
+    ecosystemEntries: EcosystemUpdate[];
     /** All outdated entries. */
     entries: OutdatedEntry[];
     /** Error message if apply failed. */
     error: string | null;
+    /** Currently active sort mode for the list panel. */
+    sortMode: SortMode;
     /** Whether the text filter input is active. */
     filterActive: boolean;
     /** Current filter text (empty = no filter). */
@@ -77,10 +147,13 @@ export class UpdateStore {
 
     #allEntries: OutdatedEntry[];
 
+    #allEcosystemEntries: EcosystemUpdate[];
+
     #recommendationMap: Map<string, AiRecommendation> | null = null;
 
-    public constructor(entries: OutdatedEntry[], aiResult: AiAnalysisResult | null = null) {
+    public constructor(entries: OutdatedEntry[], aiResult: AiAnalysisResult | null = null, ecosystemEntries: EcosystemUpdate[] = []) {
         this.#allEntries = entries;
+        this.#allEcosystemEntries = ecosystemEntries;
 
         if (aiResult) {
             this.#recommendationMap = new Map(aiResult.recommendations.map((r) => [r.package, r]));
@@ -90,7 +163,9 @@ export class UpdateStore {
             aiResult,
             allChecked: true,
             applyProgress: null,
+            checkedEcosystemKeys: new Set(ecosystemEntries.map((entry) => ecosystemEntryKey(entry))),
             checkedEntries: new Set(entries.map((e) => e.packageName)),
+            ecosystemEntries,
             entries,
             error: null,
             filterActive: false,
@@ -100,6 +175,7 @@ export class UpdateStore {
             groupedByCatalog: groupByCatalog(entries),
             phase: "browsing",
             selectedIndex: 0,
+            sortMode: "default",
         };
     }
 
@@ -115,7 +191,36 @@ export class UpdateStore {
 
     /** Get the currently filtered + visible entries. */
     public getFilteredEntries(): OutdatedEntry[] {
-        return filterEntries(this.#allEntries, this.#state.filterType, this.#state.filterText);
+        return sortEntries(filterEntries(this.#allEntries, this.#state.filterType, this.#state.filterText), this.#state.sortMode);
+    }
+
+    public setSortMode(mode: SortMode): void {
+        if (mode === this.#state.sortMode) {
+            return;
+        }
+
+        // Pin the highlight to the previously-selected package across the
+        // re-sort so the user doesn't lose their place. Falls back to 0
+        // when the prior selection has been filtered out.
+        const previousVisible = this.getFilteredEntries();
+        const previousSelected = previousVisible[this.#state.selectedIndex]?.packageName;
+
+        const nextVisible = sortEntries(filterEntries(this.#allEntries, this.#state.filterType, this.#state.filterText), mode);
+        const nextIndex = previousSelected ? Math.max(0, nextVisible.findIndex((entry) => entry.packageName === previousSelected)) : 0;
+
+        this.#emit({ ...this.#state, selectedIndex: nextIndex, sortMode: mode });
+    }
+
+    /**
+     * Cycle through the sort modes — bound to `s` in the TUI. The
+     * highlighted package is preserved across the re-sort (see
+     * `setSortMode`) so the user doesn't lose their place.
+     */
+    public cycleSortMode(): void {
+        const currentIndex = SORT_CYCLE.indexOf(this.#state.sortMode);
+        const nextMode = SORT_CYCLE[(currentIndex + 1) % SORT_CYCLE.length] ?? "default";
+
+        this.setSortMode(nextMode);
     }
 
     /** Get AI recommendation for a specific package. */
@@ -126,6 +231,34 @@ export class UpdateStore {
     /** Get the list of checked entries (for apply). */
     public getCheckedEntries(): OutdatedEntry[] {
         return this.#allEntries.filter((e) => this.#state.checkedEntries.has(e.packageName));
+    }
+
+    /** Get the list of checked ecosystem entries (for apply). */
+    public getCheckedEcosystemEntries(): EcosystemUpdate[] {
+        return this.#allEcosystemEntries.filter((entry) => this.#state.checkedEcosystemKeys.has(ecosystemEntryKey(entry)));
+    }
+
+    public toggleEcosystemCheck(key: string): void {
+        const next = new Set(this.#state.checkedEcosystemKeys);
+
+        if (next.has(key)) {
+            next.delete(key);
+        } else {
+            next.add(key);
+        }
+
+        this.#emit({ ...this.#state, checkedEcosystemKeys: next });
+    }
+
+    public checkAllEcosystem(): void {
+        this.#emit({
+            ...this.#state,
+            checkedEcosystemKeys: new Set(this.#allEcosystemEntries.map((entry) => ecosystemEntryKey(entry))),
+        });
+    }
+
+    public uncheckAllEcosystem(): void {
+        this.#emit({ ...this.#state, checkedEcosystemKeys: new Set() });
     }
 
     public setSelectedIndex(index: number): void {

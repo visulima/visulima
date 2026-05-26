@@ -56,7 +56,7 @@ const VisUpdateApp = ({
     const [confirmVisible, setConfirmVisible] = useState(false);
     const [quitDialogVisible, setQuitDialogVisible] = useState(false);
 
-    const filteredEntries = useMemo(() => store.getFilteredEntries(), [state.entries, state.filterType, state.filterText]);
+    const filteredEntries = useMemo(() => store.getFilteredEntries(), [state.entries, state.filterType, state.filterText, state.sortMode]);
 
     const selectedEntry = filteredEntries[state.selectedIndex] ?? null;
     const selectedRecommendation = selectedEntry ? store.getRecommendation(selectedEntry.packageName) : undefined;
@@ -327,6 +327,16 @@ const VisUpdateApp = ({
                     return;
                 }
 
+                // Cycle sort mode. The store keeps the highlighted
+                // package pinned across the re-sort, so we just chase the
+                // new index with `scrollToIndex` to bring it into view.
+                if (input === "s") {
+                    store.cycleSortMode();
+                    scrollToIndex(store.getSnapshot().selectedIndex);
+
+                    return;
+                }
+
                 // Text filter
                 if (input === "/") {
                     store.setFilterActive(true);
@@ -591,6 +601,13 @@ FILTERED (
                         a
                     </Text>
                     <Text dimColor> Toggle check all</Text>
+                </Text>
+                <Text>
+                    <Text bold color="white">
+                        {" "}
+                        s
+                    </Text>
+                    <Text dimColor> Cycle sort (default / name / type / severity)</Text>
                 </Text>
             </Box>
             <Box flexDirection="column" marginBottom={1}>

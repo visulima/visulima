@@ -37,8 +37,30 @@ const formatUpdateLine = (update: EcosystemUpdate): string => {
     const colorize = colorForUpdateType(update.updateType);
     const fromLabel = update.currentVersion ?? update.currentRef;
     const toLabel = update.newVersion ?? update.newRef;
+    // Surface the release page / registry URL when the ecosystem resolver
+    // populated it — this is the closest thing to a changelog link for
+    // refs we don't actually fetch the diff for.
+    const urlSuffix = update.url ? `  ${dim(update.url)}` : "";
+    const advisoryBadge = update.advisories && update.advisories.length > 0 ? ` ${red(`⚠ ${String(update.advisories.length)} advisor${update.advisories.length === 1 ? "y" : "ies"}`)}` : "";
 
-    return `    ${colorize(update.updateType.padEnd(7))}  ${update.name}  ${dim(fromLabel)} → ${toLabel}`;
+    return `    ${colorize(update.updateType.padEnd(7))}  ${update.name}  ${dim(fromLabel)} → ${toLabel}${advisoryBadge}${urlSuffix}`;
+};
+
+/**
+ * Renders one indented line per advisory under the parent update. The
+ * GHSA id is the click target; severity + summary give the user enough
+ * to triage without leaving the terminal.
+ */
+const formatAdvisoryLines = (update: EcosystemUpdate): string[] => {
+    if (!update.advisories || update.advisories.length === 0) {
+        return [];
+    }
+
+    return update.advisories.map((advisory) => {
+        const severity = advisory.severity === "CRITICAL" || advisory.severity === "HIGH" ? red(advisory.severity) : yellow(advisory.severity);
+
+        return `        ${severity}  ${advisory.id}  ${dim(advisory.summary)}`;
+    });
 };
 
 /**
@@ -73,6 +95,7 @@ export const formatEcosystemReport = (result: EcosystemCheckResult, options: { s
 
         for (const update of breaking) {
             lines.push(formatUpdateLine(update));
+            lines.push(...formatAdvisoryLines(update));
         }
     }
 
@@ -87,6 +110,7 @@ export const formatEcosystemReport = (result: EcosystemCheckResult, options: { s
 
         for (const update of bucket.updates) {
             lines.push(formatUpdateLine(update));
+            lines.push(...formatAdvisoryLines(update));
         }
     }
 

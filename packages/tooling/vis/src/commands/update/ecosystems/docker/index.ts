@@ -7,6 +7,8 @@ import { DockerRegistry } from "./registry";
 import type { ImageReference } from "./scanner";
 import { scanDockerRepository } from "./scanner";
 
+const MS_PER_DAY = 86_400_000;
+
 interface CheckDockerContext {
     readonly references: ImageReference[];
     readonly options: EcosystemUpdateOptions;
@@ -223,6 +225,36 @@ export const checkDocker = async (_workspaceRoot: string, context: CheckDockerCo
 
             if (!best) {
                 continue;
+            }
+
+            // min-age gate. Docker Hub returns `last_updated` per tag for
+            // free, so we can apply this without an extra request. v2
+            // registries don't expose a cheap timestamp, so `lastUpdated`
+            // is undefined there and the gate falls through silently —
+            // matching how the actions gate behaves when the commit
+            // lookup yields no `committedAt`.
+            if (options.minAgeDays !== undefined && best.lastUpdated !== undefined) {
+                const ageDays = (Date.now() - best.lastUpdated) / MS_PER_DAY;
+
+                if (ageDays < options.minAgeDays) {
+                    ignoredList.push({
+                        currentRef: reference.tag,
+                        currentVersion: reference.tag,
+                        ecosystem: "docker",
+                        file: reference.file,
+                        ignored: true,
+                        line: reference.line,
+                        name: fullName,
+                        newRef: best.raw,
+                        newVersion: best.raw,
+                        original: reference.original,
+                        reason: `release younger than ${String(options.minAgeDays)} days`,
+                        replacement: reference.original,
+                        updateType: "unknown",
+                    });
+
+                    continue;
+                }
             }
 
             const newTag = best.raw;

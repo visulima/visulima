@@ -13,6 +13,18 @@ export type EcosystemId = "actions" | "docker" | "gitlab";
 export type EcosystemUpdateType = "digest" | "major" | "minor" | "patch" | "pin" | "unknown";
 
 /**
+ * Compact summary of an OSV advisory matching the currently-pinned ref.
+ * Carried alongside the update so the report can flag known-vulnerable
+ * versions without forcing every consumer to talk to the advisory DB.
+ */
+export interface EcosystemAdvisory {
+    readonly id: string;
+    readonly severity: "CRITICAL" | "HIGH" | "LOW" | "MODERATE" | "UNKNOWN";
+    readonly summary: string;
+    readonly fixedVersions: string[];
+}
+
+/**
  * A single outdated reference inside a workflow / Dockerfile / GitLab CI file.
  * Produced by the per-ecosystem scanner+resolver and consumed by the applier.
  */
@@ -45,6 +57,8 @@ export interface EcosystemUpdate {
     readonly ignored?: boolean;
     /** Human-readable reason for `ignored` / `updateType === "unknown"`. */
     readonly reason?: string;
+    /** OSV advisories matching the *currently-pinned* ref. Populated when the local advisory DB is present. */
+    readonly advisories?: EcosystemAdvisory[];
 }
 
 /**

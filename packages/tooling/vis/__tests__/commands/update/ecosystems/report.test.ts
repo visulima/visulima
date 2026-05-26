@@ -90,4 +90,51 @@ describe(formatEcosystemReport, () => {
 
         expect(stripAnsi(formatEcosystemReport(buildResult(updates), { showIgnored: false }))).not.toContain("Breaking changes");
     });
+
+    it("renders an advisory badge + per-advisory line when an update carries OSV hits", () => {
+        expect.assertions(4);
+
+        const updates = [
+            makeUpdate({
+                advisories: [
+                    {
+                        fixedVersions: ["v4.0.0"],
+                        id: "GHSA-xxxx-yyyy-zzzz",
+                        severity: "HIGH",
+                        summary: "Arbitrary code execution via crafted ref",
+                    },
+                ],
+                ecosystem: "actions",
+                name: "actions/checkout",
+                updateType: "minor",
+            }),
+        ];
+
+        const report = stripAnsi(formatEcosystemReport(buildResult(updates), { showIgnored: false }));
+
+        expect(report).toContain("⚠ 1 advisory");
+        expect(report).toContain("GHSA-xxxx-yyyy-zzzz");
+        expect(report).toContain("HIGH");
+        expect(report).toContain("Arbitrary code execution via crafted ref");
+    });
+
+    it("appends the changelog/release URL when the update carries one", () => {
+        expect.assertions(2);
+
+        const updates = [
+            makeUpdate({
+                ecosystem: "actions",
+                name: "actions/checkout",
+                updateType: "minor",
+                url: "https://github.com/actions/checkout/releases/tag/v3.5.3",
+            }),
+            makeUpdate({ ecosystem: "actions", name: "actions/cache", updateType: "patch" }),
+        ];
+
+        const report = stripAnsi(formatEcosystemReport(buildResult(updates), { showIgnored: false }));
+
+        expect(report).toContain("https://github.com/actions/checkout/releases/tag/v3.5.3");
+        // The url-less entry shouldn't render a trailing whitespace-only suffix.
+        expect(report).toMatch(/patch\s+actions\/cache\s+v1\.0\.0 → v2\.0\.0(?:$|\n)/m);
+    });
 });

@@ -41,6 +41,22 @@ const matchesPattern = (name: string, patterns: string[]): boolean => {
     return false;
 };
 
+/**
+ * Best-effort GitLab release URL for a project include / component. When
+ * the project slug embeds a self-hosted host (`gitlab.example.com/group/project`)
+ * we route the URL there; otherwise we point at gitlab.com. The releases
+ * page is the closest analog to a changelog for tagged refs.
+ */
+const buildReleaseUrl = (project: string, ref: string, defaultHost: string): string => {
+    const firstSlash = project.indexOf("/");
+
+    if (firstSlash > 0 && project.slice(0, firstSlash).includes(".")) {
+        return `https://${project.slice(0, firstSlash)}/${project.slice(firstSlash + 1)}/-/releases/${ref}`;
+    }
+
+    return `${defaultHost}/${project}/-/releases/${ref}`;
+};
+
 export const checkGitlab = async (workspaceRoot: string, context: CheckGitlabContext): Promise<CheckGitlabResult> => {
     const { ignoreRules, imageReferences, includes, options, registryOptions, resolverOptions } = context;
     const updates: EcosystemUpdate[] = [];
@@ -58,17 +74,16 @@ export const checkGitlab = async (workspaceRoot: string, context: CheckGitlabCon
             registryOptions,
         });
 
-        // checkDocker labels updates with `ecosystem: "docker"` AND a
-        // docker.io / GHCR registry URL via buildRegistryUrl. When we
-        // re-attribute them to gitlab we must also drop the url — a
-        // GitLab CI image update reported with a docker.io URL misleads
-        // both the human report and any JSON consumer.
+        // checkDocker labels updates with `ecosystem: "docker"` and a
+        // docker.io / GHCR registry URL. When re-attributing to gitlab we
+        // keep the URL — for `image:` / `services:` entries the registry
+        // tag page is still the right link to click for release notes.
         for (const update of dockerResult.updates) {
-            updates.push({ ...update, ecosystem: "gitlab", url: undefined });
+            updates.push({ ...update, ecosystem: "gitlab" });
         }
 
         for (const update of dockerResult.ignored) {
-            ignoredList.push({ ...update, ecosystem: "gitlab", url: undefined });
+            ignoredList.push({ ...update, ecosystem: "gitlab" });
         }
 
         failed.push(...dockerResult.failed);
@@ -83,6 +98,8 @@ export const checkGitlab = async (workspaceRoot: string, context: CheckGitlabCon
         fetch: resolverOptions?.fetch,
         token: options.gitlabToken ?? resolverOptions?.token,
     });
+
+    const defaultHost = resolverOptions?.apiBase ?? "https://gitlab.com";
 
     // Group by project path so identical includes share a single API call.
     const grouped = new Map<string, GitLabInclude[]>();
@@ -175,6 +192,7 @@ export const checkGitlab = async (workspaceRoot: string, context: CheckGitlabCon
                 original: include.original,
                 replacement: newRef,
                 updateType: classifyUpdate(currentParsed, best),
+                url: buildReleaseUrl(include.project, best.raw, defaultHost),
             });
         }
     };
