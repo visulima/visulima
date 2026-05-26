@@ -1,3 +1,9 @@
+## @visulima/html [1.0.0-alpha.16](https://github.com/visulima/visulima/compare/@visulima/html@1.0.0-alpha.15...@visulima/html@1.0.0-alpha.16) (2026-05-26)
+
+### Miscellaneous Chores
+
+* sorted package.json ([b47c545](https://github.com/visulima/visulima/commit/b47c545591600fdab17d5cd3a3fbc68b61e199da))
+
 ## @visulima/html [1.0.0-alpha.15](https://github.com/visulima/visulima/compare/@visulima/html@1.0.0-alpha.14...@visulima/html@1.0.0-alpha.15) (2026-05-26)
 
 ### Miscellaneous Chores
