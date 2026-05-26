@@ -1,3 +1,22 @@
+## @visulima/pail [4.0.0-alpha.17](https://github.com/visulima/visulima/compare/@visulima/pail@4.0.0-alpha.16...@visulima/pail@4.0.0-alpha.17) (2026-05-26)
+
+### Bug Fixes
+
+* **pail,fs:** bind logger.raw and inline picomatch options ([e8b20d2](https://github.com/visulima/visulima/commit/e8b20d2afdbcadf2f531ac3593dc0b7210684955))
+
+### Miscellaneous Chores
+
+* **ci-stability:** green CI across vis, native, lint, tests, attw ([#651](https://github.com/visulima/visulima/issues/651)) ([d4eb684](https://github.com/visulima/visulima/commit/d4eb684b5f75c818c9251048c605a0ed54a268e3))
+
+### Tests
+
+* **repo:** add dist runtime + types integration tests ([32ee300](https://github.com/visulima/visulima/commit/32ee300b7184117a0ddf9f9d390f75f8932d5ed9))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.28
+
 ## @visulima/pail [4.0.0-alpha.16](https://github.com/visulima/visulima/compare/@visulima/pail@4.0.0-alpha.15...@visulima/pail@4.0.0-alpha.16) (2026-05-14)
 
 ### Miscellaneous Chores
