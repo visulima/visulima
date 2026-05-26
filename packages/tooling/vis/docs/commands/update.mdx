@@ -60,6 +60,13 @@ vis update --rollback               # Restore catalog from last backup
 | `--no-marshall-check`          |       | `false`  | Skip the offline marshall pipeline when explicit package arguments are supplied (author, provenance, s1ngularity, metadata, downloads, expired-domains, new-bin, archived-repo). Blanket `vis update` never runs the pipeline. |
 | `--max-concurrent-requests`    |       | `8`      | Cap concurrent registry requests during outdated checks (catalog)                                                                                                                                                              |
 | `--release-channel`            |       | `stable` | Channel filter: `stable`, `same` (match current's prerelease channel), or `any`                                                                                                                                                |
+| `--no-actions`                 |       | `false`  | Skip the GitHub Actions ecosystem scan                                                                                                                                                                                         |
+| `--no-docker`                  |       | `false`  | Skip the Docker ecosystem scan (Dockerfile + docker-compose)                                                                                                                                                                   |
+| `--no-gitlab`                  |       | `false`  | Skip the GitLab CI ecosystem scan (.gitlab-ci.yml + .gitlab/ci/\*\*)                                                                                                                                                           |
+| `--include-branches`           |       | `false`  | Include branch references (e.g. `actions/checkout@main`) when scanning workflows                                                                                                                                               |
+| `--style`                      |       | `sha`    | Reference style for GitHub Actions: `sha` pins to commit SHA + version comment, `preserve` keeps the existing style                                                                                                            |
+| `--actions-token`              |       |          | GitHub token override (falls back to `GITHUB_TOKEN` / `GH_TOKEN`)                                                                                                                                                              |
+| `--gitlab-token`               |       |          | GitLab token override (falls back to `GITLAB_TOKEN` / `CI_JOB_TOKEN`)                                                                                                                                                          |
 
 ## How It Works
 
@@ -156,6 +163,58 @@ Per-package or per-pattern update target overrides. Keys can be:
 - **Exact names**: `"typescript"` — matches only that package
 - **Glob patterns**: `"@types/*"` — matches any `@types/` package
 - **Regex patterns**: `"/^@vue/"` — wrapped in `/`, uses regex matching
+
+## Non-npm ecosystem updates
+
+In addition to npm/pnpm/bun catalogs, `vis update` auto-detects and updates references in:
+
+### GitHub Actions
+
+Scans `.github/workflows/*.yml`, `.github/actions/*/action.yml`, and root `action.yml`. For every `uses:` reference it:
+
+- Lists tags via the GitHub REST API (`/repos/{owner}/{repo}/tags`)
+- Default-pins to the commit SHA with a `# vN.M.P` version-hint comment for readability
+- Supports `--style preserve` to keep the existing tag-style reference
+- Skips branch refs (`@main`, `@master`) unless `--include-branches` is passed
+- Honours inline ignore directives: `# actions-up-ignore`, `# actions-up-ignore-next-line`, and block `# actions-up-ignore-start` / `# actions-up-ignore-end`
+- Dedupes per `owner/repo` so a workflow with N references to the same action costs one API round-trip
+
+Set `GITHUB_TOKEN` (or pass `--actions-token`) to raise the rate limit from 60 to 5000 requests/hour.
+
+### Docker
+
+Scans every Dockerfile (any name matching `Dockerfile*` / `*.dockerfile`) and compose file (`docker-compose*.yml`, `compose*.yml`). For each `FROM` line and `image:` field it:
+
+- Resolves tags from Docker Hub (`docker.io`), GHCR (`ghcr.io`), and any v2-compatible registry
+- Handles registry bearer-token challenges automatically
+- Skips `latest`, `nightly`, and other non-semver tags unless `--include-branches` is passed
+- Honours `# vis-update-ignore` and `# vis-update-ignore-next-line` directives
+- Supports digest-pinned images (`image:tag@sha256:…`) — the new tag is written without the stale digest
+
+### GitLab CI
+
+Scans `.gitlab-ci.yml` and any `*.yml` / `*.yaml` under `.gitlab/ci/`. Updates:
+
+- `image:` and `services:` entries (resolved via Docker registries, same path as Docker scanning)
+- `include: { project, ref }` blocks (resolved via the GitLab v4 REST API on `gitlab.com` or the host extracted from the project path for self-hosted instances)
+- `include: { component: <host>/<group>/<project>@<ref> }` blocks
+
+Set `GITLAB_TOKEN` or `CI_JOB_TOKEN` (or pass `--gitlab-token`) for private GitLab instances.
+
+### Dependabot / Renovate integration
+
+The ecosystem scan respects ignore lists declared in `.github/dependabot.yml` and `renovate.json` so you don't have to duplicate them. Specifically:
+
+- Dependabot `ignore.dependency-name` entries (per `package-ecosystem`)
+- Renovate top-level `ignoreDeps`
+- Renovate per-manager `ignoreDeps` (`github-actions`, `dockerfile`, `docker-compose`, `gitlabci`, `gitlabci-include`)
+- Renovate `packageRules` entries with `enabled: false`
+
+The npm/catalog path is unchanged — Dependabot/Renovate npm ignore rules continue to be governed by your catalog config.
+
+### Disabling ecosystem updates
+
+Pass `--no-actions`, `--no-docker`, or `--no-gitlab` to opt out of a single ecosystem. Passing explicit package arguments (`vis update lodash`) targets the npm path only and skips the ecosystem scan entirely.
 
 Values are `"latest"`, `"minor"`, or `"patch"`. Unmatched packages use the global `target`.
 

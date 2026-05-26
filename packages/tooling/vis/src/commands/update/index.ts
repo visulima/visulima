@@ -217,12 +217,52 @@ const update: Command = {
             name: "yes",
             type: Boolean,
         },
+        {
+            defaultValue: false,
+            description: "Skip the GitHub Actions ecosystem scan (workflows + composite action.yml files)",
+            name: "no-actions",
+            type: Boolean,
+        },
+        {
+            defaultValue: false,
+            description: "Skip the Docker ecosystem scan (Dockerfile + docker-compose images)",
+            name: "no-docker",
+            type: Boolean,
+        },
+        {
+            defaultValue: false,
+            description: "Skip the GitLab CI ecosystem scan (.gitlab-ci.yml + .gitlab/ci/**)",
+            name: "no-gitlab",
+            type: Boolean,
+        },
+        {
+            defaultValue: false,
+            description: "Include branch references (e.g. actions/checkout@main) when scanning workflows",
+            name: "include-branches",
+            type: Boolean,
+        },
+        {
+            description: "Reference style for GitHub Actions updates: sha (default, pin to commit SHA + version comment) or preserve",
+            name: "style",
+            type: String,
+        },
+        {
+            description: "GitHub token for actions resolution (overrides GITHUB_TOKEN / GH_TOKEN env)",
+            name: "actions-token",
+            type: String,
+        },
+        {
+            description: "GitLab token for include-ref resolution (overrides GITLAB_TOKEN / CI_JOB_TOKEN env)",
+            name: "gitlab-token",
+            type: String,
+        },
     ],
 };
 
 export default update;
 
 export type UpdateOptions = CreateOptions<{
+    "actions-token": string | undefined;
     ai: boolean | undefined;
     "ai-type": string | undefined;
     changelog: boolean | undefined;
@@ -231,15 +271,20 @@ export type UpdateOptions = CreateOptions<{
     exclude: string[] | undefined;
     filter: string | undefined;
     format: string | undefined;
+    "gitlab-token": string | undefined;
     global: boolean | undefined;
     include: string[] | undefined;
+    "include-branches": boolean | undefined;
     "include-internal": boolean | undefined;
     "include-locked": boolean | undefined;
     install: boolean | undefined;
     interactive: boolean | undefined;
     latest: boolean | undefined;
     "max-concurrent-requests": number | undefined;
+    "no-actions": boolean | undefined;
     "no-catalog": boolean | undefined;
+    "no-docker": boolean | undefined;
+    "no-gitlab": boolean | undefined;
     "no-marshall-check": boolean | undefined;
     "no-optional": boolean | undefined;
     "no-save": boolean | undefined;
@@ -251,6 +296,7 @@ export type UpdateOptions = CreateOptions<{
     "release-channel": string | undefined;
     rollback: boolean | undefined;
     security: boolean | undefined;
+    style: string | undefined;
     target: string | undefined;
     "workspace-root": boolean | undefined;
     yes: boolean | undefined;
