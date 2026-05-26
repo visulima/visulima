@@ -269,6 +269,28 @@ Use `--security` to catch vulnerabilities:
   run: vis check --security --exit-code
 ```
 
+## Keeping Pipelines Pinned
+
+`vis update` auto-detects and bumps non-npm references alongside the catalog flow:
+
+- **GitHub Actions** — every `uses:` in `.github/workflows/*.yml` and composite `action.yml` files. Defaults to pinning to a commit SHA with a `# vN.M.P` version comment for readability.
+- **Docker** — every `FROM` line in any `Dockerfile*` and every `image:` field in `docker-compose*.yml`.
+- **GitLab CI** — `image:`, `services:`, and `include: { project, ref }` blocks in `.gitlab-ci.yml` plus anything under `.gitlab/ci/`.
+
+`vis update` honours ignore lists declared in `.github/dependabot.yml` and `renovate.json` (`ignoreDeps`, `ignore.dependency-name`, and `packageRules` with `enabled: false`) so existing automation rules are respected.
+
+To pin actions in a workflow that runs the updater itself:
+
+```yaml
+- uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.0.0
+- name: Update actions and docker references
+  env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  run: vis update --yes --dry-run
+```
+
+Drop `--dry-run` to apply, or run `--style preserve` to keep existing tag-style refs. Pass `--no-actions`, `--no-docker`, or `--no-gitlab` to opt out of a specific ecosystem. Use `--include-branches` to also bump branch refs (`@main`).
+
 ## Deployment Build Gating
 
 Use [`vis ignore`](../commands/ignore) to cancel deployment platform builds when the target app isn't affected by the latest commit. It exits with **inverted codes** (`0` = skip, `1` = build) so it drops directly into Vercel's "Ignored Build Step" and Netlify's `ignore` field.
