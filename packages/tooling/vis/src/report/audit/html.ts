@@ -23,6 +23,8 @@ import type { SecurityVulnerability } from "../../security/advisories";
 import type { PolicyDecision } from "../../security/policies";
 import { compareFindingsForDisplay } from "../../security/severity";
 import ANOLILAB_LOGO from "../assets/anolilab-text.svg?raw";
+import { advisoryUri, SEVERITY_ORDER, type Severity } from "../finding";
+import type { AuditReport } from "./build-report";
 // Compiled to the minified Tailwind CSS string by packem at build time; under
 // vitest/tsx the import resolves via Vite's native CSS handling.
 import styleCss from "./style.css";
@@ -31,6 +33,13 @@ const css = styleCss as unknown as string;
 
 export interface AuditHtmlFinding {
     acknowledged: boolean;
+    /**
+     * Root → vulnerable resolution paths from the lockfile graph. Rendered
+     * as a collapsible "why is this installed?" section below the row. Empty
+     * when the path-walker had no graph (no lockfile) or the target was
+     * unreachable.
+     */
+    dependencyPaths?: ReadonlyArray<ReadonlyArray<{ name: string; version: string }>>;
     /** Optional AI explanation (from `--explain`), rendered in a collapsible row. */
     explanation?: string;
     packageName: string;
@@ -48,28 +57,20 @@ export interface AuditHtmlEmitOptions {
     packagesScanned: number;
     /** Non-vulnerability policy decisions to render in a dedicated section. */
     policyDecisions?: PolicyDecision[];
+    /**
+     * Canonical machine-readable report. When provided, it is embedded as
+     * `<script type="application/json" id="vis-audit-report">…</script>`
+     * so downstream tooling can extract the same payload `--format json`
+     * would have written. Same shape both surfaces produce — that parity
+     * is the contract.
+     */
+    report?: AuditReport;
     tool: { name: string; version: string };
     workspaceRoot: string;
 }
 
-const SEVERITY_ORDER = ["CRITICAL", "HIGH", "MODERATE", "LOW", "UNKNOWN"] as const;
-
-type Severity = (typeof SEVERITY_ORDER)[number];
-
 const escapeHtml = (text: string): string =>
     text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&#39;");
-
-const advisoryUri = (id: string): string => {
-    if (id.startsWith("CVE-")) {
-        return `https://nvd.nist.gov/vuln/detail/${id}`;
-    }
-
-    if (id.startsWith("GHSA-")) {
-        return `https://github.com/advisories/${id}`;
-    }
-
-    return `https://osv.dev/vulnerability/${id}`;
-};
 
 type BreakingMarker = { kind: "major" | "minor-patch" | "unknown"; label: string };
 
@@ -165,8 +166,27 @@ const TD_BASE = "px-3 py-3 text-left align-middle";
 const TH_BASE = "sticky top-0 z-[2] px-3 py-3 text-left text-[10px] font-medium uppercase whitespace-nowrap select-none";
 const POLICY_TH_BASE = "px-3 py-3 text-left text-[10px] font-medium uppercase";
 
+const renderDependencyPaths = (paths: ReadonlyArray<ReadonlyArray<{ name: string; version: string }>>): string => {
+    const items = paths
+        .map((path) => {
+            const nodes = path
+                .map((n, index) => {
+                    const label = `${n.name}@${n.version}`;
+                    const arrow = index < path.length - 1 ? `<span class="dep-arrow muted px-1">→</span>` : "";
+
+                    return `<code class="dep-node text-[12px]">${escapeHtml(label)}</code>${arrow}`;
+                })
+                .join("");
+
+            return `<li class="dep-path flex flex-wrap items-center gap-y-1">${nodes}</li>`;
+        })
+        .join("");
+
+    return `<ul class="dep-paths flex flex-col gap-2 px-3 py-3">${items}</ul>`;
+};
+
 const renderRow = (finding: AuditHtmlFinding): string => {
-    const { acknowledged, explanation, packageName, packageVersion, remediation, vulnerability } = finding;
+    const { acknowledged, dependencyPaths, explanation, packageName, packageVersion, remediation, vulnerability } = finding;
     const { severity } = vulnerability;
     const marker = breakingMarker(packageVersion, vulnerability.fixedVersions);
     const fix = vulnerability.fixedVersions.length > 0 ? vulnerability.fixedVersions.join(", ") : "—";
@@ -188,11 +208,17 @@ const renderRow = (finding: AuditHtmlFinding): string => {
   <td class="${TD_BASE}">${remediationCell}</td>
 </tr>`;
 
+    const pathsRow = dependencyPaths && dependencyPaths.length > 0
+        ? `<tr class="paths-row" ${rowAttributes}>
+  <td colspan="8" class="p-0"><details><summary class="flex cursor-pointer items-center gap-3 px-3 py-2 select-none"><span class="intel-tag text-[9px] font-bold uppercase">[ DEPENDENCY PATHS ]</span><span class="intel-hint text-[9px] uppercase">${String(dependencyPaths.length)} root${dependencyPaths.length === 1 ? "" : "s"} reach this finding · click to expand</span></summary>${renderDependencyPaths(dependencyPaths)}</details></td>
+</tr>`
+        : "";
+
     if (!explanation) {
-        return mainRow;
+        return `${mainRow}${pathsRow}`;
     }
 
-    return `${mainRow}
+    return `${mainRow}${pathsRow}
 <tr class="explain-row" ${rowAttributes}>
   <td colspan="8" class="p-0"><details><summary class="flex cursor-pointer items-center gap-3 px-3 py-2 select-none"><span class="intel-tag text-[9px] font-bold uppercase">[ AI INTEL ]</span><span class="intel-hint text-[9px] uppercase">threat analysis · click to expand</span></summary><div class="explain-body grid gap-3 px-3 pt-1 pb-4">${renderExplanation(explanation)}</div></details></td>
 </tr>`;
@@ -204,9 +230,19 @@ export const emitAuditHtml = (options: AuditHtmlEmitOptions): string => {
     const sortedFindings = [...options.findings].sort(compareFindingsForDisplay);
 
     const counts: Record<Severity, number> = { CRITICAL: 0, HIGH: 0, LOW: 0, MODERATE: 0, UNKNOWN: 0 };
+    let fixable = 0;
+    let unacknowledged = 0;
 
     for (const finding of sortedFindings) {
         counts[finding.vulnerability.severity ?? "UNKNOWN"] += 1;
+
+        if (!finding.acknowledged) {
+            unacknowledged += 1;
+
+            if (finding.vulnerability.fixedVersions.length > 0) {
+                fixable += 1;
+            }
+        }
     }
 
     const rows = sortedFindings.map((f) => renderRow(f)).join("\n");
@@ -218,6 +254,13 @@ export const emitAuditHtml = (options: AuditHtmlEmitOptions): string => {
             `<div class="dseg dseg-sev dseg-${s.toLowerCase()}"><span class="dk text-[10px] font-medium uppercase">${s}</span><span class="dv text-[22px]">${String(counts[s])}</span></div>`,
     );
 
+    // Fixable readout: how many unacknowledged findings have at least one
+    // upstream patch version. Drives the next-action signal — "fixable: 3/5"
+    // tells the reader most of their risk is one `vis audit --fix` away.
+    const fixableChip = !clean && unacknowledged > 0
+        ? `<div class="dseg dseg-fixable"><span class="dk text-[10px] font-medium uppercase">fixable</span><span class="dv text-[22px]">${String(fixable)}<span class="dvsep mx-1 font-light">/</span>${String(unacknowledged)}</span></div>`
+        : "";
+
     // Scanned/findings read left; the per-severity counts are pushed to the
     // right edge as a static read-out (name + count, no interaction).
     const metricSegments = [
@@ -225,6 +268,7 @@ export const emitAuditHtml = (options: AuditHtmlEmitOptions): string => {
         `<div class="dseg"><span class="dk text-[10px] font-medium uppercase">findings</span><span class="dv text-[22px]"><span id="shown">${String(sortedFindings.length)}</span>${
             clean ? "" : `<span class="dvsep mx-1 font-light">/</span>${String(sortedFindings.length)}`
         }</span></div>`,
+        fixableChip,
         sevChips.length > 0 ? `<span class="flex-auto"></span>` : "",
         ...sevChips,
         clean
@@ -233,6 +277,21 @@ export const emitAuditHtml = (options: AuditHtmlEmitOptions): string => {
     ].join("");
 
     const statusKind = clean ? "ok" : counts.CRITICAL > 0 ? "crit" : counts.HIGH > 0 ? "high" : "warn";
+
+    // Duplicate-version rollup — surface packages installed at multiple
+    // versions so the reader can see consolidation targets without flipping
+    // back to the JSON. Sorted by name so the section is stable across runs.
+    const duplicates = [...(options.report?.duplicates ?? [])].sort((a, b) => a.name.localeCompare(b.name));
+    const duplicateRows = duplicates
+        .map(
+            (d) =>
+                `<tr>
+  <td class="px-3 py-3 align-top"><code class="font-medium">${escapeHtml(d.name)}</code></td>
+  <td class="px-3 py-3 align-top text-[12px] font-medium tabular-nums">${String(d.versionCount)}</td>
+  <td class="px-3 py-3 align-top"><code class="text-[12px]">${d.versions.map((v) => escapeHtml(v)).join(", ")}</code></td>
+</tr>`,
+        )
+        .join("\n");
 
     const policyDecisions = (options.policyDecisions ?? []).filter((d) => d.policy !== "vulnerability");
     const policyRows = [...policyDecisions]
@@ -254,13 +313,24 @@ export const emitAuditHtml = (options: AuditHtmlEmitOptions): string => {
         })
         .join("\n");
 
+    // Embed the canonical machine-readable report so downstream tooling
+    // (dashboards, CI bots, etc.) can extract the same payload that
+    // `vis audit --format json` would have written. `</script>` is the
+    // one sequence that can prematurely close the host element regardless
+    // of JSON content; escaping the slash is the standard hardening — JSON
+    // parsers ignore the escape, the HTML parser stops looking for the
+    // closing tag.
+    const reportScript = options.report
+        ? `\n<script type="application/json" id="vis-audit-report">${JSON.stringify(options.report).replaceAll("</", "<\\/")}</script>`
+        : "";
+
     return `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>vis audit · ${escapeHtml(now.toISOString().slice(0, 10))}</title>
-<style>${css}</style>
+<style>${css}</style>${reportScript}
 </head>
 <body>
 <main class="mx-auto max-w-[1080px]">
@@ -335,6 +405,25 @@ ${
 </thead>
 <tbody>
 ${policyRows}
+</tbody>
+</table>`
+        : ""
+}
+${
+    duplicates.length > 0
+        ? `
+<h2>Duplicate Versions (${duplicates.length})</h2>
+<p class="mt-1 mb-3 text-[12px] uppercase opacity-70">Packages installed at multiple versions. Consolidating these via overrides shrinks the install footprint and the attack surface.</p>
+<table id="duplicates" class="w-full text-[13px]">
+<thead>
+<tr>
+  <th class="${POLICY_TH_BASE}">Package</th>
+  <th class="${POLICY_TH_BASE}">Versions</th>
+  <th class="${POLICY_TH_BASE}">Installed</th>
+</tr>
+</thead>
+<tbody>
+${duplicateRows}
 </tbody>
 </table>`
         : ""

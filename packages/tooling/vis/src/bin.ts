@@ -69,6 +69,7 @@ import { injectVersion, setTerminalTitle } from "./io/terminal";
 import configLoaderPlugin from "./plugins/config-loader";
 import postCommandPlugin from "./plugins/post-command";
 import securityEnforcementPlugin from "./plugins/security-enforcement";
+import { parseEarlyCaCert } from "./util/ca-cert";
 import { startUpgradeCheck } from "./util/upgrade-check";
 
 // Apply heap memory tuning before any heavy work begins.
@@ -81,6 +82,17 @@ applyHeapTuning();
 if (process.argv.includes("--no-color")) {
     process.env["NO_COLOR"] = "1";
     process.env["FORCE_COLOR"] = "0";
+}
+
+// Honor --ca-cert before any TLS handshake fires. NODE_EXTRA_CA_CERTS is
+// read once on the first `tls.createSecureContext` call (lazy, not at
+// require time), so setting it here is enough for every subsequent
+// fetch in advisory sync / osv-bloom sync / socket.dev. A user-set
+// NODE_EXTRA_CA_CERTS takes precedence — explicit env wins over flag.
+const earlyCaCert = parseEarlyCaCert(process.argv);
+
+if (earlyCaCert !== undefined && !process.env["NODE_EXTRA_CA_CERTS"]) {
+    process.env["NODE_EXTRA_CA_CERTS"] = earlyCaCert;
 }
 
 // Inject VIS_VERSION for child processes before any commands run
@@ -134,6 +146,14 @@ cli.addGlobalOption({
 cli.addGlobalOption({
     description: "Path to a vis config file (overrides discovery)",
     name: "config",
+    type: String,
+});
+
+// Surfaced for `vis --help`; the actual env-var plumbing is applied
+// at the very top of bin.ts so it lands before any TLS handshake.
+cli.addGlobalOption({
+    description: "Path to a CA bundle (PEM) to trust for HTTPS — for corporate proxies. Equivalent to NODE_EXTRA_CA_CERTS.",
+    name: "ca-cert",
     type: String,
 });
 

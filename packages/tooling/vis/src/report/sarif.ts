@@ -19,6 +19,7 @@ import { join, relative } from "node:path";
 
 import type { SecurityVulnerability } from "../security/advisories";
 import type { PolicyDecision } from "../security/policies";
+import { advisoryUri, type SarifLevel, securitySeverityString, severityLabel, severityToSarifLevel } from "./finding";
 
 export interface SarifFinding {
     acknowledged: boolean;
@@ -41,37 +42,6 @@ export interface SarifEmitOptions {
     tool: { informationUri: string; name: string; version: string };
     workspaceRoot: string;
 }
-
-type SarifLevel = "error" | "warning" | "note" | "none";
-
-const SEVERITY_TO_LEVEL: Record<string, SarifLevel> = {
-    CRITICAL: "error",
-    HIGH: "error",
-    LOW: "note",
-    MODERATE: "warning",
-    UNKNOWN: "none",
-};
-
-/**
- * CVSS-base-score buckets used when an advisory has no CVSS score attached.
- * Numbers match the upper end of each canonical severity band on the CVSS v3
- * scale so SARIF consumers' "severity from score" labels stay accurate.
- */
-const SEVERITY_TO_SECURITY_SEVERITY: Record<string, string> = {
-    CRITICAL: "9.5",
-    HIGH: "8.0",
-    LOW: "2.5",
-    MODERATE: "5.5",
-    UNKNOWN: "0.0",
-};
-
-const SEVERITY_TO_LABEL: Record<string, string> = {
-    CRITICAL: "critical",
-    HIGH: "high",
-    LOW: "low",
-    MODERATE: "medium",
-    UNKNOWN: "none",
-};
 
 export interface SarifLog {
     $schema: string;
@@ -129,26 +99,6 @@ interface SarifResult {
     ruleId: string;
 }
 
-const advisoryUri = (id: string): string => {
-    if (id.startsWith("CVE-")) {
-        return `https://nvd.nist.gov/vuln/detail/${id}`;
-    }
-
-    if (id.startsWith("GHSA-")) {
-        return `https://github.com/advisories/${id}`;
-    }
-
-    return `https://osv.dev/vulnerability/${id}`;
-};
-
-const securitySeverity = (vuln: SecurityVulnerability): string => {
-    if (typeof vuln.cvssScore === "number" && Number.isFinite(vuln.cvssScore)) {
-        return vuln.cvssScore.toFixed(1);
-    }
-
-    return SEVERITY_TO_SECURITY_SEVERITY[vuln.severity] ?? "0.0";
-};
-
 /** Builds a SARIF 2.1.0 log from OSV findings plus non-vulnerability policy decisions (one rule per advisory id and per policy name). */
 export const emitSarif = (options: SarifEmitOptions): SarifLog => {
     const rulesById = new Map<string, SarifRule>();
@@ -157,8 +107,8 @@ export const emitSarif = (options: SarifEmitOptions): SarifLog => {
 
     for (const finding of options.findings) {
         const { acknowledged, packageName, packageVersion, vulnerability: vuln } = finding;
-        const level = SEVERITY_TO_LEVEL[vuln.severity] ?? "none";
-        const label = SEVERITY_TO_LABEL[vuln.severity] ?? "none";
+        const level = severityToSarifLevel(vuln.severity);
+        const label = severityLabel(vuln.severity);
 
         if (!rulesById.has(vuln.id)) {
             rulesById.set(vuln.id, {
@@ -169,7 +119,7 @@ export const emitSarif = (options: SarifEmitOptions): SarifLog => {
                 name: vuln.id,
                 properties: {
                     precision: "very-high",
-                    "security-severity": securitySeverity(vuln),
+                    "security-severity": securitySeverityString(vuln),
                     "severity-label": label,
                     tags: ["security", "vulnerability", "supply-chain", `severity:${label}`],
                 },

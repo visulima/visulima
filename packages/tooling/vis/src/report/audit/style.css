@@ -356,6 +356,12 @@
         color: var(--minor);
     }
 
+    /* Fixable readout: positive next-action signal — same hue family as the
+       clean-state chip so it reads as "good news" without screaming. */
+    .dseg-fixable .dv {
+        color: var(--minor);
+    }
+
     /* Inputs: underline, not box. Focus brightens the rule — no glow ring. */
     .field {
         border-bottom: 1px solid var(--border2);
