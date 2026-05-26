@@ -20,7 +20,7 @@ export default defineConfig({
     validation: {
         dependencies: {
             hoisted: {
-                exclude: ["@visulima/interactive-manager", "safe-stable-stringify"],
+                exclude: ["@visulima/interactive-manager", "safe-stable-stringify", "type-fest"],
             },
         },
     },
