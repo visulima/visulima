@@ -33,9 +33,7 @@
         "xterm"
     ],
     "homepage": "https://visulima.com/packages/is-ansi-color-supported/",
-    "bugs": {
-        "url": "https://github.com/visulima/visulima/issues"
-    },
+    "bugs": "https://github.com/visulima/visulima/issues",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/visulima/visulima.git",
@@ -60,14 +58,6 @@
     "type": "module",
     "exports": {
         ".": {
-            "edge-light": {
-                "types": "./dist/is-color-supported.edge-light.d.mts",
-                "default": "./dist/is-color-supported.edge-light.mjs"
-            },
-            "browser": {
-                "types": "./dist/is-color-supported.browser.d.mts",
-                "default": "./dist/is-color-supported.browser.mjs"
-            },
             "import": {
                 "types": "./dist/is-color-supported.server.d.mts",
                 "default": "./dist/is-color-supported.server.mjs"
@@ -75,6 +65,14 @@
             "require": {
                 "types": "./dist/is-color-supported.server.d.cts",
                 "default": "./dist/is-color-supported.server.cjs"
+            },
+            "edge-light": {
+                "types": "./dist/is-color-supported.edge-light.d.mts",
+                "default": "./dist/is-color-supported.edge-light.mjs"
+            },
+            "browser": {
+                "types": "./dist/is-color-supported.browser.d.mts",
+                "default": "./dist/is-color-supported.browser.mjs"
             }
         },
         "./browser": {

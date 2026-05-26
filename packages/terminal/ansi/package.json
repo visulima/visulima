@@ -40,9 +40,7 @@
         "xterm"
     ],
     "homepage": "https://visulima.com/packages/ansi",
-    "bugs": {
-        "url": "https://github.com/visulima/visulima/issues"
-    },
+    "bugs": "https://github.com/visulima/visulima/issues",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/visulima/visulima.git",

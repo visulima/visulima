@@ -80,14 +80,6 @@
     "type": "module",
     "exports": {
         ".": {
-            "edge-light": {
-                "types": "./dist/index.server.d.mts",
-                "default": "./dist/index.server.mjs"
-            },
-            "browser": {
-                "types": "./dist/index.browser.d.mts",
-                "default": "./dist/index.browser.mjs"
-            },
             "import": {
                 "types": "./dist/index.server.d.mts",
                 "default": "./dist/index.server.mjs"
@@ -95,6 +87,14 @@
             "require": {
                 "types": "./dist/index.server.d.cts",
                 "default": "./dist/index.server.cjs"
+            },
+            "edge-light": {
+                "types": "./dist/index.server.d.mts",
+                "default": "./dist/index.server.mjs"
+            },
+            "browser": {
+                "types": "./dist/index.browser.d.mts",
+                "default": "./dist/index.browser.mjs"
             }
         },
         "./browser": {
