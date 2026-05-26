@@ -4,6 +4,8 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
+import { buildSchemaRefForTesting } from "../../../src/commands/init/handler";
+
 describe("init config generation", () => {
     let tmpDir: string;
 
@@ -193,5 +195,39 @@ describe("yarn version detection for config sync", () => {
         expect(isClassic).toBe(true);
 
         rmSync(tmpDir2, { force: true, recursive: true });
+    });
+});
+
+describe("buildSchemaRefForTesting", () => {
+    const root = "/repo";
+
+    it("emits a relative path from a workspace-root file", () => {
+        expect.assertions(2);
+
+        expect(buildSchemaRefForTesting(join(root, "project.json"), root, "project.schema.json")).toBe(
+            "./node_modules/@visulima/vis/schemas/project.schema.json",
+        );
+        expect(buildSchemaRefForTesting(join(root, "vis.config.ts"), root, "vis-config.schema.json")).toBe(
+            "./node_modules/@visulima/vis/schemas/vis-config.schema.json",
+        );
+    });
+
+    it("walks up the right number of `..` segments from nested project files", () => {
+        expect.assertions(2);
+
+        expect(buildSchemaRefForTesting(join(root, "apps", "web", "project.json"), root, "project.schema.json")).toBe(
+            "../../node_modules/@visulima/vis/schemas/project.schema.json",
+        );
+        expect(buildSchemaRefForTesting(join(root, "packages", "tooling", "name", "project.json"), root, "project.schema.json")).toBe(
+            "../../../node_modules/@visulima/vis/schemas/project.schema.json",
+        );
+    });
+
+    it("always emits forward slashes regardless of platform path style", () => {
+        expect.assertions(1);
+
+        const ref = buildSchemaRefForTesting(join(root, "apps", "web", "project.json"), root, "project.schema.json");
+
+        expect(ref.includes("\\")).toBe(false);
     });
 });

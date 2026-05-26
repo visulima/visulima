@@ -1,52 +1,8 @@
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 
+import { resolveAffectedShas } from "../../runtime/affected-shas";
 import { runToolchainPreflight } from "../../runtime/toolchain";
 import type { CiOptions } from "./index";
-
-/**
- * Detect base/head refs from common CI provider environment variables.
- * Falls back to `main` / `HEAD` when no CI-specific info is available.
- */
-const detectCiRefs = (): { base: string; head: string } => {
-    // GitHub Actions: GITHUB_BASE_REF is set on pull_request events
-    if (process.env["GITHUB_BASE_REF"]) {
-        return {
-            base: `origin/${process.env["GITHUB_BASE_REF"]}`,
-            head: process.env["GITHUB_SHA"] ?? "HEAD",
-        };
-    }
-
-    // GitLab CI
-    if (process.env["CI_MERGE_REQUEST_TARGET_BRANCH_NAME"]) {
-        return {
-            base: `origin/${process.env["CI_MERGE_REQUEST_TARGET_BRANCH_NAME"]}`,
-            head: process.env["CI_COMMIT_SHA"] ?? "HEAD",
-        };
-    }
-
-    // Buildkite: BUILDKITE_PULL_REQUEST_BASE_BRANCH is the upstream PR's
-    // base when the build was triggered by a PR webhook. For non-PR
-    // builds, fall through to the generic default — Buildkite has no
-    // canonical "previous successful build SHA" env var that maps cleanly
-    // to an affected base.
-    if (process.env["BUILDKITE_PULL_REQUEST_BASE_BRANCH"]) {
-        return {
-            base: `origin/${process.env["BUILDKITE_PULL_REQUEST_BASE_BRANCH"]}`,
-            head: process.env["BUILDKITE_COMMIT"] ?? "HEAD",
-        };
-    }
-
-    // CircleCI
-    if (process.env["CIRCLE_BRANCH"] && process.env["CIRCLE_SHA1"]) {
-        return {
-            base: "origin/main",
-            head: process.env["CIRCLE_SHA1"],
-        };
-    }
-
-    // Generic / local fallback
-    return { base: "origin/main", head: "HEAD" };
-};
 
 const execute = async ({ argument, logger, options, runtime, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, CiOptions>): Promise<void> => {
     const rawTargets = argument[0];
@@ -68,9 +24,17 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
         throw new Error("Could not determine workspace root. Run this command inside a monorepo.");
     }
 
-    const { base: defaultBase, head: defaultHead } = detectCiRefs();
-    const base = options.base ?? defaultBase;
-    const head = options.head ?? defaultHead;
+    const resolved = resolveAffectedShas({
+        defaultBase: visConfig?.defaultBase,
+        workspaceRoot: wsRoot,
+    });
+
+    const base = options.base ?? resolved.base;
+    const head = options.head ?? resolved.head;
+
+    if (!options.base && !options.head) {
+        logger.info(`▸ Resolved affected refs from ${resolved.provider} (${resolved.notes.join("; ")})`);
+    }
 
     // Pre-flight: install pinned tools before anything else, so the
     // dependency install + every affected target runs against the

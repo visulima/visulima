@@ -18,14 +18,13 @@ const affected: Command = {
     name: "affected",
     options: [
         {
-            defaultValue: "HEAD~1",
-            description: "Git base ref for comparison",
+            description:
+                "Git base ref for comparison. When omitted, vis auto-resolves it from the active CI provider (GitHub/GitLab/Buildkite/CircleCI) or falls back to `git merge-base HEAD origin/<defaultBase>` locally. Default base branch comes from `vis.config.ts#defaultBase` (or `main`).",
             name: "base",
             type: String,
         },
         {
-            defaultValue: "HEAD",
-            description: "Git head ref for comparison",
+            description: "Git head ref for comparison. When omitted, auto-resolves from CI env (e.g. `$GITHUB_SHA`) or defaults to `HEAD`.",
             name: "head",
             type: String,
         },

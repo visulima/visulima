@@ -3,7 +3,7 @@ import { createInterface } from "node:readline";
 
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 import { isAccessibleSync, writeFileSync } from "@visulima/fs";
-import { join } from "@visulima/path";
+import { join, relative } from "@visulima/path";
 
 import { DEFAULT_MIN_RELEASE_AGE_MINUTES, findVisConfigFile } from "../../config/config";
 import { pail } from "../../io/logger";
@@ -295,8 +295,49 @@ const runStaticInit = (cwd: string, pm: { name: string; version: string }, optio
     pail.notice("Run 'vis doctor' for a full health check, or 'vis init' in a terminal for guided setup.");
 };
 
+/**
+ * Compute the `$schema` reference a JSON file at `forFile` should use to
+ * point at vis's bundled schema. The returned path is workspace-relative
+ * (so editors resolve it through node_modules) and uses forward slashes
+ * regardless of platform.
+ */
+const buildSchemaRef = (forFile: string, workspaceRoot: string, schemaFile: "project.schema.json" | "vis-config.schema.json"): string => {
+    const fileDirectory = join(forFile, "..");
+    const target = join(workspaceRoot, "node_modules", "@visulima", "vis", "schemas", schemaFile);
+    const rel = relative(fileDirectory, target);
+    const normalised = rel === "" ? `./${schemaFile}` : rel.split(/[/\\]/u).join("/");
+
+    return normalised.startsWith(".") ? normalised : `./${normalised}`;
+};
+
+/**
+ * Print the workspace-relative `$schema` refs for a representative
+ * project.json (workspace root) and the vis.config.ts. Users can paste
+ * these into their files to get editor IntelliSense without running the
+ * migrator.
+ */
+const printSchemaPaths = (cwd: string, workspaceRoot: string): void => {
+    const projectRef = buildSchemaRef(join(cwd, "project.json"), workspaceRoot, "project.schema.json");
+    const configRef = buildSchemaRef(join(cwd, "vis.config.ts"), workspaceRoot, "vis-config.schema.json");
+
+    pail.info("");
+    pail.info("Paste these into your config files to get editor IntelliSense:");
+    pail.info("");
+    pail.info(`  project.json    → "$schema": "${projectRef}"`);
+    pail.info(`  vis.config.ts   → see ${configRef} (vis.config.ts is TypeScript; use the import path directly)`);
+    pail.info("");
+    pail.notice("For nested project.json files, the `..` depth changes — run `vis migrate nx` to auto-rewrite all of them.");
+};
+
 const execute = async ({ options, workspaceRoot: wsRoot }: Toolbox<Console, InitOptions>): Promise<void> => {
     const cwd = wsRoot ?? process.cwd();
+
+    if (options.schema) {
+        printSchemaPaths(cwd, cwd);
+
+        return;
+    }
+
     const pm = detectPm(cwd);
 
     const existingConfig = findVisConfigFile(cwd);
@@ -319,3 +360,5 @@ const execute = async ({ options, workspaceRoot: wsRoot }: Toolbox<Console, Init
 };
 
 export default execute as CommandExecute<Toolbox>;
+
+export { buildSchemaRef as buildSchemaRefForTesting };
