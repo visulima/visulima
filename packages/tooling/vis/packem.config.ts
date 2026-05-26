@@ -9,6 +9,9 @@ export default defineConfig({
     runtime: "node",
     externals: [/^@visulima\/vis(\/|$)/],
     rollup: {
+        resolveExternals: {
+          exclude: ["@visulima/tabular", /^@visulima\/tabular(\/|$)/],
+        },
         css: {
             mode: "inline",
             loaders: [tailwindcssLoader],
