@@ -102,6 +102,7 @@
     },
     "dependencies": {
         "@visulima/secret-scanner": "1.0.0-alpha.3",
+        "@visulima/tabular": "4.0.0-alpha.11",
         "@visulima/task-runner": "1.0.0-alpha.15",
         "@visulima/tui": "1.0.0-alpha.19",
         "jiti": "catalog:dev",
@@ -160,7 +161,6 @@
         "@visulima/source-map": "3.0.0-alpha.9",
         "@visulima/spinner": "1.0.0-alpha.1",
         "@visulima/string": "3.0.0-alpha.13",
-        "@visulima/tabular": "4.0.0-alpha.11",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
         "@yarnpkg/parsers": "^3.0.3",
