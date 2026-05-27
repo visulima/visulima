@@ -1,6 +1,7 @@
 import type { Cli as ICli } from "./cli";
 import type { Command as ICommand } from "./command";
 import type { Options } from "./options";
+import type { CerebroFs, CerebroProcess } from "./runtime";
 
 /**
  * Type-safe Toolbox interface with customizable options and environment variable types.
@@ -50,6 +51,14 @@ export interface Toolbox<
     commandName: string;
 
     /**
+     * Alias for `logger`. Exposed under the `console` name so commands can
+     * write portable `({ console }) => console.log(...)` code without reaching
+     * for the global `console`. The injected value is the same object as
+     * `toolbox.logger`, so verbosity-aware methods (`debug`) keep working.
+     */
+    console: TLogger;
+
+    /**
      * Environment variables processed from the command definition.
      * Values are transformed according to their type definitions and default values.
      * @example
@@ -71,6 +80,14 @@ export interface Toolbox<
      * ```
      */
     env: TEnv;
+
+    /**
+     * Filesystem adapter. Defaults to `node:fs/promises`, but can be swapped via
+     * `CliOptions.fs` for tests (in-memory adapter) or sandboxed runtimes
+     * (JustBash, MCP). Prefer `toolbox.fs` over a direct `node:fs/promises`
+     * import inside command actions to keep them portable and testable.
+     */
+    fs: CerebroFs;
 
     /** The logger instance. */
     logger: TLogger;
@@ -102,6 +119,15 @@ export interface Toolbox<
      * ```
      */
     options: TOptions;
+
+    /**
+     * Runtime process info — cwd, env, argv, exit, platform, arch, stdin —
+     * captured at CLI construction. Prefer `toolbox.process` over reaching for
+     * the global `process` so commands stay portable across Node, Deno, Bun,
+     * and mocked test runtimes. `process.exit` honors the `CliOptions.exit`
+     * override, which lets tests assert exit codes without killing the runner.
+     */
+    process: CerebroProcess;
 
     /**
      * Raw tokens that command-line-args could not assign to a defined

@@ -190,10 +190,13 @@ When your command's `execute` function is called, it receives a toolbox object w
 
 ### Core Properties
 
-- **`logger`**: Logger instance for output (debug, info, warn, error)
+- **`logger`**: Logger instance for output (debug, info, warn, error). Verbosity-gated via `--quiet`/`--verbose`/`--debug`.
+- **`console`**: Alias for `logger`. Use it when porting goke-style code or when a `console`-named parameter reads more naturally.
 - **`options`**: Parsed command-line options (camelCase keys)
 - **`argument`**: Array of positional arguments
-- **`env`**: Environment variables (camelCase keys)
+- **`env`**: Environment variables (camelCase keys) processed from the command's `env: [...]` definitions
+- **`fs`**: Injected filesystem adapter (subset of `node:fs/promises`). Swap via `CliOptions.fs` for tests or sandboxed runtimes.
+- **`process`**: Runtime snapshot — `cwd`, `env`, `argv`, `stdin`, `exit`, `platform`, `arch`. Prefer this over the global `process` so commands stay portable across Node, Deno, Bun, and mocked test runtimes.
 - **`runtime`**: Reference to the CLI instance
 - **`argv`**: Original command-line arguments array
 
@@ -240,6 +243,127 @@ cli.addCommand({
     },
 });
 ```
+
+## Runtime Injection
+
+Commands receive an injected `{ fs, console, process }` context on the toolbox. Prefer reading from these over reaching for `node:fs/promises`, the global `console`, or the global `process` — commands written against the injected context stay testable, portable across Node/Deno/Bun, and ready to run inside sandboxed environments like MCP servers.
+
+```ts
+import { Cerebro } from "@visulima/cerebro";
+
+const cli = new Cerebro("acme");
+
+cli.addCommand({
+    name: "login",
+    description: "Save an auth token",
+    options: [{ name: "token", type: String, description: "API token" }],
+    execute: async ({ fs, console, process, options }) => {
+        await fs.mkdir(".acme", { recursive: true });
+        await fs.writeFile(".acme/auth.json", JSON.stringify({ token: options.token }), "utf8");
+        console.log("saved credentials in", process.cwd);
+    },
+});
+
+await cli.run();
+```
+
+### Overriding the runtime
+
+Pass any of the new `CliOptions` to swap the runtime context. Each override defaults to a sensible host value:
+
+| Option   | Default                      | Used for                                                  |
+| -------- | ---------------------------- | --------------------------------------------------------- |
+| `fs`     | `node:fs/promises` adapter   | Filesystem operations from `toolbox.fs`                   |
+| `exit`   | Runtime-agnostic exit helper | `toolbox.process.exit`                                    |
+| `env`    | Host `process.env`           | `toolbox.process.env` (does **not** affect `toolbox.env`) |
+| `stdin`  | `""` (empty string)          | `toolbox.process.stdin`                                   |
+| `cwd`    | Runtime cwd                  | `toolbox.process.cwd`                                     |
+| `logger` | Verbosity-aware console shim | `toolbox.logger` and `toolbox.console`                    |
+
+```ts
+const exitSpy = vi.fn();
+const fakeFs = new InMemoryFs();
+
+const cli = new Cerebro("acme", {
+    cwd: "/virtual/project",
+    fs: fakeFs,
+    exit: exitSpy,
+    env: { NODE_ENV: "test" },
+    stdin: "y\n",
+});
+```
+
+### Testing with mocked runtime
+
+The runtime overrides remove the need for `vi.spyOn(process, "exit")` or `vi.spyOn(console, "log")` in command tests. Pass mocks at CLI construction; assert on them directly.
+
+```ts
+import { describe, expect, test, vi } from "vitest";
+import { Cerebro } from "@visulima/cerebro";
+
+describe("deploy command", () => {
+    test("exits with code 2 when env is missing", async () => {
+        const exit = vi.fn();
+        const calls: string[] = [];
+        const logger = {
+            log: (...args: unknown[]) => calls.push(String(args[0])),
+            info: () => {},
+            warn: () => {},
+            error: () => {},
+            debug: () => {},
+        };
+
+        const cli = new Cerebro("acme", { argv: ["deploy"], exit, logger });
+        cli.addCommand({
+            name: "deploy",
+            execute: ({ console, process, options }) => {
+                if (!options.env) {
+                    console.log("missing --env");
+                    process.exit(2);
+                }
+            },
+        });
+
+        await cli.run({ shouldExitProcess: false });
+
+        expect(exit).toHaveBeenCalledWith(2);
+        expect(calls).toStrictEqual(["missing --env"]);
+    });
+});
+```
+
+### `cli.clone(options?)`
+
+Creates an independent CLI sharing the same command definitions. The clone has its own commands map, global options, default-command setting, and plugin manager — so adding commands or changing options on the clone never mutates the original. Primarily useful in tests to run the same CLI with different `argv`/`exit`/`fs` overrides without rebuilding the command tree.
+
+```ts
+const cli = new Cerebro("acme");
+cli.addCommand({ name: "build", execute: ({ console }) => console.log("building") });
+
+// In tests: clone with mocked exit + captured argv
+const isolatedExit = vi.fn();
+const isolated = cli.clone({ argv: ["build"], exit: isolatedExit });
+await isolated.run({ shouldExitProcess: false });
+```
+
+### `cli.getAction(commandName)`
+
+Returns the resolved `execute` function for a registered command. For lazy commands defined with `loader`, the module is loaded once and cached. Supports space-separated nested command paths.
+
+```ts
+const cli = new Cerebro("acme");
+
+cli.addCommand({
+    name: "deploy",
+    execute: ({ console, options }) => console.log("deploying to", options.env),
+});
+
+// Call the action directly with a synthesized toolbox — no argv parsing.
+const action = await cli.getAction("deploy");
+await action({ console: fakeConsole, options: { env: "staging" } } as never);
+```
+
+Use this when you want to unit-test a command action in isolation without going through `run()`'s full lifecycle (plugin init, exception handlers, exit). For end-to-end tests that exercise argv parsing and lifecycle hooks, prefer `cli.clone(...).run(...)` instead.
 
 ## Built-in Commands
 

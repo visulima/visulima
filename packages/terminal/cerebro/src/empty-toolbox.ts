@@ -19,6 +19,12 @@ class EmptyToolbox implements Partial<IToolbox> {
 
     public logger?: IToolbox["logger"];
 
+    public console?: IToolbox["console"];
+
+    public fs?: IToolbox["fs"];
+
+    public process?: IToolbox["process"];
+
     public runtime?: IToolbox["runtime"];
 
     public rawUnknown?: IToolbox["rawUnknown"];
