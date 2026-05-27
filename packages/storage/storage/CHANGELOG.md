@@ -1,3 +1,24 @@
+## @visulima/storage [1.0.0-alpha.32](https://github.com/visulima/visulima/compare/@visulima/storage@1.0.0-alpha.31...@visulima/storage@1.0.0-alpha.32) (2026-05-27)
+
+### Features
+
+* **storage:** add move, listAll, hooks, range, multipart, transfer, MemoryStorage ([1750846](https://github.com/visulima/visulima/commit/1750846768a2e6b088bdc44485851c07b0863afe))
+
+### Bug Fixes
+
+* **storage-client:** percent-encode user fields in defaultFingerprint ([7c78a0f](https://github.com/visulima/visulima/commit/7c78a0f9512e2a673b941d80839e9f1e86b7b5d0))
+
+### Documentation
+
+* prettier-format agent instructions ([71b6414](https://github.com/visulima/visulima/commit/71b6414528780ac82c4e0bb25b5f4f11faba5549))
+
+
+### Dependencies
+
+* **@visulima/pagination:** upgraded to 5.0.0-alpha.12
+* **@visulima/fs:** upgraded to 5.0.0-alpha.28
+* **@visulima/path:** upgraded to 3.0.0-alpha.11
+
 ## @visulima/storage [1.0.0-alpha.31](https://github.com/visulima/visulima/compare/@visulima/storage@1.0.0-alpha.30...@visulima/storage@1.0.0-alpha.31) (2026-05-26)
 
 ### Features
