@@ -1,3 +1,32 @@
+## @visulima/cerebro [3.0.0-alpha.28](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.27...@visulima/cerebro@3.0.0-alpha.28) (2026-05-27)
+
+### Features
+
+* **cerebro:** inject fs/console/process into toolbox + clone/getAction ([7d8ab0a](https://github.com/visulima/visulima/commit/7d8ab0a3ef88ac2c8da054984cf36162e8a61530))
+
+### Bug Fixes
+
+* **cerebro:** silence packem hoist warning blocking prod build ([608aa67](https://github.com/visulima/visulima/commit/608aa676b615473e9e7860b72f788d6c58b96bd7))
+* **storage-client:** percent-encode user fields in defaultFingerprint ([7c78a0f](https://github.com/visulima/visulima/commit/7c78a0f9512e2a673b941d80839e9f1e86b7b5d0))
+
+### Miscellaneous Chores
+
+* refresh generated license bundles and disposable-domain stats ([a389f38](https://github.com/visulima/visulima/commit/a389f38484788aafa8ba9b698e2dd5805a982d98))
+* sorted package.json ([b47c545](https://github.com/visulima/visulima/commit/b47c545591600fdab17d5cd3a3fbc68b61e199da))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.12
+* **@visulima/tabular:** upgraded to 4.0.0-alpha.12
+* **@visulima/boxen:** upgraded to 3.0.0-alpha.11
+* **@visulima/command-line-args:** upgraded to 2.0.0-alpha.10
+* **@visulima/error:** upgraded to 6.0.0-alpha.30
+* **@visulima/find-cache-dir:** upgraded to 3.0.0-alpha.10
+* **@visulima/pail:** upgraded to 4.0.0-alpha.18
+* **@visulima/path:** upgraded to 3.0.0-alpha.11
+* **@visulima/string:** upgraded to 3.0.0-alpha.14
+
 ## @visulima/cerebro [3.0.0-alpha.27](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.26...@visulima/cerebro@3.0.0-alpha.27) (2026-05-26)
 
 ### Miscellaneous Chores
