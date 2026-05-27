@@ -1,3 +1,30 @@
+## @visulima/find-cache-dir [3.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/find-cache-dir@3.0.0-alpha.9...@visulima/find-cache-dir@3.0.0-alpha.10) (2026-05-27)
+
+### Bug Fixes
+
+* **storage-client:** percent-encode user fields in defaultFingerprint ([7c78a0f](https://github.com/visulima/visulima/commit/7c78a0f9512e2a673b941d80839e9f1e86b7b5d0))
+
+### Miscellaneous Chores
+
+* **ci-stability:** green CI across vis, native, lint, tests, attw ([#651](https://github.com/visulima/visulima/issues/651)) ([d4eb684](https://github.com/visulima/visulima/commit/d4eb684b5f75c818c9251048c605a0ed54a268e3))
+* **find-cache-dir:** apply prettier and eslint quote-style auto-fix ([599ecb8](https://github.com/visulima/visulima/commit/599ecb864150ea46acca9761d86e47a6790dcf55))
+* **find-cache-dir:** bump @visulima/fs to 5.0.0-alpha.14 ([343af7b](https://github.com/visulima/visulima/commit/343af7b921fcd9abd8e7809be17d0820bc175044))
+* **find-cache-dir:** housekeeping cleanup ([ed1f1ff](https://github.com/visulima/visulima/commit/ed1f1ffb279e2a5c435421c1a309fe3da1fbf67a))
+* **find-cache-dir:** upgrade packem to 2.0.0-alpha.76 ([f29ce07](https://github.com/visulima/visulima/commit/f29ce0709fac1833c60ff1e73d6937ffb6014b9b))
+* **fs:** apply prettier and eslint formatting sweep ([6e442f3](https://github.com/visulima/visulima/commit/6e442f3fe4413d52db2959f92574c4159e0450ce))
+* re-sort workspace package.json files via vis sort-package-json ([f625696](https://github.com/visulima/visulima/commit/f625696cfac974325774b3243e1a83c3d23acbd7))
+* sorted package.json ([b47c545](https://github.com/visulima/visulima/commit/b47c545591600fdab17d5cd3a3fbc68b61e199da))
+
+### Tests
+
+* **repo:** add dist runtime + types integration tests ([32ee300](https://github.com/visulima/visulima/commit/32ee300b7184117a0ddf9f9d390f75f8932d5ed9))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.28
+* **@visulima/path:** upgraded to 3.0.0-alpha.11
+
 ## @visulima/find-cache-dir [3.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/find-cache-dir@3.0.0-alpha.8...@visulima/find-cache-dir@3.0.0-alpha.9) (2026-04-22)
 
 ### Bug Fixes
