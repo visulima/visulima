@@ -1,3 +1,24 @@
+## @visulima/content-safety [1.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/content-safety@1.0.0-alpha.8...@visulima/content-safety@1.0.0-alpha.9) (2026-05-27)
+
+### Bug Fixes
+
+* **storage-client:** percent-encode user fields in defaultFingerprint ([7c78a0f](https://github.com/visulima/visulima/commit/7c78a0f9512e2a673b941d80839e9f1e86b7b5d0))
+
+### Miscellaneous Chores
+
+* **ci-stability:** green CI across vis, native, lint, tests, attw ([#651](https://github.com/visulima/visulima/issues/651)) ([d4eb684](https://github.com/visulima/visulima/commit/d4eb684b5f75c818c9251048c605a0ed54a268e3))
+* **content-safety:** clear lint warnings ([e0d0e9b](https://github.com/visulima/visulima/commit/e0d0e9b08a58d6cd664dc8038f3e039e910e4e14))
+* **content-safety:** fix lint errors ([9042806](https://github.com/visulima/visulima/commit/9042806a92c4bd195ad085de0394f5f07425b16c))
+* **content-safety:** housekeeping cleanup ([5030462](https://github.com/visulima/visulima/commit/5030462fcac005039ba7e0be44d40d6070a3e825))
+* **content-safety:** upgrade packem to 2.0.0-alpha.76 ([852e7db](https://github.com/visulima/visulima/commit/852e7db1461d79fd7b1c2480429ffd6a0f1ef1d2))
+* re-sort workspace package.json files via vis sort-package-json ([f625696](https://github.com/visulima/visulima/commit/f625696cfac974325774b3243e1a83c3d23acbd7))
+* **repo:** sort package.json keys across all packages ([e1fd9ab](https://github.com/visulima/visulima/commit/e1fd9ab467ef96a98c777da1572ff6a50fcf7e71))
+* sorted package.json ([b47c545](https://github.com/visulima/visulima/commit/b47c545591600fdab17d5cd3a3fbc68b61e199da))
+
+### Tests
+
+* **repo:** add dist runtime + types integration tests ([32ee300](https://github.com/visulima/visulima/commit/32ee300b7184117a0ddf9f9d390f75f8932d5ed9))
+
 ## @visulima/content-safety [1.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/content-safety@1.0.0-alpha.7...@visulima/content-safety@1.0.0-alpha.8) (2026-04-22)
 
 ### Bug Fixes
