@@ -1,3 +1,25 @@
+## @visulima/object [3.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/object@3.0.0-alpha.13...@visulima/object@3.0.0-alpha.14) (2026-05-27)
+
+### Bug Fixes
+
+* **storage-client:** percent-encode user fields in defaultFingerprint ([7c78a0f](https://github.com/visulima/visulima/commit/7c78a0f9512e2a673b941d80839e9f1e86b7b5d0))
+
+### Miscellaneous Chores
+
+* **ci-stability:** green CI across vis, native, lint, tests, attw ([#651](https://github.com/visulima/visulima/issues/651)) ([d4eb684](https://github.com/visulima/visulima/commit/d4eb684b5f75c818c9251048c605a0ed54a268e3))
+* **object:** apply formatter sweep and clean license attribution ([697adb2](https://github.com/visulima/visulima/commit/697adb268bb007cf4f6983f4a89a1258a9ff208d))
+* **object:** apply prettier and eslint quote-style auto-fix ([fb4c54f](https://github.com/visulima/visulima/commit/fb4c54f719e6ca1d03ac56c7f9f9067f9731f17e))
+* **object:** fix lint errors ([386c5f0](https://github.com/visulima/visulima/commit/386c5f0f6e36d0491e674c03196710a40f1e91c0))
+* **object:** housekeeping cleanup ([99d38b2](https://github.com/visulima/visulima/commit/99d38b214e62548810b2b362bd8b9483e242fdcc))
+* **object:** upgrade packem to 2.0.0-alpha.76 ([729158f](https://github.com/visulima/visulima/commit/729158f5a0d8a445227c7df7170f3bd7654e0546))
+* re-sort workspace package.json files via vis sort-package-json ([f625696](https://github.com/visulima/visulima/commit/f625696cfac974325774b3243e1a83c3d23acbd7))
+* **repo:** sort package.json keys across all packages ([e1fd9ab](https://github.com/visulima/visulima/commit/e1fd9ab467ef96a98c777da1572ff6a50fcf7e71))
+* sorted package.json ([b47c545](https://github.com/visulima/visulima/commit/b47c545591600fdab17d5cd3a3fbc68b61e199da))
+
+### Tests
+
+* **repo:** add dist runtime + types integration tests ([32ee300](https://github.com/visulima/visulima/commit/32ee300b7184117a0ddf9f9d390f75f8932d5ed9))
+
 ## @visulima/object [3.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/object@3.0.0-alpha.12...@visulima/object@3.0.0-alpha.13) (2026-04-22)
 
 ### Bug Fixes
