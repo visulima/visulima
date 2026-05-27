@@ -1,3 +1,33 @@
+## @visulima/tui [1.0.0-alpha.20](https://github.com/visulima/visulima/compare/@visulima/tui@1.0.0-alpha.19...@visulima/tui@1.0.0-alpha.20) (2026-05-27)
+
+### Features
+
+* **tui:** add shape prop to <Cursor> via DECSCUSR ([303934f](https://github.com/visulima/visulima/commit/303934fa36d78cd30fd74d50026472be9ea20fe4)), closes [vadimdemedes/ink#961](https://github.com/vadimdemedes/ink/issues/961)
+
+### Bug Fixes
+
+* **storage-client:** percent-encode user fields in defaultFingerprint ([7c78a0f](https://github.com/visulima/visulima/commit/7c78a0f9512e2a673b941d80839e9f1e86b7b5d0))
+* **tui:** use index keys in ErrorOverview stack + excerpt lists ([86cfdc2](https://github.com/visulima/visulima/commit/86cfdc24821dce8a4edb0ffb22f386eb7a14175b))
+
+### Documentation
+
+* prettier-format agent instructions ([71b6414](https://github.com/visulima/visulima/commit/71b6414528780ac82c4e0bb25b5f4f11faba5549))
+
+### Miscellaneous Chores
+
+* sorted package.json ([b47c545](https://github.com/visulima/visulima/commit/b47c545591600fdab17d5cd3a3fbc68b61e199da))
+
+
+### Dependencies
+
+* **@visulima/ansi:** upgraded to 4.0.0-alpha.15
+* **@visulima/boxen:** upgraded to 3.0.0-alpha.11
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.12
+* **@visulima/error:** upgraded to 6.0.0-alpha.30
+* **@visulima/spinner:** upgraded to 1.0.0-alpha.2
+* **@visulima/string:** upgraded to 3.0.0-alpha.14
+* **@visulima/tabular:** upgraded to 4.0.0-alpha.12
+
 ## @visulima/tui [1.0.0-alpha.19](https://github.com/visulima/visulima/compare/@visulima/tui@1.0.0-alpha.18...@visulima/tui@1.0.0-alpha.19) (2026-05-26)
 
 ### Miscellaneous Chores
