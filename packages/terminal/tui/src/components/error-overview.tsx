@@ -75,8 +75,8 @@ export default function ErrorOverview({ error }: Props): ReactElement {
 
             {origin && excerpt ? (
                 <Box flexDirection="column" marginTop={1}>
-                    {excerpt.map(({ line, value }) => (
-                        <Box key={line}>
+                    {excerpt.map(({ line, value }, index) => (
+                        <Box key={index}>
                             <Box width={lineWidth + 1}>
                                 <Text
                                     aria-label={line === origin.line ? `Line ${line}, error` : `Line ${line}`}
@@ -89,7 +89,7 @@ export default function ErrorOverview({ error }: Props): ReactElement {
                                 </Text>
                             </Box>
 
-                            <Text backgroundColor={line === origin.line ? "red" : undefined} color={line === origin.line ? "white" : undefined} key={line}>
+                            <Text backgroundColor={line === origin.line ? "red" : undefined} color={line === origin.line ? "white" : undefined}>
                                 {` ${value}`}
                             </Text>
                         </Box>
@@ -99,14 +99,16 @@ export default function ErrorOverview({ error }: Props): ReactElement {
 
             {traces.length > 0 ? (
                 <Box flexDirection="column" marginTop={1}>
-                    {traces.map((trace) => {
+                    {traces.map((trace, index) => {
                         const fileLabel = cleanupPath(trace.file) ?? "";
 
                         // Fall back to the raw stack line when none of the
-                        // structured fields could be extracted.
+                        // structured fields could be extracted. Index-based
+                        // keys avoid duplicate-key warnings when `trace.raw`
+                        // is empty or repeats across frames (e.g. `at native`).
                         if (!trace.methodName && !trace.file) {
                             return (
-                                <Box key={trace.raw}>
+                                <Box key={index}>
                                     <Text dimColor>- </Text>
                                     <Text bold dimColor>
                                         {trace.raw}
@@ -116,7 +118,7 @@ export default function ErrorOverview({ error }: Props): ReactElement {
                         }
 
                         return (
-                            <Box key={trace.raw}>
+                            <Box key={index}>
                                 <Text dimColor>- </Text>
                                 <Text bold dimColor>
                                     {trace.methodName ?? "<anonymous>"}
