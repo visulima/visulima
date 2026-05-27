@@ -1,3 +1,25 @@
+## @visulima/fmt [2.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/fmt@2.0.0-alpha.10...@visulima/fmt@2.0.0-alpha.11) (2026-05-27)
+
+### Bug Fixes
+
+* **storage-client:** percent-encode user fields in defaultFingerprint ([7c78a0f](https://github.com/visulima/visulima/commit/7c78a0f9512e2a673b941d80839e9f1e86b7b5d0))
+
+### Miscellaneous Chores
+
+* **ci-stability:** green CI across vis, native, lint, tests, attw ([#651](https://github.com/visulima/visulima/issues/651)) ([d4eb684](https://github.com/visulima/visulima/commit/d4eb684b5f75c818c9251048c605a0ed54a268e3))
+* **fmt:** housekeeping cleanup ([e7c78e7](https://github.com/visulima/visulima/commit/e7c78e769fac5174d21806a0a90fc816884fba24))
+* **fmt:** upgrade packem to 2.0.0-alpha.76 ([a138bde](https://github.com/visulima/visulima/commit/a138bdedc81c831a1729ee412081e0dbce2df36f))
+* sorted package.json ([b47c545](https://github.com/visulima/visulima/commit/b47c545591600fdab17d5cd3a3fbc68b61e199da))
+* **terminal:** apply prettier and eslint formatting sweep ([15fd89c](https://github.com/visulima/visulima/commit/15fd89c677eea60866e08e4fd5f5a6bc8f3bd2e5))
+
+### Tests
+
+* **repo:** add dist runtime + types integration tests ([32ee300](https://github.com/visulima/visulima/commit/32ee300b7184117a0ddf9f9d390f75f8932d5ed9))
+
+### Continuous Integration
+
+* integrate codspeed for benchmark tracking ([e758f3d](https://github.com/visulima/visulima/commit/e758f3da491cc00d3f8bbf10d7ba3fdf8deb5325))
+
 ## @visulima/fmt [2.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/fmt@2.0.0-alpha.9...@visulima/fmt@2.0.0-alpha.10) (2026-04-22)
 
 ### Bug Fixes
