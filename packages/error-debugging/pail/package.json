@@ -1,6 +1,6 @@
 {
     "name": "@visulima/pail",
-    "version": "4.0.0-alpha.17",
+    "version": "4.0.0-alpha.18",
     "description": "Highly configurable Logger for Node.js, Edge and Browser.",
     "keywords": [
         "anolilab",
@@ -246,8 +246,8 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/colorize": "2.0.0-alpha.11",
-        "@visulima/interactive-manager": "1.0.0-alpha.2"
+        "@visulima/colorize": "2.0.0-alpha.12",
+        "@visulima/interactive-manager": "1.0.0-alpha.3"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",
@@ -259,13 +259,13 @@
         "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
         "@total-typescript/ts-reset": "catalog:dev",
         "@types/node": "catalog:types",
-        "@visulima/ansi": "4.0.0-alpha.14",
-        "@visulima/error": "6.0.0-alpha.28",
-        "@visulima/fmt": "2.0.0-alpha.10",
-        "@visulima/inspector": "2.0.0-alpha.10",
+        "@visulima/ansi": "4.0.0-alpha.15",
+        "@visulima/error": "6.0.0-alpha.30",
+        "@visulima/fmt": "2.0.0-alpha.11",
+        "@visulima/inspector": "2.0.0-alpha.11",
         "@visulima/packem": "catalog:dev",
-        "@visulima/redact": "3.0.0-alpha.11",
-        "@visulima/string": "3.0.0-alpha.13",
+        "@visulima/redact": "3.0.0-alpha.12",
+        "@visulima/string": "3.0.0-alpha.14",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
         "conventional-changelog-conventionalcommits": "catalog:dev",
@@ -286,7 +286,7 @@
     "peerDependencies": {
         "@opentelemetry/api": "catalog:peer",
         "@sveltejs/kit": ">=2.0",
-        "@visulima/redact": "3.0.0-alpha.11",
+        "@visulima/redact": "3.0.0-alpha.12",
         "elysia": ">=1.0",
         "express": ">=4.0",
         "fastify": ">=4.0",

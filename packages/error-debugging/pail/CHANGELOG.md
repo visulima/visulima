@@ -1,3 +1,28 @@
+## @visulima/pail [4.0.0-alpha.18](https://github.com/visulima/visulima/compare/@visulima/pail@4.0.0-alpha.17...@visulima/pail@4.0.0-alpha.18) (2026-05-27)
+
+### Bug Fixes
+
+* **storage-client:** percent-encode user fields in defaultFingerprint ([7c78a0f](https://github.com/visulima/visulima/commit/7c78a0f9512e2a673b941d80839e9f1e86b7b5d0))
+
+### Documentation
+
+* prettier-format agent instructions ([71b6414](https://github.com/visulima/visulima/commit/71b6414528780ac82c4e0bb25b5f4f11faba5549))
+
+### Miscellaneous Chores
+
+* sorted package.json ([b47c545](https://github.com/visulima/visulima/commit/b47c545591600fdab17d5cd3a3fbc68b61e199da))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.12
+* **@visulima/interactive-manager:** upgraded to 1.0.0-alpha.3
+* **@visulima/ansi:** upgraded to 4.0.0-alpha.15
+* **@visulima/error:** upgraded to 6.0.0-alpha.30
+* **@visulima/inspector:** upgraded to 2.0.0-alpha.11
+* **@visulima/redact:** upgraded to 3.0.0-alpha.12
+* **@visulima/string:** upgraded to 3.0.0-alpha.14
+
 ## @visulima/pail [4.0.0-alpha.17](https://github.com/visulima/visulima/compare/@visulima/pail@4.0.0-alpha.16...@visulima/pail@4.0.0-alpha.17) (2026-05-26)
 
 ### Bug Fixes
