@@ -1,3 +1,9 @@
+## @visulima/html [1.0.0-alpha.18](https://github.com/visulima/visulima/compare/@visulima/html@1.0.0-alpha.17...@visulima/html@1.0.0-alpha.18) (2026-05-27)
+
+### Bug Fixes
+
+* **storage-client:** percent-encode user fields in defaultFingerprint ([7c78a0f](https://github.com/visulima/visulima/commit/7c78a0f9512e2a673b941d80839e9f1e86b7b5d0))
+
 ## @visulima/html [1.0.0-alpha.17](https://github.com/visulima/visulima/compare/@visulima/html@1.0.0-alpha.16...@visulima/html@1.0.0-alpha.17) (2026-05-27)
 
 ## @visulima/html [1.0.0-alpha.16](https://github.com/visulima/visulima/compare/@visulima/html@1.0.0-alpha.15...@visulima/html@1.0.0-alpha.16) (2026-05-26)
