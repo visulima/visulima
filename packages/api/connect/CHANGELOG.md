@@ -1,3 +1,9 @@
+## @visulima/connect [4.0.0-alpha.28](https://github.com/visulima/visulima/compare/@visulima/connect@4.0.0-alpha.27...@visulima/connect@4.0.0-alpha.28) (2026-05-27)
+
+### Bug Fixes
+
+* **storage-client:** percent-encode user fields in defaultFingerprint ([7c78a0f](https://github.com/visulima/visulima/commit/7c78a0f9512e2a673b941d80839e9f1e86b7b5d0))
+
 ## @visulima/connect [4.0.0-alpha.27](https://github.com/visulima/visulima/compare/@visulima/connect@4.0.0-alpha.26...@visulima/connect@4.0.0-alpha.27) (2026-05-27)
 
 ## @visulima/connect [4.0.0-alpha.26](https://github.com/visulima/visulima/compare/@visulima/connect@4.0.0-alpha.25...@visulima/connect@4.0.0-alpha.26) (2026-05-26)
