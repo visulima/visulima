@@ -1,6 +1,6 @@
 {
     "name": "@visulima/iso-locale",
-    "version": "1.0.0-alpha.9",
+    "version": "1.0.0-alpha.10",
     "description": "ISO data for countries, currencies, regions, timezones, and BCP 47 locale support.",
     "keywords": [
         "alpha-2",
