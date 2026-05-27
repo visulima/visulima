@@ -1,3 +1,18 @@
+## @visulima/find-ai-runner [1.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/find-ai-runner@1.0.0-alpha.5...@visulima/find-ai-runner@1.0.0-alpha.6) (2026-05-27)
+
+### Bug Fixes
+
+* **storage-client:** percent-encode user fields in defaultFingerprint ([7c78a0f](https://github.com/visulima/visulima/commit/7c78a0f9512e2a673b941d80839e9f1e86b7b5d0))
+
+### Miscellaneous Chores
+
+* **ci-stability:** green CI across vis, native, lint, tests, attw ([#651](https://github.com/visulima/visulima/issues/651)) ([d4eb684](https://github.com/visulima/visulima/commit/d4eb684b5f75c818c9251048c605a0ed54a268e3))
+* **find-ai-runner:** housekeeping cleanup ([6a970f6](https://github.com/visulima/visulima/commit/6a970f6277dedc23347963512d2b3ea2e1f1c5bf))
+* **find-ai-runner:** upgrade packem to 2.0.0-alpha.76 ([9b33293](https://github.com/visulima/visulima/commit/9b332931c0a825aecc3180a61b7a3e1b3102b1a0))
+* re-sort workspace package.json files via vis sort-package-json ([f625696](https://github.com/visulima/visulima/commit/f625696cfac974325774b3243e1a83c3d23acbd7))
+* **repo:** sort package.json keys across all packages ([e1fd9ab](https://github.com/visulima/visulima/commit/e1fd9ab467ef96a98c777da1572ff6a50fcf7e71))
+* sorted package.json ([b47c545](https://github.com/visulima/visulima/commit/b47c545591600fdab17d5cd3a3fbc68b61e199da))
+
 ## @visulima/find-ai-runner [1.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/find-ai-runner@1.0.0-alpha.4...@visulima/find-ai-runner@1.0.0-alpha.5) (2026-04-22)
 
 ### Bug Fixes
