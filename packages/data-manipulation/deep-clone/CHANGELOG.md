@@ -1,3 +1,23 @@
+## @visulima/deep-clone [4.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/deep-clone@4.0.0-alpha.13...@visulima/deep-clone@4.0.0-alpha.14) (2026-05-27)
+
+### Bug Fixes
+
+* **storage-client:** percent-encode user fields in defaultFingerprint ([7c78a0f](https://github.com/visulima/visulima/commit/7c78a0f9512e2a673b941d80839e9f1e86b7b5d0))
+
+### Documentation
+
+* prettier-format agent instructions ([71b6414](https://github.com/visulima/visulima/commit/71b6414528780ac82c4e0bb25b5f4f11faba5549))
+
+### Miscellaneous Chores
+
+* **ci-stability:** green CI across vis, native, lint, tests, attw ([#651](https://github.com/visulima/visulima/issues/651)) ([d4eb684](https://github.com/visulima/visulima/commit/d4eb684b5f75c818c9251048c605a0ed54a268e3))
+* **lint:** clear eslint findings in bench + animation test ([16bba0b](https://github.com/visulima/visulima/commit/16bba0b6a35885904b719a3f4a560da436a997c4))
+* **repo:** sort package.json keys across all packages ([e1fd9ab](https://github.com/visulima/visulima/commit/e1fd9ab467ef96a98c777da1572ff6a50fcf7e71))
+
+### Tests
+
+* **repo:** add dist runtime + types integration tests ([32ee300](https://github.com/visulima/visulima/commit/32ee300b7184117a0ddf9f9d390f75f8932d5ed9))
+
 ## @visulima/deep-clone [4.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/deep-clone@4.0.0-alpha.12...@visulima/deep-clone@4.0.0-alpha.13) (2026-05-14)
 
 ### Bug Fixes
