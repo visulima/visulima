@@ -1,3 +1,27 @@
+## @visulima/task-runner [1.0.0-alpha.16](https://github.com/visulima/visulima/compare/@visulima/task-runner@1.0.0-alpha.15...@visulima/task-runner@1.0.0-alpha.16) (2026-05-27)
+
+### Bug Fixes
+
+* **storage-client:** percent-encode user fields in defaultFingerprint ([7c78a0f](https://github.com/visulima/visulima/commit/7c78a0f9512e2a673b941d80839e9f1e86b7b5d0))
+* **task-runner:** resolve workspace .bin binaries in spawned tasks ([69bd30c](https://github.com/visulima/visulima/commit/69bd30c95fb1e70aba1f7c5b4d3d17b8f0465c11))
+* **vis:** enhance PATH inside ephemeral service bootstrap config ([30c6364](https://github.com/visulima/visulima/commit/30c6364cceff0d3c48fe5e7e4a996b77a1ed224c))
+
+### Miscellaneous Chores
+
+* **ci-stability:** green CI across vis, native, lint, tests, attw ([#651](https://github.com/visulima/visulima/issues/651)) ([d4eb684](https://github.com/visulima/visulima/commit/d4eb684b5f75c818c9251048c605a0ed54a268e3))
+* **repo:** apply eslint --fix and prettier --fix across packages ([#650](https://github.com/visulima/visulima/issues/650)) ([2e26a84](https://github.com/visulima/visulima/commit/2e26a84774f218f21345e9a8ecd68236b6542743)), closes [#620](https://github.com/visulima/visulima/issues/620)
+* **repo:** sort package.json keys across all packages ([e1fd9ab](https://github.com/visulima/visulima/commit/e1fd9ab467ef96a98c777da1572ff6a50fcf7e71))
+* sorted package.json ([b47c545](https://github.com/visulima/visulima/commit/b47c545591600fdab17d5cd3a3fbc68b61e199da))
+
+### Continuous Integration
+
+* pin macos to 15, fix task-runner indent + backbuffer flake ([61cbf4f](https://github.com/visulima/visulima/commit/61cbf4fb09be40c567a4e0d2d4349ad24ea91afb))
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 3.0.0-alpha.11
+
 ## @visulima/task-runner [1.0.0-alpha.15](https://github.com/visulima/visulima/compare/@visulima/task-runner@1.0.0-alpha.14...@visulima/task-runner@1.0.0-alpha.15) (2026-05-19)
 
 ### Features
