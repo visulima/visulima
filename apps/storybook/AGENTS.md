@@ -1,4 +1,4 @@
-# AGENTS.md
+# Agent Instructions
 
 This file provides guidance to AI coding agents when working with code in this directory.
 

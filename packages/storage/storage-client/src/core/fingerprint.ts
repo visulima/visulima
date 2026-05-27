@@ -18,6 +18,9 @@ export type FingerprintFn = (input: FingerprintInput) => Promise<string> | strin
  * Default fingerprint format — matches tus-js-client's `${name}-${size}-${type}-${lastModified}`
  * shape, prefixed with the protocol + endpoint so the same file uploaded to two different
  * servers (or via two different protocols) does not collide in shared storage.
+ *
+ * User-controlled string fields (endpoint, file.name, file.type) are percent-encoded so a `::`
+ * embedded in any of them cannot collide with the `::` delimiter.
  */
 export const defaultFingerprint: FingerprintFn = ({ endpoint, file, protocol }) =>
-    `${protocol}::${endpoint}::${file.name}::${String(file.size)}::${file.type}::${String(file.lastModified)}`;
+    `${protocol}::${encodeURIComponent(endpoint)}::${encodeURIComponent(file.name)}::${String(file.size)}::${encodeURIComponent(file.type)}::${String(file.lastModified)}`;
