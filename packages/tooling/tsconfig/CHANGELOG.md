@@ -1,3 +1,19 @@
+## @visulima/tsconfig [3.0.0-alpha.27](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.0.0-alpha.26...@visulima/tsconfig@3.0.0-alpha.27) (2026-05-27)
+
+### Bug Fixes
+
+* **storage-client:** percent-encode user fields in defaultFingerprint ([7c78a0f](https://github.com/visulima/visulima/commit/7c78a0f9512e2a673b941d80839e9f1e86b7b5d0))
+
+### Miscellaneous Chores
+
+* sorted package.json ([b47c545](https://github.com/visulima/visulima/commit/b47c545591600fdab17d5cd3a3fbc68b61e199da))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.28
+* **@visulima/path:** upgraded to 3.0.0-alpha.11
+
 ## @visulima/tsconfig [3.0.0-alpha.26](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.0.0-alpha.25...@visulima/tsconfig@3.0.0-alpha.26) (2026-05-26)
 
 ### Miscellaneous Chores
