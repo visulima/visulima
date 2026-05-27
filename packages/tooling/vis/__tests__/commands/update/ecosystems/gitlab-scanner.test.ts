@@ -53,12 +53,16 @@ describe(extractFromGitlabCi, () => {
     });
 
     it("captures component include refs", () => {
-        expect.assertions(2);
+        expect.assertions(3);
 
         const { includes } = extractFromGitlabCi("/tmp/.gitlab-ci.yml", GITLAB_YAML);
         const component = includes.find((include) => include.kind === "component");
 
-        expect(component?.project).toBe("gitlab.com/group/components/ci");
+        // GitLab resolves component tags against the *parent project*
+        // (`group/components`), not the full component path — the trailing
+        // segment is the component name and goes into `componentName`.
+        expect(component?.project).toBe("gitlab.com/group/components");
+        expect(component?.componentName).toBe("ci");
         expect(component?.ref).toBe("2.0.0");
     });
 

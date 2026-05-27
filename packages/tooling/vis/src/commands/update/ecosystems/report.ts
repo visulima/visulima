@@ -77,7 +77,33 @@ export const formatEcosystemReport = (result: EcosystemCheckResult, options: { s
     }
 
     if (totalUpdates === 0) {
-        lines.push(`${green("✓")} All ecosystem references up to date.`);
+        // "All up to date" only when every lookup succeeded AND nothing
+        // was hidden behind an ignore rule. Otherwise the user could
+        // believe their CI is fully pinned when in reality we just
+        // couldn't reach the registry for half of it.
+        if (result.failed.length === 0 && result.ignored.length === 0) {
+            lines.push(`${green("✓")} All ecosystem references up to date.`);
+
+            return lines.join("\n");
+        }
+
+        lines.push(`${yellow("⚠")} No actionable updates found.`);
+
+        if (result.failed.length > 0) {
+            lines.push(`\n  ${yellow("Failed lookups:")}`);
+
+            for (const failure of result.failed) {
+                lines.push(`    ${failure.file}: ${failure.reason}`);
+            }
+        }
+
+        if (options.showIgnored && result.ignored.length > 0) {
+            lines.push(`\n  ${dim("Ignored:")}`);
+
+            for (const update of result.ignored) {
+                lines.push(`    ${dim(update.name)}  ${dim(update.reason ?? "")}`);
+            }
+        }
 
         return lines.join("\n");
     }

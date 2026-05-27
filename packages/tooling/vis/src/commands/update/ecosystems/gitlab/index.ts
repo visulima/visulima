@@ -130,8 +130,21 @@ export const checkGitlab = async (workspaceRoot: string, context: CheckGitlabCon
             return;
         }
 
+        if (listing.error) {
+            for (const include of groupIncludes) {
+                failed.push({ file: include.file, reason: `failed to list tags for ${project}: ${listing.error}` });
+            }
+
+            return;
+        }
+
         for (const include of groupIncludes) {
-            const fullName = include.project;
+            // Display the full component path (project + component name)
+            // so the report tells the user what they actually wrote in
+            // the YAML, not the stripped-for-API-lookup form.
+            const fullName = include.kind === "component" && include.componentName
+                ? `${include.project}/${include.componentName}`
+                : include.project;
             let ignoreReason: string | undefined;
 
             if (include.ignoreReason) {
@@ -172,13 +185,33 @@ export const checkGitlab = async (workspaceRoot: string, context: CheckGitlabCon
                 continue;
             }
 
+            // Branch ref with --include-branches but a constrained mode:
+            // pickBestTag would silently return undefined because there's
+            // no version baseline. Surface it as an explicit ignore so
+            // the user sees why nothing happened.
+            if (!currentParsed && options.mode !== "latest") {
+                ignoredList.push(buildIgnored(`branch ref has no version baseline for --target=${options.mode}`));
+                continue;
+            }
+
             const best = pickBestTag(listing.parsed, currentParsed, options.mode, false);
 
             if (!best) {
                 continue;
             }
 
-            const newRef = include.kind === "component" ? `${include.project}@${best.raw}` : best.raw;
+            // Component refs are rewritten as `${project}/${componentName}@${tag}`
+            // so the on-disk token keeps its full component path. Project
+            // includes only carry the ref, not the project path.
+            let newRef: string;
+
+            if (include.kind === "component") {
+                const componentPath = include.componentName ? `${include.project}/${include.componentName}` : include.project;
+
+                newRef = `${componentPath}@${best.raw}`;
+            } else {
+                newRef = best.raw;
+            }
 
             updates.push({
                 currentRef: include.ref,
