@@ -1,3 +1,23 @@
+## @visulima/vite-overlay [2.0.0-alpha.31](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.0-alpha.30...@visulima/vite-overlay@2.0.0-alpha.31) (2026-05-27)
+
+### Bug Fixes
+
+* **storage-client:** percent-encode user fields in defaultFingerprint ([7c78a0f](https://github.com/visulima/visulima/commit/7c78a0f9512e2a673b941d80839e9f1e86b7b5d0))
+
+### Documentation
+
+* prettier-format agent instructions ([71b6414](https://github.com/visulima/visulima/commit/71b6414528780ac82c4e0bb25b5f4f11faba5549))
+
+### Miscellaneous Chores
+
+* sorted package.json ([b47c545](https://github.com/visulima/visulima/commit/b47c545591600fdab17d5cd3a3fbc68b61e199da))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.30
+* **@visulima/path:** upgraded to 3.0.0-alpha.11
+
 ## @visulima/vite-overlay [2.0.0-alpha.30](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.0-alpha.29...@visulima/vite-overlay@2.0.0-alpha.30) (2026-05-26)
 
 ### Miscellaneous Chores
