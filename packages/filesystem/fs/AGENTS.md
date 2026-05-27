@@ -12,7 +12,7 @@ This file provides guidance to AI coding agents when working with code in this d
 
 The package ships one entry per concern — import from the narrowest subpath you need so optional peers stay tree-shaken:
 
-- `@visulima/fs` — core fs surface (walk, glob, findUp, ensure*, read/writeFile, read/writeJson, move, remove, emptyDir, isAccessible, sanitize, EOL).
+- `@visulima/fs` — core fs surface (walk, glob, findUp, ensure\*, read/writeFile, read/writeJson, move, remove, emptyDir, isAccessible, sanitize, EOL).
 - `@visulima/fs/error` — `NotFoundError`, `AlreadyExistsError`, etc.
 - `@visulima/fs/yaml` | `/toml` | `/jsonc` | `/json5` | `/ini` — parser-backed read/write helpers. Each requires its peer dep to be installed.
 - `@visulima/fs/size` — file/dir size helpers.
