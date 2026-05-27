@@ -21,19 +21,19 @@ permissions:
     contents: "read" # for checkout
 
 jobs:
-    semantic-release:
-        name: "Semantic Release"
+    # Wait runs in its own job so the prerequisite check-run polling can't eat
+    # into the release job's 30-minute budget. Previously a single job did
+    # both, and on a slow Build Native + CodSpeed run the wait would consume
+    # 20+ minutes — leaving the full monorepo `build:packages:prod`, tests,
+    # codecov upload and multi-semantic-release with too little time to finish
+    # before the job timeout cancelled the entire workflow.
+    wait-for-tests:
+        name: "Wait for tests to succeed"
         if: "github.repository == 'visulima/visulima'"
         runs-on: "ubuntu-latest"
         timeout-minutes: 30
-        # Gate npm publishing behind a GitHub Environment so secrets are scoped and
-        # required-reviewer rules (configured in repo settings) can apply.
-        environment: "release"
         permissions:
-            contents: "write" # to be able to publish a GitHub release
-            issues: "write" # to be able to comment on released issues
-            pull-requests: "write" # to be able to comment on released pull requests
-            id-token: "write" # to enable use of OIDC for npm provenance
+            contents: "read"
 
         steps:
             - name: "Harden Runner"
@@ -45,18 +45,18 @@ jobs:
               # Replaces lewagon/wait-on-check-action: its bundler Gemfile.lock pins
               # darwin-24/25 only, so macOS runners on darwin-23 fail bundle install.
               # Plain shell + gh api waits for every check-run on the commit
-              # except this job and the ignore list to terminate in success.
+              # except this job, the release job, and the ignore list to terminate in success.
               timeout-minutes: 30
               shell: "bash"
               env:
                   GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
                   REF: "${{ github.event.pull_request.head.sha || github.sha }}"
                   REPO: "${{ github.repository }}"
-                  SELF_CHECK_NAME: "Semantic Release"
-                  IGNORE_CHECKS: "[\"lock-closed / lock-closed\",\"Socket Security: Pull Request Alerts\",\"Dependabot\",\"Discover affected benches\",\"Bench: boxen-bench\",\"Bench: cerebro-bench\",\"Bench: colorize-bench\",\"Bench: command-line-args-bench\",\"Bench: deep-clone-bench\",\"Bench: fmt-bench\",\"Bench: fs-bench\",\"Bench: inspector-bench\",\"Bench: pail-bench\",\"Bench: redact-bench\",\"Bench: string-bench\",\"Bench: tabular-bench\",\"Bench: task-runner-bench\",\"Bench: tui-bench\"]"
+                  SELF_CHECK_NAME: "Wait for tests to succeed"
+                  IGNORE_CHECKS: "[\"Semantic Release\",\"lock-closed / lock-closed\",\"Socket Security: Pull Request Alerts\",\"Dependabot\",\"Discover affected benches\",\"Bench: boxen-bench\",\"Bench: cerebro-bench\",\"Bench: colorize-bench\",\"Bench: command-line-args-bench\",\"Bench: deep-clone-bench\",\"Bench: fmt-bench\",\"Bench: fs-bench\",\"Bench: inspector-bench\",\"Bench: pail-bench\",\"Bench: redact-bench\",\"Bench: string-bench\",\"Bench: tabular-bench\",\"Bench: task-runner-bench\",\"Bench: tui-bench\"]"
               run: |
                   set -euo pipefail
-                  deadline=$(( $(date +%s) + 1500 ))
+                  deadline=$(( $(date +%s) + 1680 ))
                   while :; do
                       runs=$(gh api -X GET "repos/${REPO}/commits/${REF}/check-runs" --paginate --jq '.check_runs[] | [.name, .status, .conclusion // ""] | @tsv')
                       pending=0
@@ -85,11 +85,32 @@ jobs:
                       fi
                       echo "$pending checks still pending, waiting 30s..."
                       if [ "$(date +%s)" -ge "$deadline" ]; then
-                          echo "Timed out after 25 minutes"
+                          echo "Timed out after 28 minutes"
                           exit 1
                       fi
                       sleep 30
                   done
+
+    semantic-release:
+        name: "Semantic Release"
+        needs: "wait-for-tests"
+        if: "github.repository == 'visulima/visulima'"
+        runs-on: "ubuntu-latest"
+        timeout-minutes: 30
+        # Gate npm publishing behind a GitHub Environment so secrets are scoped and
+        # required-reviewer rules (configured in repo settings) can apply.
+        environment: "release"
+        permissions:
+            contents: "write" # to be able to publish a GitHub release
+            issues: "write" # to be able to comment on released issues
+            pull-requests: "write" # to be able to comment on released pull requests
+            id-token: "write" # to enable use of OIDC for npm provenance
+
+        steps:
+            - name: "Harden Runner"
+              uses: "step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411" # v2.19.4
+              with:
+                  egress-policy: "audit"
 
             # Persist credentials so multi-semantic-release can push tags/commits with
             # the explicitly-passed SEMANTIC_RELEASE_GITHUB_TOKEN.
