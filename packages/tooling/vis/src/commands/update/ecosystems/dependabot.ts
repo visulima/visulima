@@ -157,13 +157,17 @@ const addAll = (target: Set<string>, values: string[] | undefined): void => {
 };
 
 /**
- * Strips `//` line comments and `/* … *\/` block comments from JSON5 text
- * **without** touching content inside string literals. A naive
- * `/\/\/.*$/g` would happily chew through `"url": "https://example.com"`
- * — corrupting any renovate config that references a URL.
+ * Strips `//` line comments, `/* … *\/` block comments, and trailing
+ * commas from JSON5 text **without** touching content inside string
+ * literals. A naive `/\/\/.*$/g` would happily chew through
+ * `"url": "https://example.com"` — corrupting any renovate config that
+ * references a URL.
  *
  * The state machine tracks whether we're inside a string and skips
  * escapes (`\"`, `\\`) so quoted forward-slash sequences are preserved.
+ * Trailing commas before `}` and `]` are dropped because they're the
+ * most common JSON5 feature found in hand-edited renovate configs and
+ * strict `JSON.parse` rejects them.
  */
 const stripJsonComments = (source: string): string => {
     let out = "";
@@ -217,6 +221,25 @@ const stripJsonComments = (source: string): string => {
 
             index += 2;
             continue;
+        }
+
+        // Trailing-comma elision: a `,` immediately followed (after
+        // any whitespace) by `}` or `]` would crash `JSON.parse`.
+        // Skip it. We only look ahead — string-mode is already handled
+        // above so we never touch a comma inside a quoted value.
+        if (char === ",") {
+            let lookahead = index + 1;
+
+            while (lookahead < length && /\s/.test(source[lookahead] ?? "")) {
+                lookahead += 1;
+            }
+
+            const next = source[lookahead];
+
+            if (next === "}" || next === "]") {
+                index += 1;
+                continue;
+            }
         }
 
         out += char;

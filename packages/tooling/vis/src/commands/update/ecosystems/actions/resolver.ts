@@ -1,3 +1,4 @@
+import { parseLinkHeader } from "../link-header";
 import type { ParsedTag } from "../semver-helpers";
 import { parseTag } from "../semver-helpers";
 
@@ -119,40 +120,67 @@ export class ActionsResolver {
         // (`..`, `%2f`, etc.) that would otherwise let a malformed slug
         // path-traverse to a different repo with the user's bearer
         // token attached.
-        const url = `${this.apiBase}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/tags?per_page=100`;
+        const initialUrl = `${this.apiBase}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/tags?per_page=100`;
         const empty: RepoTags = { tags: [], parsed: [] };
+        const tags: { name: string; sha: string }[] = [];
 
-        try {
-            const response = await this.fetchImpl(url, { headers: this.buildHeaders() });
+        // Cap pagination at 5 pages (500 tags). GitHub's tags endpoint
+        // is cheap but unbounded — popular repos have thousands of
+        // tags and we only need the newest ones for an "is this still
+        // current" check.
+        let nextUrl: string | undefined = initialUrl;
+        let pages = 0;
+
+        while (nextUrl && pages < 5) {
+            const currentUrl: string = nextUrl;
+            let response: Response;
+
+            try {
+                response = await this.fetchImpl(currentUrl, { headers: this.buildHeaders() });
+            } catch {
+                return empty;
+            }
 
             if (!response.ok) {
                 return empty;
             }
 
-            const json = (await response.json()) as { name?: string; commit?: { sha?: string } }[];
+            let json: { name?: string; commit?: { sha?: string } }[];
+
+            try {
+                json = (await response.json()) as { name?: string; commit?: { sha?: string } }[];
+            } catch {
+                return empty;
+            }
 
             if (!Array.isArray(json)) {
                 return empty;
             }
 
-            const tags = json
-                .map((entry) => ({ name: typeof entry.name === "string" ? entry.name : "", sha: typeof entry.commit?.sha === "string" ? entry.commit.sha : "" }))
-                .filter((entry) => entry.name !== "" && entry.sha !== "");
+            for (const entry of json) {
+                const name = typeof entry.name === "string" ? entry.name : "";
+                const sha = typeof entry.commit?.sha === "string" ? entry.commit.sha : "";
 
-            const parsed: (ParsedTag & { sha: string })[] = [];
-
-            for (const entry of tags) {
-                const tag = parseTag(entry.name);
-
-                if (tag) {
-                    parsed.push({ ...tag, sha: entry.sha });
+                if (name !== "" && sha !== "") {
+                    tags.push({ name, sha });
                 }
             }
 
-            return { parsed, tags };
-        } catch {
-            return empty;
+            nextUrl = parseLinkHeader(response.headers.get("link")).next;
+            pages += 1;
         }
+
+        const parsed: (ParsedTag & { sha: string })[] = [];
+
+        for (const entry of tags) {
+            const tag = parseTag(entry.name);
+
+            if (tag) {
+                parsed.push({ ...tag, sha: entry.sha });
+            }
+        }
+
+        return { parsed, tags };
     }
 
     private async fetchCommit(owner: string, repo: string, ref: string): Promise<CommitInfo | undefined> {

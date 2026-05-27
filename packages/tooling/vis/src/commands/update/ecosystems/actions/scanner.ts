@@ -1,5 +1,5 @@
 import { isAccessibleSync, readFileSync, walkSync } from "@visulima/fs";
-import { join } from "@visulima/path";
+import { isAbsolute, join } from "@visulima/path";
 
 /**
  * A single `uses:` reference picked out of a workflow / composite action.
@@ -278,7 +278,7 @@ export const scanActionsRepository = (workspaceRoot: string, extraDirs: string[]
     }
 
     for (const directory of extraDirs) {
-        const absolute = directory.startsWith("/") ? directory : join(workspaceRoot, directory);
+        const absolute = isAbsolute(directory) ? directory : join(workspaceRoot, directory);
 
         if (!isAccessibleSync(absolute)) {
             continue;

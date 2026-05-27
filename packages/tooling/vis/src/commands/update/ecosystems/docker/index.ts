@@ -221,6 +221,30 @@ export const checkDocker = async (_workspaceRoot: string, context: CheckDockerCo
                 continue;
             }
 
+            // Branch ref with --include-branches but a constrained mode:
+            // there's no version baseline to compute the patch/minor jump
+            // from, so `pickBestTag` would silently return undefined.
+            // Make the skip explicit instead of dropping the entry.
+            if (!currentParsed && options.mode !== "latest") {
+                ignoredList.push({
+                    currentRef: reference.tag,
+                    currentVersion: reference.tag,
+                    ecosystem: "docker",
+                    file: reference.file,
+                    ignored: true,
+                    line: reference.line,
+                    name: fullName,
+                    newRef: reference.tag,
+                    newVersion: undefined,
+                    original: reference.original,
+                    reason: `branch ref has no version baseline for --target=${options.mode}`,
+                    replacement: reference.original,
+                    updateType: "unknown",
+                });
+
+                continue;
+            }
+
             const best = pickBestTag(listing.parsed, currentParsed, options.mode, false);
 
             if (!best) {

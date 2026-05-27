@@ -4,6 +4,8 @@ import { parseTag } from "../semver-helpers";
 interface GitlabProjectTags {
     readonly tags: { name: string; sha: string }[];
     readonly parsed: (ParsedTag & { sha: string })[];
+    /** When set, the lookup failed (HTTP error, bad payload, network). Callers must surface this rather than treat the empty list as "no tags". */
+    readonly error?: string;
 }
 
 export interface GitlabResolverOptions {
@@ -25,6 +27,8 @@ export interface GitlabResolverOptions {
 export class GitlabResolver {
     private readonly token: string | undefined;
 
+    private readonly tokenHeader: "JOB-TOKEN" | "PRIVATE-TOKEN";
+
     private readonly defaultApiBase: string;
 
     private readonly fetchImpl: typeof fetch;
@@ -32,7 +36,24 @@ export class GitlabResolver {
     private readonly tagCache = new Map<string, Promise<GitlabProjectTags>>();
 
     public constructor(options: GitlabResolverOptions) {
-        this.token = options.token ?? process.env.GITLAB_TOKEN ?? process.env.CI_JOB_TOKEN;
+        // GitLab uses a different header for CI-job tokens — passing a
+        // `CI_JOB_TOKEN` via `PRIVATE-TOKEN` returns 401 because GitLab
+        // routes the two through different auth providers. We preserve
+        // the explicit-token case (`PRIVATE-TOKEN`) and only flip to
+        // `JOB-TOKEN` when the value originates from `CI_JOB_TOKEN`.
+        const explicit = options.token ?? process.env.GITLAB_TOKEN;
+
+        if (explicit) {
+            this.token = explicit;
+            this.tokenHeader = "PRIVATE-TOKEN";
+        } else if (process.env.CI_JOB_TOKEN) {
+            this.token = process.env.CI_JOB_TOKEN;
+            this.tokenHeader = "JOB-TOKEN";
+        } else {
+            this.token = undefined;
+            this.tokenHeader = "PRIVATE-TOKEN";
+        }
+
         this.defaultApiBase = options.apiBase ?? "https://gitlab.com";
         this.fetchImpl = options.fetch ?? fetch;
     }
@@ -68,7 +89,6 @@ export class GitlabResolver {
     }
 
     private async fetchTags(projectPath: string): Promise<GitlabProjectTags> {
-        const empty: GitlabProjectTags = { parsed: [], tags: [] };
         const { host, path } = this.resolveHostAndPath(projectPath);
         const encoded = encodeURIComponent(path);
         const url = `${host}/api/v4/projects/${encoded}/repository/tags?per_page=100`;
@@ -78,20 +98,20 @@ export class GitlabResolver {
         };
 
         if (this.token) {
-            headers["PRIVATE-TOKEN"] = this.token;
+            headers[this.tokenHeader] = this.token;
         }
 
         try {
             const response = await this.fetchImpl(url, { headers });
 
             if (!response.ok) {
-                return empty;
+                return { error: `HTTP ${String(response.status)} from ${host}`, parsed: [], tags: [] };
             }
 
             const json = (await response.json()) as { name?: string; commit?: { id?: string } }[];
 
             if (!Array.isArray(json)) {
-                return empty;
+                return { error: `unexpected response shape from ${host}`, parsed: [], tags: [] };
             }
 
             const tags = json
@@ -108,8 +128,10 @@ export class GitlabResolver {
             }
 
             return { parsed, tags };
-        } catch {
-            return empty;
+        } catch (error) {
+            const message = error instanceof Error ? error.message : "fetch failed";
+
+            return { error: message, parsed: [], tags: [] };
         }
     }
 }

@@ -12,7 +12,13 @@ import { parseImageReference } from "../docker/scanner";
  * lives in another repo and we have no checked-out copy to walk.
  */
 export interface GitLabInclude {
-    /** Full `project` path (`group/subgroup/project`) or `component` host path. */
+    /**
+     * Project path used for tag-lookup (`group/subgroup/project`). For
+     * component refs this is the parent project — the trailing
+     * component-name segment is stored separately in `componentName`
+     * because GitLab resolves tags against the project, not against the
+     * component path.
+     */
     readonly project: string;
     /** Current ref (tag, branch, or SHA). */
     readonly ref: string;
@@ -24,6 +30,13 @@ export interface GitLabInclude {
     readonly original: string;
     /** `include: { component: gitlab.com/foo/bar/baz@1.2.3 }` form. */
     readonly kind: "component" | "project";
+    /**
+     * Component-name segment for `kind === "component"`. The full
+     * component path the user wrote is `${project}/${componentName}`; we
+     * keep them split because the API lookup targets `project` but the
+     * replacement we write back must include the component name.
+     */
+    readonly componentName?: string;
     /** When set, the include was excluded by a `# vis-update-ignore` directive. */
     readonly ignoreReason: string | undefined;
 }
@@ -56,12 +69,41 @@ const COMPONENT_RE = /^(\s*-?\s*component:\s*)(['"]?)([^'"\s#]+)\2(\s*#.*)?$/;
 const IMAGE_RE = /^(\s*image:\s*)(['"]?)([^'"\s#]+)\2(\s*#.*)?$/;
 
 /**
+ * Inline (flow-style) include mapping on a single line:
+ *
+ *     include: { project: 'foo/bar', ref: 'v1.2.3' }
+ *     - { project: 'foo/bar', ref: 'main', file: '/x.yml' }
+ *
+ * We don't parse the brace content as full YAML — we just pull
+ * `project: …` and `ref: …` out of the slice between the braces. A
+ * line that's missing either key is treated as not-an-include and
+ * dropped through to the rest of the state machine.
+ */
+const FLOW_LINE_RE = /^\s*(?:-\s*)?(?:include:\s*)?\{([^}]*)\}\s*(?:#.*)?$/;
+
+const FLOW_PROJECT_RE = /project:\s*(['"]?)([^'"\s,}]+)\1/;
+
+const FLOW_REF_RE = /ref:\s*(['"]?)([^'"\s,}]+)\1/;
+
+const FLOW_COMPONENT_RE = /component:\s*(['"]?)([^'"\s,}]+)\1/;
+
+/**
  * Limited services-list parser: matches a line of the form
  * `- name: postgres:14` (inside a `services:` block) or a bare `- postgres:14`.
  */
 const SERVICE_NAME_RE = /^(\s*-\s*name:\s*)(['"]?)([^'"\s#]+)\2(\s*#.*)?$/;
 
 const SERVICE_BARE_RE = /^(\s*-\s*)(['"]?)([^'"\s#:]+:[^'"\s#]+)\2(\s*#.*)?$/;
+
+/**
+ * YAML block-opener lines — a mapping key followed by no inline value
+ * (the value lives on subsequent indented lines). Examples: `include:`,
+ * `default:`, `before_script:`. These are structural and shouldn't
+ * consume a pending `# vis-update-ignore-next-line` directive, otherwise
+ * the directive gets eaten by the `include:` line and never reaches the
+ * `project:` / `ref:` that follows.
+ */
+const BLOCK_OPENER_RE = /^\s*-?\s*[a-z_][\w-]*:\s*(?:#.*)?$/i;
 
 export const extractFromGitlabCi = (filePath: string, content: string): { includes: GitLabInclude[]; images: ImageReference[] } => {
     const lines = content.split(/\r?\n/);
@@ -208,8 +250,11 @@ export const extractFromGitlabCi = (filePath: string, content: string): { includ
             const atIndex = raw.lastIndexOf("@");
 
             if (atIndex > 0) {
-                const project = raw.slice(0, atIndex);
+                const fullPath = raw.slice(0, atIndex);
                 const ref = raw.slice(atIndex + 1);
+                const lastSlash = fullPath.lastIndexOf("/");
+                const project = lastSlash > 0 ? fullPath.slice(0, lastSlash) : fullPath;
+                const componentName = lastSlash > 0 ? fullPath.slice(lastSlash + 1) : undefined;
                 const trailingComment = componentMatch[4]?.trim();
                 let ignoreReason = pendingIgnore ? "vis-update-ignore-next-line" : undefined;
 
@@ -218,6 +263,7 @@ export const extractFromGitlabCi = (filePath: string, content: string): { includ
                 }
 
                 includes.push({
+                    componentName,
                     file: filePath,
                     ignoreReason,
                     kind: "component",
@@ -232,14 +278,68 @@ export const extractFromGitlabCi = (filePath: string, content: string): { includ
             continue;
         }
 
+        const flowMatch = FLOW_LINE_RE.exec(line);
+
+        if (flowMatch) {
+            const inner = flowMatch[1] ?? "";
+            const trailingComment = /#(.*)$/.exec(line)?.[1]?.trim();
+            let ignoreReason = pendingIgnore ? "vis-update-ignore-next-line" : undefined;
+
+            if (trailingComment && IGNORE_INLINE_RE.test(trailingComment)) {
+                ignoreReason = ignoreReason ?? "vis-update-ignore";
+            }
+
+            const componentInline = FLOW_COMPONENT_RE.exec(inner);
+
+            if (componentInline) {
+                const raw = componentInline[2] ?? "";
+                const atIndex = raw.lastIndexOf("@");
+
+                if (atIndex > 0) {
+                    const fullPath = raw.slice(0, atIndex);
+                    const ref = raw.slice(atIndex + 1);
+                    const lastSlash = fullPath.lastIndexOf("/");
+                    const project = lastSlash > 0 ? fullPath.slice(0, lastSlash) : fullPath;
+                    const componentName = lastSlash > 0 ? fullPath.slice(lastSlash + 1) : undefined;
+
+                    includes.push({
+                        componentName,
+                        file: filePath,
+                        ignoreReason,
+                        kind: "component",
+                        line: index + 1,
+                        original: raw,
+                        project,
+                        ref,
+                    });
+                }
+            } else {
+                const projectInline = FLOW_PROJECT_RE.exec(inner);
+                const refInline = FLOW_REF_RE.exec(inner);
+
+                if (projectInline && refInline) {
+                    includes.push({
+                        file: filePath,
+                        ignoreReason,
+                        kind: "project",
+                        line: index + 1,
+                        original: refInline[2] ?? "",
+                        project: projectInline[2] ?? "",
+                        ref: refInline[2] ?? "",
+                    });
+                }
+            }
+
+            pendingIgnore = false;
+            continue;
+        }
+
         // YAML key-only lines (`include:`, `services:`, `some-job:`) sit
         // between a `# vis-update-ignore-next-line` directive and the
         // value-bearing line that the user actually wants to ignore.
         // Treat them like comments for the purpose of the lookahead so
         // the directive survives to the next `ref:` / `image:` line.
-        const isKeyOnlyLine = /^\s*-?\s*[a-z_][\w-]*:\s*(?:#.*)?$/i.test(line);
-
-        if (trimmed !== "" && !trimmed.startsWith("#") && !isKeyOnlyLine) {
+        if (trimmed !== "" && !trimmed.startsWith("#") && !BLOCK_OPENER_RE.test(line)) {
             pendingIgnore = false;
         }
     }

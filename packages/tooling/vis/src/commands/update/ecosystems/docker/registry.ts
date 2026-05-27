@@ -1,3 +1,4 @@
+import { parseLinkHeader } from "../link-header";
 import type { ParsedTag } from "../semver-helpers";
 import { parseTag } from "../semver-helpers";
 
@@ -137,11 +138,14 @@ export class DockerRegistry {
      * Standard v2 registry tag listing. Some registries (ghcr.io,
      * mcr.microsoft.com) require a bearer token even for public repos —
      * we honor the WWW-Authenticate challenge on a 401 and retry once.
+     *
+     * The registry HTTP API paginates via the `Link` header (RFC 5988)
+     * — we walk up to 5 pages (500 tags) which is enough for any
+     * realistic image without burning a session token's quota.
      */
     private async listV2Tags(registry: string, namespace: string, image: string): Promise<RegistryTagListing> {
         const empty: RegistryTagListing = { parsed: [], raw: [] };
         const repository = namespace === "library" ? image : `${namespace}/${image}`;
-        const url = `https://${registry}/v2/${repository}/tags/list?n=100`;
         const baseHeaders: Record<string, string> = { Accept: "application/json" };
         const explicit = this.tokens[registry] ?? process.env[`DOCKER_REGISTRY_TOKEN_${registry.toUpperCase().replaceAll(/[^A-Z0-9]/g, "_")}`];
 
@@ -149,40 +153,21 @@ export class DockerRegistry {
             baseHeaders.Authorization = `Bearer ${explicit}`;
         }
 
-        try {
-            let response = await this.fetchImpl(url, { headers: baseHeaders });
+        // The Link header carries a relative URL (`/v2/foo/tags/list?n=100&last=…`)
+        // for cross-page navigation, so we need the base origin to
+        // re-anchor it.
+        const origin = `https://${registry}`;
+        const tags: string[] = [];
+        let nextUrl: string | undefined = `${origin}/v2/${repository}/tags/list?n=100`;
+        let challengeHeaders: Record<string, string> = baseHeaders;
+        let pages = 0;
 
-            if (response.status === 401) {
-                const auth = parseAuthenticate(response.headers.get("www-authenticate"));
-
-                if (auth) {
-                    const token = await this.fetchBearerToken(auth);
-
-                    if (token) {
-                        response = await this.fetchImpl(url, {
-                            headers: { ...baseHeaders, Authorization: `Bearer ${token}` },
-                        });
-                    }
-                }
-            }
-
-            if (!response.ok) {
-                return empty;
-            }
-
-            const json = (await response.json()) as { tags?: string[] };
-
-            if (!Array.isArray(json.tags)) {
-                return empty;
-            }
-
-            // Imperative loop — `parsed.map(...).filter(predicate)` infers
-            // the literal-`undefined` `lastUpdated` as a non-assignable
-            // subtype of `DockerParsedTag` (TS2677). Pushing into the
-            // typed array sidesteps the inference issue.
+        const buildResult = (): RegistryTagListing => {
+            // v2 registries don't expose timestamps — leave `lastUpdated`
+            // undefined and the min-age gate skips silently.
             const parsed: DockerParsedTag[] = [];
 
-            for (const tag of json.tags) {
+            for (const tag of tags) {
                 const base = parseTag(tag);
 
                 if (base) {
@@ -190,10 +175,66 @@ export class DockerRegistry {
                 }
             }
 
-            return { parsed, raw: json.tags };
-        } catch {
+            return { parsed, raw: tags };
+        };
+
+        while (nextUrl && pages < 5) {
+            try {
+                let response: Response = await this.fetchImpl(nextUrl, { headers: challengeHeaders });
+
+                if (response.status === 401 && challengeHeaders === baseHeaders) {
+                    const auth = parseAuthenticate(response.headers.get("www-authenticate"));
+
+                    if (auth) {
+                        const token = await this.fetchBearerToken(auth);
+
+                        if (token) {
+                            // Re-issue with the bearer token AND keep it
+                            // for every subsequent page so we don't
+                            // re-challenge once per page.
+                            challengeHeaders = { ...baseHeaders, Authorization: `Bearer ${token}` };
+                            response = await this.fetchImpl(nextUrl, { headers: challengeHeaders });
+                        }
+                    }
+                }
+
+                if (!response.ok) {
+                    return pages === 0 ? empty : buildResult();
+                }
+
+                const json = (await response.json()) as { tags?: string[] };
+
+                if (!Array.isArray(json.tags)) {
+                    return pages === 0 ? empty : buildResult();
+                }
+
+                for (const tag of json.tags) {
+                    if (typeof tag === "string") {
+                        tags.push(tag);
+                    }
+                }
+
+                const link = parseLinkHeader(response.headers.get("link"));
+
+                if (link.next) {
+                    // Registries may return either an absolute URL or a
+                    // path-relative one — `URL` resolves both consistently.
+                    nextUrl = new URL(link.next, origin).toString();
+                } else {
+                    nextUrl = undefined;
+                }
+            } catch {
+                return pages === 0 ? empty : buildResult();
+            }
+
+            pages += 1;
+        }
+
+        if (tags.length === 0) {
             return empty;
         }
+
+        return buildResult();
     }
 
     private async fetchBearerToken(auth: AuthInfo): Promise<string | undefined> {
