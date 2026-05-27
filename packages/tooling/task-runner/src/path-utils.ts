@@ -82,17 +82,17 @@ const readPath = (env: NodeJS.ProcessEnv | Record<string, string | undefined> | 
 
 /**
  * Returns the enhanced PATH string for a child process spawned in
- * `cwd`. The caller's existing PATH (from `existingEnv` or
- * `process.env`) is preserved as the suffix so system binaries still
- * resolve; the workspace's `node_modules/.bin` chain is prepended.
+ * `cwd`. The caller's PATH (from `callerEnv` or, when unset, the
+ * current `process.env`) is preserved as the suffix so system binaries
+ * still resolve; the workspace's `node_modules/.bin` chain is prepended.
  *
  * Use this when building the `env` you hand to `child_process.spawn`
  * / `exec` / `tinyexec` for commands that come from `package.json`
  * scripts or any other user-authored shell string.
  */
-export const buildEnhancedPath = (cwd: string, existingEnv?: NodeJS.ProcessEnv | Record<string, string | undefined>): string => {
+export const buildEnhancedPath = (cwd: string, callerEnv?: NodeJS.ProcessEnv | Record<string, string | undefined>): string => {
     const binDirs = collectNodeModulesBinDirs(cwd);
-    const existing = readPath(existingEnv);
+    const existing = readPath(callerEnv);
 
     if (binDirs.length === 0) {
         return existing;

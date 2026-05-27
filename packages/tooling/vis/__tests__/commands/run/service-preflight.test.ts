@@ -1,9 +1,10 @@
-import { existsSync, rmSync } from "node:fs";
+import { existsSync, readFileSync, rmSync } from "node:fs";
 
+import { join } from "@visulima/path";
 import type { Task, TaskGraph } from "@visulima/task-runner";
 import { afterEach, describe, expect, it } from "vitest";
 
-import { extractPreflightTasks, injectServiceTasks, linearize, planTopoLevels, resolveServicesPolicy } from "../../../src/commands/run/service-preflight";
+import { buildBootstrapPaths, extractPreflightTasks, injectServiceTasks, linearize, planTopoLevels, resolveServicesPolicy } from "../../../src/commands/run/service-preflight";
 import type { VisTargetOptions } from "../../../src/task/target-options";
 
 const buildTask = (id: string, overrides: Partial<Task["overrides"]> & { command?: string; visOptions?: VisTargetOptions } = {}): Task => {
@@ -271,6 +272,41 @@ describe(injectServiceTasks, () => {
                 // best effort
             }
         }
+    });
+
+    it("seeds the ephemeral bootstrap config with the service cwd's node_modules/.bin chain on PATH", () => {
+        // Regression coverage for the second half of fix(task-runner) #69bd30c95:
+        // the bootstrap inherits its launcher's enhanced PATH, but the launcher
+        // is enhanced for *its* cwd. A service whose cwd is a nested package
+        // needs the nested .bin too, so we pre-bake PATH into the config payload.
+        expect.assertions(4);
+
+        const dbTask = buildTask("api:db", {
+            command: "packem dev",
+            visOptions: { service: { env: { DATABASE_URL: "postgres://127.0.0.1:5432" }, port: 5432 } },
+        });
+        const graph = buildGraph([dbTask], { "api:db": [] });
+
+        const result = injectServiceTasks({
+            missingServiceIds: ["api:db"],
+            mode: "ephemeral",
+            taskGraph: graph,
+            visBin: "/abs/vis",
+            workspaceRoot: "/ws",
+        });
+
+        dirsToClean.push(result.runDir ?? "");
+
+        const paths = buildBootstrapPaths(result.runDir!, join(result.runDir!, "bootstrap.mjs"), "api:db");
+        const payload = JSON.parse(readFileSync(paths.configFile, "utf8")) as { cwd: string; env: Record<string, string> };
+
+        expect(payload.cwd).toBe("/ws/packages/api");
+        // Pre-existing env keys survive the rewrite.
+        expect(payload.env.DATABASE_URL).toBe("postgres://127.0.0.1:5432");
+        // Nearest .bin is first.
+        expect(payload.env.PATH).toMatch(/^\/ws\/packages\/api\/node_modules\/\.bin/u);
+        // Workspace-root .bin is also in the chain.
+        expect(payload.env.PATH).toContain("/ws/node_modules/.bin");
     });
 
     it("rewrites each missing service's command to a node bootstrap invocation in ephemeral mode", () => {
