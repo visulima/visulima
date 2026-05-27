@@ -9,11 +9,11 @@ This file provides guidance to AI coding agents when working with code in this d
 ## Architecture
 
 - Four-layer source tree in `src/`:
-  - `core/` — runtime kernel (`app.ts`, `cell.ts`, `inline.ts`, `input.ts`) plus `native-binding.ts`, the loader that picks the right `@visulima/tui-binding-*` optional dep per platform.
-  - `ink/` — the Ink-compatible React renderer: reconciler, layout (`yoga-layout`), input parsing (`parse-keypress.ts`, `kitty-keyboard.ts`), backbuffer, mouse, canvas, hooks.
-  - `react/` — generic React-renderer entry separate from the Ink shape (`./react` subpath).
-  - `components/` — the published component library; each component is its own subpath export (`@visulima/tui/components/<name>`).
-  - `testing/` — `./test` subpath: mock streams, frame capture, harness utilities.
+    - `core/` — runtime kernel (`app.ts`, `cell.ts`, `inline.ts`, `input.ts`) plus `native-binding.ts`, the loader that picks the right `@visulima/tui-binding-*` optional dep per platform.
+    - `ink/` — the Ink-compatible React renderer: reconciler, layout (`yoga-layout`), input parsing (`parse-keypress.ts`, `kitty-keyboard.ts`), backbuffer, mouse, canvas, hooks.
+    - `react/` — generic React-renderer entry separate from the Ink shape (`./react` subpath).
+    - `components/` — the published component library; each component is its own subpath export (`@visulima/tui/components/<name>`).
+    - `testing/` — `./test` subpath: mock streams, frame capture, harness utilities.
 - Native bindings are eight platform-specific packages (`@visulima/tui-binding-darwin-arm64`, `…-linux-x64-gnu`, `…-win32-x64-msvc`, etc.) declared under `optionalDependencies`. The Rust source lives in `native/` and is built by `pnpm run build:native` via `@napi-rs/cli`. Do not bundle the `.node` files into the JS dist.
 - Heavy peers (`shiki`, `@shikijs/langs`/`themes`, `marked`, `diff`, `cfonts`, `react-devtools-core`, `ws`, `@visulima/tabular`) are **optional peers** — they must be lazy-imported inside the component that needs them, never at module top-level, so unused features don't drag in their dependencies.
 - Required peers: `react ^19.2.6`, `react-reconciler ^0.33.0`. New components must work against React 19 (Suspense semantics, etc.).

@@ -66,7 +66,9 @@ Types: `feat`, `fix`, `perf`, `docs`, `dx`, `refactor`, `test`, `workflow`, `bui
 ## Architecture & Patterns
 
 ### Package Structure
+
 Every package follows the same layout:
+
 - `src/index.ts` — main export
 - `__tests__/` — Vitest tests (`.test.ts` or `.spec.ts`)
 - `vitest.config.ts` — per-package test config
@@ -77,12 +79,16 @@ Every package follows the same layout:
 All packages are ESM (`"type": "module"`), use conditional exports, and have `"sideEffects": false`.
 
 ### Nx Tags on project.json
+
 Each package has tags for categorization:
+
 - `type:package` — marks it as a publishable package
 - `category:<slug>` — web category (e.g., `category:cli-terminal`, `category:data`, `category:api-web`, `category:error-handling`, `category:file-system`, `category:dev-tools`, `category:internationalization`, `category:communication`)
 
 ### Website Package Discovery
+
 The packages page at `apps/web/` is auto-generated:
+
 - `project.json` tags provide category
 - `package.json` provides name, description
 - `apps/web/src/data/packages-metadata.json` stores curated displayName and features
@@ -92,7 +98,9 @@ The packages page at `apps/web/` is auto-generated:
 To add a new package to the website: add `category:<slug>` tag to its `project.json`, optionally add metadata to `packages-metadata.json`.
 
 ### Native Rust Packages (task-runner)
+
 `packages/tooling/task-runner/` has native NAPI bindings:
+
 - 8 platform-specific packages in `npm/` (darwin, linux, windows × x64, arm64)
 - Built by `.github/workflows/build-native.yml` (matrix across all targets)
 - Published via `scripts/semantic-release-native-addons.mjs` (local semantic-release plugin, runs in `verifyConditions` + `prepare`)
@@ -100,10 +108,13 @@ To add a new package to the website: add `category:<slug>` tag to its `project.j
 - `binding.js` handles runtime platform detection and fallback to JS implementations
 
 ### Dependency Catalog
+
 Shared dependency versions are managed via pnpm catalog in `pnpm-workspace.yaml`. Packages reference versions as `catalog:dev`, `catalog:test`, `catalog:lint`, etc.
 
 ### Pre-commit Hooks
+
 Husky + lint-staged runs on commit:
+
 - `sort-package-json` on `package.json` files
 - `secretlint` on all files
 - `tsc --noEmit` on `.ts` files (per-package tsconfig)
@@ -111,6 +122,7 @@ Husky + lint-staged runs on commit:
 - Fixtures (`__fixtures__/`) are excluded
 
 ### Release
+
 Independent per-package versioning via `multi-semantic-release`. Each package has `.releaserc.json` extending the shared preset. The preset chain: commit-analyzer → release-notes-generator → changelog → clean-package-json → pnpm-publish → git → github.
 
 Research the codebase before editing. Never change code you haven't read.
@@ -120,25 +132,30 @@ Research the codebase before editing. Never change code you haven't read.
 When spawning sub-agents via the Agent tool in this repo, default to `isolation: "worktree"` so the agent works on an isolated git worktree and cannot stomp on uncommitted changes in the main checkout.
 
 **Apply worktree isolation to:**
+
 - Any agent that edits, writes, or refactors code (`general-purpose`, `pro-workflow:orchestrator`, `pro-workflow:debugger`, `coderabbit:code-reviewer` when it auto-fixes, etc.)
 - Long-running implementation tasks where the user may continue working in the main tree in parallel
 
 **Skip worktree isolation for:**
+
 - Read-only research/search agents (`Explore`, `Plan`, `pro-workflow:planner`, `pro-workflow:reviewer`, `pro-workflow:scout`, `general-purpose` when used purely for research)
 - Quick one-shot lookups where the install/Nx-cache overhead outweighs the benefit
 
 **Costs to be aware of:**
+
 - Each worktree needs a fresh `pnpm install` before builds/tests run (pnpm store is shared, but `node_modules` is per-worktree).
 - Nx cache (`.nx/cache`) starts cold per worktree — first `build:affected` / `test:affected` runs won't be cached.
 - A branch checked out in another worktree can't be checked out simultaneously in the main tree.
 - Empty (no-change) worktrees are auto-cleaned by the Agent tool; otherwise the path + branch are returned and must be cleaned up with `git worktree remove`.
 
 **Repo-local git config (already applied):**
+
 - `rerere.enabled = true` — record-and-reuse merge conflict resolutions, so rebases inside a worktree don't make you re-solve the same conflict.
 - `worktree.guessRemote = true` — `git worktree add -b <branch>` auto-tracks the matching remote branch if one exists.
 - `.worktrees/` is gitignored so worktrees placed inside the repo never leak into `git status`.
 
 **Useful commands:**
+
 - `git worktree list` — show all active worktrees.
 - `git worktree prune` — clean up stale worktree records (after `rm -rf` of a worktree dir).
 - `git worktree remove <path>` — remove a worktree cleanly (refuses if dirty; add `--force` to override).

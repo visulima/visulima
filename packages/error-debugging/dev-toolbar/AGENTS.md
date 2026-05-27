@@ -9,6 +9,7 @@ This file provides guidance to AI coding agents when working with code in this d
 ## Architecture
 
 ### Sub-path exports
+
 - `.` (main) — re-exports `DevToolbar`, RPC contexts, hooks, timeline store, settings helpers.
 - `./vite` — the Vite plugin (`src/vite-plugin.ts`).
 - `./client/overlay` — runtime overlay client.
@@ -17,12 +18,15 @@ This file provides guidance to AI coding agents when working with code in this d
 - `./toolbar`, `./ui` — internal toolbar shell and shared UI primitives (Preact components).
 
 ### Runtime split (Node vs. client)
+
 `createClientRPCContext` is client-safe (uses `import.meta.hot`). `createServerRPCContext` is Node-only and is safe to import from the main entry because Vite only loads the plugin in Node. Keep this distinction when adding new RPC endpoints.
 
 ### UI stack
+
 Built on **Preact** (not React), styled via Tailwind v4 (`@tailwindcss/node` + `@tailwindcss/oxide`), uses `clsx` for class composition, `@floating-ui/dom` for positioning, `launch-editor` for jump-to-source, `axe-core` (optional peer) for the a11y app, and Babel (`@babel/parser`/`@babel/traverse`/`@babel/generator` + `babel-plugin-transform-hook-names`) for source rewrites.
 
 ### Peer deps
+
 `vite` `^8.0.11` (required). Optional peers: `@modelcontextprotocol/sdk` `^1.29.0` (only when consuming the `./mcp` entry), `axe-core` (a11y app), `zod` `^3.25.0 || ^4.0.0`.
 
 ## Related
