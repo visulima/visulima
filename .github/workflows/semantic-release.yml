@@ -96,7 +96,10 @@ jobs:
         needs: "wait-for-tests"
         if: "github.repository == 'visulima/visulima'"
         runs-on: "ubuntu-latest"
-        timeout-minutes: 30
+        # No explicit timeout: multi-semantic-release walks ~50 packages and
+        # commits/tags/publishes each one. A 30-minute cap previously cancelled
+        # the run partway through. GitHub's default job timeout (6h) is the
+        # safety net.
         # Gate npm publishing behind a GitHub Environment so secrets are scoped and
         # required-reviewer rules (configured in repo settings) can apply.
         environment: "release"
