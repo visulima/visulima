@@ -1,3 +1,15 @@
+## @visulima/ono [2.0.0-alpha.33](https://github.com/visulima/visulima/compare/@visulima/ono@2.0.0-alpha.32...@visulima/ono@2.0.0-alpha.33) (2026-05-27)
+
+### Bug Fixes
+
+* **storage-client:** percent-encode user fields in defaultFingerprint ([7c78a0f](https://github.com/visulima/visulima/commit/7c78a0f9512e2a673b941d80839e9f1e86b7b5d0))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.30
+* **@visulima/path:** upgraded to 3.0.0-alpha.11
+
 ## @visulima/ono [2.0.0-alpha.32](https://github.com/visulima/visulima/compare/@visulima/ono@2.0.0-alpha.31...@visulima/ono@2.0.0-alpha.32) (2026-05-26)
 
 
