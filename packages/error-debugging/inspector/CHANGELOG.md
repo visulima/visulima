@@ -1,3 +1,32 @@
+## @visulima/inspector [2.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/inspector@2.0.0-alpha.10...@visulima/inspector@2.0.0-alpha.11) (2026-05-27)
+
+### Bug Fixes
+
+* **storage-client:** percent-encode user fields in defaultFingerprint ([7c78a0f](https://github.com/visulima/visulima/commit/7c78a0f9512e2a673b941d80839e9f1e86b7b5d0))
+
+### Documentation
+
+* prettier-format agent instructions ([71b6414](https://github.com/visulima/visulima/commit/71b6414528780ac82c4e0bb25b5f4f11faba5549))
+
+### Miscellaneous Chores
+
+* **ci-stability:** green CI across vis, native, lint, tests, attw ([#651](https://github.com/visulima/visulima/issues/651)) ([d4eb684](https://github.com/visulima/visulima/commit/d4eb684b5f75c818c9251048c605a0ed54a268e3))
+* **inspector:** fix lint errors ([980d74b](https://github.com/visulima/visulima/commit/980d74bf671af2f70581f4ac902924d3fc65c20a))
+* sorted package.json ([b47c545](https://github.com/visulima/visulima/commit/b47c545591600fdab17d5cd3a3fbc68b61e199da))
+
+### Tests
+
+* **repo:** add dist runtime + types integration tests ([32ee300](https://github.com/visulima/visulima/commit/32ee300b7184117a0ddf9f9d390f75f8932d5ed9))
+
+### Continuous Integration
+
+* integrate codspeed for benchmark tracking ([e758f3d](https://github.com/visulima/visulima/commit/e758f3da491cc00d3f8bbf10d7ba3fdf8deb5325))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.12
+
 ## @visulima/inspector [2.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/inspector@2.0.0-alpha.9...@visulima/inspector@2.0.0-alpha.10) (2026-04-28)
 
 ### Bug Fixes
