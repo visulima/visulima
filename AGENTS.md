@@ -1,12 +1,23 @@
-# AGENTS.md
+# Agent Instructions
 
 This file provides guidance to AI coding agents when working with code in this repository.
 
 ## Repository Overview
 
-Visulima is a pnpm monorepo with 44+ TypeScript packages organized under `packages/<category>/<name>/`. Categories: `api`, `data-manipulation`, `email`, `error-debugging`, `filesystem`, `storage`, `terminal`, `tooling`. Apps live in `apps/` (web, storybook). Shared code in `shared/`.
+Visulima is a pnpm monorepo with 50+ TypeScript packages organized under `packages/<category>/<name>/`. Categories: `api`, `data-manipulation`, `email`, `error-debugging`, `filesystem`, `storage`, `terminal`, `tooling`. Apps live in `apps/` (web, storybook). Shared code in `shared/` (`utils`, `xxh3`).
 
 **Package manager**: pnpm v10.32.1 (enforced). **Monorepo orchestration**: Nx. **Node**: ^22.14.0 || >=24.10.0.
+
+### Notable Packages
+
+A few packages have non-trivial architecture or load-bearing conventions worth knowing about before editing:
+
+- **`packages/terminal/cerebro`** — CLI framework used by `vis`. As of v5 alpha, the toolbox now ships injectable `fs`/`console`/`process`, plus `Cli.clone()` and `Cli.getAction()`. Command handlers should accept these via toolbox rather than importing `node:fs`/`node:process` directly — this is the foundation for MCP/sandboxed runtimes.
+- **`packages/tooling/vis`** — Workflow CLI built on cerebro. Command handlers use `toolbox.fs` / `toolbox.process`.
+- **`packages/tooling/vis-mcp`** — MCP server companion to `vis`. The MCP surface is paired with a separate Claude Skill (declarative instructions, not a bridge).
+- **`packages/tooling/task-runner`** — Native Rust + NAPI bindings; see the Native Rust Packages section below.
+- **`packages/api/api-platform`** — Migrated to zod v4 / swagger v5; zod is a non-optional peer (packem inlines optional-peer type namespaces).
+- **`packages/storage/storage-client`** — TUS-protocol client; ongoing work on fingerprint/upload-control/url-storage modules.
 
 ## Build & Test Commands
 
