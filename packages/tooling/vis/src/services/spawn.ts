@@ -2,6 +2,8 @@ import type { ChildProcess } from "node:child_process";
 import { spawn } from "node:child_process";
 import { closeSync, openSync } from "node:fs";
 
+import { withEnhancedPath } from "@visulima/task-runner";
+
 import { REGISTRY_FILE_MODE } from "./registry";
 
 const isWindows = process.platform === "win32";
@@ -59,7 +61,11 @@ export const spawnDetached = async (input: SpawnDetachedInput): Promise<SpawnDet
         child = spawn(shell, args, {
             cwd,
             detached: true,
-            env: { ...process.env, ...env },
+            // Mirror what `pnpm exec` / `npm run` do before invoking
+            // a script: prepend the workspace's `node_modules/.bin`
+            // chain to PATH so a service command can spell its own
+            // binary without the manager prefix.
+            env: withEnhancedPath({ ...process.env, ...env }, cwd),
             stdio: ["ignore", logFd, logFd],
             // Windows: spawn in a new console so the child isn't tied
             // to this terminal's lifetime.

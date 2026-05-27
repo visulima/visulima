@@ -6,6 +6,7 @@ import { join } from "@visulima/path";
 
 import type { FileAccess } from "./file-access-tracker";
 import { FileAccessTracker, generatePreloadScript } from "./file-access-tracker";
+import { withEnhancedPath } from "./path-utils";
 import type { Task, TaskExecutionOptions } from "./types";
 import { uniqueId } from "./utils";
 
@@ -111,11 +112,14 @@ export class TrackedTaskExecutor {
                 command,
                 {
                     cwd,
-                    env: {
-                        ...process.env,
-                        ...env,
-                        NODE_OPTIONS: `${process.env["NODE_OPTIONS"] ?? ""} --import ${preloadFile}`.trim(),
-                    },
+                    env: withEnhancedPath(
+                        {
+                            ...process.env,
+                            ...env,
+                            NODE_OPTIONS: `${process.env["NODE_OPTIONS"] ?? ""} --import ${preloadFile}`.trim(),
+                        },
+                        cwd,
+                    ),
                     maxBuffer: 50 * 1024 * 1024,
                 },
                 async (_error, stdout, stderr) => {

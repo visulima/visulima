@@ -1,3 +1,4 @@
+import { withEnhancedPath } from "@visulima/task-runner";
 import { x } from "tinyexec";
 
 import { ConfigError, TaskError } from "../errors";
@@ -181,7 +182,7 @@ export const execCommand = async (command: string, files: ReadonlyArray<string>,
                 // Pipe stdout/stderr so we can capture task output for the renderer, but forward `FORCE_COLOR=1`
                 // unless the user has already set it — tools like eslint / prettier check isTTY, which is false
                 // when piped, and drop ANSI styling without this hint. Matches lint-staged / nano-staged behavior.
-                env: buildTaskEnv(options.env),
+                env: buildTaskEnv(options.env, options.cwd),
                 // Signal delivered to the child when `signal` aborts. Defaults to SIGTERM for graceful
                 // shutdown; callers can set SIGKILL via `killSignal` for fast-fail runs.
                 killSignal: options.killSignal ?? "SIGTERM",
@@ -224,15 +225,21 @@ export const execCommand = async (command: string, files: ReadonlyArray<string>,
  * Builds the environment for a task subprocess. Merges caller-supplied overrides on top of
  * `process.env`, and injects `FORCE_COLOR=1` when the parent stderr is a TTY so linters /
  * formatters don't silently strip color from their piped output.
+ *
+ * Also prepends the cwd's `node_modules/.bin` chain to PATH so bare binary names
+ * (eslint, prettier, …) resolve when `vis staged` is invoked outside a `pnpm exec`
+ * shell — matches lint-staged / nano-staged behaviour.
  */
-const buildTaskEnv = (overrides: Record<string, string> | undefined): Record<string, string> => {
+const buildTaskEnv = (overrides: Record<string, string> | undefined, cwd: string): Record<string, string> => {
     const base = { ...process.env } as Record<string, string>;
 
     if (process.stderr.isTTY && base["FORCE_COLOR"] === undefined && base["NO_COLOR"] === undefined) {
         base["FORCE_COLOR"] = "1";
     }
 
-    return overrides ? { ...base, ...overrides } : base;
+    const merged = overrides ? { ...base, ...overrides } : base;
+
+    return withEnhancedPath(merged, cwd);
 };
 
 export { DEFAULT_MAX_ARG_LENGTH };

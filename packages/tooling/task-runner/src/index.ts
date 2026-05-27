@@ -77,6 +77,8 @@ export { resolveOutputs } from "./output-resolver";
 // Input URI parser (file://, glob://, env://, func://, dep://)
 export type { InputUriScheme } from "./parse-input-uri";
 export { INPUT_URI_SCHEMES, InvalidInputUriError, looksLikeInputUri, parseInputUri } from "./parse-input-uri";
+// PATH-enhancement helper (prepends `node_modules/.bin` for spawned scripts)
+export { buildEnhancedPath, collectNodeModulesBinDirs, withEnhancedPath } from "./path-utils";
 // Project constraints
 export { enforceProjectConstraints } from "./project-constraints";
 
