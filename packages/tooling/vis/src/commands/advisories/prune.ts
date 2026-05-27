@@ -1,12 +1,10 @@
-import { rm } from "node:fs/promises";
-
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 
 import { pail } from "../../io/logger";
 import { resolveAdvisoryDbPath } from "../../security/advisories";
 import type { AdvisoriesPruneOptions } from "./index";
 
-const execute = async ({ logger: _logger, options, workspaceRoot }: Toolbox<Console, AdvisoriesPruneOptions>): Promise<void> => {
+const execute = async ({ fs, logger: _logger, options, workspaceRoot }: Toolbox<Console, AdvisoriesPruneOptions>): Promise<void> => {
     if (!workspaceRoot) {
         throw new Error("Could not determine workspace root. Run this command inside a workspace.");
     }
@@ -32,7 +30,7 @@ const execute = async ({ logger: _logger, options, workspaceRoot }: Toolbox<Cons
 
     for (const target of targets) {
         try {
-            await rm(target, { force: true });
+            await fs.rm(target, { force: true });
             removed.push(target);
         } catch {
             // best-effort

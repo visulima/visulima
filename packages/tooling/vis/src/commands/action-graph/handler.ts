@@ -66,7 +66,7 @@ const toJson = (roots: string[], dependencies: Record<string, string[]>, tasks: 
     };
 };
 
-const execute = async ({ argument, logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, ActionGraphOptions>): Promise<void> => {
+const execute = async ({ argument, logger, options, process: proc, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, ActionGraphOptions>): Promise<void> => {
     const rawSelector = argument[0];
 
     if (!rawSelector) {
@@ -80,7 +80,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
     const { config, packageJsons, workspace } = discoverWorkspace(wsRoot, visConfig);
     const projectGraph = buildProjectGraph(wsRoot, workspace, packageJsons);
 
-    const selectorResult = await resolveSelector(rawSelector, workspace, process.cwd(), wsRoot);
+    const selectorResult = await resolveSelector(rawSelector, workspace, proc.cwd, wsRoot);
     const { target } = selectorResult;
     let projectNames = selectorResult.projects;
 
