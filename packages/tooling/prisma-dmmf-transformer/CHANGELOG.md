@@ -1,3 +1,21 @@
+## @visulima/prisma-dmmf-transformer [3.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/prisma-dmmf-transformer@3.0.0-alpha.13...@visulima/prisma-dmmf-transformer@3.0.0-alpha.14) (2026-05-27)
+
+### Bug Fixes
+
+* **storage-client:** percent-encode user fields in defaultFingerprint ([7c78a0f](https://github.com/visulima/visulima/commit/7c78a0f9512e2a673b941d80839e9f1e86b7b5d0))
+
+### Miscellaneous Chores
+
+* **ci-stability:** green CI across vis, native, lint, tests, attw ([#651](https://github.com/visulima/visulima/issues/651)) ([d4eb684](https://github.com/visulima/visulima/commit/d4eb684b5f75c818c9251048c605a0ed54a268e3))
+* **prisma-dmmf-transformer:** housekeeping cleanup ([20f3e14](https://github.com/visulima/visulima/commit/20f3e14a434c10a193084882d868218a35a1cd16))
+* **prisma-dmmf-transformer:** upgrade packem to 2.0.0-alpha.76 ([81638a6](https://github.com/visulima/visulima/commit/81638a6ef04323cbf997ca0d39faaea206c30803))
+* re-sort workspace package.json files via vis sort-package-json ([f625696](https://github.com/visulima/visulima/commit/f625696cfac974325774b3243e1a83c3d23acbd7))
+* **repo:** sort package.json keys across all packages ([e1fd9ab](https://github.com/visulima/visulima/commit/e1fd9ab467ef96a98c777da1572ff6a50fcf7e71))
+
+### Tests
+
+* **repo:** add dist runtime + types integration tests ([32ee300](https://github.com/visulima/visulima/commit/32ee300b7184117a0ddf9f9d390f75f8932d5ed9))
+
 ## @visulima/prisma-dmmf-transformer [3.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/prisma-dmmf-transformer@3.0.0-alpha.12...@visulima/prisma-dmmf-transformer@3.0.0-alpha.13) (2026-04-22)
 
 ### Bug Fixes
