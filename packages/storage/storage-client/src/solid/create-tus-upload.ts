@@ -1,14 +1,21 @@
 import type { Accessor } from "solid-js";
 import { createSignal, onCleanup, onMount } from "solid-js";
 
+import type { FingerprintFn } from "../core/fingerprint";
 import { createTusAdapter } from "../core/tus-adapter";
+import type { UploadControl } from "../core/upload-control";
+import type { UrlStorage } from "../core/url-storage";
 import type { UploadResult } from "../react/types";
 
 export interface CreateTusUploadOptions {
     /** Chunk size for TUS uploads (default: 1MB) */
     chunkSize?: number;
+    /** Unified control handle. See `UploadControl`. */
+    control?: UploadControl;
     /** TUS upload endpoint URL */
     endpoint: string;
+    /** Customise the resume fingerprint. */
+    fingerprint?: FingerprintFn;
     /** Maximum number of retry attempts */
     maxRetries?: number;
     /** Additional metadata to include with the upload */
@@ -27,6 +34,8 @@ export interface CreateTusUploadOptions {
     onSuccess?: (file: UploadResult) => void;
     /** Enable automatic retry on failure */
     retry?: boolean;
+    /** Persistent storage for resume URLs. */
+    urlStorage?: UrlStorage;
 }
 
 export interface CreateTusUploadReturn {
@@ -60,7 +69,7 @@ export interface CreateTusUploadReturn {
  * @returns Upload functions and state signals
  */
 export const createTusUpload = (options: CreateTusUploadOptions): CreateTusUploadReturn => {
-    const { chunkSize, endpoint, maxRetries, metadata, onError, onPause, onProgress, onResume, onStart, onSuccess, retry } = options;
+    const { chunkSize, control, endpoint, fingerprint, maxRetries, metadata, onError, onPause, onProgress, onResume, onStart, onSuccess, retry, urlStorage } = options;
 
     const [progress, setProgress] = createSignal(0);
     const [isUploading, setIsUploading] = createSignal(false);
@@ -72,10 +81,13 @@ export const createTusUpload = (options: CreateTusUploadOptions): CreateTusUploa
     // Create adapter instance
     const adapterInstance = createTusAdapter({
         chunkSize,
+        control,
         endpoint,
+        fingerprint,
         maxRetries,
         metadata,
         retry,
+        urlStorage,
     });
 
     // Set up adapter callbacks

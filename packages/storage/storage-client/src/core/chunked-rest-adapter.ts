@@ -1,4 +1,8 @@
 import type { UploadResult } from "../react/types";
+import type { FingerprintFn } from "./fingerprint";
+import { defaultFingerprint } from "./fingerprint";
+import type { UploadControl } from "./upload-control";
+import type { UrlStorage, UrlStorageEntry } from "./url-storage";
 
 const DEFAULT_CHUNK_SIZE = 5 * 1024 * 1024; // 5MB default chunk size
 
@@ -7,6 +11,7 @@ interface UploadState {
     aborted: boolean;
     file?: File;
     fileId?: string;
+    fingerprint?: string;
     paused: boolean;
     totalSize: number;
     uploadedChunks: Set<number>; // Track uploaded chunk offsets
@@ -15,14 +20,20 @@ interface UploadState {
 export interface ChunkedRestAdapterOptions {
     /** Chunk size in bytes (default: 5MB) */
     chunkSize?: number;
+    /** Unified control handle. See `UploadControl`. */
+    control?: UploadControl;
     /** Upload endpoint URL */
     endpoint: string;
+    /** Customise the resume fingerprint. Defaults to `defaultFingerprint`. */
+    fingerprint?: FingerprintFn;
     /** Maximum number of retry attempts */
     maxRetries?: number;
     /** Additional metadata to include with the upload */
     metadata?: Record<string, string>;
     /** Enable automatic retry on failure */
     retry?: boolean;
+    /** Persistent storage for resume identifiers. Opt-in. */
+    urlStorage?: UrlStorage;
 }
 
 export interface ChunkedRestAdapter {
@@ -56,13 +67,56 @@ export interface ChunkedRestAdapter {
  * Supports pause/resume and handles out-of-order chunks.
  */
 export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): ChunkedRestAdapter => {
-    const { chunkSize = DEFAULT_CHUNK_SIZE, endpoint, maxRetries = 3, metadata = {}, retry = true } = options;
+    const {
+        chunkSize = DEFAULT_CHUNK_SIZE,
+        control,
+        endpoint,
+        fingerprint: fingerprintFn = defaultFingerprint,
+        maxRetries = 3,
+        metadata = {},
+        retry = true,
+        urlStorage,
+    } = options;
 
     let uploadState: UploadState = {
         aborted: false,
         paused: false,
         totalSize: 0,
         uploadedChunks: new Set(),
+    };
+
+    const persistUploadEntry = async (fingerprint: string, fileId: string, file: File): Promise<void> => {
+        if (!urlStorage) {
+            return;
+        }
+
+        const entry: UrlStorageEntry = {
+            createdAt: Date.now(),
+            endpoint,
+            fingerprint,
+            lastModified: file.lastModified,
+            protocol: "chunked-rest",
+            size: file.size,
+            uploadUrl: fileId,
+        };
+
+        try {
+            await urlStorage.addEntry(entry);
+        } catch {
+            // Non-fatal.
+        }
+    };
+
+    const removeUploadEntry = async (fingerprint: string | undefined): Promise<void> => {
+        if (!urlStorage || !fingerprint) {
+            return;
+        }
+
+        try {
+            await urlStorage.removeEntry(fingerprint);
+        } catch {
+            // Non-fatal.
+        }
     };
 
     let startCallback: (() => void) | undefined;
@@ -171,6 +225,33 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
     };
 
     /**
+     * Probes an existing upload session. Returns the server-side offset, or
+     * `undefined` if the upload no longer exists (404 / 410 / 403) — so the
+     * caller can fall through to creating a fresh session.
+     */
+    const probeExistingUpload = async (fileId: string): Promise<number | undefined> => {
+        const url = endpoint.endsWith("/") ? `${endpoint}${fileId}` : `${endpoint}/${fileId}`;
+
+        let response: Response;
+
+        try {
+            response = await fetch(url, { method: "HEAD" });
+        } catch {
+            return undefined;
+        }
+
+        if (response.status === 404 || response.status === 410 || response.status === 403) {
+            return undefined;
+        }
+
+        if (!response.ok) {
+            throw new Error(`Failed to probe upload: ${String(response.status)} ${response.statusText}`);
+        }
+
+        return Number.parseInt(response.headers.get("X-Upload-Offset") ?? "0", 10);
+    };
+
+    /**
      * Gets upload status from server.
      */
     const getUploadStatus = async (fileId: string): Promise<{ chunks: { length: number; offset: number }[]; offset: number }> => {
@@ -240,6 +321,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
         const currentOffset = Number.parseInt(response.headers.get("X-Upload-Offset") ?? String(endOffset), 10);
         const progress = Math.round((currentOffset / file.size) * 100);
 
+        control?._updateOffset(currentOffset);
         progressCallback?.(progress, currentOffset);
     };
 
@@ -512,10 +594,65 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
 
                 uploadState.abortController = abortController;
 
-                // Create upload session
-                const fileId = await createUpload(file);
+                const fingerprint = await fingerprintFn({ endpoint, file, protocol: "chunked-rest" });
+
+                uploadState.fingerprint = fingerprint;
+
+                let fileId: string | undefined;
+
+                // 1. Resume from an explicit snapshot on the supplied UploadControl.
+                const snapshot = control?.snapshot;
+
+                if (snapshot && snapshot.protocol === "chunked-rest" && snapshot.fingerprint === fingerprint) {
+                    fileId = snapshot.uploadUrl;
+                }
+
+                // 2. Fall back to persistent storage.
+                if (fileId === undefined && urlStorage) {
+                    try {
+                        const stored = await urlStorage.findEntry(fingerprint);
+
+                        if (stored && stored.protocol === "chunked-rest") {
+                            fileId = stored.uploadUrl;
+                        }
+                    } catch {
+                        // Cache miss.
+                    }
+                }
+
+                // 3. Validate any resume hint — drop it if the server says the session is gone.
+                if (fileId !== undefined) {
+                    const probed = await probeExistingUpload(fileId);
+
+                    if (probed === undefined) {
+                        await removeUploadEntry(fingerprint);
+                        fileId = undefined;
+                    } else if (probed > 0) {
+                        control?._updateOffset(probed);
+                        progressCallback?.(Math.round((probed / file.size) * 100), probed);
+                    }
+                }
+
+                // 4. No usable hint — create a new session.
+                if (fileId === undefined) {
+                    fileId = await createUpload(file);
+                    await persistUploadEntry(fingerprint, fileId, file);
+                }
 
                 uploadState.fileId = fileId;
+
+                control?._attach(
+                    {
+                        abort: () => abortController.abort(),
+                        pause: () => {
+                            uploadState.paused = true;
+                        },
+                        resume: async () => {
+                            uploadState.paused = false;
+                        },
+                    },
+                    { endpoint, fingerprint, protocol: "chunked-rest", uploadUrl: fileId },
+                );
 
                 // Perform upload
                 return performUpload(file, fileId, abortController.signal);
@@ -533,12 +670,15 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
             try {
                 const result = await uploadPromise;
 
+                await removeUploadEntry(uploadState.fingerprint);
+                control?._detach();
                 internalFinishCallback(result);
 
                 return result;
             } catch (error) {
                 const uploadError = error instanceof Error ? error : new Error(String(error));
 
+                control?._detach();
                 internalErrorCallback(uploadError);
                 throw uploadError;
             }
