@@ -1,3 +1,35 @@
+## @visulima/tabular [4.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/tabular@4.0.0-alpha.11...@visulima/tabular@4.0.0-alpha.12) (2026-05-27)
+
+### Bug Fixes
+
+* **storage-client:** percent-encode user fields in defaultFingerprint ([7c78a0f](https://github.com/visulima/visulima/commit/7c78a0f9512e2a673b941d80839e9f1e86b7b5d0))
+
+### Miscellaneous Chores
+
+* **ci-stability:** green CI across vis, native, lint, tests, attw ([#651](https://github.com/visulima/visulima/issues/651)) ([d4eb684](https://github.com/visulima/visulima/commit/d4eb684b5f75c818c9251048c605a0ed54a268e3))
+* re-sort workspace package.json files via vis sort-package-json ([f625696](https://github.com/visulima/visulima/commit/f625696cfac974325774b3243e1a83c3d23acbd7))
+* **repo:** apply eslint --fix and prettier --fix across packages ([#650](https://github.com/visulima/visulima/issues/650)) ([2e26a84](https://github.com/visulima/visulima/commit/2e26a84774f218f21345e9a8ecd68236b6542743)), closes [#620](https://github.com/visulima/visulima/issues/620)
+* simplify pnpm-workspace packages list ([7cab221](https://github.com/visulima/visulima/commit/7cab221163632d9b7aa044a6f88c49083103a869))
+* sorted package.json ([b47c545](https://github.com/visulima/visulima/commit/b47c545591600fdab17d5cd3a3fbc68b61e199da))
+* **tabular:** apply prettier and eslint quote-style auto-fix ([20b94d4](https://github.com/visulima/visulima/commit/20b94d4d1ef348af8bc9f59e684c90751d8ef3de))
+* **tabular:** housekeeping cleanup ([a323806](https://github.com/visulima/visulima/commit/a3238064a8fc2da14d69d0be3e219773dc289106))
+* **tabular:** upgrade packem to 2.0.0-alpha.76 ([35567ad](https://github.com/visulima/visulima/commit/35567adb878433b4dbd319f330e11f9517802bfe))
+* **terminal:** apply prettier and eslint formatting sweep ([15fd89c](https://github.com/visulima/visulima/commit/15fd89c677eea60866e08e4fd5f5a6bc8f3bd2e5))
+
+### Tests
+
+* **repo:** add dist runtime + types integration tests ([32ee300](https://github.com/visulima/visulima/commit/32ee300b7184117a0ddf9f9d390f75f8932d5ed9))
+
+### Continuous Integration
+
+* integrate codspeed for benchmark tracking ([e758f3d](https://github.com/visulima/visulima/commit/e758f3da491cc00d3f8bbf10d7ba3fdf8deb5325))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.12
+* **@visulima/string:** upgraded to 3.0.0-alpha.14
+
 ## @visulima/tabular [4.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/tabular@4.0.0-alpha.10...@visulima/tabular@4.0.0-alpha.11) (2026-04-22)
 
 ### Bug Fixes
