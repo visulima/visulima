@@ -1,3 +1,64 @@
+## @visulima/vis [1.0.0-alpha.25](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.24...@visulima/vis@1.0.0-alpha.25) (2026-05-27)
+
+### Features
+
+* **vis:** add GitLab and JUnit audit report formats ([18e8bc2](https://github.com/visulima/visulima/commit/18e8bc204cc5ce2bac8e83a043ede9cf51d57a70))
+* **vis:** audit hardening — ca-cert flag, dep-path walker, report parity ([eb187ab](https://github.com/visulima/visulima/commit/eb187ab4e9ee04357d142c438f428b556a68ff79))
+* **vis:** auto-update GitHub Actions, Docker, and GitLab CI references ([9a3c767](https://github.com/visulima/visulima/commit/9a3c7679c1aa981eb889250ddd841b6feb213b55))
+* **vis:** breaking-change UI + interactive picker for ecosystem updates ([75b7e33](https://github.com/visulima/visulima/commit/75b7e33eb9a460036cf8f8feff5197b1fb2db010))
+* **vis:** changelog URLs, docker min-age gate, action advisories, TUI sort ([23d65e1](https://github.com/visulima/visulima/commit/23d65e1f020dd723b900c5d25f9eb384be0bece8))
+* **vis:** honor project.json[#name](https://github.com/visulima/visulima/issues/name) as the workspace identity ([4a97c92](https://github.com/visulima/visulima/commit/4a97c9203df1398265196161213f1aa5736ea4c0)), closes [package.json#dependencies](https://github.com/visulima/package.json/issues/dependencies)
+* **vis:** migrate command handlers to toolbox.fs and toolbox.process ([c582c74](https://github.com/visulima/visulima/commit/c582c740150a7eab6b34e4eabe68f521471186c1))
+* **vis:** nx migrator hardening + smart --affected SHA resolution ([631351e](https://github.com/visulima/visulima/commit/631351ef32b9367a37c6ca0931673f0e08c103a9)), closes [VisConfig#defaultBase](https://github.com/visulima/VisConfig/issues/defaultBase)
+
+### Bug Fixes
+
+* add tabular to dep ([92d578e](https://github.com/visulima/visulima/commit/92d578e7e2ce558f5e8947bd1d9c2b1da879e351))
+* added tabular to the excluded packges ([20799d6](https://github.com/visulima/visulima/commit/20799d66f3cf73381b7fd3e7bd8776401eef399f))
+* **storage-client:** percent-encode user fields in defaultFingerprint ([7c78a0f](https://github.com/visulima/visulima/commit/7c78a0f9512e2a673b941d80839e9f1e86b7b5d0))
+* **task-runner:** resolve workspace .bin binaries in spawned tasks ([69bd30c](https://github.com/visulima/visulima/commit/69bd30c95fb1e70aba1f7c5b4d3d17b8f0465c11))
+* **vis:** address coderabbit feedback on ecosystem updates ([#654](https://github.com/visulima/visulima/issues/654)) ([049f0b4](https://github.com/visulima/visulima/commit/049f0b40aa890978b43104cd15f238800d62d981))
+* **vis:** address ecosystem-update review findings ([88ac870](https://github.com/visulima/visulima/commit/88ac8703eaab7ad9741aa94a4addf77d618a2464))
+* **vis:** bump stale workspace dep versions so Nx links them ([448ce87](https://github.com/visulima/visulima/commit/448ce87dd146bd696fd0cb0b5ad6deabb7ffc9d6))
+* **vis:** enhance PATH inside ephemeral service bootstrap config ([30c6364](https://github.com/visulima/visulima/commit/30c6364cceff0d3c48fe5e7e4a996b77a1ed224c))
+
+### Documentation
+
+* **vis:** mention ecosystem updates in README and ci-cd guide ([1577e95](https://github.com/visulima/visulima/commit/1577e95accc4a91a67ece2c7a25ad1a8b26bc784))
+
+### Miscellaneous Chores
+
+* refresh generated license bundles and disposable-domain stats ([a389f38](https://github.com/visulima/visulima/commit/a389f38484788aafa8ba9b698e2dd5805a982d98))
+* sorted package.json ([b47c545](https://github.com/visulima/visulima/commit/b47c545591600fdab17d5cd3a3fbc68b61e199da))
+* sorted package.json v2 ([70f0116](https://github.com/visulima/visulima/commit/70f01166709d5db1bd8cb309758e86edd4127eb5))
+* **vis:** regenerate vis-config.schema.json for defaultBase ([4a847e9](https://github.com/visulima/visulima/commit/4a847e9a7e193880546c295920c29b2c67265a16)), closes [VisConfig#defaultBase](https://github.com/visulima/VisConfig/issues/defaultBase)
+
+### Tests
+
+* **vis:** cover highlight-preservation on sort + symmetric newRef on min-age skip ([5d383c7](https://github.com/visulima/visulima/commit/5d383c70a16c1a3b2243cb3d4503a547036a0d7c))
+
+
+### Dependencies
+
+* **@visulima/secret-scanner:** upgraded to 1.0.0-alpha.4
+* **@visulima/tabular:** upgraded to 4.0.0-alpha.12
+* **@visulima/task-runner:** upgraded to 1.0.0-alpha.16
+* **@visulima/tui:** upgraded to 1.0.0-alpha.20
+* **@visulima/ansi:** upgraded to 4.0.0-alpha.15
+* **@visulima/cerebro:** upgraded to 3.0.0-alpha.28
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.12
+* **@visulima/error:** upgraded to 6.0.0-alpha.30
+* **@visulima/find-cache-dir:** upgraded to 3.0.0-alpha.10
+* **@visulima/fs:** upgraded to 5.0.0-alpha.28
+* **@visulima/interactive-manager:** upgraded to 1.0.0-alpha.3
+* **@visulima/package:** upgraded to 5.0.0-alpha.27
+* **@visulima/pail:** upgraded to 4.0.0-alpha.18
+* **@visulima/path:** upgraded to 3.0.0-alpha.11
+* **@visulima/redact:** upgraded to 3.0.0-alpha.12
+* **@visulima/source-map:** upgraded to 3.0.0-alpha.10
+* **@visulima/spinner:** upgraded to 1.0.0-alpha.2
+* **@visulima/string:** upgraded to 3.0.0-alpha.14
+
 ## @visulima/vis [1.0.0-alpha.24](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.23...@visulima/vis@1.0.0-alpha.24) (2026-05-26)
 
 ### Features
