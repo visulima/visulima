@@ -1,3 +1,19 @@
+## @visulima/fs [5.0.0-alpha.28](https://github.com/visulima/visulima/compare/@visulima/fs@5.0.0-alpha.27...@visulima/fs@5.0.0-alpha.28) (2026-05-27)
+
+### Bug Fixes
+
+* **storage-client:** percent-encode user fields in defaultFingerprint ([7c78a0f](https://github.com/visulima/visulima/commit/7c78a0f9512e2a673b941d80839e9f1e86b7b5d0))
+
+### Documentation
+
+* prettier-format agent instructions ([71b6414](https://github.com/visulima/visulima/commit/71b6414528780ac82c4e0bb25b5f4f11faba5549))
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 3.0.0-alpha.11
+* **@visulima/error:** upgraded to 6.0.0-alpha.30
+
 ## @visulima/fs [5.0.0-alpha.27](https://github.com/visulima/visulima/compare/@visulima/fs@5.0.0-alpha.26...@visulima/fs@5.0.0-alpha.27) (2026-05-26)
 
 ### Miscellaneous Chores
