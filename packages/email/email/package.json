@@ -1,6 +1,6 @@
 {
     "name": "@visulima/email",
-    "version": "1.0.0-alpha.32",
+    "version": "1.0.0-alpha.33",
     "description": "A comprehensive email library with multi-provider support, crypto utilities, and template engines",
     "keywords": [
         "ahasend",
@@ -278,7 +278,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/disposable-email-domains": "1.0.0-alpha.14",
+        "@visulima/disposable-email-domains": "1.0.0-alpha.15",
         "html-to-text": "catalog:prod",
         "ical-generator": "catalog:prod",
         "lru-cache": "catalog:prod",
@@ -298,10 +298,10 @@
         "@types/mjml": "catalog:types",
         "@types/node": "catalog:types",
         "@types/nodemailer": "catalog:types",
-        "@visulima/error": "6.0.0-alpha.28",
-        "@visulima/fs": "5.0.0-alpha.26",
+        "@visulima/error": "6.0.0-alpha.30",
+        "@visulima/fs": "5.0.0-alpha.28",
         "@visulima/packem": "catalog:dev",
-        "@visulima/path": "3.0.0-alpha.10",
+        "@visulima/path": "3.0.0-alpha.11",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
         "@vue-email/render": "catalog:frontend",
