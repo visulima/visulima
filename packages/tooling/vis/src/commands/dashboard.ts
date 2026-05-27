@@ -30,8 +30,8 @@ const dashboard: Command = {
         ["vis dashboard --port=7788", "Pin the server to a specific port"],
         ["vis dashboard --host=0.0.0.0 --port=7788", "Expose the dashboard on all interfaces"],
     ],
-    execute: async ({ options, visConfig, workspaceRoot: wsRoot }) => {
-        const workspaceRoot = wsRoot ?? process.cwd();
+    execute: async ({ options, process: proc, visConfig, workspaceRoot: wsRoot }) => {
+        const workspaceRoot = wsRoot ?? proc.cwd;
 
         const cacheDirectory = resolveCacheDirectory(workspaceRoot, options.cacheDir as string | undefined, visConfig?.taskRunner?.cacheDirectory);
 

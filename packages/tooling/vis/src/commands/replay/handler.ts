@@ -9,7 +9,7 @@ import type { ReplayOptions } from "./index";
 
 const VALID_FORMATS = new Set(["json", "table"]);
 
-const resolveWorkspaceRoot = (workspaceRoot: string | undefined): string => workspaceRoot ?? process.cwd();
+const resolveWorkspaceRoot = (workspaceRoot: string | undefined, fallbackCwd: string): string => workspaceRoot ?? fallbackCwd;
 
 const formatDuration = (ms: number | undefined): string => {
     if (ms === undefined) {
@@ -262,8 +262,8 @@ export const runReplay = async (options: RunReplayOptions, logger: Console): Pro
     renderTaskTable(filteredTasks, logger);
 };
 
-const replayExecute = async ({ logger, options, workspaceRoot: wsRoot }: Toolbox<Console, ReplayOptions>): Promise<void> => {
-    const workspaceRoot = resolveWorkspaceRoot(wsRoot);
+const replayExecute = async ({ logger, options, process: proc, workspaceRoot: wsRoot }: Toolbox<Console, ReplayOptions>): Promise<void> => {
+    const workspaceRoot = resolveWorkspaceRoot(wsRoot, proc.cwd);
     const format = options.format ?? "table";
 
     if (!VALID_FORMATS.has(format)) {

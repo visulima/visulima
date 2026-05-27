@@ -12,6 +12,7 @@ interface ToolboxShape {
     argument: string[];
     logger: { error: ReturnType<typeof vi.fn>; info: ReturnType<typeof vi.fn>; log: ReturnType<typeof vi.fn>; warn: ReturnType<typeof vi.fn> };
     options: Record<string, unknown>;
+    process: { cwd: string };
     visConfig: Record<string, unknown> | undefined;
     workspaceRoot: string | undefined;
 }
@@ -21,6 +22,7 @@ const buildToolbox = (overrides: Partial<ToolboxShape> = {}): ToolboxShape => {
         argument: [],
         logger: { error: vi.fn(), info: vi.fn(), log: vi.fn(), warn: vi.fn() },
         options: {},
+        process: { cwd: "/tmp/replay-not-used" },
         visConfig: undefined,
         workspaceRoot: "/tmp/replay-not-used",
         ...overrides,
