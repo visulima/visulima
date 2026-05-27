@@ -3,10 +3,10 @@ import type { Writable } from "node:stream";
 
 import { cursorHide, cursorNextLine, cursorShow, cursorTo, cursorUp, eraseLineEnd, eraseLines } from "@visulima/ansi";
 
-import type { CursorPosition } from "./cursor-helpers";
-import { buildCursorOnlySequence, buildCursorSuffix, buildReturnToBottomPrefix, cursorPositionChanged } from "./cursor-helpers";
+import type { CursorPosition, CursorShape } from "./cursor-helpers";
+import { buildCursorOnlySequence, buildCursorShapeSequence, buildCursorSuffix, buildReturnToBottomPrefix, cursorPositionChanged } from "./cursor-helpers";
 
-export type { CursorPosition } from "./cursor-helpers";
+export type { CursorPosition, CursorShape } from "./cursor-helpers";
 
 export type LogUpdate = {
     clear: () => void;
@@ -14,9 +14,59 @@ export type LogUpdate = {
     isCursorDirty: () => boolean;
     reset: () => void;
     setCursorPosition: (position: CursorPosition | undefined) => void;
+    setCursorShape: (shape: CursorShape | undefined) => void;
     sync: (string_: string) => void;
     willRender: (string_: string) => boolean;
     (string_: string): boolean;
+};
+
+// Treat `undefined` (no <Cursor shape>) and "default" as the same emitted state.
+// This lets the diff against `currentShape` collapse "intent absent" and "intent
+// = default" into one no-op once we've emitted the restore sequence.
+const normalizeShape = (shape: CursorShape | undefined): CursorShape => shape ?? "default";
+
+type CursorShapeTracker = {
+    consumeDelta: () => string;
+    /** Returns the restore-default sequence if a non-default shape was emitted this session; resets state. */
+    consumeRestoreOnDone: () => string;
+    isDirty: () => boolean;
+    setPending: (shape: CursorShape | undefined) => void;
+};
+
+// DECSCUSR (cursor shape) state. `currentShape` is what the terminal currently
+// displays; `pendingShape` is the latest intent from a <Cursor> component (or
+// undefined when no <Cursor> is mounted). The diff is emitted alongside the
+// next render write; on done() we restore the default so the parent shell
+// never inherits a leaked shape.
+const createCursorShapeTracker = (): CursorShapeTracker => {
+    let currentShape: CursorShape | undefined;
+    let pendingShape: CursorShape | undefined;
+
+    return {
+        consumeDelta: () => {
+            if (normalizeShape(pendingShape) === normalizeShape(currentShape)) {
+                return "";
+            }
+
+            const next = normalizeShape(pendingShape);
+
+            currentShape = pendingShape;
+
+            return buildCursorShapeSequence(next);
+        },
+        consumeRestoreOnDone: () => {
+            const needsRestore = normalizeShape(currentShape) !== "default";
+
+            currentShape = undefined;
+            pendingShape = undefined;
+
+            return needsRestore ? buildCursorShapeSequence("default") : "";
+        },
+        isDirty: () => normalizeShape(pendingShape) !== normalizeShape(currentShape),
+        setPending: (shape) => {
+            pendingShape = shape;
+        },
+    };
 };
 
 // Count visible lines in a string, ignoring the trailing empty element
@@ -40,12 +90,13 @@ const createStandard = (stream: Writable, { showCursor = false } = {}): LogUpdat
     let cursorDirty = false;
     let previousCursorPosition: CursorPosition | undefined;
     let cursorWasShown = false;
+    const shapeTracker = createCursorShapeTracker();
 
     const getActiveCursor = () => (cursorDirty ? cursorPosition : undefined);
     const hasChanges = (string_: string, activeCursor: CursorPosition | undefined): boolean => {
         const cursorChanged = cursorPositionChanged(activeCursor, previousCursorPosition);
 
-        return string_ !== previousOutput || cursorChanged;
+        return string_ !== previousOutput || cursorChanged || shapeTracker.isDirty();
     };
 
     const render = (string_: string) => {
@@ -65,13 +116,16 @@ const createStandard = (stream: Writable, { showCursor = false } = {}): LogUpdat
             return false;
         }
 
+        const shapeDelta = shapeTracker.consumeDelta();
+
         const lines = string_.split("\n");
         const visibleCount = visibleLineCount(lines, string_);
         const cursorSuffix = buildCursorSuffix(visibleCount, activeCursor);
 
         if (string_ === previousOutput && cursorChanged) {
             stream.write(
-                buildCursorOnlySequence({
+                shapeDelta
+                + buildCursorOnlySequence({
                     cursorPosition: activeCursor,
                     cursorWasShown,
                     previousCursorPosition,
@@ -79,11 +133,15 @@ const createStandard = (stream: Writable, { showCursor = false } = {}): LogUpdat
                     visibleLineCount: visibleCount,
                 }),
             );
+        } else if (string_ === previousOutput && shapeDelta !== "") {
+            // Output and cursor position unchanged, but shape did — emit the
+            // bare DECSCUSR delta without redrawing the frame.
+            stream.write(shapeDelta);
         } else {
             previousOutput = string_;
             const returnPrefix = buildReturnToBottomPrefix(cursorWasShown, previousLineCount, previousCursorPosition);
 
-            stream.write(returnPrefix + eraseLines(clampToViewport(previousLineCount, stream)) + string_ + cursorSuffix);
+            stream.write(shapeDelta + returnPrefix + eraseLines(clampToViewport(previousLineCount, stream)) + string_ + cursorSuffix);
             previousLineCount = lines.length;
         }
 
@@ -109,6 +167,16 @@ const createStandard = (stream: Writable, { showCursor = false } = {}): LogUpdat
         previousCursorPosition = undefined;
         cursorWasShown = false;
 
+        // Restore the terminal's user-configured shape before handing the
+        // cursor back. We only emit the sequence when we actually changed the
+        // shape during this session so apps that never use <Cursor shape>
+        // don't pay the byte tax.
+        const restore = shapeTracker.consumeRestoreOnDone();
+
+        if (restore !== "") {
+            stream.write(restore);
+        }
+
         if (!showCursor) {
             stream.write(cursorShow);
             hasHiddenCursor = false;
@@ -132,6 +200,12 @@ const createStandard = (stream: Writable, { showCursor = false } = {}): LogUpdat
         previousOutput = string_;
         previousLineCount = lines.length;
 
+        const shapeDelta = shapeTracker.consumeDelta();
+
+        if (shapeDelta !== "") {
+            stream.write(shapeDelta);
+        }
+
         if (!activeCursor && cursorWasShown) {
             stream.write(cursorHide);
         }
@@ -149,7 +223,11 @@ const createStandard = (stream: Writable, { showCursor = false } = {}): LogUpdat
         cursorDirty = true;
     };
 
-    render.isCursorDirty = () => cursorDirty;
+    render.setCursorShape = shapeTracker.setPending;
+
+    // isCursorDirty signals "re-flush needed even if output bytes are
+    // identical" — covers cursor position changes *and* shape changes.
+    render.isCursorDirty = () => cursorDirty || shapeTracker.isDirty();
     render.willRender = (string_: string) => hasChanges(string_, getActiveCursor());
 
     return render;
@@ -163,12 +241,13 @@ const createIncremental = (stream: Writable, { showCursor = false } = {}): LogUp
     let cursorDirty = false;
     let previousCursorPosition: CursorPosition | undefined;
     let cursorWasShown = false;
+    const shapeTracker = createCursorShapeTracker();
 
     const getActiveCursor = () => (cursorDirty ? cursorPosition : undefined);
     const hasChanges = (string_: string, activeCursor: CursorPosition | undefined): boolean => {
         const cursorChanged = cursorPositionChanged(activeCursor, previousCursorPosition);
 
-        return string_ !== previousOutput || cursorChanged;
+        return string_ !== previousOutput || cursorChanged || shapeTracker.isDirty();
     };
 
     const render = (string_: string) => {
@@ -188,13 +267,16 @@ const createIncremental = (stream: Writable, { showCursor = false } = {}): LogUp
             return false;
         }
 
+        const shapeDelta = shapeTracker.consumeDelta();
+
         const nextLines = string_.split("\n");
         const visibleCount = visibleLineCount(nextLines, string_);
         const previousVisible = visibleLineCount(previousLines, previousOutput);
 
         if (string_ === previousOutput && cursorChanged) {
             stream.write(
-                buildCursorOnlySequence({
+                shapeDelta
+                + buildCursorOnlySequence({
                     cursorPosition: activeCursor,
                     cursorWasShown,
                     previousCursorPosition,
@@ -208,12 +290,19 @@ const createIncremental = (stream: Writable, { showCursor = false } = {}): LogUp
             return true;
         }
 
+        if (string_ === previousOutput && shapeDelta !== "") {
+            // Output and position unchanged, only shape moved.
+            stream.write(shapeDelta);
+
+            return true;
+        }
+
         const returnPrefix = buildReturnToBottomPrefix(cursorWasShown, previousLines.length, previousCursorPosition);
 
         if (string_ === "\n" || previousOutput.length === 0) {
             const cursorSuffix = buildCursorSuffix(visibleCount, activeCursor);
 
-            stream.write(returnPrefix + eraseLines(clampToViewport(previousLines.length, stream)) + string_ + cursorSuffix);
+            stream.write(shapeDelta + returnPrefix + eraseLines(clampToViewport(previousLines.length, stream)) + string_ + cursorSuffix);
             cursorWasShown = activeCursor !== undefined;
             previousCursorPosition = activeCursor ? { ...activeCursor } : undefined;
             previousOutput = string_;
@@ -225,7 +314,8 @@ const createIncremental = (stream: Writable, { showCursor = false } = {}): LogUp
         const hasTrailingNewline = string_.endsWith("\n");
 
         // We aggregate all chunks for incremental rendering into a buffer, and then write them to stdout at the end.
-        const buffer: string[] = [returnPrefix];
+        // Shape delta is prepended so DECSCUSR lands before any cursor motion/erase from this frame.
+        const buffer: string[] = [shapeDelta, returnPrefix];
 
         // Clear extra lines if the current content's line count is lower than the previous.
         const viewportRows = getViewportRows(stream);
@@ -293,6 +383,12 @@ const createIncremental = (stream: Writable, { showCursor = false } = {}): LogUp
         previousCursorPosition = undefined;
         cursorWasShown = false;
 
+        const restore = shapeTracker.consumeRestoreOnDone();
+
+        if (restore !== "") {
+            stream.write(restore);
+        }
+
         if (!showCursor) {
             stream.write(cursorShow);
             hasHiddenCursor = false;
@@ -316,6 +412,12 @@ const createIncremental = (stream: Writable, { showCursor = false } = {}): LogUp
         previousOutput = string_;
         previousLines = lines;
 
+        const shapeDelta = shapeTracker.consumeDelta();
+
+        if (shapeDelta !== "") {
+            stream.write(shapeDelta);
+        }
+
         if (!activeCursor && cursorWasShown) {
             stream.write(cursorHide);
         }
@@ -333,7 +435,11 @@ const createIncremental = (stream: Writable, { showCursor = false } = {}): LogUp
         cursorDirty = true;
     };
 
-    render.isCursorDirty = () => cursorDirty;
+    render.setCursorShape = shapeTracker.setPending;
+
+    // isCursorDirty signals "re-flush needed even if output bytes are
+    // identical" — covers cursor position changes *and* shape changes.
+    render.isCursorDirty = () => cursorDirty || shapeTracker.isDirty();
     render.willRender = (string_: string) => hasChanges(string_, getActiveCursor());
 
     return render;

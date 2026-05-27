@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-condition */
+import type { CursorShape } from "./cursor-helpers";
 import type { DOMElement, DOMNode } from "./dom";
 import { isNodeSelectable } from "./dom";
 import type { CursorPosition } from "./log-update";
@@ -10,6 +11,7 @@ import type { Selection } from "./selection";
 type Result = {
     cursorPosition: CursorPosition | undefined;
     cursorRequested: boolean;
+    cursorShape: CursorShape | undefined;
     output: string;
     outputBuffer?: Uint32Array;
     outputHeight: number;
@@ -230,6 +232,7 @@ const renderer = (
             return {
                 cursorPosition: undefined,
                 cursorRequested: false,
+                cursorShape: undefined,
                 output,
                 outputHeight,
                 staticOutput: staticOutput ? `${staticOutput}\n` : "",
@@ -250,6 +253,7 @@ const renderer = (
         const renderState: RenderState = {
             cursorPosition: undefined,
             cursorRequested: false,
+            cursorShape: undefined,
         };
 
         renderNodeToOutput(node, output, {
@@ -282,6 +286,7 @@ const renderer = (
             return {
                 cursorPosition: renderState.cursorPosition,
                 cursorRequested: renderState.cursorRequested,
+                cursorShape: renderState.cursorShape,
                 output: "",
                 outputBuffer,
                 outputHeight,
@@ -295,6 +300,7 @@ const renderer = (
         return {
             cursorPosition: renderState.cursorPosition,
             cursorRequested: renderState.cursorRequested,
+            cursorShape: renderState.cursorShape,
             output: generatedOutput,
             outputHeight,
             // Newline at the end is needed, because static output doesn't have one, so
@@ -306,6 +312,7 @@ const renderer = (
     return {
         cursorPosition: undefined,
         cursorRequested: false,
+        cursorShape: undefined,
         output: "",
         outputHeight: 0,
         staticOutput: "",

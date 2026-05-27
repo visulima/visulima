@@ -454,4 +454,131 @@ describe("log-update", () => {
 
         expect(stdout.write as any).toHaveBeenCalledTimes(0);
     });
+
+    const decscusrSequence = (ps: number): string => `[${ps} q`;
+
+    it.each(renderingModes)("$name - emits DECSCUSR when shape changes", ({ incremental }) => {
+        expect.assertions(2);
+
+        const { render, stdout } = createRenderForMode(incremental);
+
+        render.setCursorShape("bar");
+        render("Hello\n");
+
+        const written = stdout.getWrites().join("");
+
+        expect(written).toContain(decscusrSequence(6));
+        expect(written).toContain("Hello");
+    });
+
+    it.each(renderingModes)("$name - re-asserting the same shape does not re-emit DECSCUSR", ({ incremental }) => {
+        expect.assertions(2);
+
+        const { render, stdout } = createRenderForMode(incremental);
+
+        render.setCursorShape("blinking-bar");
+        render("First\n");
+
+        const firstSeqCount = stdout.getWrites().join("").split(decscusrSequence(5)).length - 1;
+
+        render.setCursorShape("blinking-bar");
+        render("Second\n");
+
+        const secondSeqCount = stdout.getWrites().join("").split(decscusrSequence(5)).length - 1;
+
+        expect(firstSeqCount).toBe(1);
+        // Output changed but shape didn't — no additional DECSCUSR.
+        expect(secondSeqCount).toBe(1);
+    });
+
+    it.each(renderingModes)("$name - switching shapes emits each transition", ({ incremental }) => {
+        expect.assertions(2);
+
+        const { render, stdout } = createRenderForMode(incremental);
+
+        render.setCursorShape("block");
+        render("A\n");
+        render.setCursorShape("underline");
+        render("B\n");
+
+        const joined = stdout.getWrites().join("");
+
+        expect(joined).toContain(decscusrSequence(2));
+        expect(joined).toContain(decscusrSequence(4));
+    });
+
+    it.each(renderingModes)("$name - emits shape-only delta when only shape changes", ({ incremental }) => {
+        expect.assertions(2);
+
+        const { render, stdout } = createRenderForMode(incremental);
+
+        render.setCursorShape("bar");
+        render("Same\n");
+
+        const writesBefore = (stdout.write as any).mock.calls.length;
+
+        render.setCursorShape("block");
+        // Same output — should still emit the shape delta on its own.
+        render("Same\n");
+
+        const writesAfter = (stdout.write as any).mock.calls.length;
+        const lastWrite = stdout.get();
+
+        expect(writesAfter).toBe(writesBefore + 1);
+        expect(lastWrite).toBe(decscusrSequence(2));
+    });
+
+    it.each(renderingModes)("$name - done() restores default shape when one was emitted", ({ incremental }) => {
+        expect.assertions(1);
+
+        const { render, stdout } = createRenderForMode(incremental);
+
+        render.setCursorShape("blinking-block");
+        render("Hello\n");
+        render.done();
+
+        expect(stdout.getWrites().join("")).toContain(decscusrSequence(0));
+    });
+
+    it.each(renderingModes)("$name - done() does not emit DECSCUSR when no shape was ever set", ({ incremental }) => {
+        expect.assertions(1);
+
+        const { render, stdout } = createRenderForMode(incremental);
+
+        render("Hello\n");
+        render.done();
+
+        expect(stdout.getWrites().join("")).not.toContain(" q");
+    });
+
+    it.each(renderingModes)("$name - setCursorShape(undefined) after a shape restores default on next render", ({ incremental }) => {
+        expect.assertions(2);
+
+        const { render, stdout } = createRenderForMode(incremental);
+
+        render.setCursorShape("bar");
+        render("Hello\n");
+
+        const writesBefore = stdout.getWrites().join("");
+
+        expect(writesBefore).toContain(decscusrSequence(6));
+
+        render.setCursorShape(undefined);
+        render("Hello\n");
+
+        const newWrites = stdout.getWrites().slice(-1).join("");
+
+        expect(newWrites).toContain(decscusrSequence(0));
+    });
+
+    it.each(renderingModes)("$name - sync() emits DECSCUSR delta when shape pending", ({ incremental }) => {
+        expect.assertions(1);
+
+        const { render, stdout } = createRenderForMode(incremental);
+
+        render.setCursorShape("underline");
+        render.sync("Fresh\n");
+
+        expect(stdout.getWrites().join("")).toContain(decscusrSequence(4));
+    });
 });

@@ -446,6 +446,141 @@ describe("cursor", () => {
         expect(output).toContain(cursorTo(0));
     });
 
+    it("cursor shape emits DECSCUSR sequence", async () => {
+        expect.assertions(2);
+
+        const stdout = createStdout();
+        const stdin = createStdin();
+
+        const ShapeApp = () => (
+            <Box>
+                <Text>hello</Text>
+                <Cursor shape="bar" />
+            </Box>
+        );
+
+        const { unmount } = render(<ShapeApp />, { interactive: true, stdin, stdout });
+
+        currentUnmount = unmount;
+
+        await waitFor(() => getWriteCalls(stdout).join("").includes(showCursorEscape));
+
+        const output = getWriteCalls(stdout).join("");
+
+        // Ps=6 (bar)
+        expect(output).toContain("[6 q");
+        expect(output).toContain(showCursorEscape);
+    });
+
+    it("cursor shape switches mid-render", async () => {
+        expect.assertions(2);
+
+        const stdout = createStdout();
+        const stdin = createStdin();
+
+        const ToggleShapeApp = () => {
+            const [insertMode, setInsertMode] = useState(false);
+
+            useInput((_input, key) => {
+                if (key.return) {
+                    setInsertMode((previous) => !previous);
+                }
+            });
+
+            return (
+                <Box>
+                    <Text>{insertMode ? "INSERT" : "NORMAL"}</Text>
+                    <Cursor shape={insertMode ? "bar" : "block"} />
+                </Box>
+            );
+        };
+
+        const { unmount } = render(<ToggleShapeApp />, { interactive: true, stdin, stdout });
+
+        currentUnmount = unmount;
+
+        await waitFor(() => getWriteCalls(stdout).join("").includes("[2 q"));
+
+        emitReadable(stdin, "\r");
+        await waitFor(() => getWriteCalls(stdout).join("").includes("[6 q"));
+
+        const allOutput = getWriteCalls(stdout).join("");
+
+        // Both shape sequences should be present in order: block first, then bar.
+        expect(allOutput.indexOf("[2 q")).toBeGreaterThanOrEqual(0);
+        expect(allOutput.indexOf("[6 q")).toBeGreaterThan(allOutput.indexOf("[2 q"));
+    });
+
+    it("cursor shape restored to default when shape-bearing child unmounts mid-app", async () => {
+        expect.assertions(2);
+
+        const stdout = createStdout();
+        const stdin = createStdin();
+
+        const ShapeChild = () => (
+            <>
+                <Text>shaped</Text>
+                <Cursor shape="bar" />
+            </>
+        );
+
+        const Parent = () => {
+            const [showChild, setShowChild] = useState(true);
+
+            useInput((_input, key) => {
+                if (key.return) {
+                    setShowChild(false);
+                }
+            });
+
+            return <Box>{showChild ? <ShapeChild /> : <Text>no cursor</Text>}</Box>;
+        };
+
+        const { unmount } = render(<Parent />, { interactive: true, stdin, stdout });
+
+        currentUnmount = unmount;
+
+        await waitFor(() => getWriteCalls(stdout).join("").includes("[6 q"));
+
+        const writesBeforeUnmount = (stdout.write as any).mock.calls.length;
+
+        emitReadable(stdin, "\r");
+        await waitFor(() => getWriteCalls(stdout).slice(writesBeforeUnmount).join("").includes("[0 q"));
+
+        const afterChildGone = getWriteCalls(stdout).slice(writesBeforeUnmount).join("");
+
+        // Bar was set; after child unmounts, the next frame must restore Ps=0
+        // before the app itself unmounts.
+        expect(afterChildGone).toContain("[0 q");
+        expect(afterChildGone).toContain("no cursor");
+    });
+
+    it("cursor shape restored to default on unmount", async () => {
+        expect.assertions(1);
+
+        const stdout = createStdout();
+        const stdin = createStdin();
+
+        const ShapeApp = () => (
+            <Box>
+                <Text>hi</Text>
+                <Cursor shape="underline" />
+            </Box>
+        );
+
+        const { unmount } = render(<ShapeApp />, { interactive: true, stdin, stdout });
+
+        await waitFor(() => getWriteCalls(stdout).join("").includes("[4 q"));
+
+        unmount();
+        await delay(50);
+
+        const allOutput = getWriteCalls(stdout).join("");
+
+        // After unmount, default-shape restore (Ps=0) must appear after the last underline emit.
+        expect(allOutput.lastIndexOf("[0 q")).toBeGreaterThan(allOutput.lastIndexOf("[4 q"));
+    });
+
     it("inline cursor handles text wrapping correctly", async () => {
         expect.assertions(2);
 

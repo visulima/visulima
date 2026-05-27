@@ -1,9 +1,43 @@
-import { cursorDown, cursorHide, cursorShow, cursorTo, cursorUp } from "@visulima/ansi";
+import { cursorDown, cursorHide, cursorShow, cursorTo, cursorUp, setCursorStyle } from "@visulima/ansi";
 
 export type CursorPosition = {
     x: number;
     y: number;
 };
+
+/**
+ * Declarative cursor shape, mapped to DECSCUSR (`CSI Ps SP q`).
+ *
+ * `"default"` restores the terminal's user-configured shape (`Ps=0`).
+ * Steady variants are non-blinking; `blinking-*` variants opt into blink.
+ */
+export type CursorShape =
+    | "bar"
+    | "blinking-bar"
+    | "blinking-block"
+    | "blinking-underline"
+    | "block"
+    | "default"
+    | "underline";
+
+// DECSCUSR `Ps` parameter for each declarative shape. `Ps=0` is treated as
+// "restore to user default" by every terminal that implements DECSCUSR; we
+// emit it on unmount/exit so an app never leaks a custom shape back to the
+// parent shell.
+const CURSOR_SHAPE_PS: Record<CursorShape, number> = {
+    bar: 6,
+    "blinking-bar": 5,
+    "blinking-block": 1,
+    "blinking-underline": 3,
+    block: 2,
+    default: 0,
+    underline: 4,
+};
+
+/**
+ * Build the DECSCUSR escape sequence for a cursor shape.
+ */
+export const buildCursorShapeSequence = (shape: CursorShape): string => setCursorStyle(CURSOR_SHAPE_PS[shape]);
 
 /**
  * Compare two cursor positions. Returns true if they differ.

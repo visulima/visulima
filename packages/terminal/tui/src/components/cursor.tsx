@@ -2,6 +2,7 @@
 import type { RefObject } from "react";
 import React, { useMemo } from "react";
 
+import type { CursorShape } from "../ink/cursor-helpers";
 import type { CursorAnchorRef, DOMElement } from "../ink/dom";
 
 export type Props = {
@@ -12,6 +13,15 @@ export type Props = {
      * If multiple `&lt;Cursor>` components are rendered in one frame, the last rendered one controls the terminal cursor position.
      */
     readonly anchorRef?: RefObject<DOMElement | null>;
+
+    /**
+     * Optional cursor shape (DECSCUSR). The shape is restored to the terminal
+     * default on unmount, SIGINT, and unhandled React tree throws, so the
+     * parent shell never inherits a leaked shape.
+     *
+     * Steady variants are non-blinking; `blinking-*` variants opt into blink.
+     */
+    readonly shape?: CursorShape;
 
     /**
      * Horizontal offset from anchor content origin.
@@ -46,7 +56,7 @@ export type Props = {
  * <Cursor anchorRef={ref} x={5} />
  * ```
  */
-export default function Cursor({ anchorRef, x = 0, y = 0 }: Props): React.JSX.Element {
+export default function Cursor({ anchorRef, shape, x = 0, y = 0 }: Props): React.JSX.Element {
     const normalizedAnchorReference: CursorAnchorRef | undefined = anchorRef ?? undefined;
     const isInline = normalizedAnchorReference === undefined && x === 0 && y === 0;
 
@@ -54,10 +64,11 @@ export default function Cursor({ anchorRef, x = 0, y = 0 }: Props): React.JSX.El
         return {
             anchorRef: normalizedAnchorReference,
             inline: isInline,
+            shape,
             x,
             y,
         };
-    }, [normalizedAnchorReference, isInline, x, y]);
+    }, [normalizedAnchorReference, isInline, shape, x, y]);
 
     return <ink-cursor internal_cursor={internalCursor} />;
 }
