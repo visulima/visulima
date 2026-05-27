@@ -1,3 +1,5 @@
+import { access, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
+
 import type { CommandLineOptions } from "@visulima/command-line-args";
 
 import { VERBOSITY_DEBUG, VERBOSITY_NORMAL, VERBOSITY_QUIET, VERBOSITY_VERBOSE } from "./constants";
@@ -7,19 +9,29 @@ import CommandNotFoundError from "./errors/command-not-found-error";
 import ConflictingOptionsError from "./errors/conflicting-options-error";
 import PluginManager from "./plugin-manager";
 import type { Cli as ICli, CliRunOptions, CommandSection as ICommandSection, RunCommandOptions } from "./types/cli";
-import type { Command as ICommand, OptionDefinition } from "./types/command";
+import type { Command as ICommand, CommandExecute, OptionDefinition } from "./types/command";
 import type { Plugin } from "./types/plugin";
+import type { CerebroFs, CerebroProcess } from "./types/runtime";
 import type { Toolbox as IToolbox } from "./types/toolbox";
 import mapOptionTypeLabel from "./util/arg-processing/map-option-type-label";
 import commandLineCommands from "./util/command-line-commands";
-import { executeCommand, prepareToolbox, processCommandArgs } from "./util/command-processing/command-processor";
+import { executeCommand, loadLazyHandler, prepareToolbox, processCommandArgs } from "./util/command-processing/command-processor";
 import { validateConflictingOptions, validateDuplicateOptions, validateRequiredOptions } from "./util/command-processing/command-validation";
 import { getCommandPathKey, getFullCommandPath, parseNestedCommand } from "./util/command-processing/nested-command-parser";
 import { addNegatableOptions, mapImpliedOptions, mapNegatableOptions, processOptionNames } from "./util/command-processing/option-processor";
 import findAlternatives from "./util/general/find-alternatives";
 import parseRawCommand from "./util/general/parse-raw-command";
 import registerExceptionHandler from "./util/general/register-exception-handler";
-import { exitProcess, getArgv as getRuntimeArgv, getCwd as getRuntimeCwd, getEnv, getExecArgv, getExecPath } from "./util/general/runtime-process";
+import {
+    exitProcess,
+    getArch as getRuntimeArch,
+    getArgv as getRuntimeArgv,
+    getCwd as getRuntimeCwd,
+    getEnv,
+    getExecArgv,
+    getExecPath,
+    getPlatform as getRuntimePlatform,
+} from "./util/general/runtime-process";
 import { validateCommandName, validateNonEmptyString, validateObject, validateStringArray } from "./util/general/validate-input";
 import { sanitizeArguments } from "./util/security";
 
@@ -32,12 +44,62 @@ const OPTION_REGEX_COMBINED: RegExp = /^-([^\d-]{2,})$/;
 
 const isOption = (argument: string): boolean => OPTION_REGEX_SHORT.test(argument) || OPTION_REGEX_LONG.test(argument) || OPTION_REGEX_COMBINED.test(argument);
 
+/**
+ * Default filesystem adapter wrapping `node:fs/promises`. Replaced when
+ * `CliOptions.fs` is provided. Defined once at module load to avoid repeated
+ * dynamic imports.
+ */
+const defaultFs: CerebroFs = {
+    access: (path, mode) => access(path, mode),
+    mkdir: (path, options) => mkdir(path, options),
+    readdir: (path) => readdir(path),
+    readFile: (async (path: string, encoding?: BufferEncoding) => {
+        if (encoding === undefined) {
+            return readFile(path);
+        }
+
+        return readFile(path, encoding);
+    }) as CerebroFs["readFile"],
+    rm: (path, options) => rm(path, options),
+    stat: (path) => stat(path),
+    writeFile: (path, data, encoding) => writeFile(path, data, encoding),
+};
+
 export type CliOptions<T extends Console = Console> = {
     argv?: ReadonlyArray<string>;
     cwd?: string;
+
+    /**
+     * Process environment variables exposed to commands via `toolbox.process.env`.
+     * Defaults to the runtime's process environment. Override to provide a
+     * captured snapshot in tests so commands don't read mutating host state.
+     */
+    env?: Record<string, string | undefined>;
+
+    /**
+     * Function called when a command invokes `toolbox.process.exit(code)`.
+     * Defaults to the runtime-agnostic exit helper that terminates the process.
+     * Override with a `vi.fn()` in tests to capture exit codes without killing
+     * the test runner.
+     */
+    exit?: (code?: number) => void;
+
+    /**
+     * Filesystem adapter exposed via `toolbox.fs`. Defaults to `node:fs/promises`.
+     * Override with an in-memory or sandboxed adapter for tests and embedded
+     * runtimes (MCP, JustBash).
+     */
+    fs?: CerebroFs;
     logger?: T;
     packageName?: string;
     packageVersion?: string;
+
+    /**
+     * Buffered stdin content exposed via `toolbox.process.stdin`. Empty string
+     * by default. Useful for tests and sandboxed runtimes where wiring real
+     * stdin is impractical.
+     */
+    stdin?: string;
 };
 
 export class Cli<T extends Console = Console> implements ICli<T> {
@@ -54,6 +116,14 @@ export class Cli<T extends Console = Console> implements ICli<T> {
     readonly #packageVersion: string | undefined;
 
     readonly #packageName: string | undefined;
+
+    readonly #fs?: CerebroFs;
+
+    readonly #exit?: (code?: number) => void;
+
+    readonly #envOverride?: Record<string, string | undefined>;
+
+    readonly #stdin: string;
 
     #pluginManager?: PluginManager<T>;
 
@@ -205,6 +275,23 @@ export class Cli<T extends Console = Console> implements ICli<T> {
     }
 
     /**
+     * Builds the `CerebroProcess` snapshot attached to each command's toolbox.
+     * Honors `CliOptions.exit`, `CliOptions.env`, `CliOptions.stdin`, and falls
+     * back to the runtime-agnostic getters for cwd / argv / platform / arch.
+     */
+    #buildProcessContext(): CerebroProcess {
+        return {
+            arch: getRuntimeArch(),
+            argv: this.#getArgv(),
+            cwd: this.#cwd,
+            env: this.#envOverride ?? getEnv(),
+            exit: this.#exit ?? ((code?: number) => exitProcess(code ?? 0)),
+            platform: getRuntimePlatform(),
+            stdin: this.#stdin,
+        };
+    }
+
+    /**
      * Common command execution logic shared between run() and runCommand().
      */
     #executeCommandInternal(
@@ -239,6 +326,14 @@ export class Cli<T extends Console = Console> implements ICli<T> {
 
         toolbox.runtime = this;
         toolbox.argv = this.#getArgv();
+        toolbox.fs = this.#fs ?? defaultFs;
+        toolbox.process = this.#buildProcessContext();
+        // `console` is an alias for `logger` so commands can write portable
+        // `({ console }) => console.log(...)` code without grabbing the global.
+        // The logger plugin overwrites `toolbox.logger` during lifecycle, so we
+        // also re-point `console` from that plugin to keep the two in sync if
+        // a custom logger plugin reassigns logger.
+        toolbox.console = this.#logger;
 
         const hasOptions = command.options && command.options.length > 0;
 
@@ -361,6 +456,39 @@ export class Cli<T extends Console = Console> implements ICli<T> {
         this.#cwd = this.#options.cwd as string;
         this.#defaultCommand = "help";
         this.#commandSection = {};
+
+        // Runtime guards below use `unknown` casts so they survive ESLint's
+        // type-narrowing rules — JS callers can still pass wrong types past
+        // TS, and we'd rather throw a clear CerebroError than crash deep
+        // inside a command handler later.
+        const rawFs = options.fs as unknown;
+
+        if (rawFs !== undefined && (typeof rawFs !== "object" || rawFs === null)) {
+            throw new CerebroError("CLI fs option must be an object implementing the CerebroFs interface", "INVALID_INPUT", { fs: options.fs });
+        }
+
+        const rawExit = options.exit as unknown;
+
+        if (rawExit !== undefined && typeof rawExit !== "function") {
+            throw new CerebroError("CLI exit option must be a function", "INVALID_INPUT", { exit: options.exit });
+        }
+
+        const rawEnv = options.env as unknown;
+
+        if (rawEnv !== undefined && (typeof rawEnv !== "object" || rawEnv === null)) {
+            throw new CerebroError("CLI env option must be a record of string keys", "INVALID_INPUT", { env: options.env });
+        }
+
+        const rawStdin = options.stdin as unknown;
+
+        if (rawStdin !== undefined && typeof rawStdin !== "string") {
+            throw new CerebroError("CLI stdin option must be a string", "INVALID_INPUT", { stdin: options.stdin });
+        }
+
+        this.#fs = options.fs;
+        this.#exit = options.exit;
+        this.#envOverride = options.env;
+        this.#stdin = options.stdin ?? "";
 
         this.#commands = new Map<string, ICommand<OptionDefinition<unknown>, T>>();
         this.#commandPaths = new Map<string, string[]>();
@@ -685,6 +813,11 @@ export class Cli<T extends Console = Console> implements ICli<T> {
             execute: (toolbox) => {
                 // eslint-disable-next-line no-param-reassign
                 toolbox.logger = this.#logger;
+                // Mirror the current logger reference so `toolbox.console ===
+                // toolbox.logger` holds even if an earlier user plugin
+                // reassigned `toolbox.logger`.
+                // eslint-disable-next-line no-param-reassign
+                toolbox.console = toolbox.logger;
             },
             name: "logger",
         });
@@ -1076,5 +1209,114 @@ export class Cli<T extends Console = Console> implements ICli<T> {
 
             throw error;
         }
+    }
+
+    /**
+     * Creates a shallow copy of the CLI with optional `CliOptions` overrides.
+     *
+     * The clone shares the underlying command definitions (the same `Command`
+     * objects are reused), but has its own commands map, global-options list,
+     * default-command setting, command-section configuration, and a freshly
+     * initialized plugin manager. Mutating one CLI's commands after cloning
+     * does not affect the other.
+     *
+     * Primarily useful in tests to run the same CLI definition with different
+     * argv / stdout / exit / fs overrides without rebuilding the command tree.
+     * @param overrides Optional `CliOptions` to merge over the clone's existing options
+     * @returns A new `Cli` instance with the same commands and merged options
+     * @example
+     * ```typescript
+     * const cli = new Cerebro("acme");
+     * cli.addCommand({ name: "build", execute: ({ console }) => console.log("building") });
+     *
+     * // In tests: clone with mocked exit + captured stdout
+     * const exitSpy = vi.fn();
+     * const isolated = cli.clone({ argv: ["build"], exit: exitSpy });
+     * await isolated.run({ shouldExitProcess: false });
+     * ```
+     */
+    public clone(overrides?: CliOptions<T>): Cli<T> {
+        const merged: CliOptions<T> = { ...this.#options, ...overrides };
+        const cloned = new Cli<T>(this.#cliName, merged);
+
+        // Share command objects but with a separate map so adding/removing on
+        // the clone does not mutate the original.
+        for (const [key, command] of this.#commands) {
+            cloned.#commands.set(key, command);
+        }
+
+        for (const [key, path] of this.#commandPaths) {
+            cloned.#commandPaths.set(key, [...path]);
+        }
+
+        for (const [key, command] of this.#commandsByPath) {
+            cloned.#commandsByPath.set(key, command);
+        }
+
+        for (const option of this.#customGlobalOptions) {
+            cloned.#customGlobalOptions.push(option);
+        }
+
+        cloned.#defaultCommand = this.#defaultCommand;
+        cloned.#commandSection = { ...this.#commandSection };
+
+        cloned.#invalidateCommandCache();
+
+        return cloned;
+    }
+
+    /**
+     * Returns the resolved `execute` function for a registered command.
+     *
+     * For lazy-loaded commands (defined via `loader`), the loader is awaited
+     * and its module's default export is returned. The result is cached on the
+     * command for subsequent calls. Supports space-separated nested command
+     * paths (e.g. `"git remote add"`).
+     *
+     * Primarily useful in tests to invoke a command's handler directly with a
+     * synthesized toolbox, without going through argv parsing or the full
+     * `run()` lifecycle.
+     * @param commandName The command name or space-separated nested path
+     * @returns A promise resolving to the command's handler function
+     * @throws {CommandNotFoundError} If no command matches the given name
+     * @throws {CerebroError} If the command has neither `execute` nor `loader`
+     * @example
+     * ```typescript
+     * const cli = new Cerebro("acme");
+     * cli.addCommand({
+     *   name: "deploy",
+     *   execute: ({ console, options }) => console.log("deploying to", options.env),
+     * });
+     *
+     * // In tests: call the action directly with a mocked toolbox
+     * const action = await cli.getAction("deploy");
+     * await action({ console: fakeConsole, options: { env: "staging" } } as never);
+     * ```
+     */
+    public async getAction(commandName: string): Promise<CommandExecute<IToolbox<T>>> {
+        validateNonEmptyString(commandName, "Command name");
+
+        const commandPath = commandName.split(" ").filter(Boolean);
+        const pathKey = getCommandPathKey(commandPath);
+        const storedPath = this.#commandPaths.get(pathKey);
+
+        const command: ICommand<OptionDefinition<unknown>, T> | undefined = storedPath ? this.#commandsByPath.get(pathKey) : this.#commands.get(commandName);
+
+        if (!command) {
+            const allCommandPaths = this.#getAllCommandPaths();
+            const alternatives = findAlternatives(pathKey || commandName, allCommandPaths);
+
+            throw new CommandNotFoundError(commandName, alternatives);
+        }
+
+        if (typeof command.execute === "function") {
+            return command.execute;
+        }
+
+        if (typeof command.loader === "function") {
+            return loadLazyHandler(command);
+        }
+
+        throw new CerebroError(`Command "${command.name}" has no execute or loader defined`, "INVALID_COMMAND", { commandName: command.name });
     }
 }

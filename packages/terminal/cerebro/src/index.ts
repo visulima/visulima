@@ -91,6 +91,7 @@ export type { Cli, CliRunOptions, OutputType, RunCommandOptions, VERBOSITY_LEVEL
 export type { ArgumentDefinition, Command, CommandExecute, EnvDefinition, LazyCommandModule, OptionDefinition } from "./types/command";
 export type { CreateEnv, CreateOptions, OptionNameToCamelCase } from "./types/option-types";
 export type { Plugin, PluginContext } from "./types/plugin";
+export type { CerebroFs, CerebroProcess } from "./types/runtime";
 export type { Toolbox } from "./types/toolbox";
 export { lazyNamed } from "./util/lazy-named";
 // eslint-disable-next-line import/no-extraneous-dependencies

@@ -43,10 +43,11 @@ const buildOptionMaps = <OD extends OptionDefinition<unknown>>(
 };
 
 /**
- * Loads the handler for a lazy command, caching the result on the command for subsequent invocations.
- * @internal
+ * Loads the handler for a lazy command, caching the result on the command for
+ * subsequent invocations. Exported for use by `Cli.getAction()` — not part of
+ * the public package API.
  */
-const loadLazyHandler = async <OD extends OptionDefinition<unknown>, TLogger extends Console = Console>(
+export const loadLazyHandler = async <OD extends OptionDefinition<unknown>, TLogger extends Console = Console>(
     command: ICommand<OD, TLogger>,
 ): Promise<CommandExecute<IToolbox<TLogger>>> => {
     // eslint-disable-next-line no-underscore-dangle
