@@ -1,3 +1,27 @@
+## @visulima/spinner [1.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/spinner@1.0.0-alpha.1...@visulima/spinner@1.0.0-alpha.2) (2026-05-27)
+
+### Bug Fixes
+
+* **storage-client:** percent-encode user fields in defaultFingerprint ([7c78a0f](https://github.com/visulima/visulima/commit/7c78a0f9512e2a673b941d80839e9f1e86b7b5d0))
+
+### Miscellaneous Chores
+
+* **ci-stability:** green CI across vis, native, lint, tests, attw ([#651](https://github.com/visulima/visulima/issues/651)) ([d4eb684](https://github.com/visulima/visulima/commit/d4eb684b5f75c818c9251048c605a0ed54a268e3))
+* re-sort workspace package.json files via vis sort-package-json ([f625696](https://github.com/visulima/visulima/commit/f625696cfac974325774b3243e1a83c3d23acbd7))
+* **repo:** sort package.json keys across all packages ([e1fd9ab](https://github.com/visulima/visulima/commit/e1fd9ab467ef96a98c777da1572ff6a50fcf7e71))
+* sorted package.json ([b47c545](https://github.com/visulima/visulima/commit/b47c545591600fdab17d5cd3a3fbc68b61e199da))
+* **spinner:** housekeeping cleanup ([eb6c5f8](https://github.com/visulima/visulima/commit/eb6c5f8d1502d0fe7d96b26357049491d5932c58))
+* **spinner:** upgrade packem to 2.0.0-alpha.76 ([8c61838](https://github.com/visulima/visulima/commit/8c61838064973e9af2bff0508c0796307ac0981c))
+
+### Tests
+
+* **repo:** add dist runtime + types integration tests ([32ee300](https://github.com/visulima/visulima/commit/32ee300b7184117a0ddf9f9d390f75f8932d5ed9))
+
+
+### Dependencies
+
+* **@visulima/interactive-manager:** upgraded to 1.0.0-alpha.3
+
 ## @visulima/spinner 1.0.0-alpha.1 (2026-04-22)
 
 ### Features
