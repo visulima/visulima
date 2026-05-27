@@ -5,6 +5,7 @@ import { platform } from "node:os";
 
 import { join, resolve } from "@visulima/path";
 
+import { withEnhancedPath } from "./path-utils";
 import { uniqueId } from "./utils";
 
 /**
@@ -166,7 +167,7 @@ export class FileAccessTracker {
                 straceCommand,
                 {
                     cwd: options.cwd ?? this.#workspaceRoot,
-                    env: { ...process.env, ...options.env },
+                    env: withEnhancedPath({ ...process.env, ...options.env }, options.cwd ?? this.#workspaceRoot),
                     maxBuffer: 50 * 1024 * 1024, // 50MB
                 },
                 async (_error, stdout, stderr) => {
@@ -332,7 +333,7 @@ export class FileAccessTracker {
                 command,
                 {
                     cwd: options.cwd ?? this.#workspaceRoot,
-                    env: { ...process.env, ...options.env },
+                    env: withEnhancedPath({ ...process.env, ...options.env }, options.cwd ?? this.#workspaceRoot),
                     maxBuffer: 50 * 1024 * 1024,
                 },
                 (_error, stdout, stderr) => {

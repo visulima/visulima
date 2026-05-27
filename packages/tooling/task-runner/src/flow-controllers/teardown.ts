@@ -10,6 +10,8 @@
 
 import { spawn } from "node:child_process";
 
+import { withEnhancedPath } from "../path-utils";
+
 export interface TeardownOptions {
     /** Commands to run in sequence after all processes complete. */
     commands: string[];
@@ -48,6 +50,12 @@ const runTeardownCommand = (command: string, cwd?: string): Promise<number> =>
 
         const child = spawn(shellProgram, shellArgs, {
             cwd,
+            // Teardown commands come from vis.config and historically
+            // ran via package-manager scripts (where node_modules/.bin
+            // is already on PATH). Match that contract so a teardown
+            // like `vitest --reporter=json` resolves without the user
+            // having to spell out `pnpm exec`.
+            env: withEnhancedPath(process.env, cwd ?? process.cwd()),
             stdio: "inherit",
             windowsVerbatimArguments: process.platform === "win32",
         });

@@ -15,6 +15,7 @@ import { withRestart } from "./flow-controllers/restart-process";
 import { runTeardown } from "./flow-controllers/teardown";
 import type { NativeProcessEvent } from "./native-binding";
 import { loadNativeBindings } from "./native-binding";
+import { buildEnhancedPath } from "./path-utils";
 import type { ConcurrentCommandConfig, ConcurrentCommandInput, ConcurrentRunnerOptions, ConcurrentRunResult } from "./types";
 
 // ── Native-path signal cleanup ──────────────────────────────────────────
@@ -97,12 +98,52 @@ const normalizeCommands = (inputs: ConcurrentCommandInput[]): ConcurrentCommandC
     });
 
 /**
+ * Returns a shallow clone of `configs` with each command's env
+ * extended so PATH includes the workspace's `node_modules/.bin`
+ * chain. Matches the behaviour of `npm run` / `pnpm run` so
+ * package.json scripts can reference bare binary names (eslint,
+ * vitest, packem, …) without the caller having to route through
+ * `pnpm exec` first. The cwd-nearest `.bin` wins, so a per-package
+ * binary shadows a workspace-root one.
+ *
+ * Honours an explicit `env.PATH` (or Windows `env.Path`) on the
+ * caller's config — we prepend, not replace. Setting one without
+ * the other previously left them disagreeing on Windows; we now
+ * mirror the merged value into both keys when the alias is present.
+ *
+ * Non-mutating: caller-provided config objects are not modified
+ * (`runConcurrently` is part of the public API and callers may
+ * reuse the configs they pass in).
+ */
+const withEnhancedPathConfigs = (configs: ConcurrentCommandConfig[]): ConcurrentCommandConfig[] =>
+    configs.map((config) => {
+        const cwd = config.cwd ?? process.cwd();
+        const enhanced = buildEnhancedPath(cwd, config.env);
+        const nextEnv: Record<string, string> = { ...(config.env ?? {}) };
+
+        nextEnv["PATH"] = enhanced;
+
+        if ("Path" in nextEnv) {
+            nextEnv["Path"] = enhanced;
+        }
+
+        return { ...config, env: nextEnv };
+    });
+
+/**
  * Core runner function that dispatches to native or JS fallback.
  * This is the inner runner without flow controller wrappers.
  */
-const coreRun = async (configs: ConcurrentCommandConfig[], options: ConcurrentRunnerOptions): Promise<ConcurrentRunResult> => {
+const coreRun = async (rawConfigs: ConcurrentCommandConfig[], options: ConcurrentRunnerOptions): Promise<ConcurrentRunResult> => {
     // Resolve shell: explicit option > npm script-shell config > platform default
     const shellPath = options.shellPath ?? detectScriptShell();
+
+    // Prepend each cwd's `node_modules/.bin` ancestry to PATH so
+    // bare binary names from package.json scripts resolve without
+    // forcing callers through `pnpm exec`. Done once here (instead
+    // of inside the native + JS spawners) so both code paths stay
+    // in lock-step.
+    const configs = withEnhancedPathConfigs(rawConfigs);
 
     const native = loadNativeBindings();
 
