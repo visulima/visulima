@@ -1,3 +1,5 @@
+## @visulima/dev-toolbar [1.0.0-alpha.30](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.0-alpha.29...@visulima/dev-toolbar@1.0.0-alpha.30) (2026-05-27)
+
 ## @visulima/dev-toolbar [1.0.0-alpha.29](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.0-alpha.28...@visulima/dev-toolbar@1.0.0-alpha.29) (2026-05-26)
 
 ### Miscellaneous Chores
