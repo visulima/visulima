@@ -1,13 +1,20 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { createChunkedRestAdapter } from "../core/chunked-rest-adapter";
+import type { FingerprintFn } from "../core/fingerprint";
+import type { UploadControl } from "../core/upload-control";
+import type { UrlStorage } from "../core/url-storage";
 import type { UploadResult } from "./types";
 
 export interface UseChunkedRestUploadOptions {
     /** Chunk size for chunked REST uploads (default: 5MB) */
     chunkSize?: number;
+    /** Unified control handle. See `UploadControl`. */
+    control?: UploadControl;
     /** Chunked REST upload endpoint URL */
     endpoint: string;
+    /** Customise the resume fingerprint. Defaults to `defaultFingerprint`. */
+    fingerprint?: FingerprintFn;
     /** Maximum number of retry attempts */
     maxRetries?: number;
     /** Additional metadata to include with the upload */
@@ -26,6 +33,8 @@ export interface UseChunkedRestUploadOptions {
     onSuccess?: (file: UploadResult) => void;
     /** Enable automatic retry on failure */
     retry?: boolean;
+    /** Persistent storage for resume identifiers. */
+    urlStorage?: UrlStorage;
 }
 
 export interface UseChunkedRestUploadReturn {
@@ -59,7 +68,7 @@ export interface UseChunkedRestUploadReturn {
  * @returns Upload functions and state
  */
 export const useChunkedRestUpload = (options: UseChunkedRestUploadOptions): UseChunkedRestUploadReturn => {
-    const { chunkSize, endpoint, maxRetries, metadata, onError, onPause, onProgress, onResume, onStart, onSuccess, retry } = options;
+    const { chunkSize, control, endpoint, fingerprint, maxRetries, metadata, onError, onPause, onProgress, onResume, onStart, onSuccess, retry, urlStorage } = options;
 
     const [progress, setProgress] = useState(0);
     const [isUploading, setIsUploading] = useState(false);
@@ -73,12 +82,15 @@ export const useChunkedRestUpload = (options: UseChunkedRestUploadOptions): UseC
         () =>
             createChunkedRestAdapter({
                 chunkSize,
+                control,
                 endpoint,
+                fingerprint,
                 maxRetries,
                 metadata,
                 retry,
+                urlStorage,
             }),
-        [chunkSize, endpoint, maxRetries, metadata, retry],
+        [chunkSize, control, endpoint, fingerprint, maxRetries, metadata, retry, urlStorage],
     );
 
     // Store callbacks in refs to avoid re-subscribing on every render

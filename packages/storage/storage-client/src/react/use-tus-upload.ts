@@ -1,13 +1,24 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import type { FingerprintFn } from "../core/fingerprint";
 import { createTusAdapter } from "../core/tus-adapter";
+import type { UploadControl } from "../core/upload-control";
+import type { UrlStorage } from "../core/url-storage";
 import type { UploadResult } from "./types";
 
 export interface UseTusUploadOptions {
     /** Chunk size for TUS uploads (default: 1MB) */
     chunkSize?: number;
+    /**
+     * Unified control handle. Pass an empty `new UploadControl()` to drive the
+     * upload, or `UploadControl.from(token)` to resume an upload that was
+     * started in another process / tab.
+     */
+    control?: UploadControl;
     /** TUS upload endpoint URL */
     endpoint: string;
+    /** Customise the resume fingerprint. Defaults to `defaultFingerprint`. */
+    fingerprint?: FingerprintFn;
     /** Maximum number of retry attempts */
     maxRetries?: number;
     /** Additional metadata to include with the upload */
@@ -26,6 +37,8 @@ export interface UseTusUploadOptions {
     onSuccess?: (file: UploadResult) => void;
     /** Enable automatic retry on failure */
     retry?: boolean;
+    /** Persistent storage for resume URLs (e.g. `defaultUrlStorage()` in the browser). */
+    urlStorage?: UrlStorage;
 }
 
 export interface UseTusUploadReturn {
@@ -59,7 +72,7 @@ export interface UseTusUploadReturn {
  * @returns Upload functions and state
  */
 export const useTusUpload = (options: UseTusUploadOptions): UseTusUploadReturn => {
-    const { chunkSize, endpoint, maxRetries, metadata, onError, onPause, onProgress, onResume, onStart, onSuccess, retry } = options;
+    const { chunkSize, control, endpoint, fingerprint, maxRetries, metadata, onError, onPause, onProgress, onResume, onStart, onSuccess, retry, urlStorage } = options;
 
     const [progress, setProgress] = useState(0);
     const [isUploading, setIsUploading] = useState(false);
@@ -73,12 +86,15 @@ export const useTusUpload = (options: UseTusUploadOptions): UseTusUploadReturn =
         () =>
             createTusAdapter({
                 chunkSize,
+                control,
                 endpoint,
+                fingerprint,
                 maxRetries,
                 metadata,
                 retry,
+                urlStorage,
             }),
-        [chunkSize, endpoint, maxRetries, metadata, retry],
+        [chunkSize, control, endpoint, fingerprint, maxRetries, metadata, retry, urlStorage],
     );
 
     // Store callbacks in refs to avoid re-subscribing on every render

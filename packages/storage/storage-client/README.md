@@ -274,6 +274,29 @@ const { upload, progress } = useChunkedRestUpload({
 await upload(file);
 ```
 
+### Cross-process resume
+
+Both `useTusUpload` and `useChunkedRestUpload` (plus their Vue / Solid / Svelte equivalents) can resume
+an upload after a page refresh, process restart, or hand-off to another tab.
+
+- Pass `urlStorage: defaultUrlStorage()` and a later `upload(sameFile)` automatically resumes from the
+  saved server-side identifier — no extra code needed.
+- Pass a shared `UploadControl` to drive `pause` / `resume` / `abort` from outside the hook, and call
+  `control.toJSON()` to get a token you can serialize and hand to `UploadControl.from(token)` elsewhere.
+
+```tsx
+import { defaultUrlStorage, UploadControl, useTusUpload } from "@visulima/storage-client/react";
+
+const control = useMemo(() => new UploadControl(), []);
+const { upload } = useTusUpload({
+    endpoint: "/api/upload/tus",
+    urlStorage: defaultUrlStorage(),
+    control,
+});
+```
+
+See [API → Cross-process resume](https://visulima.com/docs/package/storage-client/api#cross-process-resume) for the full surface.
+
 ## Documentation
 
 For complete documentation and examples, visit:

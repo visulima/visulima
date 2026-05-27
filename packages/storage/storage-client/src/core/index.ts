@@ -1,5 +1,7 @@
 export type { ChunkedRestAdapter, ChunkedRestAdapterOptions } from "./chunked-rest-adapter";
 export { createChunkedRestAdapter } from "./chunked-rest-adapter";
+export type { FingerprintFn, FingerprintInput, FingerprintProtocol } from "./fingerprint";
+export { defaultFingerprint } from "./fingerprint";
 export type { MultipartAdapter, MultipartAdapterOptions } from "./multipart-adapter";
 export { createMultipartAdapter } from "./multipart-adapter";
 export type { ApiError } from "./query-client";
@@ -8,6 +10,11 @@ export { buildUrl, deleteRequest, extractFileMetaFromHeaders, fetchFile, fetchHe
 export { default as storageQueryKeys } from "./query-keys";
 export type { TusAdapter, TusAdapterOptions } from "./tus-adapter";
 export { createTusAdapter } from "./tus-adapter";
+// Resumable upload primitives
+export type { UploadControlAttachMeta, UploadControlBinding, UploadControlSnapshot } from "./upload-control";
+export { UploadControl } from "./upload-control";
 // Export new uploader implementation
 export type { BatchState, UploaderOptions as CoreUploaderOptions, Uploader, UploaderEventHandler, UploaderEventType, UploadItem } from "./uploader";
 export { createUploader } from "./uploader";
+export type { UrlStorage, UrlStorageEntry } from "./url-storage";
+export { defaultUrlStorage, LocalStorageUrlStorage, MemoryUrlStorage } from "./url-storage";

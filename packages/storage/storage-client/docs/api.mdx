@@ -105,13 +105,16 @@ const result = await adapter.upload(file);
 
 **Options: `TusAdapterOptions`**
 
-| Property     | Type                     | Required | Default         | Description                |
-| ------------ | ------------------------ | -------- | --------------- | -------------------------- |
-| `endpoint`   | `string`                 | Yes      | -               | TUS upload endpoint URL    |
-| `chunkSize`  | `number`                 | No       | `1048576` (1MB) | Chunk size for TUS uploads |
-| `metadata`   | `Record<string, string>` | No       | `{}`            | Additional metadata        |
-| `retry`      | `boolean`                | No       | `true`          | Enable automatic retry     |
-| `maxRetries` | `number`                 | No       | `3`             | Maximum retry attempts     |
+| Property      | Type                     | Required | Default              | Description                                                                          |
+| ------------- | ------------------------ | -------- | -------------------- | ------------------------------------------------------------------------------------ |
+| `endpoint`    | `string`                 | Yes      | -                    | TUS upload endpoint URL                                                              |
+| `chunkSize`   | `number`                 | No       | `1048576` (1MB)      | Chunk size for TUS uploads                                                           |
+| `metadata`    | `Record<string, string>` | No       | `{}`                 | Additional metadata                                                                  |
+| `retry`       | `boolean`                | No       | `true`               | Enable automatic retry                                                               |
+| `maxRetries`  | `number`                 | No       | `3`                  | Maximum retry attempts                                                               |
+| `control`     | `UploadControl`          | No       | -                    | Unified pause/resume/abort handle, see [Cross-process resume](#cross-process-resume) |
+| `fingerprint` | `FingerprintFn`          | No       | `defaultFingerprint` | Override the per-file resume key                                                     |
+| `urlStorage`  | `UrlStorage`             | No       | -                    | Persistent storage for resume URLs; opt in via `defaultUrlStorage()`                 |
 
 **Returns: `TusAdapter`**
 
@@ -146,13 +149,16 @@ const result = await adapter.upload(file);
 
 **Options: `ChunkedRestAdapterOptions`**
 
-| Property     | Type                     | Required | Default         | Description                      |
-| ------------ | ------------------------ | -------- | --------------- | -------------------------------- |
-| `endpoint`   | `string`                 | Yes      | -               | Chunked REST upload endpoint URL |
-| `chunkSize`  | `number`                 | No       | `5242880` (5MB) | Chunk size in bytes              |
-| `metadata`   | `Record<string, string>` | No       | `{}`            | Additional metadata              |
-| `retry`      | `boolean`                | No       | `true`          | Enable automatic retry           |
-| `maxRetries` | `number`                 | No       | `3`             | Maximum retry attempts           |
+| Property      | Type                     | Required | Default              | Description                                                                          |
+| ------------- | ------------------------ | -------- | -------------------- | ------------------------------------------------------------------------------------ |
+| `endpoint`    | `string`                 | Yes      | -                    | Chunked REST upload endpoint URL                                                     |
+| `chunkSize`   | `number`                 | No       | `5242880` (5MB)      | Chunk size in bytes                                                                  |
+| `metadata`    | `Record<string, string>` | No       | `{}`                 | Additional metadata                                                                  |
+| `retry`       | `boolean`                | No       | `true`               | Enable automatic retry                                                               |
+| `maxRetries`  | `number`                 | No       | `3`                  | Maximum retry attempts                                                               |
+| `control`     | `UploadControl`          | No       | -                    | Unified pause/resume/abort handle, see [Cross-process resume](#cross-process-resume) |
+| `fingerprint` | `FingerprintFn`          | No       | `defaultFingerprint` | Override the per-file resume key                                                     |
+| `urlStorage`  | `UrlStorage`             | No       | -                    | Persistent storage for resume identifiers; opt in via `defaultUrlStorage()`          |
 
 **Returns: `ChunkedRestAdapter`**
 
@@ -169,6 +175,57 @@ const result = await adapter.upload(file);
 | `setOnProgress` | `(callback?) => void`                   | Sets progress callback `(progress, offset)` |
 | `setOnFinish`   | `(callback?) => void`                   | Sets finish callback                        |
 | `setOnError`    | `(callback?) => void`                   | Sets error callback                         |
+
+### Cross-process resume
+
+The TUS and chunked-REST adapters can resume an interrupted upload after a page refresh,
+process restart, or another tab takes over. The flow has two opt-in pieces:
+
+- **`urlStorage`** — persists the per-file resume identifier so the next call to `adapter.upload(file)`
+  with the same file recognises it and resumes instead of starting over. Pass `defaultUrlStorage()`
+  (browser → `localStorage`, elsewhere → in-memory) or implement the `UrlStorage` interface yourself.
+- **`UploadControl`** — a serializable handle. `toJSON()` returns a snapshot you can stash anywhere
+  (URL query param, server, IndexedDB); `UploadControl.from(token)` rehydrates it in another process,
+  and passing that control into `adapter.upload(file)` resumes the prior session.
+
+```ts
+import { createTusAdapter, defaultUrlStorage, UploadControl } from "@visulima/storage-client";
+
+// First process — persistent storage takes care of resume across reloads.
+const adapter = createTusAdapter({
+    endpoint: "/api/upload/tus",
+    urlStorage: defaultUrlStorage(),
+});
+
+await adapter.upload(file); // crashes? a later upload(file) resumes automatically
+
+// Or hand off a snapshot to another process.
+const control = new UploadControl();
+
+void createTusAdapter({ endpoint: "/api/upload/tus", control }).upload(file);
+
+// Later, in another tab/process:
+const token = JSON.stringify(control); // or control.toJSON()
+const restored = UploadControl.from(token);
+
+await createTusAdapter({ endpoint: "/api/upload/tus", control: restored }).upload(file);
+```
+
+Both pieces are independent. Use `urlStorage` alone for transparent same-machine resume.
+Use `UploadControl` alone (or together with `urlStorage`) when you need to drive pause/abort/serialize
+the upload from outside the adapter.
+
+**Types**
+
+| Type                     | Description                                                                                                 |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------- |
+| `UploadControl`          | Class with `pause()`, `resume()`, `abort()`, `toJSON()`, and `UploadControl.from(token)`                    |
+| `UploadControlSnapshot`  | Serializable shape — `{ v, protocol, endpoint, fingerprint, uploadUrl, offset? }`                           |
+| `UrlStorage`             | Interface — `addEntry / findEntry / listEntries / removeEntry` (all async)                                  |
+| `MemoryUrlStorage`       | In-process implementation (no persistence)                                                                  |
+| `LocalStorageUrlStorage` | Browser-localStorage implementation. Constructor throws if no `localStorage` is available                   |
+| `defaultUrlStorage()`    | Returns `LocalStorageUrlStorage` if available, otherwise falls back to `MemoryUrlStorage`                   |
+| `FingerprintFn`          | `(input: { endpoint, file, protocol }) => string \| Promise<string>` — override to customise the resume key |
 
 ### Utility Functions
 
@@ -483,19 +540,22 @@ const { upload, pause, resume, abort, progress, isUploading, isPaused, offset, e
 
 **Options: `UseTusUploadOptions`**
 
-| Property     | Type                           | Required | Default         | Description                  |
-| ------------ | ------------------------------ | -------- | --------------- | ---------------------------- |
-| `endpoint`   | `string`                       | Yes      | -               | TUS upload endpoint URL      |
-| `chunkSize`  | `number`                       | No       | `1048576` (1MB) | Chunk size                   |
-| `metadata`   | `Record<string, string>`       | No       | -               | Additional metadata          |
-| `retry`      | `boolean`                      | No       | -               | Enable automatic retry       |
-| `maxRetries` | `number`                       | No       | -               | Maximum retry attempts       |
-| `onStart`    | `() => void`                   | No       | -               | Called when upload starts    |
-| `onProgress` | `(progress: number) => void`   | No       | -               | Called when progress updates |
-| `onSuccess`  | `(file: UploadResult) => void` | No       | -               | Called on success            |
-| `onError`    | `(error: Error) => void`       | No       | -               | Called on failure            |
-| `onPause`    | `() => void`                   | No       | -               | Called when paused           |
-| `onResume`   | `() => void`                   | No       | -               | Called when resumed          |
+| Property      | Type                           | Required | Default              | Description                                                                          |
+| ------------- | ------------------------------ | -------- | -------------------- | ------------------------------------------------------------------------------------ |
+| `endpoint`    | `string`                       | Yes      | -                    | TUS upload endpoint URL                                                              |
+| `chunkSize`   | `number`                       | No       | `1048576` (1MB)      | Chunk size                                                                           |
+| `metadata`    | `Record<string, string>`       | No       | -                    | Additional metadata                                                                  |
+| `retry`       | `boolean`                      | No       | -                    | Enable automatic retry                                                               |
+| `maxRetries`  | `number`                       | No       | -                    | Maximum retry attempts                                                               |
+| `control`     | `UploadControl`                | No       | -                    | Unified pause/resume/abort handle, see [Cross-process resume](#cross-process-resume) |
+| `fingerprint` | `FingerprintFn`                | No       | `defaultFingerprint` | Override the per-file resume key                                                     |
+| `urlStorage`  | `UrlStorage`                   | No       | -                    | Persistent storage for resume URLs; opt in via `defaultUrlStorage()`                 |
+| `onStart`     | `() => void`                   | No       | -                    | Called when upload starts                                                            |
+| `onProgress`  | `(progress: number) => void`   | No       | -                    | Called when progress updates                                                         |
+| `onSuccess`   | `(file: UploadResult) => void` | No       | -                    | Called on success                                                                    |
+| `onError`     | `(error: Error) => void`       | No       | -                    | Called on failure                                                                    |
+| `onPause`     | `() => void`                   | No       | -                    | Called when paused                                                                   |
+| `onResume`    | `() => void`                   | No       | -                    | Called when resumed                                                                  |
 
 #### `useChunkedRestUpload`
 
@@ -510,19 +570,22 @@ const { upload, pause, resume, abort, progress, isUploading, isPaused, offset, e
 
 **Options: `UseChunkedRestUploadOptions`**
 
-| Property     | Type                                         | Required | Default         | Description                      |
-| ------------ | -------------------------------------------- | -------- | --------------- | -------------------------------- |
-| `endpoint`   | `string`                                     | Yes      | -               | Chunked REST upload endpoint URL |
-| `chunkSize`  | `number`                                     | No       | `5242880` (5MB) | Chunk size                       |
-| `metadata`   | `Record<string, string>`                     | No       | -               | Additional metadata              |
-| `retry`      | `boolean`                                    | No       | -               | Enable automatic retry           |
-| `maxRetries` | `number`                                     | No       | -               | Maximum retry attempts           |
-| `onStart`    | `() => void`                                 | No       | -               | Called when upload starts        |
-| `onProgress` | `(progress: number, offset: number) => void` | No       | -               | Called when progress updates     |
-| `onSuccess`  | `(file: UploadResult) => void`               | No       | -               | Called on success                |
-| `onError`    | `(error: Error) => void`                     | No       | -               | Called on failure                |
-| `onPause`    | `() => void`                                 | No       | -               | Called when paused               |
-| `onResume`   | `() => void`                                 | No       | -               | Called when resumed              |
+| Property      | Type                                         | Required | Default              | Description                                                                          |
+| ------------- | -------------------------------------------- | -------- | -------------------- | ------------------------------------------------------------------------------------ |
+| `endpoint`    | `string`                                     | Yes      | -                    | Chunked REST upload endpoint URL                                                     |
+| `chunkSize`   | `number`                                     | No       | `5242880` (5MB)      | Chunk size                                                                           |
+| `metadata`    | `Record<string, string>`                     | No       | -                    | Additional metadata                                                                  |
+| `retry`       | `boolean`                                    | No       | -                    | Enable automatic retry                                                               |
+| `maxRetries`  | `number`                                     | No       | -                    | Maximum retry attempts                                                               |
+| `control`     | `UploadControl`                              | No       | -                    | Unified pause/resume/abort handle, see [Cross-process resume](#cross-process-resume) |
+| `fingerprint` | `FingerprintFn`                              | No       | `defaultFingerprint` | Override the per-file resume key                                                     |
+| `urlStorage`  | `UrlStorage`                                 | No       | -                    | Persistent storage for resume identifiers; opt in via `defaultUrlStorage()`          |
+| `onStart`     | `() => void`                                 | No       | -                    | Called when upload starts                                                            |
+| `onProgress`  | `(progress: number, offset: number) => void` | No       | -                    | Called when progress updates                                                         |
+| `onSuccess`   | `(file: UploadResult) => void`               | No       | -                    | Called on success                                                                    |
+| `onError`     | `(error: Error) => void`                     | No       | -                    | Called on failure                                                                    |
+| `onPause`     | `() => void`                                 | No       | -                    | Called when paused                                                                   |
+| `onResume`    | `() => void`                                 | No       | -                    | Called when resumed                                                                  |
 
 #### `useBatchUpload`
 
