@@ -1,3 +1,27 @@
+## @visulima/is-ansi-color-supported [3.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@3.0.0-alpha.10...@visulima/is-ansi-color-supported@3.0.0-alpha.11) (2026-05-27)
+
+### Bug Fixes
+
+* **storage-client:** percent-encode user fields in defaultFingerprint ([7c78a0f](https://github.com/visulima/visulima/commit/7c78a0f9512e2a673b941d80839e9f1e86b7b5d0))
+
+### Documentation
+
+* prettier-format agent instructions ([71b6414](https://github.com/visulima/visulima/commit/71b6414528780ac82c4e0bb25b5f4f11faba5549))
+
+### Miscellaneous Chores
+
+* **ci-stability:** green CI across vis, native, lint, tests, attw ([#651](https://github.com/visulima/visulima/issues/651)) ([d4eb684](https://github.com/visulima/visulima/commit/d4eb684b5f75c818c9251048c605a0ed54a268e3))
+* **is-ansi-color-supported:** housekeeping cleanup ([b47f21c](https://github.com/visulima/visulima/commit/b47f21c5b55a7b976d9cfc052657b740ae57a142))
+* **is-ansi-color-supported:** upgrade packem to 2.0.0-alpha.76 ([9bdb5a9](https://github.com/visulima/visulima/commit/9bdb5a93391c5af6536b09ac4baf6af92785e8ce))
+* re-sort workspace package.json files via vis sort-package-json ([f625696](https://github.com/visulima/visulima/commit/f625696cfac974325774b3243e1a83c3d23acbd7))
+* refresh generated license bundles and disposable-domain stats ([a389f38](https://github.com/visulima/visulima/commit/a389f38484788aafa8ba9b698e2dd5805a982d98))
+* **repo:** sort package.json keys across all packages ([e1fd9ab](https://github.com/visulima/visulima/commit/e1fd9ab467ef96a98c777da1572ff6a50fcf7e71))
+* sorted package.json ([b47c545](https://github.com/visulima/visulima/commit/b47c545591600fdab17d5cd3a3fbc68b61e199da))
+
+### Tests
+
+* **repo:** add dist runtime + types integration tests ([32ee300](https://github.com/visulima/visulima/commit/32ee300b7184117a0ddf9f9d390f75f8932d5ed9))
+
 ## @visulima/is-ansi-color-supported [3.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@3.0.0-alpha.9...@visulima/is-ansi-color-supported@3.0.0-alpha.10) (2026-04-22)
 
 ### Bug Fixes
