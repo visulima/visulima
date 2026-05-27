@@ -1,3 +1,22 @@
+## @visulima/storage-client [1.0.0-alpha.15](https://github.com/visulima/visulima/compare/@visulima/storage-client@1.0.0-alpha.14...@visulima/storage-client@1.0.0-alpha.15) (2026-05-27)
+
+### Features
+
+* **storage-client:** add cross-process resume primitives for TUS and chunked REST ([88aa260](https://github.com/visulima/visulima/commit/88aa2602f810d8ce7769b056c64c8d048cbf8917))
+
+### Bug Fixes
+
+* **storage-client:** percent-encode user fields in defaultFingerprint ([7c78a0f](https://github.com/visulima/visulima/commit/7c78a0f9512e2a673b941d80839e9f1e86b7b5d0))
+
+### Miscellaneous Chores
+
+* **ci-stability:** green CI across vis, native, lint, tests, attw ([#651](https://github.com/visulima/visulima/issues/651)) ([d4eb684](https://github.com/visulima/visulima/commit/d4eb684b5f75c818c9251048c605a0ed54a268e3))
+* sorted package.json ([b47c545](https://github.com/visulima/visulima/commit/b47c545591600fdab17d5cd3a3fbc68b61e199da))
+
+### Tests
+
+* **repo:** add dist runtime + types integration tests ([32ee300](https://github.com/visulima/visulima/commit/32ee300b7184117a0ddf9f9d390f75f8932d5ed9))
+
 ## @visulima/storage-client [1.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/storage-client@1.0.0-alpha.13...@visulima/storage-client@1.0.0-alpha.14) (2026-05-14)
 
 ### Features
