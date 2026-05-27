@@ -10141,6 +10141,9 @@ importers:
       '@visulima/secret-scanner':
         specifier: 1.0.0-alpha.3
         version: link:../secret-scanner
+      '@visulima/tabular':
+        specifier: 4.0.0-alpha.11
+        version: link:../../terminal/tabular
       '@visulima/task-runner':
         specifier: 1.0.0-alpha.15
         version: link:../task-runner
@@ -10313,9 +10316,6 @@ importers:
       '@visulima/string':
         specifier: 3.0.0-alpha.13
         version: link:../../data-manipulation/string
-      '@visulima/tabular':
-        specifier: 4.0.0-alpha.11
-        version: link:../../terminal/tabular
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.6(@vitest/browser@4.1.6)(vitest@4.1.7)
