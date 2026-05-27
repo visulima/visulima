@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { writeFileSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 import type { Task, TaskGraph } from "@visulima/task-runner";
+import { buildEnhancedPath } from "@visulima/task-runner";
 
 import type { ServiceConfig } from "../../services/types";
 import type { VisTargetOptions } from "../../task/target-options";
@@ -345,10 +346,20 @@ const buildEphemeralConfig = (params: { paths: Pick<BootstrapPaths, "logFile" | 
         throw new TypeError(`Service ${service.id} has no TCP readiness port — declare \`service.port\` or \`service.readiness.tcp.port\`.`);
     }
 
+    // Prepend the service cwd's `node_modules/.bin` chain to PATH so bare
+    // binary names in the service command (e.g. `packem dev`, `next start`)
+    // resolve inside the detached bootstrap process. The bootstrap itself
+    // inherits the parent's enhanced PATH, but the parent was enhanced for
+    // *its* cwd — different from `service.cwd` in any nested-package setup.
+    const env: Record<string, string> = {
+        ...service.env,
+        PATH: buildEnhancedPath(service.cwd, service.env),
+    };
+
     return {
         command: service.command,
         cwd: service.cwd,
-        env: service.env,
+        env,
         host: service.config.readiness?.tcp?.host ?? "127.0.0.1",
         id: service.id,
         logFile: paths.logFile,
