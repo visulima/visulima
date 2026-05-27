@@ -2,6 +2,7 @@
 import type { Node as YogaNode } from "yoga-layout";
 import Yoga from "yoga-layout";
 
+import type { CursorShape } from "./cursor-helpers";
 import measureText from "./measure-text";
 import type { Region } from "./region";
 import type { OutputTransformer } from "./render-node-to-output";
@@ -68,6 +69,7 @@ export type CursorAnchorRef = {
 export type CursorMarker = {
     anchorRef?: CursorAnchorRef;
     inline?: boolean;
+    shape?: CursorShape;
     x: number;
     y: number;
 };

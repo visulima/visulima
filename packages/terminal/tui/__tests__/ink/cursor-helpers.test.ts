@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import {
     buildCursorOnlySequence,
+    buildCursorShapeSequence,
     buildCursorSuffix,
     buildReturnToBottom,
     buildReturnToBottomPrefix,
@@ -156,5 +157,21 @@ describe("cursor-helpers", () => {
         const result = buildReturnToBottomPrefix(true, 4, undefined);
 
         expect(result).toBe(hideCursorEscape + buildReturnToBottom(4, undefined));
+    });
+
+    // BuildCursorShapeSequence — DECSCUSR `CSI Ps SP q`
+
+    it.each([
+        ["default", 0],
+        ["blinking-block", 1],
+        ["block", 2],
+        ["blinking-underline", 3],
+        ["underline", 4],
+        ["blinking-bar", 5],
+        ["bar", 6],
+    ] as const)("buildCursorShapeSequence - %s maps to Ps=%i", (shape, ps) => {
+        expect.assertions(1);
+
+        expect(buildCursorShapeSequence(shape)).toBe(`[${ps} q`);
     });
 });

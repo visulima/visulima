@@ -1,6 +1,7 @@
 import { getStringWidth, indent as indentString, isFullwidthCodePoint } from "@visulima/string";
 import Yoga from "yoga-layout";
 
+import type { CursorShape } from "./cursor-helpers";
 import type { DOMElement, DOMNode } from "./dom";
 import getMaxWidth from "./get-max-width";
 import { getAbsoluteContentPosition } from "./layout";
@@ -106,6 +107,7 @@ export type CursorOutputPosition = {
 export type RenderState = {
     cursorPosition: CursorOutputPosition | undefined;
     cursorRequested: boolean;
+    cursorShape: CursorShape | undefined;
     lastTextWriteEnd?: CursorOutputPosition;
 };
 
@@ -227,6 +229,9 @@ const renderNodeToOutput = (
 
             return;
         }
+
+        // Track the requested shape (last <Cursor> in render order wins, same as position).
+        renderState.cursorShape = marker.shape;
 
         // Inline mode: position cursor where the preceding text ended
         if (marker.inline) {

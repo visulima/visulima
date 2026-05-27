@@ -901,10 +901,16 @@ export default class Ink {
             useNativeRenderer: this.useNativeRenderer,
         });
 
-        const { cursorPosition, cursorRequested, output, outputBuffer, outputHeight, outputWidth, staticOutput } = renderResult;
+        const { cursorPosition, cursorRequested, cursorShape, output, outputBuffer, outputHeight, outputWidth, staticOutput } = renderResult;
 
         this.renderedCursorRequested = cursorRequested;
         this.renderedCursorPosition = cursorPosition;
+
+        // Forward the declared cursor shape (or `undefined` when no <Cursor> is
+        // mounted) every frame so log-update can diff and restore default on
+        // unmount. log-update tracks emitted-vs-pending internally; passing
+        // the same shape twice is a no-op.
+        this.log.setCursorShape(cursorRequested ? cursorShape : undefined);
 
         // Lines that scrolled off the top of an `overflowToBackbuffer` region
         // this frame. Emitted once, above the live region, so they land in the
