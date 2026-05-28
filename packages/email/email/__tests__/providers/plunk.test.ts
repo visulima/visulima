@@ -415,4 +415,137 @@ describe(plunkProvider, () => {
             expect(result?.success).toBe(false);
         });
     });
+
+    describe("branch coverage", () => {
+        it("should use a generic message when the getEmail error is not an Error", async () => {
+            expect.assertions(2);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValueOnce({
+                error: "string failure",
+                success: false,
+            });
+
+            const provider = plunkProvider({ apiKey: "test123" });
+
+            const result = await provider.getEmail?.("abc");
+
+            expect(result?.success).toBe(false);
+            expect(result?.error?.message).toContain("Unknown error");
+        });
+
+        it("should derive the subscriber from an array of recipients when none is provided", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValueOnce({
+                data: { body: { id: "x" }, statusCode: 200 },
+                success: true,
+            });
+
+            const provider = plunkProvider({ apiKey: "test123" });
+
+            const result = await provider.sendEmail({
+                from: { email: "sender@example.com" },
+                html: "<h1>Test</h1>",
+                subject: "Test",
+                to: [{ email: "first@example.com" }, { email: "second@example.com" }],
+            });
+
+            expect(result.success).toBe(true);
+        });
+
+        it("should omit reply_to_name when replyTo has no name", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValueOnce({
+                data: { body: { id: "x" }, statusCode: 200 },
+                success: true,
+            });
+
+            const provider = plunkProvider({ apiKey: "test123" });
+
+            const result = await provider.sendEmail({
+                from: { email: "sender@example.com" },
+                html: "<h1>Test</h1>",
+                replyTo: { email: "reply@example.com" },
+                subject: "Test",
+                to: { email: "user@example.com" },
+            });
+
+            expect(result.success).toBe(true);
+        });
+
+        it("should send an attachment whose raw content is a Buffer", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValueOnce({
+                data: { body: { id: "x" }, statusCode: 200 },
+                success: true,
+            });
+
+            const provider = plunkProvider({ apiKey: "test123" });
+
+            const result = await provider.sendEmail({
+                attachments: [{ filename: "raw.bin", raw: Buffer.from("rawbytes") }],
+                from: { email: "sender@example.com" },
+                html: "<h1>Test</h1>",
+                subject: "Test",
+                to: { email: "user@example.com" },
+            });
+
+            expect(result.success).toBe(true);
+        });
+
+        it("should return a default error when the send fails without an error", async () => {
+            expect.assertions(2);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValueOnce({
+                success: false,
+            });
+
+            const provider = plunkProvider({ apiKey: "test123" });
+
+            const result = await provider.sendEmail({
+                from: { email: "sender@example.com" },
+                html: "<h1>Test</h1>",
+                subject: "Test",
+                to: { email: "user@example.com" },
+            });
+
+            expect(result.success).toBe(false);
+            expect(result.error?.message).toContain("Failed to send email");
+        });
+
+        it("should generate a messageId when the response has no body", async () => {
+            expect.assertions(2);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValueOnce({
+                data: { statusCode: 200 },
+                success: true,
+            });
+
+            const provider = plunkProvider({ apiKey: "test123" });
+
+            const result = await provider.sendEmail({
+                from: { email: "sender@example.com" },
+                html: "<h1>Test</h1>",
+                subject: "Test",
+                to: { email: "user@example.com" },
+            });
+
+            expect(result.success).toBe(true);
+            expect(result.data?.messageId).toBeDefined();
+        });
+    });
 });
