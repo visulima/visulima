@@ -47,14 +47,14 @@ class RotatingFileStream {
         this.#immediate = writeImmediately;
         this.#options = options;
 
-        if (!this.#immediate) {
-            try {
-                // eslint-disable-next-line @typescript-eslint/no-require-imports,global-require
-                this.#createRfsStream = (require("rotating-file-stream") as { createStream: typeof createRotatingStream }).createStream;
-            } catch {
-                throw new Error("The 'rotating-file-stream' package is missing. Make sure to install the 'rotating-file-stream' package.");
-            }
+        try {
+            // eslint-disable-next-line @typescript-eslint/no-require-imports,global-require
+            this.#createRfsStream = (require("rotating-file-stream") as { createStream: typeof createRotatingStream }).createStream;
+        } catch {
+            throw new Error("The 'rotating-file-stream' package is missing. Make sure to install the 'rotating-file-stream' package.");
+        }
 
+        if (!this.#immediate) {
             this.#stream = this.#createRfsStream(this.#filePath, options);
         }
     }
