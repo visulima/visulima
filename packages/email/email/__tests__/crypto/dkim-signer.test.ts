@@ -372,5 +372,72 @@ describe(DkimSigner, () => {
 
             expect(signed.headers["DKIM-Signature"]).toBeDefined();
         });
+
+        it("trims trailing newlines from the body with simple canonicalization", async () => {
+            expect.assertions(1);
+
+            const options: DkimOptions = {
+                domainName: "example.com",
+                keySelector: "default",
+                privateKey: TEST_PRIVATE_KEY,
+            };
+
+            const email: EmailOptions = {
+                from: { email: "sender@example.com" },
+                subject: "Test Subject",
+                text: "Body with trailing newlines\n\n\n",
+                to: { email: "recipient@example.com" },
+            };
+
+            const signer = createDkimSigner(options);
+            const signed = await signer.sign(email);
+
+            expect(signed.headers["DKIM-Signature"]).toBeDefined();
+        });
+
+        it("trims trailing newlines from the body with relaxed canonicalization", async () => {
+            expect.assertions(1);
+
+            const options: DkimOptions = {
+                bodyCanon: "relaxed",
+                domainName: "example.com",
+                keySelector: "default",
+                privateKey: TEST_PRIVATE_KEY,
+            };
+
+            const email: EmailOptions = {
+                from: { email: "sender@example.com" },
+                subject: "Test Subject",
+                text: "Body with trailing newlines\n\n\n",
+                to: { email: "recipient@example.com" },
+            };
+
+            const signer = createDkimSigner(options);
+            const signed = await signer.sign(email);
+
+            expect(signed.headers["DKIM-Signature"]).toBeDefined();
+        });
+
+        it("falls back to the bare address when the display name sanitizes to empty", async () => {
+            expect.assertions(1);
+
+            const options: DkimOptions = {
+                domainName: "example.com",
+                keySelector: "default",
+                privateKey: TEST_PRIVATE_KEY,
+            };
+
+            const email: EmailOptions = {
+                from: { email: "sender@example.com", name: String.fromCodePoint(1, 2, 3) },
+                html: "<h1>Test</h1>",
+                subject: "Test Subject",
+                to: { email: "recipient@example.com" },
+            };
+
+            const signer = createDkimSigner(options);
+            const signed = await signer.sign(email);
+
+            expect(signed.headers.From).toBe("sender@example.com");
+        });
     });
 });
