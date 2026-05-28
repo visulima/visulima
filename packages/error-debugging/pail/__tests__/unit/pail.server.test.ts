@@ -436,6 +436,101 @@ describe("pailServerImpl", () => {
 
             logStdoutSpy.mockRestore();
         });
+
+        it("should extend the parent scope when a child scope is provided", () => {
+            expect.assertions(1);
+
+            const parent = new PailServer({ reporters: [new RawReporter()], stderr, stdout });
+
+            parent.scope("parent-scope");
+
+            const child = parent.child({ scope: "child-scope" });
+
+            const logStdoutSpy = vi.spyOn(stdout, "write");
+
+            child.info("scoped child");
+
+            expect(logStdoutSpy).toHaveBeenCalledWith("scoped child");
+
+            logStdoutSpy.mockRestore();
+        });
+    });
+
+    describe("wrap, clear, and reporter extension", () => {
+        it("should wrap and restore all output sources", () => {
+            expect.assertions(2);
+
+            const pailServer = new PailServer({ stderr, stdout });
+
+            // eslint-disable-next-line no-console
+            const originalConsoleLog = console.log;
+
+            pailServer.wrapAll();
+
+            // eslint-disable-next-line no-console
+            expect(console.log).not.toBe(originalConsoleLog);
+
+            pailServer.restoreAll();
+
+            // eslint-disable-next-line no-console
+            expect(console.log).toBe(originalConsoleLog);
+        });
+
+        it("should clear the terminal by writing reset sequences to both streams", () => {
+            expect.assertions(2);
+
+            const pailServer = new PailServer({ stderr, stdout });
+            const stdoutSpy = vi.spyOn(stdout, "write");
+            const stderrSpy = vi.spyOn(stderr, "write");
+
+            pailServer.clear();
+
+            expect(stdoutSpy).toHaveBeenCalledTimes(1);
+            expect(stderrSpy).toHaveBeenCalledTimes(1);
+
+            stdoutSpy.mockRestore();
+            stderrSpy.mockRestore();
+        });
+
+        it("should configure stream-, logger-type-, and stringify-aware reporters", () => {
+            expect.assertions(5);
+
+            const reporter = {
+                log: vi.fn(),
+                setLoggerTypes: vi.fn(),
+                setStderr: vi.fn(),
+                setStdout: vi.fn(),
+                setStringify: vi.fn(),
+            };
+
+            const pailServer = new PailServer({ reporters: [reporter], stderr, stdout });
+
+            expect(reporter.setStdout).toHaveBeenCalledTimes(1);
+            expect(reporter.setStderr).toHaveBeenCalledTimes(1);
+            expect(reporter.setLoggerTypes).toHaveBeenCalledTimes(1);
+            expect(reporter.setStringify).toHaveBeenCalledTimes(1);
+
+            pailServer.info("configured reporter");
+
+            expect(reporter.log).toHaveBeenCalledTimes(1);
+        });
+
+        it("should route writes through the logger when the stream is wrapped", () => {
+            expect.assertions(1);
+
+            const pailServer = new PailServer({ reporters: [new RawReporter()], stderr, stdout });
+            const logStdoutSpy = vi.spyOn(stdout, "write");
+
+            pailServer.wrapStd();
+
+            stdout.write("wrapped stream message");
+
+            pailServer.restoreStd();
+
+            expect(logStdoutSpy).toHaveBeenCalledWith("wrapped stream message");
+
+            logStdoutSpy.mockRestore();
+        });
     });
 });
 
