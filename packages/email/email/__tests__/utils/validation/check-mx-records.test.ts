@@ -78,6 +78,21 @@ describe(checkMxRecords, () => {
         expect(result.error).toBeDefined();
     });
 
+    it("should cache the error result when the lookup fails and a cache is provided", async () => {
+        expect.assertions(3);
+
+        const cache = new InMemoryCache<MxCheckResult>();
+
+        const result = await checkMxRecords("", { cache });
+
+        expect(result.valid).toBe(false);
+        expect(result.error).toBeDefined();
+
+        const cached = await cache.get("");
+
+        expect(cached?.valid).toBe(false);
+    });
+
     it("should cache MX records when cache is provided", async () => {
         // eslint-disable-next-line vitest/prefer-expect-assertions
         expect.assertions(process.env.CI ? 0 : 5);
