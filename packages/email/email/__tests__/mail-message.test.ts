@@ -163,6 +163,31 @@ describe(MailMessage, () => {
         });
     });
 
+    describe("replyTo()", () => {
+        it("should set replyTo from a string and include it in the built message", async () => {
+            expect.assertions(2);
+
+            const message = new MailMessage();
+
+            message.from("sender@example.com").to("user@example.com").subject("Test").html("<h1>Test</h1>").replyTo("reply@example.com");
+
+            const options = await message.build();
+
+            expect(message.getReplyTo()).toStrictEqual({ email: "reply@example.com" });
+            expect(options.replyTo).toStrictEqual({ email: "reply@example.com" });
+        });
+
+        it("should set replyTo from an EmailAddress object", () => {
+            expect.assertions(1);
+
+            const message = new MailMessage();
+
+            message.replyTo({ email: "reply@example.com", name: "Reply" });
+
+            expect(message.getReplyTo()).toStrictEqual({ email: "reply@example.com", name: "Reply" });
+        });
+    });
+
     describe("attach()", () => {
         it("should add attachment", async () => {
             expect.assertions(2);
