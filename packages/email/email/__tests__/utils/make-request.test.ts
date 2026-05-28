@@ -473,4 +473,75 @@ describe(makeRequest, () => {
             expect(mockFetch.mock.calls[0][1].method).toBe("PUT");
         });
     });
+
+    describe("body conversion and timeout cleanup", () => {
+        it("clears the timeout after a successful response", async () => {
+            expect.assertions(1);
+
+            mockFetch.mockResolvedValueOnce({
+                headers: new Headers(),
+                // eslint-disable-next-line @typescript-eslint/require-await
+                json: async () => {
+                    return {};
+                },
+                ok: true,
+                status: 200,
+                statusText: "OK",
+                // eslint-disable-next-line @typescript-eslint/require-await
+                text: async () => "{}",
+            });
+
+            const result = await makeRequest("https://api.example.com/test", { timeout: 5000 });
+
+            expect(result.success).toBe(true);
+        });
+
+        it("falls back to text when a JSON content-type fails to parse", async () => {
+            expect.assertions(2);
+
+            const headers = new Headers();
+
+            headers.set("content-type", "application/json");
+
+            mockFetch.mockResolvedValueOnce({
+                headers,
+                // eslint-disable-next-line @typescript-eslint/require-await
+                json: async () => {
+                    throw new Error("bad json");
+                },
+                ok: true,
+                status: 200,
+                statusText: "OK",
+                // eslint-disable-next-line @typescript-eslint/require-await
+                text: async () => "fallback text",
+            });
+
+            const result = await makeRequest("https://api.example.com/test");
+
+            expect(result.success).toBe(true);
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+            expect((result.data as { body?: unknown })?.body).toBe("fallback text");
+        });
+
+        it("converts an unrecognized body type to a Uint8Array", async () => {
+            expect.assertions(1);
+
+            mockFetch.mockResolvedValueOnce({
+                headers: new Headers(),
+                // eslint-disable-next-line @typescript-eslint/require-await
+                json: async () => {
+                    return {};
+                },
+                ok: true,
+                status: 200,
+                statusText: "OK",
+                // eslint-disable-next-line @typescript-eslint/require-await
+                text: async () => "{}",
+            });
+
+            await makeRequest("https://api.example.com/test", { method: "POST" }, [104, 105] as unknown as Uint8Array);
+
+            expect(mockFetch.mock.calls[0][1].body).toBeInstanceOf(Uint8Array);
+        });
+    });
 });
