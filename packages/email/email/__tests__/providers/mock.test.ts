@@ -1023,4 +1023,79 @@ describe(mockProvider, () => {
             expect(provider2.getSentMessagesCount()).toBe(0);
         });
     });
+
+    describe("branch coverage", () => {
+        it("should return early from initialize when already initialized", async () => {
+            expect.assertions(1);
+
+            const provider = mockProvider();
+
+            await provider.initialize();
+
+            await expect(provider.initialize()).resolves.not.toThrow();
+        });
+
+        it("should match array cc and array bcc recipients", async () => {
+            expect.assertions(2);
+
+            const provider = mockProvider();
+
+            await provider.sendEmail({
+                bcc: [{ email: "bcc1@example.com" }, { email: "bcc2@example.com" }],
+                cc: [{ email: "cc1@example.com" }, { email: "cc2@example.com" }],
+                from: { email: "sender@example.com" },
+                html: "<h1>Test</h1>",
+                subject: "Test",
+                to: { email: "to@example.com" },
+            });
+
+            expect(provider.getMessagesTo("cc2@example.com")).toHaveLength(1);
+
+            expect(provider.getMessagesTo("bcc1@example.com")).toHaveLength(1);
+        });
+
+        it("should generate messageId and timestamp when next response omits them", async () => {
+            expect.assertions(2);
+
+            const provider = mockProvider();
+
+            provider.setNextResponse({ provider: "mock", successful: true });
+
+            const result = await provider.sendEmail({
+                from: { email: "sender@example.com" },
+                html: "<h1>Test</h1>",
+                subject: "Test",
+                to: { email: "user@example.com" },
+            });
+
+            expect(result.data?.messageId).toBeDefined();
+
+            expect(result.data?.timestamp).toBeInstanceOf(Date);
+        });
+
+        it("should use the response field from a default response", async () => {
+            expect.assertions(2);
+
+            const provider = mockProvider();
+
+            provider.setDefaultResponse({
+                messageId: "default-id",
+                provider: "mock",
+                response: { custom: "payload" },
+                successful: true,
+                timestamp: new Date("2024-01-01"),
+            });
+
+            const result = await provider.sendEmail({
+                from: { email: "sender@example.com" },
+                html: "<h1>Test</h1>",
+                subject: "Test",
+                to: { email: "user@example.com" },
+            });
+
+            expect(result.success).toBe(true);
+
+            expect(result.data?.response).toStrictEqual({ custom: "payload" });
+        });
+    });
 });
