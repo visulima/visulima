@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import toBase64 from "../../src/utils/to-base64";
 
@@ -97,6 +97,54 @@ describe(toBase64, () => {
             const result2 = toBase64(input);
 
             expect(result1).toBe(result2);
+        });
+    });
+
+    describe("without a global Buffer (TextEncoder/btoa fallback)", () => {
+        let originalBuffer: typeof globalThis.Buffer;
+
+        beforeEach(() => {
+            originalBuffer = globalThis.Buffer;
+            // Simulate a runtime without Node's Buffer (Deno/Workers) so the module
+            // re-evaluates hasBuffer === false and uses the TextEncoder/btoa path.
+            (globalThis as { Buffer?: typeof globalThis.Buffer }).Buffer = undefined;
+            vi.resetModules();
+        });
+
+        afterEach(() => {
+            globalThis.Buffer = originalBuffer;
+            vi.resetModules();
+        });
+
+        it("encodes strings via TextEncoder and btoa", async () => {
+            expect.assertions(3);
+
+            const { default: toBase64NoBuffer } = await import("../../src/utils/to-base64");
+
+            expect(toBase64NoBuffer("hello")).toBe("aGVsbG8=");
+            expect(toBase64NoBuffer("")).toBe("");
+            expect(toBase64NoBuffer("Hello 世界")).toBe("SGVsbG8g5LiW55WM");
+        });
+
+        it("encodes Uint8Array and ArrayLike via btoa", async () => {
+            expect.assertions(2);
+
+            const { default: toBase64NoBuffer } = await import("../../src/utils/to-base64");
+
+            const arrayLike: ArrayLike<number> = { 0: 116, 1: 101, 2: 115, 3: 116, length: 4 };
+
+            expect(toBase64NoBuffer(new Uint8Array([116, 101, 115, 116]))).toBe("dGVzdA==");
+            expect(toBase64NoBuffer(arrayLike)).toBe("dGVzdA==");
+        });
+
+        it("chunks large inputs to avoid stack overflow", async () => {
+            expect.assertions(2);
+
+            const { default: toBase64NoBuffer } = await import("../../src/utils/to-base64");
+
+            // Larger than the 8192-byte chunk size to exercise the chunking loops.
+            expect(toBase64NoBuffer("a".repeat(10_000))).toBe(globalThis.btoa("a".repeat(10_000)));
+            expect(toBase64NoBuffer(new Uint8Array(10_000).fill(65)).length).toBeGreaterThan(0);
         });
     });
 });
