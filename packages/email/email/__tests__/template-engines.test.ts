@@ -161,6 +161,24 @@ describe("template-engines", () => {
                     registerHandlebarsHelper("test", () => {});
                 }).toThrow("Handlebars is not installed. Please install it: pnpm add handlebars");
             });
+
+            it("should rethrow non-module errors as-is", () => {
+                expect.assertions(2);
+
+                const error = new Error("registration failed");
+
+                mockHandlebars.default.registerHelper.mockImplementation(() => {
+                    throw error;
+                });
+
+                expect(() => {
+                    registerHandlebarsHelper("test", () => {});
+                }).toThrow("registration failed");
+
+                expect(() => {
+                    registerHandlebarsHelper("test", () => {});
+                }).not.toThrow(EmailError);
+            });
         });
 
         describe(registerHandlebarsPartial, () => {
@@ -190,6 +208,24 @@ describe("template-engines", () => {
                 expect(() => {
                     registerHandlebarsPartial("test", "content");
                 }).toThrow("Handlebars is not installed. Please install it: pnpm add handlebars");
+            });
+
+            it("should rethrow non-module errors as-is", () => {
+                expect.assertions(2);
+
+                const error = new Error("registration failed");
+
+                mockHandlebars.default.registerPartial.mockImplementation(() => {
+                    throw error;
+                });
+
+                expect(() => {
+                    registerHandlebarsPartial("test", "content");
+                }).toThrow("registration failed");
+
+                expect(() => {
+                    registerHandlebarsPartial("test", "content");
+                }).not.toThrow(EmailError);
             });
         });
     });
