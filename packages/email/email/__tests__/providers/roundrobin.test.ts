@@ -767,5 +767,124 @@ describe(roundRobinProvider, () => {
             expect(result.success).toBe(true);
             expect(result.data?.provider).toContain("provider2");
         });
+
+        it("uses fallback names for unnamed providers", async () => {
+            expect.assertions(2);
+
+            const unnamed: Provider = {
+                ...createMockProvider("named", { success: true }),
+                name: undefined,
+            };
+            const roundRobin = roundRobinProvider({
+                mailers: [unnamed],
+            });
+
+            await roundRobin.initialize();
+
+            const result = await roundRobin.sendEmail(emailOptions);
+
+            expect(result.success).toBe(true);
+
+            expect(result.data?.provider).toBe("roundrobin(unknown)");
+        });
+
+        it("logs an init failure for an unnamed provider", async () => {
+            expect.assertions(1);
+
+            const unnamedFailing: Provider = {
+                ...createMockProvider("named"),
+                initialize: () => Promise.reject(new Error("init boom")),
+                name: undefined,
+            };
+            const healthy = createMockProvider("healthy", { success: true });
+            const roundRobin = roundRobinProvider({
+                mailers: [unnamedFailing, healthy],
+            });
+
+            await roundRobin.initialize();
+
+            await expect(roundRobin.isAvailable()).resolves.toBe(true);
+        });
+
+        it("retries when the first provider fails without an error", async () => {
+            expect.assertions(2);
+
+            const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0);
+
+            const silent: Provider = {
+                ...createMockProvider("silent", { available: true }),
+                sendEmail: () => Promise.resolve({ success: false }),
+            };
+            const provider2 = createMockProvider("provider2", { available: true, success: true });
+            const roundRobin = roundRobinProvider({
+                mailers: [silent, provider2],
+                retryAfter: 0,
+            });
+
+            await roundRobin.initialize();
+
+            const result = await roundRobin.sendEmail(emailOptions);
+
+            randomSpy.mockRestore();
+
+            expect(result.success).toBe(true);
+
+            expect(result.data?.provider).toContain("provider2");
+        });
+
+        it("handles an unnamed retry provider that fails without an error", async () => {
+            expect.assertions(1);
+
+            const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0);
+
+            const provider1 = createMockProvider("provider1", { available: true, success: false });
+            const unnamedSilent: Provider = {
+                ...createMockProvider("named", { available: true }),
+                name: undefined,
+                sendEmail: () => Promise.resolve({ success: false }),
+            };
+            const roundRobin = roundRobinProvider({
+                mailers: [provider1, unnamedSilent],
+                retryAfter: 0,
+            });
+
+            await roundRobin.initialize();
+
+            const result = await roundRobin.sendEmail(emailOptions);
+
+            randomSpy.mockRestore();
+
+            expect(result.success).toBe(false);
+        });
+
+        it("coerces non-Error errors from the result and a retry throw", async () => {
+            expect.assertions(2);
+
+            const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0);
+
+            const plainError: Provider = {
+                ...createMockProvider("plain", { available: true }),
+                sendEmail: () => Promise.resolve({ error: "plain failure" as unknown as Error, success: false }),
+            };
+            const thrower: Provider = {
+                ...createMockProvider("thrower", { available: true }),
+                // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+                sendEmail: () => Promise.reject("boom"),
+            };
+            const roundRobin = roundRobinProvider({
+                mailers: [plainError, thrower],
+                retryAfter: 0,
+            });
+
+            await roundRobin.initialize();
+
+            const result = await roundRobin.sendEmail(emailOptions);
+
+            randomSpy.mockRestore();
+
+            expect(result.success).toBe(false);
+
+            expect(result.error?.message).toContain("plain failure");
+        });
     });
 });
