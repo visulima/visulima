@@ -154,7 +154,7 @@ describe(sweegoProvider, () => {
                 from: { email: "" },
                 subject: "",
                 to: { email: "" },
-            } as any);
+            });
 
             expect(result.success).toBe(false);
         });
@@ -188,9 +188,9 @@ describe(sweegoProvider, () => {
 
             const provider = sweegoProvider({ apiKey: "test123" });
 
-            const result = await provider.getEmail!("");
+            const result = await provider.getEmail?.("");
 
-            expect(result.success).toBe(false);
+            expect(result?.success).toBe(false);
         });
 
         it("should return email details on success", async () => {
@@ -205,9 +205,9 @@ describe(sweegoProvider, () => {
 
             const provider = sweegoProvider({ apiKey: "test123" });
 
-            const result = await provider.getEmail!("msg-1");
+            const result = await provider.getEmail?.("msg-1");
 
-            expect(result.success).toBe(true);
+            expect(result?.success).toBe(true);
         });
 
         it("should return error when request fails", async () => {
@@ -222,9 +222,9 @@ describe(sweegoProvider, () => {
 
             const provider = sweegoProvider({ apiKey: "test123" });
 
-            const result = await provider.getEmail!("msg-1");
+            const result = await provider.getEmail?.("msg-1");
 
-            expect(result.success).toBe(false);
+            expect(result?.success).toBe(false);
         });
     });
 
@@ -234,7 +234,46 @@ describe(sweegoProvider, () => {
 
             const provider = sweegoProvider({ apiKey: "test123" });
 
-            await expect(provider.validateCredentials!()).resolves.toBe(true);
+            await expect(provider.validateCredentials?.()).resolves.toBe(true);
+        });
+    });
+
+    describe("branch coverage", () => {
+        it("should send an attachment whose content is a Promise", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValue({
+                data: { body: { id: "p-1" }, statusCode: 200 },
+                success: true,
+            });
+
+            const provider = sweegoProvider({ apiKey: "test123" });
+
+            const result = await provider.sendEmail({
+                attachments: [{ content: Promise.resolve(new Uint8Array([104, 105])), filename: "p.bin" }],
+                from: { email: "sender@example.com" },
+                html: "<h1>Hi</h1>",
+                subject: "Test",
+                to: { email: "user@example.com" },
+            });
+
+            expect(result.success).toBe(true);
+        });
+
+        it("should return an error when retrieving an email throws", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockRejectedValue(new Error("network down"));
+
+            const provider = sweegoProvider({ apiKey: "test123" });
+
+            const result = await provider.getEmail?.("msg-x");
+
+            expect(result?.success).toBe(false);
         });
     });
 });
