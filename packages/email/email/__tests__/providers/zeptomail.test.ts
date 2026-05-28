@@ -378,4 +378,75 @@ describe(zeptomailProvider, () => {
             expect(result.success).toBe(false);
         });
     });
+
+    describe("branch coverage", () => {
+        it("should use a generic message when the send error is not an Error", async () => {
+            expect.assertions(2);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValueOnce({
+                error: "string failure",
+                success: false,
+            });
+
+            const provider = zeptomailProvider({ token: "Zoho-enczapikey TEST" });
+
+            const result = await provider.sendEmail({
+                from: { email: "sender@example.com" },
+                html: "<h1>Hi</h1>",
+                subject: "Test",
+                to: { email: "user@example.com" },
+            });
+
+            expect(result.success).toBe(false);
+            expect(result.error?.message).toContain("Unknown error");
+        });
+
+        it("should ignore an empty headers object", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValueOnce({
+                data: { body: { request_id: "id" }, statusCode: 200 },
+                success: true,
+            });
+
+            const provider = zeptomailProvider({ token: "Zoho-enczapikey TEST" });
+
+            const result = await provider.sendEmail({
+                from: { email: "sender@example.com" },
+                headers: {},
+                html: "<h1>Hi</h1>",
+                subject: "Test",
+                to: { email: "user@example.com" },
+            });
+
+            expect(result.success).toBe(true);
+        });
+
+        it("should handle an attachment without content or path", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValueOnce({
+                data: { body: { request_id: "id" }, statusCode: 200 },
+                success: true,
+            });
+
+            const provider = zeptomailProvider({ token: "Zoho-enczapikey TEST" });
+
+            const result = await provider.sendEmail({
+                attachments: [{ filename: "empty.txt" }],
+                from: { email: "sender@example.com" },
+                html: "<h1>Hi</h1>",
+                subject: "Test",
+                to: { email: "user@example.com" },
+            });
+
+            expect(result.success).toBe(true);
+        });
+    });
 });
