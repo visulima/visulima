@@ -126,7 +126,7 @@ describe(httpProvider, () => {
 
             const provider = httpProvider({ endpoint: "https://api.example.com" });
 
-            await expect(provider.validateCredentials!()).resolves.toBe(true);
+            await expect(provider.validateCredentials?.()).resolves.toBe(true);
         });
 
         it("should return false when statusCode is not 2xx", async () => {
@@ -139,7 +139,7 @@ describe(httpProvider, () => {
 
             const provider = httpProvider({ endpoint: "https://api.example.com" });
 
-            await expect(provider.validateCredentials!()).resolves.toBe(false);
+            await expect(provider.validateCredentials?.()).resolves.toBe(false);
         });
 
         it("should return false on thrown error", async () => {
@@ -149,7 +149,7 @@ describe(httpProvider, () => {
 
             const provider = httpProvider({ endpoint: "https://api.example.com" });
 
-            await expect(provider.validateCredentials!()).resolves.toBe(false);
+            await expect(provider.validateCredentials?.()).resolves.toBe(false);
         });
     });
 
@@ -163,7 +163,7 @@ describe(httpProvider, () => {
                 from: { email: "" },
                 subject: "",
                 to: { email: "" },
-            } as any);
+            });
 
             expect(result.success).toBe(false);
             expect(result.error?.message).toContain("Invalid email options");
@@ -235,9 +235,10 @@ describe(httpProvider, () => {
             });
 
             expect(result.success).toBe(true);
-            const lastCall = makeRequestMock.mock.calls.at(-1)!;
 
-            expect(lastCall[0]).toBe("https://other.example.com");
+            const lastCall = makeRequestMock.mock.calls.at(-1);
+
+            expect(lastCall?.[0]).toBe("https://other.example.com");
         });
 
         it("should extract messageId from response.body.data", async () => {
@@ -342,6 +343,68 @@ describe(httpProvider, () => {
 
             expect(result.success).toBe(false);
             expect(result.error).toBeDefined();
+        });
+    });
+
+    describe("branch coverage", () => {
+        it("should return early from initialize when already initialized", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValue({
+                data: { statusCode: 200 },
+                success: true,
+            });
+
+            const provider = httpProvider({ endpoint: "https://api.example.com" });
+
+            await provider.initialize();
+            await provider.initialize();
+
+            expect(makeRequestMock).toHaveBeenCalledTimes(1);
+        });
+
+        it("should return false from isAvailable when a non-auth error is thrown", async () => {
+            expect.assertions(1);
+
+            (makeRequest as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error("network down"));
+
+            const provider = httpProvider({ endpoint: "https://api.example.com" });
+
+            await expect(provider.isAvailable()).resolves.toBe(false);
+        });
+
+        it("should format an array cc and a single bcc address", async () => {
+            expect.assertions(3);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValueOnce({
+                data: { statusCode: 200 },
+                success: true,
+            });
+            makeRequestMock.mockResolvedValueOnce({
+                data: { body: { id: "msg-cc" }, statusCode: 200 },
+                success: true,
+            });
+
+            const provider = httpProvider({ endpoint: "https://api.example.com" });
+
+            const result = await provider.sendEmail({
+                bcc: { email: "bcc@example.com" },
+                cc: [{ email: "cc1@example.com" }, { email: "cc2@example.com" }],
+                from: { email: "sender@example.com" },
+                html: "<h1>Hi</h1>",
+                subject: "Test",
+                to: { email: "user@example.com" },
+            });
+
+            const payload = JSON.parse(makeRequestMock.mock.calls.at(-1)?.[2] as string) as Record<string, unknown>;
+
+            expect(result.success).toBe(true);
+            expect(payload.cc).toStrictEqual(["cc1@example.com", "cc2@example.com"]);
+            expect(payload.bcc).toBe("bcc@example.com");
         });
     });
 });
