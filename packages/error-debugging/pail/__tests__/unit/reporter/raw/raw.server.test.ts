@@ -214,4 +214,77 @@ describe("raw-reporter", () => {
 
         expect(stdoutWriteSpy).toHaveBeenCalledExactlyOnceWith("");
     });
+
+    it("should inspect object context values before writing", () => {
+        expect.assertions(2);
+
+        const rawReporter = new RawReporter();
+
+        rawReporter.setStdout(stdout);
+        rawReporter.setStderr(stderr);
+
+        const meta = {
+            badge: "info",
+            context: [{ key: "value" }],
+            date: new Date(),
+            error: undefined,
+            groups: [],
+            label: "label",
+            message: "This is a message",
+            prefix: "prefix",
+            repeated: undefined,
+            scope: ["scope1", "scope2"],
+            suffix: "suffix",
+            traceError: undefined,
+            type: {
+                level: "informational",
+                name: "log",
+            },
+        };
+
+        const stdoutWriteSpy = vi.spyOn(stdout, "write").mockImplementation(() => true);
+
+        rawReporter.log(meta as unknown as ReadonlyMeta<string>);
+
+        const written = stdoutWriteSpy.mock.calls[0][0] as string;
+
+        expect(written).toContain("key");
+        expect(written).toContain("value");
+    });
+
+    it("should route output through the interactive manager when interactive and the stream is a TTY", () => {
+        expect.assertions(2);
+
+        const rawReporter = new RawReporter();
+        const update = vi.fn();
+        const ttyStream = { isTTY: true, write: vi.fn() } as unknown as NodeJS.WriteStream;
+
+        rawReporter.setStdout(ttyStream);
+        rawReporter.setInteractiveManager({ update } as never);
+        rawReporter.setIsInteractive(true);
+
+        const meta = {
+            badge: "info",
+            context: undefined,
+            date: new Date(),
+            error: undefined,
+            groups: [],
+            label: "label",
+            message: "interactive message",
+            prefix: "prefix",
+            repeated: undefined,
+            scope: ["scope1", "scope2"],
+            suffix: "suffix",
+            traceError: undefined,
+            type: {
+                level: "informational",
+                name: "log",
+            },
+        };
+
+        rawReporter.log(meta as unknown as ReadonlyMeta<string>);
+
+        expect(update).toHaveBeenCalledExactlyOnceWith("stdout", ["interactive message"], 0);
+        expect(ttyStream.write).not.toHaveBeenCalled();
+    });
 });
