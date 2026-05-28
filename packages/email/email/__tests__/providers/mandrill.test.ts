@@ -162,7 +162,7 @@ describe(mandrillProvider, () => {
                 from: { email: "" },
                 subject: "",
                 to: { email: "" },
-            } as any);
+            });
 
             expect(result.success).toBe(false);
         });
@@ -196,9 +196,9 @@ describe(mandrillProvider, () => {
 
             const provider = mandrillProvider({ apiKey: "test123" });
 
-            const result = await provider.getEmail!("");
+            const result = await provider.getEmail?.("");
 
-            expect(result.success).toBe(false);
+            expect(result?.success).toBe(false);
         });
 
         it("should return email details on success", async () => {
@@ -213,9 +213,9 @@ describe(mandrillProvider, () => {
 
             const provider = mandrillProvider({ apiKey: "test123" });
 
-            const result = await provider.getEmail!("msg-1");
+            const result = await provider.getEmail?.("msg-1");
 
-            expect(result.success).toBe(true);
+            expect(result?.success).toBe(true);
         });
     });
 
@@ -232,7 +232,97 @@ describe(mandrillProvider, () => {
 
             const provider = mandrillProvider({ apiKey: "test123" });
 
-            await expect(provider.validateCredentials!()).resolves.toBe(true);
+            await expect(provider.validateCredentials?.()).resolves.toBe(true);
+        });
+    });
+
+    describe("branch coverage", () => {
+        it("should send with google analytics options and a Promise attachment", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValue({
+                data: { body: [{ id: "ga-1" }], statusCode: 200 },
+                success: true,
+            });
+
+            const provider = mandrillProvider({ apiKey: "test123" });
+
+            const result = await provider.sendEmail({
+                attachments: [{ content: Promise.resolve(new Uint8Array([104, 105])), filename: "p.bin" }],
+                from: { email: "sender@example.com" },
+                googleAnalyticsCampaign: "campaign",
+                googleAnalyticsDomains: ["example.com"],
+                html: "<h1>Hi</h1>",
+                subject: "Test",
+                to: { email: "user@example.com" },
+            } as any);
+
+            expect(result.success).toBe(true);
+        });
+
+        it("should return an error when the send request fails after initialization", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock
+                .mockResolvedValueOnce({ data: { statusCode: 200 }, success: true })
+                .mockResolvedValueOnce({ error: new Error("send failed"), success: false });
+
+            const provider = mandrillProvider({ apiKey: "test123" });
+
+            const result = await provider.sendEmail({
+                from: { email: "sender@example.com" },
+                html: "<h1>Hi</h1>",
+                subject: "Test",
+                to: { email: "user@example.com" },
+            });
+
+            expect(result.success).toBe(false);
+        });
+
+        it("should return an error when retrieving an email fails", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock
+                .mockResolvedValueOnce({ data: { statusCode: 200 }, success: true })
+                .mockResolvedValueOnce({ error: new Error("not found"), success: false });
+
+            const provider = mandrillProvider({ apiKey: "test123" });
+
+            const result = await provider.getEmail?.("msg-x");
+
+            expect(result?.success).toBe(false);
+        });
+
+        it("should return an error when getEmail initialization fails", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValue({ error: new Error("unavailable"), success: false });
+
+            const provider = mandrillProvider({ apiKey: "test123" });
+
+            const result = await provider.getEmail?.("msg-x");
+
+            expect(result?.success).toBe(false);
+        });
+
+        it("should return false from isAvailable when the request throws", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockRejectedValue(new Error("network down"));
+
+            const provider = mandrillProvider({ apiKey: "test123" });
+
+            await expect(provider.isAvailable()).resolves.toBe(false);
         });
     });
 });
