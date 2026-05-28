@@ -51,3 +51,21 @@ export const withQueryClient = <T extends Record<string, any>>(
         unmount,
     };
 };
+
+/**
+ * Async polling helper. Resolves as soon as `check()` returns truthy, or after
+ * `attempts * intervalMs` ms otherwise. Use this instead of `@testing-library`'s
+ * `waitFor` for vue-query tests so retried assertions don't double-count under
+ * `expect.assertions(n)`.
+ */
+export const waitForReady = async (check: () => boolean, attempts = 50, intervalMs = 20): Promise<void> => {
+    for (let index = 0; index < attempts; index += 1) {
+        if (check()) {
+            return;
+        }
+
+        await new Promise((resolve) => {
+            setTimeout(resolve, intervalMs);
+        });
+    }
+};

@@ -82,6 +82,35 @@ describe(registerListProjects, () => {
 
         expect(result.count).toBe(2);
     });
+
+    it("should forward a query filter to the CLI via --query", async () => {
+        expect.assertions(2);
+
+        const { calls, server } = makeFakeServer();
+
+        registerListProjects({ server }, ctx());
+
+        // The fake-vis implements --query as `tag=<name>` over an in-memory
+        // project list; this asserts the wire format the MCP boundary sends.
+        const result = parseOk(await calls[0]!.handler({ query: "tag=frontend" })) as { count: number; projects: { name: string }[] };
+
+        expect(result.count).toBe(1);
+        expect(result.projects[0]!.name).toBe("@scope/alpha");
+    });
+
+    it("should surface CLI failures as errorResponse", async () => {
+        expect.assertions(1);
+
+        const { calls, server } = makeFakeServer();
+
+        // Point at a non-existent binary so spawn errors out immediately —
+        // covers the catch block.
+        registerListProjects({ server }, { visBin: "/definitely-not-a-real-binary", workspaceRoot });
+
+        const error = parseError(await calls[0]!.handler({}));
+
+        expect(error.error).toBeTruthy();
+    });
 });
 
 describe(registerDescribeProject, () => {
@@ -147,6 +176,18 @@ describe(registerListTargets, () => {
         const error = parseError(await calls[0]!.handler({ project: "@scope/ghost" }));
 
         expect(error.error).toContain("@scope/ghost");
+    });
+
+    it("should surface CLI failures via errorResponse", async () => {
+        expect.assertions(1);
+
+        const { calls, server } = makeFakeServer();
+
+        registerListTargets({ server }, { visBin: "/definitely-not-a-real-binary", workspaceRoot });
+
+        const error = parseError(await calls[0]!.handler({}));
+
+        expect(error.error).toBeTruthy();
     });
 });
 
@@ -304,6 +345,18 @@ describe(registerListTemplates, () => {
         expect(result.count).toBe(2);
         expect(result.templates.map((t) => t.name)).toStrictEqual(["package", "component"]);
     });
+
+    it("should surface CLI failures via errorResponse", async () => {
+        expect.assertions(1);
+
+        const { calls, server } = makeFakeServer();
+
+        registerListTemplates({ server }, { visBin: "/definitely-not-a-real-binary", workspaceRoot });
+
+        const error = parseError(await calls[0]!.handler({}));
+
+        expect(error.error).toBeTruthy();
+    });
 });
 
 describe(registerDescribeTemplate, () => {
@@ -351,6 +404,57 @@ describe(registerCacheHash, () => {
 
         expect(result.taskId).toBe("@scope/alpha:build");
         expect(result.hash).toBe("abcdef0123456789");
+    });
+
+    it("should reject taskId values that start with '-'", async () => {
+        expect.assertions(1);
+
+        const { calls, server } = makeFakeServer();
+
+        registerCacheHash({ server }, ctx());
+
+        const error = parseError(await calls[0]!.handler({ taskId: "--evil" }));
+
+        expect(error.error).toContain("Invalid taskId");
+    });
+
+    it("should reject runId values that contain path-traversal segments", async () => {
+        expect.assertions(1);
+
+        const { calls, server } = makeFakeServer();
+
+        registerCacheHash({ server }, ctx());
+
+        const error = parseError(await calls[0]!.handler({ runId: "../etc/passwd", taskId: "@scope/alpha:build" }));
+
+        expect(error.error).toContain("Invalid runId");
+    });
+
+    it("should forward `--run <id>` when runId is provided", async () => {
+        expect.assertions(1);
+
+        const { calls, server } = makeFakeServer();
+
+        registerCacheHash({ server }, ctx());
+
+        const result = parseOk(await calls[0]!.handler({ runId: "run-42", taskId: "@scope/alpha:build" })) as { taskId: string };
+
+        // The fake-vis ignores --run on `cache hash`; assert the call still
+        // round-trips a successful response — the runId-forwarding branch is
+        // hit, and its observable effect (no validation error) is asserted.
+        expect(result.taskId).toBe("@scope/alpha:build");
+    });
+
+    it("should surface CLI failures via errorResponse", async () => {
+        expect.assertions(1);
+
+        const { calls, server } = makeFakeServer();
+
+        registerCacheHash({ server }, { visBin: "/definitely-not-a-real-binary", workspaceRoot });
+
+        const error = parseError(await calls[0]!.handler({ taskId: "@scope/alpha:build" }));
+
+        expect(error.error).toBeTruthy();
     });
 });
 

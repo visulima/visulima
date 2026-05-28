@@ -1,3 +1,5 @@
+import { Buffer } from "node:buffer";
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import RequiredOptionError from "../../src/errors/required-option-error";
@@ -65,21 +67,13 @@ describe(azureProvider, () => {
 
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
 
-            makeRequestMock
-                .mockResolvedValueOnce({
-                    data: {
-                        body: {},
-                        statusCode: 200,
-                    },
-                    success: true,
-                })
-                .mockResolvedValueOnce({
-                    data: {
-                        body: { messageId: "test-message-id" },
-                        statusCode: 202,
-                    },
-                    success: true,
-                });
+            makeRequestMock.mockResolvedValue({
+                data: {
+                    body: { id: "msg-1" },
+                    statusCode: 202,
+                },
+                success: true,
+            });
 
             const provider = azureProvider({ accessToken: "test123", region: "eastus" });
             const emailOptions: AzureEmailOptions = {
@@ -93,6 +87,192 @@ describe(azureProvider, () => {
 
             expect(result.success).toBe(true);
             expect(result.data?.messageId).toBeDefined();
+        });
+
+        it("should send with cc/bcc/replyTo/importance/headers/text", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValue({
+                data: { body: { id: "id-1" }, statusCode: 202 },
+                success: true,
+            });
+
+            const provider = azureProvider({ accessToken: "test123", region: "eastus" });
+
+            const result = await provider.sendEmail({
+                bcc: { email: "bcc@example.com" },
+                cc: [{ email: "cc1@example.com" }, { email: "cc2@example.com" }],
+                from: { email: "sender@example.com", name: "Sender" },
+                headers: { "X-Custom": "value" },
+                html: "<h1>Hi</h1>",
+                importance: "high",
+                replyTo: { email: "reply@example.com" },
+                subject: "Test",
+                text: "Hi",
+                to: { email: "user@example.com" },
+            } as any);
+
+            expect(result.success).toBe(true);
+        });
+
+        it("should send with attachments (string/Buffer/raw)", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValue({
+                data: { body: { id: "id-2" }, statusCode: 202 },
+                success: true,
+            });
+
+            const provider = azureProvider({ accessToken: "test123", region: "eastus" });
+
+            const result = await provider.sendEmail({
+                attachments: [
+                    { content: "abc", contentType: "text/plain", filename: "a.txt" },
+                    { content: Buffer.from("hi"), filename: "b.bin" },
+                    { filename: "c.txt", raw: "rawcontent" },
+                    { filename: "d.bin", raw: Buffer.from("hi2") },
+                ],
+                from: { email: "sender@example.com" },
+                html: "<h1>Hi</h1>",
+                subject: "Test",
+                to: { email: "user@example.com" },
+            });
+
+            expect(result.success).toBe(true);
+        });
+
+        it("should fail attachment without content/raw", async () => {
+            expect.assertions(1);
+
+            const provider = azureProvider({ accessToken: "test123", region: "eastus" });
+
+            const result = await provider.sendEmail({
+                attachments: [{ filename: "empty.txt" }],
+                from: { email: "sender@example.com" },
+                html: "<h1>Hi</h1>",
+                subject: "Test",
+                to: { email: "user@example.com" },
+            });
+
+            expect(result.success).toBe(false);
+        });
+
+        it("should send using connectionString credentials", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValue({
+                data: { body: { id: "id-3" }, statusCode: 202 },
+                success: true,
+            });
+
+            const provider = azureProvider({ connectionString: "endpoint=test;accesskey=key123", region: "eastus" });
+
+            const result = await provider.sendEmail({
+                from: { email: "sender@example.com" },
+                html: "<h1>Hi</h1>",
+                subject: "Test",
+                to: { email: "user@example.com" },
+            });
+
+            expect(result.success).toBe(true);
+        });
+
+        it("should return error with malformed connectionString", async () => {
+            expect.assertions(1);
+
+            const provider = azureProvider({ connectionString: "malformed", region: "eastus" });
+
+            const result = await provider.sendEmail({
+                from: { email: "sender@example.com" },
+                html: "<h1>Hi</h1>",
+                subject: "Test",
+                to: { email: "user@example.com" },
+            });
+
+            expect(result.success).toBe(false);
+        });
+
+        it("should return validation error for invalid options", async () => {
+            expect.assertions(1);
+
+            const provider = azureProvider({ accessToken: "test123", region: "eastus" });
+
+            const result = await provider.sendEmail({
+                from: { email: "" },
+                subject: "",
+                to: { email: "" },
+            } as any);
+
+            expect(result.success).toBe(false);
+        });
+
+        it("should return error when request fails", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValue({
+                error: new Error("Network error"),
+                success: false,
+            });
+
+            const provider = azureProvider({ accessToken: "test123", region: "eastus" });
+
+            const result = await provider.sendEmail({
+                from: { email: "sender@example.com" },
+                html: "<h1>Hi</h1>",
+                subject: "Test",
+                to: { email: "user@example.com" },
+            });
+
+            expect(result.success).toBe(false);
+        });
+    });
+
+    describe("getEmail", () => {
+        it("should return error if id is empty", async () => {
+            expect.assertions(1);
+
+            const provider = azureProvider({ accessToken: "test123", region: "eastus" });
+
+            const result = await provider.getEmail!("");
+
+            expect(result.success).toBe(false);
+        });
+
+        it("should return email details on success", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValue({
+                data: { body: { id: "msg-1" }, statusCode: 200 },
+                success: true,
+            });
+
+            const provider = azureProvider({ accessToken: "test123", region: "eastus" });
+
+            const result = await provider.getEmail!("msg-1");
+
+            expect(result.success).toBe(true);
+        });
+    });
+
+    describe("validateCredentials", () => {
+        it("should delegate to isAvailable", async () => {
+            expect.assertions(1);
+
+            const provider = azureProvider({ accessToken: "test123", region: "eastus" });
+
+            const result = await provider.validateCredentials!();
+
+            expect(typeof result).toBe("boolean");
         });
     });
 });

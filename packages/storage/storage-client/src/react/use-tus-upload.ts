@@ -142,8 +142,13 @@ export const useTusUpload = (options: UseTusUploadOptions): UseTusUploadReturn =
 
         // Sync state with adapter periodically
         intervalRef.current = setInterval(() => {
-            // Only update state if component is still mounted and interval is active
-            if (isMountedRef.current && intervalRef.current) {
+            // Only update state if component is still mounted, interval is
+            // active, and the DOM is still available. The `window` check guards
+            // against happy-dom / jsdom tearing down between an interval tick
+            // being scheduled and fired — React's scheduler reads `window` to
+            // resolve update priority and throws `ReferenceError: window is
+            // not defined` if the environment is already gone.
+            if (isMountedRef.current && intervalRef.current && "window" in globalThis) {
                 setOffset(adapterInstance.getOffset());
                 setIsPaused(adapterInstance.isPaused());
             }

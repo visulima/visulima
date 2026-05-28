@@ -62,4 +62,75 @@ describe.each([
 
         await rm(path);
     });
+
+    it("detects existing indent when detectIndent is true", async () => {
+        expect.assertions(1);
+
+        const path = `test.${name}.detect-indent.jsonc`;
+
+        // 4-space indent
+        await writeFile(path, "{\n    \"name\": \"original\"\n}\n", "utf8");
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "writeJsonc") {
+            await function_(path, { name: "updated" }, { detectIndent: true, preserveComments: false });
+        } else {
+            function_(path, { name: "updated" }, { detectIndent: true, preserveComments: false });
+        }
+
+        const content = await readFile(path, "utf8");
+
+        // After fresh stringify with detected 4-space indent
+        expect(content).toContain("    \"name\"");
+
+        await rm(path);
+    });
+
+    it("writes fresh content when preserveComments is false on existing file", async () => {
+        expect.assertions(2);
+
+        const path = `test.${name}.no-preserve.jsonc`;
+        const original = "{\n  // comment\n  \"a\": 1\n}\n";
+
+        await writeFile(path, original, "utf8");
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "writeJsonc") {
+            await function_(path, { a: 2 }, { preserveComments: false });
+        } else {
+            function_(path, { a: 2 }, { preserveComments: false });
+        }
+
+        const content = await readFile(path, "utf8");
+
+        expect(content).not.toContain("// comment");
+        expect(JSON.parse(content)).toStrictEqual({ a: 2 });
+
+        await rm(path);
+    });
+
+    it("uses a replacer function for fresh writes", async () => {
+        expect.assertions(2);
+
+        const path = `test.${name}.replacer.jsonc`;
+        const data = { keep: "yes", secret: "redact" };
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "writeJsonc") {
+            await function_(path, data, {
+                replacer: (key: string, value: unknown) => (key === "secret" ? undefined : value),
+            });
+        } else {
+            function_(path, data, {
+                replacer: (key: string, value: unknown) => (key === "secret" ? undefined : value),
+            });
+        }
+
+        const content = await readFile(path, "utf8");
+
+        expect(content).toContain("\"keep\"");
+        expect(content).not.toContain("\"secret\"");
+
+        await rm(path);
+    });
 });
