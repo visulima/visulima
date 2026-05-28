@@ -38,7 +38,7 @@ describe(processAttachmentContent, () => {
         expect.assertions(1);
 
         const result = await processAttachmentContent(
-            { content: Promise.resolve(Buffer.from("hi")), filename: "a.txt" } as any,
+            { content: Promise.resolve(Buffer.from("hi")), filename: "a.txt" },
             "test",
         );
 
@@ -122,6 +122,17 @@ describe(createSendGridAttachment, () => {
             type: "text/plain",
         });
     });
+
+    it("should default the type when contentType is missing", async () => {
+        expect.assertions(1);
+
+        const result = await createSendGridAttachment(
+            { content: "abc", filename: "a.bin" },
+            "test",
+        );
+
+        expect(result.type).toBe("application/octet-stream");
+    });
 });
 
 describe(createPostmarkAttachment, () => {
@@ -139,6 +150,17 @@ describe(createPostmarkAttachment, () => {
             ContentType: "text/plain",
             Name: "a.txt",
         });
+    });
+
+    it("should default the ContentType when contentType is missing", async () => {
+        expect.assertions(1);
+
+        const result = await createPostmarkAttachment(
+            { content: "abc", filename: "a.bin" },
+            "test",
+        );
+
+        expect(result.ContentType).toBe("application/octet-stream");
     });
 });
 
