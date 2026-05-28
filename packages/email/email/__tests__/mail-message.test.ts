@@ -188,6 +188,81 @@ describe(MailMessage, () => {
         });
     });
 
+    describe("address normalization", () => {
+        it("should normalize a mixed array of strings and objects", async () => {
+            expect.assertions(2);
+
+            const message = new MailMessage();
+
+            message.from("sender@example.com").to([{ email: "a@example.com" }, "b@example.com"]).subject("Test").html("<h1>Test</h1>");
+
+            const options = await message.build();
+
+            expect(options.to).toStrictEqual([{ email: "a@example.com" }, { email: "b@example.com" }]);
+            expect(message.getTo()).toHaveLength(2);
+        });
+
+        it("should add a single string replyTo through addReplyTo", () => {
+            expect.assertions(1);
+
+            const message = new MailMessage();
+
+            message.addReplyTo("reply@example.com");
+
+            expect(message.getReplyTo()).toStrictEqual({ email: "reply@example.com" });
+        });
+
+        it("should add a single object replyTo through addReplyTo", () => {
+            expect.assertions(1);
+
+            const message = new MailMessage();
+
+            message.addReplyTo({ email: "reply@example.com", name: "Reply" });
+
+            expect(message.getReplyTo()).toStrictEqual({ email: "reply@example.com", name: "Reply" });
+        });
+
+        it("should ignore an empty array passed to addReplyTo", () => {
+            expect.assertions(1);
+
+            const message = new MailMessage();
+
+            message.addReplyTo([]);
+
+            expect(message.getReplyTo()).toBeUndefined();
+        });
+
+        it("should add a single string from through addFrom", () => {
+            expect.assertions(1);
+
+            const message = new MailMessage();
+
+            message.addFrom("sender@example.com");
+
+            expect(message.getFrom()).toStrictEqual({ email: "sender@example.com" });
+        });
+
+        it("should ignore an empty array passed to addFrom", () => {
+            expect.assertions(1);
+
+            const message = new MailMessage();
+
+            message.addFrom([]);
+
+            expect(message.getFrom()).toBeUndefined();
+        });
+
+        it("should set returnPath from an EmailAddress object", () => {
+            expect.assertions(1);
+
+            const message = new MailMessage();
+
+            message.returnPath({ email: "bounce@example.com", name: "Bounce" });
+
+            expect(message.getReturnPath()).toStrictEqual({ email: "bounce@example.com", name: "Bounce" });
+        });
+    });
+
     describe("attach()", () => {
         it("should add attachment", async () => {
             expect.assertions(2);
