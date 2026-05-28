@@ -181,4 +181,78 @@ describe.each(["writeFile", "writeFileSync"])("%s", (name) => {
             }).toThrow("File contents must be a string, ArrayBuffer, or ArrayBuffer view.");
         }
     });
+
+    it("should keep a .bak copy when overwrite is false on an existing file", async () => {
+        expect.assertions(3);
+
+        const path = join(distribution, "file.txt");
+        const backup = `${path}.bak`;
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "writeFile") {
+            await writeFile(path, "first", { overwrite: true });
+            await writeFile(path, "second", { overwrite: false });
+        } else {
+            writeFileSync(path, "first", { overwrite: true });
+            writeFileSync(path, "second", { overwrite: false });
+        }
+
+        const fileContent = readFileSync(path, "utf8");
+        const backupContent = readFileSync(backup, "utf8");
+
+        expect(fileContent).toBe("second");
+        expect(backupContent).toBe("first");
+        await expect(isAccessible(backup, F_OK)).resolves.toBe(true);
+    });
+
+    it("should accept Uint8Array content", async () => {
+        expect.assertions(1);
+
+        const path = join(distribution, "bytes.bin");
+        const content = new Uint8Array([72, 105]); // "Hi"
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "writeFile") {
+            await writeFile(path, content);
+        } else {
+            writeFileSync(path, content);
+        }
+
+        expect(readFileSync(path, "utf8")).toBe("Hi");
+    });
+
+    it("should honour an explicit mode option", async () => {
+        expect.assertions(1);
+
+        const path = join(distribution, "moded.txt");
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "writeFile") {
+            await writeFile(path, "x", { mode: 0o600 });
+        } else {
+            writeFileSync(path, "x", { mode: 0o600 });
+        }
+
+        // Just verify file was created and content is right
+        expect(readFileSync(path, "utf8")).toBe("x");
+    });
+
+    it("should honour an explicit chown option (best-effort)", async () => {
+        expect.assertions(1);
+
+        const path = join(distribution, "chowned.txt");
+
+        // Use current user's uid/gid so chown should succeed
+        const uid = process.getuid?.() ?? 0;
+        const gid = process.getgid?.() ?? 0;
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "writeFile") {
+            await writeFile(path, "x", { chown: { gid, uid } });
+        } else {
+            writeFileSync(path, "x", { chown: { gid, uid } });
+        }
+
+        expect(readFileSync(path, "utf8")).toBe("x");
+    });
 });

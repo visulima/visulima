@@ -112,4 +112,83 @@ describe(validateDurationLanguage, () => {
             validateDurationLanguage(language);
         }).toThrow(TypeError);
     });
+
+    const baseLanguage = {
+        d: "day",
+        future: "in the future",
+        h: "hour",
+        m: "minute",
+        mo: "month",
+        ms: "millisecond",
+        past: "in the past",
+        s: "second",
+        w: "week",
+        y: "year",
+    };
+
+    it("should throw a TypeError when decimal is present but not a string", () => {
+        expect.assertions(1);
+
+        const language = { ...baseLanguage, decimal: 42 };
+
+        expect(() => {
+            // @ts-expect-error - testing invalid input
+            validateDurationLanguage(language);
+        }).toThrow(new TypeError("Property decimal must be of type string"));
+    });
+
+    it("should throw a TypeError when delimiter is present but not a string", () => {
+        expect.assertions(1);
+
+        const language = { ...baseLanguage, delimiter: 99 };
+
+        expect(() => {
+            // @ts-expect-error - testing invalid input
+            validateDurationLanguage(language);
+        }).toThrow(new TypeError("Property delimiter must be of type string"));
+    });
+
+    it("should throw a TypeError when _digitReplacements is present but not an array", () => {
+        expect.assertions(1);
+
+        const language = { ...baseLanguage, _digitReplacements: "not-an-array" };
+
+        expect(() => {
+            // @ts-expect-error - testing invalid input
+            validateDurationLanguage(language);
+        }).toThrow(new TypeError("Property _digitReplacements must be an array"));
+    });
+
+    it("should throw a TypeError when _numberFirst is present but not a boolean", () => {
+        expect.assertions(1);
+
+        const language = { ...baseLanguage, _numberFirst: "yes" };
+
+        expect(() => {
+            // @ts-expect-error - testing invalid input
+            validateDurationLanguage(language);
+        }).toThrow(new TypeError("Property _numberFirst must be of type boolean"));
+    });
+
+    it("should throw a TypeError when unitMap is present but not an object", () => {
+        expect.assertions(1);
+
+        const language = { ...baseLanguage, unitMap: "not-an-object" };
+
+        expect(() => {
+            // @ts-expect-error - testing invalid input
+            validateDurationLanguage(language);
+        }).toThrow(new TypeError("Property unitMap must be an object"));
+    });
+
+    it("should throw a TypeError when unitMap contains non-string values", () => {
+        expect.assertions(1);
+
+        const language = { ...baseLanguage, unitMap: { d: "day", h: 1 } };
+
+        expect(() => {
+            // @ts-expect-error - testing invalid input
+            validateDurationLanguage(language);
+        }).toThrow(new TypeError("All values in unitMap must be of type string"));
+    });
 });

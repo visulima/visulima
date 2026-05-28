@@ -35,6 +35,15 @@ describe(execVis, () => {
 
         expect(result.timedOut).toBe(true);
     });
+
+    it("should reject with the spawn error when cwd points at a non-existent directory", async () => {
+        expect.assertions(1);
+
+        // Node's `spawn` emits an 'error' event (not a non-zero exit) when
+        // the requested cwd doesn't exist. This is the only way to trigger
+        // the error branch in execVis without mocking child_process.
+        await expect(execVis(FAKE_VIS, ["list", "--json"], { cwd: "/this/path/definitely/does/not/exist/ever" })).rejects.toThrow(/ENOENT|no such file/);
+    });
 });
 
 describe(execVisJson, () => {
@@ -56,5 +65,11 @@ describe(execVisJson, () => {
         expect.assertions(1);
 
         await expect(execVisJson(FAKE_VIS, ["fail-bad-json"])).rejects.toThrow(/did not emit valid JSON/);
+    });
+
+    it("should throw a timeout error when the subprocess exceeds timeoutMs", async () => {
+        expect.assertions(1);
+
+        await expect(execVisJson(process.execPath, ["-e", "setInterval(() => {}, 1000)"], { timeoutMs: 100 })).rejects.toThrow(/timed out after 100ms/);
     });
 });

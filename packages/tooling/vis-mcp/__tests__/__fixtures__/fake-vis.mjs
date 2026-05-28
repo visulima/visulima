@@ -33,10 +33,24 @@ if (command.startsWith("list --targets --json")) {
 }
 
 if (command.startsWith("list --json")) {
-    writeJson([
-        { name: "@scope/alpha", language: "ts", type: "library" },
-        { name: "@scope/beta", language: "ts", type: "application" },
-    ]);
+    const queryIndex = argv.indexOf("--query");
+    const projects = [
+        { name: "@scope/alpha", language: "ts", type: "library", tags: ["frontend"] },
+        { name: "@scope/beta", language: "ts", type: "application", tags: ["backend"] },
+    ];
+
+    if (queryIndex !== -1) {
+        const query = argv[queryIndex + 1] ?? "";
+        // Filter on `tag=<name>` so tests can assert the query argument
+        // was round-tripped through the MCP -> CLI boundary.
+        const match = /^tag=(.+)$/.exec(query);
+        const filtered = match ? projects.filter((project) => project.tags.includes(match[1])) : projects;
+
+        writeJson(filtered);
+        process.exit(0);
+    }
+
+    writeJson(projects);
     process.exit(0);
 }
 

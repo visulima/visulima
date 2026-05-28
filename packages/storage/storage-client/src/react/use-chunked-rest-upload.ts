@@ -132,7 +132,11 @@ export const useChunkedRestUpload = (options: UseChunkedRestUploadOptions): UseC
             callbacksRef.current.onError?.(uploadError);
         });
 
-        // Sync state with adapter periodically
+        // Sync state with adapter periodically. We re-check `window in
+        // globalThis` after every async hop because happy-dom / jsdom can
+        // tear down between scheduling and the React scheduler firing —
+        // setState in that window throws `ReferenceError: window is not
+        // defined` from React's internals.
         let mounted = true;
         const checkInterval = setInterval(() => {
             if (!mounted || !("window" in globalThis)) {
@@ -151,6 +155,11 @@ export const useChunkedRestUpload = (options: UseChunkedRestUploadOptions): UseC
                     return value;
                 })
                 .catch(() => {});
+
+            if (!mounted || !("window" in globalThis)) {
+                return;
+            }
+
             setIsPaused(adapterInstance.isPaused());
         }, 100);
 
