@@ -1,6 +1,7 @@
 import { stderr, stdout } from "node:process";
 
 import { blueBright, bold, grey, red } from "@visulima/colorize";
+import type { InteractiveManager } from "@visulima/interactive-manager";
 import { describe, expect, it, vi } from "vitest";
 
 import { dateFormatter } from "../../../../src/reporter/pretty/abstract-pretty-reporter";
@@ -19,6 +20,18 @@ vi.mock(import("terminal-size"), () => {
 });
 
 const date = new Date("2021-09-16T09:16:52.000Z");
+
+const baseInfoMeta = {
+    badge: "INFO",
+    date,
+    groups: ["Group1"],
+    label: "Label",
+    message: "base message",
+    type: {
+        level: "informational",
+        name: "info",
+    },
+};
 
 describe("simpleReporter", () => {
     it("should format and write messages correctly to stdout", () => {
@@ -335,5 +348,121 @@ describe("simpleReporter", () => {
         expect(stdoutSpy).toHaveBeenCalledExactlyOnceWith(expectedOutput);
 
         stdoutSpy.mockRestore();
+    });
+
+    it("should route through the interactive manager when interactive and the stream is a TTY", () => {
+        expect.assertions(2);
+
+        const simpleReporter = new SimpleReporter();
+        const update = vi.fn();
+        const ttyStream = { isTTY: true, write: vi.fn() } as unknown as NodeJS.WriteStream;
+
+        simpleReporter.setStdout(ttyStream);
+        simpleReporter.setInteractiveManager({ update } as unknown as InteractiveManager);
+        simpleReporter.setIsInteractive(true);
+
+        simpleReporter.log({ ...baseInfoMeta, message: "interactive line" } as ReadonlyMeta<string>);
+
+        expect(update).toHaveBeenCalledTimes(1);
+        expect(ttyStream.write).not.toHaveBeenCalled();
+    });
+
+    it("should render context entries of mixed types", () => {
+        expect.assertions(2);
+
+        const simpleReporter = new SimpleReporter();
+        const meta = { ...baseInfoMeta, context: [new Error("ctx error"), { key: "value" }, "plain string", 42] };
+
+        // @ts-expect-error - testing protected method
+        const formatted = simpleReporter.formatMessage(meta as ReadonlyMeta<string>);
+
+        expect(formatted).toContain("ctx error");
+        expect(formatted).toContain("plain string");
+    });
+
+    it("should render an error attached to the meta", () => {
+        expect.assertions(1);
+
+        const simpleReporter = new SimpleReporter();
+        const meta = { ...baseInfoMeta, error: new Error("rendered error") };
+
+        // @ts-expect-error - testing protected method
+        const formatted = simpleReporter.formatMessage(meta as ReadonlyMeta<string>);
+
+        expect(formatted).toContain("rendered error");
+    });
+
+    it("should render a traceError attached to the meta", () => {
+        expect.assertions(1);
+
+        const simpleReporter = new SimpleReporter();
+
+        // @ts-expect-error - testing protected method
+        const withTrace = simpleReporter.formatMessage({ ...baseInfoMeta, traceError: new Error("trace") } as ReadonlyMeta<string>);
+        // @ts-expect-error - testing protected method
+        const without = simpleReporter.formatMessage(baseInfoMeta as ReadonlyMeta<string>);
+
+        expect(withTrace.length).toBeGreaterThan(without.length);
+    });
+
+    it("should render the repeated counter", () => {
+        expect.assertions(1);
+
+        const simpleReporter = new SimpleReporter();
+
+        // @ts-expect-error - testing protected method
+        const formatted = simpleReporter.formatMessage({ ...baseInfoMeta, repeated: 3 } as ReadonlyMeta<string>);
+
+        expect(formatted).toContain("[3x]");
+    });
+
+    it("should render the prefix", () => {
+        expect.assertions(1);
+
+        const simpleReporter = new SimpleReporter();
+
+        // @ts-expect-error - testing protected method
+        const formatted = simpleReporter.formatMessage({ ...baseInfoMeta, prefix: "PFX" } as ReadonlyMeta<string>);
+
+        expect(formatted).toContain("PFX");
+    });
+
+    it("should render the suffix", () => {
+        expect.assertions(1);
+
+        const simpleReporter = new SimpleReporter();
+
+        // @ts-expect-error - testing protected method
+        const formatted = simpleReporter.formatMessage({ ...baseInfoMeta, suffix: "SFX" } as ReadonlyMeta<string>);
+
+        expect(formatted).toContain("SFX");
+    });
+
+    it("should render the caller file info", () => {
+        expect.assertions(2);
+
+        const simpleReporter = new SimpleReporter();
+        const meta = { ...baseInfoMeta, file: { column: 1, line: 42, name: "app.ts" } };
+
+        // @ts-expect-error - testing protected method
+        const formatted = simpleReporter.formatMessage(meta as ReadonlyMeta<string>);
+
+        expect(formatted).toContain("Caller:");
+        expect(formatted).toContain("app.ts:42");
+    });
+
+    it("should pad the badge column when no badge is present but a longest badge exists", () => {
+        expect.assertions(1);
+
+        const simpleReporter = new SimpleReporter();
+
+        (simpleReporter as unknown as { loggerTypes: Record<string, unknown> }).loggerTypes = {
+            info: { badge: "★", color: "blueBright", label: "INFO", logLevel: "informational" },
+        };
+
+        // @ts-expect-error - testing protected method
+        const formatted = simpleReporter.formatMessage({ ...baseInfoMeta, badge: undefined } as ReadonlyMeta<string>);
+
+        expect(formatted).toContain("base message");
     });
 });
