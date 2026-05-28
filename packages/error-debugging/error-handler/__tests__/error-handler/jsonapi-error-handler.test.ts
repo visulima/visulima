@@ -56,4 +56,22 @@ describe("jsonapi-error-handler", () => {
         // eslint-disable-next-line no-underscore-dangle
         expect(res._getData()).toBe("{\"errors\":[{\"code\":\"500\",\"title\":\"Internal Server Error\"}]}");
     });
+
+    it("should serialize a real JapiError through the ts-japi serializer", async () => {
+        expect.assertions(2);
+
+        const { req, res } = createMocks({
+            method: "GET",
+        });
+
+        const error = new tsJapi.JapiError({ detail: "Validation failed", status: "422", title: "Unprocessable Entity" });
+
+        await jsonapiErrorHandler(error as unknown as Error, req, res);
+
+        // eslint-disable-next-line no-underscore-dangle
+        const body = JSON.parse(res._getData());
+
+        expect(body.errors).toStrictEqual([{ detail: "Validation failed", status: "422", title: "Unprocessable Entity" }]);
+        expect(body.jsonapi).toStrictEqual({ version: "1.0" });
+    });
 });
