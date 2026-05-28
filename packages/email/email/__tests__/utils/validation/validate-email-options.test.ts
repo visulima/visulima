@@ -78,4 +78,20 @@ describe(validateEmailOptions, () => {
         expect(errors).toContain("Invalid cc email address: invalid-cc");
         expect(errors).toContain("Invalid bcc email address: invalid-bcc");
     });
+
+    it("should validate the replyTo address", () => {
+        expect.assertions(1);
+
+        const options: EmailOptions = {
+            from: { email: "sender@example.com" },
+            html: "<h1>Test</h1>",
+            replyTo: { email: "invalid-replyto" },
+            subject: "Test",
+            to: { email: "user@example.com" },
+        };
+
+        const errors = validateEmailOptions(options);
+
+        expect(errors).toContain("Invalid replyTo email address: invalid-replyto");
+    });
 });
