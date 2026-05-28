@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
+import { EMPTY_SYMBOL } from "../../../../src/constants";
 import JsonReporter from "../../../../src/reporter/json/json-reporter.server";
 
 const baseMeta = {
@@ -121,5 +122,26 @@ describe("jsonReporter server", () => {
         reporter.log({ ...baseMeta, message: "message without label", type: { level: "informational", name: "informational" } });
 
         expect(mockStdout.write).toHaveBeenCalledExactlyOnceWith(expect.stringContaining("message without label"));
+    });
+
+    it("should skip empty-symbol context entries and serialize errors in context", () => {
+        expect.assertions(2);
+
+        const reporter = new JsonReporter();
+        const mockStdout = { write: vi.fn() } as unknown as NodeJS.WriteStream;
+
+        reporter.setStdout(mockStdout);
+        reporter.setStringify(JSON.stringify);
+        reporter.log({
+            ...baseMeta,
+            context: [EMPTY_SYMBOL, new Error("ctx boom"), "plain"],
+            message: "with context",
+            type: { level: "informational", name: "informational" },
+        });
+
+        const written = (mockStdout.write as unknown as { mock: { calls: string[][] } }).mock.calls[0][0];
+
+        expect(written).toContain("ctx boom");
+        expect(written).toContain("plain");
     });
 });
