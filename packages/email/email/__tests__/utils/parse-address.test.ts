@@ -260,4 +260,28 @@ describe(parseAddress, () => {
         expect(parseAddress("John Doe <john@example.com")).toBeUndefined();
         expect(parseAddress("John Doe john@example.com>")).toBeUndefined();
     });
+
+    it("should reject domain-literal addresses with invalid local parts", () => {
+        expect.assertions(3);
+        expect(parseAddress("a..b@[1.2.3.4]")).toBeUndefined();
+        expect(parseAddress(".a@[1.2.3.4]")).toBeUndefined();
+        expect(parseAddress("ab.@[1.2.3.4]")).toBeUndefined();
+    });
+
+    it("should reject malformed domain literals", () => {
+        expect.assertions(3);
+        expect(parseAddress("a@[x@[y]")).toBeUndefined();
+        expect(parseAddress("a@[]")).toBeUndefined();
+        expect(parseAddress("a@[1]2]")).toBeUndefined();
+    });
+
+    it("should reject a quoted local part with a bracketed domain", () => {
+        expect.assertions(1);
+        expect(parseAddress("\"abc\"@[1.2].x")).toBeUndefined();
+    });
+
+    it("should parse a quoted segment that is not the local part", () => {
+        expect.assertions(1);
+        expect(parseAddress("\"a\"b@example.com")).toStrictEqual({ email: "\"a\"b@example.com" });
+    });
 });
