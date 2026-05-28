@@ -165,6 +165,27 @@ describe(buildMimeMessage, () => {
             expect(message).toContain("filename=\"test.txt\"");
         });
 
+        it("should default the content type when an attachment omits it", async () => {
+            expect.assertions(1);
+
+            const options: EmailOptions = {
+                attachments: [
+                    {
+                        content: Buffer.from("test content"),
+                        filename: "test.bin",
+                    },
+                ],
+                from: { email: "sender@example.com" },
+                subject: "Test",
+                text: "Test",
+                to: { email: "recipient@example.com" },
+            };
+
+            const message = await buildMimeMessage(options);
+
+            expect(message).toContain("Content-Type: application/octet-stream; name=\"test.bin\"");
+        });
+
         it("should handle multiple attachments", async () => {
             expect.assertions(2);
 
