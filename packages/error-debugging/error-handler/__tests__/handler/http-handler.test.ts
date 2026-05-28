@@ -168,6 +168,30 @@ describe("httpHandler handler", () => {
         expect(res._getData()).toBe("Bad Request");
     });
 
+    it("invokes the onError callback before negotiating", async () => {
+        expect.assertions(3);
+
+        const error = new httpErrors.BadRequest();
+
+        let captured: Error | undefined;
+
+        const handler = httpHandler(error, {
+            onError: (error_) => {
+                captured = error_;
+            },
+        });
+
+        const { req, res } = createMocks({ method: "GET" });
+
+        await handler(req, res);
+
+        expect(captured).toBe(error);
+        // eslint-disable-next-line no-underscore-dangle
+        expect(res._getStatusCode()).toBe(400);
+        // eslint-disable-next-line no-underscore-dangle
+        expect(res._getData()).toContain("<!DOCTYPE html>");
+    });
+
     describe(fetchHandler, () => {
         it("returns HTML by default when no Accept header is provided", async () => {
             expect.assertions(3);
@@ -316,6 +340,25 @@ describe("httpHandler handler", () => {
             const body = await response.text();
 
             expect(body).toBe("Bad Request");
+        });
+
+        it("invokes the onError callback before negotiating", async () => {
+            expect.assertions(2);
+
+            const error = new httpErrors.BadRequest();
+
+            let captured: Error | undefined;
+
+            const handler = fetchHandler(error, {
+                onError: (error_) => {
+                    captured = error_;
+                },
+            });
+
+            const response = await handler(new Request("http://localhost/test"));
+
+            expect(captured).toBe(error);
+            expect(response.status).toBe(400);
         });
     });
 });
