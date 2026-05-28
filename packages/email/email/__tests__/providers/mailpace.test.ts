@@ -55,7 +55,7 @@ describe(mailPaceProvider, () => {
 
             const provider = mailPaceProvider({ apiToken: "test123" });
 
-            await expect(provider.isAvailable!()).resolves.toBe(true);
+            await expect(provider.isAvailable()).resolves.toBe(true);
         });
 
         it("should return false on non-2xx response", async () => {
@@ -70,7 +70,7 @@ describe(mailPaceProvider, () => {
 
             const provider = mailPaceProvider({ apiToken: "test123" });
 
-            await expect(provider.isAvailable!()).resolves.toBe(false);
+            await expect(provider.isAvailable()).resolves.toBe(false);
         });
 
         it("should return false on request failure", async () => {
@@ -85,7 +85,7 @@ describe(mailPaceProvider, () => {
 
             const provider = mailPaceProvider({ apiToken: "test123" });
 
-            await expect(provider.isAvailable!()).resolves.toBe(false);
+            await expect(provider.isAvailable()).resolves.toBe(false);
         });
     });
 
@@ -190,7 +190,7 @@ describe(mailPaceProvider, () => {
                 from: { email: "" },
                 subject: "",
                 to: { email: "" },
-            } as any);
+            });
 
             expect(result.success).toBe(false);
         });
@@ -231,7 +231,7 @@ describe(mailPaceProvider, () => {
 
             const provider = mailPaceProvider({ apiToken: "test123" });
 
-            await expect(provider.validateCredentials!()).resolves.toBe(true);
+            await expect(provider.validateCredentials?.()).resolves.toBe(true);
         });
     });
 });

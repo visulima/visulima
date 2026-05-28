@@ -28,6 +28,12 @@ const baseEmail: MailPaceEmailOptions = {
 
 const config = { apiToken: "token123" };
 
+const parsePayload = (): Record<string, unknown> => {
+    const lastCall = makeRequestMock.mock.calls.at(-1);
+
+    return JSON.parse(lastCall?.[2] as string) as Record<string, unknown>;
+};
+
 describe("mailpace provider (extended)", () => {
     beforeEach(() => {
         vi.clearAllMocks();
@@ -121,6 +127,82 @@ describe("mailpace provider (extended)", () => {
 
             expect(result.success).toBe(true);
             expect(result.data?.messageId).toBeDefined();
+        });
+    });
+
+    describe("branch coverage", () => {
+        it("returns false from isAvailable when the request throws", async () => {
+            expect.assertions(1);
+
+            makeRequestMock.mockRejectedValue(new Error("network down"));
+
+            const provider = mailPaceProvider(config);
+
+            await expect(provider.isAvailable()).resolves.toBe(false);
+        });
+
+        it("sends a text-only email without an html body", async () => {
+            expect.assertions(2);
+
+            makeRequestMock.mockResolvedValue({ data: { body: { id: "t-1" }, statusCode: 200 }, success: true });
+
+            const provider = mailPaceProvider(config);
+            const result = await provider.sendEmail({
+                from: { email: "sender@example.com" },
+                subject: "Test",
+                text: "plain text",
+                to: { email: "user@example.com" },
+            });
+
+            const payload = parsePayload();
+
+            expect(result.success).toBe(true);
+            expect(payload.htmlbody).toBeUndefined();
+        });
+
+        it("sends a template email without template variables", async () => {
+            expect.assertions(2);
+
+            makeRequestMock.mockResolvedValue({ data: { body: { id: "tmpl-1" }, statusCode: 200 }, success: true });
+
+            const provider = mailPaceProvider(config);
+            const result = await provider.sendEmail({
+                ...baseEmail,
+                templateId: "tmpl-1",
+            });
+
+            const payload = parsePayload();
+
+            expect(result.success).toBe(true);
+            expect(payload.template_variables).toBeUndefined();
+        });
+
+        it("falls back to a generic error when a failed send has no error", async () => {
+            expect.assertions(2);
+
+            makeRequestMock
+                .mockResolvedValueOnce({ data: { statusCode: 200 }, success: true })
+                .mockResolvedValueOnce({ success: false });
+
+            const provider = mailPaceProvider(config);
+            const result = await provider.sendEmail(baseEmail);
+
+            expect(result.success).toBe(false);
+            expect((result.error as Error).message).toContain("Failed to send email");
+        });
+
+        it("uses a generic message when a getEmail failure has no error", async () => {
+            expect.assertions(2);
+
+            makeRequestMock
+                .mockResolvedValueOnce({ data: { statusCode: 200 }, success: true })
+                .mockResolvedValueOnce({ success: false });
+
+            const provider = mailPaceProvider(config);
+            const result = await provider.getEmail?.("m1");
+
+            expect(result?.success).toBe(false);
+            expect((result?.error as Error).message).toContain("Unknown error");
         });
     });
 });
