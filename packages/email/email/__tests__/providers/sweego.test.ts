@@ -2,6 +2,7 @@ import { Buffer } from "node:buffer";
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import EmailError from "../../src/errors/email-error";
 import RequiredOptionError from "../../src/errors/required-option-error";
 import { sweegoProvider } from "../../src/providers/sweego/index";
 import type { SweegoEmailOptions } from "../../src/providers/sweego/types";
@@ -274,6 +275,137 @@ describe(sweegoProvider, () => {
             const result = await provider.getEmail?.("msg-x");
 
             expect(result?.success).toBe(false);
+        });
+
+        it("should report unknown error when getEmail fails with a non-Error", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValue({ error: "string failure", success: false });
+
+            const provider = sweegoProvider({ apiKey: "test123" });
+
+            const result = await provider.getEmail?.("msg-x");
+
+            expect(result?.success).toBe(false);
+        });
+
+        it("should fail initialize when the availability check errors", async () => {
+            expect.assertions(1);
+
+            const throwingConsole = {
+                error: vi.fn(),
+                info: vi.fn(),
+                log: vi.fn((message: string) => {
+                    if (message.includes("Checking Sweego API availability")) {
+                        throw new Error("logger boom");
+                    }
+                }),
+                warn: vi.fn(),
+            } as unknown as Console;
+
+            const provider = sweegoProvider({ apiKey: "test123", logger: throwingConsole });
+
+            await expect(provider.initialize()).rejects.toThrow(EmailError);
+        });
+
+        it("should send a text-only email without html", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValue({ data: { body: { id: "t-1" }, statusCode: 200 }, success: true });
+
+            const provider = sweegoProvider({ apiKey: "test123" });
+
+            const result = await provider.sendEmail({
+                from: { email: "sender@example.com" },
+                subject: "Test",
+                text: "plain text",
+                to: { email: "user@example.com" },
+            });
+
+            expect(result.success).toBe(true);
+        });
+
+        it("should send with templateId but no templateVariables", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValue({ data: { body: { id: "tv-1" }, statusCode: 200 }, success: true });
+
+            const provider = sweegoProvider({ apiKey: "test123" });
+
+            const result = await provider.sendEmail({
+                from: { email: "sender@example.com" },
+                html: "<h1>Hi</h1>",
+                subject: "Test",
+                templateId: "tmpl-only",
+                to: { email: "user@example.com" },
+            });
+
+            expect(result.success).toBe(true);
+        });
+
+        it("should send an attachment with a raw Buffer", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValue({ data: { body: { id: "rb-1" }, statusCode: 200 }, success: true });
+
+            const provider = sweegoProvider({ apiKey: "test123" });
+
+            const result = await provider.sendEmail({
+                attachments: [{ filename: "r.bin", raw: Buffer.from("rawbytes") }],
+                from: { email: "sender@example.com" },
+                html: "<h1>Hi</h1>",
+                subject: "Test",
+                to: { email: "user@example.com" },
+            });
+
+            expect(result.success).toBe(true);
+        });
+
+        it("should return a default error when send fails without an error", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValue({ success: false });
+
+            const provider = sweegoProvider({ apiKey: "test123" });
+
+            const result = await provider.sendEmail({
+                from: { email: "sender@example.com" },
+                html: "<h1>Hi</h1>",
+                subject: "Test",
+                to: { email: "user@example.com" },
+            });
+
+            expect(result.success).toBe(false);
+        });
+
+        it("should generate a message id when the response body lacks one", async () => {
+            expect.assertions(2);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValue({ data: { statusCode: 200 }, success: true });
+
+            const provider = sweegoProvider({ apiKey: "test123" });
+
+            const result = await provider.sendEmail({
+                from: { email: "sender@example.com" },
+                html: "<h1>Hi</h1>",
+                subject: "Test",
+                to: { email: "user@example.com" },
+            });
+
+            expect(result.success).toBe(true);
+            expect(result.data?.messageId).toBeDefined();
         });
     });
 });
