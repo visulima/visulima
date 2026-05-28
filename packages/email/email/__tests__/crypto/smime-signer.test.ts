@@ -370,6 +370,39 @@ describe(SmimeSigner, () => {
             expect(signed.html).toBeUndefined();
         });
 
+        it("should include cc, reply-to, headers and a multipart/alternative body", async () => {
+            expect.assertions(6);
+
+            vi.mocked(readFile).mockResolvedValueOnce(TEST_CERTIFICATE).mockResolvedValueOnce(TEST_PRIVATE_KEY);
+
+            const options: SmimeSignOptions = {
+                certificate: "/path/to/certificate.crt",
+                privateKey: "/path/to/private-key.key",
+            };
+
+            const email: EmailOptions = {
+                cc: { email: "cc@example.com" },
+                from: { email: "sender@example.com", name: "Sender Name" },
+                headers: { "X-Custom": "custom-value" },
+                html: "<h1>Test</h1>",
+                replyTo: { email: "reply@example.com", name: "Reply Person" },
+                subject: "Test Subject",
+                text: "Plain text body",
+                to: [{ email: "recipient@example.com", name: "Recipient Name" }],
+            };
+
+            const signer = createSmimeSigner(options);
+
+            const signed = await signer.sign(email);
+
+            expect(signed.text).toContain("Cc: cc@example.com");
+            expect(signed.text).toContain("Reply-To: \"Reply Person\" <reply@example.com>");
+            expect(signed.text).toContain("X-Custom: custom-value");
+            expect(signed.text).toContain("\"Recipient Name\" <recipient@example.com>");
+            expect(signed.text).toContain("\"Sender Name\" <sender@example.com>");
+            expect(signed.text).toContain("multipart/alternative");
+        });
+
         it("should throw error for invalid certificate", async () => {
             expect.assertions(1);
 

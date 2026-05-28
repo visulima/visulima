@@ -380,6 +380,102 @@ describe(SmimeEncrypter, () => {
             expect(encrypted.html).toBeUndefined();
         });
 
+        it("should build message with reply-to, headers and named addresses", async () => {
+            expect.assertions(2);
+
+            vi.mocked(readFile).mockResolvedValue(TEST_CERTIFICATE);
+
+            const options: SmimeEncryptOptions = {
+                certificates: "/path/to/certificate.crt",
+            };
+
+            const email: EmailOptions = {
+                cc: { email: "cc@example.com", name: "CC Person" },
+                from: { email: "sender@example.com", name: "Sender Name" },
+                headers: { "X-Custom": "custom-value" },
+                html: "<h1>Test</h1>",
+                replyTo: { email: "reply@example.com", name: "Reply Person" },
+                subject: "Test Subject",
+                to: { email: "recipient@example.com", name: "Recipient Name" },
+            };
+
+            const encrypter = createSmimeEncrypter(options);
+
+            const encrypted = await encrypter.encrypt(email);
+
+            expect(encrypted.text).toBeDefined();
+            expect(encrypted.headers["Content-Type"]).toContain("application/pkcs7-mime");
+        });
+
+        it("should format string recipient addresses", async () => {
+            expect.assertions(1);
+
+            vi.mocked(readFile).mockResolvedValue(TEST_CERTIFICATE);
+
+            const options: SmimeEncryptOptions = {
+                certificates: "/path/to/certificate.crt",
+            };
+
+            const email: EmailOptions = {
+                from: "sender@example.com" as unknown as EmailOptions["from"],
+                subject: "Test Subject",
+                text: "Test content",
+                to: "recipient@example.com" as unknown as EmailOptions["to"],
+            };
+
+            const encrypter = createSmimeEncrypter(options);
+
+            const encrypted = await encrypter.encrypt(email);
+
+            expect(encrypted.text).toBeDefined();
+        });
+
+        it("should reject insecure 3des algorithm", async () => {
+            expect.assertions(1);
+
+            vi.mocked(readFile).mockResolvedValue(TEST_CERTIFICATE);
+
+            const options: SmimeEncryptOptions = {
+                algorithm: "3des",
+                certificates: "/path/to/certificate.crt",
+            };
+
+            const email: EmailOptions = {
+                from: { email: "sender@example.com" },
+                html: "<h1>Test</h1>",
+                subject: "Test Subject",
+                to: { email: "recipient@example.com" },
+            };
+
+            const encrypter = createSmimeEncrypter(options);
+
+            await expect(encrypter.encrypt(email)).rejects.toThrow("3DES/DES-EDE3-CBC is deprecated");
+        });
+
+        it("should use aes-192-cbc algorithm", async () => {
+            expect.assertions(1);
+
+            vi.mocked(readFile).mockResolvedValue(TEST_CERTIFICATE);
+
+            const options: SmimeEncryptOptions = {
+                algorithm: "aes-192-cbc",
+                certificates: "/path/to/certificate.crt",
+            };
+
+            const email: EmailOptions = {
+                from: { email: "sender@example.com" },
+                html: "<h1>Test</h1>",
+                subject: "Test Subject",
+                to: { email: "recipient@example.com" },
+            };
+
+            const encrypter = createSmimeEncrypter(options);
+
+            const encrypted = await encrypter.encrypt(email);
+
+            expect(encrypted.text).toBeDefined();
+        });
+
         it("should throw error for invalid certificate", async () => {
             expect.assertions(1);
 
