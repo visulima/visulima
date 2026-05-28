@@ -978,4 +978,122 @@ describe("smtp provider (extended)", () => {
             await expect(provider.shutdown?.()).resolves.toBeUndefined();
         });
     });
+
+    describe("branch coverage", () => {
+        it("defaults to the secure port when secure is set without an explicit port", async () => {
+            expect.assertions(1);
+
+            const provider = smtpProvider({ host: "smtp.example.com", secure: true });
+
+            await expect(provider.isAvailable()).resolves.toBe(true);
+        });
+
+        it("accepts a custom logger in the configuration", async () => {
+            expect.assertions(1);
+
+            const provider = smtpProvider(plainConfig({ logger: console }));
+            const result = await provider.sendEmail(baseEmail);
+
+            expect(result.success).toBe(true);
+        });
+
+        it("ignores blank capability lines in the EHLO response", async () => {
+            expect.assertions(1);
+
+            useServer({ ehloCaps: [""] });
+
+            const provider = smtpProvider(plainConfig());
+            const result = await provider.sendEmail(baseEmail);
+
+            expect(result.success).toBe(true);
+        });
+
+        it("auto-selects CRAM-MD5 when the server advertises it and no method is configured", async () => {
+            expect.assertions(2);
+
+            useServer({ ehloCaps: ["AUTH CRAM-MD5"] });
+
+            const provider = smtpProvider(plainConfig({ authMethod: "", password: "secret", user: "smtp-user" }));
+            const result = await provider.sendEmail(baseEmail);
+
+            expect(result.success).toBe(true);
+            expect(allWrites().some((write) => write.startsWith("AUTH CRAM-MD5"))).toBe(true);
+        });
+
+        it("auto-selects LOGIN when CRAM-MD5 is unavailable", async () => {
+            expect.assertions(2);
+
+            useServer({ ehloCaps: ["AUTH LOGIN"] });
+
+            const provider = smtpProvider(plainConfig({ authMethod: "", password: "secret", user: "smtp-user" }));
+            const result = await provider.sendEmail(baseEmail);
+
+            expect(result.success).toBe(true);
+            expect(allWrites().some((write) => write.startsWith("AUTH LOGIN"))).toBe(true);
+        });
+
+        it("auto-selects PLAIN as the final fallback", async () => {
+            expect.assertions(2);
+
+            useServer({ ehloCaps: ["AUTH PLAIN"] });
+
+            const provider = smtpProvider(plainConfig({ authMethod: "", password: "secret", user: "smtp-user" }));
+            const result = await provider.sendEmail(baseEmail);
+
+            expect(result.success).toBe(true);
+            expect(allWrites().some((write) => write.startsWith("AUTH PLAIN"))).toBe(true);
+        });
+
+        it("fails when no supported authentication method is advertised", async () => {
+            expect.assertions(2);
+
+            useServer({ ehloCaps: ["AUTH UNKNOWN-METHOD"] });
+
+            const provider = smtpProvider(plainConfig({ authMethod: "", password: "secret", user: "smtp-user" }));
+            const result = await provider.sendEmail(baseEmail);
+
+            expect(result.success).toBe(false);
+            expect((result.error as Error).message).toContain("No supported authentication methods");
+        });
+
+        it("adds no DSN header when every notification flag is unset", async () => {
+            expect.assertions(2);
+
+            const provider = smtpProvider(plainConfig());
+            const result = await provider.sendEmail({ ...baseEmail, dsn: {} });
+
+            expect(result.success).toBe(true);
+            expect(lastMessage()).not.toContain("X-DSN-NOTIFY");
+        });
+
+        it("treats an unknown priority as normal", async () => {
+            expect.assertions(2);
+
+            const provider = smtpProvider(plainConfig());
+            const result = await provider.sendEmail({ ...baseEmail, priority: "urgent" as unknown as "high" });
+
+            expect(result.success).toBe(true);
+            expect(lastMessage()).toContain("X-Priority: 3 (Normal)");
+        });
+
+        it("adds no Google Mail headers when the fields are unset", async () => {
+            expect.assertions(2);
+
+            const provider = smtpProvider(plainConfig());
+            const result = await provider.sendEmail({ ...baseEmail, googleMailHeaders: {} });
+
+            expect(result.success).toBe(true);
+            expect(lastMessage()).not.toContain("Feedback-ID");
+        });
+
+        it("validates credentials over a plain connection when STARTTLS fails and rejectUnauthorized is false", async () => {
+            expect.assertions(1);
+
+            useServer({ ehloCaps: ["STARTTLS"], starttlsCode: "454 TLS unavailable\r\n" });
+
+            const provider = smtpProvider(plainConfig());
+
+            await expect(provider.validateCredentials?.()).resolves.toBe(true);
+        });
+    });
 });
