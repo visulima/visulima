@@ -106,7 +106,7 @@ describe(zeptomailProvider, () => {
 
             const provider = zeptomailProvider({ token: "Zoho-enczapikey TEST" });
 
-            await expect(provider.validateCredentials!()).resolves.toBe(true);
+            await expect(provider.validateCredentials?.()).resolves.toBe(true);
         });
     });
 
@@ -282,7 +282,7 @@ describe(zeptomailProvider, () => {
                 from: { email: "" },
                 subject: "",
                 to: { email: "" },
-            } as any);
+            });
 
             expect(result.success).toBe(false);
             expect(result.error?.message).toContain("Invalid email options");
@@ -333,6 +333,49 @@ describe(zeptomailProvider, () => {
 
             expect(result.success).toBe(false);
             expect(result.error?.message).toContain("Invalid token");
+        });
+
+        it("should include API error details from response body message field", async () => {
+            expect.assertions(2);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValueOnce({
+                data: { body: { message: "Quota exceeded" }, statusCode: 400 },
+                error: new Error("HTTP 400"),
+                success: false,
+            });
+
+            const provider = zeptomailProvider({ token: "Zoho-enczapikey TEST" });
+
+            const result = await provider.sendEmail({
+                from: { email: "sender@example.com" },
+                html: "<h1>Hi</h1>",
+                subject: "Test",
+                to: { email: "user@example.com" },
+            });
+
+            expect(result.success).toBe(false);
+            expect(result.error?.message).toContain("Quota exceeded");
+        });
+
+        it("should return an error when the request throws", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockRejectedValue(new Error("network down"));
+
+            const provider = zeptomailProvider({ token: "Zoho-enczapikey TEST" });
+
+            const result = await provider.sendEmail({
+                from: { email: "sender@example.com" },
+                html: "<h1>Hi</h1>",
+                subject: "Test",
+                to: { email: "user@example.com" },
+            });
+
+            expect(result.success).toBe(false);
         });
     });
 });
