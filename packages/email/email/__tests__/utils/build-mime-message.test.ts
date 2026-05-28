@@ -522,5 +522,104 @@ describe(buildMimeMessage, () => {
             expect(message).toContain("Content-Transfer-Encoding: 7bit");
             expect(message).toContain("Content-Transfer-Encoding: base64");
         });
+
+        it("should include custom attachment headers", async () => {
+            expect.assertions(2);
+
+            const options: EmailOptions = {
+                attachments: [
+                    {
+                        content: Buffer.from("data"),
+                        contentType: "text/plain",
+                        filename: "test.txt",
+                        headers: {
+                            "X-Attachment-Id": "att-1",
+                            "X-Custom": "value",
+                        },
+                    },
+                ],
+                from: { email: "sender@example.com" },
+                subject: "Test",
+                text: "Test",
+                to: { email: "recipient@example.com" },
+            };
+
+            const message = await buildMimeMessage(options);
+
+            expect(message).toContain("X-Attachment-Id: att-1");
+            expect(message).toContain("X-Custom: value");
+        });
+
+        it("should inline a Buffer attachment with 7bit encoding", async () => {
+            expect.assertions(2);
+
+            const options: EmailOptions = {
+                attachments: [
+                    {
+                        content: Buffer.from("plain buffer body"),
+                        contentType: "text/plain",
+                        encoding: "7bit",
+                        filename: "test.txt",
+                    },
+                ],
+                from: { email: "sender@example.com" },
+                subject: "Test",
+                text: "Test",
+                to: { email: "recipient@example.com" },
+            };
+
+            const message = await buildMimeMessage(options);
+
+            expect(message).toContain("Content-Transfer-Encoding: 7bit");
+            expect(message).toContain("plain buffer body");
+        });
+
+        it("should inline a Uint8Array attachment with 8bit encoding", async () => {
+            expect.assertions(2);
+
+            const options: EmailOptions = {
+                attachments: [
+                    {
+                        content: new Uint8Array([104, 105, 33]),
+                        contentType: "text/plain",
+                        encoding: "8bit",
+                        filename: "test.txt",
+                    },
+                ],
+                from: { email: "sender@example.com" },
+                subject: "Test",
+                text: "Test",
+                to: { email: "recipient@example.com" },
+            };
+
+            const message = await buildMimeMessage(options);
+
+            expect(message).toContain("Content-Transfer-Encoding: 8bit");
+            expect(message).toContain("hi!");
+        });
+
+        it("should base64-encode an attachment with an unrecognized encoding", async () => {
+            expect.assertions(2);
+
+            const options: EmailOptions = {
+                attachments: [
+                    {
+                        content: Buffer.from("quoted body"),
+                        contentType: "text/plain",
+                        encoding: "quoted-printable",
+                        filename: "test.txt",
+                    },
+                ],
+                from: { email: "sender@example.com" },
+                subject: "Test",
+                text: "Test",
+                to: { email: "recipient@example.com" },
+            };
+
+            const message = await buildMimeMessage(options);
+
+            expect(message).toContain("Content-Transfer-Encoding: quoted-printable");
+            expect(message).toContain(Buffer.from("quoted body").toString("base64"));
+        });
     });
 });
