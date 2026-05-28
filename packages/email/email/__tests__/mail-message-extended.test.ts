@@ -7,6 +7,7 @@ import { pathToFileURL } from "node:url";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 import MailMessage from "../src/mail-message";
+import type { EmailOptions } from "../src/types";
 
 let temporaryDirectory: string;
 let temporaryFilePath: string;
@@ -640,6 +641,234 @@ describe("MailMessage - extended fluent builder", () => {
             const result = message.setLogger(console);
 
             expect(result).toBe(message);
+        });
+    });
+
+    describe("logger branches", () => {
+        const makeConsole = () => ({ error: vi.fn(), info: vi.fn(), log: vi.fn(), warn: vi.fn() }) as unknown as Console;
+        const resolveEmail = (email: EmailOptions): Promise<EmailOptions> => Promise.resolve(email);
+
+        it("logs attachFromPath success and failure", async () => {
+            expect.assertions(4);
+
+            const okConsole = makeConsole();
+
+            await new MailMessage().setLogger(okConsole).attachFromPath(temporaryFilePath);
+
+            expect(okConsole.log).toHaveBeenCalled();
+
+            const failConsole = makeConsole();
+
+            await expect(new MailMessage().setLogger(failConsole).attachFromPath(join(temporaryDirectory, "missing.txt"))).rejects.toThrow();
+
+            expect(failConsole.error).toHaveBeenCalled();
+            expect(failConsole.log).not.toHaveBeenCalled();
+        });
+
+        it("logs attachData", () => {
+            expect.assertions(1);
+
+            const mockConsole = makeConsole();
+
+            new MailMessage().setLogger(mockConsole).attachData(Buffer.from("data"), { filename: "a.txt" });
+
+            expect(mockConsole.log).toHaveBeenCalled();
+        });
+
+        it("logs embedFromPath success and failure", async () => {
+            expect.assertions(4);
+
+            const okConsole = makeConsole();
+
+            await new MailMessage().setLogger(okConsole).embedFromPath(temporaryFilePath);
+
+            expect(okConsole.log).toHaveBeenCalled();
+
+            const failConsole = makeConsole();
+
+            await expect(new MailMessage().setLogger(failConsole).embedFromPath(join(temporaryDirectory, "missing.txt"))).rejects.toThrow();
+
+            expect(failConsole.error).toHaveBeenCalled();
+            expect(failConsole.log).not.toHaveBeenCalled();
+        });
+
+        it("logs embedData", () => {
+            expect.assertions(1);
+
+            const mockConsole = makeConsole();
+
+            new MailMessage().setLogger(mockConsole).embedData(Buffer.from("data"), "logo.png");
+
+            expect(mockConsole.log).toHaveBeenCalled();
+        });
+
+        it("logs date, returnPath and sender", () => {
+            expect.assertions(1);
+
+            const mockConsole = makeConsole();
+
+            new MailMessage().setLogger(mockConsole).date(new Date()).returnPath("bounce@example.com").sender("sender@example.com");
+
+            expect(mockConsole.log).toHaveBeenCalledTimes(3);
+        });
+
+        it("logs sign and encrypt configuration", () => {
+            expect.assertions(1);
+
+            const mockConsole = makeConsole();
+            const sign = vi.fn(resolveEmail);
+            const encrypt = vi.fn(resolveEmail);
+
+            new MailMessage().setLogger(mockConsole).sign({ sign }).encrypt({ encrypt });
+
+            expect(mockConsole.log).toHaveBeenCalledTimes(2);
+        });
+
+        it("logs calendar event variants", () => {
+            expect.assertions(1);
+
+            const mockConsole = makeConsole();
+
+            new MailMessage()
+                .setLogger(mockConsole)
+                .icalEvent("BEGIN:VCALENDAR\r\nEND:VCALENDAR")
+                .icalEventFromFile("./event.ics")
+                .icalEventFromUrl("https://example.com/event.ics");
+
+            expect(mockConsole.log).toHaveBeenCalledTimes(3);
+        });
+
+        it("logs view rendering and warns when auto-text conversion fails", async () => {
+            expect.assertions(2);
+
+            const mockConsole = makeConsole();
+            const renderer = vi.fn((): Promise<string> => Promise.resolve("<h1>Hello</h1><p>Body paragraph text.</p>"));
+
+            await new MailMessage()
+                .setLogger(mockConsole)
+                .from("sender@example.com")
+                .to("user@example.com")
+                .subject("Test")
+                .view(renderer, "template");
+
+            expect(mockConsole.log).toHaveBeenCalled();
+            expect(mockConsole.warn).toHaveBeenCalled();
+        });
+
+        it("logs view rendering failure", async () => {
+            expect.assertions(2);
+
+            const mockConsole = makeConsole();
+            const renderer = vi.fn((): Promise<string> => Promise.reject(new Error("render boom")));
+
+            await expect(
+                new MailMessage().setLogger(mockConsole).from("sender@example.com").to("user@example.com").subject("Test").view(renderer, "template"),
+            ).rejects.toThrow("Failed to render template");
+
+            expect(mockConsole.error).toHaveBeenCalled();
+        });
+
+        it("logs viewText rendering", async () => {
+            expect.assertions(1);
+
+            const mockConsole = makeConsole();
+            const renderer = vi.fn((): Promise<string> => Promise.resolve("Plain text body"));
+
+            await new MailMessage()
+                .setLogger(mockConsole)
+                .from("sender@example.com")
+                .to("user@example.com")
+                .subject("Test")
+                .html("<h1>Hi</h1>")
+                .viewText(renderer, "template");
+
+            expect(mockConsole.log).toHaveBeenCalled();
+        });
+
+        it("logs viewText rendering failure", async () => {
+            expect.assertions(2);
+
+            const mockConsole = makeConsole();
+            const renderer = vi.fn((): Promise<string> => Promise.reject(new Error("render boom")));
+
+            await expect(
+                new MailMessage()
+                    .setLogger(mockConsole)
+                    .from("sender@example.com")
+                    .to("user@example.com")
+                    .subject("Test")
+                    .html("<h1>Hi</h1>")
+                    .viewText(renderer, "template"),
+            ).rejects.toThrow("Failed to render text template");
+
+            expect(mockConsole.error).toHaveBeenCalled();
+        });
+
+        it("logs attachment and calendar details during build", async () => {
+            expect.assertions(2);
+
+            const mockConsole = makeConsole();
+            const message = new MailMessage()
+                .setLogger(mockConsole)
+                .from("sender@example.com")
+                .to("user@example.com")
+                .subject("Test")
+                .html("<h1>Hi</h1><p>Body text.</p>")
+                .attachData(Buffer.from("data"), { filename: "a.txt" })
+                .icalEvent("BEGIN:VCALENDAR\r\nEND:VCALENDAR");
+
+            const built = await message.build();
+
+            expect(built.attachments).toHaveLength(1);
+            expect(built.icalEvent).toBeDefined();
+        });
+
+        it("logs signer steps during build", async () => {
+            expect.assertions(1);
+
+            const mockConsole = makeConsole();
+            const sign = vi.fn(resolveEmail);
+
+            await new MailMessage()
+                .setLogger(mockConsole)
+                .from("sender@example.com")
+                .to("user@example.com")
+                .subject("Test")
+                .html("<h1>Hi</h1>")
+                .sign({ sign })
+                .build();
+
+            expect(sign).toHaveBeenCalled();
+        });
+
+        it("logs encrypter steps during build", async () => {
+            expect.assertions(1);
+
+            const mockConsole = makeConsole();
+            const encrypt = vi.fn(resolveEmail);
+
+            await new MailMessage()
+                .setLogger(mockConsole)
+                .from("sender@example.com")
+                .to("user@example.com")
+                .subject("Test")
+                .html("<h1>Hi</h1>")
+                .encrypt({ encrypt })
+                .build();
+
+            expect(encrypt).toHaveBeenCalled();
+        });
+
+        it("logs an error when build fails validation", async () => {
+            expect.assertions(2);
+
+            const mockConsole = makeConsole();
+
+            await expect(new MailMessage().setLogger(mockConsole).from("sender@example.com").to("user@example.com").build()).rejects.toThrow(
+                "Subject is required",
+            );
+
+            expect(mockConsole.error).toHaveBeenCalled();
         });
     });
 });
