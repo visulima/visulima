@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import type { TreeRenderFunction, TreeSortFunction } from "../../src/object-tree";
 import { renderObjectTree } from "../../src/object-tree";
 
 describe(renderObjectTree, () => {
@@ -146,5 +147,65 @@ describe(renderObjectTree, () => {
         const resultString = typeof result === "string" ? result : result.join("\n");
 
         expect(resultString).toContain("(circular ref.)");
+    });
+
+    it("should render a primitive root value", () => {
+        expect.assertions(1);
+
+        expect(renderObjectTree(42 as unknown as Record<string, unknown>)).toBe("42");
+    });
+
+    it("should throw when joined is not a boolean", () => {
+        expect.assertions(1);
+
+        expect(() => renderObjectTree({}, { joined: "yes" as unknown as boolean })).toThrow(TypeError);
+    });
+
+    it("should throw when spacerNoNeighbour is not a string", () => {
+        expect.assertions(1);
+
+        expect(() => renderObjectTree({}, { spacerNoNeighbour: 1 as unknown as string })).toThrow(TypeError);
+    });
+
+    it("should throw when spacerNeighbour is not a string", () => {
+        expect.assertions(1);
+
+        expect(() => renderObjectTree({}, { spacerNeighbour: 1 as unknown as string })).toThrow(TypeError);
+    });
+
+    it("should throw when keyNoNeighbour is not a string", () => {
+        expect.assertions(1);
+
+        expect(() => renderObjectTree({}, { keyNoNeighbour: 1 as unknown as string })).toThrow(TypeError);
+    });
+
+    it("should throw when keyNeighbour is not a string", () => {
+        expect.assertions(1);
+
+        expect(() => renderObjectTree({}, { keyNeighbour: 1 as unknown as string })).toThrow(TypeError);
+    });
+
+    it("should throw when separator is not a string", () => {
+        expect.assertions(1);
+
+        expect(() => renderObjectTree({}, { separator: 1 as unknown as string })).toThrow(TypeError);
+    });
+
+    it("should throw when renderFn is not a function", () => {
+        expect.assertions(1);
+
+        expect(() => renderObjectTree({}, { renderFn: "nope" as unknown as TreeRenderFunction })).toThrow(TypeError);
+    });
+
+    it("should throw when sortFn is not a function or undefined", () => {
+        expect.assertions(1);
+
+        expect(() => renderObjectTree({}, { sortFn: "nope" as unknown as TreeSortFunction })).toThrow(TypeError);
+    });
+
+    it("should throw when breakCircularWith is not a string or null", () => {
+        expect.assertions(1);
+
+        expect(() => renderObjectTree({}, { breakCircularWith: 1 as unknown as string })).toThrow(TypeError);
     });
 });
