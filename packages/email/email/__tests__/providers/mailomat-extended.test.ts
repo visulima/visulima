@@ -118,4 +118,83 @@ describe("mailomat provider (extended)", () => {
             expect(result.data?.messageId).toBeDefined();
         });
     });
+
+    describe("branch coverage", () => {
+        it("sends a text-only email without html", async () => {
+            expect.assertions(2);
+
+            makeRequestMock.mockResolvedValue({ data: { body: { id: "t-1" }, statusCode: 200 }, success: true });
+
+            const provider = mailomatProvider(config);
+            const result = await provider.sendEmail({
+                from: { email: "sender@example.com" },
+                subject: "Test",
+                text: "plain text",
+                to: { email: "user@example.com" },
+            });
+
+            const payload = parsePayload();
+
+            expect(result.success).toBe(true);
+            expect(payload.html).toBeUndefined();
+        });
+
+        it("sends a template email without template variables", async () => {
+            expect.assertions(2);
+
+            makeRequestMock.mockResolvedValue({ data: { body: { id: "tmpl-1" }, statusCode: 200 }, success: true });
+
+            const provider = mailomatProvider(config);
+            const result = await provider.sendEmail({
+                ...baseEmail,
+                templateId: "tmpl-1",
+            });
+
+            const payload = parsePayload();
+
+            expect(result.success).toBe(true);
+            expect(payload.templateVariables).toBeUndefined();
+        });
+
+        it("encodes a buffer raw attachment as base64", async () => {
+            expect.assertions(2);
+
+            makeRequestMock.mockResolvedValue({ data: { body: { id: "raw-1" }, statusCode: 200 }, success: true });
+
+            const provider = mailomatProvider(config);
+            const result = await provider.sendEmail({
+                ...baseEmail,
+                attachments: [{ filename: "r.bin", raw: Buffer.from("hi") }],
+            });
+
+            const attachments = parsePayload().attachments as { content: string }[];
+
+            expect(result.success).toBe(true);
+            expect(attachments[0].content).toBe(Buffer.from("hi").toString("base64"));
+        });
+
+        it("falls back to a generic error when a failed send has no error", async () => {
+            expect.assertions(2);
+
+            makeRequestMock.mockResolvedValue({ success: false });
+
+            const provider = mailomatProvider(config);
+            const result = await provider.sendEmail(baseEmail);
+
+            expect(result.success).toBe(false);
+            expect((result.error as Error).message).toContain("Failed to send email");
+        });
+
+        it("uses a generic message when a getEmail failure has no error", async () => {
+            expect.assertions(2);
+
+            makeRequestMock.mockResolvedValue({ success: false });
+
+            const provider = mailomatProvider(config);
+            const result = await provider.getEmail?.("m1");
+
+            expect(result?.success).toBe(false);
+            expect((result?.error as Error).message).toContain("Unknown error");
+        });
+    });
 });

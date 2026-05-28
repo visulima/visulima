@@ -162,7 +162,7 @@ describe(mailomatProvider, () => {
                 from: { email: "" },
                 subject: "",
                 to: { email: "" },
-            } as any);
+            });
 
             expect(result.success).toBe(false);
         });
@@ -196,7 +196,7 @@ describe(mailomatProvider, () => {
 
             const provider = mailomatProvider({ apiKey: "test123" });
 
-            await expect(provider.validateCredentials!()).resolves.toBe(true);
+            await expect(provider.validateCredentials?.()).resolves.toBe(true);
         });
     });
 });
