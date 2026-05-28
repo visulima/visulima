@@ -1370,4 +1370,93 @@ describe(HttpReporter, () => {
         // Should send batch after timeout
         expect(mockSendWithRetry).toHaveBeenCalledTimes(1);
     });
+
+    it("should pass logData.data to the payload template when present", async () => {
+        expect.assertions(1);
+
+        let captured: Record<string, unknown> | undefined;
+
+        const reporter = createReporter({
+            enableBatchSend: false,
+            payloadTemplate: ({ data }) => {
+                captured = data;
+
+                return JSON.stringify(data ?? {});
+            },
+            url: "https://api.example.com/logs",
+        });
+
+        reporter.log({ ...baseMeta, data: { requestId: "abc" }, message: "with data" } as unknown as typeof baseMeta);
+
+        await vi.runAllTimersAsync();
+
+        expect(captured).toStrictEqual({ requestId: "abc" });
+    });
+
+    it("should fall back to the remaining fields as data when neither data nor context is present", async () => {
+        expect.assertions(2);
+
+        let captured: Record<string, unknown> | undefined;
+
+        const reporter = createReporter({
+            enableBatchSend: false,
+            payloadTemplate: ({ data }) => {
+                captured = data;
+
+                return JSON.stringify(data ?? {});
+            },
+            url: "https://api.example.com/logs",
+        });
+
+        reporter.log({ ...baseMeta, context: undefined, message: "no context" });
+
+        await vi.runAllTimersAsync();
+
+        expect(captured).toHaveProperty("label");
+        expect(captured).not.toHaveProperty("message");
+    });
+
+    it("should force-send the current batch when adding an entry would exceed the payload size limit", async () => {
+        expect.assertions(1);
+
+        const reporter = createReporter({
+            batchSendTimeout: 100_000,
+            batchSize: 100,
+            enableBatchSend: true,
+            maxPayloadSize: 300,
+            payloadTemplate: ({ message }) => JSON.stringify({ message }),
+            url: "https://api.example.com/logs",
+        });
+
+        const big = "x".repeat(150);
+
+        reporter.log({ ...baseMeta, message: big });
+        reporter.log({ ...baseMeta, message: big });
+
+        await vi.runAllTimersAsync();
+
+        expect(mockSendWithRetry).toHaveBeenCalledTimes(2);
+    });
+
+    it("should call onError when sending a batch fails", async () => {
+        expect.assertions(1);
+
+        const onError = vi.fn();
+
+        mockSendWithRetry.mockRejectedValueOnce(new Error("Batch send failed"));
+
+        const reporter = createReporter({
+            batchSize: 1,
+            enableBatchSend: true,
+            onError,
+            payloadTemplate: ({ message }) => JSON.stringify({ message }),
+            url: "https://api.example.com/logs",
+        });
+
+        reporter.log({ ...baseMeta, message: "boom" });
+
+        await vi.runAllTimersAsync();
+
+        expect(onError).toHaveBeenCalledWith(expect.objectContaining({ message: "Batch send failed" }));
+    });
 });
