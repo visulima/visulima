@@ -610,4 +610,162 @@ describe(roundRobinProvider, () => {
             expect(result.success).toBe(false);
         });
     });
+
+    describe("branch coverage", () => {
+        const emailOptions: EmailOptions = {
+            from: { email: "sender@example.com" },
+            html: "<h1>Test</h1>",
+            subject: "Test",
+            to: { email: "recipient@example.com" },
+        };
+
+        it("should log and continue when a provider fails to initialize", async () => {
+            expect.assertions(1);
+
+            const failing: Provider = {
+                ...createMockProvider("failing"),
+                initialize: () => Promise.reject(new Error("init boom")),
+            };
+            const healthy = createMockProvider("healthy", { success: true });
+            const roundRobin = roundRobinProvider({
+                mailers: [failing, healthy],
+            });
+
+            await roundRobin.initialize();
+
+            await expect(roundRobin.isAvailable()).resolves.toBe(true);
+        });
+
+        it("should log and continue when a mailer factory throws", async () => {
+            expect.assertions(1);
+
+            const throwingFactory = (): Provider => {
+                throw new Error("factory boom");
+            };
+            const healthy = createMockProvider("healthy", { success: true });
+            const roundRobin = roundRobinProvider({
+                mailers: [throwingFactory, healthy],
+            });
+
+            const result = await roundRobin.sendEmail(emailOptions);
+
+            expect(result.success).toBe(true);
+        });
+
+        it("should fall back to the start provider after waiting when none are available", async () => {
+            expect.assertions(1);
+
+            const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0);
+
+            const provider1 = createMockProvider("provider1", { available: false, success: true });
+            const provider2 = createMockProvider("provider2", { available: false, success: true });
+            const roundRobin = roundRobinProvider({
+                mailers: [provider1, provider2],
+                retryAfter: 1,
+            });
+
+            await roundRobin.initialize();
+
+            const result = await roundRobin.sendEmail(emailOptions);
+
+            randomSpy.mockRestore();
+
+            expect(result.success).toBe(true);
+        });
+
+        it("should skip re-initialization when already initialized", async () => {
+            expect.assertions(1);
+
+            const provider1 = createMockProvider("provider1", { success: true });
+            const roundRobin = roundRobinProvider({
+                mailers: [provider1],
+            });
+
+            await roundRobin.initialize();
+
+            await expect(roundRobin.initialize()).resolves.not.toThrow();
+        });
+
+        it("should return false from isAvailable when initialization fails", async () => {
+            expect.assertions(1);
+
+            const failing: Provider = {
+                ...createMockProvider("failing"),
+                initialize: () => Promise.reject(new Error("init boom")),
+            };
+            const roundRobin = roundRobinProvider({
+                mailers: [failing],
+            });
+
+            await expect(roundRobin.isAvailable()).resolves.toBe(false);
+        });
+
+        it("should break the retry loop when the next provider is the same instance", async () => {
+            expect.assertions(1);
+
+            const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0);
+
+            const provider1 = createMockProvider("provider1", { available: true, success: false });
+            const provider2 = createMockProvider("provider2", { available: false, success: true });
+            const roundRobin = roundRobinProvider({
+                mailers: [provider1, provider2],
+                retryAfter: 1,
+            });
+
+            await roundRobin.initialize();
+
+            const result = await roundRobin.sendEmail(emailOptions);
+
+            randomSpy.mockRestore();
+
+            expect(result.success).toBe(false);
+        });
+
+        it("should collect the error when a retry provider throws", async () => {
+            expect.assertions(2);
+
+            const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0);
+
+            const provider1 = createMockProvider("provider1", { available: true, success: false });
+            const thrower: Provider = {
+                ...createMockProvider("thrower", { available: true }),
+                sendEmail: () => Promise.reject(new Error("send boom")),
+            };
+            const roundRobin = roundRobinProvider({
+                mailers: [provider1, thrower],
+                retryAfter: 0,
+            });
+
+            await roundRobin.initialize();
+
+            const result = await roundRobin.sendEmail(emailOptions);
+
+            randomSpy.mockRestore();
+
+            expect(result.success).toBe(false);
+            expect(result.error?.message).toContain("send boom");
+        });
+
+        it("should report the retry provider after a successful failover", async () => {
+            expect.assertions(2);
+
+            const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0);
+
+            const provider1 = createMockProvider("provider1", { available: true, success: false });
+            const provider2 = createMockProvider("provider2", { available: true, success: true });
+            const roundRobin = roundRobinProvider({
+                mailers: [provider1, provider2],
+                retryAfter: 0,
+            });
+
+            await roundRobin.initialize();
+
+            const result = await roundRobin.sendEmail(emailOptions);
+
+            randomSpy.mockRestore();
+
+            expect(result.success).toBe(true);
+            expect(result.data?.provider).toContain("provider2");
+        });
+    });
 });
