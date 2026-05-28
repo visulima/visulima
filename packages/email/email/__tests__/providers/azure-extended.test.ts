@@ -168,5 +168,66 @@ describe("azure provider (extended)", () => {
             expect(result.success).toBe(false);
             expect(result.error).toBeDefined();
         });
+
+        it("authenticates the send request with a connection string", async () => {
+            expect.assertions(2);
+
+            makeRequestMock
+                .mockResolvedValueOnce(available)
+                .mockResolvedValueOnce({ data: { body: { messageId: "cs-1" }, statusCode: 202 }, success: true });
+
+            const provider = azureProvider({ connectionString: "endpoint=test;accesskey=key123", region: "eastus" });
+            const result = await provider.sendEmail(baseEmail);
+
+            const lastCall = makeRequestMock.mock.calls.at(-1);
+
+            expect(result.success).toBe(true);
+            expect((lastCall?.[1] as { headers: Record<string, string> }).headers.Authorization).toBe("Bearer key123");
+        });
+
+        it("sends a text-only email without an html body", async () => {
+            expect.assertions(2);
+
+            makeRequestMock
+                .mockResolvedValueOnce(available)
+                .mockResolvedValueOnce({ data: { body: { messageId: "t-1" }, statusCode: 202 }, success: true });
+
+            const provider = azureProvider({ accessToken: "test123", region: "eastus" });
+            const result = await provider.sendEmail({
+                from: { email: "sender@example.com" },
+                subject: "Test",
+                text: "plain text",
+                to: { email: "user@example.com" },
+            });
+
+            const payload = parsePayload() as { content: { html?: string } };
+
+            expect(result.success).toBe(true);
+            expect(payload.content.html).toBeUndefined();
+        });
+
+        it("falls back to a generic error when a failed send has no error", async () => {
+            expect.assertions(2);
+
+            makeRequestMock.mockResolvedValueOnce(available).mockResolvedValueOnce({ success: false });
+
+            const provider = azureProvider({ accessToken: "test123", region: "eastus" });
+            const result = await provider.sendEmail(baseEmail);
+
+            expect(result.success).toBe(false);
+            expect((result.error as Error).message).toContain("Failed to send email");
+        });
+
+        it("uses a generic message when a getEmail failure has no error", async () => {
+            expect.assertions(2);
+
+            makeRequestMock.mockResolvedValueOnce(available).mockResolvedValueOnce({ success: false });
+
+            const provider = azureProvider({ accessToken: "test123", region: "eastus" });
+            const result = await provider.getEmail?.("m1");
+
+            expect(result?.success).toBe(false);
+            expect((result?.error as Error).message).toContain("Unknown error");
+        });
     });
 });

@@ -207,7 +207,7 @@ describe(azureProvider, () => {
                 from: { email: "" },
                 subject: "",
                 to: { email: "" },
-            } as any);
+            });
 
             expect(result.success).toBe(false);
         });
@@ -241,9 +241,9 @@ describe(azureProvider, () => {
 
             const provider = azureProvider({ accessToken: "test123", region: "eastus" });
 
-            const result = await provider.getEmail!("");
+            const result = await provider.getEmail?.("");
 
-            expect(result.success).toBe(false);
+            expect(result?.success).toBe(false);
         });
 
         it("should return email details on success", async () => {
@@ -258,9 +258,9 @@ describe(azureProvider, () => {
 
             const provider = azureProvider({ accessToken: "test123", region: "eastus" });
 
-            const result = await provider.getEmail!("msg-1");
+            const result = await provider.getEmail?.("msg-1");
 
-            expect(result.success).toBe(true);
+            expect(result?.success).toBe(true);
         });
     });
 
@@ -268,11 +268,18 @@ describe(azureProvider, () => {
         it("should delegate to isAvailable", async () => {
             expect.assertions(1);
 
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValue({
+                data: { statusCode: 202 },
+                success: true,
+            });
+
             const provider = azureProvider({ accessToken: "test123", region: "eastus" });
 
-            const result = await provider.validateCredentials!();
+            const result = await provider.validateCredentials?.();
 
-            expect(typeof result).toBe("boolean");
+            expect(result).toBe(true);
         });
     });
 });
