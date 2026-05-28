@@ -1097,5 +1097,61 @@ describe(mockProvider, () => {
 
             expect(result.data?.response).toStrictEqual({ custom: "payload" });
         });
+
+        it("should return an error result when sending throws unexpectedly", async () => {
+            expect.assertions(2);
+
+            const throwingConsole = {
+                error: vi.fn(),
+                info: vi.fn(),
+                log: vi.fn((message: string) => {
+                    if (message.includes("Email stored")) {
+                        throw new Error("logger boom");
+                    }
+                }),
+                warn: vi.fn(),
+            } as unknown as Console;
+
+            const provider = mockProvider({ logger: throwingConsole });
+
+            const result = await provider.sendEmail({
+                from: { email: "sender@example.com" },
+                html: "<h1>Test</h1>",
+                subject: "Test",
+                to: { email: "user@example.com" },
+            });
+
+            expect(result.success).toBe(false);
+            expect(result.error?.message).toContain("Failed to send email");
+        });
+
+        it("should return an error result when retrieving an email throws unexpectedly", async () => {
+            expect.assertions(2);
+
+            const throwingConsole = {
+                error: vi.fn(),
+                info: vi.fn(),
+                log: vi.fn((message: string) => {
+                    if (message.includes("Retrieved email")) {
+                        throw new Error("logger boom");
+                    }
+                }),
+                warn: vi.fn(),
+            } as unknown as Console;
+
+            const provider = mockProvider({ logger: throwingConsole });
+
+            const sendResult = await provider.sendEmail({
+                from: { email: "sender@example.com" },
+                html: "<h1>Test</h1>",
+                subject: "Test",
+                to: { email: "user@example.com" },
+            });
+
+            const result = await provider.getEmail(sendResult.data?.messageId ?? "");
+
+            expect(result.success).toBe(false);
+            expect(result.error?.message).toContain("Failed to retrieve email");
+        });
     });
 });
