@@ -449,6 +449,25 @@ describe("template-engines", () => {
                 expect(result).toBe("<div>Rendered Vue</div>");
             });
 
+            it("should default data to an empty object when omitted", async () => {
+                expect.assertions(2);
+
+                mockVueRender.render.mockResolvedValue("<div>No data</div>");
+
+                const result = await renderVueEmail("<template></template>");
+
+                expect(mockVueRender.render).toHaveBeenCalledWith(
+                    "<template></template>",
+                    {},
+                    {
+                        htmlToTextOptions: undefined,
+                        plainText: undefined,
+                        pretty: undefined,
+                    },
+                );
+                expect(result).toBe("<div>No data</div>");
+            });
+
             it("should render with options", async () => {
                 expect.assertions(2);
 
