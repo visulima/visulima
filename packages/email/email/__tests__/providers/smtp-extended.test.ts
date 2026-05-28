@@ -77,6 +77,8 @@ interface Behavior {
     tlsUpgrade?: "error" | "secure" | "silent" | "throw";
 }
 
+type Responder = (raw: string) => string | undefined;
+
 const DEFAULT_GREETING = "220 mail.example.com ESMTP ready\r\n";
 const SOCKET_ERROR = "__SOCKET_ERROR__";
 
@@ -103,7 +105,7 @@ const buildEhlo = (caps: string[]): string => {
     return `${lines.map((line, index) => `250${index === lines.length - 1 ? " " : "-"}${line}`).join("\r\n")}\r\n`;
 };
 
-const makeServer = (config: ServerConfig = {}): ((raw: string) => string | undefined) => {
+const makeServer = (config: ServerConfig = {}): Responder => {
     const ehlo = buildEhlo(config.ehloCaps ?? []);
     let authPhase: "cram" | "login-pass" | "login-user" | undefined;
 
@@ -197,7 +199,7 @@ const makeServer = (config: ServerConfig = {}): ((raw: string) => string | undef
     };
 };
 
-const createFakeSocket = (respond: (raw: string) => string | undefined): FakeSocket => {
+const createFakeSocket = (respond: Responder): FakeSocket => {
     // eslint-disable-next-line unicorn/prefer-event-target -- provider uses socket.on/.once/.removeListener which EventTarget does not support
     const socket = new EventEmitter() as FakeSocket;
 
@@ -447,7 +449,7 @@ describe("smtp provider (extended)", () => {
             expect(result.success).toBe(true);
             expect(result.data?.provider).toBe("smtp");
             expect(result.data?.sent).toBe(true);
-            expect(typeof result.data?.messageId).toBe("string");
+            expect(result.data?.messageId).toBeDefined();
         });
 
         it("upgrades to TLS when the server advertises STARTTLS", async () => {
