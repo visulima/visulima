@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { createPayloadBuilder, PayloadBuilder } from "../../../src/providers/utils/payload-builder";
+import type { EmailAddress, EmailOptions } from "../../../src/types";
 
 describe(PayloadBuilder, () => {
     describe("constructor", () => {
@@ -81,7 +82,13 @@ describe(PayloadBuilder, () => {
 
             const builder = new PayloadBuilder();
 
-            const formatter = (addresses: any) => (Array.isArray(addresses) ? addresses.map((a) => a.email).join(",") : addresses.email);
+            const formatter = (addresses: EmailAddress | EmailAddress[]): string => {
+                if (Array.isArray(addresses)) {
+                    return addresses.map((a) => a.email).join(",");
+                }
+
+                return addresses.email;
+            };
 
             builder.addRecipients(
                 {
@@ -118,6 +125,22 @@ describe(PayloadBuilder, () => {
             expect(builder.build()).toStrictEqual({
                 to: "user@example.com",
             });
+        });
+
+        it("should skip when to is missing", () => {
+            expect.assertions(1);
+
+            const builder = new PayloadBuilder();
+
+            builder.addRecipients(
+                {
+                    from: { email: "sender@example.com" },
+                    subject: "test",
+                } as unknown as EmailOptions,
+                () => "",
+            );
+
+            expect(builder.build()).toStrictEqual({});
         });
     });
 
@@ -185,6 +208,20 @@ describe(PayloadBuilder, () => {
 
             expect(builder.build()).toStrictEqual({ templateKey: "tpl-2" });
         });
+
+        it("should skip when no templateId or templateData", () => {
+            expect.assertions(1);
+
+            const builder = new PayloadBuilder();
+
+            builder.addTemplateFields({
+                from: { email: "sender@example.com" },
+                subject: "x",
+                to: { email: "user@example.com" },
+            });
+
+            expect(builder.build()).toStrictEqual({});
+        });
     });
 
     describe("addSchedulingFields", () => {
@@ -215,7 +252,7 @@ describe(PayloadBuilder, () => {
                 from: { email: "sender@example.com" },
                 subject: "x",
                 to: { email: "user@example.com" },
-            } as any);
+            });
 
             expect(builder.build()).toStrictEqual({});
         });
@@ -348,13 +385,13 @@ describe(PayloadBuilder, () => {
                 from: { email: "sender@example.com" },
                 subject: "x",
                 to: { email: "user@example.com" },
-            } as any);
+            });
 
             expect(builder.build()).toStrictEqual({});
         });
     });
 
-    describe("createPayloadBuilder", () => {
+    describe(createPayloadBuilder, () => {
         it("should create a new PayloadBuilder instance", () => {
             expect.assertions(2);
 
