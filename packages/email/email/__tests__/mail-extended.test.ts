@@ -398,4 +398,142 @@ describe("mail (extended)", () => {
             expect(eml).toContain("global-reply@example.com");
         });
     });
+
+    describe("branch coverage", () => {
+        const singleRecipientOptions: EmailOptions = {
+            from: { email: "sender@example.com" },
+            html: "<p>Hi</p>",
+            subject: "Hi",
+            to: { email: "a@example.com" },
+        };
+
+        it("falls back to 'unknown' when the provider has no name", async () => {
+            expect.assertions(1);
+
+            const provider = { ...createMockProvider(), name: undefined } as unknown as Provider;
+
+            const result = await createMail(provider).send(singleRecipientOptions);
+
+            expect(result.success).toBe(true);
+        });
+
+        it("falls back to the provider name when a receipt has no provider", async () => {
+            expect.assertions(2);
+
+            const result: Result<EmailResult> = {
+                data: {
+                    messageId: "no-provider-id",
+                    provider: undefined as unknown as string,
+                    response: { ok: true },
+                    sent: true,
+                    timestamp: new Date(),
+                },
+                success: true,
+            };
+            const mail = createMail(createMockProvider({ result }));
+            const receipts: Receipt[] = [];
+
+            for await (const receipt of mail.sendMany([singleRecipientOptions])) {
+                receipts.push(receipt);
+            }
+
+            expect(receipts[0].successful).toBe(true);
+            expect((receipts[0] as { provider?: string }).provider).toBe("mock");
+        });
+
+        it("reports 'Unknown error' when a failure result carries no error", async () => {
+            expect.assertions(1);
+
+            const mail = createMail(createMockProvider({ result: { success: false } }));
+            const receipts: Receipt[] = [];
+
+            for await (const receipt of mail.sendMany([singleRecipientOptions])) {
+                receipts.push(receipt);
+            }
+
+            expect((receipts[0] as { errorMessages: string[] }).errorMessages).toStrictEqual(["Unknown error"]);
+        });
+
+        it("yields an aborted receipt without a logger configured", async () => {
+            expect.assertions(1);
+
+            const mail = createMail(createMockProvider());
+            const controller = new AbortController();
+
+            controller.abort();
+
+            const receipts: Receipt[] = [];
+
+            for await (const receipt of mail.sendMany([singleRecipientOptions], { signal: controller.signal })) {
+                receipts.push(receipt);
+            }
+
+            expect((receipts[0] as { errorMessages: string[] }).errorMessages).toStrictEqual(["Send operation was aborted"]);
+        });
+
+        it("catches provider exceptions without a logger configured", async () => {
+            expect.assertions(1);
+
+            const mail = createMail(createMockProvider({ throwError: new Error("exploded") }));
+            const receipts: Receipt[] = [];
+
+            for await (const receipt of mail.sendMany([singleRecipientOptions])) {
+                receipts.push(receipt);
+            }
+
+            expect(receipts[0].successful).toBe(false);
+        });
+
+        it("applies global from without a logger configured", async () => {
+            expect.assertions(1);
+
+            const provider = createMockProvider();
+            const sendEmailSpy = vi.spyOn(provider, "sendEmail");
+            const mail = createMail(provider).setFrom({ email: "global@example.com" });
+
+            await mail.send({
+                subject: "Hi",
+                text: "Hi",
+                to: { email: "user@example.com" },
+            } as never);
+
+            const [[sent]] = sendEmailSpy.mock.calls;
+
+            expect(sent.from).toStrictEqual({ email: "global@example.com" });
+        });
+
+        it("applies global reply-to without a logger configured", async () => {
+            expect.assertions(1);
+
+            const provider = createMockProvider();
+            const sendEmailSpy = vi.spyOn(provider, "sendEmail");
+            const mail = createMail(provider).setReplyTo({ email: "global-reply@example.com" });
+
+            await mail.send({
+                from: { email: "sender@example.com" },
+                subject: "Hi",
+                text: "Hi",
+                to: { email: "user@example.com" },
+            });
+
+            const [[sent]] = sendEmailSpy.mock.calls;
+
+            expect(sent.replyTo).toStrictEqual({ email: "global-reply@example.com" });
+        });
+
+        it("counts recipients when drafting from options with multiple addresses", async () => {
+            expect.assertions(1);
+
+            const mail = createMail(createMockProvider()).setLogger(mockConsole as unknown as Console);
+
+            await mail.draft({
+                from: { email: "sender@example.com" },
+                html: "<p>Hi</p>",
+                subject: "Hi",
+                to: [{ email: "a@example.com" }, { email: "b@example.com" }],
+            });
+
+            expect(mockConsole.log).toHaveBeenCalledWith("[Mail] Creating draft from email options", { subject: "Hi", to: 2 });
+        });
+    });
 });
