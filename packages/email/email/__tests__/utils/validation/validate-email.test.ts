@@ -17,4 +17,16 @@ describe(validateEmail, () => {
         expect(validateEmail("user@")).toBe(false);
         expect(validateEmail("user@example")).toBe(false);
     });
+
+    it("should reject domains that start or end with a hyphen", () => {
+        expect.assertions(2);
+        expect(validateEmail("user@-example.com")).toBe(false);
+        expect(validateEmail("user@example.com-")).toBe(false);
+    });
+
+    it("should reject domain labels that start or end with a hyphen", () => {
+        expect.assertions(2);
+        expect(validateEmail("user@sub.-example.com")).toBe(false);
+        expect(validateEmail("user@sub-.example.com")).toBe(false);
+    });
 });
