@@ -661,4 +661,187 @@ describe(failoverProvider, () => {
             expect(failover.options?.retryAfter).toBe(60);
         });
     });
+
+    describe("branch coverage", () => {
+        it("logs and skips a provider whose initialize rejects", async () => {
+            expect.assertions(1);
+
+            const failing: Provider = {
+                ...createMockProvider("failing"),
+                // eslint-disable-next-line @typescript-eslint/require-await
+                async initialize(): Promise<void> {
+                    throw new Error("init boom");
+                },
+            };
+            const good = createMockProvider("good");
+            const failover = failoverProvider({
+                mailers: [failing, good],
+            });
+
+            await failover.initialize();
+
+            await expect(failover.isAvailable()).resolves.toBe(true);
+        });
+
+        it("logs when a provider factory throws during construction", async () => {
+            expect.assertions(1);
+
+            const throwingFactory = () => {
+                throw new Error("factory boom");
+            };
+            const goodFactory = () => createMockProvider("good");
+            const failover = failoverProvider({
+                mailers: [throwingFactory, goodFactory],
+            });
+
+            await failover.initialize();
+
+            await expect(failover.isAvailable()).resolves.toBe(true);
+        });
+
+        it("returns early from initialize when already initialized", async () => {
+            expect.assertions(1);
+
+            const good = createMockProvider("good");
+            const failover = failoverProvider({
+                mailers: [good],
+            });
+
+            await failover.initialize();
+
+            await expect(failover.initialize()).resolves.not.toThrow();
+        });
+
+        it("returns false from isAvailable when no provider can initialize", async () => {
+            expect.assertions(1);
+
+            const failing: Provider = {
+                ...createMockProvider("failing"),
+                // eslint-disable-next-line @typescript-eslint/require-await
+                async initialize(): Promise<void> {
+                    throw new Error("init boom");
+                },
+            };
+            const failover = failoverProvider({
+                mailers: [failing],
+            });
+
+            await expect(failover.isAvailable()).resolves.toBe(false);
+        });
+
+        it("uses fallback names for unnamed providers", async () => {
+            expect.assertions(2);
+
+            const unnamed: Provider = {
+                ...createMockProvider("named", { success: true }),
+                name: undefined,
+            };
+            const failover = failoverProvider({
+                mailers: [unnamed],
+            });
+
+            await failover.initialize();
+
+            const result = await failover.sendEmail({
+                from: { email: "sender@example.com" },
+                html: "<h1>Test</h1>",
+                subject: "Test",
+                to: { email: "recipient@example.com" },
+            });
+
+            expect(result.success).toBe(true);
+
+            expect(result.data?.provider).toBe("failover(provider-1)");
+        });
+
+        it("skips a provider that returns failure without an error", async () => {
+            expect.assertions(2);
+
+            const silent: Provider = {
+                ...createMockProvider("silent"),
+                // eslint-disable-next-line @typescript-eslint/require-await
+                async sendEmail(): Promise<Result<EmailResult>> {
+                    return { success: false };
+                },
+            };
+            const good = createMockProvider("good", { success: true });
+            const failover = failoverProvider({
+                mailers: [silent, good],
+                retryAfter: 0,
+            });
+
+            await failover.initialize();
+
+            const result = await failover.sendEmail({
+                from: { email: "sender@example.com" },
+                html: "<h1>Test</h1>",
+                subject: "Test",
+                to: { email: "recipient@example.com" },
+            });
+
+            expect(result.success).toBe(true);
+
+            expect(result.data?.provider).toBe("failover(good)");
+        });
+
+        it("coerces a non-Error result error", async () => {
+            expect.assertions(2);
+
+            const stringError: Provider = {
+                ...createMockProvider("string-error"),
+                // eslint-disable-next-line @typescript-eslint/require-await
+                async sendEmail(): Promise<Result<EmailResult>> {
+                    return { error: "plain failure" as unknown as Error, success: false };
+                },
+            };
+            const failover = failoverProvider({
+                mailers: [stringError],
+                retryAfter: 0,
+            });
+
+            await failover.initialize();
+
+            const result = await failover.sendEmail({
+                from: { email: "sender@example.com" },
+                html: "<h1>Test</h1>",
+                subject: "Test",
+                to: { email: "recipient@example.com" },
+            });
+
+            expect(result.success).toBe(false);
+
+            expect(result.error?.message).toContain("plain failure");
+        });
+
+        it("coerces a non-Error thrown value", async () => {
+            expect.assertions(2);
+
+            const stringThrow: Provider = {
+                ...createMockProvider("string-throw"),
+                // eslint-disable-next-line @typescript-eslint/require-await
+                async sendEmail(): Promise<Result<EmailResult>> {
+                    // eslint-disable-next-line @typescript-eslint/only-throw-error
+                    throw "boom";
+                },
+            };
+            const good = createMockProvider("good", { success: true });
+            const failover = failoverProvider({
+                mailers: [stringThrow, good],
+                retryAfter: 0,
+            });
+
+            await failover.initialize();
+
+            const result = await failover.sendEmail({
+                from: { email: "sender@example.com" },
+                html: "<h1>Test</h1>",
+                subject: "Test",
+                to: { email: "recipient@example.com" },
+            });
+
+            expect(result.success).toBe(true);
+
+            expect(result.data?.provider).toBe("failover(good)");
+        });
+    });
 });
