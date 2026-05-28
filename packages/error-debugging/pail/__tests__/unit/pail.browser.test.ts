@@ -830,6 +830,41 @@ describe("pailBrowserImpl", () => {
             expect(child.scopeName).toStrictEqual(["parent", "child"]);
         });
 
+        it("should use the child scope when the parent has none", () => {
+            expect.assertions(1);
+
+            const parent = new PailBrowser({
+                logLevel: "debug",
+                processors: [],
+                rawReporter: new RawReporter(),
+                reporters: [new RawReporter()],
+                throttle: 1000,
+                throttleMin: 5,
+            });
+
+            const child = parent.child({ scope: ["only-child"] });
+
+            expect(child.scopeName).toStrictEqual(["only-child"]);
+        });
+
+        it("should inherit the parent scope when the child provides none", () => {
+            expect.assertions(1);
+
+            const parent = new PailBrowser({
+                logLevel: "debug",
+                processors: [],
+                rawReporter: new RawReporter(),
+                reporters: [new RawReporter()],
+                scope: ["only-parent"],
+                throttle: 1000,
+                throttleMin: 5,
+            });
+
+            const child = parent.child();
+
+            expect(child.scopeName).toStrictEqual(["only-parent"]);
+        });
+
         it("should combine parent and child reporters", () => {
             expect.assertions(2);
 
@@ -856,6 +891,671 @@ describe("pailBrowserImpl", () => {
             expect(consoleSpy).toHaveBeenCalledWith("Test message");
 
             consoleSpy.mockRestore();
+        });
+
+        it("should combine parent and child processors", () => {
+            expect.assertions(1);
+
+            const parentProcess = vi.fn((meta) => meta);
+            const childProcess = vi.fn((meta) => meta);
+
+            const parent = new PailBrowser({
+                logLevel: "debug",
+                processors: [{ process: parentProcess }],
+                rawReporter: new RawReporter(),
+                reporters: [new RawReporter()],
+                throttle: 1000,
+                throttleMin: 5,
+            });
+
+            const child = parent.child({ processors: [{ process: childProcess }] });
+
+            const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+            child.info("processed by both");
+
+            expect(parentProcess.mock.calls.length + childProcess.mock.calls.length).toBeGreaterThanOrEqual(2);
+
+            consoleSpy.mockRestore();
+        });
+
+        it("should merge parent and child log levels", () => {
+            expect.assertions(1);
+
+            const parent = new PailBrowser({
+                logLevel: "debug",
+                logLevels: { custom: 100 },
+                processors: [],
+                rawReporter: new RawReporter(),
+                reporters: [new RawReporter()],
+                throttle: 1000,
+                throttleMin: 5,
+            });
+
+            const child = parent.child({ logLevels: { extra: 200 } });
+
+            const { logLevels } = child as unknown as { logLevels: Record<string, number> };
+
+            expect(logLevels).toMatchObject({ custom: 100, extra: 200 });
+        });
+
+        it("should override timer messages provided to the child", () => {
+            expect.assertions(1);
+
+            const parent = new PailBrowser({
+                logLevel: "debug",
+                processors: [],
+                rawReporter: new RawReporter(),
+                reporters: [new RawReporter()],
+                throttle: 1000,
+                throttleMin: 5,
+            });
+
+            const child = parent.child({ messages: { timerStart: "Child timer started" } });
+
+            const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+            child.time("task");
+
+            expect(consoleSpy).toHaveBeenCalledWith("Child timer started");
+
+            consoleSpy.mockRestore();
+        });
+    });
+
+    describe("scope", () => {
+        it("should set the scope name via scope()", () => {
+            expect.assertions(1);
+
+            const logger = new PailBrowser({
+                logLevel: "debug",
+                processors: [],
+                rawReporter: new RawReporter(),
+                reporters: [new RawReporter()],
+                throttle: 1000,
+                throttleMin: 5,
+            });
+
+            logger.scope("auth", "login");
+
+            expect(logger.scopeName).toStrictEqual(["auth", "login"]);
+        });
+
+        it("should throw when scope() is called without a name", () => {
+            expect.assertions(1);
+
+            const logger = new PailBrowser({
+                logLevel: "debug",
+                processors: [],
+                rawReporter: new RawReporter(),
+                reporters: [new RawReporter()],
+                throttle: 1000,
+                throttleMin: 5,
+            });
+
+            expect(() => logger.scope()).toThrow("No scope name was defined.");
+        });
+
+        it("should clear the scope via unscope()", () => {
+            expect.assertions(1);
+
+            const logger = new PailBrowser({
+                logLevel: "debug",
+                processors: [],
+                rawReporter: new RawReporter(),
+                reporters: [new RawReporter()],
+                scope: ["initial"],
+                throttle: 1000,
+                throttleMin: 5,
+            });
+
+            logger.unscope();
+
+            expect(logger.scopeName).toStrictEqual([]);
+        });
+    });
+
+    describe("enable", () => {
+        it("should re-enable logging after disable via enable()", () => {
+            expect.assertions(2);
+
+            const logger = new PailBrowser({});
+
+            logger.disable();
+
+            expect(logger.isEnabled()).toBe(false);
+
+            logger.enable();
+
+            expect(logger.isEnabled()).toBe(true);
+        });
+    });
+
+    describe("wrapException", () => {
+        it("should register uncaughtException and unhandledRejection handlers that forward to error()", () => {
+            expect.assertions(3);
+
+            const handlers: Record<string, (error: unknown) => void> = {};
+            const onSpy = vi.spyOn(process, "on").mockImplementation((event: string, handler: (...arguments_: any[]) => void) => {
+                handlers[event] = handler;
+
+                return process;
+            });
+            const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+            const logger = new PailBrowser({
+                logLevel: "debug",
+                processors: [],
+                rawReporter: new RawReporter(),
+                reporters: [new RawReporter()],
+                throttle: 1000,
+                throttleMin: 5,
+            });
+
+            logger.wrapException();
+
+            handlers.uncaughtException(new Error("uncaught"));
+            handlers.unhandledRejection(new Error("rejected"));
+
+            expect(onSpy).toHaveBeenCalledWith("uncaughtException", expect.any(Function));
+            expect(onSpy).toHaveBeenCalledWith("unhandledRejection", expect.any(Function));
+            expect(errorSpy).toHaveBeenCalledTimes(2);
+
+            onSpy.mockRestore();
+            errorSpy.mockRestore();
+        });
+    });
+
+    describe("groups", () => {
+        it("should track groups internally when no window is present", () => {
+            expect.assertions(2);
+
+            const logger = new PailBrowser({
+                logLevel: "debug",
+                processors: [],
+                rawReporter: new RawReporter(),
+                reporters: [new RawReporter()],
+                throttle: 1000,
+                throttleMin: 5,
+            });
+
+            const { groups } = logger as unknown as { groups: string[] };
+
+            logger.group("Section");
+
+            expect(groups).toContain("Section");
+
+            logger.groupEnd();
+
+            expect(groups).not.toContain("Section");
+        });
+
+        it("should call console.group and console.groupEnd when a window is present", () => {
+            expect.assertions(2);
+
+            vi.stubGlobal("window", {});
+
+            const groupSpy = vi.spyOn(console, "group").mockImplementation(() => {});
+            const groupEndSpy = vi.spyOn(console, "groupEnd").mockImplementation(() => {});
+
+            const logger = new PailBrowser({
+                logLevel: "debug",
+                processors: [],
+                rawReporter: new RawReporter(),
+                reporters: [new RawReporter()],
+                throttle: 1000,
+                throttleMin: 5,
+            });
+
+            logger.group("DOM Section");
+            logger.groupEnd();
+
+            expect(groupSpy).toHaveBeenCalledWith("DOM Section");
+            expect(groupEndSpy).toHaveBeenCalledTimes(1);
+
+            groupSpy.mockRestore();
+            groupEndSpy.mockRestore();
+            vi.unstubAllGlobals();
+        });
+    });
+
+    describe("countReset", () => {
+        it("should reset an existing counter", () => {
+            expect.assertions(1);
+
+            const logger = new PailBrowser({
+                logLevel: "debug",
+                processors: [],
+                rawReporter: new RawReporter(),
+                reporters: [new RawReporter()],
+                throttle: 1000,
+                throttleMin: 5,
+            });
+
+            const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+            logger.count("hits");
+            logger.countReset("hits");
+            logger.count("hits");
+
+            expect(consoleSpy).toHaveBeenCalledWith("hits: 1");
+
+            consoleSpy.mockRestore();
+        });
+
+        it("should warn when resetting a counter that does not exist", () => {
+            expect.assertions(1);
+
+            const logger = new PailBrowser({
+                logLevel: "debug",
+                processors: [],
+                rawReporter: new RawReporter(),
+                reporters: [new RawReporter()],
+                throttle: 1000,
+                throttleMin: 5,
+            });
+
+            const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+            logger.countReset("missing");
+
+            expect(consoleSpy).toHaveBeenCalledWith("Count for missing does not exist");
+
+            consoleSpy.mockRestore();
+        });
+    });
+
+    describe("clear", () => {
+        it("should clear the console", () => {
+            expect.assertions(1);
+
+            const logger = new PailBrowser({
+                logLevel: "debug",
+                processors: [],
+                rawReporter: new RawReporter(),
+                reporters: [new RawReporter()],
+                throttle: 1000,
+                throttleMin: 5,
+            });
+
+            const clearSpy = vi.spyOn(console, "clear").mockImplementation(() => {});
+
+            logger.clear();
+
+            expect(clearSpy).toHaveBeenCalledTimes(1);
+
+            clearSpy.mockRestore();
+        });
+    });
+
+    describe("raw", () => {
+        it("should send raw messages directly to the raw reporter", () => {
+            expect.assertions(2);
+
+            const loggedMeta: any[] = [];
+            const rawReporter = new RawReporter();
+
+            rawReporter.log = (meta) => {
+                loggedMeta.push(meta);
+            };
+
+            const logger = new PailBrowser({
+                logLevel: "debug",
+                processors: [],
+                rawReporter,
+                reporters: [new RawReporter()],
+                throttle: 1000,
+                throttleMin: 5,
+            });
+
+            logger.raw("direct", { data: "value" });
+
+            expect(loggedMeta).toHaveLength(1);
+            expect(loggedMeta[0]).toMatchObject({
+                context: [{ data: "value" }],
+                message: "direct",
+            });
+        });
+
+        it("should not emit raw messages when disabled", () => {
+            expect.assertions(1);
+
+            const loggedMeta: any[] = [];
+            const rawReporter = new RawReporter();
+
+            rawReporter.log = (meta) => {
+                loggedMeta.push(meta);
+            };
+
+            const logger = new PailBrowser({
+                logLevel: "debug",
+                processors: [],
+                rawReporter,
+                reporters: [new RawReporter()],
+                throttle: 1000,
+                throttleMin: 5,
+            });
+
+            logger.disable();
+            logger.raw("ignored");
+
+            expect(loggedMeta).toHaveLength(0);
+        });
+    });
+
+    describe("timer label fallbacks", () => {
+        it("should use the most recent timer when timeLog is called without a label", () => {
+            expect.assertions(1);
+
+            const logger = new PailBrowser({
+                logLevel: "debug",
+                processors: [],
+                rawReporter: new RawReporter(),
+                reporters: [new RawReporter()],
+                throttle: 1000,
+                throttleMin: 5,
+            });
+
+            const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+            logger.time("only");
+            logger.timeLog();
+
+            expect(consoleSpy).toHaveBeenCalledWith(expect.stringMatching(MS_REGEX));
+
+            consoleSpy.mockRestore();
+        });
+
+        it("should warn when timeLog references a missing timer", () => {
+            expect.assertions(1);
+
+            const logger = new PailBrowser({
+                logLevel: "debug",
+                processors: [],
+                rawReporter: new RawReporter(),
+                reporters: [new RawReporter()],
+                throttle: 1000,
+                throttleMin: 5,
+            });
+
+            const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+            logger.timeLog("missing");
+
+            expect(consoleSpy).toHaveBeenCalledWith("Timer not found");
+
+            consoleSpy.mockRestore();
+        });
+
+        it("should use the most recent timer when timeEnd is called without a label", () => {
+            expect.assertions(1);
+
+            const logger = new PailBrowser({
+                logLevel: "debug",
+                processors: [],
+                rawReporter: new RawReporter(),
+                reporters: [new RawReporter()],
+                throttle: 1000,
+                throttleMin: 5,
+            });
+
+            const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+            logger.time("solo");
+            logger.timeEnd();
+
+            expect(consoleSpy).toHaveBeenCalledWith(expect.stringMatching(TIMER_RUN_REGEX));
+
+            consoleSpy.mockRestore();
+        });
+
+        it("should format elapsed durations of a second or more in seconds", () => {
+            expect.assertions(2);
+
+            vi.useFakeTimers();
+
+            const logger = new PailBrowser({
+                logLevel: "debug",
+                processors: [],
+                rawReporter: new RawReporter(),
+                reporters: [new RawReporter()],
+                throttle: 1000,
+                throttleMin: 5,
+            });
+
+            const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+            logger.time("slow");
+            vi.advanceTimersByTime(1500);
+            logger.timeLog("slow");
+            logger.timeEnd("slow");
+
+            expect(consoleSpy).toHaveBeenCalledWith("1.50 s");
+            expect(consoleSpy).toHaveBeenCalledWith("Timer run for: 1.50 s");
+
+            consoleSpy.mockRestore();
+            vi.useRealTimers();
+        });
+    });
+
+    describe("reporters and processors", () => {
+        it("should call setLoggerTypes and setStringify on reporters that support them", () => {
+            expect.assertions(3);
+
+            const log = vi.fn();
+            const setLoggerTypes = vi.fn();
+            const setStringify = vi.fn();
+
+            const logger = new PailBrowser({
+                logLevel: "debug",
+                processors: [],
+                rawReporter: new RawReporter(),
+                reporters: [{ log, setLoggerTypes, setStringify } as never],
+                throttle: 1000,
+                throttleMin: 5,
+            });
+
+            expect(setLoggerTypes).toHaveBeenCalledTimes(1);
+            expect(setStringify).toHaveBeenCalledTimes(1);
+
+            logger.info("via custom reporter");
+
+            expect(log).toHaveBeenCalledTimes(1);
+        });
+
+        it("should run registered processors over the meta and configure setStringify", () => {
+            expect.assertions(2);
+
+            const process = vi.fn((meta) => meta);
+            const setStringify = vi.fn();
+
+            const logger = new PailBrowser({
+                logLevel: "debug",
+                processors: [{ process, setStringify } as never],
+                rawReporter: new RawReporter(),
+                reporters: [new RawReporter()],
+                throttle: 1000,
+                throttleMin: 5,
+            });
+
+            const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+            logger.info("processed");
+
+            expect(setStringify).toHaveBeenCalledTimes(1);
+            expect(process).toHaveBeenCalledTimes(1);
+
+            consoleSpy.mockRestore();
+        });
+
+        it("should ignore re-entrant log calls while already logging", () => {
+            expect.assertions(1);
+
+            let nested = false;
+            let logger: PailBrowser;
+
+            // eslint-disable-next-line prefer-const
+            logger = new PailBrowser({
+                logLevel: "debug",
+                processors: [],
+                rawReporter: new RawReporter(),
+                reporters: [
+                    {
+                        log: () => {
+                            if (!nested) {
+                                nested = true;
+                                logger.warn("re-entrant");
+                            }
+                        },
+                    },
+                ],
+                throttle: 1000,
+                throttleMin: 5,
+            });
+
+            const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+            logger.info("outer");
+
+            expect(nested).toBe(true);
+
+            consoleSpy.mockRestore();
+        });
+
+        it("should reset the loop guard and rethrow when a reporter throws", () => {
+            expect.assertions(1);
+
+            const logger = new PailBrowser({
+                logLevel: "debug",
+                processors: [],
+                rawReporter: new RawReporter(),
+                reporters: [
+                    {
+                        log: () => {
+                            throw new Error("boom");
+                        },
+                    },
+                ],
+                throttle: 1000,
+                throttleMin: 5,
+            });
+
+            expect(() => {
+                logger.info("explode");
+            }).toThrow("boom");
+        });
+    });
+
+    describe("buildMeta", () => {
+        it("should set the suffix from a Message object", () => {
+            expect.assertions(1);
+
+            const loggedMeta: any[] = [];
+            const rawReporter = new RawReporter();
+
+            rawReporter.log = (meta) => {
+                loggedMeta.push(meta);
+            };
+
+            const logger = new PailBrowser({
+                logLevel: "debug",
+                processors: [],
+                rawReporter,
+                reporters: [rawReporter],
+                throttle: 1000,
+                throttleMin: 5,
+            });
+
+            logger.info({ message: "with suffix", suffix: "SFX" });
+
+            expect(loggedMeta[0]).toMatchObject({
+                message: "with suffix",
+                suffix: "SFX",
+            });
+        });
+
+        it("should set context from additional arguments when the Message has no context", () => {
+            expect.assertions(1);
+
+            const loggedMeta: any[] = [];
+            const rawReporter = new RawReporter();
+
+            rawReporter.log = (meta) => {
+                loggedMeta.push(meta);
+            };
+
+            const logger = new PailBrowser({
+                logLevel: "debug",
+                processors: [],
+                rawReporter,
+                reporters: [rawReporter],
+                throttle: 1000,
+                throttleMin: 5,
+            });
+
+            logger.info({ message: "no ctx" }, "extra1", "extra2");
+
+            expect(loggedMeta[0]).toMatchObject({
+                context: ["extra1", "extra2"],
+                message: "no ctx",
+            });
+        });
+
+        it("should combine an array context with additional arguments", () => {
+            expect.assertions(1);
+
+            const loggedMeta: any[] = [];
+            const rawReporter = new RawReporter();
+
+            rawReporter.log = (meta) => {
+                loggedMeta.push(meta);
+            };
+
+            const logger = new PailBrowser({
+                logLevel: "debug",
+                processors: [],
+                rawReporter,
+                reporters: [rawReporter],
+                throttle: 1000,
+                throttleMin: 5,
+            });
+
+            logger.info({ context: ["first"], message: "combined" }, "extra");
+
+            expect(loggedMeta[0]).toMatchObject({
+                context: ["first", "extra"],
+                message: "combined",
+            });
+        });
+    });
+
+    describe("throttling", () => {
+        it("should suppress duplicate spam and emit a repeated counter when the throttle resolves", () => {
+            expect.assertions(1);
+
+            vi.useFakeTimers();
+
+            const logger = new PailBrowser({
+                logLevel: "debug",
+                processors: [],
+                rawReporter: new RawReporter(),
+                reporters: [new RawReporter()],
+                throttle: 100,
+                throttleMin: 2,
+            });
+
+            const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+            for (let index = 0; index < 6; index += 1) {
+                logger.info("dup");
+            }
+
+            vi.advanceTimersByTime(200);
+
+            expect(consoleSpy.mock.calls.length).toBeGreaterThan(3);
+
+            consoleSpy.mockRestore();
+            vi.useRealTimers();
         });
     });
 });
