@@ -27,6 +27,18 @@ describe("numbers", () => {
         expect(inspect(1e300)).toBe("1e+300");
     });
 
+    it("adds numeric separators to a negative integer", () => {
+        expect.assertions(1);
+
+        expect(inspect(-1_234_567)).toBe("-1_234_567");
+    });
+
+    it("adds numeric separators to a negative floating point number", () => {
+        expect.assertions(1);
+
+        expect(inspect(-1234.5678)).toBe("-1_234.567_8");
+    });
+
     describe("truncate", () => {
         it("returns the full representation when truncate is over string length", () => {
             expect.assertions(2);

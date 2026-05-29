@@ -96,6 +96,15 @@ describe("functions", () => {
 
             expect(inspect(function foobar() {}, { truncate: 0 })).toBe("[Function …]");
         });
+
+        it("renders `[Function]` for an anonymous function whose source exceeds truncate", () => {
+            expect.assertions(1);
+
+            // eslint-disable-next-line func-names
+            expect(inspect(function () {
+                return "this body is long enough to exceed the truncate threshold below";
+            }, { truncate: 20 })).toBe("[Function]");
+        });
     });
 });
 
