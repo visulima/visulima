@@ -206,6 +206,59 @@ describe(findModuleForPath, () => {
 
             expect(result).toBe(idModule);
         });
+
+        it("should return a URL-resolved module that has a transform result (score 2)", () => {
+            expect.assertions(1);
+
+            const urlModule = {
+                transformResult: { code: "url compiled code" },
+                url: "/src/Url.tsx",
+            };
+
+            // id lookup misses, url lookup hits with a transform result -> returned immediately.
+            mockServer.moduleGraph.getModuleById.mockReturnValue(null);
+            mockServer.moduleGraph.getModuleByUrl.mockReturnValue(urlModule);
+
+            const result = findModuleForPath(mockServer, ["/src/Url.tsx"]);
+
+            expect(result).toBe(urlModule);
+        });
+    });
+
+    describe("expensive idToModuleMap fallback", () => {
+        it("skips null modules and matches by partial path inclusion", () => {
+            expect.assertions(1);
+
+            const matchModule = { file: "/abs/project/src/deep/Target.tsx" };
+
+            // id/url lookups all miss so we reach findBestModuleMatch.
+            mockServer.moduleGraph.getModuleById.mockReturnValue(null);
+            mockServer.moduleGraph.getModuleByUrl.mockReturnValue(null);
+
+            // A null entry must be skipped (continue) before the real one is matched.
+            mockServer.moduleGraph.idToModuleMap.set("null-entry", null);
+            mockServer.moduleGraph.idToModuleMap.set("/abs/project/src/deep/Target.tsx", matchModule);
+
+            // Candidate is a suffix of the module file path -> path.includes(candidate) matches.
+            const result = findModuleForPath(mockServer, ["src/deep/Target.tsx"]);
+
+            expect(result).toBe(matchModule);
+        });
+
+        it("matches when the candidate path contains the module path", () => {
+            expect.assertions(1);
+
+            const matchModule = { id: "Target.tsx" };
+
+            mockServer.moduleGraph.getModuleById.mockReturnValue(null);
+            mockServer.moduleGraph.getModuleByUrl.mockReturnValue(null);
+            mockServer.moduleGraph.idToModuleMap.set("Target.tsx", matchModule);
+
+            // candidate.includes(path): the long candidate contains the short module id.
+            const result = findModuleForPath(mockServer, ["/abs/project/src/Target.tsx"]);
+
+            expect(result).toBe(matchModule);
+        });
     });
 
     describe("real-world error scenarios", () => {

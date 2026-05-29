@@ -106,4 +106,87 @@ describe(getSourceFromMap, () => {
         // Function treats empty string as no specific source and falls back to first source
         expect(result).toBe("console.log('app code');");
     });
+
+    it("returns the first source content directly when no source is requested", () => {
+        expect.assertions(1);
+
+        const map = {
+            sources: ["src/App.tsx"],
+            sourcesContent: ["first content"],
+        };
+
+        const result = getSourceFromMap(map, undefined);
+
+        expect(result).toBe("first content");
+    });
+
+    it("returns undefined for an extension-only name with no separators that does not match", () => {
+        expect.assertions(1);
+
+        // "Missing" has no slash/backslash, so normalization is skipped and -1 is returned;
+        // sourcesContent[0] is null so there is no fallback either.
+        const map = {
+            sources: ["src/App.tsx"],
+            sourcesContent: [null],
+        };
+
+        const result = getSourceFromMap(map, "Missing");
+
+        expect(result).toBeUndefined();
+    });
+
+    it("matches a source after path normalization (backslashes -> forward slashes)", () => {
+        expect.assertions(1);
+
+        const map = {
+            sources: ["src/components/Button.tsx"],
+            sourcesContent: ["button content"],
+        };
+
+        // The wanted source uses backslashes; normalization makes it match the stored source.
+        const result = getSourceFromMap(map, String.raw`src\components\Button.tsx`);
+
+        expect(result).toBe("button content");
+    });
+
+    it("matches a source via suffix partial-match when exact and normalized lookups fail", () => {
+        expect.assertions(1);
+
+        const map = {
+            sources: ["/abs/project/src/deep/Widget.tsx"],
+            sourcesContent: ["widget content"],
+        };
+
+        // No exact match; partial match because the stored source ends with the wanted suffix.
+        const result = getSourceFromMap(map, "src/deep/Widget.tsx");
+
+        expect(result).toBe("widget content");
+    });
+
+    it("skips null entries in the sources array during partial matching", () => {
+        expect.assertions(1);
+
+        const map = {
+            sources: [null as unknown as string, "/abs/src/Real.tsx"],
+            sourcesContent: ["ignored", "real content"],
+        };
+
+        const result = getSourceFromMap(map, "src/Real.tsx");
+
+        expect(result).toBe("real content");
+    });
+
+    it("returns undefined when sources is an empty array but content exists at no matching index", () => {
+        expect.assertions(1);
+
+        // sources empty -> findSourceIndex short-circuits to -1; falls back to first content.
+        const map = {
+            sources: [] as string[],
+            sourcesContent: ["fallback content"],
+        };
+
+        const result = getSourceFromMap(map, "src/whatever.tsx");
+
+        expect(result).toBe("fallback content");
+    });
 });

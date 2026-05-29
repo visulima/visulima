@@ -184,6 +184,76 @@ describe(retrieveSourceTexts, () => {
             expect(result.originalSourceText).toBeUndefined();
         });
 
+        it("extracts original source from a cached transform-result source map", async () => {
+            expect.assertions(2);
+
+            const moduleItem = {
+                transformResult: {
+                    code: "compiled code",
+                    map: {
+                        mappings: "AAAA",
+                        sources: ["/src/App.tsx"],
+                        sourcesContent: ["original source from cached map"],
+                    },
+                },
+            };
+            const filePath = "/src/App.tsx";
+            const idCandidates = ["/src/App.tsx"];
+
+            const result = await retrieveSourceTexts(mockServer, moduleItem, filePath, idCandidates);
+
+            expect(result.compiledSourceText).toBe("compiled code");
+            expect(result.originalSourceText).toBe("original source from cached map");
+        });
+
+        it("extracts original source from a transform-request source map with mappings", async () => {
+            expect.assertions(2);
+
+            const moduleItem = {
+                id: "/src/Widget.tsx",
+            };
+            const filePath = "/src/Widget.tsx";
+            const idCandidates = ["/src/Widget.tsx"];
+
+            mockServer.transformRequest.mockResolvedValue({
+                code: "widget compiled",
+                map: {
+                    mappings: "AAAA",
+                    sources: ["/src/Widget.tsx"],
+                    sourcesContent: ["widget original source"],
+                },
+            });
+
+            const result = await retrieveSourceTexts(mockServer, moduleItem, filePath, idCandidates);
+
+            expect(result.compiledSourceText).toBe("widget compiled");
+            expect(result.originalSourceText).toBe("widget original source");
+        });
+
+        it("ignores a transform-request source map with empty mappings", async () => {
+            expect.assertions(2);
+
+            const moduleItem = {
+                id: "/src/Empty.tsx",
+            };
+            const filePath = "/src/Empty.tsx";
+            const idCandidates = ["/src/Empty.tsx"];
+
+            mockServer.transformRequest.mockResolvedValue({
+                code: "empty compiled",
+                map: {
+                    mappings: "",
+                    sources: ["/src/Empty.tsx"],
+                    sourcesContent: ["should be ignored"],
+                },
+            });
+
+            const result = await retrieveSourceTexts(mockServer, moduleItem, filePath, idCandidates);
+
+            expect(result.compiledSourceText).toBe("empty compiled");
+            expect(result.originalSourceText).toBeUndefined();
+        });
+
         it("should prioritize transform result over other sources", async () => {
             expect.assertions(1);
 

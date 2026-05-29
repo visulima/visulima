@@ -81,6 +81,25 @@ describe(normalizeIdCandidates, () => {
         expect(candidates).toHaveLength(2);
     });
 
+    it("should split a local (non-http) path on its query parameter", () => {
+        expect.assertions(3);
+
+        const candidates = normalizeIdCandidates("/src/App.tsx?vue&type=script");
+
+        expect(candidates).toContain("/src/App.tsx?vue&type=script"); // original
+        expect(candidates).toContain("src/App.tsx?vue&type=script"); // leading slash removed
+        expect(candidates).toContain("/src/App.tsx"); // query stripped
+    });
+
+    it("should not add an empty path-without-query for a local path that begins with ?", () => {
+        expect.assertions(1);
+
+        // pathWithoutQuery is "" here, so the empty candidate is not pushed.
+        const candidates = normalizeIdCandidates("?only=query");
+
+        expect(candidates).not.toContain("");
+    });
+
     it("should deduplicate candidates", () => {
         expect.assertions(1);
 
