@@ -1,8 +1,26 @@
 import { Buffer } from "node:buffer";
 
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { asciiToUint8Array, bufferToUint8Array, isUint8Array, toUint8Array, utf8ToUint8Array } from "../../src/index";
+
+/**
+ * Build an array-like object that satisfies `TemplateStringsArray` but is NOT a
+ * real `Array`. This forces the `String.raw(txt)` branch in the helpers, which
+ * is otherwise skipped because native tagged-template arrays pass `Array.isArray`.
+ * @param cooked The cooked string segments.
+ * @param raw The raw string segments (defaults to the cooked segments).
+ * @returns A `TemplateStringsArray`-shaped object that is not an `Array`.
+ */
+const buildNonArrayTemplate = (cooked: string[], raw: string[] = cooked): TemplateStringsArray => {
+    const strings: Record<number | string, unknown> = { length: cooked.length, raw };
+
+    cooked.forEach((value, index) => {
+        strings[index] = value;
+    });
+
+    return strings as unknown as TemplateStringsArray;
+};
 
 describe("@visulima/bytes", () => {
     describe(bufferToUint8Array, () => {
@@ -120,6 +138,18 @@ describe("@visulima/bytes", () => {
 
             expect(asciiToUint8Array(`Hello ${world}!`)).toStrictEqual(new Uint8Array([72, 101, 108, 108, 111, 32, 87, 111, 114, 108, 100, 33]));
         });
+
+        it("should support native tagged-template usage", () => {
+            expect.assertions(1);
+
+            expect(asciiToUint8Array`Hi!`).toStrictEqual(new Uint8Array([72, 105, 33]));
+        });
+
+        it("should resolve a non-Array TemplateStringsArray via String.raw", () => {
+            expect.assertions(1);
+
+            expect(asciiToUint8Array(buildNonArrayTemplate(["Hi!"]))).toStrictEqual(new Uint8Array([72, 105, 33]));
+        });
     });
 
     describe(utf8ToUint8Array, () => {
@@ -142,6 +172,18 @@ describe("@visulima/bytes", () => {
             const item = "你好";
 
             expect(utf8ToUint8Array(`Item: ${item}`)).toStrictEqual(new Uint8Array([73, 116, 101, 109, 58, 32, 228, 189, 160, 229, 165, 189]));
+        });
+
+        it("should support native tagged-template usage", () => {
+            expect.assertions(1);
+
+            expect(utf8ToUint8Array`Hi!`).toStrictEqual(new Uint8Array([72, 105, 33]));
+        });
+
+        it("should resolve a non-Array TemplateStringsArray via String.raw", () => {
+            expect.assertions(1);
+
+            expect(utf8ToUint8Array(buildNonArrayTemplate(["你好"]))).toStrictEqual(new Uint8Array([228, 189, 160, 229, 165, 189]));
         });
     });
 
@@ -232,6 +274,55 @@ describe("@visulima/bytes", () => {
             expect.assertions(1);
 
             expect(() => toUint8Array(undefined)).toThrow("UINT8ARRAY_INCOMPATIBLE: Cannot convert data to Uint8Array");
+        });
+    });
+
+    describe("browser environment (no Buffer)", () => {
+        afterEach(() => {
+            vi.resetModules();
+            vi.doUnmock("node:buffer");
+        });
+
+        it("isUint8Array uses the non-Buffer code path", async () => {
+            expect.assertions(3);
+
+            vi.doMock(import("node:buffer"), () => {
+                return { Buffer: undefined };
+            });
+
+            const bytesModule = await import("../../src/index");
+
+            expect(bytesModule.isUint8Array(new Uint8Array([1]))).toBe(true);
+            expect(bytesModule.isUint8Array([1, 2])).toBe(false);
+            expect(bytesModule.isUint8Array("text")).toBe(false);
+        });
+
+        it("toUint8Array still converts Uint8Array, ArrayBuffer and number arrays", async () => {
+            expect.assertions(3);
+
+            vi.doMock(import("node:buffer"), () => {
+                return { Buffer: undefined };
+            });
+
+            const bytesModule = await import("../../src/index");
+            const u8 = new Uint8Array([9]);
+
+            expect(bytesModule.toUint8Array(u8)).toBe(u8);
+            expect(bytesModule.toUint8Array(new Uint8Array([1, 2, 3]).buffer)).toStrictEqual(new Uint8Array([1, 2, 3]));
+            expect(bytesModule.toUint8Array([4, 5])).toStrictEqual(new Uint8Array([4, 5]));
+        });
+
+        it("toUint8Array throws for strings when Buffer is unavailable", async () => {
+            expect.assertions(2);
+
+            vi.doMock(import("node:buffer"), () => {
+                return { Buffer: undefined };
+            });
+
+            const bytesModule = await import("../../src/index");
+
+            expect(() => bytesModule.toUint8Array("string")).toThrow("UINT8ARRAY_INCOMPATIBLE: Cannot convert data to Uint8Array");
+            expect(() => bytesModule.toUint8Array(123)).toThrow("UINT8ARRAY_INCOMPATIBLE: Cannot convert data to Uint8Array");
         });
     });
 });
