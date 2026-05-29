@@ -91,4 +91,30 @@ describe(processHydrationDiff, () => {
         expect(error.message).not.toContain("This can happen if a SSR-ed Client Component used:");
         expect(error.message).toContain("Hydration failed");
     });
+
+    it("leaves error.message untouched when the message begins with the diff link", () => {
+        expect.assertions(2);
+
+        // No text precedes the link, so the leading hydrationMessage segment is empty (falsy)
+        // and the message-rewrite branch is skipped.
+        const diff = "+   <p>kept</p>";
+        const error = new Error(`${REACT_LINK}\n${diff}`);
+
+        const result = processHydrationDiff(error) ?? "";
+
+        expect(error.message).toBe(`${REACT_LINK}\n${diff}`);
+        expect(result).toContain("[!code ++]    <p>kept</p>");
+    });
+
+    it("keeps a style value that already ends with a semicolon as-is", () => {
+        expect.assertions(1);
+
+        const diff = "+   <p style=\"color:red;\">y</p>";
+        const error = new Error(`hydration${REACT_LINK}\n${diff}`);
+
+        const result = processHydrationDiff(error) ?? "";
+
+        // The trailing semicolon already exists, so no extra one is appended.
+        expect(result).toContain("style=\"color:red;\"");
+    });
 });

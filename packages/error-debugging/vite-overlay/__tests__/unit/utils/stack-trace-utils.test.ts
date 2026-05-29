@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { describe, expect, it } from "vitest";
 
-import { cleanErrorStack, isValidStackFrame } from "../../../src/utils/stack-trace";
+import { absolutizeStackUrls, cleanErrorMessage, cleanErrorStack, extractErrors, isAggregateError, isValidStackFrame } from "../../../src/utils/stack-trace";
 
 describe(cleanErrorStack, () => {
     it("should clean Vue compilation errors", () => {
@@ -281,5 +281,154 @@ describe(isValidStackFrame, () => {
 
         expect(isValidStackFrame("at <anonymous> (/path/to/file.js:10:5)")).toBe(true);
         expect(isValidStackFrame("at <anonymous> (file.js:10:5)")).toBe(true);
+    });
+});
+
+describe(absolutizeStackUrls, () => {
+    const root = "/home/user/project";
+
+    it("returns the stack unchanged when it is empty", () => {
+        expect.assertions(2);
+
+        expect(absolutizeStackUrls("", root)).toBe("");
+
+        expect(absolutizeStackUrls(null as any, root)).toBeNull();
+    });
+
+    it("rewrites an http URL with line and column into an absolute filesystem path", () => {
+        expect.assertions(1);
+
+        const stack = "at Component (http://localhost:5173/src/App.tsx:10:5)";
+
+        const result = absolutizeStackUrls(stack, root);
+
+        expect(result).toBe("at Component (/home/user/project/src/App.tsx:10:5)");
+    });
+
+    it("rewrites an http URL with only a line number", () => {
+        expect.assertions(1);
+
+        const stack = "at fn (https://example.com/src/file.js:42)";
+
+        const result = absolutizeStackUrls(stack, root);
+
+        expect(result).toBe("at fn (/home/user/project/src/file.js:42)");
+    });
+
+    it("rewrites an http URL without line/column", () => {
+        expect.assertions(1);
+
+        const stack = "at fn (http://localhost/src/file.js)";
+
+        const result = absolutizeStackUrls(stack, root);
+
+        expect(result).toBe("at fn (/home/user/project/src/file.js)");
+    });
+
+    it("strips /@fs/ prefixes when converting the URL pathname", () => {
+        expect.assertions(1);
+
+        const stack = "at fn (http://localhost:5173/@fs/abs/path/file.js:3:2)";
+
+        const result = absolutizeStackUrls(stack, root);
+
+        // The /@fs/ marker is removed and the remaining path is resolved against root.
+        expect(result).toContain("file.js:3:2");
+    });
+
+    it("leaves non-url content untouched", () => {
+        expect.assertions(1);
+
+        const stack = "at fn (/already/absolute/file.js:1:1)";
+
+        expect(absolutizeStackUrls(stack, root)).toBe(stack);
+    });
+});
+
+describe(cleanErrorMessage, () => {
+    it("returns the message of an Error instance", () => {
+        expect.assertions(1);
+
+        expect(cleanErrorMessage(new Error("boom"))).toBe("boom");
+    });
+
+    it("accepts a raw string message", () => {
+        expect.assertions(1);
+
+        expect(cleanErrorMessage("plain message")).toBe("plain message");
+    });
+
+    it("strips VT control characters (ANSI colors) from the message", () => {
+        expect.assertions(1);
+
+        const colored = "[31mred error[39m";
+
+        expect(cleanErrorMessage(colored)).toBe("red error");
+    });
+
+    it("falls back to String(error) when an Error has no message", () => {
+        expect.assertions(1);
+
+        const error = new Error("placeholder");
+
+        error.message = "";
+
+        expect(cleanErrorMessage(error)).toBe("Error");
+    });
+});
+
+describe(isAggregateError, () => {
+    it("returns true for a native AggregateError", () => {
+        expect.assertions(1);
+
+        expect(isAggregateError(new AggregateError([new Error("a")], "agg"))).toBe(true);
+    });
+
+    it("returns true for an object that carries an errors array", () => {
+        expect.assertions(1);
+
+        expect(isAggregateError({ errors: [new Error("a")] })).toBe(true);
+    });
+
+    it("returns false for a plain Error", () => {
+        expect.assertions(1);
+
+        expect(isAggregateError(new Error("nope"))).toBe(false);
+    });
+
+    it("returns false for null and non-objects", () => {
+        expect.assertions(2);
+
+        expect(isAggregateError(null)).toBe(false);
+        expect(isAggregateError("string")).toBe(false);
+    });
+
+    it("returns false when errors is not an array", () => {
+        expect.assertions(1);
+
+        expect(isAggregateError({ errors: "not-an-array" })).toBe(false);
+    });
+});
+
+describe(extractErrors, () => {
+    it("returns the inner errors array of an AggregateError", () => {
+        expect.assertions(2);
+
+        const inner1 = new Error("one");
+        const inner2 = new Error("two");
+        const result = extractErrors(new AggregateError([inner1, inner2], "agg"));
+
+        expect(result).toHaveLength(2);
+        expect(result[0]).toBe(inner1);
+    });
+
+    it("wraps a single error in an array", () => {
+        expect.assertions(2);
+
+        const error = new Error("single");
+        const result = extractErrors(error);
+
+        expect(result).toHaveLength(1);
+        expect(result[0]).toBe(error);
     });
 });
