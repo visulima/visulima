@@ -84,6 +84,18 @@ describe(formatBytes, () => {
         expect(formatBytes(0)).toBe("0 Bytes");
     });
 
+    it("should return the long unit name when formatting zero bytes", () => {
+        expect.assertions(1);
+
+        expect(formatBytes(0, { long: true })).toBe("0 Bytes");
+    });
+
+    it("should fall back to the locale default fraction digits when decimals is negative", () => {
+        expect.assertions(1);
+
+        expect(formatBytes(50.4 * 1024 * 1024, { decimals: -1 })).toBe("50.4 MB");
+    });
+
     const testCases = [
         // Metric
         { description: "metric 10", expectedUnit: "Bytes", expectedValue: "10", value: 10 },
@@ -319,5 +331,11 @@ describe(parseBytes, () => {
         expect.assertions(1);
 
         expect(() => parseBytes("x".repeat(101))).toThrow("Value exceeds the maximum length of 100 characters.");
+    });
+
+    it("should return NaN when the value cannot be matched by the parser", () => {
+        expect.assertions(1);
+
+        expect(parseBytes("abc")).toBeNaN();
     });
 });

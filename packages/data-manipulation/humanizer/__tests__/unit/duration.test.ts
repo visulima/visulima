@@ -2,6 +2,7 @@ import ms from "ms";
 import { describe, expect, it } from "vitest";
 
 import duration from "../../src/duration";
+import { durationLanguage as deDurationLanguage } from "../../src/language/de";
 import { durationLanguage as trDurationLanguage } from "../../src/language/tr";
 import parseDuration from "../../src/parse-duration";
 import type { DurationDigitReplacements, DurationLanguage, DurationUnitName } from "../../src/types";
@@ -79,6 +80,24 @@ describe(duration, () => {
         expect(duration(0, options)).toBe("0 days");
         expect(duration(ms("6h"), options)).toBe("0.25 days");
         expect(duration(ms("7d"), options)).toBe("7 days");
+    });
+
+    it("should return an empty piece using the smallest unit when units is an empty array", () => {
+        expect.assertions(1);
+
+        expect(duration(1000, { units: [] as DurationUnitName[] })).toBe("0 undefined");
+    });
+
+    it("should not prefix a time adverb when the duration is zero", () => {
+        expect.assertions(1);
+
+        expect(duration(0, { timeAdverb: true })).toBe("0 seconds");
+    });
+
+    it("should round each unit without bubbling up when the carry is zero", () => {
+        expect.assertions(1);
+
+        expect(duration(3_661_000, { round: true, units: ["h", "m", "s"] as DurationUnitName[] })).toBe("1 hour, 1 minute, 1 second");
     });
 
     it("should overwrite the unit measures in the initializer", () => {
@@ -481,5 +500,69 @@ describe(parseDuration, () => {
         expect(parseDuration(".", { defaultUnit: "s" })).toBeUndefined(); // Just a dot is not a number
         expect(parseDuration("1.2.3s")).toBeUndefined(); // Invalid number format
         expect(parseDuration("5. ms")).toBeUndefined(); // Invalid number format "5."
+    });
+
+    it("should fall back to default separators and the english unit map when the language omits them", () => {
+        expect.assertions(2);
+
+        const minimalLanguage: DurationLanguage = {
+            d: "d",
+            future: "in %s",
+            h: "h",
+            m: "m",
+            mo: "mo",
+            ms: "ms",
+            past: "%s ago",
+            s: "s",
+            w: "w",
+            y: "y",
+        };
+
+        expect(parseDuration("1h", { language: minimalLanguage })).toBe(3_600_000);
+        expect(parseDuration("1.5h", { language: minimalLanguage })).toBe(5_400_000);
+    });
+
+    it("should honour a language-specific decimal and group separator", () => {
+        expect.assertions(2);
+
+        expect(parseDuration("2,5 Stunden", { language: deDurationLanguage })).toBe(2.5 * 3_600_000);
+        expect(parseDuration("1.000,5 s", { language: deDurationLanguage })).toBe(1000.5 * 1000);
+    });
+
+    it("should return undefined for a numeric string when the default unit is unknown", () => {
+        expect.assertions(1);
+
+        expect(parseDuration("100", { defaultUnit: "bogus" as DurationUnitName })).toBeUndefined();
+    });
+
+    it("should parse partial ISO-8601 durations", () => {
+        expect.assertions(3);
+
+        expect(parseDuration("PT1H")).toBe(3_600_000);
+        expect(parseDuration("PT30M")).toBe(30 * 60_000);
+        expect(parseDuration("PT1H30M")).toBe(3_600_000 + 30 * 60_000);
+    });
+
+    it("should skip a matched unit whose lower-cased form is not in the unit map", () => {
+        expect.assertions(2);
+
+        const mixedCaseLanguage: DurationLanguage = {
+            d: "d",
+            future: "in %s",
+            h: "h",
+            m: "m",
+            mo: "mo",
+            ms: "ms",
+            past: "%s ago",
+            s: "s",
+            unitMap: { Hr: "h", min: "m" },
+            w: "w",
+            y: "y",
+        };
+
+        // "Hr" matches the case-insensitive unit regex, but the lower-cased lookup ("hr") misses the "Hr" key.
+        expect(parseDuration("1Hr", { language: mixedCaseLanguage })).toBeUndefined();
+        // A lower-case key still resolves normally.
+        expect(parseDuration("5min", { language: mixedCaseLanguage })).toBe(5 * 60_000);
     });
 });
