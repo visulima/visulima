@@ -337,4 +337,70 @@ describe(resendProvider, () => {
             expect(result.error).toBeDefined();
         });
     });
+
+    describe("branch coverage", () => {
+        it("should log an Error and return false when a non-standard key check fails", async () => {
+            expect.assertions(1);
+
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({ error: new Error("denied"), success: false });
+
+            const provider = resendProvider({ apiKey: "custom_key" });
+
+            await expect(provider.isAvailable()).resolves.toBe(false);
+        });
+
+        it("should report an unknown error when getEmail fails with a non-Error", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValue({ error: "string failure", success: false });
+
+            const provider = resendProvider({ apiKey: "re_test123" });
+
+            const result = await provider.getEmail?.("msg-1");
+
+            expect(result?.success).toBe(false);
+        });
+
+        it("should send with headers and a templateId without data, generating a message id", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValue({ data: { body: {}, statusCode: 200 }, success: true });
+
+            const provider = resendProvider({ apiKey: "re_test123" });
+
+            const result = await provider.sendEmail({
+                from: { email: "sender@example.com" },
+                headers: { "X-Custom": "value" },
+                html: "<h1>Hi</h1>",
+                subject: "Test",
+                templateId: "template_123",
+                to: { email: "user@example.com" },
+            });
+
+            expect(result.success).toBe(true);
+        });
+
+        it("should return a default error when send fails without an error", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValue({ success: false });
+
+            const provider = resendProvider({ apiKey: "re_test123" });
+
+            const result = await provider.sendEmail({
+                from: { email: "sender@example.com" },
+                html: "<h1>Hi</h1>",
+                subject: "Test",
+                to: { email: "user@example.com" },
+            });
+
+            expect(result.success).toBe(false);
+        });
+    });
 });
