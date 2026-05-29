@@ -1,7 +1,11 @@
 import type { InteractiveManager } from "@visulima/interactive-manager";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { MultiBarInstance } from "../src/multi-progress-bar";
 import { MultiProgressBar } from "../src/multi-progress-bar";
+
+// Hoisted to module scope so eslint's prefer-static-regex rule is satisfied.
+const RECT_GRADIENT_RE = /[▬▮▯▭]/u;
 
 /**
  * Build a minimal stub that satisfies the calls `MultiProgressBar` makes
@@ -87,6 +91,23 @@ describe("multiProgressBar", () => {
             multi.create(25);
 
             expect(state.hookCalls).toBe(1);
+        });
+
+        it("should fall back to non-composite mode when composite is explicitly undefined", () => {
+            expect.assertions(1);
+
+            const { manager, state } = createManagerStub();
+            const multi = new MultiProgressBar({ composite: undefined, format: "[{bar}]" }, manager);
+
+            multi.create(100);
+            const bar2 = multi.create(100);
+
+            // Re-render with both bars present; non-composite mode emits one row per bar.
+            bar2.update(10);
+
+            const last = state.updates.at(-1);
+
+            expect(last?.rows.length).toBe(2);
         });
 
         it("should honour custom starting current and payload", () => {
@@ -191,6 +212,36 @@ describe("multiProgressBar", () => {
 
             expect(multi.remove(otherBar)).toBe(false);
         });
+
+        it("should skip non-matching bars before removing the requested one", () => {
+            expect.assertions(2);
+
+            const { manager, state } = createManagerStub();
+            const multi = new MultiProgressBar({}, manager);
+
+            multi.create(100);
+            const second = multi.create(50);
+
+            // Removing the second bar forces the loop to skip the first (non-matching) entry.
+            const removed = multi.remove(second);
+
+            expect(removed).toBe(true);
+            expect(state.unhookCalls).toBe(0);
+        });
+
+        it("should remove the last bar without a manager and not throw", () => {
+            expect.assertions(2);
+
+            const multi = new MultiProgressBar();
+            const bar = multi.create(100);
+
+            let removed = false;
+
+            expect(() => {
+                removed = multi.remove(bar);
+            }).not.toThrow();
+            expect(removed).toBe(true);
+        });
     });
 
     describe("stop", () => {
@@ -281,6 +332,43 @@ describe("multiProgressBar", () => {
 
             expect(last?.rows[0]).toMatch(/[⣿⡷⢾⠤]/u);
         });
+
+        it("should return the raw render output when the format has no bracketed bar section", () => {
+            expect.assertions(2);
+
+            // Without a `[...]` section the composite renderer cannot inject a grid,
+            // so it returns the first bar's rendered line verbatim.
+            const multi = new MultiProgressBar({ composite: true, format: "{percentage}%" }, stub.manager);
+
+            multi.create(100);
+            multi.create(100);
+
+            const last = stub.state.updates.at(-1);
+
+            expect(last?.rows.length).toBe(1);
+            expect(last?.rows[0]).toBe("0%");
+        });
+
+        it("should pick the lowest-percentage bar when stacked bars overlap with mixed progress", () => {
+            expect.assertions(1);
+
+            // Bars at 30/90/30: within a shared cell the second (higher) bar fails the
+            // `<` check, exercising the tie/greater branch of the selection logic, and the
+            // third bar ties the smallest percentage so the larger index wins.
+            const multi = new MultiProgressBar({ composite: true, format: "[{bar}]", style: "rect" }, stub.manager);
+
+            const bar1 = multi.create(100);
+            const bar2 = multi.create(100);
+            const bar3 = multi.create(100);
+
+            bar1.update(30);
+            bar2.update(90);
+            bar3.update(30);
+
+            const last = stub.state.updates.at(-1);
+
+            expect(last?.rows[0]).toMatch(RECT_GRADIENT_RE);
+        });
     });
 
     describe("setBarColor", () => {
@@ -320,6 +408,25 @@ describe("multiProgressBar", () => {
 
             expect(last?.rows[0]).not.toContain("<RED>");
         });
+
+        it("should skip non-matching bars when assigning a color to a later bar", () => {
+            expect.assertions(1);
+
+            const { manager, state } = createManagerStub();
+            const multi = new MultiProgressBar({ composite: true, format: "[{bar}]" }, manager);
+            const colorize = (text: string): string => `<C>${text}</C>`;
+
+            multi.create(100);
+            const second = multi.create(100) as never as MultiBarInstance;
+
+            // Coloring the second bar makes setBarColor iterate past the first non-match.
+            multi.setBarColor(second, colorize);
+            second.update(50);
+
+            const last = state.updates.at(-1);
+
+            expect(last?.rows[0]).toContain("<C>");
+        });
     });
 
     describe("getBarState", () => {
@@ -333,7 +440,25 @@ describe("multiProgressBar", () => {
 
             expect(state.current).toBe(50);
             expect(state.total).toBe(200);
-            expect(typeof state.char).toBe("string");
+            expect(state.char).toBe("█");
+        });
+
+        it("should use the last entry of an array complete char", () => {
+            expect.assertions(1);
+
+            const multi = new MultiProgressBar({ barCompleteChar: ["A", "B", "C"] });
+            const bar = multi.create(100, 50) as never as MultiBarInstance;
+
+            expect(bar.getBarState().char).toBe("C");
+        });
+
+        it("should fall back to the block char when the array complete char is empty", () => {
+            expect.assertions(1);
+
+            const multi = new MultiProgressBar({ barCompleteChar: [] });
+            const bar = multi.create(100, 50) as never as MultiBarInstance;
+
+            expect(bar.getBarState().char).toBe("█");
         });
     });
 });

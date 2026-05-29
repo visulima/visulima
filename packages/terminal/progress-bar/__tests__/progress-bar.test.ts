@@ -1,5 +1,5 @@
 import type { InteractiveManager } from "@visulima/interactive-manager";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { ProgressBar } from "../src/progress-bar";
 import type { ProgressBarOptions } from "../src/types";
@@ -208,6 +208,28 @@ describe("progressBar (extra coverage)", () => {
 
             expect(state.updates.at(-1)?.[0]).toBe("42");
         });
+
+        it("should not throw when start() is called without a manager", () => {
+            expect.assertions(1);
+
+            const bar = new ProgressBar({ format: "{value}/{total}", total: 100 });
+
+            bar.start(200, 50);
+
+            expect(bar.render()).toContain("50/200");
+        });
+
+        it("should not throw when stop() is called without a manager", () => {
+            expect.assertions(1);
+
+            const bar = new ProgressBar({ total: 100 });
+
+            bar.start();
+
+            expect(() => {
+                bar.stop();
+            }).not.toThrow();
+        });
     });
 
     describe("payload", () => {
@@ -250,6 +272,19 @@ describe("progressBar (extra coverage)", () => {
 
             expect(bar.render()).not.toContain("?");
         });
+
+        it("should clamp peak position to filled-1 when peak lags far behind progress", () => {
+            expect.assertions(2);
+
+            // current=90 => filled=9, peak=10 => peakPos≈1 which is < filled-1 (8),
+            // so the peak marker is pulled forward to position filled-1.
+            const bar = new ProgressBar({ current: 90, format: "[{bar}]", peak: 10, peakChar: "P", style: "ascii", total: 100, width: 10 });
+            const output = bar.render();
+
+            expect(output).toContain("P");
+            // Peak sits at the trailing edge of the filled region, not near the start.
+            expect(output).toBe("[########P-]");
+        });
     });
 
     describe("gradient mode", () => {
@@ -283,6 +318,40 @@ describe("progressBar (extra coverage)", () => {
             });
 
             expect(bar.render()).toContain("#");
+        });
+
+        it("should normalize a string complete char into an array when only the incomplete char is an array", () => {
+            expect.assertions(1);
+
+            // Only barIncompleteChar is an array -> gradient mode; the string
+            // barCompleteChar must be wrapped into a single-element array.
+            const bar = new ProgressBar({
+                barCompleteChar: "*",
+                barIncompleteChar: [".", "_"],
+                current: 50,
+                format: "[{bar}]",
+                total: 100,
+                width: 10,
+            });
+
+            expect(bar.render()).toBe("[*****.....]");
+        });
+
+        it("should pick the gradient boundary character for the leading filled cell", () => {
+            expect.assertions(1);
+
+            // current=35/100 with width=10 and a 4-step gradient leaves a
+            // fractional remainder, so the boundary cell uses an interior gradient char.
+            const bar = new ProgressBar({
+                barCompleteChar: ["a", "b", "c", "d"],
+                barIncompleteChar: ".",
+                current: 35,
+                format: "[{bar}]",
+                total: 100,
+                width: 10,
+            });
+
+            expect(bar.render()).toBe("[dddb......]");
         });
     });
 
@@ -321,6 +390,53 @@ describe("progressBar (extra coverage)", () => {
             const bar = new ProgressBar({ current: 50, format: "[{bar}]", total: 100, width: -10 });
 
             expect(bar.render()).toBe("[]");
+        });
+
+        it("should fall back to current=0 when current is explicitly undefined", () => {
+            expect.assertions(1);
+
+            const bar = new ProgressBar({ current: undefined, format: "{value}", total: 100 });
+
+            expect(bar.render()).toBe("0");
+        });
+
+        it("should fall back to the default width when width is explicitly undefined", () => {
+            expect.assertions(1);
+
+            const bar = new ProgressBar({ current: 50, format: "[{bar}]", total: 100, width: undefined });
+
+            // The default width is 40 => a 40-character bar between the brackets.
+            expect(bar.render()).toHaveLength("[]".length + 40);
+        });
+    });
+
+    describe("eta", () => {
+        afterEach(() => {
+            vi.useRealTimers();
+        });
+
+        it("should return 0 ETA before any progress has been made", () => {
+            expect.assertions(1);
+
+            const bar = new ProgressBar({ current: 0, format: "{eta}", total: 100 });
+
+            expect(bar.render()).toBe("0");
+        });
+
+        it("should compute a positive ETA once enough time has elapsed", () => {
+            expect.assertions(1);
+
+            vi.useFakeTimers();
+            vi.setSystemTime(0);
+
+            const bar = new ProgressBar({ current: 0, format: "{eta}", total: 100 });
+
+            bar.start(100, 25);
+
+            // 2s elapsed, 25 done => rate 12.5/s, remaining 75 => ETA round(6) = 6.
+            vi.setSystemTime(2000);
+
+            expect(bar.render()).toBe("6");
         });
     });
 });
