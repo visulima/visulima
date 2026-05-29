@@ -133,6 +133,14 @@ describe("runTransport — implemented transports", () => {
 
         expect(status).toBe("skipped");
     });
+
+    it("returns 'skipped' for a transport type that isn't in the registry", async () => {
+        expect.assertions(1);
+
+        const status = await runTransport("NotARegisteredType", emptyContext);
+
+        expect(status).toBe("skipped");
+    });
 });
 
 describe(reportValidators, () => {
@@ -163,5 +171,15 @@ describe(reportValidators, () => {
 
         // eslint-disable-next-line unicorn/no-null -- same rationale as the `null` in the previous test fixture.
         expect(reportValidators([{ validation: { type: "Http" } }, { validation: null }])).toStrictEqual([]);
+    });
+
+    it("ignores validation blocks whose `type` field isn't a string", () => {
+        expect.assertions(1);
+
+        // A malformed rule with a numeric `type` is skipped, leaving only the
+        // well-formed AWS rule in the report.
+        const report = reportValidators([{ validation: { type: 5 } }, { validation: { type: "AWS" } }]);
+
+        expect(report.map((r) => r.type)).toStrictEqual(["AWS"]);
     });
 });

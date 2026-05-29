@@ -1,8 +1,8 @@
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { buildIgnoreMatcher, filterIgnoredFiles } from "../src/ignore-matcher";
 
@@ -82,6 +82,30 @@ describe(buildIgnoreMatcher, () => {
         // Matcher still builds from the patterns we did get.
         expect(matcher?.ignores("deploy.log")).toBe(true);
     });
+
+    it("warns and continues when an ignore-file read fails (e.g. it's a directory)", async () => {
+        expect.assertions(3);
+
+        const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
+        // A directory exists() but readFileSync(dir) throws EISDIR → caught + warned.
+        const dir = resolve(tmp, "a-directory");
+
+        await mkdir(dir);
+
+        const matcher = buildIgnoreMatcher({
+            walk: {
+                excludeFromFiles: [dir],
+                excludePatterns: ["*.log"],
+            },
+        });
+
+        expect(consoleError).toHaveBeenCalledTimes(1);
+        expect(consoleError.mock.calls[0]?.[0]).toContain("failed to read ignore file");
+        // The inline pattern still produced a usable matcher.
+        expect(matcher?.ignores("deploy.log")).toBe(true);
+
+        consoleError.mockRestore();
+    });
 });
 
 describe(filterIgnoredFiles, () => {
@@ -109,5 +133,17 @@ describe(filterIgnoredFiles, () => {
         const kept = filterIgnoredFiles(["../outside.ts"], matcher, resolve(tmp));
 
         expect(kept).toStrictEqual(["../outside.ts"]);
+    });
+
+    it("falls back to the raw cwd when realpathSync(cwd) throws", () => {
+        expect.assertions(1);
+
+        const matcher = buildIgnoreMatcher({ walk: { excludePatterns: ["*.log"] } });
+        // A cwd that doesn't exist makes `realpathSync(cwd)` throw → fallback to the
+        // raw string. The relative `deploy.log` still resolves and is filtered out.
+        const missingCwd = resolve(tmp, "does-not-exist-dir");
+        const kept = filterIgnoredFiles(["deploy.log", "app.ts"], matcher, missingCwd);
+
+        expect(kept).toStrictEqual(["app.ts"]);
     });
 });

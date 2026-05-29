@@ -64,6 +64,37 @@ describe(renderChecksumTemplate, () => {
 
         expect(renderChecksumTemplate("{{ body | unknownfilter }}", { body: "x" })).toBeUndefined();
     });
+
+    it("base36 encodes the crc32 into lowercase base36", () => {
+        expect.assertions(1);
+
+        const out = renderChecksumTemplate("{{ body | crc32 | base36: 7 }}", { body: "hello" });
+
+        expect(out).toMatch(/^[0-9a-z]{7}$/);
+    });
+
+    it("crc32_le_b64 truncates the little-endian base64 digest to the requested width", () => {
+        expect.assertions(2);
+
+        const full = renderChecksumTemplate("{{ body | crc32_le_b64 }}", { body: "hello" });
+        const truncated = renderChecksumTemplate("{{ body | crc32_le_b64: 6 }}", { body: "hello" });
+
+        expect(full).toMatch(/^[A-Z0-9+/]+=*$/i);
+        expect(truncated).toHaveLength(6);
+    });
+
+    it("applies the upcase filter", () => {
+        expect.assertions(1);
+
+        expect(renderChecksumTemplate("{{ body | upcase }}", { body: "abc" })).toBe("ABC");
+    });
+
+    it("encodes zero as a zero-padded run for the configured width", () => {
+        expect.assertions(1);
+
+        // `asNumber("0")` is 0, so `encodeBase` takes the early `n === 0` branch.
+        expect(renderChecksumTemplate("{{ body | base62: 4 }}", { body: "0" })).toBe("0000");
+    });
 });
 
 describe("checkChecksum — real kingfisher rules", () => {
@@ -103,5 +134,20 @@ describe("checkChecksum — real kingfisher rules", () => {
         const verdict = checkChecksum("anything", "(?<other>[a-z]+)", ZUPLO.spec);
 
         expect(verdict).toBeUndefined();
+    });
+
+    it("returns undefined when the rule pattern can't compile to a JS RegExp", () => {
+        expect.assertions(1);
+
+        // An unbalanced group makes `new RegExp` throw; `checkChecksum` swallows
+        // it and yields undefined (can't decide → conservative keep).
+        expect(checkChecksum("anything", "(unclosed", ZUPLO.spec)).toBeUndefined();
+    });
+
+    it("returns undefined when the spec has no actual template or expected value", () => {
+        expect.assertions(2);
+
+        expect(checkChecksum(ZUPLO.match, ZUPLO.pattern, { expected: "{{ BODY | crc32_hex }}" })).toBeUndefined();
+        expect(checkChecksum(ZUPLO.match, ZUPLO.pattern, { actual: { template: "{{ CHECKSUM }}" }, expected: "" })).toBeUndefined();
     });
 });
