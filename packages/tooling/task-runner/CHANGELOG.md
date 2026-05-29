@@ -1,3 +1,9 @@
+## @visulima/task-runner [1.0.0-alpha.17](https://github.com/visulima/visulima/compare/@visulima/task-runner@1.0.0-alpha.16...@visulima/task-runner@1.0.0-alpha.17) (2026-05-29)
+
+### Bug Fixes
+
+* **task-runner:** flush partial output lines on idle, not at EOF ([5912661](https://github.com/visulima/visulima/commit/59126614ab5e07d3085a4194a360bd72437eceea))
+
 ## @visulima/task-runner [1.0.0-alpha.16](https://github.com/visulima/visulima/compare/@visulima/task-runner@1.0.0-alpha.15...@visulima/task-runner@1.0.0-alpha.16) (2026-05-27)
 
 ### Bug Fixes
