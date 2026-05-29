@@ -104,6 +104,33 @@ describe("pailServerImpl", () => {
         expect(stderr.write).toBe(originalStderrWrite);
     });
 
+    it("should keep the original stream when wrapStd is called twice", () => {
+        expect.assertions(1);
+
+        const pailServer = new PailServer({ stderr, stdout });
+
+        const originalStdoutWrite = stdout.write;
+
+        pailServer.wrapStd();
+        // Second wrap must not back up the already-installed wrapper as the original.
+        pailServer.wrapStd();
+        pailServer.restoreStd();
+
+        expect(stdout.write).toBe(originalStdoutWrite);
+    });
+
+    it("should no-op when restoreStd runs without a prior wrap", () => {
+        expect.assertions(1);
+
+        const pailServer = new PailServer({ stderr, stdout });
+
+        const originalStdoutWrite = stdout.write;
+
+        pailServer.restoreStd();
+
+        expect(stdout.write).toBe(originalStdoutWrite);
+    });
+
     it("should handle logging when disabled", () => {
         expect.assertions(1);
 
@@ -451,6 +478,59 @@ describe("pailServerImpl", () => {
             child.info("scoped child");
 
             expect(logStdoutSpy).toHaveBeenCalledWith("scoped child");
+
+            logStdoutSpy.mockRestore();
+        });
+
+        it("should build a child with its own reporters, processors, log levels, messages, scope, and streams", () => {
+            expect.assertions(2);
+
+            const parent = new PailServer({ reporters: [new RawReporter()], stderr, stdout });
+
+            let processed = 0;
+
+            const child = parent.child({
+                logLevels: { informational: 2 },
+                messages: { timerEnd: "ended", timerStart: "started" },
+                processors: [
+                    {
+                        process: (meta) => {
+                            processed += 1;
+
+                            return meta;
+                        },
+                    },
+                ],
+                reporters: [new RawReporter()],
+                scope: "child-scope",
+                stderr,
+                stdout,
+            });
+
+            const logStdoutSpy = vi.spyOn(stdout, "write");
+
+            child.info("fully overridden child");
+
+            expect(processed).toBeGreaterThan(0);
+            expect(logStdoutSpy).toHaveBeenCalledWith("fully overridden child");
+
+            logStdoutSpy.mockRestore();
+        });
+
+        it("should reuse the parent scope when the child overrides nothing", () => {
+            expect.assertions(1);
+
+            const parent = new PailServer({ reporters: [new RawReporter()], stderr, stdout });
+
+            parent.scope("parent-scope");
+
+            const child = parent.child();
+
+            const logStdoutSpy = vi.spyOn(stdout, "write");
+
+            child.info("inherits parent scope");
+
+            expect(logStdoutSpy).toHaveBeenCalledWith("inherits parent scope");
 
             logStdoutSpy.mockRestore();
         });
