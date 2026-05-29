@@ -191,4 +191,31 @@ describe(wildcard, () => {
 
         expect(wildcard(string, pattern)).toBe(true);
     });
+
+    it("should fail when a rolled-back attempt can no longer find the next pattern segment", () => {
+        expect.assertions(1);
+
+        const pattern = "a*b*z";
+        const string = "aXbYbW";
+
+        expect(wildcard(string, pattern)).toBe(false);
+    });
+
+    it("should fail when the rolled-back attempt runs out of the trailing segment", () => {
+        expect.assertions(1);
+
+        const pattern = "*ab*cd*ef";
+        const string = "abXcdYZ";
+
+        expect(wildcard(string, pattern)).toBe(false);
+    });
+
+    it("should match when adjacent wildcards are skipped during rollback", () => {
+        expect.assertions(1);
+
+        const pattern = "a**a";
+        const string = "aaa";
+
+        expect(wildcard(string, pattern)).toBe(true);
+    });
 });
