@@ -48,6 +48,12 @@ describe("xTerm Key Modifier Options (XTMODKEYS)", () => {
             expect(keyModifierOptions(-1, 1)).toBe("");
             expect(keyModifierOptions(-1)).toBe("");
         });
+
+        it("should return empty string when value is provided but not an integer", () => {
+            expect.assertions(1);
+
+            expect(keyModifierOptions(1, 1.5)).toBe("");
+        });
     });
 
     it("xTMODKEYS alias should work", () => {

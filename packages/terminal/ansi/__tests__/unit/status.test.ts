@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { CSI, SEP } from "../../src/constants";
+import { CSI, DCS, SEP, ST } from "../../src/constants";
 import type { AnsiStatusReport, DecStatusReport } from "../../src/status";
 import {
     CPR,
@@ -22,8 +22,10 @@ import {
     reportPrinterNoPaperDEC,
     reportPrinterNotReadyDEC,
     reportPrinterReadyDEC,
+    reportSecondaryDeviceAttributes,
     reportTerminalNotOK,
     reportTerminalOK,
+    reportTertiaryDeviceAttributes,
     reportUDKLockedDEC,
     reportUDKUnlockedDEC,
     requestCursorPositionReport,
@@ -237,6 +239,27 @@ describe("status Reports", () => {
         it("reportPrimaryDeviceAttributes should return empty string if no attributes are provided", () => {
             expect.assertions(1);
             expect(reportPrimaryDeviceAttributes()).toBe("");
+        });
+
+        it("reportSecondaryDeviceAttributes should format correctly with an explicit cartridge", () => {
+            expect.assertions(1);
+            expect(reportSecondaryDeviceAttributes(41, 370, 0)).toBe(`${CSI}>41${SEP}370${SEP}0c`);
+        });
+
+        it("reportSecondaryDeviceAttributes should default the cartridge to 0 when omitted", () => {
+            expect.assertions(1);
+            expect(reportSecondaryDeviceAttributes(0, 2)).toBe(`${CSI}>0${SEP}2${SEP}0c`);
+        });
+
+        it("reportSecondaryDeviceAttributes should clamp negative values to 0", () => {
+            expect.assertions(1);
+            expect(reportSecondaryDeviceAttributes(-1, -2, -3)).toBe(`${CSI}>0${SEP}0${SEP}0c`);
+        });
+
+        it("reportTertiaryDeviceAttributes should format the unit ID with DCS/ST", () => {
+            expect.assertions(2);
+            expect(reportTertiaryDeviceAttributes("MYTERM001")).toBe(`${DCS}!|MYTERM001${ST}`);
+            expect(reportTertiaryDeviceAttributes("")).toBe(`${DCS}!|${ST}`);
         });
     });
 
