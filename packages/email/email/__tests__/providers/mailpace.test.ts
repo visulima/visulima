@@ -234,4 +234,26 @@ describe(mailPaceProvider, () => {
             await expect(provider.validateCredentials?.()).resolves.toBe(true);
         });
     });
+
+    describe("branch coverage", () => {
+        it("should send when a logger is supplied", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValue({ data: { body: { id: "id-3" }, statusCode: 200 }, success: true });
+
+            const logger = { debug: vi.fn(), error: vi.fn(), info: vi.fn(), log: vi.fn(), warn: vi.fn() } as unknown as Console;
+            const provider = mailPaceProvider({ apiToken: "test123", logger });
+
+            const result = await provider.sendEmail({
+                from: { email: "sender@example.com" },
+                html: "<h1>Hi</h1>",
+                subject: "Test",
+                to: { email: "user@example.com" },
+            });
+
+            expect(result.success).toBe(true);
+        });
+    });
 });
