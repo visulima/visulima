@@ -316,6 +316,17 @@ describe(makeRequest, () => {
             expect(result.error?.message).toContain("Network error");
         });
 
+        it("should handle non-Error rejections", async () => {
+            expect.assertions(2);
+
+            mockFetch.mockRejectedValueOnce("string error");
+
+            const result = await makeRequest("https://api.example.com/test");
+
+            expect(result.success).toBe(false);
+            expect(result.error?.message).toContain("string error");
+        });
+
         it("should handle non-OK responses", async () => {
             expect.assertions(2);
 
