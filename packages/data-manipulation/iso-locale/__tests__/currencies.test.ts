@@ -35,6 +35,20 @@ describe("currencies", () => {
         expect(currency?.code).toBe("USD");
     });
 
+    it("should get currency by numeric value", () => {
+        expect.assertions(2);
+
+        const currency = getByNumber(840);
+
+        expect(currency).toBeDefined();
+        expect(currency?.code).toBe("USD");
+    });
+
+    it("should fall back to the code when the symbol is unknown", () => {
+        expect.assertions(1);
+        expect(getSymbol("zzz")).toBe("ZZZ");
+    });
+
     it("should get currencies by country", () => {
         expect.hasAssertions();
 

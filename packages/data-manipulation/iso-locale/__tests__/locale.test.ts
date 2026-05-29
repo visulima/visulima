@@ -39,6 +39,17 @@ describe("locale", () => {
         expect(getCurrency("invalid")).toBeUndefined();
     });
 
+    it("should skip non-country subtags when extracting the country from a BCP 47 tag", () => {
+        expect.assertions(1);
+        // "Hant" (4 letters) must be skipped before the "TW" country part is found.
+        expect(getCurrency("zh-Hant-TW")).toBe("TWD");
+    });
+
+    it("should return undefined when the underscore locale has no 2-letter country part", () => {
+        expect.assertions(1);
+        expect(getCurrency("foo_bar_baz")).toBeUndefined();
+    });
+
     it("should get locales for currency", () => {
         expect.hasAssertions();
 
@@ -104,6 +115,24 @@ describe("locale", () => {
 
             expect(parsed?.language).toBe("en");
         });
+
+        it("should skip empty subtags", () => {
+            expect.assertions(1);
+            // The empty middle subtag from the double hyphen must be skipped.
+            expect(parseBCP47Tag("en--US")).toStrictEqual({ country: "US", language: "en" });
+        });
+
+        it("should ignore subtags that are neither a script nor a country", () => {
+            expect.assertions(1);
+            // "abc" is 3 letters: not a 4-letter script, not a 2-letter country.
+            expect(parseBCP47Tag("en-abc")).toStrictEqual({ language: "en" });
+        });
+
+        it("should ignore a 2-letter subtag that is not alphabetic", () => {
+            expect.assertions(1);
+            // "12" is length 2 but fails the alpha-2 regex, so no country is set.
+            expect(parseBCP47Tag("en-12")).toStrictEqual({ language: "en" });
+        });
     });
 
     describe("bCP 47 tag generation", () => {
@@ -158,6 +187,14 @@ describe("locale", () => {
         it("should return empty array for invalid country", () => {
             expect.hasAssertions();
             expect(getBCP47Tags("XX")).toStrictEqual([]);
+        });
+
+        it("should return empty array when no language maps to an ISO 639-1 code", () => {
+            expect.assertions(2);
+            // Greenland ("kal") and Somalia ("som") are valid countries whose only
+            // languages have no ISO 639-1 equivalent, so no BCP 47 tag is produced.
+            expect(getBCP47Tags("GL")).toStrictEqual([]);
+            expect(getBCP47Tags("SO")).toStrictEqual([]);
         });
     });
 
