@@ -317,5 +317,60 @@ describe(mailerSendProvider, () => {
 
             await expect(provider.isAvailable()).resolves.toBe(false);
         });
+
+        it("should send a text-only email with logger, templateId without variables, and a raw Buffer attachment", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValue({ data: { body: { message_id: "m-1" }, statusCode: 202 }, success: true });
+
+            const logger = { debug: vi.fn(), error: vi.fn(), info: vi.fn(), log: vi.fn(), warn: vi.fn() } as unknown as Console;
+            const provider = mailerSendProvider({ apiToken: "test123", logger });
+
+            const result = await provider.sendEmail({
+                attachments: [{ filename: "r.bin", raw: Buffer.from("rawbytes") }],
+                from: { email: "sender@example.com" },
+                subject: "Test",
+                templateId: "tmpl-only",
+                text: "plain text",
+                to: { email: "user@example.com" },
+            } as any);
+
+            expect(result.success).toBe(true);
+        });
+
+        it("should report an unknown error when getEmail fails with a non-Error", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValueOnce({ data: { statusCode: 200 }, success: true }).mockResolvedValueOnce({ error: "string failure", success: false });
+
+            const provider = mailerSendProvider({ apiToken: "test123" });
+
+            const result = await provider.getEmail?.("msg-1");
+
+            expect(result?.success).toBe(false);
+        });
+
+        it("should return a default error when send fails without an error", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValueOnce({ data: { statusCode: 200 }, success: true }).mockResolvedValueOnce({ success: false });
+
+            const provider = mailerSendProvider({ apiToken: "test123" });
+
+            const result = await provider.sendEmail({
+                from: { email: "sender@example.com" },
+                html: "<h1>Hi</h1>",
+                subject: "Test",
+                to: { email: "user@example.com" },
+            });
+
+            expect(result.success).toBe(false);
+        });
     });
 });
