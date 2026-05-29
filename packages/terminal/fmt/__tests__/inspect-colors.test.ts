@@ -8,9 +8,8 @@ import { cssToAnsi, parseCss } from "../src/inspect-colors";
  * the caller override the defaults. The internal shape uses `__proto__: null`
  * to match the runtime type — vitest doesn't care, but parseCss/cssToAnsi do.
  */
-const makeCss = (overrides: Partial<CssObject> = {}): CssObject =>
-    // eslint-disable-next-line no-proto, @typescript-eslint/no-explicit-any
-    ({
+const makeCss = (overrides: Partial<CssObject> = {}): CssObject => {
+    return {
         __proto__: null,
         backgroundColor: null,
         color: null,
@@ -19,7 +18,8 @@ const makeCss = (overrides: Partial<CssObject> = {}): CssObject =>
         textDecorationColor: null,
         textDecorationLine: [],
         ...overrides,
-    } as unknown as CssObject);
+    };
+};
 
 describe("parseCss", () => {
     describe("color names and core props", () => {
@@ -137,6 +137,34 @@ describe("parseCss", () => {
             const parsed = parseCss("text-decoration-line: underline blink");
 
             expect(parsed.textDecorationLine).not.toContain("blink");
+        });
+
+        it("should ignore text-decoration args that are neither colors nor line types", () => {
+            expect.assertions(2);
+
+            const parsed = parseCss("text-decoration: bogus underline");
+
+            expect(parsed.textDecorationLine).toContain("underline");
+            expect(parsed.textDecorationLine).not.toContain("bogus");
+        });
+    });
+
+    describe("empty values", () => {
+        it("should skip a semicolon-terminated value that is empty", () => {
+            expect.assertions(1);
+
+            // "color: ;" trims to an empty value and is dropped; the later color still applies.
+            const parsed = parseCss("color: ; color: red");
+
+            expect(parsed.color).toBe("red");
+        });
+
+        it("should skip a trailing value that is empty at end of string", () => {
+            expect.assertions(1);
+
+            const parsed = parseCss("color:");
+
+            expect(parsed.color).toBeNull();
         });
     });
 
@@ -277,8 +305,7 @@ describe("parseCss", () => {
         it("should accept array tuple for color", () => {
             expect.assertions(1);
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const ansi = cssToAnsi(makeCss({ color: [12, 34, 56] as any }));
+            const ansi = cssToAnsi(makeCss({ color: [12, 34, 56] as unknown as string }));
 
             expect(ansi).toBe("[38;2;12;34;56m");
         });
@@ -286,8 +313,7 @@ describe("parseCss", () => {
         it("should accept array tuple for backgroundColor", () => {
             expect.assertions(1);
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const ansi = cssToAnsi(makeCss({ backgroundColor: [12, 34, 56] as any }));
+            const ansi = cssToAnsi(makeCss({ backgroundColor: [12, 34, 56] as unknown as string }));
 
             expect(ansi).toBe("[48;2;12;34;56m");
         });

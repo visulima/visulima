@@ -1,5 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 
+import type { FormatterFunction } from "../src";
 import { build, format } from "../src";
 
 describe("fmt", () => {
@@ -232,5 +233,69 @@ describe("fmt", () => {
         const now = Date.now();
 
         expect(customFormatter("%s%t%s", ["[", now, "]"])).toBe(`[${new Date(now).toISOString()}]`);
+    });
+
+    it("should keep preceding text when %i is not at the start", () => {
+        expect.assertions(1);
+
+        expect(format("foo %i", [42])).toBe("foo 42");
+    });
+
+    it("should apply formatters passed directly to format()", () => {
+        expect.assertions(2);
+
+        // `format`'s own default case indexes `options.formatters` by codepoint, so the
+        // map must be keyed by the specifier's codepoint (this is what `build` produces).
+        const tCode = "t".codePointAt(0) as number;
+        const formatters: Record<string, FormatterFunction> = { [tCode]: (value) => `<${String(value)}>` };
+
+        expect(format("x %t y", ["VAL"], { formatters })).toBe("x <VAL> y");
+        // formatter at the very start exercises the lastPosition seeding path.
+        expect(format("%t end", ["VAL"], { formatters })).toBe("<VAL> end");
+    });
+
+    it("should leave the specifier untouched when its formatter is not a function", () => {
+        expect.assertions(1);
+
+        const tCode = "t".codePointAt(0) as number;
+        const formatters: Record<string, FormatterFunction> = { [tCode]: undefined as unknown as FormatterFunction };
+
+        expect(format("x %t y", ["VAL"], { formatters })).toBe("x %t y");
+    });
+
+    it("should build a formatter when no formatters option is supplied", () => {
+        expect.assertions(1);
+
+        const formatter = build({});
+
+        expect(formatter("%s", ["hi"])).toBe("hi");
+    });
+
+    it("should throw when a built formatter key is an empty string", () => {
+        expect.assertions(1);
+
+        expect(() => build({ formatters: { "": () => "x" } })).toThrow("Formatter % has no characters");
+    });
+
+    describe("in a browser-like environment", () => {
+        afterEach(() => {
+            delete (globalThis as { window?: unknown }).window;
+        });
+
+        it("should skip %c ANSI styling when globalThis.window is defined", () => {
+            expect.assertions(1);
+
+            (globalThis as { window?: unknown }).window = {};
+
+            expect(format("%cfoo bar", ["color: red"])).toBe("foo bar");
+        });
+    });
+
+    it("should not emit a trailing reset when %c styling produces no output", () => {
+        expect.assertions(1);
+
+        // `%c` with an empty CSS string yields an empty ANSI sequence and, since it sits at the
+        // start of the string, leaves `result` empty so `usedStyle` is never flipped on.
+        expect(format("%cfoo", [""])).toBe("foo");
     });
 });
