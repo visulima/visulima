@@ -10,6 +10,25 @@ import { ApplyEmptyCommitError, ConfigError, runStaged } from "../../src/staged"
 
 let root: string;
 
+// Git exports these into a hook's environment (e.g. when this very suite runs inside the repo's
+// own pre-commit hook). Leaking them into the isolated temp repos is poison: a relative
+// `GIT_DIR=.git` / `GIT_INDEX_FILE=.git/index` resolves against whatever `cwd` a `git -C …` call
+// uses, so `git -C vendor/sub fetch` opens `vendor/sub/.git/index` — but `.git` there is a gitlink
+// *file*, yielding "`.git/index`: Is not a directory". Strip them per-test, restore afterwards.
+const GIT_ENV_VARS = [
+    "GIT_DIR",
+    "GIT_WORK_TREE",
+    "GIT_INDEX_FILE",
+    "GIT_OBJECT_DIRECTORY",
+    "GIT_ALTERNATE_OBJECT_DIRECTORIES",
+    "GIT_COMMON_DIR",
+    "GIT_NAMESPACE",
+    "GIT_PREFIX",
+    "GIT_CEILING_DIRECTORIES",
+] as const;
+
+let savedGitEnv: Record<string, string | undefined> = {};
+
 const sh = (args: string[], cwd: string): string => execFileSync("git", args, { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim();
 
 const initRepo = (): string => {
@@ -41,11 +60,26 @@ const initRepo = (): string => {
 
 describe("runStaged — integration", () => {
     beforeEach(() => {
+        savedGitEnv = {};
+
+        for (const key of GIT_ENV_VARS) {
+            savedGitEnv[key] = process.env[key];
+            delete process.env[key];
+        }
+
         root = initRepo();
     });
 
     afterEach(() => {
         rmSync(root, { force: true, recursive: true });
+
+        for (const key of GIT_ENV_VARS) {
+            if (savedGitEnv[key] === undefined) {
+                delete process.env[key];
+            } else {
+                process.env[key] = savedGitEnv[key];
+            }
+        }
     });
 
     it("runs a task on a fully-staged file", async () => {
