@@ -208,4 +208,18 @@ describe(renderObjectTree, () => {
 
         expect(() => renderObjectTree({}, { breakCircularWith: 1 as unknown as string })).toThrow(TypeError);
     });
+
+    it("should fall back to zero when the sort function returns a nullish value", () => {
+        expect.assertions(1);
+
+        const object = {
+            alpha: 1,
+            beta: 2,
+        };
+
+        // A sort function that returns undefined exercises the `?? 0` fallback in the comparator.
+        const result = renderObjectTree(object, { sortFn: (() => undefined) as unknown as TreeSortFunction });
+
+        expect(result).toBeDefined();
+    });
 });
