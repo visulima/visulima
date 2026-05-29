@@ -524,6 +524,29 @@ describe(SmimeEncrypter, () => {
             expect(encrypted.text).toBeDefined();
         });
 
+        it("should encrypt an email that has neither html nor text and skip empty recipients", async () => {
+            expect.assertions(1);
+
+            vi.mocked(readFile).mockResolvedValue(TEST_CERTIFICATE);
+
+            const options: SmimeEncryptOptions = {
+                certificates: "/path/to/certificate.crt",
+            };
+
+            const email: EmailOptions = {
+                cc: { email: "" },
+                from: { email: "sender@example.com" },
+                subject: "Test Subject",
+                to: { email: "recipient@example.com" },
+            };
+
+            const encrypter = createSmimeEncrypter(options);
+
+            const encrypted = await encrypter.encrypt(email);
+
+            expect(encrypted.text).toBeDefined();
+        });
+
         it("should throw error for invalid certificate", async () => {
             expect.assertions(1);
 
