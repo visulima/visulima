@@ -683,6 +683,27 @@ describe(failoverProvider, () => {
             await expect(failover.isAvailable()).resolves.toBe(true);
         });
 
+        it("uses the unknown fallback for an unnamed provider that fails to initialize", async () => {
+            expect.assertions(1);
+
+            const failing: Provider = {
+                ...createMockProvider("ignored"),
+                // eslint-disable-next-line @typescript-eslint/require-await
+                async initialize(): Promise<void> {
+                    throw new Error("init boom");
+                },
+                name: undefined,
+            };
+            const good = createMockProvider("good");
+            const failover = failoverProvider({
+                mailers: [failing, good],
+            });
+
+            await failover.initialize();
+
+            await expect(failover.isAvailable()).resolves.toBe(true);
+        });
+
         it("logs when a provider factory throws during construction", async () => {
             expect.assertions(1);
 
