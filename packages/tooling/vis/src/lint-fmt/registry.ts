@@ -2,14 +2,24 @@ import type { AdapterId, AdapterKind, ToolAdapter, ToolPresence } from "./config
 
 /**
  * Static registry of every adapter vis knows about. The order here
- * is the default precedence: when a workspace has both Oxlint and
- * ESLint, Oxlint runs first (fast pre-filter). Users can override
- * with `lint.order` in `vis.config.ts`.
+ * is the default precedence used by both `vis lint` and `vis fmt`.
+ * After filtering by `kind` (or `both`), the resulting sequence
+ * becomes:
  *
- * Adapters are imported lazily by their consumers — keep this file
- * free of cross-cutting imports so the registry stays cheap to load.
+ *   lint: oxlint → biome → eslint
+ *   fmt:  oxfmt  → biome → dprint → prettier
+ *
+ * Rust-native tools come first so they get a chance to short-circuit
+ * cheap classes of issues before slower tools run. Biome sits in the
+ * middle because it's "both": its lint position is between oxlint and
+ * eslint; its fmt position between oxfmt and dprint.
+ *
+ * Users can override with `lint.order` / `fmt.order` in
+ * `vis.config.ts`. Adapters are imported lazily by their consumers —
+ * keep this file free of cross-cutting imports so the registry stays
+ * cheap to load.
  */
-const ADAPTER_ORDER: ReadonlyArray<AdapterId> = ["oxlint", "biome", "eslint", "oxfmt", "prettier", "dprint"];
+const ADAPTER_ORDER: ReadonlyArray<AdapterId> = ["oxlint", "oxfmt", "biome", "eslint", "dprint", "prettier"];
 
 export const registerAdapters = (adapters: ReadonlyArray<ToolAdapter>): ReadonlyArray<ToolAdapter> => {
     const byId = new Map(adapters.map((a) => [a.id, a]));

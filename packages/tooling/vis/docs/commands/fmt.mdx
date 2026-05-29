@@ -5,9 +5,9 @@ description: "Orchestrate detected formatters (prettier, …) across the workspa
 
 # vis fmt
 
-Runs every detected formatter against the workspace. Defaults to write mode (`--fix`); pass `--check` for a dry-run that lists files that would change without modifying them. Designed to add more formatters (dprint, oxfmt, biome, …) over time without changing the command surface.
+Runs every detected formatter against the workspace. Defaults to write mode (`--fix`); pass `--check` for a dry-run that lists files that would change without modifying them. Designed to add more formatters over time without changing the command surface.
 
-Phase 1 ships with the **Prettier** adapter. More follow in subsequent phases.
+Ships with adapters for **oxfmt**, **biome**, **dprint**, and **Prettier**. The orchestrator runs each one that's present in the workspace; when multiple are present, files are routed by extension.
 
 ## Usage
 
@@ -50,9 +50,12 @@ The orchestrator probes each adapter against the workspace root and runs the one
 
 | Adapter  | Config files probed                                                                           | package.json key |
 | -------- | --------------------------------------------------------------------------------------------- | ---------------- |
+| oxfmt    | `.oxfmtrc[.{json,jsonc,ts,mts,cts,js,mjs,cjs}]`, `oxfmt.config.{ts,mts,js,mjs}`               | `oxfmt`          |
+| biome    | `biome.json`, `biome.jsonc`                                                                   | `@biomejs/biome` |
+| dprint   | `dprint.json`, `dprint.jsonc`, `.dprint.json`, `.dprint.jsonc`                                | `dprint`         |
 | prettier | `.prettierrc`, `.prettierrc.{json,yaml,yml,js,cjs,mjs,ts}`, `prettier.config.{js,cjs,mjs,ts}` | `prettier`       |
 
-When multiple fmt adapters are detected, files are routed by extension via the registry's `routeFilesByExtension` helper. Override per-extension routing through `fmt.extensionOverrides` in `vis.config.ts` once additional adapters land (e.g. send `.md` to `dprint` even when `prettier` also handles it).
+When multiple fmt adapters are detected, files are routed by extension via the registry's `routeFilesByExtension` helper. The default precedence inside the registry favours Rust-native formatters (`oxfmt` → `biome` → `dprint` → `prettier`) so a `.ts` file owned by both oxfmt and prettier goes to oxfmt. Override per-extension routing through `fmt.extensionOverrides` in `vis.config.ts` (e.g. send `.md` to `dprint` even when `prettier` also handles it).
 
 ## Output formats
 

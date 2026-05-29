@@ -5,9 +5,9 @@ description: "Orchestrate detected source-code linters (eslint, …) across the 
 
 # vis lint
 
-Runs every detected source-code linter against the workspace, normalizes their output into a shared `Finding` shape, and prints them in human, JSON, or minimal format. Designed to add new linters (oxlint, biome, …) over time without changing the command surface.
+Runs every detected source-code linter against the workspace, normalizes their output into a shared `Finding` shape, and prints them in human, JSON, or minimal format. Designed to add new linters over time without changing the command surface.
 
-Phase 1 ships with the **ESLint** adapter. More follow in subsequent phases.
+Ships with adapters for **oxlint**, **biome**, and **ESLint**. The orchestrator runs each one that's present in the workspace.
 
 ## Usage
 
@@ -54,9 +54,11 @@ The orchestrator probes each adapter against the workspace root and runs the one
 
 | Adapter | Config files probed                                                     | package.json key |
 | ------- | ----------------------------------------------------------------------- | ---------------- |
+| oxlint  | `.oxlintrc.json`, `.oxlintrc.jsonc`, `oxlint.json`, `oxlint.jsonc`      | `oxlint`         |
+| biome   | `biome.json`, `biome.jsonc`                                             | `@biomejs/biome` |
 | eslint  | `eslint.config.{js,mjs,cjs,ts,mts}`, `.eslintrc.{js,cjs,json,yaml,yml}` | `eslint`         |
 
-When multiple lint adapters are detected, they run in this default precedence: `oxlint → biome → eslint`. Override with `lint.order` in `vis.config.ts` once additional adapters land.
+When multiple lint adapters are detected, they run in this default precedence: `oxlint → biome → eslint`. The Rust-native oxlint pass runs first as a fast pre-filter, biome handles its bespoke rule set, and ESLint catches what the others don't. Override with `lint.order` in `vis.config.ts`.
 
 ## Output formats
 
