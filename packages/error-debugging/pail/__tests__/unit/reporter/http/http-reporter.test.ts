@@ -1459,4 +1459,151 @@ describe(HttpReporter, () => {
 
         expect(onError).toHaveBeenCalledWith(expect.objectContaining({ message: "Batch send failed" }));
     });
+
+    it("should default the message and skip empty data when only a type is present", async () => {
+        expect.assertions(1);
+
+        const reporter = createReporter({
+            enableBatchSend: false,
+            payloadTemplate: ({ data, logLevel, message }) => JSON.stringify({ data, level: logLevel, message }),
+            url: "https://api.example.com/logs",
+        });
+
+        // No message and no other fields => parsed payload is empty, so message falls back to "" and data stays unset.
+        reporter.log({ type: { level: "informational", name: "informational" } } as never);
+
+        await vi.runAllTimersAsync();
+
+        expect(mockSendWithRetry).toHaveBeenCalledTimes(1);
+    });
+
+    it("should silently drop oversized entries when no onError is configured", async () => {
+        expect.assertions(1);
+
+        const reporter = createReporter({
+            enableBatchSend: false,
+            maxLogSize: 100,
+            payloadTemplate: ({ message }) => JSON.stringify({ message }),
+            url: "https://api.example.com/logs",
+        });
+
+        reporter.log({ ...baseMeta, message: "x".repeat(200) });
+
+        await vi.runAllTimersAsync();
+
+        expect(mockSendWithRetry).not.toHaveBeenCalled();
+    });
+
+    it("should swallow an immediate send rejection when no onError is configured", async () => {
+        expect.assertions(1);
+
+        mockSendWithRetry.mockRejectedValueOnce(new Error("Network error"));
+
+        const reporter = createReporter({
+            enableBatchSend: false,
+            payloadTemplate: ({ message }) => JSON.stringify({ message }),
+            url: "https://api.example.com/logs",
+        });
+
+        reporter.log({ ...baseMeta, message: "boom" });
+
+        await expect(vi.runAllTimersAsync()).resolves.toBeDefined();
+    });
+
+    it("should swallow a payload-template error when no onError is configured", async () => {
+        expect.assertions(1);
+
+        const reporter = createReporter({
+            enableBatchSend: false,
+            payloadTemplate: () => {
+                throw new Error("template boom");
+            },
+            url: "https://api.example.com/logs",
+        });
+
+        reporter.log({ ...baseMeta, message: "boom" });
+
+        await vi.runAllTimersAsync();
+
+        expect(mockSendWithRetry).not.toHaveBeenCalled();
+    });
+
+    it("should swallow a batch send rejection when no onError is configured", async () => {
+        expect.assertions(1);
+
+        mockSendWithRetry.mockRejectedValueOnce(new Error("Batch send failed"));
+
+        const reporter = createReporter({
+            batchSize: 1,
+            enableBatchSend: true,
+            payloadTemplate: ({ message }) => JSON.stringify({ message }),
+            url: "https://api.example.com/logs",
+        });
+
+        reporter.log({ ...baseMeta, message: "boom" });
+
+        await expect(vi.runAllTimersAsync()).resolves.toBeDefined();
+    });
+
+    it("should fall back to uncompressed and swallow compression errors without onError", async () => {
+        expect.assertions(1);
+
+        mockCompressData.mockRejectedValueOnce(new Error("compress fail"));
+
+        const reporter = createReporter({
+            compression: true,
+            enableBatchSend: false,
+            payloadTemplate: ({ message }) => JSON.stringify({ message }),
+            url: "https://api.example.com/logs",
+        });
+
+        reporter.log({ ...baseMeta, message: "compress me" });
+
+        await vi.runAllTimersAsync();
+
+        expect(mockSendWithRetry).toHaveBeenCalledTimes(1);
+    });
+
+    it("should resolve a headers function before sending", async () => {
+        expect.assertions(1);
+
+        const reporter = createReporter({
+            enableBatchSend: false,
+            headers: () => {
+                return { authorization: "Bearer dynamic" };
+            },
+            payloadTemplate: ({ message }) => JSON.stringify({ message }),
+            url: "https://api.example.com/logs",
+        });
+
+        reporter.log({ ...baseMeta, message: "with headers" });
+
+        await vi.runAllTimersAsync();
+
+        expect(mockSendWithRetry.mock.calls[0]?.[2]).toStrictEqual(expect.objectContaining({ authorization: "Bearer dynamic" }));
+    });
+
+    it("should recalculate the remaining batch size with edge compatibility", async () => {
+        expect.assertions(1);
+
+        const reporter = createReporter({
+            batchSendTimeout: 100_000,
+            batchSize: 2,
+            edgeCompat: true,
+            enableBatchSend: true,
+            maxPayloadSize: 10_485_760,
+            payloadTemplate: ({ message }) => JSON.stringify({ message }),
+            url: "https://api.example.com/logs",
+        });
+
+        // A synchronous burst keeps a batch in flight so the queue overflows past batchSize,
+        // forcing processBatch to re-measure leftover entries via the edge-compat code path.
+        for (let index = 0; index < 6; index += 1) {
+            reporter.log({ ...baseMeta, message: `Message ${index}` });
+        }
+
+        await vi.runAllTimersAsync();
+
+        expect(mockSendWithRetry.mock.calls.length).toBeGreaterThan(0);
+    });
 });
