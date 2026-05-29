@@ -138,6 +138,18 @@ describe(registerDescribeProject, () => {
 
         expect(error.error).toContain("@scope/missing");
     });
+
+    it("should surface CLI failures via errorResponse", async () => {
+        expect.assertions(1);
+
+        const { calls, server } = makeFakeServer();
+
+        registerDescribeProject({ server }, { visBin: "/definitely-not-a-real-binary", workspaceRoot });
+
+        const error = parseError(await calls[0]!.handler({ name: "@scope/alpha" }));
+
+        expect(error.error).toBeTruthy();
+    });
 });
 
 describe(registerListTargets, () => {
@@ -164,6 +176,22 @@ describe(registerListTargets, () => {
         const result = parseOk(await calls[0]!.handler({ project: "@scope/beta" })) as { count: number };
 
         expect(result.count).toBe(1);
+    });
+
+    it("should contribute zero rows for a project that declares no targets", async () => {
+        expect.assertions(2);
+
+        const { calls, server } = makeFakeServer();
+
+        registerListTargets({ server }, ctx());
+
+        // @scope/gamma in the fixture omits the `targets` key entirely — the
+        // `entry.targets ?? []` fallback means it flattens to no rows while the
+        // other projects still produce their targets.
+        const result = parseOk(await calls[0]!.handler({})) as { count: number; targets: { project: string }[] };
+
+        expect(result.count).toBe(3);
+        expect(result.targets.some((row) => row.project === "@scope/gamma")).toBe(false);
     });
 
     it("should error when filtering to a project that doesn't exist", async () => {
@@ -274,6 +302,60 @@ describe(registerGetRunLogs, () => {
 
         expect(error.error).toContain("@scope/missing:build");
     });
+
+    it("should read a specific run by id from .task-runner/runs", async () => {
+        expect.assertions(1);
+
+        mkdirSync(join(workspaceRoot, ".task-runner", "runs"), { recursive: true });
+        writeFileSync(
+            join(workspaceRoot, ".task-runner", "runs", "run-7.json"),
+            JSON.stringify({ runId: "run-7", tasks: [{ status: "success", taskId: "@scope/alpha:build" }] }),
+        );
+
+        const { calls, server } = makeFakeServer();
+
+        registerGetRunLogs({ server }, ctx());
+
+        // A valid runId resolves the runs/<id>.json path (the truthy branch of
+        // the path ternary) rather than last-summary.json.
+        const result = parseOk(await calls[0]!.handler({ runId: "run-7" })) as { runId: string };
+
+        expect(result.runId).toBe("run-7");
+    });
+
+    it("should label the run as (unknown) when the summary omits runId for a missing task", async () => {
+        expect.assertions(1);
+
+        mkdirSync(join(workspaceRoot, ".task-runner"), { recursive: true });
+        // No `runId` field — the not-found message falls back to "(unknown)".
+        writeFileSync(join(workspaceRoot, ".task-runner", "last-summary.json"), JSON.stringify({ tasks: [{ taskId: "@scope/alpha:build" }] }));
+
+        const { calls, server } = makeFakeServer();
+
+        registerGetRunLogs({ server }, ctx());
+
+        const error = parseError(await calls[0]!.handler({ taskId: "@scope/missing:build" }));
+
+        expect(error.error).toContain("(unknown)");
+    });
+
+    it("should surface a non-ENOENT read failure (malformed JSON) via errorResponse", async () => {
+        expect.assertions(2);
+
+        mkdirSync(join(workspaceRoot, ".task-runner"), { recursive: true });
+        // Valid file, invalid JSON — readFile succeeds, JSON.parse throws a
+        // SyntaxError, so the catch falls through past the ENOENT guard.
+        writeFileSync(join(workspaceRoot, ".task-runner", "last-summary.json"), "{not valid json");
+
+        const { calls, server } = makeFakeServer();
+
+        registerGetRunLogs({ server }, ctx());
+
+        const error = parseError(await calls[0]!.handler({}));
+
+        expect(error.error).toBeTruthy();
+        expect(error.error).not.toContain("No run summary");
+    });
 });
 
 describe(registerCacheWhy, () => {
@@ -327,6 +409,32 @@ describe(registerCacheWhy, () => {
 
         expect(result.taskId).toBe("@scope/alpha:build");
         expect(result.runId).toBe("run-42");
+    });
+
+    it("should default to the latest run when no runId is provided", async () => {
+        expect.assertions(1);
+
+        const { calls, server } = makeFakeServer();
+
+        registerCacheWhy({ server }, ctx());
+
+        // Omitting runId skips the `--run` flag; the fake-vis reports "latest"
+        // for that path, exercising the falsey `if (runId)` branch.
+        const result = parseOk(await calls[0]!.handler({ taskId: "@scope/alpha:build" })) as { runId: string };
+
+        expect(result.runId).toBe("latest");
+    });
+
+    it("should surface CLI failures via errorResponse", async () => {
+        expect.assertions(1);
+
+        const { calls, server } = makeFakeServer();
+
+        registerCacheWhy({ server }, { visBin: "/definitely-not-a-real-binary", workspaceRoot });
+
+        const error = parseError(await calls[0]!.handler({ taskId: "@scope/alpha:build" }));
+
+        expect(error.error).toBeTruthy();
     });
 });
 
@@ -504,6 +612,18 @@ describe(registerAudit, () => {
         expect(result.flags).toContain("--ecosystem");
         expect(result.flags).toContain("--show-accepted");
     });
+
+    it("should surface CLI failures via errorResponse", async () => {
+        expect.assertions(1);
+
+        const { calls, server } = makeFakeServer();
+
+        registerAudit({ server }, { visBin: "/definitely-not-a-real-binary", workspaceRoot });
+
+        const error = parseError(await calls[0]!.handler({}));
+
+        expect(error.error).toBeTruthy();
+    });
 });
 
 describe(registerAdvisoryStatus, () => {
@@ -536,5 +656,17 @@ describe(registerAdvisoryStatus, () => {
         const result = parseOk(await calls[0]!.handler({ db: customDb })) as { dbPath: string };
 
         expect(result.dbPath).toBe(customDb);
+    });
+
+    it("should surface CLI failures via errorResponse", async () => {
+        expect.assertions(1);
+
+        const { calls, server } = makeFakeServer();
+
+        registerAdvisoryStatus({ server }, { visBin: "/definitely-not-a-real-binary", workspaceRoot });
+
+        const error = parseError(await calls[0]!.handler({}));
+
+        expect(error.error).toBeTruthy();
     });
 });
