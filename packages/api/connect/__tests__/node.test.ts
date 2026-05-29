@@ -1,6 +1,8 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 
 import { describe, expect, it, vi } from "vitest";
+// eslint-disable-next-line import/no-namespace -- zod/consistent-import requires namespace imports
+import * as z from "zod";
 
 import { Router } from "../src";
 import { createRouter, getPathname, NodeRouter } from "../src/node";
@@ -53,6 +55,90 @@ describe(createRouter, () => {
         const returned = context.add("GET", "/", noop);
 
         expect(returned, "returned itself").toStrictEqual(context);
+    });
+
+    it("add() - wraps a single handler with zod when a schema follows a function", async () => {
+        expect.assertions(4);
+
+        const context = new NodeRouter();
+        const schemaSchema = z.object({ name: z.string().trim() });
+
+        const handler = vi.fn((request: any) => request.name);
+
+        // @ts-expect-error: private property
+        const addSpy = vi.spyOn(context.router, "add").mockImplementation(() => context.router);
+
+        // route arg is a function, second arg is a zod schema -> single-handler zod wrap
+        context.get(handler as any, schemaSchema as any);
+
+        // router.add receives the original route function plus the zod-wrapped handler
+        const [method, route, wrapped] = addSpy.mock.calls[0] ?? [];
+
+        expect(method, "method is forwarded").toBe("GET");
+        expect(route, "original route function is forwarded untouched").toBe(handler);
+        expect(wrapped, "the resolved handler is a zod wrapper, not the raw handler").not.toBe(handler);
+
+        // running the wrapper proves it validates and strips unknown keys before the handler
+        await (wrapped as any)({ extra: "stripped?", name: "alice" }, {}, async () => undefined);
+
+        expect(handler.mock.calls[0]?.[0], "wrapped handler receives the zod-parsed request").toStrictEqual({ name: "alice" });
+    });
+
+    it("add() - wraps multiple handlers with zod when a schema precedes the handlers", async () => {
+        expect.assertions(3);
+
+        const context = createRouter();
+        const schemaSchema = z.object({ name: z.string().trim() });
+
+        const first = vi.fn((_request: any, _response: any, next: any) => next());
+        const second = vi.fn((request: any) => request.name);
+
+        // route is a string, second arg is a zod schema, remaining args are handlers -> fns.map zod wrap
+        context.post("/", schemaSchema as any, first as any, second as any);
+
+        const request = { extra: "stripped?", method: "POST", name: "bob", url: "/" } as unknown as IncomingMessage;
+
+        await context.run(request, {} as ServerResponse);
+
+        expect(first, "first handler runs after validation").toHaveBeenCalledTimes(1);
+        expect(second, "second handler runs after validation").toHaveBeenCalledTimes(1);
+        expect(second.mock.calls[0]?.[0], "each handler receives the zod-parsed request").toStrictEqual({ name: "bob" });
+    });
+
+    it("add() - rejects with a 422 when the zod schema fails to validate", async () => {
+        expect.assertions(2);
+
+        const context = createRouter();
+        const schemaSchema = z.object({ name: z.string().trim() });
+
+        const handler = vi.fn();
+
+        // string route + schema + handler -> the zod-wrapped handler rejects on bad input
+        context.get("/", schemaSchema as any, handler as any);
+
+        const request = { method: "GET", name: 123, url: "/" } as unknown as IncomingMessage;
+
+        await expect(context.run(request, {} as ServerResponse), "invalid input rejects").rejects.toMatchObject({ statusCode: 422 });
+        expect(handler, "handler is not reached when validation fails").not.toHaveBeenCalled();
+    });
+
+    it("add() - keeps two handlers untouched when no schema is provided", async () => {
+        expect.assertions(2);
+
+        const context = createRouter();
+
+        const first = vi.fn((_request: any, _response: any, next: any) => next());
+        const second = vi.fn();
+
+        // both args are functions, no string route and no schema -> zodOrRouteOrFunction is a function branch
+        context.get(first as any, second as any);
+
+        const request = { method: "GET", url: "/" } as unknown as IncomingMessage;
+
+        await context.run(request, {} as ServerResponse);
+
+        expect(first, "first handler runs").toHaveBeenCalledTimes(1);
+        expect(second, "second handler runs").toHaveBeenCalledTimes(1);
     });
 
     describe("use()", () => {

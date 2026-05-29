@@ -619,6 +619,21 @@ describe("router", () => {
         bar.fns.forEach((function__: (argument0: any) => any) => function__(bar));
     });
 
+    it("find() - regex w/o named groups returns empty params", async () => {
+        expect.assertions(3);
+
+        const context = new Router<AnyHandler>();
+
+        // RegExp route without named capture groups -> matches.groups is undefined
+        context.add("GET", REGEX_NOT_SUPPORTED, noop);
+
+        const out = context.find("GET", "/not/supported") as any;
+
+        expect(out.fns, "~> matched the regex route").toHaveLength(1);
+        expect(out.params, "~> has \"params\" key (object)").toBeTypeOf("object");
+        expect(Object.keys(out.params), "~> \"params\" is empty (no named groups)").toHaveLength(0);
+    });
+
     /**
      * Additional handling tailored to connect
      */
