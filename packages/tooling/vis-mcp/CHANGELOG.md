@@ -1,3 +1,14 @@
+## @visulima/vis-mcp [1.0.0-alpha.16](https://github.com/visulima/visulima/compare/@visulima/vis-mcp@1.0.0-alpha.15...@visulima/vis-mcp@1.0.0-alpha.16) (2026-05-29)
+
+### Tests
+
+* improve coverage across packages ([91bd6d3](https://github.com/visulima/visulima/commit/91bd6d3b61736e3c8bd1fc59b0b5955f76a5d323))
+
+
+### Dependencies
+
+* **@visulima/vis:** upgraded to 1.0.0-alpha.26
+
 ## @visulima/vis-mcp [1.0.0-alpha.15](https://github.com/visulima/visulima/compare/@visulima/vis-mcp@1.0.0-alpha.14...@visulima/vis-mcp@1.0.0-alpha.15) (2026-05-27)
 
 ### Bug Fixes
