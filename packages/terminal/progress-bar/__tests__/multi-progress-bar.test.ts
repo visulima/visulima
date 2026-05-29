@@ -6,6 +6,8 @@ import { MultiProgressBar } from "../src/multi-progress-bar";
 
 // Hoisted to module scope so eslint's prefer-static-regex rule is satisfied.
 const RECT_GRADIENT_RE = /[▬▮▯▭]/u;
+const BRACKETED_BAR_RE = /^\[.+\]$/u;
+const BRAILLE_GRADIENT_RE = /[⣿⡷⢾⠤]/u;
 
 /**
  * Build a minimal stub that satisfies the calls `MultiProgressBar` makes
@@ -170,7 +172,9 @@ describe("multiProgressBar", () => {
             const bar = multi.create(100);
 
             // Should not throw — renderAll just returns without a manager.
-            expect(() => bar.update(50)).not.toThrow();
+            expect(() => {
+                bar.update(50);
+            }).not.toThrow();
         });
     });
 
@@ -195,6 +199,7 @@ describe("multiProgressBar", () => {
             const multi = new MultiProgressBar({}, manager);
 
             const bar1 = multi.create(100);
+
             multi.create(50);
 
             const removed = multi.remove(bar1);
@@ -262,7 +267,9 @@ describe("multiProgressBar", () => {
 
             const multi = new MultiProgressBar();
 
-            expect(() => multi.stop()).not.toThrow();
+            expect(() => {
+                multi.stop();
+            }).not.toThrow();
         });
     });
 
@@ -284,7 +291,7 @@ describe("multiProgressBar", () => {
             const last = stub.state.updates.at(-1);
 
             expect(last?.rows.length).toBe(1);
-            expect(last?.rows[0]).toMatch(/^\[.+\]$/u);
+            expect(last?.rows[0]).toMatch(BRACKETED_BAR_RE);
         });
 
         it("should render only incomplete characters when bars are empty", () => {
@@ -314,7 +321,7 @@ describe("multiProgressBar", () => {
             const last = stub.state.updates.at(-1);
 
             // rect gradient pulls from CHAR_GRADIENTS.rect: ["▬", "▮", "▯", "▭"]
-            expect(last?.rows[0]).toMatch(/[▬▮▯▭]/u);
+            expect(last?.rows[0]).toMatch(RECT_GRADIENT_RE);
         });
 
         it("should render braille gradient chars in composite mode", () => {
@@ -330,7 +337,7 @@ describe("multiProgressBar", () => {
 
             const last = stub.state.updates.at(-1);
 
-            expect(last?.rows[0]).toMatch(/[⣿⡷⢾⠤]/u);
+            expect(last?.rows[0]).toMatch(BRAILLE_GRADIENT_RE);
         });
 
         it("should return the raw render output when the format has no bracketed bar section", () => {
@@ -379,8 +386,7 @@ describe("multiProgressBar", () => {
             const multi = new MultiProgressBar({ composite: true, format: "[{bar}]" }, manager);
             const colorize = (text: string): string => `<RED>${text}</RED>`;
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const bar = multi.create(100) as any;
+            const bar = multi.create(100) as never as MultiBarInstance;
 
             multi.setBarColor(bar, colorize);
             bar.update(50);
@@ -397,8 +403,7 @@ describe("multiProgressBar", () => {
             const multi = new MultiProgressBar({ composite: true, format: "[{bar}]" }, manager);
             const colorize = (text: string): string => `<RED>${text}</RED>`;
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const bar = multi.create(100) as any;
+            const bar = multi.create(100) as never as MultiBarInstance;
 
             multi.setBarColor(bar, colorize);
             multi.setBarColor(bar, undefined);
@@ -434,8 +439,7 @@ describe("multiProgressBar", () => {
             expect.assertions(3);
 
             const multi = new MultiProgressBar();
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const bar = multi.create(200, 50) as any;
+            const bar = multi.create(200, 50) as never as MultiBarInstance;
             const state = bar.getBarState();
 
             expect(state.current).toBe(50);

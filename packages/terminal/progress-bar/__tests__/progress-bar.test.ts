@@ -445,9 +445,9 @@ describe("applyStyleToOptions", () => {
     it("should return options unchanged when no style is set", () => {
         expect.assertions(1);
 
-        const opts = { total: 100 };
+        const options = { total: 100 };
 
-        expect(applyStyleToOptions(opts)).toBe(opts);
+        expect(applyStyleToOptions(options)).toBe(options);
     });
 
     it("should fill default chars when style is set", () => {
@@ -534,9 +534,7 @@ describe("getBarChar", () => {
     it("should return defaults when style is unknown", () => {
         expect.assertions(2);
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        expect(getBarChar(undefined, "custom" as any, true)).toBe("█");
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        expect(getBarChar(undefined, "custom" as any, false)).toBe("░");
+        expect(getBarChar(undefined, "custom", true)).toBe("█");
+        expect(getBarChar(undefined, "custom", false)).toBe("░");
     });
 });
