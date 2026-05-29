@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { pailPlugin } from "../../../src/middleware/elysia";
+import { pailPlugin, useLogger } from "../../../src/middleware/elysia";
 import { PailBrowser } from "../../../src/pail.browser";
 import RawReporter from "../../../src/reporter/raw/raw-reporter.browser";
 
@@ -174,6 +174,42 @@ describe("elysia plugin", () => {
         const emitted = consoleSpy.mock.calls[0]?.[0] as Record<string, unknown>;
 
         expect(emitted.status).toBe(200);
+    });
+
+    it("should return the active logger from useLogger inside the request context", () => {
+        expect.assertions(1);
+
+        const pail = createMockPail();
+        const elysia = createMockElysia();
+
+        pailPlugin(elysia as any, { pail });
+
+        const request = createMockRequest();
+
+        getHandler(elysia.getDeriveHandler())({ request });
+
+        // The derive handler calls storage.enterWith(), so useLogger() resolves the active logger.
+        expect(useLogger()).toBeDefined();
+    });
+
+    it("should not emit again when onError fires after onAfterHandle already emitted", async () => {
+        expect.assertions(1);
+
+        const pail = createMockPail();
+        const consoleSpy = vi.spyOn(console, "log");
+        const errorSpy = vi.spyOn(console, "error");
+        const elysia = createMockElysia();
+
+        pailPlugin(elysia as any, { pail });
+
+        const request = createMockRequest();
+
+        getHandler(elysia.getDeriveHandler())({ request });
+        await getHandler(elysia.getAfterHandleHandler())({ request, set: { status: 200 } });
+        await getHandler(elysia.getErrorHandler())({ error: new Error("late error"), request });
+
+        // onError must short-circuit once the request was already emitted by onAfterHandle.
+        expect(consoleSpy.mock.calls.length + errorSpy.mock.calls.length).toBe(1);
     });
 
     it("should throw when useLogger is called outside context", async () => {
