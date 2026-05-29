@@ -289,4 +289,9 @@ describe(parseAddress, () => {
         expect.assertions(1);
         expect(parseAddress("user@dom\"ain.com")).toStrictEqual({ email: "user@dom\"ain.com" });
     });
+
+    it("should parse an angle-bracket address that only validates via the first opening bracket", () => {
+        expect.assertions(1);
+        expect(parseAddress("<a@b<.com>")).toStrictEqual({ email: "a@b<.com" });
+    });
 });
