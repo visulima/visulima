@@ -1010,6 +1010,32 @@ describe("deno", () => {
 
         expect(received).toBe(1);
     });
+
+    it(`should resolve stdout isTerminal for the color TERM check`, () => {
+        expect.assertions(1);
+
+        vi.stubGlobal("process", undefined);
+        vi.stubGlobal("Deno", {
+            args: [],
+            build: {
+                os: "linux",
+            },
+            env: {
+                toObject: () => {
+                    return { TERM: "color" };
+                },
+            },
+            stdout: {
+                isTerminal: () => true,
+            },
+        });
+
+        const received = isStdoutColorSupported();
+
+        vi.unstubAllGlobals();
+
+        expect(received).toBe(1);
+    });
 });
 
 describe("next.js", () => {
@@ -1174,6 +1200,138 @@ describe("support colors in terminals", () => {
             env: { TERM: "ansi.sysk" },
             platform: "linux",
             stdout: { isTTY: true },
+        });
+
+        const received = isStdoutColorSupported();
+
+        vi.unstubAllGlobals();
+
+        expect(received).toBe(1);
+    });
+
+    it(`should enable colors via empty FORCE_COLOR`, () => {
+        expect.assertions(1);
+
+        vi.stubGlobal("process", {
+            argv: [],
+            env: { FORCE_COLOR: "" },
+            platform: "linux",
+        });
+
+        const received = isStdoutColorSupported();
+
+        vi.unstubAllGlobals();
+
+        expect(received).toBe(1);
+    });
+
+    it(`should return 1 for Azure DevOps pipelines`, () => {
+        expect.assertions(1);
+
+        vi.stubGlobal("process", {
+            argv: [],
+            env: { AGENT_NAME: "Hosted Agent", TF_BUILD: "True" },
+            platform: "linux",
+        });
+
+        const received = isStdoutColorSupported();
+
+        vi.unstubAllGlobals();
+
+        expect(received).toBe(1);
+    });
+
+    it(`should return 3 for the kitty terminal`, () => {
+        expect.assertions(1);
+
+        vi.stubGlobal("process", {
+            argv: [],
+            env: { TERM: "xterm-kitty" },
+            platform: "linux",
+        });
+
+        const received = isStdoutColorSupported();
+
+        vi.unstubAllGlobals();
+
+        expect(received).toBe(3);
+    });
+
+    it(`should return 3 for the ghostty terminal`, () => {
+        expect.assertions(1);
+
+        vi.stubGlobal("process", {
+            argv: [],
+            env: { TERM: "xterm-ghostty" },
+            platform: "linux",
+        });
+
+        const received = isStdoutColorSupported();
+
+        vi.unstubAllGlobals();
+
+        expect(received).toBe(3);
+    });
+
+    it(`should return 3 for the wezterm terminal`, () => {
+        expect.assertions(1);
+
+        vi.stubGlobal("process", {
+            argv: [],
+            env: { TERM: "wezterm" },
+            platform: "linux",
+        });
+
+        const received = isStdoutColorSupported();
+
+        vi.unstubAllGlobals();
+
+        expect(received).toBe(3);
+    });
+
+    it(`should return 2 for Apple_Terminal`, () => {
+        expect.assertions(1);
+
+        vi.stubGlobal("process", {
+            argv: [],
+            env: { TERM_PROGRAM: "Apple_Terminal" },
+            platform: "darwin",
+        });
+
+        const received = isStdoutColorSupported();
+
+        vi.unstubAllGlobals();
+
+        expect(received).toBe(2);
+    });
+
+    it(`should treat PM2 with a color TERM as a TTY`, () => {
+        expect.assertions(1);
+
+        vi.stubGlobal("process", {
+            argv: [],
+            env: {
+                PM2_HOME: "/var/www/",
+                pm_id: "1",
+                TERM: "color",
+            },
+            platform: "linux",
+        });
+
+        const received = isStdoutColorSupported();
+
+        vi.unstubAllGlobals();
+
+        expect(received).toBe(1);
+    });
+
+    it(`should fall through when TERM_PROGRAM is neither iTerm nor Apple_Terminal`, () => {
+        expect.assertions(1);
+
+        vi.stubGlobal("process", {
+            argv: [],
+            env: { COLORTERM: "1", TERM_PROGRAM: "Hyper" },
+            platform: "linux",
         });
 
         const received = isStdoutColorSupported();
