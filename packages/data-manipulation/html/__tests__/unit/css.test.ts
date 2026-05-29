@@ -354,5 +354,33 @@ describe(css, () => {
             expect(result).toContain("--secondary-color: green;");
             expect(result).toContain("margin-top: 10px;");
         });
+
+        it("should prefix vendor `ms` properties with a leading dash", () => {
+            expect.assertions(2);
+
+            // camelCase MsFlexAlign -> -ms-flex-align (not ms-flex-align)
+            expect(css({ MsFlexAlign: "center" }, false)).toBe("-ms-flex-align: center;");
+            expect(css({ msOverflowStyle: "none" }, false)).toBe("-ms-overflow-style: none;");
+        });
+    });
+
+    describe("template tag with crafted strings array", () => {
+        it("should fall back to empty string when the leading and trailing strings are missing", () => {
+            expect.assertions(1);
+
+            // Crafted template strings array whose entries are all undefined exercises the
+            // `strings[0] ?? ""` and `strings[i + 1] ?? ""` fallbacks.
+            const strings = Object.assign([undefined, undefined], { raw: ["", ""] }) as unknown as TemplateStringsArray;
+
+            expect(css(strings, "A & B")).toBe(String.raw`A\ \&\ B`);
+        });
+
+        it("should fall back to empty string when the strings array is empty", () => {
+            expect.assertions(1);
+
+            const strings = Object.assign([], { raw: [] }) as unknown as TemplateStringsArray;
+
+            expect(css(strings, "Z")).toBe("Z");
+        });
     });
 });
