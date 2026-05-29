@@ -87,6 +87,24 @@ describe("hono middleware", () => {
         expect(errorSpy).toHaveBeenCalledTimes(1);
     });
 
+    it("should wrap a non-Error thrown value before emitting", async () => {
+        expect.assertions(2);
+
+        const pail = createMockPail();
+        const errorSpy = vi.spyOn(console, "error");
+        const middleware = pailMiddleware({ pail });
+        const c = createMockContext();
+
+        await expect(
+            middleware(c as any, async () => {
+                // eslint-disable-next-line @typescript-eslint/only-throw-error -- intentionally throwing a non-Error to exercise the wrapping branch
+                throw "string failure";
+            }),
+        ).rejects.toBe("string failure");
+
+        expect(errorSpy).toHaveBeenCalledTimes(1);
+    });
+
     it("should skip excluded routes", async () => {
         expect.assertions(1);
 

@@ -182,6 +182,19 @@ describe("pailError", () => {
             expect(json.fix).toBeUndefined();
             expect(json.link).toBeUndefined();
         });
+
+        it("should omit the stack when the error has no stack", () => {
+            expect.assertions(2);
+
+            const error = new PailError("no stack error");
+
+            error.stack = undefined;
+
+            const json = error.toJSON();
+
+            expect(json.stack).toBeUndefined();
+            expect(json.message).toBe("no stack error");
+        });
     });
 
     describe("toString", () => {

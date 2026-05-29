@@ -26,4 +26,17 @@ describe(getLongestLabel, () => {
 
         expect(result).toBe("");
     });
+
+    it("should treat a type without a label as an empty string", () => {
+        expect.assertions(1);
+
+        const types = {
+            type1: { label: "abc" },
+            type2: {},
+        } as Parameters<typeof getLongestLabel>[0];
+
+        const result = getLongestLabel(types);
+
+        expect(result).toBe("abc");
+    });
 });

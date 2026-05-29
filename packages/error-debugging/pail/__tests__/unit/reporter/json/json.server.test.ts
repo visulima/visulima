@@ -124,6 +124,24 @@ describe("jsonReporter server", () => {
         expect(mockStdout.write).toHaveBeenCalledExactlyOnceWith(expect.stringContaining("message without label"));
     });
 
+    it("should render the file string with placeholders when name and column are absent", () => {
+        expect.assertions(1);
+
+        const reporter = new JsonReporter();
+        const mockStdout = { write: vi.fn() } as unknown as NodeJS.WriteStream;
+
+        reporter.setStdout(mockStdout);
+        reporter.setStringify(JSON.stringify);
+        reporter.log({
+            ...baseMeta,
+            file: { line: 42 } as unknown as (typeof baseMeta)["file"],
+            message: "no name no column",
+            type: { level: "informational", name: "informational" },
+        });
+
+        expect(mockStdout.write).toHaveBeenCalledExactlyOnceWith(expect.stringContaining("\"file\":\":42\""));
+    });
+
     it("should skip empty-symbol context entries and serialize errors in context", () => {
         expect.assertions(2);
 

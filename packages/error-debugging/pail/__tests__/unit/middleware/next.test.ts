@@ -61,6 +61,24 @@ describe("next.js adapter", () => {
             expect(errorSpy).toHaveBeenCalledTimes(1);
         });
 
+        it("should wrap a non-Error thrown value before emitting", async () => {
+            expect.assertions(2);
+
+            const pail = createMockPail();
+            const errorSpy = vi.spyOn(console, "error");
+            const withPail = createWithPail({ pail });
+
+            const handler = withPail(async () => {
+                // eslint-disable-next-line @typescript-eslint/only-throw-error -- intentionally throwing a non-Error to exercise the wrapping branch
+                throw "string failure";
+            });
+
+            const request = new Request("http://localhost/api/users");
+
+            await expect(handler(request)).rejects.toBe("string failure");
+            expect(errorSpy).toHaveBeenCalledTimes(1);
+        });
+
         it("should make logger available via useLogger", async () => {
             expect.assertions(1);
 
