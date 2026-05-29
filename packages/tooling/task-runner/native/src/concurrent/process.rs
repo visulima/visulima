@@ -1,9 +1,10 @@
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
-use tokio::io::{AsyncBufReadExt, BufReader};
+use tokio::io::{AsyncRead, AsyncReadExt};
 use tokio::process::Command;
 use tokio::sync::mpsc;
 use tokio::task::JoinHandle;
+use tokio::time::timeout;
 
 use super::process_group;
 use super::types::{ConcurrentCloseEvent, ConcurrentCommandConfig, ProcessEvent};
@@ -37,30 +38,12 @@ pub fn spawn_process(
     let _ = event_tx.send(ProcessEvent::started(index, pid));
 
     // Spawn stdout reader -- returns JoinHandle so we can wait for it
-    let stdout_handle: Option<JoinHandle<()>> = child.stdout.take().map(|stdout| {
-        let tx = event_tx.clone();
-        let idx = index;
-        tokio::spawn(async move {
-            let reader = BufReader::new(stdout);
-            let mut lines = reader.lines();
-            while let Ok(Some(line)) = lines.next_line().await {
-                let _ = tx.send(ProcessEvent::stdout(idx, line));
-            }
-        })
-    });
+    let stdout_handle: Option<JoinHandle<()>> =
+        child.stdout.take().map(|stdout| tokio::spawn(stream_output(stdout, event_tx.clone(), index, false)));
 
     // Spawn stderr reader -- returns JoinHandle so we can wait for it
-    let stderr_handle: Option<JoinHandle<()>> = child.stderr.take().map(|stderr| {
-        let tx = event_tx.clone();
-        let idx = index;
-        tokio::spawn(async move {
-            let reader = BufReader::new(stderr);
-            let mut lines = reader.lines();
-            while let Ok(Some(line)) = lines.next_line().await {
-                let _ = tx.send(ProcessEvent::stderr(idx, line));
-            }
-        })
-    });
+    let stderr_handle: Option<JoinHandle<()>> =
+        child.stderr.take().map(|stderr| tokio::spawn(stream_output(stderr, event_tx.clone(), index, true)));
 
     // Spawn completion waiter -- waits for BOTH I/O drain AND process exit
     // This ensures all stdout/stderr events arrive before the close event.
@@ -139,6 +122,88 @@ pub struct ProcessInfo {
     /// When terminated or dropped, kills all child processes.
     #[cfg(windows)]
     pub job: Option<process_group::JobObject>,
+}
+
+/// Idle interval after which a partial (non-newline-terminated) line is
+/// flushed as its own event. Mirrors the JS fallback's 100ms flush timer
+/// so spinners, progress bars, and interactive prompts surface promptly
+/// instead of being withheld until the next `\n` or process exit (EOF).
+const PARTIAL_FLUSH: Duration = Duration::from_millis(100);
+
+/// Read size for a single `read()`; large enough to swallow most line
+/// bursts in one syscall without holding an oversized buffer per process.
+const READ_CHUNK: usize = 8192;
+
+/// Strip a single trailing `\r` so Windows CRLF endings don't leak a
+/// carriage return into the emitted text. Matches the JS fallback's
+/// `/\r$/` replace (one trailing `\r`, not all of them).
+fn strip_trailing_cr(line: &[u8]) -> String {
+    let end = if line.last() == Some(&b'\r') { line.len() - 1 } else { line.len() };
+
+    String::from_utf8_lossy(&line[..end]).into_owned()
+}
+
+/// Stream a child's stdout/stderr to `tx`, emitting one event per `\n`-
+/// terminated line AND flushing any partial line after `PARTIAL_FLUSH` of
+/// idle time (or at EOF). Unlike `BufReader::lines()` / `next_line()`,
+/// which only yields on a newline or EOF, this surfaces spinner/progress/
+/// prompt output that a long-running process emits without a trailing
+/// newline. `is_stderr` selects the event variant; otherwise the two
+/// streams are handled identically.
+async fn stream_output<R>(mut reader: R, tx: mpsc::UnboundedSender<ProcessEvent>, index: u32, is_stderr: bool)
+where
+    R: AsyncRead + Unpin,
+{
+    let emit = |text: String| {
+        let event = if is_stderr {
+            ProcessEvent::stderr(index, text)
+        } else {
+            ProcessEvent::stdout(index, text)
+        };
+
+        let _ = tx.send(event);
+    };
+
+    let mut pending: Vec<u8> = Vec::new();
+    let mut chunk = [0u8; READ_CHUNK];
+
+    loop {
+        // With a partial line buffered, bound the read so an idle stream
+        // still flushes it; with nothing pending, block until more data.
+        let read = if pending.is_empty() {
+            reader.read(&mut chunk).await
+        } else {
+            match timeout(PARTIAL_FLUSH, reader.read(&mut chunk)).await {
+                Ok(result) => result,
+                Err(_) => {
+                    emit(strip_trailing_cr(&pending));
+                    pending.clear();
+                    continue;
+                }
+            }
+        };
+
+        match read {
+            // EOF or read error: flush any trailing partial line, then stop.
+            Ok(0) | Err(_) => {
+                if !pending.is_empty() {
+                    emit(strip_trailing_cr(&pending));
+                }
+
+                break;
+            }
+            Ok(n) => {
+                pending.extend_from_slice(&chunk[..n]);
+
+                while let Some(pos) = pending.iter().position(|&b| b == b'\n') {
+                    let line: Vec<u8> = pending.drain(..=pos).collect();
+
+                    // `line` includes the trailing `\n`; drop it before stripping `\r`.
+                    emit(strip_trailing_cr(&line[..line.len() - 1]));
+                }
+            }
+        }
+    }
 }
 
 /// Build a tokio Command configured for execution.
@@ -241,4 +306,106 @@ fn direct_command(command: &str) -> (String, Vec<String>) {
     let program = parts.next().unwrap_or("").to_string();
     let args: Vec<String> = parts.map(|s| s.to_string()).collect();
     (program, args)
+}
+
+#[cfg(test)]
+mod tests {
+    use tokio::io::AsyncWriteExt;
+    use tokio::sync::mpsc;
+    use tokio::time::{timeout, Duration};
+
+    use super::stream_output;
+    use crate::concurrent::types::ProcessEvent;
+
+    /// Receive the next event's text within `within`, or `None` on timeout/close.
+    async fn next_text(rx: &mut mpsc::UnboundedReceiver<ProcessEvent>, within: Duration) -> Option<String> {
+        match timeout(within, rx.recv()).await {
+            Ok(Some(event)) => event.text,
+            _ => None,
+        }
+    }
+
+    #[tokio::test]
+    async fn emits_one_event_per_newline_terminated_line() {
+        let (mut writer, reader) = tokio::io::duplex(64);
+        let (tx, mut rx) = mpsc::unbounded_channel();
+        let handle = tokio::spawn(stream_output(reader, tx, 0, false));
+
+        writer.write_all(b"line1\nline2\n").await.unwrap();
+
+        assert_eq!(next_text(&mut rx, Duration::from_secs(1)).await.as_deref(), Some("line1"));
+        assert_eq!(next_text(&mut rx, Duration::from_secs(1)).await.as_deref(), Some("line2"));
+
+        drop(writer); // EOF lets the reader task finish.
+        handle.await.unwrap();
+    }
+
+    /// The regression guard: a partial line with no trailing newline and an
+    /// OPEN stream (a spinner / progress bar / prompt) must surface via the
+    /// idle flush. `BufReader::lines()` / `next_line()` would withhold it
+    /// until the next `\n` or EOF — the bug this fix addresses.
+    #[tokio::test]
+    async fn flushes_partial_line_while_stream_stays_open() {
+        let (mut writer, reader) = tokio::io::duplex(64);
+        let (tx, mut rx) = mpsc::unbounded_channel();
+        let handle = tokio::spawn(stream_output(reader, tx, 0, false));
+
+        writer.write_all(b"spinner-frame").await.unwrap();
+
+        // No newline written and `writer` is still open: the only way this
+        // arrives is the idle-timeout flush.
+        assert_eq!(
+            next_text(&mut rx, Duration::from_millis(500)).await.as_deref(),
+            Some("spinner-frame"),
+            "partial line should flush on idle timeout, not wait for newline/EOF",
+        );
+
+        drop(writer);
+        handle.await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn flushes_trailing_partial_line_at_eof() {
+        let (mut writer, reader) = tokio::io::duplex(64);
+        let (tx, mut rx) = mpsc::unbounded_channel();
+        let handle = tokio::spawn(stream_output(reader, tx, 0, false));
+
+        writer.write_all(b"tail-no-newline").await.unwrap();
+        drop(writer); // Immediate EOF.
+
+        assert_eq!(next_text(&mut rx, Duration::from_secs(1)).await.as_deref(), Some("tail-no-newline"));
+        handle.await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn strips_single_trailing_carriage_return() {
+        let (mut writer, reader) = tokio::io::duplex(64);
+        let (tx, mut rx) = mpsc::unbounded_channel();
+        let handle = tokio::spawn(stream_output(reader, tx, 0, false));
+
+        writer.write_all(b"crlf-line\r\n").await.unwrap();
+
+        assert_eq!(next_text(&mut rx, Duration::from_secs(1)).await.as_deref(), Some("crlf-line"));
+
+        drop(writer);
+        handle.await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn tags_stderr_events_with_kind_and_index() {
+        let (mut writer, reader) = tokio::io::duplex(64);
+        let (tx, mut rx) = mpsc::unbounded_channel();
+        let handle = tokio::spawn(stream_output(reader, tx, 7, true));
+
+        writer.write_all(b"err-line\n").await.unwrap();
+
+        let event = timeout(Duration::from_secs(1), rx.recv()).await.unwrap().unwrap();
+
+        assert_eq!(event.kind, "stderr");
+        assert_eq!(event.index, 7);
+        assert_eq!(event.text.as_deref(), Some("err-line"));
+
+        drop(writer);
+        handle.await.unwrap();
+    }
 }
