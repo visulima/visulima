@@ -220,6 +220,54 @@ describe("runStaged — integration", () => {
         expect(sh(["stash", "list"], root)).toBe("");
     });
 
+    // Regression: a task that *rewrites* the file (e.g. prettier --write / eslint --fix) must not
+    // let the hidden unstaged hunk reach the index. The sibling test above only inspects the file
+    // and never asserts the committed content, so it can't catch an index-level leak. Here the task
+    // edits staged-only content, then we assert the index blob (`:a.txt`) — what a commit would
+    // capture — still excludes the unstaged hunk.
+    it("keeps the index free of the unstaged hunk when a task modifies a partially-staged file", { timeout: 30_000 }, async () => {
+        expect.assertions(5);
+
+        writeFileSync(join(root, "a.txt"), "alpha\nbeta\ngamma\n");
+        sh(["add", "a.txt"], root);
+        sh(["commit", "-q", "-m", "chore: init"], root);
+
+        // Stage ONLY a change to line 1 (the wanted hunk).
+        writeFileSync(join(root, "a.txt"), "ALPHA\nbeta\ngamma\n");
+        sh(["add", "a.txt"], root);
+        // Leave an UNSTAGED change to line 3 (the unwanted hunk) on top.
+        writeFileSync(join(root, "a.txt"), "ALPHA\nbeta\nGAMMA-unstaged\n");
+
+        const result = await runStaged({
+            config: {
+                "*.txt": {
+                    // Mimic a formatter: rewrite the file it is handed (staged-only content)
+                    // by appending a deterministic marker line.
+                    task: (files) => {
+                        for (const file of files) {
+                            writeFileSync(file, `${readFileSync(file, "utf8")}formatted\n`);
+                        }
+                    },
+                    title: "format",
+                },
+            },
+            cwd: root,
+            stash: true,
+        });
+
+        expect(result.success).toBe(true);
+
+        // The index (what the commit would capture) holds the staged hunk + the task's edit…
+        const indexBlob = sh(["cat-file", "-p", ":a.txt"], root);
+
+        expect(indexBlob).toContain("ALPHA");
+        expect(indexBlob).toContain("formatted");
+        // …but NOT the unstaged hunk that was hidden for the run.
+        expect(indexBlob).not.toContain("GAMMA-unstaged");
+        // The working tree still carries the unstaged hunk after restore.
+        expect(readFileSync(join(root, "a.txt"), "utf8")).toContain("GAMMA-unstaged");
+    });
+
     it("reverts the working tree on task failure when --revert is set", async () => {
         // Windows runs occasionally observe extra assertions leaking from the
         // revert helper's stash bookkeeping (saw 6 vs expected 3), so accept
