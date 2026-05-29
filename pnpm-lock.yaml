@@ -8109,7 +8109,7 @@ importers:
         specifier: catalog:dev
         version: 2.0.0-alpha.78(45d0691480f6a3c6bafd157c9ea06d81)
       '@visulima/pail':
-        specifier: 4.0.0-alpha.18
+        specifier: 4.0.0-alpha.19
         version: link:../../error-debugging/pail
       '@visulima/path':
         specifier: 3.0.0-alpha.11
@@ -10145,7 +10145,7 @@ importers:
         specifier: 4.0.0-alpha.12
         version: link:../../terminal/tabular
       '@visulima/task-runner':
-        specifier: 1.0.0-alpha.16
+        specifier: 1.0.0-alpha.17
         version: link:../task-runner
       '@visulima/tui':
         specifier: 1.0.0-alpha.20
@@ -10269,7 +10269,7 @@ importers:
         specifier: 4.0.0-alpha.15
         version: link:../../terminal/ansi
       '@visulima/cerebro':
-        specifier: 3.0.0-alpha.28
+        specifier: 3.0.0-alpha.29
         version: link:../../terminal/cerebro
       '@visulima/colorize':
         specifier: 2.0.0-alpha.12
@@ -10299,7 +10299,7 @@ importers:
         specifier: catalog:dev
         version: 2.0.0-alpha.78(6dbd6c105e901f99694898dd8077ee62)
       '@visulima/pail':
-        specifier: 4.0.0-alpha.18
+        specifier: 4.0.0-alpha.19
         version: link:../../error-debugging/pail
       '@visulima/path':
         specifier: 3.0.0-alpha.11
@@ -10486,7 +10486,7 @@ importers:
         specifier: 3.0.0-alpha.11
         version: link:../../filesystem/path
       '@visulima/vis':
-        specifier: 1.0.0-alpha.25
+        specifier: 1.0.0-alpha.26
         version: link:../vis
       zod:
         specifier: catalog:utils
