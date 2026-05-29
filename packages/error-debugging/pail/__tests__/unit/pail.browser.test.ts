@@ -91,6 +91,53 @@ describe("pailBrowserImpl", () => {
         expect(console.log).toBe(originalConsoleLog);
     });
 
+    it("should keep the first console backup when wrapConsole runs twice", () => {
+        expect.assertions(1);
+
+        const logger = new PailBrowser({
+            logLevel: "debug",
+            processors: [],
+            rawReporter: new RawReporter(),
+            reporters: [new RawReporter()],
+            scope: ["example"],
+            throttle: 1000,
+            throttleMin: 5,
+        });
+
+        // eslint-disable-next-line no-console
+        const originalConsoleLog = console.log;
+
+        logger.wrapConsole();
+        // Second wrap must not overwrite the backup with the already-installed wrapper.
+        logger.wrapConsole();
+        logger.restoreConsole();
+
+        // eslint-disable-next-line no-console
+        expect(console.log).toBe(originalConsoleLog);
+    });
+
+    it("should no-op wrapException when process is undefined", () => {
+        expect.assertions(1);
+
+        const logger = new PailBrowser({
+            logLevel: "debug",
+            processors: [],
+            rawReporter: new RawReporter(),
+            reporters: [new RawReporter()],
+            scope: ["example"],
+            throttle: 1000,
+            throttleMin: 5,
+        });
+
+        vi.stubGlobal("process", undefined);
+
+        expect(() => {
+            logger.wrapException();
+        }).not.toThrow();
+
+        vi.unstubAllGlobals();
+    });
+
     it("should start, log, and end timers correctly", () => {
         expect.assertions(3);
 
@@ -1553,6 +1600,36 @@ describe("pailBrowserImpl", () => {
             vi.advanceTimersByTime(200);
 
             expect(consoleSpy.mock.calls.length).toBeGreaterThan(3);
+
+            consoleSpy.mockRestore();
+            vi.useRealTimers();
+        });
+
+        it("should resolve without a repeated counter when only one duplicate is suppressed", () => {
+            expect.assertions(1);
+
+            vi.useFakeTimers();
+
+            const logger = new PailBrowser({
+                logLevel: "debug",
+                processors: [],
+                rawReporter: new RawReporter(),
+                reporters: [new RawReporter()],
+                throttle: 100,
+                throttleMin: 2,
+            });
+
+            const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+            // throttleMin + 2 duplicates makes the suppressed count exactly one over the minimum,
+            // so the resolved log carries no "repeated" marker.
+            for (let index = 0; index < 4; index += 1) {
+                logger.info("dup");
+            }
+
+            vi.advanceTimersByTime(200);
+
+            expect(consoleSpy).toHaveBeenLastCalledWith("dup");
 
             consoleSpy.mockRestore();
             vi.useRealTimers();
