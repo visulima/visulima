@@ -147,3 +147,13 @@ describe("getRouteType with query params", () => {
         expect(() => getRouteType("GET", "/api/users?q=1", "foo")).toThrow("invalid resource name 'foo' for route '/api/users'");
     });
 });
+
+describe("getRouteType with an unsupported method", () => {
+    it("should return null routeType for an unknown HTTP method", () => {
+        expect.assertions(1);
+
+        expect(getRouteType("OPTIONS", "/api/users", "users")).toStrictEqual<GetRouteType>({
+            routeType: null,
+        });
+    });
+});
