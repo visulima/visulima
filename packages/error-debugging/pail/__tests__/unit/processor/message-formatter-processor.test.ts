@@ -189,4 +189,63 @@ describe("messageFormatterProcessor", () => {
 
         expect(processedMeta.message).toBe("Hello {\"prop\":\"value\"}");
     });
+
+    it("should leave the metadata untouched when the message is undefined", () => {
+        expect.assertions(1);
+
+        const processor = new MessageFormatterProcessor();
+
+        const meta: Meta<string> = {
+            badge: undefined,
+            context: undefined,
+            date: new Date(),
+            error: undefined,
+            groups: [],
+            label: undefined,
+            message: undefined,
+            prefix: undefined,
+            repeated: undefined,
+            scope: undefined,
+            suffix: undefined,
+            traceError: undefined,
+            type: {
+                level: "info",
+                name: "test",
+            },
+        };
+
+        const processedMeta = processor.process(meta);
+
+        expect(processedMeta.message).toBeUndefined();
+    });
+
+    it("should recursively format object message values of every type", () => {
+        expect.assertions(1);
+
+        const processor = new MessageFormatterProcessor();
+
+        const meta: Meta<string> = {
+            badge: undefined,
+            context: [],
+            date: new Date(),
+            error: undefined,
+            groups: [],
+            label: undefined,
+            // Mixed value types exercise the recursive branch for string, array, object, null, and primitive.
+            message: { arr: ["a"], nested: { k: "v" }, nul: null, num: 5, str: "hello" },
+            prefix: undefined,
+            repeated: undefined,
+            scope: undefined,
+            suffix: undefined,
+            traceError: undefined,
+            type: {
+                level: "info",
+                name: "test",
+            },
+        };
+
+        const processedMeta = processor.process(meta);
+
+        expect(processedMeta.message).toStrictEqual({ arr: ["a"], nested: { k: "v" }, nul: null, num: 5, str: "hello" });
+    });
 });
