@@ -227,6 +227,39 @@ describe("prisma parse where", () => {
         });
     });
 
+    it("should drop a top-level field whose operator is unknown", () => {
+        expect.assertions(1);
+
+        const baseQuery: WhereField = {
+            username: {
+                $unknown: "foo",
+            },
+        };
+
+        expect(parsePrismaWhere(baseQuery, [])).toStrictEqual<PrismaWhereField>({
+            username: undefined,
+        });
+    });
+
+    it("should skip an unknown operator inside an $and combination", () => {
+        expect.assertions(1);
+
+        const baseQuery: WhereField = {
+            $and: {
+                id: 1,
+                username: {
+                    $unknown: "foo",
+                },
+            },
+        };
+
+        expect(parsePrismaWhere(baseQuery, [])).toStrictEqual<PrismaWhereField>({
+            AND: {
+                id: 1,
+            },
+        });
+    });
+
     it("should handle nested relations", () => {
         expect.assertions(1);
 

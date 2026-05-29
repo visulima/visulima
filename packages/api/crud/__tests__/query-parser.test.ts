@@ -258,3 +258,43 @@ describe("parse distinct", () => {
         });
     });
 });
+
+describe("parse page", () => {
+    it("should parse a valid page number", () => {
+        expect.assertions(1);
+
+        const url = "http://localhost/?page=3";
+        // eslint-disable-next-line unused-imports/no-unused-vars -- destructure-omit pattern; rename to _ would violate naming-convention
+        const { originalQuery, ...result } = parseQuery(url);
+
+        expect(result).toStrictEqual<ParsedQueryParameters>({
+            page: 3,
+        });
+    });
+
+    it("should yield an undefined page for a non-numeric value", () => {
+        expect.assertions(1);
+
+        const url = "http://localhost/?page=foobar";
+        // eslint-disable-next-line unused-imports/no-unused-vars -- destructure-omit pattern; rename to _ would violate naming-convention
+        const { originalQuery, ...result } = parseQuery(url);
+
+        expect(result).toStrictEqual<ParsedQueryParameters>({
+            page: undefined,
+        });
+    });
+});
+
+describe("parse without a url", () => {
+    it("should return an empty object when no url is provided", () => {
+        expect.assertions(1);
+
+        expect(parseQuery()).toStrictEqual<ParsedQueryParameters>({});
+    });
+
+    it("should return an empty object for an empty url string", () => {
+        expect.assertions(1);
+
+        expect(parseQuery("")).toStrictEqual<ParsedQueryParameters>({});
+    });
+});
