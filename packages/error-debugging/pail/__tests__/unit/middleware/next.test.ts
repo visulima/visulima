@@ -194,6 +194,54 @@ describe("next.js adapter", () => {
 
             expect(capturedHeaders[0]?.get("x-request-id")).toBe("existing-id");
         });
+
+        it("should skip excluded paths and call next without rewriting headers", () => {
+            expect.assertions(1);
+
+            let nextOptions: unknown = "unset";
+            const MockNextResponse = {
+                next: (options?: { request?: { headers?: Headers } }) => {
+                    nextOptions = options;
+
+                    return { headers: new Headers() };
+                },
+            };
+
+            const middleware = pailMiddleware(MockNextResponse, { exclude: ["/health/**"] });
+            const request = {
+                headers: new Headers(),
+                nextUrl: { pathname: "/health/live" },
+            };
+
+            middleware(request);
+
+            // The excluded path returns NextResponse.next() with no request rewrite.
+            expect(nextOptions).toBeUndefined();
+        });
+
+        it("should skip paths absent from the include list and call next without rewriting headers", () => {
+            expect.assertions(1);
+
+            let nextOptions: unknown = "unset";
+            const MockNextResponse = {
+                next: (options?: { request?: { headers?: Headers } }) => {
+                    nextOptions = options;
+
+                    return { headers: new Headers() };
+                },
+            };
+
+            const middleware = pailMiddleware(MockNextResponse, { include: ["/api/**"] });
+            const request = {
+                headers: new Headers(),
+                nextUrl: { pathname: "/other" },
+            };
+
+            middleware(request);
+
+            // A path outside the include list returns NextResponse.next() with no request rewrite.
+            expect(nextOptions).toBeUndefined();
+        });
     });
 
     describe(useLogger, () => {
