@@ -174,4 +174,14 @@ describe(kebabCase, () => {
             expect(kebabCase("GROßE STRAßE", { locale })).toBe("große-straße");
         });
     });
+
+    describe("invalid input", () => {
+        it("should return an empty string for non-string input", () => {
+            expect.assertions(2);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            expect(kebabCase(123 as any)).toBe("");
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            expect(kebabCase(undefined as any)).toBe("");
+        });
+    });
 });

@@ -1101,4 +1101,127 @@ describe(splitByCase, () => {
             ]);
         });
     });
+
+    describe("normalize option", () => {
+        it("should title-case all-upper tokens without a locale", () => {
+            expect.assertions(2);
+            expect(splitByCase("FOO_BAR", { normalize: true })).toStrictEqual(["Foo", "Bar"]);
+            expect(splitByCase("API_KEY", { normalize: true })).toStrictEqual(["Api", "Key"]);
+        });
+
+        it("should preserve known acronyms when normalizing", () => {
+            expect.assertions(1);
+            expect(splitByCase("HTMLElement", { knownAcronyms: ["HTML"], normalize: true })).toStrictEqual(["HTML", "Element"]);
+        });
+
+        it("should title-case all-upper tokens with a locale", () => {
+            expect.assertions(2);
+            expect(splitByCase("FOO_BAR", { locale: "en", normalize: true })).toStrictEqual(["Foo", "Bar"]);
+            expect(splitByCase("ПРИВЕТ_МИР", { locale: "ru", normalize: true })).toStrictEqual(["Привет", "Мир"]);
+        });
+    });
+
+    describe("known acronyms in locale and fast paths", () => {
+        it("should split a known acronym at the start of the fast (non-locale) path", () => {
+            expect.assertions(2);
+            expect(splitByCase("HTMLElement", { knownAcronyms: ["HTML"] })).toStrictEqual(["HTML", "Element"]);
+            expect(splitByCase("getHTMLData", { knownAcronyms: ["HTML"] })).toStrictEqual(["get", "HTML", "Data"]);
+        });
+
+        it("should split a known acronym in the middle of the locale path", () => {
+            expect.assertions(1);
+            expect(splitByCase("getHTMLData", { knownAcronyms: ["HTML"], locale: "en" })).toStrictEqual(["get", "HTML", "Data"]);
+        });
+    });
+
+    describe("exact cyrillic locale (case-sensitive script transitions)", () => {
+        it("should split case transitions for bare cyrillic locale codes", () => {
+            expect.assertions(3);
+            expect(splitByCase("приветМир", { locale: "ru" })).toStrictEqual(["привет", "Мир"]);
+            expect(splitByCase("прыветМир", { locale: "be" })).toStrictEqual(["прывет", "Мир"]);
+            expect(splitByCase("здравоСвете", { locale: "sr" })).toStrictEqual(["здраво", "Свете"]);
+        });
+    });
+
+    describe("exact rtl locale handling", () => {
+        it("should split bare arabic and hebrew locale codes on script transitions", () => {
+            expect.assertions(2);
+            expect(splitByCase("مرحباWorld", { locale: "ar" })).toStrictEqual(["مرحبا", "World"]);
+            expect(splitByCase("שלוםWorld", { locale: "he" })).toStrictEqual(["שלום", "World"]);
+        });
+    });
+
+    describe("slovenian special characters", () => {
+        it("should split before a special character followed by an uppercase letter", () => {
+            expect.assertions(2);
+            expect(splitByCase("najČSlovo", { locale: "sl" })).toStrictEqual(["naj", "Č", "Slovo"]);
+            expect(splitByCase("nekiĐWord", { locale: "sl" })).toStrictEqual(["neki", "Đ", "Word"]);
+        });
+    });
+
+    describe("greek multi-part handling", () => {
+        it("should split mixed greek and latin runs", () => {
+            expect.assertions(2);
+            expect(splitByCase("αβγTestΔΕΖfoo", { locale: "el" })).toStrictEqual(["αβγ", "Test", "ΔΕΖ", "foo"]);
+            expect(splitByCase("αβγΔ", { locale: "el" })).toStrictEqual(["αβγ", "Δ"]);
+        });
+
+        it("should keep a single non-greek or single-char greek part intact", () => {
+            expect.assertions(2);
+            expect(splitByCase("Test", { locale: "el" })).toStrictEqual(["Test"]);
+            expect(splitByCase("Α", { locale: "el" })).toStrictEqual(["Α"]);
+        });
+    });
+
+    describe("path traversal edge cases", () => {
+        it("should handle trailing dot-dot and dot segments", () => {
+            expect.assertions(2);
+            expect(splitByCase("foo/..")).toStrictEqual(["foo"]);
+            expect(splitByCase("foo/.")).toStrictEqual(["foo"]);
+        });
+
+        it("should handle leading dot-dot and dot only", () => {
+            expect.assertions(4);
+            expect(splitByCase("..")).toStrictEqual([".."]);
+            expect(splitByCase(".")).toStrictEqual(["."]);
+            expect(splitByCase("../foo")).toStrictEqual(["..", "foo"]);
+            expect(splitByCase("./foo")).toStrictEqual([".", "foo"]);
+        });
+
+        it("should handle consecutive dot-dot and dot inside a path", () => {
+            expect.assertions(2);
+            expect(splitByCase("a/../../b")).toStrictEqual(["a", "..", "..", "b"]);
+            expect(splitByCase("a/././b")).toStrictEqual(["a", ".", ".", "b"]);
+        });
+    });
+
+    describe("custom separator regex caching", () => {
+        it("should reuse the cached separator regex on repeated calls with the same separators", () => {
+            expect.assertions(2);
+
+            // First call builds and caches the regex for these separators.
+            expect(splitByCase("a:b:c", { separators: [":"] })).toStrictEqual(["a", "b", "c"]);
+            // Second identical call must hit the cached regex branch.
+            expect(splitByCase("x:y:z", { separators: [":"] })).toStrictEqual(["x", "y", "z"]);
+        });
+    });
+
+    describe("locale fast-return guards for non-script input", () => {
+        it("should return digit-only input unchanged under the Greek locale", () => {
+            expect.assertions(1);
+            // No Greek and no Latin characters -> Greek branch returns the string untouched.
+            expect(splitByCase("123", { locale: "el" })).toStrictEqual(["123"]);
+        });
+
+        it("should return digit-only input unchanged under a Cyrillic locale", () => {
+            expect.assertions(1);
+            // No Cyrillic and no Latin characters -> Cyrillic branch returns the string untouched.
+            expect(splitByCase("123", { locale: "ru" })).toStrictEqual(["123"]);
+        });
+
+        it("should return a single Greek character unchanged under the Greek locale", () => {
+            expect.assertions(1);
+            expect(splitByCase("α", { locale: "el" })).toStrictEqual(["α"]);
+        });
+    });
 });

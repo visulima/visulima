@@ -284,5 +284,71 @@ describe(processAnsiString, () => {
             expect(segments).toHaveLength(5);
             expect(segments[0].width).toBe(0);
         });
+
+        it("should stop processing when the callback returns false on an SGR escape segment", () => {
+            expect.assertions(2);
+
+            const segments: (AnsiSegment | HyperlinkSegment)[] = [];
+            const text = "\u001B[31mHello\u001B[0m";
+
+            processAnsiString(text, {
+                getWidth: (string_) => string_.length,
+                onSegment: (segment) => {
+                    segments.push(segment);
+
+                    // Stop as soon as the opening color escape is emitted.
+                    return false;
+                },
+            });
+
+            expect(segments).toHaveLength(1);
+            expect(segments[0]).toMatchObject({
+                isEscapeSequence: true,
+                text: "\u001B[31m",
+            });
+        });
+
+        it("should stop processing when the callback returns false on a hyperlink-start segment", () => {
+            expect.assertions(2);
+
+            const segments: (AnsiSegment | HyperlinkSegment)[] = [];
+            const text = "\u001B]8;;https://example.com\u0007Click\u001B\\";
+
+            processAnsiString(text, {
+                getWidth: (string_) => string_.length,
+                onSegment: (segment) => {
+                    segments.push(segment);
+
+                    return false;
+                },
+            });
+
+            expect(segments).toHaveLength(1);
+            expect(segments[0]).toMatchObject({
+                hyperlinkUrl: "https://example.com",
+                isHyperlinkStart: true,
+            });
+        });
+
+        it("should stop processing when the callback returns false on a hyperlink-end segment", () => {
+            expect.assertions(1);
+
+            const segments: (AnsiSegment | HyperlinkSegment)[] = [];
+            const text = "\u001B]8;;https://example.com\u0007X\u001B\\";
+
+            processAnsiString(text, {
+                getWidth: (string_) => string_.length,
+                onSegment: (segment) => {
+                    segments.push(segment);
+
+                    // Allow everything except the hyperlink-end segment, then stop on it.
+                    return !(segment as HyperlinkSegment).isHyperlinkEnd;
+                },
+            });
+
+            expect(segments.at(-1)).toMatchObject({
+                isHyperlinkEnd: true,
+            });
+        });
     });
 });

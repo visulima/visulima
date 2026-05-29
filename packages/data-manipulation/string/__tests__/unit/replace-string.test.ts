@@ -250,4 +250,60 @@ describe("replaceString function", () => {
 
         expect(replaceString(source, searches, ignoreRanges)).toBe("abc");
     });
+
+    it("should expand $` to the text preceding a RegExp match", () => {
+        expect.assertions(1);
+
+        expect(replaceString("abcXYZdef", [[/XYZ/g, "[$`]"]], [])).toBe("abc[abc]def");
+    });
+
+    it("should expand $' to the text following a RegExp match", () => {
+        expect.assertions(1);
+
+        expect(replaceString("abcXYZdef", [[/XYZ/g, "[$']"]], [])).toBe("abc[def]def");
+    });
+
+    it("should expand $$ to a literal dollar sign in a RegExp replacement", () => {
+        expect.assertions(1);
+
+        expect(replaceString("abcXYZdef", [[/XYZ/g, "$$"]], [])).toBe("abc$def");
+    });
+
+    it("should leave $n untouched in a RegExp replacement when the group is out of range", () => {
+        expect.assertions(1);
+
+        expect(replaceString("abcXYZdef", [[/XYZ/g, "$9"]], [])).toBe("abc$9def");
+    });
+
+    it("should expand $& to the matched text for a string search", () => {
+        expect.assertions(1);
+
+        expect(replaceString("foo bar", [["bar", "<$&>"]], [])).toBe("foo <bar>");
+    });
+
+    it("should expand $$ to a literal dollar sign for a string search", () => {
+        expect.assertions(1);
+
+        expect(replaceString("foo bar", [["bar", "$$"]], [])).toBe("foo $");
+    });
+
+    it("should leave $n untouched for a string search (no capture groups available)", () => {
+        expect.assertions(1);
+
+        expect(replaceString("foo bar", [["bar", "$1"]], [])).toBe("foo $1");
+    });
+
+    it("should merge adjacent ignore ranges before applying matches", () => {
+        expect.assertions(1);
+
+        // Ranges [0,2] and [3,5] are adjacent and merge into [0,5];
+        // only the trailing two characters (indices 6-7) remain replaceable.
+        expect(replaceString("xxxxxxxx", [["x", "X"]], [[0, 2], [3, 5]])).toBe("xxxxxxXX");
+    });
+
+    it("should skip empty string search keys", () => {
+        expect.assertions(1);
+
+        expect(replaceString("abc", [["", "X"]], [])).toBe("abc");
+    });
 });

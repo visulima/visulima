@@ -618,5 +618,58 @@ describe(slice, () => {
                 expect(slice(mixedColoredText, 7, 15)).toEqualAnsi(green("日本語") + yellow("한국어") + blue("ال"));
             });
         });
+
+        describe("aNSI style tracking edge cases", () => {
+            // ESC and BEL constructed without embedding literal control bytes in the file.
+            const esc = String.fromCodePoint(27);
+            const bel = String.fromCodePoint(7);
+
+            it("should clear all active styles on a full reset (0m)", () => {
+                expect.assertions(1);
+
+                // Bold "A", full reset, then "B" — slicing both keeps the bold open/close around "A".
+                expect(slice(`${esc}[1mA${esc}[0mB`, 0, 2)).toBe(`${esc}[1mA${esc}[0mB`);
+            });
+
+            it("should close a format style via its specific reset code (22m closes bold)", () => {
+                expect.assertions(1);
+
+                expect(slice(`${esc}[1mAB${esc}[22mCD`, 0, 3)).toBe(`${esc}[1mAB${esc}[22mC`);
+            });
+
+            it("should replace an existing foreground color when a new one is opened", () => {
+                expect.assertions(1);
+
+                expect(slice(`${esc}[31mA${esc}[32mB${esc}[39m`, 0, 2)).toBe(`${esc}[31mA${esc}[32mB${esc}[39m`);
+            });
+
+            it("should replace an existing background color when a new one is opened", () => {
+                expect.assertions(1);
+
+                // Slicing a sub-range (0..2 of 3 visible chars) forces per-segment processing,
+                // exercising the background-color replacement branch.
+                expect(slice(`${esc}[41mA${esc}[42mBC${esc}[49m`, 0, 2)).toBe(`${esc}[41mA${esc}[49m${esc}[42mB${esc}[49m`);
+            });
+
+            it("should de-duplicate a repeated style attribute of the same code", () => {
+                expect.assertions(1);
+
+                expect(slice(`${esc}[1mA${esc}[1mBC${esc}[22m`, 0, 2)).toBe(`${esc}[1mA${esc}[22m${esc}[1mB${esc}[22m`);
+            });
+
+            it("should replace an existing hyperlink when a new one is opened", () => {
+                expect.assertions(1);
+
+                const both = `${esc}]8;;https://a.com${bel}A${esc}]8;;https://b.com${bel}BC${esc}]8;;${bel}`;
+
+                expect(slice(both, 0, 2)).toBe(`${esc}]8;;https://a.com${bel}A${esc}]8;;${bel}${esc}]8;;https://b.com${bel}B${esc}]8;;${bel}`);
+            });
+
+            it("should throw a RangeError for negative indices on ANSI input", () => {
+                expect.assertions(1);
+
+                expect(() => slice(`${esc}[1mAB${esc}[22m`, -1, 2)).toThrow("Negative indices aren't supported");
+            });
+        });
     });
 });

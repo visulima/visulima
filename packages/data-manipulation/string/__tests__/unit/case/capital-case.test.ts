@@ -208,4 +208,14 @@ describe(capitalCase, () => {
             expect(capitalCase("test_string", { locale: "invalid-locale" })).toBe("Test String");
         });
     });
+
+    describe("invalid input", () => {
+        it("should return an empty string for non-string input", () => {
+            expect.assertions(2);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            expect(capitalCase(123 as any)).toBe("");
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            expect(capitalCase(undefined as any)).toBe("");
+        });
+    });
 });

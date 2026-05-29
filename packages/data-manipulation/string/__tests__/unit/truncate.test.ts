@@ -192,4 +192,24 @@ describe(truncate, () => {
             ).toBe("ｗ...");
         });
     });
+
+    describe("input validation", () => {
+        it("should throw a TypeError when input is not a string", () => {
+            expect.assertions(1);
+
+            expect(() => truncate(123 as never, 5)).toThrow(TypeError);
+        });
+
+        it("should throw a TypeError when limit is not a number", () => {
+            expect.assertions(1);
+
+            expect(() => truncate("hello", "5" as never)).toThrow(TypeError);
+        });
+
+        it("should throw an Error for an invalid truncation position", () => {
+            expect.assertions(1);
+
+            expect(() => truncate("hello world", 5, { position: "top" as never })).toThrow("Invalid position");
+        });
+    });
 });

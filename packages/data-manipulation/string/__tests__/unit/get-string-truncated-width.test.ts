@@ -475,4 +475,102 @@ describe(getStringTruncatedWidth, () => {
         expect(result.ellipsed).toBe(true);
         expect(result.index).toBe(36); // TODO: Check if this is correct
     });
+
+    describe("character-width caching for very long strings", () => {
+        it("caches widths of mixed character types for strings longer than 10000 code points", () => {
+            expect.assertions(1);
+
+            // Caching is only enabled for strings longer than 10_000 code points.
+            // Mix latin (1) + NO-BREAK SPACE latin-1 (1) + CJK wide (2) + ambiguous default (2) + fullwidth cent (2) = 8 per 5-code-point unit.
+            const unit = "a 一‘￠";
+            const long = unit.repeat(2100); // 10_500 code points
+
+            expect(getStringTruncatedWidth(long).width).toBe(2100 * 8);
+        });
+
+        it("caches latin and wide characters when over the caching threshold", () => {
+            expect.assertions(1);
+
+            // latin (1) + CJK wide (2) = 3 per 2-code-point unit.
+            const long = "a一".repeat(6000); // 12_000 code points
+
+            expect(getStringTruncatedWidth(long).width).toBe(6000 * 3);
+        });
+    });
+
+    describe("non-caching character width branches", () => {
+        it("treats a C0 control character as zero width by default", () => {
+            expect.assertions(2);
+
+            const result = getStringTruncatedWidth(`a${String.fromCodePoint(1)}b`);
+
+            // "a" + control(0) + "b" = 2
+            expect(result.width).toBe(2);
+            expect(result.truncated).toBe(false);
+        });
+
+        it("treats a fullwidth Latin form as width two", () => {
+            expect.assertions(2);
+
+            // U+FF21 FULLWIDTH LATIN CAPITAL LETTER A resolves to fullwidth via East Asian width.
+            const result = getStringTruncatedWidth("Ａ");
+
+            expect(result.width).toBe(2);
+            expect(result.index).toBe(1);
+        });
+
+        it("treats an ideographic space as fullwidth via the East Asian width fallback", () => {
+            expect.assertions(2);
+
+            // U+3000 IDEOGRAPHIC SPACE is not caught by the fast category check and resolves
+            // to fullwidth through the East Asian width branch.
+            const result = getStringTruncatedWidth("　");
+
+            expect(result.width).toBe(2);
+            expect(result.index).toBe(1);
+        });
+    });
+
+    describe("truncation against the absolute limit", () => {
+        it("stops at an ANSI sequence that overflows the absolute limit when counting escape codes", () => {
+            expect.assertions(3);
+
+            const result = getStringTruncatedWidth("\u001B[31mhello", { countAnsiEscapeCodes: true, limit: 2 });
+
+            expect(result.truncated).toBe(true);
+            expect(result.ellipsed).toBe(true);
+            expect(result.index).toBe(0);
+        });
+
+        it("stops at a tab that overflows the absolute limit", () => {
+            expect.assertions(2);
+
+            const result = getStringTruncatedWidth("ab\tcd", { limit: 3, width: { tab: 8 } });
+
+            expect(result.truncated).toBe(true);
+            expect(result.index).toBe(2);
+        });
+
+        it("truncates before an OSC8 hyperlink whose display text overflows the limit", () => {
+            expect.assertions(2);
+
+            const link = "\u001B]8;;https://example.com\u0007ClickHere\u001B]8;;\u0007";
+            const result = getStringTruncatedWidth(`ab${link}`, { limit: 3 });
+
+            expect(result.truncated).toBe(true);
+            expect(result.index).toBe(2);
+        });
+
+        it("truncates before an OSC8 hyperlink when preceding text plus the full link width overflows the limit", () => {
+            expect.assertions(2);
+
+            // "abc" (width 3) followed by a link whose untruncated display text ("LONGTEXT") is width 8.
+            // 3 + 8 exceeds the limit of 5, so truncation happens before the link begins.
+            const link = "\u001B]8;;https://x.com\u0007LONGTEXT\u001B]8;;\u0007";
+            const result = getStringTruncatedWidth(`abc${link}`, { limit: 5 });
+
+            expect(result.truncated).toBe(true);
+            expect(result.index).toBe(3);
+        });
+    });
 });
