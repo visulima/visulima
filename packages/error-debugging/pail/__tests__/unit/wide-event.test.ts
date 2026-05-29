@@ -190,6 +190,22 @@ describe("wideEvent", () => {
             expect(emitted.duration).toMatch(DURATION_MS_REGEX);
         });
 
+        it("should format duration as seconds when at or above 1000ms", () => {
+            expect.assertions(1);
+
+            const pail = createMockPail();
+            // Drive startTime (constructor) and the emit timestamp so the elapsed time crosses 1000ms.
+            const nowSpy = vi.spyOn(performance, "now").mockReturnValueOnce(0).mockReturnValueOnce(1500);
+            const wideEvent = createWideEvent({ autoEmit: false, name: "test", pail });
+
+            wideEvent.emit();
+            nowSpy.mockRestore();
+
+            const emitted = consoleSpy.mock.calls[0]?.[0] as Record<string, unknown>;
+
+            expect(emitted.duration).toBe("1.50s");
+        });
+
         it("should only emit once", () => {
             expect.assertions(1);
 
@@ -322,6 +338,26 @@ describe("wideEvent", () => {
             expect(serializedError).toHaveProperty("stack");
 
             expectTypeOf(serializedError.stack).toBeString();
+        });
+
+        it("should omit stack when the error has no stack", () => {
+            expect.assertions(2);
+
+            const pail = createMockPail();
+            const wideEvent = createWideEvent({ autoEmit: false, name: "test", pail });
+            const testError = new Error("No stack");
+
+            testError.stack = undefined;
+
+            wideEvent.setError(testError);
+            wideEvent.emit();
+
+            // eslint-disable-next-line no-console
+            const emitted = (console.error as ReturnType<typeof vi.fn>).mock.calls[0]?.[0] as Record<string, unknown>;
+            const serializedError = emitted?.error as Record<string, unknown>;
+
+            expect(serializedError).toHaveProperty("message", "No stack");
+            expect(serializedError).not.toHaveProperty("stack");
         });
 
         it("should extract status from error", () => {
