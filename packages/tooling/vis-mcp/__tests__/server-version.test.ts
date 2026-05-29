@@ -107,4 +107,22 @@ describe("server.ts loadVersion fallbacks", () => {
         await expect(startMcpServer()).resolves.toBeUndefined();
         expect(mockedReadFile).not.toHaveBeenCalled();
     });
+
+    it("should fall back to '0.0.0' when the package.json has no version field", async () => {
+        expect.assertions(2);
+
+        mockedFindUp.mockResolvedValueOnce("/fake/package.json");
+        // A valid package.json that simply omits `version` — exercises the
+        // `parsed.version ?? "0.0.0"` nullish fallback.
+        mockedReadFile.mockResolvedValueOnce(JSON.stringify({ name: "@visulima/vis-mcp" }));
+
+        await expect(startMcpServer()).resolves.toBeUndefined();
+
+        const errorLines = stderrSpy.mock.calls
+            .map((call) => String(call[0]))
+            .filter((message) => message.includes("failed to read package.json"));
+
+        // The version fallback is silent — no error should be logged.
+        expect(errorLines).toHaveLength(0);
+    });
 });

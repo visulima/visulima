@@ -28,6 +28,14 @@ if (command.startsWith("list --targets --json")) {
             type: "application",
             targets: [{ name: "build", command: "next build" }],
         },
+        // A project that omits the `targets` key entirely — exercises the
+        // `entry.targets ?? []` fallback in list-targets. It contributes no
+        // rows, so existing count/ordering assertions stay valid.
+        {
+            name: "@scope/gamma",
+            language: "ts",
+            type: "library",
+        },
     ]);
     process.exit(0);
 }
@@ -154,6 +162,12 @@ if (command === "fail-bad-json") {
 if (command === "fail-exit-code") {
     writeStderr("boom\n");
     process.exit(7);
+}
+
+if (command === "fail-empty-stderr") {
+    // Non-zero exit with no stderr output — exercises the empty-`tail`
+    // branch in execVisJson's error message (no trailing newline section).
+    process.exit(5);
 }
 
 writeStderr(`fake-vis: unknown command: ${command}\n`);

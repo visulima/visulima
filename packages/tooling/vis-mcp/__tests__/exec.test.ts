@@ -61,6 +61,17 @@ describe(execVisJson, () => {
         await expect(execVisJson(FAKE_VIS, ["fail-exit-code"])).rejects.toThrow(/exited with code 7/);
     });
 
+    it("should omit the stderr tail when the failing process writes nothing to stderr", async () => {
+        expect.assertions(2);
+
+        // The fake binary exits non-zero with empty stderr — the error
+        // message should report the code without a trailing stderr section.
+        const promise = execVisJson(FAKE_VIS, ["fail-empty-stderr"]);
+
+        await expect(promise).rejects.toThrow(/exited with code 5/);
+        await expect(promise).rejects.toThrow(/exited with code 5$/);
+    });
+
     it("should throw on invalid JSON", async () => {
         expect.assertions(1);
 
