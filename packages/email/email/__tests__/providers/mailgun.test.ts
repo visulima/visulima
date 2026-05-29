@@ -479,4 +479,125 @@ describe(mailgunProvider, () => {
             expect(result.error).toBeDefined();
         });
     });
+
+    describe("branch coverage", () => {
+        const consoleLogger = { debug: vi.fn(), error: vi.fn(), info: vi.fn(), log: vi.fn(), warn: vi.fn() } as unknown as Console;
+
+        it("should send with logger, string deliveryTime, tracking flags, and template without variables", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock
+                .mockResolvedValueOnce({ data: { statusCode: 200 }, success: true })
+                .mockResolvedValueOnce({ data: { body: { id: "id-1" }, statusCode: 200 }, success: true });
+
+            const provider = mailgunProvider({ apiKey: "test123", domain: "example.com", logger: consoleLogger });
+
+            const result = await provider.sendEmail({
+                clickTracking: false,
+                deliveryTime: "Thu, 01 Jan 2025 00:00:00 GMT",
+                from: { email: "sender@example.com" },
+                html: "<h1>Hi</h1>",
+                openTracking: true,
+                subject: "Test",
+                template: "welcome",
+                to: { email: "user@example.com" },
+                unsubscribeTracking: false,
+            } as MailgunEmailOptions);
+
+            expect(result.success).toBe(true);
+        });
+
+        it("should send a text-only email without html", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock
+                .mockResolvedValueOnce({ data: { statusCode: 200 }, success: true })
+                .mockResolvedValueOnce({ data: { body: { id: "id-2" }, statusCode: 200 }, success: true });
+
+            const provider = mailgunProvider({ apiKey: "test123", domain: "example.com" });
+
+            const result = await provider.sendEmail({
+                from: { email: "sender@example.com" },
+                subject: "Test",
+                text: "plain text",
+                to: { email: "user@example.com" },
+            });
+
+            expect(result.success).toBe(true);
+        });
+
+        it("should generate a message id when the response body lacks one", async () => {
+            expect.assertions(2);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock
+                .mockResolvedValueOnce({ data: { statusCode: 200 }, success: true })
+                .mockResolvedValueOnce({ data: { statusCode: 200 }, success: true });
+
+            const provider = mailgunProvider({ apiKey: "test123", domain: "example.com" });
+
+            const result = await provider.sendEmail({
+                from: { email: "sender@example.com" },
+                html: "<h1>Hi</h1>",
+                subject: "Test",
+                to: { email: "user@example.com" },
+            });
+
+            expect(result.success).toBe(true);
+            expect(result.data?.messageId).toBeDefined();
+        });
+
+        it("should return a default error when send fails without an error", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValueOnce({ data: { statusCode: 200 }, success: true }).mockResolvedValueOnce({ success: false });
+
+            const provider = mailgunProvider({ apiKey: "test123", domain: "example.com" });
+
+            const result = await provider.sendEmail({
+                from: { email: "sender@example.com" },
+                html: "<h1>Hi</h1>",
+                subject: "Test",
+                to: { email: "user@example.com" },
+            });
+
+            expect(result.success).toBe(false);
+        });
+
+        it("should report an unknown error when getEmail fails with a non-Error", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValueOnce({ data: { statusCode: 200 }, success: true }).mockResolvedValueOnce({ error: "string failure", success: false });
+
+            const provider = mailgunProvider({ apiKey: "test123", domain: "example.com" });
+
+            const result = await provider.getEmail?.("msg-1");
+
+            expect(result?.success).toBe(false);
+        });
+
+        it("should return empty data when getEmail finds no events", async () => {
+            expect.assertions(2);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValueOnce({ data: { statusCode: 200 }, success: true }).mockResolvedValueOnce({ data: {}, success: true });
+
+            const provider = mailgunProvider({ apiKey: "test123", domain: "example.com" });
+
+            const result = await provider.getEmail?.("msg-1");
+
+            expect(result?.success).toBe(true);
+            expect(result?.data).toBeUndefined();
+        });
+    });
 });
