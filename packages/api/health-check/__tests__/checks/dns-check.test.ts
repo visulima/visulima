@@ -36,4 +36,17 @@ describe(dnsCheck, () => {
         expect(result.meta.addresses).toEqual(expect.any(Object));
         expect(result.meta.host).toBe("example.com");
     }, 10_000);
+
+    it("should return unhealthy when the lookup throws", async () => {
+        expect.assertions(4);
+
+        const host = "this-host-does-not-exist.invalid";
+
+        const result = await dnsCheck(host)();
+
+        expect(result.displayName).toBe(`DNS check for ${host}`);
+        expect(result.health.healthy).toBe(false);
+        expect(result.health.message).toEqual(expect.any(String));
+        expect(result.meta).toStrictEqual({ host });
+    }, 10_000);
 });
