@@ -6,10 +6,10 @@
  */
 import { fileURLToPath } from "node:url";
 
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { dirname, resolve } from "../../src/path";
-import { filename, isBinaryPath, isRelative, normalizeAliases, resolveAlias, reverseResolveAlias, toPath } from "../../src/utils";
+import { filename, isBinaryPath, isRelative, isWindows, normalizeAliases, resolveAlias, reverseResolveAlias, toPath } from "../../src/utils";
 
 describe("utils", () => {
     it("toPath", () => {
@@ -115,6 +115,14 @@ describe("utils", () => {
 
                 expect(reverseResolveAlias("/src/foo/bar", aliases)).toBe("~/foo/bar");
                 expect(reverseResolveAlias("C:/src/foo/bar", aliases)).toBe("~win/foo/bar");
+            });
+
+            it("should strip a trailing slash from the matched alias value", () => {
+                expect.assertions(1);
+
+                // The alias *value* (the reverse-lookup key) ends with a slash, so the
+                // trailing slash is stripped before the boundary check.
+                expect(reverseResolveAlias("/abs/src/foo", { "~src/": "/abs/src/" })).toBe("~src/foo");
             });
         });
     });
@@ -252,6 +260,68 @@ describe("utils", () => {
             expect(isBinaryPath("file.tar.gz")).toBe(true);
             expect(isBinaryPath("file.min.js")).toBe(false);
             expect(isBinaryPath("file.test.spec.ts")).toBe(false);
+        });
+    });
+
+    describe(isWindows, () => {
+        afterEach(() => {
+            vi.unstubAllGlobals();
+        });
+
+        it("should return false when globalThis.process is unavailable", () => {
+            expect.assertions(1);
+
+            vi.stubGlobal("process", undefined);
+
+            expect(isWindows()).toBe(false);
+        });
+
+        it("should return true on a win32 platform", () => {
+            expect.assertions(1);
+
+            vi.stubGlobal("process", { env: {}, platform: "win32" });
+
+            expect(isWindows()).toBe(true);
+        });
+
+        it("should return true on a cygwin platform", () => {
+            expect.assertions(1);
+
+            vi.stubGlobal("process", { env: {}, platform: "cygwin" });
+
+            expect(isWindows()).toBe(true);
+        });
+
+        it("should return false on a non-Windows platform with no OSTYPE", () => {
+            expect.assertions(1);
+
+            vi.stubGlobal("process", { env: {}, platform: "linux" });
+
+            expect(isWindows()).toBe(false);
+        });
+
+        it("should return true when OSTYPE is msys", () => {
+            expect.assertions(1);
+
+            vi.stubGlobal("process", { env: { OSTYPE: "msys" }, platform: "linux" });
+
+            expect(isWindows()).toBe(true);
+        });
+
+        it("should return true when OSTYPE is cygwin", () => {
+            expect.assertions(1);
+
+            vi.stubGlobal("process", { env: { OSTYPE: "cygwin" }, platform: "linux" });
+
+            expect(isWindows()).toBe(true);
+        });
+
+        it("should return false when OSTYPE is an unrelated string", () => {
+            expect.assertions(1);
+
+            vi.stubGlobal("process", { env: { OSTYPE: "darwin" }, platform: "linux" });
+
+            expect(isWindows()).toBe(false);
         });
     });
 });

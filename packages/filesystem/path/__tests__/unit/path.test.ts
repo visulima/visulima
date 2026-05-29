@@ -4,7 +4,7 @@
  * MIT License
  * Copyright (c) Pooya Parsa &lt;pooya@pi0.io> - Daniel Roe &lt;daniel@roe.dev>
  */
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import normalizeWindowsPath from "../../src/normalize-windows-path";
 import {
@@ -386,5 +386,75 @@ describe(matchesGlob, () => {
         expect.assertions(1);
 
         expect(matchesGlob(String.raw`\foo\bar`, "/foo/**")).toBe(true);
+    });
+});
+
+describe("normalizeString allowAboveRoot", () => {
+    it("should keep leading '..' segments when result is still empty", () => {
+        expect.assertions(3);
+
+        // When allowAboveRoot is true and the accumulated result is empty, the
+        // bare ".." branch (without a leading "/") is taken.
+        expect(normalizeString("..", true)).toBe("..");
+        expect(normalizeString("../foo", true)).toBe("../foo");
+        expect(normalizeString("../../foo", true)).toBe("../../foo");
+    });
+
+    it("should drop leading '..' segments when allowAboveRoot is false", () => {
+        expect.assertions(2);
+
+        expect(normalizeString("..", false)).toBe("");
+        expect(normalizeString("../foo", false)).toBe("foo");
+    });
+});
+
+describe("cwd fallback in resolve", () => {
+    const originalCwd = process.cwd; // eslint-disable-line @typescript-eslint/unbound-method, vitest/unbound-method
+
+    afterEach(() => {
+        process.cwd = originalCwd;
+        vi.unstubAllGlobals();
+        vi.resetModules();
+    });
+
+    it("should fall back to '/' when process.cwd is not a function", async () => {
+        expect.assertions(1);
+
+        // Simulate a runtime where process exists but process.cwd is unavailable.
+        vi.stubGlobal("process", { ...process, cwd: undefined });
+        vi.resetModules();
+
+        const { resolve: freshResolve } = await import("../../src/path");
+
+        expect(freshResolve("foo", "bar")).toBe("/foo/bar");
+    });
+});
+
+describe("delimiter platform resolution", () => {
+    afterEach(() => {
+        vi.unstubAllGlobals();
+        vi.resetModules();
+    });
+
+    it("should use ';' on a Windows platform", async () => {
+        expect.assertions(1);
+
+        vi.resetModules();
+        vi.stubGlobal("process", { ...process, platform: "win32" });
+
+        const pathModule = await import("../../src/path");
+
+        expect(pathModule.delimiter).toBe(";");
+    });
+
+    it("should fall back to ':' when the platform is undefined", async () => {
+        expect.assertions(1);
+
+        vi.resetModules();
+        vi.stubGlobal("process", { ...process, platform: undefined });
+
+        const pathModule = await import("../../src/path");
+
+        expect(pathModule.delimiter).toBe(":");
     });
 });
