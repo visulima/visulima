@@ -2,6 +2,7 @@ import { Buffer } from "node:buffer";
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import EmailError from "../../src/errors/email-error";
 import RequiredOptionError from "../../src/errors/required-option-error";
 import { mailomatProvider } from "../../src/providers/mailomat/index";
 import type { MailomatEmailOptions } from "../../src/providers/mailomat/types";
@@ -190,6 +191,77 @@ describe(mailomatProvider, () => {
         });
     });
 
+    describe("getEmail", () => {
+        it("should return error if id is empty", async () => {
+            expect.assertions(1);
+
+            const provider = mailomatProvider({ apiKey: "test123" });
+
+            const result = await provider.getEmail?.("");
+
+            expect(result?.success).toBe(false);
+        });
+
+        it("should return email details on success", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValue({
+                data: { body: { id: "msg-1", subject: "hi" }, statusCode: 200 },
+                success: true,
+            });
+
+            const provider = mailomatProvider({ apiKey: "test123" });
+
+            const result = await provider.getEmail?.("msg-1");
+
+            expect(result?.success).toBe(true);
+        });
+
+        it("should return error when request fails with an Error", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValue({ error: new Error("Not found"), success: false });
+
+            const provider = mailomatProvider({ apiKey: "test123" });
+
+            const result = await provider.getEmail?.("msg-1");
+
+            expect(result?.success).toBe(false);
+        });
+
+        it("should report unknown error when request fails with a non-Error", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValue({ error: "string failure", success: false });
+
+            const provider = mailomatProvider({ apiKey: "test123" });
+
+            const result = await provider.getEmail?.("msg-1");
+
+            expect(result?.success).toBe(false);
+        });
+
+        it("should return an error when retrieving an email throws", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockRejectedValue(new Error("network down"));
+
+            const provider = mailomatProvider({ apiKey: "test123" });
+
+            const result = await provider.getEmail?.("msg-x");
+
+            expect(result?.success).toBe(false);
+        });
+    });
+
     describe("validateCredentials", () => {
         it("should return true", async () => {
             expect.assertions(1);
@@ -197,6 +269,125 @@ describe(mailomatProvider, () => {
             const provider = mailomatProvider({ apiKey: "test123" });
 
             await expect(provider.validateCredentials?.()).resolves.toBe(true);
+        });
+    });
+
+    describe("branch coverage", () => {
+        it("should fail initialize when the availability check errors", async () => {
+            expect.assertions(1);
+
+            const throwingConsole = {
+                error: vi.fn(),
+                info: vi.fn(),
+                log: vi.fn((message: string) => {
+                    if (message.includes("Checking Mailomat API availability")) {
+                        throw new Error("logger boom");
+                    }
+                }),
+                warn: vi.fn(),
+            } as unknown as Console;
+
+            const provider = mailomatProvider({ apiKey: "test123", logger: throwingConsole });
+
+            await expect(provider.initialize()).rejects.toThrow(EmailError);
+        });
+
+        it("should send a text-only email without html", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValue({ data: { body: { id: "t-1" }, statusCode: 200 }, success: true });
+
+            const provider = mailomatProvider({ apiKey: "test123" });
+
+            const result = await provider.sendEmail({
+                from: { email: "sender@example.com" },
+                subject: "Test",
+                text: "plain text",
+                to: { email: "user@example.com" },
+            });
+
+            expect(result.success).toBe(true);
+        });
+
+        it("should send with templateId but no templateVariables", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValue({ data: { body: { id: "tv-1" }, statusCode: 200 }, success: true });
+
+            const provider = mailomatProvider({ apiKey: "test123" });
+
+            const result = await provider.sendEmail({
+                from: { email: "sender@example.com" },
+                html: "<h1>Hi</h1>",
+                subject: "Test",
+                templateId: "tmpl-only",
+                to: { email: "user@example.com" },
+            });
+
+            expect(result.success).toBe(true);
+        });
+
+        it("should send an attachment whose content is a Promise", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValue({ data: { body: { id: "p-1" }, statusCode: 200 }, success: true });
+
+            const provider = mailomatProvider({ apiKey: "test123" });
+
+            const result = await provider.sendEmail({
+                attachments: [{ content: Promise.resolve(new Uint8Array([104, 105])), filename: "p.bin" }],
+                from: { email: "sender@example.com" },
+                html: "<h1>Hi</h1>",
+                subject: "Test",
+                to: { email: "user@example.com" },
+            });
+
+            expect(result.success).toBe(true);
+        });
+
+        it("should send an attachment with a raw Buffer", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValue({ data: { body: { id: "rb-1" }, statusCode: 200 }, success: true });
+
+            const provider = mailomatProvider({ apiKey: "test123" });
+
+            const result = await provider.sendEmail({
+                attachments: [{ filename: "r.bin", raw: Buffer.from("rawbytes") }],
+                from: { email: "sender@example.com" },
+                html: "<h1>Hi</h1>",
+                subject: "Test",
+                to: { email: "user@example.com" },
+            });
+
+            expect(result.success).toBe(true);
+        });
+
+        it("should return a default error when send fails without an error", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValue({ success: false });
+
+            const provider = mailomatProvider({ apiKey: "test123" });
+
+            const result = await provider.sendEmail({
+                from: { email: "sender@example.com" },
+                html: "<h1>Hi</h1>",
+                subject: "Test",
+                to: { email: "user@example.com" },
+            });
+
+            expect(result.success).toBe(false);
         });
     });
 });
