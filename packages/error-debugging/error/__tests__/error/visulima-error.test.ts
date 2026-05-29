@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { VisulimaError } from "../../src/error/visulima-error";
+import { isVisulimaError, VisulimaError } from "../../src/error/visulima-error";
 
 class MyError extends VisulimaError {}
 
@@ -118,5 +118,71 @@ describe("visulima-error", () => {
         expect(error_).toHaveProperty("hint", "MyError");
         expect(error_).toHaveProperty("title", "MyError");
         expect(error_).toHaveProperty("loc", { column: 1, file: "MyError", line: 1 });
+    });
+
+    it("should update the location with setLocation", () => {
+        expect.assertions(1);
+
+        const error = new VisulimaError({ name: "MyError" });
+
+        error.setLocation({ column: 5, file: "src/index.ts", line: 10 });
+
+        expect(error.loc).toStrictEqual({ column: 5, file: "src/index.ts", line: 10 });
+    });
+
+    it("should update the name with setName", () => {
+        expect.assertions(1);
+
+        const error = new VisulimaError({ name: "MyError" });
+
+        error.setName("RenamedError");
+
+        expect(error.name).toBe("RenamedError");
+    });
+
+    it("should update the message with setMessage", () => {
+        expect.assertions(1);
+
+        const error = new VisulimaError({ message: "original", name: "MyError" });
+
+        error.setMessage("updated message");
+
+        expect(error.message).toBe("updated message");
+    });
+
+    it("should update the hint with setHint", () => {
+        expect.assertions(1);
+
+        const error = new VisulimaError({ name: "MyError" });
+
+        error.setHint(["line one", "line two"]);
+
+        expect(error.hint).toStrictEqual(["line one", "line two"]);
+    });
+
+    describe("isVisulimaError", () => {
+        it("should return true for a VisulimaError instance", () => {
+            expect.assertions(1);
+
+            expect(isVisulimaError(new VisulimaError({ name: "MyError" }))).toBe(true);
+        });
+
+        it("should return true for a subclass of VisulimaError", () => {
+            expect.assertions(1);
+
+            expect(isVisulimaError(new MyError({ name: "MyError" }))).toBe(true);
+        });
+
+        it("should return false for a plain Error", () => {
+            expect.assertions(1);
+
+            expect(isVisulimaError(new Error("boom"))).toBe(false);
+        });
+
+        it("should return false for a non-error value", () => {
+            expect.assertions(1);
+
+            expect(isVisulimaError({ type: "VisulimaError" })).toBe(false);
+        });
     });
 });

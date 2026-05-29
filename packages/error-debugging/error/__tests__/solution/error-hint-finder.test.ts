@@ -45,4 +45,26 @@ describe("solution/error-hint-finder", () => {
 
         expect(result?.body).toBe("a\nb");
     });
+
+    it("returns undefined for an empty string hint", async () => {
+        expect.assertions(1);
+
+        const error = new Error("x") as Error & { hint?: unknown };
+
+        error.hint = "";
+        const result = await errorHintFinder.handle(error, { file: "f", line: 1 });
+
+        expect(result).toBeUndefined();
+    });
+
+    it("returns undefined for an object hint without a string body", async () => {
+        expect.assertions(1);
+
+        const error = new Error("x") as Error & { hint?: unknown };
+
+        error.hint = { header: "only header" };
+        const result = await errorHintFinder.handle(error, { file: "f", line: 1 });
+
+        expect(result).toBeUndefined();
+    });
 });

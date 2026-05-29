@@ -66,4 +66,30 @@ describe("solution/rule-based-finder", () => {
 
         expect(result?.body).toContain("Accessing property of undefined");
     });
+
+    it("should return undefined when no rule matches", async () => {
+        expect.assertions(1);
+
+        const error = new Error("a completely unrelated and benign message");
+        const result = await ruleBasedFinder.handle(error, { file: "lib.ts", line: 2 });
+
+        expect(result).toBeUndefined();
+    });
+
+    it("should return undefined when a rule throws while testing", async () => {
+        expect.assertions(1);
+
+        const error = new Error("boom");
+
+        Object.defineProperty(error, "message", {
+            configurable: true,
+            get(): string {
+                throw new Error("message getter failure");
+            },
+        });
+
+        const result = await ruleBasedFinder.handle(error, { file: "lib.ts", line: 2 });
+
+        expect(result).toBeUndefined();
+    });
 });

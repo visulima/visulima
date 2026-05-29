@@ -441,4 +441,24 @@ ${POINTER} 2 |     const error = x.y;
         ).toBe(`${POINTER} 1 |  * @name\t\tFoo#a
     |         \t\t     ^^`);
     });
+
+    it("should omit the column separator when showGutter is false", () => {
+        expect.assertions(1);
+
+        const rawLines = ["class Foo {", "  constructor() {", "  }", "};"].join("\n");
+
+        expect(codeFrame(rawLines, { start: { column: 17, line: 2 } }, { showGutter: false })).toStrictEqual(
+            ["  1 class Foo {", `${POINTER} 2   constructor() {`, "                    ^", "  3   }", "  4 };"].join("\n"),
+        );
+    });
+
+    it("should mark an empty line without appending a trailing space", () => {
+        expect.assertions(1);
+
+        const rawLines = ["a", "", "c"].join("\n");
+
+        expect(codeFrame(rawLines, { end: { line: 3 }, start: { line: 1 } })).toStrictEqual(
+            [`${POINTER} 1 | a`, `${POINTER} 2 |`, `${POINTER} 3 | c`].join("\n"),
+        );
+    });
 });

@@ -5,6 +5,7 @@ import { describe, expect, expectTypeOf, it } from "vitest";
 
 import type { SerializedError } from "../../../src";
 import { addKnownErrorConstructor, deserializeError, isErrorLike, NonError, serializeError } from "../../../src";
+import { getKnownErrorConstructors } from "../../../src/error/serialize/error-constructors";
 
 /** Helper type for deserialized errors with dynamic extra properties. */
 type ErrorWithProps = Error & Record<string, unknown>;
@@ -797,6 +798,68 @@ describe("error serializer", () => {
         expect(keys).toContain("stack");
     });
 
+    it("should remove excluded properties from the serialized error", () => {
+        expect.assertions(3);
+
+        const error = new Error("foo") as Error & { keepMe: string; secret: string };
+
+        error.secret = "do-not-leak";
+        error.keepMe = "stay";
+
+        const serialized = serializeError(error, { exclude: ["secret"] }) as SerializedError & { keepMe?: string; secret?: string };
+
+        expect(serialized.secret).toBeUndefined();
+        expect(serialized.keepMe).toBe("stay");
+        expect(serialized.message).toBe("foo");
+    });
+
+    it.skipIf(!globalThis.AggregateError)("should throw when an AggregateError contains a non-Error entry", () => {
+        expect.assertions(1);
+
+        // eslint-disable-next-line unicorn/error-message
+        const aggregateError = new AggregateError([new Error("ok")]);
+
+        (aggregateError as AggregateError & { errors: unknown[] }).errors = ["not an error"];
+
+        expect(() => serializeError(aggregateError)).toThrow("All errors in the 'errors' property must be instances of Error");
+    });
+
+    it("should make non-enumerable and nested object properties enumerable for a toJSON result", () => {
+        expect.assertions(3);
+
+        class CustomError extends Error {
+            public constructor() {
+                super("foo");
+                this.name = this.constructor.name;
+            }
+
+            public toJSON() {
+                const result = {
+                    message: this.message,
+                    nested: { inner: "value" },
+                };
+
+                Object.defineProperty(result, "hidden", {
+                    configurable: true,
+                    enumerable: false,
+                    value: "now-visible",
+                    writable: true,
+                });
+
+                return result as { hidden: string; message: string; nested: { inner: string } };
+            }
+        }
+
+        const serialized = serializeError(new CustomError(), { useToJSON: true }) as SerializedError & {
+            hidden?: string;
+            nested?: { inner: string };
+        };
+
+        expect(Object.keys(serialized)).toContain("hidden");
+        expect(serialized.hidden).toBe("now-visible");
+        expect(serialized.nested).toStrictEqual({ inner: "value" });
+    });
+
     // Deserialization tests
     describe(deserializeError, () => {
         it("should deserialize null", () => {
@@ -1105,6 +1168,56 @@ describe("error serializer", () => {
             expect((deserialized as ErrorWithProps).numberData).toBe(42);
             expect((deserialized as ErrorWithProps).stringData).toBe("plain string");
         });
+
+        it("should wrap a non-error plain object as NonError when maxDepth is reached at the top level", () => {
+            expect.assertions(2);
+
+            const deserialized = deserializeError({ foo: "bar" }, { maxDepth: 0 });
+
+            expect(deserialized).toBeInstanceOf(NonError);
+            expect(deserialized.message).toBe("{\"foo\":\"bar\"}");
+        });
+
+        it("should wrap a function value as NonError", () => {
+            expect.assertions(1);
+
+            const deserialized = deserializeError(() => {});
+
+            expect(deserialized).toBeInstanceOf(NonError);
+        });
+
+        it("should deserialize array properties of error-like values into Error instances", () => {
+            expect.assertions(3);
+
+            const deserialized = deserializeError({
+                list: [
+                    { message: "inner one", name: "Error" },
+                    { message: "inner two", name: "Error" },
+                ],
+                message: "outer",
+                name: "Error",
+            }) as ErrorWithProps;
+
+            expect(Array.isArray(deserialized.list)).toBe(true);
+            expect((deserialized.list as Error[])[0]).toBeInstanceOf(Error);
+            expect((deserialized.list as Error[])[0]?.message).toBe("inner one");
+        });
+
+        it("should reconstruct an error-like object whose prototype chain ends in null", () => {
+            expect.assertions(3);
+
+            const proto = Object.create(null) as object;
+            const value = Object.create(proto) as Record<string, unknown>;
+
+            value.message = "deep";
+            value.name = "Error";
+
+            const deserialized = deserializeError(value);
+
+            expect(deserialized).toBeInstanceOf(Error);
+            expect(deserialized.name).toBe("Error");
+            expect(deserialized.message).toBe("deep");
+        });
     });
 
     describe(addKnownErrorConstructor, () => {
@@ -1342,6 +1455,21 @@ describe("error serializer", () => {
             expect(error).toBeInstanceOf(NonError);
             expect(error).toBeInstanceOf(Error);
             expect(error.message).toBe("test message");
+        });
+    });
+
+    describe(getKnownErrorConstructors, () => {
+        it("should return a copy of the default error constructor registry", () => {
+            expect.assertions(3);
+
+            const constructors = getKnownErrorConstructors();
+
+            expect(constructors.get("Error")).toBe(Error);
+            expect(constructors.get("TypeError")).toBe(TypeError);
+
+            constructors.delete("Error");
+
+            expect(getKnownErrorConstructors().get("Error")).toBe(Error);
         });
     });
 });
