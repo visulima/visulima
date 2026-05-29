@@ -1,4 +1,7 @@
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import type { IncomingMessage, Server, ServerResponse } from "node:http";
+import { createServer } from "node:http";
+import type { AddressInfo } from "node:net";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 
@@ -293,6 +296,100 @@ describe("postProcess — heuristic filters", () => {
         });
 
         expect(out.map((f) => f.ruleId)).toStrictEqual(["a", "b"]);
+    });
+
+    it("skips the heuristic stage entirely when every heuristic is disabled", async () => {
+        expect.assertions(1);
+
+        // With all four heuristics off, the early `return findings` fires and even
+        // a UUID / lock-file / sequential / masked secret passes through untouched.
+        const findings = [
+            sampleFinding({ file: "yarn.lock", ruleId: "lock" }),
+            sampleFinding({ ruleId: "uuid", secret: "123e4567-e89b-12d3-a456-426614174000" }),
+            sampleFinding({ ruleId: "seq", secret: "abcdefgh" }),
+            sampleFinding({ ruleId: "mask", secret: "******" }),
+        ];
+        const out = await postProcess(findings, preparedScan(), {
+            config: {
+                heuristics: { lockFile: false, notAlphanumericString: false, potentialUuid: false, sequentialString: false },
+            },
+        });
+
+        expect(out.map((f) => f.ruleId)).toStrictEqual(["lock", "uuid", "seq", "mask"]);
+    });
+
+    it("drops a non-alphanumeric (masked) secret via the notAlphanumericString heuristic", async () => {
+        expect.assertions(1);
+
+        // Mixed symbols (not a single repeated char) slip past the sequential
+        // heuristic but get dropped by notAlphanumericString.
+        const findings = [sampleFinding({ ruleId: "mask", secret: "!@#$%^&*" }), sampleFinding({ ruleId: "real", secret: "ghp_abcdef1234567890" })];
+        const out = await postProcess(findings, preparedScan(), undefined);
+
+        expect(out.map((f) => f.ruleId)).toStrictEqual(["real"]);
+    });
+});
+
+describe("postProcess — validation with resolved dependencies", () => {
+    let server: Server;
+    let url: string;
+    let received: { akid?: string }[];
+
+    beforeEach(async () => {
+        received = [];
+        server = createServer((request: IncomingMessage, response: ServerResponse) => {
+            const akid = Array.isArray(request.headers["x-akid"]) ? request.headers["x-akid"][0] : request.headers["x-akid"];
+
+            received.push({ akid });
+            response.writeHead(200, { "Content-Type": "application/json" });
+            response.end('{"ok":true}');
+        });
+
+        await new Promise<void>((_resolve) => {
+            server.listen(0, "127.0.0.1", _resolve);
+        });
+
+        const address = server.address() as AddressInfo;
+
+        url = `http://127.0.0.1:${String(address.port)}`;
+    });
+
+    afterEach(async () => {
+        await new Promise<void>((_resolve) => {
+            server.close(() => {
+                _resolve();
+            });
+        });
+    });
+
+    it("injects the dependency's secret as a template variable and validates", async () => {
+        expect.assertions(2);
+
+        const meta = new Map<string, RuleMeta>([
+            [
+                "kingfisher.aws.2",
+                {
+                    dependsOnRule: [{ ruleId: "kingfisher.aws.1", variable: "AKID" }],
+                    validation: {
+                        content: { request: { headers: { "X-Akid": "{{ AKID }}" }, response_matcher: [{ status: [200], type: "StatusMatch" }], url } },
+                        type: "Http",
+                    },
+                },
+            ],
+        ]);
+
+        // Both findings live in the same file so the dep resolver can pair them.
+        const findings = [
+            sampleFinding({ file: "creds.env", ruleId: "kingfisher.aws.1", secret: "AKIAIOSFODNN7EXAMPLE" }),
+            sampleFinding({ file: "creds.env", ruleId: "kingfisher.aws.2", secret: "wJalrXUtnFEMIK7MDENGbPxRfiCYEXAMPLEKEY" }),
+        ];
+        const out = await postProcess(findings, preparedScan(meta), { config: { validate: true } });
+
+        const aws2 = out.find((f) => f.ruleId === "kingfisher.aws.2");
+
+        expect(aws2?.validation).toBe("verified");
+        // The dependency's secret landed in the outgoing request header.
+        expect(received.some((r) => r.akid === "AKIAIOSFODNN7EXAMPLE")).toBe(true);
     });
 });
 

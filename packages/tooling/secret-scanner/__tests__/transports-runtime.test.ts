@@ -1,3 +1,7 @@
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { resolve } from "node:path";
+
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { extractUri, resetWarningsForTests, tryImport, warnMissingDep } from "../src/transports/runtime";
@@ -56,6 +60,24 @@ describe(tryImport, () => {
         const mod = await tryImport<{ join: (...parts: string[]) => string }>("node:path", "TestTransport");
 
         expect(mod?.join).toBeTypeOf("function");
+    });
+
+    it("rethrows errors that aren't 'module not found' (genuine bugs surface loudly)", async () => {
+        expect.assertions(1);
+
+        // A module that resolves fine but throws during evaluation has no
+        // MODULE_NOT_FOUND code and doesn't match the message pattern, so
+        // `tryImport` must rethrow rather than swallow it as "missing dep".
+        const dir = await mkdtemp(resolve(tmpdir(), "secret-scanner-runtime-"));
+        const broken = resolve(dir, "broken.cjs");
+
+        await writeFile(broken, "throw new Error('boom from broken peer dep');\n");
+
+        try {
+            await expect(tryImport(broken, "TestTransport")).rejects.toThrow("boom from broken peer dep");
+        } finally {
+            await rm(dir, { force: true, recursive: true });
+        }
     });
 });
 

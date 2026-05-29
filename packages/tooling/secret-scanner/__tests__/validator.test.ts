@@ -14,11 +14,12 @@ describe(renderTemplate, () => {
     });
 
     it("applies known filters in pipeline order", () => {
-        expect.assertions(3);
+        expect.assertions(4);
 
         expect(renderTemplate("{{ TOKEN | downcase }}", { TOKEN: "ABC" })).toBe("abc");
         expect(renderTemplate("{{ TOKEN | upcase }}", { TOKEN: "abc" })).toBe("ABC");
         expect(renderTemplate("{{ TOKEN | b64enc }}", { TOKEN: "user:pass" })).toBe("dXNlcjpwYXNz");
+        expect(renderTemplate("{{ TOKEN | b64dec }}", { TOKEN: "dXNlcjpwYXNz" })).toBe("user:pass");
     });
 
     it("returns undefined on unknown variable or filter", () => {
@@ -97,6 +98,22 @@ describe(PerHostLimiter, () => {
         await limiter.run("x.example.com", async () => undefined);
 
         expect(Date.now() - t0).toBeGreaterThanOrEqual(30);
+    });
+
+    it("derives the host (including port) from a valid URL", () => {
+        expect.assertions(1);
+
+        const limiter = new PerHostLimiter();
+
+        expect(limiter.hostFromUrl("https://api.example.com:8443/v1/tokens")).toBe("api.example.com:8443");
+    });
+
+    it("returns a sentinel host for an unparseable URL", () => {
+        expect.assertions(1);
+
+        const limiter = new PerHostLimiter();
+
+        expect(limiter.hostFromUrl("not a url")).toBe("__invalid__");
     });
 });
 
@@ -410,5 +427,38 @@ describe("validateFinding — JWT (offline)", () => {
         const status = await validateFinding({ content: {}, type: "JWT" }, `${header}.${payload}.sig`);
 
         expect(status).toBe("rejected");
+    });
+
+    it("returns 'rejected' when the header parses to a non-object (e.g. a bare number)", async () => {
+        expect.assertions(1);
+
+        // `5` is valid JSON but not an object, so the `typeof header !== "object"` guard rejects.
+        const header = Buffer.from("5", "utf8").toString("base64url");
+        const payload = Buffer.from(JSON.stringify({ sub: "x" })).toString("base64url");
+        const status = await validateFinding({ content: {}, type: "JWT" }, `${header}.${payload}.sig`);
+
+        expect(status).toBe("rejected");
+    });
+});
+
+describe("validateFinding — dispatch", () => {
+    it("returns 'skipped' when the validation block isn't an object", async () => {
+        expect.assertions(2);
+
+        await expect(validateFinding(undefined, "x")).resolves.toBe("skipped");
+        // eslint-disable-next-line unicorn/no-null -- exercising the `=== null` guard that tolerates null validation fields from upstream YAML.
+        await expect(validateFinding(null, "x")).resolves.toBe("skipped");
+    });
+
+    it("returns 'skipped' for HttpMultiStep validation (revocation-only)", async () => {
+        expect.assertions(1);
+
+        await expect(validateFinding({ content: {}, type: "HttpMultiStep" }, "x")).resolves.toBe("skipped");
+    });
+
+    it("returns 'skipped' for a validator type that isn't registered", async () => {
+        expect.assertions(1);
+
+        await expect(validateFinding({ content: {}, type: "SomeFutureProvider" }, "x")).resolves.toBe("skipped");
     });
 });
