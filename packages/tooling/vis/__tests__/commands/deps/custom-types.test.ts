@@ -3,7 +3,7 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import lintExecute from "../../../src/commands/lint/handler";
+import lintExecute from "../../../src/commands/deps/handler";
 import { cleanupTemporaryDirectory, createTemporaryDirectory } from "../../test-helpers";
 
 type LoggerCall = [string, ...unknown[]];

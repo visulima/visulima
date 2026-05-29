@@ -87,13 +87,13 @@ List every package that pins a specific dep:
 vis list --deps --format=ndjson | jq -r 'select(.depName == "react") | "\(.packageName)\t\(.specifier)"'
 ```
 
-Find specifier drift for a single dep (alternative to `vis lint --workspace-versions --dep <name>`):
+Find specifier drift for a single dep (alternative to `vis deps --workspace-versions --dep <name>`):
 
 ```bash
 vis list --deps --format=ndjson | jq -r 'select(.depName == "react") | .specifier' | sort -u
 ```
 
-Audit which packages still declare a banned dep before turning on `vis lint --banned-deps`:
+Audit which packages still declare a banned dep before turning on `vis deps --banned-deps`:
 
 ```bash
 vis list --deps --format=ndjson | jq -r 'select(.depName | IN("left-pad","request","moment")) | "\(.packageName)\t\(.depName)"'

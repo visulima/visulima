@@ -1,6 +1,6 @@
 import type { ConstraintsConfig, NamedInputs, ProjectConfiguration, TargetConfiguration, TaskRunnerOptions } from "@visulima/task-runner";
 
-import type { SimilarDepFamily } from "../lint/similar-deps";
+import type { SimilarDepFamily } from "../deps/similar-deps";
 import type { ToolchainConfig as InternalToolchainConfig, VersionManagerName } from "../runtime/toolchain";
 import type { StagedConfig } from "../staged";
 import type { VisTargetConfiguration } from "../task/target-options";

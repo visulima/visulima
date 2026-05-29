@@ -1,36 +1,36 @@
 import type { Command, CreateOptions } from "@visulima/cerebro";
 
-const lint: Command = {
+const deps: Command = {
     description:
         "Lint workspace dependency policies (workspace-protocol, banned-deps, redefine-root, workspace-versions, custom-types, empty-deps, root-private, root-package-manager, root-deps, missing-package-json, dead-workspace-patterns, types-in-deps, similar-deps)",
     examples: [
-        ["vis lint", "Run every enabled lint and exit non-zero on failures"],
-        ["vis lint --workspace-protocol", "Only check that internal deps use workspace:*"],
-        ["vis lint --workspace-protocol --fix", "Auto-rewrite internal deps to use workspace:*"],
-        ["vis lint --redefine-root", "Flag deps duplicated between root and child packages"],
-        ["vis lint --banned-deps", "Flag deps matching policy.bannedDeps in vis config"],
-        ["vis lint --workspace-versions", "Flag external deps declared at different versions across packages"],
-        ["vis lint --workspace-versions --fix", "Rewrite drifting deps to the highest sibling version"],
-        ["vis lint --workspace-versions --dep react", "Limit version-drift check to a single dep"],
-        ["vis lint --workspace-versions --resolve catalog --fix", "Rewrite drifting deps to catalog: when a catalog already pins them"],
-        ["vis lint --workspace-versions --resolve catalog --propose-min 3", "Suggest new catalog entries for deps ≥3 packages already agree on"],
-        ["vis lint --custom-types", "Flag drift in engines.{node,pnpm}, packageManager, volta.{node,pnpm,yarn}, devEngines"],
-        ["vis lint --custom-types --fix", "Align all engines/packageManager/volta versions to the highest sibling"],
-        ["vis lint --empty-deps --fix", "Drop empty `dependencies` / `devDependencies` / etc. blocks across the workspace"],
-        ["vis lint --root-private --fix", "Ensure the workspace root package.json has \"private\": true"],
-        ["vis lint --root-package-manager", "Ensure the root package.json declares a `packageManager` field"],
-        ["vis lint --root-deps --fix", "Move runtime deps off the private workspace root into devDependencies"],
-        ["vis lint --missing-package-json", "Flag workspace dirs that don't contain a package.json"],
-        ["vis lint --dead-workspace-patterns --fix", "Drop workspace patterns that match zero packages"],
-        ["vis lint --types-in-deps --fix", "Move @types/* out of dependencies on private packages"],
-        ["vis lint --similar-deps", "Flag drift across related dep families (react+react-dom, @babel/*, …)"],
-        ["vis lint --ban left-pad --ban request", "One-off ban: flag any package declaring left-pad or request"],
-        ["vis lint --pin react@18.2.0", "One-off pin: flag any package declaring react at a different version"],
-        ["vis lint --format json", "Emit findings as JSON for CI / editor integrations"],
+        ["vis deps", "Run every enabled lint and exit non-zero on failures"],
+        ["vis deps --workspace-protocol", "Only check that internal deps use workspace:*"],
+        ["vis deps --workspace-protocol --fix", "Auto-rewrite internal deps to use workspace:*"],
+        ["vis deps --redefine-root", "Flag deps duplicated between root and child packages"],
+        ["vis deps --banned-deps", "Flag deps matching policy.bannedDeps in vis config"],
+        ["vis deps --workspace-versions", "Flag external deps declared at different versions across packages"],
+        ["vis deps --workspace-versions --fix", "Rewrite drifting deps to the highest sibling version"],
+        ["vis deps --workspace-versions --dep react", "Limit version-drift check to a single dep"],
+        ["vis deps --workspace-versions --resolve catalog --fix", "Rewrite drifting deps to catalog: when a catalog already pins them"],
+        ["vis deps --workspace-versions --resolve catalog --propose-min 3", "Suggest new catalog entries for deps ≥3 packages already agree on"],
+        ["vis deps --custom-types", "Flag drift in engines.{node,pnpm}, packageManager, volta.{node,pnpm,yarn}, devEngines"],
+        ["vis deps --custom-types --fix", "Align all engines/packageManager/volta versions to the highest sibling"],
+        ["vis deps --empty-deps --fix", "Drop empty `dependencies` / `devDependencies` / etc. blocks across the workspace"],
+        ["vis deps --root-private --fix", "Ensure the workspace root package.json has \"private\": true"],
+        ["vis deps --root-package-manager", "Ensure the root package.json declares a `packageManager` field"],
+        ["vis deps --root-deps --fix", "Move runtime deps off the private workspace root into devDependencies"],
+        ["vis deps --missing-package-json", "Flag workspace dirs that don't contain a package.json"],
+        ["vis deps --dead-workspace-patterns --fix", "Drop workspace patterns that match zero packages"],
+        ["vis deps --types-in-deps --fix", "Move @types/* out of dependencies on private packages"],
+        ["vis deps --similar-deps", "Flag drift across related dep families (react+react-dom, @babel/*, …)"],
+        ["vis deps --ban left-pad --ban request", "One-off ban: flag any package declaring left-pad or request"],
+        ["vis deps --pin react@18.2.0", "One-off pin: flag any package declaring react at a different version"],
+        ["vis deps --format json", "Emit findings as JSON for CI / editor integrations"],
     ],
     group: "Security & Health",
     loader: () => import("./handler"),
-    name: "lint",
+    name: "deps",
     options: [
         {
             defaultValue: false,
@@ -162,9 +162,9 @@ const lint: Command = {
     ],
 };
 
-export default lint;
+export default deps;
 
-export type LintOptions = CreateOptions<{
+export type DepsOptions = CreateOptions<{
     ban: string[] | undefined;
     "banned-deps": boolean | undefined;
     "custom-types": boolean | undefined;

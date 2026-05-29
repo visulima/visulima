@@ -3,37 +3,37 @@ import { bold, cyan, dim, green, red, yellow } from "@visulima/colorize";
 import { isAccessibleSync, readJsonSync } from "@visulima/fs";
 import { join, relative } from "@visulima/path";
 
-import type { BannedDepIssue } from "../../lint/banned-deps";
-import { lintBannedDeps } from "../../lint/banned-deps";
-import type { CatalogProposal } from "../../lint/catalog-proposals";
-import { applyCatalogProposals, proposeCatalogAdditions, renderCatalogProposalsDiff } from "../../lint/catalog-proposals";
-import type { CustomTypeDriftIssue } from "../../lint/custom-types";
-import { applyCustomTypeFixes, iterateCustomTypeDeps, lintCustomTypes, validateExtraTypes } from "../../lint/custom-types";
-import type { DeadWorkspacePatternIssue } from "../../lint/dead-workspace-pattern";
-import { applyDeadWorkspacePatternFixes, lintDeadWorkspacePatterns } from "../../lint/dead-workspace-pattern";
-import type { EmptyDepsIssue } from "../../lint/empty-deps";
-import { applyEmptyDepsFixes, lintEmptyDeps } from "../../lint/empty-deps";
-import type { MissingPackageJsonIssue } from "../../lint/missing-package-json";
-import { lintMissingPackageJson } from "../../lint/missing-package-json";
-import type { RedefineRootIssue } from "../../lint/redefine-root";
-import { lintRedefineRoot } from "../../lint/redefine-root";
-import type { RootDepsIssue } from "../../lint/root-deps";
-import { applyRootDepsFixes, lintRootDeps } from "../../lint/root-deps";
-import type { RootPackageManagerIssue } from "../../lint/root-package-manager";
-import { applyRootPackageManagerFixes, lintRootPackageManager } from "../../lint/root-package-manager";
-import type { RootPrivateIssue } from "../../lint/root-private";
-import { applyRootPrivateFixes, lintRootPrivate } from "../../lint/root-private";
-import type { SimilarDepsIssue } from "../../lint/similar-deps";
-import { lintSimilarDeps } from "../../lint/similar-deps";
-import type { TypesInDepsIssue } from "../../lint/types-in-deps";
-import { applyTypesInDepsFixes, lintTypesInDeps } from "../../lint/types-in-deps";
-import type { WorkspaceProtocolIssue } from "../../lint/workspace-protocol";
-import { applyWorkspaceProtocolFixes, lintWorkspaceProtocol } from "../../lint/workspace-protocol";
-import type { WorkspaceVersionDriftIssue, WorkspaceVersionsResolveStrategy } from "../../lint/workspace-versions";
-import { applyWorkspaceVersionsFixes, lintWorkspaceVersions } from "../../lint/workspace-versions";
+import type { BannedDepIssue } from "../../deps/banned-deps";
+import { lintBannedDeps } from "../../deps/banned-deps";
+import type { CatalogProposal } from "../../deps/catalog-proposals";
+import { applyCatalogProposals, proposeCatalogAdditions, renderCatalogProposalsDiff } from "../../deps/catalog-proposals";
+import type { CustomTypeDriftIssue } from "../../deps/custom-types";
+import { applyCustomTypeFixes, iterateCustomTypeDeps, lintCustomTypes, validateExtraTypes } from "../../deps/custom-types";
+import type { DeadWorkspacePatternIssue } from "../../deps/dead-workspace-pattern";
+import { applyDeadWorkspacePatternFixes, lintDeadWorkspacePatterns } from "../../deps/dead-workspace-pattern";
+import type { EmptyDepsIssue } from "../../deps/empty-deps";
+import { applyEmptyDepsFixes, lintEmptyDeps } from "../../deps/empty-deps";
+import type { MissingPackageJsonIssue } from "../../deps/missing-package-json";
+import { lintMissingPackageJson } from "../../deps/missing-package-json";
+import type { RedefineRootIssue } from "../../deps/redefine-root";
+import { lintRedefineRoot } from "../../deps/redefine-root";
+import type { RootDepsIssue } from "../../deps/root-deps";
+import { applyRootDepsFixes, lintRootDeps } from "../../deps/root-deps";
+import type { RootPackageManagerIssue } from "../../deps/root-package-manager";
+import { applyRootPackageManagerFixes, lintRootPackageManager } from "../../deps/root-package-manager";
+import type { RootPrivateIssue } from "../../deps/root-private";
+import { applyRootPrivateFixes, lintRootPrivate } from "../../deps/root-private";
+import type { SimilarDepsIssue } from "../../deps/similar-deps";
+import { lintSimilarDeps } from "../../deps/similar-deps";
+import type { TypesInDepsIssue } from "../../deps/types-in-deps";
+import { applyTypesInDepsFixes, lintTypesInDeps } from "../../deps/types-in-deps";
+import type { WorkspaceProtocolIssue } from "../../deps/workspace-protocol";
+import { applyWorkspaceProtocolFixes, lintWorkspaceProtocol } from "../../deps/workspace-protocol";
+import type { WorkspaceVersionDriftIssue, WorkspaceVersionsResolveStrategy } from "../../deps/workspace-versions";
+import { applyWorkspaceVersionsFixes, lintWorkspaceVersions } from "../../deps/workspace-versions";
 import { readCatalogs } from "../../util/catalog";
 import { iterateWorkspaceDeps } from "../../util/workspace-deps";
-import type { LintOptions } from "./index";
+import type { DepsOptions } from "./index";
 
 /** True when the current root looks like a workspace (npm/yarn/bun `workspaces` or pnpm yaml). */
 const detectWorkspaceConfig = (workspaceRoot: string): boolean => {
@@ -805,7 +805,7 @@ const flag = (options: Record<string, unknown>, camel: string, kebab: string): b
     return options[kebab] === true;
 };
 
-const resolveSelection = (options: LintOptions): LintSelection => {
+const resolveSelection = (options: DepsOptions): LintSelection => {
     const raw = options as unknown as Record<string, unknown>;
     // `--ban` / `--pin` implicitly target their respective lints, so users
     // can run a one-off check without also passing `--banned-deps` /
@@ -966,7 +966,7 @@ const warnAutofixDenied = (
     logger.warn(`${rule}: ${String(issueCount)} issue${issueCount === 1 ? "" : "s"} not rewritten — ${reason}. ${hint}`);
 };
 
-const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, LintOptions>): Promise<void> => {
+const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, DepsOptions>): Promise<void> => {
     if (!wsRoot) {
         throw new Error("Could not determine workspace root. Run this command inside a monorepo.");
     }

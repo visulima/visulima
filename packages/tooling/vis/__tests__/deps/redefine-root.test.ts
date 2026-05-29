@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { lintRedefineRoot } from "../../src/lint/redefine-root";
+import { lintRedefineRoot } from "../../src/deps/redefine-root";
 import { iterateWorkspaceDeps } from "../../src/util/workspace-deps";
 
 let workspaceRoot: string;

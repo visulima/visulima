@@ -1,14 +1,14 @@
 ---
-title: "vis lint"
+title: "vis deps"
 description: "Lint workspace dependency policies (workspace-protocol, banned-deps, redefine-root, workspace-versions, custom-types)"
 ---
 
-# vis lint
+# vis deps
 
 Workspace-wide dependency policy linter. Reads every `package.json` in the workspace and reports drift, banned deps, and redefinitions against the root. `--fix` rewrites files in place.
 
 ```bash
-vis lint
+vis deps
 ```
 
 Running with no flags enables every check at once. Pass a specific flag to scope the run.
@@ -16,53 +16,53 @@ Running with no flags enables every check at once. Pass a specific flag to scope
 ## Usage
 
 ```bash
-vis lint [options]
+vis deps [options]
 ```
 
 ## Examples
 
 ```bash
 # Run every enabled lint and exit non-zero on failures
-vis lint
+vis deps
 
 # Only check that internal deps use workspace:*
-vis lint --workspace-protocol
+vis deps --workspace-protocol
 
 # Auto-rewrite internal deps to use workspace:*
-vis lint --workspace-protocol --fix
+vis deps --workspace-protocol --fix
 
 # Flag deps duplicated between root and child packages
-vis lint --redefine-root
+vis deps --redefine-root
 
 # Flag deps matching policy.bannedDeps in vis config
-vis lint --banned-deps
+vis deps --banned-deps
 
 # One-off ban: flag any package declaring left-pad or request
-vis lint --ban left-pad --ban request
+vis deps --ban left-pad --ban request
 
 # Flag external deps declared at different versions across packages
-vis lint --workspace-versions
+vis deps --workspace-versions
 
 # Rewrite drifting deps to the highest sibling version
-vis lint --workspace-versions --fix
+vis deps --workspace-versions --fix
 
 # One-off pin: flag any package declaring react at a different version
-vis lint --pin react@18.2.0
+vis deps --pin react@18.2.0
 
 # Rewrite drifting deps to catalog: when a catalog already pins them
-vis lint --workspace-versions --resolve catalog --fix
+vis deps --workspace-versions --resolve catalog --fix
 
 # Suggest new catalog entries for deps ≥3 packages already agree on
-vis lint --workspace-versions --resolve catalog --propose-min 3
+vis deps --workspace-versions --resolve catalog --propose-min 3
 
 # Flag drift in engines.{node,pnpm}, packageManager, volta.{node,pnpm,yarn}, devEngines
-vis lint --custom-types
+vis deps --custom-types
 
 # Align all engines/packageManager/volta versions to the highest sibling
-vis lint --custom-types --fix
+vis deps --custom-types --fix
 
 # Emit findings as JSON for CI / editor integrations
-vis lint --format json
+vis deps --format json
 ```
 
 ## Options
@@ -134,7 +134,7 @@ Each `(customType × depName)` cluster is tracked independently — `engines.nod
 `--fix` rewrites in place. The `+sha512.<hash>` integrity suffix on `packageManager` is **dropped** on bump — content-integrity hashes are tied to a specific tarball, not a version, so users must regenerate via Corepack:
 
 ```bash
-vis lint --custom-types --fix
+vis deps --custom-types --fix
 corepack use pnpm@10.32.1   # regenerate the +sha512 hash
 ```
 
@@ -177,9 +177,9 @@ A `name` that collides with a built-in (`engines`, `volta`, `packageManager`, `d
 #### Overlap with `vis doctor`
 
 - **`vis doctor`** verifies the _installed_ runtime matches `engines.node` (machine-side: "is my Node binary the right version?").
-- **`vis lint --custom-types`** verifies all packages _declare_ the same `engines.node` (workspace-side: "do all my package.json files agree?").
+- **`vis deps --custom-types`** verifies all packages _declare_ the same `engines.node` (workspace-side: "do all my package.json files agree?").
 
-Both ship; both useful. Run `vis doctor` on a developer machine to catch local mismatches; run `vis lint --custom-types` in CI to catch workspace drift.
+Both ship; both useful. Run `vis doctor` on a developer machine to catch local mismatches; run `vis deps --custom-types` in CI to catch workspace drift.
 
 ## Configuration
 
@@ -263,4 +263,4 @@ workspace-versions	packages/b/package.json	dependencies	react	^18.0.0 → ^18.2.
 - `0` — no issues, or all issues were auto-fixed
 - `1` — issues found and not fixed (or autofix denied by `policy.*.autofix: false`)
 
-CI typically runs `vis lint` with no `--fix` flag; the non-zero exit fails the build on drift. `--fix` is for local developer machines and pre-commit hooks.
+CI typically runs `vis deps` with no `--fix` flag; the non-zero exit fails the build on drift. `--fix` is for local developer machines and pre-commit hooks.
