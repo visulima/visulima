@@ -114,6 +114,48 @@ describe("iTerm2 Integration", () => {
 
                 expect(file.toString()).toBe("File=width=80;height=24:YQ==");
             });
+
+            it("should omit the content suffix when no content is provided", () => {
+                expect.assertions(1);
+
+                const file = new ITerm2File({ name: "announce", size: 2048 });
+
+                expect(file.toString()).toBe("File=name=announce;size=2048");
+            });
+
+            it("should base64-encode fileData and infer size when none is given", () => {
+                expect.assertions(1);
+
+                const fileData = new Uint8Array([72, 101, 108, 108, 111]); // "Hello"
+                const file = new ITerm2File({ name: "greeting" }, fileData);
+
+                expect(file.toString()).toBe("File=name=greeting;size=5:SGVsbG8=");
+            });
+
+            it("should accept fileData when the provided size matches its byte length", () => {
+                expect.assertions(1);
+
+                const fileData = new Uint8Array([1, 2, 3]);
+                const file = new ITerm2File({ size: 3 }, fileData);
+
+                expect(file.toString()).toBe("File=size=3:AQID");
+            });
+
+            it("should throw when fileData exceeds the 10MB limit", () => {
+                expect.assertions(1);
+
+                const fileData = new Uint8Array(10 * 1024 * 1024 + 1);
+
+                expect(() => new ITerm2File({}, fileData)).toThrow("File size exceeds maximum limit of 10MB");
+            });
+
+            it("should throw when the provided size does not match the fileData length", () => {
+                expect.assertions(1);
+
+                const fileData = new Uint8Array([1, 2, 3]);
+
+                expect(() => new ITerm2File({ size: 99 }, fileData)).toThrow("File size property doesn't match actual data length");
+            });
         });
 
         describe("iTerm2MultipartFileStart", () => {

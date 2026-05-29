@@ -90,6 +90,12 @@ describe("title and Icon Name Sequences", () => {
 
             expect(setWindowTitle(specialTitle)).toBe(`${OSC}2;${specialTitle}${BEL}`);
         });
+
+        it("should throw a TypeError when the title is not a string", () => {
+            expect.assertions(1);
+
+            expect(() => setWindowTitle(42 as never)).toThrow(new TypeError("Title must be a string"));
+        });
     });
 
     // OSC payloads end at BEL (U+0007) or ESC (U+001B); leaving either byte in

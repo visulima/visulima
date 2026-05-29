@@ -1,0 +1,28 @@
+import { describe, expect, it } from "vitest";
+
+import { BEL, OSC } from "../../src/constants";
+import { cursorMove as cursorMoveDirect } from "../../src/cursor";
+import { eraseLine as eraseLineDirect } from "../../src/erase";
+import { beep, cursorMove, eraseLine, iTerm2, strip } from "../../src/index";
+
+describe("index entry point", () => {
+    it("beep should be the BEL control character", () => {
+        expect.assertions(1);
+
+        expect(beep).toBe("\u0007");
+    });
+
+    it("should re-export the cursor and erase builders unchanged", () => {
+        expect.assertions(2);
+
+        expect(cursorMove).toBe(cursorMoveDirect);
+        expect(eraseLine).toBe(eraseLineDirect);
+    });
+
+    it("should re-export callable helpers from the barrel", () => {
+        expect.assertions(2);
+
+        expect(iTerm2({ toString: () => "Payload" })).toBe(`${OSC}1337;Payload${BEL}`);
+        expect(strip("\u001B[31mred\u001B[0m")).toBe("red");
+    });
+});
