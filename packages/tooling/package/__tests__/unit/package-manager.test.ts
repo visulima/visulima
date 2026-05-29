@@ -1,13 +1,20 @@
-import { platform } from "node:os";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { platform, tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 
 import { dirname, join } from "@visulima/path";
 import { x } from "tinyexec";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import package_ from "../../package.json";
 import type { PackageManager } from "../../src/package-manager";
-import { findPackageManager, findPackageManagerSync, generateMissingPackagesInstallMessage, getPackageManagerVersion } from "../../src/package-manager";
+import {
+    findPackageManager,
+    findPackageManagerSync,
+    generateMissingPackagesInstallMessage,
+    getPackageManagerVersion,
+    identifyInitiatingPackageManager,
+} from "../../src/package-manager";
 
 const whichPMFixturePath = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "__fixtures__", "which-package-manager");
 
@@ -125,7 +132,71 @@ describe("package-manager", () => {
         });
     });
 
-    describe("identifyInitiatingPackageManager", () => {
+    describe.each([
+        ["findPackageManager", findPackageManager],
+        ["findPackageManagerSync", findPackageManagerSync],
+    ])("%s edge cases", (name, function_) => {
+        let temporaryDirectory: string;
+
+        afterEach(() => {
+            rmSync(temporaryDirectory, { force: true, recursive: true });
+        });
+
+        it("should throw when package.json declares an unknown packageManager", async () => {
+            expect.assertions(1);
+
+            temporaryDirectory = mkdtempSync(join(tmpdir(), "visulima-package-"));
+
+            writeFileSync(join(temporaryDirectory, "package.json"), JSON.stringify({ name: "root", packageManager: "deno@1.0.0", version: "1.0.0" }));
+
+            // eslint-disable-next-line vitest/no-conditional-in-test
+            if (name === "findPackageManager") {
+                // eslint-disable-next-line vitest/no-conditional-expect
+                await expect((function_ as typeof findPackageManager)(temporaryDirectory)).rejects.toThrow("Could not find a package manager");
+            } else {
+                // eslint-disable-next-line vitest/no-conditional-expect
+                expect(() => (function_ as typeof findPackageManagerSync)(temporaryDirectory)).toThrow("Could not find a package manager");
+            }
+        });
+    });
+
+    describe(identifyInitiatingPackageManager, () => {
+        const originalUserAgent = process.env.npm_config_user_agent;
+
+        afterEach(() => {
+            if (originalUserAgent === undefined) {
+                delete process.env.npm_config_user_agent;
+            } else {
+                process.env.npm_config_user_agent = originalUserAgent;
+            }
+        });
+
+        it("should return undefined when npm_config_user_agent is not set", () => {
+            expect.assertions(1);
+
+            delete process.env.npm_config_user_agent;
+
+            expect(identifyInitiatingPackageManager()).toBeUndefined();
+        });
+
+        it("should parse the package manager name and version from npm_config_user_agent", () => {
+            expect.assertions(1);
+
+            process.env.npm_config_user_agent = "pnpm/8.6.0 npm/? node/v20.0.0 linux x64";
+
+            expect(identifyInitiatingPackageManager()).toStrictEqual({ name: "pnpm", version: "8.6.0" });
+        });
+
+        it("should map npminstall to cnpm", () => {
+            expect.assertions(1);
+
+            process.env.npm_config_user_agent = "npminstall/5.0.0 node/v20.0.0";
+
+            expect(identifyInitiatingPackageManager()).toStrictEqual({ name: "cnpm", version: "5.0.0" });
+        });
+    });
+
+    describe("identifyInitiatingPackageManager (live)", () => {
         it.skipIf(platform() === "win32" || package_.devDependencies.bun === undefined)("should detect bun", async () => {
             expect.assertions(1);
 
@@ -179,6 +250,24 @@ describe("package-manager", () => {
                     packageManagers: [],
                 });
             }).toThrow("No package managers provided, please provide at least one package manager");
+        });
+
+        it("should throw error when no missing packages are provided", () => {
+            expect.assertions(1);
+
+            expect(() => {
+                generateMissingPackagesInstallMessage("test-package", [], {});
+            }).toThrow("No missing packages provided, please provide at least one missing package");
+        });
+
+        it("should throw error for an unknown package manager", () => {
+            expect.assertions(1);
+
+            expect(() => {
+                generateMissingPackagesInstallMessage("test-package", ["lodash"], {
+                    packageManagers: ["deno" as never],
+                });
+            }).toThrow("Unknown package manager");
         });
 
         it("should generate install message with default package managers for multiple missing packages", () => {

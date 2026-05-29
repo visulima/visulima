@@ -309,6 +309,32 @@ describe("pnpm", () => {
                 },
             });
         });
+
+        it("should return undefined when the workspace has no catalog definitions", async () => {
+            expect.assertions(1);
+
+            const workspacePath = join(temporaryDirection, "pnpm-workspace.yaml");
+
+            // eslint-disable-next-line unicorn/no-null
+            writeFileSync(workspacePath, JSON.stringify({ packages: ["packages/*"] }, null, 2));
+
+            const packagePath = join(temporaryDirection, "packages", "my-package", "package.json");
+
+            await expect(readPnpmCatalogs(packagePath)).resolves.toBeUndefined();
+        });
+
+        it("should treat a non-array packages field as an empty workspace", async () => {
+            expect.assertions(1);
+
+            const workspacePath = join(temporaryDirection, "pnpm-workspace.yaml");
+
+            // `packages` is a string, not an array — no package can match.
+            writeFileSync(workspacePath, `packages: "packages/*"\ncatalog:\n  react: ^18.0.0\n`);
+
+            const packagePath = join(temporaryDirection, "packages", "my-package", "package.json");
+
+            await expect(readPnpmCatalogs(packagePath)).resolves.toBeUndefined();
+        });
     });
 
     describe(readPnpmCatalogsSync, () => {
@@ -354,6 +380,42 @@ describe("pnpm", () => {
             const result = readPnpmCatalogsSync(packagePath);
 
             expect(result).toBeUndefined();
+        });
+
+        it("should return undefined when no pnpm-workspace.yaml exists up the tree", () => {
+            expect.assertions(1);
+
+            // No workspace file is written, so findUpSync walks to the root and
+            // finds nothing.
+            const packagePath = join(temporaryDirection, "my-package", "package.json");
+
+            expect(readPnpmCatalogsSync(packagePath)).toBeUndefined();
+        });
+
+        it("should return undefined synchronously when the workspace has no catalog definitions", () => {
+            expect.assertions(1);
+
+            const workspacePath = join(temporaryDirection, "pnpm-workspace.yaml");
+
+            // eslint-disable-next-line unicorn/no-null
+            writeFileSync(workspacePath, JSON.stringify({ packages: ["packages/*"] }, null, 2));
+
+            const packagePath = join(temporaryDirection, "packages", "my-package", "package.json");
+
+            expect(readPnpmCatalogsSync(packagePath)).toBeUndefined();
+        });
+
+        it("should treat a non-array packages field as an empty workspace synchronously", () => {
+            expect.assertions(1);
+
+            const workspacePath = join(temporaryDirection, "pnpm-workspace.yaml");
+
+            // `packages` is a string, not an array — no package can match.
+            writeFileSync(workspacePath, `packages: "packages/*"\ncatalog:\n  react: ^18.0.0\n`);
+
+            const packagePath = join(temporaryDirection, "packages", "my-package", "package.json");
+
+            expect(readPnpmCatalogsSync(packagePath)).toBeUndefined();
         });
     });
 

@@ -7,7 +7,7 @@ import { isAccessibleSync, readJsonSync, writeJsonSync } from "@visulima/fs";
 import { dirname, join, toNamespacedPath } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { NormalizedReadResult } from "../../src/package-json";
+import type { FindPackageJsonCache, NormalizedReadResult } from "../../src/package-json";
 import {
     ensurePackages,
     findPackageJson,
@@ -20,7 +20,7 @@ import {
     writePackageJson,
     writePackageJsonSync,
 } from "../../src/package-json";
-import type { NormalizedPackageJson } from "../../src/types";
+import type { EnsurePackagesOptions, NormalizedPackageJson } from "../../src/types";
 
 const NO_DESCRIPTION_REGEX = /No description/;
 const REPOSITORY_FIELD_REGEX = /repository field/;
@@ -64,6 +64,49 @@ describe("package-json", () => {
             expect((result as NormalizedReadResult).packageJson).toBeTypeOf("object");
             expect((result as NormalizedReadResult).packageJson.name).toBe("nextjs_12_example_connect");
             expect((result as NormalizedReadResult).path).toBe(join(fixturePath, "package.json"));
+        });
+
+        it("should store the result in and read it back from a provided cache map", async () => {
+            expect.assertions(3);
+
+            const cache: FindPackageJsonCache = new Map();
+
+            let first = function_(fixturePath, { cache });
+
+            if (name === "findPackageJson") {
+                first = await function_(fixturePath, { cache });
+            }
+
+            expect(cache.has(join(fixturePath, "package.json"))).toBe(true);
+
+            // Second lookup must come straight from the cache (same reference).
+            let second = function_(fixturePath, { cache });
+
+            if (name === "findPackageJson") {
+                second = await function_(fixturePath, { cache });
+            }
+
+            expect((second as NormalizedReadResult).packageJson.name).toBe("nextjs_12_example_connect");
+            expect(second).toBe(first);
+        });
+
+        it("should use the internal cache when cache is set to true", async () => {
+            expect.assertions(1);
+
+            let first = function_(fixturePath, { cache: true });
+
+            if (name === "findPackageJson") {
+                first = await function_(fixturePath, { cache: true });
+            }
+
+            let second = function_(fixturePath, { cache: true });
+
+            if (name === "findPackageJson") {
+                second = await function_(fixturePath, { cache: true });
+            }
+
+            // The internal cache returns the exact same object on repeat reads.
+            expect(second).toBe(first);
         });
     });
 
@@ -325,6 +368,17 @@ describe("package-json", () => {
                 // @ts-expect-error - testing invalid input
                 parsePackageJson(packageFile),
             ).rejects.toThrow(TypeError);
+        });
+
+        it("should throw a TypeError synchronously if the input is not an object or a string", () => {
+            expect.assertions(1);
+
+            const packageFile = 123;
+
+            expect(() =>
+                // @ts-expect-error - testing invalid input
+                parsePackageJsonSync(packageFile),
+            ).toThrow(TypeError);
         });
 
         it("should handle and return a normalized package.json object for an empty package.json file", async () => {
@@ -1009,6 +1063,106 @@ packages:
             expect(mockConfirm).not.toHaveBeenCalled();
             expect(mockInstallPackage).not.toHaveBeenCalled();
         });
+
+        it("should throw in a non-interactive environment when throwOnWarn is enabled", async () => {
+            expect.assertions(2);
+
+            vi.stubGlobal("process", {
+                argv: [],
+                env: { CI: true },
+                stdout: { isTTY: true },
+                versions: { ...process.versions },
+            });
+
+            const packageJson = {
+                dependencies: {},
+                devDependencies: {},
+            } as NormalizedPackageJson;
+
+            await expect(ensurePackages(packageJson, ["package1"], "dependencies", { throwOnWarn: true })).rejects.toThrow(
+                "Skipping package installation for [package1] because the process is not interactive.",
+            );
+
+            expect(mockInstallPackage).not.toHaveBeenCalled();
+        });
+
+        it("should route the non-interactive warning to a custom logger", async () => {
+            expect.assertions(2);
+
+            vi.stubGlobal("process", {
+                argv: [],
+                env: { CI: true },
+                stdout: { isTTY: true },
+                versions: { ...process.versions },
+            });
+
+            const warn = vi.fn<(message: string) => void>();
+
+            const packageJson = {
+                dependencies: {},
+                devDependencies: {},
+            } as NormalizedPackageJson;
+
+            await ensurePackages(packageJson, ["package1"], "dependencies", { logger: { warn } });
+
+            expect(warn).toHaveBeenCalledWith("Skipping package installation for [package1] because the process is not interactive.");
+            expect(mockInstallPackage).not.toHaveBeenCalled();
+        });
+
+        it("should fill in a default message when confirm is provided without one", async () => {
+            expect.assertions(2);
+
+            mockConfirm.mockResolvedValue(true);
+
+            vi.stubGlobal("process", {
+                argv: [],
+                env: { CI: false },
+                stdout: { isTTY: true },
+                versions: { ...process.versions },
+            });
+
+            const packageJson = {
+                dependencies: {},
+                devDependencies: {},
+            } as NormalizedPackageJson;
+
+            // `confirm` exists but its `message` is undefined, so ensurePackages
+            // must synthesize the default prompt text.
+            const options = { confirm: { default: true } } as unknown as EnsurePackagesOptions;
+
+            await ensurePackages(packageJson, ["package1"], "dependencies", options);
+
+            expect(mockConfirm).toHaveBeenCalledExactlyOnceWith(
+                expect.objectContaining({
+                    default: true,
+                    message: "Package is required for this config: package1. Do you want to install them?",
+                }),
+            );
+            expect(mockInstallPackage).toHaveBeenCalledExactlyOnceWith(["package1"], expect.any(Object));
+        });
+
+        it("should not install packages when the user declines the prompt", async () => {
+            expect.assertions(2);
+
+            mockConfirm.mockResolvedValue(false);
+
+            vi.stubGlobal("process", {
+                argv: [],
+                env: { CI: false },
+                stdout: { isTTY: true },
+                versions: { ...process.versions },
+            });
+
+            const packageJson = {
+                dependencies: {},
+                devDependencies: {},
+            } as NormalizedPackageJson;
+
+            await ensurePackages(packageJson, ["package1"]);
+
+            expect(mockConfirm).toHaveBeenCalledTimes(1);
+            expect(mockInstallPackage).not.toHaveBeenCalled();
+        });
     });
 
     describe("package.yaml and package.json5 support", () => {
@@ -1358,6 +1512,16 @@ version: 2.0.0`;
                 const result = await findPackageJson(distribution);
 
                 expect(result.packageJson.name).toBe("json5-package");
+            });
+
+            it("should throw synchronously when no package file can be found", () => {
+                expect.assertions(1);
+
+                // Empty directory, yaml/json5 disabled — only package.json is
+                // searched and nothing exists up the tree.
+                expect(() => findPackageJsonSync(distribution, { json5: false, yaml: false })).toThrow(
+                    "No such file or directory, for package.json found.",
+                );
             });
         });
     });
