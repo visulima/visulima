@@ -518,4 +518,63 @@ describe(mailjetProvider, () => {
             expect(result.error).toBeDefined();
         });
     });
+
+    describe("branch coverage", () => {
+        it("should send a text-only email with logger, templateId without variables, empty headers, and a generated message id", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock
+                .mockResolvedValueOnce({ data: { statusCode: 200 }, success: true })
+                .mockResolvedValueOnce({ data: { body: {}, statusCode: 200 }, success: true });
+
+            const logger = { debug: vi.fn(), error: vi.fn(), info: vi.fn(), log: vi.fn(), warn: vi.fn() } as unknown as Console;
+            const provider = mailjetProvider({ apiKey: "key123", apiSecret: "secret123", logger });
+
+            const result = await provider.sendEmail({
+                from: { email: "sender@example.com" },
+                headers: {},
+                subject: "Test",
+                templateId: 777,
+                text: "plain text",
+                to: { email: "user@example.com" },
+            });
+
+            expect(result.success).toBe(true);
+        });
+
+        it("should report an unknown error when getEmail fails with a non-Error", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValueOnce({ data: { statusCode: 200 }, success: true }).mockResolvedValueOnce({ error: "string failure", success: false });
+
+            const provider = mailjetProvider({ apiKey: "key123", apiSecret: "secret123" });
+
+            const result = await provider.getEmail?.("msg-1");
+
+            expect(result?.success).toBe(false);
+        });
+
+        it("should return a default error when send fails without an error", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValueOnce({ data: { statusCode: 200 }, success: true }).mockResolvedValueOnce({ success: false });
+
+            const provider = mailjetProvider({ apiKey: "key123", apiSecret: "secret123" });
+
+            const result = await provider.sendEmail({
+                from: { email: "sender@example.com" },
+                html: "<h1>Hi</h1>",
+                subject: "Test",
+                to: { email: "user@example.com" },
+            });
+
+            expect(result.success).toBe(false);
+        });
+    });
 });
