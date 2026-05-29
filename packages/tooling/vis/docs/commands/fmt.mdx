@@ -1,0 +1,86 @@
+---
+title: "vis fmt"
+description: "Orchestrate detected formatters (prettier, …) across the workspace"
+---
+
+# vis fmt
+
+Runs every detected formatter against the workspace. Defaults to write mode (`--fix`); pass `--check` for a dry-run that lists files that would change without modifying them. Designed to add more formatters (dprint, oxfmt, biome, …) over time without changing the command surface.
+
+Phase 1 ships with the **Prettier** adapter. More follow in subsequent phases.
+
+## Usage
+
+```bash
+vis fmt [files…] [options]
+```
+
+With no files, each adapter runs against `.` so its native ignore semantics apply. Pass file paths to format a specific subset; each file is routed to the adapter that owns its extension.
+
+## Examples
+
+```bash
+# Apply formatting in place using every detected formatter
+vis fmt
+
+# Report files that would change without writing (CI-friendly)
+vis fmt --check
+
+# Format a specific subset
+vis fmt src/foo.ts src/bar.ts
+
+# Emit findings as JSON for CI / editor integrations
+vis fmt --format json
+
+# Suppress per-file logs
+vis fmt --quiet
+```
+
+## Options
+
+| Option     | Default | Description                                    |
+| ---------- | ------- | ---------------------------------------------- |
+| `--check`  | `false` | Report files that would change without writing |
+| `--format` | `human` | Output format: `human`, `json`, or `minimal`   |
+| `--quiet`  | `false` | Suppress per-file logs                         |
+
+## Detection
+
+The orchestrator probes each adapter against the workspace root and runs the ones that report themselves present. An adapter opts in when **either** a tool-native config file exists **or** the tool is declared in `package.json`.
+
+| Adapter  | Config files probed                                                                           | package.json key |
+| -------- | --------------------------------------------------------------------------------------------- | ---------------- |
+| prettier | `.prettierrc`, `.prettierrc.{json,yaml,yml,js,cjs,mjs,ts}`, `prettier.config.{js,cjs,mjs,ts}` | `prettier`       |
+
+When multiple fmt adapters are detected, files are routed by extension via the registry's `routeFilesByExtension` helper. Override per-extension routing through `fmt.extensionOverrides` in `vis.config.ts` once additional adapters land (e.g. send `.md` to `dprint` even when `prettier` also handles it).
+
+## Output formats
+
+### Human (default)
+
+Lists changed (or "would change") files grouped by adapter, with a friendly summary.
+
+### JSON
+
+```json
+{
+    "mode": "check",
+    "findings": [{ "adapter": "prettier", "file": "/repo/src/a.ts", "fixable": true, "severity": "info", "message": "Code style issues would be auto-fixed" }],
+    "runs": [{ "adapter": "prettier", "durationMs": 87, "exitCode": 1, "findingCount": 1 }]
+}
+```
+
+### Minimal
+
+Tab-separated lines, one per file, suitable for `awk`/`cut` pipelines:
+
+```
+prettier	src/a.ts
+```
+
+## Exit codes
+
+- `0` — nothing to change, or every change was successfully written in fix mode
+- `1` — at least one file would change (in `--check`), or at least one adapter exited non-zero without producing any findings (process-level failure)
+
+In fix mode, "would change" findings don't fail the run — the tool just wrote them. Use `--check` in CI to assert a clean tree.
