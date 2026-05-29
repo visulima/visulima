@@ -164,4 +164,28 @@ describe("init command", () => {
 
         expect(consoleLogMock).toHaveBeenCalledWith("Created \"config.js\"");
     });
+
+    it("uses module.exports when package.json has no module type", async () => {
+        expect.assertions(2);
+
+        const { findUpSync, readJsonSync } = await import("@visulima/fs");
+
+        const fixturePath = join(__dirname, "../../../", "__fixtures__");
+        const packageJsonPath = `${fixturePath}${isWin ? "\\" : "/"}package.json`;
+
+        vi.spyOn(fs, "existsSync").mockReturnValue(false);
+        vi.spyOn(console, "log");
+        vi.spyOn(fs, "realpathSync").mockReturnValue(fixturePath);
+        vi.mocked(findUpSync).mockReturnValue(packageJsonPath);
+        // No `type` field — exercises the falsy branch of `packageJson.type === "module"`.
+        vi.mocked(readJsonSync).mockReturnValue({});
+
+        const consoleInfoMock = vi.spyOn(console, "info").mockClear();
+        const writeFileSyncMock = vi.spyOn(fs, "writeFileSync").mockClear();
+
+        initCommand("config.js");
+
+        expect(consoleInfoMock).toHaveBeenCalledExactlyOnceWith(`Found package.json at "${packageJsonPath}"`);
+        expect(writeFileSyncMock).toHaveBeenCalledWith("config.js", expect.stringContaining("module.exports ="));
+    });
 });

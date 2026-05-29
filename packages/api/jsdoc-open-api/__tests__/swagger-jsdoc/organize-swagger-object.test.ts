@@ -146,4 +146,96 @@ describe("organize", () => {
             },
         ]);
     });
+
+    it("should copy the \"x-webhooks\" root extension as-is", () => {
+        expect.assertions(1);
+
+        const target: Record<string, any> = {};
+        const annotation = {
+            "x-webhooks": {
+                newPet: { post: { responses: { 200: { description: "ok" } } } },
+            },
+        };
+
+        organizeSwaggerObject(target, annotation, "x-webhooks");
+
+        expect(target["x-webhooks"]).toStrictEqual({
+            newPet: { post: { responses: { 200: { description: "ok" } } } },
+        });
+    });
+
+    it("should skip generic \"x-\" extensions without placing them in paths", () => {
+        expect.assertions(2);
+
+        const target: Record<string, any> = { paths: {} };
+        const annotation = { "x-tagGroups": [{ name: "group" }] };
+
+        organizeSwaggerObject(target, annotation, "x-tagGroups");
+
+        expect(target["x-tagGroups"]).toBeUndefined();
+        expect(target.paths).toStrictEqual({});
+    });
+
+    it("should push an array of tags, deduplicating existing tag names", () => {
+        expect.assertions(1);
+
+        const target: Record<string, any> = { tags: [{ name: "existing" }] };
+        const annotation = {
+            tags: [{ name: "existing" }, { name: "fresh" }],
+        };
+
+        organizeSwaggerObject(target, annotation, "tags");
+
+        expect(target.tags).toStrictEqual([{ name: "existing" }, { name: "fresh" }]);
+    });
+
+    it("should push a single tag object when tags is not an array", () => {
+        expect.assertions(1);
+
+        const target: Record<string, any> = { tags: [] };
+        const annotation = { tags: { name: "single" } };
+
+        organizeSwaggerObject(target, annotation, "tags");
+
+        expect(target.tags).toStrictEqual([{ name: "single" }]);
+    });
+
+    it("should not push a single tag object that is already present", () => {
+        expect.assertions(1);
+
+        const target: Record<string, any> = { tags: [{ name: "single" }] };
+        const annotation = { tags: { name: "single" } };
+
+        organizeSwaggerObject(target, annotation, "tags");
+
+        expect(target.tags).toStrictEqual([{ name: "single" }]);
+    });
+
+    it("should merge path properties that start with a slash into paths", () => {
+        expect.assertions(1);
+
+        const target: Record<string, any> = { paths: {} };
+        const annotation = {
+            "/pets": { get: { responses: { 200: { description: "ok" } } } },
+        };
+
+        organizeSwaggerObject(target, annotation, "/pets");
+
+        expect(target.paths).toStrictEqual({
+            "/pets": { get: { responses: { 200: { description: "ok" } } } },
+        });
+    });
+
+    it("should ignore properties that match none of the handled cases", () => {
+        expect.assertions(1);
+
+        const target: Record<string, any> = { paths: {} };
+        const annotation = { info: { title: "ignored" } };
+
+        organizeSwaggerObject(target, annotation, "info");
+
+        // `info` is not a common property, not tags/security, and does not start with "/",
+        // so the function leaves the target untouched.
+        expect(target).toStrictEqual({ paths: {} });
+    });
 });
