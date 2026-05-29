@@ -166,4 +166,55 @@ describe("command-line-usage/option-list-section", () => {
 
         expect(result.toString()).toMatchSnapshot();
     });
+
+    it("should hide the named definitions from the rendered list", () => {
+        expect.assertions(2);
+
+        const section = {
+            hide: ["secret"],
+            optionList: [
+                { description: "Visible option", name: "visible", type: Boolean },
+                { description: "Secret option", name: "secret", type: Boolean },
+            ],
+        };
+
+        const result = new OptionListSection(section as IOptionList).toString();
+
+        expect(result).toContain("visible");
+        expect(result).not.toContain("secret");
+    });
+
+    it("should only render options that belong to the requested group", () => {
+        expect.assertions(2);
+
+        const section = {
+            group: "main",
+            optionList: [
+                { description: "In group", group: "main", name: "ingroup", type: Boolean },
+                { description: "Other group", group: "other", name: "othergroup", type: Boolean },
+            ],
+        };
+
+        const result = new OptionListSection(section as IOptionList).toString();
+
+        expect(result).toContain("ingroup");
+        expect(result).not.toContain("othergroup");
+    });
+
+    it("should render ungrouped options when the special _none group is requested", () => {
+        expect.assertions(2);
+
+        const section = {
+            group: "_none",
+            optionList: [
+                { description: "No group", name: "nogroup", type: Boolean },
+                { description: "Grouped", group: "main", name: "grouped", type: Boolean },
+            ],
+        };
+
+        const result = new OptionListSection(section as IOptionList).toString();
+
+        expect(result).toContain("nogroup");
+        expect(result).not.toContain("grouped");
+    });
 });

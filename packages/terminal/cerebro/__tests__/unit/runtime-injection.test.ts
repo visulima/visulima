@@ -284,6 +284,23 @@ describe("Cli.clone", () => {
         expect(clone.getCommands().has("deploy")).toBe(true);
     });
 
+    it("copies custom global options onto the clone", () => {
+        expect.assertions(2);
+
+        const original = new Cli("test");
+
+        original.addGlobalOption({ description: "Override working directory", name: "workdir", type: String });
+
+        const clone = original.clone();
+
+        expect(clone.getGlobalOptions().some((option) => option.name === "workdir")).toBe(true);
+
+        // The clone owns a separate array, so adding to it does not mutate the original.
+        clone.addGlobalOption({ description: "Extra", name: "extra", type: String });
+
+        expect(original.getGlobalOptions().some((option) => option.name === "extra")).toBe(false);
+    });
+
     it("applies argv override on the clone without mutating the original", async () => {
         expect.assertions(2);
 

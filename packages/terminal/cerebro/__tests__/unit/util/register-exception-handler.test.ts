@@ -81,6 +81,46 @@ describe("register-exception-handler", () => {
         cleanup();
     });
 
+    it("should JSON-stringify a non-Error, non-string object rejection reason", () => {
+        expect.assertions(1);
+
+        const cleanup = registerExceptionHandler(mockLogger as unknown as Console);
+        const reason = { code: 500, detail: "boom" };
+        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- intentionally testing object rejection
+        const promise = Promise.reject(reason);
+
+        promise.catch(() => {});
+
+        process.emit("unhandledRejection", reason, promise);
+
+        expect(mockLogger.error).toHaveBeenCalledWith(`Promise rejection: ${JSON.stringify(reason)}`);
+
+        cleanup();
+    });
+
+    it("should fall back to String() when the rejection reason cannot be serialized", () => {
+        expect.assertions(1);
+
+        const cleanup = registerExceptionHandler(mockLogger as unknown as Console);
+        // A circular structure makes JSON.stringify throw, exercising the catch fallback.
+        const reason: Record<string, unknown> = {};
+
+        reason.self = reason;
+
+        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- intentionally testing object rejection
+        const promise = Promise.reject(reason);
+
+        promise.catch(() => {});
+
+        process.emit("unhandledRejection", reason, promise);
+
+        // The circular reference forces JSON.stringify to throw, so the handler falls back
+        // to String(reason), which yields the default object stringification.
+        expect(mockLogger.error).toHaveBeenCalledWith("Promise rejection: [object Object]");
+
+        cleanup();
+    });
+
     it("should handle error without stack", () => {
         expect.assertions(1);
 

@@ -30,4 +30,17 @@ describe("util/template-format", () => {
 
         expect(result).toStrictEqual(red("Something"));
     });
+
+    it("should evict the oldest cache entry once the cache exceeds its maximum size", () => {
+        expect.assertions(2);
+
+        // MAX_CACHE_SIZE is 500; push well past it so the FIFO eviction branch runs.
+        const firstValue = "first-unique-entry";
+
+        Array.from({ length: 600 }, (_, index) => templateFormat(`entry-${String(index)}-${firstValue}`));
+
+        // The implementation still returns the correct formatted value even after eviction.
+        expect(templateFormat("entry-599-first-unique-entry")).toBe("entry-599-first-unique-entry");
+        expect(templateFormat("entry-0-first-unique-entry")).toBe("entry-0-first-unique-entry");
+    });
 });

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { Content as IContent } from "../../../../../src/types/command-line-usage";
 import ContentSection from "../../../../../src/util/command-line-usage/section/content-section";
@@ -99,5 +99,89 @@ describe("line-usage/content-section", () => {
 
         // @ts-expect-error - test error
         expect(() => new ContentSection(sections).toString()).toThrow("invalid input");
+    });
+
+    it("should render raw content given as an array of strings", () => {
+        expect.assertions(1);
+
+        const sections = {
+            content: ["first raw line", "second raw line"],
+            raw: true,
+        };
+
+        const result = new ContentSection(sections).toString();
+
+        expect(result).toBe(`first raw line\nsecond raw line${isWindows ? "\r\n" : "\n"}`);
+    });
+
+    it("should throw for raw content that is neither a string nor an array of strings", () => {
+        expect.assertions(1);
+
+        const sections = {
+            content: { not: "valid" },
+            raw: true,
+        };
+
+        // @ts-expect-error - test error
+        expect(() => new ContentSection(sections).toString()).toThrow("Invalid raw content, must be a string or array of strings.");
+    });
+
+    it("falls back to automatic layout when the widest name column is empty", () => {
+        expect.assertions(1);
+
+        // Two-column rows whose first column is an empty string make `widest` 0,
+        // so computeColumnWidths returns undefined and tabular auto-sizes.
+        const sections = {
+            content: [
+                ["", "first description"],
+                ["", "second description"],
+            ],
+        };
+
+        const result = new ContentSection(sections).toString();
+
+        expect(result).toContain("first description");
+    });
+
+    describe("with no CEREBRO_TERMINAL_WIDTH override", () => {
+        afterEach(() => {
+            vi.unstubAllEnvs();
+        });
+
+        it("falls back to terminal-size when no width override is present", () => {
+            expect.assertions(1);
+
+            vi.stubEnv("CEREBRO_TERMINAL_WIDTH", "");
+
+            const sections = {
+                content: [
+                    ["short", "a description"],
+                    ["longer-name", "another description"],
+                ],
+            };
+
+            const result = new ContentSection(sections).toString();
+
+            expect(result).toContain("a description");
+        });
+
+        it("uses automatic layout when the name column would crush the description in a narrow terminal", () => {
+            expect.assertions(1);
+
+            // Pin a tiny terminal width so the widest name + minimum description
+            // exceeds it, forcing computeColumnWidths to return undefined.
+            vi.stubEnv("CEREBRO_TERMINAL_WIDTH", "10");
+
+            const sections = {
+                content: [
+                    ["a-very-long-command-name", "description text"],
+                    ["another-long-command", "more description"],
+                ],
+            };
+
+            const result = new ContentSection(sections).toString();
+
+            expect(result).toContain("a-very-long-command-name");
+        });
     });
 });

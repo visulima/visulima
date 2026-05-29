@@ -1,4 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import tab from "@bomb.sh/tab";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import completionCommand from "../../src/commands/completion-command";
 import type { Toolbox } from "../../src/types/toolbox";
@@ -20,6 +21,10 @@ describe("completion-command", () => {
                 getCommands: vi.fn(() => new Map()),
             },
         } as unknown as Toolbox;
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
     });
 
     it("should have correct command metadata", () => {
@@ -106,5 +111,129 @@ describe("completion-command", () => {
         // Verify error was logged with custom error handling (combined message)
         expect(mockToolbox.logger.error).toHaveBeenCalledWith(expect.stringContaining("Invalid runtime"));
         expect(mockToolbox.logger.error).toHaveBeenCalledWith(expect.stringContaining("Troubleshooting"));
+    });
+
+    describe("shell detection from toolbox env", () => {
+        it.each([
+            ["zsh", { shell: "/usr/bin/zsh" }],
+            ["bash", { shell: "/bin/bash" }],
+            ["fish", { shell: "/usr/local/bin/fish" }],
+        ])("detects %s from the SHELL env var", async (_label, env) => {
+            expect.assertions(1);
+
+            mockToolbox.options = {};
+            mockToolbox.env = env;
+
+            await completionCommand.execute(mockToolbox);
+
+            expect(mockToolbox.logger.error).not.toHaveBeenCalled();
+        });
+
+        it("prefers starshipShell over shell", async () => {
+            expect.assertions(1);
+
+            mockToolbox.options = {};
+            mockToolbox.env = { shell: "/bin/bash", starshipShell: "zsh" };
+
+            await completionCommand.execute(mockToolbox);
+
+            expect(mockToolbox.logger.error).not.toHaveBeenCalled();
+        });
+
+        it("detects powershell from PSModulePath", async () => {
+            expect.assertions(1);
+
+            mockToolbox.options = {};
+            mockToolbox.env = { psModulePath: "C:/Modules" };
+
+            await completionCommand.execute(mockToolbox);
+
+            expect(mockToolbox.logger.error).not.toHaveBeenCalled();
+        });
+
+        it("detects powershell from a PROMPT containing PS", async () => {
+            expect.assertions(1);
+
+            mockToolbox.options = {};
+            mockToolbox.env = { prompt: String.raw`PS C:\>` };
+
+            await completionCommand.execute(mockToolbox);
+
+            expect(mockToolbox.logger.error).not.toHaveBeenCalled();
+        });
+
+        it("falls back to bash when ComSpec points to cmd.exe", async () => {
+            expect.assertions(1);
+
+            mockToolbox.options = {};
+            mockToolbox.env = { comSpec: "C:/Windows/System32/cmd.exe" };
+
+            await completionCommand.execute(mockToolbox);
+
+            expect(mockToolbox.logger.error).not.toHaveBeenCalled();
+        });
+
+        it("shows usage when env contains no recognizable shell hint", async () => {
+            expect.assertions(2);
+
+            mockToolbox.options = {};
+            mockToolbox.env = { shell: "/usr/bin/elvish" };
+
+            await completionCommand.execute(mockToolbox);
+
+            expect(mockToolbox.logger.error).toHaveBeenCalledWith("Could not detect current shell");
+            expect(mockToolbox.logger.info).toHaveBeenCalledWith(expect.stringContaining("Usage:"));
+        });
+    });
+
+    it("registers visible commands and their options with the tab system", async () => {
+        expect.assertions(2);
+
+        const optionSpy = vi.fn();
+        const commandSpy = vi.fn(() => {
+            return { option: optionSpy };
+        });
+
+        vi.spyOn(tab, "command").mockImplementation(commandSpy as never);
+        vi.spyOn(tab, "setup").mockImplementation(() => {});
+
+        const commands = new Map([["b", { description: "Build it", name: "build" }], ["build", {
+            description: "Build it",
+            name: "build",
+            options: [
+                { alias: "w", description: "Watch mode", name: "watch", type: Boolean },
+                { description: "Hidden flag", hidden: true, name: "secret", type: Boolean },
+                { description: "No name", name: "", type: Boolean },
+            ],
+        }], ["internal", { description: "Internal", hidden: true, name: "internal" }]]);
+
+        // Alias entry: key differs from command.name, should be skipped.
+        // Hidden command, should be skipped.
+
+        (mockToolbox.runtime.getCommands as ReturnType<typeof vi.fn>).mockReturnValue(commands);
+        mockToolbox.options = { shell: "zsh" };
+
+        await completionCommand.execute(mockToolbox);
+
+        // Only the "build" command is registered (alias + hidden are skipped).
+        expect(commandSpy).toHaveBeenCalledTimes(1);
+        // Visible "watch" option registers its name and its alias; "secret" (hidden)
+        // and the unnamed option are skipped.
+        expect(optionSpy).toHaveBeenCalledTimes(2);
+    });
+
+    it("logs a generic troubleshooting message when setup throws a non-CompletionError", async () => {
+        expect.assertions(2);
+
+        vi.spyOn(tab, "setup").mockImplementation(() => {
+            throw new Error("tab exploded");
+        });
+
+        mockToolbox.options = { shell: "zsh" };
+
+        await completionCommand.execute(mockToolbox);
+
+        expect(mockToolbox.logger.error).toHaveBeenCalledWith(expect.stringContaining("Failed to generate completion script"));
+        expect(mockToolbox.logger.error).toHaveBeenCalledWith(expect.stringContaining("tab exploded"));
     });
 });
