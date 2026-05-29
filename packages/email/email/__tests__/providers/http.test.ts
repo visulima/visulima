@@ -406,5 +406,79 @@ describe(httpProvider, () => {
             expect(payload.cc).toStrictEqual(["cc1@example.com", "cc2@example.com"]);
             expect(payload.bcc).toBe("bcc@example.com");
         });
+
+        it("should return false from isAvailable when a non-Error value is thrown", async () => {
+            expect.assertions(1);
+
+            (makeRequest as ReturnType<typeof vi.fn>).mockRejectedValueOnce("string failure");
+
+            const provider = httpProvider({ endpoint: "https://api.example.com" });
+
+            await expect(provider.isAvailable()).resolves.toBe(false);
+        });
+
+        it("should skip initialization on a send when already initialized", async () => {
+            expect.assertions(2);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValue({ data: { body: { id: "msg-init" }, statusCode: 200 }, success: true });
+
+            const provider = httpProvider({ endpoint: "https://api.example.com" });
+
+            await provider.initialize();
+
+            const result = await provider.sendEmail({
+                from: { email: "sender@example.com" },
+                html: "<h1>Hi</h1>",
+                subject: "Test",
+                to: { email: "user@example.com" },
+            });
+
+            expect(result.success).toBe(true);
+            expect(makeRequestMock).toHaveBeenCalledTimes(2);
+        });
+
+        it("should report an unknown error when the send fails without an error", async () => {
+            expect.assertions(2);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValueOnce({ data: { statusCode: 200 }, success: true }).mockResolvedValueOnce({ success: false });
+
+            const provider = httpProvider({ endpoint: "https://api.example.com" });
+
+            const result = await provider.sendEmail({
+                from: { email: "sender@example.com" },
+                html: "<h1>Hi</h1>",
+                subject: "Test",
+                to: { email: "user@example.com" },
+            });
+
+            expect(result.success).toBe(false);
+            expect(result.error?.message).toContain("Unknown error");
+        });
+
+        it("should extract messageId from response.body.data.messageId", async () => {
+            expect.assertions(2);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock
+                .mockResolvedValueOnce({ data: { statusCode: 200 }, success: true })
+                .mockResolvedValueOnce({ data: { body: { data: { messageId: "deep-msg-id" } }, statusCode: 200 }, success: true });
+
+            const provider = httpProvider({ endpoint: "https://api.example.com" });
+
+            const result = await provider.sendEmail({
+                from: { email: "sender@example.com" },
+                html: "<h1>Hi</h1>",
+                subject: "Test",
+                to: { email: "user@example.com" },
+            });
+
+            expect(result.success).toBe(true);
+            expect(result.data?.messageId).toBe("deep-msg-id");
+        });
     });
 });
