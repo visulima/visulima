@@ -148,4 +148,31 @@ Please remember that all the information provided, including the credit card num
 
         expect(result).toMatch("John <LASTNAME> will be 30 on <DATE>");
     });
+
+    it("should accept numeric modifiers without altering unmatched text", () => {
+        expect.assertions(1);
+
+        const input = "hello 30 world";
+        const result = stringAnonymize(input, [30]);
+
+        expect(result).toBe("hello 30 world");
+    });
+
+    it("should skip numeric modifiers that are excluded", () => {
+        expect.assertions(1);
+
+        const input = "hello 30 world";
+        const result = stringAnonymize(input, [30], { exclude: [30] });
+
+        expect(result).toBe("hello 30 world");
+    });
+
+    it("should keep applying string modifiers that are not in the exclude list", () => {
+        expect.assertions(1);
+
+        const input = "John Doe will be 30 on 2024-06-10.";
+        const result = stringAnonymize(input, ["firstname"], { exclude: ["password"] });
+
+        expect(result).toMatch("<FIRSTNAME> Doe will be 30 on 2024-06-10.");
+    });
 });

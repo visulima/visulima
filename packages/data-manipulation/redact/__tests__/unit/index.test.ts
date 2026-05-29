@@ -902,6 +902,64 @@ describe(redact, () => {
         });
     });
 
+    it("should return numbers unchanged", () => {
+        expect.assertions(1);
+
+        const output = redact(42 as unknown, ["password"]);
+
+        expect(output).toBe(42);
+    });
+
+    it("should return booleans unchanged", () => {
+        expect.assertions(1);
+
+        const output = redact(false as unknown, ["password"]);
+
+        expect(output).toBe(false);
+    });
+
+    it("should redact numeric array indexes and skip excluded numeric rules", () => {
+        expect.assertions(1);
+
+        const input = ["zero", "one", "two"];
+        const result = redact(input, [0, 1], { exclude: [1] });
+
+        expect(result).toStrictEqual(["<REDACTED>", "one", "two"]);
+    });
+
+    it("should redact Map keys matched by a wildcard rule", () => {
+        expect.assertions(1);
+
+        const input = new Map<string, string>([
+            ["mypassword", "secret"],
+            ["other", "keep"],
+        ]);
+
+        const result = redact(input, ["*password"]);
+
+        expect([...result]).toStrictEqual([
+            ["mypassword", "<*PASSWORD>"],
+            ["other", "keep"],
+        ]);
+    });
+
+    it("should redact url query parameters that end with an empty value", () => {
+        expect.assertions(1);
+
+        const output = redact("http://example.com?token=", ["token"]);
+
+        expect(output).toBe("http://example.com?token=<TOKEN>");
+    });
+
+    it("should redact url query parameters while keeping a trailing non-sensitive parameter", () => {
+        expect.assertions(1);
+
+        const output = redact("https://a.com?password=&keep=1", ["password"]);
+
+        // eslint-disable-next-line no-secrets/no-secrets
+        expect(output).toBe("https://a.com?password=<PASSWORD>&keep=1");
+    });
+
     it("should return the same value without rounding it", () => {
         expect.assertions(1);
 
@@ -918,5 +976,14 @@ describe(redact, () => {
         const result = redact(input, standardModifierRules, { exclude: ["firstname"] });
 
         expect(result).toMatch("John <LASTNAME> will be 30 on <DATE>");
+    });
+
+    it("should keep redacting string rules that are not in the exclude list", () => {
+        expect.assertions(1);
+
+        const input = { password: "123456", username: "bob" };
+        const result = redact(input, ["password"], { exclude: ["unrelated"] });
+
+        expect(result).toStrictEqual({ password: "<PASSWORD>", username: "bob" });
     });
 });
