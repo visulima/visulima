@@ -21,4 +21,19 @@ describe("json-error-handler with normal Error", () => {
         expect(data.statusCode).toBe(500);
         expect(data.error).toBe("Internal Server Error");
     });
+
+    it("falls back to the reason phrase when the error message is empty", async () => {
+        expect.assertions(1);
+
+        const { req, res } = createMocks({ method: "GET" });
+
+        // eslint-disable-next-line unicorn/error-message -- intentionally empty to exercise the reason-phrase fallback
+        await jsonErrorHandler()(new Error(""), req, res);
+
+        // eslint-disable-next-line no-underscore-dangle
+        const data = JSON.parse(res._getData()) as { message: string };
+
+        // Empty message -> message falls back to the reason phrase.
+        expect(data.message).toBe("Internal Server Error");
+    });
 });

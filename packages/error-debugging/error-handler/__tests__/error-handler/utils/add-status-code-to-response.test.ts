@@ -150,6 +150,24 @@ describe(addStatusCodeToResponse, () => {
         expect(res._getStatusCode()).toBe(500); // Should default to 500
     });
 
+    it("should keep a pre-set 4xx/5xx status when the error carries no usable status code", () => {
+        expect.assertions(1);
+
+        const { res } = createMocks({
+            method: "GET",
+        });
+
+        res.statusCode = 418; // Already an error status, no valid candidate on the error.
+
+        const error = new Error("Test error"); // No statusCode/status -> candidate is NaN.
+
+        addStatusCodeToResponse(res, error);
+
+        // Both guards are skipped: candidate invalid AND statusCode already >= 400, so it stays.
+        // eslint-disable-next-line no-underscore-dangle
+        expect(res._getStatusCode()).toBe(418);
+    });
+
     it("should handle string status codes", () => {
         expect.assertions(1);
 

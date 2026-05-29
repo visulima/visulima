@@ -1,8 +1,11 @@
+import httpErrors from "http-errors";
 import { describe, expect, it } from "vitest";
 
 import createFetchNegotiatedErrorHandler from "../../src/error-handler/fetch-create-negotiated-error-handler";
 
 const JSON_ACCEPT_REGEX = /json/;
+const YAML_ACCEPT_REGEX = /application\/yaml/u;
+const EMPTY_ACCEPT_REGEX = /^$/u;
 
 const makeRequest = (accept?: string): Request =>
     new Request("https://example.test/boom", accept === undefined ? undefined : { headers: { accept } });
@@ -116,5 +119,62 @@ describe(createFetchNegotiatedErrorHandler, () => {
         const result = await handler(new Error("boom"), makeRequest("application/json"));
 
         await expect(result.json()).resolves.not.toHaveProperty("stack");
+    });
+
+    it("should join array-valued error headers when converting to a fetch Response", async () => {
+        expect.assertions(1);
+
+        const error = new httpErrors.BadRequest("boom");
+
+        // An array-valued header is copied onto the mock response, then joined with ", ".
+        error.headers = { "x-multi": ["a", "b"] };
+
+        const handler = createFetchNegotiatedErrorHandler([], false);
+        const result = await handler(error, makeRequest("application/json"));
+
+        expect(result.headers.get("x-multi")).toBe("a, b");
+    });
+
+    it("should skip a regex override whose pattern does not match the Accept header", async () => {
+        expect.assertions(2);
+
+        let overrideCalled = false;
+
+        const handler = createFetchNegotiatedErrorHandler(
+            [
+                {
+                    handler: () => {
+                        overrideCalled = true;
+
+                        return Promise.resolve(new Response("nope", { status: 418 }));
+                    },
+                    regex: YAML_ACCEPT_REGEX, // Does not match "application/json".
+                },
+            ],
+            false,
+        );
+        const result = await handler(new Error("boom"), makeRequest("application/json"));
+
+        // The non-matching override is skipped; the negotiated JSON handler runs.
+        expect(overrideCalled).toBe(false);
+        expect(result.headers.get("content-type")).toBe("application/json; charset=utf-8");
+    });
+
+    it("should match a regex override against an empty string when no Accept header is present", async () => {
+        expect.assertions(2);
+
+        const handler = createFetchNegotiatedErrorHandler(
+            [
+                {
+                    handler: () => Promise.resolve(new Response("matched-empty", { status: 400 })),
+                    regex: EMPTY_ACCEPT_REGEX, // Matches the "" fallback for a missing Accept header.
+                },
+            ],
+            false,
+        );
+        const result = await handler(new Error("boom"), makeRequest());
+
+        expect(result.status).toBe(400);
+        await expect(result.text()).resolves.toBe("matched-empty");
     });
 });
