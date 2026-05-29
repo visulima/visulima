@@ -402,6 +402,49 @@ describe.each([
         expect(visited.size).toBe(1);
     });
 
+    it("should throw a TypeError when the name argument is an invalid type", async () => {
+        expect.assertions(1);
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "findUp") {
+            // eslint-disable-next-line vitest/no-conditional-expect
+            await expect(() => function_(123 as never)).rejects.toThrow(TypeError);
+        } else {
+            // eslint-disable-next-line vitest/no-conditional-expect
+            expect(() => function_(123 as never)).toThrow(TypeError);
+        }
+    });
+
+    it("should accept a matcher returning a Buffer file name", async () => {
+        expect.assertions(1);
+
+        const matcher = (): Buffer => Buffer.from(testName.packageJson);
+
+        let foundPath = function_(matcher, { cwd: absolute.fixtureDirectory });
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "findUp") {
+            foundPath = await foundPath;
+        }
+
+        expect(foundPath).toStrictEqual(absolute.packageJson);
+    });
+
+    it("should accept an absolute file:// URL in the name array", async () => {
+        expect.assertions(1);
+
+        const url = new URL(`file://${absolute.packageJson}`);
+
+        let foundPath = function_([url] as never, { cwd: absolute.fixtureDirectory });
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "findUp") {
+            foundPath = await foundPath;
+        }
+
+        expect(foundPath).toStrictEqual(absolute.packageJson);
+    });
+
     it("should should stop early if FIND_UP_STOP in matcher is return", async () => {
         expect.assertions(3);
 

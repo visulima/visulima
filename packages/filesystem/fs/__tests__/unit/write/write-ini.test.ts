@@ -97,4 +97,49 @@ describe.each([
 
         await rm(path);
     });
+
+    it(String.raw`converts a fresh file to CRLF when eol is set to \r\n`, async () => {
+        expect.assertions(2);
+
+        const path = `test.${name}.fresh-crlf.ini`;
+        const data = { key: "value", other: 1 };
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "writeIni") {
+            await function_(path, data, { eol: "\r\n" });
+        } else {
+            function_(path, data, { eol: "\r\n" });
+        }
+
+        const content = await readFile(path, "utf8");
+
+        expect(content).toContain("\r\n");
+        expect(content).toContain("key=value");
+
+        await rm(path);
+    });
+
+    it("ignores existing style when preserveStyle is false", async () => {
+        expect.assertions(2);
+
+        const path = `test.${name}.no-preserve.ini`;
+        const original = "key = value ; comment\n";
+
+        await writeFile(path, original, "utf8");
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "writeIni") {
+            await function_(path, { key: "value", other: 2 }, { preserveStyle: false });
+        } else {
+            function_(path, { key: "value", other: 2 }, { preserveStyle: false });
+        }
+
+        const updated = await readFile(path, "utf8");
+
+        // With preserveStyle disabled the original inline comment is dropped.
+        expect(updated).not.toContain("; comment");
+        expect(updated).toContain("other=2");
+
+        await rm(path);
+    });
 });
