@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { EMPTY_SYMBOL } from "../../../../src/constants";
 import PrettyReporter from "../../../../src/reporter/pretty/pretty-reporter.browser";
 import type { ReadonlyMeta } from "../../../../src/types";
 
@@ -109,6 +110,53 @@ describe("prettyReporter browser", () => {
 
             const reporter = new PrettyReporter();
             const meta = { ...baseMeta, date: "2021-09-16T09:16:52.000Z", prefix: "Prefix", scope: [] };
+
+            reporter.log(meta as unknown as ReadonlyMeta<string>);
+
+            expect(logSpy).toHaveBeenCalledTimes(1);
+        });
+
+        it("should render without a date when none is provided", () => {
+            expect.assertions(1);
+
+            const reporter = new PrettyReporter();
+            const meta = { ...baseMeta, date: undefined };
+
+            reporter.log(meta as unknown as ReadonlyMeta<string>);
+
+            expect(logSpy).toHaveBeenCalledTimes(1);
+        });
+
+        it("should skip the badge placeholder when no logger type defines a badge", () => {
+            expect.assertions(1);
+
+            const reporter = new PrettyReporter();
+
+            reporter.setLoggerTypes({ info: { label: "info", logLevel: "informational" } } as never);
+
+            const meta = { ...baseMeta, badge: undefined };
+
+            reporter.log(meta as unknown as ReadonlyMeta<string>);
+
+            expect(logSpy).toHaveBeenCalledTimes(1);
+        });
+
+        it("should omit the message when it is the empty symbol", () => {
+            expect.assertions(1);
+
+            const reporter = new PrettyReporter();
+            const meta = { ...baseMeta, message: EMPTY_SYMBOL };
+
+            reporter.log(meta as unknown as ReadonlyMeta<string>);
+
+            expect(logSpy).toHaveBeenCalledTimes(1);
+        });
+
+        it("should render without context when none is provided", () => {
+            expect.assertions(1);
+
+            const reporter = new PrettyReporter();
+            const meta = { ...baseMeta, context: undefined };
 
             reporter.log(meta as unknown as ReadonlyMeta<string>);
 
