@@ -126,6 +126,28 @@ describe("verifySmtp (extended)", () => {
         expect(result.error).toContain("does not exist");
     });
 
+    it("reports a non-existent recipient on a 551 reply", async () => {
+        expect.assertions(2);
+
+        socketState.script = ["220", "250", "250", "551"];
+
+        const result = await verifySmtp("user@example.com");
+
+        expect(result.valid).toBe(false);
+        expect(result.error).toContain("does not exist");
+    });
+
+    it("reports a non-existent recipient on a 553 reply", async () => {
+        expect.assertions(2);
+
+        socketState.script = ["220", "250", "250", "553"];
+
+        const result = await verifySmtp("user@example.com");
+
+        expect(result.valid).toBe(false);
+        expect(result.error).toContain("does not exist");
+    });
+
     it("resolves invalid on a socket error", async () => {
         expect.assertions(2);
 
