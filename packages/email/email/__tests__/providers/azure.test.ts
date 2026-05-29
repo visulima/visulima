@@ -282,4 +282,22 @@ describe(azureProvider, () => {
             expect(result).toBe(true);
         });
     });
+
+    describe("branch coverage", () => {
+        it("should return false when the availability check throws a non-Error", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockRejectedValue("string failure");
+
+            const logger = { error: vi.fn(), info: vi.fn(), log: vi.fn(), warn: vi.fn() } as unknown as Console;
+
+            const provider = azureProvider({ accessToken: "test123", logger, region: "eastus" });
+
+            const result = await provider.isAvailable();
+
+            expect(result).toBe(false);
+        });
+    });
 });
