@@ -345,6 +345,46 @@ describe("text option", () => {
         ).toMatchSnapshot("width 20");
     });
 
+    it("drops headerText when margins leave no room for it", () => {
+        expect.assertions(1);
+
+        // maxWidth = 80 - 38 - 38 - 2 = 2; headerText.slice(0, max(0, 2 - 2)) === ""
+        // so the recheck after slicing keeps no title at all.
+        const box = boxen("x", {
+            headerText: "title",
+            margin: {
+                left: 38,
+                right: 38,
+            },
+        });
+
+        expect(box).toMatchSnapshot();
+    });
+
+    it("headerText align center with odd remaining border width", () => {
+        expect.assertions(1);
+
+        // content width 8, formatted title " title " is 7 wide -> 1 remaining
+        // border char (odd), exercising the odd-length centering branch
+        const box = boxen("a".repeat(8), {
+            headerAlignment: "center",
+            headerText: "title",
+        });
+
+        expect(box).toMatchSnapshot();
+    });
+
+    it("footerText align center with odd remaining border width", () => {
+        expect.assertions(1);
+
+        const box = boxen("a".repeat(8), {
+            footerAlignment: "center",
+            footerText: "title",
+        });
+
+        expect(box).toMatchSnapshot();
+    });
+
     it("headerText option with border style (none)", () => {
         expect.assertions(1);
 

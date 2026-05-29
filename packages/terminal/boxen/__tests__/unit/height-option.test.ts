@@ -70,4 +70,22 @@ describe("height option", () => {
 
         expect(box).toMatchSnapshot();
     });
+
+    it("drops vertical padding when it overflows a small height", () => {
+        expect.assertions(1);
+
+        // height (2) minus top+bottom padding (3 + 3) is <= 0, so padding.top/bottom
+        // are reset to 0 to prevent overflow
+        const box = boxen("foo", {
+            height: 2,
+            padding: {
+                bottom: 3,
+                left: 0,
+                right: 0,
+                top: 3,
+            },
+        });
+
+        expect(box).toMatchSnapshot();
+    });
 });

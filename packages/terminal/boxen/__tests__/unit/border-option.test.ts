@@ -154,4 +154,41 @@ describe("border option", () => {
             boxen("foo", { borderStyle: "shakenSnake" });
         }).toThrow("s");
     });
+
+    it("border style (retro vertical + horizontal shorthand)", () => {
+        expect.assertions(1);
+
+        const box = boxen("foo", {
+            borderStyle: {
+                bottomLeft: "3",
+                bottomRight: "4",
+                horizontal: "-",
+                topLeft: "1",
+                topRight: "2",
+                vertical: "|",
+            },
+        });
+
+        expect(box).toMatchSnapshot();
+    });
+
+    it("throws when a custom border side is not a string", () => {
+        expect.assertions(1);
+
+        expect(() => {
+            boxen("foo", {
+                borderStyle: {
+                    bottom: "-",
+                    // @ts-ignore - intentional error for testing
+                    bottomLeft: 5,
+                    bottomRight: "4",
+                    left: "|",
+                    right: "|",
+                    top: "-",
+                    topLeft: "1",
+                    topRight: "2",
+                },
+            });
+        }).toThrow("Invalid border style: bottomLeft");
+    });
 });
