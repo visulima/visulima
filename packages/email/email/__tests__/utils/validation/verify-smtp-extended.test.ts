@@ -239,4 +239,23 @@ describe("verifySmtp (extended)", () => {
         expect(result.valid).toBe(true);
         expect(smtpCache.set).toHaveBeenCalledTimes(1);
     });
+
+    it("ignores a cache write error when storing the SMTP result", async () => {
+        expect.assertions(2);
+
+        socketState.script = ["220", "250", "250", "250"];
+
+        const smtpCache = { get: vi.fn().mockResolvedValue(undefined), set: vi.fn().mockRejectedValue(new Error("cache down")) };
+
+        const result = await verifySmtp("user@example.com", { smtpCache: smtpCache as never });
+
+        expect(result.valid).toBe(true);
+
+        // Allow the fire-and-forget cache .catch handler to run.
+        await new Promise((resolve) => {
+            setTimeout(resolve, 0);
+        });
+
+        expect(smtpCache.set).toHaveBeenCalledTimes(1);
+    });
 });
