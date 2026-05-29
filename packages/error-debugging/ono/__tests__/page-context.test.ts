@@ -366,5 +366,348 @@ describe("context page", () => {
             expect(page?.code.html).toContain("150MB");
             expect(page?.code.html).toContain("0.29");
         });
+
+        it("should read headers and cookies from a Headers-like object exposing entries/get", async () => {
+            expect.assertions(3);
+
+            const headerMap: Record<string, string> = {
+                "content-type": "application/json",
+                cookie: "session=from-headers-obj",
+                "x-custom": "header-value",
+            };
+            const mockRequest = {
+                headers: {
+                    entries: () => Object.entries(headerMap),
+                    forEach: () => {},
+                    get: (name: string) => headerMap[name.toLowerCase()] ?? null,
+                },
+                json: () => Promise.resolve({ via: "headers-object" }),
+                method: "POST",
+                url: "http://example.com/api",
+            } as unknown as RequestLike;
+
+            const page = await createRequestContextPage(mockRequest, {});
+
+            expect(page?.code.html).toContain("header-value");
+            expect(page?.code.html).toContain("from-headers-obj");
+            expect(page?.code.html).toContain("headers-object");
+        });
+
+        it("should read a cookie header provided as an array", async () => {
+            expect.assertions(2);
+
+            const mockRequest = {
+                headers: {
+                    cookie: ["session=array-cookie; user=jane"],
+                },
+                method: "GET",
+                url: "http://example.com/test",
+            } as unknown as RequestLike;
+
+            const page = await createRequestContextPage(mockRequest, {});
+
+            expect(page?.code.html).toContain("array-cookie");
+            expect(page?.code.html).toContain("jane");
+        });
+
+        it("should skip malformed cookie pairs that have no equals sign", async () => {
+            expect.assertions(2);
+
+            const mockRequest = {
+                headers: {
+                    cookie: "session=valid; flagonly; user=john",
+                },
+                method: "GET",
+                url: "http://example.com/test",
+            } as unknown as RequestLike;
+
+            const page = await createRequestContextPage(mockRequest, {});
+
+            expect(page?.code.html).toContain("session");
+            expect(page?.code.html).toContain("john");
+        });
+
+        it("should add cookies to the cURL command when the cookie header is filtered out by the allowlist", async () => {
+            expect.assertions(2);
+
+            const mockRequest = {
+                headers: {
+                    "content-type": "application/json",
+                    cookie: "session=curl-cookie",
+                },
+                method: "GET",
+                url: "http://example.com/test",
+            } as unknown as RequestLike;
+
+            const page = await createRequestContextPage(mockRequest, {
+                headerAllowlist: ["content-type"],
+            });
+
+            expect(page?.code.html).toContain("Cookie: session=curl-cookie");
+            expect(page?.code.html).toContain("curl-cookie");
+        });
+
+        it("should fall back to text() after json() rejects", async () => {
+            expect.assertions(1);
+
+            const mockRequest = {
+                headers: {
+                    "content-type": "application/json",
+                },
+                json: () => Promise.reject(new Error("bad json")),
+                method: "POST",
+                text: () => Promise.resolve("text fallback body"),
+                url: "http://example.com/api",
+            } as unknown as RequestLike;
+
+            const page = await createRequestContextPage(mockRequest, {});
+
+            expect(page?.code.html).toContain("text fallback body");
+        });
+
+        it("should return no body when text() throws for a non-json request", async () => {
+            expect.assertions(1);
+
+            const mockRequest = {
+                headers: {
+                    "content-type": "text/plain",
+                },
+                method: "POST",
+                text: () => Promise.reject(new Error("text boom")),
+                url: "http://example.com/api",
+            } as unknown as RequestLike;
+
+            const page = await createRequestContextPage(mockRequest, {});
+
+            expect(page?.code.html).toContain("(no body)");
+        });
+
+        it("should render an array request body", async () => {
+            expect.assertions(1);
+
+            const mockRequest = {
+                headers: { "content-type": "application/json" },
+                json: () => Promise.resolve([1, 2, 3]),
+                method: "POST",
+                url: "http://example.com/api",
+            } as unknown as RequestLike;
+
+            const page = await createRequestContextPage(mockRequest, {});
+
+            expect(page?.code.html).toContain("[0]");
+        });
+
+        it("should render an empty-array request body", async () => {
+            expect.assertions(1);
+
+            const mockRequest = {
+                headers: { "content-type": "application/json" },
+                json: () => Promise.resolve([]),
+                method: "POST",
+                url: "http://example.com/api",
+            } as unknown as RequestLike;
+
+            const page = await createRequestContextPage(mockRequest, {});
+
+            expect(page?.code.html).toContain("(empty array)");
+        });
+
+        it("should render an empty-object request body", async () => {
+            expect.assertions(1);
+
+            const mockRequest = {
+                headers: { "content-type": "application/json" },
+                json: () => Promise.resolve({}),
+                method: "POST",
+                url: "http://example.com/api",
+            } as unknown as RequestLike;
+
+            const page = await createRequestContextPage(mockRequest, {});
+
+            expect(page?.code.html).toContain("(empty object)");
+        });
+
+        it("should render a numeric request body", async () => {
+            expect.assertions(1);
+
+            const mockRequest = {
+                headers: { "content-type": "application/json" },
+                json: () => Promise.resolve(42),
+                method: "POST",
+                url: "http://example.com/api",
+            } as unknown as RequestLike;
+
+            const page = await createRequestContextPage(mockRequest, {});
+
+            expect(page?.code.html).toContain("42");
+        });
+
+        it("should render an empty-string request body", async () => {
+            expect.assertions(1);
+
+            const mockRequest = {
+                headers: { "content-type": "text/plain" },
+                method: "POST",
+                text: () => Promise.resolve(""),
+                url: "http://example.com/api",
+            } as unknown as RequestLike;
+
+            const page = await createRequestContextPage(mockRequest, {});
+
+            expect(page?.code.html).toContain("(empty string)");
+        });
+
+        it("should not throw when serializing a circular request body", async () => {
+            expect.assertions(2);
+
+            const circular: Record<string, unknown> = { name: "loop" };
+
+            circular.self = circular;
+
+            const mockRequest = {
+                headers: { "content-type": "application/json" },
+                json: () => Promise.resolve(circular),
+                method: "POST",
+                url: "http://example.com/api",
+            } as unknown as RequestLike;
+
+            const page = await createRequestContextPage(mockRequest, {});
+
+            expect(page).toBeDefined();
+            expect(page?.code.html).toContain("loop");
+        });
+
+        it("should render nullish, empty, function and symbol values from the session", async () => {
+            expect.assertions(3);
+
+            const mockRequest = {
+                headers: {},
+                method: "GET",
+                session: {
+                    emptyArr: [],
+                    emptyObj: {},
+                    handler: function namedHandler() {},
+                    nul: null,
+                    sym: Symbol("session-symbol"),
+                    undef: undefined,
+                },
+                url: "http://example.com/test",
+            } as unknown as RequestLike;
+
+            const page = await createRequestContextPage(mockRequest, {});
+
+            expect(page?.code.html).toContain("null");
+            expect(page?.code.html).toContain("(empty object)");
+            expect(page?.code.html).toContain("namedHandler");
+        });
+
+        it("should cap rendering depth and item counts for deeply nested context", async () => {
+            expect.assertions(2);
+
+            const mockRequest = {
+                headers: {},
+                method: "GET",
+                url: "http://example.com/test",
+            } as unknown as RequestLike;
+
+            const page = await createRequestContextPage(mockRequest, {
+                context: {
+                    data: {
+                        deepArray: [[[["too deep"]]]],
+                        deepObject: { l1: { l2: { l3: { l4: "too deep" } } } },
+                        manyItems: Array.from({ length: 12 }, (_, index) => index),
+                        manyKeys: Object.fromEntries(Array.from({ length: 12 }, (_, index) => [`k${String(index)}`, index])),
+                    },
+                },
+            });
+
+            expect(page?.code.html).toContain("more keys");
+            expect(page?.code.html).toContain("more items");
+        });
+
+        it("should produce empty context sections when only the excluded request key is present", async () => {
+            expect.assertions(1);
+
+            const mockRequest = {
+                headers: {},
+                method: "GET",
+                url: "http://example.com/test",
+            } as unknown as RequestLike;
+
+            const page = await createRequestContextPage(mockRequest, {
+                context: { request: { ignoredContextKey: true } },
+            });
+
+            expect(page?.code.html).not.toContain("ignoredContextKey");
+        });
+
+        it("should read the body from clone() when the request exposes one", async () => {
+            expect.assertions(1);
+
+            const mockRequest = {
+                clone: () => {
+                    return {
+                        headers: { "content-type": "application/json" },
+                        json: () => Promise.resolve({ from: "cloned-request" }),
+                    };
+                },
+                headers: { "content-type": "application/json" },
+                method: "POST",
+                url: "http://example.com/api",
+            } as unknown as RequestLike;
+
+            const page = await createRequestContextPage(mockRequest, {});
+
+            expect(page?.code.html).toContain("cloned-request");
+        });
+
+        it("should read a small Node IncomingMessage body and resolve on end", async () => {
+            expect.assertions(1);
+
+            const handlers: Record<string, (chunk?: unknown) => void> = {};
+            const mockRequest = {
+                headers: { "content-type": "text/plain" },
+                method: "POST",
+                off: () => {},
+                on: (event: string, callback: (chunk?: unknown) => void) => {
+                    handlers[event] = callback;
+
+                    if (event === "data") {
+                        setTimeout(callback, 0, "incoming body");
+                    }
+
+                    if (event === "end") {
+                        setTimeout(callback, 0);
+                    }
+                },
+                setEncoding: () => {},
+                url: "http://example.com/api",
+            } as unknown as RequestLike;
+
+            const page = await createRequestContextPage(mockRequest, {});
+
+            expect(page?.code.html).toContain("incoming body");
+        });
+
+        it("should resolve with no body when a Node IncomingMessage emits an error", async () => {
+            expect.assertions(1);
+
+            const mockRequest = {
+                headers: { "content-type": "text/plain" },
+                method: "POST",
+                off: () => {},
+                on: (event: string, callback: (chunk?: unknown) => void) => {
+                    if (event === "error") {
+                        setTimeout(callback, 0);
+                    }
+                },
+                setEncoding: () => {},
+                url: "http://example.com/api",
+            } as unknown as RequestLike;
+
+            const page = await createRequestContextPage(mockRequest, {});
+
+            expect(page?.code.html).toContain("(no body)");
+        });
     });
 });
