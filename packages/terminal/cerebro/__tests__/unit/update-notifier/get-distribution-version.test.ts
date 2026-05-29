@@ -49,4 +49,40 @@ describe("update-notifier/get-dist-version", () => {
 
         await expect(getDistributionVersion("test", "latest", registryUrl)).rejects.toThrow("Could not parse version response");
     });
+
+    it("rejects when the requested dist-tag is absent from the response", async () => {
+        expect.assertions(1);
+
+        const st = new Stream();
+
+        vi.mocked(get).mockImplementation((_, callback) => {
+            callback(st);
+
+            // Valid JSON but the "latest" tag is missing, exercising the missing-version reject branch.
+            st.emit("data", "{\"beta\":\"2.0.0-beta.1\"}");
+            st.emit("end");
+        });
+
+        await expect(getDistributionVersion("test", "latest", registryUrl)).rejects.toThrow("Error getting version");
+    });
+
+    it("rejects when the underlying request emits an error", async () => {
+        expect.assertions(1);
+
+        const requestStream = new Stream();
+        const responseStream = new Stream();
+
+        vi.mocked(get).mockImplementation((_, callback) => {
+            // Do not emit a response; instead surface a transport-level error.
+            callback(responseStream);
+
+            queueMicrotask(() => {
+                requestStream.emit("error", new Error("socket hang up"));
+            });
+
+            return requestStream as never;
+        });
+
+        await expect(getDistributionVersion("test", "latest", registryUrl)).rejects.toThrow("socket hang up");
+    });
 });

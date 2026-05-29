@@ -115,4 +115,32 @@ describe("update-notifier/has-new-version", () => {
         expect(newVersion).toBeUndefined();
         expect(getDistributionVersion).not.toHaveBeenCalled();
     });
+
+    it("logs a debug message when the latest version is not newer", async () => {
+        expect.assertions(2);
+
+        vi.mocked(getDistributionVersion).mockReturnValue("1.0.0");
+
+        const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+        const newVersion = await hasNewVersion({ ...defaultArguments, debug: true });
+
+        expect(newVersion).toBeUndefined();
+        expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("not newer than current version"));
+    });
+
+    it("logs a debug message when the last check was too recent", async () => {
+        expect.assertions(2);
+
+        const TWELVE_HOURS = Date.now() - 1000 * 60 * 60 * 12;
+
+        vi.mocked(getLastUpdate).mockReturnValue(TWELVE_HOURS);
+
+        const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+        const newVersion = await hasNewVersion({ debug: true, pkg: package_, shouldNotifyInNpmScript: true });
+
+        expect(newVersion).toBeUndefined();
+        expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("Too recent to check for a new update"));
+    });
 });

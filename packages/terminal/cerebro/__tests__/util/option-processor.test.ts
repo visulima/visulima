@@ -88,6 +88,42 @@ describe("option-processor", () => {
             // eslint-disable-next-line no-underscore-dangle
             expect(command.options[0].__negated__).toBe(true);
         });
+
+        it("should return early when the command has no options", () => {
+            expect.assertions(1);
+
+            const toolbox = { options: { verbose: true } };
+            const command = { options: [] as OptionDefinition<boolean>[] };
+
+            mapNegatableOptions(toolbox, command);
+
+            // Untouched: no negatable mapping took place.
+            expect(toolbox.options).toStrictEqual({ verbose: true });
+        });
+
+        it("skips negated keys whose camelCase form is shorter than three characters", () => {
+            expect.assertions(2);
+
+            // The option name "no-" camelCases to "no", so its parsed key has no third
+            // character, exercising the `!thirdChar` continue branch.
+            const toolbox = {
+                options: {
+                    no: false,
+                },
+            };
+
+            const command = {
+                options: [{ name: "no-", type: Boolean } as OptionDefinition<boolean>],
+            };
+
+            processOptionNames(command);
+            mapNegatableOptions(toolbox, command);
+
+            // The key is left in place because the branch `continue`d before mapping/deletion.
+            expect(toolbox.options).toHaveProperty("no", false);
+            // eslint-disable-next-line no-underscore-dangle
+            expect(command.options[0].__negated__).toBeUndefined();
+        });
     });
 
     describe(mapImpliedOptions, () => {
@@ -142,6 +178,17 @@ describe("option-processor", () => {
 
             expect(toolbox.options.minify).toBe(true);
             expect(toolbox.options.sourcemap).toBe(true); // Should not be overridden
+        });
+
+        it("should return early when the command has no options", () => {
+            expect.assertions(1);
+
+            const toolbox = { options: { production: true } };
+            const command = { options: [] as OptionDefinition<boolean>[] };
+
+            mapImpliedOptions(toolbox, command);
+
+            expect(toolbox.options).toStrictEqual({ production: true });
         });
     });
 });

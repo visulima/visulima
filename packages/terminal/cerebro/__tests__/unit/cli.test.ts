@@ -1,7 +1,7 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { Toolbox } from "../../src";
-import { Cerebro as Cli } from "../../src";
+import { Cerebro as Cli, VERBOSITY_DEBUG, VERBOSITY_QUIET, VERBOSITY_VERBOSE } from "../../src";
 
 describe("cli", () => {
     it("should initialize Cli with default options", () => {
@@ -961,6 +961,140 @@ describe("cli", () => {
                         root: "/tmp",
                     }),
                 }),
+            );
+        });
+    });
+
+    describe("verbosity flags", () => {
+        const originalLevel = process.env.CEREBRO_OUTPUT_LEVEL;
+
+        afterEach(() => {
+            if (originalLevel === undefined) {
+                delete process.env.CEREBRO_OUTPUT_LEVEL;
+            } else {
+                process.env.CEREBRO_OUTPUT_LEVEL = originalLevel;
+            }
+        });
+
+        it.each([
+            ["--quiet", String(VERBOSITY_QUIET)],
+            ["-q", String(VERBOSITY_QUIET)],
+            ["--verbose", String(VERBOSITY_VERBOSE)],
+            ["--debug", String(VERBOSITY_DEBUG)],
+        ])("sets CEREBRO_OUTPUT_LEVEL from the %s flag", async (flag, expectedLevel) => {
+            expect.assertions(2);
+
+            const execute = vi.fn();
+            const cli = new Cli("MyCLI", { argv: ["run", flag] });
+
+            cli.addCommand({ execute, name: "run" });
+
+            await cli.run({ shouldExitProcess: false });
+
+            expect(execute).toHaveBeenCalledTimes(1);
+            expect(process.env.CEREBRO_OUTPUT_LEVEL).toBe(expectedLevel);
+        });
+    });
+
+    describe("constructor option validation", () => {
+        it("throws when the CLI name is not a non-empty string", () => {
+            expect.assertions(2);
+
+            expect(() => new Cli("")).toThrow("CLI name must be a non-empty string");
+            expect(() => new Cli("   ")).toThrow("CLI name must be a non-empty string");
+        });
+
+        it("throws when argv is provided but is not an array", () => {
+            expect.assertions(1);
+
+            expect(() => new Cli("MyCLI", { argv: "build" as unknown as string[] })).toThrow("CLI argv option must be an array of strings");
+        });
+
+        it("throws when cwd is provided but is not a string", () => {
+            expect.assertions(1);
+
+            expect(() => new Cli("MyCLI", { cwd: 123 as unknown as string })).toThrow("CLI cwd option must be a string");
+        });
+
+        it("throws when packageName is provided but is not a string", () => {
+            expect.assertions(1);
+
+            expect(() => new Cli("MyCLI", { packageName: 123 as unknown as string })).toThrow("CLI packageName option must be a string");
+        });
+
+        it("throws when packageVersion is provided but is not a string", () => {
+            expect.assertions(1);
+
+            expect(() => new Cli("MyCLI", { packageVersion: 1 as unknown as string })).toThrow("CLI packageVersion option must be a string");
+        });
+
+        it("throws when fs is provided but is not an object", () => {
+            expect.assertions(1);
+
+            expect(() => new Cli("MyCLI", { fs: "not-an-object" as unknown as never })).toThrow("CLI fs option must be an object implementing the CerebroFs interface");
+        });
+
+        it("throws when exit is provided but is not a function", () => {
+            expect.assertions(1);
+
+            expect(() => new Cli("MyCLI", { exit: "nope" as unknown as never })).toThrow("CLI exit option must be a function");
+        });
+
+        it("throws when env is provided but is not an object", () => {
+            expect.assertions(1);
+
+            expect(() => new Cli("MyCLI", { env: "nope" as unknown as never })).toThrow("CLI env option must be a record of string keys");
+        });
+
+        it("throws when stdin is provided but is not a string", () => {
+            expect.assertions(1);
+
+            expect(() => new Cli("MyCLI", { stdin: 5 as unknown as never })).toThrow("CLI stdin option must be a string");
+        });
+
+        it("accepts a valid env override and string stdin", () => {
+            expect.assertions(1);
+
+            expect(() => new Cli("MyCLI", { env: { FOO: "bar" }, stdin: "piped input" })).not.toThrow();
+        });
+    });
+
+    describe("addCommand alias handling", () => {
+        it("registers a command under a string alias", async () => {
+            expect.assertions(1);
+
+            const execute = vi.fn();
+            const cli = new Cli("MyCLI", { argv: ["b"] });
+
+            cli.addCommand({ alias: "b", execute, name: "build" });
+
+            await cli.run({ shouldExitProcess: false });
+
+            expect(execute).toHaveBeenCalledTimes(1);
+        });
+
+        it("registers a command under multiple array aliases", async () => {
+            expect.assertions(1);
+
+            const execute = vi.fn();
+            const cli = new Cli("MyCLI", { argv: ["i"] });
+
+            cli.addCommand({ alias: ["i", "inst"], execute, name: "install" });
+
+            await cli.run({ shouldExitProcess: false });
+
+            expect(execute).toHaveBeenCalledTimes(1);
+        });
+
+        it("throws when an alias conflicts with an existing command name", () => {
+            expect.assertions(1);
+
+            const cli = new Cli("MyCLI");
+
+            cli.addCommand({ execute: vi.fn(), name: "build" });
+
+            expect(() => cli.addCommand({ alias: "build", execute: vi.fn(), name: "compile" })).toThrow(
+                "Command alias \"build\" conflicts with existing command",
             );
         });
     });
