@@ -155,4 +155,34 @@ describe("express middleware", () => {
 
         expect(nextCalled).toBe(true);
     });
+
+    it("should fall back to req.url when originalUrl is absent", () => {
+        expect.assertions(1);
+
+        const pail = createMockPail();
+        const middleware = pailMiddleware({ pail });
+        const request = createMockRequest({ originalUrl: undefined, url: "/from-url" });
+        const response = createMockResponse();
+
+        middleware(request, response, () => {});
+
+        const data = (request.log as { getData: () => unknown }).getData() as Record<string, unknown>;
+
+        expect(data.path).toBe("/from-url");
+    });
+
+    it("should fall back to '/' when neither originalUrl nor url is set", () => {
+        expect.assertions(1);
+
+        const pail = createMockPail();
+        const middleware = pailMiddleware({ pail });
+        const request = createMockRequest({ originalUrl: undefined, url: undefined });
+        const response = createMockResponse();
+
+        middleware(request, response, () => {});
+
+        const data = (request.log as { getData: () => unknown }).getData() as Record<string, unknown>;
+
+        expect(data.path).toBe("/");
+    });
 });

@@ -133,6 +133,24 @@ describe("fastify plugin", () => {
         expect(errorSpy.mock.calls.length + consoleSpy.mock.calls.length).toBe(1);
     });
 
+    it("should ignore onError when no request state was registered", async () => {
+        expect.assertions(1);
+
+        const pail = createMockPail();
+        const errorSpy = vi.spyOn(console, "error");
+        const consoleSpy = vi.spyOn(console, "log");
+        const fastify = createMockFastify();
+        const request = createMockRequest();
+        const reply = createMockReply();
+
+        pailPlugin(fastify as any, { pail });
+
+        // onError fires without a preceding onRequest, so requestState has no entry.
+        await fastify.trigger("onError", request, reply, new Error("orphan error"));
+
+        expect(errorSpy.mock.calls.length + consoleSpy.mock.calls.length).toBe(0);
+    });
+
     it("should skip excluded routes", async () => {
         expect.assertions(1);
 

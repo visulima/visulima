@@ -123,6 +123,28 @@ describe("environmentProcessor", () => {
             expect(info.environment).toBe("staging");
         });
 
+        it("should fallback to APP_ENV when NODE_ENV and ENVIRONMENT are not set", () => {
+            expect.assertions(1);
+
+            delete process.env.NODE_ENV;
+            delete process.env.ENVIRONMENT;
+            process.env.APP_ENV = "qa";
+            const info = detectEnvironment();
+
+            expect(info.environment).toBe("qa");
+        });
+
+        it("should leave environment undefined when no environment vars are set", () => {
+            expect.assertions(1);
+
+            delete process.env.NODE_ENV;
+            delete process.env.ENVIRONMENT;
+            delete process.env.APP_ENV;
+            const info = detectEnvironment();
+
+            expect(info.environment).toBeUndefined();
+        });
+
         it("should detect GCP Cloud Run K_SERVICE", () => {
             expect.assertions(1);
 

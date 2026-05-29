@@ -2,6 +2,7 @@ import { stderr, stdout } from "node:process";
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { EMPTY_SYMBOL } from "../../../../src/constants";
 import RawReporter from "../../../../src/reporter/raw/raw-reporter.server";
 import type { ReadonlyMeta } from "../../../../src/types";
 
@@ -250,6 +251,40 @@ describe("raw-reporter", () => {
 
         expect(written).toContain("key");
         expect(written).toContain("value");
+    });
+
+    it("should omit the message when it is the empty symbol", () => {
+        expect.assertions(1);
+
+        const rawReporter = new RawReporter();
+
+        rawReporter.setStdout(stdout);
+        rawReporter.setStderr(stderr);
+
+        const meta = {
+            badge: "info",
+            context: undefined,
+            date: new Date(),
+            error: undefined,
+            groups: [],
+            label: "label",
+            message: EMPTY_SYMBOL,
+            prefix: "prefix",
+            repeated: undefined,
+            scope: ["scope1", "scope2"],
+            suffix: "suffix",
+            traceError: undefined,
+            type: {
+                level: "informational",
+                name: "log",
+            },
+        };
+
+        const stdoutWriteSpy = vi.spyOn(stdout, "write").mockImplementation(() => true);
+
+        rawReporter.log(meta as unknown as ReadonlyMeta<string>);
+
+        expect(stdoutWriteSpy).toHaveBeenCalledExactlyOnceWith("");
     });
 
     it("should route output through the interactive manager when interactive and the stream is a TTY", () => {
