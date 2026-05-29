@@ -87,6 +87,37 @@ describe("healthCheck", () => {
         });
     });
 
+    it("falls back to the service name when the checker omits a displayName", async () => {
+        expect.assertions(1);
+
+        const healthCheck = new HealthCheck();
+
+        healthCheck.addChecker("event-loop", async () => {
+            return {
+                displayName: "",
+                health: {
+                    healthy: true,
+                    timestamp: dateString,
+                },
+            };
+        });
+
+        const report = await healthCheck.getReport();
+
+        expect(report).toStrictEqual({
+            healthy: true,
+            report: {
+                "event-loop": {
+                    displayName: "event-loop",
+                    health: {
+                        healthy: true,
+                        timestamp: dateString,
+                    },
+                },
+            },
+        });
+    });
+
     it("set healthy to false when any of the checker fails", async () => {
         expect.assertions(1);
 

@@ -95,4 +95,58 @@ describe("health check route", () => {
         process.env.APP_NAME = undefined;
         process.env.APP_VERSION = undefined;
     });
+
+    it("endpoint returns a 503 error payload when a checker is unhealthy", async () => {
+        expect.assertions(4);
+
+        const unhealthyService = new HealthCheck();
+
+        unhealthyService.addChecker("database", async () => {
+            throw new Error("connection refused");
+        });
+
+        const callback = healthCheckHandler(unhealthyService);
+
+        const requestMock = createRequest();
+        const responseMock = createResponse();
+
+        await callback(requestMock, responseMock);
+
+        // eslint-disable-next-line no-underscore-dangle
+        expect(responseMock._getStatusCode()).toBe(503);
+
+        // eslint-disable-next-line no-underscore-dangle
+        const jsonResponse = responseMock._getJSONData() as Record<string, unknown>;
+
+        expect(jsonResponse.message).toBe("Health check failed");
+        expect(jsonResponse.status).toBe("error");
+        expect(jsonResponse.reports).toStrictEqual({
+            database: {
+                displayName: "database",
+                health: {
+                    healthy: false,
+                    message: "connection refused",
+                    timestamp: expect.any(String),
+                },
+                meta: {
+                    fatal: true,
+                },
+            },
+        });
+    });
+
+    it("endpoint does not set the content-type header when sendHeader is false", async () => {
+        expect.assertions(2);
+
+        const callback = healthCheckHandler(HealthCheckService, false);
+
+        const requestMock = createRequest();
+        const responseMock = createResponse();
+
+        await callback(requestMock, responseMock);
+
+        // eslint-disable-next-line no-underscore-dangle
+        expect(responseMock._getStatusCode()).toBe(200);
+        expect(responseMock.getHeader("content-type")).toBeUndefined();
+    });
 });
