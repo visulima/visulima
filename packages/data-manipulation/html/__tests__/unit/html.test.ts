@@ -188,6 +188,24 @@ describe(html, () => {
 
             expect(result).toBe("<div>Hello 世界 🌍</div>");
         });
+
+        it("should fall back to empty string when the leading and trailing strings are missing", () => {
+            expect.assertions(1);
+
+            // Crafted template strings array whose entries are all undefined exercises the
+            // `strings[0] ?? ""` and `strings[i + 1] ?? ""` fallbacks.
+            const strings = Object.assign([undefined, undefined], { raw: ["", ""] }) as unknown as TemplateStringsArray;
+
+            expect(html(strings, "<x>")).toBe("&lt;x>");
+        });
+
+        it("should fall back to empty string when the strings array is empty", () => {
+            expect.assertions(1);
+
+            const strings = Object.assign([], { raw: [] }) as unknown as TemplateStringsArray;
+
+            expect(html(strings, "Z")).toBe("Z");
+        });
     });
 
     describe("function call with escape parameter", () => {
