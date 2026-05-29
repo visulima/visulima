@@ -1,8 +1,15 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 
 import { cn } from "../src/error-inspector/utils/cn";
-import { sanitizeAttribute, sanitizeHtml, sanitizeUrlAttribute } from "../src/error-inspector/utils/sanitize";
-import process from "../src/utils/process";
+import {
+    sanitizeAttribute,
+    sanitizeCodeHtml,
+    sanitizeCspNonce,
+    sanitizeHtml,
+    sanitizeOptions,
+    sanitizeUrlAttribute,
+} from "../src/error-inspector/utils/sanitize";
+import process, { getProcessPlatform, getProcessVersion } from "../src/utils/process";
 import revisionHash from "../src/utils/revision-hash";
 import type { RuntimeName } from "../src/utils/runtimes";
 import runtime from "../src/utils/runtimes";
@@ -179,6 +186,94 @@ describe("utilities", () => {
                 expect(result3).toBe("#");
             });
         });
+
+        describe("toString object handling", () => {
+            it("serializes plain objects via JSON before sanitizing", () => {
+                expect.assertions(1);
+
+                const result = sanitizeHtml({ a: 1 });
+
+                expect(result).toContain("1");
+            });
+
+            it("returns an empty string when an object cannot be serialized", () => {
+                expect.assertions(1);
+
+                const circular: Record<string, unknown> = {};
+
+                circular.self = circular;
+
+                expect(sanitizeHtml(circular)).toBe("");
+            });
+        });
+
+        describe(sanitizeAttribute, () => {
+            it("returns an empty string for an empty value", () => {
+                expect.assertions(1);
+
+                expect(sanitizeAttribute("")).toBe("");
+            });
+        });
+
+        describe(sanitizeCodeHtml, () => {
+            it("preserves class and style attributes from highlighters", () => {
+                expect.assertions(2);
+
+                const result = sanitizeCodeHtml("<span class=\"token\" style=\"color:red\">x</span>");
+
+                expect(result).toContain("class=\"token\"");
+                expect(result).toContain("style=\"color:red\"");
+            });
+
+            it("returns an empty string for an empty value", () => {
+                expect.assertions(1);
+
+                expect(sanitizeCodeHtml("")).toBe("");
+            });
+        });
+
+        describe(sanitizeCspNonce, () => {
+            it("returns the nonce when it matches the base64 pattern", () => {
+                expect.assertions(1);
+
+                expect(sanitizeCspNonce("abc123+/-_==")).toBe("abc123+/-_==");
+            });
+
+            it("returns undefined for a nonce with disallowed characters", () => {
+                expect.assertions(1);
+
+                expect(sanitizeCspNonce("bad nonce!")).toBeUndefined();
+            });
+
+            it("returns undefined for an empty nonce", () => {
+                expect.assertions(1);
+
+                expect(sanitizeCspNonce("")).toBeUndefined();
+            });
+        });
+
+        describe(sanitizeOptions, () => {
+            it("sanitizes the cspNonce and openInEditorUrl options", () => {
+                expect.assertions(2);
+
+                const result = sanitizeOptions({
+                    cspNonce: "validNonce123",
+                    openInEditorUrl: "https://editor.test/open",
+                });
+
+                expect(result.cspNonce).toBe("validNonce123");
+                expect(result.openInEditorUrl).toBe("https://editor.test/open");
+            });
+
+            it("leaves openInEditorUrl undefined when not provided and defaults options", () => {
+                expect.assertions(2);
+
+                const result = sanitizeOptions();
+
+                expect(result.openInEditorUrl).toBeUndefined();
+                expect(result.cspNonce).toBeUndefined();
+            });
+        });
     });
 
     describe("process utility", () => {
@@ -196,6 +291,30 @@ describe("utilities", () => {
             expect(process.versions).toBeDefined();
 
             expectTypeOf(process.versions).toBeObject();
+        });
+
+        it("returns undefined for properties absent from both target and shims", () => {
+            expect.assertions(1);
+
+            expect((process as unknown as Record<string, unknown>).definitelyNotARealProcessProperty).toBeUndefined();
+        });
+
+        it("returns a cached string for getProcessVersion across calls", () => {
+            expect.assertions(2);
+
+            const first = getProcessVersion();
+
+            expect(first).toBe(process.version ?? "");
+            expect(getProcessVersion()).toBe(first);
+        });
+
+        it("returns a cached string for getProcessPlatform across calls", () => {
+            expect.assertions(2);
+
+            const first = getProcessPlatform();
+
+            expect(first).toBe(process.platform ?? "");
+            expect(getProcessPlatform()).toBe(first);
         });
     });
 

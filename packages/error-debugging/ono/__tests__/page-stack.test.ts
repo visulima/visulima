@@ -335,5 +335,41 @@ describe("stack page", () => {
             // The highest priority solution should be shown (highest priority number = highest priority)
             expect(page.code.html).toContain("Solution 2");
         });
+
+        it("throws a TypeError when solutionFinders is not an array", async () => {
+            expect.assertions(1);
+
+            const error = new Error("Test error");
+
+            await expect(createStackPage(error, {} as unknown as [])).rejects.toThrow(TypeError);
+        });
+
+        it("reconstructs an Error from a plain error-like main cause", async () => {
+            expect.assertions(2);
+
+            const errorLike = {
+                message: "Plain object failure",
+                name: "CustomError",
+                stack: "CustomError: Plain object failure\n    at custom (/custom.js:3:7)",
+            };
+
+            const page = await createStackPage(errorLike, []);
+
+            expect(page.code.html).toContain("Plain object failure");
+            expect(page.code.html).toContain("custom");
+        });
+
+        it("reconstructs an Error from an error-like main cause without a stack", async () => {
+            expect.assertions(1);
+
+            const errorLike = {
+                message: "No stack failure",
+                name: "StacklessError",
+            };
+
+            const page = await createStackPage(errorLike, []);
+
+            expect(page.code.html).toContain("No stack failure");
+        });
     });
 });
