@@ -46,4 +46,43 @@ describe("stacktrace stringify helpers", () => {
 
         expect(out).toBe(["Error: boom", "    at fnA (/a.js:1:3)", "    at /b.js:2:7"].join("\n"));
     });
+
+    it("formatStackFrameLine falls back to <unknown> file and zero line/column", () => {
+        expect.assertions(1);
+
+        const frame: Trace = {
+            column: undefined,
+            file: undefined,
+            line: undefined,
+            methodName: undefined,
+            raw: "",
+            type: undefined,
+        };
+
+        expect(formatStackFrameLine(frame)).toBe("    at <unknown>:0:0");
+    });
+
+    it("formatStacktrace defaults the header name to Error when only a message is given", () => {
+        expect.assertions(1);
+
+        const out = formatStacktrace([], { header: { message: "boom" } });
+
+        expect(out).toBe("Error: boom");
+    });
+
+    it("formatStacktrace omits the colon when the header has only a name", () => {
+        expect.assertions(1);
+
+        const out = formatStacktrace([], { header: { name: "CustomError" } });
+
+        expect(out).toBe("CustomError");
+    });
+
+    it("formatStacktrace omits the header entirely when name and message are empty", () => {
+        expect.assertions(1);
+
+        const out = formatStacktrace([], { header: { message: "", name: "" } });
+
+        expect(out).toBe("");
+    });
 });

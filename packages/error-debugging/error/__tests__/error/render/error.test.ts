@@ -224,4 +224,108 @@ describe(renderError, () => {
 
         expect(errorsOutput).toMatchSnapshot();
     });
+
+    it("should throw a RangeError when framesMaxLimit is not positive", () => {
+        expect.assertions(1);
+
+        const error = new Error("This is an example error message");
+
+        expect(() => renderError(error, { framesMaxLimit: 0 })).toThrow(RangeError);
+    });
+
+    it("should hide the message when hideMessage is enabled", () => {
+        expect.assertions(1);
+
+        const error = new Error("This is an example error message");
+        const errorOutput = renderError(error, { hideErrorCodeView: true, hideMessage: true });
+
+        expect(errorOutput).not.toContain("Error: This is an example error message");
+    });
+
+    it("should indent nested causes with tab indentation", () => {
+        expect.assertions(1);
+
+        const error = new Error("Outer", {
+            cause: new Error("Inner", {
+                cause: new Error("Innermost"),
+            }),
+        });
+        const errorOutput = renderError(error, {
+            hideErrorCauseCodeView: true,
+            hideErrorCodeView: true,
+            indentation: "\t",
+            prefix: ">",
+        });
+
+        expect(errorOutput).toContain("\t");
+    });
+
+    it("should render a string hint above the main frame", () => {
+        expect.assertions(2);
+
+        const error = new VisulimaError({ hint: "Run npm install", message: "boom", name: "Error" });
+        const errorOutput = renderError(error, { hideErrorCodeView: true });
+
+        expect(errorOutput).toContain("Run npm install");
+        expect(errorOutput).toContain("Error: boom");
+    });
+
+    it("should render an array hint as separate lines", () => {
+        expect.assertions(2);
+
+        const error = new VisulimaError({ hint: ["first hint", "second hint"], message: "boom", name: "Error" });
+        const errorOutput = renderError(error, { hideErrorCodeView: true });
+
+        expect(errorOutput).toContain("first hint");
+        expect(errorOutput).toContain("second hint");
+    });
+
+    it("should render the cause hint when the cause is a VisulimaError with a hint", () => {
+        expect.assertions(1);
+
+        const cause = new VisulimaError({ hint: "Cause hint message", message: "cause", name: "CauseError" });
+        const error = new Error("outer", { cause });
+        const errorOutput = renderError(error, { hideErrorCauseCodeView: true, hideErrorCodeView: true });
+
+        expect(errorOutput).toContain("Cause hint message");
+    });
+
+    it.skipIf(!globalThis.AggregateError)("should render the cause code view for a cause when not hidden", () => {
+        expect.assertions(2);
+
+        hoisted.existsSync.mockReturnValue(true);
+
+        const cause = new Error("cause with code view");
+        const error = new Error("outer", { cause });
+        const errorOutput = renderError(error, { framesMaxLimit: 1 });
+
+        expect(errorOutput).toContain("Caused by:");
+        expect(errorOutput).toContain("cause with code view");
+    });
+
+    it.skipIf(!globalThis.AggregateError)("should render an AggregateError reached through a cause chain", () => {
+        expect.assertions(2);
+
+        // eslint-disable-next-line unicorn/error-message
+        const aggregate = new AggregateError([new Error("inner aggregate error")]);
+        const error = new Error("outer", { cause: aggregate });
+        const errorOutput = renderError(error, {
+            hideErrorCauseCodeView: true,
+            hideErrorCodeView: true,
+            hideErrorErrorsCodeView: true,
+        });
+
+        expect(errorOutput).toContain("Caused by:");
+        expect(errorOutput).toContain("inner aggregate error");
+    });
+
+    it.skipIf(!globalThis.AggregateError)("should skip the errors section for an empty AggregateError", () => {
+        expect.assertions(1);
+
+        // eslint-disable-next-line unicorn/error-message
+        const aggregate = new AggregateError([]);
+        const errorOutput = renderError(aggregate, { hideErrorCodeView: true });
+
+        expect(errorOutput).not.toContain("Errors:");
+    });
 });

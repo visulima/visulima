@@ -183,4 +183,23 @@ describe("indexToPosition", () => {
             line: 2,
         });
     });
+
+    it("should resolve line and column from a pre-cached array of line start indexes", () => {
+        expect.assertions(3);
+
+        // line start indexes for "abc\ndef\nghi" (plus trailing entry)
+        const lineStartIndexes = [0, 4, 8, 12];
+
+        expect(indexToLineColumn(lineStartIndexes, 0)).toStrictEqual({ column: 1, line: 1 });
+        expect(indexToLineColumn(lineStartIndexes, 5)).toStrictEqual({ column: 2, line: 2 });
+        expect(indexToLineColumn(lineStartIndexes, 9)).toStrictEqual({ column: 2, line: 3 });
+    });
+
+    it("should reject an out-of-range index for a pre-cached array input", () => {
+        expect.assertions(1);
+
+        const lineStartIndexes = [0, 4, 8, 12];
+
+        expect(indexToLineColumn(lineStartIndexes, 11)).toStrictEqual({ column: 0, line: 0 });
+    });
 });

@@ -2,7 +2,7 @@
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import capturedErrors from "../../__fixtures__/captured-errors";
 import { VisulimaError } from "../../src";
@@ -1809,5 +1809,220 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
         } as unknown as Error);
 
         expect(stackFrames).toHaveLength(0);
+    });
+
+    describe("node nested frames", () => {
+        it("should parse a nested node react component frame with line and column", () => {
+            expect.assertions(2);
+
+            const stackFrames = parseStacktrace({
+                stack: "Error\n in Foo (at bar.js:1:2) at baz",
+            } as unknown as Error);
+
+            expect(stackFrames).toHaveLength(1);
+            expect(stackFrames[0]).toMatchStackFrame(["Foo", "bar.js", 1, 2]);
+        });
+
+        it("should parse a nested node react component frame with line but no column", () => {
+            expect.assertions(2);
+
+            const stackFrames = parseStacktrace({
+                stack: "Error\n in Foo (at bar.js:1) at baz",
+            } as unknown as Error);
+
+            expect(stackFrames).toHaveLength(1);
+            expect(stackFrames[0]).toMatchStackFrame(["Foo", "bar.js", 1, undefined]);
+        });
+    });
+
+    describe("node single frames", () => {
+        it("should parse a node frame with line and column", () => {
+            expect.assertions(2);
+
+            const stackFrames = parseStacktrace({
+                stack: "Error\n    in Foo (at internal/bar.js:5:9)",
+            } as unknown as Error);
+
+            expect(stackFrames).toHaveLength(1);
+            expect(stackFrames[0]).toMatchStackFrame(["Foo", "internal/bar.js", 5, 9, undefined]);
+        });
+
+        it("should parse a node react component frame with line but no column", () => {
+            expect.assertions(2);
+
+            const stackFrames = parseStacktrace({
+                stack: "Error\n    in Foo (at App.tsx:28)",
+            } as unknown as Error);
+
+            expect(stackFrames).toHaveLength(1);
+            expect(stackFrames[0]).toMatchStackFrame(["Foo", "App.tsx", 28, undefined]);
+        });
+    });
+
+    describe("react android native fallback", () => {
+        it("should parse a bare file:line:column frame with no method", () => {
+            expect.assertions(2);
+
+            const stackFrames = parseStacktrace({
+                stack: "Error\nfoo.js:10:5",
+            } as unknown as Error);
+
+            expect(stackFrames).toHaveLength(1);
+            expect(stackFrames[0]).toMatchStackFrame(["<unknown>", "foo.js", 10, 5]);
+        });
+
+        it("should parse a bare absolute-path frame with no method", () => {
+            expect.assertions(2);
+
+            const stackFrames = parseStacktrace({
+                stack: "Error\n/path/to/foo.js:10:5",
+            } as unknown as Error);
+
+            expect(stackFrames).toHaveLength(1);
+            expect(stackFrames[0]).toMatchStackFrame(["<unknown>", "/path/to/foo.js", 10, 5]);
+        });
+    });
+
+    describe("firefox/safari top frame metadata", () => {
+        it("should apply Firefox columnNumber/lineNumber to a top gecko frame without location", () => {
+            expect.assertions(2);
+
+            const stackFrames = parseStacktrace({
+                columnNumber: 99,
+                lineNumber: 44,
+                stack: "@http://foo.js",
+            } as unknown as Error);
+
+            expect(stackFrames).toHaveLength(1);
+            expect(stackFrames[0]).toMatchStackFrame(["<unknown>", "http://foo.js", 44, 99]);
+        });
+
+        it("should prefer Firefox top frame metadata over the parsed location", () => {
+            expect.assertions(2);
+
+            const stackFrames = parseStacktrace({
+                columnNumber: 99,
+                lineNumber: 44,
+                stack: "@http://foo.js:10",
+            } as unknown as Error);
+
+            expect(stackFrames).toHaveLength(1);
+            expect(stackFrames[0]).toMatchStackFrame(["<unknown>", "http://foo.js", 44, 99]);
+        });
+
+        it("should apply Safari line/column to a top gecko native frame", () => {
+            expect.assertions(2);
+
+            const stackFrames = parseStacktrace({
+                column: 7,
+                line: 12,
+                stack: "foo@[native code]",
+            } as unknown as Error);
+
+            expect(stackFrames).toHaveLength(1);
+            expect(stackFrames[0]).toMatchStackFrame(["foo", "[native code]", 12, 7, "native"]);
+        });
+
+        it("should apply Safari line/column to a top gecko frame without location", () => {
+            expect.assertions(2);
+
+            const stackFrames = parseStacktrace({
+                column: 7,
+                line: 12,
+                stack: "foo@http://x.js",
+            } as unknown as Error);
+
+            expect(stackFrames).toHaveLength(1);
+            expect(stackFrames[0]).toMatchStackFrame(["foo", "http://x.js", 12, 7]);
+        });
+    });
+
+    describe("windows eval frames", () => {
+        it("should parse a Windows eval frame and pull the inner location", () => {
+            expect.assertions(6);
+
+            const stackFrames = parseStacktrace({
+                stack: String.raw`Error
+    at eval (eval at <anonymous> (C:\Users\u\proj.js):1:5), <anonymous>:2:3`,
+            } as unknown as Error);
+
+            expect(stackFrames).toHaveLength(1);
+            expect(stackFrames[0]?.file).toContain("proj.js");
+            expect(stackFrames[0]?.line).toBe(1);
+            expect(stackFrames[0]?.column).toBe(5);
+            expect(stackFrames[0]?.type).toBe("eval");
+            expect(stackFrames[0]?.evalOrigin).toStrictEqual(
+                expect.objectContaining({
+                    column: 3,
+                    file: "<anonymous>",
+                    line: 2,
+                    methodName: "eval",
+                    type: "eval",
+                }),
+            );
+        });
+    });
+
+    describe("opera stacktrace property", () => {
+        it("should read the `stacktrace` property when present instead of `stack`", () => {
+            expect.assertions(2);
+
+            const stackFrames = parseStacktrace({
+                stack: "Error\n    at fromStack (http://wrong/file.js:1:1)",
+                stacktrace: "Error\n    at fromStacktrace (http://right/file.js:9:7)",
+            } as unknown as Error);
+
+            expect(stackFrames).toHaveLength(1);
+            expect(stackFrames[0]).toMatchStackFrame(["fromStacktrace", "http://right/file.js", 9, 7]);
+        });
+    });
+
+    describe("filter option", () => {
+        it("should drop frames rejected by the filter callback", () => {
+            expect.assertions(3);
+
+            const stackFrames = parseStacktrace(
+                {
+                    stack:
+                        "Error: keep one\n"
+                        + "    at keep (http://localhost/keep.js:1:1)\n"
+                        + "    at drop (http://localhost/drop.js:2:2)\n",
+                } as unknown as Error,
+                {
+                    filter: (line: string): boolean => !line.includes("drop.js"),
+                },
+            );
+
+            expect(stackFrames).toHaveLength(1);
+            expect(stackFrames[0]?.methodName).toBe("keep");
+            expect(stackFrames[0]?.file).toBe("http://localhost/keep.js");
+        });
+    });
+
+    describe("debug logging", () => {
+        it("should emit debug output when DEBUG=true", () => {
+            expect.assertions(1);
+
+            const originalDebug = process.env.DEBUG;
+            const debugSpy = vi.spyOn(console, "debug").mockImplementation(() => {});
+
+            process.env.DEBUG = "true";
+
+            try {
+                parseStacktrace({
+                    stack: "Error\n    at foo (http://localhost/file.js:1:1)",
+                } as unknown as Error);
+
+                expect(debugSpy).toHaveBeenCalled();
+            } finally {
+                debugSpy.mockRestore();
+
+                if (originalDebug === undefined) {
+                    delete process.env.DEBUG;
+                } else {
+                    process.env.DEBUG = originalDebug;
+                }
+            }
+        });
     });
 });
