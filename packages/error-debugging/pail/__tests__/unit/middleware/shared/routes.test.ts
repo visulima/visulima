@@ -49,6 +49,21 @@ describe("routes", () => {
             expect(matchesPattern("/api/auth/login", "/api/auth/**")).toBe(true);
             expect(matchesPattern("/api/auth", "/api/auth/**")).toBe(true);
         });
+
+        it("should handle ** in the middle of a pattern", () => {
+            expect.assertions(3);
+
+            expect(matchesPattern("/api/login", "/api/**/login")).toBe(true);
+            expect(matchesPattern("/api/auth/v1/login", "/api/**/login")).toBe(true);
+            expect(matchesPattern("/api/users", "/api/**/login")).toBe(false);
+        });
+
+        it("should handle ** at the end without a preceding slash", () => {
+            expect.assertions(2);
+
+            expect(matchesPattern("/apixyz", "/api**")).toBe(true);
+            expect(matchesPattern("/other", "/api**")).toBe(false);
+        });
     });
 
     describe(shouldLog, () => {
