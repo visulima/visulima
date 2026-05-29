@@ -5,6 +5,7 @@ import type { InteractiveManager } from "@visulima/interactive-manager";
 import terminalSize from "terminal-size";
 import { describe, expect, it, vi } from "vitest";
 
+import { EMPTY_SYMBOL } from "../../../../src/constants";
 import { dateFormatter } from "../../../../src/reporter/pretty/abstract-pretty-reporter";
 import { PrettyReporter } from "../../../../src/reporter/pretty/pretty-reporter.server";
 import type { ReadonlyMeta } from "../../../../src/types";
@@ -479,5 +480,41 @@ describe("prettyReporter", () => {
 
         expect(formatted).toContain("Prefix");
         expect(formatted).toContain("Suffix");
+    });
+
+    it("should tolerate an undefined trailing group entry", () => {
+        expect.assertions(1);
+
+        const prettyReporter = new PrettyReporter();
+        const meta = { ...baseInfoMeta, groups: [undefined] };
+
+        // @ts-expect-error - The spy is private
+        const formatted = prettyReporter._formatMessage(meta as unknown as ReadonlyMeta<string>);
+
+        expect(formatted).toContain("base message");
+    });
+
+    it("should render the caller line when the file has no name", () => {
+        expect.assertions(1);
+
+        const prettyReporter = new PrettyReporter();
+        const meta = { ...baseInfoMeta, file: { column: 1, line: 42 } };
+
+        // @ts-expect-error - The spy is private
+        const formatted = prettyReporter._formatMessage(meta as ReadonlyMeta<string>);
+
+        expect(formatted).toContain(":42");
+    });
+
+    it("should omit the message section when the message is the empty symbol", () => {
+        expect.assertions(1);
+
+        const prettyReporter = new PrettyReporter();
+        const meta = { ...baseInfoMeta, message: EMPTY_SYMBOL };
+
+        // @ts-expect-error - The spy is private
+        const formatted = prettyReporter._formatMessage(meta as unknown as ReadonlyMeta<string>);
+
+        expect(formatted).not.toContain("base message");
     });
 });
