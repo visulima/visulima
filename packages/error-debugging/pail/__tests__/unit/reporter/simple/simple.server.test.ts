@@ -4,6 +4,7 @@ import { blueBright, bold, grey, red } from "@visulima/colorize";
 import type { InteractiveManager } from "@visulima/interactive-manager";
 import { describe, expect, it, vi } from "vitest";
 
+import { EMPTY_SYMBOL } from "../../../../src/constants";
 import { dateFormatter } from "../../../../src/reporter/pretty/abstract-pretty-reporter";
 import { SimpleReporter } from "../../../../src/reporter/simple/simple-reporter.server";
 import type { Meta, ReadonlyMeta } from "../../../../src/types";
@@ -462,6 +463,77 @@ describe("simpleReporter", () => {
 
         // @ts-expect-error - testing protected method
         const formatted = simpleReporter.formatMessage({ ...baseInfoMeta, badge: undefined } as ReadonlyMeta<string>);
+
+        expect(formatted).toContain("base message");
+    });
+
+    it("should fall back to white when the logger type has no color", () => {
+        expect.assertions(1);
+
+        const simpleReporter = new SimpleReporter();
+
+        (simpleReporter as unknown as { loggerTypes: Record<string, unknown> }).loggerTypes = {
+            info: { badge: "INFO", label: "INFO", logLevel: "informational" },
+        };
+
+        // @ts-expect-error - testing protected method
+        const formatted = simpleReporter.formatMessage({ ...baseInfoMeta } as ReadonlyMeta<string>);
+
+        expect(formatted).toContain("base message");
+    });
+
+    it("should accept a string date and parse it", () => {
+        expect.assertions(1);
+
+        const simpleReporter = new SimpleReporter();
+
+        // @ts-expect-error - testing protected method
+        const formatted = simpleReporter.formatMessage({ ...baseInfoMeta, date: "2021-09-16T09:16:52.000Z" } as unknown as ReadonlyMeta<string>);
+
+        expect(formatted).toContain("base message");
+    });
+
+    it("should omit the message section when the message is the empty symbol", () => {
+        expect.assertions(1);
+
+        const simpleReporter = new SimpleReporter();
+
+        // @ts-expect-error - testing protected method
+        const formatted = simpleReporter.formatMessage({ ...baseInfoMeta, message: EMPTY_SYMBOL } as unknown as ReadonlyMeta<string>);
+
+        expect(formatted).not.toContain("base message");
+    });
+
+    it("should underline prefix and suffix when configured", () => {
+        expect.assertions(2);
+
+        const simpleReporter = new SimpleReporter({ underline: { label: false, prefix: true, suffix: true } });
+
+        // @ts-expect-error - testing protected method
+        const formatted = simpleReporter.formatMessage({ ...baseInfoMeta, prefix: "PFX", suffix: "SFX" } as unknown as ReadonlyMeta<string>);
+
+        expect(formatted).toContain("PFX");
+        expect(formatted).toContain("SFX");
+    });
+
+    it("should render a caller line when the file has neither name nor line", () => {
+        expect.assertions(1);
+
+        const simpleReporter = new SimpleReporter();
+
+        // @ts-expect-error - testing protected method
+        const formatted = simpleReporter.formatMessage({ ...baseInfoMeta, file: {} } as unknown as ReadonlyMeta<string>);
+
+        expect(formatted).toContain("Caller:");
+    });
+
+    it("should tolerate an undefined trailing group entry", () => {
+        expect.assertions(1);
+
+        const simpleReporter = new SimpleReporter();
+
+        // @ts-expect-error - testing protected method
+        const formatted = simpleReporter.formatMessage({ ...baseInfoMeta, groups: [undefined] } as unknown as ReadonlyMeta<string>);
 
         expect(formatted).toContain("base message");
     });
