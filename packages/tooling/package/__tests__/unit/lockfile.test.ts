@@ -74,6 +74,15 @@ describe(decodeSriIntegrity, () => {
         // normally map to `+` and `/`, but SRI mandates the standard alphabet.
         expect(decodeSriIntegrity("sha512-aGVsbG8_")).toBeUndefined();
     });
+
+    it("should return undefined when the base64 payload decodes to an empty buffer", () => {
+        expect.assertions(1);
+
+        // A single base64 character carries only 6 bits — too few for one byte —
+        // so it passes the strict alphabet regex yet decodes to zero bytes. Guard
+        // against producing a hash with an empty digest.
+        expect(decodeSriIntegrity("sha512-A")).toBeUndefined();
+    });
 });
 
 describe(parseNpmLockFile, () => {
@@ -156,6 +165,43 @@ describe(parseNpmLockFile, () => {
         expect.assertions(1);
 
         expect(parseNpmLockFile("not json")).toStrictEqual([]);
+    });
+
+    it("should return an empty list when the lockfile has no packages map", () => {
+        expect.assertions(1);
+
+        expect(parseNpmLockFile(JSON.stringify({ lockfileVersion: 3 }))).toStrictEqual([]);
+    });
+
+    it("should skip paths that are not node_modules entries and names starting with a dot", () => {
+        expect.assertions(1);
+
+        const content = JSON.stringify({
+            lockfileVersion: 3,
+            packages: {
+                // Non-node_modules path — the path regex doesn't match.
+                "config/foo": { version: "1.0.0" },
+                // node_modules path whose resolved name begins with `.` — skipped.
+                "node_modules/.cache": { name: ".cache", version: "1.0.0" },
+            },
+        });
+
+        expect(parseNpmLockFile(content)).toStrictEqual([]);
+    });
+
+    it("should deduplicate identical name@version entries", () => {
+        expect.assertions(1);
+
+        // Two paths resolve to the same `foo@1.0.0` — only one entry survives.
+        const content = JSON.stringify({
+            lockfileVersion: 3,
+            packages: {
+                "node_modules/bar/node_modules/foo": { version: "1.0.0" },
+                "node_modules/foo": { version: "1.0.0" },
+            },
+        });
+
+        expect(parseNpmLockFile(content).filter((entry) => entry.name === "foo")).toHaveLength(1);
     });
 });
 
@@ -301,6 +347,116 @@ snapshots:
         expect(foo?.dependencies).toStrictEqual({ "@scope/baz": ["1.0.0"], bar: ["2.0.0"] });
         expect(foo?.peerDependencies).toStrictEqual({ react: [">=17"] });
     });
+
+    it("should return an empty list when there is no packages section", () => {
+        expect.assertions(1);
+
+        // No `packages:` header at all (only metadata) — nothing to parse.
+        expect(parsePnpmLockFile("lockfileVersion: '9.0'\n")).toStrictEqual([]);
+    });
+
+    it("should strip a leading slash from legacy v5 package keys", () => {
+        expect.assertions(2);
+
+        // pnpm v5 lockfiles prefix keys with `/`.
+        const content = `packages:
+
+  /lodash@4.17.21:
+    resolution: {integrity: sha512-aGVsbG8=}
+`;
+
+        const result = parsePnpmLockFile(content);
+
+        expect(result).toHaveLength(1);
+        expect(result[0]).toMatchObject({ name: "lodash", version: "4.17.21" });
+    });
+
+    it("should skip package keys that have no version separator", () => {
+        expect.assertions(1);
+
+        // A key without an `@` separator can't be split into name/version.
+        const content = `packages:
+
+  lodash:
+    resolution: {integrity: sha512-aGVsbG8=}
+`;
+
+        expect(parsePnpmLockFile(content)).toStrictEqual([]);
+    });
+
+    it("should skip workspace and file references in package keys", () => {
+        expect.assertions(1);
+
+        const content = `packages:
+
+  pkg-a@workspace:packages/pkg-a:
+    resolution: {directory: packages/pkg-a, type: directory}
+
+  pkg-b@file:../pkg-b:
+    resolution: {directory: ../pkg-b, type: directory}
+`;
+
+        expect(parsePnpmLockFile(content)).toStrictEqual([]);
+    });
+
+    it("should skip package keys whose version is empty", () => {
+        expect.assertions(1);
+
+        // `foo@` has an `@` separator but no version after it.
+        const content = `packages:
+
+  foo@:
+    resolution: {integrity: sha512-aGVsbG8=}
+`;
+
+        expect(parsePnpmLockFile(content)).toStrictEqual([]);
+    });
+
+    it("should ignore snapshot keys that cannot be split into name and version", () => {
+        expect.assertions(1);
+
+        // The `broken-no-version:` snapshot key has no `@`, so it's skipped
+        // while the valid package entry still parses with no extra edges.
+        const content = `packages:
+
+  foo@1.0.0:
+    resolution: {integrity: sha512-aGVsbG8=}
+
+snapshots:
+
+  broken-no-version:
+    dependencies:
+      bar: 2.0.0
+
+  foo@1.0.0:
+    dependencies:
+      bar: 2.0.0
+`;
+
+        const foo = parsePnpmLockFile(content).find((entry) => entry.name === "foo");
+
+        expect(foo?.dependencies).toStrictEqual({ bar: ["2.0.0"] });
+    });
+
+    it("should skip dependency lines whose version resolves to empty", () => {
+        expect.assertions(1);
+
+        // The `empty:` dependency's quoted value collapses to an empty string
+        // once the surrounding quotes are stripped, so it's dropped while the
+        // real dep survives.
+        const content = `packages:
+
+  foo@1.0.0:
+    resolution: {integrity: sha512-aGVsbG8=}
+    dependencies:
+      bar: 2.0.0
+      empty: ""
+`;
+
+        const foo = parsePnpmLockFile(content).find((entry) => entry.name === "foo");
+
+        expect(foo?.dependencies).toStrictEqual({ bar: ["2.0.0"] });
+    });
 });
 
 describe(parseYarnLockFile, () => {
@@ -391,6 +547,24 @@ describe(parseYarnLockFile, () => {
 
         expect(foo?.version).toBe("1.2.3");
         expect(foo?.integrity).toBeUndefined();
+    });
+
+    it("should skip blocks that have no version line", () => {
+        expect.assertions(1);
+
+        // The first block has a body but no `version:` line — it must be
+        // skipped while the well-formed block still resolves.
+        const content = `
+"broken@^1.0.0":
+  resolved "https://registry.yarnpkg.com/broken/-/broken-1.0.0.tgz"
+
+"foo@^1.0.0":
+  version "1.0.0"
+`;
+
+        const result = parseYarnLockFile(content);
+
+        expect(result).toStrictEqual([{ name: "foo", version: "1.0.0" }]);
     });
 });
 
@@ -489,6 +663,27 @@ describe(parseBunLockFile, () => {
 
         expect(parseBunLockFile("{invalidJson: true")).toStrictEqual([]);
     });
+
+    it("should return an empty list when there is no packages map", () => {
+        expect.assertions(1);
+
+        expect(parseBunLockFile(`{ "lockfileVersion": 1, "workspaces": { "": { "name": "root" } } }`)).toStrictEqual([]);
+    });
+
+    it("should skip tuples whose first element is not a string or lacks a version separator", () => {
+        expect.assertions(1);
+
+        const content = `{
+  "lockfileVersion": 1,
+  "workspaces": { "": { "name": "root" } },
+  "packages": {
+    "not-a-string": [123, "", {}, "sha512-aGVsbG8="],
+    "no-separator": ["plainname", "", {}, "sha512-aGVsbG8="]
+  }
+}`;
+
+        expect(parseBunLockFile(content)).toStrictEqual([]);
+    });
 });
 
 describe(parseLockFileContent, () => {
@@ -536,6 +731,13 @@ describe(parseLockFileContent, () => {
 }`;
 
         expect(parseLockFileContent(content, "bun")).toHaveLength(1);
+    });
+
+    it("should return an empty list for an unknown lockfile type", () => {
+        expect.assertions(1);
+
+        // The default switch branch guards against a future / unexpected type.
+        expect(parseLockFileContent("whatever", "unknown" as never)).toStrictEqual([]);
     });
 });
 
@@ -604,6 +806,22 @@ describe("parseLockFile / parseLockFileSync", () => {
         expect(result.entries).toHaveLength(1);
     });
 
+    it("should find and parse the nearest yarn.lock", async () => {
+        expect.assertions(2);
+
+        writeFileSync(
+            join(temporaryDirectory, "yarn.lock"),
+            `"lodash@^4.17.21":
+  version "4.17.21"
+`,
+        );
+
+        const result = await parseLockFile(temporaryDirectory);
+
+        expect(result.type).toBe("yarn");
+        expect(result.entries[0]?.name).toBe("lodash");
+    });
+
     it("should throw when no supported lock file exists", async () => {
         expect.assertions(1);
 
@@ -612,5 +830,15 @@ describe("parseLockFile / parseLockFileSync", () => {
         ensureDirSync(isolated);
 
         await expect(parseLockFile(isolated)).rejects.toThrow(NO_LOCKFILE_ERROR);
+    });
+
+    it("should throw synchronously when no supported lock file exists", () => {
+        expect.assertions(1);
+
+        const isolated = join(tmpdir(), `no-lockfile-sync-${String(Date.now())}`);
+
+        ensureDirSync(isolated);
+
+        expect(() => parseLockFileSync(isolated)).toThrow(NO_LOCKFILE_ERROR);
     });
 });
