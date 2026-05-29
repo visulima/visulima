@@ -1,5 +1,11 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`text option > drops headerText when margins leave no room for it 1`] = `
+"                                      ┌─┐
+                                      │x│
+                                      └─┘"
+`;
+
 exports[`text option > footerText + width option > width 3 1`] = `
 "┌─┐
 │f│
@@ -24,6 +30,12 @@ exports[`text option > footerText align center 1`] = `
 "┌───────────────┐
 │foo bar foo bar│
 └─────title─────┘"
+`;
+
+exports[`text option > footerText align center with odd remaining border width 1`] = `
+"┌────────┐
+│aaaaaaaa│
+└─title──┘"
 `;
 
 exports[`text option > footerText align left 1`] = `
@@ -79,6 +91,12 @@ exports[`text option > headerText align center 1`] = `
 "┌──── title ────┐
 │foo bar foo bar│
 └───────────────┘"
+`;
+
+exports[`text option > headerText align center with odd remaining border width 1`] = `
+"┌ title ─┐
+│aaaaaaaa│
+└────────┘"
 `;
 
 exports[`text option > headerText align left 1`] = `
