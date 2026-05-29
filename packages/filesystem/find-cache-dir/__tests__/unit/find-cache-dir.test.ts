@@ -1,8 +1,8 @@
 // eslint-disable-next-line unicorn/prevent-abbreviations
-import { chmodSync, constants, mkdtempSync } from "node:fs";
+import { chmodSync, constants, existsSync, mkdtempSync } from "node:fs";
 import { rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { platform } from "node:process";
+import { cwd, platform } from "node:process";
 
 import { ensureDirSync, writeJsonSync } from "@visulima/fs";
 import { dirname, join } from "@visulima/path";
@@ -268,5 +268,57 @@ describe.each<[string, typeof findCacheDirectory | typeof findCacheDirectorySync
                 (function_ as typeof findCacheDirectorySync)("this_dir_will_never_exist", { cwd: "/this_dir_will_never_exist", throwError: true }),
             ).toThrow("ENOENT: No such file or directory found.");
         }
+    });
+
+    it("should return undefined if the root directory could not be found and throwError option is not enabled", async () => {
+        expect.assertions(1);
+
+        let result = function_("this_dir_will_never_exist", { cwd: "/this_dir_will_never_exist" });
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "findCacheDirectory") {
+            result = await result;
+        }
+
+        expect(result).toBeUndefined();
+    });
+
+    it.skipIf(isWindows)("should create the cache directory when the create option is enabled", async () => {
+        expect.assertions(2);
+
+        const testCachePath = join(distribution, "package", "node_modules", ".cache", "test");
+
+        ensureDirSync(join(distribution, "package", "node_modules"));
+        writeJsonSync(join(distribution, "package", "package.json"), {
+            name: "test",
+        });
+
+        let result = function_("test", {
+            create: true,
+            cwd: join(distribution, "package"),
+        });
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "findCacheDirectory") {
+            result = await result;
+        }
+
+        expect(result).toStrictEqual(testCachePath);
+        expect(existsSync(testCachePath)).toBe(true);
+    });
+
+    it("should fall back to the process working directory when no cwd option is provided", async () => {
+        expect.assertions(1);
+
+        delete process.env.CACHE_DIR;
+
+        let result = function_("find-cache-dir-fallback");
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "findCacheDirectory") {
+            result = await result;
+        }
+
+        expect(result).toStrictEqual(join(cwd(), "node_modules", ".cache", "find-cache-dir-fallback"));
     });
 });
