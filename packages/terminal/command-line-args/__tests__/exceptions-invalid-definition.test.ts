@@ -13,6 +13,43 @@ describe("exceptions invalid definition", () => {
         expect(() => commandLineArgs(optionDefinitions, { argv })).toThrow(InvalidDefinitionsError);
     });
 
+    it("throws when definition.name is not a string", () => {
+        expect.assertions(1);
+
+        const optionDefinitions = [{ name: 123 as unknown as string }];
+        const argv = ["--one"];
+
+        expect(() => commandLineArgs(optionDefinitions, { argv })).toThrow("name must be a string");
+    });
+
+    it("throws when definition.name is only whitespace", () => {
+        expect.assertions(1);
+
+        const optionDefinitions = [{ name: "   " }];
+        const argv = ["--one"];
+
+        expect(() => commandLineArgs(optionDefinitions, { argv })).toThrow("name cannot be empty");
+    });
+
+    it("throws when definition.alias is not a string", () => {
+        expect.assertions(1);
+
+        const optionDefinitions = [{ alias: 1 as unknown as string, name: "one" }];
+        const argv = ["--one"];
+
+        expect(() => commandLineArgs(optionDefinitions, { argv })).toThrow("alias must be a string");
+    });
+
+    it("throws when an alias conflicts with an earlier option name", () => {
+        expect.assertions(1);
+
+        // "b" is registered as a name first, then a later definition tries to use "b" as an alias.
+        const optionDefinitions = [{ name: "b" }, { alias: "b", name: "beta" }];
+        const argv = ["--b"];
+
+        expect(() => commandLineArgs(optionDefinitions, { argv })).toThrow("conflicts with an existing option name");
+    });
+
     it("throws if dev set a numeric alias", () => {
         expect.assertions(1);
 

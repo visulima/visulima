@@ -139,6 +139,19 @@ describe("stop at first unknown", () => {
         });
     });
 
+    it("stops at an unknown option even when there are no unconsumed positionals", () => {
+        expect.assertions(1);
+
+        const optionDefinitions = [{ name: "one", type: Boolean }];
+        const argv = ["--one", "--unknown"];
+        const result = commandLineArgs(optionDefinitions, { argv, stopAtFirstUnknown: true });
+
+        expect(result).toStrictEqual({
+            _unknown: ["--unknown"],
+            one: true,
+        });
+    });
+
     it("with short option group should use correct argv index", () => {
         expect.assertions(1);
 

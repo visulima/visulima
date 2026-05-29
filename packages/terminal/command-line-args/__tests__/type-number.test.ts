@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { commandLineArgs } from "../src";
+import { UnknownOptionError } from "../src/errors";
 
 describe("type number", () => {
     it("different values", () => {
@@ -39,5 +40,22 @@ describe("type number", () => {
         expect(result).toStrictEqual({
             array: [1, 2, 3],
         });
+    });
+
+    it("numeric long-option name is captured as the value when a Number option exists", () => {
+        expect.assertions(2);
+
+        const optionDefinitions = [{ name: "size", type: Number }];
+
+        expect(commandLineArgs(optionDefinitions, { argv: ["--5"] })).toStrictEqual({ size: 5 });
+        expect(commandLineArgs(optionDefinitions, { argv: ["--42"] })).toStrictEqual({ size: 42 });
+    });
+
+    it("numeric long-option name throws when no Number option is defined", () => {
+        expect.assertions(1);
+
+        const optionDefinitions = [{ name: "size" }];
+
+        expect(() => commandLineArgs(optionDefinitions, { argv: ["--5"] })).toThrow(UnknownOptionError);
     });
 });
