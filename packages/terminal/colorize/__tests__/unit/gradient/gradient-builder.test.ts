@@ -158,4 +158,115 @@ describe("gradient", () => {
 
         expect(grad.hsv(5).map((color) => color.open + color.close)).toStrictEqual(grad.rgb(5).map((color) => color.open + color.close));
     });
+
+    it("should throw when fewer than two stops are given", () => {
+        expect.assertions(1);
+
+        expect(() => {
+            // eslint-disable-next-line no-new,sonarjs/constructor-for-side-effects
+            new GradientBuilder(colorize, ["red"]);
+        }).toThrow("Invalid number of stops (< 2)");
+    });
+
+    it("should throw when mixing positioned and non-positioned stops", () => {
+        expect.assertions(1);
+
+        expect(() => {
+            // eslint-disable-next-line no-new,sonarjs/constructor-for-side-effects
+            new GradientBuilder(colorize, [{ color: "red", position: 0 }, "blue"]);
+        }).toThrow("Cannot mix positioned and non-positioned color stops");
+    });
+
+    it("should throw when a positioned stop is out of range", () => {
+        expect.assertions(2);
+
+        expect(() => {
+            // eslint-disable-next-line no-new,sonarjs/constructor-for-side-effects
+            new GradientBuilder(colorize, [
+                { color: "red", position: -0.1 },
+                { color: "blue", position: 1 },
+            ]);
+        }).toThrow("Color stops positions must be between 0 and 1");
+
+        expect(() => {
+            // eslint-disable-next-line no-new,sonarjs/constructor-for-side-effects
+            new GradientBuilder(colorize, [
+                { color: "red", position: 0 },
+                { color: "blue", position: 1.5 },
+            ]);
+        }).toThrow("Color stops positions must be between 0 and 1");
+    });
+
+    it("should throw for an invalid color stop", () => {
+        expect.assertions(1);
+
+        expect(() => {
+            // eslint-disable-next-line no-new,sonarjs/constructor-for-side-effects
+            new GradientBuilder(colorize, [{}, {}] as never);
+        }).toThrow("Invalid color stop");
+    });
+
+    it("should accept hex and rgb-object positioned stops", () => {
+        expect.assertions(1);
+
+        const grad = new GradientBuilder(colorize, [
+            { color: "#ff0000", position: 0 },
+            { color: { b: 255, g: 0, r: 0 }, position: 1 },
+        ]);
+
+        expect(grad.stops.map((stop) => stop.color)).toStrictEqual([
+            [255, 0, 0],
+            [0, 0, 255],
+        ]);
+    });
+
+    it("should accept rgb-object non-positioned stops", () => {
+        expect.assertions(1);
+
+        const grad = new GradientBuilder(colorize, [
+            { b: 0, g: 0, r: 255 },
+            { b: 255, g: 0, r: 0 },
+        ]);
+
+        expect(grad.stops.map((stop) => stop.color)).toStrictEqual([
+            [255, 0, 0],
+            [0, 0, 255],
+        ]);
+    });
+
+    it("should accept hex-string non-positioned stops", () => {
+        expect.assertions(1);
+
+        const grad = new GradientBuilder(colorize, ["#ff0000", "#0000ff"]);
+
+        expect(grad.stops.map((stop) => stop.color)).toStrictEqual([
+            [255, 0, 0],
+            [0, 0, 255],
+        ]);
+    });
+
+    it("should pad positioned stops that do not start at 0 or end at 1", () => {
+        expect.assertions(1);
+
+        const grad = new GradientBuilder(colorize, [
+            { color: "red", position: 0.2 },
+            { color: "blue", position: 0.8 },
+        ]);
+
+        expect(grad.stops.map((stop) => stop.position)).toStrictEqual([0, 0.2, 0.8, 1]);
+    });
+
+    it("should interpolate color-less stops in HSV mode", () => {
+        expect.assertions(1);
+
+        const grad = new GradientBuilder(colorize, [{ color: "red", position: 0 }, { position: 0.5 }, { color: "blue", position: 1 }]);
+
+        expect(grad.hsv(5).map((color) => color.open)).toStrictEqual([
+            "[38;2;255;0;0m",
+            "[38;2;255;255;0m",
+            "[38;2;0;255;0m",
+            "[38;2;0;255;255m",
+            "[38;2;0;0;255m",
+        ]);
+    });
 });

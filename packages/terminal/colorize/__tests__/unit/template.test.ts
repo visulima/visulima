@@ -9,9 +9,10 @@
 
 import { describe, expect, it } from "vitest";
 
+import ColorizeImpl from "../../src/colorize.server";
 // @ts-expect-error - this is a test file
 import { blue, magenta, red } from "../../src/index.server.mts";
-import template from "../../src/template";
+import template, { makeTaggedTemplate } from "../../src/template";
 
 describe(template, () => {
     it.each([["stdout", template]])("[%s] should return an empty string for an empty literal", (_, function_) => {
@@ -204,5 +205,44 @@ ${red("there")}`);
 
         expect(function_`hello ${undefined}`).toBe("hello undefined");
         expect(function_`hello ${null}`).toBe("hello null");
+    });
+
+    it.each([["stdout", template]])(`[%s] should parse quoted string style arguments`, (_, function_) => {
+        expect.assertions(1);
+
+        // A quoted, non-numeric argument exercises the string-argument parsing branch.
+        expect(function_`{rgb('zz',0,0) hi}`).toBe("[38;2;NaN;0;0mhi[39m");
+    });
+
+    it.each([["stdout", template]])(`[%s] should decode escapes inside quoted string style arguments`, (_, function_) => {
+        expect.assertions(1);
+
+        expect(function_`{rgb('a\tb') hi}`).toBe("[38;2;NaN;NaN;NaNmhi[39m");
+    });
+
+    it.each([["stdout", template]])(`[%s] should throw for an unparsable style argument`, (_, function_) => {
+        expect.assertions(1);
+
+        expect(() => {
+            function_`{rgb(zz) hi}`;
+        }).toThrow("Invalid template style argument: zz (in style 'rgb')");
+    });
+
+    it.each([["stdout", template]])(`[%s] should throw when not used as a tagged template literal`, (_, function_) => {
+        expect.assertions(1);
+
+        expect(() => {
+            (function_ as unknown as (value: string) => string)("not a tagged template");
+        }).toThrow("A tagged template literal must be provided");
+    });
+});
+
+describe(makeTaggedTemplate, () => {
+    it("should build a tagged template renderer bound to a colorize instance", () => {
+        expect.assertions(1);
+
+        const tagged = makeTaggedTemplate(new ColorizeImpl());
+
+        expect(tagged`{red hi}`).toBe("[31mhi[39m");
     });
 });
