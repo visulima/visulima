@@ -668,4 +668,86 @@ describe(postmarkProvider, () => {
             expect(result.error).toBeDefined();
         });
     });
+
+    describe("branch coverage", () => {
+        it("should send a text-only email with logger, templateId without model, empty headers, and generated message id", async () => {
+            expect.assertions(2);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock
+                .mockResolvedValueOnce({ data: { statusCode: 200 }, success: true })
+                .mockResolvedValueOnce({ data: { body: {}, statusCode: 200 }, success: true });
+
+            const logger = { debug: vi.fn(), error: vi.fn(), info: vi.fn(), log: vi.fn(), warn: vi.fn() } as unknown as Console;
+            const provider = postmarkProvider({ logger, serverToken: "test123" });
+
+            const result = await provider.sendEmail({
+                from: { email: "sender@example.com" },
+                headers: {},
+                subject: "Test",
+                templateId: 999,
+                text: "plain text",
+                to: { email: "user@example.com" },
+            } as PostmarkEmailOptions);
+
+            expect(result.success).toBe(true);
+            expect(result.data?.messageId).toBeDefined();
+        });
+
+        it("should send with a templateAlias but no templateModel", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock
+                .mockResolvedValueOnce({ data: { statusCode: 200 }, success: true })
+                .mockResolvedValueOnce({ data: { body: { MessageID: "ta-1" }, statusCode: 200 }, success: true });
+
+            const provider = postmarkProvider({ serverToken: "test123" });
+
+            const result = await provider.sendEmail({
+                from: { email: "sender@example.com" },
+                html: "<h1>Hi</h1>",
+                subject: "Test",
+                templateAlias: "welcome",
+                to: { email: "user@example.com" },
+            } as PostmarkEmailOptions);
+
+            expect(result.success).toBe(true);
+        });
+
+        it("should report an unknown error when getEmail fails with a non-Error", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValueOnce({ data: { statusCode: 200 }, success: true }).mockResolvedValueOnce({ error: "string failure", success: false });
+
+            const provider = postmarkProvider({ serverToken: "test123" });
+
+            const result = await provider.getEmail?.("msg-1");
+
+            expect(result?.success).toBe(false);
+        });
+
+        it("should return a default error when send fails without an error", async () => {
+            expect.assertions(1);
+
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
+            makeRequestMock.mockResolvedValueOnce({ data: { statusCode: 200 }, success: true }).mockResolvedValueOnce({ success: false });
+
+            const provider = postmarkProvider({ serverToken: "test123" });
+
+            const result = await provider.sendEmail({
+                from: { email: "sender@example.com" },
+                html: "<h1>Hi</h1>",
+                subject: "Test",
+                to: { email: "user@example.com" },
+            });
+
+            expect(result.success).toBe(false);
+        });
+    });
 });
