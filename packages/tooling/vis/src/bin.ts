@@ -30,6 +30,7 @@ import dlxCommand from "./commands/dlx";
 import dockerCommand from "./commands/docker";
 import doctorCommand from "./commands/doctor";
 import execCommand from "./commands/exec";
+import fmtCommand from "./commands/fmt";
 import generateCommand from "./commands/generate";
 import graphCommand from "./commands/graph";
 import hookCommands from "./commands/hook";
@@ -41,6 +42,7 @@ import inspectCommand from "./commands/inspect";
 import installCommand from "./commands/install";
 import depsCommand from "./commands/deps";
 import linkCommand from "./commands/link";
+import lintCommand from "./commands/lint";
 import listCommand from "./commands/list";
 import migrateCommands from "./commands/migrate";
 import { isBareMigrateInvocation } from "./commands/migrate/detect-bare";
@@ -190,6 +192,10 @@ cli.addCommand(listCommand);
 cli.addCommand(toolchainCommand);
 cli.addCommand(completionCommand);
 cli.addCommand(versionCommand);
+
+// Lint & format commands
+cli.addCommand(lintCommand);
+cli.addCommand(fmtCommand);
 
 // Package management commands
 cli.addCommand(installCommand);
