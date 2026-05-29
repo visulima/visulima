@@ -54,6 +54,26 @@ describe(isDisposableEmail, () => {
             expect(isDisposableEmail("  user@10minutemail.com  ")).toBe(true);
             expect(isDisposableEmail("\tuser@10minutemail.com\n")).toBe(true);
         });
+
+        it("should match subdomains against parent disposable domains (wildcard)", () => {
+            expect.assertions(3);
+            // `33mail.com` is in the list but `sub.33mail.com` is not, so the
+            // parent-domain wildcard loop must resolve the match.
+            expect(isDisposableEmail("user@sub.33mail.com")).toBe(true);
+            expect(isDisposableEmail("user@a.b.10minutemail.com")).toBe(true);
+            // A subdomain of a non-disposable parent must still be false.
+            expect(isDisposableEmail("user@sub.example.com")).toBe(false);
+        });
+
+        it("should match subdomains against custom parent domains is not implied", () => {
+            expect.assertions(2);
+
+            const customDomains = new Set(["custom-disposable.com"]);
+
+            // Custom domains only match exactly, not via the wildcard parent loop.
+            expect(isDisposableEmail("user@custom-disposable.com", customDomains)).toBe(true);
+            expect(isDisposableEmail("user@sub.custom-disposable.com", customDomains)).toBe(false);
+        });
     });
 
     describe(areDisposableEmails, () => {
