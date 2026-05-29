@@ -59,6 +59,9 @@ describe.each([
         ["explicit undefined retryDelay", { retryDelay: undefined }],
         ["explicit undefined maxRetries", { maxRetries: undefined }],
         ["both undefined", { maxRetries: undefined, retryDelay: undefined }],
+        ["defined maxRetries", { maxRetries: 2 }],
+        ["defined retryDelay", { retryDelay: 5 }],
+        ["both defined", { maxRetries: 1, retryDelay: 1 }],
     ])("should remove a directory when options carry undefined retry fields (%s)", async (_, options) => {
         expect.assertions(1);
 

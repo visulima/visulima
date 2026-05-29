@@ -323,4 +323,94 @@ describe(walk, () => {
             rmSync(temporaryDirectory, { recursive: true });
         }
     });
+
+    it("should expose entry type methods on a yielded symlink entry", async () => {
+        expect.assertions(3);
+
+        const temporaryDirectory = resolve(fixture, "_tmp_symlink_methods_test");
+
+        await mkdir(temporaryDirectory, { recursive: true });
+        await writeFile(resolve(temporaryDirectory, "real-file.txt"), "hello");
+        await symlink(resolve(temporaryDirectory, "real-file.txt"), resolve(temporaryDirectory, "link-to-file.txt"));
+
+        try {
+            const entries = await getEntries(temporaryDirectory, { includeSymlinks: true });
+            const symlinkEntry = entries.find((entry) => entry.path === resolve(temporaryDirectory, "link-to-file.txt"));
+
+            // Invoking the lazy type predicates exercises the symlink-entry closures.
+            expect(symlinkEntry?.isSymbolicLink()).toBe(true);
+            expect(symlinkEntry?.isFile()).toBe(false);
+            expect(symlinkEntry?.isDirectory()).toBe(false);
+        } finally {
+            await rm(temporaryDirectory, { recursive: true });
+        }
+    });
+
+    it("should resolve a directory symlink target when followSymlinks is true", async () => {
+        expect.assertions(2);
+
+        const temporaryDirectory = resolve(fixture, "_tmp_follow_symlink_dir_test");
+
+        await mkdir(resolve(temporaryDirectory, "real-dir"), { recursive: true });
+        await writeFile(resolve(temporaryDirectory, "real-dir", "inner.txt"), "hello");
+        await symlink(resolve(temporaryDirectory, "real-dir"), resolve(temporaryDirectory, "link-to-dir"));
+
+        try {
+            const entries = await getEntries(temporaryDirectory, { followSymlinks: true });
+            const paths = entries.map(({ path }) => path);
+
+            // With followSymlinks the link is resolved to its real directory target and recursed into.
+            expect(paths).toContain(resolve(temporaryDirectory, "real-dir", "inner.txt"));
+            // The resolved real target appears (the symlink path itself is replaced by realpath).
+            expect(paths.some((path) => path.endsWith("inner.txt"))).toBe(true);
+        } finally {
+            await rm(temporaryDirectory, { recursive: true });
+        }
+    });
+
+    it("should skip a symlink entry when includeSymlinks is false and followSymlinks is false", async () => {
+        expect.assertions(2);
+
+        const temporaryDirectory = resolve(fixture, "_tmp_skip_symlink_test");
+
+        await mkdir(temporaryDirectory, { recursive: true });
+        await writeFile(resolve(temporaryDirectory, "real-file.txt"), "hello");
+        await symlink(resolve(temporaryDirectory, "real-file.txt"), resolve(temporaryDirectory, "link-to-file.txt"));
+
+        try {
+            const entries = await getEntries(temporaryDirectory, { followSymlinks: false, includeSymlinks: false });
+            const paths = entries.map(({ path }) => path);
+
+            expect(paths).toContain(resolve(temporaryDirectory, "real-file.txt"));
+            expect(paths).not.toContain(resolve(temporaryDirectory, "link-to-file.txt"));
+        } finally {
+            await rm(temporaryDirectory, { recursive: true });
+        }
+    });
+
+    it("walkSync should expose entry type methods on a yielded symlink entry", () => {
+        expect.assertions(3);
+
+        const temporaryDirectory = resolve(fixture, "_tmp_symlink_methods_sync_test");
+
+        mkdirSync(temporaryDirectory, { recursive: true });
+        writeFileSync(resolve(temporaryDirectory, "real-file.txt"), "hello");
+        symlinkSync(resolve(temporaryDirectory, "real-file.txt"), resolve(temporaryDirectory, "link-to-file.txt"));
+
+        try {
+            const entries: WalkEntry[] = [];
+
+            for (const entry of walkSync(temporaryDirectory, { includeSymlinks: true })) {
+                entries.push(entry);
+            }
+
+            const symlinkEntry = entries.find((entry) => entry.path === resolve(temporaryDirectory, "link-to-file.txt"));
+
+            expect(symlinkEntry?.isSymbolicLink()).toBe(true);
+            expect(symlinkEntry?.isFile()).toBe(false);
+            expect(symlinkEntry?.isDirectory()).toBe(false);
+        } finally {
+            rmSync(temporaryDirectory, { recursive: true });
+        }
+    });
 });

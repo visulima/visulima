@@ -73,6 +73,21 @@ describe.each([
         }
     });
 
+    it("should throw when the destination exists and overwrite is false", async () => {
+        expect.assertions(1);
+
+        const destination = join(distribution, "existing-destination.txt");
+
+        await writeFile(destination, "already here", "utf8");
+
+        try {
+            await function_(distributionFile, destination, { overwrite: false });
+        } catch (error: unknown) {
+            // eslint-disable-next-line vitest/no-conditional-expect
+            expect((error as Error).message).toBe(`The destination file exists: ${destination}`);
+        }
+    });
+
     it("should move a file with the `cwd` option", async () => {
         expect.assertions(1);
 

@@ -348,6 +348,61 @@ describe(sanitize, () => {
         });
     });
 
+    describe("darwin filesystem", () => {
+        it("should treat darwin like unix (forbidden chars not replaced)", () => {
+            expect.assertions(2);
+
+            // On darwin only "/" is forbidden, like unix.
+            expect(sanitize("file:name.txt", { filesystem: "darwin" })).toBe("file:name.txt");
+            expect(sanitize("h?w", { filesystem: "darwin" })).toBe("h?w");
+        });
+    });
+
+    describe("windows trailing-trim edge cases", () => {
+        it("should return the extension when a windows base name trims to empty", () => {
+            expect.assertions(1);
+
+            // "...txt": the base part ".." trims away, leaving just the extension.
+            expect(sanitize("...txt", { filesystem: "win32" })).toBe("txt");
+        });
+
+        it("should return fallback when a windows name trims to empty", () => {
+            expect.assertions(1);
+
+            // Whitespace-only collapses to empty after trimming on win32.
+            expect(sanitize("   ", { filesystem: "win32" })).toBe("unnamed");
+        });
+
+        it("should return fallback for a reserved name exposed only after trailing-space trim", () => {
+            expect.assertions(1);
+
+            // "con " is not matched before trimming, but becomes the reserved "con" afterwards.
+            expect(sanitize("con ", { filesystem: "win32" })).toBe("unnamed");
+        });
+    });
+
+    describe("fat32 trailing-trim edge cases", () => {
+        it("should return fallback when the fat32 base name trims to empty (with extension)", () => {
+            expect.assertions(1);
+
+            expect(sanitize("  . .txt", { filesystem: "fat32" })).toBe("unnamed");
+        });
+
+        it("should return fallback when a fat32 name without extension trims to empty", () => {
+            expect.assertions(1);
+
+            expect(sanitize(" . . . ", { filesystem: "fat32" })).toBe("unnamed");
+        });
+    });
+
+    describe("zero max length", () => {
+        it("should return fallback when truncation produces an empty string", () => {
+            expect.assertions(1);
+
+            expect(sanitize("abc", { maxLength: 0 })).toBe("unnamed");
+        });
+    });
+
     describe("invalid input", () => {
         it("should return fallback for non-string input", () => {
             expect.assertions(1);

@@ -33,6 +33,14 @@ describe.each([
         expect(result.toString()).toBe(`hello world!${isWindows ? "\r\n" : "\n"}`);
     });
 
+    it("should read with an explicit flag option", async () => {
+        expect.assertions(1);
+
+        const result = await function_(join(fixturePath, "text.md"), { flag: "r" });
+
+        expect(result).toBe(`hello world!${isWindows ? "\r\n" : "\n"}`);
+    });
+
     it("should throw a error on a missing file", async () => {
         expect.assertions(1);
 
