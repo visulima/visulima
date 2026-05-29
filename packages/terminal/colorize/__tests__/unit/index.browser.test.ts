@@ -141,6 +141,15 @@ describe("functional tests", () => {
         expect(received).toStrictEqual(expected);
     });
 
+    it(`should return the input unchanged from strip()`, () => {
+        expect.assertions(1);
+
+        const received = colorize.strip("foo");
+        const expected = "foo";
+
+        expect(received).toStrictEqual(expected);
+    });
+
     it(`should colorize nested styles`, () => {
         expect.assertions(1);
 
@@ -295,6 +304,24 @@ describe("colorize class tests", () => {
 
         const received = new Colorize().red("foo");
         const expected = ["%cfoo", "color: red;"];
+
+        expect(received).toStrictEqual(expected);
+    });
+
+    it(`should re-wrap a pre-formatted %c string with collected styles`, () => {
+        expect.assertions(1);
+
+        const received = colorize.red("%cfoo,color: blue;");
+        const expected = ["%c%cfoo", "color: red;", "color: blue;"];
+
+        expect(received).toStrictEqual(expected);
+    });
+
+    it(`should re-wrap a pre-formatted %c string without collected styles`, () => {
+        expect.assertions(1);
+
+        const received = colorize.red("%cfoo");
+        const expected = ["%c%cfoo", "color: red;"];
 
         expect(received).toStrictEqual(expected);
     });

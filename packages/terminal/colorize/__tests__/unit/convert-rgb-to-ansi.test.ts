@@ -140,6 +140,15 @@ describe("convert ANSI 256 to ANSI 16", () => {
 
         expect(received).toStrictEqual(expected);
     });
+
+    it(`ansi256To16(16) -> black (zero luminance)`, () => {
+        expect.assertions(1);
+
+        const received = ansi256To16(16);
+        const expected = 30;
+
+        expect(received).toStrictEqual(expected);
+    });
 });
 
 describe("convert RGB to ANSI 16", () => {
