@@ -2,6 +2,7 @@ import type { Server } from "@hapi/hapi";
 import Hapi from "@hapi/hapi";
 // eslint-disable-next-line import/no-named-as-default -- @koa/router exposes Router as both default and named export; using the default is the documented pattern
 import Router from "@koa/router";
+import { resolve } from "@visulima/path";
 // eslint-disable-next-line e18e/ban-dependencies -- express is required to test the express adapter; replacement migration is out of scope for the test
 import type { Express } from "express";
 // eslint-disable-next-line e18e/ban-dependencies -- express is required to test the express adapter; replacement migration is out of scope for the test
@@ -12,6 +13,9 @@ import Koa from "koa";
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { getRoutes } from "../../../../../src/framework/cli/command/list/get-routes";
+
+const fixturesRoot = resolve(__dirname, "../../../../../", "__fixtures__");
+const nextFixturesPath = resolve(fixturesRoot, "collect");
 
 describe(getRoutes, () => {
     describe(express, () => {
@@ -153,6 +157,33 @@ describe(getRoutes, () => {
             const actualRoutesMap = await getRoutes(app, "fastify", false);
 
             expect(actualRoutesMap).toMatchSnapshot();
+        });
+    });
+
+    describe("next", () => {
+        it("should collect and parse next pages/api routes", async () => {
+            expect.assertions(2);
+
+            const routes = await getRoutes(resolve(nextFixturesPath, "pages-example"), "next", false);
+
+            expect(routes).not.toBeNull();
+            expect((routes ?? []).length).toBeGreaterThan(0);
+        });
+
+        it("should throw when no next api routes are found", async () => {
+            expect.assertions(1);
+
+            await expect(getRoutes(resolve(fixturesRoot, "framework/express"), "next", false)).rejects.toThrow("No API routes found");
+        });
+    });
+
+    describe("unknown", () => {
+        it("should return null for an unsupported framework", async () => {
+            expect.assertions(1);
+
+            const routes = await getRoutes("", "unknown", false);
+
+            expect(routes).toBeNull();
         });
     });
 });

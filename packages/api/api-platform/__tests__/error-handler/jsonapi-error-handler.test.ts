@@ -56,4 +56,26 @@ describe("jsonapi-error-handler", () => {
         // eslint-disable-next-line no-underscore-dangle
         expect(res._getData()).toBe("{\"errors\":[{\"code\":\"500\",\"title\":\"Internal Server Error\"}]}");
     });
+
+    it("should serialize a real JapiError instance through the ErrorSerializer branch", async () => {
+        expect.assertions(2);
+
+        const { req, res } = createMocks({
+            method: "GET",
+        });
+
+        const error = new tsJapi.JapiError({
+            detail: "I am a teapot",
+            status: "418",
+            title: "Teapot",
+        });
+
+        await jsonapiErrorHandler(error, req, res);
+
+        // eslint-disable-next-line no-underscore-dangle
+        const data = JSON.parse(res._getData() as string) as { errors: { detail: string; status: string; title: string }[] };
+
+        expect(data.errors[0]?.title).toBe("Teapot");
+        expect(data.errors[0]?.detail).toBe("I am a teapot");
+    });
 });
