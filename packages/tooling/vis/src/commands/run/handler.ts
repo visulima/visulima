@@ -91,6 +91,8 @@ interface PersistentTasksLifecycleHooks {
     /** Resolves when the TUI exits (user pressed `q`/Ctrl+C); triggers an abort. */
     abortSignal?: Promise<void>;
     lifeCycle: LifeCycleInterface;
+    /** Registry of writable stdin entries keyed by task ID, for interactive PTY input. */
+    stdinRegistry?: Map<string, StdinEntry>;
     store: TaskStore;
 }
 
@@ -131,11 +133,26 @@ const runPersistentTasks = async (
                     : {};
             const serviceEnv = serviceEnvByTaskId?.get(task.id) ?? {};
 
+            // Persistent tasks are dev servers / watchers. Under the live
+            // TUI run them through a PTY by default so TTY-aware CLIs
+            // (convex, vite, next, …) emit their full interactive output
+            // instead of detecting a pipe and going quiet — only the first
+            // unconditional line would otherwise reach us. Opt out with
+            // `visOptions.pty: false`. The non-TUI path keeps pipe mode:
+            // there's no terminal to emulate and output is line-oriented.
+            const usePty = Boolean(lifecycleHooks) && visOptions?.pty !== false;
+
             return {
                 command,
                 cwd,
                 env: { INIT_CWD: initCwd, ...envFileVars, ...serviceEnv, ...affectedEnv },
                 name: task.id,
+                ...(usePty
+                    ? {
+                        ptySize: { cols: process.stdout.columns ?? 80, rows: process.stdout.rows ?? 24 },
+                        stdin: "pty" as const,
+                    }
+                    : {}),
             };
         })
         .filter((c): c is NonNullable<typeof c> => c !== undefined);
@@ -156,12 +173,34 @@ const runPersistentTasks = async (
         return;
     }
 
-    const { abortSignal, lifeCycle, store } = lifecycleHooks;
+    const { abortSignal, lifeCycle, stdinRegistry, store } = lifecycleHooks;
     // Map runConcurrently's positional `index` back to the originating
     // Task — runConcurrently doesn't echo `name` on stdout/stderr/started
     // events, only on `close`. Keeping a parallel array preserves the
     // ordering invariant without trusting per-event metadata.
     const runnableTasks = commands.map((c) => tasks.find((t) => t.id === c.name)!).filter(Boolean);
+
+    // PTY tasks emit raw ANSI (cursor moves, in-place spinner redraws) as a
+    // single merged stdout stream. Feed each through its own TerminalBuffer
+    // so `toString()` yields a normalized frame, then REPLACE the stored
+    // output (`setOutput`) rather than appending — the buffer already holds
+    // the full accumulated frame. Pipe-mode tasks keep the line-append path.
+    const isPtyIndex = (index: number): boolean => (commands[index] as { stdin?: string } | undefined)?.stdin === "pty";
+    const termBuffers = new Map<number, TerminalBuffer>();
+    const getTermBuffer = (index: number): TerminalBuffer | undefined => {
+        if (!isPtyIndex(index)) {
+            return undefined;
+        }
+
+        let buf = termBuffers.get(index);
+
+        if (!buf) {
+            buf = new TerminalBuffer(MAX_OUTPUT_BYTES);
+            termBuffers.set(index, buf);
+        }
+
+        return buf;
+    };
 
     // The orchestrator already called endCommand() → markDone() on the
     // store; reverse it so the TUI keeps the task table visible while
@@ -255,11 +294,19 @@ const runPersistentTasks = async (
                             },
                         ]);
                         killHandles.delete(event.index);
+                        stdinRegistry?.delete(task.id);
                         break;
                     }
                     case "error": {
                         if (event.message) {
-                            store.addOutput(task.id, `${event.message}\n`);
+                            const buf = getTermBuffer(event.index);
+
+                            if (buf) {
+                                buf.write(`${event.message}\n`);
+                                store.setOutput(task.id, buf.toString());
+                            } else {
+                                store.addOutput(task.id, `${event.message}\n`);
+                            }
                         }
 
                         break;
@@ -271,12 +318,26 @@ const runPersistentTasks = async (
                             killHandles.set(event.index, event.kill);
                         }
 
+                        // PTY tasks expose write/resize so the user can
+                        // type into the dev server (e.g. vite's `r` to
+                        // restart) once the task panel is focused.
+                        if (event.write && stdinRegistry) {
+                            stdinRegistry.set(task.id, { kill: event.kill, resize: event.resize, write: event.write });
+                        }
+
                         break;
                     }
                     case "stderr":
                     case "stdout": {
                         if (event.text) {
-                            store.addOutput(task.id, `${event.text}\n`);
+                            const buf = getTermBuffer(event.index);
+
+                            if (buf) {
+                                buf.write(event.text);
+                                store.setOutput(task.id, buf.toString());
+                            } else {
+                                store.addOutput(task.id, `${event.text}\n`);
+                            }
                         }
 
                         break;
@@ -2291,6 +2352,7 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
                             {
                                 abortSignal,
                                 lifeCycle,
+                                stdinRegistry,
                                 store,
                             },
                             serviceEnvByTaskId,
