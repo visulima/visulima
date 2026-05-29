@@ -1,3 +1,14 @@
+## @visulima/cerebro [3.0.0-alpha.29](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.28...@visulima/cerebro@3.0.0-alpha.29) (2026-05-29)
+
+### Tests
+
+* improve coverage across packages ([91bd6d3](https://github.com/visulima/visulima/commit/91bd6d3b61736e3c8bd1fc59b0b5955f76a5d323))
+
+
+### Dependencies
+
+* **@visulima/pail:** upgraded to 4.0.0-alpha.19
+
 ## @visulima/cerebro [3.0.0-alpha.28](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.27...@visulima/cerebro@3.0.0-alpha.28) (2026-05-27)
 
 ### Features
