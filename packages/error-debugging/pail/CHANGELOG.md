@@ -1,3 +1,33 @@
+## @visulima/pail [4.0.0-alpha.19](https://github.com/visulima/visulima/compare/@visulima/pail@4.0.0-alpha.18...@visulima/pail@4.0.0-alpha.19) (2026-05-29)
+
+### Bug Fixes
+
+* **pail:** create rotating-file-stream factory in immediate mode ([a72ac70](https://github.com/visulima/visulima/commit/a72ac70cfd6df3e738568f6479031265ebae95af))
+
+### Tests
+
+* **pail:** cover browser logger scope, timers, groups, raw, and reporter paths ([7b1ba52](https://github.com/visulima/visulima/commit/7b1ba52e5c14bfd638870eac668e66f6015560e3))
+* **pail:** cover browser pretty reporter console and DOM formatting paths ([f8c1742](https://github.com/visulima/visulima/commit/f8c17424e90a80aa1a51393cc2740c8a4e404bb2))
+* **pail:** cover browser wrapConsole rewrap, processless exception, and throttle resolve ([b28e8fa](https://github.com/visulima/visulima/commit/b28e8fa3d7040d170a92d80435ea87df68ddaff6))
+* **pail:** cover http reporter data/rest payload, force-send, and batch errors ([d00c4cc](https://github.com/visulima/visulima/commit/d00c4cc85e091fbcd54477e6299b1db2e68842a0))
+* **pail:** cover http reporter error and batch edge paths ([fceb9f5](https://github.com/visulima/visulima/commit/fceb9f5daa72d922e2167ed462cbc98c73783726))
+* **pail:** cover middleware fallbacks, storage throw, and reporter edge branches ([25cc807](https://github.com/visulima/visulima/commit/25cc807bc4f97f93a4e3316ffbb2bf2caa75120f))
+* **pail:** cover middleware route glob patterns for mid and trailing ** ([9b5da54](https://github.com/visulima/visulima/commit/9b5da54e40fbb560e7f2590aa947333cfc5376b2))
+* **pail:** cover next and elysia middleware exclude/include and emit guards ([c75e359](https://github.com/visulima/visulima/commit/c75e359c61c81e82fe770d355f9097bc48c93341))
+* **pail:** cover object-tree option validation and safe stream handler ([3efeda2](https://github.com/visulima/visulima/commit/3efeda2b1137edb5c2715f670f4237cb4f17b1bc))
+* **pail:** cover object-tree sort fallback branch ([6e7c68f](https://github.com/visulima/visulima/commit/6e7c68f8e131a0aef198788f07f11d902e26179d))
+* **pail:** cover pretty browser date, badge, message, and context branches ([a05a7ba](https://github.com/visulima/visulima/commit/a05a7baafd981143b46c42df017ae560e6f93e9c))
+* **pail:** cover pretty reporter interactive, context, error, and caller paths ([8fdd0cc](https://github.com/visulima/visulima/commit/8fdd0cce3b6f6277127009f24a696f3aeecbd704))
+* **pail:** cover pretty server group, nameless file, and empty message ([0552536](https://github.com/visulima/visulima/commit/0552536137b80a94af8c4e8def14499a3b2a7385))
+* **pail:** cover reporter utils, raw object/interactive paths, and json context ([f7e228c](https://github.com/visulima/visulima/commit/f7e228cefaa0b17e4b114779a7286dc1b9da3bee))
+* **pail:** cover retry throws without onError for client and retryable errors ([776ab80](https://github.com/visulima/visulima/commit/776ab80c1c5d7c962329b46d0fca8678d4417474))
+* **pail:** cover server child overrides and stream wrap ([2e30e6f](https://github.com/visulima/visulima/commit/2e30e6f8190873ef9e794d1ad2af5230a054ef6e))
+* **pail:** cover server child scope, wrap/clear, and reporter extension paths ([c4abf3f](https://github.com/visulima/visulima/commit/c4abf3fc65265a9ba9d372922557d914f13ff0f8))
+* **pail:** cover server/browser entry points and default log level resolution ([c1c34f6](https://github.com/visulima/visulima/commit/c1c34f66f5c29b52d46471d858cc6d0f75bb9384))
+* **pail:** cover simple reporter and message formatter ([31d7d1e](https://github.com/visulima/visulima/commit/31d7d1e58406445093266ce89b1fb187da71ef92))
+* **pail:** cover simple reporter interactive, context, error, and caller paths ([d75bd5f](https://github.com/visulima/visulima/commit/d75bd5fcae40e5a0c072871c2061cc034c608166))
+* **pail:** cover wide-event duration seconds and stackless error ([56cf694](https://github.com/visulima/visulima/commit/56cf694a9011c40263d39a451f53b6940883807e))
+
 ## @visulima/pail [4.0.0-alpha.18](https://github.com/visulima/visulima/compare/@visulima/pail@4.0.0-alpha.17...@visulima/pail@4.0.0-alpha.18) (2026-05-27)
 
 ### Bug Fixes
