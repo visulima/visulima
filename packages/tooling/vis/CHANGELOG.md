@@ -1,3 +1,20 @@
+## @visulima/vis [1.0.0-alpha.26](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.25...@visulima/vis@1.0.0-alpha.26) (2026-05-29)
+
+### Bug Fixes
+
+* **vis:** isolate git env vars in staged integration tests ([18900a1](https://github.com/visulima/visulima/commit/18900a126bfb16f6d70ab81cbe5248720b03ac40))
+* **vis:** run persistent tasks under a PTY in the live TUI ([77b2a26](https://github.com/visulima/visulima/commit/77b2a263b9563f8ee894671f910e013f2c95077a))
+
+### Tests
+
+* **vis:** assert index excludes unstaged hunk on modify ([371063e](https://github.com/visulima/visulima/commit/371063ebc5fb2c4a90a3aa3cb377fdcc3d2d34ea))
+
+
+### Dependencies
+
+* **@visulima/cerebro:** upgraded to 3.0.0-alpha.29
+* **@visulima/pail:** upgraded to 4.0.0-alpha.19
+
 ## @visulima/vis [1.0.0-alpha.25](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.24...@visulima/vis@1.0.0-alpha.25) (2026-05-27)
 
 ### Features
