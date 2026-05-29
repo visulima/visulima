@@ -1,5 +1,8 @@
+import { mkdtempSync, writeFileSync } from "node:fs";
 import type { IncomingMessage, RequestListener, ServerResponse } from "node:http";
 import { createServer, get as httpGet } from "node:http";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 import { describe, expect, expectTypeOf, it, vi } from "vitest";
 
@@ -281,6 +284,167 @@ describe("server middleware", () => {
             const next = vi.fn();
 
             await middleware(mockRequest, mockResponse, next);
+
+            expect(mockResponse.statusCode).toBe(400);
+        });
+
+        it("uses the Express-style status().send() responder when available", async () => {
+            expect.assertions(2);
+
+            const middleware = createOpenInEditorMiddleware();
+
+            const mockRequest = {
+                method: "GET",
+                url: "/?line=10",
+            } as any;
+
+            // eslint-disable-next-line vitest/require-mock-type-parameters
+            const send = vi.fn();
+            // eslint-disable-next-line vitest/require-mock-type-parameters
+            const status = vi.fn(() => {
+                return { send };
+            });
+
+            const mockResponse = { status } as any;
+
+            await middleware(mockRequest, mockResponse);
+
+            expect(status).toHaveBeenCalledWith(400);
+            expect(send).toHaveBeenCalledWith("Failed to open editor");
+        });
+
+        it("treats an empty POST body as an empty payload", async () => {
+            expect.assertions(1);
+
+            const middleware = createOpenInEditorMiddleware();
+
+            const mockRequest = {
+                method: "POST",
+                // eslint-disable-next-line vitest/require-mock-type-parameters
+                on: vi.fn((event, callback) => {
+                    if (event === "data") {
+                        callback("");
+                    }
+
+                    if (event === "end") {
+                        callback();
+                    }
+                }),
+                url: "/",
+            } as any;
+
+            const mockResponse = {
+                // eslint-disable-next-line vitest/require-mock-type-parameters
+                end: vi.fn(),
+                statusCode: 200,
+            } as any;
+
+            await middleware(mockRequest, mockResponse);
+
+            expect(mockResponse.statusCode).toBe(400);
+        });
+
+        it("resolves to an empty payload when the request emits an error event", async () => {
+            expect.assertions(1);
+
+            const middleware = createOpenInEditorMiddleware();
+
+            const mockRequest = {
+                method: "POST",
+                // eslint-disable-next-line vitest/require-mock-type-parameters
+                on: vi.fn((event, callback) => {
+                    if (event === "error") {
+                        callback(new Error("socket error"));
+                    }
+                }),
+                url: "/",
+            } as any;
+
+            const mockResponse = {
+                // eslint-disable-next-line vitest/require-mock-type-parameters
+                end: vi.fn(),
+                statusCode: 200,
+            } as any;
+
+            await middleware(mockRequest, mockResponse);
+
+            expect(mockResponse.statusCode).toBe(400);
+        });
+
+        it("defaults to a GET request when no method is provided", async () => {
+            expect.assertions(1);
+
+            const middleware = createOpenInEditorMiddleware();
+
+            const mockRequest = {
+                url: "/?file=/test.js",
+            } as any;
+
+            const mockResponse = {
+                // eslint-disable-next-line vitest/require-mock-type-parameters
+                end: vi.fn(),
+                statusCode: 200,
+            } as any;
+
+            // eslint-disable-next-line vitest/require-mock-type-parameters
+            const next = vi.fn();
+
+            await middleware(mockRequest, mockResponse, next);
+
+            // /test.js is outside the cwd project root, so it is rejected.
+            expect(mockResponse.statusCode).toBe(400);
+        });
+
+        it("honors a project root that already ends with a path separator", async () => {
+            expect.assertions(1);
+
+            const middleware = createOpenInEditorMiddleware({
+                allowOutsideProject: false,
+                projectRoot: "/project/",
+            });
+
+            const mockRequest = {
+                method: "GET",
+                url: "/?file=/outside/test.js&line=10",
+            } as any;
+
+            const mockResponse = {
+                // eslint-disable-next-line vitest/require-mock-type-parameters
+                end: vi.fn(),
+                statusCode: 200,
+            } as any;
+
+            await middleware(mockRequest, mockResponse);
+
+            expect(mockResponse.statusCode).toBe(400);
+        });
+
+        it("rejects a real file that resolves outside the real project root", async () => {
+            expect.assertions(1);
+
+            const projectRoot = mkdtempSync(join(tmpdir(), "ono-open-root-"));
+            const outsideDirectory = mkdtempSync(join(tmpdir(), "ono-open-outside-"));
+            const outsideFile = join(outsideDirectory, "secret.js");
+
+            writeFileSync(outsideFile, "export const x = 1;");
+
+            const middleware = createOpenInEditorMiddleware({
+                allowOutsideProject: false,
+                projectRoot,
+            });
+
+            const mockRequest = {
+                method: "GET",
+                url: `/?file=${encodeURIComponent(outsideFile)}&line=1`,
+            } as any;
+
+            const mockResponse = {
+                // eslint-disable-next-line vitest/require-mock-type-parameters
+                end: vi.fn(),
+                statusCode: 200,
+            } as any;
+
+            await middleware(mockRequest, mockResponse);
 
             expect(mockResponse.statusCode).toBe(400);
         });
