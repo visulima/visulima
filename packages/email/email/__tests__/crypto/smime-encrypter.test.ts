@@ -476,6 +476,54 @@ describe(SmimeEncrypter, () => {
             expect(encrypted.text).toBeDefined();
         });
 
+        it("should use the aes128 alias algorithm", async () => {
+            expect.assertions(1);
+
+            vi.mocked(readFile).mockResolvedValue(TEST_CERTIFICATE);
+
+            const options: SmimeEncryptOptions = {
+                algorithm: "aes128",
+                certificates: "/path/to/certificate.crt",
+            };
+
+            const email: EmailOptions = {
+                from: { email: "sender@example.com" },
+                html: "<h1>Test</h1>",
+                subject: "Test Subject",
+                to: { email: "recipient@example.com" },
+            };
+
+            const encrypter = createSmimeEncrypter(options);
+
+            const encrypted = await encrypter.encrypt(email);
+
+            expect(encrypted.text).toBeDefined();
+        });
+
+        it("should use the aes192 alias algorithm", async () => {
+            expect.assertions(1);
+
+            vi.mocked(readFile).mockResolvedValue(TEST_CERTIFICATE);
+
+            const options: SmimeEncryptOptions = {
+                algorithm: "aes192",
+                certificates: "/path/to/certificate.crt",
+            };
+
+            const email: EmailOptions = {
+                from: { email: "sender@example.com" },
+                html: "<h1>Test</h1>",
+                subject: "Test Subject",
+                to: { email: "recipient@example.com" },
+            };
+
+            const encrypter = createSmimeEncrypter(options);
+
+            const encrypted = await encrypter.encrypt(email);
+
+            expect(encrypted.text).toBeDefined();
+        });
+
         it("should throw error for invalid certificate", async () => {
             expect.assertions(1);
 
