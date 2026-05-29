@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
     ANNOTATION_DARK,
@@ -12,10 +12,31 @@ import {
     resetPaletteCache,
 } from "../../../src/apps/inspector/theme-palette";
 
+// jsdom does not implement matchMedia, so install a stub that returns the given
+// matches value. Returns a restore function to delete it afterwards.
+const stubMatchMedia = (matches: boolean): () => void => {
+    const original = Object.getOwnPropertyDescriptor(globalThis.window, "matchMedia");
+
+    Object.defineProperty(globalThis.window, "matchMedia", {
+        configurable: true,
+        value: () => ({ matches }) as MediaQueryList,
+        writable: true,
+    });
+
+    return () => {
+        if (original) {
+            Object.defineProperty(globalThis.window, "matchMedia", original);
+        } else {
+            delete (globalThis.window as unknown as Record<string, unknown>).matchMedia;
+        }
+    };
+};
+
 describe("theme-palette", () => {
     afterEach(() => {
         localStorage.clear();
         resetPaletteCache();
+        vi.restoreAllMocks();
     });
 
     describe("palettes", () => {
@@ -62,6 +83,93 @@ describe("theme-palette", () => {
             resetPaletteCache();
 
             expect(isDarkTheme()).toBe(false);
+        });
+
+        it("reuses the cached value without re-reading localStorage", () => {
+            expect.assertions(2);
+
+            localStorage.setItem("__v_dt__theme", "dark");
+            resetPaletteCache();
+
+            expect(isDarkTheme()).toBe(true);
+
+            // Change the stored value WITHOUT resetting the cache; the cached value wins.
+            localStorage.setItem("__v_dt__theme", "light");
+
+            expect(isDarkTheme()).toBe(true);
+        });
+
+        it("falls back to matchMedia when no theme is stored (dark preference)", () => {
+            expect.assertions(1);
+
+            const restore = stubMatchMedia(true);
+
+            resetPaletteCache();
+
+            expect(isDarkTheme()).toBe(true);
+
+            restore();
+        });
+
+        it("falls back to matchMedia when no theme is stored (light preference)", () => {
+            expect.assertions(1);
+
+            const restore = stubMatchMedia(false);
+
+            resetPaletteCache();
+
+            expect(isDarkTheme()).toBe(false);
+
+            restore();
+        });
+
+        it("survives a localStorage access error and falls back to matchMedia", () => {
+            expect.assertions(1);
+
+            const getItemSpy = vi.spyOn(globalThis.localStorage, "getItem").mockImplementation(() => {
+                throw new Error("blocked");
+            });
+            const restore = stubMatchMedia(true);
+
+            resetPaletteCache();
+
+            expect(isDarkTheme()).toBe(true);
+
+            getItemSpy.mockRestore();
+            restore();
+        });
+    });
+
+    describe("storage event listener", () => {
+        it("invalidates the cache when the theme key changes in another tab", () => {
+            expect.assertions(2);
+
+            localStorage.setItem("__v_dt__theme", "dark");
+            resetPaletteCache();
+
+            expect(isDarkTheme()).toBe(true);
+
+            // Simulate a cross-tab storage change for the theme key — the registered
+            // listener clears the cache so the next read re-resolves from localStorage.
+            localStorage.setItem("__v_dt__theme", "light");
+            globalThis.dispatchEvent(new StorageEvent("storage", { key: "__v_dt__theme" }));
+
+            expect(isDarkTheme()).toBe(false);
+        });
+
+        it("ignores storage changes for unrelated keys", () => {
+            expect.assertions(1);
+
+            localStorage.setItem("__v_dt__theme", "dark");
+            resetPaletteCache();
+            // Prime the cache.
+            isDarkTheme();
+
+            localStorage.setItem("__v_dt__theme", "light");
+            // A different key must NOT invalidate the cache.
+            globalThis.dispatchEvent(new StorageEvent("storage", { key: "something-else" }));
+
+            expect(isDarkTheme()).toBe(true);
         });
     });
 
