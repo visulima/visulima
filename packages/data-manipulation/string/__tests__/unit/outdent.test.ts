@@ -302,4 +302,45 @@ describe(outdent, () => {
 
         expect(result).toBe("Values:\nString: text\nNumber: 42\nObject: Object");
     });
+
+    describe("edge cases and caching", () => {
+        it("should return an empty string for an empty template literal", () => {
+            expect.assertions(1);
+
+            expect(outdent``).toBe("");
+        });
+
+        it("should return undefined for an empty strings array", () => {
+            expect.assertions(1);
+
+            expect(outdent(makeStrings())).toBeUndefined();
+        });
+
+        it("should return identical results from the cache for repeated no-value template literals", () => {
+            expect.assertions(2);
+
+            const render = (): string =>
+                outdent`
+                    cached
+                    line`;
+
+            const first = render();
+            const second = render();
+
+            expect(first).toBe("cached\nline");
+            expect(first).toBe(second);
+        });
+
+        it("should reuse the rendered cache for interpolated template literals", () => {
+            expect.assertions(2);
+
+            const render = (value: string): string =>
+                outdent`
+                    hello ${value}
+                    world`;
+
+            expect(render("X")).toBe("hello X\nworld");
+            expect(render("Y")).toBe("hello Y\nworld");
+        });
+    });
 });

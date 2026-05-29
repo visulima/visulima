@@ -176,4 +176,14 @@ describe(pascalSnakeCase, () => {
             expect(pascalSnakeCase("test_string", { locale: "invalid-locale" })).toBe("Test_String");
         });
     });
+
+    describe("invalid input", () => {
+        it("should return an empty string for non-string input", () => {
+            expect.assertions(2);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            expect(pascalSnakeCase(123 as any)).toBe("");
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            expect(pascalSnakeCase(undefined as any)).toBe("");
+        });
+    });
 });

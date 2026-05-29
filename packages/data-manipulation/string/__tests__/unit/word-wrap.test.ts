@@ -1,6 +1,6 @@
 import { stripVTControlCharacters } from "node:util";
 
-import { bgGreen, green, red } from "@visulima/colorize";
+import { bgGreen, black, green, red } from "@visulima/colorize";
 import { describe, expect, it } from "vitest";
 
 import { RE_FAST_ANSI } from "../../src/constants";
@@ -514,6 +514,126 @@ describe(wordWrap, () => {
 
             expect(wordWrap("foo   bar", { width: 3, wrapMode: WrapMode.STRICT_WIDTH })).toBe("foo\nbar");
             expect(wordWrap("foo   bar", { trim: false, width: 3, wrapMode: WrapMode.STRICT_WIDTH })).toBe("foo\n   \nbar");
+        });
+    });
+
+    describe("wrapMode.BREAK_WORDS option", () => {
+        it("should break only words that are longer than the width", () => {
+            expect.assertions(1);
+            expect(wordWrap("hello supercalifragilistic", { width: 5, wrapMode: WrapMode.BREAK_WORDS })).toBe("hello\nsuper\ncalif\nragil\nistic");
+        });
+
+        it("should keep words intact when they fit", () => {
+            expect.assertions(2);
+            expect(wordWrap("foo bar baz", { width: 5, wrapMode: WrapMode.BREAK_WORDS })).toBe("foo\nbar\nbaz");
+            expect(wordWrap("hello world foo", { width: 6, wrapMode: WrapMode.BREAK_WORDS })).toBe("hello\nworld\nfoo");
+        });
+
+        it("should push the current line before breaking a long word, then continue", () => {
+            expect.assertions(1);
+            expect(wordWrap("aa bbbbbbbb cc", { width: 4, wrapMode: WrapMode.BREAK_WORDS })).toBe("aa\nbbbb\nbbbb\ncc");
+        });
+
+        it("should skip leading whitespace tokens when trimming", () => {
+            expect.assertions(1);
+            expect(wordWrap("   hello world", { width: 5, wrapMode: WrapMode.BREAK_WORDS })).toBe("hello\nworld");
+        });
+
+        it("should preserve empty and whitespace-only lines when trim is false", () => {
+            expect.assertions(2);
+            expect(wordWrap("a\n\nb", { trim: false, width: 5, wrapMode: WrapMode.BREAK_WORDS })).toBe("a\n\nb");
+            expect(wordWrap("a\n   \nb", { trim: false, width: 5, wrapMode: WrapMode.BREAK_WORDS })).toBe("a\n   \nb");
+        });
+    });
+
+    describe("empty and whitespace lines across wrap modes (trim disabled)", () => {
+        it("should preserve empty lines in every wrap mode", () => {
+            expect.assertions(3);
+            expect(wordWrap("a\n\nb", { trim: false, width: 5, wrapMode: WrapMode.BREAK_AT_CHARACTERS })).toBe("a\n\nb");
+            expect(wordWrap("a\n\nb", { trim: false, width: 5, wrapMode: WrapMode.PRESERVE_WORDS })).toBe("a\n\nb");
+            expect(wordWrap("a\n\nb", { trim: false, width: 5, wrapMode: WrapMode.STRICT_WIDTH })).toBe("a\n\nb");
+        });
+    });
+
+    describe("zero-width characters preserved when removal is disabled", () => {
+        it("should not count preserved zero-width characters toward the width", () => {
+            expect.assertions(2);
+            expect(wordWrap("ab​cd", { removeZeroWidthCharacters: false, width: 3, wrapMode: WrapMode.BREAK_AT_CHARACTERS })).toBe("ab​c\nd");
+            expect(wordWrap("ab​cd", { removeZeroWidthCharacters: false, width: 3, wrapMode: WrapMode.STRICT_WIDTH })).toBe("ab​c\nd");
+        });
+    });
+
+    describe("non-positive width in strict mode", () => {
+        it("should return the line unchanged when width is zero", () => {
+            expect.assertions(1);
+            expect(wordWrap("hello", { trim: false, width: 0, wrapMode: WrapMode.STRICT_WIDTH })).toBe("hello");
+        });
+    });
+
+    describe("aNSI reset insertion when breaking long colored words", () => {
+        const esc = String.fromCodePoint(27);
+
+        it("should append a foreground reset when a black-foreground word is broken across lines", () => {
+            expect.assertions(3);
+
+            const wrapped = wordWrap(black("abcdefghij"), { width: 4, wrapMode: WrapMode.BREAK_WORDS });
+            const lines = wrapped.split("\n");
+
+            expect(lines).toHaveLength(3);
+            expect(stripVTControlCharacters(wrapped).split("\n")).toStrictEqual(["abcd", "efgh", "ij"]);
+            // resetAnsiAtLineBreak appends the foreground reset (39m) for the black (30m) foreground.
+            expect(lines.at(-1)).toContain(`${esc}[39m`);
+        });
+
+        it("should append a background reset when a green-background word is broken across lines", () => {
+            expect.assertions(3);
+
+            const wrapped = wordWrap(bgGreen("abcdefghij"), { width: 4, wrapMode: WrapMode.BREAK_WORDS });
+            const lines = wrapped.split("\n");
+
+            expect(lines).toHaveLength(3);
+            expect(stripVTControlCharacters(wrapped).split("\n")).toStrictEqual(["abcd", "efgh", "ij"]);
+            // resetAnsiAtLineBreak appends the background reset (49m) for the green (42m) background.
+            expect(lines.at(-1)).toContain(`${esc}[49m`);
+        });
+    });
+
+    describe("bREAK_AT_CHARACTERS escape and space handling", () => {
+        it("should keep ANSI escape sequences attached while breaking at characters", () => {
+            expect.assertions(2);
+
+            const wrapped = wordWrap(black("hello world"), { width: 5, wrapMode: WrapMode.BREAK_AT_CHARACTERS });
+
+            expect(wrapped.split("\n")).toHaveLength(2);
+            expect(stripVTControlCharacters(wrapped).split("\n")).toStrictEqual(["hello", "world"]);
+        });
+
+        it("should drop the space at a wrap point when trim is enabled", () => {
+            expect.assertions(1);
+
+            expect(wordWrap("abcde fghij", { width: 5, wrapMode: WrapMode.BREAK_AT_CHARACTERS })).toBe("abcde\nfghij");
+        });
+    });
+
+    describe("space run collapsing and empty-token handling", () => {
+        it("should skip a run of spaces at a strict-width wrap point when trimming", () => {
+            expect.assertions(2);
+
+            expect(wordWrap("abc   def", { width: 3, wrapMode: WrapMode.STRICT_WIDTH })).toBe("abc\ndef");
+            expect(wordWrap("ab   cd", { width: 2, wrapMode: WrapMode.STRICT_WIDTH })).toBe("ab\ncd");
+        });
+
+        it("should handle empty leading/trailing tokens when trim is disabled in PRESERVE_WORDS mode", () => {
+            expect.assertions(2);
+
+            expect(wordWrap(" abc def", { trim: false, width: 5, wrapMode: WrapMode.PRESERVE_WORDS })).toBe(" abc \ndef");
+            expect(wordWrap("abc def ", { trim: false, width: 5, wrapMode: WrapMode.PRESERVE_WORDS })).toBe("abc \ndef ");
+        });
+
+        it("should handle an empty leading token when trim is disabled in BREAK_WORDS mode", () => {
+            expect.assertions(1);
+
+            expect(wordWrap(" abc def", { trim: false, width: 5, wrapMode: WrapMode.BREAK_WORDS })).toBe(" abc \ndef");
         });
     });
 });

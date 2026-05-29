@@ -401,4 +401,14 @@ describe("transliterate function", () => {
 
         expect(transliterate("Є Ґ ї")).toBe("Ye G yi");
     });
+
+    it("should romanize Thai script", () => {
+        expect.assertions(5);
+
+        expect(transliterate("สวัสดี")).toBe("swasdi");
+        expect(transliterate("กา")).toBe("ka");
+        expect(transliterate("ไทย")).toBe("thai");
+        expect(transliterate("กง")).toBe("kong");
+        expect(transliterate("สบาย")).toBe("sbai");
+    });
 });
