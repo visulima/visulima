@@ -345,4 +345,119 @@ describe(commentsToOpenApi, () => {
             },
         ]);
     });
+
+    it("combines an inline top-level property name (ending with \":\") with its description", () => {
+        expect.assertions(1);
+
+        // The tag name (`tags:`) is on the same line as `@openapi`, so it ends up in the
+        // `name` token and is combined with the following description block.
+        const fileContents = `
+/**
+ * @openapi tags:
+ *   - name: pets
+ *     description: Everything about pets
+ */
+`;
+
+        const result = commentsToOpenApi(fileContents);
+
+        expect(result).toStrictEqual([
+            {
+                loc: 2,
+                spec: {
+                    paths: {},
+                    tags: [{ description: "Everything about pets", name: "pets" }],
+                },
+            },
+        ]);
+    });
+
+    it("combines an inline path name (starting with \"/\") with its description", () => {
+        expect.assertions(1);
+
+        // The path is inline with `@openapi`, so `name` starts with "/" and is prepended
+        // to the YAML description body.
+        const fileContents = `
+/**
+ * @openapi /pets:
+ *   get:
+ *     responses:
+ *       200:
+ *         description: ok
+ */
+`;
+
+        const result = commentsToOpenApi(fileContents);
+
+        expect(result).toStrictEqual([
+            {
+                loc: 2,
+                spec: {
+                    paths: {
+                        "/pets": {
+                            get: {
+                                responses: {
+                                    200: { description: "ok" },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        ]);
+    });
+
+    it("uses just the inline name when there is no description body", () => {
+        expect.assertions(1);
+
+        // `@openapi /pets:` with no following body — the trimmed description is empty, so the
+        // bare name is used as the YAML content.
+        const fileContents = `
+/**
+ * @openapi /pets:
+ */
+`;
+
+        const result = commentsToOpenApi(fileContents);
+
+        expect(result).toStrictEqual([
+            {
+                loc: 2,
+                spec: {
+                    paths: { "/pets": {} },
+                },
+            },
+        ]);
+    });
+
+    it("throws a non-verbose error when the YAML cannot be parsed", () => {
+        expect.assertions(2);
+
+        const fileContents = `
+/**
+ * @openapi
+ * /pets:
+ *   get:
+ *  bad: indentation: here
+ */
+`;
+
+        expect(() => commentsToOpenApi(fileContents)).toThrow("Error parsing YAML in @openapi spec:");
+        expect(() => commentsToOpenApi(fileContents)).not.toThrow("Imbedded within:");
+    });
+
+    it("throws a verbose error that embeds the offending YAML when verbose is enabled", () => {
+        expect.assertions(1);
+
+        const fileContents = `
+/**
+ * @openapi
+ * /pets:
+ *   get:
+ *  bad: indentation: here
+ */
+`;
+
+        expect(() => commentsToOpenApi(fileContents, true)).toThrow("Imbedded within:");
+    });
 });
