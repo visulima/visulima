@@ -2,6 +2,9 @@ import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 import { bold, cyan, dim, green } from "@visulima/colorize";
 import { relative } from "@visulima/path";
 
+import { biomeAdapter } from "../../lint-fmt/adapters/biome";
+import { dprintAdapter } from "../../lint-fmt/adapters/dprint";
+import { oxfmtAdapter } from "../../lint-fmt/adapters/oxfmt";
 import { prettierAdapter } from "../../lint-fmt/adapters/prettier";
 import type { AdapterRunOptions, Finding } from "../../lint-fmt/config-types";
 import { detectAdapters } from "../../lint-fmt/detect";
@@ -10,7 +13,7 @@ import { aggregate, exitCodeFor, groupFindingsByFile } from "../../lint-fmt/resu
 import { runAdapter } from "../../lint-fmt/runner";
 import type { FmtOptions } from "./index";
 
-const FORMAT_ADAPTERS = [prettierAdapter];
+const FORMAT_ADAPTERS = [oxfmtAdapter, biomeAdapter, dprintAdapter, prettierAdapter];
 
 const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, FmtOptions>): Promise<void> => {
     const root = workspaceRoot ?? process.cwd();
@@ -19,7 +22,7 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, FmtO
     const eligible = adaptersByKind(detected, adapters, "fmt");
 
     if (eligible.length === 0) {
-        logger.warn("vis fmt: no formatter detected in this workspace (looked for: prettier).");
+        logger.warn("vis fmt: no formatter detected in this workspace (looked for: oxfmt, biome, dprint, prettier).");
 
         return;
     }
