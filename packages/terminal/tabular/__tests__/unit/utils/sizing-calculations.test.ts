@@ -276,6 +276,128 @@ describe("grid Sizing Calculations", () => {
                 ),
             ).toStrictEqual([1, 1, 1]);
         });
+
+        it("returns an empty array for an empty grid layout", () => {
+            expect.assertions(1);
+
+            expect(
+                calculateRowHeights(
+                    [],
+                    [],
+                    {
+                        autoColumns: 1,
+                        autoFlow: "row",
+                        autoRows: 1,
+                        columns: 1,
+                        gap: 0,
+                        paddingLeft: 0,
+                        paddingRight: 0,
+                        rows: 0,
+                        showBorders: false,
+                        truncate: false,
+                        wordWrap: false,
+                    },
+                    alignCellContent,
+                    findFirstOccurrenceRow,
+                ),
+            ).toStrictEqual([]);
+        });
+
+        it("skips sparse (undefined) rows in the grid layout", () => {
+            expect.assertions(1);
+
+            const cellA: GridItem = { content: "A" };
+            const grid: (GridItem | undefined)[][] = [];
+
+            // Leave index 1 as a hole (undefined row) so the `if (!row) continue` paths are hit.
+            grid[0] = [cellA];
+            grid[2] = [cellA];
+
+            expect(
+                calculateRowHeights(
+                    grid,
+                    [1],
+                    {
+                        autoColumns: 1,
+                        autoFlow: "row",
+                        autoRows: 1,
+                        columns: 1,
+                        gap: 0,
+                        paddingLeft: 0,
+                        paddingRight: 0,
+                        rows: 0,
+                        showBorders: false,
+                        truncate: false,
+                        wordWrap: false,
+                    },
+                    alignCellContent,
+                    findFirstOccurrenceRow,
+                ),
+            ).toStrictEqual([1, 1, 1]);
+        });
+
+        it("applies a single-element fixed rowHeights value to every row", () => {
+            expect.assertions(1);
+
+            const cellA: GridItem = { content: "A" };
+            const cellB: GridItem = { content: "B" };
+            const grid = [[cellA], [cellB]];
+
+            // fixedRowHeights has a single entry, which should be applied to rows beyond index 0.
+            expect(
+                calculateRowHeights(
+                    grid,
+                    [1],
+                    {
+                        autoColumns: 1,
+                        autoFlow: "row",
+                        autoRows: 1,
+                        columns: 1,
+                        fixedRowHeights: [2],
+                        gap: 0,
+                        paddingLeft: 0,
+                        paddingRight: 0,
+                        rows: 0,
+                        showBorders: false,
+                        truncate: false,
+                        wordWrap: false,
+                    },
+                    alignCellContent,
+                    findFirstOccurrenceRow,
+                ),
+            ).toStrictEqual([2, 2]);
+        });
+
+        it("distributes a spanning cell deficit across non-fixed rows", () => {
+            expect.assertions(1);
+
+            // A 3-row spanning cell with 5 lines of content. Initial heights are [1,1,1] (=3 lines),
+            // so a deficit must be distributed across the non-fixed span rows.
+            const span: GridItem = { content: "L1\nL2\nL3\nL4\nL5", rowSpan: 3 };
+            const grid: (GridItem | undefined)[][] = [[span], [undefined], [undefined]];
+
+            expect(
+                calculateRowHeights(
+                    grid,
+                    [5],
+                    {
+                        autoColumns: 1,
+                        autoFlow: "row",
+                        autoRows: 1,
+                        columns: 1,
+                        gap: 0,
+                        paddingLeft: 0,
+                        paddingRight: 0,
+                        rows: 0,
+                        showBorders: false,
+                        truncate: false,
+                        wordWrap: false,
+                    },
+                    alignCellContent,
+                    findFirstOccurrenceRow,
+                ),
+            ).toStrictEqual([4, 1, 1]);
+        });
     });
 
     describe(computeRowLogicalWidth, () => {
