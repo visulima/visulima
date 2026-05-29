@@ -284,4 +284,9 @@ describe(parseAddress, () => {
         expect.assertions(1);
         expect(parseAddress("\"a\"b@example.com")).toStrictEqual({ email: "\"a\"b@example.com" });
     });
+
+    it("should parse an address whose quote appears after the @", () => {
+        expect.assertions(1);
+        expect(parseAddress("user@dom\"ain.com")).toStrictEqual({ email: "user@dom\"ain.com" });
+    });
 });
