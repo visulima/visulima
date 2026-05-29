@@ -153,6 +153,22 @@ describe(sendWithRetry, () => {
         expect(onError).toHaveBeenCalledWith(expect.objectContaining({ message: expect.stringContaining("HTTP 404") }));
     });
 
+    it("should throw for non-2xx status codes when no onError callback is provided", async () => {
+        expect.assertions(1);
+
+        const mockResponse = new Response("Not Found", { status: 404 });
+
+        mockFetch.mockResolvedValueOnce(mockResponse);
+
+        const promise = sendWithRetry("https://api.example.com/logs", "POST", { "Content-Type": "application/json" }, "{\"test\": \"data\"}", 0, 1000, true);
+
+        promise.catch(() => {
+            // Ignore errors
+        });
+
+        await expect(promise).rejects.toThrow("HTTP 404");
+    });
+
     it("should not call onError for 2xx status codes", async () => {
         expect.assertions(1);
 
@@ -262,6 +278,22 @@ describe(sendWithRetry, () => {
 
         await expect(promise).rejects.toThrow("HTTP 429");
         expect(onError).toHaveBeenCalledWith(expect.objectContaining({ message: expect.stringContaining("HTTP 429") }));
+    });
+
+    it("should throw after exhausting retries on a retryable status without an onError callback", async () => {
+        expect.assertions(1);
+
+        const mockResponse = new Response("Rate Limited", { status: 429 });
+
+        mockFetch.mockResolvedValueOnce(mockResponse);
+
+        const promise = sendWithRetry("https://api.example.com/logs", "POST", { "Content-Type": "application/json" }, "{\"test\": \"data\"}", 0, 1000, false);
+
+        promise.catch(() => {
+            // Ignore errors
+        });
+
+        await expect(promise).rejects.toThrow("HTTP 429");
     });
 
     it("should retry on 5xx server errors", async () => {
