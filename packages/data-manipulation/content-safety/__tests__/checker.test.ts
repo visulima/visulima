@@ -147,6 +147,35 @@ describe(checkBannedWords, () => {
 
             expect(before + highlighted + after).toBe(text);
         });
+
+        it("returns phrase positions that map back to the original text", () => {
+            expect.assertions(2);
+
+            const text = "look at that white trash over there";
+            const result = checkBannedWords(text);
+            const match = result.matches.find((m) => m.word.toLowerCase() === "white trash");
+
+            expect(match).toBeDefined();
+            expect(text.slice(match!.startIndex, match!.endIndex).toLowerCase()).toBe("white trash");
+        });
+
+        it("supports reverse-iteration censoring as documented", () => {
+            expect.assertions(2);
+
+            const text = "shit and fuck";
+            const result = checkBannedWords(text);
+
+            let censored = text;
+
+            for (const match of result.matches.toSorted((a, b) => b.startIndex - a.startIndex)) {
+                const replacement = "*".repeat(match.word.length);
+
+                censored = censored.slice(0, match.startIndex) + replacement + censored.slice(match.endIndex);
+            }
+
+            expect(censored).not.toContain("fuck");
+            expect(censored).not.toContain("shit");
+        });
     });
 
     describe("word boundary matching", () => {
@@ -282,6 +311,19 @@ describe(checkBannedWords, () => {
             const result = checkBannedWords("这个人真他妈的烦人");
 
             expect(result.hasBannedWords).toBe(true);
+        });
+    });
+
+    describe("chinese repeated occurrences", () => {
+        it("returns a match for each occurrence of the same CJK word", () => {
+            expect.assertions(3);
+
+            const result = checkBannedWords("傻逼傻逼");
+            const matches = result.matches.filter((m) => m.word === "傻逼");
+
+            expect(result.hasBannedWords).toBe(true);
+            expect(matches.length).toBeGreaterThanOrEqual(2);
+            expect(matches[0]!.startIndex).toBeLessThan(matches[1]!.startIndex);
         });
     });
 
