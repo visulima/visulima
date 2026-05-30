@@ -3,8 +3,10 @@ import { bold, cyan, dim, green, red, yellow } from "@visulima/colorize";
 import { relative } from "@visulima/path";
 
 import { biomeAdapter } from "../../lint-fmt/adapters/biome";
+import { denoLintAdapter } from "../../lint-fmt/adapters/deno";
 import { eslintAdapter } from "../../lint-fmt/adapters/eslint";
 import { oxlintAdapter } from "../../lint-fmt/adapters/oxlint";
+import { stylelintAdapter } from "../../lint-fmt/adapters/stylelint";
 import type { AdapterRunOptions, Finding } from "../../lint-fmt/config-types";
 import { detectAdapters } from "../../lint-fmt/detect";
 import { adaptersByKind, registerAdapters } from "../../lint-fmt/registry";
@@ -12,7 +14,7 @@ import { aggregate, exitCodeFor, groupFindingsByFile } from "../../lint-fmt/resu
 import { runAdapter } from "../../lint-fmt/runner";
 import type { LintOptions } from "./index";
 
-const SOURCE_ADAPTERS = [oxlintAdapter, biomeAdapter, eslintAdapter];
+const SOURCE_ADAPTERS = [oxlintAdapter, biomeAdapter, eslintAdapter, stylelintAdapter, denoLintAdapter];
 
 const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, LintOptions>): Promise<void> => {
     const root = workspaceRoot ?? process.cwd();
@@ -21,7 +23,7 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Lint
     const eligible = adaptersByKind(detected, adapters, "lint");
 
     if (eligible.length === 0) {
-        logger.warn("vis lint: no linter detected in this workspace (looked for: oxlint, biome, eslint).");
+        logger.warn("vis lint: no linter detected in this workspace (looked for: oxlint, biome, eslint, stylelint, deno).");
 
         return;
     }

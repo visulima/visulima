@@ -6,20 +6,34 @@ import type { AdapterId, AdapterKind, ToolAdapter, ToolPresence } from "./config
  * After filtering by `kind` (or `both`), the resulting sequence
  * becomes:
  *
- *   lint: oxlint → biome → eslint
- *   fmt:  oxfmt  → biome → dprint → prettier
+ *   lint: oxlint → biome → eslint → stylelint → deno-lint
+ *   fmt:  oxfmt  → biome → dprint → prettier → deno-fmt
  *
  * Rust-native tools come first so they get a chance to short-circuit
  * cheap classes of issues before slower tools run. Biome sits in the
  * middle because it's "both": its lint position is between oxlint and
- * eslint; its fmt position between oxfmt and dprint.
+ * eslint; its fmt position between oxfmt and dprint. Stylelint is a
+ * CSS-only late entry — it never collides on JS/TS files so order
+ * with the others doesn't matter. Deno's two adapters come last
+ * because Deno workspaces typically don't co-exist with the npm
+ * toolchain; when they do, the npm-native tooling wins.
  *
  * Users can override with `lint.order` / `fmt.order` in
  * `vis.config.ts`. Adapters are imported lazily by their consumers —
  * keep this file free of cross-cutting imports so the registry stays
  * cheap to load.
  */
-const ADAPTER_ORDER: ReadonlyArray<AdapterId> = ["oxlint", "oxfmt", "biome", "eslint", "dprint", "prettier"];
+const ADAPTER_ORDER: ReadonlyArray<AdapterId> = [
+    "oxlint",
+    "oxfmt",
+    "biome",
+    "eslint",
+    "dprint",
+    "prettier",
+    "stylelint",
+    "deno-lint",
+    "deno-fmt",
+];
 
 export const registerAdapters = (adapters: ReadonlyArray<ToolAdapter>): ReadonlyArray<ToolAdapter> => {
     const byId = new Map(adapters.map((a) => [a.id, a]));

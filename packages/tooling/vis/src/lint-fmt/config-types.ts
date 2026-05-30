@@ -8,7 +8,7 @@
 
 export type AdapterKind = "both" | "fmt" | "lint";
 
-export type AdapterId = "biome" | "dprint" | "eslint" | "oxfmt" | "oxlint" | "prettier";
+export type AdapterId = "biome" | "deno-fmt" | "deno-lint" | "dprint" | "eslint" | "oxfmt" | "oxlint" | "prettier" | "stylelint";
 
 export type FindingSeverity = "error" | "info" | "warning";
 
