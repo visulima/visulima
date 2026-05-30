@@ -34,7 +34,7 @@ const detectDeno = (id: "deno-fmt" | "deno-lint") => (root: string): ToolPresenc
     };
 };
 
-const isAbsolutePath = (raw: string): boolean => raw.startsWith("/") || /^[a-zA-Z]:[\\/]/.test(raw);
+const isAbsolutePath = (raw: string): boolean => raw.startsWith("/") || /^[a-z]:[\\/]/i.test(raw);
 
 interface DenoLintRange {
     end?: { col?: number; line?: number };

@@ -25,9 +25,9 @@ const SEVERITY_MAP: Record<string, FindingSeverity> = {
 
 interface OxlintLabelSpan {
     column?: number;
+    length?: number;
     line?: number;
     offset?: number;
-    length?: number;
 }
 
 interface OxlintLabel {

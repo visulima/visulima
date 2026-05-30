@@ -22,12 +22,12 @@ import { join, relative } from "@visulima/path";
  */
 
 export interface IgnoreRule {
-    /** Original pattern, unmodified — kept for debugging. */
-    readonly pattern: string;
-    /** True when the rule negates a previous match (`!` prefix). */
-    readonly negated: boolean;
     /** True when the pattern only matches directories (trailing `/`). */
     readonly directoryOnly: boolean;
+    /** True when the rule negates a previous match (`!` prefix). */
+    readonly negated: boolean;
+    /** Original pattern, unmodified — kept for debugging. */
+    readonly pattern: string;
     /** Compiled regex used for matching. */
     readonly regex: RegExp;
 }
@@ -139,17 +139,13 @@ export const buildIgnoreRules = (
     extras: ReadonlyArray<string> = [],
     extraFiles: ReadonlyArray<string> = [],
 ): IgnoreRule[] => {
-    const rules: IgnoreRule[] = [];
+    const fromExtraFiles = extraFiles.flatMap((file) => loadIgnoreFile(file));
 
-    rules.push(...loadIgnoreFile(join(root, ".gitignore")));
-
-    for (const file of extraFiles) {
-        rules.push(...loadIgnoreFile(file));
-    }
-
-    rules.push(...parsePatterns(extras.join("\n")));
-
-    return rules;
+    return [
+        ...loadIgnoreFile(join(root, ".gitignore")),
+        ...fromExtraFiles,
+        ...parsePatterns(extras.join("\n")),
+    ];
 };
 
 /**

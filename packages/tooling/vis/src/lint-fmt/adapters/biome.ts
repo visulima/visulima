@@ -22,8 +22,8 @@ import { declaredVersion, findFirstConfig } from "../detect";
 
 const SEVERITY_MAP: Record<string, FindingSeverity> = {
     error: "error",
-    information: "info",
     info: "info",
+    information: "info",
     warning: "warning",
 };
 
@@ -33,9 +33,9 @@ interface BiomePosition {
 }
 
 interface BiomeLocation {
+    end?: BiomePosition;
     path?: string | { file?: string };
     start?: BiomePosition;
-    end?: BiomePosition;
 }
 
 interface BiomeDiagnostic {
@@ -164,7 +164,7 @@ const resolvePath = (root: string, path: BiomeLocation["path"]): string => {
         return root;
     }
 
-    if (raw.startsWith("/") || /^[a-zA-Z]:[\\/]/.test(raw)) {
+    if (raw.startsWith("/") || /^[a-z]:[\\/]/i.test(raw)) {
         return raw;
     }
 

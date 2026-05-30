@@ -32,7 +32,7 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, FmtO
     const positional = collectPositional(options);
     const mode: "check" | "fix" = options.check ? "check" : "fix";
 
-    const runs: Array<{ adapter: typeof eligible[number]["adapter"]; durationMs: number; exitCode: number | null; findings: Finding[] }> = [];
+    const runs: { adapter: typeof eligible[number]["adapter"]; durationMs: number; exitCode: number | null; findings: Finding[] }[] = [];
 
     if (positional.length === 0) {
         // No explicit file list — each adapter runs against `.` so its own
@@ -62,13 +62,15 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, FmtO
     }
 
     const result = aggregate(
-        runs.map((run) => ({
-            adapter: run.adapter.id,
-            durationMs: run.durationMs,
-            exitCode: run.exitCode,
-            findingCount: run.findings.length,
-            findings: run.findings,
-        })),
+        runs.map((run) => {
+            return {
+                adapter: run.adapter.id,
+                durationMs: run.durationMs,
+                exitCode: run.exitCode,
+                findingCount: run.findings.length,
+                findings: run.findings,
+            };
+        }),
     );
 
     const format = options.format ?? "human";

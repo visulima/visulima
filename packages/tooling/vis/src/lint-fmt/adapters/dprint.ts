@@ -119,7 +119,7 @@ const buildArgs = (files: ReadonlyArray<string>, options: AdapterRunOptions, mod
 };
 
 const resolveFile = (root: string, line: string): string => {
-    if (line.startsWith("/") || /^[a-zA-Z]:[\\/]/.test(line)) {
+    if (line.startsWith("/") || /^[a-z]:[\\/]/i.test(line)) {
         return line;
     }
 

@@ -10,12 +10,12 @@ import type { AdapterId, Finding, FindingSeverity } from "./config-types";
 export interface AggregateResult {
     /** Every finding produced, in adapter-then-file order. */
     findings: ReadonlyArray<Finding>;
-    /** Per-adapter run metadata. */
-    runs: ReadonlyArray<AdapterRunSummary>;
-    /** Highest severity observed; `undefined` when there are no findings. */
-    maxSeverity?: FindingSeverity;
     /** True when at least one run exited non-zero. */
     hadProcessFailure: boolean;
+    /** Highest severity observed; `undefined` when there are no findings. */
+    maxSeverity?: FindingSeverity;
+    /** Per-adapter run metadata. */
+    runs: ReadonlyArray<AdapterRunSummary>;
 }
 
 export interface AdapterRunSummary {
@@ -58,13 +58,11 @@ export const aggregate = (entries: ReadonlyArray<AdapterRunSummary & { findings:
             findingCount: entry.findings.length,
         });
 
-        if (entry.exitCode !== 0 && entry.exitCode !== null) {
-            // Some linters (eslint) exit 1 purely because they found issues —
+        if (entry.exitCode !== 0 && entry.exitCode !== null // Some linters (eslint) exit 1 purely because they found issues —
             // that's not a process failure. We only flag failures the parse
             // layer couldn't account for: zero findings but non-zero exit.
-            if (entry.findings.length === 0) {
-                hadProcessFailure = true;
-            }
+            && entry.findings.length === 0) {
+            hadProcessFailure = true;
         }
 
         for (const finding of entry.findings) {

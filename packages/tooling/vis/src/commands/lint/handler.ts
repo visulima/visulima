@@ -38,7 +38,7 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Lint
     const files: string[] = positional.length > 0 ? positional : ["."];
     const mode: "check" | "fix" = options.fix ? "fix" : "check";
 
-    const runs: Array<{ adapter: typeof eligible[number]["adapter"]; durationMs: number; exitCode: number | null; findings: Finding[] }> = [];
+    const runs: { adapter: typeof eligible[number]["adapter"]; durationMs: number; exitCode: number | null; findings: Finding[] }[] = [];
 
     for (const { adapter, presence } of eligible) {
         const raw = runAdapter(adapter, presence, files, runOptions, mode);
@@ -48,13 +48,15 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Lint
     }
 
     const result = aggregate(
-        runs.map((run) => ({
-            adapter: run.adapter.id,
-            durationMs: run.durationMs,
-            exitCode: run.exitCode,
-            findingCount: run.findings.length,
-            findings: run.findings,
-        })),
+        runs.map((run) => {
+            return {
+                adapter: run.adapter.id,
+                durationMs: run.durationMs,
+                exitCode: run.exitCode,
+                findingCount: run.findings.length,
+                findings: run.findings,
+            };
+        }),
     );
 
     const format = options.format ?? "human";
@@ -96,7 +98,7 @@ const printHuman = (findings: ReadonlyArray<Finding>, root: string, logger: Tool
 
         for (const finding of fileFindings) {
             const location = formatLocation(finding);
-            const severityChip = severityChip_(finding.severity);
+            const severityChip = severityChipFor(finding.severity);
             const rule = finding.ruleId ? dim(`  ${finding.ruleId}`) : "";
 
             logger.info(`  ${dim(location)} ${severityChip} ${finding.message}${rule}`);
@@ -126,13 +128,13 @@ const formatLocation = (finding: Finding): string => {
     }
 
     if (finding.column === undefined) {
-        return `${String(finding.line)}`;
+        return String(finding.line);
     }
 
     return `${String(finding.line)}:${String(finding.column)}`;
 };
 
-const severityChip_ = (severity: Finding["severity"]): string => {
+const severityChipFor = (severity: Finding["severity"]): string => {
     if (severity === "error") {
         return red("error");
     }

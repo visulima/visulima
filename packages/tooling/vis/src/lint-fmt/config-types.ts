@@ -25,16 +25,16 @@ export interface Finding {
     endColumn?: number;
     /** End line (1-based) when the tool reports a range. */
     endLine?: number;
-    /** True when the tool can auto-fix this finding via `--fix` / `--write`. */
-    fixable: boolean;
     /** Absolute path to the file the finding is anchored to. */
     file: string;
-    /** Tool-native rule identifier (e.g. `no-unused-vars`, `formatting`). */
-    ruleId?: string;
-    /** Human-readable message. */
-    message: string;
+    /** True when the tool can auto-fix this finding via `--fix` / `--write`. */
+    fixable: boolean;
     /** 1-based line number; undefined for file-level findings. */
     line?: number;
+    /** Human-readable message. */
+    message: string;
+    /** Tool-native rule identifier (e.g. `no-unused-vars`, `formatting`). */
+    ruleId?: string;
     /** Severity bucket. Formatters report `info` for "would change". */
     severity: FindingSeverity;
 }
@@ -67,12 +67,12 @@ export interface ToolPresence {
  * each adapter doesn't have to ignore irrelevant flags.
  */
 export interface AdapterRunOptions {
-    /** Pass `--quiet` / equivalent when supported. */
-    quiet?: boolean;
-    /** Override max warnings threshold (lint only). */
-    maxWarnings?: number;
     /** Tool-specific extra args, appended verbatim. */
     extraArgs?: string[];
+    /** Override max warnings threshold (lint only). */
+    maxWarnings?: number;
+    /** Pass `--quiet` / equivalent when supported. */
+    quiet?: boolean;
 }
 
 /**
@@ -80,14 +80,14 @@ export interface AdapterRunOptions {
  * details before normalization. `parse()` turns this into Finding[].
  */
 export interface RunResult {
-    /** Process exit code. `null` if the process was killed. */
-    exitCode: number | null;
-    /** Captured stdout. */
-    stdout: string;
-    /** Captured stderr. */
-    stderr: string;
     /** Wall time in milliseconds. */
     durationMs: number;
+    /** Process exit code. `null` if the process was killed. */
+    exitCode: number | null;
+    /** Captured stderr. */
+    stderr: string;
+    /** Captured stdout. */
+    stdout: string;
 }
 
 /**
@@ -103,26 +103,13 @@ export interface RunResult {
  * should be invoked with a stable, parseable format.
  */
 export interface ToolAdapter {
-    /** Adapter identifier. Must be unique across the registry. */
-    readonly id: AdapterId;
-    /** What the adapter does. `both` participates in lint and fmt. */
-    readonly kind: AdapterKind;
-    /**
-     * File extensions this adapter is willing to handle (without the
-     * leading dot). Used by the registry for extension routing when
-     * multiple fmt-capable adapters are detected.
-     */
-    readonly extensions: ReadonlyArray<string>;
-    /** Probe the workspace; return ToolPresence when applicable. */
-    detect: (root: string, packageJson: Record<string, unknown>) => ToolPresence | undefined;
-    /** Argv head — typically `["pnpm", "exec", <tool>]` or absolute. */
-    bin: (presence: ToolPresence) => ReadonlyArray<string>;
     /** Args for check / dry-run mode (no writes). */
     argsCheck: (files: ReadonlyArray<string>, options: AdapterRunOptions) => ReadonlyArray<string>;
     /** Args for fix / write mode. */
     argsFix: (files: ReadonlyArray<string>, options: AdapterRunOptions) => ReadonlyArray<string>;
-    /** Normalize tool output into Finding[]. */
-    parse: (result: RunResult, presence: ToolPresence) => Finding[];
+    /** Argv head — typically `["pnpm", "exec", &lt;tool>]` or absolute. */
+    bin: (presence: ToolPresence) => ReadonlyArray<string>;
+
     /**
      * Stable cache key fragment for this invocation. Used by the
      * task-runner cache layer to invalidate when args / config
@@ -130,4 +117,19 @@ export interface ToolAdapter {
      * those in separately.
      */
     cacheKey: (presence: ToolPresence, options: AdapterRunOptions) => string;
+    /** Probe the workspace; return ToolPresence when applicable. */
+    detect: (root: string, packageJson: Record<string, unknown>) => ToolPresence | undefined;
+
+    /**
+     * File extensions this adapter is willing to handle (without the
+     * leading dot). Used by the registry for extension routing when
+     * multiple fmt-capable adapters are detected.
+     */
+    readonly extensions: ReadonlyArray<string>;
+    /** Adapter identifier. Must be unique across the registry. */
+    readonly id: AdapterId;
+    /** What the adapter does. `both` participates in lint and fmt. */
+    readonly kind: AdapterKind;
+    /** Normalize tool output into Finding[]. */
+    parse: (result: RunResult, presence: ToolPresence) => Finding[];
 }

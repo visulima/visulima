@@ -66,8 +66,8 @@ export const adaptersByKind = (
     detected: Map<AdapterId, ToolPresence>,
     all: ReadonlyArray<ToolAdapter>,
     kind: "lint" | "fmt",
-): Array<{ adapter: ToolAdapter; presence: ToolPresence }> => {
-    const out: Array<{ adapter: ToolAdapter; presence: ToolPresence }> = [];
+): { adapter: ToolAdapter; presence: ToolPresence }[] => {
+    const out: { adapter: ToolAdapter; presence: ToolPresence }[] = [];
 
     for (const adapter of all) {
         const presence = detected.get(adapter.id);
