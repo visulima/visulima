@@ -563,10 +563,10 @@ class GoogleDriveStorage extends BaseStorage<GoogleDriveFile> {
         key: string,
         options?: { expiresIn?: number; responseContentDisposition?: string; responseContentType?: string },
     ): Promise<string> {
-        if (options?.responseContentDisposition) {
+        if (options?.responseContentDisposition !== undefined || options?.responseContentType !== undefined) {
             return throwErrorCode(
                 ERRORS.METHOD_NOT_ALLOWED,
-                "Google Drive: `responseContentDisposition` is not supported — Drive's webContentLink has no Content-Disposition override.",
+                "Google Drive: `responseContentDisposition`/`responseContentType` are not supported — Drive's webContentLink has no Content-Disposition/Content-Type override.",
             );
         }
 
@@ -584,6 +584,13 @@ class GoogleDriveStorage extends BaseStorage<GoogleDriveFile> {
     }
 
     public override async getUploadUrl(key: string, options?: { contentLength?: number; contentType?: string; expiresIn?: number }): Promise<string> {
+        if (options?.contentLength !== undefined) {
+            return throwErrorCode(
+                ERRORS.BAD_REQUEST,
+                "Google Drive: `contentLength` is not supported for upload URLs. A Drive resumable upload session does not enforce a server-side content-length policy, so the cap would not bind; enforce size limits at your application gateway/proxy before issuing the session URL.",
+            );
+        }
+
         if (!this.authForTokens) {
             return throwErrorCode(
                 ERRORS.METHOD_NOT_ALLOWED,
@@ -605,10 +612,6 @@ class GoogleDriveStorage extends BaseStorage<GoogleDriveFile> {
 
         if (options?.contentType) {
             headers["X-Upload-Content-Type"] = options.contentType;
-        }
-
-        if (options?.contentLength !== undefined) {
-            headers["X-Upload-Content-Length"] = String(options.contentLength);
         }
 
         const initBody = {
@@ -653,7 +656,12 @@ class GoogleDriveStorage extends BaseStorage<GoogleDriveFile> {
             return cached;
         }
 
-        const q = `appProperties has { key='${KEY_PROP}' and value='${escapeQueryValue(key)}' } and trashed=false`;
+        // Scope the lookup to the configured root folder. Without the `in parents` clause this
+        // query searches every file the credentials can see (My Drive + shared drives + anything
+        // shared with the service account), so a foreign file carrying a matching appProperties key
+        // would resolve and escape the adapter's root. All adapter-created files are written into
+        // `rootFolderId` (see write/copy/getUploadUrl), so the filter never excludes our own files.
+        const q = `appProperties has { key='${KEY_PROP}' and value='${escapeQueryValue(key)}' } and '${escapeQueryValue(this.rootFolderId)}' in parents and trashed=false`;
         const response = await this.runOperation(options, () =>
             this.driveClient.files.list({
                 ...this.sharedDriveParams,

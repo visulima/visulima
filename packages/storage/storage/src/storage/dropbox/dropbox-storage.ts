@@ -554,10 +554,10 @@ class DropboxStorage extends BaseStorage<DropboxFile> {
         key: string,
         options?: { expiresIn?: number; responseContentDisposition?: string; responseContentType?: string },
     ): Promise<string> {
-        if (options?.responseContentDisposition) {
+        if (options?.responseContentDisposition !== undefined || options?.responseContentType !== undefined) {
             return throwErrorCode(
                 ERRORS.METHOD_NOT_ALLOWED,
-                "Dropbox: `responseContentDisposition` is not supported — Dropbox temporary links have no Content-Disposition override.",
+                "Dropbox: `responseContentDisposition`/`responseContentType` are not supported — Dropbox temporary links have no Content-Disposition/Content-Type override.",
             );
         }
 
