@@ -1,5 +1,5 @@
 import { createWriteStream } from "node:fs";
-import { cp, mkdir, readdir, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
+import { cp, mkdir, open, readdir, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
 import { pipeline } from "node:stream/promises";
 
 import { formatBytes, parseBytes } from "@visulima/humanizer";
@@ -389,9 +389,40 @@ class Cache {
             await Promise.all(writes);
             await writeFile(join(temporaryDirectory, ".commit"), "");
 
-            // Atomically move into place
-            await removeEntry(cacheEntryDirectory);
-            await rename(temporaryDirectory, cacheEntryDirectory);
+            // Atomic-ish swap: rename existing entry out of the way
+            // first (atomic POSIX op), then rename the new staging dir
+            // into place (atomic), then rm the trash in the background.
+            // Previously a `removeEntry → rename` opened a window where
+            // concurrent readers saw a missing entry (false cache
+            // miss); worse, a failure between the two left the prior
+            // committed entry destroyed.
+            const trashDirectory = `${cacheEntryDirectory}.trash-${uniqueId()}`;
+            let hadExisting = false;
+
+            try {
+                await rename(cacheEntryDirectory, trashDirectory);
+                hadExisting = true;
+            } catch {
+                // Destination didn't exist — fine, just proceed.
+            }
+
+            try {
+                await rename(temporaryDirectory, cacheEntryDirectory);
+            } catch (error) {
+                // The new entry rename failed; try to put the old one
+                // back so we don't leave the cache key absent.
+                if (hadExisting) {
+                    await rename(trashDirectory, cacheEntryDirectory).catch(() => {});
+                }
+
+                throw error;
+            }
+
+            if (hadExisting) {
+                // Best-effort cleanup; a leftover .trash-* dir gets
+                // reaped by `removeOldEntries`.
+                removeEntry(trashDirectory).catch(() => {});
+            }
         } catch {
             // Clean up temp dir on failure
             await removeEntry(temporaryDirectory);
@@ -446,37 +477,114 @@ class Cache {
      * Each write is atomic (temp file + rename).
      */
     public async setTaskIndex(taskId: string, hash: string): Promise<void> {
-        // Serialize writes through a queue to prevent concurrent read-modify-write races
-        this.#indexWriteQueue = this.#indexWriteQueue.then(() => this.#writeTaskIndex(taskId, hash)).catch(() => {});
+        // Serialize writes through a queue to prevent concurrent
+        // read-modify-write races. Two promises here: one for THIS
+        // caller (must reject if the write actually fails) and one
+        // for the chain (must NOT reject so the next caller's `then`
+        // still fires). Previously a single `.catch(() => {})` on
+        // the chain was also handed back as the return value, so
+        // disk-write failures (ENOSPC, EACCES, EROFS) silently
+        // reported success to the caller and the auto-fingerprint
+        // path missed cache forever for that task id.
+        const writePromise = this.#indexWriteQueue.then(() => this.#writeTaskIndex(taskId, hash));
 
-        return this.#indexWriteQueue;
+        this.#indexWriteQueue = writePromise.catch(() => {});
+
+        return writePromise;
     }
 
     async #writeTaskIndex(taskId: string, hash: string): Promise<void> {
         const indexFile = join(this.#cacheDirectory, ".task-index.json");
         const temporaryFile = join(this.#cacheDirectory, `.task-index-${uniqueId()}.tmp`);
 
-        let index: Record<string, string> = {};
-
-        try {
-            const indexContent = await readFile(indexFile, "utf8");
-
-            index = JSON.parse(indexContent) as Record<string, string>;
-        } catch {
-            // Index doesn't exist yet
-        }
-
-        index[taskId] = hash;
-
         await mkdir(this.#cacheDirectory, { recursive: true });
-        await writeFile(temporaryFile, JSON.stringify(index));
 
-        try {
-            await rename(temporaryFile, indexFile);
-        } catch {
-            // Fallback: direct write if rename fails (cross-device)
-            await writeFile(indexFile, JSON.stringify(index));
-            await rm(temporaryFile, { force: true });
+        // Cross-process lock around the read-modify-write. The in-
+        // process queue only serializes within one Node — two parallel
+        // `vis run` invocations on the same cache directory used to
+        // interleave their RMW cycles, with the second `rename`
+        // overwriting the first process's task→hash mappings. Lock
+        // file is taken via `O_CREAT | O_EXCL`; stale locks (>30 s
+        // old) are reclaimed so an abandoned process doesn't wedge
+        // the cache permanently.
+        await this.#withTaskIndexLock(async () => {
+            let index: Record<string, string> = {};
+
+            try {
+                const indexContent = await readFile(indexFile, "utf8");
+
+                index = JSON.parse(indexContent) as Record<string, string>;
+            } catch {
+                // Index doesn't exist yet
+            }
+
+            index[taskId] = hash;
+
+            await writeFile(temporaryFile, JSON.stringify(index));
+
+            try {
+                await rename(temporaryFile, indexFile);
+            } catch {
+                // Fallback: direct write if rename fails (cross-device)
+                await writeFile(indexFile, JSON.stringify(index));
+                await rm(temporaryFile, { force: true });
+            }
+        });
+    }
+
+    /**
+     * Acquires an exclusive cross-process lock on the task-index
+     * file via `O_CREAT | O_EXCL`. Spins with a short delay until
+     * the lock is obtained or until the existing lock is judged
+     * stale (>30 s old) and reclaimed. A timeout aborts after ~10 s
+     * so a buggy peer can't wedge the cache forever.
+     */
+    async #withTaskIndexLock<T>(function_: () => Promise<T>): Promise<T> {
+        const lockPath = join(this.#cacheDirectory, ".task-index.lock");
+        const STALE_LOCK_MS = 30_000;
+        const ACQUIRE_TIMEOUT_MS = 10_000;
+        const start = Date.now();
+
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+            let handle: Awaited<ReturnType<typeof open>> | undefined;
+
+            try {
+                // eslint-disable-next-line no-await-in-loop
+                handle = await open(lockPath, "wx");
+            } catch (error) {
+                if ((error as NodeJS.ErrnoException).code !== "EEXIST") {
+                    throw error;
+                }
+
+                // eslint-disable-next-line no-await-in-loop
+                const existing = await stat(lockPath).catch(() => undefined);
+
+                if (existing && Date.now() - existing.mtimeMs > STALE_LOCK_MS) {
+                    // eslint-disable-next-line no-await-in-loop
+                    await rm(lockPath, { force: true }).catch(() => {});
+
+                    continue;
+                }
+
+                if (Date.now() - start > ACQUIRE_TIMEOUT_MS) {
+                    throw new Error(`Timed out waiting for task-index lock at ${lockPath}`);
+                }
+
+                // eslint-disable-next-line no-await-in-loop
+                await new Promise((r) => {
+                    setTimeout(r, 50);
+                });
+
+                continue;
+            }
+
+            try {
+                return await function_();
+            } finally {
+                await handle.close().catch(() => {});
+                await rm(lockPath, { force: true }).catch(() => {});
+            }
         }
     }
 
@@ -496,6 +604,15 @@ class Cache {
             for (const entry of entries) {
                 // Skip index files and temp dirs
                 if (entry.startsWith(".")) {
+                    continue;
+                }
+
+                // Carve out the v2 CAS root. The CAS / AC / index
+                // subtree manages its own lifetime via blob-level
+                // touch + reference accounting; reaping it as a single
+                // legacy-style entry would wipe out every cached
+                // action on the first quiet-run-then-GC cycle.
+                if (entry === V2_ROOT) {
                     continue;
                 }
 

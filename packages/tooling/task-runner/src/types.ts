@@ -705,6 +705,19 @@ export interface TaskRunnerOptions {
     autoFingerprint?: boolean;
 
     /**
+     * Failure-propagation policy.
+     *
+     * - `false` (default) — when a task fails, its transitive
+     *   dependents are marked `skipped`. Tasks not downstream of the
+     *   failure still run. Prevents cascade failures from running a
+     *   dependent on a missing `dist/` produced by the failed dep.
+     * - `true` — fail-fast. On the first failure every not-yet-started
+     *   task is marked `skipped`; in-flight tasks finish naturally.
+     * @default false
+     */
+    bail?: boolean;
+
+    /**
      * Whether to show cache miss diagnostics (why a cache miss occurred).
      * @default false
      */

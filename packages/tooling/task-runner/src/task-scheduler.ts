@@ -261,12 +261,48 @@ export class TaskScheduler {
             return [];
         }
 
+        // `parallelism: false` means the task runs in isolation — no
+        // siblings concurrent with it. While one is running we yield
+        // the entire scheduler tick so the loop waits for it to
+        // complete. Documented in vis but the field was previously
+        // ignored.
+        if (this.#runningTasks.size > 0) {
+            for (const runningId of this.#runningTasks) {
+                if (this.#taskGraph.tasks[runningId]?.parallelism === false) {
+                    return [];
+                }
+            }
+        }
+
         const readyTasks = this.#getReadyTasks();
         const sortedTasks = this.#sortByPriority(readyTasks);
 
-        // Fast path: no caps configured, original slice behavior.
+        // A `parallelism: false` candidate only fires when nothing else
+        // is running and it goes into a singleton batch — no siblings
+        // alongside it. Walk priority order and pick the first such
+        // candidate or the first un-capped one, whichever comes first.
+        if (this.#runningTasks.size === 0 && sortedTasks.length > 0 && sortedTasks[0]?.parallelism === false) {
+            return [sortedTasks[0] as Task];
+        }
+
+        // Fast path: no caps configured, original slice behavior. Stop
+        // at any `parallelism: false` task so it doesn't ride along
+        // with siblings — it'll be picked alone on a future tick.
         if (this.#taskKeys.size === 0) {
-            return sortedTasks.slice(0, availableSlots);
+            const limit = Math.min(sortedTasks.length, availableSlots);
+            const batch: Task[] = [];
+
+            for (let index = 0; index < limit; index += 1) {
+                const candidate = sortedTasks[index] as Task;
+
+                if (candidate.parallelism === false) {
+                    break;
+                }
+
+                batch.push(candidate);
+            }
+
+            return batch;
         }
 
         // Cap-aware fill. Walk in priority order and skip any task
@@ -285,10 +321,24 @@ export class TaskScheduler {
                 break;
             }
 
+            // Sole-task constraint also applies on the cap path: once
+            // any task is queued, a `parallelism: false` candidate must
+            // wait for its own tick.
+            if (task.parallelism === false) {
+                if (batch.length > 0) {
+                    break;
+                }
+            }
+
             const keys = this.#taskKeys.get(task.id);
 
             if (keys === undefined) {
                 batch.push(task);
+
+                if (task.parallelism === false) {
+                    break;
+                }
+
                 continue;
             }
 
@@ -308,6 +358,10 @@ export class TaskScheduler {
             }
 
             batch.push(task);
+
+            if (task.parallelism === false) {
+                break;
+            }
         }
 
         return batch;
@@ -384,17 +438,74 @@ export class TaskScheduler {
         return this.#runningTasks.size;
     }
 
+    /**
+     * Returns dep-id refs the task graph carries that don't resolve to
+     * any task in `tasks`, keyed by the task that declared them. The
+     * scheduler treats these as already-completed so the run can
+     * proceed, but the orchestrator surfaces this map as a warning at
+     * run start so the underlying input bug (vis / config emitting
+     * dangling refs) doesn't go silently masked.
+     */
+    public getOrphanDependencies(): Map<string, string[]> {
+        const orphans = new Map<string, string[]>();
+        const tasks = this.#taskGraph.tasks;
+
+        for (const [taskId, deps] of Object.entries(this.#taskGraph.dependencies)) {
+            if (!(taskId in tasks)) {
+                continue;
+            }
+
+            const missing = deps.filter((dep) => !(dep in tasks));
+
+            if (missing.length > 0) {
+                orphans.set(taskId, missing);
+            }
+        }
+
+        return orphans;
+    }
+
+    /**
+     * Returns task ids that are not in `completedTasks` and not in
+     * `runningTasks`, along with their unmet deps after orphan refs
+     * have been filtered out. The orchestrator's deadlock error reads
+     * this so the message can name the actual stranded tasks instead
+     * of a generic "may indicate a circular dependency" hint.
+     */
+    public describeStrandedTasks(): { id: string; unmetDeps: string[] }[] {
+        const stranded: { id: string; unmetDeps: string[] }[] = [];
+        const tasks = this.#taskGraph.tasks;
+
+        for (const taskId of Object.keys(tasks)) {
+            if (this.#completedTasks.has(taskId) || this.#runningTasks.has(taskId)) {
+                continue;
+            }
+
+            const deps = this.#taskGraph.dependencies[taskId] ?? [];
+            const unmetDeps = deps.filter((dep) => dep in tasks && !this.#completedTasks.has(dep));
+
+            stranded.push({ id: taskId, unmetDeps });
+        }
+
+        return stranded;
+    }
+
     #getReadyTasks(): Task[] {
         const ready: Task[] = [];
+        const tasks = this.#taskGraph.tasks;
 
-        for (const [taskId, task] of Object.entries(this.#taskGraph.tasks)) {
+        for (const [taskId, task] of Object.entries(tasks)) {
             if (this.#completedTasks.has(taskId) || this.#runningTasks.has(taskId)) {
                 continue;
             }
 
             const deps = this.#taskGraph.dependencies[taskId] ?? [];
 
-            if (deps.every((dep) => this.#completedTasks.has(dep))) {
+            // Treat orphan dep refs — ids the graph never materialised
+            // — as already completed. Without this, a task carrying a
+            // dangling ref sits in the ready check forever, and the
+            // orchestrator misdiagnoses the stall as a circular dep.
+            if (deps.every((dep) => this.#completedTasks.has(dep) || !(dep in tasks))) {
                 ready.push(task);
             }
         }

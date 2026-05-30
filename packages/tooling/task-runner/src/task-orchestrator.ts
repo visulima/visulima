@@ -8,6 +8,7 @@ import type { Cache, CachedResult } from "./cache";
 import type { TaskFingerprint } from "./fingerprint";
 import { FingerprintManager } from "./fingerprint";
 import { generateRunSummary, writeLastRunSummary, writeRunSummary } from "./run-summary";
+import { findCycle } from "./task-graph-utils";
 import type { TaskHasher } from "./task-hasher";
 import { computeTaskHash } from "./task-hasher";
 import type { TaskScheduler } from "./task-scheduler";
@@ -30,6 +31,20 @@ interface TaskOrchestratorOptions {
      */
     alwaysTasks?: Task[];
     autoFingerprint?: boolean;
+
+    /**
+     * Failure-propagation policy.
+     *
+     * - `false` (default) — when a task fails, its transitive
+     *   dependents are marked `skipped` with a "dependency failed"
+     *   note. Tasks not downstream of the failure still run. Prevents
+     *   the cascade failures that result from running a dependent on
+     *   a missing `dist/` produced by the failed dep.
+     * - `true` — fail-fast. On the first failure every task that
+     *   hasn't started is marked `skipped`; in-flight tasks are
+     *   allowed to finish.
+     */
+    bail?: boolean;
     cache: Cache;
     cacheDiagnostics?: boolean;
     captureOutput?: boolean;
@@ -149,6 +164,39 @@ const createDeferred = (): { promise: Promise<void>; resolve: () => void } => {
 };
 
 /**
+ * Wraps a {@link LifeCycleInterface} so every method call is
+ * fenced by a try/catch. Lifecycle hooks live outside the runner's
+ * trust boundary — TUIs, plugins, third-party reporters — and a
+ * single throw inside any of them used to break load-bearing
+ * orchestrator paths (notably `signal.resolve()` after
+ * `endTasks`/`printTaskTerminalOutput`, causing the loop to hang
+ * waiting on a deferred that no completion would fire).
+ *
+ * The proxy short-circuits failures to `undefined`. Errors are
+ * swallowed silently: the runner has no out-of-band channel to
+ * surface them without itself going through a (potentially
+ * broken) lifecycle hook.
+ */
+const wrapLifeCycle = (lifeCycle: LifeCycleInterface): LifeCycleInterface =>
+    new Proxy(lifeCycle, {
+        get(target, property, receiver) {
+            const value = Reflect.get(target, property, receiver) as unknown;
+
+            if (typeof value !== "function") {
+                return value;
+            }
+
+            return (...arguments_: unknown[]): unknown => {
+                try {
+                    return (value as (...arguments__: unknown[]) => unknown).apply(target, arguments_);
+                } catch {
+                    return undefined;
+                }
+            };
+        },
+    });
+
+/**
  * Orchestrates the execution of tasks, handling caching,
  * scheduling, and lifecycle events.
  */
@@ -203,6 +251,16 @@ class TaskOrchestrator {
 
     readonly #whenContext: WhenContext;
 
+    readonly #bail: boolean;
+
+    /**
+     * Forward-dependents index built once at construction time, used
+     * by the failure-propagation path to mark transitive downstream
+     * tasks as skipped when a dep fails. Empty when no taskGraph was
+     * supplied (callers that don't pass one opt out of skip-dependents).
+     */
+    readonly #forwardDependents: Map<string, string[]>;
+
     /** Tracks in-flight task promises so the execution loop can await them */
     readonly #inFlightTasks = new Map<string, Promise<TaskResult>>();
 
@@ -215,7 +273,7 @@ class TaskOrchestrator {
         this.#taskHasher = options.taskHasher;
         this.#cache = options.cache;
         this.#scheduler = options.scheduler;
-        this.#lifeCycle = options.lifeCycle;
+        this.#lifeCycle = wrapLifeCycle(options.lifeCycle);
         this.#taskExecutor = options.taskExecutor;
         this.#workspaceRoot = options.workspaceRoot;
         this.#skipCache = options.skipCache ?? false;
@@ -233,9 +291,12 @@ class TaskOrchestrator {
         this.#taskGraph = options.taskGraph ?? undefined;
         this.#startTime = Date.now();
         this.#alwaysTasks = options.alwaysTasks ?? [];
+        this.#bail = options.bail ?? false;
         this.#whenContext = options.whenContext ?? {
             branch: getCurrentBranch(options.workspaceRoot),
         };
+
+        this.#forwardDependents = this.#buildForwardDependents();
 
         // The trace machinery is built when fingerprinting is global
         // (`autoFingerprint`) OR any single target opted in via
@@ -255,11 +316,36 @@ class TaskOrchestrator {
     public async run(): Promise<TaskResults> {
         this.#lifeCycle.startCommand?.();
 
+        // Surface orphan dependency refs (deps naming task ids that
+        // don't exist in the graph) once per run, before any task
+        // fires. The scheduler treats them as already-completed so
+        // progress continues — this warning exists so the underlying
+        // input bug doesn't hide behind a green run.
+        const orphans = this.#scheduler.getOrphanDependencies?.();
+
+        if (orphans && orphans.size > 0) {
+            const lines = ["[task-runner] Task graph contains dependency refs that don't resolve to any task — treating them as already-completed:"];
+
+            for (const [taskId, refs] of orphans) {
+                lines.push(`  - ${taskId} → ${refs.join(", ")}`);
+            }
+
+            process.stderr.write(`${lines.join("\n")}\n`);
+        }
+
         const signalHandler = (): void => {
             this.#aborted = true;
 
-            // Kill any tracked child processes to prevent orphans
+            // Kill any tracked child processes to prevent orphans.
+            // Non-tracked (default-executor) children handle SIGINT
+            // themselves via process-group inheritance.
             this.#trackedExecutor?.killAll();
+
+            // Wake the loop so the `while (!#aborted)` predicate
+            // re-evaluates. Without this we sit on
+            // `await signal.promise` until the next task completion,
+            // which on a hung run never arrives.
+            this.#taskCompletionSignal.resolve();
         };
 
         process.on("SIGINT", signalHandler);
@@ -280,14 +366,25 @@ class TaskOrchestrator {
         }
 
         if (this.#taskGraph && !this.#aborted) {
-            const summary = generateRunSummary(this.#results, this.#taskGraph, this.#startTime);
+            // Summary persistence is a side effect of a finished run,
+            // not part of its success criterion. A failing disk write
+            // (EACCES, ENOSPC, EROFS in CI sandboxes, …) used to
+            // reject `run()` after every task had succeeded — making
+            // the caller see a failed build for what is actually a
+            // perfectly valid set of results. Catch and stash the
+            // error on stderr instead.
+            try {
+                const summary = generateRunSummary(this.#results, this.#taskGraph, this.#startTime);
 
-            // Always persist the "last run" snapshot so CLIs can replay it
-            // (interrupted runs are skipped — they'd cache incomplete output).
-            await writeLastRunSummary(summary, this.#workspaceRoot, { dataDirectory: this.#dataDirectory });
+                await writeLastRunSummary(summary, this.#workspaceRoot, { dataDirectory: this.#dataDirectory });
 
-            if (this.#summarize) {
-                await writeRunSummary(summary, this.#workspaceRoot, { dataDirectory: this.#dataDirectory });
+                if (this.#summarize) {
+                    await writeRunSummary(summary, this.#workspaceRoot, { dataDirectory: this.#dataDirectory });
+                }
+            } catch (error) {
+                const reason = error instanceof Error ? error.message : String(error);
+
+                process.stderr.write(`[task-runner] Failed to persist run summary: ${reason}\n`);
             }
         }
 
@@ -351,7 +448,7 @@ class TaskOrchestrator {
                 }
 
                 if (this.#scheduler.remainingCount > 0) {
-                    throw new Error("Deadlock detected: tasks remain but none can be scheduled. This may indicate a circular dependency.");
+                    throw new Error(this.#formatDeadlockMessage());
                 }
 
                 break;
@@ -384,17 +481,52 @@ class TaskOrchestrator {
                         this.#inFlightTasks.delete(task.id);
                         this.#scheduler.completeTask(task.id);
 
-                        this.#lifeCycle.endTasks?.([result]);
+                        // Propagate failure: by default mark transitive
+                        // dependents as skipped so the next batch
+                        // doesn't pick them up to run on a broken
+                        // upstream. With `bail` on, mark every
+                        // remaining task as skipped so the loop winds
+                        // down once in-flight tasks finish.
+                        if (result.status === "failure") {
+                            this.#propagateFailure(task.id);
+                        }
+
+                        // Lifecycle hooks live outside the runner's
+                        // trust boundary — a plugin throwing inside
+                        // endTasks() or printTaskTerminalOutput()
+                        // must NOT break the signal.resolve() path,
+                        // or the loop would hang on the next
+                        // `await signal.promise` when only this task
+                        // was in flight. Errors are swallowed so the
+                        // run completes; a buggy plugin shouldn't
+                        // take a real run red.
+                        try {
+                            this.#lifeCycle.endTasks?.([result]);
+                        } catch {
+                            // ignore
+                        }
 
                         if (result.terminalOutput) {
-                            this.#lifeCycle.printTaskTerminalOutput?.(result.task, result.status, result.terminalOutput);
+                            try {
+                                this.#lifeCycle.printTaskTerminalOutput?.(result.task, result.status, result.terminalOutput);
+                            } catch {
+                                // ignore
+                            }
                         }
 
                         // Wake the execution loop to schedule more tasks
                         this.#taskCompletionSignal.resolve();
 
                         return result;
-                    });
+                    })
+                    // Final safety net: any rejection past the .then()
+                    // (shouldn't happen — we swallow lifecycle errors
+                    // above — but `createFailureResult` or our own
+                    // bookkeeping could in principle throw) is
+                    // absorbed into a synthetic failure result so we
+                    // never produce an unhandled rejection that would
+                    // crash the host on Node 15+.
+                    .catch((error: unknown) => createFailureResult(task, error, Date.now()));
 
                 this.#inFlightTasks.set(task.id, taskPromise);
             }
@@ -830,6 +962,149 @@ class TaskOrchestrator {
         this.#results.set(task.id, result);
 
         return result;
+    }
+
+    /**
+     * Inverts `taskGraph.dependencies` into a forward-dependents
+     * lookup so the failure-propagation path can mark transitive
+     * downstream tasks as skipped in one walk. Built once at
+     * construction; cheap O(V + E).
+     */
+    #buildForwardDependents(): Map<string, string[]> {
+        const map = new Map<string, string[]>();
+
+        if (!this.#taskGraph) {
+            return map;
+        }
+
+        for (const [taskId, deps] of Object.entries(this.#taskGraph.dependencies)) {
+            for (const dep of deps) {
+                const list = map.get(dep);
+
+                if (list) {
+                    list.push(taskId);
+                } else {
+                    map.set(dep, [taskId]);
+                }
+            }
+        }
+
+        return map;
+    }
+
+    /**
+     * Marks tasks that can no longer run as `skipped` because an
+     * upstream task failed. Two modes:
+     *
+     * - default (`bail=false`): walk transitive forward-dependents of
+     *   the failed task. Unrelated tasks still run.
+     * - `bail=true`: mark *every* not-yet-completed, not-yet-running
+     *   task as skipped, so the loop winds down after in-flight tasks
+     *   finish.
+     *
+     * Skipping is implemented by writing a synthetic `skipped` result
+     * and calling `scheduler.completeTask` so `getReadyTasks` won't
+     * pick the task up.
+     */
+    #propagateFailure(failedTaskId: string): void {
+        if (!this.#taskGraph) {
+            return;
+        }
+
+        const skipReason = `Skipped: upstream dependency failed (${failedTaskId})`;
+        const tasks = this.#taskGraph.tasks;
+        const toSkip = new Set<string>();
+
+        if (this.#bail) {
+            for (const id of Object.keys(tasks)) {
+                toSkip.add(id);
+            }
+        } else {
+            const queue = [failedTaskId];
+            const seen = new Set<string>([failedTaskId]);
+
+            while (queue.length > 0) {
+                const current = queue.shift() as string;
+
+                for (const dependent of this.#forwardDependents.get(current) ?? []) {
+                    if (seen.has(dependent)) {
+                        continue;
+                    }
+
+                    seen.add(dependent);
+                    toSkip.add(dependent);
+                    queue.push(dependent);
+                }
+            }
+        }
+
+        for (const id of toSkip) {
+            // Don't overwrite a result we already have — tasks
+            // already running, completed, or with results in-flight
+            // keep their real outcomes. The `bail` path in particular
+            // would otherwise clobber the failed task's own result.
+            if (this.#results.has(id) || this.#inFlightTasks.has(id)) {
+                continue;
+            }
+
+            const task = tasks[id];
+
+            if (!task) {
+                continue;
+            }
+
+            const startTime = Date.now();
+            const result: TaskResult = {
+                code: 0,
+                endTime: startTime,
+                startTime,
+                status: "skipped",
+                task,
+                terminalOutput: skipReason,
+            };
+
+            this.#results.set(id, result);
+            this.#scheduler.completeTask(id);
+
+            try {
+                this.#lifeCycle.endTasks?.([result]);
+            } catch {
+                // ignore — see the .then() handler for the rationale
+            }
+        }
+    }
+
+    /**
+     * Builds a multi-line error message for the deadlock case. After
+     * the scheduler treats orphan dep refs as completed, a true deadlock
+     * can only come from a cycle. We name the participating tasks (when
+     * a cycle is found) and list any stranded tasks with their unmet
+     * deps — strictly more informative than the previous "may indicate
+     * a circular dependency" hint that pointed operators at the wrong
+     * root cause when dangling refs were to blame.
+     */
+    #formatDeadlockMessage(): string {
+        const lines = ["Deadlock detected: tasks remain but none can be scheduled."];
+
+        if (this.#taskGraph) {
+            const cycle = findCycle(this.#taskGraph);
+
+            if (cycle && cycle.length > 0) {
+                lines.push(`Circular dependency found: ${cycle.join(" → ")}`);
+            }
+        }
+
+        const stranded = this.#scheduler.describeStrandedTasks?.();
+
+        if (stranded && stranded.length > 0) {
+            lines.push("Stranded tasks (id → unmet deps):");
+
+            for (const { id, unmetDeps } of stranded) {
+                lines.push(`  - ${id} → ${unmetDeps.length > 0 ? unmetDeps.join(", ") : "(no unmet deps — scheduler bug, please report)"}`);
+            }
+        }
+
+        return lines.join("\n");
     }
 }
 

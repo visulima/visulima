@@ -139,7 +139,19 @@ const stageBlob = async (root: string, sourcePath: string): Promise<string> => {
     const stagingPath = `${tmpDirectoryPath}/${uniqueId()}`;
 
     await mkdir(tmpDirectoryPath, { recursive: true });
-    await pipeline(createReadStream(sourcePath), createWriteStream(stagingPath));
+
+    try {
+        await pipeline(createReadStream(sourcePath), createWriteStream(stagingPath));
+    } catch (error) {
+        // Pipeline failure (ENOSPC, source vanished mid-copy, write
+        // stream error) used to leak the half-written staging file
+        // in `v2/tmp/` because the cleanup lived in
+        // `putBlobFromFile`'s try/catch, which never runs if
+        // `stageBlob` itself throws.
+        await rm(stagingPath, { force: true }).catch(() => {});
+
+        throw error;
+    }
 
     return stagingPath;
 };
