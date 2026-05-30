@@ -121,10 +121,35 @@ const withEnhancedPathConfigs = (configs: ConcurrentCommandConfig[]): Concurrent
         const enhanced = buildEnhancedPath(cwd, config.env);
         const nextEnv: Record<string, string> = { ...(config.env ?? {}) };
 
+        // Strip any aliased `Path` / `path` keys so Node's
+        // last-write-wins env serialisation can't pick the
+        // pre-enhanced value. Previously, a caller spreading
+        // `process.env` on Windows (which exposes `Path`) into config
+        // ended up with both `PATH` and `Path` set; the spawn's
+        // effective PATH was non-deterministic depending on object
+        // key order, occasionally losing the workspace `.bin` prepend.
+        for (const key of Object.keys(nextEnv)) {
+            if (key === "Path" || key === "path") {
+                // eslint-disable-next-line security/detect-object-injection
+                delete nextEnv[key];
+            }
+        }
+
         nextEnv["PATH"] = enhanced;
 
-        if ("Path" in nextEnv) {
+        if (process.platform === "win32") {
+            // Some Windows toolchains (older PowerShell, cygwin
+            // shims) still read `Path`. Mirror the canonical value
+            // so they don't drop the workspace bin chain.
             nextEnv["Path"] = enhanced;
+
+            // Preserve PATHEXT — PowerShell shims (`pnpm.ps1`,
+            // `vitest.ps1`) need it to resolve `node.exe` by bare
+            // name. A sanitised-env mode that drops PATHEXT used to
+            // make every shim invocation fail silently.
+            if (!("PATHEXT" in nextEnv) && process.env["PATHEXT"]) {
+                nextEnv["PATHEXT"] = process.env["PATHEXT"];
+            }
         }
 
         return { ...config, env: nextEnv };

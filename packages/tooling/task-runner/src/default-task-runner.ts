@@ -78,6 +78,66 @@ const computeGlobalEnvNamespace = (globalEnv: string[] | undefined): string | un
 };
 
 /**
+ * Default list of env-var patterns the hasher should NOT mix into the
+ * cache key. Mirrors Turborepo's reference list (taskhash.go) plus the
+ * vite-task PR #262 additions: GitHub Actions runner env, Corepack /
+ * Volta package-manager state, X11 session, dynamic-loader injection
+ * (LD_*, DYLD_*), Windows install-path metadata, and pnpm/Corepack
+ * helper paths that flip every run.
+ *
+ * Any pattern here is interpreted by the hasher as a glob — wildcards
+ * are honoured so future env additions don't require version bumps.
+ * User-supplied `untrackedEnvVars` are appended after these so users
+ * can extend (not replace) the defaults.
+ */
+const DEFAULT_UNTRACKED_ENV_PATTERNS: ReadonlyArray<string> = [
+    // GitHub Actions runner env (busts cache between local and CI)
+    "GITHUB_*",
+    "RUNNER_*",
+    "ACTIONS_*",
+    "GH_*",
+    // Other CI providers
+    "CI_*",
+    "BUILDKITE_*",
+    "CIRCLECI_*",
+    "CIRCLE_*",
+    "GITLAB_*",
+    "VERCEL_GIT_*",
+    "NETLIFY_BUILD_*",
+    // Package-manager state that flips per run
+    "COREPACK_*",
+    "VOLTA_*",
+    "NPM_CONFIG_*",
+    "YARN_*",
+    "PNPM_*",
+    // Node / runtime debug / loader injection
+    "NODE_OPTIONS",
+    "NODE_PATH",
+    "NODE_REPL_HISTORY",
+    "NODE_EXTRA_CA_CERTS",
+    "LD_PRELOAD",
+    "LD_LIBRARY_PATH",
+    "DYLD_INSERT_LIBRARIES",
+    "DYLD_LIBRARY_PATH",
+    // Session / display
+    "DISPLAY",
+    "XAUTHORITY",
+    "DBUS_SESSION_BUS_ADDRESS",
+    "SSH_AUTH_SOCK",
+    "SSH_AGENT_PID",
+    "TMUX",
+    "TMUX_PANE",
+    "STY",
+    "WINDOWID",
+    "TERM_SESSION_ID",
+    // Windows install-path / shell metadata
+    "PROCESSOR_*",
+    "USERDNSDOMAIN",
+    "LOGONSERVER",
+    "USERDOMAIN_*",
+];
+
+/**
  * Resolves the parallel option to a numeric value.
  */
 const resolveParallel = (parallel: number | boolean | undefined): number => {
@@ -231,6 +291,7 @@ const defaultTaskRunner = async (_tasks: Task[], options: TaskRunnerOptions, con
     const orchestrator = new TaskOrchestrator({
         alwaysTasks,
         autoFingerprint: options.autoFingerprint,
+        bail: options.bail,
         cache,
         cacheDiagnostics: options.cacheDiagnostics,
         captureOutput: true,
@@ -250,7 +311,7 @@ const defaultTaskRunner = async (_tasks: Task[], options: TaskRunnerOptions, con
         taskExecutor,
         taskGraph: scheduledGraph,
         taskHasher,
-        untrackedEnvVars: options.untrackedEnvVars,
+        untrackedEnvVars: [...DEFAULT_UNTRACKED_ENV_PATTERNS, ...(options.untrackedEnvVars ?? [])],
         workspaceRoot,
     });
 

@@ -135,6 +135,16 @@ const getDependencyProjectTasks = (
     const deps = projectGraph.dependencies[projectName] ?? [];
 
     for (const dep of deps) {
+        // Skip self-edges. A package that lists itself as a workspace
+        // dependency (a real and easy-to-make mistake in package.json)
+        // would otherwise produce `pkg:build → pkg:build` and the
+        // orchestrator's deadlock detector would surface it as a
+        // circular dependency — pointing the operator at the task
+        // graph when the real bug is in the project graph.
+        if (dep.target === projectName) {
+            continue;
+        }
+
         const depProject = workspace.projects[dep.target];
 
         if (!depProject) {
@@ -284,6 +294,7 @@ const createTaskGraph = (initialTasks: Task[], options: CreateTaskGraphOptions):
     const tasks: Record<string, Task> = {};
     const dependencies: Record<string, string[]> = {};
     const visited = new Set<string>();
+    const queued = new Set<string>(initialTasks.map((task) => task.id));
     const queue: Task[] = [...initialTasks];
 
     while (queue.length > 0) {
@@ -306,8 +317,16 @@ const createTaskGraph = (initialTasks: Task[], options: CreateTaskGraphOptions):
         for (const depTask of deps) {
             dependencies[task.id]?.push(depTask.id);
 
-            if (!visited.has(depTask.id)) {
+            // Dedup at queue-time, not just at dequeue-time. Diamond
+            // graphs (multiple parents sharing a dep) used to push the
+            // same dep onto the queue once per parent; the visited
+            // check inside the while loop made each extra entry a
+            // no-op but still allocated. Track `queued` separately so
+            // we don't accidentally mark the dep as fully processed
+            // before its own deps are resolved.
+            if (!visited.has(depTask.id) && !queued.has(depTask.id)) {
                 queue.push(depTask);
+                queued.add(depTask.id);
             }
         }
     }

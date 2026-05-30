@@ -187,10 +187,9 @@ class HttpRemoteCache implements RemoteCacheBackend {
         try {
             const artifactUrl = this.#buildUrl(`/v8/artifacts/${actionDigest.hash}`);
 
-            const response = await fetch(artifactUrl, {
+            const response = await this.#fetchWithRetry(artifactUrl, {
                 headers: this.#buildHeaders(),
                 method: "HEAD",
-                signal: AbortSignal.timeout(this.#timeout),
             });
 
             return response.ok;
@@ -233,13 +232,25 @@ class HttpRemoteCache implements RemoteCacheBackend {
 
             const artifactUrl = this.#buildUrl(`/v8/artifacts/${actionDigest.hash}`);
 
-            const response = await fetch(artifactUrl, {
+            const response = await this.#fetchWithRetry(artifactUrl, {
                 headers: this.#buildHeaders(),
                 method: "GET",
-                signal: AbortSignal.timeout(this.#timeout),
             });
 
+            // 404 is a legitimate cache miss; everything else is a
+            // configuration / wire problem that the operator needs
+            // to see, not silently swallow as if no entry existed.
+            // Auth (401/403), 5xx that survived retry, and similar
+            // are surfaced via `onUploadError` (reusing the same
+            // sink so operators have one place to look) before we
+            // degrade to "miss".
+            if (response.status === 404) {
+                return null;
+            }
+
             if (!response.ok || !response.body) {
+                this.#onUploadError?.(actionDigest.hash, new Error(`remote cache GET ${actionDigest.hash} returned HTTP ${response.status}`));
+
                 return null;
             }
 
@@ -252,6 +263,31 @@ class HttpRemoteCache implements RemoteCacheBackend {
             }
 
             await pipeline(response.body as unknown as NodeJS.ReadableStream, createWriteStream(stagingPath));
+
+            // Content-Length integrity check. Without signing
+            // configured (the default), this is the only line of
+            // defence against a truncated body landing in the local
+            // CAS under a hash that no longer matches the bytes —
+            // which then crashes the next decompression with an
+            // unhelpful "invalid archive" error. A mismatch is
+            // surfaced via `onUploadError` and the entry is rejected
+            // (not stored), so the orchestrator falls back to
+            // re-executing the task with a clear diagnostic.
+            const declaredLength = response.headers.get("content-length");
+
+            if (declaredLength !== null) {
+                const expectedSize = Number.parseInt(declaredLength, 10);
+                const { size: actualSize } = await stat(stagingPath);
+
+                if (Number.isFinite(expectedSize) && actualSize !== expectedSize) {
+                    this.#onUploadError?.(
+                        actionDigest.hash,
+                        new Error(`remote cache GET ${actionDigest.hash} truncated: declared ${expectedSize} bytes, received ${actualSize}`),
+                    );
+
+                    return null;
+                }
+            }
 
             if (this.#signingSecret && receivedSignature) {
                 const expected = await computeArtifactSignatureStream(this.#signingSecret, actionDigest.hash, stagingPath);
@@ -375,6 +411,12 @@ class HttpRemoteCache implements RemoteCacheBackend {
                 }
             }
 
+            // PUTs intentionally don't go through `fetchWithRetry`:
+            // each retry would have to re-open the file stream, and
+            // duplicate writes on the server side aren't free. Single
+            // attempt; non-OK still surfaces via onUploadError below
+            // so the operator sees auth / quota / 5xx instead of a
+            // silent skip.
             const response = await fetch(artifactUrl, {
                 body: createReadStream(stagingPath) as unknown as BodyInit,
                 // @ts-expect-error — `duplex` is a Node-specific fetch
@@ -385,7 +427,16 @@ class HttpRemoteCache implements RemoteCacheBackend {
                 signal: AbortSignal.timeout(this.#timeout),
             });
 
-            return response.ok;
+            if (!response.ok) {
+                this.#onUploadError?.(
+                    actionDigest.hash,
+                    new Error(`remote cache PUT ${actionDigest.hash} returned HTTP ${response.status}`),
+                );
+
+                return false;
+            }
+
+            return true;
         } catch (error) {
             this.#onUploadError?.(actionDigest.hash, error);
 
@@ -393,6 +444,70 @@ class HttpRemoteCache implements RemoteCacheBackend {
         } finally {
             await rm(stagingPath, { force: true }).catch(() => {});
         }
+    }
+
+    /**
+     * Fetch wrapper that retries idempotent reads (GET/HEAD) on
+     * transient failures — 502/503/504 from Vercel/S3-backed Turbo
+     * caches, 429 burst rejects on shared CI runners, and aborted
+     * connections. Exponential backoff (250 ms → 500 → 1000 → 2000,
+     * capped at 4 attempts) so a flapping cache server doesn't
+     * silently force every task to re-execute. PUTs are NOT routed
+     * through here (see `#uploadAction`).
+     *
+     * 429 `Retry-After` is honoured when present and reasonable
+     * (≤ this.#timeout); otherwise we fall back to the exponential
+     * delay. Anything outside this set (4xx, success, body errors)
+     * returns immediately so the caller can decide.
+     */
+    async #fetchWithRetry(url: string, init: RequestInit): Promise<Response> {
+        const RETRY_STATUSES = new Set([429, 502, 503, 504]);
+        const MAX_ATTEMPTS = 4;
+        const BASE_DELAY_MS = 250;
+        let lastError: unknown;
+
+        for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt += 1) {
+            try {
+                const response = await fetch(url, {
+                    ...init,
+                    signal: AbortSignal.timeout(this.#timeout),
+                });
+
+                if (!RETRY_STATUSES.has(response.status) || attempt === MAX_ATTEMPTS - 1) {
+                    return response;
+                }
+
+                const retryAfter = response.headers.get("retry-after");
+                let delay = BASE_DELAY_MS * (2 ** attempt);
+
+                if (retryAfter !== null) {
+                    const parsed = Number.parseInt(retryAfter, 10);
+
+                    if (Number.isFinite(parsed) && parsed > 0) {
+                        delay = Math.min(parsed * 1000, this.#timeout);
+                    }
+                }
+
+                await new Promise((resolve) => {
+                    setTimeout(resolve, delay);
+                });
+            } catch (error) {
+                lastError = error;
+
+                // Don't retry abort errors caused by our own timeout;
+                // those mean the per-request budget is up.
+                if ((error as Error)?.name === "TimeoutError" || attempt === MAX_ATTEMPTS - 1) {
+                    throw error;
+                }
+
+                await new Promise((resolve) => {
+                    setTimeout(resolve, BASE_DELAY_MS * (2 ** attempt));
+                });
+            }
+        }
+
+        // Unreachable: the loop always either returns or throws.
+        throw (lastError ?? new Error("remote cache request exhausted retries"));
     }
 
     #buildUrl(path: string): string {

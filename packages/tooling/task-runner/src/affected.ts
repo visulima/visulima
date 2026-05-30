@@ -75,9 +75,21 @@ interface AffectedResult {
 const findProjectForFile = (filePath: string, projects: Record<string, ProjectConfiguration>): string | undefined => {
     let bestMatch: string | undefined;
     let bestLength = 0;
+    // Workspace-root project (root: "." or root: "") matches any file
+    // not claimed by a more specific project. Without this special-case,
+    // `${root}/` becomes `./` and `filePath.startsWith("./")` is false for
+    // git-relative paths like `package.json` — every changed file then
+    // falls through to "outside all projects" and the caller marks the
+    // whole workspace as affected, defeating affected detection.
+    let rootProject: string | undefined;
 
     for (const [name, config] of Object.entries(projects)) {
         const { root } = config;
+
+        if (root === "" || root === ".") {
+            rootProject = name;
+            continue;
+        }
 
         // Check if file is within this project's root
         if (
@@ -89,7 +101,7 @@ const findProjectForFile = (filePath: string, projects: Record<string, ProjectCo
         }
     }
 
-    return bestMatch;
+    return bestMatch ?? rootProject;
 };
 
 /**

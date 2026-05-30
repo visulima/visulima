@@ -17,6 +17,35 @@ import { spawn as ptySpawn } from "@lydell/node-pty";
 
 import type { ConcurrentCloseEvent, ConcurrentCommandConfig, ConcurrentRunnerOptions, ConcurrentRunResult, ProcessEvent } from "./types";
 
+/**
+ * POSIX signal-name → number mapping covering the signals we
+ * realistically see from a killed child. Used to encode the conventional
+ * `128 + signum` exit code so downstream CI checks (`137` for SIGKILL,
+ * `143` for SIGTERM, `139` for SIGSEGV) keep working. Falls back to
+ * SIGTERM's 15 when the platform reports a signal name we don't know.
+ */
+const SIGNAL_NUMBERS: Record<string, number> = {
+    SIGABRT: 6,
+    SIGALRM: 14,
+    SIGBUS: 7,
+    SIGCHLD: 17,
+    SIGFPE: 8,
+    SIGHUP: 1,
+    SIGILL: 4,
+    SIGINT: 2,
+    SIGKILL: 9,
+    SIGPIPE: 13,
+    SIGQUIT: 3,
+    SIGSEGV: 11,
+    SIGSTOP: 19,
+    SIGTERM: 15,
+    SIGTRAP: 5,
+    SIGUSR1: 10,
+    SIGUSR2: 12,
+};
+
+const signalNumberFor = (signal: NodeJS.Signals | string): number | undefined => SIGNAL_NUMBERS[signal];
+
 interface ActiveProcess {
     child?: ChildProcess;
     index: number;
@@ -269,7 +298,11 @@ const spawnCommand = (
         const elapsed = process.hrtime(startTime);
         const durationMs = elapsed[0] * 1000 + elapsed[1] / 1_000_000;
 
-        const exitCode = code ?? (signal ? 1 : -1);
+        // Preserve POSIX `128 + signum` semantics for signal-killed
+        // children so downstream CI checks for 137 (SIGKILL) / 139
+        // (SIGSEGV) / 143 (SIGTERM) still work. The previous form
+        // collapsed every signal exit into `1`, losing the cause.
+        const exitCode = code ?? (signal ? 128 + (signalNumberFor(signal) ?? 15) : -1);
 
         const closeEvent: ConcurrentCloseEvent = {
             command: config.command,

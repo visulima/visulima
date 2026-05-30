@@ -1,5 +1,5 @@
 import type { ChildProcess } from "node:child_process";
-import { exec, execFileSync } from "node:child_process";
+import { execFile, execFileSync } from "node:child_process";
 import { mkdir, readFile, rm } from "node:fs/promises";
 import { platform } from "node:os";
 
@@ -159,12 +159,32 @@ export class FileAccessTracker {
         // -e trace=open,openat,stat,lstat,newfstatat,access,getdents,getdents64: track file operations
         // -o: output to file
         // -qq: suppress non-essential messages
-        const straceCommand = `strace -f -qq -e trace=open,openat,creat,stat,lstat,newfstatat,access,getdents,getdents64,unlink,unlinkat,rename,renameat,renameat2 -o ${traceFile} -- ${command}`;
+        //
+        // Spawn argv-style rather than going through /bin/sh. The
+        // workspace path (and thus `traceFile`) can contain spaces on
+        // perfectly normal contributor machines (macOS Library paths,
+        // mounted shares, CI workers); string interpolation through a
+        // shell would break the `-o` flag and silently produce no
+        // trace, which the catch below mistakes for "strace not
+        // available" and the orchestrator caches the task as if it
+        // had no inputs.
+        const straceArgs = [
+            "-f",
+            "-qq",
+            "-e",
+            "trace=open,openat,creat,stat,lstat,newfstatat,access,getdents,getdents64,unlink,unlinkat,rename,renameat,renameat2",
+            "-o",
+            traceFile,
+            "--",
+            "sh",
+            "-c",
+            command,
+        ];
 
         return new Promise((_resolve) => {
-            // eslint-disable-next-line sonarjs/os-command
-            const child = exec(
-                straceCommand,
+            const child = execFile(
+                "strace",
+                straceArgs,
                 {
                     cwd: options.cwd ?? this.#workspaceRoot,
                     env: withEnhancedPath({ ...process.env, ...options.env }, options.cwd ?? this.#workspaceRoot),
@@ -328,9 +348,14 @@ export class FileAccessTracker {
         },
     ): Promise<TrackingResult> {
         return new Promise((_resolve) => {
-            // eslint-disable-next-line sonarjs/os-command
-            const child = exec(
-                command,
+            // Argv-style spawn through `sh -c`: keeps the user task's
+            // shell expansion semantics intact while avoiding string
+            // interpolation of the workspace path. A workspaceRoot
+            // containing spaces used to break the previous string-form
+            // invocation when the command referenced derived paths.
+            const child = execFile(
+                "sh",
+                ["-c", command],
                 {
                     cwd: options.cwd ?? this.#workspaceRoot,
                     env: withEnhancedPath({ ...process.env, ...options.env }, options.cwd ?? this.#workspaceRoot),

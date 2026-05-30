@@ -173,6 +173,48 @@ const executeRuntimeCommand = (runtime: string): Promise<string> => {
     });
 };
 
+/**
+ * Stable, presence-distinct signature for an env var. The previous
+ * `${process.env[name] ?? ""}` form collapsed three distinct states —
+ * unset, set to empty, present-but-cleared — into a single hash, so
+ * flipping `CI` between unset and `""` reused the same cache entry.
+ * Prefix `1:` when the key is in `process.env`, `0:` otherwise.
+ */
+const envSignature = (name: string): string => {
+    if (Object.prototype.hasOwnProperty.call(process.env, name)) {
+        return `1:${process.env[name] ?? ""}`;
+    }
+
+    return "0:";
+};
+
+/**
+ * Sort/normalise an `OutputSpec[]` so equivalent declarations produce
+ * the same JSON signature. String entries are sorted lexicographically;
+ * `{ auto: true }` is encoded explicitly. Used as part of the cache key
+ * so reordering or rewriting outputs invalidates stale entries.
+ */
+const canonicaliseOutputs = (outputs: ReadonlyArray<string | { auto: true }> | undefined): unknown[] => {
+    if (!outputs || outputs.length === 0) {
+        return [];
+    }
+
+    const strings: string[] = [];
+    let hasAuto = false;
+
+    for (const spec of outputs) {
+        if (typeof spec === "string") {
+            strings.push(spec);
+        } else if (spec.auto) {
+            hasAuto = true;
+        }
+    }
+
+    strings.sort();
+
+    return hasAuto ? [...strings, { auto: true }] : strings;
+};
+
 /** Cache for runtime command results (they don't change within a run) */
 const runtimeCache = new Map<string, string>();
 
@@ -340,7 +382,7 @@ class InProcessTaskHasher implements TaskHasher {
                 // eslint-disable-next-line no-await-in-loop -- runtime inputs processed within sequential input loop
                 runtime[input.runtime] = await hashRuntimeValue(input.runtime);
             } else if (isEnvironmentInput(input)) {
-                runtime[`env:${input.env}`] = hashStrings(input.env, process.env[input.env] ?? "");
+                runtime[`env:${input.env}`] = hashStrings(input.env, envSignature(input.env));
             } else if (isExternalDependencyInput(input)) {
                 // eslint-disable-next-line no-await-in-loop -- external dependencies processed within sequential input loop
                 const depHashes = await Promise.all(input.externalDependencies.map(async (dep) => [dep, await this.#hashExternalDependency(dep)] as const));
@@ -352,7 +394,7 @@ class InProcessTaskHasher implements TaskHasher {
         }
 
         for (const envVariable of this.#envVars) {
-            runtime[`env:${envVariable}`] = hashStrings(envVariable, process.env[envVariable] ?? "");
+            runtime[`env:${envVariable}`] = hashStrings(envVariable, envSignature(envVariable));
         }
 
         // Auto-fingerprint env vars referenced in the task's command
@@ -368,7 +410,7 @@ class InProcessTaskHasher implements TaskHasher {
 
                     // Don't overwrite if the user already declared it.
                     if (runtime[key] === undefined) {
-                        runtime[key] = hashStrings(name, process.env[name] ?? "");
+                        runtime[key] = hashStrings(name, envSignature(name));
                     }
                 }
             }
@@ -391,7 +433,7 @@ class InProcessTaskHasher implements TaskHasher {
                 const frameworkEnvVariables = await getFrameworkEnvVariables(packageJsonPath);
 
                 for (const envName of Object.keys(frameworkEnvVariables)) {
-                    runtime[`framework-env:${envName}`] = hashStrings(envName, process.env[envName] ?? "");
+                    runtime[`framework-env:${envName}`] = hashStrings(envName, envSignature(envName));
                 }
             }
         }
@@ -451,8 +493,25 @@ class InProcessTaskHasher implements TaskHasher {
     #hashCommand(task: Task): string {
         const overridesJson = JSON.stringify(sortObjectKeys(task.overrides));
 
+        // Resolve the command text and outputs deterministically so the
+        // cache key changes when either does. Without this, editing
+        // `"build": "tsc"` → `"build": "rolldown"` in package.json or
+        // flipping `outputs: ["dist/**"]` → `["build/**"]` produced an
+        // identical hash and the next run returned the stale artefact.
+        const commandText = this.#resolveCommandText(task) ?? "";
+        const outputsJson = JSON.stringify(canonicaliseOutputs(task.outputs));
+
         if (this.#native) {
-            return this.#native.hashCommand(task.target.project, task.target.target, task.target.configuration ?? undefined, overridesJson);
+            // Native bindings expect a single overrides payload; fold
+            // command + outputs into it so the Rust hasher participates
+            // without an API/version change.
+            const compositeOverrides = JSON.stringify({
+                command: commandText,
+                outputs: outputsJson,
+                overrides: sortObjectKeys(task.overrides),
+            });
+
+            return this.#native.hashCommand(task.target.project, task.target.target, task.target.configuration ?? undefined, compositeOverrides);
         }
 
         const hash = createXxh3Hasher();
@@ -465,6 +524,8 @@ class InProcessTaskHasher implements TaskHasher {
         }
 
         hash.update(overridesJson);
+        hash.update(`command:${commandText}`);
+        hash.update(`outputs:${outputsJson}`);
 
         return hash.digest();
     }
@@ -571,7 +632,18 @@ class InProcessTaskHasher implements TaskHasher {
             return {};
         }
 
-        const absoluteBase = resolve(this.#workspaceRoot, resolvedPattern.replace(/\/\*\*\/\*$/, "").replace(/\/\*$/, ""));
+        // Find the deepest dir prefix that contains no glob magic. The
+        // previous form only stripped a trailing `/**/*` or `/*`, so a
+        // perfectly normal pattern like `src/**/*.ts` (or `src/*.json`,
+        // or `**/*.tsx`) was resolved as a directory literally named
+        // `**`/`*.ts`, which never exists. The catch at the bottom of
+        // this method then swallowed the ENOENT and returned `{}`,
+        // meaning the task hash silently included zero files from that
+        // input — every subsequent run became a false cache hit.
+        const segments = resolvedPattern.split("/");
+        const firstGlobIndex = segments.findIndex((segment) => /[*?[{]/.test(segment));
+        const baseSegments = firstGlobIndex === -1 ? segments : segments.slice(0, firstGlobIndex);
+        const absoluteBase = resolve(this.#workspaceRoot, baseSegments.join("/") || ".");
         const absoluteNegations = negationPatterns.map((p) => resolve(this.#workspaceRoot, p));
         const result: Record<string, string> = {};
 
@@ -745,7 +817,7 @@ class InProcessTaskHasher implements TaskHasher {
         }
 
         for (const envName of this.#globalEnv) {
-            hash.update(`globalEnv:${envName}=${process.env[envName] ?? ""}`);
+            hash.update(`globalEnv:${envName}=${envSignature(envName)}`);
             hasContent = true;
         }
 

@@ -1,10 +1,10 @@
-import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
 
 // eslint-disable-next-line import/no-extraneous-dependencies -- bundled inline by packem from workspace devDependency
 import { xxh3Hash } from "@shared/xxh3";
 import { dirname, join, relative } from "@visulima/path";
 
-import { collectFiles } from "./utils";
+import { collectFiles, uniqueId } from "./utils";
 
 /**
  * Incremental file hasher that only re-hashes files that have changed
@@ -98,7 +98,22 @@ class IncrementalFileHasher {
             data[path] = snap;
         }
 
-        await writeFile(this.#snapshotPath, JSON.stringify(data));
+        // tmp + rename so a crash mid-write doesn't leave a truncated
+        // JSON file on disk. The previous direct write meant any
+        // interrupted run regressed the snapshot to "unloadable" — the
+        // next run's `load()` swallowed the parse error and silently
+        // started cold, losing the incremental hasher's entire reason
+        // for existing across that boundary.
+        const temporaryPath = `${this.#snapshotPath}.tmp-${uniqueId()}`;
+
+        try {
+            await writeFile(temporaryPath, JSON.stringify(data));
+            await rename(temporaryPath, this.#snapshotPath);
+        } catch (error) {
+            await rm(temporaryPath, { force: true }).catch(() => {});
+
+            throw error;
+        }
     }
 
     /**
