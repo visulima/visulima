@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 
+import { TOOL_SIGNATURES } from "../../util/tool-signatures";
 import type { AdapterRunOptions, Finding, ToolAdapter, ToolPresence } from "../config-types";
 import { findFirstConfig } from "../detect";
 
@@ -18,10 +19,8 @@ import { findFirstConfig } from "../detect";
  * deno isn't an npm package.
  */
 
-const CONFIG_CANDIDATES = ["deno.json", "deno.jsonc"];
-
 const detectDeno = (id: "deno-fmt" | "deno-lint") => (root: string): ToolPresence | undefined => {
-    const configFile = findFirstConfig(root, CONFIG_CANDIDATES);
+    const configFile = findFirstConfig(root, TOOL_SIGNATURES.deno.configFiles);
 
     if (!configFile) {
         return undefined;

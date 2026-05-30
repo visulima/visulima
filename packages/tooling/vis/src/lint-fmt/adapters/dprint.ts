@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 
+import { TOOL_SIGNATURES } from "../../util/tool-signatures";
 import type { AdapterRunOptions, Finding, ToolAdapter } from "../config-types";
 import { declaredVersion, findFirstConfig } from "../detect";
 
@@ -20,8 +21,6 @@ import { declaredVersion, findFirstConfig } from "../detect";
  * extras don't cause harm.
  */
 
-const CONFIG_CANDIDATES = ["dprint.json", "dprint.jsonc", ".dprint.json", ".dprint.jsonc"];
-
 export const dprintAdapter: ToolAdapter = {
     argsCheck: (files, options) => buildArgs(files, options, "check"),
     argsFix: (files, options) => buildArgs(files, options, "fix"),
@@ -41,8 +40,8 @@ export const dprintAdapter: ToolAdapter = {
     },
 
     detect: (root, packageJson) => {
-        const declared = declaredVersion(packageJson, "dprint");
-        const configFile = findFirstConfig(root, CONFIG_CANDIDATES);
+        const declared = declaredVersion(packageJson, TOOL_SIGNATURES.dprint.packageNames[0]);
+        const configFile = findFirstConfig(root, TOOL_SIGNATURES.dprint.configFiles);
 
         if (!declared && !configFile) {
             return undefined;

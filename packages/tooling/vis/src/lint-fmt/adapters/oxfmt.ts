@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 
+import { TOOL_SIGNATURES } from "../../util/tool-signatures";
 import type { AdapterRunOptions, Finding, ToolAdapter } from "../config-types";
 import { declaredVersion, findFirstConfig } from "../detect";
 
@@ -14,22 +15,6 @@ import { declaredVersion, findFirstConfig } from "../detect";
  * so we don't pass `--ignore-path` ourselves — the orchestrator's
  * vis-level ignore set layers on top of that.
  */
-
-const CONFIG_CANDIDATES = [
-    ".oxfmtrc",
-    ".oxfmtrc.json",
-    ".oxfmtrc.jsonc",
-    ".oxfmtrc.ts",
-    ".oxfmtrc.mts",
-    ".oxfmtrc.cts",
-    ".oxfmtrc.js",
-    ".oxfmtrc.mjs",
-    ".oxfmtrc.cjs",
-    "oxfmt.config.ts",
-    "oxfmt.config.mts",
-    "oxfmt.config.js",
-    "oxfmt.config.mjs",
-];
 
 export const oxfmtAdapter: ToolAdapter = {
     argsCheck: (files, options) => buildArgs(files, options, "check"),
@@ -50,8 +35,8 @@ export const oxfmtAdapter: ToolAdapter = {
     },
 
     detect: (root, packageJson) => {
-        const declared = declaredVersion(packageJson, "oxfmt");
-        const configFile = findFirstConfig(root, CONFIG_CANDIDATES);
+        const declared = declaredVersion(packageJson, TOOL_SIGNATURES.oxfmt.packageNames[0]);
+        const configFile = findFirstConfig(root, TOOL_SIGNATURES.oxfmt.configFiles);
 
         if (!declared && !configFile) {
             return undefined;

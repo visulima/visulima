@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 
+import { TOOL_SIGNATURES } from "../../util/tool-signatures";
 import type { AdapterRunOptions, Finding, FindingSeverity, ToolAdapter } from "../config-types";
 import { declaredVersion, findFirstConfig } from "../detect";
 
@@ -14,19 +15,6 @@ import { declaredVersion, findFirstConfig } from "../detect";
  * surface presence even without a config file — eslint's own
  * "no config" error then surfaces at run time with a clear message.
  */
-
-const CONFIG_CANDIDATES = [
-    "eslint.config.js",
-    "eslint.config.mjs",
-    "eslint.config.cjs",
-    "eslint.config.ts",
-    "eslint.config.mts",
-    ".eslintrc.js",
-    ".eslintrc.cjs",
-    ".eslintrc.json",
-    ".eslintrc.yaml",
-    ".eslintrc.yml",
-];
 
 const SEVERITY_MAP: Record<number, FindingSeverity> = {
     1: "warning",
@@ -71,8 +59,8 @@ export const eslintAdapter: ToolAdapter = {
     },
 
     detect: (root, packageJson) => {
-        const declared = declaredVersion(packageJson, "eslint");
-        const configFile = findFirstConfig(root, CONFIG_CANDIDATES);
+        const declared = declaredVersion(packageJson, TOOL_SIGNATURES.eslint.packageNames[0]);
+        const configFile = findFirstConfig(root, TOOL_SIGNATURES.eslint.configFiles);
 
         if (!declared && !configFile) {
             return undefined;

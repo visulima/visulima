@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 
 import { join } from "@visulima/path";
 
+import { TOOL_SIGNATURES } from "../../util/tool-signatures";
 import type { AdapterRunOptions, Finding, FindingSeverity, ToolAdapter } from "../config-types";
 import { declaredVersion, findFirstConfig } from "../detect";
 
@@ -18,8 +19,6 @@ import { declaredVersion, findFirstConfig } from "../detect";
  * stable enough across 1.x → 2.x for our needs but we treat parse
  * failures as a single synthetic error rather than crashing.
  */
-
-const CONFIG_CANDIDATES = ["biome.json", "biome.jsonc"];
 
 const SEVERITY_MAP: Record<string, FindingSeverity> = {
     error: "error",
@@ -70,8 +69,8 @@ export const biomeAdapter: ToolAdapter = {
     },
 
     detect: (root, packageJson) => {
-        const declared = declaredVersion(packageJson, "@biomejs/biome");
-        const configFile = findFirstConfig(root, CONFIG_CANDIDATES);
+        const declared = declaredVersion(packageJson, TOOL_SIGNATURES.biome.packageNames[0]);
+        const configFile = findFirstConfig(root, TOOL_SIGNATURES.biome.configFiles);
 
         if (!declared && !configFile) {
             return undefined;

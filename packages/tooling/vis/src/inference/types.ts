@@ -31,7 +31,7 @@ export interface Detector {
      * detector. Any match is enough — multiple matches let detectors
      * support `.ts`, `.js`, `.mjs` variants without code duplication.
      */
-    configFiles: string[];
+    configFiles: ReadonlyArray<string>;
     /** Build the inferred targets. Pure — no FS access beyond what was already located. */
     detect: (context: DetectContext) => DetectedTargets;
 

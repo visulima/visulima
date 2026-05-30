@@ -1,7 +1,8 @@
+import { TOOL_SIGNATURES } from "../../util/tool-signatures";
 import type { DetectedTargets, Detector } from "../types";
 
 export const dprintDetector: Detector = {
-    configFiles: ["dprint.json", "dprint.jsonc", ".dprint.json", ".dprint.jsonc"],
+    configFiles: TOOL_SIGNATURES.dprint.configFiles,
     detect: ({ matchedConfigs }) => {
         const sharedInputs = [
             "{projectRoot}/src/**/*",
@@ -28,6 +29,6 @@ export const dprintDetector: Detector = {
 
         return { targets };
     },
-    fallbackDependency: "dprint",
+    fallbackDependency: TOOL_SIGNATURES.dprint.packageNames[0],
     name: "dprint",
 };

@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 
+import { TOOL_SIGNATURES } from "../../util/tool-signatures";
 import type { AdapterRunOptions, Finding, ToolAdapter } from "../config-types";
 import { declaredVersion, findFirstConfig } from "../detect";
 
@@ -18,21 +19,6 @@ import { declaredVersion, findFirstConfig } from "../detect";
  * ignore file names. The adapter only opts in if at least one of
  * those is present.
  */
-
-const CONFIG_CANDIDATES = [
-    ".prettierrc",
-    ".prettierrc.json",
-    ".prettierrc.yaml",
-    ".prettierrc.yml",
-    ".prettierrc.js",
-    ".prettierrc.cjs",
-    ".prettierrc.mjs",
-    ".prettierrc.ts",
-    "prettier.config.js",
-    "prettier.config.cjs",
-    "prettier.config.mjs",
-    "prettier.config.ts",
-];
 
 export const prettierAdapter: ToolAdapter = {
     argsCheck: (files, options) => buildArgs(files, options, "check"),
@@ -53,8 +39,8 @@ export const prettierAdapter: ToolAdapter = {
     },
 
     detect: (root, packageJson) => {
-        const declared = declaredVersion(packageJson, "prettier");
-        const configFile = findFirstConfig(root, CONFIG_CANDIDATES);
+        const declared = declaredVersion(packageJson, TOOL_SIGNATURES.prettier.packageNames[0]);
+        const configFile = findFirstConfig(root, TOOL_SIGNATURES.prettier.configFiles);
 
         if (!declared && !configFile) {
             return undefined;

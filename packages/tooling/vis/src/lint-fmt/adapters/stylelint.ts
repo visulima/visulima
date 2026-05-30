@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 
+import { TOOL_SIGNATURES } from "../../util/tool-signatures";
 import type { AdapterRunOptions, Finding, FindingSeverity, ToolAdapter } from "../config-types";
 import { declaredVersion, findFirstConfig } from "../detect";
 
@@ -14,19 +15,6 @@ import { declaredVersion, findFirstConfig } from "../detect";
  * back to the legacy `.stylelintrc[.{json,js,cjs,yml,yaml}]` forms
  * since real-world projects still ship those.
  */
-
-const CONFIG_CANDIDATES = [
-    "stylelint.config.ts",
-    "stylelint.config.js",
-    "stylelint.config.mjs",
-    "stylelint.config.cjs",
-    ".stylelintrc",
-    ".stylelintrc.json",
-    ".stylelintrc.js",
-    ".stylelintrc.cjs",
-    ".stylelintrc.yml",
-    ".stylelintrc.yaml",
-];
 
 const SEVERITY_MAP: Record<string, FindingSeverity> = {
     error: "error",
@@ -68,8 +56,8 @@ export const stylelintAdapter: ToolAdapter = {
     },
 
     detect: (root, packageJson) => {
-        const declared = declaredVersion(packageJson, "stylelint");
-        const configFile = findFirstConfig(root, CONFIG_CANDIDATES);
+        const declared = declaredVersion(packageJson, TOOL_SIGNATURES.stylelint.packageNames[0]);
+        const configFile = findFirstConfig(root, TOOL_SIGNATURES.stylelint.configFiles);
 
         if (!declared && !configFile) {
             return undefined;

@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 
+import { TOOL_SIGNATURES } from "../../util/tool-signatures";
 import type { AdapterRunOptions, Finding, FindingSeverity, ToolAdapter } from "../config-types";
 import { declaredVersion, findFirstConfig } from "../detect";
 
@@ -15,8 +16,6 @@ import { declaredVersion, findFirstConfig } from "../detect";
  * configs but that's not its primary use mode and we don't want
  * to silently opt every ESLint project into oxlint.
  */
-
-const CONFIG_CANDIDATES = [".oxlintrc.json", ".oxlintrc.jsonc", "oxlint.json", "oxlint.jsonc"];
 
 const SEVERITY_MAP: Record<string, FindingSeverity> = {
     advice: "info",
@@ -68,8 +67,8 @@ export const oxlintAdapter: ToolAdapter = {
     },
 
     detect: (root, packageJson) => {
-        const declared = declaredVersion(packageJson, "oxlint");
-        const configFile = findFirstConfig(root, CONFIG_CANDIDATES);
+        const declared = declaredVersion(packageJson, TOOL_SIGNATURES.oxlint.packageNames[0]);
+        const configFile = findFirstConfig(root, TOOL_SIGNATURES.oxlint.configFiles);
 
         if (!declared && !configFile) {
             return undefined;
