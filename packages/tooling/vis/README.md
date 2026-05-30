@@ -204,30 +204,30 @@ When aube is the installer, `vis doctor` surfaces aube's effective hardening pos
 
 ## Commands
 
-| Command                 | Alias  | Description                                                          |
-| ----------------------- | ------ | -------------------------------------------------------------------- |
-| `vis create [template]` |        | Scaffold a new project from templates, npm packages, or git repos    |
-| `vis generate [name]`   |        | Scaffold files from an in-repo template (native TS or moon-format)   |
-| `vis init`              |        | Initialize vis.config.ts with security defaults                      |
-| `vis run <target>`      |        | Run a target across workspace projects with caching                  |
-| `vis affected <target>` |        | Run tasks only on projects affected by git changes                   |
-| `vis ignore <project>`  |        | CI build gating for Vercel / Netlify "Ignored Build Step"            |
-| `vis graph`             |        | Visualize the project dependency graph                               |
-| `vis check [packages]`  | `c`    | Check for outdated dependencies in workspace catalogs                |
-| `vis update [packages]` | `up`   | Update packages, GitHub Actions, Dockerfiles, and GitLab CI refs     |
-| `vis install`           | `i`    | Install dependencies via the detected package manager                |
-| `vis info <package>`    | `view` | Show npm registry metadata for a package (wraps `npm view` et al.)   |
-| `vis dlx <package>`     |        | Execute a remote package without permanent installation              |
-| `vis audit`             |        | Audit dependencies for security vulnerabilities                      |
-| `vis clean`             |        | Remove build artifacts, caches, and node_modules                     |
-| `vis cache <action>`    |        | Inspect cache (`list`, `size`, `hash`, `why`), or `prune` / `clean`  |
-| `vis hook <action>`     |        | Manage git hooks (install, uninstall, migrate)                       |
-| `vis secrets [paths]`   |        | Scan for hardcoded secrets / credentials (Rust-native)               |
-| `vis toolchain <cmd>`   |        | Inspect / delegate to the version manager (proto, mise, fnm, volta…) |
-| `vis lint [files]`      |        | Orchestrate detected source-code linters (oxlint, biome, eslint)     |
-| `vis fmt [files]`       |        | Orchestrate detected formatters (oxfmt, biome, dprint, prettier)     |
-| `vis staged`            |        | Run tasks on staged files (built-in `lint-staged` replacement)       |
-| `vis migrate <type>`    |        | Migrate from other tools — now including `gitleaks` and `secretlint` |
+| Command                 | Alias  | Description                                                                            |
+| ----------------------- | ------ | -------------------------------------------------------------------------------------- |
+| `vis create [template]` |        | Scaffold a new project from templates, npm packages, or git repos                      |
+| `vis generate [name]`   |        | Scaffold files from an in-repo template (native TS or moon-format)                     |
+| `vis init`              |        | Initialize vis.config.ts with security defaults                                        |
+| `vis run <target>`      |        | Run a target across workspace projects with caching                                    |
+| `vis affected <target>` |        | Run tasks only on projects affected by git changes                                     |
+| `vis ignore <project>`  |        | CI build gating for Vercel / Netlify "Ignored Build Step"                              |
+| `vis graph`             |        | Visualize the project dependency graph                                                 |
+| `vis check [packages]`  | `c`    | Check for outdated dependencies in workspace catalogs                                  |
+| `vis update [packages]` | `up`   | Update packages, GitHub Actions, Dockerfiles, and GitLab CI refs                       |
+| `vis install`           | `i`    | Install dependencies via the detected package manager                                  |
+| `vis info <package>`    | `view` | Show npm registry metadata for a package (wraps `npm view` et al.)                     |
+| `vis dlx <package>`     |        | Execute a remote package without permanent installation                                |
+| `vis audit`             |        | Audit dependencies for security vulnerabilities                                        |
+| `vis clean`             |        | Remove build artifacts, caches, and node_modules                                       |
+| `vis cache <action>`    |        | Inspect cache (`list`, `size`, `hash`, `why`), or `prune` / `clean`                    |
+| `vis hook <action>`     |        | Manage git hooks (install, uninstall, migrate)                                         |
+| `vis secrets [paths]`   |        | Scan for hardcoded secrets / credentials (Rust-native)                                 |
+| `vis toolchain <cmd>`   |        | Inspect / delegate to the version manager (proto, mise, fnm, volta…)                   |
+| `vis lint [files]`      |        | Orchestrate detected source-code linters (oxlint, biome, eslint, stylelint, deno-lint) |
+| `vis fmt [files]`       |        | Orchestrate detected formatters (oxfmt, biome, dprint, prettier, deno-fmt)             |
+| `vis staged`            |        | Run tasks on staged files (built-in `lint-staged` replacement)                         |
+| `vis migrate <type>`    |        | Migrate from other tools — now including `gitleaks` and `secretlint`                   |
 
 For `vis ignore`, see the [command reference](./docs/commands/ignore.mdx) and the [deployment build gating section](./docs/guides/ci-cd.mdx#deployment-build-gating) of the CI/CD guide.
 

@@ -7,7 +7,7 @@ description: "Orchestrate detected source-code linters (eslint, …) across the 
 
 Runs every detected source-code linter against the workspace, normalizes their output into a shared `Finding` shape, and prints them in human, JSON, or minimal format. Designed to add new linters over time without changing the command surface.
 
-Ships with adapters for **oxlint**, **biome**, and **ESLint**. The orchestrator runs each one that's present in the workspace.
+Ships with adapters for **oxlint**, **biome**, **ESLint**, **stylelint** (CSS), and **deno lint**. The orchestrator runs each one that's present in the workspace.
 
 ## Usage
 
@@ -52,13 +52,15 @@ vis lint --max-warnings 0
 
 The orchestrator probes each adapter against the workspace root and runs the ones that report themselves present. An adapter opts in when **either** a tool-native config file exists **or** the tool is declared in `package.json` (any dep field).
 
-| Adapter | Config files probed                                                     | package.json key |
-| ------- | ----------------------------------------------------------------------- | ---------------- |
-| oxlint  | `.oxlintrc.json`, `.oxlintrc.jsonc`, `oxlint.json`, `oxlint.jsonc`      | `oxlint`         |
-| biome   | `biome.json`, `biome.jsonc`                                             | `@biomejs/biome` |
-| eslint  | `eslint.config.{js,mjs,cjs,ts,mts}`, `.eslintrc.{js,cjs,json,yaml,yml}` | `eslint`         |
+| Adapter   | Config files probed                                                                       | package.json key |
+| --------- | ----------------------------------------------------------------------------------------- | ---------------- |
+| oxlint    | `.oxlintrc.json`, `.oxlintrc.jsonc`, `oxlint.json`, `oxlint.jsonc`                        | `oxlint`         |
+| biome     | `biome.json`, `biome.jsonc`                                                               | `@biomejs/biome` |
+| eslint    | `eslint.config.{js,mjs,cjs,ts,mts}`, `.eslintrc`, `.eslintrc.{js,cjs,json,yaml,yml}`      | `eslint`         |
+| stylelint | `stylelint.config.{ts,js,mjs,cjs}`, `.stylelintrc`, `.stylelintrc.{json,js,cjs,yml,yaml}` | `stylelint`      |
+| deno-lint | `deno.json`, `deno.jsonc` (no npm package — `deno` is a runtime)                          | —                |
 
-When multiple lint adapters are detected, they run in this default precedence: `oxlint → biome → eslint`. The Rust-native oxlint pass runs first as a fast pre-filter, biome handles its bespoke rule set, and ESLint catches what the others don't. Override with `lint.order` in `vis.config.ts`.
+When multiple lint adapters are detected, they run in this default precedence: `oxlint → biome → eslint → stylelint → deno-lint`. The Rust-native oxlint pass runs first as a fast pre-filter, biome handles its bespoke rule set, ESLint catches what the others don't, stylelint covers CSS/SCSS, and deno-lint runs last since deno coexists with the npm-native pipeline rather than replacing it. Override with `lint.order` in `vis.config.ts`.
 
 ## Output formats
 
