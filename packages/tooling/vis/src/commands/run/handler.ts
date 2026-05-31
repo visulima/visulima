@@ -140,7 +140,18 @@ const runPersistentTasks = async (
             // unconditional line would otherwise reach us. Opt out with
             // `visOptions.pty: false`. The non-TUI path keeps pipe mode:
             // there's no terminal to emulate and output is line-oriented.
-            const usePty = Boolean(lifecycleHooks) && visOptions?.pty !== false;
+            //
+            // Per-target `task.pty` (carried over from
+            // TargetConfiguration.pty) wins over both workspace toggles —
+            // a single target can force PTY (e.g. vitest, prettier with
+            // colors) or suppress it (`pty: false`) regardless of the
+            // ambient TUI state.
+            const usePty
+                = task.pty === true
+                    ? true
+                    : task.pty === false
+                        ? false
+                        : Boolean(lifecycleHooks) && visOptions?.pty !== false;
 
             return {
                 command,
@@ -872,9 +883,18 @@ const createConcurrentExecutor = (deps: ExecutorDependencies) => {
         // present (live TUI dev tasks) or the target config opts in via
         // `options.pty`. In both cases output flows through TerminalBuffer,
         // which normalizes ANSI escapes into a deterministic final frame.
+        //
+        // Per-target `task.pty` (from TargetConfiguration.pty) overrides
+        // both workspace-level signals so individual targets can opt in
+        // or out independent of the ambient setup.
         const ptyOptIn = visOptions?.pty === true;
         const ptyInteractive = Boolean(stdinRegistry);
-        const isPty = ptyInteractive || ptyOptIn;
+        const isPty
+            = task.pty === true
+                ? true
+                : task.pty === false
+                    ? false
+                    : ptyInteractive || ptyOptIn;
 
         if (isPty) {
             task.cache = false;
