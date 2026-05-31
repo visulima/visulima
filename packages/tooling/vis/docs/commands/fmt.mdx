@@ -73,6 +73,22 @@ vis fmt --check --format sarif --output fmt.sarif
 
 `vis fmt --output <path>` writes the reporter payload to a file instead of stdout. The file's parent directory is created as needed; the special values `-` and `stdout` route to `process.stdout` and `stderr` routes to `process.stderr`. The flag only applies to machine-readable formats (`json`, `minimal`, `sarif`, `junit`, `github`) — combining it with the default `human` format logs a warning and is ignored.
 
+## Pre-commit integration
+
+`vis fmt --staged` is the recommended entry for the `staged` block in `vis.config.ts` — it auto-detects every installed formatter, only sees staged files, and writes formatting fixes in place so the commit captures the formatted tree. Pair it with `vis lint --staged --fix` to enforce lint alongside formatting.
+
+```ts
+import { defineConfig } from "@visulima/vis/config";
+
+export default defineConfig({
+    staged: {
+        "*": ["vis lint --staged --fix", "vis fmt --staged"],
+    },
+});
+```
+
+`vis init` scaffolds exactly this block when pre-commit hooks are enabled; `vis hook install` then wires `.vis-hooks/pre-commit` to invoke `vis staged`. For CI gating that fails on unformatted files, run `vis fmt --check` (optionally `--since <base>`) as a separate target alongside lint.
+
 ## Caching
 
 `vis fmt --check` runs cache their results under `<workspaceRoot>/.vis/cache/lint-fmt/<adapter>/` keyed by the adapter's config fingerprint plus a SHA-256 of every input file's bytes. A subsequent `--check` with the same inputs replays the stored result without spawning the formatter.
