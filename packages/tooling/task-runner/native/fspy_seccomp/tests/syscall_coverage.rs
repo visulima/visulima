@@ -33,6 +33,7 @@ fn unlinkat_records_write_access() {
         ],
         &helper_path(),
         &SpawnOptions::default(),
+        None,
     )
     .expect("track_command should succeed");
 
@@ -68,6 +69,7 @@ fn stat_family_records_stat_access() {
         ],
         &helper_path(),
         &SpawnOptions::default(),
+        None,
     )
     .expect("track_command should succeed");
 
@@ -102,6 +104,7 @@ fn getdents_records_readdir_against_resolved_path() {
         ],
         &helper_path(),
         &SpawnOptions::default(),
+        None,
     )
     .expect("track_command should succeed");
 

@@ -309,4 +309,22 @@ export interface SeccompTrackingResult {
  */
 export declare function topologicalSort(graph: NativeTaskGraph): Array<string>
 
-export declare function trackWithSeccomp(argv: Array<string>, helperPath: string, options?: SeccompSpawnOptions | undefined | null): Promise<SeccompTrackingResult>
+/**
+ * `on_started` is a top-level parameter (not inside the options
+ * object) because `ThreadsafeFunction` doesn't implement
+ * `ToNapiValue` and can't live in `#[napi(object)]` fields. From
+ * JS:
+ *
+ * ```ts
+ * trackWithSeccomp(argv, helper, options, (pid) => {
+ *   registerForKillAll(pid);
+ * });
+ * ```
+ *
+ * Fired once with the helper PID as soon as the spawn succeeds.
+ * The PID is the same one that becomes the target process
+ * post-execve, so callers can SIGTERM it for kill-on-abort
+ * cleanup. Fires before the supervisor loop starts streaming
+ * events.
+ */
+export declare function trackWithSeccomp(argv: Array<string>, helperPath: string, options?: SeccompSpawnOptions | undefined | null, onStarted?: ((pid: number) => void) | undefined | null): Promise<SeccompTrackingResult>

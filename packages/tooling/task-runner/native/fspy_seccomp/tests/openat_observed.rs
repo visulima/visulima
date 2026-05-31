@@ -26,6 +26,7 @@ fn observes_openat_from_cat() {
         &["/usr/bin/cat".to_string(), "/etc/hostname".to_string()],
         &helper_path(),
         &SpawnOptions::default(),
+        None,
     )
     .expect("track_command should succeed on this Linux host");
 
@@ -78,6 +79,7 @@ fn relative_path_resolves_via_cwd() {
         ],
         &helper_path(),
         &SpawnOptions::default(),
+        None,
     )
     .expect("track_command should succeed");
 

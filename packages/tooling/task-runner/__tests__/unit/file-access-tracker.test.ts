@@ -184,6 +184,51 @@ describe(FileAccessTracker, () => {
             expect(result.output).toContain("hello");
         });
     });
+
+    describe("cancellation", () => {
+        it.runIf(new FileAccessTracker(tmpdir()).isSupported())("aborts a long-running command via AbortSignal", async () => {
+            expect.assertions(1);
+
+            const tracker = new FileAccessTracker(workspaceRoot);
+            const controller = new AbortController();
+
+            // Abort the in-flight `sleep` after a short delay.
+            const abortTimer = setTimeout(() => {
+                controller.abort();
+            }, 100);
+
+            const start = Date.now();
+
+            await tracker.track("sleep 30", {
+                abortSignal: controller.signal,
+                cwd: workspaceRoot,
+            });
+
+            clearTimeout(abortTimer);
+
+            // Sleep was 30s; with cancellation we should be back in
+            // well under a second. Generous bound for slow CI.
+            expect(Date.now() - start).toBeLessThan(5000);
+        });
+
+        it.runIf(new FileAccessTracker(tmpdir()).isSupported())("killAll terminates active spawns", async () => {
+            expect.assertions(1);
+
+            const tracker = new FileAccessTracker(workspaceRoot);
+            const start = Date.now();
+
+            // Race tracker.track against an external killAll.
+            const trackPromise = tracker.track("sleep 30", { cwd: workspaceRoot });
+
+            setTimeout(() => {
+                tracker.killAll();
+            }, 150);
+
+            await trackPromise;
+
+            expect(Date.now() - start).toBeLessThan(5000);
+        });
+    });
 });
 
 describe(generatePreloadScript, () => {

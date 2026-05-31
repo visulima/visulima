@@ -125,12 +125,18 @@ interface NativeBindings {
      * the helper binary at `helperPath`. Resolves once the child
      * exits with the gathered file accesses.
      *
+     * `onStarted` (when supplied) fires once with the helper PID
+     * as soon as the spawn succeeds. The PID survives the
+     * helper→target execve, so callers can SIGTERM it via
+     * `process.kill(pid)` to abort the traced command.
+     *
      * Undefined when the addon was built on a non-Linux target.
      */
     trackWithSeccomp?: (
         argv: string[],
         helperPath: string,
         options?: NativeSeccompSpawnOptions,
+        onStarted?: (pid: number) => void,
     ) => Promise<NativeSeccompTrackingResult>;
 }
 

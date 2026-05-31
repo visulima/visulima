@@ -1,4 +1,3 @@
-import type { ChildProcess } from "node:child_process";
 import { execFile, execFileSync } from "node:child_process";
 import { accessSync, constants as fsConstants } from "node:fs";
 import { mkdir, readFile, rm } from "node:fs/promises";
@@ -195,6 +194,21 @@ const parseOpenAccessType = (line: string): "read" | "write" => {
 };
 
 /**
+ * Minimal duck-typed surface `killAll()` needs. `ChildProcess`
+ * satisfies this directly; the seccomp dispatch synthesises a stub
+ * around `process.kill(pid, signal)` so its helper PID participates
+ * in the same kill-on-abort plumbing.
+ *
+ * The return type accepts `boolean | undefined` to cover both
+ * `ChildProcess.kill` (returns `boolean`) and `process.kill`
+ * (returns `void` in some Node typings) without unioning `void`,
+ * which `@typescript-eslint/no-invalid-void-type` rightly flags.
+ */
+interface Killable {
+    kill: (signal?: NodeJS.Signals | number) => boolean | undefined;
+}
+
+/**
  * Tracks which files a child process accesses during execution.
  *
  * Uses `strace` on Linux to intercept syscalls (open, openat, stat, lstat, access, getdents).
@@ -205,8 +219,12 @@ export class FileAccessTracker {
 
     readonly #excludePatterns: RegExp[];
 
-    /** Tracks active child processes for cleanup on abort */
-    readonly #activeProcesses = new Set<ChildProcess>();
+    /**
+     * Tracks active processes for kill-on-abort. ChildProcess
+     * (strace path) and the seccomp helper PID stub both implement
+     * the `Killable` shape so `killAll()` can iterate the union.
+     */
+    readonly #activeProcesses = new Set<Killable>();
 
     public constructor(workspaceRoot: string, excludePatterns?: RegExp[]) {
         this.#workspaceRoot = resolve(workspaceRoot);
@@ -245,6 +263,8 @@ export class FileAccessTracker {
     public async track(
         command: string,
         options: {
+            /** When fired, SIGTERMs the active spawn for this call. */
+            abortSignal?: AbortSignal;
             cwd?: string;
             env?: Record<string, string | undefined>;
         } = {},
@@ -270,10 +290,16 @@ export class FileAccessTracker {
      * accesses; we filter to the workspace + exclusion patterns
      * here (same predicate as the strace branch) so the result
      * shape is identical to the orchestrator.
+     *
+     * Cancellation surface: the native addon fires an `onStarted`
+     * callback with the helper PID. We register a `Killable` stub
+     * in `#activeProcesses` so `killAll()` reaches it, and also
+     * SIGTERM on per-call `abortSignal` aborts.
      */
     async #runWithSeccomp(
         command: string,
         options: {
+            abortSignal?: AbortSignal;
             cwd?: string;
             env?: Record<string, string | undefined>;
         },
@@ -304,8 +330,62 @@ export class FileAccessTracker {
 
         const argv = ["sh", "-c", command];
 
+        // Cancellation plumbing — both `killAll()` and per-call
+        // `abortSignal` route through the same registered stub. The
+        // PID lands once via the native's `onStarted` callback;
+        // we resolve a deferred so the abort listener doesn't race
+        // against the PID arrival.
+        let killable: Killable | undefined;
+        let resolveKillable: ((k: Killable) => void) | undefined;
+        const killableReady = new Promise<Killable>((r) => {
+            resolveKillable = r;
+        });
+
+        const onStarted = (pid: number): void => {
+            killable = {
+                kill: (signal): boolean => {
+                    try {
+                        return process.kill(pid, signal ?? "SIGTERM");
+                    } catch {
+                        // Already exited — same semantics as ChildProcess.kill.
+                        return false;
+                    }
+                },
+            };
+            this.#activeProcesses.add(killable);
+            resolveKillable?.(killable);
+        };
+
+        const abortHandler = (): void => {
+            // Don't race the PID arrival: wait for `onStarted` then
+            // kill. If the helper crashed before connecting, the
+            // accept watchdog (5s) will return an error instead.
+            killableReady
+                .then((k) => {
+                    k.kill("SIGTERM");
+
+                    return undefined;
+                })
+                .catch(() => {
+                    // Promise never rejects (we only ever resolve)
+                    // but appease the floating-promise rule.
+                });
+        };
+
+        if (options.abortSignal?.aborted) {
+            // Already aborted before we started — short-circuit.
+            return { accesses: [], code: -1, output: "" };
+        }
+
+        options.abortSignal?.addEventListener("abort", abortHandler, { once: true });
+
         try {
-            const result = await native.trackWithSeccomp(argv, helperPath, { cwd, env: envFiltered });
+            const result = await native.trackWithSeccomp(
+                argv,
+                helperPath,
+                { cwd, env: envFiltered },
+                onStarted,
+            );
 
             const accesses: FileAccess[] = [];
 
@@ -331,6 +411,12 @@ export class FileAccessTracker {
             // the no-tracking path so the orchestrator marks the
             // result as `emptyFingerprint: true` and skips caching.
             return this.#runWithoutTracking(command, options);
+        } finally {
+            if (killable) {
+                this.#activeProcesses.delete(killable);
+            }
+
+            options.abortSignal?.removeEventListener("abort", abortHandler);
         }
     }
 
@@ -518,14 +604,17 @@ export class FileAccessTracker {
     }
 
     /**
-     * Kills all active child processes. Called on abort/signal to prevent orphans.
+     * Kills all active child processes. Called on abort/signal to
+     * prevent orphans. Works for both `ChildProcess` (strace path)
+     * and the seccomp helper PID stub via the shared `Killable`
+     * shape.
      */
     public killAll(): void {
-        for (const child of this.#activeProcesses) {
+        for (const target of this.#activeProcesses) {
             try {
-                child.kill("SIGTERM");
+                target.kill("SIGTERM");
             } catch {
-                // Process may have already exited
+                // Process may have already exited.
             }
         }
 

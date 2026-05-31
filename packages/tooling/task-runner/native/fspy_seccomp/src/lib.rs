@@ -115,10 +115,17 @@ pub struct SpawnOptions {
 /// `helper_path` must point at a `fspy-seccomp-helper` binary
 /// shipping alongside this library (typically packaged with the
 /// `.node` addon).
+///
+/// `on_started` (when present) is invoked once with the helper PID
+/// as soon as the spawn succeeds. The PID is the same one that
+/// becomes the target process post-`execve`, so callers can register
+/// it for SIGTERM-on-abort cleanup. The callback runs synchronously
+/// on the calling thread before `accept_and_recv_fd` blocks.
 pub fn track_command(
     cmd: &[String],
     helper_path: &Path,
     opts: &SpawnOptions,
+    on_started: Option<&mut dyn FnMut(u32)>,
 ) -> io::Result<TrackingResult> {
     if cmd.is_empty() {
         return Err(io::Error::new(
@@ -153,6 +160,13 @@ pub fn track_command(
     command.stderr(Stdio::piped());
 
     let mut child = command.spawn()?;
+
+    // Surface the PID immediately so callers can register the
+    // helper for kill-on-abort. The PID survives the helper→target
+    // execve, so a future SIGTERM hits the actual target.
+    if let Some(cb) = on_started {
+        cb(child.id());
+    }
 
     // ChildGuard ensures the helper is killed + reaped on every
     // early return between spawn and the wait at the bottom. Without
