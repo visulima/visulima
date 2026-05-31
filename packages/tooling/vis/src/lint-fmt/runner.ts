@@ -1,6 +1,7 @@
 import { spawn, spawnSync } from "node:child_process";
 import { availableParallelism } from "node:os";
 
+import { cacheable, computeCacheKey, readCacheEntry, writeCacheEntry } from "./cache";
 import type { AdapterRunOptions, RunResult, ToolAdapter, ToolPresence } from "./config-types";
 
 /**
@@ -19,15 +20,15 @@ export interface AdapterJob {
  * Invoke a tool adapter against a file list. Synchronous, kept for
  * callers that don't need parallelism (tests, single-adapter probes,
  * future cache lookups). Prefer `runAdaptersParallel` from production
- * handlers — it fans out across CPU cores.
+ * handlers — it fans out across CPU cores and consults the cache.
  *
  * `mode` controls whether to dry-run (`check`) or write fixes
  * (`fix`). The runner doesn't know the difference — it just picks
  * `argsCheck` vs `argsFix`.
  *
- * Cache integration is a TODO — for the Phase 1 MVP this spawns
- * unconditionally. The cache key returned by `adapter.cacheKey()`
- * is the hook the cache layer will mix with file content hashes.
+ * This synchronous variant intentionally does NOT consult the cache.
+ * It exists for the rare callers (tests, single-shot probes) that
+ * want a deterministic spawn-and-return.
  */
 export const runAdapter = (
     adapter: ToolAdapter,
@@ -110,6 +111,17 @@ export const runAdapterAsync = async (
 };
 
 /**
+ * Options that gate caching for `runAdaptersParallel`. When `cacheRoot`
+ * is set, each cacheable job (see {@link cacheable}) hashes its inputs
+ * and either serves a stored {@link RunResult} or stores one after the
+ * spawn.
+ */
+export interface RunAdaptersParallelOptions {
+    readonly cacheRoot?: string;
+    readonly concurrency?: number;
+}
+
+/**
  * Fan out a list of adapter jobs across CPU cores. Returns results
  * in the same order as the input jobs (so reporters that rely on
  * registry precedence still see oxlint before eslint, etc.).
@@ -118,22 +130,58 @@ export const runAdapterAsync = async (
  * the job count. Set `VIS_LINT_FMT_SERIAL=1` to force sequential
  * execution — useful for debugging, profiling, or tests where the
  * spawn order matters.
+ *
+ * If `cacheRoot` is provided, eligible jobs (check mode, no workspace
+ * sentinel paths, `VIS_NO_CACHE` unset) will be served from disk when
+ * a hit is found. Cache misses spawn normally and store the result
+ * for next time.
  */
 export const runAdaptersParallel = async (
     jobs: ReadonlyArray<AdapterJob>,
     options: AdapterRunOptions,
     mode: "check" | "fix",
-    concurrency: number = availableParallelism(),
+    concurrencyOrOptions: number | RunAdaptersParallelOptions = availableParallelism(),
 ): Promise<RunResult[]> => {
     if (jobs.length === 0) {
         return [];
     }
 
+    const { cacheRoot, concurrency }: { cacheRoot?: string; concurrency: number }
+        = typeof concurrencyOrOptions === "number"
+            ? { concurrency: concurrencyOrOptions }
+            : { cacheRoot: concurrencyOrOptions.cacheRoot, concurrency: concurrencyOrOptions.concurrency ?? availableParallelism() };
+
+    const runOne = async (job: AdapterJob): Promise<RunResult> => {
+        if (cacheRoot && cacheable(job.files, mode)) {
+            const computed = computeCacheKey(job.adapter, job.presence, job.files, options, mode);
+
+            if (computed) {
+                const hit = readCacheEntry(cacheRoot, job.adapter, computed.key);
+
+                if (hit) {
+                    return hit.result;
+                }
+
+                const fresh = await runAdapterAsync(job.adapter, job.presence, job.files, options, mode);
+
+                // Only cache successful, terminated spawns. A null exit
+                // means the process was killed (timeout) — don't pin that.
+                if (fresh.exitCode !== null) {
+                    writeCacheEntry(cacheRoot, job.adapter, computed.key, fresh, computed.fileHashes);
+                }
+
+                return fresh;
+            }
+        }
+
+        return runAdapterAsync(job.adapter, job.presence, job.files, options, mode);
+    };
+
     if (process.env.VIS_LINT_FMT_SERIAL === "1") {
         const results: RunResult[] = [];
 
         for (const job of jobs) {
-            results.push(await runAdapterAsync(job.adapter, job.presence, job.files, options, mode));
+            results.push(await runOne(job));
         }
 
         return results;
@@ -153,9 +201,7 @@ export const runAdaptersParallel = async (
                 return;
             }
 
-            const job = jobs[index]!;
-
-            results[index] = await runAdapterAsync(job.adapter, job.presence, job.files, options, mode);
+            results[index] = await runOne(jobs[index]!);
         }
     };
 

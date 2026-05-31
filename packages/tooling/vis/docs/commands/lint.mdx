@@ -56,6 +56,18 @@ vis lint --since main
 
 `vis lint --since <ref>` narrows the input to files that changed relative to `<ref>` — committed, staged, unstaged, and untracked all qualify. Each adapter only sees files whose extension it claims, so a CSS-only change skips ESLint and a TS-only change skips stylelint. When `<ref>` doesn't exist (or the directory isn't a git repo) the command falls back to a workspace-wide run and warns.
 
+## Caching
+
+When `vis lint` is invoked with an explicit file list or `--since`, results are cached under `<workspaceRoot>/.vis/cache/lint-fmt/<adapter>/` keyed by the adapter's config fingerprint plus a SHA-256 of every input file's bytes. A subsequent run with the same inputs replays the stored `RunResult` instead of spawning the tool.
+
+The cache is skipped for:
+
+- `--fix` runs (writes mutate the working tree)
+- workspace-wide runs that pass `.` (the file vector is unbounded)
+- runs where `VIS_NO_CACHE=1` is set
+
+Failed or killed processes are never stored. Clear the cache with `vis cache clean` or by removing the directory directly.
+
 ## Detection
 
 The orchestrator probes each adapter against the workspace root and runs the ones that report themselves present. An adapter opts in when **either** a tool-native config file exists **or** the tool is declared in `package.json` (any dep field).

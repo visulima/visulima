@@ -1,4 +1,4 @@
-import { chmodSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { chmodSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 
 import { join } from "@visulima/path";
@@ -153,6 +153,93 @@ describe("lint-fmt runner", () => {
 
             expect(result.stdout.trim()).toBe("hi");
             expect(result.exitCode).toBe(0);
+        });
+    });
+
+    describe("cache integration", () => {
+        it("serves a stored RunResult on a hit and skips the spawn", async () => {
+            expect.assertions(3);
+
+            const cacheRoot = mkdtempSync(join(tmpdir(), "vis-runner-cache-"));
+            const sourceFile = join(workspaceRoot, "a.ts");
+
+            writeFileSync(sourceFile, "export const a = 1;");
+
+            // Counter script: each invocation appends a line. After two
+            // calls we know the second hit short-circuited if the file
+            // still has one line.
+            const counterFile = join(scriptDir, "count.log");
+            const counter = writeScript("counter.sh", `echo run >> ${counterFile}\necho hit`);
+
+            const presence: ToolPresence = { adapter: "oxlint", declared: false, root: workspaceRoot };
+            const adapter = stubAdapter("oxlint", counter, { cacheKey: () => "stable" });
+            const jobs: AdapterJob[] = [{ adapter, files: [sourceFile], presence }];
+
+            try {
+                const first = await runAdaptersParallel(jobs, {}, "check", { cacheRoot });
+                const second = await runAdaptersParallel(jobs, {}, "check", { cacheRoot });
+
+                expect(first[0]!.stdout).toContain("hit");
+                expect(second[0]!.stdout).toContain("hit");
+
+                const log = readFileSync(counterFile, "utf8").trim().split("\n");
+
+                expect(log).toHaveLength(1);
+            } finally {
+                rmSync(cacheRoot, { force: true, recursive: true });
+            }
+        });
+
+        it("re-runs after file contents change", async () => {
+            expect.assertions(1);
+
+            const cacheRoot = mkdtempSync(join(tmpdir(), "vis-runner-cache-"));
+            const sourceFile = join(workspaceRoot, "a.ts");
+
+            writeFileSync(sourceFile, "export const a = 1;");
+
+            const counterFile = join(scriptDir, "count2.log");
+            const counter = writeScript("counter2.sh", `echo run >> ${counterFile}\necho ok`);
+
+            const presence: ToolPresence = { adapter: "oxlint", declared: false, root: workspaceRoot };
+            const adapter = stubAdapter("oxlint", counter, { cacheKey: () => "stable" });
+            const jobs: AdapterJob[] = [{ adapter, files: [sourceFile], presence }];
+
+            try {
+                await runAdaptersParallel(jobs, {}, "check", { cacheRoot });
+                writeFileSync(sourceFile, "export const a = 2;");
+                await runAdaptersParallel(jobs, {}, "check", { cacheRoot });
+
+                const log = readFileSync(counterFile, "utf8").trim().split("\n");
+
+                expect(log).toHaveLength(2);
+            } finally {
+                rmSync(cacheRoot, { force: true, recursive: true });
+            }
+        });
+
+        it("bypasses the cache for `.` workspace runs", async () => {
+            expect.assertions(1);
+
+            const cacheRoot = mkdtempSync(join(tmpdir(), "vis-runner-cache-"));
+
+            const counterFile = join(scriptDir, "count3.log");
+            const counter = writeScript("counter3.sh", `echo run >> ${counterFile}\necho ok`);
+
+            const presence: ToolPresence = { adapter: "oxlint", declared: false, root: workspaceRoot };
+            const adapter = stubAdapter("oxlint", counter, { cacheKey: () => "stable" });
+            const jobs: AdapterJob[] = [{ adapter, files: ["."], presence }];
+
+            try {
+                await runAdaptersParallel(jobs, {}, "check", { cacheRoot });
+                await runAdaptersParallel(jobs, {}, "check", { cacheRoot });
+
+                const log = readFileSync(counterFile, "utf8").trim().split("\n");
+
+                expect(log).toHaveLength(2);
+            } finally {
+                rmSync(cacheRoot, { force: true, recursive: true });
+            }
         });
     });
 });

@@ -2,6 +2,7 @@ import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 import { bold, cyan, dim, green, red, yellow } from "@visulima/colorize";
 import { relative } from "@visulima/path";
 
+import { resolveSharedCacheDirectory } from "../../cache/cache-directory";
 import { biomeAdapter } from "../../lint-fmt/adapters/biome";
 import { denoLintAdapter } from "../../lint-fmt/adapters/deno";
 import { eslintAdapter } from "../../lint-fmt/adapters/eslint";
@@ -74,7 +75,8 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Lint
         jobs.push({ adapter, files, presence });
     }
 
-    const rawResults = await runAdaptersParallel(jobs, runOptions, mode);
+    const cacheRoot = resolveSharedCacheDirectory(root, undefined, undefined, true);
+    const rawResults = await runAdaptersParallel(jobs, runOptions, mode, { cacheRoot });
     const runs = jobs.map((job, index) => {
         const raw = rawResults[index]!;
         const findings = job.adapter.parse(raw, job.presence);
