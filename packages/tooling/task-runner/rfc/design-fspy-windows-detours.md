@@ -112,15 +112,14 @@ const trackImpl: "detours" | "preload" | "strace" = platform() === "win32" && is
 
 ## Plan
 
-| Step                                                                            | Effort | Validation                                                          |
-| ------------------------------------------------------------------------------- | ------ | ------------------------------------------------------------------- |
-| Scaffold `fspy_windows` crate; stub `DllMain` + one hook (`CreateFileW`)        | 1d     | DLL loads, emits one event                                          |
-| Add IPC pipe + supervisor reader                                                | 1d     | Round-trip a `CreateFileW` event                                    |
-| Implement the full hook table                                                   | 2d     | Hook surface complete                                               |
-| `NtCreateFile`/`NtOpenFile` hooks via `MinHook` if Detours IAT can't reach them | 1d     | Cargo + MSVC linker covered                                         |
-| TS integration (`trackWithDetours`, dispatch)                                   | 1d     | Existing unit tests pass with `VIS_FORCE_DETOURS=1` on Windows      |
-| CI matrix wiring (build + publish)                                              | 1d     | DLL ships inside the win32 binding packages                         |
-| Integration tests on real Windows runners                                       | 1d     | At least one test covering a native-binary child (cargo or msbuild) |
+| Step                                                                     | Effort | Validation                                                          |
+| ------------------------------------------------------------------------ | ------ | ------------------------------------------------------------------- |
+| Scaffold `fspy_windows` crate; stub `DllMain` + one hook (`CreateFileW`) | 1d     | DLL loads, emits one event                                          |
+| Add IPC pipe + supervisor reader                                         | 1d     | Round-trip a `CreateFileW` event                                    |
+| Implement the full hook table (Win32 + Nt\* via Detours IAT)             | 2d     | Hook surface complete; cargo + MSVC linker covered                  |
+| TS integration (`trackWithDetours`, dispatch)                            | 1d     | Existing unit tests pass with `VIS_FORCE_DETOURS=1` on Windows      |
+| CI matrix wiring (build + publish)                                       | 1d     | DLL ships inside the win32 binding packages                         |
+| Integration tests on real Windows runners                                | 1d     | At least one test covering a native-binary child (cargo or msbuild) |
 
 **Total**: ~1 week of focused work on a Windows box. Cannot be developed reliably from Linux — requires a Windows VM/CI loop.
 

@@ -23,10 +23,14 @@ required-features = []
 [target.'cfg(target_os = "linux")'.dependencies]
 libseccomp-sys = "0.2"
 libc = "0.2"
-nix = { version = "0.31", features = ["fs", "process", "signal", "sched"] }
+# `socket` + `uio` swap our hand-rolled libc calls (socket, bind,
+# listen, accept, sendmsg/recvmsg with SCM_RIGHTS, process_vm_readv)
+# for safe nix wrappers — ~150 lines of `unsafe` → ~60 of safe code,
+# and the cmsg buffer alignment problem (cmsghdr requires size_t
+# alignment) goes away because nix manages those buffers.
+nix = { version = "0.31", features = ["fs", "process", "signal", "sched", "socket", "uio", "poll"] }
 
-[profile.release]
-lto = true
-codegen-units = 1
-opt-level = 3
-strip = "symbols"
+# [profile.release] intentionally omitted — Cargo only honors
+# `[profile.*]` from the workspace root. The native/ root Cargo.toml's
+# release profile (lto = true, codegen-units = 1, strip = "symbols")
+# governs both task-runner-native and the helper binary built here.

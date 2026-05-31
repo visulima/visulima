@@ -2,61 +2,61 @@
 //! address space and resolves working-directory-relative paths.
 //!
 //! Strategy from the RFC:
-//! - `process_vm_readv(2)` for arg-pointer reads. No `PTRACE_ATTACH`
-//!   indirection (the child keeps running), but the kernel still
-//!   requires `CAP_SYS_PTRACE` or a matching uid/gid pair — always
-//!   satisfied here because we forked the child from the supervisor
-//!   process.
+//! - `process_vm_readv(2)` (via `nix::sys::uio::process_vm_readv`)
+//!   for arg-pointer reads. No `PTRACE_ATTACH` indirection (the
+//!   child keeps running), but the kernel still requires
+//!   `CAP_SYS_PTRACE` or a matching uid/gid pair — always satisfied
+//!   here because we forked the child from the supervisor process.
 //! - `/proc/<pid>/cwd` symlink for the child's current working
 //!   directory. Step 3 will add per-pid caching invalidated on
 //!   `chdir`/`fchdir`; for v0 the readlink-per-call cost is fine.
 //! - `/proc/<pid>/fd/<n>` for fd→path resolution
 //!   (`fstatat(AT_FDCWD, ...)`, `getdents64(dirfd, ...)`).
 
+use std::ffi::OsStr;
 use std::fs;
-use std::io;
+use std::io::{self, IoSliceMut};
+use std::os::unix::ffi::OsStrExt;
 use std::path::{Path, PathBuf};
 
-use libc::{c_void, iovec, process_vm_readv};
+use nix::sys::uio::{RemoteIoVec, process_vm_readv};
+use nix::unistd::Pid;
 
-/// Read a NUL-terminated UTF-8 path from `pid`'s address space at
-/// `addr`. Reads in 256-byte chunks until either NUL is found or
-/// `PATH_MAX` is exceeded.
+/// Read a NUL-terminated path from `pid`'s address space at `addr`.
+/// Returns the path as a `PathBuf` preserving raw byte layout —
+/// Linux pathnames are arbitrary NUL-terminated bytes, not
+/// guaranteed UTF-8, so we go through `OsStr::from_bytes` rather
+/// than `String::from_utf8` (which would silently drop legitimate
+/// non-UTF-8 paths).
 ///
-/// `process_vm_readv` is single-shot, no ptrace dance — but it
-/// requires `CAP_SYS_PTRACE` or matching uid/gid. We always have
-/// matching uid because we forked the child.
+/// Reads in 256-byte chunks until either NUL is found or `PATH_MAX`
+/// is exceeded — short paths pay one syscall, long ones at most 16.
 pub fn read_path(pid: i32, addr: u64) -> io::Result<PathBuf> {
-    // Linux PATH_MAX is 4096. Read in chunks so a tiny path doesn't
-    // pay the full 4 KiB transfer cost.
     const PATH_MAX: usize = 4096;
     const CHUNK: usize = 256;
 
+    let target = Pid::from_raw(pid);
     let mut buf = Vec::with_capacity(CHUNK);
-    let mut total_read = 0usize;
-    let mut current_addr = addr;
+    let mut current_addr = addr as usize;
 
-    while total_read < PATH_MAX {
-        let want = CHUNK.min(PATH_MAX - total_read);
+    while buf.len() < PATH_MAX {
+        let want = CHUNK.min(PATH_MAX - buf.len());
         let start = buf.len();
         buf.resize(start + want, 0u8);
 
-        let local = iovec {
-            iov_base: buf[start..].as_mut_ptr() as *mut c_void,
-            iov_len: want,
-        };
-        let remote = iovec {
-            iov_base: current_addr as *mut c_void,
-            iov_len: want,
-        };
+        let mut local = [IoSliceMut::new(&mut buf[start..])];
+        let remote = [RemoteIoVec { base: current_addr, len: want }];
 
-        let n = unsafe { process_vm_readv(pid, &local, 1, &remote, 1, 0) };
-        if n < 0 {
-            buf.truncate(start);
-            return Err(io::Error::last_os_error());
-        }
+        let n = match process_vm_readv(target, &mut local, &remote) {
+            Ok(n) => n,
+            Err(e) => {
+                buf.truncate(start);
+                return Err(io::Error::from_raw_os_error(e as i32));
+            }
+        };
         if n == 0 {
-            // Hit unmapped memory before NUL. Truncate and bail.
+            // Hit unmapped memory before NUL. Truncate to what we
+            // confirmed read and bail.
             buf.truncate(start);
             return Err(io::Error::new(
                 io::ErrorKind::UnexpectedEof,
@@ -64,18 +64,14 @@ pub fn read_path(pid: i32, addr: u64) -> io::Result<PathBuf> {
             ));
         }
 
-        let actually_read = n as usize;
-        buf.truncate(start + actually_read);
-        total_read += actually_read;
+        buf.truncate(start + n);
 
         if let Some(nul) = buf[start..].iter().position(|&b| b == 0) {
             buf.truncate(start + nul);
-            return String::from_utf8(buf)
-                .map(PathBuf::from)
-                .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e));
+            return Ok(PathBuf::from(OsStr::from_bytes(&buf).to_os_string()));
         }
 
-        current_addr += actually_read as u64;
+        current_addr += n;
     }
 
     Err(io::Error::new(
@@ -98,8 +94,8 @@ pub fn path_of_fd(pid: i32, fd: i32) -> io::Result<PathBuf> {
 }
 
 /// Join a `dirfd`-relative path with the right base:
-/// - `dirfd == AT_FDCWD` → resolve against `cwd_of(pid)`
 /// - absolute `path` → returned as-is
+/// - `dirfd == AT_FDCWD` → resolve against `cwd_of(pid)`
 /// - otherwise → resolve against `path_of_fd(pid, dirfd)`
 ///
 /// Returns the original path on resolution failure so caller code

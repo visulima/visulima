@@ -17,9 +17,8 @@
 
 #![cfg(target_os = "linux")]
 
-use std::path::PathBuf;
-
 use std::collections::HashMap;
+use std::path::PathBuf;
 
 use fspy_seccomp::{
     AccessKind as RustAccessKind, FileAccess as RustFileAccess, SpawnOptions as RustSpawnOptions,

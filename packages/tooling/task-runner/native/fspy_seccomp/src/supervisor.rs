@@ -61,6 +61,11 @@ pub fn run(notify_fd: RawFd) -> io::Result<Vec<FileAccess>> {
     let mut accesses = Vec::new();
 
     loop {
+        // Zero the notif before each recv so stale fields from the
+        // previous notification can't leak through if the kernel
+        // writes a shorter payload. The kernel always writes the
+        // fields we read (id, pid, data), so `sizeof::<seccomp_notif>`
+        // suffices.
         unsafe { std::ptr::write_bytes(req as *mut u8, 0, mem::size_of::<seccomp_notif>()) };
 
         let rc = unsafe { seccomp_notify_receive(notify_fd, req) };

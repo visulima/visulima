@@ -99,13 +99,20 @@ pub fn classify(notif: &seccomp_notif, pid: i32) -> Vec<FileAccess> {
 
     let args = &notif.data.args;
 
+    // Non-`*at` syscalls (`open`, `stat`, `unlink`, ...) take a
+    // raw `*pathname` arg. We route them through `decode_direct`
+    // which now resolves via `resolve_at(pid, AT_FDCWD, &raw)` —
+    // same path the `*at` variants get. Without this, `open("foo")`
+    // would record `foo` while `openat(AT_FDCWD, "foo")` records
+    // `/cwd/foo`, leaving downstream consumers with a mix of
+    // relative and absolute paths for equivalent operations.
     match name.as_ref() {
         // (dirfd, *pathname, flags, mode)
         "openat" | "openat2" => decode_at_with_flags(pid, args[0] as i32, args[1], args[2]),
         // (*pathname, flags, mode)
         "open" => match peer::read_path(pid, args[0]) {
             Ok(path) => vec![FileAccess {
-                path,
+                path: peer::resolve_at(pid, libc::AT_FDCWD, &path),
                 kind: openat_kind_from_flags(args[1]),
             }],
             Err(_) => Vec::new(),
@@ -153,9 +160,15 @@ pub fn classify(notif: &seccomp_notif, pid: i32) -> Vec<FileAccess> {
     }
 }
 
+/// Non-`*at` syscall handler. Resolves the read path against the
+/// child's cwd so callers see absolute paths consistently — see the
+/// note at the top of `classify`.
 fn decode_direct(pid: i32, addr: u64, kind: AccessKind) -> Vec<FileAccess> {
     match peer::read_path(pid, addr) {
-        Ok(path) => vec![FileAccess { path, kind }],
+        Ok(raw) => vec![FileAccess {
+            path: peer::resolve_at(pid, libc::AT_FDCWD, &raw),
+            kind,
+        }],
         Err(_) => Vec::new(),
     }
 }

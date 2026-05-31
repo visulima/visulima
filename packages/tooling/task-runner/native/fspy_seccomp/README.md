@@ -10,11 +10,10 @@ The supervisor (called from the NAPI binding in
 `../src/seccomp.rs`) sets up a per-spawn Unix socket listener,
 then `Command::spawn`s the helper binary with `FSPY_SOCK=<path>`
 and the target argv. `Command` without `pre_exec` uses
-`posix_spawn` under the hood, which is multi-thread-safe (vfork
-
-- exec internally) — the fork-from-multithreaded hazard that
-  ruled out installing seccomp directly in `pre_exec` doesn't
-  apply.
+`posix_spawn` under the hood, which is multi-thread-safe
+(`vfork`+`exec` internally) — the fork-from-multithreaded hazard
+that ruled out installing seccomp directly in `pre_exec` doesn't
+apply.
 
 The helper runs in a fresh single-threaded process where
 libseccomp is safe to call: it does `prctl(PR_SET_NO_NEW_PRIVS)`,

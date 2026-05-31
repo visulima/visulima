@@ -17,38 +17,49 @@
 //! │ create Unix socket listener  │
 //! │ at $TMPDIR/fspy-XXXX.sock    │
 //! │                              │
-//! │ posix_spawn(                 │   ┌────────────────────────────┐
+//! │ Command::spawn(              │   ┌────────────────────────────┐
 //! │   "fspy-seccomp-helper",     │   │ helper (fresh single-      │
 //! │   argv=[target_cmd, args],   │──►│ threaded process)          │
 //! │   env={FSPY_SOCK=<path>})    │   │  1. PR_SET_NO_NEW_PRIVS    │
-//! │                              │   │  2. seccomp_load -> fd     │
-//! │ accept connection            │◄──│  3. connect to FSPY_SOCK   │
-//! │ recv notify_fd via SCM_RIGHTS│◄──│  4. send fd via SCM_RIGHTS │
-//! │                              │   │  5. execve(target)         │
-//! │ run supervisor on notify_fd  │   └────────────────────────────┘
+//! │   (posix_spawn under hood —  │   │  2. seccomp_load -> fd     │
+//! │    no pre_exec hook)         │   │  3. connect to FSPY_SOCK   │
+//! │                              │   │  4. send fd via SCM_RIGHTS │
+//! │ accept connection            │◄──│  5. execve(target)         │
+//! │ recv notify_fd via SCM_RIGHTS│◄──│                            │
+//! │                              │   └────────────────────────────┘
+//! │ supervisor thread:           │
+//! │   seccomp_notify_receive     │
+//! │   -> classify(notif, pid)    │
+//! │   -> CONTINUE                │
+//! │ drain stdout/stderr pipes    │
 //! │ wait(child)                  │
 //! └──────────────────────────────┘
 //! ```
 //!
-//! `posix_spawn` uses `vfork+exec` internally — safe to call from
-//! a multi-threaded parent. The helper is a single-threaded process
-//! when it does the seccomp install; no fork-in-multithreaded
-//! exposure anywhere.
-//!
-//! The helper binary is `src/bin/helper.rs` (see `Cargo.toml`
-//! `[[bin]]` entry); packaging ships it next to the `.node` addon.
+//! `Command::spawn` without a `pre_exec` hook uses `posix_spawn`
+//! under the hood — multi-thread-safe (vfork+exec internally). The
+//! helper is a single-threaded process when it does the seccomp
+//! install; no fork-in-multithreaded exposure anywhere.
 
 #![cfg(target_os = "linux")]
 #![deny(unused_must_use)]
 
-use std::io::{self, Read};
-use std::os::unix::ffi::OsStrExt;
-use std::os::unix::io::{AsRawFd, FromRawFd, IntoRawFd, OwnedFd, RawFd};
+use std::io::{self, IoSliceMut, Read};
+use std::os::fd::AsFd;
+use std::os::unix::io::{AsRawFd, FromRawFd, OwnedFd, RawFd};
 use std::os::unix::process::ExitStatusExt;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use std::sync::mpsc::sync_channel;
 use std::thread;
+use std::time::Duration;
+
+use nix::cmsg_space;
+use nix::poll::{PollFd, PollFlags, PollTimeout, poll};
+use nix::sys::socket::{
+    AddressFamily, Backlog, ControlMessageOwned, MsgFlags, SockFlag, SockType, UnixAddr, accept,
+    bind, listen, recvmsg, socket,
+};
 
 pub mod filter;
 pub mod peer;
@@ -83,8 +94,8 @@ pub struct TrackingResult {
     pub stderr: Vec<u8>,
 }
 
-/// Optional spawn settings for the tracked command. None means
-/// "inherit from the parent" (cwd + env).
+/// Optional spawn settings for the tracked command. `None` fields
+/// fall through to parent-process inheritance.
 #[derive(Debug, Default, Clone)]
 pub struct SpawnOptions {
     pub cwd: Option<PathBuf>,
@@ -94,7 +105,7 @@ pub struct SpawnOptions {
 }
 
 /// Spawn `cmd` under seccomp tracking. The parent listens on a
-/// Unix socket; `posix_spawn` invokes `helper_path` with the
+/// Unix socket; `Command::spawn` invokes `helper_path` with the
 /// socket path as `FSPY_SOCK`; the helper sends the notify fd back
 /// via SCM_RIGHTS and execves the target.
 ///
@@ -116,14 +127,9 @@ pub fn track_command(
         ));
     }
 
-    // Per-spawn Unix socket path. Random suffix to avoid collisions
-    // when many trackers run concurrently in the same temp dir.
     let sock_path = mk_socket_path();
-
-    // Bind + listen before spawning so the helper's connect can
-    // never race against an unready listener.
     let listener = bind_listener(&sock_path)?;
-    // Ensure the socket file is removed even on early-return paths.
+    // Remove the socket file even on early-return paths.
     let _socket_cleanup = SocketCleanup(sock_path.clone());
 
     // Spawn the helper via std::process::Command. Without a
@@ -148,10 +154,23 @@ pub fn track_command(
 
     let mut child = command.spawn()?;
 
-    // Accept the helper's connection, recv the notify fd via
-    // SCM_RIGHTS. The helper hands off once and execves; we never
-    // accept a second connection.
-    let notify_fd = accept_and_recv_fd(&listener)?;
+    // ChildGuard ensures the helper is killed + reaped on every
+    // early return between spawn and the wait at the bottom. Without
+    // this an error from accept_and_recv_fd / supervisor::run would
+    // leak the helper (and any target it had execvp'd) as a zombie.
+    let mut guard = ChildGuard::new(&mut child);
+
+    // Accept the helper's connection (with a watchdog: if the helper
+    // dies before connecting we'd otherwise block forever in accept).
+    // The helper hands off once and execves; we never accept a
+    // second connection.
+    let notify_fd = accept_and_recv_fd(&listener, &mut guard)?;
+
+    // Past the accept handoff: from here on the helper is the target
+    // process — let the regular wait below reap it instead of the
+    // guard killing it. `release` flips the guard to no-op so Drop
+    // doesn't double-wait.
+    let child = guard.release();
 
     // Supervisor runs in a thread so we can simultaneously read
     // stdio + wait on the child without deadlocking.
@@ -159,6 +178,8 @@ pub fn track_command(
     let supervisor_fd = notify_fd;
     let supervisor_thread = thread::spawn(move || {
         let result = supervisor::run(supervisor_fd);
+        // Closing the fd matches "parent owns the listener" — once
+        // the supervisor returns we have no further use for it.
         unsafe { libc::close(supervisor_fd) };
         let _ = tx.send(result);
     });
@@ -227,100 +248,149 @@ impl Drop for SocketCleanup {
     }
 }
 
+/// Bind a Unix-stream listener at `path`. Unlinks any stale file
+/// at the same path first — a previous crashed run sharing our pid
+/// could otherwise make `bind` fail with `EADDRINUSE`. Path-length
+/// bounds checking is done by `UnixAddr::new`.
 fn bind_listener(path: &Path) -> io::Result<OwnedFd> {
-    let fd = unsafe { libc::socket(libc::AF_UNIX, libc::SOCK_STREAM | libc::SOCK_CLOEXEC, 0) };
-    if fd < 0 {
-        return Err(io::Error::last_os_error());
-    }
-    let owned = unsafe { OwnedFd::from_raw_fd(fd) };
+    // Best-effort unlink. If the file doesn't exist (the normal
+    // case) we get ENOENT and ignore it. Any other error will surface
+    // again from bind() with a more useful message.
+    let _ = std::fs::remove_file(path);
 
-    let path_bytes = path.as_os_str().as_bytes();
-    if path_bytes.len() >= 108 {
-        return Err(io::Error::new(
-            io::ErrorKind::InvalidInput,
-            "socket path too long for sockaddr_un",
-        ));
-    }
-    let mut addr: libc::sockaddr_un = unsafe { std::mem::zeroed() };
-    addr.sun_family = libc::AF_UNIX as libc::sa_family_t;
-    for (i, &b) in path_bytes.iter().enumerate() {
-        addr.sun_path[i] = b as libc::c_char;
-    }
-    let addr_len = std::mem::size_of::<libc::sa_family_t>() + path_bytes.len() + 1;
+    let fd = socket(
+        AddressFamily::Unix,
+        SockType::Stream,
+        SockFlag::SOCK_CLOEXEC,
+        None,
+    )
+    .map_err(to_io)?;
 
-    let rc = unsafe {
-        libc::bind(
-            owned.as_raw_fd(),
-            &addr as *const _ as *const libc::sockaddr,
-            addr_len as u32,
-        )
-    };
-    if rc != 0 {
-        return Err(io::Error::last_os_error());
-    }
-    let rc = unsafe { libc::listen(owned.as_raw_fd(), 1) };
-    if rc != 0 {
-        return Err(io::Error::last_os_error());
-    }
+    let addr = UnixAddr::new(path).map_err(to_io)?;
+    bind(fd.as_raw_fd(), &addr).map_err(to_io)?;
+    listen(&fd, Backlog::new(1).unwrap()).map_err(to_io)?;
 
-    Ok(owned)
+    Ok(fd)
 }
 
-fn accept_and_recv_fd(listener: &OwnedFd) -> io::Result<RawFd> {
-    let conn = unsafe { libc::accept(listener.as_raw_fd(), std::ptr::null_mut(), std::ptr::null_mut()) };
-    if conn < 0 {
-        return Err(io::Error::last_os_error());
+/// Accept the helper's connection and receive the seccomp notify fd
+/// via `SCM_RIGHTS`. Polls the listener with the helper's exit as a
+/// watchdog: if the helper dies before connecting we surface the
+/// failure instead of hanging in `accept` forever.
+fn accept_and_recv_fd(listener: &OwnedFd, guard: &mut ChildGuard<'_>) -> io::Result<RawFd> {
+    // 5s is enough for the helper to do prctl + seccomp_load + connect
+    // on any reasonable kernel; faster than that and a stuck helper
+    // surfaces clearly, slower would hide real bugs.
+    const ACCEPT_TIMEOUT: Duration = Duration::from_secs(5);
+    let mut poll_fds = [PollFd::new(listener.as_fd(), PollFlags::POLLIN)];
+
+    let poll_timeout = PollTimeout::try_from(ACCEPT_TIMEOUT)
+        .unwrap_or(PollTimeout::MAX);
+    loop {
+        match poll(&mut poll_fds, poll_timeout) {
+            Ok(0) => {
+                // Timeout. Was the helper still alive? If it exited
+                // (or is exiting) the most informative error to
+                // bubble up is the helper's stderr/exit code; let
+                // the caller see them via the wait the ChildGuard
+                // will trigger on drop.
+                if let Some(status) = guard.try_check_exit()? {
+                    return Err(io::Error::new(
+                        io::ErrorKind::BrokenPipe,
+                        format!("fspy helper exited before connecting (status: {status:?})"),
+                    ));
+                }
+                return Err(io::Error::new(
+                    io::ErrorKind::TimedOut,
+                    format!(
+                        "fspy helper did not connect within {}s",
+                        ACCEPT_TIMEOUT.as_secs()
+                    ),
+                ));
+            }
+            Ok(_) => break,
+            Err(nix::errno::Errno::EINTR) => continue,
+            Err(e) => return Err(to_io(e)),
+        }
     }
+
+    let conn = accept(listener.as_raw_fd()).map_err(to_io)?;
+    // SAFETY: accept returns an owned fd on success.
     let conn_owned = unsafe { OwnedFd::from_raw_fd(conn) };
 
-    let mut data: u8 = 0;
-    let mut iov = libc::iovec {
-        iov_base: &mut data as *mut u8 as *mut libc::c_void,
-        iov_len: 1,
-    };
-    let mut cmsg_buf = [0u8; 32];
-    let mut msg: libc::msghdr = unsafe { std::mem::zeroed() };
-    msg.msg_iov = &mut iov;
-    msg.msg_iovlen = 1;
-    msg.msg_control = cmsg_buf.as_mut_ptr() as *mut libc::c_void;
-    msg.msg_controllen = cmsg_buf.len() as _;
+    // recvmsg with a single SCM_RIGHTS-sized cmsg buffer. nix
+    // handles the buffer alignment + cmsg framing for us — the
+    // cmsg_space! macro sizes it correctly for one RawFd payload.
+    let mut iov_buf = [0u8; 1];
+    let mut iov = [IoSliceMut::new(&mut iov_buf)];
+    let mut cmsg = cmsg_space!(RawFd);
 
-    let rc = unsafe { libc::recvmsg(conn_owned.as_raw_fd(), &mut msg, 0) };
-    if rc < 0 {
-        return Err(io::Error::last_os_error());
-    }
-    if rc == 0 {
+    let msg: nix::sys::socket::RecvMsg<'_, '_, ()> = recvmsg(
+        conn_owned.as_raw_fd(),
+        &mut iov,
+        Some(&mut cmsg),
+        MsgFlags::empty(),
+    )
+    .map_err(to_io)?;
+
+    if msg.bytes == 0 {
         return Err(io::Error::new(
             io::ErrorKind::UnexpectedEof,
             "helper closed connection before sending notify fd",
         ));
     }
 
-    let cmsg = unsafe { libc::CMSG_FIRSTHDR(&msg) };
-    if cmsg.is_null() {
-        return Err(io::Error::new(
-            io::ErrorKind::InvalidData,
-            "no SCM_RIGHTS ancillary data from helper",
-        ));
+    for cmsg in msg.cmsgs().map_err(to_io)? {
+        if let ControlMessageOwned::ScmRights(fds) = cmsg {
+            if let Some(&fd) = fds.first() {
+                return Ok(fd);
+            }
+        }
     }
-    let (level, ty) = unsafe { ((*cmsg).cmsg_level, (*cmsg).cmsg_type) };
-    if level != libc::SOL_SOCKET || ty != libc::SCM_RIGHTS {
-        return Err(io::Error::new(
-            io::ErrorKind::InvalidData,
-            format!("unexpected cmsg level/type {level}/{ty}"),
-        ));
-    }
-    let fd = unsafe { std::ptr::read(libc::CMSG_DATA(cmsg) as *const RawFd) };
-    if fd < 0 {
-        return Err(io::Error::new(io::ErrorKind::InvalidData, "received invalid fd"));
-    }
-    Ok(fd)
+
+    Err(io::Error::new(
+        io::ErrorKind::InvalidData,
+        "no SCM_RIGHTS fd in helper's message",
+    ))
 }
 
-/// Force a use of `OwnedFd::into_raw_fd` so the import doesn't show
-/// as dead. Removed once a future caller (e.g. detecting helper
-/// crash without exit code) actually owns notify-fd lifetimes here.
-#[allow(dead_code)]
-fn _force_ownedfd_into_raw_fd(fd: OwnedFd) -> RawFd {
-    fd.into_raw_fd()
+fn to_io(e: nix::errno::Errno) -> io::Error {
+    io::Error::from_raw_os_error(e as i32)
+}
+
+/// RAII guard that kills + reaps a helper child if the caller drops
+/// out of `track_command` before the regular `wait`. Required to
+/// avoid orphaning the helper (and any target it execvp'd) on the
+/// error paths between `Command::spawn` and the final `child.wait`.
+struct ChildGuard<'a> {
+    /// `Some` while active, `None` after `release()` — Drop short-
+    /// circuits on `None` so the regular wait at the bottom of
+    /// `track_command` does the reaping without a double-wait.
+    child: Option<&'a mut std::process::Child>,
+}
+
+impl<'a> ChildGuard<'a> {
+    fn new(child: &'a mut std::process::Child) -> Self {
+        Self { child: Some(child) }
+    }
+
+    fn release(mut self) -> &'a mut std::process::Child {
+        self.child.take().expect("ChildGuard released twice")
+    }
+
+    fn try_check_exit(&mut self) -> io::Result<Option<std::process::ExitStatus>> {
+        match self.child.as_mut() {
+            Some(child) => child.try_wait(),
+            None => Ok(None),
+        }
+    }
+}
+
+impl<'a> Drop for ChildGuard<'a> {
+    fn drop(&mut self) {
+        if let Some(child) = self.child.as_mut() {
+            let _ = child.kill();
+            let _ = child.wait();
+        }
+    }
 }

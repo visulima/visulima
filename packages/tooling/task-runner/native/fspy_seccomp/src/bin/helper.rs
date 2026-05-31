@@ -14,7 +14,8 @@
 //! 2. `filter::install(syscalls::tracked())` — builds the filter via
 //!    libseccomp and returns the listener fd.
 //! 3. Connect to the parent's Unix socket at `FSPY_SOCK`.
-//! 4. Send the listener fd to the parent via `SCM_RIGHTS`.
+//! 4. Send the listener fd to the parent via `SCM_RIGHTS` (handled
+//!    by nix's `sendmsg` + `ControlMessage::ScmRights`).
 //! 5. `execve(target_cmd, target_args)`.
 //!
 //! From this point the kernel routes every tracked syscall in the
@@ -25,11 +26,15 @@
 
 use std::env;
 use std::ffi::CString;
-use std::io;
-use std::os::unix::ffi::OsStrExt;
-use std::os::unix::io::RawFd;
+use std::io::{self, IoSlice};
+use std::os::unix::io::{AsRawFd, OwnedFd, RawFd};
 use std::path::Path;
 use std::process::ExitCode;
+
+use nix::sys::socket::{
+    AddressFamily, ControlMessage, MsgFlags, SockFlag, SockType, UnixAddr, connect, sendmsg,
+    socket,
+};
 
 use fspy_seccomp::{filter, syscalls};
 
@@ -96,8 +101,7 @@ fn run() -> Result<(), ExitCode> {
 
     // execve replaces the process image. From this point seccomp
     // notifications fire whenever the target runs a tracked syscall.
-    let target = CString::new(argv[0].as_bytes())
-        .map_err(|_| ExitCode::from(64))?;
+    let target = CString::new(argv[0].as_bytes()).map_err(|_| ExitCode::from(64))?;
     let arg_cstrs: Vec<CString> = argv
         .iter()
         .map(|s| CString::new(s.as_bytes()).map_err(|_| ExitCode::from(64)))
@@ -119,74 +123,35 @@ fn run() -> Result<(), ExitCode> {
 }
 
 /// Connect to the parent's listener at `sock_path` and hand it the
-/// notify fd via SCM_RIGHTS. Writes a single zero byte alongside —
-/// Linux requires at least 1 iovec byte for SCM_RIGHTS.
+/// notify fd via `SCM_RIGHTS`. Goes through nix's typed `sendmsg` +
+/// `ControlMessage::ScmRights` so the cmsg framing + alignment are
+/// the library's problem, not ours.
 fn send_notify_fd(sock_path: &Path, payload_fd: RawFd) -> io::Result<()> {
-    use libc::{c_void, iovec};
+    let sock: OwnedFd = socket(
+        AddressFamily::Unix,
+        SockType::Stream,
+        SockFlag::empty(),
+        None,
+    )
+    .map_err(to_io)?;
 
-    // Open a Unix stream socket and connect to sock_path.
-    let sock = unsafe { libc::socket(libc::AF_UNIX, libc::SOCK_STREAM, 0) };
-    if sock < 0 {
-        return Err(io::Error::last_os_error());
-    }
+    // UnixAddr::new performs the sun_path bounds check (108 bytes).
+    let addr = UnixAddr::new(sock_path).map_err(to_io)?;
+    connect(sock.as_raw_fd(), &addr).map_err(to_io)?;
 
-    let path_bytes = sock_path.as_os_str().as_bytes();
-    if path_bytes.len() >= 108 {
-        // sun_path is fixed at 108 bytes on Linux. Truncating would
-        // silently route us to the wrong listener.
-        unsafe { libc::close(sock) };
-        return Err(io::Error::new(
-            io::ErrorKind::InvalidInput,
-            "FSPY_SOCK path too long for sockaddr_un",
-        ));
-    }
+    // Linux requires at least 1 iovec byte for SCM_RIGHTS to be
+    // attached — send a single zero byte alongside the fd.
+    let payload = [0u8];
+    let iov = [IoSlice::new(&payload)];
+    let fds = [payload_fd];
+    let cmsgs = [ControlMessage::ScmRights(&fds)];
 
-    let mut addr: libc::sockaddr_un = unsafe { std::mem::zeroed() };
-    addr.sun_family = libc::AF_UNIX as libc::sa_family_t;
-    for (i, &b) in path_bytes.iter().enumerate() {
-        addr.sun_path[i] = b as libc::c_char;
-    }
-    // Length: family field + path + trailing NUL. Compute up to but
-    // not past the actual path length.
-    let addr_len = std::mem::size_of::<libc::sa_family_t>() + path_bytes.len() + 1;
+    sendmsg::<()>(sock.as_raw_fd(), &iov, &cmsgs, MsgFlags::empty(), None)
+        .map_err(to_io)?;
 
-    let rc = unsafe {
-        libc::connect(sock, &addr as *const _ as *const libc::sockaddr, addr_len as u32)
-    };
-    if rc != 0 {
-        let err = io::Error::last_os_error();
-        unsafe { libc::close(sock) };
-        return Err(err);
-    }
+    Ok(())
+}
 
-    let mut data: u8 = 0;
-    let mut iov = iovec {
-        iov_base: &mut data as *mut u8 as *mut c_void,
-        iov_len: 1,
-    };
-
-    let mut cmsg_buf = [0u8; 32];
-    let mut msg: libc::msghdr = unsafe { std::mem::zeroed() };
-    msg.msg_iov = &mut iov;
-    msg.msg_iovlen = 1;
-    msg.msg_control = cmsg_buf.as_mut_ptr() as *mut c_void;
-    msg.msg_controllen = unsafe { libc::CMSG_SPACE(std::mem::size_of::<RawFd>() as u32) as _ };
-
-    unsafe {
-        let cmsg = libc::CMSG_FIRSTHDR(&msg);
-        (*cmsg).cmsg_level = libc::SOL_SOCKET;
-        (*cmsg).cmsg_type = libc::SCM_RIGHTS;
-        (*cmsg).cmsg_len = libc::CMSG_LEN(std::mem::size_of::<RawFd>() as u32) as _;
-        std::ptr::write(libc::CMSG_DATA(cmsg) as *mut RawFd, payload_fd);
-    }
-
-    let rc = unsafe { libc::sendmsg(sock, &msg, 0) };
-    let send_err = if rc < 0 { Some(io::Error::last_os_error()) } else { None };
-
-    unsafe { libc::close(sock) };
-
-    match send_err {
-        Some(e) => Err(e),
-        None => Ok(()),
-    }
+fn to_io(e: nix::errno::Errno) -> io::Error {
+    io::Error::from_raw_os_error(e as i32)
 }

@@ -46,15 +46,20 @@ const isStraceAvailable = (): boolean => {
  * helper one directory above. Falls back to a dev location for
  * `cargo build --debug` workflows.
  */
-let helperPathCache: string | null | undefined;
+interface HelperPathCache {
+    /** Resolved path, or `""` for "looked but didn't find one". */
+    value: string;
+}
+
+let helperPathCache: HelperPathCache | undefined;
 
 const resolveSeccompHelperPath = (): string | undefined => {
     if (helperPathCache !== undefined) {
-        return helperPathCache ?? undefined;
+        return helperPathCache.value === "" ? undefined : helperPathCache.value;
     }
 
     if (platform() !== "linux") {
-        helperPathCache = null;
+        helperPathCache = { value: "" };
 
         return undefined;
     }
@@ -86,7 +91,7 @@ const resolveSeccompHelperPath = (): string | undefined => {
     for (const candidate of candidates) {
         try {
             accessSync(candidate, fsConstants.X_OK);
-            helperPathCache = candidate;
+            helperPathCache = { value: candidate };
 
             return candidate;
         } catch {
@@ -94,7 +99,7 @@ const resolveSeccompHelperPath = (): string | undefined => {
         }
     }
 
-    helperPathCache = null;
+    helperPathCache = { value: "" };
 
     return undefined;
 };
