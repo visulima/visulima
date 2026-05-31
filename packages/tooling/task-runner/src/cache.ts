@@ -830,84 +830,181 @@ const restoreOutputsCompressed = async (cacheEntryDirectory: string, workspaceRo
     }
 
     const stagingDirectory = join(cacheEntryDirectory, `.restore-${uniqueId()}`);
-    const backups: { backup: string; original: string }[] = [];
-    // The extract above already applied the captured mtime to each
-    // staged file via utimes(); without `preserveTimestamps` here, the
-    // subsequent `cp` would silently re-stamp every restored file to
-    // "now" and undo the work. Mode bits are always preserved by cp.
     const preserveMtime = options?.preserveMtime ?? true;
+
+    /**
+     * Rename-and-pivot swap. Each output goes through three atomic
+     * phases:
+     *
+     *   1. Pre-position. Move the freshly-extracted staging subtree
+     *      to a sibling-of-destination path (`<dst>.restoring-<uid>`)
+     *      so the install rename in phase 3 is intra-directory and
+     *      cannot fail with EXDEV. If staging is on a different
+     *      filesystem the rename throws EXDEV and we fall back to
+     *      `cp -r` for pre-positioning only — never for the install.
+     *
+     *   2. Backup. `rename(<dst>, <dst>.old-<uid>)` for every output
+     *      that has an existing tree on disk. Single atomic POSIX op
+     *      per entry. If any backup fails, every prior backup is
+     *      renamed back atomically and the function returns `false`
+     *      with the workspace exactly as it was on entry.
+     *
+     *   3. Install. `rename(<dst>.restoring-<uid>, <dst>)` for every
+     *      output. Atomic intra-directory rename. If any install
+     *      fails, every prior install is renamed to a trash sibling
+     *      and every backup is renamed back. The user sees either
+     *      the full new tree or the full old tree — never a mix.
+     *
+     * Cleanup (rm of backups, rm of leftover restoring/trash paths)
+     * is best-effort and runs in the background; failures there
+     * leak disk space, not correctness.
+     *
+     * Compared to the prior `rename → cp → rm-then-rename rollback`
+     * shape, the only `rm` on the load-bearing path is for backup
+     * cleanup AFTER success. A rollback path never has to `rm` a
+     * partially-copied tree, so a Windows file lock or EBUSY on
+     * any single file can no longer leave the workspace in a
+     * mixed "Frankenstein" state.
+     */
+    type EntryState = {
+        absoluteOutput: string;
+        backupPath: string;
+        backupCreated: boolean;
+        entry: string;
+        prePositioned: string;
+        installed: boolean;
+    };
+
+    const states: EntryState[] = [];
 
     try {
         await mkdir(stagingDirectory, { recursive: true });
         await extractTarBrotli(archivePath, stagingDirectory, options);
 
-        // Derive swap roots from what's actually in the archive.
-        // Avoids the caller having to re-resolve globs against the
-        // post-task workspace, which may have moved on.
-        //
-        // readdir order is fs-dependent (ext4 returns inode order, APFS
-        // by creation, NTFS alphabetic-ish); sort here so the swap loop
-        // visits roots in the same order across machines and reruns.
-        // Ordering only matters for failure-mode determinism — the
-        // bounded parallel runBounded below interleaves writes either
-        // way — but it makes diffs and bug reports reproducible.
+        // Derive swap roots from what's actually in the archive — the
+        // caller doesn't need to re-resolve globs against the
+        // post-task workspace. readdir order is fs-dependent; sort
+        // for cross-machine determinism on rollback diagnostics.
         const stagingEntries = await readdir(stagingDirectory);
         const topLevel = stagingEntries.sort();
 
-        // Swap roots are disjoint subtrees by construction (archive
-        // top-levels), so placement can run in parallel. Each task
-        // locally backs up → cps; the shared `backups` array is only
-        // pushed to, and we only read it on the error path after the
-        // Promise.all settles, so there's no interleaving hazard.
-        await runBounded(STAGE_CONCURRENCY, topLevel, async (entry) => {
+        const swapId = uniqueId();
+
+        for (const entry of topLevel) {
             const absoluteOutput = resolve(workspaceRoot, entry);
-            const stagedOutput = join(stagingDirectory, entry);
 
-            await mkdir(dirname(absoluteOutput), { recursive: true });
+            states.push({
+                absoluteOutput,
+                backupCreated: false,
+                backupPath: `${absoluteOutput}.old-${swapId}`,
+                entry,
+                installed: false,
+                prePositioned: `${absoluteOutput}.restoring-${swapId}`,
+            });
+        }
 
-            // Move the existing tree aside atomically before copying the
-            // replacement into place. If anything fails below, the
-            // rollback loop renames these backups back to their originals.
+        // Phase 1: pre-position. Move the staged subtree to a sibling
+        // of the destination so phase 3 is a same-directory rename.
+        // EXDEV (cross-filesystem) falls back to `cp -r` because we
+        // can't atomic-rename across mounts; the install rename
+        // itself stays atomic in either case.
+        await runBounded(STAGE_CONCURRENCY, states, async (state) => {
+            const stagedOutput = join(stagingDirectory, state.entry);
+
+            await mkdir(dirname(state.absoluteOutput), { recursive: true });
+            // Defensive: stale leftover from an aborted prior run.
+            // rename refuses to overwrite a non-empty dir, so clear it.
+            await rm(state.prePositioned, { force: true, recursive: true }).catch(() => {});
+
             try {
-                await stat(absoluteOutput);
-
-                const backup = `${absoluteOutput}.pre-restore-${uniqueId()}`;
-
-                await rename(absoluteOutput, backup);
-                backups.push({ backup, original: absoluteOutput });
-            } catch {
-                // No existing tree to back up — nothing to rollback later.
+                await rename(stagedOutput, state.prePositioned);
+            } catch (error) {
+                if ((error as NodeJS.ErrnoException).code === "EXDEV") {
+                    await cp(stagedOutput, state.prePositioned, { preserveTimestamps: preserveMtime, recursive: true });
+                } else {
+                    throw error;
+                }
             }
-
-            await cp(stagedOutput, absoluteOutput, { preserveTimestamps: preserveMtime, recursive: true });
         });
 
-        // All outputs placed successfully — drop the backups in parallel.
-        await Promise.all(backups.map(({ backup }) => rm(backup, { force: true, recursive: true }).catch(() => {})));
+        // Phase 2: backup. Atomic rename(dst → dst.old) for every
+        // entry that has an existing tree. Fail-fast: any per-entry
+        // failure aborts the whole phase, the catch below rolls back.
+        await runBounded(STAGE_CONCURRENCY, states, async (state) => {
+            try {
+                await stat(state.absoluteOutput);
+            } catch {
+                // No existing tree — phase 3 installs into empty.
+                return;
+            }
+
+            await rename(state.absoluteOutput, state.backupPath);
+            state.backupCreated = true;
+        });
+
+        // Phase 3: install. Atomic rename(staged → dst). Same fail-
+        // fast semantics; the catch rolls back to the pre-call state.
+        await runBounded(STAGE_CONCURRENCY, states, async (state) => {
+            await rename(state.prePositioned, state.absoluteOutput);
+            state.installed = true;
+        });
+
+        // Success. Drop the backups in the background; a failure to
+        // rm a backup leaks disk but doesn't affect correctness.
+        await Promise.all(states.filter((s) => s.backupCreated).map(({ backupPath }) => rm(backupPath, { force: true, recursive: true }).catch(() => {})));
 
         return true;
     } catch {
-        // Roll back every rename so the working tree matches its
-        // pre-call state. Any new cp() that partially succeeded also
-        // needs to go so the rename can land.
-        //
-        // Known limitation: rollback is best-effort. If `rm(original)`
-        // fails — Windows file lock, EBUSY, or a permission change
-        // mid-flight — the subsequent `rename` can't land and the user
-        // ends up with neither the new tree nor the old. We swallow
-        // the inner failure because surfacing it would mask the
-        // original restore error that triggered the rollback, and
-        // both failures already surface via the `return false`.
-        for (const { backup, original } of backups) {
-            // eslint-disable-next-line no-await-in-loop
-            await rm(original, { force: true, recursive: true }).catch(() => {});
-            // eslint-disable-next-line no-await-in-loop
-            await rename(backup, original).catch(() => {});
+        // Roll back everything we did, in reverse order, using only
+        // atomic renames. No `rm` of a partially-copied tree is
+        // required, so a single locked file cannot wedge the
+        // rollback into a mixed state.
+        for (const state of states) {
+            if (state.installed) {
+                // rename the just-installed tree out of the way, then
+                // restore the backup. Trash gets cleaned in the
+                // finally block.
+                const trash = `${state.absoluteOutput}.failed-${uniqueId()}`;
+
+                // eslint-disable-next-line no-await-in-loop
+                await rename(state.absoluteOutput, trash).catch(() => {});
+
+                if (state.backupCreated) {
+                    // eslint-disable-next-line no-await-in-loop
+                    await rename(state.backupPath, state.absoluteOutput).catch(() => {});
+                }
+
+                state.installed = false;
+
+                // eslint-disable-next-line no-await-in-loop
+                await rm(trash, { force: true, recursive: true }).catch(() => {});
+            } else if (state.backupCreated) {
+                // eslint-disable-next-line no-await-in-loop
+                await rename(state.backupPath, state.absoluteOutput).catch(() => {});
+            }
         }
 
         return false;
     } finally {
+        // Sweep up everything that didn't make it into the live
+        // workspace: the staging dir, any pre-positioned subtrees we
+        // didn't install, and any orphan backups from a partial
+        // rollback. Best-effort — these are all out-of-band paths
+        // that an operator can also clean by hand if needed.
         await rm(stagingDirectory, { force: true, recursive: true }).catch(() => {});
+
+        for (const state of states) {
+            await rm(state.prePositioned, { force: true, recursive: true }).catch(() => {});
+
+            if (state.backupCreated && !state.installed) {
+                // Backup is still on disk because rollback failed to
+                // restore it; leave it for the operator to investigate
+                // rather than silently deleting their old output tree.
+                continue;
+            }
+
+            await rm(state.backupPath, { force: true, recursive: true }).catch(() => {});
+        }
     }
 };
 

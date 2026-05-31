@@ -112,6 +112,39 @@ export class ReapiRemoteCache implements RemoteCacheBackend {
 
     readonly #inflightUploads = new Map<string, Promise<boolean>>();
 
+    /**
+     * Tracks every in-flight RPC so `close()` can wait for orderly
+     * quiescence before tearing the channels down. Without this, a
+     * `storeAction` that's mid-stream when `defaultTaskRunner`'s
+     * `finally` block calls `close()` was cancelled with a
+     * gRPC CANCELLED status and surfaced via `onUploadError`,
+     * looking like a real upload failure when it's actually a clean
+     * shutdown of a fire-and-forget background write.
+     *
+     * Entries auto-remove when the RPC settles. `close()` snapshots
+     * the set, awaits `Promise.allSettled` (bounded by
+     * `#closeQuiescenceTimeoutMs` so a stuck server can't wedge
+     * teardown forever), then closes the channels.
+     */
+    readonly #inflightRpcs = new Set<Promise<unknown>>();
+
+    /**
+     * Hard cap on how long `close()` waits for in-flight RPCs to
+     * settle before forcing the channel closure. 10 s is enough for
+     * a typical upload to commit (`#streamWrite`'s default deadline
+     * is `timeout × 10`, but a healthy server completes in seconds)
+     * yet short enough that a stuck `bazel-remote` doesn't make a
+     * vis run hang on Ctrl-C.
+     */
+    readonly #closeQuiescenceTimeoutMs = 10_000;
+
+    /**
+     * Set once `close()` runs. New `#trackRpc` calls reject
+     * immediately so a buggy caller can't re-enter the backend after
+     * teardown started.
+     */
+    #closed = false;
+
     #clientsPromise:
         | Promise<{
             actionCache: GrpcClientLike;
@@ -156,6 +189,11 @@ export class ReapiRemoteCache implements RemoteCacheBackend {
      * resolution so the underlying channels are observable to close.
      */
     public async close(): Promise<void> {
+        // Flip the closed flag first so any subsequent RPC entry
+        // sees teardown is in progress and refuses to start a new
+        // call. The flag is read by `#trackRpc`.
+        this.#closed = true;
+
         const pending = this.#clientsPromise;
 
         if (pending === undefined) {
@@ -163,6 +201,19 @@ export class ReapiRemoteCache implements RemoteCacheBackend {
         }
 
         this.#clientsPromise = undefined;
+
+        // Wait for in-flight RPCs to drain so we don't tear channels
+        // out from under an active streaming write. The drain is
+        // capped by `#closeQuiescenceTimeoutMs` so a hung server
+        // can't block teardown forever.
+        if (this.#inflightRpcs.size > 0) {
+            const drain = Promise.allSettled([...this.#inflightRpcs]);
+            const timeout = new Promise<void>((resolve) => {
+                setTimeout(resolve, this.#closeQuiescenceTimeoutMs);
+            });
+
+            await Promise.race([drain, timeout]);
+        }
 
         let resolved: Awaited<typeof pending>;
 
@@ -183,6 +234,36 @@ export class ReapiRemoteCache implements RemoteCacheBackend {
     }
 
     /**
+     * Wraps an RPC promise so it's registered in `#inflightRpcs`
+     * while pending and auto-removed when it settles. `close()`
+     * reads this set to know what to wait on before tearing the
+     * channels down.
+     *
+     * Throws synchronously if `close()` has already started, so
+     * callers fail fast rather than issuing a new RPC against
+     * channels that are about to go away.
+     */
+    #trackRpc<T>(call: () => Promise<T>): Promise<T> {
+        if (this.#closed) {
+            return Promise.reject(new Error("[task-runner] REAPI backend is closed; refusing new RPC"));
+        }
+
+        const promise = call();
+
+        this.#inflightRpcs.add(promise);
+
+        promise.finally(() => {
+            this.#inflightRpcs.delete(promise);
+        }).catch(() => {
+            // The finally above is the bookkeeping path; we re-attach
+            // a noop .catch so any unhandled-rejection surface stays
+            // on the caller's chain, not on our tracking wrapper.
+        });
+
+        return promise;
+    }
+
+    /**
      * Diagnostic probe — fetches the server's `Capabilities` RPC response
      * (or the cached value, if a previous call already negotiated). Used
      * by `vis cache doctor` to surface what the server advertises without
@@ -196,10 +277,14 @@ export class ReapiRemoteCache implements RemoteCacheBackend {
         digestFunctions: ReadonlyArray<string>;
         maxBatchTotalSizeBytes: number;
     }> {
-        return this.#negotiateCapabilities();
+        return this.#trackRpc(() => this.#negotiateCapabilities());
     }
 
     public async containsAction(actionDigest: CasDigest): Promise<boolean> {
+        return this.#trackRpc(() => this.#containsActionImpl(actionDigest));
+    }
+
+    async #containsActionImpl(actionDigest: CasDigest): Promise<boolean> {
         if (!this.#read) {
             return false;
         }
@@ -234,6 +319,10 @@ export class ReapiRemoteCache implements RemoteCacheBackend {
     }
 
     public async fetchBlob(digest: CasDigest, destinationPath: string): Promise<boolean> {
+        return this.#trackRpc(() => this.#fetchBlobImpl(digest, destinationPath));
+    }
+
+    async #fetchBlobImpl(digest: CasDigest, destinationPath: string): Promise<boolean> {
         if (!this.#read) {
             return false;
         }
@@ -266,6 +355,10 @@ export class ReapiRemoteCache implements RemoteCacheBackend {
     }
 
     public async retrieveAction(actionDigest: CasDigest): Promise<ActionResult | null> {
+        return this.#trackRpc(() => this.#retrieveActionImpl(actionDigest));
+    }
+
+    async #retrieveActionImpl(actionDigest: CasDigest): Promise<ActionResult | null> {
         if (!this.#read) {
             return null;
         }
@@ -299,6 +392,10 @@ export class ReapiRemoteCache implements RemoteCacheBackend {
     }
 
     public async storeAction(actionDigest: CasDigest, result: ActionResult, blobs: ReadonlyArray<BlobSource>): Promise<boolean> {
+        return this.#trackRpc(() => this.#storeActionImpl(actionDigest, result, blobs));
+    }
+
+    async #storeActionImpl(actionDigest: CasDigest, result: ActionResult, blobs: ReadonlyArray<BlobSource>): Promise<boolean> {
         if (!this.#write) {
             return false;
         }
