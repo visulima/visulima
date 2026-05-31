@@ -92,6 +92,53 @@ fn stat_family_records_stat_access() {
 }
 
 #[test]
+fn forked_descendants_emit_on_root_listener() {
+    // Verify the kernel's documented behaviour: a seccomp filter
+    // installed with SECCOMP_FILTER_FLAG_NEW_LISTENER produces a
+    // notify fd associated with the FILTER, not with the task.
+    // Forked descendants inherit the filter and their notifications
+    // fire on the same parent listener — `notif.pid` tells us
+    // which task. So a single supervisor naturally covers the whole
+    // process tree without any per-task fd plumbing.
+    //
+    // This test makes that explicit by forking three levels deep
+    // (sh → sh → sh → cat) and asserting we still see the leaf
+    // openat for the target file.
+    let dir = tmpdir("fork-tree");
+    let target = dir.join("leaf.txt");
+    fs::write(&target, b"hello").expect("seed leaf");
+
+    let result = track_command(
+        &[
+            "/bin/sh".to_string(),
+            "-c".to_string(),
+            // Two nested `sh -c` invocations before cat — each
+            // shell forks to run the next layer.
+            format!(
+                "sh -c 'sh -c \"cat {}\"'",
+                target.display()
+            ),
+        ],
+        &helper_path(),
+        &SpawnOptions::default(),
+        None,
+    )
+    .expect("track_command should succeed");
+
+    let _ = fs::remove_dir_all(&dir);
+
+    assert_eq!(result.exit_code, 0, "nested-shell pipeline should exit 0");
+
+    let saw_leaf = result.accesses.iter().any(|a| a.path == target);
+    assert!(
+        saw_leaf,
+        "expected leaf openat for {} to fire on root listener despite 3-deep fork tree, got: {:?}",
+        target.display(),
+        result.accesses.iter().map(|a| &a.path).collect::<Vec<_>>(),
+    );
+}
+
+#[test]
 fn getdents_records_readdir_against_resolved_path() {
     let dir = tmpdir("readdir");
     fs::write(dir.join("a"), b"").expect("seed a");
