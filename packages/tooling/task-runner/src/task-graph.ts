@@ -145,6 +145,19 @@ const getDependencyProjectTasks = (
             continue;
         }
 
+        // Skip peer-dependency edges for *build ordering*. Peers are
+        // declarations that the depending package needs the peer at
+        // runtime, but they don't imply that the peer must build first
+        // (and they often form bidirectional cycles: an eslint plugin
+        // peer-deps eslint while eslint workspace-deps the plugin via
+        // tests). pnpm/turbo intentionally exclude peer-deps from
+        // build order. Affected-detection still uses the full graph
+        // through a separate code path, so a code change in the peer
+        // still propagates. See voidzero-dev/vite-task#411.
+        if (dep.type === "peerDependency") {
+            continue;
+        }
+
         const depProject = workspace.projects[dep.target];
 
         if (!depProject) {

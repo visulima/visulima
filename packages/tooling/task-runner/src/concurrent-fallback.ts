@@ -46,6 +46,26 @@ const SIGNAL_NUMBERS: Record<string, number> = {
 
 const signalNumberFor = (signal: NodeJS.Signals | string): number | undefined => SIGNAL_NUMBERS[signal];
 
+/**
+ * Merge env vars for a child process, preserving an explicit caller-supplied
+ * `FORCE_COLOR` from `config.env` rather than clobbering it. Order of
+ * precedence: `config.env` > `process.env` > the default `"1"`. The previous
+ * pattern (`FORCE_COLOR: process.env.FORCE_COLOR ?? "1"` placed *after* the
+ * config.env spread) silently overrode a caller passing `FORCE_COLOR=0` to
+ * disable color for tools that misbehave with ANSI / emit JSON. See
+ * voidzero-dev/vite-task#379.
+ */
+const mergeEnvWithForceColor = (configEnv: NodeJS.ProcessEnv | undefined, extras: Record<string, string> = {}): NodeJS.ProcessEnv => {
+    const callerForceColor = configEnv?.["FORCE_COLOR"];
+
+    return {
+        ...process.env,
+        ...configEnv,
+        ...extras,
+        FORCE_COLOR: callerForceColor ?? process.env["FORCE_COLOR"] ?? "1",
+    };
+};
+
 interface ActiveProcess {
     child?: ChildProcess;
     index: number;
@@ -154,11 +174,7 @@ const spawnCommand = (
         child = spawn(shellProgram, shellArgs, {
             cwd: config.cwd,
             detached: process.platform !== "win32",
-            env: {
-                ...process.env,
-                ...config.env,
-                FORCE_COLOR: process.env["FORCE_COLOR"] ?? "1",
-            },
+            env: mergeEnvWithForceColor(config.env),
             stdio: [stdinStdio, "pipe", "pipe"],
             windowsVerbatimArguments: verbatimArgs,
         });
@@ -171,11 +187,7 @@ const spawnCommand = (
         child = spawn(program, args, {
             cwd: config.cwd,
             detached: process.platform !== "win32",
-            env: {
-                ...process.env,
-                ...config.env,
-                FORCE_COLOR: process.env["FORCE_COLOR"] ?? "1",
-            },
+            env: mergeEnvWithForceColor(config.env),
             stdio: [stdinStdio, "pipe", "pipe"],
         });
     }
@@ -359,7 +371,7 @@ const spawnCommandPty = (
         cols: config.ptySize?.cols ?? 80,
         cwd: config.cwd ?? process.cwd(),
         env: Object.fromEntries(
-            Object.entries({ ...process.env, ...config.env, FORCE_COLOR: process.env["FORCE_COLOR"] ?? "1", TERM: "xterm-256color" }).filter(
+            Object.entries(mergeEnvWithForceColor(config.env, { TERM: "xterm-256color" })).filter(
                 (entry): entry is [string, string] => typeof entry[1] === "string",
             ),
         ),

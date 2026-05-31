@@ -79,6 +79,13 @@ const calculateProjectDepths = (projectGraph: ProjectGraph): Map<string, number>
         let maxDepth = 0;
 
         for (const dep of deps) {
+            // Mirror task-graph.ts: peer-dep edges don't constrain
+            // build ordering and would otherwise inflate scheduling
+            // depths used for tie-breaking.
+            if (dep.type === "peerDependency") {
+                continue;
+            }
+
             maxDepth = Math.max(maxDepth, calculateDepth(dep.target) + 1);
         }
 

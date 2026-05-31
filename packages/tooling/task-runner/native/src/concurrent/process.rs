@@ -1,3 +1,5 @@
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 use tokio::io::{AsyncRead, AsyncReadExt};
@@ -27,6 +29,14 @@ pub fn spawn_process(
     shell_path: Option<&str>,
 ) -> Result<ProcessInfo, std::io::Error> {
     let mut cmd = build_command(config, shell_path);
+    // If the JS-side `run_concurrent` future is dropped (Promise GC'd,
+    // AbortController cancellation, Node shutdown), tokio tears down
+    // its task tree: the completion-waiter task is aborted and the
+    // owned `Child` is dropped. With the default `kill_on_drop = false`
+    // that would leave the OS-level process running as an orphan
+    // re-parented to PID 1. Force-killing on drop ensures the JS side
+    // can never abandon spawned children.
+    cmd.kill_on_drop(true);
     let mut child = cmd.spawn()?;
     let start_time = Instant::now();
 
@@ -44,6 +54,13 @@ pub fn spawn_process(
     // Spawn stderr reader -- returns JoinHandle so we can wait for it
     let stderr_handle: Option<JoinHandle<()>> =
         child.stderr.take().map(|stderr| tokio::spawn(stream_output(stderr, event_tx.clone(), index, true)));
+
+    // Shared flag the runner's force-kill timer checks before issuing
+    // SIGKILL. Without it, a kill_timeout of 5s is plenty of room for
+    // the child to exit cleanly AND for the kernel to recycle the PID
+    // for an unrelated process, which the timer would then SIGKILL.
+    let terminated = Arc::new(AtomicBool::new(false));
+    let terminated_completion = Arc::clone(&terminated);
 
     // Spawn completion waiter -- waits for BOTH I/O drain AND process exit
     // This ensures all stdout/stderr events arrive before the close event.
@@ -78,6 +95,12 @@ pub fn spawn_process(
             Err(_) => -1,
         };
 
+        // Mark this process as terminated *before* we send the completion
+        // message. The force-kill timer reads this flag with Acquire
+        // ordering and skips pids that have already exited, eliminating
+        // the PID-recycling race window.
+        terminated_completion.store(true, Ordering::Release);
+
         let close_event = ConcurrentCloseEvent {
             index,
             command: command_str,
@@ -103,6 +126,7 @@ pub fn spawn_process(
     Ok(ProcessInfo {
         index,
         pid,
+        terminated,
         #[cfg(windows)]
         job,
     })
@@ -118,6 +142,11 @@ pub struct CompletionMessage {
 pub struct ProcessInfo {
     pub index: u32,
     pub pid: Option<u32>,
+    /// Set to `true` by the completion waiter once the child has exited
+    /// and its event has been dispatched. The force-kill timer checks
+    /// this with Acquire ordering before issuing SIGKILL so it can't
+    /// hit a PID the kernel has already recycled for another process.
+    pub terminated: Arc<AtomicBool>,
     /// Windows: Job Object that owns the process tree.
     /// When terminated or dropped, kills all child processes.
     #[cfg(windows)]
@@ -231,8 +260,13 @@ fn build_command(config: &ConcurrentCommandConfig, shell_path: Option<&str>) -> 
         cmd.envs(env.iter().map(|(k, v)| (k.as_str(), v.as_str())));
     }
 
-    // Pass through color support
-    if std::env::var("FORCE_COLOR").is_err() {
+    // Pass through color support — but respect an explicit
+    // `FORCE_COLOR` from `config.env` first (e.g. `"0"` to disable
+    // color for tools that misbehave with ANSI / emit JSON). The
+    // previous unconditional override on parent-env absence silently
+    // forced color on. See voidzero-dev/vite-task#379.
+    let caller_has_force_color = config.env.as_ref().map(|env| env.contains_key("FORCE_COLOR")).unwrap_or(false);
+    if !caller_has_force_color && std::env::var("FORCE_COLOR").is_err() {
         cmd.env("FORCE_COLOR", "1");
     }
 

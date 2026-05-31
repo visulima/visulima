@@ -244,12 +244,28 @@ impl ConcurrentRunner {
         // tears down any surviving descendants. The `kill_tree` call
         // here covers the window between escalation and that drop —
         // missing grandchildren are caught by the Job Object close.
+        //
+        // Each entry carries the per-process `terminated` flag so the
+        // timer skips pids whose child already exited cleanly. Without
+        // this check, a 5s default kill_timeout is plenty of time for
+        // the kernel to recycle the PID for an unrelated process,
+        // which we would then SIGKILL.
+        use std::sync::atomic::Ordering;
+        use std::sync::Arc;
+        use std::sync::atomic::AtomicBool;
+
         let kill_timeout = self.kill_timeout_ms;
-        let pids: Vec<u32> = active.iter().filter_map(|p| p.pid).collect();
-        if !pids.is_empty() {
+        let targets: Vec<(u32, Arc<AtomicBool>)> = active
+            .iter()
+            .filter_map(|p| p.pid.map(|pid| (pid, Arc::clone(&p.terminated))))
+            .collect();
+        if !targets.is_empty() {
             tokio::spawn(async move {
                 tokio::time::sleep(tokio::time::Duration::from_millis(kill_timeout)).await;
-                for pid in pids {
+                for (pid, terminated) in targets {
+                    if terminated.load(Ordering::Acquire) {
+                        continue;
+                    }
                     let _ = super::process_group::kill_tree(pid, "SIGKILL");
                 }
             });
