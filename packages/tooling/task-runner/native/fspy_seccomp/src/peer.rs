@@ -19,7 +19,7 @@ use std::io::{self, IoSliceMut};
 use std::os::unix::ffi::OsStrExt;
 use std::path::{Path, PathBuf};
 
-use nix::sys::uio::{RemoteIoVec, process_vm_readv};
+use nix::sys::uio::{process_vm_readv, RemoteIoVec};
 use nix::unistd::Pid;
 
 /// Read a NUL-terminated path from `pid`'s address space at `addr`.
@@ -58,10 +58,7 @@ pub fn read_path(pid: i32, addr: u64) -> io::Result<PathBuf> {
             // Hit unmapped memory before NUL. Truncate to what we
             // confirmed read and bail.
             buf.truncate(start);
-            return Err(io::Error::new(
-                io::ErrorKind::UnexpectedEof,
-                "process_vm_readv returned 0 bytes before NUL",
-            ));
+            return Err(io::Error::new(io::ErrorKind::UnexpectedEof, "process_vm_readv returned 0 bytes before NUL"));
         }
 
         buf.truncate(start + n);
@@ -74,10 +71,7 @@ pub fn read_path(pid: i32, addr: u64) -> io::Result<PathBuf> {
         current_addr += n;
     }
 
-    Err(io::Error::new(
-        io::ErrorKind::InvalidData,
-        "path exceeds PATH_MAX without terminating NUL",
-    ))
+    Err(io::Error::new(io::ErrorKind::InvalidData, "path exceeds PATH_MAX without terminating NUL"))
 }
 
 /// Resolve `pid`'s current working directory via the
@@ -106,11 +100,7 @@ pub fn resolve_at(pid: i32, dirfd: i32, path: &Path) -> PathBuf {
         return path.to_path_buf();
     }
 
-    let base = if dirfd == libc::AT_FDCWD {
-        cwd_of(pid)
-    } else {
-        path_of_fd(pid, dirfd)
-    };
+    let base = if dirfd == libc::AT_FDCWD { cwd_of(pid) } else { path_of_fd(pid, dirfd) };
 
     match base {
         Ok(base) => base.join(path),

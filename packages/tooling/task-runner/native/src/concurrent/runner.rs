@@ -250,15 +250,13 @@ impl ConcurrentRunner {
         // this check, a 5s default kill_timeout is plenty of time for
         // the kernel to recycle the PID for an unrelated process,
         // which we would then SIGKILL.
+        use std::sync::atomic::AtomicBool;
         use std::sync::atomic::Ordering;
         use std::sync::Arc;
-        use std::sync::atomic::AtomicBool;
 
         let kill_timeout = self.kill_timeout_ms;
-        let targets: Vec<(u32, Arc<AtomicBool>)> = active
-            .iter()
-            .filter_map(|p| p.pid.map(|pid| (pid, Arc::clone(&p.terminated))))
-            .collect();
+        let targets: Vec<(u32, Arc<AtomicBool>)> =
+            active.iter().filter_map(|p| p.pid.map(|pid| (pid, Arc::clone(&p.terminated)))).collect();
         if !targets.is_empty() {
             tokio::spawn(async move {
                 tokio::time::sleep(tokio::time::Duration::from_millis(kill_timeout)).await;

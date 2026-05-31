@@ -27,9 +27,7 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::mpsc;
 
-use fspy_seccomp::{
-    AccessKind as RustAccessKind, FileAccess as RustFileAccess, SpawnOptions as RustSpawnOptions,
-};
+use fspy_seccomp::{AccessKind as RustAccessKind, FileAccess as RustFileAccess, SpawnOptions as RustSpawnOptions};
 use napi::bindgen_prelude::*;
 use napi::threadsafe_function::{ThreadsafeFunction, ThreadsafeFunctionCallMode};
 use napi_derive::napi;
@@ -82,7 +80,10 @@ pub struct SeccompSpawnOptions {
 /// post-execve, so callers can SIGTERM it for kill-on-abort
 /// cleanup. Fires before the supervisor loop starts streaming
 /// events.
-#[napi(catch_unwind, ts_args_type = "argv: Array<string>, helperPath: string, options?: SeccompSpawnOptions | undefined | null, onStarted?: ((pid: number) => void) | undefined | null")]
+#[napi(
+    catch_unwind,
+    ts_args_type = "argv: Array<string>, helperPath: string, options?: SeccompSpawnOptions | undefined | null, onStarted?: ((pid: number) => void) | undefined | null"
+)]
 pub async fn track_with_seccomp(
     argv: Vec<String>,
     helper_path: String,

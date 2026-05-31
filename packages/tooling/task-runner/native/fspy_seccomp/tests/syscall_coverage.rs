@@ -8,7 +8,7 @@
 use std::fs;
 use std::path::PathBuf;
 
-use fspy_seccomp::{AccessKind, SpawnOptions, track_command};
+use fspy_seccomp::{track_command, AccessKind, SpawnOptions};
 
 fn helper_path() -> PathBuf {
     PathBuf::from(env!("CARGO_BIN_EXE_fspy-seccomp-helper"))
@@ -27,10 +27,7 @@ fn unlinkat_records_write_access() {
     fs::write(&target, b"x").expect("seed file");
 
     let result = track_command(
-        &[
-            "/usr/bin/rm".to_string(),
-            target.to_string_lossy().into_owned(),
-        ],
+        &["/usr/bin/rm".to_string(), target.to_string_lossy().into_owned()],
         &helper_path(),
         &SpawnOptions::default(),
         None,
@@ -41,18 +38,9 @@ fn unlinkat_records_write_access() {
 
     assert_eq!(result.exit_code, 0, "rm should exit 0");
 
-    let writes: Vec<_> = result
-        .accesses
-        .iter()
-        .filter(|a| a.kind == AccessKind::Write && a.path == target)
-        .collect();
+    let writes: Vec<_> = result.accesses.iter().filter(|a| a.kind == AccessKind::Write && a.path == target).collect();
 
-    assert!(
-        !writes.is_empty(),
-        "expected Write access for {}, got: {:?}",
-        target.display(),
-        result.accesses,
-    );
+    assert!(!writes.is_empty(), "expected Write access for {}, got: {:?}", target.display(), result.accesses,);
 }
 
 #[test]
@@ -62,11 +50,7 @@ fn stat_family_records_stat_access() {
     fs::write(&target, b"x").expect("seed file");
 
     let result = track_command(
-        &[
-            "/usr/bin/test".to_string(),
-            "-e".to_string(),
-            target.to_string_lossy().into_owned(),
-        ],
+        &["/usr/bin/test".to_string(), "-e".to_string(), target.to_string_lossy().into_owned()],
         &helper_path(),
         &SpawnOptions::default(),
         None,
@@ -77,18 +61,9 @@ fn stat_family_records_stat_access() {
 
     assert_eq!(result.exit_code, 0, "test -e should exit 0");
 
-    let stats: Vec<_> = result
-        .accesses
-        .iter()
-        .filter(|a| a.kind == AccessKind::Stat && a.path == target)
-        .collect();
+    let stats: Vec<_> = result.accesses.iter().filter(|a| a.kind == AccessKind::Stat && a.path == target).collect();
 
-    assert!(
-        !stats.is_empty(),
-        "expected Stat access for {}, got: {:?}",
-        target.display(),
-        result.accesses,
-    );
+    assert!(!stats.is_empty(), "expected Stat access for {}, got: {:?}", target.display(), result.accesses,);
 }
 
 #[test]
@@ -114,10 +89,7 @@ fn forked_descendants_emit_on_root_listener() {
             "-c".to_string(),
             // Two nested `sh -c` invocations before cat — each
             // shell forks to run the next layer.
-            format!(
-                "sh -c 'sh -c \"cat {}\"'",
-                target.display()
-            ),
+            format!("sh -c 'sh -c \"cat {}\"'", target.display()),
         ],
         &helper_path(),
         &SpawnOptions::default(),
@@ -145,10 +117,7 @@ fn getdents_records_readdir_against_resolved_path() {
     fs::write(dir.join("b"), b"").expect("seed b");
 
     let result = track_command(
-        &[
-            "/usr/bin/ls".to_string(),
-            dir.to_string_lossy().into_owned(),
-        ],
+        &["/usr/bin/ls".to_string(), dir.to_string_lossy().into_owned()],
         &helper_path(),
         &SpawnOptions::default(),
         None,
@@ -159,16 +128,7 @@ fn getdents_records_readdir_against_resolved_path() {
 
     assert_eq!(result.exit_code, 0, "ls should exit 0");
 
-    let readdirs: Vec<_> = result
-        .accesses
-        .iter()
-        .filter(|a| a.kind == AccessKind::ReadDir && a.path == dir)
-        .collect();
+    let readdirs: Vec<_> = result.accesses.iter().filter(|a| a.kind == AccessKind::ReadDir && a.path == dir).collect();
 
-    assert!(
-        !readdirs.is_empty(),
-        "expected ReadDir on {}, got: {:?}",
-        dir.display(),
-        result.accesses,
-    );
+    assert!(!readdirs.is_empty(), "expected ReadDir on {}, got: {:?}", dir.display(), result.accesses,);
 }

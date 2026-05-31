@@ -55,10 +55,10 @@ use std::thread;
 use std::time::Duration;
 
 use nix::cmsg_space;
-use nix::poll::{PollFd, PollFlags, PollTimeout, poll};
+use nix::poll::{poll, PollFd, PollFlags, PollTimeout};
 use nix::sys::socket::{
-    AddressFamily, Backlog, ControlMessageOwned, MsgFlags, SockFlag, SockType, UnixAddr, accept,
-    bind, listen, recvmsg, socket,
+    accept, bind, listen, recvmsg, socket, AddressFamily, Backlog, ControlMessageOwned, MsgFlags, SockFlag, SockType,
+    UnixAddr,
 };
 
 pub mod filter;
@@ -128,10 +128,7 @@ pub fn track_command(
     on_started: Option<&mut dyn FnMut(u32)>,
 ) -> io::Result<TrackingResult> {
     if cmd.is_empty() {
-        return Err(io::Error::new(
-            io::ErrorKind::InvalidInput,
-            "track_command requires at least the program path",
-        ));
+        return Err(io::Error::new(io::ErrorKind::InvalidInput, "track_command requires at least the program path"));
     }
 
     let sock_path = mk_socket_path();
@@ -233,17 +230,9 @@ pub fn track_command(
     let stdout = stdout_thread.join().unwrap_or_else(|_| Ok(Vec::new())).unwrap_or_default();
     let stderr = stderr_thread.join().unwrap_or_else(|_| Ok(Vec::new())).unwrap_or_default();
 
-    let exit_code = status
-        .code()
-        .or_else(|| status.signal().map(|s| 128 + s))
-        .unwrap_or(-1);
+    let exit_code = status.code().or_else(|| status.signal().map(|s| 128 + s)).unwrap_or(-1);
 
-    Ok(TrackingResult {
-        accesses,
-        exit_code,
-        stdout,
-        stderr,
-    })
+    Ok(TrackingResult { accesses, exit_code, stdout, stderr })
 }
 
 fn mk_socket_path() -> PathBuf {
@@ -272,13 +261,7 @@ fn bind_listener(path: &Path) -> io::Result<OwnedFd> {
     // again from bind() with a more useful message.
     let _ = std::fs::remove_file(path);
 
-    let fd = socket(
-        AddressFamily::Unix,
-        SockType::Stream,
-        SockFlag::SOCK_CLOEXEC,
-        None,
-    )
-    .map_err(to_io)?;
+    let fd = socket(AddressFamily::Unix, SockType::Stream, SockFlag::SOCK_CLOEXEC, None).map_err(to_io)?;
 
     let addr = UnixAddr::new(path).map_err(to_io)?;
     bind(fd.as_raw_fd(), &addr).map_err(to_io)?;
@@ -298,8 +281,7 @@ fn accept_and_recv_fd(listener: &OwnedFd, guard: &mut ChildGuard<'_>) -> io::Res
     const ACCEPT_TIMEOUT: Duration = Duration::from_secs(5);
     let mut poll_fds = [PollFd::new(listener.as_fd(), PollFlags::POLLIN)];
 
-    let poll_timeout = PollTimeout::try_from(ACCEPT_TIMEOUT)
-        .unwrap_or(PollTimeout::MAX);
+    let poll_timeout = PollTimeout::try_from(ACCEPT_TIMEOUT).unwrap_or(PollTimeout::MAX);
     loop {
         match poll(&mut poll_fds, poll_timeout) {
             Ok(0) => {
@@ -316,10 +298,7 @@ fn accept_and_recv_fd(listener: &OwnedFd, guard: &mut ChildGuard<'_>) -> io::Res
                 }
                 return Err(io::Error::new(
                     io::ErrorKind::TimedOut,
-                    format!(
-                        "fspy helper did not connect within {}s",
-                        ACCEPT_TIMEOUT.as_secs()
-                    ),
+                    format!("fspy helper did not connect within {}s", ACCEPT_TIMEOUT.as_secs()),
                 ));
             }
             Ok(_) => break,
@@ -339,19 +318,11 @@ fn accept_and_recv_fd(listener: &OwnedFd, guard: &mut ChildGuard<'_>) -> io::Res
     let mut iov = [IoSliceMut::new(&mut iov_buf)];
     let mut cmsg = cmsg_space!(RawFd);
 
-    let msg: nix::sys::socket::RecvMsg<'_, '_, ()> = recvmsg(
-        conn_owned.as_raw_fd(),
-        &mut iov,
-        Some(&mut cmsg),
-        MsgFlags::empty(),
-    )
-    .map_err(to_io)?;
+    let msg: nix::sys::socket::RecvMsg<'_, '_, ()> =
+        recvmsg(conn_owned.as_raw_fd(), &mut iov, Some(&mut cmsg), MsgFlags::empty()).map_err(to_io)?;
 
     if msg.bytes == 0 {
-        return Err(io::Error::new(
-            io::ErrorKind::UnexpectedEof,
-            "helper closed connection before sending notify fd",
-        ));
+        return Err(io::Error::new(io::ErrorKind::UnexpectedEof, "helper closed connection before sending notify fd"));
     }
 
     for cmsg in msg.cmsgs().map_err(to_io)? {
@@ -362,10 +333,7 @@ fn accept_and_recv_fd(listener: &OwnedFd, guard: &mut ChildGuard<'_>) -> io::Res
         }
     }
 
-    Err(io::Error::new(
-        io::ErrorKind::InvalidData,
-        "no SCM_RIGHTS fd in helper's message",
-    ))
+    Err(io::Error::new(io::ErrorKind::InvalidData, "no SCM_RIGHTS fd in helper's message"))
 }
 
 fn to_io(e: nix::errno::Errno) -> io::Error {

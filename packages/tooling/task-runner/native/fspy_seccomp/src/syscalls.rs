@@ -144,9 +144,7 @@ pub fn classify(notif: &seccomp_notif, pid: i32) -> Vec<FileAccess> {
         // (*oldpath, *newpath) — emit both as writes
         "rename" | "link" => decode_pair_direct(pid, args[0], args[1], AccessKind::Write),
         // (olddir, *oldpath, newdir, *newpath[, flags])
-        "renameat" | "renameat2" | "linkat" => {
-            decode_pair_at(pid, args[0] as i32, args[1], args[2] as i32, args[3])
-        }
+        "renameat" | "renameat2" | "linkat" => decode_pair_at(pid, args[0] as i32, args[1], args[2] as i32, args[3]),
         // (*target, *linkpath) — target is symlink contents (not a
         // real fs path); only linkpath is the actual write.
         "symlink" => decode_direct(pid, args[1], AccessKind::Write),
@@ -165,30 +163,21 @@ pub fn classify(notif: &seccomp_notif, pid: i32) -> Vec<FileAccess> {
 /// note at the top of `classify`.
 fn decode_direct(pid: i32, addr: u64, kind: AccessKind) -> Vec<FileAccess> {
     match peer::read_path(pid, addr) {
-        Ok(raw) => vec![FileAccess {
-            path: peer::resolve_at(pid, libc::AT_FDCWD, &raw),
-            kind,
-        }],
+        Ok(raw) => vec![FileAccess { path: peer::resolve_at(pid, libc::AT_FDCWD, &raw), kind }],
         Err(_) => Vec::new(),
     }
 }
 
 fn decode_at(pid: i32, dirfd: i32, addr: u64, kind: AccessKind) -> Vec<FileAccess> {
     match peer::read_path(pid, addr) {
-        Ok(raw) => vec![FileAccess {
-            path: peer::resolve_at(pid, dirfd, &raw),
-            kind,
-        }],
+        Ok(raw) => vec![FileAccess { path: peer::resolve_at(pid, dirfd, &raw), kind }],
         Err(_) => Vec::new(),
     }
 }
 
 fn decode_at_with_flags(pid: i32, dirfd: i32, addr: u64, flags: u64) -> Vec<FileAccess> {
     match peer::read_path(pid, addr) {
-        Ok(raw) => vec![FileAccess {
-            path: peer::resolve_at(pid, dirfd, &raw),
-            kind: openat_kind_from_flags(flags),
-        }],
+        Ok(raw) => vec![FileAccess { path: peer::resolve_at(pid, dirfd, &raw), kind: openat_kind_from_flags(flags) }],
         Err(_) => Vec::new(),
     }
 }
@@ -207,13 +196,7 @@ fn decode_pair_direct(pid: i32, a: u64, b: u64, kind: AccessKind) -> Vec<FileAcc
     out
 }
 
-fn decode_pair_at(
-    pid: i32,
-    old_dirfd: i32,
-    old_addr: u64,
-    new_dirfd: i32,
-    new_addr: u64,
-) -> Vec<FileAccess> {
+fn decode_pair_at(pid: i32, old_dirfd: i32, old_addr: u64, new_dirfd: i32, new_addr: u64) -> Vec<FileAccess> {
     let mut out = Vec::with_capacity(2);
     out.extend(decode_at(pid, old_dirfd, old_addr, AccessKind::Write));
     out.extend(decode_at(pid, new_dirfd, new_addr, AccessKind::Write));

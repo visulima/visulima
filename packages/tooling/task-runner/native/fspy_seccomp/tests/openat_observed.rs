@@ -10,7 +10,7 @@
 
 use std::path::{Path, PathBuf};
 
-use fspy_seccomp::{AccessKind, SpawnOptions, track_command};
+use fspy_seccomp::{track_command, AccessKind, SpawnOptions};
 
 /// Locate the helper binary that Cargo built alongside this test.
 /// `CARGO_BIN_EXE_<name>` is the official mechanism — populated by
@@ -31,31 +31,21 @@ fn observes_openat_from_cat() {
     .expect("track_command should succeed on this Linux host");
 
     assert_eq!(
-        result.exit_code, 0,
+        result.exit_code,
+        0,
         "cat /etc/hostname should exit 0, got {} (accesses captured: {})",
         result.exit_code,
         result.accesses.len(),
     );
 
-    let reads: Vec<_> = result
-        .accesses
-        .iter()
-        .filter(|a| a.kind == AccessKind::Read)
-        .collect();
+    let reads: Vec<_> = result.accesses.iter().filter(|a| a.kind == AccessKind::Read).collect();
 
-    assert!(
-        !reads.is_empty(),
-        "expected at least one Read access, got {} accesses total",
-        result.accesses.len(),
-    );
+    assert!(!reads.is_empty(), "expected at least one Read access, got {} accesses total", result.accesses.len(),);
 
     // Path-resolution check: the child opened `/etc/hostname`
     // explicitly. After process_vm_readv it should appear verbatim
     // in the observed accesses.
-    let saw_target = result
-        .accesses
-        .iter()
-        .any(|a| a.path == Path::new("/etc/hostname"));
+    let saw_target = result.accesses.iter().any(|a| a.path == Path::new("/etc/hostname"));
 
     assert!(
         saw_target,
@@ -72,11 +62,7 @@ fn relative_path_resolves_via_cwd() {
     std::fs::write(&target, b"hello").expect("write tmp file");
 
     let result = track_command(
-        &[
-            "/bin/sh".to_string(),
-            "-c".to_string(),
-            format!("cd {} && cat data.txt", tmpdir.display()),
-        ],
+        &["/bin/sh".to_string(), "-c".to_string(), format!("cd {} && cat data.txt", tmpdir.display())],
         &helper_path(),
         &SpawnOptions::default(),
         None,

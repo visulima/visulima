@@ -22,12 +22,12 @@ use std::mem;
 use std::os::unix::io::RawFd;
 
 use libseccomp_sys::{
-    SECCOMP_USER_NOTIF_FLAG_CONTINUE, seccomp_notif, seccomp_notif_resp, seccomp_notify_alloc,
-    seccomp_notify_free, seccomp_notify_receive, seccomp_notify_respond,
+    seccomp_notif, seccomp_notif_resp, seccomp_notify_alloc, seccomp_notify_free, seccomp_notify_receive,
+    seccomp_notify_respond, SECCOMP_USER_NOTIF_FLAG_CONTINUE,
 };
 
-use crate::FileAccess;
 use crate::syscalls;
+use crate::FileAccess;
 
 /// Drain the listener until the tracked process tree exits.
 ///

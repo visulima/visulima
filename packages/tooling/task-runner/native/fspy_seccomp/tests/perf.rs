@@ -13,7 +13,7 @@ use std::path::PathBuf;
 use std::process::Command;
 use std::time::Instant;
 
-use fspy_seccomp::{SpawnOptions, track_command};
+use fspy_seccomp::{track_command, SpawnOptions};
 
 fn helper_path() -> PathBuf {
     PathBuf::from(env!("CARGO_BIN_EXE_fspy-seccomp-helper"))
@@ -37,10 +37,7 @@ fn seccomp_overhead_is_bounded() {
 
     // --- untracked baseline ---
     let untracked_start = Instant::now();
-    let untracked_status = Command::new("/bin/sh")
-        .args(["-c", &cmd_str])
-        .status()
-        .expect("untracked exec");
+    let untracked_status = Command::new("/bin/sh").args(["-c", &cmd_str]).status().expect("untracked exec");
     let untracked_elapsed = untracked_start.elapsed();
     assert!(untracked_status.success(), "untracked baseline must succeed");
 
@@ -58,10 +55,8 @@ fn seccomp_overhead_is_bounded() {
 
     let _ = fs::remove_dir_all(&dir);
 
-    let overhead_ms = tracked_elapsed
-        .as_secs_f64()
-        .max(untracked_elapsed.as_secs_f64())
-        - untracked_elapsed.as_secs_f64();
+    let overhead_ms =
+        tracked_elapsed.as_secs_f64().max(untracked_elapsed.as_secs_f64()) - untracked_elapsed.as_secs_f64();
     let overhead_pct = if untracked_elapsed.as_nanos() > 0 {
         (tracked_elapsed.as_nanos() as f64 / untracked_elapsed.as_nanos() as f64 - 1.0) * 100.0
     } else {

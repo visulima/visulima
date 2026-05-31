@@ -14,8 +14,8 @@ use std::os::raw::c_int;
 use std::os::unix::io::RawFd;
 
 use libseccomp_sys::{
-    SECCOMP_RET_ALLOW, SECCOMP_RET_USER_NOTIF, seccomp_init, seccomp_load, seccomp_notify_fd,
-    seccomp_release, seccomp_rule_add, seccomp_syscall_resolve_name,
+    seccomp_init, seccomp_load, seccomp_notify_fd, seccomp_release, seccomp_rule_add, seccomp_syscall_resolve_name,
+    SECCOMP_RET_ALLOW, SECCOMP_RET_USER_NOTIF,
 };
 
 use crate::syscalls::TrackedSyscall;

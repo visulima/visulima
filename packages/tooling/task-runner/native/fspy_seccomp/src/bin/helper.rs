@@ -32,8 +32,7 @@ use std::path::Path;
 use std::process::ExitCode;
 
 use nix::sys::socket::{
-    AddressFamily, ControlMessage, MsgFlags, SockFlag, SockType, UnixAddr, connect, sendmsg,
-    socket,
+    connect, sendmsg, socket, AddressFamily, ControlMessage, MsgFlags, SockFlag, SockType, UnixAddr,
 };
 
 use fspy_seccomp::{filter, syscalls};
@@ -71,10 +70,7 @@ fn run() -> Result<(), ExitCode> {
     // PR_SET_NO_NEW_PRIVS is required for non-root seccomp_load.
     let rc = unsafe { libc::prctl(libc::PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0) };
     if rc != 0 {
-        eprintln!(
-            "fspy-seccomp-helper: prctl(PR_SET_NO_NEW_PRIVS) failed: {}",
-            io::Error::last_os_error(),
-        );
+        eprintln!("fspy-seccomp-helper: prctl(PR_SET_NO_NEW_PRIVS) failed: {}", io::Error::last_os_error(),);
         return Err(ExitCode::from(126));
     }
 
@@ -102,10 +98,8 @@ fn run() -> Result<(), ExitCode> {
     // execve replaces the process image. From this point seccomp
     // notifications fire whenever the target runs a tracked syscall.
     let target = CString::new(argv[0].as_bytes()).map_err(|_| ExitCode::from(64))?;
-    let arg_cstrs: Vec<CString> = argv
-        .iter()
-        .map(|s| CString::new(s.as_bytes()).map_err(|_| ExitCode::from(64)))
-        .collect::<Result<_, _>>()?;
+    let arg_cstrs: Vec<CString> =
+        argv.iter().map(|s| CString::new(s.as_bytes()).map_err(|_| ExitCode::from(64))).collect::<Result<_, _>>()?;
     let mut arg_ptrs: Vec<*const libc::c_char> = arg_cstrs.iter().map(|c| c.as_ptr()).collect();
     arg_ptrs.push(std::ptr::null());
 
@@ -114,11 +108,7 @@ fn run() -> Result<(), ExitCode> {
     }
 
     // execvp only returns on failure (no such file, permission denied, etc).
-    eprintln!(
-        "fspy-seccomp-helper: execvp({}) failed: {}",
-        argv[0],
-        io::Error::last_os_error(),
-    );
+    eprintln!("fspy-seccomp-helper: execvp({}) failed: {}", argv[0], io::Error::last_os_error(),);
     Err(ExitCode::from(127)) // command not found / not executable
 }
 
@@ -127,13 +117,7 @@ fn run() -> Result<(), ExitCode> {
 /// `ControlMessage::ScmRights` so the cmsg framing + alignment are
 /// the library's problem, not ours.
 fn send_notify_fd(sock_path: &Path, payload_fd: RawFd) -> io::Result<()> {
-    let sock: OwnedFd = socket(
-        AddressFamily::Unix,
-        SockType::Stream,
-        SockFlag::empty(),
-        None,
-    )
-    .map_err(to_io)?;
+    let sock: OwnedFd = socket(AddressFamily::Unix, SockType::Stream, SockFlag::empty(), None).map_err(to_io)?;
 
     // UnixAddr::new performs the sun_path bounds check (108 bytes).
     let addr = UnixAddr::new(sock_path).map_err(to_io)?;
@@ -146,8 +130,7 @@ fn send_notify_fd(sock_path: &Path, payload_fd: RawFd) -> io::Result<()> {
     let fds = [payload_fd];
     let cmsgs = [ControlMessage::ScmRights(&fds)];
 
-    sendmsg::<()>(sock.as_raw_fd(), &iov, &cmsgs, MsgFlags::empty(), None)
-        .map_err(to_io)?;
+    sendmsg::<()>(sock.as_raw_fd(), &iov, &cmsgs, MsgFlags::empty(), None).map_err(to_io)?;
 
     Ok(())
 }

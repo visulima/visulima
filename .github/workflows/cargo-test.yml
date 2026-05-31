@@ -171,6 +171,15 @@ jobs:
               with:
                   toolchain: "stable"
 
+            # libseccomp-dev for the task-runner native crate's
+            # fspy_seccomp dep. Linux+glibc only — matches the
+            # `cfg(all(target_os = "linux", target_env = "gnu"))`
+            # gate in `task-runner/native/Cargo.toml`.
+            - name: "Install libseccomp-dev (task-runner only)"
+              if: "matrix.package.name == 'task-runner' && runner.os == 'Linux'"
+              shell: "bash"
+              run: "sudo apt-get update && sudo apt-get install -y libseccomp-dev"
+
             - name: "Restore Cargo cache"
               id: "cargo-cache"
               uses: "actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae" # v5.0.5

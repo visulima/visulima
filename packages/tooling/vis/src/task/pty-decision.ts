@@ -5,17 +5,16 @@
  *
  * Three signals, in priority order (highest wins):
  *
- * 1. `task.pty: true`  → always PTY, regardless of workspace.
- * 2. `task.pty: false` → never PTY, regardless of workspace.
- * 3. fall-through: the workspace's existing rule —
- *    `Boolean(interactive) && workspacePty !== false`.
+ * 1. `task.pty: true`  -> always PTY, regardless of workspace.
+ * 2. `task.pty: false` -> never PTY, regardless of workspace.
+ * 3. fall-through: `interactive` AND `workspacePty` is not `false`.
  *
  * Used at two sites in `commands/run/handler.ts`:
  * - the pre-spawn `runConcurrently` config builder (no lifecycle
  *   hooks present yet) — there `interactive` is just
  *   `Boolean(lifecycleHooks)`.
  * - the in-flight executor's `isPty` decision — there `interactive`
- *   is `Boolean(stdinRegistry) || workspacePty === true`.
+ *   is `Boolean(stdinRegistry)` plus the workspace opt-in.
  *
  * The function intentionally collapses both forms by taking
  * `interactive` as a pre-computed boolean; callers thread their
@@ -26,18 +25,22 @@ export interface PtyDecisionInputs {
      * Pre-resolved workspace-level interactivity signal — the
      * value the caller would use absent any task-level override.
      * For the run-config builder, this is `Boolean(lifecycleHooks)`.
-     * For the executor, it's `Boolean(stdinRegistry) || (workspacePty === true)`.
+     * For the executor, it's `Boolean(stdinRegistry)` plus the
+     * workspace opt-in.
      */
     interactive: boolean;
+
     /**
      * Per-task PTY override carried over from
      * `TargetConfiguration.pty`. `true` forces PTY, `false`
      * suppresses, `undefined` falls through.
      */
     taskPty: boolean | undefined;
+
     /**
      * Workspace-level `visOptions.pty`. When the task doesn't
-     * override, the fall-through uses `interactive && workspacePty !== false`.
+     * override, the fall-through requires `interactive` to be
+     * true and `workspacePty` to not be `false`.
      */
     workspacePty: boolean | undefined;
 }
