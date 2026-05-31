@@ -18,6 +18,7 @@ import { emitSarif } from "../../lint-fmt/reporters/sarif";
 import { aggregate, exitCodeFor, groupFindingsByFile } from "../../lint-fmt/results";
 import type { AdapterJob } from "../../lint-fmt/runner";
 import { runAdaptersParallel } from "../../lint-fmt/runner";
+import { runWatchLoop } from "../../lint-fmt/watch-loop";
 import type { FmtOptions } from "./index";
 
 const FORMAT_ADAPTERS = [oxfmtAdapter, biomeAdapter, dprintAdapter, prettierAdapter, denoFmtAdapter];
@@ -70,125 +71,148 @@ const execute = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Co
         }
     }
 
-    // Resolution precedence: explicit positional > --since > workspace-wide.
-    const explicit = positional.length > 0 ? positional : sinceFiles;
-    const jobs: AdapterJob[] = [];
-
-    if (explicit) {
-        // Route each explicit file to the adapter that owns its extension.
-        const grouped = routeFilesByExtension(explicit, eligible, fmtConfig?.extensionOverrides);
-
-        for (const { adapter, presence } of eligible) {
-            const files = grouped.get(adapter.id);
-
-            if (!files || files.length === 0) {
-                continue;
-            }
-
-            const extra = baseExtraArgs(adapter.id);
-            const job: AdapterJob = { adapter, files, presence };
-
-            if (extra) {
-                job.options = { ...runOptions, extraArgs: extra };
-            }
-
-            jobs.push(job);
-        }
-    } else {
-        // No explicit file list — each adapter runs against `.` so its own
-        // ignore semantics filter the workspace.
-        for (const { adapter, presence } of eligible) {
-            const extra = baseExtraArgs(adapter.id);
-            const job: AdapterJob = { adapter, files: ["."], presence };
-
-            if (extra) {
-                job.options = { ...runOptions, extraArgs: extra };
-            }
-
-            jobs.push(job);
-        }
-    }
-
     const cacheRoot = resolveSharedCacheDirectory(root, undefined, undefined, true);
-    const rawResults = await runAdaptersParallel(jobs, runOptions, mode, { cacheRoot });
-    const runs = jobs.map((job, index) => {
-        const raw = rawResults[index]!;
-        const findings = job.adapter.parse(raw, job.presence);
-
-        return { adapter: job.adapter, durationMs: raw.durationMs, exitCode: raw.exitCode, findings };
-    });
-
-    const result = aggregate(
-        runs.map((run) => {
-            return {
-                adapter: run.adapter.id,
-                durationMs: run.durationMs,
-                exitCode: run.exitCode,
-                findingCount: run.findings.length,
-                findings: run.findings,
-            };
-        }),
-    );
-
     const format = options.format ?? "human";
 
-    switch (format) {
-        case "github": {
-            process.stdout.write(emitGitHub({
-                runs: runs.map((run) => {
-                    return { findings: run.findings };
-                }),
-                workspaceRoot: root,
-            }));
+    const runCycle = async (cycleFiles: string[] | undefined): Promise<void> => {
+        // Resolution precedence: explicit positional > cycle files (flag-derived or watch event) > workspace-wide.
+        const explicit = positional.length > 0 ? positional : cycleFiles;
+        const jobs: AdapterJob[] = [];
 
-            break;
-        }
-        case "json": {
-            process.stdout.write(`${JSON.stringify({ findings: result.findings, mode, runs: result.runs }, null, 2)}\n`);
+        if (explicit) {
+            // Route each explicit file to the adapter that owns its extension.
+            const grouped = routeFilesByExtension(explicit, eligible, fmtConfig?.extensionOverrides);
 
-            break;
-        }
-        case "junit": {
-            process.stdout.write(emitJUnit({
-                runs: runs.map((run) => {
-                    return { adapter: run.adapter.id, durationMs: run.durationMs, findings: run.findings };
-                }),
-                workspaceRoot: root,
-            }));
+            for (const { adapter, presence } of eligible) {
+                const files = grouped.get(adapter.id);
 
-            break;
-        }
-        case "minimal": {
-            printMinimal(result.findings, root);
+                if (!files || files.length === 0) {
+                    continue;
+                }
 
-            break;
-        }
-        case "sarif": {
-            process.stdout.write(emitSarif({
-                runs: runs.map((run) => {
-                    return {
-                        adapter: run.adapter.id,
-                        findings: run.findings,
-                        presence: jobs.find((job) => job.adapter.id === run.adapter.id)?.presence,
-                    };
-                }),
-                workspaceRoot: root,
-            }));
+                const extra = baseExtraArgs(adapter.id);
+                const job: AdapterJob = { adapter, files, presence };
 
-            break;
+                if (extra) {
+                    job.options = { ...runOptions, extraArgs: extra };
+                }
+
+                jobs.push(job);
+            }
+        } else {
+            // No explicit file list — each adapter runs against `.` so its own
+            // ignore semantics filter the workspace.
+            for (const { adapter, presence } of eligible) {
+                const extra = baseExtraArgs(adapter.id);
+                const job: AdapterJob = { adapter, files: ["."], presence };
+
+                if (extra) {
+                    job.options = { ...runOptions, extraArgs: extra };
+                }
+
+                jobs.push(job);
+            }
         }
-        default: {
-            printHuman(result.findings, root, mode, logger);
+
+        if (jobs.length === 0) {
+            return;
         }
+
+        const rawResults = await runAdaptersParallel(jobs, runOptions, mode, { cacheRoot });
+        const runs = jobs.map((job, index) => {
+            const raw = rawResults[index]!;
+            const findings = job.adapter.parse(raw, job.presence);
+
+            return { adapter: job.adapter, durationMs: raw.durationMs, exitCode: raw.exitCode, findings };
+        });
+
+        const result = aggregate(
+            runs.map((run) => {
+                return {
+                    adapter: run.adapter.id,
+                    durationMs: run.durationMs,
+                    exitCode: run.exitCode,
+                    findingCount: run.findings.length,
+                    findings: run.findings,
+                };
+            }),
+        );
+
+        switch (format) {
+            case "github": {
+                process.stdout.write(emitGitHub({
+                    runs: runs.map((run) => {
+                        return { findings: run.findings };
+                    }),
+                    workspaceRoot: root,
+                }));
+
+                break;
+            }
+            case "json": {
+                process.stdout.write(`${JSON.stringify({ findings: result.findings, mode, runs: result.runs }, null, 2)}\n`);
+
+                break;
+            }
+            case "junit": {
+                process.stdout.write(emitJUnit({
+                    runs: runs.map((run) => {
+                        return { adapter: run.adapter.id, durationMs: run.durationMs, findings: run.findings };
+                    }),
+                    workspaceRoot: root,
+                }));
+
+                break;
+            }
+            case "minimal": {
+                printMinimal(result.findings, root);
+
+                break;
+            }
+            case "sarif": {
+                process.stdout.write(emitSarif({
+                    runs: runs.map((run) => {
+                        return {
+                            adapter: run.adapter.id,
+                            findings: run.findings,
+                            presence: jobs.find((job) => job.adapter.id === run.adapter.id)?.presence,
+                        };
+                    }),
+                    workspaceRoot: root,
+                }));
+
+                break;
+            }
+            default: {
+                printHuman(result.findings, root, mode, logger);
+            }
+        }
+
+        // In `fix` mode, "would change" findings shouldn't fail the run — the
+        // tool just wrote them. Only escalate when the user asked for `--check`.
+        const exitCode = mode === "fix" ? (result.hadProcessFailure ? 1 : 0) : exitCodeFor({ ...result, maxSeverity: result.findings.length > 0 ? "error" : undefined });
+
+        if (exitCode !== 0) {
+            process.exitCode = exitCode;
+        }
+    };
+
+    if (options.watch) {
+        const extensions = [...new Set(eligible.flatMap(({ adapter }) => adapter.extensions))];
+
+        await runWatchLoop({
+            extensions,
+            initialFiles: sinceFiles,
+            label: "fmt",
+            log: (message) => { logger.info(message); },
+            runCycle,
+            workspaceRoot: root,
+        });
+
+        return;
     }
 
-    // In `fix` mode, "would change" findings shouldn't fail the run — the
-    // tool just wrote them. Only escalate when the user asked for `--check`.
-    const exitCode = mode === "fix" ? (result.hadProcessFailure ? 1 : 0) : exitCodeFor({ ...result, maxSeverity: result.findings.length > 0 ? "error" : undefined });
-
-    if (exitCode !== 0) {
-        process.exitCode = exitCode;
-    }
+    await runCycle(sinceFiles);
 };
 
 const collectPositional = (options: FmtOptions): string[] => {

@@ -43,6 +43,9 @@ vis lint --since main
 
 # Only lint files currently staged in the git index
 vis lint --staged
+
+# Re-run linters whenever watched files change (cache makes incremental near-free)
+vis lint --watch
 ```
 
 ## Options
@@ -55,6 +58,7 @@ vis lint --staged
 | `--max-warnings` |         | Fail the run if more than N warnings are reported                        |
 | `--since`        |         | Only lint files changed vs the given git ref (branch/tag/sha)            |
 | `--staged`       | `false` | Only lint files currently staged in the git index                        |
+| `--watch`        | `false` | Re-run linters whenever watched files change                             |
 
 ### `--since`
 
@@ -63,6 +67,10 @@ vis lint --staged
 ### `--staged`
 
 `vis lint --staged` narrows the input to files currently in the git index — the same model `lint-staged` uses. Use it in a pre-commit hook to lint only what is about to be committed. Each adapter only sees staged files whose extension it claims. When nothing is staged the command exits early with a `✓ lint: no staged files` message. Outside a git repo (or with git unavailable) the command falls back to a workspace-wide run and warns.
+
+### `--watch`
+
+`vis lint --watch` keeps the command running, runs an initial cycle, and then re-runs whenever a file matching any eligible adapter's extension set changes. Events are debounced (200 ms) and coalesced — concurrent edits batch into a single follow-up run rather than queueing one per keystroke. The orchestrator's content-addressed cache means the incremental cycle only spawns the tools whose inputs actually changed. The loop watches the workspace root recursively (via Watchman when available, falling back to `node:fs.watch`) and ignores `node_modules`, `.git`, and `.vis`. Exit with Ctrl-C (SIGINT) or SIGTERM.
 
 ## Caching
 

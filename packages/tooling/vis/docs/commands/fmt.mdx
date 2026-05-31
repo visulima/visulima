@@ -37,6 +37,9 @@ vis fmt --quiet
 
 # Only format files changed vs the main branch
 vis fmt --since main
+
+# Re-run formatters whenever watched files change
+vis fmt --watch
 ```
 
 ## Options
@@ -48,6 +51,7 @@ vis fmt --since main
 | `--quiet`  | `false` | Suppress per-file logs                                                   |
 | `--since`  |         | Only format files changed vs the given git ref (branch/tag/sha)          |
 | `--staged` | `false` | Only format files currently staged in the git index                      |
+| `--watch`  | `false` | Re-run formatters whenever watched files change                          |
 
 ### `--since`
 
@@ -56,6 +60,10 @@ vis fmt --since main
 ### `--staged`
 
 `vis fmt --staged` narrows the input to files currently in the git index — the same model `lint-staged` uses. Use it in a pre-commit hook to format only what is about to be committed. When no files are staged the command exits early with a `✓ fmt: no staged files` message. Outside a git repo (or with git unavailable) the command falls back to a workspace-wide run and warns.
+
+### `--watch`
+
+`vis fmt --watch` keeps the command running, runs an initial cycle, and then re-runs whenever a file matching any eligible adapter's extension set changes. Events are debounced (200 ms) and coalesced. Combine with `--check` to keep a "would change" report live while editing — the orchestrator's cache means each incremental cycle only respawns formatters whose inputs actually changed. The loop watches the workspace root recursively (Watchman when available, `node:fs.watch` otherwise) and ignores `node_modules`, `.git`, and `.vis`. Exit with Ctrl-C (SIGINT) or SIGTERM.
 
 ## Caching
 

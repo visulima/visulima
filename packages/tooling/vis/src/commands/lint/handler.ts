@@ -18,6 +18,7 @@ import { emitSarif } from "../../lint-fmt/reporters/sarif";
 import { aggregate, exitCodeFor, groupFindingsByFile } from "../../lint-fmt/results";
 import type { AdapterJob } from "../../lint-fmt/runner";
 import { runAdaptersParallel } from "../../lint-fmt/runner";
+import { runWatchLoop } from "../../lint-fmt/watch-loop";
 import type { LintOptions } from "./index";
 
 const SOURCE_ADAPTERS = [oxlintAdapter, biomeAdapter, eslintAdapter, stylelintAdapter, denoLintAdapter];
@@ -76,111 +77,135 @@ const execute = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Co
     }
 
     const positionalFiles: string[] | undefined = positional.length > 0 ? positional : undefined;
-    const filterChangedToAdapter = sinceFiles !== undefined && sinceFiles.length > 0 && positionalFiles === undefined;
-
-    const jobs: AdapterJob[] = [];
-
-    for (const { adapter, presence } of eligible) {
-        let files: string[];
-
-        if (filterChangedToAdapter) {
-            files = filterByExtensions(sinceFiles!, adapter.extensions);
-
-            if (files.length === 0) {
-                continue;
-            }
-        } else {
-            files = positionalFiles ?? ["."];
-        }
-
-        const extra = baseExtraArgs(adapter.id);
-        const job: AdapterJob = { adapter, files, presence };
-
-        if (extra) {
-            job.options = { ...runOptions, extraArgs: extra };
-        }
-
-        jobs.push(job);
-    }
-
     const cacheRoot = resolveSharedCacheDirectory(root, undefined, undefined, true);
-    const rawResults = await runAdaptersParallel(jobs, runOptions, mode, { cacheRoot });
-    const runs = jobs.map((job, index) => {
-        const raw = rawResults[index]!;
-        const findings = job.adapter.parse(raw, job.presence);
-
-        return { adapter: job.adapter, durationMs: raw.durationMs, exitCode: raw.exitCode, findings };
-    });
-
-    const result = aggregate(
-        runs.map((run) => {
-            return {
-                adapter: run.adapter.id,
-                durationMs: run.durationMs,
-                exitCode: run.exitCode,
-                findingCount: run.findings.length,
-                findings: run.findings,
-            };
-        }),
-    );
-
     const format = options.format ?? "human";
 
-    switch (format) {
-        case "github": {
-            process.stdout.write(emitGitHub({
-                runs: runs.map((run) => {
-                    return { findings: run.findings };
-                }),
-                workspaceRoot: root,
-            }));
+    const runCycle = async (cycleFiles: string[] | undefined): Promise<void> => {
+        const filterToAdapter = cycleFiles !== undefined && cycleFiles.length > 0 && positionalFiles === undefined;
+        const jobs: AdapterJob[] = [];
 
-            break;
-        }
-        case "json": {
-            process.stdout.write(`${JSON.stringify({ findings: result.findings, runs: result.runs }, null, 2)}\n`);
+        for (const { adapter, presence } of eligible) {
+            let files: string[];
 
-            break;
-        }
-        case "junit": {
-            process.stdout.write(emitJUnit({
-                runs: runs.map((run) => {
-                    return { adapter: run.adapter.id, durationMs: run.durationMs, findings: run.findings };
-                }),
-                workspaceRoot: root,
-            }));
+            if (filterToAdapter) {
+                files = filterByExtensions(cycleFiles, adapter.extensions);
 
-            break;
-        }
-        case "minimal": {
-            printMinimal(result.findings, root);
+                if (files.length === 0) {
+                    continue;
+                }
+            } else {
+                files = positionalFiles ?? cycleFiles ?? ["."];
+            }
 
-            break;
-        }
-        case "sarif": {
-            process.stdout.write(emitSarif({
-                runs: runs.map((run) => {
-                    return {
-                        adapter: run.adapter.id,
-                        findings: run.findings,
-                        presence: jobs.find((job) => job.adapter.id === run.adapter.id)?.presence,
-                    };
-                }),
-                workspaceRoot: root,
-            }));
+            const extra = baseExtraArgs(adapter.id);
+            const job: AdapterJob = { adapter, files, presence };
 
-            break;
+            if (extra) {
+                job.options = { ...runOptions, extraArgs: extra };
+            }
+
+            jobs.push(job);
         }
-        default: {
-            printHuman(result.findings, root, logger);
+
+        if (jobs.length === 0) {
+            return;
         }
+
+        const rawResults = await runAdaptersParallel(jobs, runOptions, mode, { cacheRoot });
+        const runs = jobs.map((job, index) => {
+            const raw = rawResults[index]!;
+            const findings = job.adapter.parse(raw, job.presence);
+
+            return { adapter: job.adapter, durationMs: raw.durationMs, exitCode: raw.exitCode, findings };
+        });
+
+        const result = aggregate(
+            runs.map((run) => {
+                return {
+                    adapter: run.adapter.id,
+                    durationMs: run.durationMs,
+                    exitCode: run.exitCode,
+                    findingCount: run.findings.length,
+                    findings: run.findings,
+                };
+            }),
+        );
+
+        switch (format) {
+            case "github": {
+                process.stdout.write(emitGitHub({
+                    runs: runs.map((run) => {
+                        return { findings: run.findings };
+                    }),
+                    workspaceRoot: root,
+                }));
+
+                break;
+            }
+            case "json": {
+                process.stdout.write(`${JSON.stringify({ findings: result.findings, runs: result.runs }, null, 2)}\n`);
+
+                break;
+            }
+            case "junit": {
+                process.stdout.write(emitJUnit({
+                    runs: runs.map((run) => {
+                        return { adapter: run.adapter.id, durationMs: run.durationMs, findings: run.findings };
+                    }),
+                    workspaceRoot: root,
+                }));
+
+                break;
+            }
+            case "minimal": {
+                printMinimal(result.findings, root);
+
+                break;
+            }
+            case "sarif": {
+                process.stdout.write(emitSarif({
+                    runs: runs.map((run) => {
+                        return {
+                            adapter: run.adapter.id,
+                            findings: run.findings,
+                            presence: jobs.find((job) => job.adapter.id === run.adapter.id)?.presence,
+                        };
+                    }),
+                    workspaceRoot: root,
+                }));
+
+                break;
+            }
+            default: {
+                printHuman(result.findings, root, logger);
+            }
+        }
+
+        const exitCode = exitCodeFor(result);
+
+        if (exitCode !== 0) {
+            process.exitCode = exitCode;
+        }
+    };
+
+    if (options.watch) {
+        // The orchestrator's cache makes incremental re-runs cheap, so
+        // the watch loop just funnels changed files into runCycle.
+        const extensions = [...new Set(eligible.flatMap(({ adapter }) => adapter.extensions))];
+
+        await runWatchLoop({
+            extensions,
+            initialFiles: sinceFiles,
+            label: "lint",
+            log: (message) => { logger.info(message); },
+            runCycle,
+            workspaceRoot: root,
+        });
+
+        return;
     }
 
-    const exitCode = exitCodeFor(result);
-
-    if (exitCode !== 0) {
-        process.exitCode = exitCode;
-    }
+    await runCycle(sinceFiles);
 };
 
 const collectPositional = (options: LintOptions): string[] => {
