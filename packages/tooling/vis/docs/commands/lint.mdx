@@ -37,16 +37,24 @@ vis lint --quiet
 
 # Treat any warning as a failure (per-adapter --max-warnings 0)
 vis lint --max-warnings 0
+
+# Only lint files changed vs the main branch
+vis lint --since main
 ```
 
 ## Options
 
-| Option           | Default | Description                                       |
-| ---------------- | ------- | ------------------------------------------------- |
-| `--fix`          | `false` | Apply auto-fixes in place                         |
-| `--format`       | `human` | Output format: `human`, `json`, or `minimal`      |
-| `--quiet`        | `false` | Suppress warnings — report errors only            |
-| `--max-warnings` |         | Fail the run if more than N warnings are reported |
+| Option           | Default | Description                                                   |
+| ---------------- | ------- | ------------------------------------------------------------- |
+| `--fix`          | `false` | Apply auto-fixes in place                                     |
+| `--format`       | `human` | Output format: `human`, `json`, or `minimal`                  |
+| `--quiet`        | `false` | Suppress warnings — report errors only                        |
+| `--max-warnings` |         | Fail the run if more than N warnings are reported             |
+| `--since`        |         | Only lint files changed vs the given git ref (branch/tag/sha) |
+
+### `--since`
+
+`vis lint --since <ref>` narrows the input to files that changed relative to `<ref>` — committed, staged, unstaged, and untracked all qualify. Each adapter only sees files whose extension it claims, so a CSS-only change skips ESLint and a TS-only change skips stylelint. When `<ref>` doesn't exist (or the directory isn't a git repo) the command falls back to a workspace-wide run and warns.
 
 ## Detection
 

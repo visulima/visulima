@@ -9,6 +9,7 @@ import { oxlintAdapter } from "../../lint-fmt/adapters/oxlint";
 import { stylelintAdapter } from "../../lint-fmt/adapters/stylelint";
 import type { AdapterRunOptions, Finding } from "../../lint-fmt/config-types";
 import { detectAdapters } from "../../lint-fmt/detect";
+import { changedFilesSince, filterByExtensions } from "../../lint-fmt/diff";
 import { adaptersByKind, registerAdapters } from "../../lint-fmt/registry";
 import { aggregate, exitCodeFor, groupFindingsByFile } from "../../lint-fmt/results";
 import { runAdapter } from "../../lint-fmt/runner";
@@ -35,12 +36,40 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Lint
     };
 
     const positional = collectPositional(options);
-    const files: string[] = positional.length > 0 ? positional : ["."];
     const mode: "check" | "fix" = options.fix ? "fix" : "check";
+
+    let sinceFiles: string[] | undefined;
+
+    if (typeof options.since === "string" && options.since.length > 0) {
+        sinceFiles = changedFilesSince(root, options.since);
+
+        if (sinceFiles === undefined) {
+            logger.warn(`vis lint: could not resolve --since ${options.since} (not a git repo or unknown ref). Falling back to a workspace-wide run.`);
+        } else if (sinceFiles.length === 0) {
+            logger.info(green(`✓ lint: no files changed since ${options.since}`));
+
+            return;
+        }
+    }
+
+    const positionalFiles: string[] | undefined = positional.length > 0 ? positional : undefined;
+    const filterChangedToAdapter = sinceFiles !== undefined && sinceFiles.length > 0 && positionalFiles === undefined;
 
     const runs: { adapter: typeof eligible[number]["adapter"]; durationMs: number; exitCode: number | null; findings: Finding[] }[] = [];
 
     for (const { adapter, presence } of eligible) {
+        let files: string[];
+
+        if (filterChangedToAdapter) {
+            files = filterByExtensions(sinceFiles!, adapter.extensions);
+
+            if (files.length === 0) {
+                continue;
+            }
+        } else {
+            files = positionalFiles ?? ["."];
+        }
+
         const raw = runAdapter(adapter, presence, files, runOptions, mode);
         const findings = adapter.parse(raw, presence);
 

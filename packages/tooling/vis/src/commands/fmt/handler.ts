@@ -9,6 +9,7 @@ import { oxfmtAdapter } from "../../lint-fmt/adapters/oxfmt";
 import { prettierAdapter } from "../../lint-fmt/adapters/prettier";
 import type { AdapterRunOptions, Finding } from "../../lint-fmt/config-types";
 import { detectAdapters } from "../../lint-fmt/detect";
+import { changedFilesSince } from "../../lint-fmt/diff";
 import { adaptersByKind, registerAdapters, routeFilesByExtension } from "../../lint-fmt/registry";
 import { aggregate, exitCodeFor, groupFindingsByFile } from "../../lint-fmt/results";
 import { runAdapter } from "../../lint-fmt/runner";
@@ -32,20 +33,28 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, FmtO
     const positional = collectPositional(options);
     const mode: "check" | "fix" = options.check ? "check" : "fix";
 
+    let sinceFiles: string[] | undefined;
+
+    if (typeof options.since === "string" && options.since.length > 0) {
+        sinceFiles = changedFilesSince(root, options.since);
+
+        if (sinceFiles === undefined) {
+            logger.warn(`vis fmt: could not resolve --since ${options.since} (not a git repo or unknown ref). Falling back to a workspace-wide run.`);
+        } else if (sinceFiles.length === 0) {
+            logger.info(green(`✓ fmt: no files changed since ${options.since}`));
+
+            return;
+        }
+    }
+
+    // Resolution precedence: explicit positional > --since > workspace-wide.
+    const explicit = positional.length > 0 ? positional : sinceFiles;
+
     const runs: { adapter: typeof eligible[number]["adapter"]; durationMs: number; exitCode: number | null; findings: Finding[] }[] = [];
 
-    if (positional.length === 0) {
-        // No explicit file list — each adapter runs against `.` so its own
-        // ignore semantics filter the workspace.
-        for (const { adapter, presence } of eligible) {
-            const raw = runAdapter(adapter, presence, ["."], runOptions, mode);
-            const findings = adapter.parse(raw, presence);
-
-            runs.push({ adapter, durationMs: raw.durationMs, exitCode: raw.exitCode, findings });
-        }
-    } else {
+    if (explicit) {
         // Route each explicit file to the adapter that owns its extension.
-        const grouped = routeFilesByExtension(positional, eligible);
+        const grouped = routeFilesByExtension(explicit, eligible);
 
         for (const { adapter, presence } of eligible) {
             const files = grouped.get(adapter.id);
@@ -55,6 +64,15 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, FmtO
             }
 
             const raw = runAdapter(adapter, presence, files, runOptions, mode);
+            const findings = adapter.parse(raw, presence);
+
+            runs.push({ adapter, durationMs: raw.durationMs, exitCode: raw.exitCode, findings });
+        }
+    } else {
+        // No explicit file list — each adapter runs against `.` so its own
+        // ignore semantics filter the workspace.
+        for (const { adapter, presence } of eligible) {
+            const raw = runAdapter(adapter, presence, ["."], runOptions, mode);
             const findings = adapter.parse(raw, presence);
 
             runs.push({ adapter, durationMs: raw.durationMs, exitCode: raw.exitCode, findings });

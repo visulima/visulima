@@ -34,15 +34,23 @@ vis fmt --format json
 
 # Suppress per-file logs
 vis fmt --quiet
+
+# Only format files changed vs the main branch
+vis fmt --since main
 ```
 
 ## Options
 
-| Option     | Default | Description                                    |
-| ---------- | ------- | ---------------------------------------------- |
-| `--check`  | `false` | Report files that would change without writing |
-| `--format` | `human` | Output format: `human`, `json`, or `minimal`   |
-| `--quiet`  | `false` | Suppress per-file logs                         |
+| Option     | Default | Description                                                     |
+| ---------- | ------- | --------------------------------------------------------------- |
+| `--check`  | `false` | Report files that would change without writing                  |
+| `--format` | `human` | Output format: `human`, `json`, or `minimal`                    |
+| `--quiet`  | `false` | Suppress per-file logs                                          |
+| `--since`  |         | Only format files changed vs the given git ref (branch/tag/sha) |
+
+### `--since`
+
+`vis fmt --since <ref>` narrows the input to files that changed relative to `<ref>` — committed, staged, unstaged, and untracked all qualify. Each file is routed to the formatter that owns its extension. When `<ref>` doesn't exist (or the directory isn't a git repo) the command falls back to a workspace-wide run and warns.
 
 ## Detection
 

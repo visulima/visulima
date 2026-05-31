@@ -8,6 +8,7 @@ const fmt: Command = {
         ["vis fmt --format json", "Emit findings as JSON for CI / editor integrations"],
         ["vis fmt src/foo.ts src/bar.ts", "Format a specific file list"],
         ["vis fmt --quiet", "Suppress per-file logs"],
+        ["vis fmt --since main", "Only format files changed vs the main branch"],
     ],
     group: "Lint & Format",
     loader: () => import("./handler"),
@@ -16,6 +17,7 @@ const fmt: Command = {
         { defaultValue: false, description: "Report files that would change without writing", name: "check", type: Boolean },
         { defaultValue: "human", description: "Output format: human, json, or minimal", name: "format", type: String },
         { defaultValue: false, description: "Suppress per-file logs", name: "quiet", type: Boolean },
+        { description: "Only format files changed vs the given git ref (branch, tag, sha)", name: "since", type: String },
     ],
 };
 
@@ -25,4 +27,5 @@ export type FmtOptions = CreateOptions<{
     check: boolean | undefined;
     format: "human" | "json" | "minimal";
     quiet: boolean | undefined;
+    since: string | undefined;
 }>;
