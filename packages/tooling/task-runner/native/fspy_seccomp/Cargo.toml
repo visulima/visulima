@@ -1,0 +1,21 @@
+[package]
+name = "fspy-seccomp"
+version = "0.0.0"
+edition = "2021"
+license = "MIT"
+publish = false
+description = "WIP — Linux seccomp_unotify file-access tracker. See ../../rfc/design-fspy-seccomp-unotify.md."
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[target.'cfg(target_os = "linux")'.dependencies]
+libseccomp-sys = "0.2"
+libc = "0.2"
+nix = { version = "0.31", features = ["fs", "process", "signal", "sched"] }
+
+[profile.release]
+lto = true
+codegen-units = 1
+opt-level = 3
+strip = "symbols"

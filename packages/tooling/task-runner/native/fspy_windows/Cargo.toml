@@ -1,0 +1,25 @@
+[package]
+name = "fspy-windows"
+version = "0.0.0"
+edition = "2021"
+license = "MIT"
+publish = false
+description = "WIP — Windows file-access tracker via Microsoft Detours. See ../../rfc/design-fspy-windows-detours.md."
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61", features = [
+    "Win32_Foundation",
+    "Win32_Storage_FileSystem",
+    "Win32_System_LibraryLoader",
+    "Win32_System_Pipes",
+    "Win32_System_Threading",
+] }
+
+[profile.release]
+lto = true
+codegen-units = 1
+opt-level = 3
+strip = "symbols"
