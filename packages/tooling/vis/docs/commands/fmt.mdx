@@ -7,7 +7,7 @@ description: "Orchestrate detected formatters (prettier, …) across the workspa
 
 Runs every detected formatter against the workspace. Defaults to write mode (`--fix`); pass `--check` for a dry-run that lists files that would change without modifying them. Designed to add more formatters over time without changing the command surface.
 
-Ships with adapters for **oxfmt**, **biome**, **dprint**, **Prettier**, and **deno fmt**. The orchestrator runs each one that's present in the workspace; when multiple are present, files are routed by extension.
+Ships with adapters for **oxfmt**, **biome**, **dprint**, **Prettier**, **ruff format** (Python), and **deno fmt**. The orchestrator runs each one that's present in the workspace; when multiple are present, files are routed by extension.
 
 ## Usage
 
@@ -81,13 +81,14 @@ Failed or killed processes are never stored. Clear the cache with `vis cache cle
 
 The orchestrator probes each adapter against the workspace root and runs the ones that report themselves present. An adapter opts in when **either** a tool-native config file exists **or** the tool is declared in `package.json`.
 
-| Adapter  | Config files probed                                                                               | package.json key |
-| -------- | ------------------------------------------------------------------------------------------------- | ---------------- |
-| oxfmt    | `.oxfmtrc[.{json,jsonc,ts,mts,cts,js,mjs,cjs}]`, `oxfmt.config.{ts,mts,js,mjs}`                   | `oxfmt`          |
-| biome    | `biome.json`, `biome.jsonc`                                                                       | `@biomejs/biome` |
-| dprint   | `dprint.json`, `dprint.jsonc`, `.dprint.json`, `.dprint.jsonc`                                    | `dprint`         |
-| prettier | `.prettierrc`, `.prettierrc.{json,yaml,yml,js,cjs,mjs,ts}`, `prettier.config.{js,cjs,mjs,mts,ts}` | `prettier`       |
-| deno-fmt | `deno.json`, `deno.jsonc` (no npm package — `deno` is a runtime)                                  | —                |
+| Adapter  | Config files probed                                                                               | package.json key          |
+| -------- | ------------------------------------------------------------------------------------------------- | ------------------------- |
+| oxfmt    | `.oxfmtrc[.{json,jsonc,ts,mts,cts,js,mjs,cjs}]`, `oxfmt.config.{ts,mts,js,mjs}`                   | `oxfmt`                   |
+| biome    | `biome.json`, `biome.jsonc`                                                                       | `@biomejs/biome`          |
+| dprint   | `dprint.json`, `dprint.jsonc`, `.dprint.json`, `.dprint.jsonc`                                    | `dprint`                  |
+| prettier | `.prettierrc`, `.prettierrc.{json,yaml,yml,js,cjs,mjs,ts}`, `prettier.config.{js,cjs,mjs,mts,ts}` | `prettier`                |
+| ruff-fmt | `ruff.toml`, `.ruff.toml`, `pyproject.toml` with `[tool.ruff]`                                    | `ruff`, `@astral-sh/ruff` |
+| deno-fmt | `deno.json`, `deno.jsonc` (no npm package — `deno` is a runtime)                                  | —                         |
 
 When multiple fmt adapters are detected, files are routed by extension via the registry's `routeFilesByExtension` helper. The default precedence inside the registry favours Rust-native formatters (`oxfmt` → `biome` → `dprint` → `prettier` → `deno-fmt`) so a `.ts` file owned by both oxfmt and prettier goes to oxfmt. `deno-fmt` ranks last so it only owns extensions no other adapter claims — deno coexists with the npm-native pipeline rather than replacing it. Override per-extension routing through `fmt.extensionOverrides` in `vis.config.ts` (e.g. send `.md` to `dprint` even when `prettier` also handles it).
 

@@ -8,6 +8,7 @@ import { denoFmtAdapter } from "../../lint-fmt/adapters/deno";
 import { dprintAdapter } from "../../lint-fmt/adapters/dprint";
 import { oxfmtAdapter } from "../../lint-fmt/adapters/oxfmt";
 import { prettierAdapter } from "../../lint-fmt/adapters/prettier";
+import { ruffFmtAdapter } from "../../lint-fmt/adapters/ruff";
 import type { AdapterRunOptions, Finding } from "../../lint-fmt/config-types";
 import { detectAdapters } from "../../lint-fmt/detect";
 import { changedFilesSince, stagedFiles } from "../../lint-fmt/diff";
@@ -21,7 +22,7 @@ import { runAdaptersParallel } from "../../lint-fmt/runner";
 import { runWatchLoop } from "../../lint-fmt/watch-loop";
 import type { FmtOptions } from "./index";
 
-const FORMAT_ADAPTERS = [oxfmtAdapter, biomeAdapter, dprintAdapter, prettierAdapter, denoFmtAdapter];
+const FORMAT_ADAPTERS = [oxfmtAdapter, biomeAdapter, dprintAdapter, prettierAdapter, ruffFmtAdapter, denoFmtAdapter];
 
 const execute = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Console, FmtOptions>): Promise<void> => {
     const root = workspaceRoot ?? process.cwd();

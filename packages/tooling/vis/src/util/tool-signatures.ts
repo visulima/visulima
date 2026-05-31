@@ -56,6 +56,23 @@ export const TOOL_SIGNATURES = {
         ],
         packageNames: ["eslint"],
     },
+    markdownlint: {
+        configFiles: [
+            ".markdownlint.json",
+            ".markdownlint.jsonc",
+            ".markdownlint.yaml",
+            ".markdownlint.yml",
+            ".markdownlintrc",
+            ".markdownlintrc.json",
+            ".markdownlintrc.yaml",
+            ".markdownlintrc.yml",
+            ".markdownlint-cli2.jsonc",
+            ".markdownlint-cli2.yaml",
+            ".markdownlint-cli2.cjs",
+            ".markdownlint-cli2.mjs",
+        ],
+        packageNames: ["markdownlint-cli2", "markdownlint-cli"],
+    },
     oxfmt: {
         configFiles: [
             ".oxfmtrc",
@@ -95,6 +112,20 @@ export const TOOL_SIGNATURES = {
             ".prettierrc.yaml",
         ],
         packageNames: ["prettier"],
+    },
+    ruff: {
+        // pyproject.toml is *not* listed here — it only signals ruff
+        // presence when it contains a `[tool.ruff]` table, and the
+        // adapter does that check explicitly. Adding it to configFiles
+        // would over-detect every Python project.
+        configFiles: ["ruff.toml", ".ruff.toml"],
+        // Ruff lives on PyPI but it also ships as `@astral-sh/ruff`
+        // / `ruff` on npm via wrapper packages.
+        packageNames: ["ruff", "@astral-sh/ruff"],
+    },
+    shellcheck: {
+        configFiles: [".shellcheckrc"],
+        packageNames: ["shellcheck"],
     },
     stylelint: {
         configFiles: [

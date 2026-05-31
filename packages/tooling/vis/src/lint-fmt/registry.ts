@@ -31,6 +31,10 @@ const ADAPTER_ORDER: ReadonlyArray<AdapterId> = [
     "dprint",
     "prettier",
     "stylelint",
+    "ruff-check",
+    "ruff-fmt",
+    "markdownlint",
+    "shellcheck",
     "deno-lint",
     "deno-fmt",
 ];
