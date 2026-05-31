@@ -119,6 +119,37 @@ interface NativeBindings {
         onLifecycle?: ((event: NativeProcessEvent) => void) | null,
     ) => Promise<NativeConcurrentRunResult>;
     topologicalSort: (graph: NativeTaskGraph) => string[];
+
+    /**
+     * Linux-only: spawn `argv` under seccomp_unotify tracking via
+     * the helper binary at `helperPath`. Resolves once the child
+     * exits with the gathered file accesses.
+     *
+     * Undefined when the addon was built on a non-Linux target.
+     */
+    trackWithSeccomp?: (
+        argv: string[],
+        helperPath: string,
+        options?: NativeSeccompSpawnOptions,
+    ) => Promise<NativeSeccompTrackingResult>;
+}
+
+interface NativeSeccompSpawnOptions {
+    cwd?: string;
+    /** Extra env vars merged on top of the parent's. */
+    env?: Record<string, string>;
+}
+
+interface NativeSeccompFileAccess {
+    kind: "missing" | "read" | "readdir" | "stat" | "write";
+    path: string;
+}
+
+interface NativeSeccompTrackingResult {
+    accesses: NativeSeccompFileAccess[];
+    exitCode: number;
+    stderr: Buffer;
+    stdout: Buffer;
 }
 
 let nativeBindings: NativeBindings | undefined;
@@ -173,6 +204,9 @@ export type {
     NativeCycleResult,
     NativeFileHash,
     NativeProcessEvent,
+    NativeSeccompFileAccess,
+    NativeSeccompSpawnOptions,
+    NativeSeccompTrackingResult,
     NativeTaskGraph,
     NativeTaskHashDetails,
 };

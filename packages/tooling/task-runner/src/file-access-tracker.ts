@@ -1,10 +1,15 @@
 import type { ChildProcess } from "node:child_process";
 import { execFile, execFileSync } from "node:child_process";
+import { accessSync, constants as fsConstants } from "node:fs";
 import { mkdir, readFile, rm } from "node:fs/promises";
+import { createRequire } from "node:module";
 import { platform } from "node:os";
+import { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { join, resolve } from "@visulima/path";
 
+import { loadNativeBindings } from "./native-binding";
 import { withEnhancedPath } from "./path-utils";
 import { uniqueId } from "./utils";
 
@@ -25,6 +30,104 @@ const isStraceAvailable = (): boolean => {
     }
 
     return straceAvailable;
+};
+
+/**
+ * Lazily resolves the path to the bundled `fspy-seccomp-helper`
+ * binary. Returns `undefined` when:
+ * - not on Linux,
+ * - the native addon failed to load,
+ * - the addon doesn't expose `trackWithSeccomp` (built for a
+ *   non-Linux target),
+ * - or no helper binary is locatable on disk.
+ *
+ * The helper ships alongside the native `.node` addon — the napi
+ * platform binding packages have the addon at their root and the
+ * helper one directory above. Falls back to a dev location for
+ * `cargo build --debug` workflows.
+ */
+let helperPathCache: string | null | undefined;
+
+const resolveSeccompHelperPath = (): string | undefined => {
+    if (helperPathCache !== undefined) {
+        return helperPathCache ?? undefined;
+    }
+
+    if (platform() !== "linux") {
+        helperPathCache = null;
+
+        return undefined;
+    }
+
+    const candidates: string[] = [];
+
+    // Production: the addon lives in node_modules/<binding-pkg>/
+    // and ships the helper next to its .node file.
+    try {
+        const here = dirname(fileURLToPath(import.meta.url));
+        const cjsRequire = createRequire(import.meta.url);
+        const indexJsPath = cjsRequire.resolve("../index.js");
+        const indexDir = dirname(indexJsPath);
+
+        candidates.push(
+            // Production: same dir as the .node addon.
+            join(indexDir, "fspy-seccomp-helper"),
+            // Or a `bin/` subdir if the binding package nests it.
+            join(indexDir, "bin", "fspy-seccomp-helper"),
+            // Source tree (`pnpm build:native:debug` output).
+            join(here, "..", "native", "fspy_seccomp", "target", "debug", "fspy-seccomp-helper"),
+            join(here, "..", "native", "fspy_seccomp", "target", "release", "fspy-seccomp-helper"),
+        );
+    } catch {
+        // import.meta.url may be unusable in some bundler outputs;
+        // skip the resolve and fall through to the null cache.
+    }
+
+    for (const candidate of candidates) {
+        try {
+            accessSync(candidate, fsConstants.X_OK);
+            helperPathCache = candidate;
+
+            return candidate;
+        } catch {
+            // Try the next candidate.
+        }
+    }
+
+    helperPathCache = null;
+
+    return undefined;
+};
+
+/**
+ * Returns true when seccomp_unotify tracking is available on this
+ * host (Linux + the native addon's `trackWithSeccomp` is exposed +
+ * the helper binary is on disk). Cached after the first call.
+ */
+let seccompAvailable: boolean | undefined;
+
+const isSeccompAvailable = (): boolean => {
+    if (seccompAvailable !== undefined) {
+        return seccompAvailable;
+    }
+
+    if (platform() !== "linux") {
+        seccompAvailable = false;
+
+        return false;
+    }
+
+    const native = loadNativeBindings();
+
+    if (!native?.trackWithSeccomp) {
+        seccompAvailable = false;
+
+        return false;
+    }
+
+    seccompAvailable = resolveSeccompHelperPath() !== undefined;
+
+    return seccompAvailable;
 };
 
 /**
@@ -118,12 +221,21 @@ export class FileAccessTracker {
      */
     // eslint-disable-next-line class-methods-use-this
     public isSupported(): boolean {
-        return platform() === "linux" && isStraceAvailable();
+        return platform() === "linux" && (isSeccompAvailable() || isStraceAvailable());
     }
 
     /**
      * Runs a command and tracks all file system accesses.
-     * On unsupported platforms, runs the command without tracking.
+     *
+     * Dispatch order (highest fidelity first):
+     * 1. **seccomp_unotify** — kernel-level interception via the
+     *    bundled helper binary. Catches static binaries and musl
+     *    children that the strace + preload paths miss. Linux only.
+     * 2. **strace** — userspace fallback when seccomp isn't
+     *    available (no native addon, no helper bin, kernel < 5.0).
+     * 3. **no-op** — on every other platform, run the command and
+     *    return zero accesses so the orchestrator's empty-fingerprint
+     *    diagnostic fires.
      */
     public async track(
         command: string,
@@ -132,11 +244,89 @@ export class FileAccessTracker {
             env?: Record<string, string | undefined>;
         } = {},
     ): Promise<TrackingResult> {
-        if (!this.isSupported()) {
+        if (platform() !== "linux") {
             return this.#runWithoutTracking(command, options);
         }
 
-        return this.#runWithStrace(command, options);
+        if (isSeccompAvailable()) {
+            return this.#runWithSeccomp(command, options);
+        }
+
+        if (isStraceAvailable()) {
+            return this.#runWithStrace(command, options);
+        }
+
+        return this.#runWithoutTracking(command, options);
+    }
+
+    /**
+     * Runs a command under seccomp_unotify tracking via the helper
+     * binary. The native addon's `trackWithSeccomp` returns raw
+     * accesses; we filter to the workspace + exclusion patterns
+     * here (same predicate as the strace branch) so the result
+     * shape is identical to the orchestrator.
+     */
+    async #runWithSeccomp(
+        command: string,
+        options: {
+            cwd?: string;
+            env?: Record<string, string | undefined>;
+        },
+    ): Promise<TrackingResult> {
+        const native = loadNativeBindings();
+        const helperPath = resolveSeccompHelperPath();
+
+        if (!native?.trackWithSeccomp || !helperPath) {
+            // Both pre-checks passed in isSupported, but defensive
+            // fall-through in case the cache is stale (e.g. someone
+            // deleted the helper between calls).
+            return this.#runWithoutTracking(command, options);
+        }
+
+        // Same `sh -c` wrapping as the strace path so shell-syntax
+        // commands (pipelines, redirects) work. cwd + env are
+        // propagated through the native binding's spawn-options to
+        // Command::current_dir / Command::env on the helper.
+        const cwd = options.cwd ?? this.#workspaceRoot;
+        const env = withEnhancedPath({ ...process.env, ...options.env }, cwd);
+        const envFiltered: Record<string, string> = {};
+
+        for (const [k, v] of Object.entries(env)) {
+            if (typeof v === "string") {
+                envFiltered[k] = v;
+            }
+        }
+
+        const argv = ["sh", "-c", command];
+
+        try {
+            const result = await native.trackWithSeccomp(argv, helperPath, { cwd, env: envFiltered });
+
+            const accesses: FileAccess[] = [];
+
+            for (const a of result.accesses) {
+                const absolute = a.path.startsWith("/") ? a.path : resolve(cwd, a.path);
+
+                if (this.#shouldExclude(absolute) || !absolute.startsWith(this.#workspaceRoot)) {
+                    continue;
+                }
+
+                accesses.push({ path: absolute, type: a.kind });
+            }
+
+            // Concatenate stdout + stderr to mirror the strace path's
+            // single `output` field. The orchestrator presents the
+            // two streams together; finer-grained separation can be
+            // added by widening TrackingResult later.
+            const output = `${result.stdout.toString("utf8")}${result.stderr.toString("utf8")}`;
+
+            return { accesses, code: result.exitCode, output };
+        } catch {
+            // Helper failure shouldn't fail the task — degrade to
+            // the no-tracking path so the orchestrator marks the
+            // result as `emptyFingerprint: true` and skips caching.
+            return this.#runWithoutTracking(command, options);
+        }
     }
 
     /**
