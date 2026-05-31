@@ -40,6 +40,9 @@ vis lint --max-warnings 0
 
 # Only lint files changed vs the main branch
 vis lint --since main
+
+# Only lint files currently staged in the git index
+vis lint --staged
 ```
 
 ## Options
@@ -51,10 +54,15 @@ vis lint --since main
 | `--quiet`        | `false` | Suppress warnings — report errors only                         |
 | `--max-warnings` |         | Fail the run if more than N warnings are reported              |
 | `--since`        |         | Only lint files changed vs the given git ref (branch/tag/sha)  |
+| `--staged`       | `false` | Only lint files currently staged in the git index              |
 
 ### `--since`
 
 `vis lint --since <ref>` narrows the input to files that changed relative to `<ref>` — committed, staged, unstaged, and untracked all qualify. Each adapter only sees files whose extension it claims, so a CSS-only change skips ESLint and a TS-only change skips stylelint. When `<ref>` doesn't exist (or the directory isn't a git repo) the command falls back to a workspace-wide run and warns.
+
+### `--staged`
+
+`vis lint --staged` narrows the input to files currently in the git index — the same model `lint-staged` uses. Use it in a pre-commit hook to lint only what is about to be committed. Each adapter only sees staged files whose extension it claims. When nothing is staged the command exits early with a `✓ lint: no staged files` message. Outside a git repo (or with git unavailable) the command falls back to a workspace-wide run and warns.
 
 ## Caching
 

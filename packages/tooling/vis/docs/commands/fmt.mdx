@@ -47,10 +47,15 @@ vis fmt --since main
 | `--format` | `human` | Output format: `human`, `json`, `minimal`, `sarif`, or `junit`  |
 | `--quiet`  | `false` | Suppress per-file logs                                          |
 | `--since`  |         | Only format files changed vs the given git ref (branch/tag/sha) |
+| `--staged` | `false` | Only format files currently staged in the git index             |
 
 ### `--since`
 
 `vis fmt --since <ref>` narrows the input to files that changed relative to `<ref>` — committed, staged, unstaged, and untracked all qualify. Each file is routed to the formatter that owns its extension. When `<ref>` doesn't exist (or the directory isn't a git repo) the command falls back to a workspace-wide run and warns.
+
+### `--staged`
+
+`vis fmt --staged` narrows the input to files currently in the git index — the same model `lint-staged` uses. Use it in a pre-commit hook to format only what is about to be committed. When no files are staged the command exits early with a `✓ fmt: no staged files` message. Outside a git repo (or with git unavailable) the command falls back to a workspace-wide run and warns.
 
 ## Caching
 

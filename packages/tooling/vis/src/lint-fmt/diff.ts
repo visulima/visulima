@@ -46,6 +46,39 @@ export const changedFilesSince = (root: string, ref: string): string[] | undefin
     return [...all].sort();
 };
 
+/**
+ * Resolve the set of files currently staged in the index. Used by
+ * `vis lint --staged` and `vis fmt --staged` to scope the run to the
+ * pre-commit changeset — the same model lint-staged uses.
+ *
+ * Includes added/copied/modified/renamed entries. Deletions are
+ * filtered for the same reason as `changedFilesSince`: a deleted file
+ * has no contents to lint.
+ *
+ * Returns absolute paths. Returns `undefined` when git itself fails
+ * (not a repo, no HEAD yet, etc.) so callers can decide whether to
+ * warn-and-bail or fall back to a workspace-wide run.
+ */
+export const stagedFiles = (root: string): string[] | undefined => {
+    const staged = runGit(root, ["diff", "--name-only", "--diff-filter=ACMR", "--cached", "-z"]);
+
+    if (staged === undefined) {
+        return undefined;
+    }
+
+    const out = new Set<string>();
+
+    for (const entry of staged.split("\0")) {
+        if (entry.length === 0) {
+            continue;
+        }
+
+        out.add(isAbsolute(entry) ? entry : join(root, entry));
+    }
+
+    return [...out].sort();
+};
+
 const runGit = (cwd: string, args: ReadonlyArray<string>): string | undefined => {
     const result = spawnSync("git", [...args], {
         cwd,

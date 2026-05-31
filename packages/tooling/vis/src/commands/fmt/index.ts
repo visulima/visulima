@@ -11,6 +11,7 @@ const fmt: Command = {
         ["vis fmt src/foo.ts src/bar.ts", "Format a specific file list"],
         ["vis fmt --quiet", "Suppress per-file logs"],
         ["vis fmt --since main", "Only format files changed vs the main branch"],
+        ["vis fmt --staged", "Only format files currently staged in the git index"],
     ],
     group: "Lint & Format",
     loader: () => import("./handler"),
@@ -20,6 +21,7 @@ const fmt: Command = {
         { defaultValue: "human", description: "Output format: human, json, minimal, sarif, or junit", name: "format", type: String },
         { defaultValue: false, description: "Suppress per-file logs", name: "quiet", type: Boolean },
         { description: "Only format files changed vs the given git ref (branch, tag, sha)", name: "since", type: String },
+        { defaultValue: false, description: "Only format files currently staged in the git index", name: "staged", type: Boolean },
     ],
 };
 
@@ -30,4 +32,5 @@ export type FmtOptions = CreateOptions<{
     format: "human" | "json" | "junit" | "minimal" | "sarif";
     quiet: boolean | undefined;
     since: string | undefined;
+    staged: boolean | undefined;
 }>;

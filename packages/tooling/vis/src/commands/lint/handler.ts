@@ -10,7 +10,7 @@ import { oxlintAdapter } from "../../lint-fmt/adapters/oxlint";
 import { stylelintAdapter } from "../../lint-fmt/adapters/stylelint";
 import type { AdapterRunOptions, Finding } from "../../lint-fmt/config-types";
 import { detectAdapters } from "../../lint-fmt/detect";
-import { changedFilesSince, filterByExtensions } from "../../lint-fmt/diff";
+import { changedFilesSince, filterByExtensions, stagedFiles } from "../../lint-fmt/diff";
 import { adaptersByKind, registerAdapters } from "../../lint-fmt/registry";
 import { emitJUnit } from "../../lint-fmt/reporters/junit";
 import { emitSarif } from "../../lint-fmt/reporters/sarif";
@@ -52,7 +52,17 @@ const execute = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Co
 
     let sinceFiles: string[] | undefined;
 
-    if (typeof options.since === "string" && options.since.length > 0) {
+    if (options.staged) {
+        sinceFiles = stagedFiles(root);
+
+        if (sinceFiles === undefined) {
+            logger.warn("vis lint: could not resolve --staged (not a git repo or git unavailable). Falling back to a workspace-wide run.");
+        } else if (sinceFiles.length === 0) {
+            logger.info(green("✓ lint: no staged files"));
+
+            return;
+        }
+    } else if (typeof options.since === "string" && options.since.length > 0) {
         sinceFiles = changedFilesSince(root, options.since);
 
         if (sinceFiles === undefined) {

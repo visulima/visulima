@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { changedFilesSince, filterByExtensions } from "../../src/lint-fmt/diff";
+import { changedFilesSince, filterByExtensions, stagedFiles } from "../../src/lint-fmt/diff";
 
 let workspaceRoot: string;
 
@@ -109,5 +109,64 @@ describe(changedFilesSince, () => {
         expect.assertions(1);
 
         expect(changedFilesSince(workspaceRoot, "main")).toStrictEqual([]);
+    });
+});
+
+describe(stagedFiles, () => {
+    beforeEach(() => {
+        workspaceRoot = mkdtempSync(join(tmpdir(), "vis-staged-"));
+        git(["init", "-q", "-b", "main"]);
+        git(["config", "user.email", "test@example.com"]);
+        git(["config", "user.name", "test"]);
+        git(["config", "commit.gpgsign", "false"]);
+        writeFile("README.md", "init");
+        git(["add", "."]);
+        git(["commit", "-q", "-m", "init"]);
+    });
+
+    afterEach(() => {
+        rmSync(workspaceRoot, { force: true, recursive: true });
+    });
+
+    it("returns files currently in the git index", () => {
+        expect.assertions(2);
+
+        writeFile("src/a.ts", "export {}");
+        git(["add", "src/a.ts"]);
+
+        const result = stagedFiles(workspaceRoot);
+
+        expect(result).toBeDefined();
+        expect(result!.some((f) => f.endsWith("/src/a.ts"))).toBe(true);
+    });
+
+    it("ignores unstaged modifications", () => {
+        expect.assertions(2);
+
+        writeFile("src/b.ts", "export const x = 1;");
+        // not added — purely a working-tree modification
+
+        const result = stagedFiles(workspaceRoot);
+
+        expect(result).toBeDefined();
+        expect(result!.some((f) => f.endsWith("/src/b.ts"))).toBe(false);
+    });
+
+    it("returns an empty array when nothing is staged", () => {
+        expect.assertions(1);
+
+        expect(stagedFiles(workspaceRoot)).toStrictEqual([]);
+    });
+
+    it("returns undefined outside of a git repository", () => {
+        expect.assertions(1);
+
+        const outside = mkdtempSync(join(tmpdir(), "vis-no-git-"));
+
+        try {
+            expect(stagedFiles(outside)).toBeUndefined();
+        } finally {
+            rmSync(outside, { force: true, recursive: true });
+        }
     });
 });

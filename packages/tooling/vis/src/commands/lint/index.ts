@@ -12,6 +12,7 @@ const lint: Command = {
         ["vis lint --quiet", "Suppress warnings — only errors are reported"],
         ["vis lint --max-warnings 0", "Treat any warning as a failure"],
         ["vis lint --since main", "Only lint files changed vs the main branch"],
+        ["vis lint --staged", "Only lint files currently staged in the git index"],
     ],
     group: "Lint & Format",
     loader: () => import("./handler"),
@@ -22,6 +23,7 @@ const lint: Command = {
         { defaultValue: false, description: "Suppress warnings — report errors only", name: "quiet", type: Boolean },
         { description: "Fail the run if more than N warnings are reported", name: "max-warnings", type: Number },
         { description: "Only lint files changed vs the given git ref (branch, tag, sha)", name: "since", type: String },
+        { defaultValue: false, description: "Only lint files currently staged in the git index", name: "staged", type: Boolean },
     ],
 };
 
@@ -33,4 +35,5 @@ export type LintOptions = CreateOptions<{
     "max-warnings": number | undefined;
     quiet: boolean | undefined;
     since: string | undefined;
+    staged: boolean | undefined;
 }>;
