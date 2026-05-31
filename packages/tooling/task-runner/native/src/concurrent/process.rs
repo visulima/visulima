@@ -113,7 +113,21 @@ pub fn spawn_process(
         let _ = completion_tx.send(CompletionMessage { index, close_event });
     });
 
-    // Windows: create Job Object and assign the child process for tree killing
+    // Windows: create Job Object and assign the child process for tree killing.
+    //
+    // KNOWN LIMITATION: the child is already running by the time we
+    // create + assign the Job Object. A wrapper that immediately
+    // re-`exec`s another binary (very common with `cmd.exe /s /c`)
+    // can fork a grandchild *before* AssignProcessToJobObject runs;
+    // that grandchild is outside the Job and so isn't terminated by
+    // `TerminateJobObject` or by `JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE`.
+    // The correct fix is `CreateProcessW(CREATE_SUSPENDED)` → assign
+    // → `ResumeThread`, which requires bypassing tokio's `Command`
+    // and using raw Win32 (tokio doesn't expose the primary thread
+    // handle). Deferred until we have a Windows test runtime to
+    // validate against; the `kill_on_drop(true)` + Job Object combo
+    // covers the common case, and the wider blast radius is bounded
+    // by Job Object cleanup on process exit.
     #[cfg(windows)]
     let job = {
         let job = process_group::JobObject::new().ok();

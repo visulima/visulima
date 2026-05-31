@@ -63,6 +63,34 @@ async fn wait_for_signal() -> ReceivedSignal {
 
 #[cfg(windows)]
 async fn wait_for_signal() -> ReceivedSignal {
-    let _ = tokio::signal::ctrl_c().await;
-    ReceivedSignal::Interrupt
+    use std::future::pending;
+
+    use tokio::signal::windows::{ctrl_break, ctrl_c};
+
+    // Both `CTRL_C` and `CTRL_BREAK` are common shutdown signals on
+    // Windows consoles. Previously only Ctrl+C was wired, so a
+    // Ctrl+Break to the parent left children unsignalled and the
+    // close events never reached JS.
+    let mut ctrl_c_stream = ctrl_c().ok();
+    let mut ctrl_break_stream = ctrl_break().ok();
+
+    if ctrl_c_stream.is_none() && ctrl_break_stream.is_none() {
+        pending::<()>().await;
+        return ReceivedSignal::None;
+    }
+
+    tokio::select! {
+        _ = async {
+            match ctrl_c_stream.as_mut() {
+                Some(s) => { let _ = s.recv().await; }
+                None => pending::<()>().await,
+            }
+        } => ReceivedSignal::Interrupt,
+        _ = async {
+            match ctrl_break_stream.as_mut() {
+                Some(s) => { let _ = s.recv().await; }
+                None => pending::<()>().await,
+            }
+        } => ReceivedSignal::Terminate,
+    }
 }

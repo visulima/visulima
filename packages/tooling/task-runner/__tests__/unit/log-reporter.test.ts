@@ -80,4 +80,27 @@ describe(LogReporter, () => {
 
         expect(buffer.value).toBe("[app#build] one\n");
     });
+
+    it("strips ANSI escapes when color mode is 'never'", () => {
+        expect.assertions(1);
+
+        const buffer = capture();
+        const reporter = createLogReporter("interleaved", buffer.write, "never");
+
+        // `[31mred[0m` — red foreground, reset.
+        reporter.printTaskTerminalOutput(makeTask("app", "build"), "success", "[31mred[0m\n");
+
+        expect(buffer.value).toBe("red\n");
+    });
+
+    it("preserves ANSI escapes when color mode is 'always'", () => {
+        expect.assertions(1);
+
+        const buffer = capture();
+        const reporter = createLogReporter("interleaved", buffer.write, "always");
+
+        reporter.printTaskTerminalOutput(makeTask("app", "build"), "success", "[31mred[0m\n");
+
+        expect(buffer.value).toBe("[31mred[0m\n");
+    });
 });
