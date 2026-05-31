@@ -12,6 +12,8 @@ import type { AdapterRunOptions, Finding } from "../../lint-fmt/config-types";
 import { detectAdapters } from "../../lint-fmt/detect";
 import { changedFilesSince, filterByExtensions } from "../../lint-fmt/diff";
 import { adaptersByKind, registerAdapters } from "../../lint-fmt/registry";
+import { emitJUnit } from "../../lint-fmt/reporters/junit";
+import { emitSarif } from "../../lint-fmt/reporters/sarif";
 import { aggregate, exitCodeFor, groupFindingsByFile } from "../../lint-fmt/results";
 import type { AdapterJob } from "../../lint-fmt/runner";
 import { runAdaptersParallel } from "../../lint-fmt/runner";
@@ -98,12 +100,44 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Lint
 
     const format = options.format ?? "human";
 
-    if (format === "json") {
-        process.stdout.write(`${JSON.stringify({ findings: result.findings, runs: result.runs }, null, 2)}\n`);
-    } else if (format === "minimal") {
-        printMinimal(result.findings, root);
-    } else {
-        printHuman(result.findings, root, logger);
+    switch (format) {
+        case "json": {
+            process.stdout.write(`${JSON.stringify({ findings: result.findings, runs: result.runs }, null, 2)}\n`);
+
+            break;
+        }
+        case "junit": {
+            process.stdout.write(emitJUnit({
+                runs: runs.map((run) => {
+                    return { adapter: run.adapter.id, durationMs: run.durationMs, findings: run.findings };
+                }),
+                workspaceRoot: root,
+            }));
+
+            break;
+        }
+        case "minimal": {
+            printMinimal(result.findings, root);
+
+            break;
+        }
+        case "sarif": {
+            process.stdout.write(emitSarif({
+                runs: runs.map((run) => {
+                    return {
+                        adapter: run.adapter.id,
+                        findings: run.findings,
+                        presence: jobs.find((job) => job.adapter.id === run.adapter.id)?.presence,
+                    };
+                }),
+                workspaceRoot: root,
+            }));
+
+            break;
+        }
+        default: {
+            printHuman(result.findings, root, logger);
+        }
     }
 
     const exitCode = exitCodeFor(result);

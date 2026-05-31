@@ -44,7 +44,7 @@ vis fmt --since main
 | Option     | Default | Description                                                     |
 | ---------- | ------- | --------------------------------------------------------------- |
 | `--check`  | `false` | Report files that would change without writing                  |
-| `--format` | `human` | Output format: `human`, `json`, or `minimal`                    |
+| `--format` | `human` | Output format: `human`, `json`, `minimal`, `sarif`, or `junit`  |
 | `--quiet`  | `false` | Suppress per-file logs                                          |
 | `--since`  |         | Only format files changed vs the given git ref (branch/tag/sha) |
 
@@ -101,6 +101,14 @@ Tab-separated lines, one per file, suitable for `awk`/`cut` pipelines:
 ```
 prettier	src/a.ts
 ```
+
+### SARIF
+
+`vis fmt --check --format sarif` emits a [SARIF 2.1.0](https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html) document — one `run` per formatter that participated. File-level "would change" findings appear as `note`-level results so SARIF-aware ingestors don't flag formatting churn as code-scanning errors.
+
+### JUnit
+
+`vis fmt --check --format junit` emits a Surefire-flavoured JUnit XML report — one `<testsuite>` per formatter and one `<testcase>` per file that would change. Suitable for CI dashboards that already render JUnit artefacts.
 
 ## Exit codes
 

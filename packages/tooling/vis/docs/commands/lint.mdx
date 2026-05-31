@@ -44,13 +44,13 @@ vis lint --since main
 
 ## Options
 
-| Option           | Default | Description                                                   |
-| ---------------- | ------- | ------------------------------------------------------------- |
-| `--fix`          | `false` | Apply auto-fixes in place                                     |
-| `--format`       | `human` | Output format: `human`, `json`, or `minimal`                  |
-| `--quiet`        | `false` | Suppress warnings — report errors only                        |
-| `--max-warnings` |         | Fail the run if more than N warnings are reported             |
-| `--since`        |         | Only lint files changed vs the given git ref (branch/tag/sha) |
+| Option           | Default | Description                                                    |
+| ---------------- | ------- | -------------------------------------------------------------- |
+| `--fix`          | `false` | Apply auto-fixes in place                                      |
+| `--format`       | `human` | Output format: `human`, `json`, `minimal`, `sarif`, or `junit` |
+| `--quiet`        | `false` | Suppress warnings — report errors only                         |
+| `--max-warnings` |         | Fail the run if more than N warnings are reported              |
+| `--since`        |         | Only lint files changed vs the given git ref (branch/tag/sha)  |
 
 ### `--since`
 
@@ -115,6 +115,14 @@ Tab-separated lines, one per finding, suitable for `awk`/`cut` pipelines:
 ```
 eslint	src/a.ts	10	5	error	no-bad	'foo' is not defined
 ```
+
+### SARIF
+
+`--format sarif` emits a [SARIF 2.1.0](https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html) document on stdout — one `run` per adapter, with `tool.driver.rules` aggregated from the findings. File paths under `workspaceRoot` are emitted relative to a `SRCROOT` `uriBaseId` so the report is portable across machines. Use this format with the [GitHub code-scanning upload action](https://github.com/github/codeql-action) or any other SARIF-aware ingestor.
+
+### JUnit
+
+`--format junit` emits a Surefire-flavoured JUnit XML report — one `<testsuite>` per adapter and one `<testcase>` per finding. Errors land as `<failure type="error">`, warnings as `<failure type="warning">`. GitLab CI, GitHub Actions test reporters, Jenkins and Bitbucket all parse this dialect without an extra plugin.
 
 ## Exit codes
 
