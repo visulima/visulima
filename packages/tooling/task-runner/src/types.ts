@@ -93,8 +93,9 @@ export interface Task {
     /**
      * Per-task slot weight against the global `parallel` cap. Defaults
      * to `1` (one slot). Carried over from
-     * {@link TargetConfiguration.concurrencyWeight}; values `&lt;= 0` or
-     * non-finite are ignored.
+     * {@link TargetConfiguration.concurrencyWeight}; values `&lt;= 0`,
+     * non-finite, or non-integer are ignored (treated as `1` — matches
+     * `resolveWeight` in `task-scheduler.ts`).
      */
     concurrencyWeight?: number;
     /** Hash of the task inputs for caching */

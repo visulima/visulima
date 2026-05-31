@@ -46,7 +46,7 @@ The DLL emits these events; the supervisor reads them and folds them into `Track
 
 ### Architecture
 
-```
+```text
 +---------------------+
 | task-runner (node)  |
 |  spawns child via   |
@@ -78,7 +78,7 @@ The DLL emits these events; the supervisor reads them and folds them into `Track
 
 ### Crate layout
 
-```
+```text
 packages/tooling/task-runner/native/fspy_windows/
   Cargo.toml          # cdylib, target = x86_64-pc-windows-msvc + aarch64
   build.rs            # link detours.lib, find Detours via vcpkg or vendored

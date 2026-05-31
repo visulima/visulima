@@ -19,7 +19,7 @@ The orchestrator does the honest thing — surfaces `emptyFingerprint: true` and
 
 ## Approach
 
-```
+```text
 +---------------------+
 | task-runner (node)  |
 |  fork() child       |
@@ -76,7 +76,7 @@ For fd-based syscalls (`fstatat(AT_FDCWD, ...)`, `getdents64(dirfd, ...)`), reso
 
 ### Crate layout
 
-```
+```text
 packages/tooling/task-runner/native/fspy_seccomp/
   Cargo.toml          # cdylib feature, target = linux
   build.rs            # generate syscall constants for current arch
