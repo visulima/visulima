@@ -13,6 +13,15 @@ import type { AdapterRunOptions, RunResult, ToolAdapter, ToolPresence } from "./
 export interface AdapterJob {
     adapter: ToolAdapter;
     files: ReadonlyArray<string>;
+
+    /**
+     * Adapter-specific options. When set, replaces the shared
+     * `options` argument to `runAdaptersParallel` for this job only —
+     * lets `vis.config.ts` adapter overrides (e.g. per-adapter
+     * `extraArgs`) thread through without changing the shared options
+     * bag for siblings.
+     */
+    options?: AdapterRunOptions;
     presence: ToolPresence;
 }
 
@@ -152,8 +161,10 @@ export const runAdaptersParallel = async (
             : { cacheRoot: concurrencyOrOptions.cacheRoot, concurrency: concurrencyOrOptions.concurrency ?? availableParallelism() };
 
     const runOne = async (job: AdapterJob): Promise<RunResult> => {
+        const jobOptions = job.options ?? options;
+
         if (cacheRoot && cacheable(job.files, mode)) {
-            const computed = computeCacheKey(job.adapter, job.presence, job.files, options, mode);
+            const computed = computeCacheKey(job.adapter, job.presence, job.files, jobOptions, mode);
 
             if (computed) {
                 const hit = readCacheEntry(cacheRoot, job.adapter, computed.key);
@@ -162,7 +173,7 @@ export const runAdaptersParallel = async (
                     return hit.result;
                 }
 
-                const fresh = await runAdapterAsync(job.adapter, job.presence, job.files, options, mode);
+                const fresh = await runAdapterAsync(job.adapter, job.presence, job.files, jobOptions, mode);
 
                 // Only cache successful, terminated spawns. A null exit
                 // means the process was killed (timeout) — don't pin that.
@@ -174,7 +185,7 @@ export const runAdaptersParallel = async (
             }
         }
 
-        return runAdapterAsync(job.adapter, job.presence, job.files, options, mode);
+        return runAdapterAsync(job.adapter, job.presence, job.files, jobOptions, mode);
     };
 
     if (process.env.VIS_LINT_FMT_SERIAL === "1") {

@@ -78,6 +78,29 @@ The orchestrator probes each adapter against the workspace root and runs the one
 
 When multiple fmt adapters are detected, files are routed by extension via the registry's `routeFilesByExtension` helper. The default precedence inside the registry favours Rust-native formatters (`oxfmt` → `biome` → `dprint` → `prettier` → `deno-fmt`) so a `.ts` file owned by both oxfmt and prettier goes to oxfmt. `deno-fmt` ranks last so it only owns extensions no other adapter claims — deno coexists with the npm-native pipeline rather than replacing it. Override per-extension routing through `fmt.extensionOverrides` in `vis.config.ts` (e.g. send `.md` to `dprint` even when `prettier` also handles it).
 
+## Configuration
+
+`vis.config.ts` exposes a `fmt` block for workspace-wide tuning. CLI flags always win over config.
+
+```ts
+import { defineConfig } from "@visulima/vis/config";
+
+export default defineConfig({
+    fmt: {
+        // Override the default adapter precedence; unlisted adapters still run, appended after.
+        order: ["biome", "prettier"],
+        // Pin specific extensions to a specific adapter.
+        extensionOverrides: { md: "dprint" },
+        adapters: {
+            // Skip an adapter even when its config is detected.
+            "deno-fmt": { enabled: false },
+            // Append flags verbatim to every prettier invocation.
+            prettier: { extraArgs: ["--cache-strategy", "content"] },
+        },
+    },
+});
+```
+
 ## Output formats
 
 ### Human (default)

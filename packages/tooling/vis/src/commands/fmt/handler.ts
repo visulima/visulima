@@ -21,17 +21,25 @@ import type { FmtOptions } from "./index";
 
 const FORMAT_ADAPTERS = [oxfmtAdapter, biomeAdapter, dprintAdapter, prettierAdapter, denoFmtAdapter];
 
-const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, FmtOptions>): Promise<void> => {
+const execute = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Console, FmtOptions>): Promise<void> => {
     const root = workspaceRoot ?? process.cwd();
-    const adapters = registerAdapters(FORMAT_ADAPTERS);
+    const fmtConfig = visConfig?.fmt;
+    const adapters = registerAdapters(FORMAT_ADAPTERS, fmtConfig?.order);
     const detected = detectAdapters(root, adapters);
-    const eligible = adaptersByKind(detected, adapters, "fmt");
+    const allEligible = adaptersByKind(detected, adapters, "fmt");
+    const eligible = allEligible.filter(({ adapter }) => fmtConfig?.adapters?.[adapter.id]?.enabled !== false);
 
     if (eligible.length === 0) {
         logger.warn("vis fmt: no formatter detected in this workspace (looked for: oxfmt, biome, dprint, prettier, deno).");
 
         return;
     }
+
+    const baseExtraArgs = (adapterId: AdapterJob["adapter"]["id"]): string[] | undefined => {
+        const extra = fmtConfig?.adapters?.[adapterId]?.extraArgs;
+
+        return extra && extra.length > 0 ? [...extra] : undefined;
+    };
 
     const runOptions: AdapterRunOptions = { quiet: options.quiet ?? false };
     const positional = collectPositional(options);
@@ -57,7 +65,7 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, FmtO
 
     if (explicit) {
         // Route each explicit file to the adapter that owns its extension.
-        const grouped = routeFilesByExtension(explicit, eligible);
+        const grouped = routeFilesByExtension(explicit, eligible, fmtConfig?.extensionOverrides);
 
         for (const { adapter, presence } of eligible) {
             const files = grouped.get(adapter.id);
@@ -66,13 +74,27 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, FmtO
                 continue;
             }
 
-            jobs.push({ adapter, files, presence });
+            const extra = baseExtraArgs(adapter.id);
+            const job: AdapterJob = { adapter, files, presence };
+
+            if (extra) {
+                job.options = { ...runOptions, extraArgs: extra };
+            }
+
+            jobs.push(job);
         }
     } else {
         // No explicit file list — each adapter runs against `.` so its own
         // ignore semantics filter the workspace.
         for (const { adapter, presence } of eligible) {
-            jobs.push({ adapter, files: ["."], presence });
+            const extra = baseExtraArgs(adapter.id);
+            const job: AdapterJob = { adapter, files: ["."], presence };
+
+            if (extra) {
+                job.options = { ...runOptions, extraArgs: extra };
+            }
+
+            jobs.push(job);
         }
     }
 

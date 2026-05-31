@@ -1,10 +1,32 @@
 import type { ConstraintsConfig, NamedInputs, ProjectConfiguration, TargetConfiguration, TaskRunnerOptions } from "@visulima/task-runner";
 
 import type { SimilarDepFamily } from "../deps/similar-deps";
+import type { AdapterId as LintFmtAdapterId } from "../lint-fmt/config-types";
 import type { ToolchainConfig as InternalToolchainConfig, VersionManagerName } from "../runtime/toolchain";
 import type { StagedConfig } from "../staged";
 import type { VisTargetConfiguration } from "../task/target-options";
 import type { VisPlugin } from "../util/hooks";
+
+/**
+ * Per-adapter override applied by `vis lint` / `vis fmt`. Keyed by
+ * adapter id under `lint.adapters` / `fmt.adapters`. Every field is
+ * optional — set only what you need to change.
+ */
+export interface LintFmtAdapterOverride {
+    /**
+     * Set to `false` to skip this adapter even when its config file or
+     * package.json entry is detected. Defaults to `true` (run when
+     * detected).
+     */
+    enabled?: boolean;
+
+    /**
+     * Extra arguments appended verbatim to every invocation of this
+     * adapter. Useful for tool-specific flags vis doesn't expose
+     * directly (e.g. `eslint --rulesdir`).
+     */
+    extraArgs?: string[];
+}
 
 interface NativeAuditExclusions {
     /** Package names to exclude from audit (yarn berry only). */
@@ -388,6 +410,48 @@ export interface VisConfig {
     fileGroups?: Record<string, string[]>;
 
     /**
+     * Configuration for `vis fmt` — the formatter orchestrator.
+     *
+     * Tunes adapter detection precedence, per-extension routing, and
+     * per-adapter overrides. Flags on the CLI always win over config.
+     *
+     * The default fmt precedence is `oxfmt → biome → dprint → prettier
+     * → deno-fmt`. When multiple adapters claim the same extension,
+     * the first in this order owns it unless overridden here.
+     * @example
+     * ```
+     * fmt: {
+     *   order: ["biome", "prettier"],
+     *   extensionOverrides: { md: "dprint" },
+     *   adapters: { "deno-fmt": { enabled: false } },
+     * }
+     * ```
+     */
+    fmt?: {
+        /**
+         * Per-adapter overrides. Keyed by `AdapterId`. Set
+         * `enabled: false` to skip an adapter even when detected, or
+         * `extraArgs` to append flags verbatim.
+         */
+        adapters?: Partial<Record<LintFmtAdapterId, LintFmtAdapterOverride>>;
+
+        /**
+         * Pin a file extension (without the leading dot) to a specific
+         * adapter, overriding the registry's "first detected adapter
+         * wins" routing. Use to e.g. send `.md` to `dprint` even when
+         * both prettier and dprint are present.
+         */
+        extensionOverrides?: Record<string, LintFmtAdapterId>;
+
+        /**
+         * Override the adapter precedence order. Adapters omitted from
+         * this list still run (appended at the end in registry order),
+         * but those listed earlier get priority for extension routing.
+         */
+        order?: LintFmtAdapterId[];
+    };
+
+    /**
      * Configuration for the `vis generate` in-repo scaffolding command.
      * Points at additional template directories beyond the defaults
      * (`.vis/templates/` and `.moon/templates/`).
@@ -537,6 +601,39 @@ export interface VisConfig {
          * @default "auto"
          */
         corepack?: "auto" | boolean;
+    };
+
+    /**
+     * Configuration for `vis lint` — the linter orchestrator.
+     *
+     * Tunes adapter detection precedence and per-adapter overrides.
+     * Flags on the CLI always win over config.
+     *
+     * The default lint precedence is `oxlint → biome → eslint →
+     * stylelint → deno-lint`. Override with `order` to e.g. let biome
+     * fire before oxlint when the workspace standardises on biome.
+     * @example
+     * ```
+     * lint: {
+     *   order: ["biome", "eslint"],
+     *   adapters: { "deno-lint": { enabled: false } },
+     * }
+     * ```
+     */
+    lint?: {
+        /**
+         * Per-adapter overrides. Keyed by `AdapterId`. Set
+         * `enabled: false` to skip an adapter even when detected, or
+         * `extraArgs` to append flags verbatim.
+         */
+        adapters?: Partial<Record<LintFmtAdapterId, LintFmtAdapterOverride>>;
+
+        /**
+         * Override the adapter precedence order. Adapters omitted from
+         * this list still run (appended at the end in registry order)
+         * unless explicitly disabled under `adapters[id].enabled`.
+         */
+        order?: LintFmtAdapterId[];
     };
 
     /**

@@ -82,6 +82,27 @@ The orchestrator probes each adapter against the workspace root and runs the one
 
 When multiple lint adapters are detected, they run in this default precedence: `oxlint → biome → eslint → stylelint → deno-lint`. The Rust-native oxlint pass runs first as a fast pre-filter, biome handles its bespoke rule set, ESLint catches what the others don't, stylelint covers CSS/SCSS, and deno-lint runs last since deno coexists with the npm-native pipeline rather than replacing it. Override with `lint.order` in `vis.config.ts`.
 
+## Configuration
+
+`vis.config.ts` exposes a `lint` block for workspace-wide tuning. CLI flags always win over config.
+
+```ts
+import { defineConfig } from "@visulima/vis/config";
+
+export default defineConfig({
+    lint: {
+        // Override the default precedence; unlisted adapters still run, appended after.
+        order: ["biome", "eslint"],
+        adapters: {
+            // Skip an adapter even when its config is detected.
+            "deno-lint": { enabled: false },
+            // Append flags verbatim to every eslint invocation.
+            eslint: { extraArgs: ["--rulesdir", "./eslint-rules"] },
+        },
+    },
+});
+```
+
 ## Output formats
 
 ### Human (default)

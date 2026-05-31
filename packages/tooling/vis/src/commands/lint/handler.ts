@@ -21,17 +21,25 @@ import type { LintOptions } from "./index";
 
 const SOURCE_ADAPTERS = [oxlintAdapter, biomeAdapter, eslintAdapter, stylelintAdapter, denoLintAdapter];
 
-const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, LintOptions>): Promise<void> => {
+const execute = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Console, LintOptions>): Promise<void> => {
     const root = workspaceRoot ?? process.cwd();
-    const adapters = registerAdapters(SOURCE_ADAPTERS);
+    const lintConfig = visConfig?.lint;
+    const adapters = registerAdapters(SOURCE_ADAPTERS, lintConfig?.order);
     const detected = detectAdapters(root, adapters);
-    const eligible = adaptersByKind(detected, adapters, "lint");
+    const allEligible = adaptersByKind(detected, adapters, "lint");
+    const eligible = allEligible.filter(({ adapter }) => lintConfig?.adapters?.[adapter.id]?.enabled !== false);
 
     if (eligible.length === 0) {
         logger.warn("vis lint: no linter detected in this workspace (looked for: oxlint, biome, eslint, stylelint, deno).");
 
         return;
     }
+
+    const baseExtraArgs = (adapterId: AdapterJob["adapter"]["id"]): string[] | undefined => {
+        const extra = lintConfig?.adapters?.[adapterId]?.extraArgs;
+
+        return extra && extra.length > 0 ? [...extra] : undefined;
+    };
 
     const runOptions: AdapterRunOptions = {
         extraArgs: undefined,
@@ -74,7 +82,14 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Lint
             files = positionalFiles ?? ["."];
         }
 
-        jobs.push({ adapter, files, presence });
+        const extra = baseExtraArgs(adapter.id);
+        const job: AdapterJob = { adapter, files, presence };
+
+        if (extra) {
+            job.options = { ...runOptions, extraArgs: extra };
+        }
+
+        jobs.push(job);
     }
 
     const cacheRoot = resolveSharedCacheDirectory(root, undefined, undefined, true);

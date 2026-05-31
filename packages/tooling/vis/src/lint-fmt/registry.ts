@@ -35,23 +35,46 @@ const ADAPTER_ORDER: ReadonlyArray<AdapterId> = [
     "deno-fmt",
 ];
 
-export const registerAdapters = (adapters: ReadonlyArray<ToolAdapter>): ReadonlyArray<ToolAdapter> => {
+export const registerAdapters = (
+    adapters: ReadonlyArray<ToolAdapter>,
+    customOrder?: ReadonlyArray<AdapterId>,
+): ReadonlyArray<ToolAdapter> => {
     const byId = new Map(adapters.map((a) => [a.id, a]));
     const ordered: ToolAdapter[] = [];
+    const seen = new Set<AdapterId>();
 
-    for (const id of ADAPTER_ORDER) {
+    // `customOrder` (from `vis.config.ts#lint.order` / `fmt.order`) wins
+    // over the static precedence. Adapters not listed there fall back to
+    // the registry default so omitted entries still run.
+    const primary = customOrder && customOrder.length > 0 ? customOrder : ADAPTER_ORDER;
+
+    for (const id of primary) {
         const adapter = byId.get(id);
 
-        if (adapter) {
+        if (adapter && !seen.has(id)) {
             ordered.push(adapter);
+            seen.add(id);
         }
     }
 
-    // Append any adapter the static order doesn't know about (defensive — keeps
-    // future adapters from disappearing if someone forgets to update ADAPTER_ORDER).
+    if (customOrder && customOrder.length > 0) {
+        // Fall back to the static order for adapters the user didn't list.
+        for (const id of ADAPTER_ORDER) {
+            const adapter = byId.get(id);
+
+            if (adapter && !seen.has(id)) {
+                ordered.push(adapter);
+                seen.add(id);
+            }
+        }
+    }
+
+    // Append any adapter neither the user nor the static order knows about
+    // (defensive — keeps future adapters from disappearing).
     for (const adapter of adapters) {
-        if (!ADAPTER_ORDER.includes(adapter.id)) {
+        if (!seen.has(adapter.id)) {
             ordered.push(adapter);
+            seen.add(adapter.id);
         }
     }
 

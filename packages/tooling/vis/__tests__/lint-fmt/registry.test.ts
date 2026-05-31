@@ -17,9 +17,9 @@ const stubAdapter = (id: AdapterId, kind: AdapterKind, extensions: string[]): To
     };
 };
 
-const presence = (id: AdapterId): ToolPresence => ({ adapter: id, declared: true, root: "/repo" });
+const presence = (id: AdapterId): ToolPresence => { return { adapter: id, declared: true, root: "/repo" }; };
 
-describe("registerAdapters", () => {
+describe(registerAdapters, () => {
     it("orders adapters by static precedence", () => {
         expect.assertions(1);
 
@@ -35,14 +35,41 @@ describe("registerAdapters", () => {
     it("appends unknown adapters at the end so future adapters are not dropped", () => {
         expect.assertions(1);
 
-        const phantom = stubAdapter("biome" as AdapterId, "both", []);
+        const phantom = stubAdapter("biome", "both", []);
         const ordered = registerAdapters([phantom, stubAdapter("eslint", "lint", ["ts"])]);
 
         expect(ordered.map((adapter) => adapter.id)).toStrictEqual(["biome", "eslint"]);
     });
+
+    it("honours a custom order from vis.config.ts", () => {
+        expect.assertions(1);
+
+        const ordered = registerAdapters(
+            [
+                stubAdapter("oxlint", "lint", ["ts"]),
+                stubAdapter("biome", "both", ["ts"]),
+                stubAdapter("eslint", "lint", ["ts"]),
+            ],
+            ["eslint", "biome"],
+        );
+
+        // user-listed entries first, then the registry default fills in the rest
+        expect(ordered.map((adapter) => adapter.id)).toStrictEqual(["eslint", "biome", "oxlint"]);
+    });
+
+    it("falls back to the static order when the custom order is empty", () => {
+        expect.assertions(1);
+
+        const ordered = registerAdapters(
+            [stubAdapter("prettier", "fmt", ["ts"]), stubAdapter("oxlint", "lint", ["ts"])],
+            [],
+        );
+
+        expect(ordered.map((adapter) => adapter.id)).toStrictEqual(["oxlint", "prettier"]);
+    });
 });
 
-describe("adaptersByKind", () => {
+describe(adaptersByKind, () => {
     it("filters by kind and matches `both`", () => {
         expect.assertions(1);
 
@@ -51,9 +78,9 @@ describe("adaptersByKind", () => {
         const biome = stubAdapter("biome", "both", ["ts"]);
 
         const detected = new Map<AdapterId, ToolPresence>([
+            ["biome", presence("biome")],
             ["eslint", presence("eslint")],
             ["prettier", presence("prettier")],
-            ["biome", presence("biome")],
         ]);
 
         const lintEligible = adaptersByKind(detected, [eslint, prettier, biome], "lint");
@@ -71,7 +98,7 @@ describe("adaptersByKind", () => {
     });
 });
 
-describe("routeFilesByExtension", () => {
+describe(routeFilesByExtension, () => {
     it("groups files by the first adapter that claims their extension", () => {
         expect.assertions(2);
 
