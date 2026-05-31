@@ -14,6 +14,8 @@ import { stylelintAdapter } from "../../lint-fmt/adapters/stylelint";
 import type { AdapterRunOptions, Finding } from "../../lint-fmt/config-types";
 import { detectAdapters } from "../../lint-fmt/detect";
 import { changedFilesSince, filterByExtensions, stagedFiles } from "../../lint-fmt/diff";
+import type { OutputSink } from "../../lint-fmt/output";
+import { resolveOutput } from "../../lint-fmt/output";
 import { adaptersByKind, registerAdapters } from "../../lint-fmt/registry";
 import { emitGitHub } from "../../lint-fmt/reporters/github";
 import { emitJUnit } from "../../lint-fmt/reporters/junit";
@@ -83,6 +85,10 @@ const execute = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Co
     const cacheRoot = resolveSharedCacheDirectory(root, undefined, undefined, true);
     const format = options.format ?? "human";
 
+    if (format === "human" && options.output !== undefined) {
+        logger.warn("vis lint: --output is ignored for the human format; pass --format json|minimal|sarif|junit|github to redirect findings to a file.");
+    }
+
     const runCycle = async (cycleFiles: string[] | undefined): Promise<void> => {
         const filterToAdapter = cycleFiles !== undefined && cycleFiles.length > 0 && positionalFiles === undefined;
         const jobs: AdapterJob[] = [];
@@ -134,54 +140,60 @@ const execute = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Co
             }),
         );
 
-        switch (format) {
-            case "github": {
-                process.stdout.write(emitGitHub({
-                    runs: runs.map((run) => {
-                        return { findings: run.findings };
-                    }),
-                    workspaceRoot: root,
-                }));
+        const sink = format === "human" ? undefined : resolveOutput({ cwd: root, target: options.output });
 
-                break;
-            }
-            case "json": {
-                process.stdout.write(`${JSON.stringify({ findings: result.findings, runs: result.runs }, null, 2)}\n`);
+        try {
+            switch (format) {
+                case "github": {
+                    sink!.write(emitGitHub({
+                        runs: runs.map((run) => {
+                            return { findings: run.findings };
+                        }),
+                        workspaceRoot: root,
+                    }));
 
-                break;
-            }
-            case "junit": {
-                process.stdout.write(emitJUnit({
-                    runs: runs.map((run) => {
-                        return { adapter: run.adapter.id, durationMs: run.durationMs, findings: run.findings };
-                    }),
-                    workspaceRoot: root,
-                }));
+                    break;
+                }
+                case "json": {
+                    sink!.write(`${JSON.stringify({ findings: result.findings, runs: result.runs }, null, 2)}\n`);
 
-                break;
-            }
-            case "minimal": {
-                printMinimal(result.findings, root);
+                    break;
+                }
+                case "junit": {
+                    sink!.write(emitJUnit({
+                        runs: runs.map((run) => {
+                            return { adapter: run.adapter.id, durationMs: run.durationMs, findings: run.findings };
+                        }),
+                        workspaceRoot: root,
+                    }));
 
-                break;
-            }
-            case "sarif": {
-                process.stdout.write(emitSarif({
-                    runs: runs.map((run) => {
-                        return {
-                            adapter: run.adapter.id,
-                            findings: run.findings,
-                            presence: jobs.find((job) => job.adapter.id === run.adapter.id)?.presence,
-                        };
-                    }),
-                    workspaceRoot: root,
-                }));
+                    break;
+                }
+                case "minimal": {
+                    printMinimal(result.findings, root, sink!);
 
-                break;
+                    break;
+                }
+                case "sarif": {
+                    sink!.write(emitSarif({
+                        runs: runs.map((run) => {
+                            return {
+                                adapter: run.adapter.id,
+                                findings: run.findings,
+                                presence: jobs.find((job) => job.adapter.id === run.adapter.id)?.presence,
+                            };
+                        }),
+                        workspaceRoot: root,
+                    }));
+
+                    break;
+                }
+                default: {
+                    printHuman(result.findings, root, logger);
+                }
             }
-            default: {
-                printHuman(result.findings, root, logger);
-            }
+        } finally {
+            sink?.close();
         }
 
         const exitCode = exitCodeFor(result);
@@ -247,13 +259,13 @@ const printHuman = (findings: ReadonlyArray<Finding>, root: string, logger: Tool
     logger.info(`${red(`${String(errorCount)} error${errorCount === 1 ? "" : "s"}`)}, ${yellow(`${String(warningCount)} warning${warningCount === 1 ? "" : "s"}`)}`);
 };
 
-const printMinimal = (findings: ReadonlyArray<Finding>, root: string): void => {
+const printMinimal = (findings: ReadonlyArray<Finding>, root: string, sink: OutputSink): void => {
     for (const finding of findings) {
         const file = relative(root, finding.file);
         const line = finding.line ?? "";
         const col = finding.column ?? "";
 
-        process.stdout.write(`${finding.adapter}\t${file}\t${String(line)}\t${String(col)}\t${finding.severity}\t${finding.ruleId ?? ""}\t${finding.message}\n`);
+        sink.write(`${finding.adapter}\t${file}\t${String(line)}\t${String(col)}\t${finding.severity}\t${finding.ruleId ?? ""}\t${finding.message}\n`);
     }
 };
 

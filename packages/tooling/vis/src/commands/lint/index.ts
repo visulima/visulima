@@ -15,6 +15,7 @@ const lint: Command = {
         ["vis lint --since main", "Only lint files changed vs the main branch"],
         ["vis lint --staged", "Only lint files currently staged in the git index"],
         ["vis lint --watch", "Re-run linters when watched files change (cache makes incremental near-free)"],
+        ["vis lint --format sarif --output lint.sarif", "Write the SARIF report to lint.sarif instead of stdout"],
     ],
     group: "Lint & Format",
     loader: () => import("./handler"),
@@ -26,6 +27,7 @@ const lint: Command = {
         { description: "Fail the run if more than N warnings are reported", name: "max-warnings", type: Number },
         { description: "Only lint files changed vs the given git ref (branch, tag, sha)", name: "since", type: String },
         { defaultValue: false, description: "Only lint files currently staged in the git index", name: "staged", type: Boolean },
+        { description: "Write formatted output to a file path instead of stdout (also accepts `-`/`stdout`/`stderr`)", name: "output", type: String },
         { defaultValue: false, description: "Re-run linters whenever watched files change", name: "watch", type: Boolean },
     ],
 };
@@ -36,6 +38,7 @@ export type LintOptions = CreateOptions<{
     fix: boolean | undefined;
     format: "github" | "human" | "json" | "junit" | "minimal" | "sarif";
     "max-warnings": number | undefined;
+    output: string | undefined;
     quiet: boolean | undefined;
     since: string | undefined;
     staged: boolean | undefined;

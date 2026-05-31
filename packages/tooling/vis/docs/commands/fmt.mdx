@@ -40,18 +40,22 @@ vis fmt --since main
 
 # Re-run formatters whenever watched files change
 vis fmt --watch
+
+# Write a SARIF report to a file instead of stdout
+vis fmt --check --format sarif --output fmt.sarif
 ```
 
 ## Options
 
-| Option     | Default | Description                                                              |
-| ---------- | ------- | ------------------------------------------------------------------------ |
-| `--check`  | `false` | Report files that would change without writing                           |
-| `--format` | `human` | Output format: `human`, `json`, `minimal`, `sarif`, `junit`, or `github` |
-| `--quiet`  | `false` | Suppress per-file logs                                                   |
-| `--since`  |         | Only format files changed vs the given git ref (branch/tag/sha)          |
-| `--staged` | `false` | Only format files currently staged in the git index                      |
-| `--watch`  | `false` | Re-run formatters whenever watched files change                          |
+| Option     | Default | Description                                                                                  |
+| ---------- | ------- | -------------------------------------------------------------------------------------------- |
+| `--check`  | `false` | Report files that would change without writing                                               |
+| `--format` | `human` | Output format: `human`, `json`, `minimal`, `sarif`, `junit`, or `github`                     |
+| `--quiet`  | `false` | Suppress per-file logs                                                                       |
+| `--since`  |         | Only format files changed vs the given git ref (branch/tag/sha)                              |
+| `--staged` | `false` | Only format files currently staged in the git index                                          |
+| `--output` |         | Write formatted output to a file path instead of stdout (also accepts `-`/`stdout`/`stderr`) |
+| `--watch`  | `false` | Re-run formatters whenever watched files change                                              |
 
 ### `--since`
 
@@ -64,6 +68,10 @@ vis fmt --watch
 ### `--watch`
 
 `vis fmt --watch` keeps the command running, runs an initial cycle, and then re-runs whenever a file matching any eligible adapter's extension set changes. Events are debounced (200 ms) and coalesced. Combine with `--check` to keep a "would change" report live while editing — the orchestrator's cache means each incremental cycle only respawns formatters whose inputs actually changed. The loop watches the workspace root recursively (Watchman when available, `node:fs.watch` otherwise) and ignores `node_modules`, `.git`, and `.vis`. Exit with Ctrl-C (SIGINT) or SIGTERM.
+
+### `--output`
+
+`vis fmt --output <path>` writes the reporter payload to a file instead of stdout. The file's parent directory is created as needed; the special values `-` and `stdout` route to `process.stdout` and `stderr` routes to `process.stderr`. The flag only applies to machine-readable formats (`json`, `minimal`, `sarif`, `junit`, `github`) — combining it with the default `human` format logs a warning and is ignored.
 
 ## Caching
 

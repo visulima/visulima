@@ -14,6 +14,7 @@ const fmt: Command = {
         ["vis fmt --since main", "Only format files changed vs the main branch"],
         ["vis fmt --staged", "Only format files currently staged in the git index"],
         ["vis fmt --watch", "Re-run formatters when watched files change (cache makes incremental --check near-free)"],
+        ["vis fmt --check --format sarif --output fmt.sarif", "Write the SARIF report to fmt.sarif instead of stdout"],
     ],
     group: "Lint & Format",
     loader: () => import("./handler"),
@@ -24,6 +25,7 @@ const fmt: Command = {
         { defaultValue: false, description: "Suppress per-file logs", name: "quiet", type: Boolean },
         { description: "Only format files changed vs the given git ref (branch, tag, sha)", name: "since", type: String },
         { defaultValue: false, description: "Only format files currently staged in the git index", name: "staged", type: Boolean },
+        { description: "Write formatted output to a file path instead of stdout (also accepts `-`/`stdout`/`stderr`)", name: "output", type: String },
         { defaultValue: false, description: "Re-run formatters whenever watched files change", name: "watch", type: Boolean },
     ],
 };
@@ -33,6 +35,7 @@ export default fmt;
 export type FmtOptions = CreateOptions<{
     check: boolean | undefined;
     format: "github" | "human" | "json" | "junit" | "minimal" | "sarif";
+    output: string | undefined;
     quiet: boolean | undefined;
     since: string | undefined;
     staged: boolean | undefined;

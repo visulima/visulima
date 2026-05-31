@@ -46,19 +46,23 @@ vis lint --staged
 
 # Re-run linters whenever watched files change (cache makes incremental near-free)
 vis lint --watch
+
+# Write a SARIF report to a file instead of stdout
+vis lint --format sarif --output lint.sarif
 ```
 
 ## Options
 
-| Option           | Default | Description                                                              |
-| ---------------- | ------- | ------------------------------------------------------------------------ |
-| `--fix`          | `false` | Apply auto-fixes in place                                                |
-| `--format`       | `human` | Output format: `human`, `json`, `minimal`, `sarif`, `junit`, or `github` |
-| `--quiet`        | `false` | Suppress warnings — report errors only                                   |
-| `--max-warnings` |         | Fail the run if more than N warnings are reported                        |
-| `--since`        |         | Only lint files changed vs the given git ref (branch/tag/sha)            |
-| `--staged`       | `false` | Only lint files currently staged in the git index                        |
-| `--watch`        | `false` | Re-run linters whenever watched files change                             |
+| Option           | Default | Description                                                                                  |
+| ---------------- | ------- | -------------------------------------------------------------------------------------------- |
+| `--fix`          | `false` | Apply auto-fixes in place                                                                    |
+| `--format`       | `human` | Output format: `human`, `json`, `minimal`, `sarif`, `junit`, or `github`                     |
+| `--quiet`        | `false` | Suppress warnings — report errors only                                                       |
+| `--max-warnings` |         | Fail the run if more than N warnings are reported                                            |
+| `--since`        |         | Only lint files changed vs the given git ref (branch/tag/sha)                                |
+| `--staged`       | `false` | Only lint files currently staged in the git index                                            |
+| `--output`       |         | Write formatted output to a file path instead of stdout (also accepts `-`/`stdout`/`stderr`) |
+| `--watch`        | `false` | Re-run linters whenever watched files change                                                 |
 
 ### `--since`
 
@@ -71,6 +75,10 @@ vis lint --watch
 ### `--watch`
 
 `vis lint --watch` keeps the command running, runs an initial cycle, and then re-runs whenever a file matching any eligible adapter's extension set changes. Events are debounced (200 ms) and coalesced — concurrent edits batch into a single follow-up run rather than queueing one per keystroke. The orchestrator's content-addressed cache means the incremental cycle only spawns the tools whose inputs actually changed. The loop watches the workspace root recursively (via Watchman when available, falling back to `node:fs.watch`) and ignores `node_modules`, `.git`, and `.vis`. Exit with Ctrl-C (SIGINT) or SIGTERM.
+
+### `--output`
+
+`vis lint --output <path>` writes the reporter payload to a file instead of stdout. The file's parent directory is created as needed; the special values `-` and `stdout` route to `process.stdout` and `stderr` routes to `process.stderr`. The flag only applies to machine-readable formats (`json`, `minimal`, `sarif`, `junit`, `github`) — combining it with the default `human` format logs a warning and is ignored.
 
 ## Caching
 
