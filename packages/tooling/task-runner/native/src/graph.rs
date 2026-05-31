@@ -78,47 +78,59 @@ pub fn find_cycle(graph: NativeTaskGraph) -> CycleResult {
 }
 
 /// Finds all cycles in the task graph.
+///
+/// Iterative DFS — a recursive implementation would blow the native
+/// thread's stack on a deep task chain (NAPI threads run with a smaller
+/// stack than the main thread on some platforms). Each work-stack
+/// frame holds `(node, next_child_index)` so we can resume scanning
+/// children after recursing into a child.
 #[napi(catch_unwind)]
 pub fn find_all_cycles(graph: NativeTaskGraph) -> Vec<Vec<String>> {
     let adjacency = build_adjacency(&graph);
     let mut cycles: Vec<Vec<String>> = Vec::new();
-    let mut visited = HashSet::new();
-    let mut in_stack = HashSet::new();
-    let mut stack: Vec<String> = Vec::new();
+    let mut visited: HashSet<String> = HashSet::new();
+    let mut in_stack: HashSet<String> = HashSet::new();
+    let mut path: Vec<String> = Vec::new();
+    let mut work: Vec<(String, usize)> = Vec::new();
 
-    fn dfs(
-        task_id: &str,
-        adjacency: &HashMap<String, Vec<String>>,
-        visited: &mut HashSet<String>,
-        in_stack: &mut HashSet<String>,
-        stack: &mut Vec<String>,
-        cycles: &mut Vec<Vec<String>>,
-    ) {
-        visited.insert(task_id.to_string());
-        in_stack.insert(task_id.to_string());
-        stack.push(task_id.to_string());
-
-        if let Some(deps) = adjacency.get(task_id) {
-            for dep in deps {
-                if in_stack.contains(dep.as_str()) {
-                    if let Some(cycle_start) = stack.iter().position(|s| s == dep) {
-                        let mut cycle: Vec<String> = stack[cycle_start..].to_vec();
-                        cycle.push(dep.clone());
-                        cycles.push(cycle);
-                    }
-                } else if !visited.contains(dep.as_str()) {
-                    dfs(dep, adjacency, visited, in_stack, stack, cycles);
-                }
-            }
-        }
-
-        stack.pop();
-        in_stack.remove(task_id);
-    }
+    let empty: Vec<String> = Vec::new();
 
     for task_id in &graph.task_ids {
-        if !visited.contains(task_id.as_str()) {
-            dfs(task_id, &adjacency, &mut visited, &mut in_stack, &mut stack, &mut cycles);
+        if visited.contains(task_id.as_str()) {
+            continue;
+        }
+
+        visited.insert(task_id.clone());
+        in_stack.insert(task_id.clone());
+        path.push(task_id.clone());
+        work.push((task_id.clone(), 0));
+
+        while let Some((node, idx)) = work.last().cloned() {
+            let deps = adjacency.get(&node).unwrap_or(&empty);
+
+            if idx >= deps.len() {
+                work.pop();
+                path.pop();
+                in_stack.remove(&node);
+                continue;
+            }
+
+            let dep = deps[idx].clone();
+            let last_idx = work.len() - 1;
+            work[last_idx].1 = idx + 1;
+
+            if in_stack.contains(dep.as_str()) {
+                if let Some(cycle_start) = path.iter().position(|s| s == &dep) {
+                    let mut cycle: Vec<String> = path[cycle_start..].to_vec();
+                    cycle.push(dep.clone());
+                    cycles.push(cycle);
+                }
+            } else if !visited.contains(dep.as_str()) {
+                visited.insert(dep.clone());
+                in_stack.insert(dep.clone());
+                path.push(dep.clone());
+                work.push((dep, 0));
+            }
         }
     }
 
@@ -175,39 +187,47 @@ pub fn topological_sort(graph: NativeTaskGraph) -> Result<Vec<String>> {
 
 /// Makes the graph acyclic by removing back edges.
 /// Returns the edges that were removed.
+///
+/// Iterative DFS for the same reason as `find_all_cycles`.
 #[napi(catch_unwind)]
 pub fn find_back_edges(graph: NativeTaskGraph) -> Vec<Vec<String>> {
     let adjacency = build_adjacency(&graph);
-    let mut visited = HashSet::new();
-    let mut in_stack = HashSet::new();
+    let mut visited: HashSet<String> = HashSet::new();
+    let mut in_stack: HashSet<String> = HashSet::new();
     let mut back_edges: Vec<Vec<String>> = Vec::new();
+    let mut work: Vec<(String, usize)> = Vec::new();
 
-    fn dfs(
-        task_id: &str,
-        adjacency: &HashMap<String, Vec<String>>,
-        visited: &mut HashSet<String>,
-        in_stack: &mut HashSet<String>,
-        back_edges: &mut Vec<Vec<String>>,
-    ) {
-        visited.insert(task_id.to_string());
-        in_stack.insert(task_id.to_string());
-
-        if let Some(deps) = adjacency.get(task_id) {
-            for dep in deps {
-                if in_stack.contains(dep.as_str()) {
-                    back_edges.push(vec![task_id.to_string(), dep.clone()]);
-                } else if !visited.contains(dep.as_str()) {
-                    dfs(dep, adjacency, visited, in_stack, back_edges);
-                }
-            }
-        }
-
-        in_stack.remove(task_id);
-    }
+    let empty: Vec<String> = Vec::new();
 
     for task_id in &graph.task_ids {
-        if !visited.contains(task_id.as_str()) {
-            dfs(task_id, &adjacency, &mut visited, &mut in_stack, &mut back_edges);
+        if visited.contains(task_id.as_str()) {
+            continue;
+        }
+
+        visited.insert(task_id.clone());
+        in_stack.insert(task_id.clone());
+        work.push((task_id.clone(), 0));
+
+        while let Some((node, idx)) = work.last().cloned() {
+            let deps = adjacency.get(&node).unwrap_or(&empty);
+
+            if idx >= deps.len() {
+                work.pop();
+                in_stack.remove(&node);
+                continue;
+            }
+
+            let dep = deps[idx].clone();
+            let last_idx = work.len() - 1;
+            work[last_idx].1 = idx + 1;
+
+            if in_stack.contains(dep.as_str()) {
+                back_edges.push(vec![node.clone(), dep.clone()]);
+            } else if !visited.contains(dep.as_str()) {
+                visited.insert(dep.clone());
+                in_stack.insert(dep.clone());
+                work.push((dep, 0));
+            }
         }
     }
 

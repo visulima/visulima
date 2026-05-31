@@ -39,6 +39,14 @@ pub fn collect_files(dir: String) -> Result<Vec<String>> {
     let files: Vec<String> = WalkDir::new(path)
         .into_iter()
         .filter_entry(|entry| {
+            // Only apply the IGNORED_DIRS name filter to directories.
+            // A regular file named `.cache`, `dist`, `coverage`, etc.
+            // is a legitimate workspace artifact whose contents must
+            // contribute to cache keys; the previous filter dropped
+            // them silently and made cache hashes ignore real changes.
+            if !entry.file_type().is_dir() {
+                return true;
+            }
             let name = entry.file_name().to_str().unwrap_or("");
             !IGNORED_DIRS.contains(&name)
         })
@@ -82,6 +90,10 @@ pub fn hash_files_in_directory(dir: String, workspace_root: String) -> Result<Ve
     let files: Vec<PathBuf> = WalkDir::new(dir_path)
         .into_iter()
         .filter_entry(|entry| {
+            // Same as collect_files: only filter on name for dirs.
+            if !entry.file_type().is_dir() {
+                return true;
+            }
             let name = entry.file_name().to_str().unwrap_or("");
             !IGNORED_DIRS.contains(&name)
         })
