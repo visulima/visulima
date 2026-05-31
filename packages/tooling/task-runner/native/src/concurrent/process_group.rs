@@ -22,6 +22,14 @@ mod unix {
 
     /// Kill an entire process group by PID.
     /// The PID is used as the PGID (since we called setsid).
+    ///
+    /// Caveat: a child that itself calls `setpgid`/`setsid` after our
+    /// `pre_exec_setsid` will have moved out of the group we recorded.
+    /// On a busy system the kernel could even re-assign that PGID to
+    /// an unrelated process group before our signal lands. Realistic
+    /// package.json scripts (shells, node, vitest, packem) don't do
+    /// this, but it's worth knowing if a future bug report names a
+    /// process being signalled that shouldn't have been.
     pub fn kill_process_group(pid: u32, signal_name: &str) -> io::Result<()> {
         let sig = parse_signal(signal_name).unwrap_or(Signal::SIGTERM);
         let pgid = Pid::from_raw(-(pid as i32));
@@ -44,7 +52,7 @@ mod unix {
 mod windows {
     use std::io;
 
-    use windows_sys::Win32::Foundation::{CloseHandle, HANDLE, INVALID_HANDLE_VALUE};
+    use windows_sys::Win32::Foundation::{CloseHandle, HANDLE};
     use windows_sys::Win32::System::Console::{GenerateConsoleCtrlEvent, CTRL_BREAK_EVENT};
     use windows_sys::Win32::System::JobObjects::{
         AssignProcessToJobObject, CreateJobObjectW, JobObjectExtendedLimitInformation, SetInformationJobObject,
@@ -109,7 +117,10 @@ mod windows {
         pub fn assign_process_by_pid(&self, pid: u32) -> io::Result<()> {
             // Minimum permissions needed for Job Object assignment + termination
             let process_handle = unsafe { OpenProcess(PROCESS_SET_QUOTA | PROCESS_TERMINATE, 0, pid) };
-            if process_handle == INVALID_HANDLE_VALUE || process_handle.is_null() {
+            // OpenProcess returns NULL on failure per MSDN, not
+            // INVALID_HANDLE_VALUE — the redundant comparison the
+            // previous code carried was harmless but misleading.
+            if process_handle.is_null() {
                 return Err(io::Error::last_os_error());
             }
 

@@ -104,14 +104,12 @@ pub fn hash_files_in_directory(dir: String, workspace_root: String) -> Result<Ve
 
     let results: Vec<FileHash> = files
         .par_iter()
-        .filter_map(|file_path| {
-            let content = fs::read(file_path).ok()?;
-            let hash = hash_bytes(&content);
-
+        .map(|file_path| {
             let abs = file_path.to_string_lossy().to_string();
             let rel = make_relative(&abs, &workspace_root);
+            let hash = read_and_hash(file_path);
 
-            Some(FileHash { path: rel, hash })
+            FileHash { path: rel, hash }
         })
         .collect();
 
@@ -124,13 +122,11 @@ pub fn hash_files_in_directory(dir: String, workspace_root: String) -> Result<Ve
 pub fn hash_files_batch(file_paths: Vec<String>, workspace_root: String) -> Result<Vec<FileHash>> {
     let results: Vec<FileHash> = file_paths
         .par_iter()
-        .filter_map(|file_path| {
-            let content = fs::read(file_path).ok()?;
-            let hash = hash_bytes(&content);
-
+        .map(|file_path| {
             let rel = make_relative(file_path, &workspace_root);
+            let hash = read_and_hash(Path::new(file_path));
 
-            Some(FileHash { path: rel, hash })
+            FileHash { path: rel, hash }
         })
         .collect();
 
@@ -156,6 +152,26 @@ fn make_relative(path: &str, workspace_root: &str) -> String {
 fn hash_bytes(data: &[u8]) -> String {
     let h = xxh3_128(data);
     hex::encode(h.to_be_bytes())
+}
+
+/// Read a file and hash its contents, returning a deterministic
+/// sentinel hash if the read fails. Previously the read error was
+/// swallowed via `.ok()?` in a `filter_map`, silently dropping the
+/// file from the hash batch — which made cache keys non-deterministic
+/// in the face of transient races (parallel write, broken symlink,
+/// permission denied). The sentinel is keyed off the absolute path so
+/// two unreadable files still produce distinct hashes; the constant
+/// prefix lets a careful reader distinguish "could not read" from a
+/// successful xxh3-128 hash, which is always 32 hex chars.
+fn read_and_hash(file_path: &Path) -> String {
+    match fs::read(file_path) {
+        Ok(content) => hash_bytes(&content),
+        Err(_) => {
+            let path_bytes = file_path.to_string_lossy();
+            let h = xxh3_128(path_bytes.as_bytes());
+            format!("ERR:{}", hex::encode(h.to_be_bytes()))
+        }
+    }
 }
 
 /// Computes an xxh3-128 hash from a string.
