@@ -694,7 +694,12 @@ class TaskOrchestrator {
 
             const skipCacheOnWarning = hadWarnings && task.cacheOnWarning === false;
 
-            if (code === 0 && task.cache !== false && task.hash && !skipCacheOnWarning) {
+            // Never cache the result of a task that completed after an
+            // abort. The user interrupted the run; the task may have
+            // exited 0 but its output is treated as incomplete-by-policy
+            // so the next run starts fresh. Matches vite-task's
+            // documented cancellation contract.
+            if (code === 0 && task.cache !== false && task.hash && !skipCacheOnWarning && !this.#aborted) {
                 const modified = await this.#detectSelfModifiedInputs(task);
 
                 if (modified.length > 0) {
@@ -840,7 +845,8 @@ class TaskOrchestrator {
 
             const skipCacheOnWarning = hadWarnings && task.cacheOnWarning === false;
 
-            if (code === 0 && task.cache !== false && fingerprint && !skipCacheOnWarning) {
+            // Same abort-gate as the declared path — see `#executeTask`.
+            if (code === 0 && task.cache !== false && fingerprint && !skipCacheOnWarning && !this.#aborted) {
                 const modified = this.#detectSelfModifiedFingerprint(fingerprint);
                 const emptyFingerprintReason = this.#describeEmptyFingerprint(fingerprint, usedRealTracker, trackerAccessCount);
 
