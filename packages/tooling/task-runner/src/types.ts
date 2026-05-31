@@ -89,6 +89,14 @@ export interface Task {
      * {@link TaskRunnerOptions.concurrencyGroups}.
      */
     concurrencyGroup?: string;
+
+    /**
+     * Per-task slot weight against the global `parallel` cap. Defaults
+     * to `1` (one slot). Carried over from
+     * {@link TargetConfiguration.concurrencyWeight}; values `&lt;= 0` or
+     * non-finite are ignored.
+     */
+    concurrencyWeight?: number;
     /** Hash of the task inputs for caching */
     hash?: string;
     /** Detailed hash information */
@@ -133,6 +141,16 @@ export interface Task {
     priority?: TaskPriority;
     /** The project root directory */
     projectRoot?: string;
+
+    /**
+     * Per-task PTY override. When `true`, this task spawns inside a
+     * pseudo-terminal even if the workspace-level toggle is off (or
+     * vice versa when `false`). Carried over from
+     * {@link TargetConfiguration.pty}. Consumed by the runner that
+     * actually spawns the command — the task-runner library exposes
+     * the flag and leaves the spawn decision to the executor.
+     */
+    pty?: boolean;
     /** The target this task executes */
     target: TaskTarget;
 
@@ -349,6 +367,21 @@ export interface TargetConfiguration {
      */
     concurrencyGroup?: string;
 
+    /**
+     * Per-task slot weight against the global `parallel` cap. Defaults
+     * to `1`. A task with `concurrencyWeight: 2` consumes two slots; with
+     * `parallel: 4` only two such tasks can run concurrently (or one
+     * weight-2 plus two weight-1). Use for CPU-pinning tasks — bundlers,
+     * `tsc`, native compiles — where the runner shouldn't keep
+     * over-subscribing the box just because slots are nominally free.
+     *
+     * The scheduler always lets a single task run even if its weight
+     * exceeds the remaining budget; otherwise a heavy task on a
+     * `parallel: 1` pool would deadlock. Values `&lt;= 0`, non-finite, or
+     * non-integer are ignored (treated as `1`).
+     */
+    concurrencyWeight?: number;
+
     /** Named configurations (e.g., "production", "development") */
     configurations?: Record<string, Record<string, unknown>>;
     /** Other targets this target depends on */
@@ -421,6 +454,20 @@ export interface TargetConfiguration {
     outputs?: OutputSpec[];
     /** Whether this target supports parallel execution */
     parallelism?: boolean;
+
+    /**
+     * Per-target PTY override. When `true`, every task spawned from
+     * this target runs inside a pseudo-terminal (so `isatty()` returns
+     * true and the child preserves color / progress UI). When `false`,
+     * the workspace-level PTY toggle is suppressed for this target.
+     * Useful when most targets are happy with piped stdio but one
+     * tool (vitest, prettier, a colorising linter) needs a real TTY,
+     * or vice versa.
+     *
+     * Absent means "follow the workspace default" — the executor
+     * decides based on its own toggles.
+     */
+    pty?: boolean;
 
     /**
      * Regex source string(s) that mark a successful task as having
