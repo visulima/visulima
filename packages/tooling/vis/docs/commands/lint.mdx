@@ -47,14 +47,14 @@ vis lint --staged
 
 ## Options
 
-| Option           | Default | Description                                                    |
-| ---------------- | ------- | -------------------------------------------------------------- |
-| `--fix`          | `false` | Apply auto-fixes in place                                      |
-| `--format`       | `human` | Output format: `human`, `json`, `minimal`, `sarif`, or `junit` |
-| `--quiet`        | `false` | Suppress warnings — report errors only                         |
-| `--max-warnings` |         | Fail the run if more than N warnings are reported              |
-| `--since`        |         | Only lint files changed vs the given git ref (branch/tag/sha)  |
-| `--staged`       | `false` | Only lint files currently staged in the git index              |
+| Option           | Default | Description                                                              |
+| ---------------- | ------- | ------------------------------------------------------------------------ |
+| `--fix`          | `false` | Apply auto-fixes in place                                                |
+| `--format`       | `human` | Output format: `human`, `json`, `minimal`, `sarif`, `junit`, or `github` |
+| `--quiet`        | `false` | Suppress warnings — report errors only                                   |
+| `--max-warnings` |         | Fail the run if more than N warnings are reported                        |
+| `--since`        |         | Only lint files changed vs the given git ref (branch/tag/sha)            |
+| `--staged`       | `false` | Only lint files currently staged in the git index                        |
 
 ### `--since`
 
@@ -152,6 +152,10 @@ eslint	src/a.ts	10	5	error	no-bad	'foo' is not defined
 ### JUnit
 
 `--format junit` emits a Surefire-flavoured JUnit XML report — one `<testsuite>` per adapter and one `<testcase>` per finding. Errors land as `<failure type="error">`, warnings as `<failure type="warning">`. GitLab CI, GitHub Actions test reporters, Jenkins and Bitbucket all parse this dialect without an extra plugin.
+
+### GitHub Actions
+
+`--format github` emits [workflow commands](https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions) — one `::error|warning|notice file=…,line=…,col=…,title=…::message` line per finding — so the Actions runner annotates the corresponding lines inline in the pull request. File paths are emitted relative to the workspace root so GitHub resolves them against the checked-out tree. Multi-line messages and reserved characters in property values are percent-encoded per spec.
 
 ## Exit codes
 

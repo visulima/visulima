@@ -41,13 +41,13 @@ vis fmt --since main
 
 ## Options
 
-| Option     | Default | Description                                                     |
-| ---------- | ------- | --------------------------------------------------------------- |
-| `--check`  | `false` | Report files that would change without writing                  |
-| `--format` | `human` | Output format: `human`, `json`, `minimal`, `sarif`, or `junit`  |
-| `--quiet`  | `false` | Suppress per-file logs                                          |
-| `--since`  |         | Only format files changed vs the given git ref (branch/tag/sha) |
-| `--staged` | `false` | Only format files currently staged in the git index             |
+| Option     | Default | Description                                                              |
+| ---------- | ------- | ------------------------------------------------------------------------ |
+| `--check`  | `false` | Report files that would change without writing                           |
+| `--format` | `human` | Output format: `human`, `json`, `minimal`, `sarif`, `junit`, or `github` |
+| `--quiet`  | `false` | Suppress per-file logs                                                   |
+| `--since`  |         | Only format files changed vs the given git ref (branch/tag/sha)          |
+| `--staged` | `false` | Only format files currently staged in the git index                      |
 
 ### `--since`
 
@@ -137,6 +137,10 @@ prettier	src/a.ts
 ### JUnit
 
 `vis fmt --check --format junit` emits a Surefire-flavoured JUnit XML report — one `<testsuite>` per formatter and one `<testcase>` per file that would change. Suitable for CI dashboards that already render JUnit artefacts.
+
+### GitHub Actions
+
+`vis fmt --check --format github` emits [workflow commands](https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions) — `::notice file=…::message` lines (formatter findings are `info`-severity, so they annotate as notices rather than errors). File paths are emitted relative to the workspace root so GitHub anchors annotations correctly against the checked-out tree.
 
 ## Exit codes
 

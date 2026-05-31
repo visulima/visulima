@@ -12,6 +12,7 @@ import type { AdapterRunOptions, Finding } from "../../lint-fmt/config-types";
 import { detectAdapters } from "../../lint-fmt/detect";
 import { changedFilesSince, stagedFiles } from "../../lint-fmt/diff";
 import { adaptersByKind, registerAdapters, routeFilesByExtension } from "../../lint-fmt/registry";
+import { emitGitHub } from "../../lint-fmt/reporters/github";
 import { emitJUnit } from "../../lint-fmt/reporters/junit";
 import { emitSarif } from "../../lint-fmt/reporters/sarif";
 import { aggregate, exitCodeFor, groupFindingsByFile } from "../../lint-fmt/results";
@@ -132,6 +133,16 @@ const execute = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Co
     const format = options.format ?? "human";
 
     switch (format) {
+        case "github": {
+            process.stdout.write(emitGitHub({
+                runs: runs.map((run) => {
+                    return { findings: run.findings };
+                }),
+                workspaceRoot: root,
+            }));
+
+            break;
+        }
         case "json": {
             process.stdout.write(`${JSON.stringify({ findings: result.findings, mode, runs: result.runs }, null, 2)}\n`);
 
