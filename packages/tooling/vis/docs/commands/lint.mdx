@@ -7,7 +7,7 @@ description: "Orchestrate detected source-code linters (eslint, …) across the 
 
 Runs every detected source-code linter against the workspace, normalizes their output into a shared `Finding` shape, and prints them in human, JSON, or minimal format. Designed to add new linters over time without changing the command surface.
 
-Ships with adapters for **oxlint**, **biome**, **ESLint**, **stylelint** (CSS), **ruff** (Python), **markdownlint-cli2** (Markdown), and **deno lint**. The orchestrator runs each one that's present in the workspace.
+Ships with adapters for **oxlint**, **biome**, **ESLint**, **stylelint** (CSS), **ruff** (Python), **markdownlint-cli2** (Markdown), **shellcheck** (shell scripts), and **deno lint**. The orchestrator runs each one that's present in the workspace.
 
 ## Usage
 
@@ -96,9 +96,10 @@ The orchestrator probes each adapter against the workspace root and runs the one
 | stylelint    | `stylelint.config.{ts,js,mjs,cjs}`, `.stylelintrc`, `.stylelintrc.{json,js,cjs,yml,yaml}`                             | `stylelint`                             |
 | ruff-check   | `ruff.toml`, `.ruff.toml`, `pyproject.toml` with `[tool.ruff]`                                                        | `ruff`, `@astral-sh/ruff`               |
 | markdownlint | `.markdownlint.{json,jsonc,yaml,yml}`, `.markdownlintrc[.{json,yaml,yml}]`, `.markdownlint-cli2.{jsonc,yaml,cjs,mjs}` | `markdownlint-cli2`, `markdownlint-cli` |
+| shellcheck   | `.shellcheckrc` (system binary — not an npm package)                                                                  | `shellcheck`                            |
 | deno-lint    | `deno.json`, `deno.jsonc` (no npm package — `deno` is a runtime)                                                      | —                                       |
 
-When multiple lint adapters are detected, they run in this default precedence: `oxlint → biome → eslint → stylelint → ruff-check → markdownlint → deno-lint`. The Rust-native oxlint pass runs first as a fast pre-filter, biome handles its bespoke rule set, ESLint catches what the others don't, stylelint covers CSS/SCSS, and deno-lint runs last since deno coexists with the npm-native pipeline rather than replacing it. Override with `lint.order` in `vis.config.ts`.
+When multiple lint adapters are detected, they run in this default precedence: `oxlint → biome → eslint → stylelint → ruff-check → markdownlint → shellcheck → deno-lint`. The Rust-native oxlint pass runs first as a fast pre-filter, biome handles its bespoke rule set, ESLint catches what the others don't, stylelint covers CSS/SCSS, and deno-lint runs last since deno coexists with the npm-native pipeline rather than replacing it. Override with `lint.order` in `vis.config.ts`.
 
 ## Configuration
 

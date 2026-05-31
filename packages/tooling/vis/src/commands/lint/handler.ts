@@ -9,6 +9,7 @@ import { eslintAdapter } from "../../lint-fmt/adapters/eslint";
 import { markdownlintAdapter } from "../../lint-fmt/adapters/markdownlint";
 import { oxlintAdapter } from "../../lint-fmt/adapters/oxlint";
 import { ruffCheckAdapter } from "../../lint-fmt/adapters/ruff";
+import { shellcheckAdapter } from "../../lint-fmt/adapters/shellcheck";
 import { stylelintAdapter } from "../../lint-fmt/adapters/stylelint";
 import type { AdapterRunOptions, Finding } from "../../lint-fmt/config-types";
 import { detectAdapters } from "../../lint-fmt/detect";
@@ -23,7 +24,7 @@ import { runAdaptersParallel } from "../../lint-fmt/runner";
 import { runWatchLoop } from "../../lint-fmt/watch-loop";
 import type { LintOptions } from "./index";
 
-const SOURCE_ADAPTERS = [oxlintAdapter, biomeAdapter, eslintAdapter, stylelintAdapter, ruffCheckAdapter, markdownlintAdapter, denoLintAdapter];
+const SOURCE_ADAPTERS = [oxlintAdapter, biomeAdapter, eslintAdapter, stylelintAdapter, ruffCheckAdapter, markdownlintAdapter, shellcheckAdapter, denoLintAdapter];
 
 const execute = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Console, LintOptions>): Promise<void> => {
     const root = workspaceRoot ?? process.cwd();
