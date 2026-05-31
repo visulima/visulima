@@ -702,11 +702,11 @@ describe(registerLint, () => {
 
         registerLint({ server }, ctx());
 
-        const result = parseOk(await calls[0]!.handler({ since: "main" })) as { runs: { flags?: string[] }[] };
         const response = await calls[0]!.handler({ since: "main" });
-        const flags = (JSON.parse(response.content[0]!.text) as { flags?: string[] }).flags ?? [];
+        const payload = JSON.parse(response.content[0]!.text) as { findings?: unknown; flags?: string[] };
+        const flags = payload.flags ?? [];
 
-        expect(result.findings).toBeDefined();
+        expect(payload.findings).toBeDefined();
         expect(flags).toContain("--since");
     });
 

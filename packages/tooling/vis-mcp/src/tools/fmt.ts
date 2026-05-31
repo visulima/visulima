@@ -35,8 +35,6 @@ const fmtJsonSchema = z
     })
     .catchall(z.unknown());
 
-type FmtJson = z.infer<typeof fmtJsonSchema>;
-
 export const registerFmt = ({ server }: ToolDeps, context: ToolContext): void => {
     server.registerTool(
         "fmt",
@@ -92,7 +90,14 @@ export const registerFmt = ({ server }: ToolDeps, context: ToolContext): void =>
                     return errorResponse(new Error(`vis fmt exited with code ${String(result.exitCode)} and no JSON output${tail ? `\n${tail}` : ""}`));
                 }
 
-                const raw = JSON.parse(result.stdout) as FmtJson;
+                let raw: unknown;
+
+                try {
+                    raw = JSON.parse(result.stdout);
+                } catch (error) {
+                    return errorResponse(new Error(`vis ${args.join(" ")} did not emit valid JSON: ${error instanceof Error ? error.message : String(error)}`, { cause: error }));
+                }
+
                 const payload = fmtJsonSchema.parse(raw);
 
                 return okResponse({ ...payload, exitCode: result.exitCode, mode: payload.mode ?? "check" });
