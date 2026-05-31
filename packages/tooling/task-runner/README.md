@@ -34,6 +34,7 @@
 - **npm script-shell support**: Honors `npm config set script-shell` for custom shells (Git Bash, etc.)
 - **Long-running process support**: Configurable stdin mode (null/pipe/inherit), bounded output buffers
 - **Two caching modes**: Nx-style explicit inputs or Vite Task-style auto-fingerprinting
+- **3-tier auto-fingerprint dispatch on Linux**: kernel-level `seccomp_unotify` (catches Alpine/musl/static-binary children), `strace` fallback, then no-op. The seccomp path uses a tiny `fspy-seccomp-helper` binary bundled with the platform binding package — sidesteps the fork-from-multithreaded hazard of installing seccomp in `pre_exec` from Node's NAPI host. See `rfc/design-fspy-seccomp-unotify.md`.
 - **Smart lockfile hashing**: Only hashes resolved versions relevant to each package (like Turborepo)
 - **Framework env inference**: Auto-detects Next.js, Vite, CRA, Gatsby, Nuxt, and more
 - **Remote caching**: Turborepo-compatible HTTP cache protocol, plus a Bazel REAPI gRPC backend (bazel-remote, BuildBuddy, BuildBarn, EngFlow)

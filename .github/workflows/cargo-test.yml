@@ -187,6 +187,18 @@ jobs:
               working-directory: "${{ matrix.package.dir }}"
               run: "cargo test --verbose"
 
+            # fspy_seccomp is a path-dep of task-runner-native (not a
+            # workspace member), so `cargo test` above doesn't reach
+            # it. Run its tests + perf bench separately on Linux only.
+            # The bench is `#[ignore]` so it requires --ignored.
+            - name: "Run fspy_seccomp integration tests + perf bench"
+              if: "matrix.package.name == 'task-runner' && runner.os == 'Linux'"
+              shell: "bash"
+              working-directory: "${{ matrix.package.dir }}/fspy_seccomp"
+              run: |
+                  cargo test --release --verbose
+                  cargo test --test perf --release -- --ignored --nocapture
+
             - name: "Run cargo clippy"
               working-directory: "${{ matrix.package.dir }}"
               run: "cargo clippy -- -D warnings"

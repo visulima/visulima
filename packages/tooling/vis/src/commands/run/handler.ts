@@ -43,6 +43,7 @@ import { runToolchainPreflight } from "../../runtime/toolchain";
 import { runReadiness } from "../../services/readiness";
 import { deleteEntry, readAllEntries } from "../../services/registry";
 import type { ServiceEntry } from "../../services/types";
+import { decidePty } from "../../task/pty-decision";
 import { filterProjectsByQuery, resolveSelector } from "../../task/selectors";
 import { resolveSkipCachePatterns } from "../../task/skip-cache";
 import { checkStrictEnv, formatStrictEnvError } from "../../task/strict-env";
@@ -145,13 +146,13 @@ const runPersistentTasks = async (
             // TargetConfiguration.pty) wins over both workspace toggles —
             // a single target can force PTY (e.g. vitest, prettier with
             // colors) or suppress it (`pty: false`) regardless of the
-            // ambient TUI state.
-            const usePty
-                = task.pty === true
-                    ? true
-                    : task.pty === false
-                        ? false
-                        : Boolean(lifecycleHooks) && visOptions?.pty !== false;
+            // ambient TUI state. See `task/pty-decision.ts` for the
+            // shared resolution logic.
+            const usePty = decidePty({
+                interactive: Boolean(lifecycleHooks),
+                taskPty: task.pty,
+                workspacePty: visOptions?.pty,
+            });
 
             return {
                 command,
@@ -886,7 +887,11 @@ const createConcurrentExecutor = (deps: ExecutorDependencies) => {
         //
         // Per-target `task.pty` (from TargetConfiguration.pty) overrides
         // both workspace-level signals so individual targets can opt in
-        // or out independent of the ambient setup.
+        // or out independent of the ambient setup. Subtly different from
+        // the pre-spawn builder: here a TUI stdin registry forces PTY
+        // even when `visOptions.pty === false` (the user needs to pass
+        // input through), so we don't gate `ptyInteractive` on the
+        // workspace toggle.
         const ptyOptIn = visOptions?.pty === true;
         const ptyInteractive = Boolean(stdinRegistry);
         const isPty

@@ -476,6 +476,52 @@ describe(TaskOrchestrator, () => {
 
             expect(listenerCountAfter).toBe(listenerCountBefore);
         });
+
+        it("does not cache a task whose run was aborted", async () => {
+            // Mirrors vite-task's documented cancellation contract:
+            // tasks that complete cleanly *after* SIGINT must not be
+            // seeded into the cache. We assert it by checking that a
+            // second run after the aborted one re-executes (cache
+            // miss), rather than being served from cache.
+            expect.assertions(2);
+
+            const task: Task = {
+                id: "app:build",
+                outputs: [],
+                overrides: {},
+                projectRoot: "packages/app",
+                target: { project: "app", target: "build" },
+            };
+
+            let executionCount = 0;
+            const executor: TaskExecutor = async () => {
+                executionCount += 1;
+
+                // Trigger SIGINT mid-execution. The task still
+                // returns success — the abort gate must refuse to
+                // cache it anyway.
+                process.emit("SIGINT", "SIGINT");
+
+                return { code: 0, terminalOutput: "Build successful" };
+            };
+
+            const orch1 = createOrchestrator([task], executor);
+
+            await orch1.run();
+
+            expect(executionCount).toBe(1);
+
+            // Fresh orchestrator (signal listeners cleaned), same
+            // task definition → would be a cache hit if the abort
+            // gate had let the previous result through.
+            const orch2 = createOrchestrator([task], executor);
+
+            await orch2.run();
+
+            // Re-executed because cache was empty (abort gate
+            // prevented the seed). Count = 2 means no cache hit.
+            expect(executionCount).toBe(2);
+        });
     });
 
     describe("lifecycle hooks", () => {
