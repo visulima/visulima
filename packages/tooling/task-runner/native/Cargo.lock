@@ -83,6 +83,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "fspy-seccomp"
+version = "0.0.0"
+dependencies = [
+ "libc",
+ "libseccomp-sys",
+ "nix",
+]
+
+[[package]]
 name = "futures"
 version = "0.3.32"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -185,6 +194,12 @@ dependencies = [
  "cfg-if",
  "windows-link",
 ]
+
+[[package]]
+name = "libseccomp-sys"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9a7cbbd4ad467251987c6e5b47d53b11a5a05add08f2447a9e2d70aef1e0d138"
 
 [[package]]
 name = "memchr"
@@ -375,6 +390,7 @@ dependencies = [
 name = "task-runner-native"
 version = "0.1.0"
 dependencies = [
+ "fspy-seccomp",
  "napi",
  "napi-build",
  "napi-derive",

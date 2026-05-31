@@ -9,6 +9,17 @@ description = "WIP — Linux seccomp_unotify file-access tracker. See ../../rfc/
 [lib]
 crate-type = ["cdylib", "rlib"]
 
+# Per-spawn helper. The parent NAPI binding posix_spawns this binary
+# (multi-thread-safe; sidesteps the fork-from-multithreaded problem
+# of installing seccomp in pre_exec from Node's tokio runtime). The
+# helper installs the filter on itself in a clean single-threaded
+# process, sends notify_fd back via SCM_RIGHTS, then execves the
+# target command.
+[[bin]]
+name = "fspy-seccomp-helper"
+path = "src/bin/helper.rs"
+required-features = []
+
 [target.'cfg(target_os = "linux")'.dependencies]
 libseccomp-sys = "0.2"
 libc = "0.2"

@@ -123,16 +123,35 @@ Order matters: prefer `seccomp` over `strace` once available — it's faster (no
 
 ## Plan
 
-| Step                                                                            | Effort | Validation                                                                                |
-| ------------------------------------------------------------------------------- | ------ | ----------------------------------------------------------------------------------------- |
-| Scaffold `fspy_seccomp` crate; filter installer + minimal `openat` interception | 1d     | Single test: track `openat("/tmp/x", O_RDONLY)` from a forked child                       |
-| Path resolution via `process_vm_readv` + `/proc/<pid>/cwd`                      | 1d     | Round-trip relative + absolute paths                                                      |
-| Full syscall table + flag→type mapping                                          | 1d     | Parity with `STRACE_PATTERNS`                                                             |
-| NAPI surface + TS integration                                                   | 1d     | Existing unit tests pass with `VIS_FORCE_SECCOMP=1`                                       |
-| musl + Alpine test (CI matrix addition)                                         | 1d     | New CI job: `node:alpine` container, tracks accesses from a statically-linked test binary |
-| Performance benchmark vs strace                                                 | 0.5d   | Document the speedup in the crate README                                                  |
+| Step                                                                            | Effort | Status                                                                                                                                                                                           |
+| ------------------------------------------------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Scaffold `fspy_seccomp` crate; filter installer + minimal `openat` interception | 1d     | ✅ Done                                                                                                                                                                                          |
+| Path resolution via `process_vm_readv` + `/proc/<pid>/cwd`                      | 1d     | ✅ Done                                                                                                                                                                                          |
+| Full syscall table + flag→type mapping                                          | 1d     | ✅ Done (openat/openat2/open, stat/lstat/fstatat/newfstatat/statx, access/faccessat[2], getdents64, readlink[at], unlink[at], rename/renameat/renameat2, mkdir[at]/rmdir, symlink[at], link[at]) |
+| NAPI surface + TS integration                                                   | 1d     | ✅ Done — dispatch in `src/file-access-tracker.ts` prefers seccomp over strace                                                                                                                   |
+| CI packaging of helper bin per platform                                         | 0.5d   | 🔜 Follow-up — needs `build-native.yml` matrix update + binding-package `files` updates                                                                                                          |
+| musl + Alpine test (CI matrix addition)                                         | 1d     | 🔜 Follow-up — new CI job: `node:alpine` container with a statically-linked test binary                                                                                                          |
+| Performance benchmark vs strace                                                 | 0.5d   | 🔜 Follow-up — document the speedup in the crate README                                                                                                                                          |
 
-**Total**: ~3–5 days of focused work on a Linux box. Most of it is reusable supervisor/path code that's well-understood from strace patterns.
+**Implementation note (helper-binary pattern):** the first attempt
+installed the seccomp filter directly in a `Command::pre_exec`
+hook (the same way the strace path wraps spawns). It works
+end-to-end from `cargo test` but breaks under Node's NAPI host —
+forking from a multi-threaded runtime (V8 + libuv + tokio
+workers) inherits allocator + libseccomp locks held by sibling
+threads, and the child's `libseccomp` calls inside `pre_exec`
+hit undefined behaviour (observed: cat exit 1, EBADF on fd 1).
+
+Resolved by adopting the **helper-binary pattern** vite-task's
+`fspy_seccomp_unotify` also uses: a tiny `fspy-seccomp-helper`
+binary (`src/bin/helper.rs`) is `posix_spawn`-ed by the parent
+(multi-thread-safe — uses vfork+exec internally). The helper
+runs in a fresh single-threaded process where it's safe to call
+`libseccomp`, installs the filter, sends the notify fd back to
+the parent over a Unix socket via `SCM_RIGHTS`, then `execve`s
+the target. From that point on the parent supervisor (in a
+background thread) receives notifications and decodes them via
+the syscall dispatch in `src/syscalls.rs`.
 
 ## Non-goals
 
