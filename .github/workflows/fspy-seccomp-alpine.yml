@@ -1,0 +1,80 @@
+# Verifies that `fspy_seccomp` actually closes the Alpine/musl gap
+# the RFC promises. Runs the crate's integration tests inside a
+# `node:alpine` container — proves the seccomp dispatch works on
+# musl, that `process_vm_readv` works with Alpine's `CAP_SYS_PTRACE`
+# default, and that the libseccomp version present in Alpine's
+# repos is recent enough for `SCMP_ACT_NOTIFY`.
+#
+# See `packages/tooling/task-runner/rfc/design-fspy-seccomp-unotify.md`.
+
+name: "fspy-seccomp Alpine validation"
+
+on:
+    workflow_dispatch:
+    pull_request:
+        types: ["opened", "synchronize"]
+        paths:
+            - "packages/tooling/task-runner/native/fspy_seccomp/**"
+            - ".github/workflows/fspy-seccomp-alpine.yml"
+    push:
+        branches:
+            - "main"
+            - "alpha"
+        paths:
+            - "packages/tooling/task-runner/native/fspy_seccomp/**"
+            - ".github/workflows/fspy-seccomp-alpine.yml"
+
+concurrency:
+    group: "${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}"
+    cancel-in-progress: true
+
+permissions:
+    contents: "read"
+
+jobs:
+    alpine-cargo-test:
+        name: "cargo test fspy_seccomp on node:alpine"
+        runs-on: "ubuntu-24.04"
+        timeout-minutes: 20
+        container:
+            image: "node:24-alpine"
+            # --privileged is over-broad for tests but the minimal
+            # cap our process_vm_readv needs is CAP_SYS_PTRACE,
+            # which by default isn't granted to containers.
+            options: "--privileged"
+
+        steps:
+            - name: "Git checkout"
+              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+              with:
+                  persist-credentials: false
+
+            - name: "Install Alpine build deps"
+              shell: "sh"
+              run: |
+                  apk add --no-cache \
+                      build-base \
+                      curl \
+                      libseccomp-dev \
+                      bash \
+                      coreutils
+
+            - name: "Install Rust toolchain"
+              shell: "sh"
+              run: |
+                  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable --profile minimal
+                  echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+
+            # cargo test runs the crate's full suite — openat/stat/
+            # unlink/getdents coverage plus the deep-fork-tree test.
+            # All five should pass on musl just like they do on glibc;
+            # that's the whole point of this job.
+            - name: "Run fspy_seccomp integration tests on musl"
+              shell: "sh"
+              working-directory: "packages/tooling/task-runner/native/fspy_seccomp"
+              run: "cargo test --release"
+
+            - name: "Run perf bench on musl"
+              shell: "sh"
+              working-directory: "packages/tooling/task-runner/native/fspy_seccomp"
+              run: "cargo test --test perf --release -- --ignored --nocapture"

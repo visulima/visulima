@@ -1,36 +1,37 @@
 {
-    "name": "@visulima/task-runner-binding-linux-x64-gnu",
-    "version": "1.0.0-alpha.3",
-    "description": "Native binding for @visulima/task-runner (Linux x64 glibc)",
-    "homepage": "https://visulima.com",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/visulima/visulima.git",
-        "directory": "packages/tooling/task-runner"
-    },
-    "license": "MIT",
-    "author": {
-        "name": "Daniel Bannert",
-        "email": "d.bannert@anolilab.de"
-    },
-    "main": "task-runner-native.linux-x64-gnu.node",
-    "files": [
-        "task-runner-native.linux-x64-gnu.node"
-    ],
-    "engines": {
-        "node": "^22.14.0 || >=24.10.0"
-    },
-    "os": [
-        "linux"
-    ],
-    "cpu": [
-        "x64"
-    ],
-    "publishConfig": {
-        "access": "public",
-        "provenance": true
-    },
-    "libc": [
-        "glibc"
-    ]
+  "name": "@visulima/task-runner-binding-linux-x64-gnu",
+  "version": "1.0.0-alpha.3",
+  "description": "Native binding for @visulima/task-runner (Linux x64 glibc)",
+  "homepage": "https://visulima.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/visulima/visulima.git",
+    "directory": "packages/tooling/task-runner"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Daniel Bannert",
+    "email": "d.bannert@anolilab.de"
+  },
+  "main": "task-runner-native.linux-x64-gnu.node",
+  "files": [
+    "task-runner-native.linux-x64-gnu.node",
+    "fspy-seccomp-helper"
+  ],
+  "engines": {
+    "node": "^22.14.0 || >=24.10.0"
+  },
+  "os": [
+    "linux"
+  ],
+  "cpu": [
+    "x64"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "libc": [
+    "glibc"
+  ]
 }

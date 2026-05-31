@@ -65,20 +65,34 @@ const resolveSeccompHelperPath = (): string | undefined => {
 
     const candidates: string[] = [];
 
-    // Production: the addon lives in node_modules/<binding-pkg>/
-    // and ships the helper next to its .node file.
     try {
         const here = dirname(fileURLToPath(import.meta.url));
         const cjsRequire = createRequire(import.meta.url);
-        const indexJsPath = cjsRequire.resolve("../index.js");
-        const indexDir = dirname(indexJsPath);
 
+        // Production: the helper ships inside the platform binding
+        // package alongside the .node addon. Try every Linux
+        // binding package; whichever one is installed for this
+        // host's arch/libc will resolve cleanly. The others throw
+        // ERR_MODULE_NOT_FOUND and we skip them.
+        const bindingPackages = [
+            "@visulima/task-runner-binding-linux-x64-gnu",
+            "@visulima/task-runner-binding-linux-x64-musl",
+            "@visulima/task-runner-binding-linux-arm64-gnu",
+            "@visulima/task-runner-binding-linux-arm64-musl",
+        ];
+
+        for (const pkg of bindingPackages) {
+            try {
+                const pkgJsonPath = cjsRequire.resolve(`${pkg}/package.json`);
+
+                candidates.push(join(dirname(pkgJsonPath), "fspy-seccomp-helper"));
+            } catch {
+                // Binding not installed for this host — try the next.
+            }
+        }
+
+        // Source tree fallback (`pnpm build:native:debug` output).
         candidates.push(
-            // Production: same dir as the .node addon.
-            join(indexDir, "fspy-seccomp-helper"),
-            // Or a `bin/` subdir if the binding package nests it.
-            join(indexDir, "bin", "fspy-seccomp-helper"),
-            // Source tree (`pnpm build:native:debug` output).
             join(here, "..", "native", "fspy_seccomp", "target", "debug", "fspy-seccomp-helper"),
             join(here, "..", "native", "fspy_seccomp", "target", "release", "fspy-seccomp-helper"),
         );
