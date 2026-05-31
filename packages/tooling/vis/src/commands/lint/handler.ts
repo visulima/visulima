@@ -6,6 +6,7 @@ import { resolveSharedCacheDirectory } from "../../cache/cache-directory";
 import { biomeAdapter } from "../../lint-fmt/adapters/biome";
 import { denoLintAdapter } from "../../lint-fmt/adapters/deno";
 import { eslintAdapter } from "../../lint-fmt/adapters/eslint";
+import { markdownlintAdapter } from "../../lint-fmt/adapters/markdownlint";
 import { oxlintAdapter } from "../../lint-fmt/adapters/oxlint";
 import { ruffCheckAdapter } from "../../lint-fmt/adapters/ruff";
 import { stylelintAdapter } from "../../lint-fmt/adapters/stylelint";
@@ -22,7 +23,7 @@ import { runAdaptersParallel } from "../../lint-fmt/runner";
 import { runWatchLoop } from "../../lint-fmt/watch-loop";
 import type { LintOptions } from "./index";
 
-const SOURCE_ADAPTERS = [oxlintAdapter, biomeAdapter, eslintAdapter, stylelintAdapter, ruffCheckAdapter, denoLintAdapter];
+const SOURCE_ADAPTERS = [oxlintAdapter, biomeAdapter, eslintAdapter, stylelintAdapter, ruffCheckAdapter, markdownlintAdapter, denoLintAdapter];
 
 const execute = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Console, LintOptions>): Promise<void> => {
     const root = workspaceRoot ?? process.cwd();
