@@ -12,7 +12,8 @@ import { detectAdapters } from "../../lint-fmt/detect";
 import { changedFilesSince, filterByExtensions } from "../../lint-fmt/diff";
 import { adaptersByKind, registerAdapters } from "../../lint-fmt/registry";
 import { aggregate, exitCodeFor, groupFindingsByFile } from "../../lint-fmt/results";
-import { runAdapter } from "../../lint-fmt/runner";
+import type { AdapterJob } from "../../lint-fmt/runner";
+import { runAdaptersParallel } from "../../lint-fmt/runner";
 import type { LintOptions } from "./index";
 
 const SOURCE_ADAPTERS = [oxlintAdapter, biomeAdapter, eslintAdapter, stylelintAdapter, denoLintAdapter];
@@ -55,7 +56,7 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Lint
     const positionalFiles: string[] | undefined = positional.length > 0 ? positional : undefined;
     const filterChangedToAdapter = sinceFiles !== undefined && sinceFiles.length > 0 && positionalFiles === undefined;
 
-    const runs: { adapter: typeof eligible[number]["adapter"]; durationMs: number; exitCode: number | null; findings: Finding[] }[] = [];
+    const jobs: AdapterJob[] = [];
 
     for (const { adapter, presence } of eligible) {
         let files: string[];
@@ -70,11 +71,16 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Lint
             files = positionalFiles ?? ["."];
         }
 
-        const raw = runAdapter(adapter, presence, files, runOptions, mode);
-        const findings = adapter.parse(raw, presence);
-
-        runs.push({ adapter, durationMs: raw.durationMs, exitCode: raw.exitCode, findings });
+        jobs.push({ adapter, files, presence });
     }
+
+    const rawResults = await runAdaptersParallel(jobs, runOptions, mode);
+    const runs = jobs.map((job, index) => {
+        const raw = rawResults[index]!;
+        const findings = job.adapter.parse(raw, job.presence);
+
+        return { adapter: job.adapter, durationMs: raw.durationMs, exitCode: raw.exitCode, findings };
+    });
 
     const result = aggregate(
         runs.map((run) => {
