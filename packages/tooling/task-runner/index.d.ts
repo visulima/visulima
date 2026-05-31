@@ -267,7 +267,46 @@ export declare function runConcurrent(commands: Array<ConcurrentCommandConfig>, 
 export declare function runConcurrentBatch(commands: Array<ConcurrentCommandConfig>, options: ConcurrentRunnerOptions, onLifecycle?: ((event: ProcessEvent) => void) | undefined | null): Promise<ConcurrentRunResult>
 
 /**
+ * Mirrors the TypeScript `FileAccess` shape in
+ * `src/file-access-tracker.ts`. JS sees `kind` as the string union
+ * `"read" | "write" | "stat" | "readdir" | "missing"`.
+ */
+export interface SeccompFileAccess {
+  path: string
+  kind: string
+}
+
+/**
+ * Optional spawn settings — undefined fields fall through to
+ * parent-process inheritance.
+ */
+export interface SeccompSpawnOptions {
+  cwd?: string
+  /**
+   * Extra env vars merged on top of the parent's. Use for
+   * per-command overrides (enhanced PATH, NODE_OPTIONS, etc.).
+   */
+  env?: Record<string, string>
+}
+
+/**
+ * Result returned to JS after the traced command exits.
+ *
+ * `stdout` / `stderr` are buffers so the TypeScript caller can
+ * decode them with the encoding of its choice (default `utf8`)
+ * without us assuming UTF-8 validity in the child's output.
+ */
+export interface SeccompTrackingResult {
+  accesses: Array<SeccompFileAccess>
+  exitCode: number
+  stdout: Buffer
+  stderr: Buffer
+}
+
+/**
  * Performs a topological sort of the task graph.
  * Returns task IDs in topological order (dependencies first).
  */
 export declare function topologicalSort(graph: NativeTaskGraph): Array<string>
+
+export declare function trackWithSeccomp(argv: Array<string>, helperPath: string, options?: SeccompSpawnOptions | undefined | null): Promise<SeccompTrackingResult>
