@@ -121,6 +121,21 @@ interface NativeBindings {
     topologicalSort: (graph: NativeTaskGraph) => string[];
 
     /**
+     * Windows-only: spawn the directly-exec'd `argv` suspended, inject
+     * the `fspy_windows` DLL (at `dllPath`) via
+     * `CreateRemoteThread(LoadLibraryW)`, and collect the IAT-hooked
+     * accesses streamed over a named pipe. Same result shape as
+     * `trackWithSeccomp`. Present only when the addon was built for a
+     * Windows target.
+     */
+    trackWithIatHook?: (
+        argv: string[],
+        dllPath: string,
+        options?: NativeSeccompSpawnOptions,
+        onStarted?: (pid: number) => void,
+    ) => Promise<NativeSeccompTrackingResult>;
+
+    /**
      * macOS-only: spawn the directly-exec'd `argv` with the
      * `fspy_macos` interpose dylib (at `dylibPath`) injected via
      * `DYLD_INSERT_LIBRARIES` and collect reported accesses. Same

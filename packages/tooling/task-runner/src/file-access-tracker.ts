@@ -237,6 +237,95 @@ const isInterposeAvailable = (): boolean => {
 };
 
 /**
+ * Lazily resolves the bundled `fspy-windows.dll` (the IAT-hook tracker
+ * injected into directly-exec'd children on Windows). Mirrors
+ * {@link resolveInterposeDylibPath} for the win32 binding packages, with
+ * a source-tree fallback for `cargo build`.
+ */
+let windowsDllPathCache: HelperPathCache | undefined;
+
+const resolveWindowsDllPath = (): string | undefined => {
+    if (windowsDllPathCache !== undefined) {
+        return windowsDllPathCache.value === "" ? undefined : windowsDllPathCache.value;
+    }
+
+    if (platform() !== "win32") {
+        windowsDllPathCache = { value: "" };
+
+        return undefined;
+    }
+
+    const candidates: string[] = [];
+
+    try {
+        const here = dirname(fileURLToPath(import.meta.url));
+        const cjsRequire = createRequire(import.meta.url);
+
+        for (const pkg of ["@visulima/task-runner-binding-win32-x64-msvc", "@visulima/task-runner-binding-win32-arm64-msvc"]) {
+            try {
+                const pkgJsonPath = cjsRequire.resolve(`${pkg}/package.json`);
+
+                candidates.push(join(dirname(pkgJsonPath), "fspy-windows.dll"));
+            } catch {
+                // Binding not installed for this host — try the next.
+            }
+        }
+
+        // Source-tree fallback (`cargo build [--release]`). The cdylib has no
+        // `lib` prefix on Windows → `fspy_windows.dll`.
+        candidates.push(
+            join(here, "..", "native", "fspy_windows", "target", "debug", "fspy_windows.dll"),
+            join(here, "..", "native", "fspy_windows", "target", "release", "fspy_windows.dll"),
+        );
+    } catch {
+        // import.meta.url unusable in some bundler outputs — null cache.
+    }
+
+    for (const candidate of candidates) {
+        try {
+            accessSync(candidate, fsConstants.R_OK);
+            windowsDllPathCache = { value: candidate };
+
+            return candidate;
+        } catch {
+            // Try the next candidate.
+        }
+    }
+
+    windowsDllPathCache = { value: "" };
+
+    return undefined;
+};
+
+/**
+ * True when IAT-hook tracking is available (Windows + the addon exposes
+ * `trackWithIatHook` + the DLL is on disk). Cached.
+ */
+let iatHookAvailable: boolean | undefined;
+
+const isIatHookAvailable = (): boolean => {
+    if (iatHookAvailable !== undefined) {
+        return iatHookAvailable;
+    }
+
+    if (platform() !== "win32") {
+        iatHookAvailable = false;
+
+        return false;
+    }
+
+    if (!loadNativeBindings()?.trackWithIatHook) {
+        iatHookAvailable = false;
+
+        return false;
+    }
+
+    iatHookAvailable = resolveWindowsDllPath() !== undefined;
+
+    return iatHookAvailable;
+};
+
+/**
  * Shell syntax that means a command can't be exec'd as a single binary
  * — so the macOS interpose path (which exec's directly, never through
  * `/bin/sh`, to survive SIP) can't handle it and must defer to the
@@ -441,6 +530,36 @@ export class FileAccessTracker {
         } = {},
     ): Promise<TrackingResult> {
         return this.#runWithInterpose(argv, options);
+    }
+
+    /**
+     * True when the Windows IAT-hook tracker is usable. Like
+     * {@link isInterposeSupported}, only covers *directly-exec'd*
+     * commands (the DLL is injected into the spawned binary, with no
+     * child-process propagation) — the caller must gate on
+     * {@link parseDirectExec} and fall back to the preload path for
+     * shell-syntax commands.
+     */
+    // eslint-disable-next-line class-methods-use-this
+    public isIatHookSupported(): boolean {
+        return isIatHookAvailable();
+    }
+
+    /**
+     * Tracks a directly-exec'd `argv` via the Windows `fspy_windows`
+     * DLL (IAT hooks). `argv` MUST come from {@link parseDirectExec}.
+     * Degrades to the no-tracking path if the addon/DLL went missing
+     * since the availability check.
+     */
+    public async trackIatHook(
+        argv: string[],
+        options: {
+            abortSignal?: AbortSignal;
+            cwd?: string;
+            env?: Record<string, string | undefined>;
+        } = {},
+    ): Promise<TrackingResult> {
+        return this.#runWithIatHook(argv, options);
     }
 
     /**
@@ -692,6 +811,109 @@ export class FileAccessTracker {
                 const absolute = a.path.startsWith("/") ? a.path : resolve(cwd, a.path);
 
                 if (this.#shouldExclude(absolute) || !absolute.startsWith(this.#workspaceRoot)) {
+                    continue;
+                }
+
+                accesses.push({ path: absolute, type: a.kind });
+            }
+
+            const output = `${result.stdout.toString("utf8")}${result.stderr.toString("utf8")}`;
+
+            return { accesses, code: result.exitCode, output };
+        } catch {
+            return this.#runWithoutTracking(argv.join(" "), options);
+        } finally {
+            if (killable) {
+                this.#activeProcesses.delete(killable);
+            }
+
+            options.abortSignal?.removeEventListener("abort", abortHandler);
+        }
+    }
+
+    /**
+     * Windows IAT-hook path. Spawns `argv` suspended, injects the
+     * `fspy_windows` DLL, and collects accesses off the named pipe.
+     * Cancellation mirrors {@link #runWithSeccomp}. The DLL emits
+     * forward-slash, drive-qualified paths; Windows is case-insensitive,
+     * so the workspace filter compares lower-cased.
+     */
+    async #runWithIatHook(
+        argv: string[],
+        options: {
+            abortSignal?: AbortSignal;
+            cwd?: string;
+            env?: Record<string, string | undefined>;
+        },
+    ): Promise<TrackingResult> {
+        const native = loadNativeBindings();
+        const dllPath = resolveWindowsDllPath();
+
+        if (!native?.trackWithIatHook || !dllPath || argv.length === 0) {
+            return this.#runWithoutTracking(argv.join(" "), options);
+        }
+
+        const cwd = options.cwd ?? this.#workspaceRoot;
+        const env = withEnhancedPath({ ...process.env, ...options.env }, cwd);
+        const envFiltered: Record<string, string> = {};
+
+        for (const [k, v] of Object.entries(env)) {
+            if (typeof v === "string") {
+                envFiltered[k] = v;
+            }
+        }
+
+        let killable: Killable | undefined;
+        let resolveKillable: ((k: Killable) => void) | undefined;
+        const killableReady = new Promise<Killable>((r) => {
+            resolveKillable = r;
+        });
+
+        // eslint-disable-next-line sonarjs/no-identical-functions
+        const onStarted = (pid: number): void => {
+            killable = {
+                kill: (signal): boolean => {
+                    try {
+                        return process.kill(pid, signal ?? "SIGTERM");
+                    } catch {
+                        return false;
+                    }
+                },
+            };
+            this.#activeProcesses.add(killable);
+            resolveKillable?.(killable);
+        };
+
+        // eslint-disable-next-line sonarjs/no-identical-functions
+        const abortHandler = (): void => {
+            killableReady
+                .then((k) => {
+                    k.kill("SIGTERM");
+
+                    return undefined;
+                })
+                .catch(() => {});
+        };
+
+        if (options.abortSignal?.aborted) {
+            return { accesses: [], code: -1, output: "" };
+        }
+
+        options.abortSignal?.addEventListener("abort", abortHandler, { once: true });
+
+        const workspaceLower = this.#workspaceRoot.toLowerCase();
+
+        try {
+            const result = await native.trackWithIatHook(argv, dllPath, { cwd, env: envFiltered }, onStarted);
+
+            const accesses: FileAccess[] = [];
+
+            for (const a of result.accesses) {
+                // The DLL already normalizes to forward-slash; treat a
+                // drive-qualified or rooted path as absolute, else resolve.
+                const absolute = /^(?:[a-z]:)?[/\\]/iu.test(a.path) ? a.path : resolve(cwd, a.path);
+
+                if (this.#shouldExclude(absolute) || !absolute.toLowerCase().startsWith(workspaceLower)) {
                     continue;
                 }
 

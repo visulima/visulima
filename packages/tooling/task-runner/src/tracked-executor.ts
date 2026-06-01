@@ -97,28 +97,33 @@ export class TrackedTaskExecutor {
             let base: Omit<TrackedExecutionResult, "hints">;
 
             // Strategy 1: syscall-level tracking (Linux strace/seccomp — most complete).
-            // Strategy 2 (macOS): DYLD interpose, but only for directly-exec'd
-            //   commands (no shell syntax) — SIP strips DYLD_INSERT_LIBRARIES
-            //   from /bin/sh, so shell commands must use the preload fallback.
+            // Strategy 2: native injection for directly-exec'd commands only —
+            //   macOS DYLD interpose / Windows IAT hooks. Shell-syntax commands
+            //   can't be injected (SIP /bin/sh on macOS; no child propagation on
+            //   Windows), so they fall through to the preload.
             // Strategy 3: Node preload script (cross-platform, Node.js processes only).
-            const directArgv = this.#tracker.isInterposeSupported() ? parseDirectExec(command) : undefined;
+            const trackingEnv = { ...options.env, ...hintEnv };
+            const nativeDirect = this.#tracker.isInterposeSupported() || this.#tracker.isIatHookSupported();
+            const directArgv = nativeDirect ? parseDirectExec(command) : undefined;
 
             if (this.#tracker.isSupported()) {
-                const trackingResult = await this.#tracker.track(command, {
-                    cwd,
-                    env: { ...options.env, ...hintEnv },
-                });
+                const trackingResult = await this.#tracker.track(command, { cwd, env: trackingEnv });
 
                 base = {
                     accesses: trackingResult.accesses,
                     code: trackingResult.code,
                     terminalOutput: trackingResult.output,
                 };
-            } else if (directArgv) {
-                const trackingResult = await this.#tracker.trackInterpose(directArgv, {
-                    cwd,
-                    env: { ...options.env, ...hintEnv },
-                });
+            } else if (directArgv && this.#tracker.isInterposeSupported()) {
+                const trackingResult = await this.#tracker.trackInterpose(directArgv, { cwd, env: trackingEnv });
+
+                base = {
+                    accesses: trackingResult.accesses,
+                    code: trackingResult.code,
+                    terminalOutput: trackingResult.output,
+                };
+            } else if (directArgv && this.#tracker.isIatHookSupported()) {
+                const trackingResult = await this.#tracker.trackIatHook(directArgv, { cwd, env: trackingEnv });
 
                 base = {
                     accesses: trackingResult.accesses,
@@ -126,7 +131,7 @@ export class TrackedTaskExecutor {
                     terminalOutput: trackingResult.output,
                 };
             } else {
-                base = await this.#executeWithPreload(command, cwd, { ...options.env, ...hintEnv });
+                base = await this.#executeWithPreload(command, cwd, trackingEnv);
             }
 
             return { ...base, hints: await this.#readHints(hintsFile, cwd) };
