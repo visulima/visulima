@@ -1,6 +1,5 @@
 import type { PathLike } from "node:fs";
 import { lstat, stat } from "node:fs/promises";
-import { fileURLToPath } from "node:url";
 
 import { dirname, isAbsolute, parse, resolve } from "@visulima/path";
 import { toPath } from "@visulima/path/utils";
@@ -109,7 +108,11 @@ const findUp = async (
             if (Buffer.isBuffer(fileName)) {
                 fileName = fileName.toString();
             } else if (fileName instanceof URL) {
-                fileName = fileURLToPath(fileName);
+                // `toPath` runs `fileURLToPath` then folds the result into POSIX
+                // form (forward slashes, canonical drive-letter case) — matching
+                // what `resolve`/`dirname` produce for the rest of this module,
+                // so the returned path is consistent across platforms.
+                fileName = toPath(fileName);
             }
 
             const filePath = isAbsolute(fileName as string) ? (fileName as string) : resolve(directory, fileName as string);
