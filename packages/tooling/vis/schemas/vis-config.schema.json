@@ -36,11 +36,6 @@
             "$ref": "#/$defs/CodeownersConfig",
             "description": "Code ownership configuration. Controls how `vis sync codeowners` renders the generated CODEOWNERS file."
         },
-        "defaultBase": {
-            "type": "string",
-            "description": "Default base branch used by `vis affected`, `vis ci`, and `vis run --affected` when no explicit `--base` is passed and no CI smart-resolver fires.\n\nResolved as `origin/<defaultBase>` against the local clone; should be a branch name (not a fully-qualified ref) such as `main`, `master`, or `trunk`. Falls back to `main` when omitted.\n\nMigrated automatically from `nx.json#affected.defaultBase` / `nx.json#defaultBase` by `vis migrate nx`.",
-            "default": "main"
-        },
         "constraints": {
             "type": "object",
             "properties": {
@@ -175,6 +170,11 @@
             },
             "additionalProperties": false,
             "description": "Configuration for the `vis create` scaffolding command. Controls template downloads (via giget), default options, and post-creation behavior."
+        },
+        "defaultBase": {
+            "type": "string",
+            "description": "Default base branch used by `vis affected`, `vis ci`, and `vis run --affected` when no explicit `--base` is passed and no CI smart-resolver fires.\n\nResolved as `origin/&lt;defaultBase>` against the local clone; should be a branch name (not a fully-qualified ref) such as `main`, `master`, or `trunk`. Falls back to `main` when omitted.\n\nMigrated automatically from `nx.json#affected.defaultBase` / `nx.json#defaultBase` by `vis migrate nx`.",
+            "default": "main"
         },
         "editorconfig": {
             "type": "boolean",
@@ -1823,6 +1823,11 @@
                     "description": "Enable auto-fingerprinting mode (Vite Task-style). When enabled, the task runner automatically tracks which files a task accesses during execution and uses that for cache invalidation instead of requiring manual input configuration.\n\nFalls back to explicit inputs (Nx-style) when file tracking is not supported on the current platform.\n\nThis is the workspace-wide switch. To opt a single target into traced hashing without flipping it for the whole graph, set  {@link  TargetConfiguration.hashMode }  to `\"trace\"` on that target instead.",
                     "default": false
                 },
+                "bail": {
+                    "type": "boolean",
+                    "description": "Failure-propagation policy.\n\n- `false` (default) — when a task fails, its transitive   dependents are marked `skipped`. Tasks not downstream of the   failure still run. Prevents cascade failures from running a   dependent on a missing `dist/` produced by the failed dep.\n- `true` — fail-fast. On the first failure every not-yet-started   task is marked `skipped`; in-flight tasks finish naturally.",
+                    "default": false
+                },
                 "cacheDiagnostics": {
                     "type": "boolean",
                     "description": "Whether to show cache miss diagnostics (why a cache miss occurred).",
@@ -2241,6 +2246,10 @@
                                 "type": "string",
                                 "description": "Workspace-level concurrency group this target opts into. The scheduler caps the *combined* in-flight count of every task whose target carries the same group name to the value declared in  {@link  TaskRunnerOptions.concurrencyGroups } . Use this when several targets share an external resource (a single Postgres, a developer's Docker daemon, an account-wide deploy lock) so the cap follows the resource, not any single target name.\n\nTargets that name a group not declared in `concurrencyGroups` run uncapped — a typo shouldn't deadlock the graph. Caps don't apply to tasks marked `always: true`; those run in a separate finalisation phase outside the scheduler."
                             },
+                            "concurrencyWeight": {
+                                "type": "number",
+                                "description": "Per-task slot weight against the global `parallel` cap. Defaults to `1`. A task with `concurrencyWeight: 2` consumes two slots; with `parallel: 4` only two such tasks can run concurrently (or one weight-2 plus two weight-1). Use for CPU-pinning tasks — bundlers, `tsc`, native compiles — where the runner shouldn't keep over-subscribing the box just because slots are nominally free.\n\nThe scheduler always lets a single task run even if its weight exceeds the remaining budget; otherwise a heavy task on a `parallel: 1` pool would deadlock. Values `&lt;= 0`, non-finite, or non-integer are ignored (treated as `1`)."
+                            },
                             "configurations": {
                                 "type": "object",
                                 "additionalProperties": {
@@ -2447,6 +2456,10 @@
                             "parallelism": {
                                 "type": "boolean",
                                 "description": "Whether this target supports parallel execution"
+                            },
+                            "pty": {
+                                "type": "boolean",
+                                "description": "Per-target PTY override. When `true`, every task spawned from this target runs inside a pseudo-terminal (so `isatty()` returns true and the child preserves color / progress UI). When `false`, the workspace-level PTY toggle is suppressed for this target. Useful when most targets are happy with piped stdio but one tool (vitest, prettier, a colorising linter) needs a real TTY, or vice versa.\n\nAbsent means \"follow the workspace default\" — the executor decides based on its own toggles."
                             },
                             "warningPattern": {
                                 "anyOf": [
@@ -2796,6 +2809,10 @@
                         "type": "string",
                         "description": "Workspace-level concurrency group this target opts into. The scheduler caps the *combined* in-flight count of every task whose target carries the same group name to the value declared in  {@link  TaskRunnerOptions.concurrencyGroups } . Use this when several targets share an external resource (a single Postgres, a developer's Docker daemon, an account-wide deploy lock) so the cap follows the resource, not any single target name.\n\nTargets that name a group not declared in `concurrencyGroups` run uncapped — a typo shouldn't deadlock the graph. Caps don't apply to tasks marked `always: true`; those run in a separate finalisation phase outside the scheduler."
                     },
+                    "concurrencyWeight": {
+                        "type": "number",
+                        "description": "Per-task slot weight against the global `parallel` cap. Defaults to `1`. A task with `concurrencyWeight: 2` consumes two slots; with `parallel: 4` only two such tasks can run concurrently (or one weight-2 plus two weight-1). Use for CPU-pinning tasks — bundlers, `tsc`, native compiles — where the runner shouldn't keep over-subscribing the box just because slots are nominally free.\n\nThe scheduler always lets a single task run even if its weight exceeds the remaining budget; otherwise a heavy task on a `parallel: 1` pool would deadlock. Values `&lt;= 0`, non-finite, or non-integer are ignored (treated as `1`)."
+                    },
                     "configurations": {
                         "type": "object",
                         "additionalProperties": {
@@ -2997,6 +3014,10 @@
                     "parallelism": {
                         "type": "boolean",
                         "description": "Whether this target supports parallel execution"
+                    },
+                    "pty": {
+                        "type": "boolean",
+                        "description": "Per-target PTY override. When `true`, every task spawned from this target runs inside a pseudo-terminal (so `isatty()` returns true and the child preserves color / progress UI). When `false`, the workspace-level PTY toggle is suppressed for this target. Useful when most targets are happy with piped stdio but one tool (vitest, prettier, a colorising linter) needs a real TTY, or vice versa.\n\nAbsent means \"follow the workspace default\" — the executor decides based on its own toggles."
                     },
                     "warningPattern": {
                         "anyOf": [
@@ -3825,6 +3846,10 @@
                                 "type": "string",
                                 "description": "Workspace-level concurrency group this target opts into. The scheduler caps the *combined* in-flight count of every task whose target carries the same group name to the value declared in  {@link  TaskRunnerOptions.concurrencyGroups } . Use this when several targets share an external resource (a single Postgres, a developer's Docker daemon, an account-wide deploy lock) so the cap follows the resource, not any single target name.\n\nTargets that name a group not declared in `concurrencyGroups` run uncapped — a typo shouldn't deadlock the graph. Caps don't apply to tasks marked `always: true`; those run in a separate finalisation phase outside the scheduler."
                             },
+                            "concurrencyWeight": {
+                                "type": "number",
+                                "description": "Per-task slot weight against the global `parallel` cap. Defaults to `1`. A task with `concurrencyWeight: 2` consumes two slots; with `parallel: 4` only two such tasks can run concurrently (or one weight-2 plus two weight-1). Use for CPU-pinning tasks — bundlers, `tsc`, native compiles — where the runner shouldn't keep over-subscribing the box just because slots are nominally free.\n\nThe scheduler always lets a single task run even if its weight exceeds the remaining budget; otherwise a heavy task on a `parallel: 1` pool would deadlock. Values `&lt;= 0`, non-finite, or non-integer are ignored (treated as `1`)."
+                            },
                             "configurations": {
                                 "type": "object",
                                 "additionalProperties": {
@@ -4026,6 +4051,10 @@
                             "parallelism": {
                                 "type": "boolean",
                                 "description": "Whether this target supports parallel execution"
+                            },
+                            "pty": {
+                                "type": "boolean",
+                                "description": "Per-target PTY override. When `true`, every task spawned from this target runs inside a pseudo-terminal (so `isatty()` returns true and the child preserves color / progress UI). When `false`, the workspace-level PTY toggle is suppressed for this target. Useful when most targets are happy with piped stdio but one tool (vitest, prettier, a colorising linter) needs a real TTY, or vice versa.\n\nAbsent means \"follow the workspace default\" — the executor decides based on its own toggles."
                             },
                             "warningPattern": {
                                 "anyOf": [
