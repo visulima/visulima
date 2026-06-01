@@ -32,10 +32,94 @@ export type LogMode = "grouped" | "interleaved" | "labeled";
  */
 export type ColorMode = "always" | "auto" | "never";
 
-// eslint-disable-next-line no-control-regex, sonarjs/no-control-regex, sonarjs/regex-complexity -- ANSI escape sequence matching: \x1b (CSI/OSC introducer) and \x07 (BEL/OSC terminator) are intentional control chars; this is the standard ANSI-stripping pattern and cannot be simplified without dropping coverage
-const ANSI_ESCAPE_PATTERN = /[][[\]()#;?]*(?:(?:(?:;[-\w/#&.:=?%@~]+)+|[a-zA-Z\d]+(?:;[-\w/#&.:=?%@~]*)*)?|(?:\d{1,4}(?:;\d{0,4})*)?[\dA-PR-TZcf-nq-uy=><~])/g;
+// Escape-sequence stripping is a single linear forward scan rather than a
+// regex. Any regex broad enough to match CSI + OSC sequences has the shape
+// CodeQL's polynomial-ReDoS check (js/polynomial-redos) flags on uncontrolled
+// task output; a scan cannot backtrack, so it is O(n) and has no escape-char
+// literals embedded in a pattern.
+const ESC = 0x1b; // ESC — multi-byte sequence introducer
+const CSI = 0x9b; // single-byte CSI introducer (ESC '[' equivalent)
+const BEL = 0x07; // OSC string terminator
+const ST = 0x9c; // single-byte ST — OSC string terminator
 
-const stripAnsi = (input: string): string => input.replaceAll(ANSI_ESCAPE_PATTERN, "");
+// Given an escape introducer at `start` (ESC or single-byte CSI), return the
+// index just past the whole sequence. Always advances past at least the
+// introducer so the caller's scan is guaranteed to terminate.
+const skipEscapeSequence = (input: string, start: number): number => {
+    const { length } = input;
+    const introducer = input.codePointAt(start);
+    let index = start + 1;
+
+    // OSC: ESC ] … terminated by BEL, ST (0x9C), or the two-char ST `ESC \`.
+    if (introducer === ESC && input[index] === "]") {
+        index += 1;
+
+        while (index < length) {
+            const code = input.codePointAt(index);
+
+            if (code === BEL || code === ST) {
+                return index + 1;
+            }
+
+            if (code === ESC && input[index + 1] === "\\") {
+                return index + 2;
+            }
+
+            index += 1;
+        }
+
+        return length;
+    }
+
+    // CSI: ESC [ … (or the single-byte 0x9B introducer). Parameter and
+    // intermediate bytes (0x20–0x3F) run until a final byte (0x40–0x7E).
+    if (introducer === CSI || input[index] === "[") {
+        if (introducer === ESC) {
+            index += 1; // step over '['
+        }
+
+        while (index < length) {
+            const code = input.codePointAt(index);
+
+            index += 1;
+
+            if (code !== undefined && code >= 0x40 && code <= 0x7e) {
+                break; // final byte ends the CSI sequence
+            }
+        }
+
+        return index;
+    }
+
+    // Any other two-byte ESC sequence (charset selection, RIS, …): drop ESC
+    // plus the single byte that follows it.
+    return Math.min(index + 1, length);
+};
+
+const stripAnsi = (input: string): string => {
+    const { length } = input;
+    let result = "";
+    let sliceStart = 0;
+    let index = 0;
+
+    while (index < length) {
+        const code = input.codePointAt(index);
+
+        if (code !== ESC && code !== CSI) {
+            index += 1;
+
+            continue;
+        }
+
+        result += input.slice(sliceStart, index);
+        index = skipEscapeSequence(input, index);
+        sliceStart = index;
+    }
+
+    // `sliceStart === 0` means no escape was ever found — return input as-is
+    // and avoid allocating a copy for the common (already-clean) case.
+    return sliceStart === 0 ? input : result + input.slice(sliceStart);
+};
 
 const detectColorSupport = (): boolean => {
     if (process.env["NO_COLOR"] !== undefined && process.env["NO_COLOR"] !== "") {
