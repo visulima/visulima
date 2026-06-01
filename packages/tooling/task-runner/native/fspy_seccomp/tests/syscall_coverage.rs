@@ -27,7 +27,7 @@ fn unlinkat_records_write_access() {
     fs::write(&target, b"x").expect("seed file");
 
     let result = track_command(
-        &["/usr/bin/rm".to_string(), target.to_string_lossy().into_owned()],
+        &["rm".to_string(), target.to_string_lossy().into_owned()],
         &helper_path(),
         &SpawnOptions::default(),
         None,
@@ -50,7 +50,7 @@ fn stat_family_records_stat_access() {
     fs::write(&target, b"x").expect("seed file");
 
     let result = track_command(
-        &["/usr/bin/test".to_string(), "-e".to_string(), target.to_string_lossy().into_owned()],
+        &["test".to_string(), "-e".to_string(), target.to_string_lossy().into_owned()],
         &helper_path(),
         &SpawnOptions::default(),
         None,
@@ -85,7 +85,7 @@ fn forked_descendants_emit_on_root_listener() {
 
     let result = track_command(
         &[
-            "/bin/sh".to_string(),
+            "sh".to_string(),
             "-c".to_string(),
             // Two nested `sh -c` invocations before cat — each
             // shell forks to run the next layer.
@@ -117,7 +117,7 @@ fn getdents_records_readdir_against_resolved_path() {
     fs::write(dir.join("b"), b"").expect("seed b");
 
     let result = track_command(
-        &["/usr/bin/ls".to_string(), dir.to_string_lossy().into_owned()],
+        &["ls".to_string(), dir.to_string_lossy().into_owned()],
         &helper_path(),
         &SpawnOptions::default(),
         None,

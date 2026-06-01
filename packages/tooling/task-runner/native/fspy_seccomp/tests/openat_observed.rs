@@ -23,7 +23,7 @@ fn helper_path() -> PathBuf {
 #[test]
 fn observes_openat_from_cat() {
     let result = track_command(
-        &["/usr/bin/cat".to_string(), "/etc/hostname".to_string()],
+        &["cat".to_string(), "/etc/hostname".to_string()],
         &helper_path(),
         &SpawnOptions::default(),
         None,
@@ -62,7 +62,7 @@ fn relative_path_resolves_via_cwd() {
     std::fs::write(&target, b"hello").expect("write tmp file");
 
     let result = track_command(
-        &["/bin/sh".to_string(), "-c".to_string(), format!("cd {} && cat data.txt", tmpdir.display())],
+        &["sh".to_string(), "-c".to_string(), format!("cd {} && cat data.txt", tmpdir.display())],
         &helper_path(),
         &SpawnOptions::default(),
         None,

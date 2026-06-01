@@ -37,14 +37,14 @@ fn seccomp_overhead_is_bounded() {
 
     // --- untracked baseline ---
     let untracked_start = Instant::now();
-    let untracked_status = Command::new("/bin/sh").args(["-c", &cmd_str]).status().expect("untracked exec");
+    let untracked_status = Command::new("sh").args(["-c", &cmd_str]).status().expect("untracked exec");
     let untracked_elapsed = untracked_start.elapsed();
     assert!(untracked_status.success(), "untracked baseline must succeed");
 
     // --- tracked under seccomp ---
     let tracked_start = Instant::now();
     let tracked_result = track_command(
-        &["/bin/sh".to_string(), "-c".to_string(), cmd_str.clone()],
+        &["sh".to_string(), "-c".to_string(), cmd_str.clone()],
         &helper_path(),
         &SpawnOptions::default(),
         None,
