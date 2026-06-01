@@ -133,7 +133,10 @@ describe(FileAccessTracker, () => {
             expect.assertions(1);
 
             const tracker = new FileAccessTracker(workspaceRoot);
-            const command = process.platform === "win32" ? "echo %MY_TEST_VAR%" : 'echo "$MY_TEST_VAR"';
+            // The tracker always runs commands through `sh -c` (on Windows
+            // that's the runner's Git Bash), so use POSIX `$VAR` expansion
+            // on every platform — cmd.exe `%VAR%` syntax is never evaluated.
+            const command = 'echo "$MY_TEST_VAR"';
             const result = await tracker.track(command, {
                 cwd: workspaceRoot,
                 env: { MY_TEST_VAR: "test_value_123" },

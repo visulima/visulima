@@ -685,6 +685,10 @@ export class FileAccessTracker {
             // interpolation of the workspace path. A workspaceRoot
             // containing spaces used to break the previous string-form
             // invocation when the command referenced derived paths.
+            // `sh` is the canonical shell on every dispatch path (strace
+            // + seccomp wrap with it too); on Windows it resolves to the
+            // runner's Git Bash, so task commands use POSIX semantics
+            // consistently rather than cmd.exe.
             const child = execFile(
                 "sh",
                 ["-c", command],
