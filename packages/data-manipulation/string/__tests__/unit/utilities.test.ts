@@ -13,13 +13,23 @@ describe(escapeRegExp, () => {
 describe(inRange, () => {
     it("should return true when the number falls within any interval", () => {
         expect.assertions(2);
-        expect(inRange(5, [[1, 3], [4, 6]])).toBe(true);
+        expect(
+            inRange(5, [
+                [1, 3],
+                [4, 6],
+            ]),
+        ).toBe(true);
         expect(inRange(1, [[1, 3]])).toBe(true);
     });
 
     it("should return false when the number is outside all intervals", () => {
         expect.assertions(2);
-        expect(inRange(7, [[1, 3], [4, 6]])).toBe(false);
+        expect(
+            inRange(7, [
+                [1, 3],
+                [4, 6],
+            ]),
+        ).toBe(false);
         expect(inRange(0, [[1, 3]])).toBe(false);
     });
 });
@@ -65,6 +75,9 @@ describe(findStringOccurrences, () => {
 
     it("should keep disjoint ranges separate", () => {
         expect.assertions(1);
-        expect(findStringOccurrences("a_b_a", ["a"])).toStrictEqual([[0, 0], [4, 4]]);
+        expect(findStringOccurrences("a_b_a", ["a"])).toStrictEqual([
+            [0, 0],
+            [4, 4],
+        ]);
     });
 });

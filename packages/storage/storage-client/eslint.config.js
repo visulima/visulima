@@ -22,6 +22,7 @@ export default createConfig(
             ".secretlintrc.cjs",
             "package.json",
             "README.md",
+            "AGENTS.md",
             "prettier.config.js",
         ],
         typescript: {
@@ -31,6 +32,9 @@ export default createConfig(
     {
         files: ["__tests__/**"],
         rules: {
+            // Concise `renderHook(() => { hook(); })` and `vi.fn(() => x)` helpers put the arrow
+            // body inline; the statements-per-line cap is purely stylistic noise in tests.
+            "@stylistic/max-statements-per-line": "off",
             "@typescript-eslint/member-ordering": "off",
             "@typescript-eslint/no-explicit-any": "off",
             "@typescript-eslint/no-non-null-assertion": "off",
@@ -44,10 +48,16 @@ export default createConfig(
             "@typescript-eslint/require-await": "off",
             "@typescript-eslint/restrict-template-expressions": "off",
             "@typescript-eslint/unbound-method": "off",
+            // One-shot assertion regexes (`toThrow(/abort/i)`) need not be hoisted to module scope.
+            "e18e/prefer-static-regex": "off",
             "jsdoc/match-description": "off",
             "max-classes-per-file": "off",
+            // The resume/url-storage suites target the browser `localStorage` global on purpose.
+            "n/no-unsupported-features/node-builtins": "off",
             "no-await-in-loop": "off",
             "no-confusing-arrow": "off",
+            // Tests exercise the `_attach`/`_detach`/`_updateOffset` @internal API of UploadControl directly.
+            "no-underscore-dangle": "off",
             "react/destructuring-assignment": "off",
             "react/react-in-jsx-scope": "off",
             "sonarjs/no-dead-store": "off",

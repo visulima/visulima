@@ -2,7 +2,7 @@ import type { Accessor } from "solid-js";
 import { createSignal, onCleanup, onMount } from "solid-js";
 
 import { createChunkedRestAdapter } from "../core/chunked-rest-adapter";
-import type { FingerprintFn } from "../core/fingerprint";
+import type { FingerprintFunction } from "../core/fingerprint";
 import type { UploadControl } from "../core/upload-control";
 import type { UrlStorage } from "../core/url-storage";
 import type { UploadResult } from "../react/types";
@@ -15,7 +15,7 @@ export interface CreateChunkedRestUploadOptions {
     /** Chunked REST upload endpoint URL */
     endpoint: string;
     /** Customise the resume fingerprint. */
-    fingerprint?: FingerprintFn;
+    fingerprint?: FingerprintFunction;
     /** Maximum number of retry attempts */
     maxRetries?: number;
     /** Additional metadata to include with the upload */
@@ -69,7 +69,8 @@ export interface CreateChunkedRestUploadReturn {
  * @returns Upload functions and state signals
  */
 export const createChunkedRestUpload = (options: CreateChunkedRestUploadOptions): CreateChunkedRestUploadReturn => {
-    const { chunkSize, control, endpoint, fingerprint, maxRetries, metadata, onError, onPause, onProgress, onResume, onStart, onSuccess, retry, urlStorage } = options;
+    const { chunkSize, control, endpoint, fingerprint, maxRetries, metadata, onError, onPause, onProgress, onResume, onStart, onSuccess, retry, urlStorage } =
+        options;
 
     const [progress, setProgress] = createSignal(0);
     const [isUploading, setIsUploading] = createSignal(false);

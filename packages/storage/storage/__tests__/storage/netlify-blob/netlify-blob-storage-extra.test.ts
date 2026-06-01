@@ -48,7 +48,7 @@ describe(`${NetlifyBlobStorage.name} additional coverage`, () => {
 
     describe("construction & raw access", () => {
         it("should pick up siteID/token from environment when not provided", async () => {
-            expect.assertions(1);
+            expect.assertions(2);
 
             process.env.NETLIFY_SITE_ID = "env-site-id";
             process.env.NETLIFY_TOKEN = "env-token";
@@ -58,9 +58,9 @@ describe(`${NetlifyBlobStorage.name} additional coverage`, () => {
 
             spy.mockClear();
 
-            // eslint-disable-next-line no-new
-            new NetlifyBlobStorage({ ...(storageOptions as NetlifyBlobStorageOptions) });
+            const instance = new NetlifyBlobStorage({ ...(storageOptions as NetlifyBlobStorageOptions) });
 
+            expect(instance).toBeDefined();
             expect(spy).toHaveBeenCalledWith(
                 expect.objectContaining({
                     siteID: "env-site-id",
@@ -138,17 +138,20 @@ describe(`${NetlifyBlobStorage.name} additional coverage`, () => {
     });
 
     describe(".write()", () => {
-        const baseFile: NetlifyBlobFile = Object.assign(new NetlifyBlobFile({
-            contentType: "video/mp4",
-            metadata: { name: metafile.name },
-            originalName: metafile.name,
-            size: metafile.size,
-        }), {
-            bytesWritten: 0,
-            id: metafile.id,
-            name: metafile.name,
-            status: "created" as const,
-        });
+        const baseFile: NetlifyBlobFile = Object.assign(
+            new NetlifyBlobFile({
+                contentType: "video/mp4",
+                metadata: { name: metafile.name },
+                originalName: metafile.name,
+                size: metafile.size,
+            }),
+            {
+                bytesWritten: 0,
+                id: metafile.id,
+                name: metafile.name,
+                status: "created" as const,
+            },
+        );
 
         it("returns the file unchanged when status is completed", async () => {
             expect.assertions(2);
@@ -384,6 +387,7 @@ describe(`${NetlifyBlobStorage.name} additional coverage`, () => {
 
             expect(copySpy).toHaveBeenCalledWith(metafile.id, "dest", undefined);
             expect(deleteSpy).toHaveBeenCalledWith({ id: metafile.id }, undefined);
+
             void result;
         });
     });
@@ -395,10 +399,7 @@ describe(`${NetlifyBlobStorage.name} additional coverage`, () => {
             vi.spyOn(storage, "getMeta").mockResolvedValue({ ...metafile });
             vi.spyOn(storage, "saveMeta").mockImplementation(async (file) => file);
 
-            const updated = await storage.update(
-                { id: metafile.id },
-                { ttl: 5000 } as unknown as Partial<NetlifyBlobFile>,
-            );
+            const updated = await storage.update({ id: metafile.id }, { ttl: 5000 } as unknown as Partial<NetlifyBlobFile>);
 
             expect(updated.expiredAt).toBeGreaterThanOrEqual(Date.now());
         });

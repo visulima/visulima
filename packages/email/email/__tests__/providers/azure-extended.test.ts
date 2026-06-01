@@ -172,9 +172,7 @@ describe("azure provider (extended)", () => {
         it("authenticates the send request with a connection string", async () => {
             expect.assertions(2);
 
-            makeRequestMock
-                .mockResolvedValueOnce(available)
-                .mockResolvedValueOnce({ data: { body: { messageId: "cs-1" }, statusCode: 202 }, success: true });
+            makeRequestMock.mockResolvedValueOnce(available).mockResolvedValueOnce({ data: { body: { messageId: "cs-1" }, statusCode: 202 }, success: true });
 
             const provider = azureProvider({ connectionString: "endpoint=test;accesskey=key123", region: "eastus" });
             const result = await provider.sendEmail(baseEmail);
@@ -188,9 +186,7 @@ describe("azure provider (extended)", () => {
         it("sends a text-only email without an html body", async () => {
             expect.assertions(2);
 
-            makeRequestMock
-                .mockResolvedValueOnce(available)
-                .mockResolvedValueOnce({ data: { body: { messageId: "t-1" }, statusCode: 202 }, success: true });
+            makeRequestMock.mockResolvedValueOnce(available).mockResolvedValueOnce({ data: { body: { messageId: "t-1" }, statusCode: 202 }, success: true });
 
             const provider = azureProvider({ accessToken: "test123", region: "eastus" });
             const result = await provider.sendEmail({

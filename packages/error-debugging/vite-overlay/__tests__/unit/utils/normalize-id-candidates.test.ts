@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { describe, expect, it } from "vitest";
 
 import { isHttpUrl, normalizeIdCandidates } from "../../../src/utils/normalize-id-candidates";

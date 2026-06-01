@@ -65,11 +65,11 @@ const readFile = async <O extends ReadFileOptions<keyof typeof decompressionMeth
     // eslint-disable-next-line no-param-reassign
     path = toPath(path);
 
-    if (!await isAccessible(path)) {
+    if (!(await isAccessible(path))) {
         throw new PermissionError(`unable to read the non-accessible file: ${path}`);
     }
 
-    if (!await isAccessible(path, R_OK)) {
+    if (!(await isAccessible(path, R_OK))) {
         throw new Error(`Unable to read the non-readable file: ${path}`);
     }
 

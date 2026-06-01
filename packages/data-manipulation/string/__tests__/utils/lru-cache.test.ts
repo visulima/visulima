@@ -84,6 +84,7 @@ describe(LRUCache, () => {
         cache.set("a", 1);
         cache.set("b", 2);
         // Re-set "a" with new value — should bump recency, not evict
+        // eslint-disable-next-line sonarjs/no-element-overwrite -- intentional re-set to bump LRU recency before eviction
         cache.set("a", 10);
         // Now insert "c" — "b" was LRU so it goes
         cache.set("c", 3);

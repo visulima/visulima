@@ -142,7 +142,7 @@ describe(resolveConfig, () => {
 
         expect(resolved.rules?.some((r) => r.id === "custom-extra-rule")).toBe(true);
         // The overlay added exactly one new id, so the merged count grows by one.
-        expect((resolved.rules ?? [])).toHaveLength(bundledCount + 1);
+        expect(resolved.rules ?? []).toHaveLength(bundledCount + 1);
     });
 
     it("reads, caches, and merges a config from a path", async () => {
@@ -187,6 +187,6 @@ describe(resolveConfig, () => {
         const resolved = resolveConfig({ configPath: path });
         const bundledCount = (getBundledConfig().rules ?? []).length;
 
-        expect((resolved.rules ?? [])).toHaveLength(bundledCount);
+        expect(resolved.rules ?? []).toHaveLength(bundledCount);
     });
 });

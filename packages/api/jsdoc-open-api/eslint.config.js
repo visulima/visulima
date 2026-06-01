@@ -40,6 +40,8 @@ export default createConfig(
             "@typescript-eslint/no-unsafe-return": "off",
             "no-secrets/no-secrets": "off",
             "sonarjs/no-nested-functions": "off",
+            // Tests create isolated scratch dirs under the OS temp dir (mkdtempSync) — not a real shared-writable-path risk.
+            "sonarjs/publicly-writable-directories": "off",
             "unicorn/no-null": "off",
             "vitest/require-mock-type-parameters": "off",
         },

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { describe, expect, it } from "vitest";
 
 import getSourceFromMap from "../../../src/utils/get-source-from-map";

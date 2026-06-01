@@ -298,7 +298,16 @@ describe("replaceString function", () => {
 
         // Ranges [0,2] and [3,5] are adjacent and merge into [0,5];
         // only the trailing two characters (indices 6-7) remain replaceable.
-        expect(replaceString("xxxxxxxx", [["x", "X"]], [[0, 2], [3, 5]])).toBe("xxxxxxXX");
+        expect(
+            replaceString(
+                "xxxxxxxx",
+                [["x", "X"]],
+                [
+                    [0, 2],
+                    [3, 5],
+                ],
+            ),
+        ).toBe("xxxxxxXX");
     });
 
     it("should skip empty string search keys", () => {

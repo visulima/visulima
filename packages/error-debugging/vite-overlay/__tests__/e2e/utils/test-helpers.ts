@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/prefer-optional-chain, @typescript-eslint/restrict-template-expressions */
+/* eslint-disable @typescript-eslint/prefer-optional-chain */
 import type { Page } from "@playwright/test";
 
 const ORIGINAL_EXTENSION_REGEX = /\.(?:tsx?|jsx?|vue|svelte)(?::\d+)?$/;

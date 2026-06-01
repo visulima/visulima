@@ -3,8 +3,8 @@ import { rm } from "node:fs/promises";
 import { temporaryDirectory } from "tempy";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { Tus as TusFetch } from "../../../../src/handler/tus/tus-fetch";
 import { serializeMetadata, TUS_RESUMABLE } from "../../../../src/handler/tus/tus-base";
+import { Tus as TusFetch } from "../../../../src/handler/tus/tus-fetch";
 import DiskStorage from "../../../../src/storage/local/disk-storage";
 import { metadata, storageOptions, testfile } from "../../../__helpers__/config";
 
@@ -40,7 +40,7 @@ const createUpload = async (handler: TusFetch): Promise<{ id: string; location: 
 
     const rawLocation = response.headers.get("location") as string;
     const location = toAbsolute(rawLocation);
-    const id = location.split("/").filter(Boolean).pop() as string;
+    const id = location.split("/").findLast(Boolean) as string;
 
     return { id, location };
 };

@@ -29,7 +29,9 @@ describe("messaging/presets/vite", () => {
 
             const channel = createViteHMRContext(makeHandlers()).createChannel();
 
-            expect(() => { channel.send("dev-toolbar:ready"); }).not.toThrow();
+            expect(() => {
+                channel.send("dev-toolbar:ready");
+            }).not.toThrow();
         });
     });
 
@@ -40,7 +42,9 @@ describe("messaging/presets/vite", () => {
             const channel = createViteHMRClient(makeHandlers());
 
             expect(channel.send).toBeInstanceOf(Function);
-            expect(() => { channel.send("dev-toolbar:rpc", { args: [], id: "1", method: "x" }); }).not.toThrow();
+            expect(() => {
+                channel.send("dev-toolbar:rpc", { args: [], id: "1", method: "x" });
+            }).not.toThrow();
         });
     });
 

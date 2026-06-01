@@ -4,7 +4,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const launchMock = vi.fn();
 
-vi.mock(import("launch-editor"), () => { return { default: launchMock }; });
+vi.mock(import("launch-editor"), () => {
+    return { default: launchMock };
+});
 
 const { openInEditor } = await import("../../../src/rpc/functions/open-in-editor");
 

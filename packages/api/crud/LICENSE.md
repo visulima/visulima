@@ -23,11 +23,14 @@ SOFTWARE.
 <!-- DEPENDENCIES -->
 
 # Licenses of bundled dependencies
+
 The published @visulima/crud artifact additionally contains code with the following licenses:
 MIT
 
 # Bundled dependencies:
+
 ## dot-prop
+
 License: MIT
 By: Sindre Sorhus
 Repository: sindresorhus/dot-prop
@@ -47,11 +50,14 @@ Repository: sindresorhus/dot-prop
 <!-- TYPE_DEPENDENCIES -->
 
 # Licenses of bundled types
+
 The published @visulima/crud artifact additionally contains code with the following licenses:
 MIT
 
 # Bundled types:
+
 ## next
+
 License: MIT
 Repository: vercel/next.js
 

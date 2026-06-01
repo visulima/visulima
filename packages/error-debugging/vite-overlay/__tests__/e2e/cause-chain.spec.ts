@@ -1,4 +1,4 @@
-/* eslint-disable sonarjs/different-types-comparison, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/prefer-nullish-coalescing, @typescript-eslint/restrict-template-expressions */
+/* eslint-disable sonarjs/different-types-comparison */
 import { expect, test } from "@playwright/test";
 
 import {

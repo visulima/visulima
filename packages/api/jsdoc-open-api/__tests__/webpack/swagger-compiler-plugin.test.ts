@@ -1,4 +1,3 @@
-/* eslint-disable max-classes-per-file -- helpers + test scoped to this file */
 import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -10,12 +9,16 @@ import SwaggerCompilerPlugin from "../../src/webpack/swagger-compiler-plugin";
 // Minimal duck-type that matches the slice of `webpack.Compiler` the plugin actually uses.
 type TapAsyncCallback = (compilation: unknown, callback: () => void) => Promise<void> | void;
 
+const IGNORE_PET_REGEX = /pet\.js$/u;
+const IGNORE_STORE_REGEX = /store\.js$/u;
+const IGNORE_USER_REGEX = /user\.js$/u;
+
 interface FakeCompiler {
     hooks: {
         make: {
+            run: () => Promise<void>;
             tap: (name: string, callback: TapAsyncCallback) => void;
             tapAsync: (name: string, callback: TapAsyncCallback) => void;
-            run: () => Promise<void>;
         };
     };
 }
@@ -27,19 +30,25 @@ const createFakeCompiler = (): FakeCompiler => {
         hooks: {
             make: {
                 run: async () => {
-                    if (!registered) {
+                    const registeredCallback = registered;
+
+                    if (!registeredCallback) {
                         throw new Error("tapAsync was never called");
                     }
 
                     await new Promise<void>((resolve, reject) => {
                         try {
-                            const maybePromise = registered!({}, () => resolve());
+                            const maybePromise = registeredCallback({}, () => {
+                                resolve();
+                            });
 
                             if (maybePromise && typeof (maybePromise as Promise<unknown>).then === "function") {
-                                (maybePromise as Promise<unknown>).then(undefined, reject);
+                                (maybePromise as Promise<unknown>).then(undefined, (error: unknown) => {
+                                    reject(error instanceof Error ? error : new Error(String(error)));
+                                }).catch(() => undefined);
                             }
                         } catch (error) {
-                            reject(error as Error);
+                            reject(error instanceof Error ? error : new Error(String(error)));
                         }
                     });
                 },
@@ -63,18 +72,18 @@ describe(SwaggerCompilerPlugin, () => {
         openapi: "3.0.3",
     } as const;
 
-    let workDir: string;
+    let workDirectory: string;
     let consoleLogSpy: ReturnType<typeof vi.spyOn>;
     let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
 
     beforeEach(() => {
-        workDir = mkdtempSync(join(tmpdir(), "swagger-plugin-"));
+        workDirectory = mkdtempSync(join(tmpdir(), "swagger-plugin-"));
         consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => undefined);
         consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined);
     });
 
     afterEach(() => {
-        rmSync(workDir, { force: true, recursive: true });
+        rmSync(workDirectory, { force: true, recursive: true });
         consoleLogSpy.mockRestore();
         consoleErrorSpy.mockRestore();
     });
@@ -92,10 +101,10 @@ describe(SwaggerCompilerPlugin, () => {
     it("collects routes, builds a valid spec, and writes the asset file when run via webpack hook", async () => {
         expect.assertions(5);
 
-        const assetsPath = join(workDir, "nested", "swagger.json");
-        const sourcesDir = join(__dirname, "..", "..", "__fixtures__", "routes");
+        const assetsPath = join(workDirectory, "nested", "swagger.json");
+        const sourcesDirectory = join(__dirname, "..", "..", "__fixtures__", "routes");
 
-        const plugin = new SwaggerCompilerPlugin(assetsPath, [sourcesDir], baseDefinition, { verbose: true });
+        const plugin = new SwaggerCompilerPlugin(assetsPath, [sourcesDirectory], baseDefinition, { verbose: true });
 
         const compiler = createFakeCompiler();
 
@@ -126,11 +135,11 @@ describe(SwaggerCompilerPlugin, () => {
     it("honors the ignore option by skipping matching files", async () => {
         expect.assertions(1);
 
-        const assetsPath = join(workDir, "swagger-ignored.json");
-        const sourcesDir = join(__dirname, "..", "..", "__fixtures__", "routes");
+        const assetsPath = join(workDirectory, "swagger-ignored.json");
+        const sourcesDirectory = join(__dirname, "..", "..", "__fixtures__", "routes");
 
-        const plugin = new SwaggerCompilerPlugin(assetsPath, [sourcesDir], baseDefinition, {
-            ignore: [/pet\.js$/u, /store\.js$/u, /user\.js$/u],
+        const plugin = new SwaggerCompilerPlugin(assetsPath, [sourcesDirectory], baseDefinition, {
+            ignore: [IGNORE_PET_REGEX, IGNORE_STORE_REGEX, IGNORE_USER_REGEX],
         });
 
         const compiler = createFakeCompiler();

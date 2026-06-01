@@ -165,7 +165,9 @@ describe("runtime-process (Deno simulation)", () => {
                 set: (key: string, value: string) => {
                     denoEnvStore[key] = value;
                 },
-                toObject: () => { return { ...denoEnvStore }; },
+                toObject: () => {
+                    return { ...denoEnvStore };
+                },
             },
             execPath: () => "/usr/bin/deno",
             exit: vi.fn(),

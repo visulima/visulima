@@ -3,7 +3,7 @@ import type { Readable } from "svelte/store";
 import { writable } from "svelte/store";
 
 import { createChunkedRestAdapter } from "../core/chunked-rest-adapter";
-import type { FingerprintFn } from "../core/fingerprint";
+import type { FingerprintFunction } from "../core/fingerprint";
 import type { UploadControl } from "../core/upload-control";
 import type { UrlStorage } from "../core/url-storage";
 import type { UploadResult } from "../react/types";
@@ -16,7 +16,7 @@ export interface CreateChunkedRestUploadOptions {
     /** Chunked REST upload endpoint URL */
     endpoint: string;
     /** Customise the resume fingerprint. */
-    fingerprint?: FingerprintFn;
+    fingerprint?: FingerprintFunction;
     /** Maximum number of retry attempts */
     maxRetries?: number;
     /** Additional metadata to include with the upload */
@@ -70,7 +70,8 @@ export interface CreateChunkedRestUploadReturn {
  * @returns Upload functions and state stores
  */
 export const createChunkedRestUpload = (options: CreateChunkedRestUploadOptions): CreateChunkedRestUploadReturn => {
-    const { chunkSize, control, endpoint, fingerprint, maxRetries, metadata, onError, onPause, onProgress, onResume, onStart, onSuccess, retry, urlStorage } = options;
+    const { chunkSize, control, endpoint, fingerprint, maxRetries, metadata, onError, onPause, onProgress, onResume, onStart, onSuccess, retry, urlStorage } =
+        options;
 
     const progress = writable(0);
     const isUploading = writable(false);

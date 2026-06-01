@@ -261,7 +261,7 @@ describe("files facade", () => {
             "with\0null",
         ];
 
-        for (const key of traversalKeys) {
+        describe.each(traversalKeys)("unsafe key %j", (key) => {
             it(`rejects upload for unsafe key ${JSON.stringify(key)}`, async () => {
                 const { facade } = makeFiles(directory);
 
@@ -284,14 +284,11 @@ describe("files facade", () => {
                 await expect(facade.copy(key, "ok.txt")).rejects.toThrow(/Invalid file id|InvalidFileName/);
                 await expect(facade.copy("safe.txt", key)).rejects.toThrow(/Invalid file id|InvalidFileName/);
             });
-        }
+        });
     });
 
     describe("constructor prefix", () => {
-        const makePrefixed = (
-            directoryPath: string,
-            prefix: string,
-        ): { adapter: DiskStorage; facade: Files<DiskStorage> } => {
+        const makePrefixed = (directoryPath: string, prefix: string): { adapter: DiskStorage; facade: Files<DiskStorage> } => {
             const adapter = new DiskStorage<File>({ directory: directoryPath, maxUploadSize: "100MB" });
 
             return { adapter, facade: new Files({ adapter, prefix }) };
@@ -351,10 +348,7 @@ describe("files facade", () => {
         class CapturingDiskStorage extends DiskStorage {
             public readonly captured: { retries?: number; signal?: AbortSignal; timeout?: number }[] = [];
 
-            public override async getMeta(
-                id: string,
-                options?: { retries?: number; signal?: AbortSignal; timeout?: number },
-            ): Promise<File> {
+            public override async getMeta(id: string, options?: { retries?: number; signal?: AbortSignal; timeout?: number }): Promise<File> {
                 this.captured.push({ retries: options?.retries, signal: options?.signal, timeout: options?.timeout });
 
                 return super.getMeta(id, options);
@@ -523,9 +517,7 @@ describe("files facade", () => {
         it("delete() collects per-key validation failures in errors instead of throwing the whole batch", async () => {
             const { facade } = makeFiles(directory);
 
-            await facade.upload([
-                { body: "ok", key: "del2/ok.txt" },
-            ]);
+            await facade.upload([{ body: "ok", key: "del2/ok.txt" }]);
 
             const result = await facade.delete(["del2/ok.txt", "../escape.txt"]);
 
@@ -540,10 +532,12 @@ describe("files facade", () => {
         it("respects a custom concurrency limit", async () => {
             const { facade } = makeFiles(directory);
 
-            const items = Array.from({ length: 12 }, (_, index) => { return {
-                body: String(index),
-                key: `c/${index}.txt`,
-            }; });
+            const items = Array.from({ length: 12 }, (_, index) => {
+                return {
+                    body: String(index),
+                    key: `c/${index}.txt`,
+                };
+            });
 
             const result = await facade.upload(items, { concurrency: 3 });
 

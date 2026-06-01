@@ -1,5 +1,6 @@
+/* eslint-disable no-underscore-dangle -- `control._attach/_detach/_updateOffset` are the intentional @internal cross-module API of UploadControl */
 import type { UploadResult } from "../react/types";
-import type { FingerprintFn } from "./fingerprint";
+import type { FingerprintFunction } from "./fingerprint";
 import { defaultFingerprint } from "./fingerprint";
 import type { UploadControl } from "./upload-control";
 import type { UrlStorage, UrlStorageEntry } from "./url-storage";
@@ -25,7 +26,7 @@ export interface ChunkedRestAdapterOptions {
     /** Upload endpoint URL */
     endpoint: string;
     /** Customise the resume fingerprint. Defaults to `defaultFingerprint`. */
-    fingerprint?: FingerprintFn;
+    fingerprint?: FingerprintFunction;
     /** Maximum number of retry attempts */
     maxRetries?: number;
     /** Additional metadata to include with the upload */
@@ -71,7 +72,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
         chunkSize = DEFAULT_CHUNK_SIZE,
         control,
         endpoint,
-        fingerprint: fingerprintFn = defaultFingerprint,
+        fingerprint: fingerprintFunction = defaultFingerprint,
         maxRetries = 3,
         metadata = {},
         retry = true,
@@ -594,7 +595,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
 
                 uploadState.abortController = abortController;
 
-                const fingerprint = await fingerprintFn({ endpoint, file, protocol: "chunked-rest" });
+                const fingerprint = await fingerprintFunction({ endpoint, file, protocol: "chunked-rest" });
 
                 uploadState.fingerprint = fingerprint;
 
@@ -603,7 +604,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
                 // 1. Resume from an explicit snapshot on the supplied UploadControl.
                 const snapshot = control?.snapshot;
 
-                if (snapshot && snapshot.protocol === "chunked-rest" && snapshot.fingerprint === fingerprint) {
+                if (snapshot?.protocol === "chunked-rest" && snapshot.fingerprint === fingerprint) {
                     fileId = snapshot.uploadUrl;
                 }
 
@@ -612,7 +613,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
                     try {
                         const stored = await urlStorage.findEntry(fingerprint);
 
-                        if (stored && stored.protocol === "chunked-rest") {
+                        if (stored?.protocol === "chunked-rest") {
                             fileId = stored.uploadUrl;
                         }
                     } catch {
@@ -643,12 +644,14 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
 
                 control?._attach(
                     {
-                        abort: () => abortController.abort(),
+                        abort: () => { abortController.abort(); },
                         pause: () => {
                             uploadState.paused = true;
                         },
-                        resume: async () => {
+                        resume: () => {
                             uploadState.paused = false;
+
+                            return Promise.resolve();
                         },
                     },
                     { endpoint, fingerprint, protocol: "chunked-rest", uploadUrl: fileId },

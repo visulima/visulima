@@ -5,7 +5,7 @@ const smtpProviderMock = vi.fn();
 
 vi.mock(import("../../src/providers/smtp/index"), () => {
     return {
-        smtpProvider: (...arguments_: unknown[]) => smtpProviderMock(...arguments_),
+        smtpProvider: (...arguments_: unknown[]): unknown => smtpProviderMock(...arguments_) as unknown,
     };
 });
 
@@ -171,8 +171,9 @@ describe(mailCrabProvider, () => {
             smtpProviderMock.mockReturnValue({ validateCredentials });
 
             const provider = mailCrabProvider();
+            const validate = provider.validateCredentials as () => Promise<boolean>;
 
-            await expect(provider.validateCredentials!()).resolves.toBe(true);
+            await expect(validate()).resolves.toBe(true);
             expect(validateCredentials).toHaveBeenCalledTimes(1);
         });
 
@@ -182,8 +183,9 @@ describe(mailCrabProvider, () => {
             smtpProviderMock.mockReturnValue({});
 
             const provider = mailCrabProvider();
+            const validate = provider.validateCredentials as () => Promise<boolean>;
 
-            await expect(provider.validateCredentials!()).resolves.toBe(false);
+            await expect(validate()).resolves.toBe(false);
         });
     });
 });

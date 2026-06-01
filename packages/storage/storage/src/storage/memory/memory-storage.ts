@@ -67,7 +67,8 @@ class MemoryStorage<TFile extends File = File> extends BaseStorage<TFile> {
         super(config);
 
         this.store = new Map<string, MemoryEntry>();
-        this.meta = config.metaStorage as MemoryMetaStorage<TFile> | undefined ?? new MemoryMetaStorage<TFile>({ ...config.metaStorageConfig, logger: this.logger });
+        this.meta =
+            (config.metaStorage as MemoryMetaStorage<TFile> | undefined) ?? new MemoryMetaStorage<TFile>({ ...config.metaStorageConfig, logger: this.logger });
 
         if (config.initial) {
             for (const [key, value] of Object.entries(config.initial)) {
@@ -75,13 +76,13 @@ class MemoryStorage<TFile extends File = File> extends BaseStorage<TFile> {
 
                 const bytes = typeof value === "string" ? Buffer.from(value) : Buffer.from(value);
                 const now = new Date().toISOString();
-                const eTag = etag(bytes);
+                const entityTag = etag(bytes);
 
                 this.store.set(key, {
                     bytes,
                     contentType: "application/octet-stream",
                     createdAt: now,
-                    eTag,
+                    eTag: entityTag,
                     metadata: {},
                     modifiedAt: now,
                 });
@@ -101,7 +102,7 @@ class MemoryStorage<TFile extends File = File> extends BaseStorage<TFile> {
 
                 seed.name = key;
                 seed.bytesWritten = bytes.length;
-                seed.ETag = eTag;
+                seed.ETag = entityTag;
                 seed.createdAt = now;
                 seed.modifiedAt = now;
                 seed.status = getFileStatus(seed);
@@ -138,13 +139,13 @@ class MemoryStorage<TFile extends File = File> extends BaseStorage<TFile> {
 
     public async write(part: FilePart | FileQuery, _options?: OperationOptions): Promise<TFile> {
         return this.instrumentOperation("write", async () => {
-            const file = await this.getMeta((part as FileQuery).id);
+            const file = await this.getMeta((part).id);
 
-            if (!hasContent(part as FilePart)) {
+            if (!hasContent(part)) {
                 return file;
             }
 
-            const { body, start = 0 } = part as FilePart;
+            const { body, start } = part;
             const chunks: Buffer[] = [];
 
             for await (const chunk of body) {
@@ -161,13 +162,7 @@ class MemoryStorage<TFile extends File = File> extends BaseStorage<TFile> {
 
             const incoming = Buffer.concat(chunks);
             const existing = this.store.get(file.name)?.bytes;
-            let bytes: Buffer;
-
-            if (start === 0 || !existing) {
-                bytes = incoming;
-            } else {
-                bytes = Buffer.concat([existing.subarray(0, start), incoming]);
-            }
+            const bytes: Buffer = start === 0 || !existing ? incoming : Buffer.concat([existing.subarray(0, start), incoming]);
 
             const now = new Date().toISOString();
             const entry: MemoryEntry = {
@@ -207,7 +202,7 @@ class MemoryStorage<TFile extends File = File> extends BaseStorage<TFile> {
             }
 
             let content = entry.bytes;
-            const range = (_options as { range?: { end?: number; start: number } } | undefined)?.range;
+            const range = (_options)?.range;
 
             if (range) {
                 const start = Math.max(0, range.start);
@@ -248,7 +243,7 @@ class MemoryStorage<TFile extends File = File> extends BaseStorage<TFile> {
             }
 
             let content = entry.bytes;
-            const range = (_options as { range?: { end?: number; start: number } } | undefined)?.range;
+            const range = (_options)?.range;
 
             if (range) {
                 const start = Math.max(0, range.start);
@@ -318,7 +313,7 @@ class MemoryStorage<TFile extends File = File> extends BaseStorage<TFile> {
                 modifiedAt: now,
             });
 
-            const copied = { ...sourceFile, ETag: entry.eTag, id: destination, name: destination, modifiedAt: now } as TFile;
+            const copied = { ...sourceFile, ETag: entry.eTag, id: destination, modifiedAt: now, name: destination } as TFile;
 
             await this.saveMeta(copied);
 
@@ -361,12 +356,14 @@ class MemoryStorage<TFile extends File = File> extends BaseStorage<TFile> {
         });
     }
 
+    // eslint-disable-next-line class-methods-use-this -- memory URLs are derived solely from the key; no instance state is needed.
     public override async getReadUrl(key: string): Promise<string> {
         BaseStorage.assertSafeId(key);
 
         return `memory://${key}`;
     }
 
+    // eslint-disable-next-line class-methods-use-this -- memory URLs are derived solely from the key; no instance state is needed.
     public override async getUploadUrl(key: string): Promise<string> {
         BaseStorage.assertSafeId(key);
 

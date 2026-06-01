@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import { patchOverlay } from "../../../src/overlay/patch-overlay";

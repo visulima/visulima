@@ -120,7 +120,7 @@ catalogs:
     '@aws-sdk/s3-request-presigner': 3.1048.0
     '@aws-sdk/signature-v4-crt': 3.1048.0
     '@aws-sdk/types': 3.973.8
-    '@azure/core-auth': ^1.9.0
+    '@azure/core-auth': ^1.10.1
     '@azure/storage-blob': ^12.31.0
     '@babel/core': 7.29.0
     '@babel/types': ^7.29.0
@@ -577,7 +577,7 @@ catalogs:
     nitro: 3.0.260311-beta
     nodemailer: 8.0.7
     normalize-package-data: ^9.0.0
-    nuxt: ^4.4.5
+    nuxt: ^4.4.6
     nx: 22.7.2
     object-inspect: ^1.13.4
     patch-console: ^2.0.0
@@ -752,6 +752,9 @@ minimumReleaseAgeExclude:
   - '@sveltejs/kit@2.60.1'
   - uuid@11.1.1
   - js-cookie@3.0.6
+  - lodash.set@4.3.3
+  - qs@6.15.2
+  - tmp@0.2.6
 
 overrides:
   '@anthropic-ai/sdk@>=0.79.0 <0.91.1': ^0.91.1

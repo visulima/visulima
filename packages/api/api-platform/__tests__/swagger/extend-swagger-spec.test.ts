@@ -74,9 +74,7 @@ describe("swagger/extend-swagger-spec", () => {
 
         const result = extendSwaggerSpec(spec, { "application/json": true, "text/xml": true });
 
-        const xmlSchema = (
-            (result.paths?.["/list"]?.get as OpenAPIV3.OperationObject).responses["200"] as OpenAPIV3.ResponseObject
-        ).content?.["text/xml"]?.schema as OpenAPIV3.ArraySchemaObject;
+        const xmlSchema = ((result.paths?.["/list"]?.get as OpenAPIV3.OperationObject).responses["200"] as OpenAPIV3.ResponseObject).content?.["text/xml"]?.schema as OpenAPIV3.ArraySchemaObject;
 
         expect(xmlSchema.type).toBe("array");
     });
@@ -119,9 +117,7 @@ describe("swagger/extend-swagger-spec", () => {
 
         const result = extendSwaggerSpec(spec, { "application/json": true, "text/xml": true });
 
-        const xmlExamples = (
-            (result.paths?.["/ref"]?.get as OpenAPIV3.OperationObject).responses["200"] as OpenAPIV3.ResponseObject
-        ).content?.["text/xml"]?.examples as Record<string, OpenAPIV3.ExampleObject>;
+        const xmlExamples = ((result.paths?.["/ref"]?.get as OpenAPIV3.OperationObject).responses["200"] as OpenAPIV3.ResponseObject).content?.["text/xml"]?.examples as Record<string, OpenAPIV3.ExampleObject>;
 
         expect(xmlExamples.Linked?.value).toContain("<ref>value</ref>");
     });
@@ -157,9 +153,9 @@ describe("swagger/extend-swagger-spec", () => {
 
         const result = extendSwaggerSpec(spec, { "application/json": true, "application/x-yaml": true });
 
-        const yamlExamples = (
-            (result.paths?.["/inline"]?.get as OpenAPIV3.OperationObject).responses["200"] as OpenAPIV3.ResponseObject
-        ).content?.["application/x-yaml"]?.examples as Record<string, OpenAPIV3.ExampleObject>;
+        const yamlExamples = ((result.paths?.["/inline"]?.get as OpenAPIV3.OperationObject).responses["200"] as OpenAPIV3.ResponseObject).content?.[
+            "application/x-yaml"
+        ]?.examples as Record<string, OpenAPIV3.ExampleObject>;
 
         expect(yamlExamples.Inline?.value).toBe("plain-string\n");
     });

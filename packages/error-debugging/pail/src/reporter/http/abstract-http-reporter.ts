@@ -290,8 +290,8 @@ export abstract class AbstractHttpReporter<L extends string = string> extends Ab
             }
 
             // Check log entry size
-            const logEntrySize
-                = this.edgeCompat || typeof TextEncoder === "undefined" ? Buffer.byteLength(payload, "utf8") : new TextEncoder().encode(payload).length;
+            const logEntrySize =
+                this.edgeCompat || typeof TextEncoder === "undefined" ? Buffer.byteLength(payload, "utf8") : new TextEncoder().encode(payload).length;
 
             if (logEntrySize > this.maxLogSize) {
                 const error = new LogSizeError(
@@ -379,8 +379,8 @@ export abstract class AbstractHttpReporter<L extends string = string> extends Ab
 
         for (let i = 0; i < this.batchQueue.length; i += 1) {
             const payload = this.batchQueue[i];
-            const payloadSize
-                = this.edgeCompat || typeof TextEncoder === "undefined" ? Buffer.byteLength(payload, "utf8") : new TextEncoder().encode(payload).length;
+            const payloadSize =
+                this.edgeCompat || typeof TextEncoder === "undefined" ? Buffer.byteLength(payload, "utf8") : new TextEncoder().encode(payload).length;
 
             // Add payload size plus delimiter (except for last item)
             this.currentBatchSize += payloadSize + (i < this.batchQueue.length - 1 ? this.batchSendDelimiter.length : 0);

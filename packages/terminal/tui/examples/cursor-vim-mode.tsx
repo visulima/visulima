@@ -56,7 +56,7 @@ const VimModeInput = () => {
             <Text>Vim-mode input — block cursor in NORMAL, bar in INSERT.</Text>
             <Text>i/a → insert · Esc → normal · x → delete char · Ctrl+C → exit</Text>
             <Box flexDirection="row">
-                <Text>[{mode === "normal" ? "N" : "I"}] </Text>
+                <Text>{`[${mode === "normal" ? "N" : "I"}] `}</Text>
                 <Text>{prompt}</Text>
                 <Text>{value}</Text>
                 <Cursor shape={mode === "normal" ? "block" : "bar"} />

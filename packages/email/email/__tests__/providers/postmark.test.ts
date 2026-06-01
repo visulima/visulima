@@ -722,7 +722,9 @@ describe(postmarkProvider, () => {
 
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
 
-            makeRequestMock.mockResolvedValueOnce({ data: { statusCode: 200 }, success: true }).mockResolvedValueOnce({ error: "string failure", success: false });
+            makeRequestMock
+                .mockResolvedValueOnce({ data: { statusCode: 200 }, success: true })
+                .mockResolvedValueOnce({ error: "string failure", success: false });
 
             const provider = postmarkProvider({ serverToken: "test123" });
 

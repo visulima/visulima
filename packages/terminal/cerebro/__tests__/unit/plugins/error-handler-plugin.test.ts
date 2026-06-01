@@ -3,14 +3,15 @@ import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from "v
 import { errorHandlerPlugin } from "../../../src/plugins/error-handler-plugin";
 import type { Toolbox } from "../../../src/types/toolbox";
 
-const createToolbox = (): Toolbox => ({
-    logger: {
-        error: vi.fn(),
-    },
-    runtime: {
-        getCwd: vi.fn(() => "/work/dir"),
-    },
-} as unknown as Toolbox);
+const createToolbox = (): Toolbox =>
+    ({
+        logger: {
+            error: vi.fn(),
+        },
+        runtime: {
+            getCwd: vi.fn(() => "/work/dir"),
+        },
+    }) as unknown as Toolbox;
 
 describe(errorHandlerPlugin, () => {
     let exitSpy: ReturnType<typeof vi.spyOn>;

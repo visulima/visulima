@@ -17,6 +17,7 @@ export default createConfig(
             "playwright-setup.js",
             "prettier.config.js",
             "README.md",
+            "AGENTS.md",
         ],
         typescript: {
             tsconfigPath: "./tsconfig.eslint.json",

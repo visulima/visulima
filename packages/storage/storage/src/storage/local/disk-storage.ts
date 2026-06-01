@@ -361,7 +361,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
                 throw error;
             }
 
-            const eTag = etag(content);
+            const entityTag = etag(content);
             const range = options?.range;
 
             if (range) {
@@ -378,7 +378,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
             return {
                 content,
                 contentType,
-                ETag: eTag,
+                ETag: entityTag,
                 expiredAt,
                 id,
                 metadata,

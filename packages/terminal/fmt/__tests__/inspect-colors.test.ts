@@ -21,7 +21,7 @@ const makeCss = (overrides: Partial<CssObject> = {}): CssObject => {
     };
 };
 
-describe("parseCss", () => {
+describe(parseCss, () => {
     describe("color names and core props", () => {
         it("should parse the color property", () => {
             expect.assertions(1);
@@ -320,7 +320,7 @@ describe("parseCss", () => {
     });
 });
 
-describe("cssToAnsi", () => {
+describe(cssToAnsi, () => {
     describe("named foreground colors", () => {
         it.each([
             ["black", "[30m"],

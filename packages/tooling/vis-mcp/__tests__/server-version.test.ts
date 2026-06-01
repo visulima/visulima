@@ -90,9 +90,7 @@ describe("server.ts loadVersion fallbacks", () => {
 
         await expect(startMcpServer()).resolves.toBeUndefined();
 
-        const errorLines = stderrSpy.mock.calls
-            .map((call) => String(call[0]))
-            .filter((message) => message.includes("[vis-mcp] failed to read package.json"));
+        const errorLines = stderrSpy.mock.calls.map((call) => String(call[0])).filter((message) => message.includes("[vis-mcp] failed to read package.json"));
 
         expect(errorLines.length).toBeGreaterThanOrEqual(1);
     });
@@ -118,9 +116,7 @@ describe("server.ts loadVersion fallbacks", () => {
 
         await expect(startMcpServer()).resolves.toBeUndefined();
 
-        const errorLines = stderrSpy.mock.calls
-            .map((call) => String(call[0]))
-            .filter((message) => message.includes("failed to read package.json"));
+        const errorLines = stderrSpy.mock.calls.map((call) => String(call[0])).filter((message) => message.includes("failed to read package.json"));
 
         // The version fallback is silent — no error should be logged.
         expect(errorLines).toHaveLength(0);

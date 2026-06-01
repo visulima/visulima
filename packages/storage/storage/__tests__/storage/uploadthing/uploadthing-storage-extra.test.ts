@@ -44,11 +44,11 @@ vi.mock(import("uploadthing/server"), () => {
     };
 });
 
-const buildOptions = (overrides: Partial<UploadThingStorageOptions> = {}): UploadThingStorageOptions => ({
+const buildOptions = (overrides: Partial<UploadThingStorageOptions> = {}): UploadThingStorageOptions => { return {
     ...(storageOptions as UploadThingStorageOptions),
     token: validToken,
     ...overrides,
-});
+}; };
 
 const bufferToStream = (buffer: Buffer): Readable => Readable.from([buffer]);
 
@@ -118,17 +118,20 @@ describe(`${UploadThingStorage.name} additional coverage`, () => {
 
     describe(".write()", () => {
         const makeBaseFile = (): UploadThingFile =>
-            Object.assign(new UploadThingFile({
-                contentType: "video/mp4",
-                metadata: { name: metafile.name },
-                originalName: metafile.name,
-                size: metafile.size,
-            }), {
-                bytesWritten: 0,
-                id: metafile.id,
-                name: metafile.name,
-                status: "created" as const,
-            });
+            Object.assign(
+                new UploadThingFile({
+                    contentType: "video/mp4",
+                    metadata: { name: metafile.name },
+                    originalName: metafile.name,
+                    size: metafile.size,
+                }),
+                {
+                    bytesWritten: 0,
+                    id: metafile.id,
+                    name: metafile.name,
+                    status: "created" as const,
+                },
+            );
 
         it("uploads via uploadFiles and updates file metadata", async () => {
             expect.assertions(4);
@@ -210,7 +213,7 @@ describe(`${UploadThingStorage.name} additional coverage`, () => {
             vi.spyOn(storage, "getMeta").mockResolvedValue({
                 ...metafile,
                 customId: metafile.name,
-            } as UploadThingFile);
+            });
             vi.spyOn(storage, "deleteMeta").mockResolvedValue(undefined);
 
             const onDeleteSpy = vi.fn();
@@ -236,11 +239,11 @@ describe(`${UploadThingStorage.name} additional coverage`, () => {
             vi.spyOn(storage, "getMeta").mockResolvedValue({
                 ...metafile,
                 customId: metafile.name,
-            } as UploadThingFile);
+            });
 
             const result = await storage.get({ id: metafile.id });
 
-            expect(global.fetch).toHaveBeenCalledWith(`https://test-app.ufs.sh/f/${encodeURIComponent(metafile.name)}`);
+            expect(globalThis.fetch).toHaveBeenCalledWith(`https://test-app.ufs.sh/f/${encodeURIComponent(metafile.name)}`);
             expect(result.content?.toString()).toContain("payload");
         });
 
@@ -252,7 +255,7 @@ describe(`${UploadThingStorage.name} additional coverage`, () => {
             vi.spyOn(storage, "getMeta").mockResolvedValue({
                 ...metafile,
                 customId: metafile.name,
-            } as UploadThingFile);
+            });
 
             mockUtapi.generateSignedURL.mockResolvedValue({
                 ufsUrl: "https://signed.example/file?sig=abc",
@@ -260,7 +263,7 @@ describe(`${UploadThingStorage.name} additional coverage`, () => {
 
             await storage.get({ id: metafile.id });
 
-            expect(global.fetch).toHaveBeenCalledWith("https://signed.example/file?sig=abc");
+            expect(globalThis.fetch).toHaveBeenCalledWith("https://signed.example/file?sig=abc");
         });
 
         it("falls back to id when meta cannot be loaded", async () => {
@@ -272,7 +275,7 @@ describe(`${UploadThingStorage.name} additional coverage`, () => {
 
             const result = await storage.get({ id: "user/orphan.png" });
 
-            expect(global.fetch).toHaveBeenCalledWith(`https://test-app.ufs.sh/f/${encodeURIComponent("user/orphan.png")}`);
+            expect(globalThis.fetch).toHaveBeenCalledWith(`https://test-app.ufs.sh/f/${encodeURIComponent("user/orphan.png")}`);
             expect(result.id).toBe("user/orphan.png");
         });
 
@@ -284,7 +287,7 @@ describe(`${UploadThingStorage.name} additional coverage`, () => {
             vi.spyOn(storage, "getMeta").mockResolvedValue({
                 ...metafile,
                 customId: metafile.name,
-            } as UploadThingFile);
+            });
 
             vi.stubGlobal(
                 "fetch",
@@ -310,7 +313,7 @@ describe(`${UploadThingStorage.name} additional coverage`, () => {
             vi.spyOn(storage, "getMeta").mockResolvedValue({
                 ...metafile,
                 customId: metafile.name,
-            } as UploadThingFile);
+            });
 
             mockUtapi.uploadFiles.mockResolvedValue({
                 data: {
@@ -335,7 +338,7 @@ describe(`${UploadThingStorage.name} additional coverage`, () => {
             vi.spyOn(storage, "getMeta").mockResolvedValue({
                 ...metafile,
                 customId: metafile.name,
-            } as UploadThingFile);
+            });
 
             mockUtapi.uploadFiles.mockResolvedValue({ error: { message: "boom" } });
 
@@ -347,24 +350,26 @@ describe(`${UploadThingStorage.name} additional coverage`, () => {
 
             const storage = new UploadThingStorage(buildOptions());
 
-            const copySpy = vi
-                .spyOn(storage, "copy")
-                .mockResolvedValue(
-                    Object.assign(new UploadThingFile({
+            const copySpy = vi.spyOn(storage, "copy").mockResolvedValue(
+                Object.assign(
+                    new UploadThingFile({
                         contentType: "video/mp4",
                         metadata: {},
                         originalName: "dest",
-                    }), { id: "dest", name: "dest" }),
-                );
-            const deleteSpy = vi
-                .spyOn(storage, "delete")
-                .mockResolvedValue(
-                    Object.assign(new UploadThingFile({
+                    }),
+                    { id: "dest", name: "dest" },
+                ),
+            );
+            const deleteSpy = vi.spyOn(storage, "delete").mockResolvedValue(
+                Object.assign(
+                    new UploadThingFile({
                         contentType: "video/mp4",
                         metadata: {},
                         originalName: "src",
-                    }), { id: "src", status: "deleted" as const }),
-                );
+                    }),
+                    { id: "src", status: "deleted" as const },
+                ),
+            );
 
             await storage.move("src", "dest");
 

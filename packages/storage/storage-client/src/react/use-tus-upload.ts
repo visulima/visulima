@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import type { FingerprintFn } from "../core/fingerprint";
+import type { FingerprintFunction } from "../core/fingerprint";
 import { createTusAdapter } from "../core/tus-adapter";
 import type { UploadControl } from "../core/upload-control";
 import type { UrlStorage } from "../core/url-storage";
@@ -9,6 +9,7 @@ import type { UploadResult } from "./types";
 export interface UseTusUploadOptions {
     /** Chunk size for TUS uploads (default: 1MB) */
     chunkSize?: number;
+
     /**
      * Unified control handle. Pass an empty `new UploadControl()` to drive the
      * upload, or `UploadControl.from(token)` to resume an upload that was
@@ -18,7 +19,7 @@ export interface UseTusUploadOptions {
     /** TUS upload endpoint URL */
     endpoint: string;
     /** Customise the resume fingerprint. Defaults to `defaultFingerprint`. */
-    fingerprint?: FingerprintFn;
+    fingerprint?: FingerprintFunction;
     /** Maximum number of retry attempts */
     maxRetries?: number;
     /** Additional metadata to include with the upload */
@@ -72,7 +73,8 @@ export interface UseTusUploadReturn {
  * @returns Upload functions and state
  */
 export const useTusUpload = (options: UseTusUploadOptions): UseTusUploadReturn => {
-    const { chunkSize, control, endpoint, fingerprint, maxRetries, metadata, onError, onPause, onProgress, onResume, onStart, onSuccess, retry, urlStorage } = options;
+    const { chunkSize, control, endpoint, fingerprint, maxRetries, metadata, onError, onPause, onProgress, onResume, onStart, onSuccess, retry, urlStorage } =
+        options;
 
     const [progress, setProgress] = useState(0);
     const [isUploading, setIsUploading] = useState(false);

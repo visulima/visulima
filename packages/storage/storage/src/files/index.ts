@@ -162,6 +162,7 @@ export interface FilesHooks {
     onAction?: (event: HookEvent) => void;
     /** Called once per failed operation, with the error attached. */
     onError?: (event: HookEvent & { error: Error }) => void;
+
     /**
      * Called when the underlying adapter retries an operation. Receives the
      * attempt number (1-based) and the error that triggered the retry.
@@ -449,7 +450,7 @@ const toBulkError = (key: string, reason: unknown): BulkError => {
 /**
  * `Throws` cannot escape — hook contract is fire-and-forget.
  */
-const safeInvoke = (callback: ((arg: unknown) => void) | undefined, value: unknown): void => {
+const safeInvoke = (callback: ((argument: unknown) => void) | undefined, value: unknown): void => {
     if (!callback) {
         return;
     }
@@ -554,7 +555,10 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
      * fold a wrapped `onRetry` into the per-call retry config so the hook fires with
      * facade-level context (type, key, from/to) for each retry attempt the adapter performs.
      */
-    private mergeOptions(perCall?: OperationOptions, hookContext?: Omit<HookEvent, "durationMs" | "error" | "type"> & { type: HookActionType }): OperationOptions | undefined {
+    private mergeOptions(
+        perCall?: OperationOptions,
+        hookContext?: Omit<HookEvent, "durationMs" | "error" | "type"> & { type: HookActionType },
+    ): OperationOptions | undefined {
         const merged = mergeOperationOptions(this.defaults, perCall);
 
         if (!hookContext || !this.hooks.onRetry) {
@@ -562,7 +566,7 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
         }
 
         const existing = merged?.retries;
-        const retries: RetryConfig = typeof existing === "number" ? { maxRetries: existing } : { ...(existing ?? {}) };
+        const retries: RetryConfig = typeof existing === "number" ? { maxRetries: existing } : { ...existing };
         const userOnRetry = retries.onRetry;
         const hookOnRetry = this.hooks.onRetry;
 
@@ -576,7 +580,8 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
             }
 
             try {
-                const normalized = error instanceof Error ? error : new Error(typeof error === "string" ? error : "Unknown error", { cause: error });
+                const message = typeof error === "string" ? error : "Unknown error";
+                const normalized = error instanceof Error ? error : new Error(message, { cause: error });
 
                 hookOnRetry({ ...hookContext, attempt, error: normalized });
             } catch {
@@ -584,7 +589,7 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
             }
         };
 
-        return { ...(merged ?? {}), retries };
+        return { ...merged, retries };
     }
 
     private emitAction(type: HookActionType, partial: Omit<HookEvent, "type">): void {
@@ -621,7 +626,8 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
 
             return result;
         } catch (error: unknown) {
-            const normalized = error instanceof Error ? error : new Error(typeof error === "string" ? error : "Unknown error", { cause: error });
+            const message = typeof error === "string" ? error : "Unknown error";
+            const normalized = error instanceof Error ? error : new Error(message, { cause: error });
 
             this.emitError(type, { ...partial, durationMs: Date.now() - started }, normalized);
 
@@ -698,14 +704,14 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
                 // callers always see the ordering start → chunk[1] → chunk[2] → ... — even if a stream
                 // happens to emit synchronously the moment we pipe.
                 if (size !== undefined) {
-                    safeInvoke(callback as (arg: unknown) => void, { loaded: 0, total: size });
+                    safeInvoke(callback as (argument: unknown) => void, { loaded: 0, total: size });
                 }
 
                 stream.on("data", (chunk: Buffer | Uint8Array | string) => {
-                    const chunkSize = typeof chunk === "string" ? Buffer.byteLength(chunk) : (chunk as Buffer | Uint8Array).byteLength;
+                    const chunkSize = typeof chunk === "string" ? Buffer.byteLength(chunk) : (chunk).byteLength;
 
                     loaded += chunkSize;
-                    safeInvoke(callback as (arg: unknown) => void, { loaded, total: size });
+                    safeInvoke(callback as (argument: unknown) => void, { loaded, total: size });
                 });
 
                 stream.pipe(passthrough);
@@ -718,7 +724,7 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
                 id: file.id,
                 start: 0,
                 ...(multipart !== undefined && { multipart }),
-                ...(reportsNatively && wantsProgress && { onProgress: options?.onProgress as UploadProgressCallback }),
+                ...(reportsNatively && wantsProgress && { onProgress: options?.onProgress }),
             };
 
             const written = await this.adapter.write(part, operationOptions);
@@ -739,7 +745,13 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
         const settled = await runConcurrent(
             items,
             async ({ body, key, ...uploadOptions }) => {
-                const perItemProgress = uploadOptions.onProgress ?? (onProgress ? (event: UploadProgress) => onProgress({ ...event, key }) : undefined);
+                const perItemProgress
+                    = uploadOptions.onProgress
+                    ?? (onProgress
+                        ? (event: UploadProgress) => {
+                            onProgress({ ...event, key });
+                        }
+                        : undefined);
 
                 return this.uploadOne(key, body, {
                     ...rest,
@@ -783,10 +795,10 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
 
     public async download(keyOrKeys: string[] | string, options?: BulkDownloadOptions | DownloadOptions): Promise<BulkDownloadResult | DownloadResult> {
         if (Array.isArray(keyOrKeys)) {
-            return this.downloadMany(keyOrKeys, options as BulkDownloadOptions | undefined);
+            return this.downloadMany(keyOrKeys, options);
         }
 
-        return this.downloadOne(keyOrKeys, options as DownloadOptions | undefined);
+        return this.downloadOne(keyOrKeys, options);
     }
 
     private assertRangeSupported(range: DownloadRange | undefined): void {
@@ -1041,9 +1053,7 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
             }
 
             return this.withHooks("delete", { keys: validKeys }, async () => {
-                const response = resolvedIds.length > 0
-                    ? await this.adapter.deleteBatch(resolvedIds, operationOptions)
-                    : { failed: [], successful: [] };
+                const response = resolvedIds.length > 0 ? await this.adapter.deleteBatch(resolvedIds, operationOptions) : { failed: [], successful: [] };
                 const idIndex = new Map(resolvedIds.map((id, index) => [id, index]));
 
                 const deleted: string[] = response.successful.map((file) => {
@@ -1252,7 +1262,6 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
      * so this is effectively `list` + iteration for them. Adapters that paginate natively can
      * override `list` to honour the per-page `limit` and `listAll` will keep pulling pages until
      * the page is short.
-     *
      * @example
      * ```ts
      * for await (const file of files.listAll({ prefix: "avatars/" })) {
@@ -1274,7 +1283,7 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
             // require honoring the limit, and several adapters (memory, disk) ignore it entirely.
             // Terminate when an iteration yields zero *new* keys instead. Per-key dedup also guards
             // against adapters that hand back the same set on each call.
-            // eslint-disable-next-line no-constant-condition
+
             while (true) {
                 const page = await this.adapter.list(pageSize, this.mergeOptions(operationOptions, { type: "listAll" }));
                 let yielded = 0;
@@ -1309,7 +1318,9 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
                 }
             }
         } catch (error: unknown) {
-            errored = error instanceof Error ? error : new Error(typeof error === "string" ? error : "Unknown error", { cause: error });
+            const message = typeof error === "string" ? error : "Unknown error";
+
+            errored = error instanceof Error ? error : new Error(message, { cause: error });
 
             throw errored;
         } finally {
@@ -1371,6 +1382,15 @@ export interface TransferOptions extends OperationOptions {
     onProgress?: (event: TransferProgress) => void;
 
     /**
+     * When `false`, skip keys that already exist at the destination. When `true`, always upload.
+     * @default false
+     */
+    overwrite?: boolean;
+
+    /** Restrict the walk to this prefix on the source. */
+    prefix?: string;
+
+    /**
      * When `true`, the first failing transfer rejects {@link transfer} instead of being
      * collected in `errors`.
      * @default false
@@ -1379,15 +1399,6 @@ export interface TransferOptions extends OperationOptions {
 
     /** Transform each source key into the destination key. Defaults to identity. */
     transformKey?: (key: string) => string;
-
-    /**
-     * When `false`, skip keys that already exist at the destination. When `true`, always upload.
-     * @default false
-     */
-    overwrite?: boolean;
-
-    /** Restrict the walk to this prefix on the source. */
-    prefix?: string;
 }
 
 export interface TransferResult {
@@ -1407,7 +1418,6 @@ export interface TransferResult {
  *
  * Like the other bulk methods, `transfer` doesn't throw on partial failure: results come back as
  * `{ transferred, skipped, errors? }`.
- *
  * @example
  * ```ts
  * const from = new Files({ adapter: new S3Storage({ bucket: "old", ... }) });
@@ -1419,21 +1429,8 @@ export interface TransferResult {
  * });
  * ```
  */
-export const transfer = async (
-    source: Files,
-    destination: Files,
-    options: TransferOptions = {},
-): Promise<TransferResult> => {
-    const {
-        concurrency = DEFAULT_BULK_CONCURRENCY,
-        limit,
-        onProgress,
-        overwrite = false,
-        prefix,
-        signal,
-        stopOnError = false,
-        transformKey,
-    } = options;
+export const transfer = async (source: Files, destination: Files, options: TransferOptions = {}): Promise<TransferResult> => {
+    const { concurrency = DEFAULT_BULK_CONCURRENCY, limit, onProgress, overwrite = false, prefix, signal, stopOnError = false, transformKey } = options;
 
     const transferred: string[] = [];
     const skipped: string[] = [];

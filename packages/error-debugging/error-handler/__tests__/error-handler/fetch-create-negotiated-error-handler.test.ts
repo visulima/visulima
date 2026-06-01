@@ -7,8 +7,7 @@ const JSON_ACCEPT_REGEX = /json/;
 const YAML_ACCEPT_REGEX = /application\/yaml/u;
 const EMPTY_ACCEPT_REGEX = /^$/u;
 
-const makeRequest = (accept?: string): Request =>
-    new Request("https://example.test/boom", accept === undefined ? undefined : { headers: { accept } });
+const makeRequest = (accept?: string): Request => new Request("https://example.test/boom", accept === undefined ? undefined : { headers: { accept } });
 
 describe(createFetchNegotiatedErrorHandler, () => {
     it("should dispatch application/json to the JSON handler", async () => {

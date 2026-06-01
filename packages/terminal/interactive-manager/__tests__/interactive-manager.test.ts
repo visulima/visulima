@@ -30,12 +30,12 @@ const createMockStream = (): { captured: string[]; stream: NodeJS.WriteStream } 
 
 const createManager = (): { capturedErr: string[]; capturedOut: string[]; manager: InteractiveManager } => {
     const { captured: capturedOut, stream: outStream } = createMockStream();
-    const { captured: capturedErr, stream: errStream } = createMockStream();
+    const { captured: capturedError, stream: errorStream } = createMockStream();
     const stdoutHook = new InteractiveStreamHook(outStream);
-    const stderrHook = new InteractiveStreamHook(errStream);
+    const stderrHook = new InteractiveStreamHook(errorStream);
     const manager = new InteractiveManager(stdoutHook, stderrHook);
 
-    return { capturedErr, capturedOut, manager };
+    return { capturedErr: capturedError, capturedOut, manager };
 };
 
 describe("interactiveManager", () => {
@@ -160,7 +160,9 @@ describe("interactiveManager", () => {
             manager.hook();
             manager.update("stdout", ["foo"]);
 
-            expect(() => manager.erase("stdout")).not.toThrow();
+            expect(() => {
+                manager.erase("stdout");
+            }).not.toThrow();
         });
 
         it("should not throw when erasing zero lines", () => {
@@ -168,7 +170,9 @@ describe("interactiveManager", () => {
 
             const { manager } = createManager();
 
-            expect(() => manager.erase("stdout", 0)).not.toThrow();
+            expect(() => {
+                manager.erase("stdout", 0);
+            }).not.toThrow();
         });
     });
 

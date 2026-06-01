@@ -2,7 +2,7 @@ import { onDestroy, onMount } from "svelte";
 import type { Readable } from "svelte/store";
 import { writable } from "svelte/store";
 
-import type { FingerprintFn } from "../core/fingerprint";
+import type { FingerprintFunction } from "../core/fingerprint";
 import { createTusAdapter } from "../core/tus-adapter";
 import type { UploadControl } from "../core/upload-control";
 import type { UrlStorage } from "../core/url-storage";
@@ -16,7 +16,7 @@ export interface CreateTusUploadOptions {
     /** TUS upload endpoint URL */
     endpoint: string;
     /** Customise the resume fingerprint. */
-    fingerprint?: FingerprintFn;
+    fingerprint?: FingerprintFunction;
     /** Maximum number of retry attempts */
     maxRetries?: number;
     /** Additional metadata to include with the upload */
@@ -70,7 +70,8 @@ export interface CreateTusUploadReturn {
  * @returns Upload functions and state stores
  */
 export const createTusUpload = (options: CreateTusUploadOptions): CreateTusUploadReturn => {
-    const { chunkSize, control, endpoint, fingerprint, maxRetries, metadata, onError, onPause, onProgress, onResume, onStart, onSuccess, retry, urlStorage } = options;
+    const { chunkSize, control, endpoint, fingerprint, maxRetries, metadata, onError, onPause, onProgress, onResume, onStart, onSuccess, retry, urlStorage } =
+        options;
 
     const progress = writable(0);
     const isUploading = writable(false);

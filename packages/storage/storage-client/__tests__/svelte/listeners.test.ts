@@ -25,7 +25,7 @@ const createStubUploader = (): {
     });
 
     const emit = (event: UploaderEventType, payload: UploadItem | BatchState): void => {
-        handlers.get(event)?.forEach((handler) => handler(payload));
+        handlers.get(event)?.forEach((handler) => { handler(payload); });
     };
 
     return { emit, handlers, off, on };
@@ -34,23 +34,25 @@ const createStubUploader = (): {
 type StubUploader = ReturnType<typeof createStubUploader>;
 const stubRef: { current: StubUploader | undefined } = { current: undefined };
 
-vi.mock("../../src/core/multipart-adapter", () => ({
-    createMultipartAdapter: vi.fn(() => {
-        const stub = createStubUploader();
+vi.mock(import("../../src/core/multipart-adapter"), () => {
+    return {
+        createMultipartAdapter: vi.fn(() => {
+            const stub = createStubUploader();
 
-        stubRef.current = stub;
+            stubRef.current = stub;
 
-        return {
-            abort: vi.fn(),
-            abortBatch: vi.fn(),
-            abortItem: vi.fn(),
-            clear: vi.fn(),
-            upload: vi.fn(),
-            uploadBatch: vi.fn(),
-            uploader: stub,
-        };
-    }),
-}));
+            return {
+                abort: vi.fn(),
+                abortBatch: vi.fn(),
+                abortItem: vi.fn(),
+                clear: vi.fn(),
+                upload: vi.fn(),
+                uploadBatch: vi.fn(),
+                uploader: stub,
+            };
+        }),
+    };
+});
 
 const { createAllAbortListener } = await import("../../src/svelte/create-all-abort-listener");
 const { createBatchCancelledListener } = await import("../../src/svelte/create-batch-cancelled-listener");
@@ -61,31 +63,33 @@ const { createBatchProgressListener } = await import("../../src/svelte/create-ba
 const { createBatchStartListener } = await import("../../src/svelte/create-batch-start-listener");
 const { createRetryListener } = await import("../../src/svelte/create-retry-listener");
 
-const makeItem = (overrides: Partial<UploadItem> = {}): UploadItem => ({
-    completed: 0,
-    file: new File(["x"], "x.txt"),
-    id: "item-1",
-    loaded: 0,
-    retryCount: 0,
-    size: 1,
-    status: "pending",
-    ...overrides,
-});
-
-const makeBatch = (overrides: Partial<BatchState> = {}): BatchState => ({
-    completedCount: 0,
-    errorCount: 0,
-    id: "batch-1",
-    itemIds: ["item-1"],
-    progress: 0,
-    status: "pending",
-    totalCount: 1,
-    ...overrides,
-});
-
-const mountListener = (listener: () => void): { unmount: () => void } => {
-    return render(ListenerHost, { props: { listener } });
+const makeItem = (overrides: Partial<UploadItem> = {}): UploadItem => {
+    return {
+        completed: 0,
+        file: new File(["x"], "x.txt"),
+        id: "item-1",
+        loaded: 0,
+        retryCount: 0,
+        size: 1,
+        status: "pending",
+        ...overrides,
+    };
 };
+
+const makeBatch = (overrides: Partial<BatchState> = {}): BatchState => {
+    return {
+        completedCount: 0,
+        errorCount: 0,
+        id: "batch-1",
+        itemIds: ["item-1"],
+        progress: 0,
+        status: "pending",
+        totalCount: 1,
+        ...overrides,
+    };
+};
+
+const mountListener = (listener: () => void): { unmount: () => void } => render(ListenerHost, { props: { listener } });
 
 beforeEach(() => {
     stubRef.current = undefined;
@@ -110,7 +114,7 @@ describe("svelte listener factories", () => {
             const onAbort = vi.fn();
             const item = makeItem({ status: "aborted" });
 
-            mountListener(() => createAllAbortListener({ endpoint: "/upload", onAbort }));
+            mountListener(() => { createAllAbortListener({ endpoint: "/upload", onAbort }); });
 
             expect(stubRef.current?.on).toHaveBeenCalledWith("ITEM_ABORT", expect.any(Function));
 
@@ -130,9 +134,10 @@ describe("svelte listener factories", () => {
             const onBatchCancelled = vi.fn();
             const batch = makeBatch({ status: "cancelled" });
 
-            mountListener(() => createBatchCancelledListener({ endpoint: "/upload", onBatchCancelled }));
+            mountListener(() => { createBatchCancelledListener({ endpoint: "/upload", onBatchCancelled }); });
 
             expect(stubRef.current?.on).toHaveBeenCalledWith("BATCH_CANCELLED", expect.any(Function));
+
             stubRef.current?.emit("BATCH_CANCELLED", batch);
             stubRef.current?.emit("BATCH_CANCELLED", makeItem());
 
@@ -148,10 +153,12 @@ describe("svelte listener factories", () => {
             const onBatchError = vi.fn();
             const batch = makeBatch({ errorCount: 1, status: "error" });
 
-            mountListener(() => createBatchErrorListener({ endpoint: "/upload", onBatchError }));
+            mountListener(() => { createBatchErrorListener({ endpoint: "/upload", onBatchError }); });
 
             expect(stubRef.current?.on).toHaveBeenCalledWith("BATCH_ERROR", expect.any(Function));
+
             stubRef.current?.emit("BATCH_ERROR", batch);
+
             expect(onBatchError).toHaveBeenCalledWith(batch);
         });
     });
@@ -163,10 +170,12 @@ describe("svelte listener factories", () => {
             const onBatchFinalize = vi.fn();
             const batch = makeBatch({ completedCount: 1, status: "completed" });
 
-            mountListener(() => createBatchFinalizeListener({ endpoint: "/upload", onBatchFinalize }));
+            mountListener(() => { createBatchFinalizeListener({ endpoint: "/upload", onBatchFinalize }); });
 
             expect(stubRef.current?.on).toHaveBeenCalledWith("BATCH_FINALIZE", expect.any(Function));
+
             stubRef.current?.emit("BATCH_FINALIZE", batch);
+
             expect(onBatchFinalize).toHaveBeenCalledWith(batch);
         });
     });
@@ -178,10 +187,12 @@ describe("svelte listener factories", () => {
             const onBatchFinish = vi.fn();
             const batch = makeBatch({ progress: 100, status: "completed" });
 
-            mountListener(() => createBatchFinishListener({ endpoint: "/upload", onBatchFinish }));
+            mountListener(() => { createBatchFinishListener({ endpoint: "/upload", onBatchFinish }); });
 
             expect(stubRef.current?.on).toHaveBeenCalledWith("BATCH_FINISH", expect.any(Function));
+
             stubRef.current?.emit("BATCH_FINISH", batch);
+
             expect(onBatchFinish).toHaveBeenCalledWith(batch);
         });
     });
@@ -193,7 +204,7 @@ describe("svelte listener factories", () => {
             const onBatchProgress = vi.fn();
             const batch = makeBatch({ progress: 50, status: "uploading" });
 
-            mountListener(() => createBatchProgressListener({ endpoint: "/upload", onBatchProgress }));
+            mountListener(() => { createBatchProgressListener({ endpoint: "/upload", onBatchProgress }); });
 
             stubRef.current?.emit("BATCH_PROGRESS", batch);
             stubRef.current?.emit("BATCH_PROGRESS", makeItem());
@@ -211,10 +222,12 @@ describe("svelte listener factories", () => {
             const onBatchStart = vi.fn();
             const batch = makeBatch({ status: "uploading" });
 
-            mountListener(() => createBatchStartListener({ endpoint: "/upload", onBatchStart }));
+            mountListener(() => { createBatchStartListener({ endpoint: "/upload", onBatchStart }); });
 
             expect(stubRef.current?.on).toHaveBeenCalledWith("BATCH_START", expect.any(Function));
+
             stubRef.current?.emit("BATCH_START", batch);
+
             expect(onBatchStart).toHaveBeenCalledWith(batch);
         });
     });
@@ -227,7 +240,7 @@ describe("svelte listener factories", () => {
             const first = makeItem({ retryCount: 0, status: "uploading" });
             const retried = makeItem({ id: "item-2", retryCount: 3, status: "uploading" });
 
-            mountListener(() => createRetryListener({ endpoint: "/upload", onRetry }));
+            mountListener(() => { createRetryListener({ endpoint: "/upload", onRetry }); });
 
             stubRef.current?.emit("ITEM_START", first);
             stubRef.current?.emit("ITEM_START", retried);

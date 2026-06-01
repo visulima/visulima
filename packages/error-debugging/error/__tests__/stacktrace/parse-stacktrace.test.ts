@@ -1983,10 +1983,7 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
 
             const stackFrames = parseStacktrace(
                 {
-                    stack:
-                        "Error: keep one\n"
-                        + "    at keep (http://localhost/keep.js:1:1)\n"
-                        + "    at drop (http://localhost/drop.js:2:2)\n",
+                    stack: "Error: keep one\n    at keep (http://localhost/keep.js:1:1)\n    at drop (http://localhost/drop.js:2:2)\n",
                 } as unknown as Error,
                 {
                     filter: (line: string): boolean => !line.includes("drop.js"),
@@ -2013,7 +2010,7 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
                     stack: "Error\n    at foo (http://localhost/file.js:1:1)",
                 } as unknown as Error);
 
-                expect(debugSpy).toHaveBeenCalled();
+                expect(debugSpy).toHaveBeenCalledWith();
             } finally {
                 debugSpy.mockRestore();
 

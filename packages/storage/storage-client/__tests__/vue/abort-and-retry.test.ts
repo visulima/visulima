@@ -1,5 +1,5 @@
 import { render } from "@testing-library/vue";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 import { defineComponent, h } from "vue";
 
 // Capture each adapter we hand out so individual tests can assert that the
@@ -16,26 +16,28 @@ type FakeAdapter = {
 
 const lastAdapter: { current: FakeAdapter | undefined } = { current: undefined };
 
-vi.mock("../../src/core/multipart-adapter", () => ({
-    createMultipartAdapter: vi.fn(() => {
-        const adapter: FakeAdapter = {
-            abort: vi.fn(),
-            abortBatch: vi.fn(),
-            abortItem: vi.fn(),
-            clear: vi.fn(),
-            upload: vi.fn(),
-            uploadBatch: vi.fn(),
-            uploader: {
-                retryBatch: vi.fn(),
-                retryItem: vi.fn(),
-            },
-        };
+vi.mock(import("../../src/core/multipart-adapter"), () => {
+    return {
+        createMultipartAdapter: vi.fn(() => {
+            const adapter: FakeAdapter = {
+                abort: vi.fn(),
+                abortBatch: vi.fn(),
+                abortItem: vi.fn(),
+                clear: vi.fn(),
+                upload: vi.fn(),
+                uploadBatch: vi.fn(),
+                uploader: {
+                    retryBatch: vi.fn(),
+                    retryItem: vi.fn(),
+                },
+            };
 
-        lastAdapter.current = adapter;
+            lastAdapter.current = adapter;
 
-        return adapter;
-    }),
-}));
+            return adapter;
+        }),
+    };
+});
 
 const { useAbortAll } = await import("../../src/vue/use-abort-all");
 const { useAbortBatch } = await import("../../src/vue/use-abort-batch");
@@ -74,8 +76,10 @@ describe("vue abort and retry composables", () => {
 
             const { result } = mountComposable(() => useAbortAll({ endpoint: "/upload" }));
 
-            expect(typeof result.abortAll).toBe("function");
+            expectTypeOf(result.abortAll).toBeFunction();
+
             result.abortAll();
+
             expect(lastAdapter.current?.abort).toHaveBeenCalledTimes(1);
         });
     });

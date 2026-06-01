@@ -87,8 +87,7 @@ describe("interactiveStreamHook", () => {
 
             let called = false;
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (stream.write as any)("data", "utf8", () => {
+            (stream.write as (data: string, encoding: BufferEncoding, callback: () => void) => boolean)("data", "utf8", () => {
                 called = true;
             });
 
@@ -149,7 +148,9 @@ describe("interactiveStreamHook", () => {
 
             hook.active();
 
-            expect(() => hook.inactive()).not.toThrow();
+            expect(() => {
+                hook.inactive();
+            }).not.toThrow();
         });
     });
 
@@ -158,7 +159,6 @@ describe("interactiveStreamHook", () => {
             expect.assertions(1);
 
             const { captured, stream } = createMockStream();
-            const original = stream.write;
             const hook = new InteractiveStreamHook(stream);
 
             hook.active();
@@ -168,9 +168,6 @@ describe("interactiveStreamHook", () => {
             stream.write("after-renew");
 
             expect(captured.join("")).toContain("after-renew");
-
-            // sanity: same identity as before active()
-            void original;
         });
     });
 

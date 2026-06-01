@@ -14,7 +14,7 @@ const collect = (stream: Readable): Promise<Buffer> =>
     });
 
 describe("stream-utils", () => {
-    describe("createRangeLimitedStream", () => {
+    describe(createRangeLimitedStream, () => {
         it("returns only the requested byte range", async () => {
             expect.assertions(1);
 
@@ -56,7 +56,7 @@ describe("stream-utils", () => {
         });
     });
 
-    describe("createStreamResponse", () => {
+    describe(createStreamResponse, () => {
         it("packages stream + size + headers into a response object", () => {
             expect.assertions(3);
 
@@ -78,7 +78,7 @@ describe("stream-utils", () => {
         });
     });
 
-    describe("pipeWithBackpressure", () => {
+    describe(pipeWithBackpressure, () => {
         it("pipes data from source to destination and signals end", async () => {
             expect.assertions(1);
 

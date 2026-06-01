@@ -29,6 +29,23 @@ type Props = {
 
 export default function ErrorOverview({ error }: Props): ReactElement {
     const traces = parseStacktrace(error);
+
+    // Derive a stable, unique key per frame from its content. Stack frames can
+    // repeat (e.g. empty `raw`, or `at native` recurring), so an occurrence
+    // counter disambiguates duplicates without falling back to the array index.
+    const traceKeyCounts = new Map<string, number>();
+    const tracesWithKeys = traces.map((trace) => {
+        const base
+            = !trace.methodName && !trace.file
+                ? `raw:${trace.raw}`
+                : `${cleanupPath(trace.file) ?? ""}:${trace.line}:${trace.column}:${trace.methodName ?? ""}`;
+        const occurrence = traceKeyCounts.get(base) ?? 0;
+
+        traceKeyCounts.set(base, occurrence + 1);
+
+        return { key: `${base}#${occurrence}`, trace };
+    });
+
     const origin = traces[0];
     const filePath = cleanupPath(origin?.file);
     let excerpt: CodeExcerpt[] | undefined;
@@ -75,8 +92,8 @@ export default function ErrorOverview({ error }: Props): ReactElement {
 
             {origin && excerpt ? (
                 <Box flexDirection="column" marginTop={1}>
-                    {excerpt.map(({ line, value }, index) => (
-                        <Box key={index}>
+                    {excerpt.map(({ line, value }) => (
+                        <Box key={`excerpt-${line}`}>
                             <Box width={lineWidth + 1}>
                                 <Text
                                     aria-label={line === origin.line ? `Line ${line}, error` : `Line ${line}`}
@@ -99,16 +116,14 @@ export default function ErrorOverview({ error }: Props): ReactElement {
 
             {traces.length > 0 ? (
                 <Box flexDirection="column" marginTop={1}>
-                    {traces.map((trace, index) => {
+                    {tracesWithKeys.map(({ key, trace }) => {
                         const fileLabel = cleanupPath(trace.file) ?? "";
 
                         // Fall back to the raw stack line when none of the
-                        // structured fields could be extracted. Index-based
-                        // keys avoid duplicate-key warnings when `trace.raw`
-                        // is empty or repeats across frames (e.g. `at native`).
+                        // structured fields could be extracted.
                         if (!trace.methodName && !trace.file) {
                             return (
-                                <Box key={index}>
+                                <Box key={key}>
                                     <Text dimColor>- </Text>
                                     <Text bold dimColor>
                                         {trace.raw}
@@ -118,7 +133,7 @@ export default function ErrorOverview({ error }: Props): ReactElement {
                         }
 
                         return (
-                            <Box key={index}>
+                            <Box key={key}>
                                 <Text dimColor>- </Text>
                                 <Text bold dimColor>
                                     {trace.methodName ?? "<anonymous>"}

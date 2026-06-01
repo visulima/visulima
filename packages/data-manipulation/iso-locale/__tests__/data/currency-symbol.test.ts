@@ -16,7 +16,7 @@ describe("currencySymbolMap", () => {
 
         const entry = currencySymbolMap[0]!;
 
-        expect(entry).toEqual(
+        expect(entry).toStrictEqual(
             expect.objectContaining({
                 code: expect.any(String),
                 name: expect.any(String),

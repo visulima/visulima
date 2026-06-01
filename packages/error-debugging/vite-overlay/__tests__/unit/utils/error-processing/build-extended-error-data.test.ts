@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-return,@typescript-eslint/no-unsafe-call,@typescript-eslint/prefer-nullish-coalescing,@typescript-eslint/prefer-optional-chain,@typescript-eslint/no-unsafe-argument,sonarjs/no-undefined-argument,@typescript-eslint/restrict-template-expressions,@typescript-eslint/unbound-method */
+/* eslint-disable @typescript-eslint/prefer-optional-chain,sonarjs/no-undefined-argument */
 // Mock all dependencies first
 import { readFile } from "node:fs/promises";
 
