@@ -109,7 +109,7 @@ describe(registerListProjects, () => {
 
         const error = parseError(await calls[0]!.handler({}));
 
-        expect(error.error).toBe(true);
+        expect(error.error).toBeTruthy();
     });
 });
 
@@ -148,7 +148,7 @@ describe(registerDescribeProject, () => {
 
         const error = parseError(await calls[0]!.handler({ name: "@scope/alpha" }));
 
-        expect(error.error).toBe(true);
+        expect(error.error).toBeTruthy();
     });
 });
 
@@ -215,7 +215,7 @@ describe(registerListTargets, () => {
 
         const error = parseError(await calls[0]!.handler({}));
 
-        expect(error.error).toBe(true);
+        expect(error.error).toBeTruthy();
     });
 });
 
@@ -353,7 +353,7 @@ describe(registerGetRunLogs, () => {
 
         const error = parseError(await calls[0]!.handler({}));
 
-        expect(error.error).toBe(true);
+        expect(error.error).toBeTruthy();
         expect(error.error).not.toContain("No run summary");
     });
 });
@@ -434,7 +434,7 @@ describe(registerCacheWhy, () => {
 
         const error = parseError(await calls[0]!.handler({ taskId: "@scope/alpha:build" }));
 
-        expect(error.error).toBe(true);
+        expect(error.error).toBeTruthy();
     });
 });
 
@@ -463,7 +463,7 @@ describe(registerListTemplates, () => {
 
         const error = parseError(await calls[0]!.handler({}));
 
-        expect(error.error).toBe(true);
+        expect(error.error).toBeTruthy();
     });
 });
 
@@ -562,7 +562,7 @@ describe(registerCacheHash, () => {
 
         const error = parseError(await calls[0]!.handler({ taskId: "@scope/alpha:build" }));
 
-        expect(error.error).toBe(true);
+        expect(error.error).toBeTruthy();
     });
 });
 
@@ -622,7 +622,7 @@ describe(registerAudit, () => {
 
         const error = parseError(await calls[0]!.handler({}));
 
-        expect(error.error).toBe(true);
+        expect(error.error).toBeTruthy();
     });
 });
 
@@ -667,6 +667,6 @@ describe(registerAdvisoryStatus, () => {
 
         const error = parseError(await calls[0]!.handler({}));
 
-        expect(error.error).toBe(true);
+        expect(error.error).toBeTruthy();
     });
 });

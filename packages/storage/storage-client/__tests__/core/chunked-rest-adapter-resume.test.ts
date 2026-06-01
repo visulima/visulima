@@ -27,7 +27,7 @@ const captureFetchCall = (call: unknown[]): FetchArgs => {
             headers[key] = value;
         }
     } else {
-        Object.assign(headers, headersInit);
+        Object.assign(headers, headersInit as Record<string, string>);
     }
 
     return { headers, method: init?.method, url };
@@ -84,7 +84,7 @@ describe("chunked-rest-adapter resume", () => {
         // 5. GET — result
         mockFetch.mockResolvedValueOnce({
             headers: new Headers(),
-            json: async () => { return { id: "file-123", size: 100, status: "completed" }; },
+            json: async () => ({ id: "file-123", size: 100, status: "completed" }),
             ok: true,
         });
 
@@ -134,7 +134,7 @@ describe("chunked-rest-adapter resume", () => {
         // 4. GET result
         mockFetch.mockResolvedValueOnce({
             headers: new Headers(),
-            json: async () => { return { id: "existing-id", size: 100, status: "completed" }; },
+            json: async () => ({ id: "existing-id", size: 100, status: "completed" }),
             ok: true,
         });
 
@@ -163,7 +163,7 @@ describe("chunked-rest-adapter resume", () => {
             uploadUrl: "stale-id",
         });
 
-        const adapter = createChunkedRestAdapter({ chunkSize: 100, endpoint: ENDPOINT, retry: false, urlStorage });
+        const adapter = createChunkedRestAdapter({ chunkSize: 100, endpoint: ENDPOINT, urlStorage, retry: false });
 
         // 1. HEAD probe — 404 Gone
         mockFetch.mockResolvedValueOnce({
@@ -195,7 +195,7 @@ describe("chunked-rest-adapter resume", () => {
         // 6. GET result
         mockFetch.mockResolvedValueOnce({
             headers: new Headers(),
-            json: async () => { return { id: "fresh-id", size: 100, status: "completed" }; },
+            json: async () => ({ id: "fresh-id", size: 100, status: "completed" }),
             ok: true,
         });
 
@@ -247,7 +247,7 @@ describe("chunked-rest-adapter resume", () => {
         // 5. GET result
         mockFetch.mockResolvedValueOnce({
             headers: new Headers(),
-            json: async () => { return { id: "snap-id", size: 100, status: "completed" }; },
+            json: async () => ({ id: "snap-id", size: 100, status: "completed" }),
             ok: true,
         });
 
@@ -298,7 +298,7 @@ describe("chunked-rest-adapter resume", () => {
         // 4. GET result.
         mockFetch.mockResolvedValueOnce({
             headers: new Headers(),
-            json: async () => { return { id: "resumed-id", size: 100, status: "completed" }; },
+            json: async () => ({ id: "resumed-id", size: 100, status: "completed" }),
             ok: true,
         });
 
@@ -309,6 +309,7 @@ describe("chunked-rest-adapter resume", () => {
         let observedAfterProbe = -1;
         const originalUpdate = control._updateOffset.bind(control);
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- intentional spy
         (control as any)._updateOffset = (offset: number): void => {
             if (observedAfterProbe === -1) {
                 observedAfterProbe = offset;
@@ -378,12 +379,12 @@ describe("chunked-rest-adapter resume", () => {
         // 3. PATCH hangs until the signal fires.
         mockFetch.mockImplementationOnce(
             async (_url: string, init?: RequestInit) =>
-                new Promise<Response>((_resolve, reject) => {
+                new Promise<Response>((_, reject) => {
                     init?.signal?.addEventListener("abort", () => {
-                        const error = new Error("Aborted");
+                        const err = new Error("Aborted");
 
-                        error.name = "AbortError";
-                        reject(error);
+                        err.name = "AbortError";
+                        reject(err);
                     });
                 }),
         );
@@ -429,7 +430,7 @@ describe("chunked-rest-adapter resume", () => {
         });
         mockFetch.mockResolvedValueOnce({
             headers: new Headers(),
-            json: async () => { return { id: "file-pause", size: 100, status: "completed" }; },
+            json: async () => ({ id: "file-pause", size: 100, status: "completed" }),
             ok: true,
         });
 
@@ -441,11 +442,9 @@ describe("chunked-rest-adapter resume", () => {
         });
 
         control.pause();
-
         expect(adapter.isPaused()).toBe(true);
 
         await control.resume();
-
         expect(adapter.isPaused()).toBe(false);
 
         resolvePatch?.({
@@ -500,7 +499,7 @@ describe("chunked-rest-adapter resume", () => {
         // 6. GET result.
         mockFetch.mockResolvedValueOnce({
             headers: new Headers(),
-            json: async () => { return { id: "fresh-id", size: 100, status: "completed" }; },
+            json: async () => ({ id: "fresh-id", size: 100, status: "completed" }),
             ok: true,
         });
 

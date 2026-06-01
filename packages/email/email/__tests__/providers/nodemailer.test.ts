@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // Mock nodemailer before importing the provider.
 const createTransportMock = vi.fn<(...arguments_: unknown[]) => unknown>();
 
-vi.mock(import("nodemailer"), () => {
+vi.mock("nodemailer", () => {
     return {
         default: {
             createTransport: (...arguments_: unknown[]) => createTransportMock(...arguments_),
@@ -65,7 +65,7 @@ describe(nodemailerProvider, () => {
             await provider.initialize();
 
             expect(createTransportMock).toHaveBeenCalledWith({ host: "smtp.example.com" });
-            expect(transporter.verify).toHaveBeenCalledWith();
+            expect(transporter.verify).toHaveBeenCalled();
         });
 
         it("should throw EmailError if verify fails", async () => {
@@ -307,7 +307,7 @@ describe(nodemailerProvider, () => {
                 transportOverride: { host: "smtp.override.com" },
             });
 
-            expect(overrideTransporter.sendMail).toHaveBeenCalledWith();
+            expect(overrideTransporter.sendMail).toHaveBeenCalled();
             expect(defaultTransporter.sendMail).not.toHaveBeenCalled();
         });
 
@@ -366,7 +366,7 @@ describe(nodemailerProvider, () => {
             await provider.initialize();
             await provider.shutdown?.();
 
-            expect(transporter.close).toHaveBeenCalledWith();
+            expect(transporter.close).toHaveBeenCalled();
         });
     });
 

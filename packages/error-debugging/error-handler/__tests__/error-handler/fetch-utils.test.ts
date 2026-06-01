@@ -1,4 +1,4 @@
-import { describe, expect, expectTypeOf, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { extractStatusCode, sendFetchJson } from "../../src/error-handler/fetch-utils";
 
@@ -6,7 +6,7 @@ describe("fetch-utils re-exports", () => {
     it("should re-export extractStatusCode as a callable function", () => {
         expect.assertions(2);
 
-        expectTypeOf(extractStatusCode).toBeFunction();
+        expect(typeof extractStatusCode).toBe("function");
 
         const error = new Error("boom");
 
@@ -18,7 +18,7 @@ describe("fetch-utils re-exports", () => {
     it("should re-export sendFetchJson as a callable function", async () => {
         expect.assertions(3);
 
-        expectTypeOf(sendFetchJson).toBeFunction();
+        expect(typeof sendFetchJson).toBe("function");
 
         const response = sendFetchJson({ ok: false }, 422);
 

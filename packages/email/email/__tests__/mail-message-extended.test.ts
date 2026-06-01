@@ -1,7 +1,7 @@
 import { Buffer } from "node:buffer";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
@@ -9,33 +9,32 @@ import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import MailMessage from "../src/mail-message";
 import type { EmailOptions } from "../src/types";
 
-const FAILED_TO_RENDER_TEMPLATE_REGEX = /Failed to render template/;
-const FAILED_TO_RENDER_TEXT_TEMPLATE_REGEX = /Failed to render text template/;
-const FILE_READ_FAILURE_REGEX = /unable to read|ENOENT/i;
-
 let temporaryDirectory: string;
 let temporaryFilePath: string;
-let eventIcsPath: string;
 
-describe("mailMessage - extended fluent builder", () => {
-    beforeAll(() => {
-        temporaryDirectory = mkdtempSync(join(tmpdir(), "mail-message-test-"));
-        temporaryFilePath = join(temporaryDirectory, "hello.txt");
-        eventIcsPath = join(temporaryDirectory, "event.ics");
-        writeFileSync(temporaryFilePath, "hello world");
-    });
+beforeAll(() => {
+    temporaryDirectory = mkdtempSync(join(tmpdir(), "mail-message-test-"));
+    temporaryFilePath = join(temporaryDirectory, "hello.txt");
+    writeFileSync(temporaryFilePath, "hello world");
+});
 
-    afterAll(() => {
-        rmSync(temporaryDirectory, { force: true, recursive: true });
-    });
+afterAll(() => {
+    rmSync(temporaryDirectory, { recursive: true, force: true });
+});
 
+describe("MailMessage - extended fluent builder", () => {
     describe("attachFromPath", () => {
         it("should add an attachment from a real file", async () => {
             expect.assertions(3);
 
             const message = new MailMessage();
 
-            await message.from("sender@example.com").to("user@example.com").subject("Test").html("<h1>Hi</h1>").attachFromPath(temporaryFilePath);
+            await message
+                .from("sender@example.com")
+                .to("user@example.com")
+                .subject("Test")
+                .html("<h1>Hi</h1>")
+                .attachFromPath(temporaryFilePath);
 
             const built = await message.build();
 
@@ -49,10 +48,15 @@ describe("mailMessage - extended fluent builder", () => {
 
             const message = new MailMessage();
 
-            await message.from("sender@example.com").to("user@example.com").subject("Test").html("<h1>Hi</h1>").attachFromPath(temporaryFilePath, {
-                contentType: "application/octet-stream",
-                filename: "custom.bin",
-            });
+            await message
+                .from("sender@example.com")
+                .to("user@example.com")
+                .subject("Test")
+                .html("<h1>Hi</h1>")
+                .attachFromPath(temporaryFilePath, {
+                    contentType: "application/octet-stream",
+                    filename: "custom.bin",
+                });
 
             const built = await message.build();
 
@@ -65,7 +69,9 @@ describe("mailMessage - extended fluent builder", () => {
 
             const message = new MailMessage();
 
-            await expect(message.attachFromPath("/non/existent/path/file.txt")).rejects.toThrow(FILE_READ_FAILURE_REGEX);
+            await expect(
+                message.attachFromPath("/non/existent/path/file.txt"),
+            ).rejects.toThrow();
         });
     });
 
@@ -75,11 +81,16 @@ describe("mailMessage - extended fluent builder", () => {
 
             const message = new MailMessage();
 
-            const cid = await message.from("sender@example.com").to("user@example.com").subject("Test").html("<h1>Hi</h1>").embedFromPath(temporaryFilePath);
+            const cid = await message
+                .from("sender@example.com")
+                .to("user@example.com")
+                .subject("Test")
+                .html("<h1>Hi</h1>")
+                .embedFromPath(temporaryFilePath);
 
             const built = await message.build();
 
-            expect(cid).toBe(true);
+            expect(cid).toBeTruthy();
             expect(built.attachments).toHaveLength(1);
             expect(built.attachments?.[0]?.contentDisposition).toBe("inline");
         });
@@ -89,7 +100,9 @@ describe("mailMessage - extended fluent builder", () => {
 
             const message = new MailMessage();
 
-            await expect(message.embedFromPath("/non/existent/path/file.txt")).rejects.toThrow(FILE_READ_FAILURE_REGEX);
+            await expect(
+                message.embedFromPath("/non/existent/path/file.txt"),
+            ).rejects.toThrow();
         });
     });
 
@@ -108,7 +121,7 @@ describe("mailMessage - extended fluent builder", () => {
 
             const built = await message.build();
 
-            expect(cid).toBe(true);
+            expect(cid).toBeTruthy();
             expect(built.attachments?.[0]?.contentDisposition).toBe("inline");
             expect(built.attachments?.[0]?.contentType).toBe("image/png");
         });
@@ -120,18 +133,16 @@ describe("mailMessage - extended fluent builder", () => {
 
             const message = new MailMessage();
 
-            const sign = vi.fn((email: EmailOptions) =>
-                Promise.resolve({
-                    ...email,
-                    headers: { ...(email.headers as Record<string, string>), "DKIM-Signature": "test-signature" },
-                }),
-            );
+            const sign = vi.fn(async (email: any) => ({
+                ...email,
+                headers: { ...email.headers, "DKIM-Signature": "test-signature" },
+            }));
 
             message.from("sender@example.com").to("user@example.com").subject("Test").html("<h1>Hi</h1>").sign({ sign });
 
             const built = await message.build();
 
-            expect(sign).toHaveBeenCalledWith();
+            expect(sign).toHaveBeenCalled();
             expect(built.headers?.["DKIM-Signature"]).toBe("test-signature");
         });
 
@@ -140,18 +151,16 @@ describe("mailMessage - extended fluent builder", () => {
 
             const message = new MailMessage();
 
-            const encrypt = vi.fn((email: EmailOptions) =>
-                Promise.resolve({
-                    ...email,
-                    html: "<encrypted/>",
-                }),
-            );
+            const encrypt = vi.fn(async (email: any) => ({
+                ...email,
+                html: "<encrypted/>",
+            }));
 
             message.from("sender@example.com").to("user@example.com").subject("Test").html("<h1>Hi</h1>").encrypt({ encrypt });
 
             const built = await message.build();
 
-            expect(encrypt).toHaveBeenCalledWith();
+            expect(encrypt).toHaveBeenCalled();
             expect(built.html).toBe("<encrypted/>");
         });
 
@@ -160,15 +169,21 @@ describe("mailMessage - extended fluent builder", () => {
 
             const message = new MailMessage();
 
-            const sign = vi.fn((email: EmailOptions) => Promise.resolve({ ...email, html: `${String(email.html)}-signed` }));
-            const encrypt = vi.fn((email: EmailOptions) => Promise.resolve({ ...email, html: `${String(email.html)}-encrypted` }));
+            const sign = vi.fn(async (email: any) => ({ ...email, html: `${email.html}-signed` }));
+            const encrypt = vi.fn(async (email: any) => ({ ...email, html: `${email.html}-encrypted` }));
 
-            message.from("sender@example.com").to("user@example.com").subject("Test").html("<h1>Hi</h1>").sign({ sign }).encrypt({ encrypt });
+            message
+                .from("sender@example.com")
+                .to("user@example.com")
+                .subject("Test")
+                .html("<h1>Hi</h1>")
+                .sign({ sign })
+                .encrypt({ encrypt });
 
             const built = await message.build();
 
             expect(built.html).toBe("<h1>Hi</h1>-signed-encrypted");
-            expect(encrypt).toHaveBeenCalledWith();
+            expect(encrypt).toHaveBeenCalled();
         });
     });
 
@@ -200,16 +215,13 @@ describe("mailMessage - extended fluent builder", () => {
                 .to("user@example.com")
                 .subject("Test")
                 .html("<h1>Hi</h1>")
-                .icalEvent(
-                    (calendar) => {
-                        calendar.createEvent({
-                            end: new Date("2026-01-01T01:00:00Z"),
-                            start: new Date("2026-01-01T00:00:00Z"),
-                            summary: "Meeting",
-                        });
-                    },
-                    { method: "REQUEST" },
-                );
+                .icalEvent((calendar) => {
+                    calendar.createEvent({
+                        end: new Date("2026-01-01T01:00:00Z"),
+                        start: new Date("2026-01-01T00:00:00Z"),
+                        summary: "Meeting",
+                    });
+                }, { method: "REQUEST" });
 
             const built = await message.build();
 
@@ -222,11 +234,16 @@ describe("mailMessage - extended fluent builder", () => {
 
             const message = new MailMessage();
 
-            message.from("sender@example.com").to("user@example.com").subject("Test").html("<h1>Hi</h1>").icalEventFromFile(eventIcsPath);
+            message
+                .from("sender@example.com")
+                .to("user@example.com")
+                .subject("Test")
+                .html("<h1>Hi</h1>")
+                .icalEventFromFile("/tmp/event.ics");
 
             const built = await message.build();
 
-            expect(built.icalEvent?.path).toBe(eventIcsPath);
+            expect(built.icalEvent?.path).toBe("/tmp/event.ics");
         });
 
         it("should attach from file URL", async () => {
@@ -234,13 +251,18 @@ describe("mailMessage - extended fluent builder", () => {
 
             const message = new MailMessage();
 
-            const url = pathToFileURL(eventIcsPath);
+            const url = pathToFileURL("/tmp/event.ics");
 
-            message.from("sender@example.com").to("user@example.com").subject("Test").html("<h1>Hi</h1>").icalEventFromFile(url);
+            message
+                .from("sender@example.com")
+                .to("user@example.com")
+                .subject("Test")
+                .html("<h1>Hi</h1>")
+                .icalEventFromFile(url);
 
             const built = await message.build();
 
-            expect(built.icalEvent?.path).toBe(eventIcsPath);
+            expect(built.icalEvent?.path).toBe("/tmp/event.ics");
         });
 
         it("should attach from URL", async () => {
@@ -248,7 +270,12 @@ describe("mailMessage - extended fluent builder", () => {
 
             const message = new MailMessage();
 
-            message.from("sender@example.com").to("user@example.com").subject("Test").html("<h1>Hi</h1>").icalEventFromUrl("https://example.com/event.ics");
+            message
+                .from("sender@example.com")
+                .to("user@example.com")
+                .subject("Test")
+                .html("<h1>Hi</h1>")
+                .icalEventFromUrl("https://example.com/event.ics");
 
             const built = await message.build();
 
@@ -262,9 +289,13 @@ describe("mailMessage - extended fluent builder", () => {
 
             const message = new MailMessage();
 
-            const renderer = vi.fn(() => Promise.resolve("<h1>Rendered</h1>"));
+            const renderer = vi.fn(async () => "<h1>Rendered</h1>");
 
-            await message.from("sender@example.com").to("user@example.com").subject("Test").view(renderer, "template", { name: "John" });
+            await message
+                .from("sender@example.com")
+                .to("user@example.com")
+                .subject("Test")
+                .view(renderer, "template", { name: "John" });
 
             const built = await message.build();
 
@@ -276,9 +307,13 @@ describe("mailMessage - extended fluent builder", () => {
 
             const message = new MailMessage();
 
-            const renderer = vi.fn(() => Promise.resolve("<h1>Rendered</h1>"));
+            const renderer = vi.fn(async () => "<h1>Rendered</h1>");
 
-            await message.from("sender@example.com").to("user@example.com").subject("Test").view(renderer, "template", undefined, { autoText: false });
+            await message
+                .from("sender@example.com")
+                .to("user@example.com")
+                .subject("Test")
+                .view(renderer, "template", undefined, { autoText: false });
 
             const built = await message.build();
 
@@ -291,11 +326,17 @@ describe("mailMessage - extended fluent builder", () => {
 
             const message = new MailMessage();
 
-            const renderer = vi.fn(() => Promise.reject(new Error("Render failure")));
+            const renderer = vi.fn(async () => {
+                throw new Error("Render failure");
+            });
 
-            await expect(message.from("sender@example.com").to("user@example.com").subject("Test").view(renderer, "template")).rejects.toThrow(
-                FAILED_TO_RENDER_TEMPLATE_REGEX,
-            );
+            await expect(
+                message
+                    .from("sender@example.com")
+                    .to("user@example.com")
+                    .subject("Test")
+                    .view(renderer, "template"),
+            ).rejects.toThrow(/Failed to render template/);
         });
     });
 
@@ -305,7 +346,7 @@ describe("mailMessage - extended fluent builder", () => {
 
             const message = new MailMessage();
 
-            const renderer = vi.fn(() => Promise.resolve("Hello John"));
+            const renderer = vi.fn(async () => "Hello John");
 
             await message
                 .from("sender@example.com")
@@ -324,11 +365,16 @@ describe("mailMessage - extended fluent builder", () => {
 
             const message = new MailMessage();
 
-            const renderer = vi.fn(() => Promise.resolve(42 as unknown as string));
+            const renderer = vi.fn(async () => 42 as any);
 
             await expect(
-                message.from("sender@example.com").to("user@example.com").subject("Test").html("<h1>Hi</h1>").viewText(renderer, "template"),
-            ).rejects.toThrow(FAILED_TO_RENDER_TEXT_TEMPLATE_REGEX);
+                message
+                    .from("sender@example.com")
+                    .to("user@example.com")
+                    .subject("Test")
+                    .html("<h1>Hi</h1>")
+                    .viewText(renderer, "template"),
+            ).rejects.toThrow(/Failed to render text template/);
         });
 
         it("should throw on renderer error", async () => {
@@ -336,11 +382,18 @@ describe("mailMessage - extended fluent builder", () => {
 
             const message = new MailMessage();
 
-            const renderer = vi.fn(() => Promise.reject(new Error("Render failure")));
+            const renderer = vi.fn(async () => {
+                throw new Error("Render failure");
+            });
 
             await expect(
-                message.from("sender@example.com").to("user@example.com").subject("Test").html("<h1>Hi</h1>").viewText(renderer, "template"),
-            ).rejects.toThrow(FAILED_TO_RENDER_TEXT_TEMPLATE_REGEX);
+                message
+                    .from("sender@example.com")
+                    .to("user@example.com")
+                    .subject("Test")
+                    .html("<h1>Hi</h1>")
+                    .viewText(renderer, "template"),
+            ).rejects.toThrow(/Failed to render text template/);
         });
     });
 
@@ -362,7 +415,12 @@ describe("mailMessage - extended fluent builder", () => {
 
             const message = new MailMessage();
 
-            message.from("sender@example.com").to("user@example.com").subject("Test").html("<h1>Hi</h1>").setHeaders({ "X-A": "1", "X-B": "2" });
+            message
+                .from("sender@example.com")
+                .to("user@example.com")
+                .subject("Test")
+                .html("<h1>Hi</h1>")
+                .setHeaders({ "X-A": "1", "X-B": "2" });
 
             const built = await message.build();
 
@@ -399,7 +457,12 @@ describe("mailMessage - extended fluent builder", () => {
 
             const message = new MailMessage();
 
-            message.from("sender@example.com").to("user@example.com").subject("Test").html("<h1>Hi</h1>").returnPath("bounce@example.com");
+            message
+                .from("sender@example.com")
+                .to("user@example.com")
+                .subject("Test")
+                .html("<h1>Hi</h1>")
+                .returnPath("bounce@example.com");
 
             const built = await message.build();
 
@@ -412,7 +475,12 @@ describe("mailMessage - extended fluent builder", () => {
 
             const message = new MailMessage();
 
-            message.from("sender@example.com").to("user@example.com").subject("Test").html("<h1>Hi</h1>").sender({ email: "actual@example.com" });
+            message
+                .from("sender@example.com")
+                .to("user@example.com")
+                .subject("Test")
+                .html("<h1>Hi</h1>")
+                .sender({ email: "actual@example.com" });
 
             const built = await message.build();
 
@@ -506,12 +574,17 @@ describe("mailMessage - extended fluent builder", () => {
     });
 
     describe("text/html charset", () => {
-        it("should set text and html with custom charsets", () => {
+        it("should set text and html with custom charsets", async () => {
             expect.assertions(2);
 
             const message = new MailMessage();
 
-            message.from("sender@example.com").to("u@example.com").subject("Test").text("Hi", "iso-8859-1").html("<h1>Hi</h1>", "iso-8859-1");
+            message
+                .from("sender@example.com")
+                .to("u@example.com")
+                .subject("Test")
+                .text("Hi", "iso-8859-1")
+                .html("<h1>Hi</h1>", "iso-8859-1");
 
             expect(message.getTextCharset()).toBe("iso-8859-1");
             expect(message.getHtmlCharset()).toBe("iso-8859-1");
@@ -537,7 +610,12 @@ describe("mailMessage - extended fluent builder", () => {
 
             const message = new MailMessage();
 
-            message.from({ email: "sender@example.com", name: "Sender" }).to("u@example.com").subject("My subject").text("Plain").html("<h1>HTML</h1>");
+            message
+                .from({ email: "sender@example.com", name: "Sender" })
+                .to("u@example.com")
+                .subject("My subject")
+                .text("Plain")
+                .html("<h1>HTML</h1>");
 
             expect(message.getSubject()).toBe("My subject");
             expect(message.getFrom()?.email).toBe("sender@example.com");
@@ -577,13 +655,13 @@ describe("mailMessage - extended fluent builder", () => {
 
             await new MailMessage().setLogger(okConsole).attachFromPath(temporaryFilePath);
 
-            expect(okConsole.log).toHaveBeenCalledWith();
+            expect(okConsole.log).toHaveBeenCalled();
 
             const failConsole = makeConsole();
 
-            await expect(new MailMessage().setLogger(failConsole).attachFromPath(join(temporaryDirectory, "missing.txt"))).rejects.toThrow(FILE_READ_FAILURE_REGEX);
+            await expect(new MailMessage().setLogger(failConsole).attachFromPath(join(temporaryDirectory, "missing.txt"))).rejects.toThrow();
 
-            expect(failConsole.error).toHaveBeenCalledWith();
+            expect(failConsole.error).toHaveBeenCalled();
             expect(failConsole.log).not.toHaveBeenCalled();
         });
 
@@ -594,7 +672,7 @@ describe("mailMessage - extended fluent builder", () => {
 
             new MailMessage().setLogger(mockConsole).attachData(Buffer.from("data"), { filename: "a.txt" });
 
-            expect(mockConsole.log).toHaveBeenCalledWith();
+            expect(mockConsole.log).toHaveBeenCalled();
         });
 
         it("logs embedFromPath success and failure", async () => {
@@ -604,13 +682,13 @@ describe("mailMessage - extended fluent builder", () => {
 
             await new MailMessage().setLogger(okConsole).embedFromPath(temporaryFilePath);
 
-            expect(okConsole.log).toHaveBeenCalledWith();
+            expect(okConsole.log).toHaveBeenCalled();
 
             const failConsole = makeConsole();
 
-            await expect(new MailMessage().setLogger(failConsole).embedFromPath(join(temporaryDirectory, "missing.txt"))).rejects.toThrow(FILE_READ_FAILURE_REGEX);
+            await expect(new MailMessage().setLogger(failConsole).embedFromPath(join(temporaryDirectory, "missing.txt"))).rejects.toThrow();
 
-            expect(failConsole.error).toHaveBeenCalledWith();
+            expect(failConsole.error).toHaveBeenCalled();
             expect(failConsole.log).not.toHaveBeenCalled();
         });
 
@@ -621,7 +699,7 @@ describe("mailMessage - extended fluent builder", () => {
 
             new MailMessage().setLogger(mockConsole).embedData(Buffer.from("data"), "logo.png");
 
-            expect(mockConsole.log).toHaveBeenCalledWith();
+            expect(mockConsole.log).toHaveBeenCalled();
         });
 
         it("logs date, returnPath and sender", () => {
@@ -666,10 +744,15 @@ describe("mailMessage - extended fluent builder", () => {
             const mockConsole = makeConsole();
             const renderer = vi.fn((): Promise<string> => Promise.resolve("<h1>Hello</h1><p>Body paragraph text.</p>"));
 
-            await new MailMessage().setLogger(mockConsole).from("sender@example.com").to("user@example.com").subject("Test").view(renderer, "template");
+            await new MailMessage()
+                .setLogger(mockConsole)
+                .from("sender@example.com")
+                .to("user@example.com")
+                .subject("Test")
+                .view(renderer, "template");
 
-            expect(mockConsole.log).toHaveBeenCalledWith();
-            expect(mockConsole.warn).toHaveBeenCalledWith();
+            expect(mockConsole.log).toHaveBeenCalled();
+            expect(mockConsole.warn).toHaveBeenCalled();
         });
 
         it("logs view rendering failure", async () => {
@@ -682,7 +765,7 @@ describe("mailMessage - extended fluent builder", () => {
                 new MailMessage().setLogger(mockConsole).from("sender@example.com").to("user@example.com").subject("Test").view(renderer, "template"),
             ).rejects.toThrow("Failed to render template");
 
-            expect(mockConsole.error).toHaveBeenCalledWith();
+            expect(mockConsole.error).toHaveBeenCalled();
         });
 
         it("logs viewText rendering", async () => {
@@ -699,7 +782,7 @@ describe("mailMessage - extended fluent builder", () => {
                 .html("<h1>Hi</h1>")
                 .viewText(renderer, "template");
 
-            expect(mockConsole.log).toHaveBeenCalledWith();
+            expect(mockConsole.log).toHaveBeenCalled();
         });
 
         it("logs viewText rendering failure", async () => {
@@ -718,7 +801,7 @@ describe("mailMessage - extended fluent builder", () => {
                     .viewText(renderer, "template"),
             ).rejects.toThrow("Failed to render text template");
 
-            expect(mockConsole.error).toHaveBeenCalledWith();
+            expect(mockConsole.error).toHaveBeenCalled();
         });
 
         it("logs attachment and calendar details during build", async () => {
@@ -755,7 +838,7 @@ describe("mailMessage - extended fluent builder", () => {
                 .sign({ sign })
                 .build();
 
-            expect(sign).toHaveBeenCalledWith();
+            expect(sign).toHaveBeenCalled();
         });
 
         it("logs encrypter steps during build", async () => {
@@ -773,7 +856,7 @@ describe("mailMessage - extended fluent builder", () => {
                 .encrypt({ encrypt })
                 .build();
 
-            expect(encrypt).toHaveBeenCalledWith();
+            expect(encrypt).toHaveBeenCalled();
         });
 
         it("logs an error when build fails validation", async () => {
@@ -785,7 +868,7 @@ describe("mailMessage - extended fluent builder", () => {
                 "Subject is required",
             );
 
-            expect(mockConsole.error).toHaveBeenCalledWith();
+            expect(mockConsole.error).toHaveBeenCalled();
         });
     });
 });

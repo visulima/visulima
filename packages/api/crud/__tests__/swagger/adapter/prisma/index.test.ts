@@ -22,7 +22,7 @@ describe(modelsToOpenApi, () => {
             prismaClient: makeClient(),
         });
 
-        expect(Object.keys(result.paths)).toStrictEqual(expect.arrayContaining(["/users", "/users/{id}"]));
+        expect(Object.keys(result.paths)).toEqual(expect.arrayContaining(["/users", "/users/{id}"]));
         expect(result.tags).toContainEqual({ name: "User" });
         expect(result.schemas).toHaveProperty("User");
         expect(result.examples).toHaveProperty("User");

@@ -35,6 +35,7 @@ describe(validateAdapterMethods, () => {
         expect(() => {
             validateAdapterMethods(
                 new PrismaAdapter({
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- PrismaClient is `any` due to missing generated types in tests
                     prismaClient: PrismaClient,
                 }),
             );
