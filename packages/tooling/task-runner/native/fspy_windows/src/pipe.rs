@@ -32,7 +32,9 @@ pub fn connect(pid: u32) -> bool {
     // free instance in case of a startup race.
     unsafe { WaitNamedPipeW(name.as_ptr(), 2000) };
 
-    let handle = unsafe { CreateFileW(name.as_ptr(), GENERIC_WRITE, 0, std::ptr::null(), OPEN_EXISTING, 0, std::ptr::null_mut()) };
+    let handle = unsafe {
+        CreateFileW(name.as_ptr(), GENERIC_WRITE, 0, std::ptr::null(), OPEN_EXISTING, 0, std::ptr::null_mut())
+    };
 
     if handle == INVALID_HANDLE_VALUE || handle.is_null() {
         return false;

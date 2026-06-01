@@ -147,7 +147,11 @@ fn table() -> [HookEntry; 4] {
         HookEntry { name: b"CreateFileW", hook: hook_CreateFileW as *const c_void, orig: &ORIG_CREATE_FILE_W },
         HookEntry { name: b"CreateFileA", hook: hook_CreateFileA as *const c_void, orig: &ORIG_CREATE_FILE_A },
         HookEntry { name: b"DeleteFileW", hook: hook_DeleteFileW as *const c_void, orig: &ORIG_DELETE_FILE_W },
-        HookEntry { name: b"GetFileAttributesExW", hook: hook_GetFileAttributesExW as *const c_void, orig: &ORIG_GET_FILE_ATTRS_EX_W },
+        HookEntry {
+            name: b"GetFileAttributesExW",
+            hook: hook_GetFileAttributesExW as *const c_void,
+            orig: &ORIG_GET_FILE_ATTRS_EX_W,
+        },
     ]
 }
 

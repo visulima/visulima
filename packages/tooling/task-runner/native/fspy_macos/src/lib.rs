@@ -91,10 +91,7 @@ fn init() {
         return;
     }
 
-    let fd = unsafe { std::ffi::CStr::from_ptr(raw) }
-        .to_str()
-        .ok()
-        .and_then(|s| s.parse::<c_int>().ok());
+    let fd = unsafe { std::ffi::CStr::from_ptr(raw) }.to_str().ok().and_then(|s| s.parse::<c_int>().ok());
 
     let Some(fd) = fd else {
         return;
@@ -275,10 +272,8 @@ macro_rules! interpose {
     ($static_name:ident, $replacement:expr, $replacee:expr) => {
         #[used]
         #[link_section = "__DATA,__interpose"]
-        static $static_name: Interpose = Interpose {
-            replacement: $replacement as *const c_void,
-            replacee: $replacee as *const c_void,
-        };
+        static $static_name: Interpose =
+            Interpose { replacement: $replacement as *const c_void, replacee: $replacee as *const c_void };
     };
 }
 
