@@ -305,6 +305,35 @@ jobs:
                           "npm/$binding/fspy-seccomp-helper"
                   fi
 
+            # Build the fspy_macos interpose dylib for each darwin target.
+            # It's a standalone cdylib (NOT linked into the addon — its
+            # __interpose section must not load into the parent), injected at
+            # runtime via DYLD_INSERT_LIBRARIES. Native macOS compile, so no
+            # zigbuild/sysroot. The .dylib drops into the matching darwin
+            # binding package so its `files` array publishes it.
+            - name: "Build fspy_macos dylib (all macOS)"
+              if: "contains(matrix.settings.target, 'apple')"
+              shell: "bash"
+              working-directory: "packages/tooling/task-runner"
+              env:
+                  TARGET: "${{ matrix.settings.target }}"
+              run: |
+                  rustup target add "$TARGET"
+                  cargo build \
+                      --manifest-path native/fspy_macos/Cargo.toml \
+                      --release \
+                      --target "$TARGET"
+                  case "$TARGET" in
+                    x86_64-apple-darwin)   binding="darwin-x64" ;;
+                    aarch64-apple-darwin)  binding="darwin-arm64" ;;
+                    *)                     binding="" ;;
+                  esac
+                  if [ -n "$binding" ]; then
+                      install -m 0755 \
+                          "native/fspy_macos/target/$TARGET/release/libfspy_macos.dylib" \
+                          "npm/$binding/fspy-macos.dylib"
+                  fi
+
             - name: "Build tui native"
               if: "steps.cache-tui.outputs.cache-hit != 'true'"
               run: "pnpm build:native --target ${{ matrix.settings.target }} ${{ matrix.settings.cross || '' }}"
