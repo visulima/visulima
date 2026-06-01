@@ -102,7 +102,11 @@ const findUpSync = (
             if (Buffer.isBuffer(fileName)) {
                 fileName = fileName.toString();
             } else if (fileName instanceof URL) {
-                fileName = fileURLToPath(fileName);
+                // `fileURLToPath` yields a native path (backslashes on Windows);
+                // normalize to the forward-slash form the rest of this module
+                // (via `@visulima/path`) produces, so the returned path is
+                // consistent across platforms.
+                fileName = fileURLToPath(fileName).replaceAll("\\", "/");
             }
 
             const filePath = isAbsolute(fileName as string) ? (fileName as string) : resolve(directory, fileName as string);
