@@ -284,6 +284,18 @@ jobs:
                   find artifacts -name "vis-native.*.node" -exec mv {} packages/tooling/vis/ \; 2>/dev/null || true
                   find artifacts -name "secret-scanner-native.*.node" -exec mv {} packages/tooling/secret-scanner/ \; 2>/dev/null || true
 
+                  # Restore the task-runner sidecars into their binding-package
+                  # dirs (the .node moves above don't carry them). Without this,
+                  # the seccomp + macOS-interpose integration tests can't find
+                  # the helper/dylib and silently skip instead of validating.
+                  for sidecar in fspy-seccomp-helper fspy-macos.dylib; do
+                      find artifacts -path "*/npm/*/$sidecar" -print0 2>/dev/null | while IFS= read -r -d "" f; do
+                          binding="$(basename "$(dirname "$f")")"
+                          mkdir -p "packages/tooling/task-runner/npm/$binding"
+                          install -m 0755 "$f" "packages/tooling/task-runner/npm/$binding/$sidecar" 2>/dev/null || true
+                      done
+                  done
+
                   rm -rf artifacts/
 
             # The codecov step below consumes the changed-files list; nx
@@ -559,6 +571,18 @@ jobs:
                   find artifacts -name "tui-native.*.node" -exec mv {} packages/terminal/tui/ \; 2>/dev/null || true
                   find artifacts -name "vis-native.*.node" -exec mv {} packages/tooling/vis/ \; 2>/dev/null || true
                   find artifacts -name "secret-scanner-native.*.node" -exec mv {} packages/tooling/secret-scanner/ \; 2>/dev/null || true
+
+                  # Restore the task-runner sidecars into their binding-package
+                  # dirs (the .node moves above don't carry them). Without this,
+                  # the seccomp + macOS-interpose integration tests can't find
+                  # the helper/dylib and silently skip instead of validating.
+                  for sidecar in fspy-seccomp-helper fspy-macos.dylib; do
+                      find artifacts -path "*/npm/*/$sidecar" -print0 2>/dev/null | while IFS= read -r -d "" f; do
+                          binding="$(basename "$(dirname "$f")")"
+                          mkdir -p "packages/tooling/task-runner/npm/$binding"
+                          install -m 0755 "$f" "packages/tooling/task-runner/npm/$binding/$sidecar" 2>/dev/null || true
+                      done
+                  done
 
                   rm -rf artifacts/
 

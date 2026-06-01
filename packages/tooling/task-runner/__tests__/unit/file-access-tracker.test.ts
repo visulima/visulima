@@ -173,6 +173,43 @@ describe(FileAccessTracker, () => {
             expect(types.has("read")).toBe(true);
             expect(types.has("write")).toBe(true);
         });
+
+        // macOS DYLD-interpose path. Spawns `node` directly (a non-SIP binary,
+        // so `DYLD_INSERT_LIBRARIES` survives and the dylib loads) via
+        // `trackInterpose`, then asserts the injected dylib reported the
+        // syscall. Skipped unless the interpose dylib + addon are present
+        // (i.e. macOS with the native artifacts built).
+        it.skipIf(!new FileAccessTracker(tmpdir(), []).isInterposeSupported())(
+            "tracks a read by a directly-exec'd binary via the macOS interpose dylib",
+            async () => {
+                expect.assertions(1);
+
+                const tracker = new FileAccessTracker(workspaceRoot, []);
+                const target = join(workspaceRoot, "interpose-read.txt");
+
+                await writeFile(target, "data");
+
+                const argv = [process.execPath, "-e", `require("node:fs").readFileSync(${JSON.stringify(target)})`];
+                const result = await tracker.trackInterpose(argv, { cwd: workspaceRoot });
+
+                expect(result.accesses.some((a) => a.path === target && a.type === "read")).toBe(true);
+            },
+        );
+
+        it.skipIf(!new FileAccessTracker(tmpdir(), []).isInterposeSupported())(
+            "tracks a write by a directly-exec'd binary via the macOS interpose dylib",
+            async () => {
+                expect.assertions(1);
+
+                const tracker = new FileAccessTracker(workspaceRoot, []);
+                const target = join(workspaceRoot, "interpose-write.txt");
+
+                const argv = [process.execPath, "-e", `require("node:fs").writeFileSync(${JSON.stringify(target)}, "x")`];
+                const result = await tracker.trackInterpose(argv, { cwd: workspaceRoot });
+
+                expect(result.accesses.some((a) => a.path === target && a.type === "write")).toBe(true);
+            },
+        );
     });
 
     describe("track on unsupported platform", () => {

@@ -390,6 +390,7 @@ jobs:
                   path: |
                       packages/tooling/task-runner/*.node
                       packages/tooling/task-runner/npm/linux-*/fspy-seccomp-helper
+                      packages/tooling/task-runner/npm/darwin-*/fspy-macos.dylib
                   if-no-files-found: "error"
 
             - name: "Upload tui artifact"
