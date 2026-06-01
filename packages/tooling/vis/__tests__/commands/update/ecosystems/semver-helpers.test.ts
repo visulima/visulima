@@ -76,7 +76,9 @@ describe(pickBestTag, () => {
     it("respects mode=patch — same major+minor only", () => {
         expect.assertions(1);
 
-        const newer = ["v1.0.0", "v1.0.1", "v1.0.2", "v1.1.0"].map((entry) => parseTag(entry)).filter((value): value is NonNullable<typeof value> => value !== undefined);
+        const newer = ["v1.0.0", "v1.0.1", "v1.0.2", "v1.1.0"]
+            .map((entry) => parseTag(entry))
+            .filter((value): value is NonNullable<typeof value> => value !== undefined);
         const best = pickBestTag(newer, parseTag("v1.0.0"), "patch", false);
 
         expect(best?.normalized).toBe("1.0.2");

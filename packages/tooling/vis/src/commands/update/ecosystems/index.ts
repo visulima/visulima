@@ -5,9 +5,9 @@ import { checkDocker, scanDockerRepository } from "./docker/index";
 import { checkGitlab, scanGitlabRepository } from "./gitlab/index";
 import type { EcosystemId, EcosystemUpdate, EcosystemUpdateOptions, EcosystemUpdateResult } from "./types";
 
-export type { EcosystemId, EcosystemUpdate, EcosystemUpdateOptions, EcosystemUpdateResult, EcosystemUpdateType } from "./types";
-export { applyEcosystemUpdates } from "./applier";
 export type { ApplyResult } from "./applier";
+export { applyEcosystemUpdates } from "./applier";
+export type { EcosystemId, EcosystemUpdate, EcosystemUpdateOptions, EcosystemUpdateResult, EcosystemUpdateType } from "./types";
 
 const DEFAULT_OPTIONS: EcosystemUpdateOptions = {
     disabled: new Set<EcosystemId>(),
@@ -24,13 +24,13 @@ const DEFAULT_OPTIONS: EcosystemUpdateOptions = {
 };
 
 export interface CheckEcosystemsContext {
-    readonly workspaceRoot: string;
     readonly options?: Partial<EcosystemUpdateOptions>;
+    readonly workspaceRoot: string;
 }
 
 export interface EcosystemCheckResult extends EcosystemUpdateResult {
     /** Per-ecosystem breakdown so the report can group by source. */
-    readonly perEcosystem: Record<EcosystemId, { updates: EcosystemUpdate[]; ignored: EcosystemUpdate[]; failed: { file: string; reason: string }[] }>;
+    readonly perEcosystem: Record<EcosystemId, { failed: { file: string; reason: string }[]; ignored: EcosystemUpdate[]; updates: EcosystemUpdate[] }>;
 }
 
 /**
@@ -62,6 +62,8 @@ export const checkEcosystems = async (context: CheckEcosystemsContext): Promise<
             ecosystemPromises.push(
                 checkActions(context.workspaceRoot, { ignoreRules, options, references: refs }).then((result) => {
                     perEcosystem.actions = result;
+
+                    return undefined;
                 }),
             );
         }
@@ -75,6 +77,8 @@ export const checkEcosystems = async (context: CheckEcosystemsContext): Promise<
             ecosystemPromises.push(
                 checkDocker(context.workspaceRoot, { ignoreRules, options, references: refs }).then((result) => {
                     perEcosystem.docker = result;
+
+                    return undefined;
                 }),
             );
         }
@@ -93,6 +97,8 @@ export const checkEcosystems = async (context: CheckEcosystemsContext): Promise<
                     options,
                 }).then((result) => {
                     perEcosystem.gitlab = result;
+
+                    return undefined;
                 }),
             );
         }
@@ -100,23 +106,11 @@ export const checkEcosystems = async (context: CheckEcosystemsContext): Promise<
 
     await Promise.all(ecosystemPromises);
 
-    const updates: EcosystemUpdate[] = [
-        ...perEcosystem.actions.updates,
-        ...perEcosystem.docker.updates,
-        ...perEcosystem.gitlab.updates,
-    ];
+    const updates: EcosystemUpdate[] = [...perEcosystem.actions.updates, ...perEcosystem.docker.updates, ...perEcosystem.gitlab.updates];
 
-    const ignored: EcosystemUpdate[] = [
-        ...perEcosystem.actions.ignored,
-        ...perEcosystem.docker.ignored,
-        ...perEcosystem.gitlab.ignored,
-    ];
+    const ignored: EcosystemUpdate[] = [...perEcosystem.actions.ignored, ...perEcosystem.docker.ignored, ...perEcosystem.gitlab.ignored];
 
-    const failed: { file: string; reason: string }[] = [
-        ...perEcosystem.actions.failed,
-        ...perEcosystem.docker.failed,
-        ...perEcosystem.gitlab.failed,
-    ];
+    const failed: { file: string; reason: string }[] = [...perEcosystem.actions.failed, ...perEcosystem.docker.failed, ...perEcosystem.gitlab.failed];
 
     return {
         failed,

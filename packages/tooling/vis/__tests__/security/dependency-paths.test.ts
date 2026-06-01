@@ -1,7 +1,8 @@
 import type { LockFileEntry } from "@visulima/package";
 import { describe, expect, it } from "vitest";
 
-import { buildDependencyPaths, type LockfileGraph } from "../../src/security/dependency-paths";
+import type { LockfileGraph } from "../../src/security/dependency-paths";
+import { buildDependencyPaths } from "../../src/security/dependency-paths";
 
 const entry = (name: string, version: string, dependencies?: Record<string, string[]>): LockFileEntry => {
     return { dependencies, name, version };
@@ -15,14 +16,16 @@ describe(buildDependencyPaths, () => {
     it("should return the direct edge for a root dependency", () => {
         expect.assertions(1);
 
-        const g = graph(
-            [entry("lodash", "4.17.20"), entry("app", "1.0.0", { lodash: ["^4.17.0"] })],
-            [{ name: "app", version: "1.0.0" }],
-        );
+        const g = graph([entry("lodash", "4.17.20"), entry("app", "1.0.0", { lodash: ["^4.17.0"] })], [{ name: "app", version: "1.0.0" }]);
 
         const paths = buildDependencyPaths(g, { name: "lodash", version: "4.17.20" });
 
-        expect(paths).toStrictEqual([[{ name: "app", version: "1.0.0" }, { name: "lodash", version: "4.17.20" }]]);
+        expect(paths).toStrictEqual([
+            [
+                { name: "app", version: "1.0.0" },
+                { name: "lodash", version: "4.17.20" },
+            ],
+        ]);
     });
 
     it("should walk a multi-level transitive chain", () => {
@@ -48,11 +51,7 @@ describe(buildDependencyPaths, () => {
         expect.assertions(2);
 
         const g = graph(
-            [
-                entry("app-a", "1.0.0", { lodash: ["4.17.20"] }),
-                entry("app-b", "1.0.0", { lodash: ["4.17.20"] }),
-                entry("lodash", "4.17.20"),
-            ],
+            [entry("app-a", "1.0.0", { lodash: ["4.17.20"] }), entry("app-b", "1.0.0", { lodash: ["4.17.20"] }), entry("lodash", "4.17.20")],
             [
                 { name: "app-a", version: "1.0.0" },
                 { name: "app-b", version: "1.0.0" },
@@ -68,13 +67,7 @@ describe(buildDependencyPaths, () => {
     it("should resolve a semver-range specifier to an installed version", () => {
         expect.assertions(2);
 
-        const g = graph(
-            [
-                entry("app", "1.0.0", { axios: ["^0.21.0"] }),
-                entry("axios", "0.21.4"),
-            ],
-            [{ name: "app", version: "1.0.0" }],
-        );
+        const g = graph([entry("app", "1.0.0", { axios: ["^0.21.0"] }), entry("axios", "0.21.4")], [{ name: "app", version: "1.0.0" }]);
 
         const paths = buildDependencyPaths(g, { name: "axios", version: "0.21.4" });
 
@@ -87,11 +80,7 @@ describe(buildDependencyPaths, () => {
 
         // Same dep name resolved to two versions under different peer contexts.
         const g = graph(
-            [
-                entry("app", "1.0.0", { react: ["18.2.0", "17.0.2"] }),
-                entry("react", "17.0.2"),
-                entry("react", "18.2.0"),
-            ],
+            [entry("app", "1.0.0", { react: ["18.2.0", "17.0.2"] }), entry("react", "17.0.2"), entry("react", "18.2.0")],
             [{ name: "app", version: "1.0.0" }],
         );
 
@@ -106,13 +95,7 @@ describe(buildDependencyPaths, () => {
         expect.assertions(1);
 
         // a → b → a → b … must terminate; only the a→b path is yielded.
-        const g = graph(
-            [
-                entry("a", "1.0.0", { b: ["1.0.0"] }),
-                entry("b", "1.0.0", { a: ["1.0.0"] }),
-            ],
-            [{ name: "a", version: "1.0.0" }],
-        );
+        const g = graph([entry("a", "1.0.0", { b: ["1.0.0"] }), entry("b", "1.0.0", { a: ["1.0.0"] })], [{ name: "a", version: "1.0.0" }]);
 
         const paths = buildDependencyPaths(g, { name: "b", version: "1.0.0" });
 
@@ -165,10 +148,7 @@ describe(buildDependencyPaths, () => {
     it("should return an empty array when the target is unreachable", () => {
         expect.assertions(1);
 
-        const g = graph(
-            [entry("app", "1.0.0"), entry("orphan", "1.0.0")],
-            [{ name: "app", version: "1.0.0" }],
-        );
+        const g = graph([entry("app", "1.0.0"), entry("orphan", "1.0.0")], [{ name: "app", version: "1.0.0" }]);
 
         const paths = buildDependencyPaths(g, { name: "orphan", version: "1.0.0" });
 
@@ -200,10 +180,10 @@ describe(buildDependencyPaths, () => {
         expect(pathsToA).toHaveLength(1);
         expect(pathsToB).toHaveLength(1);
         // Both leaves must be reachable through `shared@1.0.0`.
-        expect([
-            pathsToA[0]?.map((n) => n.name).join("→"),
-            pathsToB[0]?.map((n) => n.name).join("→"),
-        ]).toStrictEqual(["app→shared→leaf-a", "app→shared→leaf-b"]);
+        expect([pathsToA[0]?.map((n) => n.name).join("→"), pathsToB[0]?.map((n) => n.name).join("→")]).toStrictEqual([
+            "app→shared→leaf-a",
+            "app→shared→leaf-b",
+        ]);
     });
 
     it("should yield the shortest path first even when a long root is enumerated before a short one", () => {
@@ -239,10 +219,7 @@ describe(buildDependencyPaths, () => {
     it("should ignore an unknown root with no installed candidate", () => {
         expect.assertions(1);
 
-        const g = graph(
-            [entry("lodash", "4.17.20")],
-            [{ name: "ghost", version: "1.0.0" }],
-        );
+        const g = graph([entry("lodash", "4.17.20")], [{ name: "ghost", version: "1.0.0" }]);
 
         const paths = buildDependencyPaths(g, { name: "lodash", version: "4.17.20" });
 

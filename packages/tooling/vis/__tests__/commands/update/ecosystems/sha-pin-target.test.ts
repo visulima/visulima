@@ -2,8 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { checkActions } from "../../../../src/commands/update/ecosystems/actions/index";
 import type { UsesReference } from "../../../../src/commands/update/ecosystems/actions/scanner";
-import { pickBestTag } from "../../../../src/commands/update/ecosystems/semver-helpers";
-import { parseTag } from "../../../../src/commands/update/ecosystems/semver-helpers";
+import { parseTag, pickBestTag } from "../../../../src/commands/update/ecosystems/semver-helpers";
 import type { EcosystemUpdateOptions } from "../../../../src/commands/update/ecosystems/types";
 
 const baseOptions: EcosystemUpdateOptions = {
@@ -21,7 +20,7 @@ const baseOptions: EcosystemUpdateOptions = {
 };
 
 const fetchTags = (tags: { name: string; sha: string }[]): typeof fetch =>
-    vi.fn(async () => new Response(JSON.stringify(tags.map((tag) => ({ commit: { sha: tag.sha }, name: tag.name }))), { status: 200 })) as typeof fetch;
+    vi.fn(async () => Response.json(tags.map((tag) => { return { commit: { sha: tag.sha }, name: tag.name }; }), { status: 200 }));
 
 const SHA_PIN_NO_HINT: UsesReference = {
     file: "/tmp/wf.yml",

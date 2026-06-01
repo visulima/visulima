@@ -6,16 +6,7 @@ describe("gitlab CI scanner — nested services blocks", () => {
     it("captures `services:` indented under a job (the canonical layout)", () => {
         expect.assertions(2);
 
-        const yaml = [
-            "test:",
-            "  image: node:22",
-            "  services:",
-            "    - postgres:14",
-            "    - name: redis:7.2",
-            "  script:",
-            "    - pnpm test",
-            "",
-        ].join("\n");
+        const yaml = ["test:", "  image: node:22", "  services:", "    - postgres:14", "    - name: redis:7.2", "  script:", "    - pnpm test", ""].join("\n");
 
         const { images } = extractFromGitlabCi("/tmp/.gitlab-ci.yml", yaml);
         const postgres = images.find((image) => image.name === "postgres");
@@ -28,11 +19,7 @@ describe("gitlab CI scanner — nested services blocks", () => {
     it("still works for top-level services blocks", () => {
         expect.assertions(1);
 
-        const yaml = [
-            "services:",
-            "  - postgres:14",
-            "",
-        ].join("\n");
+        const yaml = ["services:", "  - postgres:14", ""].join("\n");
 
         const { images } = extractFromGitlabCi("/tmp/.gitlab-ci.yml", yaml);
 

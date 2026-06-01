@@ -2,32 +2,24 @@ import { parseLinkHeader } from "../link-header";
 import type { ParsedTag } from "../semver-helpers";
 import { parseTag } from "../semver-helpers";
 
-/**
- * Per-repo cache key: `"owner/repo"`. Repo metadata + tag/commit lookups
- * are cached for the lifetime of one update run; rate-limiting is the
- * main reason but it also keeps a single workflow file with N references
- * to the same action down to a single API round trip.
- */
-type CacheKey = string;
-
 interface RepoTags {
-    readonly tags: { name: string; sha: string }[];
     readonly parsed: (ParsedTag & { sha: string })[];
+    readonly tags: { name: string; sha: string }[];
 }
 
 interface CommitInfo {
-    readonly sha: string;
     /** ISO 8601 commit date — used by the min-age gate. */
     readonly committedAt: string | undefined;
+    readonly sha: string;
 }
 
 export interface ActionsResolverOptions {
-    /** Falls back to `GITHUB_TOKEN` / `GH_TOKEN` env vars when undefined. */
-    readonly token: string | undefined;
     /** Override the GitHub API base URL (used by tests). */
     readonly apiBase?: string;
     /** Pluggable fetch for tests. Defaults to the global `fetch`. */
     readonly fetch?: typeof fetch;
+    /** Falls back to `GITHUB_TOKEN` / `GH_TOKEN` env vars when undefined. */
+    readonly token: string | undefined;
 }
 
 /**
@@ -43,7 +35,13 @@ export class ActionsResolver {
 
     private readonly fetchImpl: typeof fetch;
 
-    private readonly tagsCache = new Map<CacheKey, Promise<RepoTags>>();
+    /**
+     * Per-repo cache keyed by `"owner/repo"`. Repo metadata + tag/commit
+     * lookups are cached for the lifetime of one update run; rate-limiting
+     * is the main reason but it also keeps a single workflow file with N
+     * references to the same action down to a single API round trip.
+     */
+    private readonly tagsCache = new Map<string, Promise<RepoTags>>();
 
     private readonly commitCache = new Map<string, Promise<CommitInfo | undefined>>();
 
@@ -121,7 +119,7 @@ export class ActionsResolver {
         // path-traverse to a different repo with the user's bearer
         // token attached.
         const initialUrl = `${this.apiBase}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/tags?per_page=100`;
-        const empty: RepoTags = { tags: [], parsed: [] };
+        const empty: RepoTags = { parsed: [], tags: [] };
         const tags: { name: string; sha: string }[] = [];
 
         // Cap pagination at 5 pages (500 tags). GitHub's tags endpoint
@@ -145,10 +143,10 @@ export class ActionsResolver {
                 return empty;
             }
 
-            let json: { name?: string; commit?: { sha?: string } }[];
+            let json: { commit?: { sha?: string }; name?: string }[];
 
             try {
-                json = (await response.json()) as { name?: string; commit?: { sha?: string } }[];
+                json = (await response.json()) as { commit?: { sha?: string }; name?: string }[];
             } catch {
                 return empty;
             }
@@ -193,7 +191,7 @@ export class ActionsResolver {
                 return undefined;
             }
 
-            const json = (await response.json()) as { sha?: string; commit?: { committer?: { date?: string } } };
+            const json = (await response.json()) as { commit?: { committer?: { date?: string } }; sha?: string };
 
             if (typeof json.sha !== "string") {
                 return undefined;

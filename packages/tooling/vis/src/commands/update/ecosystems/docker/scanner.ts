@@ -1,3 +1,5 @@
+import { realpathSync } from "node:fs";
+
 import { isAccessibleSync, readFileSync, walkSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
@@ -319,7 +321,28 @@ export const scanDockerRepository = (workspaceRoot: string): ImageReference[] =>
         return references;
     }
 
+    // Dedupe by canonical (real) path so a file reached twice — once via the
+    // walker and again via the case-variant fallback below — is scanned once.
+    // On case-insensitive filesystems (Windows NTFS, macOS APFS) `Dockerfile`
+    // and `dockerfile` resolve to the same inode, so a plain string compare
+    // would double-count every root Dockerfile.
+    const collectedRealPaths = new Set<string>();
+
     const collect = (absolutePath: string, kind: "dockerfile" | "compose"): void => {
+        let canonicalPath: string;
+
+        try {
+            canonicalPath = realpathSync.native(absolutePath);
+        } catch {
+            canonicalPath = absolutePath;
+        }
+
+        if (collectedRealPaths.has(canonicalPath)) {
+            return;
+        }
+
+        collectedRealPaths.add(canonicalPath);
+
         let content: string;
 
         try {
@@ -351,11 +374,9 @@ export const scanDockerRepository = (workspaceRoot: string): ImageReference[] =>
         const path = join(workspaceRoot, candidate);
 
         if (isAccessibleSync(path)) {
-            const seen = references.some((reference) => reference.file === path);
-
-            if (!seen) {
-                collect(path, isDockerfile(candidate) ? "dockerfile" : "compose");
-            }
+            // `collect` dedupes by canonical path, so re-collecting a file the
+            // walker already found (or a case-variant of it) is a no-op.
+            collect(path, isDockerfile(candidate) ? "dockerfile" : "compose");
         }
     }
 

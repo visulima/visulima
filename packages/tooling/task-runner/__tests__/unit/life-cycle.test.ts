@@ -82,6 +82,27 @@ describe(CompositeLifeCycle, () => {
 
         expect(handler.printCacheMiss).toHaveBeenCalledWith(task, "File changed: src/index.ts");
     });
+
+    it("should forward the cache-skip diagnostics to all handlers", () => {
+        expect.assertions(3);
+
+        const handler: LifeCycleInterface = {
+            printCacheDisabledByTask: vi.fn<(task: Task) => void>(),
+            printEmptyFingerprintWarning: vi.fn<(task: Task, reason: string) => void>(),
+            printSelfModifyingSkip: vi.fn<(task: Task, modifiedFiles: string[]) => void>(),
+        };
+
+        const composite = new CompositeLifeCycle([handler]);
+        const task = createTask("a:build");
+
+        composite.printCacheDisabledByTask(task);
+        composite.printEmptyFingerprintWarning(task, "no accesses");
+        composite.printSelfModifyingSkip(task, ["src/x.ts"]);
+
+        expect(handler.printCacheDisabledByTask).toHaveBeenCalledWith(task);
+        expect(handler.printEmptyFingerprintWarning).toHaveBeenCalledWith(task, "no accesses");
+        expect(handler.printSelfModifyingSkip).toHaveBeenCalledWith(task, ["src/x.ts"]);
+    });
 });
 
 describe(ConsoleLifeCycle, () => {

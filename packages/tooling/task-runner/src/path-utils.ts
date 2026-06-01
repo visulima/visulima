@@ -12,9 +12,15 @@
  * `pnpm exec vis run` and false for a bare `vis run`).
  */
 
-import { delimiter, dirname, isAbsolute, join, resolve } from "@visulima/path";
+// Use `node:path` (not `@visulima/path`): this module builds the OS-level
+// `PATH` env var handed to `child_process`, so it must use the platform's
+// native separator and delimiter. `@visulima/path` normalises to POSIX
+// (`/` + `:`) on every platform, which produces a broken `PATH` on Windows
+// (entries joined with `:` instead of `;`, forward-slash bin dirs).
+import { delimiter, dirname, isAbsolute, join, resolve } from "node:path";
 
-/** Hard cap on how many ancestor directories we will walk. Prevents
+/**
+ * Hard cap on how many ancestor directories we will walk. Prevents
  * pathological symlink loops from spinning forever. 64 is well past
  * any realistic monorepo depth.
  */
@@ -22,7 +28,7 @@ const MAX_ANCESTOR_WALK = 64;
 
 /**
  * Walks from `cwd` (resolved against `process.cwd()` when relative)
- * up to the filesystem root, returning every `<dir>/node_modules/.bin`
+ * up to the filesystem root, returning every `&lt;dir>/node_modules/.bin`
  * path encountered. Ordered nearest-first so the cwd-local `.bin`
  * shadows ancestor `.bin` directories, matching npm/pnpm semantics.
  *

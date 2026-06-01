@@ -12,7 +12,7 @@ import type { EcosystemAdvisory, EcosystemUpdate } from "../types";
 const OSV_ECOSYSTEM = "GitHub Actions";
 
 /**
- * Composite cache key. `queryAdvisories` returns a `Map<name,
+ * Composite cache key. `queryAdvisories` returns a `Map&lt;name,
  * vulnerabilities[]>` — keying by name alone collapses two updates of
  * the same action pinned to different versions onto the second query's
  * result. We side-step it by querying once per unique (name, version)
@@ -106,6 +106,6 @@ export const decorateActionsAdvisories = (workspaceRoot: string, updates: Ecosys
             return update;
         }
 
-        return { ...update, advisories: hits.map(toAdvisory) };
+        return { ...update, advisories: hits.map((hit) => toAdvisory(hit)) };
     });
 };

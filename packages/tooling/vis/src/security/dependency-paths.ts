@@ -1,7 +1,7 @@
 /**
  * Root → vulnerable-package path construction.
  *
- * `@visulima/package`'s lockfile parsers already preserve `Record<string, string[]>`
+ * `@visulima/package`'s lockfile parsers already preserve `Record&lt;string, string[]>`
  * multi-edge dep maps (a single dep can resolve to multiple versions under
  * different peer contexts in pnpm v9+). This module consumes those entries
  * and emits the actual paths a maintainer would walk from a declared root
@@ -33,9 +33,10 @@ export type DependencyPath = ReadonlyArray<DependencyPathNode>;
 export interface LockfileGraph {
     /**
      * Parsed lockfile entries. Each entry carries `dependencies`,
-     * `peerDependencies`, and `optionalDependencies` as `Record<name, specifiers[]>`.
+     * `peerDependencies`, and `optionalDependencies` as `Record&lt;name, specifiers[]>`.
      */
     entries: ReadonlyArray<LockFileEntry>;
+
     /**
      * The declared root packages — workspace `package.json` deps. Edges
      * from these into the graph kick off the DFS.

@@ -13,6 +13,24 @@ import { parseImageReference } from "../docker/scanner";
  */
 export interface GitLabInclude {
     /**
+     * Component-name segment for `kind === "component"`. The full
+     * component path the user wrote is `${project}/${componentName}`; we
+     * keep them split because the API lookup targets `project` but the
+     * replacement we write back must include the component name.
+     */
+    readonly componentName?: string;
+    /** Origin file. */
+    readonly file: string;
+    /** When set, the include was excluded by a `# vis-update-ignore` directive. */
+    readonly ignoreReason: string | undefined;
+    /** `include: { component: gitlab.com/foo/bar/baz@1.2.3 }` form. */
+    readonly kind: "component" | "project";
+    /** Line where the `ref:` value sits — used by the applier as the rewrite anchor. */
+    readonly line: number;
+    /** Original ref token (with surrounding quotes if present). */
+    readonly original: string;
+
+    /**
      * Project path used for tag-lookup (`group/subgroup/project`). For
      * component refs this is the parent project — the trailing
      * component-name segment is stored separately in `componentName`
@@ -22,29 +40,12 @@ export interface GitLabInclude {
     readonly project: string;
     /** Current ref (tag, branch, or SHA). */
     readonly ref: string;
-    /** Origin file. */
-    readonly file: string;
-    /** Line where the `ref:` value sits — used by the applier as the rewrite anchor. */
-    readonly line: number;
-    /** Original ref token (with surrounding quotes if present). */
-    readonly original: string;
-    /** `include: { component: gitlab.com/foo/bar/baz@1.2.3 }` form. */
-    readonly kind: "component" | "project";
-    /**
-     * Component-name segment for `kind === "component"`. The full
-     * component path the user wrote is `${project}/${componentName}`; we
-     * keep them split because the API lookup targets `project` but the
-     * replacement we write back must include the component name.
-     */
-    readonly componentName?: string;
-    /** When set, the include was excluded by a `# vis-update-ignore` directive. */
-    readonly ignoreReason: string | undefined;
 }
 
 const IGNORE_NEXT_RE = /vis-update-ignore-next-line/i;
 const IGNORE_INLINE_RE = /vis-update-ignore(?:\s|$|:)/i;
 
-const GITLAB_CI_FILES = new Set([".gitlab-ci.yml", ".gitlab-ci.yaml"]);
+const GITLAB_CI_FILES = new Set([".gitlab-ci.yaml", ".gitlab-ci.yml"]);
 
 const isGitlabCiFile = (name: string): boolean => GITLAB_CI_FILES.has(name) || name.endsWith(".gitlab-ci.yml") || name.endsWith(".gitlab-ci.yaml");
 
@@ -60,13 +61,13 @@ const isGitlabCiFile = (name: string): boolean => GITLAB_CI_FILES.has(name) || n
  * give us the original ref formatting. The state machine remembers the
  * most recent `project:` so we can attribute the trailing `ref:` to it.
  */
-const PROJECT_RE = /^(\s*-?\s*project:\s*)(['"]?)([^'"\s#]+)\2(\s*#.*)?$/;
+const PROJECT_RE = /^\s*-?\s*project:\s*(['"]?)([^'"\s#]+)\1(?:\s*#.*)?$/;
 
-const REF_RE = /^(\s*ref:\s*)(['"]?)([^'"\s#]+)\2(\s*#.*)?$/;
+const REF_RE = /^\s*ref:\s*(['"]?)([^'"\s#]+)\1(\s*#.*)?$/;
 
-const COMPONENT_RE = /^(\s*-?\s*component:\s*)(['"]?)([^'"\s#]+)\2(\s*#.*)?$/;
+const COMPONENT_RE = /^\s*-?\s*component:\s*(['"]?)([^'"\s#]+)\1(\s*#.*)?$/;
 
-const IMAGE_RE = /^(\s*image:\s*)(['"]?)([^'"\s#]+)\2(\s*#.*)?$/;
+const IMAGE_RE = /^\s*image:\s*(['"]?)([^'"\s#]+)\1(\s*#.*)?$/;
 
 /**
  * Inline (flow-style) include mapping on a single line:
@@ -105,18 +106,18 @@ const SERVICE_BARE_RE = /^(\s*-\s*)(['"]?)([^'"\s#:]+:[^'"\s#]+)\2(\s*#.*)?$/;
  */
 const BLOCK_OPENER_RE = /^\s*-?\s*[a-z_][\w-]*:\s*(?:#.*)?$/i;
 
-export const extractFromGitlabCi = (filePath: string, content: string): { includes: GitLabInclude[]; images: ImageReference[] } => {
+export const extractFromGitlabCi = (filePath: string, content: string): { images: ImageReference[]; includes: GitLabInclude[] } => {
     const lines = content.split(/\r?\n/);
     const includes: GitLabInclude[] = [];
     const images: ImageReference[] = [];
 
-    let pendingProject: { project: string; line: number } | undefined;
+    let pendingProject: { line: number; project: string } | undefined;
     let pendingIgnore = false;
     let insideServices = false;
     let servicesIndent = -1;
 
-    for (let index = 0; index < lines.length; index++) {
-        const line = lines[index] ?? "";
+    for (const [index, rawLine] of lines.entries()) {
+        const line = rawLine ?? "";
         const trimmed = line.trim();
         const trimmedIsCommentOnly = trimmed === "" || trimmed.startsWith("#");
 
@@ -154,11 +155,11 @@ export const extractFromGitlabCi = (filePath: string, content: string): { includ
         const imageMatch = IMAGE_RE.exec(line);
 
         if (imageMatch) {
-            const value = imageMatch[3] ?? "";
+            const value = imageMatch[2] ?? "";
             const parsed = parseImageReference(value);
 
             if (parsed) {
-                const trailingComment = imageMatch[4]?.trim();
+                const trailingComment = imageMatch[3]?.trim();
                 let ignoreReason = pendingIgnore ? "vis-update-ignore-next-line" : undefined;
 
                 if (trailingComment && IGNORE_INLINE_RE.test(trailingComment)) {
@@ -210,7 +211,7 @@ export const extractFromGitlabCi = (filePath: string, content: string): { includ
         const projectMatch = PROJECT_RE.exec(line);
 
         if (projectMatch) {
-            pendingProject = { line: index + 1, project: projectMatch[3] ?? "" };
+            pendingProject = { line: index + 1, project: projectMatch[2] ?? "" };
             // Deliberately keep `pendingIgnore` alive across project: lines
             // — a `# vis-update-ignore-next-line` on the previous line
             // should apply to the whole include block, not just the
@@ -221,7 +222,7 @@ export const extractFromGitlabCi = (filePath: string, content: string): { includ
         const refMatch = REF_RE.exec(line);
 
         if (refMatch && pendingProject) {
-            const trailingComment = refMatch[4]?.trim();
+            const trailingComment = refMatch[3]?.trim();
             let ignoreReason = pendingIgnore ? "vis-update-ignore-next-line" : undefined;
 
             if (trailingComment && IGNORE_INLINE_RE.test(trailingComment)) {
@@ -233,9 +234,9 @@ export const extractFromGitlabCi = (filePath: string, content: string): { includ
                 ignoreReason,
                 kind: "project",
                 line: index + 1,
-                original: refMatch[3] ?? "",
+                original: refMatch[2] ?? "",
                 project: pendingProject.project,
-                ref: refMatch[3] ?? "",
+                ref: refMatch[2] ?? "",
             });
 
             pendingProject = undefined;
@@ -246,7 +247,7 @@ export const extractFromGitlabCi = (filePath: string, content: string): { includ
         const componentMatch = COMPONENT_RE.exec(line);
 
         if (componentMatch) {
-            const raw = componentMatch[3] ?? "";
+            const raw = componentMatch[2] ?? "";
             const atIndex = raw.lastIndexOf("@");
 
             if (atIndex > 0) {
@@ -255,7 +256,7 @@ export const extractFromGitlabCi = (filePath: string, content: string): { includ
                 const lastSlash = fullPath.lastIndexOf("/");
                 const project = lastSlash > 0 ? fullPath.slice(0, lastSlash) : fullPath;
                 const componentName = lastSlash > 0 ? fullPath.slice(lastSlash + 1) : undefined;
-                const trailingComment = componentMatch[4]?.trim();
+                const trailingComment = componentMatch[3]?.trim();
                 let ignoreReason = pendingIgnore ? "vis-update-ignore-next-line" : undefined;
 
                 if (trailingComment && IGNORE_INLINE_RE.test(trailingComment)) {
@@ -349,7 +350,7 @@ export const extractFromGitlabCi = (filePath: string, content: string): { includ
 
 const SKIP_RE = /^(?:\.git|node_modules|\.pnpm-store|\.turbo|\.nx|dist|build|\.cache)$/;
 
-export const scanGitlabRepository = (workspaceRoot: string): { includes: GitLabInclude[]; images: ImageReference[] } => {
+export const scanGitlabRepository = (workspaceRoot: string): { images: ImageReference[]; includes: GitLabInclude[] } => {
     const allIncludes: GitLabInclude[] = [];
     const allImages: ImageReference[] = [];
 
@@ -394,7 +395,11 @@ export const scanGitlabRepository = (workspaceRoot: string): { includes: GitLabI
 
     // Anything else named `*.gitlab-ci.yml` at the top level.
     for (const entry of walkSync(workspaceRoot, { includeDirs: false, includeSymlinks: false, maxDepth: 2, skip: [SKIP_RE] })) {
-        if (isGitlabCiFile(entry.name) && !allImages.some((image) => image.file === entry.path) && !allIncludes.some((include) => include.file === entry.path)) {
+        if (
+            isGitlabCiFile(entry.name)
+            && !allImages.some((image) => image.file === entry.path)
+            && !allIncludes.some((include) => include.file === entry.path)
+        ) {
             collect(entry.path);
         }
     }

@@ -18,30 +18,32 @@ const baseOptions: EcosystemUpdateOptions = {
     style: "sha",
 };
 
-const reference = (overrides: Partial<ImageReference> = {}): ImageReference => ({
-    digest: undefined,
-    file: "/tmp/Dockerfile",
-    ignoreReason: undefined,
-    kind: "dockerfile",
-    line: 1,
-    name: "node",
-    namespace: "library",
-    original: "node:18",
-    registry: "docker.io",
-    tag: "18",
-    ...overrides,
-});
+const reference = (overrides: Partial<ImageReference> = {}): ImageReference => {
+    return {
+        digest: undefined,
+        file: "/tmp/Dockerfile",
+        ignoreReason: undefined,
+        kind: "dockerfile",
+        line: 1,
+        name: "node",
+        namespace: "library",
+        original: "node:18",
+        registry: "docker.io",
+        tag: "18",
+        ...overrides,
+    };
+};
 
 const fetchHubTags = (tags: string[]): typeof fetch =>
-    vi.fn(async () => new Response(JSON.stringify({ next: null, results: tags.map((tag) => ({ name: tag })) }), { status: 200 })) as typeof fetch;
+    vi.fn(async () => Response.json({ next: null, results: tags.map((tag) => { return { name: tag }; }) }, { status: 200 }));
 
-const fetchHubTagsWithDates = (entries: { name: string; lastUpdated: string }[]): typeof fetch =>
+const fetchHubTagsWithDates = (entries: { lastUpdated: string; name: string }[]): typeof fetch =>
     vi.fn(
         async () =>
-            new Response(JSON.stringify({ next: null, results: entries.map((entry) => ({ last_updated: entry.lastUpdated, name: entry.name })) }), {
+            Response.json({ next: null, results: entries.map((entry) => { return { last_updated: entry.lastUpdated, name: entry.name }; }) }, {
                 status: 200,
             }),
-    ) as typeof fetch;
+    );
 
 describe(checkDocker, () => {
     it("emits an update with the docker.io display name and a hub.docker.com URL", async () => {

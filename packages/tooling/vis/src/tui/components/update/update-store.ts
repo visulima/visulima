@@ -4,6 +4,7 @@ import type { OutdatedEntry } from "../../../util/catalog";
 
 export type FilterType = "all" | "major" | "minor" | "patch" | "security";
 export type UpdatePhase = "applying" | "browsing" | "done" | "error";
+
 /**
  * Sort order for the visible entry list. `default` is whatever order the
  * caller passed in (catalog grouping); the others cycle via `s` so users
@@ -11,7 +12,7 @@ export type UpdatePhase = "applying" | "browsing" | "done" | "error";
  */
 export type SortMode = "default" | "name" | "severity" | "updateType";
 
-const SORT_CYCLE: readonly SortMode[] = ["default", "name", "updateType", "severity"];
+const SORT_CYCLE: ReadonlyArray<SortMode> = ["default", "name", "updateType", "severity"];
 
 /** Stable severity rank — higher comes first when sorting by severity. */
 const severityRank = (entry: OutdatedEntry): number => {
@@ -70,10 +71,11 @@ export interface UpdateState {
     allChecked: boolean;
     /** Progress during apply phase. */
     applyProgress: { current: number; total: number } | null;
-    /** Set of checked package names for selective apply. */
-    checkedEntries: Set<string>;
     /** Set of `ecosystemEntryKey()`s the user has checked for apply. */
     checkedEcosystemKeys: Set<string>;
+    /** Set of checked package names for selective apply. */
+    checkedEntries: Set<string>;
+
     /**
      * Non-npm ecosystem entries (GitHub Actions, Docker, GitLab CI).
      * Plumbed through the store + accessible via `getCheckedEcosystemEntries()`,
@@ -85,8 +87,6 @@ export interface UpdateState {
     entries: OutdatedEntry[];
     /** Error message if apply failed. */
     error: string | null;
-    /** Currently active sort mode for the list panel. */
-    sortMode: SortMode;
     /** Whether the text filter input is active. */
     filterActive: boolean;
     /** Current filter text (empty = no filter). */
@@ -101,6 +101,8 @@ export interface UpdateState {
     phase: UpdatePhase;
     /** Currently highlighted entry index in the filtered list. */
     selectedIndex: number;
+    /** Currently active sort mode for the list panel. */
+    sortMode: SortMode;
 }
 
 type Listener = () => void;
@@ -206,7 +208,12 @@ export class UpdateStore {
         const previousSelected = previousVisible[this.#state.selectedIndex]?.packageName;
 
         const nextVisible = sortEntries(filterEntries(this.#allEntries, this.#state.filterType, this.#state.filterText), mode);
-        const nextIndex = previousSelected ? Math.max(0, nextVisible.findIndex((entry) => entry.packageName === previousSelected)) : 0;
+        const nextIndex = previousSelected
+            ? Math.max(
+                0,
+                nextVisible.findIndex((entry) => entry.packageName === previousSelected),
+            )
+            : 0;
 
         this.#emit({ ...this.#state, selectedIndex: nextIndex, sortMode: mode });
     }

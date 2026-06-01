@@ -77,6 +77,24 @@ class CompositeLifeCycle implements LifeCycleInterface {
         }
     }
 
+    public printCacheDisabledByTask(task: Task): void {
+        for (const lc of this.#lifeCycles) {
+            lc.printCacheDisabledByTask?.(task);
+        }
+    }
+
+    public printEmptyFingerprintWarning(task: Task, reason: string): void {
+        for (const lc of this.#lifeCycles) {
+            lc.printEmptyFingerprintWarning?.(task, reason);
+        }
+    }
+
+    public printSelfModifyingSkip(task: Task, modifiedFiles: string[]): void {
+        for (const lc of this.#lifeCycles) {
+            lc.printSelfModifyingSkip?.(task, modifiedFiles);
+        }
+    }
+
     public onTaskStdout(task: Task, chunk: string): void {
         for (const lc of this.#lifeCycles) {
             lc.onTaskStdout?.(task, chunk);

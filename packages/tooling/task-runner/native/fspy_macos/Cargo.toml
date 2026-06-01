@@ -1,0 +1,32 @@
+[package]
+name = "fspy-macos"
+version = "0.0.0"
+edition = "2021"
+license = "MIT"
+publish = false
+description = "macOS file-access tracker — a DYLD-interpose dylib injected via DYLD_INSERT_LIBRARIES. See ../../rfc/design-fspy-windows-detours.md for the sibling Windows design."
+
+# cdylib only: this artifact is the injected `.dylib`. It MUST NOT be linked
+# into the parent NAPI crate — its `__DATA,__interpose` section would then
+# rewrite the parent's own file syscalls. The parent-side spawn/collect logic
+# lives in `native/src/macos.rs` instead (mirrors how the seccomp helper is a
+# separate binary from the parent binding).
+[lib]
+crate-type = ["cdylib"]
+
+[target.'cfg(target_os = "macos")'.dependencies]
+# `libc` for the real syscall wrappers we forward to, the socket primitives,
+# and `mode_t`/`O_*` constants. `ctor` runs our initialiser the moment dyld
+# maps the dylib into the child, before `main` — that's where we adopt the
+# inherited reporting socket. Both are tiny, stable-Rust, no-nightly deps.
+libc = "0.2.178"
+ctor = "0.2"
+
+# Keep the injected dylib small and dependency-free at runtime: no tokio, no
+# serialization crate. The wire format is a single datagram per access
+# (`[u8 mode][path bytes]`) written with a raw `send(2)`, so there is nothing
+# to frame or buffer inside an arbitrary tracked process.
+
+# `[profile.release]` is intentionally omitted — Cargo only honours
+# `[profile.*]` from the workspace root (native/Cargo.toml), which already sets
+# lto + strip for every artifact built under it, this dylib included.

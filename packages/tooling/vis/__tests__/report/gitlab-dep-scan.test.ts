@@ -81,7 +81,7 @@ describe(emitGitlabDepScan, () => {
 
         const finding = { acknowledged: false, packageName: "lodash", packageVersion: "4.17.20", vulnerability: vuln() };
         const report = emitGitlabDepScan({ findings: [finding], now: fixedNow, tool, workspaceRoot: "/repo" });
-        const location = report.vulnerabilities[0]!.location;
+        const { location } = (report.vulnerabilities[0]!);
 
         expect(location.dependency.package.name).toBe("lodash");
         expect(location.dependency.version).toBe("4.17.20");
@@ -159,8 +159,18 @@ describe(emitGitlabDepScan, () => {
 
         const findings = [
             { acknowledged: false, packageName: "lodash", packageVersion: "4.17.20", vulnerability: vuln({ id: "GHSA-1", severity: "CRITICAL" }) },
-            { acknowledged: true, packageName: "axios", packageVersion: "0.21.0", vulnerability: vuln({ aliases: [], id: "CVE-2021-12345", severity: "HIGH" }) },
-            { acknowledged: false, packageName: "evil-pkg", packageVersion: "1.0.0", vulnerability: vuln({ aliases: [], fixedVersions: [], id: "MAL-2024-001", severity: "UNKNOWN", summary: "" }) },
+            {
+                acknowledged: true,
+                packageName: "axios",
+                packageVersion: "0.21.0",
+                vulnerability: vuln({ aliases: [], id: "CVE-2021-12345", severity: "HIGH" }),
+            },
+            {
+                acknowledged: false,
+                packageName: "evil-pkg",
+                packageVersion: "1.0.0",
+                vulnerability: vuln({ aliases: [], fixedVersions: [], id: "MAL-2024-001", severity: "UNKNOWN", summary: "" }),
+            },
         ];
         const decisions: PolicyDecision[] = [
             { packageName: "evil-pkg", policy: "malware", reason: "Detected malware signature", severity: "block", version: "1.0.0" },

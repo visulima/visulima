@@ -32,10 +32,11 @@ const createReadlineIO = (): PromptIO => {
     };
 };
 
-const parseIndexSelection = (raw: string, length: number): number[] => raw
-    .split(",")
-    .map((part) => Number.parseInt(part.trim(), 10) - 1)
-    .filter((index) => Number.isInteger(index) && index >= 0 && index < length);
+const parseIndexSelection = (raw: string, length: number): number[] =>
+    raw
+        .split(",")
+        .map((part) => Number.parseInt(part.trim(), 10) - 1)
+        .filter((index) => Number.isInteger(index) && index >= 0 && index < length);
 
 /**
  * Interactive selector for ecosystem updates. Mirrors the npm-side
@@ -51,10 +52,7 @@ const parseIndexSelection = (raw: string, length: number): number[] => raw
  * An unrecognised answer defaults to "none" — the safer of the two
  * options when the user's intent is ambiguous.
  */
-export const promptEcosystemSelection = async (
-    updates: EcosystemUpdate[],
-    io: PromptIO = createReadlineIO(),
-): Promise<EcosystemUpdate[]> => {
+export const promptEcosystemSelection = async (updates: EcosystemUpdate[], io: PromptIO = createReadlineIO()): Promise<EcosystemUpdate[]> => {
     if (updates.length === 0) {
         io.close();
 

@@ -34,8 +34,8 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
         throw new Error(`Invalid --upstream value: "${upstreamValue}". Must be "none", "direct", or "deep".`);
     }
 
-    let base = options.base;
-    let head = options.head;
+    let { base } = options;
+    let { head } = options;
 
     if (!base || !head) {
         const resolved = resolveAffectedShas({

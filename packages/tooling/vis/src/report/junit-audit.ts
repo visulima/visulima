@@ -1,9 +1,9 @@
 /**
  * JUnit-XML emitter for `vis audit`.
  *
- * Each (package, advisory) pair becomes a `<testcase>` and each finding
- * is reported via a `<failure>` child. Policy decisions land in their
- * own `<testsuite>` so CI dashboards can render the two streams
+ * Each (package, advisory) pair becomes a `&lt;testcase>` and each finding
+ * is reported via a `&lt;failure>` child. Policy decisions land in their
+ * own `&lt;testsuite>` so CI dashboards can render the two streams
  * separately.
  *
  * Output is Surefire-flavoured — the dialect GitLab CI, GitHub Actions
@@ -26,7 +26,7 @@ export interface JUnitAuditEmitOptions {
     /** Fixed timestamp for reproducible test output. */
     now?: Date;
     policyDecisions?: PolicyDecision[];
-    /** Surface name — stamped into `<testsuites name>`. */
+    /** Surface name — stamped into `&lt;testsuites name>`. */
     suiteName?: string;
 }
 
@@ -36,12 +36,7 @@ export interface JUnitAuditEmitOptions {
  * escaping would explode the line count.
  */
 const escapeAttribute = (value: string): string =>
-    value
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll("\"", "&quot;")
-        .replaceAll("'", "&apos;");
+    value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&apos;");
 
 /** Wraps text in CDATA, defensively splitting any embedded `]]>` sequences. */
 const cdata = (value: string): string => `<![CDATA[${value.replaceAll("]]>", "]]]]><![CDATA[>")}]]>`;
@@ -55,7 +50,7 @@ interface TestCase {
     failureType: string;
     name: string;
     status: TestCaseStatus;
-    /** Optional `<system-out>` body — used for `passing` info-level rows. */
+    /** Optional `&lt;system-out>` body — used for `passing` info-level rows. */
     systemOut?: string;
 }
 
@@ -77,14 +72,14 @@ const renderTestsuite = (name: string, testcases: TestCase[], timestamp: string)
     const failures = testcases.filter((t) => t.status === "failure").length;
     const skipped = testcases.filter((t) => t.status === "skipped").length;
     const tests = testcases.length;
-    const inner = testcases.map(renderTestcase).join("");
+    const inner = testcases.map((testcase) => renderTestcase(testcase)).join("");
 
     return `  <testsuite name="${escapeAttribute(name)}" tests="${String(tests)}" failures="${String(failures)}" skipped="${String(skipped)}" errors="0" timestamp="${escapeAttribute(timestamp)}" time="0">\n${inner}  </testsuite>\n`;
 };
 
 /**
  * Builds a Surefire-compatible JUnit XML document from audit findings.
- * Always returns a single `<testsuites>` root, even when both suites
+ * Always returns a single `&lt;testsuites>` root, even when both suites
  * are empty, so downstream parsers don't choke on an empty file.
  */
 export const emitJUnitAudit = (options: JUnitAuditEmitOptions): string => {

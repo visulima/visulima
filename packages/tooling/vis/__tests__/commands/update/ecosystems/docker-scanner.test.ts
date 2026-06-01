@@ -67,10 +67,7 @@ describe(scanDockerRepository, () => {
     it("extracts FROM lines from Dockerfiles", () => {
         expect.assertions(2);
 
-        writeFileSync(
-            join(workspaceRoot, "Dockerfile"),
-            "FROM node:22 AS base\nWORKDIR /app\nFROM base AS build\nFROM scratch\n",
-        );
+        writeFileSync(join(workspaceRoot, "Dockerfile"), "FROM node:22 AS base\nWORKDIR /app\nFROM base AS build\nFROM scratch\n");
 
         const references = scanDockerRepository(workspaceRoot);
 
@@ -84,10 +81,7 @@ describe(scanDockerRepository, () => {
     it("extracts image: lines from compose files", () => {
         expect.assertions(2);
 
-        writeFileSync(
-            join(workspaceRoot, "docker-compose.yml"),
-            "services:\n  db:\n    image: postgres:14.5\n  cache:\n    image: 'redis:7.2'\n",
-        );
+        writeFileSync(join(workspaceRoot, "docker-compose.yml"), "services:\n  db:\n    image: postgres:14.5\n  cache:\n    image: 'redis:7.2'\n");
 
         const references = scanDockerRepository(workspaceRoot);
         const postgres = references.find((reference) => reference.name === "postgres");
@@ -100,10 +94,7 @@ describe(scanDockerRepository, () => {
     it("honours `# vis-update-ignore` directives", () => {
         expect.assertions(1);
 
-        writeFileSync(
-            join(workspaceRoot, "Dockerfile"),
-            "# vis-update-ignore-next-line\nFROM node:18\n",
-        );
+        writeFileSync(join(workspaceRoot, "Dockerfile"), "# vis-update-ignore-next-line\nFROM node:18\n");
 
         const references = scanDockerRepository(workspaceRoot);
 

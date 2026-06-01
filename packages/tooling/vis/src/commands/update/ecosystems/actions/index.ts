@@ -6,13 +6,12 @@ import { decorateActionsAdvisories } from "./advisories";
 import type { ActionsResolverOptions } from "./resolver";
 import { ActionsResolver } from "./resolver";
 import type { UsesReference } from "./scanner";
-import { scanActionsRepository } from "./scanner";
 
 const SHA_LENGTH = 40;
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
-const BRANCH_TOKENS = new Set(["main", "master", "develop", "trunk", "edge", "stable"]);
+const BRANCH_TOKENS = new Set(["develop", "edge", "main", "master", "stable", "trunk"]);
 
 const looksLikeBranch = (ref: string): boolean => {
     if (ref.length === SHA_LENGTH && /^[a-f0-9]{40}$/i.test(ref)) {
@@ -30,16 +29,16 @@ const looksLikeBranch = (ref: string): boolean => {
 };
 
 interface CheckActionsContext {
-    readonly references: UsesReference[];
-    readonly options: EcosystemUpdateOptions;
-    readonly resolverOptions?: Partial<ActionsResolverOptions>;
     readonly ignoreRules?: DependabotIgnoreRules;
+    readonly options: EcosystemUpdateOptions;
+    readonly references: UsesReference[];
+    readonly resolverOptions?: Partial<ActionsResolverOptions>;
 }
 
 interface CheckActionsResult {
-    readonly updates: EcosystemUpdate[];
     readonly failed: { file: string; reason: string }[];
     readonly ignored: EcosystemUpdate[];
+    readonly updates: EcosystemUpdate[];
 }
 
 const matchesPattern = (name: string, patterns: string[]): boolean => {
@@ -324,4 +323,4 @@ export const checkActions = async (workspaceRoot: string, context: CheckActionsC
     return { failed, ignored: ignoredList, updates: decoratedUpdates };
 };
 
-export { scanActionsRepository };
+export { scanActionsRepository } from "./scanner";

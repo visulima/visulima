@@ -545,7 +545,6 @@ class Cache {
         const ACQUIRE_TIMEOUT_MS = 10_000;
         const start = Date.now();
 
-        // eslint-disable-next-line no-constant-condition
         while (true) {
             let handle: Awaited<ReturnType<typeof open>> | undefined;
 
@@ -568,7 +567,7 @@ class Cache {
                 }
 
                 if (Date.now() - start > ACQUIRE_TIMEOUT_MS) {
-                    throw new Error(`Timed out waiting for task-index lock at ${lockPath}`);
+                    throw new Error(`Timed out waiting for task-index lock at ${lockPath}`, { cause: error });
                 }
 
                 // eslint-disable-next-line no-await-in-loop
@@ -580,9 +579,12 @@ class Cache {
             }
 
             try {
+                // eslint-disable-next-line no-await-in-loop -- sequential by design: the locked function must complete while the lock is held
                 return await function_();
             } finally {
+                // eslint-disable-next-line no-await-in-loop -- sequential by design: ordered lock teardown (close handle before removing the lock file)
                 await handle.close().catch(() => {});
+                // eslint-disable-next-line no-await-in-loop -- sequential by design: ordered lock teardown (remove lock file after closing the handle)
                 await rm(lockPath, { force: true }).catch(() => {});
             }
         }
@@ -837,19 +839,19 @@ const restoreOutputsCompressed = async (cacheEntryDirectory: string, workspaceRo
      * phases:
      *
      *   1. Pre-position. Move the freshly-extracted staging subtree
-     *      to a sibling-of-destination path (`<dst>.restoring-<uid>`)
+     *      to a sibling-of-destination path (`&lt;dst>.restoring-&lt;uid>`)
      *      so the install rename in phase 3 is intra-directory and
      *      cannot fail with EXDEV. If staging is on a different
      *      filesystem the rename throws EXDEV and we fall back to
      *      `cp -r` for pre-positioning only — never for the install.
      *
-     *   2. Backup. `rename(<dst>, <dst>.old-<uid>)` for every output
+     *   2. Backup. `rename(&lt;dst>, &lt;dst>.old-&lt;uid>)` for every output
      *      that has an existing tree on disk. Single atomic POSIX op
      *      per entry. If any backup fails, every prior backup is
      *      renamed back atomically and the function returns `false`
      *      with the workspace exactly as it was on entry.
      *
-     *   3. Install. `rename(<dst>.restoring-<uid>, <dst>)` for every
+     *   3. Install. `rename(&lt;dst>.restoring-&lt;uid>, &lt;dst>)` for every
      *      output. Atomic intra-directory rename. If any install
      *      fails, every prior install is renamed to a trash sibling
      *      and every backup is renamed back. The user sees either
@@ -868,11 +870,11 @@ const restoreOutputsCompressed = async (cacheEntryDirectory: string, workspaceRo
      */
     type EntryState = {
         absoluteOutput: string;
-        backupPath: string;
         backupCreated: boolean;
+        backupPath: string;
         entry: string;
-        prePositioned: string;
         installed: boolean;
+        prePositioned: string;
     };
 
     const states: EntryState[] = [];
@@ -994,6 +996,7 @@ const restoreOutputsCompressed = async (cacheEntryDirectory: string, workspaceRo
         await rm(stagingDirectory, { force: true, recursive: true }).catch(() => {});
 
         for (const state of states) {
+            // eslint-disable-next-line no-await-in-loop -- sequential by design: best-effort ordered cleanup of per-state out-of-band paths
             await rm(state.prePositioned, { force: true, recursive: true }).catch(() => {});
 
             if (state.backupCreated && !state.installed) {
@@ -1003,6 +1006,7 @@ const restoreOutputsCompressed = async (cacheEntryDirectory: string, workspaceRo
                 continue;
             }
 
+            // eslint-disable-next-line no-await-in-loop -- sequential by design: best-effort ordered cleanup of per-state backup paths
             await rm(state.backupPath, { force: true, recursive: true }).catch(() => {});
         }
     }

@@ -8,37 +8,37 @@ import { isAbsolute, join } from "@visulima/path";
  * destroy comments, anchors, and quoting style).
  */
 export interface UsesReference {
-    /** Owner/repo (e.g. `actions/checkout`) or full path (`org/repo/path/to/action`). */
-    readonly slug: string;
-    /** Sub-path of a composite action inside the repo, or `undefined` for repo-root actions. */
-    readonly subpath: string | undefined;
-    /** The ref string after `@` — tag, branch, or SHA. */
-    readonly ref: string;
-    /** Owner segment (`actions` in `actions/checkout`). */
-    readonly owner: string;
-    /** Repo segment (`checkout`). */
-    readonly repo: string;
     /** Absolute path of the file that contains the reference. */
     readonly file: string;
+    /** When set, the actions-up-style ignore comment that excludes this line. */
+    readonly ignoreReason: string | undefined;
+    /** Whether the existing ref is already a 40-char hex SHA. */
+    readonly isSha: boolean;
     /** 1-based line number. */
     readonly line: number;
     /** Exact original token as it appeared after `uses:`, sans surrounding whitespace/quotes. */
     readonly original: string;
+    /** Owner segment (`actions` in `actions/checkout`). */
+    readonly owner: string;
     /** Quote character the original value was wrapped in, or `""` when unquoted. The applier re-emits the new value inside the same quote style so trailing `# vN.M.P` hints don't end up *inside* the YAML string. */
     readonly quote: "" | "'" | "\"";
-    /** Whether the existing ref is already a 40-char hex SHA. */
-    readonly isSha: boolean;
+    /** The ref string after `@` — tag, branch, or SHA. */
+    readonly ref: string;
+    /** Repo segment (`checkout`). */
+    readonly repo: string;
+    /** Owner/repo (e.g. `actions/checkout`) or full path (`org/repo/path/to/action`). */
+    readonly slug: string;
+    /** Sub-path of a composite action inside the repo, or `undefined` for repo-root actions. */
+    readonly subpath: string | undefined;
     /** Inline comment trailing the `uses:` line (e.g. `# v3.5.3`). Used to preserve the version hint when re-pinning. */
     readonly trailingComment: string | undefined;
-    /** When set, the actions-up-style ignore comment that excludes this line. */
-    readonly ignoreReason: string | undefined;
 }
 
 const WORKFLOWS_GLOB_DIR = ".github/workflows";
 const COMPOSITE_GLOB_DIR = ".github/actions";
 
 /**
- * Regex that matches `uses: <slug>@<ref>` in a YAML line. Tolerates:
+ * Regex that matches `uses: &lt;slug>@&lt;ref>` in a YAML line. Tolerates:
  *   - leading hyphen for list entries
  *   - quoted or bare values
  *   - trailing comments after the ref
@@ -48,7 +48,7 @@ const COMPOSITE_GLOB_DIR = ".github/actions";
  * docker form is handled by the docker scanner via the action.yml's
  * `runs.image` field, not by `uses:`.
  */
-const USES_LINE_RE = /^(\s*-?\s*uses:\s*)(['"]?)([^'"\s#]+)\2(\s*#\s*(.+))?\s*$/;
+const USES_LINE_RE = /^\s*-?\s*uses:\s*(['"]?)([^'"\s#]+)\1(?:\s*#\s*(.+))?\s*$/;
 
 const SHA_RE = /^[a-f0-9]{40}$/i;
 
@@ -89,8 +89,8 @@ export const extractUsesFromContent = (filePath: string, content: string): UsesR
     let pendingIgnoreReason: string | undefined;
     let blockIgnore = false;
 
-    for (let index = 0; index < lines.length; index++) {
-        const line = lines[index] ?? "";
+    for (const [index, rawLine] of lines.entries()) {
+        const line = rawLine ?? "";
 
         // Block-level ignore directives. `start` and `end` switch a flag
         // that applies to every line between them — including the start
@@ -130,15 +130,15 @@ export const extractUsesFromContent = (filePath: string, content: string): UsesR
             continue;
         }
 
-        // match[2] is the original quote character (`'`, `"`, or empty);
-        // match[3] is the already-unquoted value. We capture the quote
+        // match[1] is the original quote character (`'`, `"`, or empty);
+        // match[2] is the already-unquoted value. We capture the quote
         // separately so the applier can re-emit the same quoting style
         // and the trailing `# vN.M.P` hint never lands *inside* the YAML
         // string.
-        const rawQuote = match[2] ?? "";
+        const rawQuote = match[1] ?? "";
         const quote: "" | "'" | "\"" = rawQuote === "'" || rawQuote === "\"" ? rawQuote : "";
-        const value = match[3] ?? "";
-        const trailingComment = match[5]?.trim();
+        const value = match[2] ?? "";
+        const trailingComment = match[3]?.trim();
 
         // Local actions and docker:// urls are out of scope.
         if (value.startsWith("./") || value.startsWith("../") || value.startsWith("docker://")) {
@@ -168,6 +168,7 @@ export const extractUsesFromContent = (filePath: string, content: string): UsesR
         }
 
         let ignoreReason = pendingIgnoreReason ?? (blockIgnore ? "actions-up-ignore-block" : undefined);
+
         // Only treat the inline directive as an ignore when it appears as
         // a standalone token starting the trailing comment — a trailing
         // `# v3.1.0` mustn't be parsed as an ignore. Both
@@ -178,7 +179,7 @@ export const extractUsesFromContent = (filePath: string, content: string): UsesR
             const startInline = /^actions-up-ignore(?:-next-line)?(?::\s*(.+))?(?:\s|$)/i.exec(trailingComment);
 
             if (startInline) {
-                ignoreReason = ignoreReason ?? (startInline[1] ?? "actions-up-ignore");
+                ignoreReason = ignoreReason ?? startInline[1] ?? "actions-up-ignore";
             }
         }
 
@@ -215,8 +216,8 @@ const isWorkflowFile = (name: string): boolean => name.endsWith(".yml") || name.
 
 /**
  * Walks the workspace looking for action references:
- *   - .github/workflows/<file>.yml (and .yaml)
- *   - .github/actions/<name>/action.yml (and .yaml)
+ *   - .github/workflows/&lt;file>.yml (and .yaml)
+ *   - .github/actions/&lt;name>/action.yml (and .yaml)
  *   - Root action.yml / action.yaml (the action repo itself)
  *
  * `extraDirs` can be passed to scan additional directories, mirroring

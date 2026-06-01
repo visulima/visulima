@@ -13,31 +13,31 @@ export interface DockerParsedTag extends ParsedTag {
 }
 
 interface RegistryTagListing {
-    readonly raw: string[];
     readonly parsed: DockerParsedTag[];
+    readonly raw: string[];
 }
 
 export interface DockerRegistryOptions {
-    /** Per-registry bearer tokens. Key is the registry host, value is the token. */
-    readonly tokens?: Record<string, string>;
     /** Pluggable fetch for tests. */
     readonly fetch?: typeof fetch;
+    /** Per-registry bearer tokens. Key is the registry host, value is the token. */
+    readonly tokens?: Record<string, string>;
 }
 
 interface AuthInfo {
     readonly realm: string;
-    readonly service: string;
     readonly scope: string;
+    readonly service: string;
 }
 
 /**
  * Multi-registry tag resolver. Talks the Docker Registry HTTP API v2:
  *   - `docker.io`: special-cased through Docker Hub's public API which
  *     paginates more pleasantly than the v2 manifest API
- *   - everything else: standard `GET /v2/<name>/tags/list`
+ *   - everything else: standard `GET /v2/&lt;name>/tags/list`
  *
  * Anonymous reads are supported for public images. Tokens supplied via
- * `tokens[host]` (or `DOCKER_REGISTRY_TOKEN_<HOST>` env vars) override
+ * `tokens[host]` (or `DOCKER_REGISTRY_TOKEN_&lt;HOST>` env vars) override
  * the anonymous path.
  */
 export class DockerRegistry {
@@ -216,13 +216,9 @@ export class DockerRegistry {
 
                 const link = parseLinkHeader(response.headers.get("link"));
 
-                if (link.next) {
-                    // Registries may return either an absolute URL or a
-                    // path-relative one — `URL` resolves both consistently.
-                    nextUrl = new URL(link.next, origin).toString();
-                } else {
-                    nextUrl = undefined;
-                }
+                // Registries may return either an absolute URL or a
+                // path-relative one — `URL` resolves both consistently.
+                nextUrl = link.next ? new URL(link.next, origin).toString() : undefined;
             } catch {
                 return pages === 0 ? empty : buildResult();
             }
@@ -263,6 +259,7 @@ export class DockerRegistry {
  * registry that uses Basic auth (we don't try to prompt for creds — the
  * user can pass a bearer token instead).
  */
+
 /**
  * Splits a `Www-Authenticate` parameter list (`k1="v1",k2="v2,with,commas",k3=v3`)
  * into `key,value` pairs, respecting quoted values that legitimately
@@ -273,7 +270,7 @@ export class DockerRegistry {
 const splitAuthParams = (input: string): { key: string; value: string }[] => {
     const params: { key: string; value: string }[] = [];
     let index = 0;
-    const length = input.length;
+    const { length } = input;
 
     while (index < length) {
         // Skip leading whitespace.

@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, expectTypeOf, it } from "vitest";
 
-import { FileAccessTracker, generatePreloadScript } from "../../src/file-access-tracker";
+import { FileAccessTracker, generatePreloadScript, parseDirectExec } from "../../src/file-access-tracker";
 
 const createTemporaryDirectory = async (base?: string): Promise<string> => {
     const parent = base ?? tmpdir();
@@ -133,7 +133,10 @@ describe(FileAccessTracker, () => {
             expect.assertions(1);
 
             const tracker = new FileAccessTracker(workspaceRoot);
-            const command = process.platform === "win32" ? "echo %MY_TEST_VAR%" : 'echo "$MY_TEST_VAR"';
+            // The tracker always runs commands through `sh -c` (on Windows
+            // that's the runner's Git Bash), so use POSIX `$VAR` expansion
+            // on every platform — cmd.exe `%VAR%` syntax is never evaluated.
+            const command = 'echo "$MY_TEST_VAR"';
             const result = await tracker.track(command, {
                 cwd: workspaceRoot,
                 env: { MY_TEST_VAR: "test_value_123" },
@@ -170,6 +173,85 @@ describe(FileAccessTracker, () => {
             expect(types.has("read")).toBe(true);
             expect(types.has("write")).toBe(true);
         });
+
+        // macOS DYLD-interpose path. Spawns `node` directly (a non-SIP binary,
+        // so `DYLD_INSERT_LIBRARIES` survives and the dylib loads) via
+        // `trackInterpose`, then asserts the injected dylib reported the
+        // syscall. Skipped unless the interpose dylib + addon are present
+        // (i.e. macOS with the native artifacts built).
+        it.skipIf(!new FileAccessTracker(tmpdir(), []).isInterposeSupported())(
+            "tracks a read by a directly-exec'd binary via the macOS interpose dylib",
+            async () => {
+                expect.assertions(1);
+
+                const tracker = new FileAccessTracker(workspaceRoot, []);
+                const target = join(workspaceRoot, "interpose-read.txt");
+
+                await writeFile(target, "data");
+
+                const argv = [process.execPath, "-e", `require("node:fs").readFileSync(${JSON.stringify(target)})`];
+                const result = await tracker.trackInterpose(argv, { cwd: workspaceRoot });
+
+                expect(result.accesses.some((a) => a.path === target && a.type === "read")).toBe(true);
+            },
+        );
+
+        it.skipIf(!new FileAccessTracker(tmpdir(), []).isInterposeSupported())(
+            "tracks a write by a directly-exec'd binary via the macOS interpose dylib",
+            async () => {
+                expect.assertions(1);
+
+                const tracker = new FileAccessTracker(workspaceRoot, []);
+                const target = join(workspaceRoot, "interpose-write.txt");
+
+                const argv = [process.execPath, "-e", `require("node:fs").writeFileSync(${JSON.stringify(target)}, "x")`];
+                const result = await tracker.trackInterpose(argv, { cwd: workspaceRoot });
+
+                expect(result.accesses.some((a) => a.path === target && a.type === "write")).toBe(true);
+            },
+        );
+
+        // Windows IAT-hook path. Spawns `node` directly (the DLL is injected
+        // into it) via trackIatHook, then asserts the IAT hooks reported the
+        // access. Windows paths are case-insensitive and the DLL emits
+        // forward slashes, so compare normalized + lower-cased. Skipped unless
+        // the IAT-hook DLL + addon are present (i.e. Windows with the native
+        // artifacts built).
+        it.skipIf(!new FileAccessTracker(tmpdir(), []).isIatHookSupported())(
+            "tracks a read by a directly-exec'd binary via the Windows IAT-hook DLL",
+            async () => {
+                expect.assertions(1);
+
+                const tracker = new FileAccessTracker(workspaceRoot, []);
+                const target = join(workspaceRoot, "iat-read.txt");
+
+                await writeFile(target, "data");
+
+                const argv = [process.execPath, "-e", `require("node:fs").readFileSync(${JSON.stringify(target)})`];
+                const result = await tracker.trackIatHook(argv, { cwd: workspaceRoot });
+
+                const want = target.replaceAll("\\", "/").toLowerCase();
+
+                expect(result.accesses.some((a) => a.path.replaceAll("\\", "/").toLowerCase() === want && a.type === "read")).toBe(true);
+            },
+        );
+
+        it.skipIf(!new FileAccessTracker(tmpdir(), []).isIatHookSupported())(
+            "tracks a write by a directly-exec'd binary via the Windows IAT-hook DLL",
+            async () => {
+                expect.assertions(1);
+
+                const tracker = new FileAccessTracker(workspaceRoot, []);
+                const target = join(workspaceRoot, "iat-write.txt");
+
+                const argv = [process.execPath, "-e", `require("node:fs").writeFileSync(${JSON.stringify(target)}, "x")`];
+                const result = await tracker.trackIatHook(argv, { cwd: workspaceRoot });
+
+                const want = target.replaceAll("\\", "/").toLowerCase();
+
+                expect(result.accesses.some((a) => a.path.replaceAll("\\", "/").toLowerCase() === want && a.type === "write")).toBe(true);
+            },
+        );
     });
 
     describe("track on unsupported platform", () => {
@@ -184,6 +266,21 @@ describe(FileAccessTracker, () => {
             expect(result.output).toContain("hello");
         });
     });
+
+    // NOTE: cancellation (per-call `AbortSignal` + `killAll()`) is wired
+    // across all three dispatch paths via `wireAbort` and the
+    // `#activeProcesses` set, and the seccomp path fails fast through
+    // the accept watchdog. It is NOT covered by an automated test here:
+    // a real-process test (spawn `sleep`, abort, assert fast return)
+    // proved non-deterministically flaky across the node/bun/deno ×
+    // ubuntu/macos/windows matrix — a `sh -c` grandchild can retain the
+    // stdio pipes, so the spawn doesn't report completion even after the
+    // kill, and the dispatch path (seccomp vs strace vs no-tracking)
+    // varies per runner. The behaviour was verified manually
+    // (`track("sleep N", { abortSignal })` returns in ~120ms on abort)
+    // and the Rust-side fail-fast handshake is covered by
+    // `native/fspy_seccomp` integration tests. Revisit with an injected
+    // fake spawn if a deterministic harness becomes worthwhile.
 });
 
 describe(generatePreloadScript, () => {
@@ -210,7 +307,7 @@ describe(generatePreloadScript, () => {
 
         const script = generatePreloadScript("/tmp/log");
 
-        expect(script).toContain('require("node:fs/promises")');
+        expect(script).toContain('import fsp from "node:fs/promises"');
         expect(script).toContain('"readFile"');
         expect(script).toContain('"stat"');
         expect(script).toContain('"readdir"');
@@ -233,5 +330,39 @@ describe(generatePreloadScript, () => {
         const script = generatePreloadScript("/tmp/log");
 
         expect(script).toContain('process.on("beforeExit"');
+    });
+});
+
+describe(parseDirectExec, () => {
+    it("returns argv for a single direct binary invocation", () => {
+        expect.assertions(3);
+
+        expect(parseDirectExec("eslint .")).toStrictEqual(["eslint", "."]);
+        expect(parseDirectExec("node script.js --flag value")).toStrictEqual(["node", "script.js", "--flag", "value"]);
+        expect(parseDirectExec("  tsc   --noEmit  ")).toStrictEqual(["tsc", "--noEmit"]);
+    });
+
+    it("returns undefined for empty input", () => {
+        expect.assertions(2);
+
+        expect(parseDirectExec("")).toBeUndefined();
+        expect(parseDirectExec("   ")).toBeUndefined();
+    });
+
+    it.each([
+        ["pipeline", "cat x | grep y"],
+        ["and", "a && b"],
+        ["semicolon", "a; b"],
+        ["redirect", "echo hi > out.txt"],
+        ["var expansion", "echo $HOME"],
+        ["subshell", "echo $(date)"],
+        ["backtick", "echo `date`"],
+        ["glob", "prettier --write src/**/*.ts"],
+        ["quotes", 'eslint "src/**"'],
+        ["home", "cat ~/x"],
+    ])("returns undefined for shell syntax (%s)", (_label, command) => {
+        expect.assertions(1);
+
+        expect(parseDirectExec(command)).toBeUndefined();
     });
 });

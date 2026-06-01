@@ -12,10 +12,10 @@ import type { EcosystemUpdateType } from "./types";
 export interface ParsedTag {
     readonly major: number;
     readonly minor: number;
+    readonly normalized: string;
     readonly patch: number;
     readonly prerelease: boolean;
     readonly raw: string;
-    readonly normalized: string;
 }
 
 /**
@@ -44,12 +44,12 @@ export const parseTag = (input: string): ParsedTag | undefined => {
     return {
         major: coerced.major,
         minor: coerced.minor,
-        patch: coerced.patch,
-        prerelease: coerced.prerelease.length > 0,
-        raw: trimmed,
         normalized: `${String(coerced.major)}.${String(coerced.minor)}.${String(coerced.patch)}${
             coerced.prerelease.length > 0 ? `-${coerced.prerelease.join(".")}` : ""
         }`,
+        patch: coerced.patch,
+        prerelease: coerced.prerelease.length > 0,
+        raw: trimmed,
     };
 };
 

@@ -89,6 +89,15 @@ export interface Task {
      * {@link TaskRunnerOptions.concurrencyGroups}.
      */
     concurrencyGroup?: string;
+
+    /**
+     * Per-task slot weight against the global `parallel` cap. Defaults
+     * to `1` (one slot). Carried over from
+     * {@link TargetConfiguration.concurrencyWeight}; values `&lt;= 0`,
+     * non-finite, or non-integer are ignored (treated as `1` — matches
+     * `resolveWeight` in `task-scheduler.ts`).
+     */
+    concurrencyWeight?: number;
     /** Hash of the task inputs for caching */
     hash?: string;
     /** Detailed hash information */
@@ -133,6 +142,16 @@ export interface Task {
     priority?: TaskPriority;
     /** The project root directory */
     projectRoot?: string;
+
+    /**
+     * Per-task PTY override. When `true`, this task spawns inside a
+     * pseudo-terminal even if the workspace-level toggle is off (or
+     * vice versa when `false`). Carried over from
+     * {@link TargetConfiguration.pty}. Consumed by the runner that
+     * actually spawns the command — the task-runner library exposes
+     * the flag and leaves the spawn decision to the executor.
+     */
+    pty?: boolean;
     /** The target this task executes */
     target: TaskTarget;
 
@@ -191,6 +210,35 @@ export type TaskStatus = "success" | "failure" | "skipped" | "local-cache" | "lo
  * Result of executing a task.
  */
 export interface TaskResult {
+    /**
+     * Set when the task asked the runner not to cache this run by calling
+     * `disableCache()` from `@visulima/task-runner-client`. Unlike
+     * {@link TaskResult.emptyFingerprint}, the fingerprint may be perfectly
+     * valid — the task itself declared the run non-deterministic (network
+     * flake, debug mode, aborted watch). Surfaced to reporters and the run
+     * summary so the skip is explained rather than silent.
+     */
+    cacheDisabledByTask?: boolean;
+
+    /**
+     * Provenance of the cooperative cache hints a task emitted via
+     * `@visulima/task-runner-client` during this run. Present only when
+     * the task registered at least one hint, so the common (no-client)
+     * path leaves it `undefined`. Surfaced in `--summarize` output so a
+     * cache key can be explained: which reads/writes were ignored and
+     * which env vars/patterns were registered as dependencies.
+     */
+    cacheHints?: {
+        /** Absolute paths whose reads were dropped from inferred inputs. */
+        ignoredInputs: string[];
+        /** Absolute paths whose writes were dropped from inferred outputs. */
+        ignoredOutputs: string[];
+        /** Env var names registered as cache dependencies via `getEnv`. */
+        trackedEnv: string[];
+        /** Env glob patterns registered as cache dependencies via `getEnvs`. */
+        trackedEnvPatterns: string[];
+    };
+
     /** The exit code, if applicable */
     code?: number;
 
@@ -349,6 +397,21 @@ export interface TargetConfiguration {
      */
     concurrencyGroup?: string;
 
+    /**
+     * Per-task slot weight against the global `parallel` cap. Defaults
+     * to `1`. A task with `concurrencyWeight: 2` consumes two slots; with
+     * `parallel: 4` only two such tasks can run concurrently (or one
+     * weight-2 plus two weight-1). Use for CPU-pinning tasks — bundlers,
+     * `tsc`, native compiles — where the runner shouldn't keep
+     * over-subscribing the box just because slots are nominally free.
+     *
+     * The scheduler always lets a single task run even if its weight
+     * exceeds the remaining budget; otherwise a heavy task on a
+     * `parallel: 1` pool would deadlock. Values `&lt;= 0`, non-finite, or
+     * non-integer are ignored (treated as `1`).
+     */
+    concurrencyWeight?: number;
+
     /** Named configurations (e.g., "production", "development") */
     configurations?: Record<string, Record<string, unknown>>;
     /** Other targets this target depends on */
@@ -421,6 +484,20 @@ export interface TargetConfiguration {
     outputs?: OutputSpec[];
     /** Whether this target supports parallel execution */
     parallelism?: boolean;
+
+    /**
+     * Per-target PTY override. When `true`, every task spawned from
+     * this target runs inside a pseudo-terminal (so `isatty()` returns
+     * true and the child preserves color / progress UI). When `false`,
+     * the workspace-level PTY toggle is suppressed for this target.
+     * Useful when most targets are happy with piped stdio but one
+     * tool (vitest, prettier, a colorising linter) needs a real TTY,
+     * or vice versa.
+     *
+     * Absent means "follow the workspace default" — the executor
+     * decides based on its own toggles.
+     */
+    pty?: boolean;
 
     /**
      * Regex source string(s) that mark a successful task as having
@@ -1153,6 +1230,14 @@ export interface LifeCycleInterface {
      * semantics — same contract, different stream.
      */
     onTaskStdout?: (task: Task, chunk: string) => void;
+
+    /**
+     * Called when caching is skipped because the task itself requested it
+     * via `disableCache()` (`@visulima/task-runner-client`). Distinct from
+     * {@link LifeCycleInterface.printEmptyFingerprintWarning}: the
+     * fingerprint may be valid; the task declared the run non-cacheable.
+     */
+    printCacheDisabledByTask?: (task: Task) => void;
     /** Called when a cache miss occurs with diagnostic information */
     printCacheMiss?: (task: Task, reasons: string) => void;
 

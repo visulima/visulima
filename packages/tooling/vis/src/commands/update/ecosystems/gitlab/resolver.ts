@@ -2,19 +2,19 @@ import type { ParsedTag } from "../semver-helpers";
 import { parseTag } from "../semver-helpers";
 
 interface GitlabProjectTags {
-    readonly tags: { name: string; sha: string }[];
-    readonly parsed: (ParsedTag & { sha: string })[];
     /** When set, the lookup failed (HTTP error, bad payload, network). Callers must surface this rather than treat the empty list as "no tags". */
     readonly error?: string;
+    readonly parsed: (ParsedTag & { sha: string })[];
+    readonly tags: { name: string; sha: string }[];
 }
 
 export interface GitlabResolverOptions {
-    /** GitLab access token. Falls back to `GITLAB_TOKEN` / `CI_JOB_TOKEN`. */
-    readonly token: string | undefined;
     /** Default API host (`gitlab.com`). Self-hosted instances may be reached at different hosts. */
     readonly apiBase?: string;
     /** Pluggable fetch for tests. */
     readonly fetch?: typeof fetch;
+    /** GitLab access token. Falls back to `GITLAB_TOKEN` / `CI_JOB_TOKEN`. */
+    readonly token: string | undefined;
 }
 
 /**
@@ -108,14 +108,14 @@ export class GitlabResolver {
                 return { error: `HTTP ${String(response.status)} from ${host}`, parsed: [], tags: [] };
             }
 
-            const json = (await response.json()) as { name?: string; commit?: { id?: string } }[];
+            const json = (await response.json()) as { commit?: { id?: string }; name?: string }[];
 
             if (!Array.isArray(json)) {
                 return { error: `unexpected response shape from ${host}`, parsed: [], tags: [] };
             }
 
             const tags = json
-                .map((entry) => ({ name: typeof entry.name === "string" ? entry.name : "", sha: typeof entry.commit?.id === "string" ? entry.commit.id : "" }))
+                .map((entry) => { return { name: typeof entry.name === "string" ? entry.name : "", sha: typeof entry.commit?.id === "string" ? entry.commit.id : "" }; })
                 .filter((entry) => entry.name !== "");
             const parsed: (ParsedTag & { sha: string })[] = [];
 

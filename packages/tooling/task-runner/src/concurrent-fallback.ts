@@ -44,7 +44,7 @@ const SIGNAL_NUMBERS: Record<string, number> = {
     SIGUSR2: 12,
 };
 
-const signalNumberFor = (signal: NodeJS.Signals | string): number | undefined => SIGNAL_NUMBERS[signal];
+const signalNumberFor = (signal: string): number | undefined => SIGNAL_NUMBERS[signal];
 
 /**
  * Merge env vars for a child process, preserving an explicit caller-supplied

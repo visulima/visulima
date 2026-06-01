@@ -11,6 +11,22 @@ import { uniqueId } from "./utils";
 interface TaskSummary {
     /** Whether the task was cacheable */
     cacheable: boolean;
+
+    /**
+     * Provenance of cooperative cache hints the task emitted via
+     * `@visulima/task-runner-client` ({@link TaskResult.cacheHints}).
+     * Omitted when the task used no client hints.
+     */
+    cacheHints?: TaskResult["cacheHints"];
+
+    /**
+     * Why a cacheable task that ran (exit 0) seeded no cache entry.
+     * Omitted for cache hits, failures, and ordinary cache writes.
+     * `disabled-by-task` — the task called `disableCache()`;
+     * `self-modified` — it rewrote one of its own tracked inputs;
+     * `empty-fingerprint` — tracking observed no workspace accesses.
+     */
+    cacheSkipReason?: "disabled-by-task" | "empty-fingerprint" | "self-modified";
     /** Cache status */
     cacheStatus: "HIT" | "MISS" | "REMOTE_HIT" | "SKIPPED";
     /** Dependencies on other tasks */
@@ -90,6 +106,27 @@ interface RunSummary {
     tasks: TaskSummary[];
 }
 
+/**
+ * Maps a result's cache-skip flags to a single reason string for the
+ * summary. Returns `undefined` when the task either cached normally or
+ * never reached the cache-write gate (failure / skip / cache hit).
+ */
+const getCacheSkipReason = (result: TaskResult): TaskSummary["cacheSkipReason"] => {
+    if (result.cacheDisabledByTask) {
+        return "disabled-by-task";
+    }
+
+    if (result.selfModified) {
+        return "self-modified";
+    }
+
+    if (result.emptyFingerprint) {
+        return "empty-fingerprint";
+    }
+
+    return undefined;
+};
+
 const getCacheStatus = (result: TaskResult): "HIT" | "MISS" | "REMOTE_HIT" | "SKIPPED" => {
     switch (result.status) {
         case "local-cache":
@@ -129,6 +166,8 @@ const generateRunSummary = (results: TaskResults, taskGraph: TaskGraph, startTim
 
         const summary: TaskSummary = {
             cacheable: result.task.cache !== false,
+            cacheHints: result.cacheHints,
+            cacheSkipReason: getCacheSkipReason(result),
             cacheStatus: getCacheStatus(result),
             dependencies: taskDeps,
             duration: result.startTime && result.endTime ? result.endTime - result.startTime : undefined,

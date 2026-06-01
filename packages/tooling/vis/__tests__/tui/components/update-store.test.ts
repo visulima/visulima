@@ -4,17 +4,15 @@ import type { EcosystemUpdate } from "../../../src/commands/update/ecosystems";
 import { ecosystemEntryKey, UpdateStore } from "../../../src/tui/components/update/update-store";
 import type { OutdatedEntry } from "../../../src/util/catalog";
 
-const makeOutdated = (overrides: Partial<OutdatedEntry> & Pick<OutdatedEntry, "packageName">): OutdatedEntry => {
-    return {
-        catalogName: "default",
-        current: "1.0.0",
-        latest: "2.0.0",
-        packageName: overrides.packageName,
-        target: "2.0.0",
-        updateType: "minor",
-        ...overrides,
-    } as OutdatedEntry;
-};
+const makeOutdated = (overrides: Partial<OutdatedEntry> & Pick<OutdatedEntry, "packageName">): OutdatedEntry => ({
+    catalogName: "default",
+    current: "1.0.0",
+    latest: "2.0.0",
+    packageName: overrides.packageName,
+    target: "2.0.0",
+    updateType: "minor",
+    ...overrides,
+} as OutdatedEntry);
 
 const makeEcosystemEntry = (overrides: Partial<EcosystemUpdate> = {}): EcosystemUpdate => {
     return {
@@ -33,7 +31,7 @@ const makeEcosystemEntry = (overrides: Partial<EcosystemUpdate> = {}): Ecosystem
     };
 };
 
-describe("UpdateStore (ecosystem plumbing)", () => {
+describe("updateStore (ecosystem plumbing)", () => {
     it("stores ecosystem entries and seeds the checked set with every key", () => {
         expect.assertions(3);
 
@@ -90,13 +88,13 @@ describe("UpdateStore (ecosystem plumbing)", () => {
     });
 });
 
-describe("UpdateStore (sort cycle)", () => {
+describe("updateStore (sort cycle)", () => {
     it("default sort preserves input order", () => {
         expect.assertions(1);
 
         const store = new UpdateStore([makeOutdated({ packageName: "zebra" }), makeOutdated({ packageName: "alpha" })]);
 
-        expect(store.getFilteredEntries().map((entry) => entry.packageName)).toEqual(["zebra", "alpha"]);
+        expect(store.getFilteredEntries().map((entry) => entry.packageName)).toStrictEqual(["zebra", "alpha"]);
     });
 
     it("`name` sort returns entries alphabetically", () => {
@@ -106,7 +104,7 @@ describe("UpdateStore (sort cycle)", () => {
 
         store.setSortMode("name");
 
-        expect(store.getFilteredEntries().map((entry) => entry.packageName)).toEqual(["alpha", "zebra"]);
+        expect(store.getFilteredEntries().map((entry) => entry.packageName)).toStrictEqual(["alpha", "zebra"]);
     });
 
     it("`updateType` sort ranks major > minor > patch", () => {
@@ -120,25 +118,23 @@ describe("UpdateStore (sort cycle)", () => {
 
         store.setSortMode("updateType");
 
-        expect(store.getFilteredEntries().map((entry) => entry.packageName)).toEqual(["m", "n", "p"]);
+        expect(store.getFilteredEntries().map((entry) => entry.packageName)).toStrictEqual(["m", "n", "p"]);
     });
 
     it("setSortMode preserves the highlighted package across a re-sort", () => {
         expect.assertions(2);
 
-        const store = new UpdateStore([
-            makeOutdated({ packageName: "zebra" }),
-            makeOutdated({ packageName: "alpha" }),
-            makeOutdated({ packageName: "mango" }),
-        ]);
+        const store = new UpdateStore([makeOutdated({ packageName: "zebra" }), makeOutdated({ packageName: "alpha" }), makeOutdated({ packageName: "mango" })]);
 
         // Highlight "alpha" (index 1 in default order).
         store.setSelectedIndex(1);
+
         expect(store.getSnapshot().selectedIndex).toBe(1);
 
         // After name-sort the order is alpha, mango, zebra → "alpha" sits
         // at index 0, not at the old index 1.
         store.setSortMode("name");
+
         expect(store.getSnapshot().selectedIndex).toBe(0);
     });
 
@@ -150,15 +146,19 @@ describe("UpdateStore (sort cycle)", () => {
         expect(store.getSnapshot().sortMode).toBe("default");
 
         store.cycleSortMode();
+
         expect(store.getSnapshot().sortMode).toBe("name");
 
         store.cycleSortMode();
+
         expect(store.getSnapshot().sortMode).toBe("updateType");
 
         store.cycleSortMode();
+
         expect(store.getSnapshot().sortMode).toBe("severity");
 
         store.cycleSortMode();
+
         expect(store.getSnapshot().sortMode).toBe("default");
     });
 });

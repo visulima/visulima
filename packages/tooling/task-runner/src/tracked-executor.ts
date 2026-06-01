@@ -4,8 +4,10 @@ import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 
 import { join } from "@visulima/path";
 
+import type { CollectedHints } from "./cache-hints";
+import { collectHints, emptyHints, HINTS_ENV, HINTS_PROTOCOL_VERSION, PROTOCOL_ENV } from "./cache-hints";
 import type { FileAccess } from "./file-access-tracker";
-import { FileAccessTracker, generatePreloadScript } from "./file-access-tracker";
+import { FileAccessTracker, generatePreloadScript, parseDirectExec } from "./file-access-tracker";
 import { withEnhancedPath } from "./path-utils";
 import type { Task, TaskExecutionOptions } from "./types";
 import { uniqueId } from "./utils";
@@ -18,6 +20,13 @@ export interface TrackedExecutionResult {
     accesses: FileAccess[];
     /** The command exit code */
     code: number;
+
+    /**
+     * Cooperative cache hints the task emitted via
+     * `@visulima/task-runner-client` ({@link CollectedHints}). Empty when
+     * the task didn't use the client.
+     */
+    hints: CollectedHints;
     /** The command stdout + stderr output */
     terminalOutput: string;
 }
@@ -70,29 +79,86 @@ export class TrackedTaskExecutor {
     public async execute(task: Task, options: TaskExecutionOptions, command: string): Promise<TrackedExecutionResult> {
         const cwd = options.cwd ?? (task.projectRoot ? join(this.#workspaceRoot, task.projectRoot) : this.#workspaceRoot);
 
-        // Strategy 1: strace (Linux only, most complete)
-        if (this.#tracker.isSupported()) {
-            const trackingResult = await this.#tracker.track(command, {
-                cwd,
-                env: options.env as Record<string, string | undefined>,
-            });
+        // Allocate a per-task NDJSON hints file and expose it to the
+        // child via env. The cooperative client appends one line per
+        // call; we read it back after the child exits. Same cache dir +
+        // cleanup discipline as the strace trace / preload log.
+        const cacheDirectory = join(this.#workspaceRoot, "node_modules", ".cache", "task-runner");
 
-            return {
-                accesses: trackingResult.accesses,
-                code: trackingResult.code,
-                terminalOutput: trackingResult.output,
-            };
+        await mkdir(cacheDirectory, { recursive: true });
+
+        const hintsFile = join(cacheDirectory, `hints-${uniqueId()}.ndjson`);
+        const hintEnv: Record<string, string> = {
+            [HINTS_ENV]: hintsFile,
+            [PROTOCOL_ENV]: HINTS_PROTOCOL_VERSION,
+        };
+
+        try {
+            let base: Omit<TrackedExecutionResult, "hints">;
+
+            // Strategy 1: syscall-level tracking (Linux strace/seccomp — most complete).
+            // Strategy 2: native injection for directly-exec'd commands only —
+            //   macOS DYLD interpose / Windows IAT hooks. Shell-syntax commands
+            //   can't be injected (SIP /bin/sh on macOS; no child propagation on
+            //   Windows), so they fall through to the preload.
+            // Strategy 3: Node preload script (cross-platform, Node.js processes only).
+            const trackingEnv = { ...options.env, ...hintEnv };
+            const nativeDirect = this.#tracker.isInterposeSupported() || this.#tracker.isIatHookSupported();
+            const directArgv = nativeDirect ? parseDirectExec(command) : undefined;
+
+            if (this.#tracker.isSupported()) {
+                const trackingResult = await this.#tracker.track(command, { cwd, env: trackingEnv });
+
+                base = {
+                    accesses: trackingResult.accesses,
+                    code: trackingResult.code,
+                    terminalOutput: trackingResult.output,
+                };
+            } else if (directArgv && this.#tracker.isInterposeSupported()) {
+                const trackingResult = await this.#tracker.trackInterpose(directArgv, { cwd, env: trackingEnv });
+
+                base = {
+                    accesses: trackingResult.accesses,
+                    code: trackingResult.code,
+                    terminalOutput: trackingResult.output,
+                };
+            } else if (directArgv && this.#tracker.isIatHookSupported()) {
+                const trackingResult = await this.#tracker.trackIatHook(directArgv, { cwd, env: trackingEnv });
+
+                base = {
+                    accesses: trackingResult.accesses,
+                    code: trackingResult.code,
+                    terminalOutput: trackingResult.output,
+                };
+            } else {
+                base = await this.#executeWithPreload(command, cwd, trackingEnv);
+            }
+
+            return { ...base, hints: await this.#readHints(hintsFile, cwd) };
+        } finally {
+            await rm(hintsFile, { force: true }).catch(() => {});
         }
+    }
 
-        // Strategy 2: Preload script (cross-platform, Node.js processes only)
-        return this.#executeWithPreload(command, cwd, options.env);
+    /**
+     * Reads and parses a task's cooperative-hints file. Returns an empty
+     * hint set when the file is absent (the common case — the task
+     * didn't use the client).
+     */
+    // eslint-disable-next-line class-methods-use-this
+    async #readHints(hintsFile: string, cwd: string): Promise<CollectedHints> {
+        try {
+            return collectHints(await readFile(hintsFile, "utf8"), cwd);
+        } catch {
+            return emptyHints();
+        }
     }
 
     /**
      * Executes a command with a Node.js preload script to track fs accesses.
      * Works on macOS, Windows, and Linux for Node.js-based commands.
      */
-    async #executeWithPreload(command: string, cwd: string, env?: Record<string, string>): Promise<TrackedExecutionResult> {
+    async #executeWithPreload(command: string, cwd: string, env?: Record<string, string>): Promise<Omit<TrackedExecutionResult, "hints">> {
         const cacheDirectory = join(this.#workspaceRoot, "node_modules", ".cache", "task-runner");
 
         await mkdir(cacheDirectory, { recursive: true });

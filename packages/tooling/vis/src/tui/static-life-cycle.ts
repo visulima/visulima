@@ -179,6 +179,28 @@ export class StaticOutputLifeCycle implements LifeCycleInterface {
         }
     }
 
+    // eslint-disable-next-line class-methods-use-this -- shared append-only notice; no instance state
+    #printCacheNotice(message: string): void {
+        const columns = process.stdout.columns || 80;
+        const line = renderToString(React.createElement(Text, { dimColor: true }, `  ⓘ ${message}`), { columns });
+
+        process.stdout.write(`${line}\n`);
+    }
+
+    public printCacheDisabledByTask(task: Task): void {
+        this.#printCacheNotice(`${task.id}: caching disabled by task via disableCache()`);
+    }
+
+    public printSelfModifyingSkip(task: Task, modifiedFiles: string[]): void {
+        this.#printCacheNotice(
+            `${task.id}: caching skipped — task modified its own input${modifiedFiles.length === 1 ? "" : "s"} (${modifiedFiles.join(", ")})`,
+        );
+    }
+
+    public printEmptyFingerprintWarning(task: Task, reason: string): void {
+        this.#printCacheNotice(`${task.id}: caching skipped — ${reason}`);
+    }
+
     public printTaskTerminalOutput(task: Task, status: TaskStatus, terminalOutput: string): void {
         // `quiet` swallows successful + cached output but keeps failures visible
         // so users still see what broke without scrolling past clean runs.

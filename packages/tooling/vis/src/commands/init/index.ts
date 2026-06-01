@@ -27,7 +27,12 @@ const init: Command = {
         { defaultValue: false, description: "Overwrite existing config file", name: "force", type: Boolean },
         { defaultValue: false, description: "Skip interactive prompts", name: "no-interactive", type: Boolean },
         { defaultValue: false, description: "Sync settings to native PM config files", name: "sync-native", type: Boolean },
-        { defaultValue: false, description: "Print workspace-relative $schema paths for project.json and vis.config.ts, then exit", name: "schema", type: Boolean },
+        {
+            defaultValue: false,
+            description: "Print workspace-relative $schema paths for project.json and vis.config.ts, then exit",
+            name: "schema",
+            type: Boolean,
+        },
     ],
 };
 

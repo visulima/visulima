@@ -33,7 +33,10 @@ describe("collectNodeModulesBinDirs", () => {
 describe("buildEnhancedPath", () => {
     it("prepends `.bin` dirs to the supplied env's PATH", () => {
         const cwd = `${sep}repo${sep}pkg`;
-        const result = buildEnhancedPath(cwd, { PATH: "/usr/bin:/bin" });
+        // Join the caller PATH with the platform `delimiter` (`;` on Windows,
+        // `:` elsewhere) so the round-trip through `split(delimiter)` below is
+        // platform-consistent — a hard-coded `:` would stay one token on Windows.
+        const result = buildEnhancedPath(cwd, { PATH: ["/usr/bin", "/bin"].join(delimiter) });
 
         const parts = result.split(delimiter);
 

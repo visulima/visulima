@@ -114,6 +114,7 @@ const POLICY_SEVERITY_TO_GITLAB: Record<PolicyDecision["severity"], GitlabVulner
 const NAMESPACE_OID_BYTES = Uint8Array.from([0x6b, 0xa7, 0xb8, 0x12, 0x9d, 0xad, 0x11, 0xd1, 0x80, 0xb4, 0x00, 0xc0, 0x4f, 0xd4, 0x30, 0xc8]);
 
 const uuidV5 = (name: string): string => {
+    // eslint-disable-next-line sonarjs/hashing -- non-cryptographic: RFC 4122 §4.3 mandates SHA-1 for v5 UUID derivation (stable dedupe key, not a security boundary)
     const hash = createHash("sha1");
 
     hash.update(NAMESPACE_OID_BYTES);
@@ -121,10 +122,12 @@ const uuidV5 = (name: string): string => {
 
     const bytes = hash.digest();
 
+    /* eslint-disable no-bitwise -- RFC 4122 §4.3 version (v5) + variant (10xx) marker bit manipulation */
     // Version 5 marker in the high nibble of byte 6.
     bytes[6] = ((bytes[6] ?? 0) & 0x0f) | 0x50;
     // RFC 4122 variant (10xx) in the high two bits of byte 8.
     bytes[8] = ((bytes[8] ?? 0) & 0x3f) | 0x80;
+    /* eslint-enable no-bitwise */
 
     const hex = bytes.subarray(0, 16).toString("hex");
 
@@ -174,7 +177,9 @@ export const emitGitlabDepScan = (options: GitlabDepScanEmitOptions): GitlabDepS
 
         vulnerabilities.push({
             description,
-            ...(acknowledged ? { flags: [{ description: "Acknowledged via vis accepted-risks", origin: "vis", type: "flagged-as-likely-false-positive" as const }] } : {}),
+            ...(acknowledged
+                ? { flags: [{ description: "Acknowledged via vis accepted-risks", origin: "vis", type: "flagged-as-likely-false-positive" as const }] }
+                : {}),
             id: uuidV5(`vis-audit|${vuln.id}|${packageName}@${packageVersion}`),
             identifiers,
             links,
@@ -197,9 +202,13 @@ export const emitGitlabDepScan = (options: GitlabDepScanEmitOptions): GitlabDepS
 
         vulnerabilities.push({
             description: decision.reason,
-            ...(decision.acceptedRisk ? { flags: [{ description: "Acknowledged via vis accepted-risks", origin: "vis", type: "flagged-as-likely-false-positive" as const }] } : {}),
+            ...(decision.acceptedRisk
+                ? { flags: [{ description: "Acknowledged via vis accepted-risks", origin: "vis", type: "flagged-as-likely-false-positive" as const }] }
+                : {}),
             id: uuidV5(`vis-audit|${policyId}|${decision.packageName}@${decision.version}`),
-            identifiers: [{ name: policyId, type: "vis_policy", url: `https://visulima.com/packages/vis/commands/audit#policy-${decision.policy}`, value: policyId }],
+            identifiers: [
+                { name: policyId, type: "vis_policy", url: `https://visulima.com/packages/vis/commands/audit#policy-${decision.policy}`, value: policyId },
+            ],
             links: [{ name: `vis policy: ${decision.policy}`, url: `https://visulima.com/packages/vis/commands/audit#policy-${decision.policy}` }],
             location: {
                 dependency: { package: { name: decision.packageName }, version: decision.version },
@@ -212,9 +221,21 @@ export const emitGitlabDepScan = (options: GitlabDepScanEmitOptions): GitlabDepS
 
     return {
         scan: {
-            analyzer: { id: options.tool.name, name: options.tool.name, url: options.tool.informationUri, vendor: { name: "Visulima" }, version: options.tool.version },
+            analyzer: {
+                id: options.tool.name,
+                name: options.tool.name,
+                url: options.tool.informationUri,
+                vendor: { name: "Visulima" },
+                version: options.tool.version,
+            },
             end_time: timestamp,
-            scanner: { id: options.tool.name, name: options.tool.name, url: options.tool.informationUri, vendor: { name: "Visulima" }, version: options.tool.version },
+            scanner: {
+                id: options.tool.name,
+                name: options.tool.name,
+                url: options.tool.informationUri,
+                vendor: { name: "Visulima" },
+                version: options.tool.version,
+            },
             start_time: timestamp,
             status: "success",
             type: "dependency_scanning",
@@ -224,4 +245,3 @@ export const emitGitlabDepScan = (options: GitlabDepScanEmitOptions): GitlabDepS
         vulnerabilities,
     };
 };
-

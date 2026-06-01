@@ -75,6 +75,43 @@ describe(generateRunSummary, () => {
         expect(summary.stats.skipped).toBe(0);
     });
 
+    it("surfaces cooperative-hint provenance and cache-skip reasons", () => {
+        expect.assertions(6);
+
+        const disabled = createTask("app:build");
+        const tracked = createTask("lib:build", { hash: "h2" });
+        const selfMod = createTask("api:build");
+
+        const results: TaskResults = new Map([
+            ["api:build", createResult(selfMod, "success", { selfModified: true })],
+            ["app:build", createResult(disabled, "success", { cacheDisabledByTask: true })],
+            [
+                "lib:build",
+                createResult(tracked, "success", {
+                    cacheHints: { ignoredInputs: ["/w/.cache"], ignoredOutputs: [], trackedEnv: ["API_URL"], trackedEnvPatterns: ["VITE_*"] },
+                }),
+            ],
+        ]);
+
+        const taskGraph: TaskGraph = {
+            dependencies: { "api:build": [], "app:build": [], "lib:build": [] },
+            roots: ["app:build", "lib:build", "api:build"],
+            tasks: { "api:build": selfMod, "app:build": disabled, "lib:build": tracked },
+        };
+
+        const summary = generateRunSummary(results, taskGraph, Date.now());
+        const find = (id: string) => summary.tasks.find((t) => t.taskId === id);
+
+        expect(find("app:build")?.cacheSkipReason).toBe("disabled-by-task");
+        expect(find("api:build")?.cacheSkipReason).toBe("self-modified");
+        // A task that ran and cached normally carries no skip reason.
+        expect(find("lib:build")?.cacheSkipReason).toBeUndefined();
+        expect(find("lib:build")?.cacheHints?.trackedEnv).toStrictEqual(["API_URL"]);
+        expect(find("lib:build")?.cacheHints?.ignoredInputs).toStrictEqual(["/w/.cache"]);
+        // No hints on a plain task → omitted.
+        expect(find("app:build")?.cacheHints).toBeUndefined();
+    });
+
     it("should track correct cache status", () => {
         expect.assertions(7);
 

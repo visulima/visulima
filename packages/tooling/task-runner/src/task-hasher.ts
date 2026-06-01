@@ -181,7 +181,7 @@ const executeRuntimeCommand = (runtime: string): Promise<string> => {
  * Prefix `1:` when the key is in `process.env`, `0:` otherwise.
  */
 const envSignature = (name: string): string => {
-    if (Object.prototype.hasOwnProperty.call(process.env, name)) {
+    if (Object.hasOwn(process.env, name)) {
         return `1:${process.env[name] ?? ""}`;
     }
 

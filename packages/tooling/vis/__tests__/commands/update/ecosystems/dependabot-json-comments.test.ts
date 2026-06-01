@@ -39,15 +39,7 @@ describe("dependabot/renovate config loader — JSON5 comment strip", () => {
     it("still strips real `//` line comments", () => {
         expect.assertions(1);
 
-        writeFileSync(
-            join(workspaceRoot, "renovate.json"),
-            [
-                "{",
-                "  // Top-level ignore list",
-                "  \"ignoreDeps\": [\"actions/checkout\"]",
-                "}",
-            ].join("\n"),
-        );
+        writeFileSync(join(workspaceRoot, "renovate.json"), ["{", "  // Top-level ignore list", "  \"ignoreDeps\": [\"actions/checkout\"]", "}"].join("\n"));
 
         const rules = loadIgnoreRules(workspaceRoot);
 
@@ -57,10 +49,7 @@ describe("dependabot/renovate config loader — JSON5 comment strip", () => {
     it("strips block comments without breaking JSON content", () => {
         expect.assertions(1);
 
-        writeFileSync(
-            join(workspaceRoot, "renovate.json"),
-            "{\n  /* multi-line block\n     comment */\n  \"ignoreDeps\": [\"actions/checkout\"]\n}\n",
-        );
+        writeFileSync(join(workspaceRoot, "renovate.json"), "{\n  /* multi-line block\n     comment */\n  \"ignoreDeps\": [\"actions/checkout\"]\n}\n");
 
         const rules = loadIgnoreRules(workspaceRoot);
 

@@ -119,6 +119,72 @@ interface NativeBindings {
         onLifecycle?: ((event: NativeProcessEvent) => void) | null,
     ) => Promise<NativeConcurrentRunResult>;
     topologicalSort: (graph: NativeTaskGraph) => string[];
+
+    /**
+     * Windows-only: spawn the directly-exec'd `argv` suspended, inject
+     * the `fspy_windows` DLL (at `dllPath`) via
+     * `CreateRemoteThread(LoadLibraryW)`, and collect the IAT-hooked
+     * accesses streamed over a named pipe. Same result shape as
+     * `trackWithSeccomp`. Present only when the addon was built for a
+     * Windows target.
+     */
+    trackWithIatHook?: (
+        argv: string[],
+        dllPath: string,
+        options?: NativeSeccompSpawnOptions,
+        onStarted?: (pid: number) => void,
+    ) => Promise<NativeSeccompTrackingResult>;
+
+    /**
+     * macOS-only: spawn the directly-exec'd `argv` with the
+     * `fspy_macos` interpose dylib (at `dylibPath`) injected via
+     * `DYLD_INSERT_LIBRARIES` and collect reported accesses. Same
+     * result shape as `trackWithSeccomp`. Present only when the
+     * addon was built for a macOS target.
+     */
+    trackWithInterpose?: (
+        argv: string[],
+        dylibPath: string,
+        options?: NativeSeccompSpawnOptions,
+        onStarted?: (pid: number) => void,
+    ) => Promise<NativeSeccompTrackingResult>;
+
+    /**
+     * Linux-only: spawn `argv` under seccomp_unotify tracking via
+     * the helper binary at `helperPath`. Resolves once the child
+     * exits with the gathered file accesses.
+     *
+     * `onStarted` (when supplied) fires once with the helper PID
+     * as soon as the spawn succeeds. The PID survives the
+     * helper→target execve, so callers can SIGTERM it via
+     * `process.kill(pid)` to abort the traced command.
+     *
+     * Undefined when the addon was built on a non-Linux target.
+     */
+    trackWithSeccomp?: (
+        argv: string[],
+        helperPath: string,
+        options?: NativeSeccompSpawnOptions,
+        onStarted?: (pid: number) => void,
+    ) => Promise<NativeSeccompTrackingResult>;
+}
+
+interface NativeSeccompSpawnOptions {
+    cwd?: string;
+    /** Extra env vars merged on top of the parent's. */
+    env?: Record<string, string>;
+}
+
+interface NativeSeccompFileAccess {
+    kind: "missing" | "read" | "readdir" | "stat" | "write";
+    path: string;
+}
+
+interface NativeSeccompTrackingResult {
+    accesses: NativeSeccompFileAccess[];
+    exitCode: number;
+    stderr: Buffer;
+    stdout: Buffer;
 }
 
 let nativeBindings: NativeBindings | undefined;
@@ -173,6 +239,9 @@ export type {
     NativeCycleResult,
     NativeFileHash,
     NativeProcessEvent,
+    NativeSeccompFileAccess,
+    NativeSeccompSpawnOptions,
+    NativeSeccompTrackingResult,
     NativeTaskGraph,
     NativeTaskHashDetails,
 };

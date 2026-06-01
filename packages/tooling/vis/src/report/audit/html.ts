@@ -23,7 +23,8 @@ import type { SecurityVulnerability } from "../../security/advisories";
 import type { PolicyDecision } from "../../security/policies";
 import { compareFindingsForDisplay } from "../../security/severity";
 import ANOLILAB_LOGO from "../assets/anolilab-text.svg?raw";
-import { advisoryUri, SEVERITY_ORDER, type Severity } from "../finding";
+import type { Severity } from "../finding";
+import { advisoryUri, SEVERITY_ORDER } from "../finding";
 import type { AuditReport } from "./build-report";
 // Compiled to the minified Tailwind CSS string by packem at build time; under
 // vitest/tsx the import resolves via Vite's native CSS handling.
@@ -33,6 +34,7 @@ const css = styleCss as unknown as string;
 
 export interface AuditHtmlFinding {
     acknowledged: boolean;
+
     /**
      * Root → vulnerable resolution paths from the lockfile graph. Rendered
      * as a collapsible "why is this installed?" section below the row. Empty
@@ -57,9 +59,10 @@ export interface AuditHtmlEmitOptions {
     packagesScanned: number;
     /** Non-vulnerability policy decisions to render in a dedicated section. */
     policyDecisions?: PolicyDecision[];
+
     /**
      * Canonical machine-readable report. When provided, it is embedded as
-     * `<script type="application/json" id="vis-audit-report">…</script>`
+     * `&lt;script type="application/json" id="vis-audit-report">…&lt;/script>`
      * so downstream tooling can extract the same payload `--format json`
      * would have written. Same shape both surfaces produce — that parity
      * is the contract.
@@ -208,11 +211,12 @@ const renderRow = (finding: AuditHtmlFinding): string => {
   <td class="${TD_BASE}">${remediationCell}</td>
 </tr>`;
 
-    const pathsRow = dependencyPaths && dependencyPaths.length > 0
-        ? `<tr class="paths-row" ${rowAttributes}>
+    const pathsRow
+        = dependencyPaths && dependencyPaths.length > 0
+            ? `<tr class="paths-row" ${rowAttributes}>
   <td colspan="8" class="p-0"><details><summary class="flex cursor-pointer items-center gap-3 px-3 py-2 select-none"><span class="intel-tag text-[9px] font-bold uppercase">[ DEPENDENCY PATHS ]</span><span class="intel-hint text-[9px] uppercase">${String(dependencyPaths.length)} root${dependencyPaths.length === 1 ? "" : "s"} reach this finding · click to expand</span></summary>${renderDependencyPaths(dependencyPaths)}</details></td>
 </tr>`
-        : "";
+            : "";
 
     if (!explanation) {
         return `${mainRow}${pathsRow}`;
@@ -257,9 +261,10 @@ export const emitAuditHtml = (options: AuditHtmlEmitOptions): string => {
     // Fixable readout: how many unacknowledged findings have at least one
     // upstream patch version. Drives the next-action signal — "fixable: 3/5"
     // tells the reader most of their risk is one `vis audit --fix` away.
-    const fixableChip = !clean && unacknowledged > 0
-        ? `<div class="dseg dseg-fixable"><span class="dk text-[10px] font-medium uppercase">fixable</span><span class="dv text-[22px]">${String(fixable)}<span class="dvsep mx-1 font-light">/</span>${String(unacknowledged)}</span></div>`
-        : "";
+    const fixableChip
+        = !clean && unacknowledged > 0
+            ? `<div class="dseg dseg-fixable"><span class="dk text-[10px] font-medium uppercase">fixable</span><span class="dv text-[22px]">${String(fixable)}<span class="dvsep mx-1 font-light">/</span>${String(unacknowledged)}</span></div>`
+            : "";
 
     // Scanned/findings read left; the per-severity counts are pushed to the
     // right edge as a static read-out (name + count, no interaction).
@@ -321,7 +326,7 @@ export const emitAuditHtml = (options: AuditHtmlEmitOptions): string => {
     // parsers ignore the escape, the HTML parser stops looking for the
     // closing tag.
     const reportScript = options.report
-        ? `\n<script type="application/json" id="vis-audit-report">${JSON.stringify(options.report).replaceAll("</", "<\\/")}</script>`
+        ? `\n<script type="application/json" id="vis-audit-report">${JSON.stringify(options.report).replaceAll("</", String.raw`<\/`)}</script>`
         : "";
 
     return `<!doctype html>

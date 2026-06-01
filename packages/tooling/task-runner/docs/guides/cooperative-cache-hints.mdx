@@ -1,0 +1,109 @@
+---
+title: Cooperative Cache Hints
+description: Track env vars and refine cache keys from inside a task with @visulima/task-runner-client
+---
+
+# Cooperative Cache Hints
+
+Auto-fingerprinting **observes** a task — it watches file syscalls and resolves the env patterns you declare in config. That covers unmodified tools, but a tool knows things the runner can't observe: which reads are throw-away cache noise, which writes are scratch, when a run is non-deterministic, and — most importantly for cache correctness — **which environment variables it actually reads**.
+
+[`@visulima/task-runner-client`](https://www.npmjs.com/package/@visulima/task-runner-client) lets a task _tell_ the runner. It's a zero-dependency package; outside a runner-managed task every call is a no-op, so it's safe to ship in a tool used both standalone and under the runner.
+
+```sh
+npm install @visulima/task-runner-client
+```
+
+## Tracking environment variables
+
+This is the headline use case. Declaring env patterns in config (`env: ["VITE_*"]`) works, but it has two weaknesses:
+
+- **Over-tracking** — `VITE_*` busts the cache when _any_ matching var changes, even one the build never reads.
+- **Silent under-tracking** — read `MY_FLAG` without listing it, and a change to it produces a **stale cache hit** with no warning. This is the dangerous one.
+
+`getEnv` closes both gaps by registering the dependency **at the point of use** — reading and tracking become the same call, so you can't forget:
+
+```ts
+import { getEnv, getEnvs } from "@visulima/task-runner-client";
+
+// Reads process.env.API_URL AND registers it as a cache dependency.
+// Change API_URL → this task's cache entry is invalidated. Leave it
+// unchanged → the cached result is reused.
+const apiUrl = getEnv("API_URL");
+
+// Glob form: every matching var becomes a dependency, and adding /
+// removing / changing any VITE_* var busts the entry.
+const viteEnv = getEnvs("VITE_*");
+
+// Read without tracking (value only, no cache dependency):
+const ci = getEnv("CI", { tracked: false });
+```
+
+### How it relates to config `env` patterns
+
+The two are additive, not exclusive. Patterns you set in config still apply to every task; `getEnv`/`getEnvs` add **per-task** dependencies on top. Use config patterns for workspace-wide vars (`NODE_ENV`) and `getEnv` inside a tool for the vars only it knows it consumes. A changed value from _either_ source invalidates the cache via the same `env-changed` check.
+
+## Refining inferred inputs and outputs
+
+```ts
+import { disableCache, ignoreInput, ignoreOutput } from "@visulima/task-runner-client";
+
+// Our own cache dir is read every run but isn't a real input — don't
+// let it into the fingerprint.
+ignoreInput("node_modules/.cache/my-tool");
+
+// A scratch file we write but that isn't a build artifact.
+ignoreOutput(".my-tool-tmp");
+
+// This run hit the network / ran in debug mode / was aborted — don't
+// cache it at all.
+if (nonDeterministic) {
+    disableCache();
+}
+```
+
+Relative paths resolve against the task's working directory.
+
+## API
+
+| Function                         | Effect                                                                                             |
+| -------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `getEnv(name, { tracked? })`     | Return `process.env[name]`; with `tracked` (default `true`) register `name` as a cache dependency. |
+| `getEnvs(pattern, { tracked? })` | Return env matching the `*`-glob; with `tracked` (default `true`) register the pattern.            |
+| `ignoreInput(path)`              | Drop reads under `path` from inferred cache inputs.                                                |
+| `ignoreOutput(path)`             | Drop writes under `path` from inferred cache outputs.                                              |
+| `disableCache()`                 | Mark this run non-deterministic — the runner won't cache it.                                       |
+
+## How it works
+
+The runner sets `TASK_RUNNER_HINTS` to a per-task file path before spawning the command. Each client call appends one NDJSON line to that file (synchronous + append-only, so a hint survives even if the tool crashes right after). After the command exits, the runner reads the file and folds the hints into the fingerprint before it's sealed — `getEnv` names are added to the env set, `ignoreInput`/`ignoreOutput` filter the observed accesses, and `disableCache` skips the cache write. Because the transport is a plain file, it works on **every platform**, not just where syscall tracking is available.
+
+## Seeing what was tracked
+
+Run with `summarize: true` (or `vis run --summarize`) and each task entry records the provenance:
+
+```json
+{
+    "taskId": "web:build",
+    "cacheSkipReason": "disabled-by-task",
+    "cacheHints": {
+        "ignoredInputs": ["/repo/apps/web/node_modules/.cache/vite"],
+        "ignoredOutputs": [],
+        "trackedEnv": ["API_URL"],
+        "trackedEnvPatterns": ["VITE_*"]
+    }
+}
+```
+
+`cacheSkipReason` explains why a task that ran seeded no cache entry — `disabled-by-task`, `self-modified`, or `empty-fingerprint`. Under `vis` each of these also prints an inline notice (e.g. `ⓘ <task>: caching disabled by task via disableCache()`).
+
+## Adopting tools written for vite-task
+
+A tool that already imports [`@voidzero-dev/vite-task-client`](https://github.com/voidzero-dev/vite-task/tree/main/packages/vite-task-client) emits nothing here — that client only talks to vite+'s addon. Because `@visulima/task-runner-client` is an API-compatible drop-in, you can alias it with a package-manager override:
+
+```yaml
+# pnpm-workspace.yaml (or package.json "pnpm.overrides")
+overrides:
+    "@voidzero-dev/vite-task-client": "npm:@visulima/task-runner-client@^1"
+```
+
+`vis run` detects the vite client in your workspace and offers to add this override automatically (interactive TTY only — it remembers a decline and never prompts in CI). See the [`@visulima/task-runner-client` README](https://www.npmjs.com/package/@visulima/task-runner-client) for the npm/yarn forms.
