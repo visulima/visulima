@@ -4,6 +4,7 @@ import type { EmailResult, Result } from "../../types";
 import { createLogger } from "../../utils/create-logger";
 import type { Provider, ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
+import { aggregateProviderFeatures } from "../utils";
 import type { RoundRobinConfig, RoundRobinEmailOptions } from "./types";
 
 // Type guard to check if something is a ProviderFactory
@@ -157,18 +158,10 @@ const roundRobinProvider: ProviderFactory<RoundRobinConfig> = defineProvider((co
     };
 
     return {
-        features: {
-            // Round robin supports features that all providers support
-            attachments: true,
-            batchSending: false,
-            customHeaders: true,
-            html: true,
-            replyTo: true,
-            scheduling: false, // Not all providers support scheduling
-            tagging: false, // Not all providers support tagging
-            templates: false, // Not all providers support templates
-            tracking: false, // Not all providers support tracking
-        },
+        // Derived from the configured mailers: a capability is advertised only when every routed
+        // provider agrees, otherwise it is left undefined ("unknown") so the fail-fast capability
+        // guard delegates the decision to whichever mailer ultimately handles the message.
+        features: aggregateProviderFeatures(options.mailers),
 
         /**
          * Initializes the round robin provider and all underlying providers.
