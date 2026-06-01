@@ -160,7 +160,7 @@ describe("visulima-error", () => {
         expect(error.hint).toStrictEqual(["line one", "line two"]);
     });
 
-    describe("isVisulimaError", () => {
+    describe(isVisulimaError, () => {
         it("should return true for a VisulimaError instance", () => {
             expect.assertions(1);
 

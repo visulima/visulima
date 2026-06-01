@@ -8,7 +8,9 @@ import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from "v
 
 const launchMock = vi.fn();
 
-vi.mock(import("launch-editor"), () => { return { default: launchMock }; });
+vi.mock(import("launch-editor"), () => {
+    return { default: launchMock };
+});
 
 const { createServerRPCContext } = await import("../../src/rpc/server");
 
@@ -137,7 +139,6 @@ describe("rpc/server", () => {
             const { server, viteServer } = makeServer(tmpDir);
 
             createServerRPCContext(viteServer, {
-
                 boom: async () => {
                     // eslint-disable-next-line @typescript-eslint/only-throw-error -- exercising the non-Error catch branch in the rpc handler
                     throw "plain string failure";
@@ -274,7 +275,11 @@ describe("rpc/server", () => {
             // The handler awaits the underlying function before calling client.send, so
             // awaiting it lets us read the captured response synchronously afterwards.
             await handler?.(
-                { args: [{ comment: "c", elementTag: "div", intent: "fix", severity: "important", url: "/", x: 0, y: 0 }], id: "create", method: "createAnnotation" },
+                {
+                    args: [{ comment: "c", elementTag: "div", intent: "fix", severity: "important", url: "/", x: 0, y: 0 }],
+                    id: "create",
+                    method: "createAnnotation",
+                },
                 client,
             );
 
@@ -314,7 +319,11 @@ describe("rpc/server", () => {
             } as unknown as WebSocketClient;
 
             await handler?.(
-                { args: [{ comment: "c", elementTag: "div", intent: "fix", severity: "important", url: "/", x: 0, y: 0 }], id: "create", method: "createAnnotation" },
+                {
+                    args: [{ comment: "c", elementTag: "div", intent: "fix", severity: "important", url: "/", x: 0, y: 0 }],
+                    id: "create",
+                    method: "createAnnotation",
+                },
                 client,
             );
 

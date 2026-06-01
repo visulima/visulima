@@ -1,17 +1,20 @@
 import { describe, expect, it } from "vitest";
 
-import { defaultUrlStorage, LocalStorageUrlStorage, MemoryUrlStorage, type UrlStorageEntry } from "../../src/core/url-storage";
+import type { UrlStorageEntry } from "../../src/core/url-storage";
+import { defaultUrlStorage, LocalStorageUrlStorage, MemoryUrlStorage } from "../../src/core/url-storage";
 
-const makeEntry = (overrides: Partial<UrlStorageEntry> = {}): UrlStorageEntry => ({
-    createdAt: 1_700_000_000_000,
-    endpoint: "http://localhost/api/upload",
-    fingerprint: "tus::http://localhost/api/upload::test.bin::100::application/octet-stream::0",
-    lastModified: 0,
-    protocol: "tus",
-    size: 100,
-    uploadUrl: "http://localhost/api/upload/123",
-    ...overrides,
-});
+const makeEntry = (overrides: Partial<UrlStorageEntry> = {}): UrlStorageEntry => {
+    return {
+        createdAt: 1_700_000_000_000,
+        endpoint: "http://localhost/api/upload",
+        fingerprint: "tus::http://localhost/api/upload::test.bin::100::application/octet-stream::0",
+        lastModified: 0,
+        protocol: "tus",
+        size: 100,
+        uploadUrl: "http://localhost/api/upload/123",
+        ...overrides,
+    };
+};
 
 interface MemoryStore {
     getItem: (key: string) => string | null;
@@ -48,12 +51,12 @@ describe(MemoryUrlStorage, () => {
 
         await storage.addEntry(entry);
 
-        expect(await storage.findEntry(entry.fingerprint)).toStrictEqual(entry);
+        await expect(storage.findEntry(entry.fingerprint)).resolves.toStrictEqual(entry);
 
         await storage.removeEntry(entry.fingerprint);
 
-        expect(await storage.findEntry(entry.fingerprint)).toBeUndefined();
-        expect(await storage.listEntries()).toStrictEqual([]);
+        await expect(storage.findEntry(entry.fingerprint)).resolves.toBeUndefined();
+        await expect(storage.listEntries()).resolves.toStrictEqual([]);
     });
 
     it("returns undefined for a missing fingerprint", async () => {
@@ -61,7 +64,7 @@ describe(MemoryUrlStorage, () => {
 
         const storage = new MemoryUrlStorage();
 
-        expect(await storage.findEntry("does-not-exist")).toBeUndefined();
+        await expect(storage.findEntry("does-not-exist")).resolves.toBeUndefined();
     });
 
     it("overwrites an existing entry with the same fingerprint", async () => {
@@ -92,7 +95,7 @@ describe(MemoryUrlStorage, () => {
         const entries = await storage.listEntries();
 
         expect(entries).toHaveLength(2);
-        expect(entries.map((entry) => entry.fingerprint).sort()).toStrictEqual(["a", "b"]);
+        expect(entries.map((entry) => entry.fingerprint).toSorted((first, second) => first.localeCompare(second))).toStrictEqual(["a", "b"]);
     });
 });
 
@@ -107,7 +110,7 @@ describe(LocalStorageUrlStorage, () => {
         await storage.addEntry(entry);
 
         expect(ls.getItem(`visulima-upload::${entry.fingerprint}`)).toBe(JSON.stringify(entry));
-        expect(await storage.findEntry(entry.fingerprint)).toStrictEqual(entry);
+        await expect(storage.findEntry(entry.fingerprint)).resolves.toStrictEqual(entry);
     });
 
     it("honours a custom prefix", async () => {
@@ -150,7 +153,7 @@ describe(LocalStorageUrlStorage, () => {
 
         const storage = new LocalStorageUrlStorage(ls);
 
-        expect(await storage.findEntry("corrupt")).toBeUndefined();
+        await expect(storage.findEntry("corrupt")).resolves.toBeUndefined();
         expect(ls.getItem("visulima-upload::corrupt")).toBeNull();
     });
 

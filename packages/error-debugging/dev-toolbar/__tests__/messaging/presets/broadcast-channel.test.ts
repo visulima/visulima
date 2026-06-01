@@ -53,7 +53,9 @@ describe("messaging/presets/broadcast-channel", () => {
 
                 expect(channel.send).toBeInstanceOf(Function);
                 // send is a no-op send function — calling it must not throw.
-                expect(() => { channel.send("dev-toolbar:message", {}); }).not.toThrow();
+                expect(() => {
+                    channel.send("dev-toolbar:message", {});
+                }).not.toThrow();
             } finally {
                 (globalThis as Record<string, unknown>).BroadcastChannel = original;
             }

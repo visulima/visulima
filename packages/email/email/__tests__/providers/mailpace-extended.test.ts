@@ -180,9 +180,7 @@ describe("mailpace provider (extended)", () => {
         it("falls back to a generic error when a failed send has no error", async () => {
             expect.assertions(2);
 
-            makeRequestMock
-                .mockResolvedValueOnce({ data: { statusCode: 200 }, success: true })
-                .mockResolvedValueOnce({ success: false });
+            makeRequestMock.mockResolvedValueOnce({ data: { statusCode: 200 }, success: true }).mockResolvedValueOnce({ success: false });
 
             const provider = mailPaceProvider(config);
             const result = await provider.sendEmail(baseEmail);
@@ -194,9 +192,7 @@ describe("mailpace provider (extended)", () => {
         it("uses a generic message when a getEmail failure has no error", async () => {
             expect.assertions(2);
 
-            makeRequestMock
-                .mockResolvedValueOnce({ data: { statusCode: 200 }, success: true })
-                .mockResolvedValueOnce({ success: false });
+            makeRequestMock.mockResolvedValueOnce({ data: { statusCode: 200 }, success: true }).mockResolvedValueOnce({ success: false });
 
             const provider = mailPaceProvider(config);
             const result = await provider.getEmail?.("m1");

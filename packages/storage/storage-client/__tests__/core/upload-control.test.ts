@@ -1,13 +1,16 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { UploadControl, type UploadControlSnapshot } from "../../src/core/upload-control";
+import type { UploadControlSnapshot } from "../../src/core/upload-control";
+import { UploadControl } from "../../src/core/upload-control";
 
-const makeMeta = () => ({
-    endpoint: "http://localhost/api/upload",
-    fingerprint: "tus::http://localhost/api/upload::test.bin::100::application/octet-stream::0",
-    protocol: "tus" as const,
-    uploadUrl: "http://localhost/api/upload/123",
-});
+const makeMeta = () => {
+    return {
+        endpoint: "http://localhost/api/upload",
+        fingerprint: "tus::http://localhost/api/upload::test.bin::100::application/octet-stream::0",
+        protocol: "tus" as const,
+        uploadUrl: "http://localhost/api/upload/123",
+    };
+};
 
 describe(UploadControl, () => {
     it("starts with all metadata undefined and offset 0", () => {
@@ -138,7 +141,7 @@ describe(UploadControl, () => {
         expect(restored.offset).toBe(50);
     });
 
-    it("UploadControl.from accepts an already-parsed snapshot object", () => {
+    it("uploadControl.from accepts an already-parsed snapshot object", () => {
         expect.assertions(1);
 
         const snapshot: UploadControlSnapshot = {
@@ -155,7 +158,7 @@ describe(UploadControl, () => {
         expect(control.snapshot).toStrictEqual(snapshot);
     });
 
-    it("UploadControl.from throws on an unknown snapshot version", () => {
+    it("uploadControl.from throws on an unknown snapshot version", () => {
         expect.assertions(1);
 
         const future = JSON.stringify({
@@ -184,6 +187,7 @@ describe(UploadControl, () => {
         const control = UploadControl.from(snapshot);
 
         expect(control.snapshot).toStrictEqual(snapshot);
+
         // Re-attaching does not erase the snapshot — adapters rely on it to decide whether to resume.
         control._attach(
             { abort: vi.fn(), pause: vi.fn(), resume: vi.fn().mockResolvedValue(undefined) },

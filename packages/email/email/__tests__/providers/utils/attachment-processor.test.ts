@@ -15,10 +15,7 @@ describe(processAttachmentContent, () => {
     it("should return string content as-is", async () => {
         expect.assertions(1);
 
-        const result = await processAttachmentContent(
-            { content: "stringcontent", filename: "a.txt" },
-            "test",
-        );
+        const result = await processAttachmentContent({ content: "stringcontent", filename: "a.txt" }, "test");
 
         expect(result).toBe("stringcontent");
     });
@@ -26,10 +23,7 @@ describe(processAttachmentContent, () => {
     it("should convert Buffer content to base64", async () => {
         expect.assertions(1);
 
-        const result = await processAttachmentContent(
-            { content: Buffer.from("hi"), filename: "a.txt" },
-            "test",
-        );
+        const result = await processAttachmentContent({ content: Buffer.from("hi"), filename: "a.txt" }, "test");
 
         expect(result).toBe("aGk=");
     });
@@ -37,10 +31,7 @@ describe(processAttachmentContent, () => {
     it("should resolve Promise content to base64", async () => {
         expect.assertions(1);
 
-        const result = await processAttachmentContent(
-            { content: Promise.resolve(Buffer.from("hi")), filename: "a.txt" },
-            "test",
-        );
+        const result = await processAttachmentContent({ content: Promise.resolve(Buffer.from("hi")), filename: "a.txt" }, "test");
 
         expect(result).toBe("aGk=");
     });
@@ -48,10 +39,7 @@ describe(processAttachmentContent, () => {
     it("should use raw string when content is missing", async () => {
         expect.assertions(1);
 
-        const result = await processAttachmentContent(
-            { filename: "a.txt", raw: "rawstring" },
-            "test",
-        );
+        const result = await processAttachmentContent({ filename: "a.txt", raw: "rawstring" }, "test");
 
         expect(result).toBe("rawstring");
     });
@@ -59,10 +47,7 @@ describe(processAttachmentContent, () => {
     it("should use raw buffer when content is missing", async () => {
         expect.assertions(1);
 
-        const result = await processAttachmentContent(
-            { filename: "a.txt", raw: Buffer.from("hi") },
-            "test",
-        );
+        const result = await processAttachmentContent({ filename: "a.txt", raw: Buffer.from("hi") }, "test");
 
         expect(result).toBe("aGk=");
     });
@@ -78,10 +63,7 @@ describe(createStandardAttachment, () => {
     it("should create standard attachment object", async () => {
         expect.assertions(1);
 
-        const result = await createStandardAttachment(
-            { cid: "cid-1", content: "abc", contentType: "text/plain", filename: "a.txt" },
-            "test",
-        );
+        const result = await createStandardAttachment({ cid: "cid-1", content: "abc", contentType: "text/plain", filename: "a.txt" }, "test");
 
         expect(result).toStrictEqual({
             content: "abc",
@@ -95,10 +77,7 @@ describe(createStandardAttachment, () => {
     it("should default contentType and disposition", async () => {
         expect.assertions(2);
 
-        const result = await createStandardAttachment(
-            { content: "abc", filename: "a.bin" },
-            "test",
-        );
+        const result = await createStandardAttachment({ content: "abc", filename: "a.bin" }, "test");
 
         expect(result.contentType).toBe("application/octet-stream");
         expect(result.disposition).toBe("attachment");
@@ -109,10 +88,7 @@ describe(createSendGridAttachment, () => {
     it("should create SendGrid-formatted attachment", async () => {
         expect.assertions(1);
 
-        const result = await createSendGridAttachment(
-            { cid: "cid-1", content: "abc", contentType: "text/plain", filename: "a.txt" },
-            "test",
-        );
+        const result = await createSendGridAttachment({ cid: "cid-1", content: "abc", contentType: "text/plain", filename: "a.txt" }, "test");
 
         expect(result).toStrictEqual({
             content: "abc",
@@ -126,10 +102,7 @@ describe(createSendGridAttachment, () => {
     it("should default the type when contentType is missing", async () => {
         expect.assertions(1);
 
-        const result = await createSendGridAttachment(
-            { content: "abc", filename: "a.bin" },
-            "test",
-        );
+        const result = await createSendGridAttachment({ content: "abc", filename: "a.bin" }, "test");
 
         expect(result.type).toBe("application/octet-stream");
     });
@@ -139,10 +112,7 @@ describe(createPostmarkAttachment, () => {
     it("should create Postmark-formatted attachment", async () => {
         expect.assertions(1);
 
-        const result = await createPostmarkAttachment(
-            { cid: "cid-1", content: "abc", contentType: "text/plain", filename: "a.txt" },
-            "test",
-        );
+        const result = await createPostmarkAttachment({ cid: "cid-1", content: "abc", contentType: "text/plain", filename: "a.txt" }, "test");
 
         expect(result).toStrictEqual({
             Content: "abc",
@@ -155,10 +125,7 @@ describe(createPostmarkAttachment, () => {
     it("should default the ContentType when contentType is missing", async () => {
         expect.assertions(1);
 
-        const result = await createPostmarkAttachment(
-            { content: "abc", filename: "a.bin" },
-            "test",
-        );
+        const result = await createPostmarkAttachment({ content: "abc", filename: "a.bin" }, "test");
 
         expect(result.ContentType).toBe("application/octet-stream");
     });
@@ -168,11 +135,7 @@ describe(createMailgunAttachment, () => {
     it("should create Mailgun-formatted attachment with correct key", async () => {
         expect.assertions(1);
 
-        const result = await createMailgunAttachment(
-            { content: "abc", filename: "a.txt" },
-            "test",
-            3,
-        );
+        const result = await createMailgunAttachment({ content: "abc", filename: "a.txt" }, "test", 3);
 
         expect(result).toStrictEqual({
             content: "abc",

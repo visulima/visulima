@@ -1,7 +1,7 @@
 import type { Ref } from "vue";
 import { onBeforeUnmount, onMounted, ref } from "vue";
 
-import type { FingerprintFn } from "../core/fingerprint";
+import type { FingerprintFunction } from "../core/fingerprint";
 import { createTusAdapter } from "../core/tus-adapter";
 import type { UploadControl } from "../core/upload-control";
 import type { UrlStorage } from "../core/url-storage";
@@ -15,7 +15,7 @@ export interface UseTusUploadOptions {
     /** TUS upload endpoint URL */
     endpoint: string;
     /** Customise the resume fingerprint. */
-    fingerprint?: FingerprintFn;
+    fingerprint?: FingerprintFunction;
     /** Maximum number of retry attempts */
     maxRetries?: number;
     /** Additional metadata to include with the upload */
@@ -69,7 +69,8 @@ export interface UseTusUploadReturn {
  * @returns Upload functions and state
  */
 export const useTusUpload = (options: UseTusUploadOptions): UseTusUploadReturn => {
-    const { chunkSize, control, endpoint, fingerprint, maxRetries, metadata, onError, onPause, onProgress, onResume, onStart, onSuccess, retry, urlStorage } = options;
+    const { chunkSize, control, endpoint, fingerprint, maxRetries, metadata, onError, onPause, onProgress, onResume, onStart, onSuccess, retry, urlStorage } =
+        options;
 
     const progress = ref(0);
     const isUploading = ref(false);

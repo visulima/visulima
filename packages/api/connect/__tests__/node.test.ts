@@ -63,7 +63,7 @@ describe(createRouter, () => {
         const context = new NodeRouter();
         const schemaSchema = z.object({ name: z.string().trim() });
 
-        const handler = vi.fn((request: any) => request.name);
+        const handler = vi.fn<(request: any) => any>((request: any) => request.name);
 
         // @ts-expect-error: private property
         const addSpy = vi.spyOn(context.router, "add").mockImplementation(() => context.router);
@@ -90,8 +90,8 @@ describe(createRouter, () => {
         const context = createRouter();
         const schemaSchema = z.object({ name: z.string().trim() });
 
-        const first = vi.fn((_request: any, _response: any, next: any) => next());
-        const second = vi.fn((request: any) => request.name);
+        const first = vi.fn<(_request: any, _response: any, next: any) => any>((_request: any, _response: any, next: any) => next());
+        const second = vi.fn<(request: any) => any>((request: any) => request.name);
 
         // route is a string, second arg is a zod schema, remaining args are handlers -> fns.map zod wrap
         context.post("/", schemaSchema as any, first as any, second as any);
@@ -111,7 +111,7 @@ describe(createRouter, () => {
         const context = createRouter();
         const schemaSchema = z.object({ name: z.string().trim() });
 
-        const handler = vi.fn();
+        const handler = vi.fn<(...arguments_: any[]) => any>();
 
         // string route + schema + handler -> the zod-wrapped handler rejects on bad input
         context.get("/", schemaSchema as any, handler as any);
@@ -127,8 +127,8 @@ describe(createRouter, () => {
 
         const context = createRouter();
 
-        const first = vi.fn((_request: any, _response: any, next: any) => next());
-        const second = vi.fn();
+        const first = vi.fn<(_request: any, _response: any, next: any) => any>((_request: any, _response: any, next: any) => next());
+        const second = vi.fn<(...arguments_: any[]) => any>();
 
         // both args are functions, no string route and no schema -> zodOrRouteOrFunction is a function branch
         context.get(first as any, second as any);

@@ -2,27 +2,26 @@
 
 ### Bug Fixes
 
-* **storage-client:** percent-encode user fields in defaultFingerprint ([7c78a0f](https://github.com/visulima/visulima/commit/7c78a0f9512e2a673b941d80839e9f1e86b7b5d0))
+- **storage-client:** percent-encode user fields in defaultFingerprint ([7c78a0f](https://github.com/visulima/visulima/commit/7c78a0f9512e2a673b941d80839e9f1e86b7b5d0))
 
 ### Miscellaneous Chores
 
-* **ci-stability:** green CI across vis, native, lint, tests, attw ([#651](https://github.com/visulima/visulima/issues/651)) ([d4eb684](https://github.com/visulima/visulima/commit/d4eb684b5f75c818c9251048c605a0ed54a268e3))
-* **interactive-manager:** housekeeping cleanup ([7bfd667](https://github.com/visulima/visulima/commit/7bfd66710540b573318a6548e9ede01b74236d80))
-* **interactive-manager:** upgrade packem to 2.0.0-alpha.76 ([34e5e82](https://github.com/visulima/visulima/commit/34e5e82588b82c8031b2e1075d936b5b543ed2b3))
-* re-sort workspace package.json files via vis sort-package-json ([f625696](https://github.com/visulima/visulima/commit/f625696cfac974325774b3243e1a83c3d23acbd7))
-* **repo:** apply eslint --fix and prettier --fix across packages ([#650](https://github.com/visulima/visulima/issues/650)) ([2e26a84](https://github.com/visulima/visulima/commit/2e26a84774f218f21345e9a8ecd68236b6542743)), closes [#620](https://github.com/visulima/visulima/issues/620)
-* sorted package.json ([b47c545](https://github.com/visulima/visulima/commit/b47c545591600fdab17d5cd3a3fbc68b61e199da))
-* **terminal:** apply prettier and eslint formatting sweep ([15fd89c](https://github.com/visulima/visulima/commit/15fd89c677eea60866e08e4fd5f5a6bc8f3bd2e5))
+- **ci-stability:** green CI across vis, native, lint, tests, attw ([#651](https://github.com/visulima/visulima/issues/651)) ([d4eb684](https://github.com/visulima/visulima/commit/d4eb684b5f75c818c9251048c605a0ed54a268e3))
+- **interactive-manager:** housekeeping cleanup ([7bfd667](https://github.com/visulima/visulima/commit/7bfd66710540b573318a6548e9ede01b74236d80))
+- **interactive-manager:** upgrade packem to 2.0.0-alpha.76 ([34e5e82](https://github.com/visulima/visulima/commit/34e5e82588b82c8031b2e1075d936b5b543ed2b3))
+- re-sort workspace package.json files via vis sort-package-json ([f625696](https://github.com/visulima/visulima/commit/f625696cfac974325774b3243e1a83c3d23acbd7))
+- **repo:** apply eslint --fix and prettier --fix across packages ([#650](https://github.com/visulima/visulima/issues/650)) ([2e26a84](https://github.com/visulima/visulima/commit/2e26a84774f218f21345e9a8ecd68236b6542743)), closes [#620](https://github.com/visulima/visulima/issues/620)
+- sorted package.json ([b47c545](https://github.com/visulima/visulima/commit/b47c545591600fdab17d5cd3a3fbc68b61e199da))
+- **terminal:** apply prettier and eslint formatting sweep ([15fd89c](https://github.com/visulima/visulima/commit/15fd89c677eea60866e08e4fd5f5a6bc8f3bd2e5))
 
 ### Tests
 
-* **repo:** add dist runtime + types integration tests ([32ee300](https://github.com/visulima/visulima/commit/32ee300b7184117a0ddf9f9d390f75f8932d5ed9))
-
+- **repo:** add dist runtime + types integration tests ([32ee300](https://github.com/visulima/visulima/commit/32ee300b7184117a0ddf9f9d390f75f8932d5ed9))
 
 ### Dependencies
 
-* **@visulima/ansi:** upgraded to 4.0.0-alpha.15
-* **@visulima/string:** upgraded to 3.0.0-alpha.14
+- **@visulima/ansi:** upgraded to 4.0.0-alpha.15
+- **@visulima/string:** upgraded to 3.0.0-alpha.14
 
 ## @visulima/interactive-manager [1.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/interactive-manager@1.0.0-alpha.1...@visulima/interactive-manager@1.0.0-alpha.2) (2026-04-22)
 

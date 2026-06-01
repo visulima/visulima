@@ -1,5 +1,6 @@
+/* eslint-disable no-underscore-dangle -- `control._attach/_detach/_updateOffset` are the intentional @internal cross-module API of UploadControl */
 import type { FileMeta, UploadResult } from "../react/types";
-import type { FingerprintFn } from "./fingerprint";
+import type { FingerprintFunction } from "./fingerprint";
 import { defaultFingerprint } from "./fingerprint";
 import type { UploadControl } from "./upload-control";
 import type { UrlStorage, UrlStorageEntry } from "./url-storage";
@@ -96,6 +97,7 @@ interface TusUploadState {
 export interface TusAdapterOptions {
     /** Chunk size for TUS uploads (default: 1MB) */
     chunkSize?: number;
+
     /**
      * Optional unified control handle. When passed, `pause`/`resume`/`abort`/`toJSON`
      * on the control delegate to this adapter. Pre-loaded controls (see
@@ -106,13 +108,14 @@ export interface TusAdapterOptions {
     /** TUS upload endpoint URL */
     endpoint: string;
     /** Customise the resume fingerprint. Defaults to `defaultFingerprint`. */
-    fingerprint?: FingerprintFn;
+    fingerprint?: FingerprintFunction;
     /** Maximum number of retry attempts */
     maxRetries?: number;
     /** Additional metadata to include with the upload */
     metadata?: Record<string, string>;
     /** Enable automatic retry on failure */
     retry?: boolean;
+
     /**
      * Persistent storage for resume URLs. Defaults to no persistence — pass a
      * `defaultUrlStorage()` (browser) or `MemoryUrlStorage` to opt in.
@@ -151,7 +154,16 @@ export interface TusAdapter {
  * with proper progress tracking, pause/resume, and event handling.
  */
 export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
-    const { chunkSize = DEFAULT_CHUNK_SIZE, control, endpoint, fingerprint: fingerprintFn = defaultFingerprint, maxRetries = 3, metadata = {}, retry = true, urlStorage } = options;
+    const {
+        chunkSize = DEFAULT_CHUNK_SIZE,
+        control,
+        endpoint,
+        fingerprint: fingerprintFunction = defaultFingerprint,
+        maxRetries = 3,
+        metadata = {},
+        retry = true,
+        urlStorage,
+    } = options;
 
     let uploadState: TusUploadState | undefined;
     let progressCallback: ((progress: number, offset: number) => void) | undefined;
@@ -651,49 +663,57 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
                 startCallback?.();
 
                 const initialState = uploadState;
-                const fingerprint = await fingerprintFn({ endpoint, file, protocol: "tus" });
+                const fingerprint = await fingerprintFunction({ endpoint, file, protocol: "tus" });
 
                 resolvedFingerprint = fingerprint;
                 initialState.fingerprint = fingerprint;
 
-                let uploadUrl: string | undefined;
+                // Steps 1–3: locate a reusable resume URL from the snapshot or persistent storage,
+                // then validate it against the server. Returns undefined when none is usable.
+                const resolveResumeUrl = async (): Promise<string | undefined> => {
+                    // 1. Resume from an explicit snapshot on the supplied UploadControl.
+                    const snapshot = control?.snapshot;
 
-                // 1. Resume from an explicit snapshot on the supplied UploadControl.
-                const snapshot = control?.snapshot;
+                    let candidate: string | undefined
+                        = snapshot?.protocol === "tus" && snapshot.fingerprint === fingerprint ? snapshot.uploadUrl : undefined;
 
-                if (snapshot && snapshot.protocol === "tus" && snapshot.fingerprint === fingerprint) {
-                    uploadUrl = snapshot.uploadUrl;
-                }
+                    // 2. Fall back to the persistent url storage.
+                    if (candidate === undefined && urlStorage) {
+                        try {
+                            const stored = await urlStorage.findEntry(fingerprint);
 
-                // 2. Fall back to the persistent url storage.
-                if (uploadUrl === undefined && urlStorage) {
-                    try {
-                        const stored = await urlStorage.findEntry(fingerprint);
-
-                        if (stored && stored.protocol === "tus") {
-                            uploadUrl = stored.uploadUrl;
+                            if (stored?.protocol === "tus") {
+                                candidate = stored.uploadUrl;
+                            }
+                        } catch {
+                            // Treat storage failures as cache miss.
                         }
-                    } catch {
-                        // Treat storage failures as cache miss.
                     }
-                }
 
-                // 3. Validate any resume URL we found — drop it if the server says it's gone.
-                if (uploadUrl !== undefined) {
-                    const probedOffset = await probeExistingUpload(uploadUrl, initialState.abortController.signal);
+                    // 3. Validate any resume URL we found — drop it if the server says it's gone.
+                    if (candidate === undefined) {
+                        return undefined;
+                    }
+
+                    const probedOffset = await probeExistingUpload(candidate, initialState.abortController.signal);
 
                     if (probedOffset === undefined) {
                         await removeUploadEntry(fingerprint);
-                        uploadUrl = undefined;
-                    } else {
-                        initialState.uploadUrl = uploadUrl;
-                        initialState.offset = probedOffset;
 
-                        if (probedOffset > 0) {
-                            progressCallback?.(Math.round((probedOffset / file.size) * 100), probedOffset);
-                        }
+                        return undefined;
                     }
-                }
+
+                    initialState.uploadUrl = candidate;
+                    initialState.offset = probedOffset;
+
+                    if (probedOffset > 0) {
+                        progressCallback?.(Math.round((probedOffset / file.size) * 100), probedOffset);
+                    }
+
+                    return candidate;
+                };
+
+                let uploadUrl: string | undefined = await resolveResumeUrl();
 
                 // 4. No usable resume URL — POST a fresh upload.
                 if (uploadUrl === undefined) {
@@ -712,12 +732,14 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
 
                 control?._attach(
                     {
-                        abort: () => initialState.abortController.abort(),
+                        abort: () => { initialState.abortController.abort(); },
                         pause: () => {
                             initialState.isPaused = true;
                         },
-                        resume: async () => {
+                        resume: () => {
                             initialState.isPaused = false;
+
+                            return Promise.resolve();
                         },
                     },
                     { endpoint, fingerprint, protocol: "tus", uploadUrl },

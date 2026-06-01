@@ -115,7 +115,9 @@ describe("load-source-map", () => {
         const generated = { column: 13, line: 30 };
         const expected = { column: 9, line: 15, name: "setState", source: pathToFileURL(join(FIXTURES_DIR, "src", "example.js")).href };
 
-        expect(originalPositionFor(result as TraceMap, generated), "should resolve the relative .map path captured by the block-comment group").toStrictEqual(expected);
+        expect(originalPositionFor(result as TraceMap, generated), "should resolve the relative .map path captured by the block-comment group").toStrictEqual(
+            expected,
+        );
     });
 
     it("should stringify a thrown non-Error value when reading fails", () => {

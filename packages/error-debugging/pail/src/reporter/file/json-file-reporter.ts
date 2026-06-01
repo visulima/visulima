@@ -7,8 +7,8 @@ import RotatingFileStream from "./utils/rotating-file-stream";
 /**
  * Options for configuring the JsonFileReporter.
  */
-export type FileReporterOptions = AbstractJsonReporterOptions
-    & RfsOptions & {
+export type FileReporterOptions = AbstractJsonReporterOptions &
+    RfsOptions & {
         /** Path to the log file */
         filePath: string;
         /** Whether to write immediately to disk instead of buffering */

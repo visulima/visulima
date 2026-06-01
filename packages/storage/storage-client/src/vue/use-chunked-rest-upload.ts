@@ -2,7 +2,7 @@ import type { Ref } from "vue";
 import { onBeforeUnmount, onMounted, ref } from "vue";
 
 import { createChunkedRestAdapter } from "../core/chunked-rest-adapter";
-import type { FingerprintFn } from "../core/fingerprint";
+import type { FingerprintFunction } from "../core/fingerprint";
 import type { UploadControl } from "../core/upload-control";
 import type { UrlStorage } from "../core/url-storage";
 import type { UploadResult } from "../react/types";
@@ -15,7 +15,7 @@ export interface UseChunkedRestUploadOptions {
     /** Chunked REST upload endpoint URL */
     endpoint: string;
     /** Customise the resume fingerprint. */
-    fingerprint?: FingerprintFn;
+    fingerprint?: FingerprintFunction;
     /** Maximum number of retry attempts */
     maxRetries?: number;
     /** Additional metadata to include with the upload */
@@ -69,7 +69,8 @@ export interface UseChunkedRestUploadReturn {
  * @returns Upload functions and state
  */
 export const useChunkedRestUpload = (options: UseChunkedRestUploadOptions): UseChunkedRestUploadReturn => {
-    const { chunkSize, control, endpoint, fingerprint, maxRetries, metadata, onError, onPause, onProgress, onResume, onStart, onSuccess, retry, urlStorage } = options;
+    const { chunkSize, control, endpoint, fingerprint, maxRetries, metadata, onError, onPause, onProgress, onResume, onStart, onSuccess, retry, urlStorage } =
+        options;
 
     const progress = ref(0);
     const isUploading = ref(false);

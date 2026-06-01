@@ -10,7 +10,7 @@ const terminalSizeMock = vi.fn<() => { columns: number; rows: number }>(() => {
     return { columns: 80, rows: 3 };
 });
 
-vi.mock("terminal-size", () => {
+vi.mock(import("terminal-size"), () => {
     return {
         default: () => terminalSizeMock(),
     };

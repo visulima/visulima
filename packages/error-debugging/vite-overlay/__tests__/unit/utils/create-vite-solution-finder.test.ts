@@ -104,7 +104,9 @@ describe(createViteSolutionFinder, () => {
         expect.assertions(2);
 
         const finder = createViteSolutionFinder(temporaryRoot);
-        const error = new Error("Hydration failed because the initial UI does not match what was rendered on the server. Text content does not match server html.");
+        const error = new Error(
+            "Hydration failed because the initial UI does not match what was rendered on the server. Text content does not match server html.",
+        );
         const solution = await finder.handle(error, context());
 
         expect(solution).toBeDefined();
@@ -171,10 +173,7 @@ describe(createViteSolutionFinder, () => {
         const finder = createViteSolutionFinder(temporaryRoot);
         // Importing from a nested file so a match in `src` is in the parent directory.
         const error = new Error("Failed to resolve import \"./utils\" from \"src/components/Button.tsx\"");
-        const solution = await finder.handle(
-            error,
-            context({ file: join(temporaryRoot, "src", "components", "Button.tsx"), language: "typescript" }),
-        );
+        const solution = await finder.handle(error, context({ file: join(temporaryRoot, "src", "components", "Button.tsx"), language: "typescript" }));
 
         // utils.ts lives in src/, one directory above src/components -> parent directory hint.
         expect(solution?.body ?? "").toContain("parent directory");

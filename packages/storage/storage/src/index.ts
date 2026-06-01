@@ -33,15 +33,15 @@ export type {
     UploadProgressCallback,
 } from "./files";
 export { Files, transfer } from "./files";
-export { default as MemoryMetaStorage } from "./storage/memory/memory-meta-storage";
-export type { MemoryStorageOptions } from "./storage/memory/memory-storage";
-export { default as MemoryStorage } from "./storage/memory/memory-storage";
 export { waitForStorage } from "./handler/utils/storage-utils";
 export { NoOpMetrics, OpenTelemetryMetrics } from "./metrics";
 export { default as DiskStorage } from "./storage/local/disk-storage";
 export { default as DiskStorageWithChecksum } from "./storage/local/disk-storage-with-checksum";
 export type { LocalMetaStorageOptions } from "./storage/local/local-meta-storage";
 export { default as LocalMetaStorage } from "./storage/local/local-meta-storage";
+export { default as MemoryMetaStorage } from "./storage/memory/memory-meta-storage";
+export type { MemoryStorageOptions } from "./storage/memory/memory-storage";
+export { default as MemoryStorage } from "./storage/memory/memory-storage";
 export { default as MetaStorage } from "./storage/meta-storage";
 export { BaseStorage as AbstractBaseStorage, defaultCloudStorageFileNameValidation, defaultFilesystemFileNameValidation } from "./storage/storage";
 export type {

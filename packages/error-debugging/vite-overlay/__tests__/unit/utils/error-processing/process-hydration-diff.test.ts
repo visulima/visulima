@@ -43,12 +43,7 @@ describe(processHydrationDiff, () => {
     it("removes style/script/template tags from the diff content", () => {
         expect.assertions(3);
 
-        const diff = [
-            "+   <p>kept</p>",
-            "<style>.x { color: red; }</style>",
-            "<script>console.log(1)</script>",
-            "<template>tpl</template>",
-        ].join("\n");
+        const diff = ["+   <p>kept</p>", "<style>.x { color: red; }</style>", "<script>console.log(1)</script>", "<template>tpl</template>"].join("\n");
         const error = new Error(`hydration${REACT_LINK}\n${diff}`);
 
         const result = processHydrationDiff(error) ?? "";

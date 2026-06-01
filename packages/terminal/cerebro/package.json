@@ -127,6 +127,7 @@
     },
     "dependencies": {
         "@visulima/colorize": "2.0.0-alpha.12",
+        "@visulima/string": "3.0.0-alpha.14",
         "@visulima/tabular": "4.0.0-alpha.12",
         "fastest-levenshtein": "catalog:prod",
         "terminal-size": "catalog:prod"
@@ -147,7 +148,6 @@
         "@visulima/packem": "catalog:dev",
         "@visulima/pail": "4.0.0-alpha.19",
         "@visulima/path": "3.0.0-alpha.11",
-        "@visulima/string": "3.0.0-alpha.14",
         "@vitest/coverage-v8": "catalog:test",
         "ci-info": "catalog:dev",
         "commander": "catalog:dev",

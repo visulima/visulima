@@ -43,11 +43,14 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 <!-- DEPENDENCIES -->
 
 # Licenses of bundled dependencies
+
 The published @visulima/colorize artifact additionally contains code with the following licenses:
 MIT
 
 # Bundled dependencies:
+
 ## ansi-regex
+
 License: MIT
 By: Sindre Sorhus
 Repository: chalk/ansi-regex

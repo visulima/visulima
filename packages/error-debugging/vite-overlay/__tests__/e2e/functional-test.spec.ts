@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
 import { expect, test } from "@playwright/test";
 
 import { getErrorNavigation, getOverlayHeader, waitForErrorOverlay, waitForErrorTestPage } from "./utils/test-helpers";

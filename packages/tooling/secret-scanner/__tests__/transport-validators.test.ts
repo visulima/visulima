@@ -7,7 +7,7 @@ import type { TransportContext } from "../src/transports/context";
 // drive the verified / rejected / error branches without opening a real socket.
 const tryImportMock = vi.fn<(packageName: string, type: string) => Promise<unknown>>();
 
-vi.mock(import('../src/transports/runtime'), async () => {
+vi.mock(import("../src/transports/runtime"), async () => {
     const actual = await vi.importActual<typeof import("../src/transports/runtime")>("../src/transports/runtime");
 
     return {
@@ -50,7 +50,9 @@ describe("validateAws", () => {
 
     const makeStsModule = (send: () => Promise<{ Account?: string }>): Record<string, unknown> => {
         return {
-            GetCallerIdentityCommand: constructable(() => { return {}; }),
+            GetCallerIdentityCommand: constructable(() => {
+                return {};
+            }),
             STSClient: constructable(() => {
                 return {
                     destroy: (): void => undefined,
@@ -129,7 +131,11 @@ describe("validateGcp", () => {
     });
 
     const makeJwtModule = (authorize: () => Promise<{ access_token?: string }>): Record<string, unknown> => {
-        return { JWT: constructable(() => { return { authorize }; }) };
+        return {
+            JWT: constructable(() => {
+                return { authorize };
+            }),
+        };
     };
 
     it("returns 'rejected' when the secret isn't valid JSON", async () => {
@@ -348,7 +354,9 @@ describe("validateMongoDB", () => {
                 return {
                     close: (): Promise<void> => Promise.resolve(),
                     connect: (): Promise<unknown> => Promise.resolve(),
-                    db: (): { command: () => Promise<unknown> } => { return { command }; },
+                    db: (): { command: () => Promise<unknown> } => {
+                        return { command };
+                    },
                 };
             }),
         };
@@ -454,7 +462,9 @@ describe("validateJdbc", () => {
                 return {
                     close: (): Promise<void> => Promise.resolve(),
                     connect: (): Promise<unknown> => Promise.resolve(),
-                    db: (): { command: () => Promise<unknown> } => { return { command: (): Promise<unknown> => Promise.resolve({ ok: 1 }) }; },
+                    db: (): { command: () => Promise<unknown> } => {
+                        return { command: (): Promise<unknown> => Promise.resolve({ ok: 1 }) };
+                    },
                 };
             }),
         });

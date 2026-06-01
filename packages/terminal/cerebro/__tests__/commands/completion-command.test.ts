@@ -197,15 +197,22 @@ describe("completion-command", () => {
         vi.spyOn(tab, "command").mockImplementation(commandSpy as never);
         vi.spyOn(tab, "setup").mockImplementation(() => {});
 
-        const commands = new Map([["b", { description: "Build it", name: "build" }], ["build", {
-            description: "Build it",
-            name: "build",
-            options: [
-                { alias: "w", description: "Watch mode", name: "watch", type: Boolean },
-                { description: "Hidden flag", hidden: true, name: "secret", type: Boolean },
-                { description: "No name", name: "", type: Boolean },
+        const commands = new Map([
+            ["b", { description: "Build it", name: "build" }],
+            [
+                "build",
+                {
+                    description: "Build it",
+                    name: "build",
+                    options: [
+                        { alias: "w", description: "Watch mode", name: "watch", type: Boolean },
+                        { description: "Hidden flag", hidden: true, name: "secret", type: Boolean },
+                        { description: "No name", name: "", type: Boolean },
+                    ],
+                },
             ],
-        }], ["internal", { description: "Internal", hidden: true, name: "internal" }]]);
+            ["internal", { description: "Internal", hidden: true, name: "internal" }],
+        ]);
 
         // Alias entry: key differs from command.name, should be skipped.
         // Hidden command, should be skipped.

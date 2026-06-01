@@ -361,10 +361,7 @@ describe("stop icon handling", () => {
         expect.assertions(1);
 
         const manager = createMockManager();
-        const spinner = new Spinner(
-            { icons: { success: "OK" }, name: "dots", style: (text) => `<${text}>` },
-            manager as unknown as InteractiveManager,
-        );
+        const spinner = new Spinner({ icons: { success: "OK" }, name: "dots", style: (text) => `<${text}>` }, manager as unknown as InteractiveManager);
 
         spinner.start("Loading");
         manager.updates.length = 0;

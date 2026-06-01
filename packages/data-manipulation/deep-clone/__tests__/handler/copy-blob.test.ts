@@ -13,7 +13,7 @@ describe(copyBlob, () => {
         expect(copy).toBeInstanceOf(Blob);
         expect(copy).not.toBe(original);
         expect(copy.type).toBe("text/plain");
-        expect(await copy.text()).toBe("hello world");
+        await expect(copy.text()).resolves.toBe("hello world");
     });
 
     it("preserves size when slicing the whole blob", () => {
@@ -35,7 +35,7 @@ describe("deepClone with Blob input", () => {
 
         expect(cloned).toBeInstanceOf(Blob);
         expect(cloned).not.toBe(original);
-        expect(await cloned.text()).toBe("deep-clone");
+        await expect(cloned.text()).resolves.toBe("deep-clone");
     });
 
     it("clones nested Blob values inside objects", async () => {
@@ -46,6 +46,6 @@ describe("deepClone with Blob input", () => {
 
         expect(cloned.payload).toBeInstanceOf(Blob);
         expect(cloned.payload).not.toBe(original.payload);
-        expect(await cloned.payload.text()).toBe("x");
+        await expect(cloned.payload.text()).resolves.toBe("x");
     });
 });
