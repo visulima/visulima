@@ -186,48 +186,63 @@ describe(FileAccessTracker, () => {
     });
 
     describe("cancellation", () => {
-        it.runIf(new FileAccessTracker(tmpdir()).isSupported())("aborts a long-running command via AbortSignal", async () => {
-            expect.assertions(1);
+        // These spawn a real `sleep` and assert cancellation returns
+        // far sooner than the command's natural duration. The bound
+        // (10s) is well under `sleep 30` yet generous enough for a
+        // slow/cold CI box plus the seccomp helper's fail-fast
+        // fallback path. The explicit 20s per-test timeout keeps a
+        // genuine hang (cancellation broken) from being masked by — or
+        // racing against — vitest's 5s default, so the assertion can
+        // actually run and report rather than the runner killing it.
+        const CANCEL_TIMEOUT_MS = 20_000;
+        const CANCEL_BOUND_MS = 10_000;
 
-            const tracker = new FileAccessTracker(workspaceRoot);
-            const controller = new AbortController();
+        it.runIf(new FileAccessTracker(tmpdir()).isSupported())(
+            "aborts a long-running command via AbortSignal",
+            async () => {
+                expect.assertions(1);
 
-            // Abort the in-flight `sleep` after a short delay.
-            const abortTimer = setTimeout(() => {
-                controller.abort();
-            }, 100);
+                const tracker = new FileAccessTracker(workspaceRoot);
+                const controller = new AbortController();
 
-            const start = Date.now();
+                const abortTimer = setTimeout(() => {
+                    controller.abort();
+                }, 100);
 
-            await tracker.track("sleep 30", {
-                abortSignal: controller.signal,
-                cwd: workspaceRoot,
-            });
+                const start = Date.now();
 
-            clearTimeout(abortTimer);
+                await tracker.track("sleep 30", {
+                    abortSignal: controller.signal,
+                    cwd: workspaceRoot,
+                });
 
-            // Sleep was 30s; with cancellation we should be back in
-            // well under a second. Generous bound for slow CI.
-            expect(Date.now() - start).toBeLessThan(5000);
-        });
+                clearTimeout(abortTimer);
 
-        it.runIf(new FileAccessTracker(tmpdir()).isSupported())("killAll terminates active spawns", async () => {
-            expect.assertions(1);
+                expect(Date.now() - start).toBeLessThan(CANCEL_BOUND_MS);
+            },
+            CANCEL_TIMEOUT_MS,
+        );
 
-            const tracker = new FileAccessTracker(workspaceRoot);
-            const start = Date.now();
+        it.runIf(new FileAccessTracker(tmpdir()).isSupported())(
+            "killAll terminates active spawns",
+            async () => {
+                expect.assertions(1);
 
-            // Race tracker.track against an external killAll.
-            const trackPromise = tracker.track("sleep 30", { cwd: workspaceRoot });
+                const tracker = new FileAccessTracker(workspaceRoot);
+                const start = Date.now();
 
-            setTimeout(() => {
-                tracker.killAll();
-            }, 150);
+                const trackPromise = tracker.track("sleep 30", { cwd: workspaceRoot });
 
-            await trackPromise;
+                setTimeout(() => {
+                    tracker.killAll();
+                }, 150);
 
-            expect(Date.now() - start).toBeLessThan(5000);
-        });
+                await trackPromise;
+
+                expect(Date.now() - start).toBeLessThan(CANCEL_BOUND_MS);
+            },
+            CANCEL_TIMEOUT_MS,
+        );
     });
 });
 

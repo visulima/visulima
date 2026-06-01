@@ -52,7 +52,7 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use std::sync::mpsc::sync_channel;
 use std::thread;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use nix::cmsg_space;
 use nix::poll::{poll, PollFd, PollFlags, PollTimeout};
@@ -275,31 +275,41 @@ fn bind_listener(path: &Path) -> io::Result<OwnedFd> {
 /// watchdog: if the helper dies before connecting we surface the
 /// failure instead of hanging in `accept` forever.
 fn accept_and_recv_fd(listener: &OwnedFd, guard: &mut ChildGuard<'_>) -> io::Result<RawFd> {
-    // 5s is enough for the helper to do prctl + seccomp_load + connect
-    // on any reasonable kernel; faster than that and a stuck helper
-    // surfaces clearly, slower would hide real bugs.
-    const ACCEPT_TIMEOUT: Duration = Duration::from_secs(5);
+    // Total time we'll wait for the helper to do prctl + seccomp_load
+    // + connect. Generous enough for a slow/cold CI box.
+    const ACCEPT_DEADLINE: Duration = Duration::from_secs(5);
+    // Poll in short ticks and re-check the helper's liveness each one.
+    // A single 5s poll would block the full timeout when the helper
+    // dies at seccomp_load (common in sandboxes that disallow the
+    // user-notif filter) — it exits *before* connecting, so the
+    // listener never becomes readable. Ticking lets us notice the
+    // exit within ~one tick and fail fast so the caller can fall back
+    // to strace / no-tracking instead of hanging.
+    let tick = PollTimeout::from(100u16);
     let mut poll_fds = [PollFd::new(listener.as_fd(), PollFlags::POLLIN)];
+    let start = Instant::now();
 
-    let poll_timeout = PollTimeout::try_from(ACCEPT_TIMEOUT).unwrap_or(PollTimeout::MAX);
     loop {
-        match poll(&mut poll_fds, poll_timeout) {
+        match poll(&mut poll_fds, tick) {
             Ok(0) => {
-                // Timeout. Was the helper still alive? If it exited
-                // (or is exiting) the most informative error to
-                // bubble up is the helper's stderr/exit code; let
-                // the caller see them via the wait the ChildGuard
-                // will trigger on drop.
+                // Tick elapsed with no connection. If the helper has
+                // exited, surface that immediately (it failed before
+                // the handshake — e.g. seccomp_load denied).
                 if let Some(status) = guard.try_check_exit()? {
                     return Err(io::Error::new(
                         io::ErrorKind::BrokenPipe,
                         format!("fspy helper exited before connecting (status: {status:?})"),
                     ));
                 }
-                return Err(io::Error::new(
-                    io::ErrorKind::TimedOut,
-                    format!("fspy helper did not connect within {}s", ACCEPT_TIMEOUT.as_secs()),
-                ));
+
+                if start.elapsed() >= ACCEPT_DEADLINE {
+                    return Err(io::Error::new(
+                        io::ErrorKind::TimedOut,
+                        format!("fspy helper did not connect within {}s", ACCEPT_DEADLINE.as_secs()),
+                    ));
+                }
+
+                continue;
             }
             Ok(_) => break,
             Err(nix::errno::Errno::EINTR) => continue,
