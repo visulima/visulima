@@ -307,7 +307,7 @@ describe(generatePreloadScript, () => {
 
         const script = generatePreloadScript("/tmp/log");
 
-        expect(script).toContain('require("node:fs/promises")');
+        expect(script).toContain('import fsp from "node:fs/promises"');
         expect(script).toContain('"readFile"');
         expect(script).toContain('"stat"');
         expect(script).toContain('"readdir"');

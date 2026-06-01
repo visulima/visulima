@@ -841,16 +841,19 @@ describe(TaskOrchestrator, () => {
 
             const printCacheDisabledByTask = vi.fn<(task: Task) => void>();
 
-            // A real shell command that writes a disableCache hint to the
-            // file the runner exposed via $TASK_RUNNER_HINTS — the exact
-            // wire the `@visulima/task-runner-client` `disableCache()` call
-            // uses. `resolveCommand` forces the auto-fingerprint tracked
-            // path, which spawns this command for real and reads the hint
-            // back after it exits.
+            // A real command that writes a disableCache hint to the file the
+            // runner exposed via TASK_RUNNER_HINTS — the exact wire the
+            // `@visulima/task-runner-client` `disableCache()` call uses. We
+            // shell out to `node` (not `printf`/`$VAR`) and read the env var
+            // *inside* Node so the stand-in is shell-agnostic: the tracked
+            // path spawns via `exec`, which is `/bin/sh` on POSIX but cmd.exe
+            // on Windows (no `printf`, no `$VAR` expansion).
             const orchestrator = createOrchestrator([task], successExecutor, {
                 autoFingerprint: true,
                 lifeCycle: { printCacheDisabledByTask } as unknown as LifeCycleInterface,
-                resolveCommand: () => String.raw`printf '%s\n' '{"op":"disableCache"}' >> "$TASK_RUNNER_HINTS"`,
+                resolveCommand: () =>
+                    // eslint-disable-next-line no-secrets/no-secrets -- not a secret; this is the node one-liner that writes the hint
+                    String.raw`node -e "require('fs').appendFileSync(process.env.TASK_RUNNER_HINTS, JSON.stringify({op:'disableCache'})+'\n')"`,
             });
 
             const results = await orchestrator.run();

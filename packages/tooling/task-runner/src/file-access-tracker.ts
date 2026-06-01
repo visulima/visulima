@@ -1192,11 +1192,14 @@ export class FileAccessTracker {
  * This is an alternative to strace that works cross-platform for Node.js processes.
  */
 export const generatePreloadScript = (outputPath: string): string => String.raw`
-import { createWriteStream } from "node:fs";
+import fs from "node:fs";
+import fsp from "node:fs/promises";
 
-const fs = require("node:fs");
-const fsp = require("node:fs/promises");
-const logStream = createWriteStream(${JSON.stringify(outputPath)}, { flags: "a" });
+// Loaded as ESM (--import + .mjs). Patching the default-imported fs / fsp
+// namespaces mutates the same singletons a require("node:fs") task consumes,
+// so the child's reads/writes are intercepted. (CJS callers; ESM named-import
+// callers bind the function early, so they're out of scope for this approach.)
+const logStream = fs.createWriteStream(${JSON.stringify(outputPath)}, { flags: "a" });
 const log = (type, path) => { logStream.write(JSON.stringify({ type, path }) + "\n"); };
 
 // Patch each fs method: save original, replace with logged wrapper
