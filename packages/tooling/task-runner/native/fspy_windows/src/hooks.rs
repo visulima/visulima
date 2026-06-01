@@ -1,8 +1,10 @@
 //! Name-based IAT hooking for the Win32 file-API surface.
 //!
-//! We walk the main module's import table and, for every imported function
-//! whose name matches one we care about, swap the IAT pointer to our hook and
-//! stash the original. Matching by **function name across all import
+//! We walk **every loaded module's** import table and, for every imported
+//! function whose name matches one we care about, swap the IAT pointer to our
+//! hook and stash the original. Walking all modules (not just the main exe)
+//! catches file calls made from other DLLs — the CRT, addon `.node`s, etc.
+//! Matching by **function name across all import
 //! descriptors** (not by DLL name) means API-set forwarders
 //! (`api-ms-win-core-file-l1-1-0.dll` etc.) are handled the same as a direct
 //! `kernel32.dll` import. Pointer-swapping (vs inline patching) is
@@ -23,13 +25,15 @@ compile_error!("fspy_windows: only 64-bit Windows targets are supported (the IAT
 use core::ffi::c_void;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
-use windows_sys::Win32::Foundation::HANDLE;
+use windows_sys::Win32::Foundation::{HANDLE, HMODULE};
 use windows_sys::Win32::System::Diagnostics::Debug::{IMAGE_DIRECTORY_ENTRY_IMPORT, IMAGE_NT_HEADERS64};
 use windows_sys::Win32::System::LibraryLoader::GetModuleHandleW;
 use windows_sys::Win32::System::Memory::{VirtualProtect, PAGE_PROTECTION_FLAGS, PAGE_READWRITE};
+use windows_sys::Win32::System::ProcessStatus::EnumProcessModules;
 use windows_sys::Win32::System::SystemServices::{
     IMAGE_DOS_HEADER, IMAGE_DOS_SIGNATURE, IMAGE_IMPORT_BY_NAME, IMAGE_IMPORT_DESCRIPTOR, IMAGE_ORDINAL_FLAG64,
 };
+use windows_sys::Win32::System::Threading::GetCurrentProcess;
 use windows_sys::Win32::System::WindowsProgramming::IMAGE_THUNK_DATA64;
 
 use crate::mode;
@@ -41,11 +45,29 @@ static ORIG_CREATE_FILE_W: AtomicUsize = AtomicUsize::new(0);
 static ORIG_CREATE_FILE_A: AtomicUsize = AtomicUsize::new(0);
 static ORIG_DELETE_FILE_W: AtomicUsize = AtomicUsize::new(0);
 static ORIG_GET_FILE_ATTRS_EX_W: AtomicUsize = AtomicUsize::new(0);
+static ORIG_GET_FILE_ATTRS_W: AtomicUsize = AtomicUsize::new(0);
+static ORIG_FIND_FIRST_FILE_W: AtomicUsize = AtomicUsize::new(0);
+static ORIG_FIND_FIRST_FILE_EX_W: AtomicUsize = AtomicUsize::new(0);
+static ORIG_MOVE_FILE_EX_W: AtomicUsize = AtomicUsize::new(0);
+
+/// Our own DLL's base address — skipped when walking modules so we never hook
+/// our own pipe-IPC file calls (avoids self-reporting + re-entrancy).
+static SELF_BASE: AtomicUsize = AtomicUsize::new(0);
+
+/// Record this DLL's module base so [`install_all`] can skip it. Called from
+/// `DllMain` with the `hinstDLL` the loader passes.
+pub fn set_self_base(base: usize) {
+    SELF_BASE.store(base, Ordering::Relaxed);
+}
 
 type CreateFileWFn = unsafe extern "system" fn(*const u16, u32, u32, *const c_void, u32, u32, HANDLE) -> HANDLE;
 type CreateFileAFn = unsafe extern "system" fn(*const u8, u32, u32, *const c_void, u32, u32, HANDLE) -> HANDLE;
 type DeleteFileWFn = unsafe extern "system" fn(*const u16) -> i32;
 type GetFileAttrsExWFn = unsafe extern "system" fn(*const u16, i32, *mut c_void) -> i32;
+type GetFileAttrsWFn = unsafe extern "system" fn(*const u16) -> u32;
+type FindFirstFileWFn = unsafe extern "system" fn(*const u16, *mut c_void) -> HANDLE;
+type FindFirstFileExWFn = unsafe extern "system" fn(*const u16, i32, *mut c_void, i32, *const c_void, u32) -> HANDLE;
+type MoveFileExWFn = unsafe extern "system" fn(*const u16, *const u16, u32) -> i32;
 
 // Win32 access flags implying write intent.
 const GENERIC_WRITE: u32 = 0x4000_0000;
@@ -139,6 +161,44 @@ unsafe extern "system" fn hook_GetFileAttributesExW(name: *const u16, level: i32
     result
 }
 
+unsafe extern "system" fn hook_GetFileAttributesW(name: *const u16) -> u32 {
+    let orig: GetFileAttrsWFn = std::mem::transmute(ORIG_GET_FILE_ATTRS_W.load(Ordering::Relaxed));
+    let result = orig(name);
+    report_w(name, mode::STAT);
+    result
+}
+
+unsafe extern "system" fn hook_FindFirstFileW(name: *const u16, data: *mut c_void) -> HANDLE {
+    let orig: FindFirstFileWFn = std::mem::transmute(ORIG_FIND_FIRST_FILE_W.load(Ordering::Relaxed));
+    let result = orig(name, data);
+    report_w(name, mode::READDIR);
+    result
+}
+
+unsafe extern "system" fn hook_FindFirstFileExW(
+    name: *const u16,
+    level: i32,
+    data: *mut c_void,
+    search_op: i32,
+    filter: *const c_void,
+    flags: u32,
+) -> HANDLE {
+    let orig: FindFirstFileExWFn = std::mem::transmute(ORIG_FIND_FIRST_FILE_EX_W.load(Ordering::Relaxed));
+    let result = orig(name, level, data, search_op, filter, flags);
+    report_w(name, mode::READDIR);
+    result
+}
+
+unsafe extern "system" fn hook_MoveFileExW(existing: *const u16, new: *const u16, flags: u32) -> i32 {
+    let orig: MoveFileExWFn = std::mem::transmute(ORIG_MOVE_FILE_EX_W.load(Ordering::Relaxed));
+    let result = orig(existing, new, flags);
+    // Both source and destination are mutated; `new` may be null (a pure delete
+    // via MOVEFILE flags), which `report_w` ignores.
+    report_w(existing, mode::WRITE);
+    report_w(new, mode::WRITE);
+    result
+}
+
 /// One (imported-name, hook, original-slot) row in the hook table.
 struct HookEntry {
     name: &'static [u8],
@@ -149,7 +209,7 @@ struct HookEntry {
 // SAFETY: only static fn pointers + static refs; read-only after init.
 unsafe impl Sync for HookEntry {}
 
-fn table() -> [HookEntry; 4] {
+fn table() -> [HookEntry; 8] {
     [
         HookEntry { name: b"CreateFileW", hook: hook_CreateFileW as *const c_void, orig: &ORIG_CREATE_FILE_W },
         HookEntry { name: b"CreateFileA", hook: hook_CreateFileA as *const c_void, orig: &ORIG_CREATE_FILE_A },
@@ -159,6 +219,22 @@ fn table() -> [HookEntry; 4] {
             hook: hook_GetFileAttributesExW as *const c_void,
             orig: &ORIG_GET_FILE_ATTRS_EX_W,
         },
+        HookEntry {
+            name: b"GetFileAttributesW",
+            hook: hook_GetFileAttributesW as *const c_void,
+            orig: &ORIG_GET_FILE_ATTRS_W,
+        },
+        HookEntry {
+            name: b"FindFirstFileW",
+            hook: hook_FindFirstFileW as *const c_void,
+            orig: &ORIG_FIND_FIRST_FILE_W,
+        },
+        HookEntry {
+            name: b"FindFirstFileExW",
+            hook: hook_FindFirstFileExW as *const c_void,
+            orig: &ORIG_FIND_FIRST_FILE_EX_W,
+        },
+        HookEntry { name: b"MoveFileExW", hook: hook_MoveFileExW as *const c_void, orig: &ORIG_MOVE_FILE_EX_W },
     ]
 }
 
@@ -172,14 +248,13 @@ unsafe fn c_str_eq(ptr: *const u8, want: &[u8]) -> bool {
     *ptr.add(want.len()) == 0
 }
 
-/// Install every hook by patching the main module's IAT. Returns the number of
-/// entries successfully hooked.
-pub fn install_all() -> usize {
+/// Patch one module's IAT for every entry in [`table`]. Returns the number of
+/// IAT slots swapped in this module.
+fn install_in_module(base: *const u8) -> usize {
     let entries = table();
     let mut hooked = 0;
 
     unsafe {
-        let base = GetModuleHandleW(std::ptr::null()) as *const u8;
         if base.is_null() {
             return 0;
         }
@@ -246,4 +321,49 @@ pub fn install_all() -> usize {
     }
 
     hooked
+}
+
+/// Install hooks across **every** currently-loaded module's IAT — not just the
+/// main executable — so file calls made from other DLLs (the CRT, addon
+/// `.node`s, etc.) are caught too. The first module to be patched records the
+/// real function pointer; later modules reuse it (same import target). Our own
+/// DLL is skipped so we never hook our pipe IPC. Returns the total slots
+/// swapped. Falls back to the main module if enumeration fails.
+pub fn install_all() -> usize {
+    let self_base = SELF_BASE.load(Ordering::Relaxed);
+
+    unsafe {
+        let process = GetCurrentProcess();
+
+        // First call sizes the module array; second fills it.
+        let mut needed: u32 = 0;
+        let ok = EnumProcessModules(process, std::ptr::null_mut(), 0, &mut needed) != 0;
+
+        if !ok || needed == 0 {
+            let base = GetModuleHandleW(std::ptr::null()) as *const u8;
+            return install_in_module(base);
+        }
+
+        let count = needed as usize / std::mem::size_of::<HMODULE>();
+        let mut modules: Vec<HMODULE> = vec![std::ptr::null_mut(); count];
+        let mut written: u32 = 0;
+
+        if EnumProcessModules(process, modules.as_mut_ptr(), needed, &mut written) == 0 {
+            let base = GetModuleHandleW(std::ptr::null()) as *const u8;
+            return install_in_module(base);
+        }
+
+        let actual = (written as usize / std::mem::size_of::<HMODULE>()).min(count);
+        let mut hooked = 0;
+
+        for &module in &modules[..actual] {
+            if module.is_null() || module as usize == self_base {
+                continue;
+            }
+
+            hooked += install_in_module(module as *const u8);
+        }
+
+        hooked
+    }
 }

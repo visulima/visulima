@@ -43,6 +43,9 @@ pub extern "system" fn DllMain(hinst: HINSTANCE, reason: u32, _reserved: *mut c_
     if reason == DLL_PROCESS_ATTACH {
         unsafe {
             DisableThreadLibraryCalls(hinst);
+            // Record our own base so install_all skips our module (never hook
+            // our own pipe IPC).
+            hooks::set_self_base(hinst as usize);
             let pid = GetCurrentProcessId();
             if pipe::connect(pid) {
                 let _ = hooks::install_all();

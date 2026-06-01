@@ -268,6 +268,147 @@ unsafe extern "C" fn hook_unlink(path: *const c_char) -> c_int {
 /// `read`/`write` are NOT hooked — we classify at `open` time, which is enough
 /// for cache fingerprinting and keeps the hot path (every byte of I/O) clean.
 
+// ---- child-process propagation ---------------------------------------------
+//
+// `DYLD_INSERT_LIBRARIES` + `FSPY_MACOS_FD` are inherited by children through
+// the environment automatically — *except* when a child is launched with a
+// curated `envp` that omits them (Node's `posix_spawn`, build tools that scrub
+// the environment, …). These hooks re-inject our two vars into such an `envp`
+// so tracking follows the whole process tree. (A `/bin/sh`-style SIP binary in
+// the chain still strips `DYLD_*`; that's inherent to SIP and unavoidable.)
+
+/// Keys we propagate into a child's environment. Values are read from our own
+/// environment at call time, so we forward exactly what we were started with.
+const DYLD_KEY: &[u8] = b"DYLD_INSERT_LIBRARIES\0";
+
+/// Owns the backing storage for a rebuilt `envp` so the pointers stay valid
+/// for the duration of the `exec`/`posix_spawn` call. Inner pointers are
+/// `*mut c_char` to match libc's `posix_spawn` ABI (`*const *mut c_char`);
+/// `execve` (which wants `*const *const c_char`) casts the array at the call.
+struct EnvCopy {
+    // Kept alive; the pointer array below borrows from these.
+    _owned: Vec<std::ffi::CString>,
+    ptrs: Vec<*mut c_char>,
+}
+
+impl EnvCopy {
+    fn as_ptr(&self) -> *const *mut c_char {
+        self.ptrs.as_ptr()
+    }
+}
+
+/// Build a NUL-terminated `envp` that contains the caller's entries plus any of
+/// our propagation keys (`DYLD_INSERT_LIBRARIES`, `FSPY_MACOS_FD`) that were
+/// missing, taking their values from our own environment. Returns `None` when
+/// `envp` is null (the child then inherits our `environ`, which already carries
+/// the vars) so the caller forwards the original pointer untouched.
+unsafe fn rebuild_envp(envp: *const *const c_char) -> Option<EnvCopy> {
+    if envp.is_null() {
+        return None;
+    }
+
+    let mut owned: Vec<std::ffi::CString> = Vec::new();
+    let mut ptrs: Vec<*mut c_char> = Vec::new();
+    let mut have_dyld = false;
+    let mut have_fd = false;
+
+    // Copy the caller's entries verbatim, noting whether our keys are present.
+    let mut i = 0isize;
+    loop {
+        let entry = unsafe { *envp.offset(i) };
+        if entry.is_null() {
+            break;
+        }
+        if unsafe { env_key_matches(entry, b"DYLD_INSERT_LIBRARIES=") } {
+            have_dyld = true;
+        } else if unsafe { env_key_matches(entry, b"FSPY_MACOS_FD=") } {
+            have_fd = true;
+        }
+        ptrs.push(entry as *mut c_char);
+        i += 1;
+    }
+
+    if have_dyld && have_fd {
+        return None; // nothing to add — forward the original envp.
+    }
+
+    if !have_dyld {
+        if let Some(entry) = unsafe { our_env_entry(DYLD_KEY, "DYLD_INSERT_LIBRARIES") } {
+            ptrs.push(entry.as_ptr() as *mut c_char);
+            owned.push(entry);
+        }
+    }
+    if !have_fd {
+        if let Some(entry) = unsafe { our_env_entry(FD_ENV, "FSPY_MACOS_FD") } {
+            ptrs.push(entry.as_ptr() as *mut c_char);
+            owned.push(entry);
+        }
+    }
+
+    ptrs.push(std::ptr::null_mut());
+
+    Some(EnvCopy { _owned: owned, ptrs })
+}
+
+/// True when the `KEY=` prefix of `entry` equals `prefix` (which includes `=`).
+unsafe fn env_key_matches(entry: *const c_char, prefix: &[u8]) -> bool {
+    let bytes = entry.cast::<u8>();
+    for (i, &p) in prefix.iter().enumerate() {
+        if unsafe { *bytes.add(i) } != p {
+            return false;
+        }
+    }
+    true
+}
+
+/// `"KEY=<our value>"` as a `CString`, or `None` when we don't carry the var.
+unsafe fn our_env_entry(key_nul: &[u8], key: &str) -> Option<std::ffi::CString> {
+    let raw = unsafe { libc::getenv(key_nul.as_ptr().cast::<c_char>()) };
+    if raw.is_null() {
+        return None;
+    }
+    let value = unsafe { std::ffi::CStr::from_ptr(raw) }.to_str().ok()?;
+    std::ffi::CString::new(format!("{key}={value}")).ok()
+}
+
+unsafe extern "C" fn hook_execve(path: *const c_char, argv: *const *const c_char, envp: *const *const c_char) -> c_int {
+    match unsafe { rebuild_envp(envp) } {
+        // execve wants `*const *const c_char`; our storage is `*const *mut`.
+        Some(copy) => unsafe { libc::execve(path, argv, copy.as_ptr() as *const *const c_char) },
+        None => unsafe { libc::execve(path, argv, envp) },
+    }
+}
+
+unsafe extern "C" fn hook_posix_spawn(
+    pid: *mut libc::pid_t,
+    path: *const c_char,
+    file_actions: *const libc::posix_spawn_file_actions_t,
+    attrp: *const libc::posix_spawnattr_t,
+    argv: *const *mut c_char,
+    envp: *const *mut c_char,
+) -> c_int {
+    // The kernel copies `envp` during the call, so dropping the rebuilt storage
+    // when this returns is safe.
+    match unsafe { rebuild_envp(envp as *const *const c_char) } {
+        Some(copy) => unsafe { libc::posix_spawn(pid, path, file_actions, attrp, argv, copy.as_ptr()) },
+        None => unsafe { libc::posix_spawn(pid, path, file_actions, attrp, argv, envp) },
+    }
+}
+
+unsafe extern "C" fn hook_posix_spawnp(
+    pid: *mut libc::pid_t,
+    path: *const c_char,
+    file_actions: *const libc::posix_spawn_file_actions_t,
+    attrp: *const libc::posix_spawnattr_t,
+    argv: *const *mut c_char,
+    envp: *const *mut c_char,
+) -> c_int {
+    match unsafe { rebuild_envp(envp as *const *const c_char) } {
+        Some(copy) => unsafe { libc::posix_spawnp(pid, path, file_actions, attrp, argv, copy.as_ptr()) },
+        None => unsafe { libc::posix_spawnp(pid, path, file_actions, attrp, argv, envp) },
+    }
+}
+
 macro_rules! interpose {
     ($static_name:ident, $replacement:expr, $replacee:expr) => {
         #[used]
@@ -285,6 +426,11 @@ interpose!(I_ACCESS, hook_access, libc::access);
 interpose!(I_OPENDIR, hook_opendir, libc::opendir);
 interpose!(I_RENAME, hook_rename, libc::rename);
 interpose!(I_UNLINK, hook_unlink, libc::unlink);
+// Child-process propagation: re-inject DYLD_INSERT_LIBRARIES + FSPY_MACOS_FD
+// into curated child environments so tracking follows the whole tree.
+interpose!(I_EXECVE, hook_execve, libc::execve);
+interpose!(I_POSIX_SPAWN, hook_posix_spawn, libc::posix_spawn);
+interpose!(I_POSIX_SPAWNP, hook_posix_spawnp, libc::posix_spawnp);
 
 // Silence "unused" for the libc imports only referenced through interpose
 // type-checking on some toolchains.
