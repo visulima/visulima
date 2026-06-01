@@ -1,32 +1,33 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { Plugin, ViteDevServer } from "vite";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { MESSAGE_TYPE, PLUGIN_NAME } from "../../src/constants";
 import errorOverlayPlugin from "../../src/index";
+import { MESSAGE_TYPE, PLUGIN_NAME } from "../../src/constants";
 
 // Globally stub `process.on` so plugin instances created in any describe block
 // don't leak real `unhandledRejection` listeners. Tests that need to inspect the
 // registered handler can read from `globalRegistered`.
-const globalRegistered: { event: string; handler: (...args: any[]) => unknown }[] = [];
-let globalProcessOnSpy: ReturnType<typeof vi.spyOn>;
-let globalProcessOffSpy: ReturnType<typeof vi.spyOn>;
+const globalRegistered: Array<{ event: string; handler: (...args: any[]) => unknown }> = [];
+let __globalProcessOnSpy: ReturnType<typeof vi.spyOn>;
+let __globalProcessOffSpy: ReturnType<typeof vi.spyOn>;
 
 beforeAll(() => {
-    globalProcessOnSpy = vi.spyOn(process, "on").mockImplementation((event: any, handler: any) => {
+    __globalProcessOnSpy = vi.spyOn(process, "on").mockImplementation((event: any, handler: any) => {
         globalRegistered.push({ event, handler });
 
         return process;
     });
-    globalProcessOffSpy = vi.spyOn(process, "off").mockImplementation(() => process);
+    __globalProcessOffSpy = vi.spyOn(process, "off").mockImplementation(() => process);
+});
+
+afterAll(() => {
+    __globalProcessOnSpy.mockRestore();
+    __globalProcessOffSpy.mockRestore();
 });
 
 beforeEach(() => {
     globalRegistered.length = 0;
-});
-
-afterAll(() => {
-    globalProcessOnSpy.mockRestore();
-    globalProcessOffSpy.mockRestore();
 });
 
 /**
@@ -40,7 +41,7 @@ const createMockWs = () => {
         on: vi.fn((event: string, handler: any) => {
             handlers.set(event, handler);
         }),
-
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         send: vi.fn((data: any, _client?: any) => {
             sent.push(data);
         }),
@@ -79,7 +80,7 @@ const createMockServer = (overrides: Partial<ViteDevServer> = {}) => {
             }),
         },
         ssrFixStacktrace: vi.fn(() => {}),
-        transformRequest: vi.fn(async (_url: string) => { return { code: "/* original */" }; }),
+        transformRequest: vi.fn(async (_url: string) => ({ code: "/* original */" })),
         ws,
         ...overrides,
     };
@@ -204,11 +205,15 @@ describe("errorOverlayPlugin.transform hook", () => {
         expect.assertions(2);
 
         const plugin = getPlugin();
-        const result = (plugin.transform as any).call({}, "var ErrorOverlay = class extends HTMLElement {};", "/node_modules/vite/dist/client/client.mjs", {});
+        const result = (plugin.transform as any).call(
+            {},
+            "var ErrorOverlay = class extends HTMLElement {};",
+            "/node_modules/vite/dist/client/client.mjs",
+            {},
+        );
 
         // patchOverlay returns a string and should contain our injected style or wiring.
         expect(typeof result).toBe("string");
-
         expect((result as string).length).toBeGreaterThan(0);
     });
 
@@ -216,7 +221,12 @@ describe("errorOverlayPlugin.transform hook", () => {
         expect.assertions(1);
 
         const plugin = getPlugin();
-        const result = (plugin.transform as any).call({}, "var ErrorOverlay = class extends HTMLElement {};", "https://example.com/@vite/client", {});
+        const result = (plugin.transform as any).call(
+            {},
+            "var ErrorOverlay = class extends HTMLElement {};",
+            "https://example.com/@vite/client",
+            {},
+        );
 
         expect(typeof result).toBe("string");
     });
@@ -225,7 +235,12 @@ describe("errorOverlayPlugin.transform hook", () => {
         expect.assertions(1);
 
         const plugin = getPlugin({ overlay: { balloon: { enabled: false } } });
-        const result = (plugin.transform as any).call({}, "var ErrorOverlay = class extends HTMLElement {};", "/node_modules/vite/dist/client/client.mjs", {});
+        const result = (plugin.transform as any).call(
+            {},
+            "var ErrorOverlay = class extends HTMLElement {};",
+            "/node_modules/vite/dist/client/client.mjs",
+            {},
+        );
 
         expect(typeof result).toBe("string");
     });
@@ -274,10 +289,8 @@ describe("errorOverlayPlugin.configureServer", () => {
 
         // ws.on was registered for MESSAGE_TYPE
         expect(server.ws.on).toHaveBeenCalledWith(MESSAGE_TYPE, expect.any(Function));
-
         // transformRequest was patched (it's still a function)
         expect(typeof server.transformRequest).toBe("function");
-
         // process.on('unhandledRejection') registered
         expect(globalRegistered.some((r) => r.event === "unhandledRejection")).toBe(true);
         // httpServer.on('close', ...) registered
@@ -298,7 +311,7 @@ describe("errorOverlayPlugin.configureServer", () => {
 
         closeHandler?.();
 
-        expect(globalProcessOffSpy).toHaveBeenCalledWith("unhandledRejection", expect.any(Function));
+        expect(__globalProcessOffSpy).toHaveBeenCalledWith("unhandledRejection", expect.any(Function));
     });
 
     it("falls back to process.cwd() when server.config.root is empty", () => {
@@ -319,17 +332,17 @@ describe("errorOverlayPlugin.configureServer", () => {
 
         const plugin = getPlugin();
         const { server } = createMockServer();
-        const originalError = new Error("Failed to resolve import \"./missing\" from \"src/App.tsx\"");
+        const originalErr = new Error("Failed to resolve import \"./missing\" from \"src/App.tsx\"");
 
-        vi.spyOn(server, "transformRequest").mockImplementation(async () => {
-            throw originalError;
+        server.transformRequest = vi.fn(async () => {
+            throw originalErr;
         });
 
         (plugin.configureServer as any)(server);
 
-        await expect(server.transformRequest("/src/App.tsx")).rejects.toBe(originalError);
-        expect((originalError as any).sourceFile).toBe("src/App.tsx");
-        expect((originalError as any).importPath).toBe("./missing");
+        await expect(server.transformRequest("/src/App.tsx")).rejects.toBe(originalErr);
+        expect((originalErr as any).sourceFile).toBe("src/App.tsx");
+        expect((originalErr as any).importPath).toBe("./missing");
     });
 
     it("rethrows non-import errors unchanged from transformRequest", async () => {
@@ -337,17 +350,17 @@ describe("errorOverlayPlugin.configureServer", () => {
 
         const plugin = getPlugin();
         const { server } = createMockServer();
-        const error = new Error("some other failure");
+        const err = new Error("some other failure");
 
-        vi.spyOn(server, "transformRequest").mockImplementation(async () => {
-            throw error;
+        server.transformRequest = vi.fn(async () => {
+            throw err;
         });
 
         (plugin.configureServer as any)(server);
 
-        await expect(server.transformRequest("/x")).rejects.toBe(error);
+        await expect(server.transformRequest("/x")).rejects.toBe(err);
         // No mutation
-        expect((error as any).sourceFile).toBeUndefined();
+        expect((err as any).sourceFile).toBeUndefined();
     });
 
     it("returns the original successful transformRequest result", async () => {
@@ -360,7 +373,7 @@ describe("errorOverlayPlugin.configureServer", () => {
 
         const result = await server.transformRequest("/x");
 
-        expect(result).toStrictEqual({ code: "/* original */" });
+        expect(result).toEqual({ code: "/* original */" });
     });
 });
 
@@ -379,7 +392,7 @@ describe("errorOverlayPlugin ws.send interception", () => {
 
         // Original send was invoked.
         expect(sent).toHaveLength(1);
-        expect(sent[0]).toStrictEqual({ foo: "bar", type: "update" });
+        expect(sent[0]).toEqual({ foo: "bar", type: "update" });
     });
 
     it("deduplicates identical errors within the TTL window", async () => {
@@ -390,13 +403,13 @@ describe("errorOverlayPlugin ws.send interception", () => {
 
         (plugin.configureServer as any)(server);
 
-        const errorPayload = {
+        const errPayload = {
             err: { message: "dup", stack: "Error: dup\n    at /tmp/project-root/file.ts:1:1" },
             type: "error",
         };
 
-        await server.ws.send(errorPayload);
-        await server.ws.send(errorPayload);
+        await server.ws.send(errPayload);
+        await server.ws.send(errPayload);
 
         // Second call was deduplicated, so only one passthrough.
         expect(sent.length).toBeLessThanOrEqual(1);
@@ -451,7 +464,7 @@ describe("errorOverlayPlugin ws.send interception", () => {
         // Either replaced with extended payload (object with `errors` array) or fell back gracefully.
         // We treat both as success since we just care that the code path executed without throwing.
         const wasMutated = payload.err && typeof payload.err === "object" && "errors" in payload.err;
-        const fellBack = payload.err?.message?.includes("Failed to resolve import");
+        const fellBack = payload.err && payload.err.message?.includes("Failed to resolve import");
 
         expect(wasMutated || fellBack).toBe(true);
         // ws.send was reassigned by the plugin, so we use the sent array as the source of truth.
@@ -507,9 +520,7 @@ describe("errorOverlayPlugin ws.send interception", () => {
 });
 
 describe("errorOverlayPlugin HMR client error handler", () => {
-    const buildClient = () => {
-        return { send: vi.fn() };
-    };
+    const buildClient = () => ({ send: vi.fn() });
 
     it("no-ops when forwardConsole is disabled", async () => {
         expect.assertions(1);
@@ -536,18 +547,14 @@ describe("errorOverlayPlugin HMR client error handler", () => {
 
         const client = buildClient();
 
-        await dispatch(
-            MESSAGE_TYPE,
-            {
-                column: 5,
-                file: "/tmp/project-root/src/App.tsx",
-                line: 10,
-                message: "client boom",
-                name: "TypeError",
-                stack: "TypeError: client boom\n    at /tmp/project-root/src/App.tsx:10:5",
-            },
-            client,
-        );
+        await dispatch(MESSAGE_TYPE, {
+            column: 5,
+            file: "/tmp/project-root/src/App.tsx",
+            line: 10,
+            message: "client boom",
+            name: "TypeError",
+            stack: "TypeError: client boom\n    at /tmp/project-root/src/App.tsx:10:5",
+        }, client);
 
         // Either send was called with a payload, or it bailed early & still finished.
         expect(client.send).toHaveBeenCalled();
