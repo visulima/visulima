@@ -210,6 +210,48 @@ describe(FileAccessTracker, () => {
                 expect(result.accesses.some((a) => a.path === target && a.type === "write")).toBe(true);
             },
         );
+
+        // Windows IAT-hook path. Spawns `node` directly (the DLL is injected
+        // into it) via trackIatHook, then asserts the IAT hooks reported the
+        // access. Windows paths are case-insensitive and the DLL emits
+        // forward slashes, so compare normalized + lower-cased. Skipped unless
+        // the IAT-hook DLL + addon are present (i.e. Windows with the native
+        // artifacts built).
+        it.skipIf(!new FileAccessTracker(tmpdir(), []).isIatHookSupported())(
+            "tracks a read by a directly-exec'd binary via the Windows IAT-hook DLL",
+            async () => {
+                expect.assertions(1);
+
+                const tracker = new FileAccessTracker(workspaceRoot, []);
+                const target = join(workspaceRoot, "iat-read.txt");
+
+                await writeFile(target, "data");
+
+                const argv = [process.execPath, "-e", `require("node:fs").readFileSync(${JSON.stringify(target)})`];
+                const result = await tracker.trackIatHook(argv, { cwd: workspaceRoot });
+
+                const want = target.replaceAll("\\", "/").toLowerCase();
+
+                expect(result.accesses.some((a) => a.path.replaceAll("\\", "/").toLowerCase() === want && a.type === "read")).toBe(true);
+            },
+        );
+
+        it.skipIf(!new FileAccessTracker(tmpdir(), []).isIatHookSupported())(
+            "tracks a write by a directly-exec'd binary via the Windows IAT-hook DLL",
+            async () => {
+                expect.assertions(1);
+
+                const tracker = new FileAccessTracker(workspaceRoot, []);
+                const target = join(workspaceRoot, "iat-write.txt");
+
+                const argv = [process.execPath, "-e", `require("node:fs").writeFileSync(${JSON.stringify(target)}, "x")`];
+                const result = await tracker.trackIatHook(argv, { cwd: workspaceRoot });
+
+                const want = target.replaceAll("\\", "/").toLowerCase();
+
+                expect(result.accesses.some((a) => a.path.replaceAll("\\", "/").toLowerCase() === want && a.type === "write")).toBe(true);
+            },
+        );
     });
 
     describe("track on unsupported platform", () => {
