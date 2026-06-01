@@ -15,6 +15,13 @@ mod seccomp;
 #[cfg(target_os = "macos")]
 mod macos;
 
+// Windows file-access tracker — spawns the target suspended, injects the
+// `fspy_windows` DLL (IAT hooks) via CreateRemoteThread(LoadLibraryW), and
+// drains accesses off a named pipe. The DLL is a separate cdylib artifact
+// (native/fspy_windows), not linked here.
+#[cfg(target_os = "windows")]
+mod windows;
+
 pub use concurrent::*;
 pub use file_hasher::*;
 pub use graph::*;
@@ -26,3 +33,6 @@ pub use seccomp::*;
 
 #[cfg(target_os = "macos")]
 pub use macos::*;
+
+#[cfg(target_os = "windows")]
+pub use windows::*;

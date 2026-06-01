@@ -334,6 +334,31 @@ jobs:
                           "npm/$binding/fspy-macos.dylib"
                   fi
 
+            # Build the fspy_windows IAT-hook DLL for each MSVC target. Pure
+            # Rust (no Detours/vcpkg). The cdylib output is `fspy_windows.dll`
+            # (no `lib` prefix on Windows); it drops into the matching win32
+            # binding package so its `files` array publishes it.
+            - name: "Build fspy_windows DLL (all Windows)"
+              if: "contains(matrix.settings.target, 'windows')"
+              shell: "bash"
+              working-directory: "packages/tooling/task-runner"
+              env:
+                  TARGET: "${{ matrix.settings.target }}"
+              run: |
+                  rustup target add "$TARGET"
+                  cargo build \
+                      --manifest-path native/fspy_windows/Cargo.toml \
+                      --release \
+                      --target "$TARGET"
+                  case "$TARGET" in
+                    x86_64-pc-windows-msvc)   binding="win32-x64-msvc" ;;
+                    aarch64-pc-windows-msvc)  binding="win32-arm64-msvc" ;;
+                    *)                        binding="" ;;
+                  esac
+                  if [ -n "$binding" ]; then
+                      cp "native/fspy_windows/target/$TARGET/release/fspy_windows.dll" "npm/$binding/fspy-windows.dll"
+                  fi
+
             - name: "Build tui native"
               if: "steps.cache-tui.outputs.cache-hit != 'true'"
               run: "pnpm build:native --target ${{ matrix.settings.target }} ${{ matrix.settings.cross || '' }}"
@@ -391,6 +416,7 @@ jobs:
                       packages/tooling/task-runner/*.node
                       packages/tooling/task-runner/npm/linux-*/fspy-seccomp-helper
                       packages/tooling/task-runner/npm/darwin-*/fspy-macos.dylib
+                      packages/tooling/task-runner/npm/win32-*/fspy-windows.dll
                   if-no-files-found: "error"
 
             - name: "Upload tui artifact"

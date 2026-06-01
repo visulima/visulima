@@ -33,7 +33,22 @@ fspy-seccomp = { path = "./fspy_seccomp" }
 libc = "0.2.178"
 
 [target.'cfg(windows)'.dependencies]
-windows-sys = { version = "0.61", features = ["Win32_System_Console", "Win32_System_JobObjects", "Win32_System_Threading", "Win32_Foundation", "Win32_Security"] }
+windows-sys = { version = "0.61", features = [
+  "Win32_System_Console",
+  "Win32_System_JobObjects",
+  "Win32_System_Threading",
+  "Win32_Foundation",
+  "Win32_Security",
+  # Windows file-access tracker parent (native/src/windows.rs): suspended
+  # process creation + CreateRemoteThread(LoadLibraryW) DLL injection + a
+  # per-spawn named-pipe server that drains the injected fspy_windows DLL.
+  "Win32_System_Memory",
+  "Win32_System_LibraryLoader",
+  "Win32_System_Diagnostics_Debug",
+  "Win32_System_Pipes",
+  "Win32_Storage_FileSystem",
+  "Win32_System_IO",
+] }
 
 [build-dependencies]
 napi-build = "2"

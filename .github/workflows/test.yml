@@ -288,7 +288,7 @@ jobs:
                   # dirs (the .node moves above don't carry them). Without this,
                   # the seccomp + macOS-interpose integration tests can't find
                   # the helper/dylib and silently skip instead of validating.
-                  for sidecar in fspy-seccomp-helper fspy-macos.dylib; do
+                  for sidecar in fspy-seccomp-helper fspy-macos.dylib fspy-windows.dll; do
                       find artifacts -path "*/npm/*/$sidecar" -print0 2>/dev/null | while IFS= read -r -d "" f; do
                           binding="$(basename "$(dirname "$f")")"
                           mkdir -p "packages/tooling/task-runner/npm/$binding"
@@ -576,7 +576,7 @@ jobs:
                   # dirs (the .node moves above don't carry them). Without this,
                   # the seccomp + macOS-interpose integration tests can't find
                   # the helper/dylib and silently skip instead of validating.
-                  for sidecar in fspy-seccomp-helper fspy-macos.dylib; do
+                  for sidecar in fspy-seccomp-helper fspy-macos.dylib fspy-windows.dll; do
                       find artifacts -path "*/npm/*/$sidecar" -print0 2>/dev/null | while IFS= read -r -d "" f; do
                           binding="$(basename "$(dirname "$f")")"
                           mkdir -p "packages/tooling/task-runner/npm/$binding"
