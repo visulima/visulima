@@ -303,10 +303,16 @@ describe(injectServiceTasks, () => {
         expect(payload.cwd).toBe("/ws/packages/api");
         // Pre-existing env keys survive the rewrite.
         expect(payload.env.DATABASE_URL).toBe("postgres://127.0.0.1:5432");
+        // `env.PATH` is built by task-runner's `withEnhancedPath`, which now
+        // uses native OS separators (`\` + `;` on Windows) since it constructs
+        // a real `PATH` for a spawned process. Normalise to `/` so the
+        // assertions stay platform-agnostic.
+        const normalizedPath = payload.env.PATH.replaceAll("\\", "/");
+
         // Nearest .bin is first.
-        expect(payload.env.PATH).toMatch(/^\/ws\/packages\/api\/node_modules\/\.bin/u);
+        expect(normalizedPath).toMatch(/^\/ws\/packages\/api\/node_modules\/\.bin/u);
         // Workspace-root .bin is also in the chain.
-        expect(payload.env.PATH).toContain("/ws/node_modules/.bin");
+        expect(normalizedPath).toContain("/ws/node_modules/.bin");
     });
 
     it("rewrites each missing service's command to a node bootstrap invocation in ephemeral mode", () => {
