@@ -21,8 +21,16 @@ path = "src/bin/helper.rs"
 required-features = []
 
 [target.'cfg(target_os = "linux")'.dependencies]
-libseccomp-sys = "0.2"
-libc = "0.2"
+# Pure-Rust seccomp: libc has the structs (`seccomp_notif{,_resp,_sizes}`,
+# `sock_filter`, `BPF_STMT`/`BPF_JUMP`) and constants
+# (`SECCOMP_RET_USER_NOTIF`, `SECCOMP_FILTER_FLAG_NEW_LISTENER`, ...)
+# we need. The few that aren't exported by libc (the `SECCOMP_IOCTL_*`
+# ioctl numbers, `AUDIT_ARCH_*` per-arch identifiers, per-arch syscall
+# numbers) are computed/baked in `filter.rs` + `syscalls.rs`. Dropping
+# the libseccomp-sys dep removes the system-library link requirement
+# so the crate builds for every Linux target (gnu, musl, aarch64,
+# riscv64) with no C deps.
+libc = "0.2.178"
 # `socket` + `uio` swap our hand-rolled libc calls (socket, bind,
 # listen, accept, sendmsg/recvmsg with SCM_RIGHTS, process_vm_readv)
 # for safe nix wrappers — ~150 lines of `unsafe` → ~60 of safe code,

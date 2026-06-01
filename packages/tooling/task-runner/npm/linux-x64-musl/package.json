@@ -15,8 +15,8 @@
   },
   "main": "task-runner-native.linux-x64-musl.node",
   "files": [
-    "task-runner-native.linux-x64-musl.node",
-    "fspy-seccomp-helper"
+    "fspy-seccomp-helper",
+    "task-runner-native.linux-x64-musl.node"
   ],
   "engines": {
     "node": "^22.14.0 || >=24.10.0"

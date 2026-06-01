@@ -132,7 +132,7 @@ pub fn track_command(
     }
 
     let sock_path = mk_socket_path();
-    let listener = bind_listener(&sock_path)?;
+    let listener = bind_listener(&sock_path).map_err(|e| e)?;
     // Remove the socket file even on early-return paths.
     let _socket_cleanup = SocketCleanup(sock_path.clone());
 
@@ -156,7 +156,7 @@ pub fn track_command(
     command.stdout(Stdio::piped());
     command.stderr(Stdio::piped());
 
-    let mut child = command.spawn()?;
+    let mut child = command.spawn().map_err(|e| e)?;
 
     // Surface the PID immediately so callers can register the
     // helper for kill-on-abort. The PID survives the helper→target
@@ -175,7 +175,7 @@ pub fn track_command(
     // dies before connecting we'd otherwise block forever in accept).
     // The helper hands off once and execves; we never accept a
     // second connection.
-    let notify_fd = accept_and_recv_fd(&listener, &mut guard)?;
+    let notify_fd = accept_and_recv_fd(&listener, &mut guard).map_err(|e| e)?;
 
     // Past the accept handoff: from here on the helper is the target
     // process — let the regular wait below reap it instead of the

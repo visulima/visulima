@@ -69,18 +69,25 @@ const resolveSeccompHelperPath = (): string | undefined => {
         const here = dirname(fileURLToPath(import.meta.url));
         const cjsRequire = createRequire(import.meta.url);
 
-        // Production: the helper ships in the x86_64-linux-gnu
-        // binding package only. Other Linux bindings don't bundle
-        // it — cross-compiling libseccomp-sys for musl/aarch64
-        // isn't wired into the CI matrix yet, so those targets fall
-        // back to strace / no-tracking. See `Cargo.toml` for the
-        // `cfg(target_env = "gnu")` gate that mirrors this.
-        try {
-            const pkgJsonPath = cjsRequire.resolve("@visulima/task-runner-binding-linux-x64-gnu/package.json");
+        // Production: the helper ships in every Linux binding
+        // package (gnu, musl, x86_64, aarch64). Try each; whichever
+        // matches the host's arch/libc resolves cleanly, the others
+        // throw ERR_MODULE_NOT_FOUND and get skipped.
+        const bindingPackages = [
+            "@visulima/task-runner-binding-linux-x64-gnu",
+            "@visulima/task-runner-binding-linux-x64-musl",
+            "@visulima/task-runner-binding-linux-arm64-gnu",
+            "@visulima/task-runner-binding-linux-arm64-musl",
+        ];
 
-            candidates.push(join(dirname(pkgJsonPath), "fspy-seccomp-helper"));
-        } catch {
-            // Binding not installed for this host — no helper available.
+        for (const pkg of bindingPackages) {
+            try {
+                const pkgJsonPath = cjsRequire.resolve(`${pkg}/package.json`);
+
+                candidates.push(join(dirname(pkgJsonPath), "fspy-seccomp-helper"));
+            } catch {
+                // Binding not installed for this host — try the next.
+            }
         }
 
         // Source tree fallback (`pnpm build:native:debug` output).

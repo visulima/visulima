@@ -4,11 +4,9 @@ mod graph;
 mod task_hasher;
 mod worktree;
 
-// Match the `fspy-seccomp` dep gate in `Cargo.toml`: glibc Linux
-// only. musl/aarch64 cross-targets skip the dispatch — TS
-// gracefully falls back to strace / no-tracking when
-// `trackWithSeccomp` is absent.
-#[cfg(all(target_os = "linux", target_env = "gnu"))]
+// Pure-Rust seccomp_unotify implementation works on every Linux
+// target (gnu, musl, aarch64, riscv64) — no system libraries.
+#[cfg(target_os = "linux")]
 mod seccomp;
 
 pub use concurrent::*;
@@ -17,5 +15,5 @@ pub use graph::*;
 pub use task_hasher::*;
 pub use worktree::*;
 
-#[cfg(all(target_os = "linux", target_env = "gnu"))]
+#[cfg(target_os = "linux")]
 pub use seccomp::*;

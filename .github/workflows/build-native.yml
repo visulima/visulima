@@ -164,7 +164,7 @@ jobs:
               with:
                   path: |
                       packages/tooling/task-runner/*.node
-                      packages/tooling/task-runner/npm/linux-x64-gnu/fspy-seccomp-helper
+                      packages/tooling/task-runner/npm/linux-*/fspy-seccomp-helper
                   key: "native-task-runner-${{ matrix.settings.target }}-zig0.14.1-${{ hashFiles('rust-toolchain.toml', 'packages/tooling/task-runner/native/Cargo.toml', 'packages/tooling/task-runner/native/Cargo.lock', 'packages/tooling/task-runner/native/build.rs', 'packages/tooling/task-runner/native/src/**', 'packages/tooling/task-runner/native/fspy_seccomp/Cargo.toml', 'packages/tooling/task-runner/native/fspy_seccomp/Cargo.lock', 'packages/tooling/task-runner/native/fspy_seccomp/src/**') }}"
 
             - name: "Restore tui native build cache"
@@ -251,34 +251,36 @@ jobs:
               run: "pnpm build:native --target ${{ matrix.settings.target }} ${{ matrix.settings.cross || '' }}"
               working-directory: "packages/tooling/task-runner"
 
-            # libseccomp-dev for the seccomp dispatch dep. Only the
-            # x86_64-linux-gnu target gets it — cargo-zigbuild can't
-            # cross-compile libseccomp-sys into musl/aarch64 sysroots
-            # without bespoke setup, so those targets skip fspy_seccomp
-            # entirely (gated via `cfg(target_env = "gnu")` in
-            # `native/Cargo.toml`). The Alpine CI job covers the musl
-            # path natively.
-            - name: "Install libseccomp-dev (x86_64-linux-gnu only)"
-              if: "matrix.settings.target == 'x86_64-unknown-linux-gnu'"
-              shell: "bash"
-              run: "sudo apt-get update && sudo apt-get install -y libseccomp-dev"
-
-            # Build the fspy-seccomp-helper sidecar binary. Same gate
-            # as the dep — x86_64-linux-gnu only. The other Linux
-            # binding packages don't get a helper; the TS resolver
-            # only searches the gnu binding (see file-access-tracker.ts).
-            - name: "Build fspy-seccomp-helper (x86_64-linux-gnu only)"
-              if: "matrix.settings.target == 'x86_64-unknown-linux-gnu'"
+            # Build the fspy-seccomp-helper sidecar binary for every
+            # Linux target. Pure-Rust seccomp (no libseccomp dep), so
+            # cargo-zigbuild can cross-compile all four triples without
+            # extra sysroot setup. Each output drops into the matching
+            # binding package so its `files` array publishes it.
+            - name: "Build fspy-seccomp-helper (all Linux)"
+              if: "contains(matrix.settings.target, 'linux')"
               shell: "bash"
               working-directory: "packages/tooling/task-runner"
+              env:
+                  TARGET: "${{ matrix.settings.target }}"
               run: |
-                  cargo build \
+                  rustup target add "$TARGET"
+                  cargo zigbuild \
                       --manifest-path native/fspy_seccomp/Cargo.toml \
                       --bin fspy-seccomp-helper \
-                      --release
-                  install -m 0755 \
-                      "native/fspy_seccomp/target/release/fspy-seccomp-helper" \
-                      "npm/linux-x64-gnu/fspy-seccomp-helper"
+                      --release \
+                      --target "$TARGET"
+                  case "$TARGET" in
+                    x86_64-unknown-linux-gnu)    binding="linux-x64-gnu" ;;
+                    x86_64-unknown-linux-musl)   binding="linux-x64-musl" ;;
+                    aarch64-unknown-linux-gnu)   binding="linux-arm64-gnu" ;;
+                    aarch64-unknown-linux-musl)  binding="linux-arm64-musl" ;;
+                    *)                           binding="" ;;
+                  esac
+                  if [ -n "$binding" ]; then
+                      install -m 0755 \
+                          "native/fspy_seccomp/target/$TARGET/release/fspy-seccomp-helper" \
+                          "npm/$binding/fspy-seccomp-helper"
+                  fi
 
             - name: "Build tui native"
               if: "steps.cache-tui.outputs.cache-hit != 'true'"
@@ -304,7 +306,7 @@ jobs:
               with:
                   path: |
                       packages/tooling/task-runner/*.node
-                      packages/tooling/task-runner/npm/linux-x64-gnu/fspy-seccomp-helper
+                      packages/tooling/task-runner/npm/linux-*/fspy-seccomp-helper
                   key: "${{ steps.cache-task-runner.outputs.cache-primary-key }}"
 
             - name: "Save tui native build cache"
@@ -335,7 +337,7 @@ jobs:
                   name: "bindings-task-runner-${{ matrix.settings.target }}"
                   path: |
                       packages/tooling/task-runner/*.node
-                      packages/tooling/task-runner/npm/linux-x64-gnu/fspy-seccomp-helper
+                      packages/tooling/task-runner/npm/linux-*/fspy-seccomp-helper
                   if-no-files-found: "error"
 
             - name: "Upload tui artifact"

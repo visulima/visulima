@@ -1,71 +1,103 @@
 //! Syscall metadata + per-call decoders. Each handler maps one
 //! seccomp notification to zero or more `FileAccess` entries.
 //!
-//! libseccomp resolves syscall names per-arch at filter-install
-//! time, so we carry canonical Linux names (strings) rather than
-//! baking raw numbers that differ across x86_64 / aarch64 /
-//! riscv64. Step 3 of `rfc/design-fspy-seccomp-unotify.md` —
-//! complete syscall table covering reads, writes, stats, readdir.
+//! Per-arch syscall numbers baked in here (we used to delegate to
+//! libseccomp's name resolver, but dropping the libseccomp-sys dep
+//! to support musl/aarch64 cross-compile means we carry the table
+//! ourselves now). Each `TrackedSyscall` records its name plus the
+//! nr on each supported arch; `nr()` picks the one that matches the
+//! current build target. Syscalls that don't exist on a given arch
+//! (e.g. legacy `open`/`stat`/`unlink` on aarch64) are `None` there
+//! and skipped at filter-install time.
 
 use std::path::PathBuf;
 
-use libseccomp_sys::{seccomp_arch_native, seccomp_notif, seccomp_syscall_resolve_num_arch};
+use libc::seccomp_notif;
 
 use crate::peer;
 use crate::{AccessKind, FileAccess};
 
-/// One row of the seccomp filter table. The supervisor walks this
-/// list to register `SCMP_ACT_NOTIFY` rules; `classify` does the
-/// matching post-notification work.
+/// One row of the seccomp filter table. `name` is informational
+/// only — used for dispatch in `classify` and for diagnostics.
 #[derive(Debug, Clone, Copy)]
 pub struct TrackedSyscall {
-    /// Canonical Linux syscall name. Resolved per-arch via
-    /// `seccomp_syscall_resolve_name_arch` at filter-install time.
-    /// Skipped silently when libseccomp doesn't know the name on
-    /// the current arch (e.g. `openat2` on older toolchains).
     pub name: &'static str,
+    /// x86_64 syscall number (from `<asm/unistd_64.h>`).
+    /// `None` means this syscall doesn't exist on x86_64.
+    /// `dead_code` because only the field matching the build
+    /// target's arch is read by `nr()`.
+    #[allow(dead_code)]
+    x86_64: Option<i32>,
+    /// aarch64 syscall number (from `<asm/unistd.h>`).
+    /// `None` means this syscall doesn't exist on aarch64.
+    /// aarch64 dropped many legacy calls (open, stat, unlink, ...);
+    /// their userspace shims call the *at variants instead.
+    #[allow(dead_code)]
+    aarch64: Option<i32>,
 }
 
-/// The full set we intercept. Order doesn't matter for filter
-/// install; the dispatch in `classify` matches by name.
+impl TrackedSyscall {
+    /// Resolve the syscall number for the current build target.
+    /// Returns `None` when the syscall isn't available on this arch.
+    pub fn nr(&self) -> Option<i32> {
+        #[cfg(target_arch = "x86_64")]
+        return self.x86_64;
+        #[cfg(target_arch = "aarch64")]
+        return self.aarch64;
+        #[cfg(not(any(target_arch = "x86_64", target_arch = "aarch64")))]
+        return None;
+    }
+}
+
+/// Convenience for declaring a row with a single shared name and
+/// per-arch numbers.
+const fn s(name: &'static str, x86_64: Option<i32>, aarch64: Option<i32>) -> TrackedSyscall {
+    TrackedSyscall { name, x86_64, aarch64 }
+}
+
+/// Per-arch numbers verified against:
+/// - x86_64: `arch/x86/entry/syscalls/syscall_64.tbl`
+/// - aarch64: `include/uapi/asm-generic/unistd.h`
+static TRACKED: &[TrackedSyscall] = &[
+    // Open / read funnel
+    s("openat", Some(257), Some(56)),
+    s("openat2", Some(437), Some(437)),
+    s("open", Some(2), None), // legacy; aarch64 uses openat
+    // Stat family
+    s("stat", Some(4), None),
+    s("lstat", Some(6), None),
+    s("newfstatat", Some(262), Some(79)),
+    s("statx", Some(332), Some(291)),
+    s("access", Some(21), None),
+    s("faccessat", Some(269), Some(48)),
+    s("faccessat2", Some(439), Some(439)),
+    // Directory enumeration
+    s("getdents64", Some(217), Some(61)),
+    // Symlinks
+    s("readlink", Some(89), None),
+    s("readlinkat", Some(267), Some(78)),
+    // Writes — create / delete / rename / link
+    s("unlink", Some(87), None),
+    s("unlinkat", Some(263), Some(35)),
+    s("rename", Some(82), None),
+    s("renameat", Some(264), Some(38)),
+    s("renameat2", Some(316), Some(276)),
+    s("mkdir", Some(83), None),
+    s("mkdirat", Some(258), Some(34)),
+    s("rmdir", Some(84), None),
+    s("symlink", Some(88), None),
+    s("symlinkat", Some(266), Some(36)),
+    s("link", Some(86), None),
+    s("linkat", Some(265), Some(37)),
+    // cwd shifts (no recorded access, but the supervisor needs
+    // to see them so future arg resolution stays accurate)
+    s("chdir", Some(80), Some(49)),
+    s("fchdir", Some(81), Some(50)),
+];
+
+/// The full set we intercept.
 pub fn tracked() -> &'static [TrackedSyscall] {
-    &[
-        // Open / read funnel
-        TrackedSyscall { name: "openat" },
-        TrackedSyscall { name: "openat2" },
-        TrackedSyscall { name: "open" },
-        // Stat family
-        TrackedSyscall { name: "stat" },
-        TrackedSyscall { name: "lstat" },
-        TrackedSyscall { name: "fstatat" },
-        TrackedSyscall { name: "newfstatat" },
-        TrackedSyscall { name: "statx" },
-        TrackedSyscall { name: "access" },
-        TrackedSyscall { name: "faccessat" },
-        TrackedSyscall { name: "faccessat2" },
-        // Directory enumeration
-        TrackedSyscall { name: "getdents64" },
-        // Symlinks
-        TrackedSyscall { name: "readlink" },
-        TrackedSyscall { name: "readlinkat" },
-        // Writes — create / delete / rename / link
-        TrackedSyscall { name: "unlink" },
-        TrackedSyscall { name: "unlinkat" },
-        TrackedSyscall { name: "rename" },
-        TrackedSyscall { name: "renameat" },
-        TrackedSyscall { name: "renameat2" },
-        TrackedSyscall { name: "mkdir" },
-        TrackedSyscall { name: "mkdirat" },
-        TrackedSyscall { name: "rmdir" },
-        TrackedSyscall { name: "symlink" },
-        TrackedSyscall { name: "symlinkat" },
-        TrackedSyscall { name: "link" },
-        TrackedSyscall { name: "linkat" },
-        // cwd shifts (no recorded access, but the supervisor needs
-        // to see them so future arg resolution stays accurate)
-        TrackedSyscall { name: "chdir" },
-        TrackedSyscall { name: "fchdir" },
-    ]
+    TRACKED
 }
 
 /// Decode `openat`-style flags into the resulting access kind.
@@ -89,24 +121,26 @@ pub fn openat_kind_from_flags(flags: u64) -> AccessKind {
 /// per-syscall arms handle their own arg layout; everything routes
 /// through `peer::read_path` and `peer::resolve_at` for the actual
 /// child-memory inspection.
+///
+/// Non-`*at` syscalls (`open`, `stat`, `unlink`, ...) take a
+/// raw `*pathname` arg. We route them through `decode_direct`
+/// which resolves via `resolve_at(pid, AT_FDCWD, &raw)` — same
+/// path the `*at` variants get. Without this, `open("foo")`
+/// would record `foo` while `openat(AT_FDCWD, "foo")` records
+/// `/cwd/foo`, leaving downstream consumers with a mix of
+/// relative and absolute paths for equivalent operations.
 pub fn classify(notif: &seccomp_notif, pid: i32) -> Vec<FileAccess> {
-    let arch = unsafe { seccomp_arch_native() };
-    let name_ptr = unsafe { seccomp_syscall_resolve_num_arch(arch, notif.data.nr) };
-    if name_ptr.is_null() {
+    // Map the notif's nr back to a TrackedSyscall by walking the
+    // table. The table is small (~25 entries) and the dispatch
+    // runs once per notification, so linear search is fine.
+    let nr = notif.data.nr;
+    let Some(entry) = tracked().iter().find(|s| s.nr() == Some(nr)) else {
         return Vec::new();
-    }
-    let name = unsafe { std::ffi::CStr::from_ptr(name_ptr) }.to_string_lossy();
+    };
 
     let args = &notif.data.args;
 
-    // Non-`*at` syscalls (`open`, `stat`, `unlink`, ...) take a
-    // raw `*pathname` arg. We route them through `decode_direct`
-    // which now resolves via `resolve_at(pid, AT_FDCWD, &raw)` —
-    // same path the `*at` variants get. Without this, `open("foo")`
-    // would record `foo` while `openat(AT_FDCWD, "foo")` records
-    // `/cwd/foo`, leaving downstream consumers with a mix of
-    // relative and absolute paths for equivalent operations.
-    match name.as_ref() {
+    match entry.name {
         // (dirfd, *pathname, flags, mode)
         "openat" | "openat2" => decode_at_with_flags(pid, args[0] as i32, args[1], args[2]),
         // (*pathname, flags, mode)
@@ -122,7 +156,7 @@ pub fn classify(notif: &seccomp_notif, pid: i32) -> Vec<FileAccess> {
         // (*pathname, mode)
         "access" => decode_direct(pid, args[0], AccessKind::Stat),
         // (dirfd, *pathname, *statbuf, flags)
-        "fstatat" | "newfstatat" => decode_at(pid, args[0] as i32, args[1], AccessKind::Stat),
+        "newfstatat" => decode_at(pid, args[0] as i32, args[1], AccessKind::Stat),
         // (dirfd, *pathname, mode[, flags])
         "faccessat" | "faccessat2" => decode_at(pid, args[0] as i32, args[1], AccessKind::Stat),
         // (dirfd, *pathname, flags, mask, *buf)
@@ -151,8 +185,7 @@ pub fn classify(notif: &seccomp_notif, pid: i32) -> Vec<FileAccess> {
         // (*target, dirfd, *linkpath)
         "symlinkat" => decode_at(pid, args[1] as i32, args[2], AccessKind::Write),
         // chdir / fchdir don't record an access today — they only
-        // matter as cwd-cache invalidation triggers, which step 4
-        // will wire when per-pid cwd caching lands.
+        // matter as cwd-cache invalidation triggers (future work).
         "chdir" | "fchdir" => Vec::new(),
         _ => Vec::new(),
     }
@@ -177,7 +210,9 @@ fn decode_at(pid: i32, dirfd: i32, addr: u64, kind: AccessKind) -> Vec<FileAcces
 
 fn decode_at_with_flags(pid: i32, dirfd: i32, addr: u64, flags: u64) -> Vec<FileAccess> {
     match peer::read_path(pid, addr) {
-        Ok(raw) => vec![FileAccess { path: peer::resolve_at(pid, dirfd, &raw), kind: openat_kind_from_flags(flags) }],
+        Ok(raw) => {
+            vec![FileAccess { path: peer::resolve_at(pid, dirfd, &raw), kind: openat_kind_from_flags(flags) }]
+        }
         Err(_) => Vec::new(),
     }
 }
