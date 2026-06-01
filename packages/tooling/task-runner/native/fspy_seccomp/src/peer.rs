@@ -74,6 +74,24 @@ pub fn read_path(pid: i32, addr: u64) -> io::Result<PathBuf> {
     Err(io::Error::new(io::ErrorKind::InvalidData, "path exceeds PATH_MAX without terminating NUL"))
 }
 
+/// Read a single little-endian `u64` from `pid`'s address space at
+/// `addr`. Used to pull `open_how.flags` for `openat2`, whose flags
+/// live in a struct pointed to by the syscall arg rather than in the
+/// arg register itself.
+pub fn read_u64(pid: i32, addr: u64) -> io::Result<u64> {
+    let target = Pid::from_raw(pid);
+    let mut buf = [0u8; 8];
+    let mut local = [IoSliceMut::new(&mut buf)];
+    let remote = [RemoteIoVec { base: addr as usize, len: 8 }];
+
+    let n = process_vm_readv(target, &mut local, &remote).map_err(|e| io::Error::from_raw_os_error(e as i32))?;
+    if n < 8 {
+        return Err(io::Error::new(io::ErrorKind::UnexpectedEof, "short read for u64"));
+    }
+
+    Ok(u64::from_le_bytes(buf))
+}
+
 /// Resolve `pid`'s current working directory via the
 /// `/proc/<pid>/cwd` magic symlink.
 pub fn cwd_of(pid: i32) -> io::Result<PathBuf> {

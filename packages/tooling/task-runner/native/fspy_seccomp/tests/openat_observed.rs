@@ -8,7 +8,7 @@
 
 #![cfg(target_os = "linux")]
 
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 use fspy_seccomp::{track_command, AccessKind, SpawnOptions};
 
@@ -22,18 +22,28 @@ fn helper_path() -> PathBuf {
 
 #[test]
 fn observes_openat_from_cat() {
+    // Use a temp file we create ourselves rather than a host file
+    // like `/etc/hostname` — the latter isn't guaranteed present on
+    // every valid Linux environment, which would fail the test even
+    // when tracking is correct. `cat` is resolved via PATH by the
+    // helper's execvp (works on both FHS and busybox layouts).
+    let target = std::env::temp_dir().join(format!("fspy-openat-{}.txt", std::process::id()));
+    std::fs::write(&target, b"hello").expect("write tmp file");
+
     let result = track_command(
-        &["cat".to_string(), "/etc/hostname".to_string()],
+        &["cat".to_string(), target.to_string_lossy().into_owned()],
         &helper_path(),
         &SpawnOptions::default(),
         None,
     )
     .expect("track_command should succeed on this Linux host");
 
+    let _ = std::fs::remove_file(&target);
+
     assert_eq!(
         result.exit_code,
         0,
-        "cat /etc/hostname should exit 0, got {} (accesses captured: {})",
+        "cat <tmpfile> should exit 0, got {} (accesses captured: {})",
         result.exit_code,
         result.accesses.len(),
     );
@@ -42,14 +52,15 @@ fn observes_openat_from_cat() {
 
     assert!(!reads.is_empty(), "expected at least one Read access, got {} accesses total", result.accesses.len(),);
 
-    // Path-resolution check: the child opened `/etc/hostname`
+    // Path-resolution check: the child opened our temp file
     // explicitly. After process_vm_readv it should appear verbatim
     // in the observed accesses.
-    let saw_target = result.accesses.iter().any(|a| a.path == Path::new("/etc/hostname"));
+    let saw_target = result.accesses.iter().any(|a| a.path == target);
 
     assert!(
         saw_target,
-        "expected /etc/hostname in resolved accesses, got: {:?}",
+        "expected {} in resolved accesses, got: {:?}",
+        target.display(),
         result.accesses.iter().map(|a| &a.path).collect::<Vec<_>>(),
     );
 }

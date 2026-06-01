@@ -141,8 +141,19 @@ pub fn classify(notif: &seccomp_notif, pid: i32) -> Vec<FileAccess> {
     let args = &notif.data.args;
 
     match entry.name {
-        // (dirfd, *pathname, flags, mode)
-        "openat" | "openat2" => decode_at_with_flags(pid, args[0] as i32, args[1], args[2]),
+        // openat(dirfd, *pathname, flags, mode) — flags is arg2.
+        "openat" => decode_at_with_flags(pid, args[0] as i32, args[1], args[2]),
+        // openat2(dirfd, *pathname, *open_how, size) — arg2 is a
+        // POINTER to `struct open_how { __u64 flags; ... }`, not the
+        // flags themselves. Read the first u64 (flags) from the
+        // child's address space; fall back to Read if the read fails
+        // (a write misclassified as read is safer than treating a
+        // random pointer's bits as a flag mask).
+        "openat2" => {
+            let flags = peer::read_u64(pid, args[2]).unwrap_or(0);
+
+            decode_at_with_flags(pid, args[0] as i32, args[1], flags)
+        }
         // (*pathname, flags, mode)
         "open" => match peer::read_path(pid, args[0]) {
             Ok(path) => vec![FileAccess {

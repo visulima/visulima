@@ -43,15 +43,27 @@ use crate::syscalls::TrackedSyscall;
 const SECCOMP_RET_KILL_THREAD: c_uint = 0x0000_0000;
 
 /// `AUDIT_ARCH_*` aren't in libc. Hard-coded per arch from
-/// `<linux/audit.h>`. Add more entries when porting to a new arch.
+/// `<linux/audit.h>`. Only arches that ALSO have a populated
+/// syscall-number table in `syscalls.rs` are listed — otherwise
+/// the filter would build a no-op tracker (every syscall resolves
+/// to `None`, so nothing is intercepted). A new arch needs BOTH a
+/// constant here and its numbers in `syscalls.rs`.
 #[cfg(target_arch = "x86_64")]
 const NATIVE_AUDIT_ARCH: c_uint = 0xc000_003e;
 
 #[cfg(target_arch = "aarch64")]
 const NATIVE_AUDIT_ARCH: c_uint = 0xc000_00b7;
 
-#[cfg(target_arch = "riscv64")]
-const NATIVE_AUDIT_ARCH: c_uint = 0xc000_00f3;
+// Gate unsupported arches at compile time rather than shipping a
+// silent no-op. riscv64 has an AUDIT_ARCH (0xc000_00f3) but no
+// syscall table yet — add the numbers to `syscalls.rs::TRACKED`
+// and a const above before enabling it.
+#[cfg(not(any(target_arch = "x86_64", target_arch = "aarch64")))]
+compile_error!(
+    "fspy_seccomp: unsupported target_arch — only x86_64 and aarch64 \
+     have syscall tables. Populate syscalls.rs::TRACKED and add an \
+     AUDIT_ARCH constant in filter.rs before building this target."
+);
 
 /// Build and install a seccomp filter that traps the given
 /// syscalls for user-notify and allows everything else. Returns
