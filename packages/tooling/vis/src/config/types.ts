@@ -148,6 +148,7 @@ export interface ProjectJson {
     language?: string;
     /** Project layer, used for constraint inheritance and query filtering. */
     layer?: "application" | "automation" | "configuration" | "library" | "scaffolding" | "tool";
+
     /**
      * Project name. When set, takes precedence over `package.json#name`
      * as the project's identity in the workspace graph and CLI filters.
@@ -250,20 +251,6 @@ export interface VisConfig {
     codeowners?: CodeownersConfig;
 
     /**
-     * Default base branch used by `vis affected`, `vis ci`, and `vis run --affected`
-     * when no explicit `--base` is passed and no CI smart-resolver fires.
-     *
-     * Resolved as `origin/<defaultBase>` against the local clone; should be a
-     * branch name (not a fully-qualified ref) such as `main`, `master`, or `trunk`.
-     * Falls back to `main` when omitted.
-     *
-     * Migrated automatically from `nx.json#affected.defaultBase` /
-     * `nx.json#defaultBase` by `vis migrate nx`.
-     * @default "main"
-     */
-    defaultBase?: string;
-
-    /**
      * Project dependency constraints.
      * Enforced after building the project graph, before running tasks.
      */
@@ -343,6 +330,20 @@ export interface VisConfig {
          */
         templates?: Record<string, string>;
     };
+
+    /**
+     * Default base branch used by `vis affected`, `vis ci`, and `vis run --affected`
+     * when no explicit `--base` is passed and no CI smart-resolver fires.
+     *
+     * Resolved as `origin/&lt;defaultBase>` against the local clone; should be a
+     * branch name (not a fully-qualified ref) such as `main`, `master`, or `trunk`.
+     * Falls back to `main` when omitted.
+     *
+     * Migrated automatically from `nx.json#affected.defaultBase` /
+     * `nx.json#defaultBase` by `vis migrate nx`.
+     * @default "main"
+     */
+    defaultBase?: string;
 
     /**
      * Discover `.editorconfig` for indent / line-ending defaults during

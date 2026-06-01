@@ -120,7 +120,7 @@ const INSTALL_COMMAND: Record<"ci" | "tty", Record<LockfilePackageManager, strin
  */
 const MTIME_SKEW_MS = 1000;
 
-const detectPackageManager = (workspaceRoot: string): { lockfileFile: string; manager: LockfilePackageManager } | undefined => {
+export const detectPackageManager = (workspaceRoot: string): { lockfileFile: string; manager: LockfilePackageManager } | undefined => {
     for (const [manager, files] of Object.entries(LOCKFILE_FILES_BY_MANAGER) as [LockfilePackageManager, string[]][]) {
         for (const file of files) {
             if (existsSync(join(workspaceRoot, file))) {

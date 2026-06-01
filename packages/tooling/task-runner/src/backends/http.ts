@@ -428,10 +428,7 @@ class HttpRemoteCache implements RemoteCacheBackend {
             });
 
             if (!response.ok) {
-                this.#onUploadError?.(
-                    actionDigest.hash,
-                    new Error(`remote cache PUT ${actionDigest.hash} returned HTTP ${response.status}`),
-                );
+                this.#onUploadError?.(actionDigest.hash, new Error(`remote cache PUT ${actionDigest.hash} returned HTTP ${response.status}`));
 
                 return false;
             }
@@ -468,6 +465,7 @@ class HttpRemoteCache implements RemoteCacheBackend {
 
         for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt += 1) {
             try {
+                // eslint-disable-next-line no-await-in-loop -- sequential by design: each retry attempt must complete before the next
                 const response = await fetch(url, {
                     ...init,
                     signal: AbortSignal.timeout(this.#timeout),
@@ -478,7 +476,7 @@ class HttpRemoteCache implements RemoteCacheBackend {
                 }
 
                 const retryAfter = response.headers.get("retry-after");
-                let delay = BASE_DELAY_MS * (2 ** attempt);
+                let delay = BASE_DELAY_MS * 2 ** attempt;
 
                 if (retryAfter !== null) {
                     const parsed = Number.parseInt(retryAfter, 10);
@@ -488,6 +486,7 @@ class HttpRemoteCache implements RemoteCacheBackend {
                     }
                 }
 
+                // eslint-disable-next-line no-await-in-loop -- sequential by design: retry backoff delay before the next attempt
                 await new Promise((resolve) => {
                     setTimeout(resolve, delay);
                 });
@@ -500,14 +499,19 @@ class HttpRemoteCache implements RemoteCacheBackend {
                     throw error;
                 }
 
+                // eslint-disable-next-line no-await-in-loop -- sequential by design: retry backoff delay before the next attempt
                 await new Promise((resolve) => {
-                    setTimeout(resolve, BASE_DELAY_MS * (2 ** attempt));
+                    setTimeout(resolve, BASE_DELAY_MS * 2 ** attempt);
                 });
             }
         }
 
         // Unreachable: the loop always either returns or throws.
-        throw (lastError ?? new Error("remote cache request exhausted retries"));
+        if (lastError instanceof Error) {
+            throw lastError;
+        }
+
+        throw new Error("remote cache request exhausted retries", lastError === undefined ? undefined : { cause: lastError });
     }
 
     #buildUrl(path: string): string {

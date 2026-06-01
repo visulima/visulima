@@ -163,6 +163,9 @@
 "package: task-runner":
     - changed-files:
           - any-glob-to-any-file: "packages/tooling/task-runner/**/*"
+"package: task-runner-client":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/task-runner-client/**/*"
 "package: task-runner/darwin-arm64":
     - changed-files:
           - any-glob-to-any-file: "packages/tooling/task-runner/npm/darwin-arm64/**/*"

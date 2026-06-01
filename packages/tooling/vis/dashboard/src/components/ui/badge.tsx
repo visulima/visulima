@@ -34,7 +34,7 @@ export type BadgeProps = React.HTMLAttributes<HTMLSpanElement> & VariantProps<ty
  */
 const Badge = ({ children, className, variant, ...props }: BadgeProps) => (
     <span className={cn(badgeVariants({ variant }), className)} {...props}>
-        { }
+        {}
 [
 {children}
 ]

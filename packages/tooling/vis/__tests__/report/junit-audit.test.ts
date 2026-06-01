@@ -16,7 +16,7 @@ const vuln = (overrides: Partial<SecurityVulnerability> = {}): SecurityVulnerabi
     };
 };
 
-const countMatches = (xml: string, pattern: RegExp): number => (xml.match(pattern) ?? []).length;
+const countMatches = (xml: string, pattern: RegExp): number => [...xml.matchAll(pattern)].length;
 
 describe(emitJUnitAudit, () => {
     it("always emits a root <testsuites> element and the vulnerabilities suite", () => {
@@ -66,7 +66,7 @@ describe(emitJUnitAudit, () => {
         expect(xml).toContain("type=\"MEDIUM\"");
     });
 
-    it("CDATA-escapes embedded ]]> sequences in advisory summaries", () => {
+    it("cDATA-escapes embedded ]]> sequences in advisory summaries", () => {
         expect.assertions(2);
 
         const findings = [
@@ -105,9 +105,7 @@ describe(emitJUnitAudit, () => {
     it("adds a separate <testsuite name=\"policies\"> only when policy decisions exist", () => {
         expect.assertions(2);
 
-        const decisions: PolicyDecision[] = [
-            { packageName: "evil-pkg", policy: "malware", reason: "Detected malware", severity: "block", version: "1.0.0" },
-        ];
+        const decisions: PolicyDecision[] = [{ packageName: "evil-pkg", policy: "malware", reason: "Detected malware", severity: "block", version: "1.0.0" }];
         const xml = emitJUnitAudit({ findings: [], policyDecisions: decisions });
         const xmlNoPolicies = emitJUnitAudit({ findings: [] });
 
@@ -146,9 +144,7 @@ describe(emitJUnitAudit, () => {
             { acknowledged: false, packageName: "a", packageVersion: "1.0.0", vulnerability: vuln({ id: "GHSA-1" }) },
             { acknowledged: true, packageName: "b", packageVersion: "1.0.0", vulnerability: vuln({ id: "GHSA-2" }) },
         ];
-        const decisions: PolicyDecision[] = [
-            { packageName: "evil-pkg", policy: "malware", reason: "Detected malware", severity: "block", version: "1.0.0" },
-        ];
+        const decisions: PolicyDecision[] = [{ packageName: "evil-pkg", policy: "malware", reason: "Detected malware", severity: "block", version: "1.0.0" }];
         const xml = emitJUnitAudit({ findings, policyDecisions: decisions });
 
         expect(xml).toMatch(/<testsuites[^>]*\stests="3"/);

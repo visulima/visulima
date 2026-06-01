@@ -9,7 +9,7 @@ import type { EcosystemUpdate } from "./types";
  */
 export interface ApplyResult {
     readonly applied: EcosystemUpdate[];
-    readonly skipped: { update: EcosystemUpdate; reason: string }[];
+    readonly skipped: { reason: string; update: EcosystemUpdate }[];
 }
 
 /**
@@ -92,7 +92,7 @@ export const applyEcosystemUpdates = (updates: EcosystemUpdate[]): ApplyResult =
 
             const originalIndex = line.indexOf(update.original);
 
-            if (originalIndex < 0) {
+            if (originalIndex === -1) {
                 // The file has drifted since the scan (most likely a
                 // formatter rewrote it). Skip rather than corrupt the
                 // file with a misaligned rewrite.

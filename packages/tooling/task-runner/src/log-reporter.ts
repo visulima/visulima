@@ -32,9 +32,10 @@ export type LogMode = "grouped" | "interleaved" | "labeled";
  */
 export type ColorMode = "always" | "auto" | "never";
 
-const ANSI_ESCAPE_PATTERN = /[][[\]()#;?]*(?:(?:(?:(?:;[-a-zA-Z\d/#&.:=?%@~_]+)*|[a-zA-Z\d]+(?:;[-a-zA-Z\d/#&.:=?%@~_]*)*)?)|(?:(?:\d{1,4}(?:;\d{0,4})*)?[\dA-PR-TZcf-nq-uy=><~]))/g;
+// eslint-disable-next-line no-control-regex, sonarjs/no-control-regex, sonarjs/regex-complexity -- ANSI escape sequence matching: \x1b (CSI/OSC introducer) and \x07 (BEL/OSC terminator) are intentional control chars; this is the standard ANSI-stripping pattern and cannot be simplified without dropping coverage
+const ANSI_ESCAPE_PATTERN = /[][[\]()#;?]*(?:(?:(?:;[-\w/#&.:=?%@~]+)+|[a-zA-Z\d]+(?:;[-\w/#&.:=?%@~]*)*)?|(?:\d{1,4}(?:;\d{0,4})*)?[\dA-PR-TZcf-nq-uy=><~])/g;
 
-const stripAnsi = (input: string): string => input.replace(ANSI_ESCAPE_PATTERN, "");
+const stripAnsi = (input: string): string => input.replaceAll(ANSI_ESCAPE_PATTERN, "");
 
 const detectColorSupport = (): boolean => {
     if (process.env["NO_COLOR"] !== undefined && process.env["NO_COLOR"] !== "") {
@@ -49,7 +50,7 @@ const detectColorSupport = (): boolean => {
         return false;
     }
 
-    return Boolean(process.stdout.isTTY);
+    return process.stdout.isTTY ?? false;
 };
 
 const formatTaskLabel = (task: Task): string => `${task.target.project}#${task.target.target}`;
@@ -84,11 +85,7 @@ export class LogReporter implements LifeCycleInterface {
 
     readonly #stripColor: boolean;
 
-    public constructor(
-        mode: LogMode,
-        write: (chunk: string) => void = (chunk) => process.stdout.write(chunk),
-        color: ColorMode = "auto",
-    ) {
+    public constructor(mode: LogMode, write: (chunk: string) => void = (chunk) => process.stdout.write(chunk), color: ColorMode = "auto") {
         this.#mode = mode;
         this.#write = write;
         // Resolve once at construction so a stable destination is treated
@@ -135,5 +132,4 @@ export class LogReporter implements LifeCycleInterface {
  * Consumers that already compose their own lifecycle handlers can instantiate
  * {@link LogReporter} directly.
  */
-export const createLogReporter = (mode: LogMode, write?: (chunk: string) => void, color?: ColorMode): LogReporter =>
-    new LogReporter(mode, write, color);
+export const createLogReporter = (mode: LogMode, write?: (chunk: string) => void, color?: ColorMode): LogReporter => new LogReporter(mode, write, color);

@@ -262,6 +262,21 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
             store.endTasks(results);
         },
 
+        printCacheDisabledByTask(task: Task): void {
+            // Surface the skip in the task's output buffer (shown in the
+            // TUI output panel) — appending is layout-safe, unlike writing
+            // to stdout while the React tree is mounted.
+            store.addOutput(task.id, "ⓘ caching disabled by task via disableCache()\n");
+        },
+
+        printEmptyFingerprintWarning(task: Task, reason: string): void {
+            store.addOutput(task.id, `ⓘ caching skipped — ${reason}\n`);
+        },
+
+        printSelfModifyingSkip(task: Task, modifiedFiles: string[]): void {
+            store.addOutput(task.id, `ⓘ caching skipped — task modified its own input${modifiedFiles.length === 1 ? "" : "s"} (${modifiedFiles.join(", ")})\n`);
+        },
+
         printTaskTerminalOutput(task: Task, _status: TaskStatus, output: string): void {
             // Only add if endTasks didn't already set it (avoids double output)
             if (!store.getSnapshot().outputs.has(task.id)) {

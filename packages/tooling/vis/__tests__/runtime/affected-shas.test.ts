@@ -3,16 +3,18 @@ import { describe, expect, it, vi } from "vitest";
 import type { ResolveAffectedShasOptions } from "../../src/runtime/affected-shas";
 import { resolveAffectedShas } from "../../src/runtime/affected-shas";
 
-const makeOptions = (overrides: Partial<ResolveAffectedShasOptions>): ResolveAffectedShasOptions => ({
-    env: {},
-    readEventPayload: () => undefined,
-    runGit: () => undefined,
-    workspaceRoot: "/tmp/ws",
-    ...overrides,
-});
+const makeOptions = (overrides: Partial<ResolveAffectedShasOptions>): ResolveAffectedShasOptions => {
+    return {
+        env: {},
+        readEventPayload: () => undefined,
+        runGit: () => undefined,
+        workspaceRoot: "/tmp/ws",
+        ...overrides,
+    };
+};
 
 describe(resolveAffectedShas, () => {
-    describe("GitHub Actions provider", () => {
+    describe("gitHub Actions provider", () => {
         it("uses GITHUB_BASE_REF on pull_request events", () => {
             expect.assertions(4);
 
@@ -31,7 +33,7 @@ describe(resolveAffectedShas, () => {
         it("reads event.before from GITHUB_EVENT_PATH on push events", () => {
             expect.assertions(4);
 
-            const readEventPayload = vi.fn(() => ({ after: "newSha", before: "deadbeef" }));
+            const readEventPayload = vi.fn(() => { return { after: "newSha", before: "deadbeef" }; });
 
             const result = resolveAffectedShas(
                 makeOptions({
@@ -53,7 +55,7 @@ describe(resolveAffectedShas, () => {
                 makeOptions({
                     defaultBase: "trunk",
                     env: { GITHUB_ACTIONS: "true", GITHUB_EVENT_PATH: "/tmp/event.json", GITHUB_SHA: "newSha" },
-                    readEventPayload: () => ({ before: "0000000000000000000000000000000000000000" }),
+                    readEventPayload: () => { return { before: "0000000000000000000000000000000000000000" }; },
                 }),
             );
 
@@ -76,7 +78,7 @@ describe(resolveAffectedShas, () => {
         });
     });
 
-    describe("GitLab CI provider", () => {
+    describe("gitLab CI provider", () => {
         it("uses CI_MERGE_REQUEST_DIFF_BASE_SHA on merge_request events", () => {
             expect.assertions(3);
 
@@ -151,7 +153,7 @@ describe(resolveAffectedShas, () => {
         });
     });
 
-    describe("Buildkite provider (naive)", () => {
+    describe("buildkite provider (naive)", () => {
         it("uses BUILDKITE_PULL_REQUEST_BASE_BRANCH on PR builds", () => {
             expect.assertions(3);
 
@@ -185,13 +187,13 @@ describe(resolveAffectedShas, () => {
         });
     });
 
-    describe("CircleCI provider (naive)", () => {
+    describe("circleCI provider (naive)", () => {
         it("uses CIRCLE_PR_BASE_BRANCH on PR builds", () => {
             expect.assertions(3);
 
             const result = resolveAffectedShas(
                 makeOptions({
-                    env: { CIRCLECI: "true", CIRCLE_PR_BASE_BRANCH: "main", CIRCLE_SHA1: "ccSha" },
+                    env: { CIRCLE_PR_BASE_BRANCH: "main", CIRCLE_SHA1: "ccSha", CIRCLECI: "true" },
                 }),
             );
 
@@ -206,7 +208,7 @@ describe(resolveAffectedShas, () => {
             const result = resolveAffectedShas(
                 makeOptions({
                     defaultBase: "master",
-                    env: { CIRCLECI: "true", CIRCLE_SHA1: "ccSha" },
+                    env: { CIRCLE_SHA1: "ccSha", CIRCLECI: "true" },
                 }),
             );
 

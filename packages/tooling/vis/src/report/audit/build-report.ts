@@ -23,6 +23,7 @@ export interface AuditReportEntryVulnerability extends SecurityVulnerability {
 
 export interface AuditReportEntry {
     acceptedRisk: AcceptedRisk | null;
+
     /**
      * Root → vulnerable resolution paths through the lockfile graph.
      * Up to `BuildAuditReportInput.maxDependencyPathsPerEntry` are listed,
@@ -106,6 +107,7 @@ export interface BuildAuditReportInput {
     bloomHits: ReadonlyArray<AuditReportBloomHit>;
     /** Duplicate-version detections from `findDuplicateDependencies`. */
     duplicates: DuplicatePackage[];
+
     /**
      * AI explanations keyed by {@link explainKey} — both the JSON path and
      * the HTML embed pull from this map so the same explanation text is
@@ -115,6 +117,7 @@ export interface BuildAuditReportInput {
     /** Severity-filtered audit entries with vulns + Socket reports. */
     filtered: ReadonlyArray<{
         acceptedRisk?: AcceptedRisk;
+
         /**
          * Pre-computed root→vuln paths from the lockfile graph. Empty array
          * (or absent) when paths weren't computed for this entry.
@@ -140,23 +143,12 @@ export interface BuildAuditReportInput {
 }
 
 export const buildAuditReport = (input: BuildAuditReportInput): AuditReport => {
-    const {
-        bloomHits,
-        duplicates,
-        explanations,
-        filtered,
-        now,
-        packagesScanned,
-        policyDecisions,
-        tool,
-        unknownPolicyTokens,
-        workspaceRoot,
-    } = input;
+    const { bloomHits, duplicates, explanations, filtered, now, packagesScanned, policyDecisions, tool, unknownPolicyTokens, workspaceRoot } = input;
 
     const results: AuditReportEntry[] = filtered.map((entry) => {
         return {
             acceptedRisk: entry.acceptedRisk ?? null,
-            dependencyPaths: entry.dependencyPaths ? entry.dependencyPaths.map((path) => path.map((node) => ({ name: node.name, version: node.version }))) : [],
+            dependencyPaths: entry.dependencyPaths ? entry.dependencyPaths.map((path) => path.map((node) => { return { name: node.name, version: node.version }; })) : [],
             name: entry.name,
             socketAlerts: entry.socketReport?.alerts ?? [],
             socketScore: entry.socketReport?.score.overall ?? null,

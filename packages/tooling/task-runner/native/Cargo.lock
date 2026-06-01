@@ -400,6 +400,7 @@ name = "task-runner-native"
 version = "0.1.0"
 dependencies = [
  "fspy-seccomp",
+ "libc",
  "napi",
  "napi-build",
  "napi-derive",

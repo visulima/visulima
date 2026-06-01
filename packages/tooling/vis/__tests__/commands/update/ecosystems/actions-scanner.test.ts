@@ -29,12 +29,7 @@ describe(extractUsesFromContent, () => {
 
         // checkout + setup-node + pnpm/action-setup + cache. docker:// and ./local skipped.
         expect(references).toHaveLength(4);
-        expect(references.map((reference) => reference.slug)).toStrictEqual([
-            "actions/checkout",
-            "actions/setup-node",
-            "pnpm/action-setup",
-            "actions/cache",
-        ]);
+        expect(references.map((reference) => reference.slug)).toStrictEqual(["actions/checkout", "actions/setup-node", "pnpm/action-setup", "actions/cache"]);
         expect(references[1]?.isSha).toBe(true);
     });
 

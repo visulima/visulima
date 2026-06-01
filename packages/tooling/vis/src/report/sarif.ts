@@ -19,7 +19,8 @@ import { join, relative } from "node:path";
 
 import type { SecurityVulnerability } from "../security/advisories";
 import type { PolicyDecision } from "../security/policies";
-import { advisoryUri, type SarifLevel, securitySeverityString, severityLabel, severityToSarifLevel } from "./finding";
+import type { SarifLevel } from "./finding";
+import { advisoryUri, securitySeverityString, severityLabel, severityToSarifLevel } from "./finding";
 
 export interface SarifFinding {
     acknowledged: boolean;

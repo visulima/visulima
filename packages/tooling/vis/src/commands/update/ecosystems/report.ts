@@ -41,7 +41,10 @@ const formatUpdateLine = (update: EcosystemUpdate): string => {
     // populated it — this is the closest thing to a changelog link for
     // refs we don't actually fetch the diff for.
     const urlSuffix = update.url ? `  ${dim(update.url)}` : "";
-    const advisoryBadge = update.advisories && update.advisories.length > 0 ? ` ${red(`⚠ ${String(update.advisories.length)} advisor${update.advisories.length === 1 ? "y" : "ies"}`)}` : "";
+    const advisoryBadge
+        = update.advisories && update.advisories.length > 0
+            ? ` ${red(`⚠ ${String(update.advisories.length)} advisor${update.advisories.length === 1 ? "y" : "ies"}`)}`
+            : "";
 
     return `    ${colorize(update.updateType.padEnd(7))}  ${update.name}  ${dim(fromLabel)} → ${toLabel}${advisoryBadge}${urlSuffix}`;
 };
@@ -164,16 +167,17 @@ export const formatEcosystemReport = (result: EcosystemCheckResult, options: { s
  * shape (`{ outdated, failed, ignored }`) so downstream consumers can
  * key off `ecosystem` to know which side of the payload they're on.
  */
-export const formatEcosystemJson = (result: EcosystemCheckResult): string => JSON.stringify(
-    {
-        ecosystems: {
-            failed: result.failed,
-            ignored: result.ignored,
-            perEcosystem: result.perEcosystem,
-            scanned: result.scanned,
-            updates: result.updates,
+export const formatEcosystemJson = (result: EcosystemCheckResult): string =>
+    JSON.stringify(
+        {
+            ecosystems: {
+                failed: result.failed,
+                ignored: result.ignored,
+                perEcosystem: result.perEcosystem,
+                scanned: result.scanned,
+                updates: result.updates,
+            },
         },
-    },
-    undefined,
-    2,
-);
+        undefined,
+        2,
+    );

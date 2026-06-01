@@ -208,8 +208,6 @@ describe("vis.task.ts per-package overlay", () => {
 
         expect(graph.nodes["app-aliased"]).toBeDefined();
         expect(graph.nodes["lib-aliased"]).toBeDefined();
-        expect(graph.dependencies["app-aliased"]).toStrictEqual([
-            { source: "app-aliased", target: "lib-aliased", type: "static" },
-        ]);
+        expect(graph.dependencies["app-aliased"]).toStrictEqual([{ source: "app-aliased", target: "lib-aliased", type: "static" }]);
     });
 });

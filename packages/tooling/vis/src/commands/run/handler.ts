@@ -36,6 +36,7 @@ import isInCi from "is-in-ci";
 import { applyBranchScope, resolveSharedCacheDirectory } from "../../cache/cache-directory";
 import { buildProjectGraph, discoverWorkspace, loadVisTaskConfigsForWorkspace } from "../../config/workspace";
 import { runLockfilePreflight } from "../../preflight/lockfile";
+import { maybePromptViteClientOverride } from "../../preflight/vite-client-override";
 import { FailureLogLifeCycle } from "../../report/failure-log";
 import { analyzeFlakiness, formatFlakinessTable } from "../../report/flakiness";
 import { compareDuration, formatTimingSummary, loadRunSummaries } from "../../report/run-report";
@@ -894,12 +895,7 @@ const createConcurrentExecutor = (deps: ExecutorDependencies) => {
         // workspace toggle.
         const ptyOptIn = visOptions?.pty === true;
         const ptyInteractive = Boolean(stdinRegistry);
-        const isPty
-            = task.pty === true
-                ? true
-                : task.pty === false
-                    ? false
-                    : ptyInteractive || ptyOptIn;
+        const isPty = task.pty === true ? true : task.pty === false ? false : ptyInteractive || ptyOptIn;
 
         if (isPty) {
             task.cache = false;
@@ -1625,6 +1621,26 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
 
     if (!lockfilePreflight.shouldContinue) {
         throw new Error(`${lockfilePreflight.formattedMessage ?? "preflight: lockfile drift detected"} (pass --no-preflight to bypass)`);
+    }
+
+    // One-time offer to alias @voidzero-dev/vite-task-client to our
+    // drop-in client so its cache hints reach the runner. TTY-only and
+    // remembers a decline, so CI and repeat runs are never blocked.
+    if (preflightEnabled && !isInCi && process.stdin.isTTY && process.stdout.isTTY) {
+        await maybePromptViteClientOverride(workspaceRoot, {
+            interactive: true,
+            logger: {
+                info: (message) => {
+                    logger.info(message);
+                },
+                warn: (message) => {
+                    logger.warn(message);
+                },
+            },
+            // Scan every discovered project manifest, not just the root —
+            // a tool depending on the vite client may live in a sub-package.
+            projectManifests: [...packageJsons.values()],
+        });
     }
 
     // Auto-attach: if a service this run depends on is already

@@ -166,6 +166,7 @@ describe(buildAuditReport, () => {
             filtered: [{ name: "lodash", version: "4.17.20", vulnerabilities: [vuln()] }],
         });
 
+        // eslint-disable-next-line unicorn/prefer-structured-clone -- intentional JSON round-trip: asserts the report is losslessly JSON-serializable, which structuredClone would not verify
         const round = JSON.parse(JSON.stringify(report)) as unknown;
 
         expect(round).toStrictEqual(report);

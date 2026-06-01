@@ -352,14 +352,15 @@ export class TaskScheduler {
             }
 
             const keys = this.#taskKeys.get(task.id);
-            const exceedsKeyCap = keys === undefined
-                ? false
-                : keys.some((key) => {
-                    const cap = this.#capForKey(key);
-                    const projected = (projectedPerKey.get(key) ?? 0) + 1;
+            const exceedsKeyCap
+                = keys === undefined
+                    ? false
+                    : keys.some((key) => {
+                        const cap = this.#capForKey(key);
+                        const projected = (projectedPerKey.get(key) ?? 0) + 1;
 
-                    return cap !== undefined && projected > cap;
-                });
+                        return cap !== undefined && projected > cap;
+                    });
 
             if (exceedsKeyCap) {
                 continue;
@@ -479,7 +480,7 @@ export class TaskScheduler {
      */
     public getOrphanDependencies(): Map<string, string[]> {
         const orphans = new Map<string, string[]>();
-        const tasks = this.#taskGraph.tasks;
+        const { tasks } = this.#taskGraph;
 
         for (const [taskId, deps] of Object.entries(this.#taskGraph.dependencies)) {
             if (!(taskId in tasks)) {
@@ -505,7 +506,7 @@ export class TaskScheduler {
      */
     public describeStrandedTasks(): { id: string; unmetDeps: string[] }[] {
         const stranded: { id: string; unmetDeps: string[] }[] = [];
-        const tasks = this.#taskGraph.tasks;
+        const { tasks } = this.#taskGraph;
 
         for (const taskId of Object.keys(tasks)) {
             if (this.#completedTasks.has(taskId) || this.#runningTasks.has(taskId)) {
@@ -523,7 +524,7 @@ export class TaskScheduler {
 
     #getReadyTasks(): Task[] {
         const ready: Task[] = [];
-        const tasks = this.#taskGraph.tasks;
+        const { tasks } = this.#taskGraph;
 
         for (const [taskId, task] of Object.entries(tasks)) {
             if (this.#completedTasks.has(taskId) || this.#runningTasks.has(taskId)) {

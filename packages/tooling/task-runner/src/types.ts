@@ -210,6 +210,35 @@ export type TaskStatus = "success" | "failure" | "skipped" | "local-cache" | "lo
  * Result of executing a task.
  */
 export interface TaskResult {
+    /**
+     * Set when the task asked the runner not to cache this run by calling
+     * `disableCache()` from `@visulima/task-runner-client`. Unlike
+     * {@link TaskResult.emptyFingerprint}, the fingerprint may be perfectly
+     * valid — the task itself declared the run non-deterministic (network
+     * flake, debug mode, aborted watch). Surfaced to reporters and the run
+     * summary so the skip is explained rather than silent.
+     */
+    cacheDisabledByTask?: boolean;
+
+    /**
+     * Provenance of the cooperative cache hints a task emitted via
+     * `@visulima/task-runner-client` during this run. Present only when
+     * the task registered at least one hint, so the common (no-client)
+     * path leaves it `undefined`. Surfaced in `--summarize` output so a
+     * cache key can be explained: which reads/writes were ignored and
+     * which env vars/patterns were registered as dependencies.
+     */
+    cacheHints?: {
+        /** Absolute paths whose reads were dropped from inferred inputs. */
+        ignoredInputs: string[];
+        /** Absolute paths whose writes were dropped from inferred outputs. */
+        ignoredOutputs: string[];
+        /** Env var names registered as cache dependencies via `getEnv`. */
+        trackedEnv: string[];
+        /** Env glob patterns registered as cache dependencies via `getEnvs`. */
+        trackedEnvPatterns: string[];
+    };
+
     /** The exit code, if applicable */
     code?: number;
 
@@ -1201,6 +1230,14 @@ export interface LifeCycleInterface {
      * semantics — same contract, different stream.
      */
     onTaskStdout?: (task: Task, chunk: string) => void;
+
+    /**
+     * Called when caching is skipped because the task itself requested it
+     * via `disableCache()` (`@visulima/task-runner-client`). Distinct from
+     * {@link LifeCycleInterface.printEmptyFingerprintWarning}: the
+     * fingerprint may be valid; the task declared the run non-cacheable.
+     */
+    printCacheDisabledByTask?: (task: Task) => void;
     /** Called when a cache miss occurs with diagnostic information */
     printCacheMiss?: (task: Task, reasons: string) => void;
 

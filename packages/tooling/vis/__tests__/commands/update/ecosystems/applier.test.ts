@@ -6,16 +6,18 @@ import { applyEcosystemUpdates } from "../../../../src/commands/update/ecosystem
 import type { EcosystemUpdate } from "../../../../src/commands/update/ecosystems/types";
 import { cleanupTemporaryDirectory, createTemporaryDirectory } from "../../../test-helpers";
 
-const makeUpdate = (overrides: Partial<EcosystemUpdate> & Pick<EcosystemUpdate, "file" | "line" | "original" | "replacement">): EcosystemUpdate => ({
-    currentRef: "v1.0.0",
-    currentVersion: "v1.0.0",
-    ecosystem: "actions",
-    name: "test/action",
-    newRef: "v2.0.0",
-    newVersion: "v2.0.0",
-    updateType: "major",
-    ...overrides,
-});
+const makeUpdate = (overrides: Partial<EcosystemUpdate> & Pick<EcosystemUpdate, "file" | "line" | "original" | "replacement">): EcosystemUpdate => {
+    return {
+        currentRef: "v1.0.0",
+        currentVersion: "v1.0.0",
+        ecosystem: "actions",
+        name: "test/action",
+        newRef: "v2.0.0",
+        newVersion: "v2.0.0",
+        updateType: "major",
+        ...overrides,
+    };
+};
 
 describe(applyEcosystemUpdates, () => {
     let workspaceRoot: string;
@@ -33,10 +35,7 @@ describe(applyEcosystemUpdates, () => {
 
         const file = join(workspaceRoot, "workflow.yml");
 
-        writeFileSync(
-            file,
-            "name: ci\njobs:\n  build:\n    steps:\n      - uses: actions/checkout@v3.5.0\n",
-        );
+        writeFileSync(file, "name: ci\njobs:\n  build:\n    steps:\n      - uses: actions/checkout@v3.5.0\n");
 
         const result = applyEcosystemUpdates([
             makeUpdate({
@@ -57,10 +56,7 @@ describe(applyEcosystemUpdates, () => {
 
         const file = join(workspaceRoot, "workflow.yml");
 
-        writeFileSync(
-            file,
-            "      - uses: actions/checkout@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa # v3.5.0\n",
-        );
+        writeFileSync(file, "      - uses: actions/checkout@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa # v3.5.0\n");
 
         applyEcosystemUpdates([
             makeUpdate({

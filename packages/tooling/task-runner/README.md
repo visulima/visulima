@@ -50,6 +50,7 @@
 - **Output archiving**: Caches and restores build outputs (dist/ directories)
 - **LRU cache eviction**: Configurable max size and age limits
 - **Lifecycle hooks**: 7 hook points for custom behavior
+- **Cooperative cache hints**: tools can refine the inferred fingerprint from the inside via the zero-dependency [`@visulima/task-runner-client`](../task-runner-client) — `ignoreInput`/`ignoreOutput` to drop noise, `disableCache` for non-deterministic runs, and `getEnv`/`getEnvs` to register env-var dependencies at the point of use (closing the silent under-tracking gap that pattern-only env config leaves open). Complements observation: works on every platform, no client = no change.
 
 ## Install
 

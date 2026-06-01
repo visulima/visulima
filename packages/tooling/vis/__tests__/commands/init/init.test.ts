@@ -198,7 +198,7 @@ describe("yarn version detection for config sync", () => {
     });
 });
 
-describe("buildSchemaRefForTesting", () => {
+describe(buildSchemaRefForTesting, () => {
     const root = "/repo";
 
     it("emits a relative path from a workspace-root file", () => {
@@ -228,6 +228,6 @@ describe("buildSchemaRefForTesting", () => {
 
         const ref = buildSchemaRefForTesting(join(root, "apps", "web", "project.json"), root, "project.schema.json");
 
-        expect(ref.includes("\\")).toBe(false);
+        expect(ref).not.toContain("\\");
     });
 });

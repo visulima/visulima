@@ -22,7 +22,9 @@ const detectPmMock = vi.fn(() => {
 const resolveInstallerMock = vi.fn(() => {
     return { name: "pnpm", version: "10.0.0" };
 });
-const runInstallCapturedMock = vi.fn(async () => { return { code: 0, output: "" }; });
+const runInstallCapturedMock = vi.fn(async () => {
+    return { code: 0, output: "" };
+});
 const detectLockfileDriftMock = vi.fn(() => undefined);
 
 vi.mock(import("../../../src/pm/pm-runner"), () => {

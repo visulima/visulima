@@ -34,7 +34,6 @@ const SEVERITY_MAP: Record<string, CycloneDxSeverity> = {
     UNKNOWN: "unknown",
 };
 
-
 const groupBy = <T, K extends string | number>(items: T[], key: (item: T) => K): Map<K, T[]> => {
     const map = new Map<K, T[]>();
 

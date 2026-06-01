@@ -826,6 +826,47 @@ describe(TaskOrchestrator, () => {
         });
     });
 
+    describe("cooperative cache hints", () => {
+        it("honors a disableCache() hint emitted by the running command", async () => {
+            expect.assertions(3);
+
+            const task: Task = {
+                cache: true,
+                id: "app:build",
+                outputs: [],
+                overrides: {},
+                projectRoot: "packages/app",
+                target: { project: "app", target: "build" },
+            };
+
+            const printCacheDisabledByTask = vi.fn<(task: Task) => void>();
+
+            // A real shell command that writes a disableCache hint to the
+            // file the runner exposed via $TASK_RUNNER_HINTS — the exact
+            // wire the `@visulima/task-runner-client` `disableCache()` call
+            // uses. `resolveCommand` forces the auto-fingerprint tracked
+            // path, which spawns this command for real and reads the hint
+            // back after it exits.
+            const orchestrator = createOrchestrator([task], successExecutor, {
+                autoFingerprint: true,
+                lifeCycle: { printCacheDisabledByTask } as unknown as LifeCycleInterface,
+                resolveCommand: () => String.raw`printf '%s\n' '{"op":"disableCache"}' >> "$TASK_RUNNER_HINTS"`,
+            });
+
+            const results = await orchestrator.run();
+            const result = results.get("app:build");
+
+            expect(result?.cacheDisabledByTask).toBe(true);
+            expect(printCacheDisabledByTask).toHaveBeenCalledTimes(1);
+
+            // The run succeeded and produced a fingerprint, but the task
+            // asked not to cache — nothing must be persisted.
+            const cached = await new Cache({ workspaceRoot }).getByTaskId("app:build");
+
+            expect(cached).toBeUndefined();
+        });
+    });
+
     describe("auto-only outputs guard", () => {
         it("skips cache and warns for { auto: true }-only outputs on the non-tracking path", async () => {
             expect.assertions(4);

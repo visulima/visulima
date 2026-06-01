@@ -19,7 +19,7 @@ const baseOptions: EcosystemUpdateOptions = {
 };
 
 const fetchTags = (tags: { name: string; sha: string }[]): typeof fetch =>
-    vi.fn(async () => new Response(JSON.stringify(tags.map((tag) => ({ commit: { sha: tag.sha }, name: tag.name }))), { status: 200 })) as typeof fetch;
+    vi.fn(async () => Response.json(tags.map((tag) => { return { commit: { sha: tag.sha }, name: tag.name }; }), { status: 200 }));
 
 describe("actions scanner quote preservation", () => {
     it("captures the original quote character when uses: is single-quoted", () => {
@@ -49,11 +49,7 @@ describe("actions scanner quote preservation", () => {
 
         const refs = extractUsesFromContent(
             "/tmp/wf.yml",
-            [
-                "      - uses: actions/checkout@v3 # actions-up-ignore-next-line",
-                "      - uses: actions/setup-node@v4",
-                "",
-            ].join("\n"),
+            ["      - uses: actions/checkout@v3 # actions-up-ignore-next-line", "      - uses: actions/setup-node@v4", ""].join("\n"),
         );
 
         // The first uses: must be ignored; the second must NOT inherit the directive.

@@ -6,16 +6,18 @@ import { applyEcosystemUpdates } from "../../../../src/commands/update/ecosystem
 import type { EcosystemUpdate } from "../../../../src/commands/update/ecosystems/types";
 import { cleanupTemporaryDirectory, createTemporaryDirectory } from "../../../test-helpers";
 
-const makeUpdate = (overrides: Partial<EcosystemUpdate> & Pick<EcosystemUpdate, "file" | "line" | "original" | "replacement">): EcosystemUpdate => ({
-    currentRef: "v1.0.0",
-    currentVersion: "v1.0.0",
-    ecosystem: "actions",
-    name: "test/action",
-    newRef: "v2.0.0",
-    newVersion: "v2.0.0",
-    updateType: "major",
-    ...overrides,
-});
+const makeUpdate = (overrides: Partial<EcosystemUpdate> & Pick<EcosystemUpdate, "file" | "line" | "original" | "replacement">): EcosystemUpdate => {
+    return {
+        currentRef: "v1.0.0",
+        currentVersion: "v1.0.0",
+        ecosystem: "actions",
+        name: "test/action",
+        newRef: "v2.0.0",
+        newVersion: "v2.0.0",
+        updateType: "major",
+        ...overrides,
+    };
+};
 
 describe("applier — file round-trip", () => {
     let workspaceRoot: string;
@@ -63,10 +65,10 @@ describe("applier — file round-trip", () => {
 
         expect(afterSecond).toBe("      - uses: actions/checkout@v5.0.0\n");
         // Trailing newline count stays at 1.
-        expect(afterSecond.match(/\n+$/)?.[0].length).toBe(1);
+        expect(/\n+$/.exec(afterSecond)?.[0].length).toBe(1);
     });
 
-    it("preserves a user audit comment that follows a version-looking token (regression: greedy [^\\n]*$)", () => {
+    it(String.raw`preserves a user audit comment that follows a version-looking token (regression: greedy [^\n]*$)`, () => {
         expect.assertions(1);
 
         const file = join(workspaceRoot, "workflow.yml");
@@ -95,10 +97,7 @@ describe("applier — file round-trip", () => {
 
         const file = join(workspaceRoot, "workflow.yml");
 
-        writeFileSync(
-            file,
-            "      - uses: actions/checkout@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa # v3.5.0\n",
-        );
+        writeFileSync(file, "      - uses: actions/checkout@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa # v3.5.0\n");
 
         applyEcosystemUpdates([
             makeUpdate({

@@ -1,15 +1,15 @@
 import { describe, expect, it, vi } from "vitest";
 
-import type { SecurityVulnerability } from "../../../../../src/security/advisories";
 import type { EcosystemUpdate } from "../../../../../src/commands/update/ecosystems/types";
+import type { SecurityVulnerability } from "../../../../../src/security/advisories";
 
-vi.mock("node:fs", async () => {
+vi.mock(import("node:fs"), async () => {
     const actual = await vi.importActual<typeof import("node:fs")>("node:fs");
 
     return { ...actual, existsSync: vi.fn() };
 });
 
-vi.mock("../../../../../src/security/advisories", () => {
+vi.mock(import("../../../../../src/security/advisories"), () => {
     return {
         queryAdvisories: vi.fn(),
         resolveAdvisoryDbPath: vi.fn(() => "/fake/db"),
@@ -71,7 +71,7 @@ describe(decorateActionsAdvisories.name, () => {
 
         const updates = [makeUpdate({ name: "actions/checkout" })];
 
-        expect(decorateActionsAdvisories("/repo", updates)).toEqual(updates);
+        expect(decorateActionsAdvisories("/repo", updates)).toStrictEqual(updates);
     });
 
     it("attaches advisories from the OSV result keyed by package name", () => {
@@ -137,10 +137,7 @@ describe(decorateActionsAdvisories.name, () => {
         mockedQueryAdvisories.mockReset();
         mockedQueryAdvisories.mockReturnValue(new Map([["actions/checkout", [vuln("GHSA-shared")]]]));
 
-        const updates = [
-            makeUpdate({ file: "/a.yml", name: "actions/checkout" }),
-            makeUpdate({ file: "/b.yml", name: "actions/checkout" }),
-        ];
+        const updates = [makeUpdate({ file: "/a.yml", name: "actions/checkout" }), makeUpdate({ file: "/b.yml", name: "actions/checkout" })];
 
         const result = decorateActionsAdvisories("/repo", updates);
 

@@ -875,7 +875,9 @@ describe("taskScheduler concurrencyWeight", () => {
 
         expect(batch).toHaveLength(3);
         // weighted slots used: 2 (heavy) + 1 + 1 = 4; the fourth task is held back.
-        expect(batch.map((t) => t.id).includes("z:build") || batch.map((t) => t.id).includes("y:build") || batch.map((t) => t.id).includes("x:build")).toBe(true);
+        expect(batch.map((t) => t.id).includes("z:build") || batch.map((t) => t.id).includes("y:build") || batch.map((t) => t.id).includes("x:build")).toBe(
+            true,
+        );
     });
 
     it("running weight blocks further admits until completion", () => {
