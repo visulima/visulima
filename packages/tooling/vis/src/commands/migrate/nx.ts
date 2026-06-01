@@ -851,7 +851,7 @@ const translateProjectJsonTargets = (
                         }
 
                         for (const shimName of shimTargets) {
-                            delete current.targets[shimName];
+                            Reflect.deleteProperty(current.targets, shimName);
                         }
 
                         return current;
@@ -983,15 +983,15 @@ const cleanPnpmWorkspaceYaml = (
 };
 
 interface SyncGeneratorRewriteResult {
-    /** Pre-script name added (e.g. "prebuild"). */
-    preScript: string;
     /** Workspace-relative path to the touched package.json. */
     pkgPath: string;
+    /** Pre-script name added (e.g. "prebuild"). */
+    preScript: string;
 }
 
 /**
  * For a single project.json target with `syncGenerators`, add a matching
- * `pre<target>` script to the sibling package.json containing a TODO that
+ * `pre&lt;target>` script to the sibling package.json containing a TODO that
  * names the original generator(s). The script intentionally `exit 1`s so
  * CI fails loudly until the user wires up a real replacement.
  *
@@ -1032,9 +1032,7 @@ const rewriteSyncGeneratorToPreScript = (
             return { reason: `\`${preScript}\` script already exists in ${relativeFromRoot(workspaceRoot, pkgPath)}` };
         }
 
-        logger.info(
-            `Would add \`${preScript}\` script to ${relativeFromRoot(workspaceRoot, pkgPath)} (TODO for nx syncGenerators: ${generators.join(", ")}).`,
-        );
+        logger.info(`Would add \`${preScript}\` script to ${relativeFromRoot(workspaceRoot, pkgPath)} (TODO for nx syncGenerators: ${generators.join(", ")}).`);
 
         return { pkgPath: relativeFromRoot(workspaceRoot, pkgPath), preScript };
     }
@@ -1050,7 +1048,7 @@ const rewriteSyncGeneratorToPreScript = (
                 return undefined;
             }
 
-            current.scripts = { ...(current.scripts ?? {}), [preScript]: todo };
+            current.scripts = { ...current.scripts, [preScript]: todo };
 
             return current;
         },
@@ -1089,7 +1087,7 @@ const rewriteNxScript = (value: string, knownProjects: Set<string>): string | un
 
     // Chained commands (`nx run-many ... && pnpm test`) or shell quoting are
     // out of scope. We only touch the simple "single nx invocation" case.
-    if (/[;&|]|"|'/u.test(trimmed)) {
+    if (/[;&|"']/u.test(trimmed)) {
         return undefined;
     }
 
@@ -1160,7 +1158,9 @@ const applyAggressiveCleanup = (
 
             try {
                 unlinkSync(ignoreFilePath);
-                logger.info(`Removed ${relativeFromRoot(workspaceRoot, ignoreFilePath)} (backup at \`${relativeFromRoot(workspaceRoot, ignoreFilePath)}.bak\`).`);
+                logger.info(
+                    `Removed ${relativeFromRoot(workspaceRoot, ignoreFilePath)} (backup at \`${relativeFromRoot(workspaceRoot, ignoreFilePath)}.bak\`).`,
+                );
                 result.deletedFiles.push(relativeFromRoot(workspaceRoot, ignoreFilePath));
             } catch {
                 // Non-critical - leave it on disk.
@@ -1183,7 +1183,7 @@ const applyAggressiveCleanup = (
                 for (const dep of Object.keys(current.devDependencies)) {
                     if (dep === "nx" || dep.startsWith("@nx/") || dep.startsWith("@nrwl/")) {
                         if (!options.dryRun) {
-                            delete current.devDependencies[dep];
+                            Reflect.deleteProperty(current.devDependencies, dep);
                         }
 
                         result.strippedDevDeps.push(dep);
@@ -1427,7 +1427,7 @@ const printChecklist = (lines: string[], logger: MigrateLogger): void => {
  * @param options.aggressive When true, auto-apply the safe cleanup items the migrator would otherwise leave on the checklist (delete nx.json + ignore file, strip nx/`@nx/*`/`@nrwl/*` devDeps, rewrite mechanical `nx run-many|run|affected` scripts). Implies `force` and `rewriteSyncGenerators`.
  * @param options.dryRun When true, render/preview but skip writes.
  * @param options.force Overwrite existing vis.config.ts (a `.bak` is taken first).
- * @param options.rewriteSyncGenerators When true, also add a `pre<target>` script (with TODO) to sibling package.json for each project.json `syncGenerators`.
+ * @param options.rewriteSyncGenerators When true, also add a `pre&lt;target>` script (with TODO) to sibling package.json for each project.json `syncGenerators`.
  * @param options.useEditorconfig When false, skip `.editorconfig` discovery for indent.
  * @param logger Logger for user feedback.
  * @param report Migration report to append manual steps and warnings.

@@ -1039,10 +1039,7 @@ const buildEcosystemOptions = (options: Record<string, unknown>, visConfig: VisC
         gitlabToken: (options.gitlabToken as string | undefined) ?? undefined,
         include: toFilterArray(options.include as FilterOption),
         includeBranches: options.includeBranches === true,
-        maxConcurrentRequests:
-            typeof options.maxConcurrentRequests === "number" && options.maxConcurrentRequests > 0
-                ? options.maxConcurrentRequests
-                : 8,
+        maxConcurrentRequests: typeof options.maxConcurrentRequests === "number" && options.maxConcurrentRequests > 0 ? options.maxConcurrentRequests : 8,
         minAgeDays:
             typeof configDefaults.minimumReleaseAge === "number" && configDefaults.minimumReleaseAge > 0
                 ? configDefaults.minimumReleaseAge / (60 * 24)
@@ -1070,7 +1067,7 @@ const buildEcosystemOptions = (options: Record<string, unknown>, visConfig: VisC
  * Apply is refused outright when:
  *   - `--dry-run` was passed
  *   - The catalog/PM stage failed (`process.exitCode` is non-zero)
- *   - The catalog TUI was canceled (user said no)
+ *   - The catalog TUI was canceled (user said no).
  */
 const shouldApplyEcosystem = (options: Record<string, unknown>, catalogResult: UpdatePathResult): boolean => {
     if (options.dryRun === true) {
@@ -1239,7 +1236,7 @@ const execute = async ({ argument: rawArgument, logger, options, visConfig, work
         throw new Error("Could not determine workspace root. Run this command inside a monorepo.");
     }
 
-    validateEcosystemFlags(options as Record<string, unknown>);
+    validateEcosystemFlags(options);
 
     let argument = rawArgument;
 
@@ -1345,7 +1342,7 @@ const execute = async ({ argument: rawArgument, logger, options, visConfig, work
     // refuse to apply when the npm stage failed, was canceled in the
     // TUI, or already produced a JSON document on stdout.
     if (argument.length === 0) {
-        await runEcosystemUpdate(workspaceRoot, options as Record<string, unknown>, visConfig ?? {}, logger, catalogResult);
+        await runEcosystemUpdate(workspaceRoot, options, visConfig ?? {}, logger, catalogResult);
     }
 };
 

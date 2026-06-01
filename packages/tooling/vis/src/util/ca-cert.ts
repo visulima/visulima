@@ -12,7 +12,7 @@
 
 import { resolve } from "node:path";
 
-export const parseEarlyCaCert = (argv: readonly string[]): string | undefined => {
+export const parseEarlyCaCert = (argv: ReadonlyArray<string>): string | undefined => {
     for (let index = 0; index < argv.length; index += 1) {
         const argument = argv[index]!;
 

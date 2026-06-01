@@ -162,8 +162,10 @@ jobs:
               id: "cache-task-runner"
               uses: "actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae" # v5.0.5
               with:
-                  path: "packages/tooling/task-runner/*.node"
-                  key: "native-task-runner-${{ matrix.settings.target }}-zig0.14.1-${{ hashFiles('rust-toolchain.toml', 'packages/tooling/task-runner/native/Cargo.toml', 'packages/tooling/task-runner/native/Cargo.lock', 'packages/tooling/task-runner/native/build.rs', 'packages/tooling/task-runner/native/src/**') }}"
+                  path: |
+                      packages/tooling/task-runner/*.node
+                      packages/tooling/task-runner/npm/linux-*/fspy-seccomp-helper
+                  key: "native-task-runner-${{ matrix.settings.target }}-zig0.14.1-${{ hashFiles('rust-toolchain.toml', 'packages/tooling/task-runner/native/Cargo.toml', 'packages/tooling/task-runner/native/Cargo.lock', 'packages/tooling/task-runner/native/build.rs', 'packages/tooling/task-runner/native/src/**', 'packages/tooling/task-runner/native/fspy_seccomp/Cargo.toml', 'packages/tooling/task-runner/native/fspy_seccomp/Cargo.lock', 'packages/tooling/task-runner/native/fspy_seccomp/src/**') }}"
 
             - name: "Restore tui native build cache"
               id: "cache-tui"
@@ -240,6 +242,29 @@ jobs:
               with:
                   version: "0.14.1"
 
+            # Zig for the fspy-seccomp-helper build below. The
+            # napi-cli build path bundles its own zig for the `.node`
+            # addon, but `cargo zigbuild` (used for the helper bin)
+            # needs a standalone zig on PATH. The earlier setup-zig
+            # step only fires for musl (`cross == '-x'`); the helper
+            # builds on every Linux target, so install zig here too.
+            # Idempotent — re-running setup-zig when it already ran
+            # for musl is a no-op.
+            - name: "Install Zig for fspy-seccomp-helper (all Linux)"
+              if: "contains(matrix.settings.target, 'linux') && steps.cache-task-runner.outputs.cache-hit != 'true'"
+              uses: "mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29" # v2.2.1
+              with:
+                  version: "0.14.1"
+
+            # cargo-zigbuild for the fspy-seccomp-helper build step.
+            # Prebuilt via taiki-e/install-action (~5s; building via
+            # `cargo install` would add multiple minutes per CI run).
+            - name: "Install cargo-zigbuild (Linux only)"
+              if: "contains(matrix.settings.target, 'linux') && steps.cache-task-runner.outputs.cache-hit != 'true'"
+              uses: "taiki-e/install-action@e49978b799e49ff429d162b7a30601a569ab6538" # v2
+              with:
+                  tool: "cargo-zigbuild"
+
             # --- Build each package when cache missed ---
             # Cache keys are derived from native sources, so cache hits short-circuit
             # unchanged packages. Removing the files-changed gate ensures that PRs
@@ -248,6 +273,91 @@ jobs:
               if: "steps.cache-task-runner.outputs.cache-hit != 'true'"
               run: "pnpm build:native --target ${{ matrix.settings.target }} ${{ matrix.settings.cross || '' }}"
               working-directory: "packages/tooling/task-runner"
+
+            # Build the fspy-seccomp-helper sidecar binary for every
+            # Linux target. Pure-Rust seccomp (no libseccomp dep), so
+            # cargo-zigbuild can cross-compile all four triples without
+            # extra sysroot setup. Each output drops into the matching
+            # binding package so its `files` array publishes it.
+            - name: "Build fspy-seccomp-helper (all Linux)"
+              if: "contains(matrix.settings.target, 'linux') && steps.cache-task-runner.outputs.cache-hit != 'true'"
+              shell: "bash"
+              working-directory: "packages/tooling/task-runner"
+              env:
+                  TARGET: "${{ matrix.settings.target }}"
+              run: |
+                  rustup target add "$TARGET"
+                  cargo zigbuild \
+                      --manifest-path native/fspy_seccomp/Cargo.toml \
+                      --bin fspy-seccomp-helper \
+                      --release \
+                      --target "$TARGET"
+                  case "$TARGET" in
+                    x86_64-unknown-linux-gnu)    binding="linux-x64-gnu" ;;
+                    x86_64-unknown-linux-musl)   binding="linux-x64-musl" ;;
+                    aarch64-unknown-linux-gnu)   binding="linux-arm64-gnu" ;;
+                    aarch64-unknown-linux-musl)  binding="linux-arm64-musl" ;;
+                    *)                           binding="" ;;
+                  esac
+                  if [ -n "$binding" ]; then
+                      install -m 0755 \
+                          "native/fspy_seccomp/target/$TARGET/release/fspy-seccomp-helper" \
+                          "npm/$binding/fspy-seccomp-helper"
+                  fi
+
+            # Build the fspy_macos interpose dylib for each darwin target.
+            # It's a standalone cdylib (NOT linked into the addon — its
+            # __interpose section must not load into the parent), injected at
+            # runtime via DYLD_INSERT_LIBRARIES. Native macOS compile, so no
+            # zigbuild/sysroot. The .dylib drops into the matching darwin
+            # binding package so its `files` array publishes it.
+            - name: "Build fspy_macos dylib (all macOS)"
+              if: "contains(matrix.settings.target, 'apple')"
+              shell: "bash"
+              working-directory: "packages/tooling/task-runner"
+              env:
+                  TARGET: "${{ matrix.settings.target }}"
+              run: |
+                  rustup target add "$TARGET"
+                  cargo build \
+                      --manifest-path native/fspy_macos/Cargo.toml \
+                      --release \
+                      --target "$TARGET"
+                  case "$TARGET" in
+                    x86_64-apple-darwin)   binding="darwin-x64" ;;
+                    aarch64-apple-darwin)  binding="darwin-arm64" ;;
+                    *)                     binding="" ;;
+                  esac
+                  if [ -n "$binding" ]; then
+                      install -m 0755 \
+                          "native/fspy_macos/target/$TARGET/release/libfspy_macos.dylib" \
+                          "npm/$binding/fspy-macos.dylib"
+                  fi
+
+            # Build the fspy_windows IAT-hook DLL for each MSVC target. Pure
+            # Rust (no Detours/vcpkg). The cdylib output is `fspy_windows.dll`
+            # (no `lib` prefix on Windows); it drops into the matching win32
+            # binding package so its `files` array publishes it.
+            - name: "Build fspy_windows DLL (all Windows)"
+              if: "contains(matrix.settings.target, 'windows')"
+              shell: "bash"
+              working-directory: "packages/tooling/task-runner"
+              env:
+                  TARGET: "${{ matrix.settings.target }}"
+              run: |
+                  rustup target add "$TARGET"
+                  cargo build \
+                      --manifest-path native/fspy_windows/Cargo.toml \
+                      --release \
+                      --target "$TARGET"
+                  case "$TARGET" in
+                    x86_64-pc-windows-msvc)   binding="win32-x64-msvc" ;;
+                    aarch64-pc-windows-msvc)  binding="win32-arm64-msvc" ;;
+                    *)                        binding="" ;;
+                  esac
+                  if [ -n "$binding" ]; then
+                      cp "native/fspy_windows/target/$TARGET/release/fspy_windows.dll" "npm/$binding/fspy-windows.dll"
+                  fi
 
             - name: "Build tui native"
               if: "steps.cache-tui.outputs.cache-hit != 'true'"
@@ -271,7 +381,9 @@ jobs:
               if: "github.event_name == 'push' && steps.cache-task-runner.outputs.cache-hit != 'true'"
               uses: "actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae" # v5.0.5
               with:
-                  path: "packages/tooling/task-runner/*.node"
+                  path: |
+                      packages/tooling/task-runner/*.node
+                      packages/tooling/task-runner/npm/linux-*/fspy-seccomp-helper
                   key: "${{ steps.cache-task-runner.outputs.cache-primary-key }}"
 
             - name: "Save tui native build cache"
@@ -300,7 +412,11 @@ jobs:
               uses: "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a" # v7.0.1
               with:
                   name: "bindings-task-runner-${{ matrix.settings.target }}"
-                  path: "packages/tooling/task-runner/*.node"
+                  path: |
+                      packages/tooling/task-runner/*.node
+                      packages/tooling/task-runner/npm/linux-*/fspy-seccomp-helper
+                      packages/tooling/task-runner/npm/darwin-*/fspy-macos.dylib
+                      packages/tooling/task-runner/npm/win32-*/fspy-windows.dll
                   if-no-files-found: "error"
 
             - name: "Upload tui artifact"

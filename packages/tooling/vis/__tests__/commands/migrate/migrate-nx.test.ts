@@ -135,10 +135,12 @@ describe("migrate-nx", () => {
             expect(content).not.toContain("@nx/eslint:lint");
             // `@nx/eslint:lint` → `lint:eslint` carries cache+inputs.
             expect(content).toMatch(/"lint:eslint"|lint:eslint:/u);
+
             // `@nx/js:tsc` collides with explicit `build` → dropped with warning.
             const conflictWarning = report.warnings.find((w) => w.includes("@nx/js:tsc") && w.includes("explicit"));
 
             expect(conflictWarning).toBeDefined();
+
             // Unknown executor with no hint → dropped with warning.
             const unknownWarning = report.warnings.find((w) => w.includes("some-plugin:weird"));
 
@@ -804,7 +806,7 @@ describe("migrate-nx", () => {
             };
 
             expect(pkg.devDependencies).toStrictEqual({ typescript: "5.7.0" });
-            expect(result.strippedDevDeps.sort()).toStrictEqual(["@nrwl/cli", "@nx/devkit", "@nx/eslint", "nx"]);
+            expect(result.strippedDevDeps.toSorted()).toStrictEqual(["@nrwl/cli", "@nx/devkit", "@nx/eslint", "nx"]);
             expect(report.backupsCreated.some((b) => b.endsWith("package.json.bak"))).toBe(true);
         });
 

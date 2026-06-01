@@ -997,7 +997,14 @@ describe("runStaged — integration", () => {
         }
     });
 
-    it("uses SIGKILL to terminate in-flight subprocesses on fast-fail cancellation", async () => {
+    // Linux-only: spawns an unbounded `setInterval` child and relies on the OS
+    // reaping it via SIGKILL when the run fast-fails. On macOS/Windows the
+    // kill/reap timing is non-deterministic — an unreaped child keeps the
+    // vitest worker fork alive until it is force-terminated (abnormal exit /
+    // SIGINT 130 on Windows), the same cross-platform flakiness that retired
+    // the file-access-tracker cancellation tests. The kill behaviour is covered
+    // deterministically on Linux.
+    it.skipIf(process.platform !== "linux")("uses SIGKILL to terminate in-flight subprocesses on fast-fail cancellation", async () => {
         expect.assertions(4);
 
         writeFileSync(join(root, "a.txt"), "seed\n");
@@ -1245,10 +1252,16 @@ describe("runStaged — integration", () => {
         expect(readlinkSync(join(root, "link.txt"))).toBe("target.txt");
     });
 
-    // 30s timeout: the SIGINT path waits up to 5s for the marker plus the
-    // signal handler to fire, then runStaged unwinds; on cold Windows
-    // runners that easily exceeds vitest's 5s default.
-    it("sIGINT during a running task cancels the run and restores pre-run state", { timeout: 30_000 }, async () => {
+    // Linux-only: spawns a 60s child task, then drives the global SIGINT
+    // handler to cancel the run. On macOS/Windows the abort→child-kill→reap
+    // timing is non-deterministic — the long-running child can outlive the
+    // run and keep the vitest worker fork alive until it is force-terminated
+    // (abnormal exit / SIGINT 130 on Windows). The 30s bump below was an
+    // earlier attempt to absorb the slow "cold Windows runner" path, but the
+    // underlying signal/process race can't be made deterministic off Linux,
+    // so the cancellation contract is asserted on Linux only — matching the
+    // retired file-access-tracker cancellation tests.
+    it.skipIf(process.platform !== "linux")("sIGINT during a running task cancels the run and restores pre-run state", { timeout: 30_000 }, async () => {
         expect.assertions(4);
 
         writeFileSync(join(root, "a.txt"), "seed\n");

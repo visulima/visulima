@@ -4,15 +4,24 @@ import { ActionsResolver } from "../../../../src/commands/update/ecosystems/acti
 
 const mockFetch = (responses: Record<string, unknown>): typeof fetch =>
     vi.fn(async (input: RequestInfo | URL) => {
-        const url = typeof input === "string" ? input : input.toString();
+        let url: string;
+
+        if (typeof input === "string") {
+            url = input;
+        } else if (input instanceof URL) {
+            url = input.href;
+        } else {
+            url = input.url;
+        }
+
         const payload = responses[url];
 
         if (payload === undefined) {
             return new Response("not found", { status: 404 });
         }
 
-        return new Response(JSON.stringify(payload), { headers: { "content-type": "application/json" }, status: 200 });
-    }) as typeof fetch;
+        return Response.json(payload, { headers: { "content-type": "application/json" }, status: 200 });
+    });
 
 describe(ActionsResolver, () => {
     it("lists tags from the GitHub API and parses them through semver", async () => {
@@ -20,9 +29,9 @@ describe(ActionsResolver, () => {
 
         const fetchImpl = mockFetch({
             "https://api.github.com/repos/actions/checkout/tags?per_page=100": [
-                { name: "v4.1.1", commit: { sha: "aaaa1111aaaa1111aaaa1111aaaa1111aaaa1111" } },
-                { name: "v4.0.0", commit: { sha: "bbbb2222bbbb2222bbbb2222bbbb2222bbbb2222" } },
-                { name: "not-a-version", commit: { sha: "cccc3333cccc3333cccc3333cccc3333cccc3333" } },
+                { commit: { sha: "aaaa1111aaaa1111aaaa1111aaaa1111aaaa1111" }, name: "v4.1.1" },
+                { commit: { sha: "bbbb2222bbbb2222bbbb2222bbbb2222bbbb2222" }, name: "v4.0.0" },
+                { commit: { sha: "cccc3333cccc3333cccc3333cccc3333cccc3333" }, name: "not-a-version" },
             ],
         });
 
@@ -37,8 +46,8 @@ describe(ActionsResolver, () => {
     it("caches per repo so repeated lookups share one round-trip", async () => {
         expect.assertions(1);
 
-        const fetchImpl = vi.fn(async () =>
-            new Response(JSON.stringify([{ name: "v1.0.0", commit: { sha: "deadbeefdeadbeefdeadbeefdeadbeefdeadbeef" } }]), { status: 200 }),
+        const fetchImpl = vi.fn(
+            async () => Response.json([{ commit: { sha: "deadbeefdeadbeefdeadbeefdeadbeefdeadbeef" }, name: "v1.0.0" }], { status: 200 }),
         ) as typeof fetch;
         const resolver = new ActionsResolver({ apiBase: "https://api.github.com", fetch: fetchImpl, token: undefined });
 

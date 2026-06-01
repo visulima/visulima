@@ -19,10 +19,7 @@ describe("docker scanner — BuildKit FROM flags", () => {
     it("captures the image past a leading --platform flag", () => {
         expect.assertions(2);
 
-        writeFileSync(
-            join(workspaceRoot, "Dockerfile"),
-            "FROM --platform=$BUILDPLATFORM node:18 AS build\n",
-        );
+        writeFileSync(join(workspaceRoot, "Dockerfile"), "FROM --platform=$BUILDPLATFORM node:18 AS build\n");
 
         const refs = scanDockerRepository(workspaceRoot);
         const node = refs.find((r) => r.name === "node");
@@ -34,10 +31,7 @@ describe("docker scanner — BuildKit FROM flags", () => {
     it("captures the image past multiple BuildKit flags", () => {
         expect.assertions(1);
 
-        writeFileSync(
-            join(workspaceRoot, "Dockerfile"),
-            "FROM --platform=linux/amd64 --chown=node:node node:20\n",
-        );
+        writeFileSync(join(workspaceRoot, "Dockerfile"), "FROM --platform=linux/amd64 --chown=node:node node:20\n");
 
         const refs = scanDockerRepository(workspaceRoot);
 
@@ -47,10 +41,7 @@ describe("docker scanner — BuildKit FROM flags", () => {
     it("does not treat the BuildKit flag itself as an image", () => {
         expect.assertions(1);
 
-        writeFileSync(
-            join(workspaceRoot, "Dockerfile"),
-            "FROM --platform=linux/amd64 node:20\n",
-        );
+        writeFileSync(join(workspaceRoot, "Dockerfile"), "FROM --platform=linux/amd64 node:20\n");
 
         const refs = scanDockerRepository(workspaceRoot);
 
@@ -73,14 +64,7 @@ describe("docker scanner — inline ignore directive", () => {
     it("treats `# vis-update-ignore-next-line` on a FROM line as an inline (this-line) ignore", () => {
         expect.assertions(2);
 
-        writeFileSync(
-            join(workspaceRoot, "Dockerfile"),
-            [
-                "FROM node:18 # vis-update-ignore-next-line",
-                "FROM postgres:14",
-                "",
-            ].join("\n"),
-        );
+        writeFileSync(join(workspaceRoot, "Dockerfile"), ["FROM node:18 # vis-update-ignore-next-line", "FROM postgres:14", ""].join("\n"));
 
         const refs = scanDockerRepository(workspaceRoot);
         const node = refs.find((r) => r.name === "node");
@@ -96,14 +80,7 @@ describe("docker scanner — inline ignore directive", () => {
     it("treats `# vis-update-ignore-next-line` on a comment-only line as a lookahead", () => {
         expect.assertions(1);
 
-        writeFileSync(
-            join(workspaceRoot, "Dockerfile"),
-            [
-                "# vis-update-ignore-next-line",
-                "FROM postgres:14",
-                "",
-            ].join("\n"),
-        );
+        writeFileSync(join(workspaceRoot, "Dockerfile"), ["# vis-update-ignore-next-line", "FROM postgres:14", ""].join("\n"));
 
         const refs = scanDockerRepository(workspaceRoot);
 

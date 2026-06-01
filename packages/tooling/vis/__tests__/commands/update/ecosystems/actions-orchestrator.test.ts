@@ -18,24 +18,26 @@ const baseOptions: EcosystemUpdateOptions = {
     style: "sha",
 };
 
-const makeReference = (overrides: Partial<UsesReference> = {}): UsesReference => ({
-    file: "/tmp/workflow.yml",
-    ignoreReason: undefined,
-    isSha: false,
-    line: 5,
-    original: "actions/checkout@v3.5.0",
-    owner: "actions",
-    quote: "",
-    ref: "v3.5.0",
-    repo: "checkout",
-    slug: "actions/checkout",
-    subpath: undefined,
-    trailingComment: undefined,
-    ...overrides,
-});
+const makeReference = (overrides: Partial<UsesReference> = {}): UsesReference => {
+    return {
+        file: "/tmp/workflow.yml",
+        ignoreReason: undefined,
+        isSha: false,
+        line: 5,
+        original: "actions/checkout@v3.5.0",
+        owner: "actions",
+        quote: "",
+        ref: "v3.5.0",
+        repo: "checkout",
+        slug: "actions/checkout",
+        subpath: undefined,
+        trailingComment: undefined,
+        ...overrides,
+    };
+};
 
 const fetchTags = (tags: { name: string; sha: string }[]): typeof fetch =>
-    vi.fn(async () => new Response(JSON.stringify(tags.map((tag) => ({ commit: { sha: tag.sha }, name: tag.name }))), { status: 200 })) as typeof fetch;
+    vi.fn(async () => Response.json(tags.map((tag) => { return { commit: { sha: tag.sha }, name: tag.name }; }), { status: 200 }));
 
 describe(checkActions, () => {
     it("emits a SHA-pinned replacement with version-hint comment by default", async () => {

@@ -19,7 +19,7 @@ import type { SecurityVulnerability } from "../security/advisories";
  */
 export type Severity = SecurityVulnerability["severity"];
 
-export const SEVERITY_ORDER: readonly Severity[] = ["CRITICAL", "HIGH", "MODERATE", "LOW", "UNKNOWN"];
+export const SEVERITY_ORDER: ReadonlyArray<Severity> = ["CRITICAL", "HIGH", "MODERATE", "LOW", "UNKNOWN"];
 
 /** SARIF result `level` per GitHub Code Scanning convention. */
 export type SarifLevel = "error" | "note" | "warning" | "none";
@@ -79,7 +79,7 @@ export const securitySeverityString = (vulnerability: Pick<SecurityVulnerability
  * Canonical advisory landing page for an OSV/CVE/GHSA id.
  * - CVE-…  → NVD
  * - GHSA-… → GitHub Advisory Database
- * - else   → osv.dev
+ * - else   → osv.dev.
  */
 export const advisoryUri = (id: string): string => {
     if (id.startsWith("CVE-")) {

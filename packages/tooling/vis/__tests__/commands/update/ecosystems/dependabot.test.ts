@@ -62,8 +62,8 @@ describe(loadIgnoreRules, () => {
         writeFileSync(
             join(workspaceRoot, "renovate.json"),
             JSON.stringify({
+                dockerfile: { ignoreDeps: ["alpine"] },
                 "github-actions": { ignoreDeps: ["actions/cache"] },
-                "dockerfile": { ignoreDeps: ["alpine"] },
                 ignoreDeps: ["typescript"],
             }),
         );

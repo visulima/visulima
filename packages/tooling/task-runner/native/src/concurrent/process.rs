@@ -198,11 +198,7 @@ where
     R: AsyncRead + Unpin,
 {
     let emit = |text: String| {
-        let event = if is_stderr {
-            ProcessEvent::stderr(index, text)
-        } else {
-            ProcessEvent::stdout(index, text)
-        };
+        let event = if is_stderr { ProcessEvent::stderr(index, text) } else { ProcessEvent::stdout(index, text) };
 
         let _ = tx.send(event);
     };

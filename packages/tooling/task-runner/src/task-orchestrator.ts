@@ -5,6 +5,7 @@ import { join, resolve } from "@visulima/path";
 import { retrieveByTaskHash, storeByTaskHash } from "./backends/hash-bridge";
 import type { RemoteCacheBackend } from "./backends/types";
 import type { Cache, CachedResult } from "./cache";
+import { applyAccessHints, mergeEnvPatterns, summarizeHints } from "./cache-hints";
 import type { TaskFingerprint } from "./fingerprint";
 import { FingerprintManager } from "./fingerprint";
 import { generateRunSummary, writeLastRunSummary, writeRunSummary } from "./run-summary";
@@ -694,7 +695,12 @@ class TaskOrchestrator {
 
             const skipCacheOnWarning = hadWarnings && task.cacheOnWarning === false;
 
-            if (code === 0 && task.cache !== false && task.hash && !skipCacheOnWarning) {
+            // Never cache the result of a task that completed after an
+            // abort. The user interrupted the run; the task may have
+            // exited 0 but its output is treated as incomplete-by-policy
+            // so the next run starts fresh. Matches vite-task's
+            // documented cancellation contract.
+            if (code === 0 && task.cache !== false && task.hash && !skipCacheOnWarning && !this.#aborted) {
                 const modified = await this.#detectSelfModifiedInputs(task);
 
                 if (modified.length > 0) {
@@ -774,6 +780,14 @@ class TaskOrchestrator {
             // fills this — auto outputs silently contribute nothing
             // when tracking isn't available.
             let autoWrites: string[] | undefined;
+            // Set when a task asked the runner not to cache this run via
+            // `@visulima/task-runner-client`'s `disableCache()`. Gates the
+            // cache-write block below, mirroring the config `cache: false`.
+            let cacheDisabledByTask = false;
+            // Provenance of cooperative hints, attached to the result for
+            // `--summarize` when the task emitted any. Left undefined on the
+            // common (no-client) path.
+            let cacheHints: TaskResult["cacheHints"];
 
             const shellCommand = this.#resolveCommand?.(task);
             const canTrack = shellCommand && this.#trackedExecutor?.isTrackingSupported;
@@ -783,16 +797,25 @@ class TaskOrchestrator {
 
                 code = trackedResult.code;
                 terminalOutput = trackedResult.terminalOutput;
-                trackerAccessCount = trackedResult.accesses.length;
+                cacheDisabledByTask = trackedResult.hints.cacheDisabled;
+                cacheHints = summarizeHints(trackedResult.hints);
+
+                // Fold cooperative hints into the observed accesses before
+                // hashing: `ignoreInput`/`ignoreOutput` drop noise (tool
+                // caches, scratch files); `getEnv`/`getEnvs` add per-run
+                // env dependencies on top of the configured patterns.
+                const accesses = applyAccessHints(trackedResult.accesses, trackedResult.hints);
+
+                trackerAccessCount = accesses.length;
                 usedRealTracker = true;
-                autoWrites = trackedResult.accesses.filter((a) => a.type === "write").map((a) => a.path);
+                autoWrites = accesses.filter((a) => a.type === "write").map((a) => a.path);
 
                 fingerprint = await this.#fingerprintManager.createFingerprint(
-                    trackedResult.accesses,
+                    accesses,
                     taskCommand,
                     task.overrides,
                     process.env,
-                    this.#fingerprintEnvPatterns,
+                    mergeEnvPatterns(this.#fingerprintEnvPatterns, trackedResult.hints),
                     this.#untrackedEnvVars,
                 );
             } else {
@@ -826,6 +849,7 @@ class TaskOrchestrator {
             const hadWarnings = code === 0 && detectWarnings(task.warningPattern, terminalOutput);
 
             const result: TaskResult = {
+                cacheHints,
                 code,
                 endTime: Date.now(),
                 hadWarnings: hadWarnings || undefined,
@@ -840,11 +864,16 @@ class TaskOrchestrator {
 
             const skipCacheOnWarning = hadWarnings && task.cacheOnWarning === false;
 
-            if (code === 0 && task.cache !== false && fingerprint && !skipCacheOnWarning) {
+            // Same abort-gate as the declared path — see `#executeTask`.
+            if (code === 0 && task.cache !== false && fingerprint && !skipCacheOnWarning && !this.#aborted) {
                 const modified = this.#detectSelfModifiedFingerprint(fingerprint);
                 const emptyFingerprintReason = this.#describeEmptyFingerprint(fingerprint, usedRealTracker, trackerAccessCount);
 
-                if (modified.length > 0) {
+                if (cacheDisabledByTask) {
+                    result.cacheDisabledByTask = true;
+
+                    this.#lifeCycle.printCacheDisabledByTask?.(task);
+                } else if (modified.length > 0) {
                     result.selfModified = true;
 
                     this.#lifeCycle.printSelfModifyingSkip?.(task, modified);
@@ -1012,7 +1041,7 @@ class TaskOrchestrator {
         }
 
         const skipReason = `Skipped: upstream dependency failed (${failedTaskId})`;
-        const tasks = this.#taskGraph.tasks;
+        const { tasks } = this.#taskGraph;
         const toSkip = new Set<string>();
 
         if (this.#bail) {

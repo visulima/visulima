@@ -119,7 +119,7 @@ const withEnhancedPathConfigs = (configs: ConcurrentCommandConfig[]): Concurrent
     configs.map((config) => {
         const cwd = config.cwd ?? process.cwd();
         const enhanced = buildEnhancedPath(cwd, config.env);
-        const nextEnv: Record<string, string> = { ...(config.env ?? {}) };
+        const nextEnv: Record<string, string> = { ...config.env };
 
         // Strip any aliased `Path` / `path` keys so Node's
         // last-write-wins env serialisation can't pick the
@@ -128,12 +128,8 @@ const withEnhancedPathConfigs = (configs: ConcurrentCommandConfig[]): Concurrent
         // ended up with both `PATH` and `Path` set; the spawn's
         // effective PATH was non-deterministic depending on object
         // key order, occasionally losing the workspace `.bin` prepend.
-        for (const key of Object.keys(nextEnv)) {
-            if (key === "Path" || key === "path") {
-                // eslint-disable-next-line security/detect-object-injection
-                delete nextEnv[key];
-            }
-        }
+        delete nextEnv["Path"];
+        delete nextEnv["path"];
 
         nextEnv["PATH"] = enhanced;
 

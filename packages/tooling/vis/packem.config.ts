@@ -10,7 +10,7 @@ export default defineConfig({
     externals: [/^@visulima\/vis(\/|$)/],
     rollup: {
         resolveExternals: {
-          exclude: ["@visulima/tabular", /^@visulima\/tabular(\/|$)/],
+            exclude: ["@visulima/tabular", /^@visulima\/tabular(\/|$)/],
         },
         css: {
             mode: "inline",
@@ -66,7 +66,7 @@ export default defineConfig({
                     "v8-compile-cache",
                     "fastest-levenshtein",
                     "terminal-size",
-                    "@jridgewell/trace-mapping"
+                    "@jridgewell/trace-mapping",
                 ],
             },
         },

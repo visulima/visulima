@@ -476,6 +476,52 @@ describe(TaskOrchestrator, () => {
 
             expect(listenerCountAfter).toBe(listenerCountBefore);
         });
+
+        it("does not cache a task whose run was aborted", async () => {
+            // Mirrors vite-task's documented cancellation contract:
+            // tasks that complete cleanly *after* SIGINT must not be
+            // seeded into the cache. We assert it by checking that a
+            // second run after the aborted one re-executes (cache
+            // miss), rather than being served from cache.
+            expect.assertions(2);
+
+            const task: Task = {
+                id: "app:build",
+                outputs: [],
+                overrides: {},
+                projectRoot: "packages/app",
+                target: { project: "app", target: "build" },
+            };
+
+            let executionCount = 0;
+            const executor: TaskExecutor = async () => {
+                executionCount += 1;
+
+                // Trigger SIGINT mid-execution. The task still
+                // returns success — the abort gate must refuse to
+                // cache it anyway.
+                process.emit("SIGINT", "SIGINT");
+
+                return { code: 0, terminalOutput: "Build successful" };
+            };
+
+            const orch1 = createOrchestrator([task], executor);
+
+            await orch1.run();
+
+            expect(executionCount).toBe(1);
+
+            // Fresh orchestrator (signal listeners cleaned), same
+            // task definition → would be a cache hit if the abort
+            // gate had let the previous result through.
+            const orch2 = createOrchestrator([task], executor);
+
+            await orch2.run();
+
+            // Re-executed because cache was empty (abort gate
+            // prevented the seed). Count = 2 means no cache hit.
+            expect(executionCount).toBe(2);
+        });
     });
 
     describe("lifecycle hooks", () => {
@@ -775,6 +821,50 @@ describe(TaskOrchestrator, () => {
             // Nothing was persisted to the cache — the task-id index must
             // not resolve, so subsequent runs have no shortcut to hit.
             const cached = await cache.getByTaskId("app:build");
+
+            expect(cached).toBeUndefined();
+        });
+    });
+
+    describe("cooperative cache hints", () => {
+        it("honors a disableCache() hint emitted by the running command", async () => {
+            expect.assertions(3);
+
+            const task: Task = {
+                cache: true,
+                id: "app:build",
+                outputs: [],
+                overrides: {},
+                projectRoot: "packages/app",
+                target: { project: "app", target: "build" },
+            };
+
+            const printCacheDisabledByTask = vi.fn<(task: Task) => void>();
+
+            // A real command that writes a disableCache hint to the file the
+            // runner exposed via TASK_RUNNER_HINTS — the exact wire the
+            // `@visulima/task-runner-client` `disableCache()` call uses. We
+            // shell out to `node` (not `printf`/`$VAR`) and read the env var
+            // *inside* Node so the stand-in is shell-agnostic: the tracked
+            // path spawns via `exec`, which is `/bin/sh` on POSIX but cmd.exe
+            // on Windows (no `printf`, no `$VAR` expansion).
+            const orchestrator = createOrchestrator([task], successExecutor, {
+                autoFingerprint: true,
+                lifeCycle: { printCacheDisabledByTask } as unknown as LifeCycleInterface,
+                resolveCommand: () =>
+                    // eslint-disable-next-line no-secrets/no-secrets -- not a secret; this is the node one-liner that writes the hint
+                    String.raw`node -e "require('fs').appendFileSync(process.env.TASK_RUNNER_HINTS, JSON.stringify({op:'disableCache'})+'\n')"`,
+            });
+
+            const results = await orchestrator.run();
+            const result = results.get("app:build");
+
+            expect(result?.cacheDisabledByTask).toBe(true);
+            expect(printCacheDisabledByTask).toHaveBeenCalledTimes(1);
+
+            // The run succeeded and produced a fingerprint, but the task
+            // asked not to cache — nothing must be persisted.
+            const cached = await new Cache({ workspaceRoot }).getByTaskId("app:build");
 
             expect(cached).toBeUndefined();
         });

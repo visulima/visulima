@@ -207,7 +207,7 @@ export class ReapiRemoteCache implements RemoteCacheBackend {
         // capped by `#closeQuiescenceTimeoutMs` so a hung server
         // can't block teardown forever.
         if (this.#inflightRpcs.size > 0) {
-            const drain = Promise.allSettled([...this.#inflightRpcs]);
+            const drain = Promise.allSettled(this.#inflightRpcs);
             const timeout = new Promise<void>((resolve) => {
                 setTimeout(resolve, this.#closeQuiescenceTimeoutMs);
             });
@@ -252,13 +252,15 @@ export class ReapiRemoteCache implements RemoteCacheBackend {
 
         this.#inflightRpcs.add(promise);
 
-        promise.finally(() => {
-            this.#inflightRpcs.delete(promise);
-        }).catch(() => {
-            // The finally above is the bookkeeping path; we re-attach
-            // a noop .catch so any unhandled-rejection surface stays
-            // on the caller's chain, not on our tracking wrapper.
-        });
+        promise
+            .finally(() => {
+                this.#inflightRpcs.delete(promise);
+            })
+            .catch(() => {
+                // The finally above is the bookkeeping path; we re-attach
+                // a noop .catch so any unhandled-rejection surface stays
+                // on the caller's chain, not on our tracking wrapper.
+            });
 
         return promise;
     }

@@ -8,21 +8,20 @@ import type { EcosystemUpdate, EcosystemUpdateOptions } from "../types";
 import type { GitlabResolverOptions } from "./resolver";
 import { GitlabResolver } from "./resolver";
 import type { GitLabInclude } from "./scanner";
-import { scanGitlabRepository } from "./scanner";
 
 interface CheckGitlabContext {
-    readonly includes: GitLabInclude[];
-    readonly imageReferences: ImageReference[];
-    readonly options: EcosystemUpdateOptions;
-    readonly resolverOptions?: Partial<GitlabResolverOptions>;
-    readonly registryOptions?: DockerRegistryOptions;
     readonly ignoreRules?: DependabotIgnoreRules;
+    readonly imageReferences: ImageReference[];
+    readonly includes: GitLabInclude[];
+    readonly options: EcosystemUpdateOptions;
+    readonly registryOptions?: DockerRegistryOptions;
+    readonly resolverOptions?: Partial<GitlabResolverOptions>;
 }
 
 interface CheckGitlabResult {
-    readonly updates: EcosystemUpdate[];
     readonly failed: { file: string; reason: string }[];
     readonly ignored: EcosystemUpdate[];
+    readonly updates: EcosystemUpdate[];
 }
 
 const matchesPattern = (name: string, patterns: string[]): boolean => {
@@ -142,9 +141,7 @@ export const checkGitlab = async (workspaceRoot: string, context: CheckGitlabCon
             // Display the full component path (project + component name)
             // so the report tells the user what they actually wrote in
             // the YAML, not the stripped-for-API-lookup form.
-            const fullName = include.kind === "component" && include.componentName
-                ? `${include.project}/${include.componentName}`
-                : include.project;
+            const fullName = include.kind === "component" && include.componentName ? `${include.project}/${include.componentName}` : include.project;
             let ignoreReason: string | undefined;
 
             if (include.ignoreReason) {
@@ -157,21 +154,23 @@ export const checkGitlab = async (workspaceRoot: string, context: CheckGitlabCon
                 ignoreReason = "ignored by dependabot/renovate config";
             }
 
-            const buildIgnored = (reason: string): EcosystemUpdate => ({
-                currentRef: include.ref,
-                currentVersion: include.ref,
-                ecosystem: "gitlab",
-                file: include.file,
-                ignored: true,
-                line: include.line,
-                name: fullName,
-                newRef: include.ref,
-                newVersion: undefined,
-                original: include.original,
-                reason,
-                replacement: include.original,
-                updateType: "unknown",
-            });
+            const buildIgnored = (reason: string): EcosystemUpdate => {
+                return {
+                    currentRef: include.ref,
+                    currentVersion: include.ref,
+                    ecosystem: "gitlab",
+                    file: include.file,
+                    ignored: true,
+                    line: include.line,
+                    name: fullName,
+                    newRef: include.ref,
+                    newVersion: undefined,
+                    original: include.original,
+                    reason,
+                    replacement: include.original,
+                    updateType: "unknown",
+                };
+            };
 
             if (ignoreReason) {
                 ignoredList.push(buildIgnored(ignoreReason));
@@ -253,4 +252,4 @@ export const checkGitlab = async (workspaceRoot: string, context: CheckGitlabCon
     return { failed, ignored: ignoredList, updates };
 };
 
-export { scanGitlabRepository };
+export { scanGitlabRepository } from "./scanner";

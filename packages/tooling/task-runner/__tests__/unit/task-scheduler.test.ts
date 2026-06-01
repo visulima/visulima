@@ -808,3 +808,147 @@ describe(parsePartition, () => {
         }
     });
 });
+
+describe("taskScheduler concurrencyWeight", () => {
+    const makeFlat = (entries: Record<string, Partial<Task>>): { projectGraph: ProjectGraph; taskGraph: TaskGraph } => {
+        const tasks: Record<string, Task> = {};
+        const dependencies: Record<string, string[]> = {};
+
+        for (const [id, overrides] of Object.entries(entries)) {
+            const [project, target] = id.split(":") as [string, string];
+
+            tasks[id] = {
+                id,
+                outputs: [],
+                overrides: {},
+                target: { project, target },
+                ...overrides,
+            };
+            dependencies[id] = [];
+        }
+
+        const projectGraph: ProjectGraph = {
+            dependencies: Object.fromEntries(Object.keys(entries).map((id) => [id.split(":")[0] as string, []])),
+            nodes: Object.fromEntries(
+                Object.keys(entries).map((id) => {
+                    const project = id.split(":")[0] as string;
+
+                    return [project, { data: { root: project }, name: project, type: "library" }];
+                }),
+            ),
+        };
+
+        return {
+            projectGraph,
+            taskGraph: { dependencies, roots: Object.keys(entries), tasks },
+        };
+    };
+
+    it("default weight of 1 keeps prior count-based behavior", () => {
+        expect.assertions(1);
+
+        const { projectGraph, taskGraph } = makeFlat({
+            "a:build": {},
+            "b:build": {},
+            "c:build": {},
+        });
+        const scheduler = new TaskScheduler(taskGraph, projectGraph, 2);
+
+        // No weights set; the scheduler should fill 2 slots, same as before.
+        expect(scheduler.getNextBatch()).toHaveLength(2);
+    });
+
+    it("weight-2 task halves throughput against the cap", () => {
+        expect.assertions(2);
+
+        const { projectGraph, taskGraph } = makeFlat({
+            // weight-2 task should occupy 2 of 4 slots on its own,
+            // leaving room for two weight-1 tasks but blocking a third.
+            "heavy:build": { concurrencyWeight: 2 },
+            "x:build": {},
+            "y:build": {},
+            "z:build": {},
+        });
+        const scheduler = new TaskScheduler(taskGraph, projectGraph, 4);
+
+        const batch = scheduler.getNextBatch();
+
+        expect(batch).toHaveLength(3);
+        // weighted slots used: 2 (heavy) + 1 + 1 = 4; the fourth task is held back.
+        expect(batch.map((t) => t.id).includes("z:build") || batch.map((t) => t.id).includes("y:build") || batch.map((t) => t.id).includes("x:build")).toBe(
+            true,
+        );
+    });
+
+    it("running weight blocks further admits until completion", () => {
+        expect.assertions(2);
+
+        const { projectGraph, taskGraph } = makeFlat({
+            "heavy:build": { concurrencyWeight: 3 },
+            "light:build": {},
+        });
+        const scheduler = new TaskScheduler(taskGraph, projectGraph, 3);
+
+        const first = scheduler.getNextBatch();
+
+        // Heavy + light = 4 > 3, so only one of them runs.
+        expect(first).toHaveLength(1);
+
+        scheduler.startTask((first[0] as Task).id);
+        const second = scheduler.getNextBatch();
+
+        // Whichever task the scheduler picked first, the remaining one
+        // can't fit: heavy first leaves 0 slots (3 used of 3); light first
+        // leaves 2 slots which heavy (weight 3) still overruns. Either
+        // way the second batch is empty until completion frees the budget.
+        expect(second).toHaveLength(0);
+    });
+
+    it("heavy task on parallel:1 still runs (deadlock-free)", () => {
+        expect.assertions(1);
+
+        const { projectGraph, taskGraph } = makeFlat({
+            "heavy:build": { concurrencyWeight: 8 },
+        });
+        const scheduler = new TaskScheduler(taskGraph, projectGraph, 1);
+
+        // Without the idle-pool exception, a weight-8 task on a 1-slot
+        // pool would never start — the cap would refuse it forever.
+        expect(scheduler.getNextBatch()).toHaveLength(1);
+    });
+
+    it("invalid weights coerce to 1", () => {
+        expect.assertions(1);
+
+        const { projectGraph, taskGraph } = makeFlat({
+            "a:build": { concurrencyWeight: -5 },
+            "b:build": { concurrencyWeight: 0 },
+            "c:build": { concurrencyWeight: 1.5 },
+            "d:build": { concurrencyWeight: Number.NaN },
+        });
+        const scheduler = new TaskScheduler(taskGraph, projectGraph, 4);
+
+        // All four should fit at weight 1 each.
+        expect(scheduler.getNextBatch()).toHaveLength(4);
+    });
+
+    it("completion frees the weight slot", () => {
+        expect.assertions(2);
+
+        const { projectGraph, taskGraph } = makeFlat({
+            "heavy:build": { concurrencyWeight: 2 },
+            "next:build": { concurrencyWeight: 2 },
+        });
+        const scheduler = new TaskScheduler(taskGraph, projectGraph, 2);
+
+        const first = scheduler.getNextBatch();
+
+        expect(first).toHaveLength(1);
+
+        scheduler.startTask((first[0] as Task).id);
+        scheduler.completeTask((first[0] as Task).id);
+
+        // After completion, the budget is fully freed and the other heavy task fits.
+        expect(scheduler.getNextBatch()).toHaveLength(1);
+    });
+});

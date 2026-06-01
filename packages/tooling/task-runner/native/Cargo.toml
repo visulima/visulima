@@ -18,8 +18,37 @@ tokio = { version = "1", features = ["rt-multi-thread", "process", "io-util", "s
 [target.'cfg(unix)'.dependencies]
 nix = { version = "0.31", features = ["signal", "process"] }
 
+# Linux file-access tracker via seccomp_unotify. Pure Rust, no
+# system libraries — fspy_seccomp talks to the kernel directly via
+# raw `seccomp(2)` + ioctl. Works on every Linux target (gnu, musl,
+# aarch64, riscv64) with no C dependency.
+[target.'cfg(target_os = "linux")'.dependencies]
+fspy-seccomp = { path = "./fspy_seccomp" }
+
+# macOS interpose tracker (native/src/macos.rs) talks to libc directly for the
+# socketpair + datagram recv + fd flags. The injected dylib lives in the
+# separate `fspy_macos` cdylib (NOT a dependency here — its `__interpose`
+# section must never link into the parent addon).
+[target.'cfg(target_os = "macos")'.dependencies]
+libc = "0.2.178"
+
 [target.'cfg(windows)'.dependencies]
-windows-sys = { version = "0.61", features = ["Win32_System_Console", "Win32_System_JobObjects", "Win32_System_Threading", "Win32_Foundation", "Win32_Security"] }
+windows-sys = { version = "0.61", features = [
+  "Win32_System_Console",
+  "Win32_System_JobObjects",
+  "Win32_System_Threading",
+  "Win32_Foundation",
+  "Win32_Security",
+  # Windows file-access tracker parent (native/src/windows.rs): suspended
+  # process creation + CreateRemoteThread(LoadLibraryW) DLL injection + a
+  # per-spawn named-pipe server that drains the injected fspy_windows DLL.
+  "Win32_System_Memory",
+  "Win32_System_LibraryLoader",
+  "Win32_System_Diagnostics_Debug",
+  "Win32_System_Pipes",
+  "Win32_Storage_FileSystem",
+  "Win32_System_IO",
+] }
 
 [build-dependencies]
 napi-build = "2"

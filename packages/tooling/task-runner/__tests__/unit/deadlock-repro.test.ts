@@ -20,13 +20,15 @@ const createTemporaryDirectory = async (): Promise<string> => {
     return directory;
 };
 
-const makeTask = (project: string): Task => ({
-    id: `${project}:build`,
-    outputs: [],
-    overrides: {},
-    projectRoot: `packages/${project}`,
-    target: { project, target: "build" },
-});
+const makeTask = (project: string): Task => {
+    return {
+        id: `${project}:build`,
+        outputs: [],
+        overrides: {},
+        projectRoot: `packages/${project}`,
+        target: { project, target: "build" },
+    };
+};
 
 describe("orphan-dep tolerance + deadlock diagnostics", () => {
     it("schedules every task even when dependency lists carry refs to non-existent task ids", async () => {
@@ -52,6 +54,7 @@ describe("orphan-dep tolerance + deadlock diagnostics", () => {
                 // mirroring the cirrus-side input bug. Pre-fix this
                 // deadlocks; post-fix it schedules all 24 tasks.
                 const index = Number(dep.replace("dep", ""));
+
                 dependencies[`${dep}:build`] = [`leaf${index % 13}:build`, `leaf${(index + 1) % 13}:build`, "orphan:build"];
             }
 
@@ -63,11 +66,16 @@ describe("orphan-dep tolerance + deadlock diagnostics", () => {
 
             const projectGraph: ProjectGraph = {
                 dependencies: Object.fromEntries(projects.map((p) => [p, []])),
-                nodes: Object.fromEntries(projects.map((p) => [p, {
-                    data: { root: `packages/${p}` },
-                    name: p,
-                    type: "application",
-                }])),
+                nodes: Object.fromEntries(
+                    projects.map((p) => [
+                        p,
+                        {
+                            data: { root: `packages/${p}` },
+                            name: p,
+                            type: "application",
+                        },
+                    ]),
+                ),
             };
 
             const cache = new Cache({ workspaceRoot });
@@ -76,7 +84,9 @@ describe("orphan-dep tolerance + deadlock diagnostics", () => {
                 workspaceRoot,
             });
             const scheduler = new TaskScheduler(taskGraph, projectGraph, 1);
-            const executor: TaskExecutor = async () => ({ code: 0, terminalOutput: "ok" });
+            const executor: TaskExecutor = async () => {
+                return { code: 0, terminalOutput: "ok" };
+            };
 
             const orchestrator = new TaskOrchestrator({
                 cache,
@@ -92,11 +102,11 @@ describe("orphan-dep tolerance + deadlock diagnostics", () => {
             let warningOutput = "";
             const originalWrite = process.stderr.write.bind(process.stderr);
 
-            process.stderr.write = ((chunk: string | Uint8Array) => {
+            process.stderr.write = (chunk: string | Uint8Array) => {
                 warningOutput += typeof chunk === "string" ? chunk : Buffer.from(chunk).toString();
 
                 return true;
-            }) as typeof process.stderr.write;
+            };
 
             try {
                 const results = await orchestrator.run();
@@ -144,7 +154,9 @@ describe("orphan-dep tolerance + deadlock diagnostics", () => {
                 workspaceRoot,
             });
             const scheduler = new TaskScheduler(taskGraph, projectGraph, 2);
-            const executor: TaskExecutor = async () => ({ code: 0, terminalOutput: "ok" });
+            const executor: TaskExecutor = async () => {
+                return { code: 0, terminalOutput: "ok" };
+            };
 
             const orchestrator = new TaskOrchestrator({
                 cache,
@@ -158,16 +170,18 @@ describe("orphan-dep tolerance + deadlock diagnostics", () => {
             });
 
             await expect(orchestrator.run()).rejects.toThrow(/Circular dependency found/);
-            await expect(new TaskOrchestrator({
-                cache,
-                lifeCycle: new EmptyLifeCycle(),
-                scheduler: new TaskScheduler(taskGraph, projectGraph, 2),
-                skipCache: true,
-                taskExecutor: executor,
-                taskGraph,
-                taskHasher,
-                workspaceRoot,
-            }).run()).rejects.toThrow(/Stranded tasks/);
+            await expect(
+                new TaskOrchestrator({
+                    cache,
+                    lifeCycle: new EmptyLifeCycle(),
+                    scheduler: new TaskScheduler(taskGraph, projectGraph, 2),
+                    skipCache: true,
+                    taskExecutor: executor,
+                    taskGraph,
+                    taskHasher,
+                    workspaceRoot,
+                }).run(),
+            ).rejects.toThrow(/Stranded tasks/);
         } finally {
             await rm(workspaceRoot, { force: true, recursive: true });
         }
@@ -194,11 +208,16 @@ describe("skip-dependents on failure (Fix #1)", () => {
             };
             const projectGraph: ProjectGraph = {
                 dependencies: { a: [], b: [], c: [], d: [] },
-                nodes: Object.fromEntries(["a", "b", "c", "d"].map((p) => [p, {
-                    data: { root: `packages/${p}` },
-                    name: p,
-                    type: "application",
-                }])),
+                nodes: Object.fromEntries(
+                    ["a", "b", "c", "d"].map((p) => [
+                        p,
+                        {
+                            data: { root: `packages/${p}` },
+                            name: p,
+                            type: "application",
+                        },
+                    ]),
+                ),
             };
 
             const cache = new Cache({ workspaceRoot });
@@ -208,9 +227,7 @@ describe("skip-dependents on failure (Fix #1)", () => {
             });
             const scheduler = new TaskScheduler(taskGraph, projectGraph, 4);
 
-            const executor: TaskExecutor = async (task) => (task.id === "b:build"
-                ? { code: 1, terminalOutput: "b broke" }
-                : { code: 0, terminalOutput: "ok" });
+            const executor: TaskExecutor = async (task) => (task.id === "b:build" ? { code: 1, terminalOutput: "b broke" } : { code: 0, terminalOutput: "ok" });
 
             const orchestrator = new TaskOrchestrator({
                 cache,
@@ -254,11 +271,16 @@ describe("skip-dependents on failure (Fix #1)", () => {
             };
             const projectGraph: ProjectGraph = {
                 dependencies: { a: [], b: [], c: [], d: [] },
-                nodes: Object.fromEntries(["a", "b", "c", "d"].map((p) => [p, {
-                    data: { root: `packages/${p}` },
-                    name: p,
-                    type: "application",
-                }])),
+                nodes: Object.fromEntries(
+                    ["a", "b", "c", "d"].map((p) => [
+                        p,
+                        {
+                            data: { root: `packages/${p}` },
+                            name: p,
+                            type: "application",
+                        },
+                    ]),
+                ),
             };
 
             const cache = new Cache({ workspaceRoot });
@@ -269,9 +291,7 @@ describe("skip-dependents on failure (Fix #1)", () => {
             // parallel=1 so a→b runs before c/d get a chance.
             const scheduler = new TaskScheduler(taskGraph, projectGraph, 1);
 
-            const executor: TaskExecutor = async (task) => (task.id === "b:build"
-                ? { code: 1, terminalOutput: "b broke" }
-                : { code: 0, terminalOutput: "ok" });
+            const executor: TaskExecutor = async (task) => (task.id === "b:build" ? { code: 1, terminalOutput: "b broke" } : { code: 0, terminalOutput: "ok" });
 
             const orchestrator = new TaskOrchestrator({
                 bail: true,
@@ -323,7 +343,9 @@ describe("lifecycle hook resilience (Fix #2)", () => {
             });
             const scheduler = new TaskScheduler(taskGraph, projectGraph, 1);
 
-            const executor: TaskExecutor = async () => ({ code: 0, terminalOutput: "ok" });
+            const executor: TaskExecutor = async () => {
+                return { code: 0, terminalOutput: "ok" };
+            };
 
             const buggyLifeCycle = {
                 endTasks: (): void => {
@@ -345,7 +367,9 @@ describe("lifecycle hook resilience (Fix #2)", () => {
             const results = await Promise.race([
                 orchestrator.run(),
                 new Promise<never>((_, reject) => {
-                    setTimeout(() => reject(new Error("orchestrator hung")), 5000);
+                    setTimeout(() => {
+                        reject(new Error("orchestrator hung"));
+                    }, 5000);
                 }),
             ]);
 
@@ -363,11 +387,7 @@ describe("parallelism: false (Fix #4)", () => {
         const workspaceRoot = await createTemporaryDirectory();
 
         try {
-            const tasks: Task[] = [
-                { ...makeTask("a") },
-                { ...makeTask("b"), parallelism: false },
-                { ...makeTask("c") },
-            ];
+            const tasks: Task[] = [{ ...makeTask("a") }, { ...makeTask("b"), parallelism: false }, { ...makeTask("c") }];
             const taskGraph: TaskGraph = {
                 dependencies: { "a:build": [], "b:build": [], "c:build": [] },
                 roots: ["a:build", "b:build", "c:build"],
@@ -375,11 +395,16 @@ describe("parallelism: false (Fix #4)", () => {
             };
             const projectGraph: ProjectGraph = {
                 dependencies: { a: [], b: [], c: [] },
-                nodes: Object.fromEntries(["a", "b", "c"].map((p) => [p, {
-                    data: { root: `packages/${p}` },
-                    name: p,
-                    type: "application",
-                }])),
+                nodes: Object.fromEntries(
+                    ["a", "b", "c"].map((p) => [
+                        p,
+                        {
+                            data: { root: `packages/${p}` },
+                            name: p,
+                            type: "application",
+                        },
+                    ]),
+                ),
             };
 
             const cache = new Cache({ workspaceRoot });

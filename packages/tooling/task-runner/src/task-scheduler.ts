@@ -131,6 +131,22 @@ const buildTargetCaps = (taskGraph: TaskGraph): Map<string, number> => {
     return caps;
 };
 
+/**
+ * Resolves a task's slot weight against the global `parallel` cap.
+ * Defaults to `1` for any unset, non-positive, non-finite, or
+ * non-integer value — the scheduler treats those as "one slot" rather
+ * than rejecting them, so a typo never wedges the graph.
+ */
+const resolveWeight = (task: Task): number => {
+    const raw = task.concurrencyWeight;
+
+    if (typeof raw !== "number" || !Number.isInteger(raw) || raw <= 0) {
+        return 1;
+    }
+
+    return raw;
+};
+
 const buildGroupCaps = (raw: ConcurrencyGroups | undefined): Map<string, number> => {
     const caps = new Map<string, number>();
 
@@ -200,6 +216,12 @@ export class TaskScheduler {
     /** Live count of running tasks per capped key. */
     readonly #runningPerKey = new Map<string, number>();
 
+    /** Sum of resolved `concurrencyWeight` for every currently-running task. */
+    #runningWeight = 0;
+
+    /** task-id → resolved weight, captured at start so completion mirrors start. */
+    readonly #runningWeights = new Map<string, number>();
+
     /**
      * Partitions a list of tasks for distributed CI execution.
      * Tasks are sorted by ID for deterministic distribution, then split
@@ -260,11 +282,20 @@ export class TaskScheduler {
 
     /**
      * Returns the next batch of tasks that are ready to execute.
+     *
+     * Slot accounting is weighted: a task's `concurrencyWeight` (default
+     * `1`) counts against the global `parallel` cap. A heavier task may
+     * still run alone — when nothing is in flight, the scheduler always
+     * admits at least one ready task even if its weight exceeds the cap,
+     * so a `parallel: 1` pool can't deadlock on a weight-3 task.
      */
     public getNextBatch(): Task[] {
-        const availableSlots = this.#maxParallel - this.#runningTasks.size;
+        const availableSlots = this.#maxParallel - this.#runningWeight;
 
-        if (availableSlots <= 0) {
+        // A weight-N task can still claim the pool when nothing's
+        // running. Only return early when in-flight tasks already
+        // saturate the budget.
+        if (availableSlots <= 0 && this.#runningTasks.size > 0) {
             return [];
         }
 
@@ -284,88 +315,69 @@ export class TaskScheduler {
         const readyTasks = this.#getReadyTasks();
         const sortedTasks = this.#sortByPriority(readyTasks);
 
-        // A `parallelism: false` candidate only fires when nothing else
-        // is running and it goes into a singleton batch — no siblings
-        // alongside it. Walk priority order and pick the first such
-        // candidate or the first un-capped one, whichever comes first.
-        if (this.#runningTasks.size === 0 && sortedTasks.length > 0 && sortedTasks[0]?.parallelism === false) {
-            return [sortedTasks[0] as Task];
-        }
-
-        // Fast path: no caps configured, original slice behavior. Stop
-        // at any `parallelism: false` task so it doesn't ride along
-        // with siblings — it'll be picked alone on a future tick.
-        if (this.#taskKeys.size === 0) {
-            const limit = Math.min(sortedTasks.length, availableSlots);
-            const batch: Task[] = [];
-
-            for (let index = 0; index < limit; index += 1) {
-                const candidate = sortedTasks[index] as Task;
-
-                if (candidate.parallelism === false) {
-                    break;
-                }
-
-                batch.push(candidate);
-            }
-
-            return batch;
-        }
-
         // Cap-aware fill. Walk in priority order and skip any task
-        // whose start would push a per-target or per-group key over
-        // its declared cap. Skipped tasks aren't dropped — they stay
-        // in the ready queue for the next tick (a running task with
-        // the same key will eventually complete and free the slot).
-        // We also accumulate hypothetical key counts within this pass
-        // so the cap holds even when the same batch contains multiple
-        // candidates sharing a key.
+        // whose start would exceed the weighted budget or push a
+        // per-target/per-group key over its declared cap. Skipped
+        // tasks stay in the ready queue for the next tick (a running
+        // task with the same key will eventually complete and free
+        // the slot). Hypothetical key counts accumulate within this
+        // pass so caps hold when the same batch contains multiple
+        // candidates sharing a key. The single unified loop subsumes
+        // the old no-caps fast-path — uncapped tasks just skip the
+        // key checks and pay only the weight accounting.
         const batch: Task[] = [];
         const projectedPerKey = new Map<string, number>(this.#runningPerKey);
+        let projectedWeight = this.#runningWeight;
+        const idle = this.#runningTasks.size === 0;
 
         for (const task of sortedTasks) {
-            if (batch.length >= availableSlots) {
+            const weight = resolveWeight(task);
+            const remaining = this.#maxParallel - projectedWeight;
+
+            // Weight fit: normally the task must fit in the remaining
+            // budget. The exception is the very first admit on an idle
+            // pool — a single heavy task always gets to run, otherwise
+            // a weight-3 task on `parallel: 1` would never start.
+            const weightFits = weight <= remaining || (idle && batch.length === 0);
+
+            if (!weightFits) {
+                continue;
+            }
+
+            // `parallelism: false` means the task runs alone. If
+            // anything is already queued for this tick, defer the
+            // singleton to its own batch.
+            if (task.parallelism === false && batch.length > 0) {
                 break;
             }
 
-            // Sole-task constraint also applies on the cap path: once
-            // any task is queued, a `parallelism: false` candidate must
-            // wait for its own tick.
-            if (task.parallelism === false) {
-                if (batch.length > 0) {
-                    break;
-                }
-            }
-
             const keys = this.#taskKeys.get(task.id);
+            const exceedsKeyCap
+                = keys === undefined
+                    ? false
+                    : keys.some((key) => {
+                        const cap = this.#capForKey(key);
+                        const projected = (projectedPerKey.get(key) ?? 0) + 1;
 
-            if (keys === undefined) {
-                batch.push(task);
+                        return cap !== undefined && projected > cap;
+                    });
 
-                if (task.parallelism === false) {
-                    break;
+            if (exceedsKeyCap) {
+                continue;
+            }
+
+            if (keys !== undefined) {
+                for (const key of keys) {
+                    projectedPerKey.set(key, (projectedPerKey.get(key) ?? 0) + 1);
                 }
-
-                continue;
             }
 
-            const wouldExceed = keys.some((key) => {
-                const cap = this.#capForKey(key);
-                const projected = (projectedPerKey.get(key) ?? 0) + 1;
-
-                return cap !== undefined && projected > cap;
-            });
-
-            if (wouldExceed) {
-                continue;
-            }
-
-            for (const key of keys) {
-                projectedPerKey.set(key, (projectedPerKey.get(key) ?? 0) + 1);
-            }
-
+            projectedWeight += weight;
             batch.push(task);
 
+            // Once a singleton lands in the batch nothing else may
+            // ride along with it. Bail so the loop returns just that
+            // task.
             if (task.parallelism === false) {
                 break;
             }
@@ -383,6 +395,12 @@ export class TaskScheduler {
         }
 
         this.#runningTasks.add(taskId);
+
+        const task = this.#taskGraph.tasks[taskId];
+        const weight = task === undefined ? 1 : resolveWeight(task);
+
+        this.#runningWeights.set(taskId, weight);
+        this.#runningWeight += weight;
 
         const keys = this.#taskKeys.get(taskId);
 
@@ -404,6 +422,13 @@ export class TaskScheduler {
 
         if (!wasRunning) {
             return;
+        }
+
+        const weight = this.#runningWeights.get(taskId);
+
+        if (weight !== undefined) {
+            this.#runningWeight -= weight;
+            this.#runningWeights.delete(taskId);
         }
 
         const keys = this.#taskKeys.get(taskId);
@@ -455,7 +480,7 @@ export class TaskScheduler {
      */
     public getOrphanDependencies(): Map<string, string[]> {
         const orphans = new Map<string, string[]>();
-        const tasks = this.#taskGraph.tasks;
+        const { tasks } = this.#taskGraph;
 
         for (const [taskId, deps] of Object.entries(this.#taskGraph.dependencies)) {
             if (!(taskId in tasks)) {
@@ -481,7 +506,7 @@ export class TaskScheduler {
      */
     public describeStrandedTasks(): { id: string; unmetDeps: string[] }[] {
         const stranded: { id: string; unmetDeps: string[] }[] = [];
-        const tasks = this.#taskGraph.tasks;
+        const { tasks } = this.#taskGraph;
 
         for (const taskId of Object.keys(tasks)) {
             if (this.#completedTasks.has(taskId) || this.#runningTasks.has(taskId)) {
@@ -499,7 +524,7 @@ export class TaskScheduler {
 
     #getReadyTasks(): Task[] {
         const ready: Task[] = [];
-        const tasks = this.#taskGraph.tasks;
+        const { tasks } = this.#taskGraph;
 
         for (const [taskId, task] of Object.entries(tasks)) {
             if (this.#completedTasks.has(taskId) || this.#runningTasks.has(taskId)) {

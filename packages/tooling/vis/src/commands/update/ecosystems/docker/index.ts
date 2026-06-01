@@ -5,21 +5,20 @@ import type { EcosystemUpdate, EcosystemUpdateOptions } from "../types";
 import type { DockerRegistryOptions } from "./registry";
 import { DockerRegistry } from "./registry";
 import type { ImageReference } from "./scanner";
-import { scanDockerRepository } from "./scanner";
 
 const MS_PER_DAY = 86_400_000;
 
 interface CheckDockerContext {
-    readonly references: ImageReference[];
-    readonly options: EcosystemUpdateOptions;
-    readonly registryOptions?: DockerRegistryOptions;
     readonly ignoreRules?: DependabotIgnoreRules;
+    readonly options: EcosystemUpdateOptions;
+    readonly references: ImageReference[];
+    readonly registryOptions?: DockerRegistryOptions;
 }
 
 interface CheckDockerResult {
-    readonly updates: EcosystemUpdate[];
     readonly failed: { file: string; reason: string }[];
     readonly ignored: EcosystemUpdate[];
+    readonly updates: EcosystemUpdate[];
 }
 
 const matchesPattern = (name: string, patterns: string[]): boolean => {
@@ -57,15 +56,16 @@ const displayName = (reference: ImageReference): string => {
  * Returns true when the reference has a `@sha256:…` digest pin. Digest
  * pins are an explicit supply-chain guarantee from the user — we can't
  * cheaply resolve a fresh digest for the new tag (it would require a
- * `HEAD /v2/<name>/manifests/<tag>` call per update), so the safe
+ * `HEAD /v2/&lt;name>/manifests/&lt;tag>` call per update), so the safe
  * default is to skip the update with a clear reason rather than silently
  * strip the pin.
  */
 const hasDigestPin = (reference: ImageReference): boolean => reference.digest !== undefined && reference.digest.length > 0;
+
 /**
  * Best-effort registry browse URL for the report. Docker Hub uses a
  * different path shape for library vs. user images, and other registries
- * just don't have a canonical web URL — we return the `https://<host>/...`
+ * just don't have a canonical web URL — we return the `https://&lt;host>/...`
  * form and let the report show it for navigability.
  */
 const buildRegistryUrl = (reference: ImageReference): string => {
@@ -324,4 +324,4 @@ export const checkDocker = async (_workspaceRoot: string, context: CheckDockerCo
     return { failed, ignored: ignoredList, updates };
 };
 
-export { scanDockerRepository };
+export { scanDockerRepository } from "./scanner";

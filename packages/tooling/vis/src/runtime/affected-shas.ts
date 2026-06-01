@@ -22,20 +22,24 @@ export interface ResolveAffectedShasOptions {
      * Callers should pass `visConfig.defaultBase` here.
      */
     defaultBase?: string;
+
     /**
      * Environment to inspect. Defaults to `process.env`. Injectable for tests.
      */
     env?: NodeJS.ProcessEnv;
+
     /**
      * Read and parse a JSON file (e.g. `$GITHUB_EVENT_PATH`). Returns
      * `undefined` on any error. Injectable for tests.
      */
     readEventPayload?: EventPayloadReader;
+
     /**
      * Run a git command and return the trimmed stdout. Returns `undefined`
      * on non-zero exit. Injectable for tests.
      */
     runGit?: GitRunner;
+
     /**
      * Workspace root used as the cwd for git invocations. Defaults to
      * `process.cwd()`.
@@ -83,11 +87,7 @@ const getNested = (payload: Record<string, unknown> | undefined, ...keys: string
     return current;
 };
 
-const resolveGithub = (
-    env: NodeJS.ProcessEnv,
-    defaultBase: string,
-    readEventPayload: EventPayloadReader,
-): ResolvedShas => {
+const resolveGithub = (env: NodeJS.ProcessEnv, defaultBase: string, readEventPayload: EventPayloadReader): ResolvedShas => {
     const notes: string[] = [];
 
     const baseRef = env["GITHUB_BASE_REF"];
@@ -103,7 +103,7 @@ const resolveGithub = (
     const payload = eventPath ? readEventPayload(eventPath) : undefined;
 
     if (payload) {
-        const before = typeof payload["before"] === "string" ? (payload["before"] as string) : undefined;
+        const before = typeof payload["before"] === "string" ? (payload["before"]) : undefined;
 
         if (isNonEmptySha(before)) {
             notes.push(`push: event.before=${before}`);
@@ -190,11 +190,7 @@ const resolveCircleCI = (env: NodeJS.ProcessEnv, defaultBase: string): ResolvedS
     return { base: `origin/${defaultBase}`, head: headSha, notes, provider: "circleci" };
 };
 
-const resolveLocal = (
-    defaultBase: string,
-    runGit: GitRunner,
-    workspaceRoot: string,
-): ResolvedShas => {
+const resolveLocal = (defaultBase: string, runGit: GitRunner, workspaceRoot: string): ResolvedShas => {
     const notes: string[] = [];
     const mergeBase = runGit(["merge-base", "HEAD", `origin/${defaultBase}`], workspaceRoot);
 

@@ -178,6 +178,10 @@
                     "type": "string",
                     "description": "Workspace-level concurrency group this target opts into. The scheduler caps the *combined* in-flight count of every task whose target carries the same group name to the value declared in  {@link  TaskRunnerOptions.concurrencyGroups } . Use this when several targets share an external resource (a single Postgres, a developer's Docker daemon, an account-wide deploy lock) so the cap follows the resource, not any single target name.\n\nTargets that name a group not declared in `concurrencyGroups` run uncapped — a typo shouldn't deadlock the graph. Caps don't apply to tasks marked `always: true`; those run in a separate finalisation phase outside the scheduler."
                 },
+                "concurrencyWeight": {
+                    "type": "number",
+                    "description": "Per-task slot weight against the global `parallel` cap. Defaults to `1`. A task with `concurrencyWeight: 2` consumes two slots; with `parallel: 4` only two such tasks can run concurrently (or one weight-2 plus two weight-1). Use for CPU-pinning tasks — bundlers, `tsc`, native compiles — where the runner shouldn't keep over-subscribing the box just because slots are nominally free.\n\nThe scheduler always lets a single task run even if its weight exceeds the remaining budget; otherwise a heavy task on a `parallel: 1` pool would deadlock. Values `&lt;= 0`, non-finite, or non-integer are ignored (treated as `1`)."
+                },
                 "configurations": {
                     "type": "object",
                     "additionalProperties": {
@@ -379,6 +383,10 @@
                 "parallelism": {
                     "type": "boolean",
                     "description": "Whether this target supports parallel execution"
+                },
+                "pty": {
+                    "type": "boolean",
+                    "description": "Per-target PTY override. When `true`, every task spawned from this target runs inside a pseudo-terminal (so `isatty()` returns true and the child preserves color / progress UI). When `false`, the workspace-level PTY toggle is suppressed for this target. Useful when most targets are happy with piped stdio but one tool (vitest, prettier, a colorising linter) needs a real TTY, or vice versa.\n\nAbsent means \"follow the workspace default\" — the executor decides based on its own toggles."
                 },
                 "warningPattern": {
                     "anyOf": [

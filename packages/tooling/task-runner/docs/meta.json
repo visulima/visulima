@@ -15,6 +15,7 @@
                 "guides/affected-detection",
                 "guides/conditional-tasks",
                 "guides/command-tokens",
+                "guides/cooperative-cache-hints",
                 "guides/run-summaries",
                 "guides/graph-visualization"
             ]
