@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, expectTypeOf, it } from "vitest";
 
-import { FileAccessTracker, generatePreloadScript } from "../../src/file-access-tracker";
+import { FileAccessTracker, generatePreloadScript, parseDirectExec } from "../../src/file-access-tracker";
 
 const createTemporaryDirectory = async (base?: string): Promise<string> => {
     const parent = base ?? tmpdir();
@@ -251,5 +251,39 @@ describe(generatePreloadScript, () => {
         const script = generatePreloadScript("/tmp/log");
 
         expect(script).toContain('process.on("beforeExit"');
+    });
+});
+
+describe(parseDirectExec, () => {
+    it("returns argv for a single direct binary invocation", () => {
+        expect.assertions(3);
+
+        expect(parseDirectExec("eslint .")).toStrictEqual(["eslint", "."]);
+        expect(parseDirectExec("node script.js --flag value")).toStrictEqual(["node", "script.js", "--flag", "value"]);
+        expect(parseDirectExec("  tsc   --noEmit  ")).toStrictEqual(["tsc", "--noEmit"]);
+    });
+
+    it("returns undefined for empty input", () => {
+        expect.assertions(2);
+
+        expect(parseDirectExec("")).toBeUndefined();
+        expect(parseDirectExec("   ")).toBeUndefined();
+    });
+
+    it.each([
+        ["pipeline", "cat x | grep y"],
+        ["and", "a && b"],
+        ["semicolon", "a; b"],
+        ["redirect", "echo hi > out.txt"],
+        ["var expansion", "echo $HOME"],
+        ["subshell", "echo $(date)"],
+        ["backtick", "echo `date`"],
+        ["glob", "prettier --write src/**/*.ts"],
+        ["quotes", 'eslint "src/**"'],
+        ["home", "cat ~/x"],
+    ])("returns undefined for shell syntax (%s)", (_label, command) => {
+        expect.assertions(1);
+
+        expect(parseDirectExec(command)).toBeUndefined();
     });
 });

@@ -7,7 +7,7 @@ import { join } from "@visulima/path";
 import type { CollectedHints } from "./cache-hints";
 import { collectHints, emptyHints, HINTS_ENV, HINTS_PROTOCOL_VERSION, PROTOCOL_ENV } from "./cache-hints";
 import type { FileAccess } from "./file-access-tracker";
-import { FileAccessTracker, generatePreloadScript } from "./file-access-tracker";
+import { FileAccessTracker, generatePreloadScript, parseDirectExec } from "./file-access-tracker";
 import { withEnhancedPath } from "./path-utils";
 import type { Task, TaskExecutionOptions } from "./types";
 import { uniqueId } from "./utils";
@@ -96,7 +96,13 @@ export class TrackedTaskExecutor {
         try {
             let base: Omit<TrackedExecutionResult, "hints">;
 
-            // Strategy 1: strace (Linux only, most complete)
+            // Strategy 1: syscall-level tracking (Linux strace/seccomp — most complete).
+            // Strategy 2 (macOS): DYLD interpose, but only for directly-exec'd
+            //   commands (no shell syntax) — SIP strips DYLD_INSERT_LIBRARIES
+            //   from /bin/sh, so shell commands must use the preload fallback.
+            // Strategy 3: Node preload script (cross-platform, Node.js processes only).
+            const directArgv = this.#tracker.isInterposeSupported() ? parseDirectExec(command) : undefined;
+
             if (this.#tracker.isSupported()) {
                 const trackingResult = await this.#tracker.track(command, {
                     cwd,
@@ -108,8 +114,18 @@ export class TrackedTaskExecutor {
                     code: trackingResult.code,
                     terminalOutput: trackingResult.output,
                 };
+            } else if (directArgv) {
+                const trackingResult = await this.#tracker.trackInterpose(directArgv, {
+                    cwd,
+                    env: { ...options.env, ...hintEnv },
+                });
+
+                base = {
+                    accesses: trackingResult.accesses,
+                    code: trackingResult.code,
+                    terminalOutput: trackingResult.output,
+                };
             } else {
-                // Strategy 2: Preload script (cross-platform, Node.js processes only)
                 base = await this.#executeWithPreload(command, cwd, { ...options.env, ...hintEnv });
             }
 

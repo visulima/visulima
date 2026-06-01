@@ -148,6 +148,122 @@ const isSeccompAvailable = (): boolean => {
 };
 
 /**
+ * Lazily resolves the bundled `fspy-macos.dylib` (the DYLD-interpose
+ * tracker injected into directly-exec'd children on macOS). Mirrors
+ * {@link resolveSeccompHelperPath}: the dylib ships in each darwin
+ * binding package, with a source-tree fallback for `cargo build`.
+ */
+let dylibPathCache: HelperPathCache | undefined;
+
+const resolveInterposeDylibPath = (): string | undefined => {
+    if (dylibPathCache !== undefined) {
+        return dylibPathCache.value === "" ? undefined : dylibPathCache.value;
+    }
+
+    if (platform() !== "darwin") {
+        dylibPathCache = { value: "" };
+
+        return undefined;
+    }
+
+    const candidates: string[] = [];
+
+    try {
+        const here = dirname(fileURLToPath(import.meta.url));
+        const cjsRequire = createRequire(import.meta.url);
+
+        for (const pkg of ["@visulima/task-runner-binding-darwin-arm64", "@visulima/task-runner-binding-darwin-x64"]) {
+            try {
+                const pkgJsonPath = cjsRequire.resolve(`${pkg}/package.json`);
+
+                candidates.push(join(dirname(pkgJsonPath), "fspy-macos.dylib"));
+            } catch {
+                // Binding not installed for this host — try the next.
+            }
+        }
+
+        // Source-tree fallback (`cargo build [--release]` output). The
+        // cdylib's `fspy-macos` crate name maps to `libfspy_macos.dylib`.
+        candidates.push(
+            join(here, "..", "native", "fspy_macos", "target", "debug", "libfspy_macos.dylib"),
+            join(here, "..", "native", "fspy_macos", "target", "release", "libfspy_macos.dylib"),
+        );
+    } catch {
+        // import.meta.url unusable in some bundler outputs — null cache.
+    }
+
+    for (const candidate of candidates) {
+        try {
+            accessSync(candidate, fsConstants.R_OK);
+            dylibPathCache = { value: candidate };
+
+            return candidate;
+        } catch {
+            // Try the next candidate.
+        }
+    }
+
+    dylibPathCache = { value: "" };
+
+    return undefined;
+};
+
+/**
+ * True when interpose tracking is available (macOS + the addon exposes
+ * `trackWithInterpose` + the dylib is on disk). Cached.
+ */
+let interposeAvailable: boolean | undefined;
+
+const isInterposeAvailable = (): boolean => {
+    if (interposeAvailable !== undefined) {
+        return interposeAvailable;
+    }
+
+    if (platform() !== "darwin") {
+        interposeAvailable = false;
+
+        return false;
+    }
+
+    if (!loadNativeBindings()?.trackWithInterpose) {
+        interposeAvailable = false;
+
+        return false;
+    }
+
+    interposeAvailable = resolveInterposeDylibPath() !== undefined;
+
+    return interposeAvailable;
+};
+
+/**
+ * Shell syntax that means a command can't be exec'd as a single binary
+ * — so the macOS interpose path (which exec's directly, never through
+ * `/bin/sh`, to survive SIP) can't handle it and must defer to the
+ * preload fallback. Quotes/globs/expansions all disqualify.
+ */
+const SHELL_SYNTAX = /[\t\n!"#$&'()*;<>?[\\\]`{|}~]/u;
+
+/**
+ * Returns the argv for a command that is a single direct binary
+ * invocation with no shell syntax, or `undefined` when a shell is
+ * required. Conservative by design: anything that could behave
+ * differently under `execvp` than under a shell is rejected so the
+ * caller falls back to the (shell-based) preload path.
+ */
+export const parseDirectExec = (command: string): string[] | undefined => {
+    const trimmed = command.trim();
+
+    if (trimmed === "" || SHELL_SYNTAX.test(trimmed)) {
+        return undefined;
+    }
+
+    const argv = trimmed.split(/\s+/u);
+
+    return argv.length > 0 ? argv : undefined;
+};
+
+/**
  * Represents a file access recorded during task execution.
  *
  * Write-intent accesses (`"write"`) are emitted when a task opens a file
@@ -294,6 +410,37 @@ export class FileAccessTracker {
     // eslint-disable-next-line class-methods-use-this
     public isSupported(): boolean {
         return platform() === "linux" && (isSeccompAvailable() || isStraceAvailable());
+    }
+
+    /**
+     * True when the macOS DYLD-interpose tracker is usable. Unlike
+     * {@link isSupported} (which gates the syscall-level Linux paths),
+     * interpose only covers *directly-exec'd* commands — the caller
+     * must additionally check {@link parseDirectExec} and fall back to
+     * the preload path for shell-syntax commands.
+     */
+    // eslint-disable-next-line class-methods-use-this
+    public isInterposeSupported(): boolean {
+        return isInterposeAvailable();
+    }
+
+    /**
+     * Tracks a directly-exec'd `argv` via the macOS interpose dylib.
+     * `argv` MUST come from {@link parseDirectExec} (a single binary,
+     * no shell syntax) — it is exec'd directly, never through a shell,
+     * so `DYLD_INSERT_LIBRARIES` survives SIP. Degrades to the
+     * no-tracking path if the addon/dylib went missing since the
+     * availability check.
+     */
+    public async trackInterpose(
+        argv: string[],
+        options: {
+            abortSignal?: AbortSignal;
+            cwd?: string;
+            env?: Record<string, string | undefined>;
+        } = {},
+    ): Promise<TrackingResult> {
+        return this.#runWithInterpose(argv, options);
     }
 
     /**
@@ -455,6 +602,107 @@ export class FileAccessTracker {
             // the no-tracking path so the orchestrator marks the
             // result as `emptyFingerprint: true` and skips caching.
             return this.#runWithoutTracking(command, options);
+        } finally {
+            if (killable) {
+                this.#activeProcesses.delete(killable);
+            }
+
+            options.abortSignal?.removeEventListener("abort", abortHandler);
+        }
+    }
+
+    /**
+     * macOS interpose path. Spawns the directly-exec'd `argv` (no
+     * shell — SIP would strip `DYLD_INSERT_LIBRARIES` from `/bin/sh`)
+     * with the `fspy_macos` dylib injected and collects the reported
+     * accesses. Cancellation + access filtering mirror
+     * {@link #runWithSeccomp}.
+     */
+    async #runWithInterpose(
+        argv: string[],
+        options: {
+            abortSignal?: AbortSignal;
+            cwd?: string;
+            env?: Record<string, string | undefined>;
+        },
+    ): Promise<TrackingResult> {
+        const native = loadNativeBindings();
+        const dylibPath = resolveInterposeDylibPath();
+
+        if (!native?.trackWithInterpose || !dylibPath || argv.length === 0) {
+            return this.#runWithoutTracking(argv.join(" "), options);
+        }
+
+        const cwd = options.cwd ?? this.#workspaceRoot;
+        const env = withEnhancedPath({ ...process.env, ...options.env }, cwd);
+        const envFiltered: Record<string, string> = {};
+
+        for (const [k, v] of Object.entries(env)) {
+            if (typeof v === "string") {
+                envFiltered[k] = v;
+            }
+        }
+
+        let killable: Killable | undefined;
+        let resolveKillable: ((k: Killable) => void) | undefined;
+        const killableReady = new Promise<Killable>((r) => {
+            resolveKillable = r;
+        });
+
+        // Intentionally mirrors the seccomp path's PID-kill plumbing; kept
+        // inline rather than shared so the proven seccomp method is untouched.
+        // eslint-disable-next-line sonarjs/no-identical-functions
+        const onStarted = (pid: number): void => {
+            killable = {
+                kill: (signal): boolean => {
+                    try {
+                        return process.kill(pid, signal ?? "SIGTERM");
+                    } catch {
+                        return false;
+                    }
+                },
+            };
+            this.#activeProcesses.add(killable);
+            resolveKillable?.(killable);
+        };
+
+        // eslint-disable-next-line sonarjs/no-identical-functions
+        const abortHandler = (): void => {
+            killableReady
+                .then((k) => {
+                    k.kill("SIGTERM");
+
+                    return undefined;
+                })
+                .catch(() => {});
+        };
+
+        if (options.abortSignal?.aborted) {
+            return { accesses: [], code: -1, output: "" };
+        }
+
+        options.abortSignal?.addEventListener("abort", abortHandler, { once: true });
+
+        try {
+            const result = await native.trackWithInterpose(argv, dylibPath, { cwd, env: envFiltered }, onStarted);
+
+            const accesses: FileAccess[] = [];
+
+            for (const a of result.accesses) {
+                const absolute = a.path.startsWith("/") ? a.path : resolve(cwd, a.path);
+
+                if (this.#shouldExclude(absolute) || !absolute.startsWith(this.#workspaceRoot)) {
+                    continue;
+                }
+
+                accesses.push({ path: absolute, type: a.kind });
+            }
+
+            const output = `${result.stdout.toString("utf8")}${result.stderr.toString("utf8")}`;
+
+            return { accesses, code: result.exitCode, output };
+        } catch {
+            return this.#runWithoutTracking(argv.join(" "), options);
         } finally {
             if (killable) {
                 this.#activeProcesses.delete(killable);

@@ -121,6 +121,20 @@ interface NativeBindings {
     topologicalSort: (graph: NativeTaskGraph) => string[];
 
     /**
+     * macOS-only: spawn the directly-exec'd `argv` with the
+     * `fspy_macos` interpose dylib (at `dylibPath`) injected via
+     * `DYLD_INSERT_LIBRARIES` and collect reported accesses. Same
+     * result shape as `trackWithSeccomp`. Present only when the
+     * addon was built for a macOS target.
+     */
+    trackWithInterpose?: (
+        argv: string[],
+        dylibPath: string,
+        options?: NativeSeccompSpawnOptions,
+        onStarted?: (pid: number) => void,
+    ) => Promise<NativeSeccompTrackingResult>;
+
+    /**
      * Linux-only: spawn `argv` under seccomp_unotify tracking via
      * the helper binary at `helperPath`. Resolves once the child
      * exits with the gathered file accesses.
