@@ -19,24 +19,31 @@
 
 use std::io;
 use std::mem;
-use std::os::raw::c_ulong;
 use std::os::unix::io::RawFd;
 
-use libc::{seccomp_notif, seccomp_notif_resp, SECCOMP_USER_NOTIF_FLAG_CONTINUE};
+use libc::{Ioctl, SECCOMP_USER_NOTIF_FLAG_CONTINUE, seccomp_notif, seccomp_notif_resp};
 
-use crate::syscalls;
 use crate::FileAccess;
+use crate::syscalls;
 
-// Linux ioctl numbers — computed once by hand from
-// `<linux/seccomp.h>`'s `_IOWR('S', N, T)` macros. The layout is
-// `(dir<<30) | (size<<16) | (type<<8) | nr`; for these the type is
-// 'S' (0x53), `dir` is RW (3), and the size is the underlying
-// struct's byte size. These are stable across all Linux arches.
+// Linux ioctl numbers — computed from `<linux/seccomp.h>`'s
+// `_IOWR(SECCOMP_IOC_MAGIC, N, T)` macros where
+// `SECCOMP_IOC_MAGIC = '!'` (0x21, easy to misread as 'S'). Layout
+// is `(dir<<30) | (size<<16) | (type<<8) | nr`; `dir` is RW (3),
+// `size` is the struct's byte size. Stable across all Linux arches.
+//
+// `libc::Ioctl` is `c_ulong` on glibc (u64) and `c_int` on musl
+// (i32). Computing as `u32` then `as`-casting to Ioctl preserves
+// the bit pattern on both — the kernel reads the raw bytes.
 
-/// `_IOWR('S', 0, struct seccomp_notif)` — 80-byte struct → size = 80.
-const SECCOMP_IOCTL_NOTIF_RECV: c_ulong = 0xC050_2100;
-/// `_IOWR('S', 1, struct seccomp_notif_resp)` — 24-byte struct.
-const SECCOMP_IOCTL_NOTIF_SEND: c_ulong = 0xC018_2101;
+const fn ioc(dir: u32, ty: u32, nr: u32, size: u32) -> Ioctl {
+    (((dir) << 30) | ((size) << 16) | ((ty) << 8) | (nr)) as Ioctl
+}
+
+/// `_IOWR('!', 0, struct seccomp_notif)` — 80-byte struct.
+const SECCOMP_IOCTL_NOTIF_RECV: Ioctl = ioc(3, 0x21, 0, 80);
+/// `_IOWR('!', 1, struct seccomp_notif_resp)` — 24-byte struct.
+const SECCOMP_IOCTL_NOTIF_SEND: Ioctl = ioc(3, 0x21, 1, 24);
 
 /// Drain the listener until the tracked process tree exits.
 ///

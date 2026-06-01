@@ -242,6 +242,18 @@ jobs:
               with:
                   version: "0.14.1"
 
+            # cargo-zigbuild for the fspy-seccomp-helper build step.
+            # napi-cli bundles its own zigbuild for the .node addon,
+            # but the helper bin uses `cargo zigbuild` directly so it
+            # needs the standalone subcommand. Prebuilt via
+            # taiki-e/install-action (~5s; building via `cargo install`
+            # would add multiple minutes per CI run).
+            - name: "Install cargo-zigbuild (Linux only)"
+              if: "contains(matrix.settings.target, 'linux')"
+              uses: "taiki-e/install-action@e49978b799e49ff429d162b7a30601a569ab6538" # v2
+              with:
+                  tool: "cargo-zigbuild"
+
             # --- Build each package when cache missed ---
             # Cache keys are derived from native sources, so cache hits short-circuit
             # unchanged packages. Removing the files-changed gate ensures that PRs
