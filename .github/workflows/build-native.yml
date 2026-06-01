@@ -251,7 +251,7 @@ jobs:
             # Idempotent — re-running setup-zig when it already ran
             # for musl is a no-op.
             - name: "Install Zig for fspy-seccomp-helper (all Linux)"
-              if: "contains(matrix.settings.target, 'linux')"
+              if: "contains(matrix.settings.target, 'linux') && steps.cache-task-runner.outputs.cache-hit != 'true'"
               uses: "mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29" # v2.2.1
               with:
                   version: "0.14.1"
@@ -260,7 +260,7 @@ jobs:
             # Prebuilt via taiki-e/install-action (~5s; building via
             # `cargo install` would add multiple minutes per CI run).
             - name: "Install cargo-zigbuild (Linux only)"
-              if: "contains(matrix.settings.target, 'linux')"
+              if: "contains(matrix.settings.target, 'linux') && steps.cache-task-runner.outputs.cache-hit != 'true'"
               uses: "taiki-e/install-action@e49978b799e49ff429d162b7a30601a569ab6538" # v2
               with:
                   tool: "cargo-zigbuild"
@@ -280,7 +280,7 @@ jobs:
             # extra sysroot setup. Each output drops into the matching
             # binding package so its `files` array publishes it.
             - name: "Build fspy-seccomp-helper (all Linux)"
-              if: "contains(matrix.settings.target, 'linux')"
+              if: "contains(matrix.settings.target, 'linux') && steps.cache-task-runner.outputs.cache-hit != 'true'"
               shell: "bash"
               working-directory: "packages/tooling/task-runner"
               env:

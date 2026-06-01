@@ -13,6 +13,13 @@
 #![cfg(windows)]
 #![allow(non_snake_case)]
 
+// 64-bit only: the IAT walk uses the *64 PE structures (IMAGE_NT_HEADERS64,
+// IMAGE_THUNK_DATA64, IMAGE_ORDINAL_FLAG64). Both shipped Windows targets
+// (x86_64, aarch64) are 64-bit — fail fast rather than miscompile if a 32-bit
+// target is ever added.
+#[cfg(not(target_pointer_width = "64"))]
+compile_error!("fspy_windows: only 64-bit Windows targets are supported (the IAT walk uses IMAGE_*64 structures)");
+
 use core::ffi::c_void;
 use std::sync::atomic::{AtomicUsize, Ordering};
 

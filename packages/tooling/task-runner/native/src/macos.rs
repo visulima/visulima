@@ -232,10 +232,6 @@ fn drain(parent_fd: RawFd, cwd: &Path) -> Vec<InterposeFileAccess> {
 
         let n = n as usize;
 
-        if n < 1 {
-            continue;
-        }
-
         let mode = buf[0];
         let path_bytes = &buf[1..n];
 
