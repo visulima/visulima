@@ -4,21 +4,30 @@ version = "0.0.0"
 edition = "2021"
 license = "MIT"
 publish = false
-description = "WIP — Windows file-access tracker via Microsoft Detours. See ../../rfc/design-fspy-windows-detours.md."
+description = "Windows file-access tracker — an injected DLL that IAT-hooks the file API surface and streams accesses to the parent over a named pipe. Pure Rust (no Detours/vcpkg). See ../../rfc/design-fspy-windows-detours.md."
 
+# cdylib: the injected DLL. rlib: lets `native/src/windows.rs` (the parent
+# NAPI) reuse the shared `FileAccess`/wire types without re-declaring them.
 [lib]
-crate-type = [
-  "cdylib",
-  "rlib"
-]
+crate-type = ["cdylib", "rlib"]
 
 [target.'cfg(windows)'.dependencies]
+# Pure-Rust Windows bindings. We hand-roll IAT hooking (PE import-table
+# pointer swaps — arch-independent, covers x64 + arm64, no instruction
+# patching) and named-pipe IPC, so no Microsoft Detours / vcpkg dependency.
 windows-sys = { version = "0.61", features = [
   "Win32_Foundation",
   "Win32_Storage_FileSystem",
   "Win32_System_LibraryLoader",
   "Win32_System_Pipes",
   "Win32_System_Threading",
+  "Win32_System_Memory",
+  "Win32_System_Diagnostics_Debug",
+  "Win32_System_SystemServices",
+  "Win32_System_SystemInformation",
+  "Win32_System_WindowsProgramming",
+  "Win32_System_IO",
+  "Win32_Security",
 ] }
 
 [profile.release]

@@ -1,63 +1,57 @@
-//! `fspy_windows` — Windows file-access tracker via Microsoft Detours.
+//! `fspy_windows` — Windows file-access tracker.
 //!
-//! **Status: WIP scaffold.** Plan step 1 from
-//! `rfc/design-fspy-windows-detours.md`: lay out the module boundaries
-//! and stub the public entrypoint. Nothing here actually hooks
-//! anything yet — the DLL exports a `DllMain` and the supervisor lives
-//! in `pipe.rs` only as placeholder code.
+//! An injected DLL that IAT-hooks the Win32 file API and streams each access
+//! to the parent over a per-spawn named pipe. Pure Rust — no Microsoft Detours
+//! and no vcpkg; IAT pointer-swapping is arch-independent so the same code
+//! covers x64 and ARM64.
 //!
-//! See the RFC for the full design (IAT hook surface, named-pipe IPC,
-//! ARM64 considerations, EDR caveats).
+//! The parent ([`native/src/windows.rs`]) creates the process suspended,
+//! creates the `\\.\pipe\fspy-<childpid>` server, injects this DLL via
+//! `CreateRemoteThread(LoadLibraryW)`, then resumes the child. On
+//! `DLL_PROCESS_ATTACH` we connect to that pipe (derived from our own PID) and
+//! install the hooks before the host program's `main` runs.
 
 #![cfg(windows)]
-#![deny(unused_must_use)]
 
 pub mod hooks;
 pub mod path;
 pub mod pipe;
 
-/// Mirrors the TS-side `FileAccess` interface in
-/// `src/file-access-tracker.ts`. The supervisor in the parent process
-/// receives a stream of these over the per-spawn named pipe.
-#[derive(Debug, Clone)]
-pub struct FileAccess {
-    pub path: std::path::PathBuf,
-    pub kind: AccessKind,
+use core::ffi::c_void;
+
+use windows_sys::Win32::Foundation::HINSTANCE;
+use windows_sys::Win32::System::LibraryLoader::DisableThreadLibraryCalls;
+use windows_sys::Win32::System::SystemServices::{DLL_PROCESS_ATTACH, DLL_PROCESS_DETACH};
+use windows_sys::Win32::System::Threading::GetCurrentProcessId;
+
+/// Wire opcodes — one byte prefix per pipe message. Kept in sync with the
+/// parser in `native/src/windows.rs`.
+pub mod mode {
+    pub const READ: u8 = 0;
+    pub const WRITE: u8 = 1;
+    pub const STAT: u8 = 2;
+    pub const READDIR: u8 = 3;
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum AccessKind {
-    Read,
-    ReadDir,
-    Stat,
-    Write,
-    Missing,
-}
-
-/// Spawn `cmd` with the Detours-injected DLL attached. Returns the
-/// gathered accesses once the child exits.
-///
-/// **Not implemented.** The TS surface (`trackWithDetours(...)`) will
-/// call into this via NAPI; today it errors so the strace / preload
-/// fallback in `file-access-tracker.ts` keeps the runner working.
-pub fn track_command(_cmd: &[String]) -> std::io::Result<Vec<FileAccess>> {
-    Err(std::io::Error::new(
-        std::io::ErrorKind::Unsupported,
-        "fspy_windows::track_command is not yet implemented — see rfc/design-fspy-windows-detours.md",
-    ))
-}
-
-/// `DllMain` — entrypoint Windows calls when the DLL is attached to a
-/// process. On `DLL_PROCESS_ATTACH` we install our hooks and connect
-/// to the parent's named pipe. On `DLL_PROCESS_DETACH` we flush.
-///
-/// **Not implemented.** Returns `1` (TRUE) so the loader accepts the
-/// DLL without crashing the child.
+/// `DllMain` — entrypoint the loader calls when the DLL attaches. On
+/// `DLL_PROCESS_ATTACH` we drop thread-attach callbacks (we don't need them),
+/// connect to the parent's pipe (named for our own PID), and install the IAT
+/// hooks before the host runs. All best-effort: any failure leaves the host
+/// running untracked rather than disturbing it. Returns `TRUE`.
 #[no_mangle]
-pub extern "system" fn DllMain(
-    _hinst: *mut core::ffi::c_void,
-    _reason: u32,
-    _reserved: *mut core::ffi::c_void,
-) -> i32 {
+pub extern "system" fn DllMain(hinst: HINSTANCE, reason: u32, _reserved: *mut c_void) -> i32 {
+    if reason == DLL_PROCESS_ATTACH {
+        unsafe {
+            DisableThreadLibraryCalls(hinst);
+            let pid = GetCurrentProcessId();
+            if pipe::connect(pid) {
+                let _ = hooks::install_all();
+            }
+        }
+    } else if reason == DLL_PROCESS_DETACH {
+        // Hooks live for the process lifetime; nothing to unwind here. The pipe
+        // closes when the process exits, which the supervisor reads as EOF.
+    }
+
     1
 }

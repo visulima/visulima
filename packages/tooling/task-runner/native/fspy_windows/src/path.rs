@@ -21,6 +21,13 @@ pub fn normalize(path: &Path) -> PathBuf {
     PathBuf::from(normalize_str(&path.to_string_lossy()))
 }
 
+/// String form used by the injected DLL's hot path (it already has the path as
+/// a `String` from the UTF-16/ANSI argument and only needs the normalized
+/// string to put on the wire).
+pub fn normalize_win(s: &str) -> String {
+    normalize_str(s)
+}
+
 fn normalize_str(raw: &str) -> String {
     // `\\?\UNC\server\share` is the extended form of a UNC path — drop the
     // `\\?\UNC\` and re-introduce the `\\` UNC root so it normalizes the same
