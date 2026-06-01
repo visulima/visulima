@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 
 import { buildEnhancedPath, collectNodeModulesBinDirs, withEnhancedPath } from "../../src/path-utils";
 
-describe("collectNodeModulesBinDirs", () => {
+describe(collectNodeModulesBinDirs, () => {
     it("returns the cwd's `.bin` first, then each parent's `.bin`", () => {
         const dirs = collectNodeModulesBinDirs(`${sep}home${sep}user${sep}project${sep}packages${sep}foo`);
 
@@ -12,11 +12,11 @@ describe("collectNodeModulesBinDirs", () => {
         expect(dirs[1]).toBe(`${sep}home${sep}user${sep}project${sep}packages${sep}node_modules${sep}.bin`);
         expect(dirs[2]).toBe(`${sep}home${sep}user${sep}project${sep}node_modules${sep}.bin`);
         // Eventually walks up to the root entry.
-        expect(dirs.some((d) => d === `${sep}node_modules${sep}.bin`)).toBe(true);
+        expect(dirs).toContain(`${sep}node_modules${sep}.bin`);
     });
 
     it("stops walking at the filesystem root", () => {
-        const dirs = collectNodeModulesBinDirs(`${sep}`);
+        const dirs = collectNodeModulesBinDirs(sep);
 
         expect(dirs).toHaveLength(1);
         expect(dirs[0]).toBe(`${sep}node_modules${sep}.bin`);
@@ -30,7 +30,7 @@ describe("collectNodeModulesBinDirs", () => {
     });
 });
 
-describe("buildEnhancedPath", () => {
+describe(buildEnhancedPath, () => {
     it("prepends `.bin` dirs to the supplied env's PATH", () => {
         const cwd = `${sep}repo${sep}pkg`;
         // Join the caller PATH with the platform `delimiter` (`;` on Windows,
@@ -61,9 +61,9 @@ describe("buildEnhancedPath", () => {
     });
 
     it("honours the Windows `Path` alias when `PATH` is absent", () => {
-        const result = buildEnhancedPath(`${sep}repo`, { Path: "C:\\Windows" });
+        const result = buildEnhancedPath(`${sep}repo`, { Path: String.raw`C:\Windows` });
 
-        expect(result.endsWith("C:\\Windows")).toBe(true);
+        expect(result.endsWith(String.raw`C:\Windows`)).toBe(true);
     });
 
     it("returns just the bin chain when no existing PATH is set", () => {
@@ -76,7 +76,7 @@ describe("buildEnhancedPath", () => {
         try {
             const result = buildEnhancedPath(`${sep}repo`, {});
 
-            expect(result.includes(`${sep}repo${sep}node_modules${sep}.bin`)).toBe(true);
+            expect(result).toContain(`${sep}repo${sep}node_modules${sep}.bin`);
             expect(result.startsWith(delimiter)).toBe(false);
         } finally {
             if (previous !== undefined) {
@@ -90,7 +90,7 @@ describe("buildEnhancedPath", () => {
     });
 });
 
-describe("withEnhancedPath", () => {
+describe(withEnhancedPath, () => {
     it("returns a new env object without mutating the input", () => {
         const input: NodeJS.ProcessEnv = { FOO: "bar", PATH: "/usr/bin" };
         const output = withEnhancedPath(input, `${sep}repo`);
