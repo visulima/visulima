@@ -148,9 +148,14 @@ describe(runtimeVersionCheckPlugin, () => {
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
         (globalThis as any).Deno = {
-            env: { get: () => undefined, has: () => false, set: () => {}, toObject: () => {
-                return {};
-            } },
+            env: {
+                get: () => undefined,
+                has: () => false,
+                set: () => {},
+                toObject: () => {
+                    return {};
+                },
+            },
             exit: denoExit,
             version: { deno: "2.1.0" },
         };
@@ -169,9 +174,14 @@ describe(runtimeVersionCheckPlugin, () => {
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
         (globalThis as any).Deno = {
-            env: { get: () => undefined, has: () => false, set: () => {}, toObject: () => {
-                return {};
-            } },
+            env: {
+                get: () => undefined,
+                has: () => false,
+                set: () => {},
+                toObject: () => {
+                    return {};
+                },
+            },
             exit: denoExit,
         };
 

@@ -12,7 +12,7 @@ export interface FingerprintInput {
     protocol: FingerprintProtocol;
 }
 
-export type FingerprintFn = (input: FingerprintInput) => Promise<string> | string;
+export type FingerprintFunction = (input: FingerprintInput) => Promise<string> | string;
 
 /**
  * Default fingerprint format — matches tus-js-client's `${name}-${size}-${type}-${lastModified}`
@@ -22,5 +22,5 @@ export type FingerprintFn = (input: FingerprintInput) => Promise<string> | strin
  * User-controlled string fields (endpoint, file.name, file.type) are percent-encoded so a `::`
  * embedded in any of them cannot collide with the `::` delimiter.
  */
-export const defaultFingerprint: FingerprintFn = ({ endpoint, file, protocol }) =>
+export const defaultFingerprint: FingerprintFunction = ({ endpoint, file, protocol }) =>
     `${protocol}::${encodeURIComponent(endpoint)}::${encodeURIComponent(file.name)}::${String(file.size)}::${encodeURIComponent(file.type)}::${String(file.lastModified)}`;

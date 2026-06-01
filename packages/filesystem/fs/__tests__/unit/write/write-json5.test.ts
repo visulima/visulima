@@ -161,7 +161,7 @@ describe.each([
             await expect(function_(path, { foo: 1 })).rejects.toThrow(FAILED_WRITE_RE);
         } else {
             // eslint-disable-next-line vitest/no-conditional-expect
-            expect(() => (function_)(path, { foo: 1 })).toThrow(FAILED_WRITE_RE);
+            expect(() => function_(path, { foo: 1 })).toThrow(FAILED_WRITE_RE);
         }
     });
 });

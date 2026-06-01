@@ -63,7 +63,7 @@ const writeFile = async (path: URL | string, content: ArrayBuffer | ArrayBufferV
         if (!pathExists && options.recursive) {
             const directory = dirname(path);
 
-            if (!await isAccessible(directory, F_OK)) {
+            if (!(await isAccessible(directory, F_OK))) {
                 await mkdir(directory, { recursive: true });
             }
         }
@@ -90,7 +90,7 @@ const writeFile = async (path: URL | string, content: ArrayBuffer | ArrayBufferV
             }
         }
 
-        await chmod(temporaryPath, stat && !options.mode ? stat.mode : options.mode ?? 0o666);
+        await chmod(temporaryPath, stat && !options.mode ? stat.mode : (options.mode ?? 0o666));
 
         await rename(temporaryPath, path);
     } catch (error: unknown) {

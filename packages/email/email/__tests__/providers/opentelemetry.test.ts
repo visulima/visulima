@@ -105,7 +105,7 @@ describe(opentelemetryProvider, () => {
 
             await provider.initialize();
 
-            expect(factory).toHaveBeenCalled();
+            expect(factory).toHaveBeenCalledWith();
         });
 
         it("should throw EmailError when provider is invalid", async () => {
@@ -148,7 +148,7 @@ describe(opentelemetryProvider, () => {
             const provider = opentelemetryProvider({ provider: wrapped });
 
             await expect(provider.isAvailable()).resolves.toBe(true);
-            expect(wrapped.isAvailable).toHaveBeenCalled();
+            expect(wrapped.isAvailable).toHaveBeenCalledWith();
         });
 
         it("should return false when isAvailable throws", async () => {
@@ -169,7 +169,7 @@ describe(opentelemetryProvider, () => {
             const provider = opentelemetryProvider({ provider: wrapped });
 
             await expect(provider.validateCredentials?.()).resolves.toBe(true);
-            expect(wrapped.validateCredentials).toHaveBeenCalled();
+            expect(wrapped.validateCredentials).toHaveBeenCalledWith();
         });
 
         it("should fall back to isAvailable when validateCredentials is missing", async () => {
@@ -179,7 +179,7 @@ describe(opentelemetryProvider, () => {
             const provider = opentelemetryProvider({ provider: wrapped });
 
             await expect(provider.validateCredentials?.()).resolves.toBe(true);
-            expect(wrapped.isAvailable).toHaveBeenCalled();
+            expect(wrapped.isAvailable).toHaveBeenCalledWith();
         });
 
         it("should return false when validateCredentials throws", async () => {
@@ -218,8 +218,8 @@ describe(opentelemetryProvider, () => {
 
             expect(result.success).toBe(true);
             expect(result.data?.provider).toContain("mock-provider");
-            expect(span.setAttributes).toHaveBeenCalled();
-            expect(span.end).toHaveBeenCalled();
+            expect(span.setAttributes).toHaveBeenCalledWith();
+            expect(span.end).toHaveBeenCalledWith();
         });
 
         it("should record content lengths when recordContent is true", async () => {
@@ -277,7 +277,7 @@ describe(opentelemetryProvider, () => {
                 to: { email: "user@example.com" },
             });
 
-            expect(span.setAttributes).toHaveBeenCalled();
+            expect(span.setAttributes).toHaveBeenCalledWith();
         });
 
         it("should record error state when wrapped provider returns failure", async () => {
@@ -304,7 +304,7 @@ describe(opentelemetryProvider, () => {
             });
 
             expect(result.success).toBe(false);
-            expect(span.recordException).toHaveBeenCalled();
+            expect(span.recordException).toHaveBeenCalledWith();
         });
 
         it("should record exception when sendEmail throws", async () => {
@@ -328,7 +328,7 @@ describe(opentelemetryProvider, () => {
             });
 
             expect(result.success).toBe(false);
-            expect(span.recordException).toHaveBeenCalled();
+            expect(span.recordException).toHaveBeenCalledWith();
         });
     });
 
@@ -341,7 +341,7 @@ describe(opentelemetryProvider, () => {
 
             expect(() => {
                 (provider as any).getInstance();
-            }).toThrow();
+            }).toThrow("Provider not initialized");
         });
 
         it("should return the wrapped provider after initialize", async () => {
@@ -366,7 +366,7 @@ describe(opentelemetryProvider, () => {
             await provider.initialize();
             await provider.shutdown?.();
 
-            expect(wrapped.shutdown).toHaveBeenCalled();
+            expect(wrapped.shutdown).toHaveBeenCalledWith();
         });
     });
 
@@ -481,7 +481,7 @@ describe(opentelemetryProvider, () => {
 
             await provider.initialize();
 
-            expect(wrapped.initialize).toHaveBeenCalled();
+            expect(wrapped.initialize).toHaveBeenCalledWith();
         });
 
         it("reuses the wrapped provider for isAvailable after initialize", async () => {
@@ -550,7 +550,7 @@ describe(opentelemetryProvider, () => {
             });
 
             expect(result.success).toBe(false);
-            expect(span.recordException).toHaveBeenCalled();
+            expect(span.recordException).toHaveBeenCalledWith();
         });
 
         it("uses an unknown error message when a failure has no error", async () => {
@@ -589,7 +589,7 @@ describe(opentelemetryProvider, () => {
             });
 
             expect(result.success).toBe(false);
-            expect(span.recordException).toHaveBeenCalled();
+            expect(span.recordException).toHaveBeenCalledWith();
         });
 
         it("shuts down cleanly before initialization", async () => {

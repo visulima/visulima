@@ -169,9 +169,7 @@ describe(mailPaceProvider, () => {
             const provider = mailPaceProvider({ apiToken: "test123" });
 
             const result = await provider.sendEmail({
-                attachments: [
-                    { content: "abc", contentType: "text/plain", filename: "a.txt" } as any,
-                ],
+                attachments: [{ content: "abc", contentType: "text/plain", filename: "a.txt" } as any],
                 from: { email: "sender@example.com" },
                 html: "<h1>Hi</h1>",
                 subject: "Test",

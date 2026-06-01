@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { createChunkedRestAdapter } from "../core/chunked-rest-adapter";
-import type { FingerprintFn } from "../core/fingerprint";
+import type { FingerprintFunction } from "../core/fingerprint";
 import type { UploadControl } from "../core/upload-control";
 import type { UrlStorage } from "../core/url-storage";
 import type { UploadResult } from "./types";
@@ -14,7 +14,7 @@ export interface UseChunkedRestUploadOptions {
     /** Chunked REST upload endpoint URL */
     endpoint: string;
     /** Customise the resume fingerprint. Defaults to `defaultFingerprint`. */
-    fingerprint?: FingerprintFn;
+    fingerprint?: FingerprintFunction;
     /** Maximum number of retry attempts */
     maxRetries?: number;
     /** Additional metadata to include with the upload */
@@ -68,7 +68,8 @@ export interface UseChunkedRestUploadReturn {
  * @returns Upload functions and state
  */
 export const useChunkedRestUpload = (options: UseChunkedRestUploadOptions): UseChunkedRestUploadReturn => {
-    const { chunkSize, control, endpoint, fingerprint, maxRetries, metadata, onError, onPause, onProgress, onResume, onStart, onSuccess, retry, urlStorage } = options;
+    const { chunkSize, control, endpoint, fingerprint, maxRetries, metadata, onError, onPause, onProgress, onResume, onStart, onSuccess, retry, urlStorage } =
+        options;
 
     const [progress, setProgress] = useState(0);
     const [isUploading, setIsUploading] = useState(false);
@@ -156,10 +157,8 @@ export const useChunkedRestUpload = (options: UseChunkedRestUploadOptions): UseC
                 })
                 .catch(() => {});
 
-            if (!mounted || !("window" in globalThis)) {
-                return;
-            }
-
+            // `mounted` and `window` were already checked at the top of this synchronous
+            // tick; nothing above can flip them before this line, so no re-check is needed.
             setIsPaused(adapterInstance.isPaused());
         }, 100);
 

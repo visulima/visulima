@@ -1,6 +1,6 @@
 import { Readable } from "node:stream";
 
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import type { HookEvent } from "../../src/files";
 import { Files, transfer } from "../../src/files";
@@ -26,14 +26,16 @@ describe("memory storage adapter", () => {
         const { facade } = makeMemoryFacade();
 
         await facade.upload("a.txt", "hello");
-        expect(await facade.exists("a.txt")).toBe(true);
+
+        await expect(facade.exists("a.txt")).resolves.toBe(true);
 
         const dl = await facade.download("a.txt");
 
         expect(dl.body.toString("utf8")).toBe("hello");
 
         await facade.delete("a.txt");
-        expect(await facade.exists("a.txt")).toBe(false);
+
+        await expect(facade.exists("a.txt")).resolves.toBe(false);
     });
 
     it("declares supportsRange = true", () => {
@@ -46,6 +48,7 @@ describe("memory storage adapter", () => {
         const { adapter, facade } = makeMemoryFacade();
 
         await facade.upload("k.txt", "x");
+
         expect(adapter.raw.has("k.txt")).toBe(true);
     });
 
@@ -53,8 +56,9 @@ describe("memory storage adapter", () => {
         const { facade } = makeMemoryFacade();
 
         await facade.upload("k.txt", "x");
-        expect(await facade.url("k.txt")).toBe("memory://k.txt");
-        expect(await facade.signedUploadUrl("k.txt")).toBe("memory://k.txt");
+
+        await expect(facade.url("k.txt")).resolves.toBe("memory://k.txt");
+        await expect(facade.signedUploadUrl("k.txt")).resolves.toBe("memory://k.txt");
     });
 });
 
@@ -68,7 +72,10 @@ describe("move() on the Files facade", () => {
         expect(result.key).toBe("to.txt");
         expect(adapter.raw.has("from.txt")).toBe(false);
         expect(adapter.raw.has("to.txt")).toBe(true);
-        expect((await facade.download("to.txt")).body.toString("utf8")).toBe("payload");
+
+        const downloaded = await facade.download("to.txt");
+
+        expect(downloaded.body.toString("utf8")).toBe("payload");
     });
 
     it("is a no-op when source and destination match", async () => {
@@ -78,7 +85,10 @@ describe("move() on the Files facade", () => {
         const result = await facade.move("same.txt", "same.txt");
 
         expect(result.key).toBe("same.txt");
-        expect((await facade.download("same.txt")).body.toString("utf8")).toBe("x");
+
+        const downloaded = await facade.download("same.txt");
+
+        expect(downloaded.body.toString("utf8")).toBe("x");
     });
 
     it("runs the bulk array form with per-item errors", async () => {
@@ -93,7 +103,7 @@ describe("move() on the Files facade", () => {
             { from: "missing.txt", to: "ghost.txt" },
         ]);
 
-        expect(result.moved.map((f) => f.key).sort()).toEqual(["a2.txt", "b2.txt"]);
+        expect(result.moved.map((f) => f.key).toSorted()).toEqual(["a2.txt", "b2.txt"]);
         expect(result.errors).toBeDefined();
         expect(result.errors).toHaveLength(1);
         expect(result.errors?.[0]?.key).toBe("missing.txt");
@@ -121,7 +131,7 @@ describe("listAll() async iterable", () => {
             collected.push(file.key);
         }
 
-        expect(collected.sort()).toEqual(["a.txt", "b.txt", "c.txt"]);
+        expect(collected.toSorted()).toEqual(["a.txt", "b.txt", "c.txt"]);
     });
 
     it("filters by relative prefix and strips the constructor prefix", async () => {
@@ -137,7 +147,7 @@ describe("listAll() async iterable", () => {
             collected.push(file.key);
         }
 
-        expect(collected.sort()).toEqual(["123/avatar.png", "123/cover.png"]);
+        expect(collected.toSorted()).toEqual(["123/avatar.png", "123/cover.png"]);
     });
 
     it("does not yield duplicates", async () => {
@@ -161,12 +171,14 @@ describe("hooks", () => {
 
         await facade.upload("k.txt", "hi");
 
-        expect(onAction).toHaveBeenCalled();
+        expect(onAction).toHaveBeenCalledWith();
+
         const event = onAction.mock.calls.at(-1)?.[0] as HookEvent;
 
         expect(event.type).toBe("upload");
         expect(event.key).toBe("k.txt");
-        expect(typeof event.durationMs).toBe("number");
+
+        expectTypeOf(event.durationMs).toBeNumber();
     });
 
     it("fires onError when an operation throws", async () => {
@@ -268,7 +280,7 @@ describe("transfer(source, dest)", () => {
 
         const result = await transfer(source, destination);
 
-        expect(result.transferred.sort()).toEqual(["a.txt", "b.txt", "c.txt"]);
+        expect(result.transferred.toSorted()).toEqual(["a.txt", "b.txt", "c.txt"]);
         expect(result.skipped).toEqual([]);
         expect(destinationAdapter.raw.size).toBe(3);
     });
@@ -294,7 +306,9 @@ describe("transfer(source, dest)", () => {
 
         await transfer(source, destination, { overwrite: true });
 
-        expect((await destination.download("k.txt")).body.toString("utf8")).toBe("new");
+        const downloaded = await destination.download("k.txt");
+
+        expect(downloaded.body.toString("utf8")).toBe("new");
     });
 
     it("transforms keys via transformKey", async () => {
@@ -303,8 +317,8 @@ describe("transfer(source, dest)", () => {
 
         await transfer(source, destination, { transformKey: (key) => `archive/${key}` });
 
-        expect(await destination.exists("archive/a.txt")).toBe(true);
-        expect(await destination.exists("a.txt")).toBe(false);
+        await expect(destination.exists("archive/a.txt")).resolves.toBe(true);
+        await expect(destination.exists("a.txt")).resolves.toBe(false);
     });
 
     it("reports per-key progress", async () => {
@@ -318,7 +332,7 @@ describe("transfer(source, dest)", () => {
         });
 
         expect(events).toHaveLength(2);
-        expect(events.every((e) => e.status === "transferred")).toBe(true);
+        expect(events.every((event) => event.status === "transferred")).toBe(true);
     });
 
     it("stops dispatching new transfers when the signal is already aborted", async () => {
@@ -355,7 +369,6 @@ describe("transfer(source, dest)", () => {
         const calls: string[] = [];
         const original = destination.upload.bind(destination);
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (destination as any).upload = (...arguments_: Parameters<typeof original>) => {
             calls.push(arguments_[0] as string);
 
@@ -363,7 +376,7 @@ describe("transfer(source, dest)", () => {
                 throw new Error("boom");
             }
 
-            return original(...(arguments_ as Parameters<typeof original>));
+            return original(...(arguments_));
         };
 
         const result = await transfer(source, destination, { stopOnError: true });
@@ -454,19 +467,22 @@ describe("onRetry — facade wiring", () => {
         public override async getMeta(id: string, options?: Parameters<MemoryStorage["getMeta"]>[1]) {
             const { retry } = await import("../../src/utils/retry");
 
-            return retry(async () => {
-                this.calls += 1;
+            return retry(
+                async () => {
+                    this.calls += 1;
 
-                if (this.calls <= 2) {
-                    const error = new Error("transient");
+                    if (this.calls <= 2) {
+                        const error = new Error("transient");
 
-                    (error as Error & { code?: string }).code = "ECONNRESET";
+                        (error as Error & { code?: string }).code = "ECONNRESET";
 
-                    throw error;
-                }
+                        throw error;
+                    }
 
-                return super.getMeta(id, options);
-            }, typeof options?.retries === "number" ? { maxRetries: options.retries } : (options?.retries ?? {}));
+                    return super.getMeta(id, options);
+                },
+                typeof options?.retries === "number" ? { maxRetries: options.retries } : (options?.retries ?? {}),
+            );
         }
     }
 
@@ -494,6 +510,7 @@ describe("onRetry — facade wiring", () => {
         await facade.head("k.txt");
 
         expect(onRetry).toHaveBeenCalledTimes(2);
+
         const first = onRetry.mock.calls[0]?.[0] as HookEvent & { attempt: number; error: Error };
 
         expect(first.attempt).toBe(1);
@@ -560,10 +577,11 @@ describe("reportsUploadProgress=true adapter path", () => {
 
         // Facade did NOT emit any synthetic events (no PassThrough wrap).
         expect(onProgress).not.toHaveBeenCalled();
+
         // ...but the adapter received the callback on the write part.
         const part = writeSpy.mock.calls[0]?.[0] as { onProgress?: unknown };
 
-        expect(typeof part.onProgress).toBe("function");
+        expectTypeOf(part.onProgress).toBeFunction();
     });
 });
 

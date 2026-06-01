@@ -194,7 +194,11 @@ describe(MailMessage, () => {
 
             const message = new MailMessage();
 
-            message.from("sender@example.com").to([{ email: "a@example.com" }, "b@example.com"]).subject("Test").html("<h1>Test</h1>");
+            message
+                .from("sender@example.com")
+                .to([{ email: "a@example.com" }, "b@example.com"])
+                .subject("Test")
+                .html("<h1>Test</h1>");
 
             const options = await message.build();
 

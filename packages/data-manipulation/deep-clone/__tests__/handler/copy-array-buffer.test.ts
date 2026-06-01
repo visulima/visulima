@@ -15,7 +15,7 @@ describe(copyArrayBuffer, () => {
 
         expect(cloned).toBeInstanceOf(ArrayBuffer);
         expect(cloned).not.toBe(original);
-        expect([...new Uint8Array(cloned as ArrayBuffer)]).toStrictEqual([1, 2, 3, 4, 5, 6, 7, 8]);
+        expect([...new Uint8Array(cloned)]).toStrictEqual([1, 2, 3, 4, 5, 6, 7, 8]);
     });
 
     it("clones a Uint8Array via the typed-array constructor lookup", () => {

@@ -128,9 +128,7 @@ describe("timeline/capture", () => {
             startTimelineCapture();
 
             // dev-toolbar's own file is ignored — produces no event with that filename.
-            globalThis.dispatchEvent(
-                new ErrorEvent("error", { colno: 1, filename: "/x/visulima-dev-toolbar/overlay.js", lineno: 2, message: "internal" }),
-            );
+            globalThis.dispatchEvent(new ErrorEvent("error", { colno: 1, filename: "/x/visulima-dev-toolbar/overlay.js", lineno: 2, message: "internal" }));
 
             const internal = getTimelineStore()
                 .getGroupEvents("errors")

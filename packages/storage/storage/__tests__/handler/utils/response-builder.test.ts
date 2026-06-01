@@ -14,7 +14,7 @@ import {
 import type { UploadFile } from "../../../src/storage/utils/file";
 
 const buildFile = (overrides: Partial<UploadFile> = {}): UploadFile =>
-    ({
+    { return {
         bytesWritten: 100,
         contentType: "video/mp4",
         id: "f1",
@@ -24,10 +24,10 @@ const buildFile = (overrides: Partial<UploadFile> = {}): UploadFile =>
         size: 200,
         status: "created",
         ...overrides,
-    }) as UploadFile;
+    }; };
 
 describe("response-builder", () => {
-    describe("buildResponseFile", () => {
+    describe(buildResponseFile, () => {
         it("merges file with headers and default 200 status", () => {
             expect.assertions(3);
 
@@ -49,11 +49,11 @@ describe("response-builder", () => {
         });
     });
 
-    describe("buildFileHeaders", () => {
+    describe(buildFileHeaders, () => {
         it("includes Location plus expiredAt + ETag when defined", () => {
             expect.assertions(3);
 
-            const file = buildFile({ ETag: "etag1", expiredAt: 1700000000000 });
+            const file = buildFile({ ETag: "etag1", expiredAt: 1_700_000_000_000 });
             const headers = buildFileHeaders(file, "/files/f1");
 
             expect(headers.Location).toBe("/files/f1");
@@ -73,7 +73,7 @@ describe("response-builder", () => {
         });
     });
 
-    describe("buildChunkedUploadHeaders", () => {
+    describe(buildChunkedUploadHeaders, () => {
         it("emits required chunked headers with isComplete flag", () => {
             expect.assertions(3);
 
@@ -95,7 +95,7 @@ describe("response-builder", () => {
         });
     });
 
-    describe("buildLocationHeader", () => {
+    describe(buildLocationHeader, () => {
         it("returns a relative URL when useRelativeLocation is true", () => {
             expect.assertions(1);
 
@@ -121,7 +121,7 @@ describe("response-builder", () => {
         });
     });
 
-    describe("buildFileMetadataHeaders", () => {
+    describe(buildFileMetadataHeaders, () => {
         it("emits Content-Length and Content-Type", () => {
             expect.assertions(2);
 
@@ -144,13 +144,13 @@ describe("response-builder", () => {
         });
     });
 
-    describe("convertHeadersToString", () => {
+    describe(convertHeadersToString, () => {
         it("converts arrays into comma-separated strings", () => {
             expect.assertions(2);
 
             const headers = convertHeadersToString({
-                "X-Foo": ["a", "b"],
                 "X-Bar": "single",
+                "X-Foo": ["a", "b"],
             });
 
             expect(headers["X-Foo"]).toBe("a, b");
@@ -158,7 +158,7 @@ describe("response-builder", () => {
         });
     });
 
-    describe("buildErrorResponseBody", () => {
+    describe(buildErrorResponseBody, () => {
         it("falls back to defaults when error fields are missing", () => {
             expect.assertions(3);
 
@@ -180,7 +180,7 @@ describe("response-builder", () => {
         });
     });
 
-    describe("prepareResponseBody", () => {
+    describe(prepareResponseBody, () => {
         it("serialises strings and sets text/plain by default", () => {
             expect.assertions(3);
 
@@ -218,7 +218,7 @@ describe("response-builder", () => {
         });
     });
 
-    describe("cleanFileData", () => {
+    describe(cleanFileData, () => {
         it("removes content and stream properties from file data", () => {
             expect.assertions(2);
 

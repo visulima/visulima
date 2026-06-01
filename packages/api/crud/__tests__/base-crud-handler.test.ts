@@ -3,6 +3,9 @@ import { describe, expect, it, vi } from "vitest";
 import type { Adapter } from "../src";
 import baseHandler from "../src/base-crud-handler";
 
+const CREATE_ERROR_REGEX = /create/u;
+const RESOURCE_NOT_FOUND_REGEX = /Resource not found|Couldn't find model name/u;
+
 const buildAdapter = (overrides: Partial<Adapter<any, any>> = {}): Adapter<any, any> => {
     return {
         connect: vi.fn<() => Promise<void>>().mockResolvedValue(),
@@ -20,12 +23,14 @@ const buildAdapter = (overrides: Partial<Adapter<any, any>> = {}): Adapter<any, 
     };
 };
 
-const buildRequest = (init: { body?: unknown; host?: string; method: string; url: string } = { method: "GET", url: "/users" }): any => {
+const buildRequest = (init?: { body?: unknown; host?: string; method: string; url: string }): any => {
+    const resolved = init ?? { method: "GET", url: "/users" };
+
     return {
-        body: init.body,
-        headers: { host: init.host ?? "example.com" },
-        method: init.method,
-        url: init.url,
+        body: resolved.body,
+        headers: { host: resolved.host ?? "example.com" },
+        method: resolved.method,
+        url: resolved.url,
     };
 };
 
@@ -41,7 +46,7 @@ describe(baseHandler, () => {
         const responseExecutor = vi.fn();
         const finalExecutor = vi.fn();
 
-        await expect(baseHandler(responseExecutor, finalExecutor, adapter)).rejects.toThrow(/create/u);
+        await expect(baseHandler(responseExecutor, finalExecutor, adapter)).rejects.toThrow(CREATE_ERROR_REGEX);
     });
 
     it("should call adapter.init during setup", async () => {
@@ -156,7 +161,7 @@ describe(baseHandler, () => {
 
         const handler = await baseHandler(responseExecutor, finalExecutor, adapter);
 
-        await expect(handler(buildRequest({ method: "GET", url: "/unknown" }), {})).rejects.toThrow(/Resource not found|Couldn't find model name/u);
+        await expect(handler(buildRequest({ method: "GET", url: "/unknown" }), {})).rejects.toThrow(RESOURCE_NOT_FOUND_REGEX);
     });
 
     it("should throw 404 for routes excluded via models.only", async () => {

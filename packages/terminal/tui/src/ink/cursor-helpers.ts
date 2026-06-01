@@ -11,14 +11,7 @@ export type CursorPosition = {
  * `"default"` restores the terminal's user-configured shape (`Ps=0`).
  * Steady variants are non-blinking; `blinking-*` variants opt into blink.
  */
-export type CursorShape =
-    | "bar"
-    | "blinking-bar"
-    | "blinking-block"
-    | "blinking-underline"
-    | "block"
-    | "default"
-    | "underline";
+export type CursorShape = "bar" | "blinking-bar" | "blinking-block" | "blinking-underline" | "block" | "default" | "underline";
 
 // DECSCUSR `Ps` parameter for each declarative shape. `Ps=0` is treated as
 // "restore to user default" by every terminal that implements DECSCUSR; we

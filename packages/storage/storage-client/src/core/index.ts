@@ -1,6 +1,6 @@
 export type { ChunkedRestAdapter, ChunkedRestAdapterOptions } from "./chunked-rest-adapter";
 export { createChunkedRestAdapter } from "./chunked-rest-adapter";
-export type { FingerprintFn, FingerprintInput, FingerprintProtocol } from "./fingerprint";
+export type { FingerprintFunction, FingerprintInput, FingerprintProtocol } from "./fingerprint";
 export { defaultFingerprint } from "./fingerprint";
 export type { MultipartAdapter, MultipartAdapterOptions } from "./multipart-adapter";
 export { createMultipartAdapter } from "./multipart-adapter";

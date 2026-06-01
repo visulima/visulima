@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { describe, expect, it } from "vitest";
 
 import { absolutizeStackUrls, cleanErrorMessage, cleanErrorStack, extractErrors, isAggregateError, isValidStackFrame } from "../../../src/utils/stack-trace";

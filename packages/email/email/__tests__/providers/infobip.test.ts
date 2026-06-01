@@ -380,7 +380,9 @@ describe(infobipProvider, () => {
 
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
 
-            makeRequestMock.mockResolvedValueOnce({ data: { statusCode: 200 }, success: true }).mockResolvedValueOnce({ error: "string failure", success: false });
+            makeRequestMock
+                .mockResolvedValueOnce({ data: { statusCode: 200 }, success: true })
+                .mockResolvedValueOnce({ error: "string failure", success: false });
 
             const provider = infobipProvider({ apiKey: "test123" });
 

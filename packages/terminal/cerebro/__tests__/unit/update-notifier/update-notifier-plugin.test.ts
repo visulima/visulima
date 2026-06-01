@@ -264,10 +264,7 @@ describe(updateNotifierPlugin, () => {
         const toolbox = makeToolbox();
 
         await expect(runBefore(plugin, toolbox)).resolves.toBeUndefined();
-        expect(toolbox.logger.debug).toHaveBeenCalledWith(
-            expect.stringContaining("failed to check for updates"),
-            expect.any(Error),
-        );
+        expect(toolbox.logger.debug).toHaveBeenCalledWith(expect.stringContaining("failed to check for updates"), expect.any(Error));
     });
 
     it("propagates package name/version into hasNewVersion call", async () => {
@@ -312,8 +309,6 @@ describe(updateNotifierPlugin, () => {
 
         await runBefore(plugin, toolbox);
 
-        expect(hasNewVersionMock).toHaveBeenCalledWith(
-            expect.objectContaining({ distTag: "next", updateCheckInterval: 1000 }),
-        );
+        expect(hasNewVersionMock).toHaveBeenCalledWith(expect.objectContaining({ distTag: "next", updateCheckInterval: 1000 }));
     });
 });

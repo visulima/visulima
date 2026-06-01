@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import EmailError from "../../../src/errors/email-error";
 import { createProviderLogger, handleProviderError, isSuccessfulResponse, ProviderState } from "../../../src/providers/utils/provider-base";
@@ -51,10 +51,10 @@ describe(createProviderLogger, () => {
 
         const logger = createProviderLogger("test");
 
-        expect(typeof logger.debug).toBe("function");
-        expect(typeof logger.info).toBe("function");
-        expect(typeof logger.warn).toBe("function");
-        expect(typeof logger.error).toBe("function");
+        expectTypeOf(logger.debug).toBeFunction();
+        expectTypeOf(logger.info).toBeFunction();
+        expectTypeOf(logger.warn).toBeFunction();
+        expectTypeOf(logger.error).toBeFunction();
     });
 
     it("should accept a custom console", () => {
@@ -124,6 +124,6 @@ describe(handleProviderError, () => {
 
         handleProviderError("test", "send email", new Error("upstream"), logger);
 
-        expect(logger.debug).toHaveBeenCalled();
+        expect(logger.debug).toHaveBeenCalledWith();
     });
 });

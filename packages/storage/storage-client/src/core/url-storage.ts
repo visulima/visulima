@@ -1,3 +1,5 @@
+/* eslint-disable max-classes-per-file -- MemoryUrlStorage and LocalStorageUrlStorage are two tightly-coupled implementations of the same UrlStorage contract and belong in one module */
+/* eslint-disable import/exports-last -- interfaces and classes are exported inline next to their definitions for readability of this small primitive module */
 import type { FingerprintProtocol } from "./fingerprint";
 
 /**
@@ -40,22 +42,22 @@ export class MemoryUrlStorage implements UrlStorage {
     readonly #entries = new Map<string, UrlStorageEntry>();
 
     // eslint-disable-next-line @typescript-eslint/require-await -- UrlStorage interface is async to allow IndexedDB/etc. implementations
-    async addEntry(entry: UrlStorageEntry): Promise<void> {
+    public async addEntry(entry: UrlStorageEntry): Promise<void> {
         this.#entries.set(entry.fingerprint, entry);
     }
 
     // eslint-disable-next-line @typescript-eslint/require-await -- async to match interface
-    async findEntry(fingerprint: string): Promise<UrlStorageEntry | undefined> {
+    public async findEntry(fingerprint: string): Promise<UrlStorageEntry | undefined> {
         return this.#entries.get(fingerprint);
     }
 
     // eslint-disable-next-line @typescript-eslint/require-await -- async to match interface
-    async listEntries(): Promise<UrlStorageEntry[]> {
+    public async listEntries(): Promise<UrlStorageEntry[]> {
         return [...this.#entries.values()];
     }
 
     // eslint-disable-next-line @typescript-eslint/require-await -- async to match interface
-    async removeEntry(fingerprint: string): Promise<void> {
+    public async removeEntry(fingerprint: string): Promise<void> {
         this.#entries.delete(fingerprint);
     }
 }
@@ -79,8 +81,10 @@ export class LocalStorageUrlStorage implements UrlStorage {
 
     readonly #storage: LocalStorageLike;
 
-    constructor(storage?: LocalStorageLike, prefix: string = DEFAULT_LOCAL_STORAGE_PREFIX) {
-        const resolved = storage ?? (typeof globalThis !== "undefined" ? (globalThis as { localStorage?: LocalStorageLike }).localStorage : undefined);
+    public constructor(storage?: LocalStorageLike, prefix: string = DEFAULT_LOCAL_STORAGE_PREFIX) {
+        const resolved
+            // eslint-disable-next-line n/no-unsupported-features/node-builtins -- guarded access to the browser localStorage global; Node's experimental localStorage is irrelevant here
+            = storage ?? (typeof globalThis === "undefined" ? undefined : (globalThis as { localStorage?: LocalStorageLike }).localStorage);
 
         if (!resolved) {
             throw new Error("LocalStorageUrlStorage: no localStorage-like object available");
@@ -91,12 +95,12 @@ export class LocalStorageUrlStorage implements UrlStorage {
     }
 
     // eslint-disable-next-line @typescript-eslint/require-await -- async to match interface
-    async addEntry(entry: UrlStorageEntry): Promise<void> {
+    public async addEntry(entry: UrlStorageEntry): Promise<void> {
         this.#storage.setItem(this.#key(entry.fingerprint), JSON.stringify(entry));
     }
 
     // eslint-disable-next-line @typescript-eslint/require-await -- async to match interface
-    async findEntry(fingerprint: string): Promise<UrlStorageEntry | undefined> {
+    public async findEntry(fingerprint: string): Promise<UrlStorageEntry | undefined> {
         const raw = this.#storage.getItem(this.#key(fingerprint));
 
         if (raw === null) {
@@ -114,13 +118,13 @@ export class LocalStorageUrlStorage implements UrlStorage {
     }
 
     // eslint-disable-next-line @typescript-eslint/require-await -- async to match interface
-    async listEntries(): Promise<UrlStorageEntry[]> {
+    public async listEntries(): Promise<UrlStorageEntry[]> {
         const out: UrlStorageEntry[] = [];
 
         for (let index = 0; index < this.#storage.length; index += 1) {
             const key = this.#storage.key(index);
 
-            if (key === null || !key.startsWith(this.#prefix)) {
+            if (!key?.startsWith(this.#prefix)) {
                 continue;
             }
 
@@ -141,7 +145,7 @@ export class LocalStorageUrlStorage implements UrlStorage {
     }
 
     // eslint-disable-next-line @typescript-eslint/require-await -- async to match interface
-    async removeEntry(fingerprint: string): Promise<void> {
+    public async removeEntry(fingerprint: string): Promise<void> {
         this.#storage.removeItem(this.#key(fingerprint));
     }
 
@@ -155,7 +159,9 @@ export class LocalStorageUrlStorage implements UrlStorage {
  * Browser → `LocalStorageUrlStorage`. Everywhere else → `MemoryUrlStorage`.
  */
 export const defaultUrlStorage = (): UrlStorage => {
-    const ls = typeof globalThis !== "undefined" ? (globalThis as { localStorage?: LocalStorageLike }).localStorage : undefined;
+    const ls
+        // eslint-disable-next-line n/no-unsupported-features/node-builtins -- guarded access to the browser localStorage global; Node's experimental localStorage is irrelevant here
+        = typeof globalThis === "undefined" ? undefined : (globalThis as { localStorage?: LocalStorageLike }).localStorage;
 
     if (ls) {
         try {

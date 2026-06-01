@@ -4,8 +4,7 @@ import { akamai, backblaze, cloudflare, digitalOcean, hetzner, minio, storj, tig
 
 let savedEnvironment: NodeJS.ProcessEnv;
 
-const PROVIDER_KEY =
-    /^(?:AKAMAI|BACKBLAZE|B2|CLOUDFLARE|SPACES|HETZNER|MINIO|STORJ|TIGRIS|WASABI)_/;
+const PROVIDER_KEY = /^(?:AKAMAI|BACKBLAZE|B2|CLOUDFLARE|SPACES|HETZNER|MINIO|STORJ|TIGRIS|WASABI)_/;
 
 const isHostManagedKey = (key: string): boolean => key.startsWith("AWS_") || PROVIDER_KEY.test(key);
 
@@ -22,7 +21,7 @@ describe("additional aws s3-compatible client presets", () => {
         process.env = savedEnvironment;
     });
 
-    describe("akamai", () => {
+    describe(akamai, () => {
         it("builds the region endpoint", () => {
             expect(akamai({ ...credentials, region: "us-iad-1" })).toStrictEqual({
                 credentials,
@@ -54,7 +53,7 @@ describe("additional aws s3-compatible client presets", () => {
         });
     });
 
-    describe("backblaze", () => {
+    describe(backblaze, () => {
         it("builds the region endpoint with application key credentials", () => {
             expect(
                 backblaze({
@@ -86,7 +85,7 @@ describe("additional aws s3-compatible client presets", () => {
         });
     });
 
-    describe("cloudflare", () => {
+    describe(cloudflare, () => {
         it("builds the account-scoped R2 endpoint", () => {
             expect(cloudflare({ ...credentials, accountId: "abc123" })).toStrictEqual({
                 credentials,
@@ -104,7 +103,7 @@ describe("additional aws s3-compatible client presets", () => {
         });
     });
 
-    describe("digitalOcean", () => {
+    describe(digitalOcean, () => {
         it("builds the regional spaces endpoint and overrides the signing region", () => {
             expect(digitalOcean({ key: "ak", region: "nyc3", secret: "sk" })).toStrictEqual({
                 credentials,
@@ -132,7 +131,7 @@ describe("additional aws s3-compatible client presets", () => {
         });
     });
 
-    describe("hetzner", () => {
+    describe(hetzner, () => {
         it("builds the regional object-storage endpoint", () => {
             expect(hetzner({ ...credentials, location: "fsn1" })).toStrictEqual({
                 credentials,
@@ -153,7 +152,7 @@ describe("additional aws s3-compatible client presets", () => {
         });
     });
 
-    describe("minio", () => {
+    describe(minio, () => {
         it("builds with custom endpoint and forces path-style addressing", () => {
             expect(
                 minio({
@@ -174,7 +173,7 @@ describe("additional aws s3-compatible client presets", () => {
         });
     });
 
-    describe("storj", () => {
+    describe(storj, () => {
         it("defaults to the global gateway endpoint", () => {
             expect(storj({ ...credentials })).toStrictEqual({
                 credentials,
@@ -193,7 +192,7 @@ describe("additional aws s3-compatible client presets", () => {
         });
     });
 
-    describe("tigris", () => {
+    describe(tigris, () => {
         it("defaults to t3.storage.dev endpoint", () => {
             expect(tigris({ ...credentials })).toStrictEqual({
                 credentials,
@@ -212,7 +211,7 @@ describe("additional aws s3-compatible client presets", () => {
         });
     });
 
-    describe("wasabi", () => {
+    describe(wasabi, () => {
         it("builds the regional endpoint and sets the apiVersion", () => {
             expect(wasabi({ ...credentials, region: "us-east-1" })).toStrictEqual({
                 apiVersion: "2006-03-01",

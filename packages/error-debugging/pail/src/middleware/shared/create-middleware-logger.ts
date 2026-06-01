@@ -119,7 +119,7 @@ export const createMiddlewareLogger = <T extends string = string>(
         method,
         path,
         requestId,
-        ...headers ? { headers } : {},
+        ...(headers ? { headers } : {}),
     });
 
     const finish = (finishOptions?: WideEventFinishOptions): void => {

@@ -220,7 +220,10 @@ describe(formatMailpaceAddresses, () => {
     it("should delegate to the standard formatter", () => {
         expect.assertions(1);
 
-        expect(formatMailpaceAddresses([{ email: "a@example.com" }, { email: "b@example.com", name: "B" }])).toStrictEqual(["a@example.com", "B <b@example.com>"]);
+        expect(formatMailpaceAddresses([{ email: "a@example.com" }, { email: "b@example.com", name: "B" }])).toStrictEqual([
+            "a@example.com",
+            "B <b@example.com>",
+        ]);
     });
 });
 

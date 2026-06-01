@@ -16,6 +16,7 @@ export interface UploadControlSnapshot {
     offset?: number;
     /** Adapter that owns the upload. */
     protocol: FingerprintProtocol;
+
     /**
      * Server-issued resume key. For TUS this is the `Location` header from the
      * initial POST (an absolute or relative URL). For chunked-REST this is the
@@ -49,19 +50,20 @@ export interface UploadControlAttachMeta {
  * Unified pause/resume/abort handle for an upload.
  *
  * Lifecycle:
- *  1. Construct empty (`new UploadControl()`) and pass into `adapter.upload(file, { control })`.
- *  2. The adapter calls `_attach()` once the upload identifier is known.
- *  3. Callers drive the upload via `pause/resume/abort`.
- *  4. `toJSON()` returns a serializable snapshot.
- *  5. In a future process, `UploadControl.from(snapshot)` returns a control
- *     pre-loaded with the snapshot — pass it to `adapter.upload(file, { control })`
- *     and the adapter resumes the in-flight upload instead of starting a new one.
+ * 1. Construct empty (`new UploadControl()`) and pass into `adapter.upload(file, { control })`.
+ * 2. The adapter calls `_attach()` once the upload identifier is known.
+ * 3. Callers drive the upload via `pause/resume/abort`.
+ * 4. `toJSON()` returns a serializable snapshot.
+ * 5. In a future process, `UploadControl.from(snapshot)` returns a control
+ * pre-loaded with the snapshot — pass it to `adapter.upload(file, { control })`
+ * and the adapter resumes the in-flight upload instead of starting a new one.
  */
 export class UploadControl {
-    static from(token: string | UploadControlSnapshot): UploadControl {
+    public static from(token: string | UploadControlSnapshot): UploadControl {
         const snapshot = typeof token === "string" ? (JSON.parse(token) as UploadControlSnapshot) : token;
 
-        if (snapshot.v !== SNAPSHOT_VERSION) {
+        // `snapshot` may come from untrusted JSON, so `v` is not guaranteed to match the literal type at runtime.
+        if ((snapshot.v as number) !== SNAPSHOT_VERSION) {
             throw new Error(`UploadControl: unsupported snapshot version ${String(snapshot.v)}`);
         }
 
@@ -86,31 +88,31 @@ export class UploadControl {
 
     #uploadUrl: string | undefined;
 
-    abort(): void {
+    public abort(): void {
         this.#binding?.abort();
     }
 
-    get endpoint(): string | undefined {
+    public get endpoint(): string | undefined {
         return this.#endpoint;
     }
 
-    get fingerprint(): string | undefined {
+    public get fingerprint(): string | undefined {
         return this.#fingerprint;
     }
 
-    get offset(): number {
+    public get offset(): number {
         return this.#offset;
     }
 
-    pause(): void {
+    public pause(): void {
         this.#binding?.pause();
     }
 
-    get protocol(): FingerprintProtocol | undefined {
+    public get protocol(): FingerprintProtocol | undefined {
         return this.#protocol;
     }
 
-    async resume(): Promise<void> {
+    public async resume(): Promise<void> {
         if (this.#binding) {
             await this.#binding.resume();
         }
@@ -120,11 +122,11 @@ export class UploadControl {
      * Snapshot loaded via `UploadControl.from(token)` — adapters read this to
      * decide whether to skip the create step and resume an existing upload.
      */
-    get snapshot(): UploadControlSnapshot | undefined {
+    public get snapshot(): UploadControlSnapshot | undefined {
         return this.#snapshot;
     }
 
-    toJSON(): UploadControlSnapshot {
+    public toJSON(): UploadControlSnapshot {
         if (this.#protocol === undefined || this.#endpoint === undefined || this.#fingerprint === undefined || this.#uploadUrl === undefined) {
             throw new Error("UploadControl.toJSON: control is not yet attached to an upload");
         }
@@ -139,7 +141,7 @@ export class UploadControl {
         };
     }
 
-    get uploadUrl(): string | undefined {
+    public get uploadUrl(): string | undefined {
         return this.#uploadUrl;
     }
 
@@ -147,7 +149,8 @@ export class UploadControl {
      * Adapter-internal. Wires the in-flight upload's pause/resume/abort into this control.
      * @internal
      */
-    _attach(binding: UploadControlBinding, meta: UploadControlAttachMeta): void {
+    // eslint-disable-next-line no-underscore-dangle -- `_`-prefixed name marks an adapter-internal method that is intentionally part of the cross-module @internal API
+    public _attach(binding: UploadControlBinding, meta: UploadControlAttachMeta): void {
         this.#binding = binding;
         this.#protocol = meta.protocol;
         this.#endpoint = meta.endpoint;
@@ -159,7 +162,8 @@ export class UploadControl {
      * Adapter-internal. Called when the upload finishes or is aborted.
      * @internal
      */
-    _detach(): void {
+    // eslint-disable-next-line no-underscore-dangle -- `_`-prefixed name marks an adapter-internal method that is intentionally part of the cross-module @internal API
+    public _detach(): void {
         this.#binding = undefined;
     }
 
@@ -167,7 +171,8 @@ export class UploadControl {
      * Adapter-internal. Keeps `toJSON()`'s `offset` field current.
      * @internal
      */
-    _updateOffset(offset: number): void {
+    // eslint-disable-next-line no-underscore-dangle -- `_`-prefixed name marks an adapter-internal method that is intentionally part of the cross-module @internal API
+    public _updateOffset(offset: number): void {
         this.#offset = offset;
     }
 

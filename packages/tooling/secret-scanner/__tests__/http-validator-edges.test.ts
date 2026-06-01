@@ -190,17 +190,23 @@ describe("runHttpValidation — matcher branches (in-process server)", () => {
     it("wordMatch with an empty words list imposes no constraint (verified)", async () => {
         expect.assertions(1);
 
-        await expect(validateFinding(httpValidation([{ type: "WordMatch", words: [] }, { status: [200], type: "StatusMatch" }]), "x")).resolves.toBe(
-            "verified",
-        );
+        await expect(
+            validateFinding(
+                httpValidation([
+                    { type: "WordMatch", words: [] },
+                    { status: [200], type: "StatusMatch" },
+                ]),
+                "x",
+            ),
+        ).resolves.toBe("verified");
     });
 
     it("wordMatch with match_all_words rejects when one word is absent", async () => {
         expect.assertions(1);
 
-        await expect(
-            validateFinding(httpValidation([{ match_all_words: true, type: "WordMatch", words: ['"ok"', "missing-word"] }]), "x"),
-        ).resolves.toBe("rejected");
+        await expect(validateFinding(httpValidation([{ match_all_words: true, type: "WordMatch", words: ['"ok"', "missing-word"] }]), "x")).resolves.toBe(
+            "rejected",
+        );
     });
 
     it("returns 'skipped' on an unknown matcher type encountered in the loop", async () => {
@@ -240,9 +246,15 @@ describe("runHttpValidation — matcher branches (in-process server)", () => {
             }, 20);
         };
 
-        await expect(validateFinding(httpValidation([{ status: [200], type: "StatusMatch" }, { type: "WordMatch", words: ["needle"] }]), "x")).resolves.toBe(
-            "error",
-        );
+        await expect(
+            validateFinding(
+                httpValidation([
+                    { status: [200], type: "StatusMatch" },
+                    { type: "WordMatch", words: ["needle"] },
+                ]),
+                "x",
+            ),
+        ).resolves.toBe("error");
     });
 
     it("verifies a POST whose body template renders successfully", async () => {

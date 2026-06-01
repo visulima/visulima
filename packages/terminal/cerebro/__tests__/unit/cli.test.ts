@@ -1031,7 +1031,9 @@ describe("cli", () => {
         it("throws when fs is provided but is not an object", () => {
             expect.assertions(1);
 
-            expect(() => new Cli("MyCLI", { fs: "not-an-object" as unknown as never })).toThrow("CLI fs option must be an object implementing the CerebroFs interface");
+            expect(() => new Cli("MyCLI", { fs: "not-an-object" as unknown as never })).toThrow(
+                "CLI fs option must be an object implementing the CerebroFs interface",
+            );
         });
 
         it("throws when exit is provided but is not a function", () => {

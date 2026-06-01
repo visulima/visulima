@@ -1519,9 +1519,7 @@ version: 2.0.0`;
 
                 // Empty directory, yaml/json5 disabled — only package.json is
                 // searched and nothing exists up the tree.
-                expect(() => findPackageJsonSync(distribution, { json5: false, yaml: false })).toThrow(
-                    "No such file or directory, for package.json found.",
-                );
+                expect(() => findPackageJsonSync(distribution, { json5: false, yaml: false })).toThrow("No such file or directory, for package.json found.");
             });
         });
     });

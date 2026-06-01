@@ -4,15 +4,15 @@ import { describe, expect, it, vi } from "vitest";
 
 import { sendJson } from "../src";
 
-const createMockResponse = (): { calls: { setHeader: [string, string][]; end: string[] }; response: ServerResponse } => {
+const createMockResponse = (): { calls: { end: string[]; setHeader: [string, string][] }; response: ServerResponse } => {
     const setHeaderCalls: [string, string][] = [];
     const endCalls: string[] = [];
 
     const response = {
-        end: vi.fn((body: string) => {
+        end: vi.fn<(body: string) => void>((body: string) => {
             endCalls.push(body);
         }),
-        setHeader: vi.fn((name: string, value: string) => {
+        setHeader: vi.fn<(name: string, value: string) => void>((name: string, value: string) => {
             setHeaderCalls.push([name, value]);
         }),
         statusCode: 0,
