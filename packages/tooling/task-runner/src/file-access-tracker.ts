@@ -222,6 +222,42 @@ interface Killable {
 }
 
 /**
+ * Wire a per-call `AbortSignal` to SIGTERM a `Killable` spawn.
+ * Used by every dispatch path (seccomp, strace, no-tracking) so
+ * cancellation behaves identically regardless of which tracker is
+ * active — a caller that aborts always kills the spawned process.
+ *
+ * Returns a detach function the caller invokes once the spawn
+ * completes, so the listener can't leak past the command's life.
+ * If the signal is already aborted, kills immediately.
+ */
+const wireAbort = (signal: AbortSignal | undefined, target: Killable): (() => void) => {
+    if (!signal) {
+        return () => {};
+    }
+
+    const kill = (): void => {
+        try {
+            target.kill("SIGTERM");
+        } catch {
+            // Process already exited — nothing to terminate.
+        }
+    };
+
+    if (signal.aborted) {
+        kill();
+
+        return () => {};
+    }
+
+    signal.addEventListener("abort", kill, { once: true });
+
+    return () => {
+        signal.removeEventListener("abort", kill);
+    };
+};
+
+/**
  * Tracks which files a child process accesses during execution.
  *
  * Uses `strace` on Linux to intercept syscalls (open, openat, stat, lstat, access, getdents).
@@ -393,12 +429,7 @@ export class FileAccessTracker {
         options.abortSignal?.addEventListener("abort", abortHandler, { once: true });
 
         try {
-            const result = await native.trackWithSeccomp(
-                argv,
-                helperPath,
-                { cwd, env: envFiltered },
-                onStarted,
-            );
+            const result = await native.trackWithSeccomp(argv, helperPath, { cwd, env: envFiltered }, onStarted);
 
             const accesses: FileAccess[] = [];
 
@@ -439,6 +470,7 @@ export class FileAccessTracker {
     async #runWithStrace(
         command: string,
         options: {
+            abortSignal?: AbortSignal;
             cwd?: string;
             env?: Record<string, string | undefined>;
         },
@@ -486,6 +518,7 @@ export class FileAccessTracker {
                 },
                 async (_error, stdout, stderr) => {
                     this.#activeProcesses.delete(child);
+                    detachAbort();
 
                     let accesses: FileAccess[] = [];
 
@@ -509,6 +542,7 @@ export class FileAccessTracker {
             );
 
             this.#activeProcesses.add(child);
+            const detachAbort = wireAbort(options.abortSignal, child);
         });
     }
 
@@ -640,6 +674,7 @@ export class FileAccessTracker {
     async #runWithoutTracking(
         command: string,
         options: {
+            abortSignal?: AbortSignal;
             cwd?: string;
             env?: Record<string, string | undefined>;
         },
@@ -660,6 +695,7 @@ export class FileAccessTracker {
                 },
                 (_error, stdout, stderr) => {
                     this.#activeProcesses.delete(child);
+                    detachAbort();
 
                     _resolve({
                         accesses: [],
@@ -670,6 +706,7 @@ export class FileAccessTracker {
             );
 
             this.#activeProcesses.add(child);
+            const detachAbort = wireAbort(options.abortSignal, child);
         });
     }
 }
