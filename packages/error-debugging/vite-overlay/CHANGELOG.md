@@ -1,3 +1,23 @@
+## @visulima/vite-overlay [2.0.0-alpha.32](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.0-alpha.31...@visulima/vite-overlay@2.0.0-alpha.32) (2026-06-02)
+
+### Bug Fixes
+
+* **tests:** revert unsafe vitest autofixes from the lint sweep ([378f27c](https://github.com/visulima/visulima/commit/378f27caa370f1d3188aef2ed36d46839abc88c4))
+
+### Miscellaneous Chores
+
+* apply eslint + prettier autofixes across packages ([c1bb784](https://github.com/visulima/visulima/commit/c1bb7848a0d93d0dfe2960c77e3cda22239c79a0))
+
+### Tests
+
+* improve coverage across packages ([91bd6d3](https://github.com/visulima/visulima/commit/91bd6d3b61736e3c8bd1fc59b0b5955f76a5d323))
+* **vite-overlay:** cover solution finder, diff transformer, esbuild and stack-trace utils ([54455cf](https://github.com/visulima/visulima/commit/54455cf70f407104907a731ae299d430f3d90e92))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.31
+
 ## @visulima/vite-overlay [2.0.0-alpha.31](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.0-alpha.30...@visulima/vite-overlay@2.0.0-alpha.31) (2026-05-27)
 
 ### Bug Fixes
