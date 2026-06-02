@@ -443,6 +443,13 @@ class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
         key: string,
         options?: { expiresIn?: number; responseContentDisposition?: string; responseContentType?: string },
     ): Promise<string> {
+        if (options?.responseContentDisposition !== undefined || options?.responseContentType !== undefined) {
+            return throwErrorCode(
+                ERRORS.METHOD_NOT_ALLOWED,
+                "PocketBase: `responseContentDisposition`/`responseContentType` are not supported — PocketBase file URLs have no Content-Disposition/Content-Type override.",
+            );
+        }
+
         if (this.publicBaseUrl) {
             return `${this.publicBaseUrl.replace(/\/+$/, "")}/${key}`;
         }

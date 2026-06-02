@@ -177,9 +177,34 @@ describe("azureStorage authentication & signed URLs", () => {
         expect(readUrl).toBe("https://test-account.blob.core.windows.net/c/file.txt?sig=shared-key");
         expect(generateSasUrlMock).toHaveBeenCalledTimes(1);
 
-        await storage.getUploadUrl("file.txt", { contentType: "text/plain" });
+        await storage.getUploadUrl("file.txt", { expiresIn: 600 });
 
         expect(generateSasUrlMock).toHaveBeenCalledTimes(2);
+    });
+
+    it("rejects unenforceable contentType/contentLength on upload URLs", async () => {
+        expect.assertions(2);
+
+        const storage = new AzureStorage({
+            ...baseOptions,
+            accountKey: "test-account-key",
+            accountName: "test-account",
+        });
+
+        await expect(storage.getUploadUrl("file.txt", { contentType: "text/plain" })).rejects.toThrow(/contentType.*not supported/u);
+        await expect(storage.getUploadUrl("file.txt", { contentLength: 1024 })).rejects.toThrow(/not supported/u);
+    });
+
+    it("rejects responseContentDisposition on the pre-issued sasToken read path", async () => {
+        expect.assertions(1);
+
+        const storage = new AzureStorage({
+            ...baseOptions,
+            accountName: "test-account",
+            sasToken: "sv=2021-08-06&sig=preissued",
+        });
+
+        await expect(storage.getReadUrl("file.txt", { responseContentDisposition: "attachment" })).rejects.toThrow(/not supported|require a freshly minted SAS/u);
     });
 
     it("mints a User Delegation SAS when given a Microsoft Entra credential", async () => {
