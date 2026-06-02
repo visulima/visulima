@@ -293,20 +293,39 @@ fn drain_bounded<R: Read + AsRawFd>(mut reader: R, cancel_fd: RawFd) -> Vec<u8> 
             break;
         }
 
-        // Cancelled — return what we've gathered so far.
+        // Always prefer draining pending stdout/stderr before honoring cancel:
+        // a fast command (`echo hello`) exits and we `signal_cancel` almost
+        // immediately, so the pipe data and the cancel byte race. Reading the
+        // pipe first means a racing cancel can't drop already-buffered output.
+        if fds[0].revents != 0 {
+            match reader.read(&mut chunk) {
+                Ok(0) => break, // EOF: all writers closed the pipe.
+                Ok(n) => {
+                    buf.extend_from_slice(&chunk[..n]);
+
+                    continue;
+                },
+                // Nothing pending right now (POLLHUP without data, or a raced
+                // poll); fall through to the cancel check below.
+                Err(ref e) if matches!(e.kind(), io::ErrorKind::WouldBlock | io::ErrorKind::Interrupted) => {},
+                Err(_) => break,
+            }
+        }
+
+        // Cancelled and no more pending pipe data: a lingering descendant that
+        // inherited the pipe is keeping it open past the main child's exit.
+        // Sweep any last immediately-available bytes (non-blocking) so we don't
+        // truncate output, then stop instead of blocking on an EOF that may
+        // never come — the second half of the vite-task#396 hang.
         if fds[1].revents != 0 {
+            loop {
+                match reader.read(&mut chunk) {
+                    Ok(n) if n > 0 => buf.extend_from_slice(&chunk[..n]),
+                    _ => break,
+                }
+            }
+
             break;
-        }
-
-        if fds[0].revents == 0 {
-            continue;
-        }
-
-        match reader.read(&mut chunk) {
-            Ok(0) => break, // EOF: all writers closed the pipe.
-            Ok(n) => buf.extend_from_slice(&chunk[..n]),
-            Err(ref e) if matches!(e.kind(), io::ErrorKind::WouldBlock | io::ErrorKind::Interrupted) => continue,
-            Err(_) => break,
         }
     }
 

@@ -353,21 +353,35 @@ fn read_bounded<R: Read + AsRawFd>(mut reader: R, cancel_fd: RawFd) -> Vec<u8> {
             break;
         }
 
-        if fds[1].revents != 0 {
-            break;
-        }
+        // Prefer draining pending pipe data before honoring cancel: a fast
+        // command exits and the caller signals cancel almost immediately, so
+        // the data and the cancel byte race. Reading first means a racing
+        // cancel can't drop already-buffered output.
+        if fds[0].revents != 0 {
+            match reader.read(&mut chunk) {
+                Ok(0) => break,
+                Ok(n) => {
+                    buf.extend_from_slice(&chunk[..n]);
 
-        if fds[0].revents == 0 {
-            continue;
-        }
-
-        match reader.read(&mut chunk) {
-            Ok(0) => break,
-            Ok(n) => buf.extend_from_slice(&chunk[..n]),
-            Err(ref e) if matches!(e.kind(), std::io::ErrorKind::WouldBlock | std::io::ErrorKind::Interrupted) => {
-                continue
+                    continue;
+                }
+                Err(ref e) if matches!(e.kind(), std::io::ErrorKind::WouldBlock | std::io::ErrorKind::Interrupted) => {}
+                Err(_) => break,
             }
-            Err(_) => break,
+        }
+
+        // Cancelled with no more pending data: sweep any last available bytes
+        // (non-blocking) so output isn't truncated, then stop instead of
+        // blocking on an EOF a lingering descendant may never deliver.
+        if fds[1].revents != 0 {
+            loop {
+                match reader.read(&mut chunk) {
+                    Ok(n) if n > 0 => buf.extend_from_slice(&chunk[..n]),
+                    _ => break,
+                }
+            }
+
+            break;
         }
     }
 
