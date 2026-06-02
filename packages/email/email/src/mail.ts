@@ -1,6 +1,8 @@
 import DraftMailMessage from "./draft-mail-message";
 import EmailError from "./errors/email-error";
 import MailMessage from "./mail-message";
+import type { Middleware, SendFunction } from "./middleware/types";
+import { composeMiddleware } from "./middleware/types";
 import type { Provider } from "./providers/provider";
 import type { EmailAddress, EmailHeaders, EmailOptions, EmailResult, Receipt, Result } from "./types";
 import buildMimeMessage from "./utils/build-mime-message";
@@ -105,6 +107,10 @@ export class Mail {
 
     private readonly featureCheck: FeatureCheckMode;
 
+    private readonly middlewares: Middleware[] = [];
+
+    private composedSend?: SendFunction;
+
     /**
      * Creates a new Mail instance with a provider.
      * @param provider The email provider instance.
@@ -128,6 +134,29 @@ export class Mail {
     public setLogger(logger: Console): this {
         this.loggerInstance = logger;
         this.logger = createLogger("Mail", logger);
+
+        return this;
+    }
+
+    /**
+     * Registers a send middleware. Middlewares wrap the provider's `sendEmail` call and run in
+     * registration order (first registered is the outermost wrapper), enabling retry, rate-limiting,
+     * circuit-breaking, deduplication, logging, and credential injection.
+     * @param middleware The middleware to add. See the `@visulima/email/middleware` entry point.
+     * @returns This instance for method chaining.
+     * @example
+     * ```ts
+     * import { retryMiddleware, rateLimitMiddleware } from "@visulima/email/middleware";
+     *
+     * const mail = createMail(provider)
+     *   .use(rateLimitMiddleware({ rate: 10 }))
+     *   .use(retryMiddleware({ retries: 3 }));
+     * ```
+     */
+    public use(middleware: Middleware): this {
+        this.middlewares.push(middleware);
+        // Invalidate the memoized chain so the new middleware is picked up on the next send.
+        this.composedSend = undefined;
 
         return this;
     }
@@ -321,11 +350,29 @@ export class Mail {
             return { error: featureError, success: false };
         }
 
-        const result = await this.provider.sendEmail(emailOptions);
+        const result = await this.dispatch(emailOptions);
 
         logSendResult(this.logger, result, this.provider.name ?? "unknown");
 
         return result;
+    }
+
+    /**
+     * Sends the resolved options through the middleware chain (or straight to the provider when no
+     * middleware is registered). The composed chain is memoized and rebuilt whenever {@link Mail.use}
+     * adds a middleware.
+     * @param emailOptions The fully-resolved email options.
+     * @returns The send result.
+     * @private
+     */
+    private async dispatch(emailOptions: EmailOptions): Promise<Result<EmailResult>> {
+        if (this.middlewares.length === 0) {
+            return await this.provider.sendEmail(emailOptions);
+        }
+
+        this.composedSend ??= composeMiddleware(this.middlewares, (options) => Promise.resolve(this.provider.sendEmail(options)));
+
+        return await this.composedSend(emailOptions);
     }
 
     /**

@@ -97,6 +97,14 @@
             "types": "./dist/template-engines/html-to-text.d.ts",
             "default": "./dist/template-engines/html-to-text.js"
         },
+        "./template/liquid": {
+            "types": "./dist/template-engines/liquid.d.ts",
+            "default": "./dist/template-engines/liquid.js"
+        },
+        "./template/jsx-email": {
+            "types": "./dist/template-engines/jsx-email.d.ts",
+            "default": "./dist/template-engines/jsx-email.js"
+        },
         "./providers/aws-ses": {
             "types": "./dist/providers/aws-ses/index.d.ts",
             "default": "./dist/providers/aws-ses/index.js"
@@ -148,6 +156,34 @@
         "./crypto": {
             "types": "./dist/crypto/index.d.ts",
             "default": "./dist/crypto/index.js"
+        },
+        "./webhooks": {
+            "types": "./dist/webhooks/index.d.ts",
+            "default": "./dist/webhooks/index.js"
+        },
+        "./deliverability": {
+            "types": "./dist/deliverability/index.d.ts",
+            "default": "./dist/deliverability/index.js"
+        },
+        "./inbound": {
+            "types": "./dist/inbound/index.d.ts",
+            "default": "./dist/inbound/index.js"
+        },
+        "./events": {
+            "types": "./dist/events/index.d.ts",
+            "default": "./dist/events/index.js"
+        },
+        "./middleware": {
+            "types": "./dist/middleware/index.d.ts",
+            "default": "./dist/middleware/index.js"
+        },
+        "./queue": {
+            "types": "./dist/queue/index.d.ts",
+            "default": "./dist/queue/index.js"
+        },
+        "./test": {
+            "types": "./dist/test/index.d.ts",
+            "default": "./dist/test/index.js"
         },
         "./providers/sendgrid": {
             "types": "./dist/providers/sendgrid/index.d.ts",
@@ -314,6 +350,8 @@
         "esbuild": "catalog:build",
         "eslint": "catalog:lint",
         "handlebars": "catalog:dev",
+        "jsx-email": "^2.0.0",
+        "liquidjs": "^10.0.0",
         "mjml": "catalog:dev",
         "nodemailer": "catalog:dev",
         "openapi-types": "catalog:dev",
@@ -332,6 +370,8 @@
         "@vue-email/render": "catalog:frontend",
         "asn1js": "catalog:peer",
         "handlebars": "catalog:peer",
+        "jsx-email": "^2.0.0",
+        "liquidjs": "^10.0.0",
         "mjml": "catalog:peer",
         "nodemailer": ">=7",
         "pkijs": "catalog:peer"
@@ -350,6 +390,12 @@
             "optional": true
         },
         "handlebars": {
+            "optional": true
+        },
+        "jsx-email": {
+            "optional": true
+        },
+        "liquidjs": {
             "optional": true
         },
         "mjml": {

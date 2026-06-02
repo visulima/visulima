@@ -3,6 +3,7 @@ export { default as EmailError } from "./errors/email-error";
 export { default as RequiredOptionError } from "./errors/required-option-error";
 export { createMail, type FeatureCheckMode, Mail, type MailGlobalConfig, type MailOptions, type SendableMessage } from "./mail";
 export { default as MailMessage } from "./mail-message";
+export type { Middleware, SendFunction } from "./middleware/types";
 export type { Provider, ProviderFactory } from "./providers/provider";
 export { defineProvider } from "./providers/provider";
 export type { TemplateRenderer } from "./template-engines/types";
