@@ -434,10 +434,10 @@ class BunnyStorage extends BaseStorage<BunnyFile> {
         key: string,
         options?: { expiresIn?: number; responseContentDisposition?: string; responseContentType?: string },
     ): Promise<string> {
-        if (options?.responseContentDisposition !== undefined || options?.responseContentType !== undefined) {
+        if (options?.responseContentDisposition) {
             return throwErrorCode(
                 ERRORS.METHOD_NOT_ALLOWED,
-                "Bunny Storage: `responseContentDisposition`/`responseContentType` are not supported — no override exists on Bunny Storage / Pull Zone URLs.",
+                "Bunny Storage: `responseContentDisposition` is not supported — no override exists on Bunny Storage / Pull Zone URLs.",
             );
         }
 

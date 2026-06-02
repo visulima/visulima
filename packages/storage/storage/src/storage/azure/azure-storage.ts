@@ -549,11 +549,8 @@ class AzureStorage extends BaseStorage {
      * (public-container) adapters return the unsigned blob URL.
      * @param key Storage key.
      * @param options Optional expiry and response content overrides. Response
-     * content overrides only apply when the adapter mints a fresh SAS; they are
-     * rejected on the pre-issued `sasToken` and anonymous paths, which have no
-     * signature in which to bind them.
-     * @throws {UploadError} When the adapter has no way to authorise reads, or
-     * when a response content override is supplied on a non-signing path.
+     * content overrides only apply when the adapter mints a fresh SAS.
+     * @throws {UploadError} When the adapter has no way to authorise reads.
      */
     public override async getReadUrl(
         key: string,
@@ -568,13 +565,6 @@ class AzureStorage extends BaseStorage {
                 ...(options?.responseContentDisposition && { contentDisposition: options.responseContentDisposition }),
                 ...(options?.responseContentType && { contentType: options.responseContentType }),
             });
-        }
-
-        if (options?.responseContentDisposition !== undefined || options?.responseContentType !== undefined) {
-            return throwErrorCode(
-                ERRORS.BAD_REQUEST,
-                "azure: `responseContentDisposition`/`responseContentType` require a freshly minted SAS (construct with a shared key or Microsoft Entra credential). A pre-issued `sasToken` or anonymous public-container URL has no signature in which to bind the override, so it cannot be enforced.",
-            );
         }
 
         if (this.sasToken) {
@@ -600,20 +590,11 @@ class AzureStorage extends BaseStorage {
      * header on the PUT — a SAS cannot pin the stored content type.
      * @param key Storage key.
      * @param options Optional expiry. `contentLength` and `contentType` are
-     * rejected: an Azure SAS does not bind the request `Content-Type` into the
-     * signature and has no server-enforced size limit, so accepting them would
-     * hand the caller a guarantee that does not hold.
-     * @throws {UploadError} When the adapter cannot authorise writes, or when an
-     * unenforceable `contentType`/`contentLength` override is supplied.
+     * accepted for interface parity but a SAS cannot enforce a size limit or
+     * pin the content type.
+     * @throws {UploadError} When the adapter cannot authorise writes.
      */
     public override async getUploadUrl(key: string, options?: { contentLength?: number; contentType?: string; expiresIn?: number }): Promise<string> {
-        if (options?.contentType !== undefined || options?.contentLength !== undefined) {
-            return throwErrorCode(
-                ERRORS.BAD_REQUEST,
-                "azure: `contentType`/`contentLength` are not supported for upload URLs. An Azure SAS does not bind the request Content-Type into the signature and cannot enforce a size limit; validate both at your application gateway/proxy before issuing the SAS, or omit them and accept the unbounded PUT.",
-            );
-        }
-
         const blobClient = this.containerClient.getBlobClient(this.getFullPath(key));
 
         if (this.signer) {

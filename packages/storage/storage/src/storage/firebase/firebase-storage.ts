@@ -372,13 +372,6 @@ class FirebaseStorage extends BaseStorage<FirebaseFile> {
         options?: { expiresIn?: number; responseContentDisposition?: string; responseContentType?: string },
     ): Promise<string> {
         if (this.publicBaseUrl) {
-            if (options?.responseContentDisposition !== undefined || options?.responseContentType !== undefined) {
-                return throwErrorCode(
-                    ERRORS.BAD_REQUEST,
-                    "Firebase: `responseContentDisposition`/`responseContentType` are not supported when `publicBaseUrl` is configured — a static public URL has no signature in which to bind the override.",
-                );
-            }
-
             return `${this.publicBaseUrl}/${key}`;
         }
 
@@ -388,8 +381,6 @@ class FirebaseStorage extends BaseStorage<FirebaseFile> {
             const [url] = await this.bucket.file(key).getSignedUrl({
                 action: "read",
                 expires: Date.now() + expiresIn * 1000,
-                ...(options?.responseContentDisposition !== undefined && { responseDisposition: options.responseContentDisposition }),
-                ...(options?.responseContentType !== undefined && { responseType: options.responseContentType }),
             });
 
             return url;
@@ -399,13 +390,6 @@ class FirebaseStorage extends BaseStorage<FirebaseFile> {
     }
 
     public override async getUploadUrl(key: string, options?: { contentLength?: number; contentType?: string; expiresIn?: number }): Promise<string> {
-        if (options?.contentLength !== undefined) {
-            return throwErrorCode(
-                ERRORS.BAD_REQUEST,
-                "Firebase: `contentLength` is not supported for upload URLs. A GCS signed PUT has no content-length-range policy, so the cap would not bind; enforce size limits at your application gateway/proxy before issuing the URL.",
-            );
-        }
-
         const expiresIn = options?.expiresIn ?? this.defaultUrlExpiresIn;
 
         try {

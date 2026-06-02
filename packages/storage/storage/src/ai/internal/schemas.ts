@@ -4,17 +4,9 @@ import * as z from "zod";
  * Default upper bound on `downloadFile` payload size. The tool boundary is
  * JSON, so anything larger than ~1 MiB is almost certainly a mistake (it
  * blows up the model context and the response payload). Callers can raise
- * the cap per-invocation via `maxBytes`, up to {@link MAX_DOWNLOAD_BYTES}.
+ * the cap per-invocation via `maxBytes`.
  */
 export const DEFAULT_MAX_DOWNLOAD_BYTES: number = 1024 * 1024;
-
-/**
- * Absolute ceiling on `downloadFile` payload size. A `maxBytes` override above
- * this is rejected so an oversized download cannot be pulled inline into the
- * model context / JSON tool response. Use `getFileUrl` to delegate larger
- * downloads to the client.
- */
-export const MAX_DOWNLOAD_BYTES: number = 10 * 1024 * 1024;
 
 export const listFilesInputSchema: z.ZodObject<{
     limit: z.ZodOptional<z.ZodNumber>;
@@ -40,10 +32,9 @@ export const downloadFileInputSchema: z.ZodObject<{
     maxBytes: z
         .int()
         .positive()
-        .max(MAX_DOWNLOAD_BYTES)
         .optional()
         .meta({
-            description: `Reject downloads larger than this byte count (default ${DEFAULT_MAX_DOWNLOAD_BYTES}, maximum ${MAX_DOWNLOAD_BYTES}). Verified via head() before transferring.`,
+            description: `Reject downloads larger than this byte count (default ${DEFAULT_MAX_DOWNLOAD_BYTES}). Verified via head() before transferring.`,
         }),
 });
 

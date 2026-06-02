@@ -9,7 +9,7 @@ import type {
     SignUploadUrlInput,
     UploadFileInput,
 } from "./schemas";
-import { DEFAULT_MAX_DOWNLOAD_BYTES, MAX_DOWNLOAD_BYTES } from "./schemas";
+import { DEFAULT_MAX_DOWNLOAD_BYTES } from "./schemas";
 
 const serializeLastModified = (value: Date | number | string | undefined): string | undefined => {
     if (value === undefined) {
@@ -115,13 +115,6 @@ export const executors: Executors = {
 
     downloadFile: async (files: Files, { binary, key, maxBytes }: DownloadFileInput): Promise<DownloadFileResult> => {
         const limit = maxBytes ?? DEFAULT_MAX_DOWNLOAD_BYTES;
-
-        if (limit > MAX_DOWNLOAD_BYTES) {
-            throw new RangeError(
-                `downloadFile refused: maxBytes (${limit}) exceeds the maximum of ${MAX_DOWNLOAD_BYTES}. Use getFileUrl to delegate larger downloads to the client.`,
-            );
-        }
-
         const head = await files.head(key);
 
         if (typeof head.size === "number" && head.size > limit) {

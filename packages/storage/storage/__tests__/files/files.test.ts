@@ -340,19 +340,6 @@ describe("files facade", () => {
 
             expect(listed).toEqual(["a.txt", "b.txt"]);
         });
-
-        it("rejects a prefix containing . or .. path segments at construction", () => {
-            expect(() => makePrefixed(directory, "../escape")).toThrow(/path segments|InvalidFileName/);
-            expect(() => makePrefixed(directory, "users/../admin")).toThrow(/path segments|InvalidFileName/);
-        });
-
-        it("rejects a prefixed key that escapes the namespace via .. segments", async () => {
-            const { facade } = makePrefixed(directory, "users");
-
-            await expect(facade.head("../admin/secret")).rejects.toThrow(/path segments|InvalidFileName/);
-            await expect(facade.download("../../etc/passwd")).rejects.toThrow(/path segments|InvalidFileName/);
-            await expect(facade.upload("../escape.txt", "x")).rejects.toThrow(/path segments|InvalidFileName/);
-        });
     });
 
     describe("per-call OperationOptions", () => {

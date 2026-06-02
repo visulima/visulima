@@ -429,14 +429,7 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
         return data.signedUrl;
     }
 
-    public override async getUploadUrl(key: string, options?: { contentLength?: number; contentType?: string; expiresIn?: number }): Promise<string> {
-        if (options?.contentType !== undefined || options?.contentLength !== undefined) {
-            return throwErrorCode(
-                ERRORS.BAD_REQUEST,
-                "Supabase: `contentType`/`contentLength` are not supported for upload URLs. A Supabase signed upload URL does not bind the request Content-Type into the signature and cannot enforce a size limit; validate both at your application gateway/proxy before issuing the URL.",
-            );
-        }
-
+    public override async getUploadUrl(key: string, _options?: { contentLength?: number; contentType?: string; expiresIn?: number }): Promise<string> {
         const { data, error } = await this.storageClient.from(this.bucket).createSignedUploadUrl(key);
 
         if (error || !data) {

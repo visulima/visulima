@@ -152,7 +152,7 @@ describe(GoogleDriveStorage, () => {
                 fields: "files(id)",
                 includeItemsFromAllDrives: true,
                 pageSize: 2,
-                q: "appProperties has { key='fsdkKey' and value='video.mp4' } and 'root' in parents and trashed=false",
+                q: "appProperties has { key='fsdkKey' and value='video.mp4' } and trashed=false",
                 supportsAllDrives: true,
             });
             expect(mockDrive.files.delete).toHaveBeenCalledWith(expect.objectContaining({ fileId: "file-1" }));

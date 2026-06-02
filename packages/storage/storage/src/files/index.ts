@@ -3,7 +3,6 @@ import { PassThrough, Readable } from "node:stream";
 import { BaseStorage } from "../storage/storage";
 import type { OperationOptions } from "../storage/types";
 import type { File as StorageFile, FilePart } from "../storage/utils/file";
-import { ERRORS, throwErrorCode } from "../utils/errors";
 import type { RetryConfig } from "../utils/retry";
 
 /**
@@ -347,17 +346,6 @@ const toFileObject = (file: StorageFile, fallbackKey?: string): FileObject => {
 };
 
 /**
- * Reject `.` and `..` path segments. A prefix or key containing them would let a caller escape the
- * configured namespace/root once it is joined into `${prefix}/${key}` (e.g. `prefix: "users"` +
- * `key: "../admin/secret"`), so we fail closed before any adapter call.
- */
-const assertNoRelativeSegments = (value: string, label: string): void => {
-    if (value.split("/").some((segment) => segment === "." || segment === "..")) {
-        throwErrorCode(ERRORS.INVALID_FILE_NAME, `${label} must not contain "." or ".." path segments: "${value}"`);
-    }
-};
-
-/**
  * Trim leading/trailing slashes; collapse internal repeats. Empty prefix → "".
  */
 const normalizePrefix = (raw: string): string => {
@@ -365,14 +353,10 @@ const normalizePrefix = (raw: string): string => {
         return "";
     }
 
-    const normalized = raw
+    return raw
         .split("/")
         .filter((segment) => segment.length > 0)
         .join("/");
-
-    assertNoRelativeSegments(normalized, "prefix");
-
-    return normalized;
 };
 
 /**
@@ -542,15 +526,7 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
 
     /** Resolve a caller-supplied key into the underlying storage key. */
     private resolveKey(key: string): string {
-        if (!this.prefix) {
-            return key;
-        }
-
-        const normalized = key.replace(/^\/+/u, "");
-
-        assertNoRelativeSegments(normalized, "key");
-
-        return `${this.prefix}/${normalized}`;
+        return this.prefix ? `${this.prefix}/${key}` : key;
     }
 
     /**
