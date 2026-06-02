@@ -600,7 +600,8 @@ export class Mail {
      * import { renderHandlebars } from "@visulima/email/template/handlebars";
      *
      * for await (const receipt of mail.sendBatch(
-     *   { from: { email: "a@x.com" }, subject: "Hi {{name}}", html: "<p>Hello {{name}}</p>" },
+     *   // `to` is required on EmailOptions but ignored here — each personalization supplies its own.
+     *   { from: { email: "a@x.com" }, to: { email: "placeholder@x.com" }, subject: "Hi {{name}}", html: "<p>Hello {{name}}</p>" },
      *   [{ to: { email: "b@x.com" }, data: { name: "Bob" } }],
      *   { render: (tpl, data) => renderHandlebars(tpl, data) },
      * )) { /* ... *\/ }

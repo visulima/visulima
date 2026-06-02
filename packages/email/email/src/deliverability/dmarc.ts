@@ -21,6 +21,14 @@ const alignment = (value: string | undefined): "r" | "s" | undefined => {
     return undefined;
 };
 
+const validPolicy = (value: string | undefined): "none" | "quarantine" | "reject" | undefined => {
+    if (value === "none" || value === "quarantine" || value === "reject") {
+        return value;
+    }
+
+    return undefined;
+};
+
 /**
  * A parsed DMARC DNS policy record (the `_dmarc.&lt;domain>` TXT record).
  */
@@ -106,10 +114,10 @@ export const parseDmarcRecord = (record: string): DmarcRecord => {
         aspf: alignment(tags.aspf),
         fo: tags.fo,
         percent: percentRaw === undefined || Number.isNaN(percentRaw) ? undefined : percentRaw,
-        policy: tags.p as DmarcRecord["policy"],
+        policy: validPolicy(tags.p),
         rua: splitUris(tags.rua),
         ruf: splitUris(tags.ruf),
-        subdomainPolicy: tags.sp as DmarcRecord["subdomainPolicy"],
+        subdomainPolicy: validPolicy(tags.sp),
         tags,
         valid: (tags.v ?? "").toUpperCase() === "DMARC1",
     };

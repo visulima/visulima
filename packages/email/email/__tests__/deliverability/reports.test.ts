@@ -21,6 +21,15 @@ describe("deliverability reports", () => {
             expect.assertions(1);
             expect(parseDmarcRecord("v=spf1 -all").valid).toBe(false);
         });
+
+        it("drops unknown policy values instead of trusting them", () => {
+            expect.assertions(2);
+
+            const record = parseDmarcRecord("v=DMARC1; p=bogus; sp=alsobad");
+
+            expect(record.policy).toBeUndefined();
+            expect(record.subdomainPolicy).toBeUndefined();
+        });
     });
 
     describe(parseMtaStsPolicy, () => {

@@ -46,7 +46,8 @@ class UnionFind {
  */
 export interface EmailThread {
     /**
-     * A stable identifier for the thread (the canonical root Message-ID, or a normalized subject).
+     * A stable identifier for the thread: the union-find root, which is a normalized root Message-ID
+     * or a synthetic `__index_&lt;n>` key when a message has no Message-ID.
      */
     id: string;
 

@@ -153,8 +153,13 @@ const arcMessageSignatureBase = (email: EmailOptions, options: ArcSealOptions): 
     const timestamp = options.timestamp ?? Math.floor(Date.now() / 1000);
     const headers = buildHeaders(email);
 
-    const signedHeaderNames = (options.headersToSign ?? DEFAULT_SIGNED_HEADERS).filter((name) =>
-        Object.keys(headers).some((key) => key.toLowerCase() === name));
+    // Only sign headers that are actually present with a non-empty value: a name in h= whose value
+    // canonicalizes to empty would break verification, and we do not synthesize Date/Message-ID.
+    const signedHeaderNames = (options.headersToSign ?? DEFAULT_SIGNED_HEADERS).filter((name) => {
+        const key = Object.keys(headers).find((header) => header.toLowerCase() === name);
+
+        return key !== undefined && headers[key] !== undefined && headers[key] !== "";
+    });
 
     const body = [email.text, email.html].filter((part): part is string => part !== undefined).join("\n\n");
     const bodyHash = createHash("sha256").update(relaxedBody(body)).digest("base64");
@@ -242,15 +247,17 @@ const loadPrivateKey = async (privateKey: string, passphrase?: string) => {
  */
 const signArc = async (email: EmailOptions, options: ArcSealOptions): Promise<{ email: EmailOptions; headers: ArcHeaderSet }> => {
     const instance = options.instance ?? 1;
+    // Resolve the timestamp once so the AMS and ARC-Seal share an identical t= value.
+    const sealOptions: ArcSealOptions = { ...options, timestamp: options.timestamp ?? Math.floor(Date.now() / 1000) };
     const key = await loadPrivateKey(options.privateKey, options.passphrase);
 
     const aarValue = `i=${String(instance)}; ${options.authenticationResults}`;
 
-    const ams = arcMessageSignatureBase(email, options);
+    const ams = arcMessageSignatureBase(email, sealOptions);
     const amsSignature = createSign("RSA-SHA256").update(ams.signBase).sign(key, "base64");
     const amsValue = `${ams.header}${amsSignature}`;
 
-    const seal = arcSealBase(aarValue, amsValue, options);
+    const seal = arcSealBase(aarValue, amsValue, sealOptions);
     const sealSignature = createSign("RSA-SHA256").update(seal.signBase).sign(key, "base64");
     const sealValue = `${seal.header}${sealSignature}`;
 
