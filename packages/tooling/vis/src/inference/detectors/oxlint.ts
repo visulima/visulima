@@ -1,7 +1,8 @@
+import { TOOL_SIGNATURES } from "../../util/tool-signatures";
 import type { Detector } from "../types";
 
 export const oxlintDetector: Detector = {
-    configFiles: [".oxlintrc.json", "oxlint.json"],
+    configFiles: TOOL_SIGNATURES.oxlint.configFiles,
     detect: ({ matchedConfigs }) => {
         return {
             targets: {
@@ -24,6 +25,6 @@ export const oxlintDetector: Detector = {
             },
         };
     },
-    fallbackDependency: "oxlint",
+    fallbackDependency: TOOL_SIGNATURES.oxlint.packageNames[0],
     name: "oxlint",
 };

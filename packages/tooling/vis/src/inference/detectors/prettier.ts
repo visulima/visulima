@@ -1,20 +1,8 @@
+import { TOOL_SIGNATURES } from "../../util/tool-signatures";
 import type { DetectedTargets, Detector } from "../types";
 
 export const prettierDetector: Detector = {
-    configFiles: [
-        "prettier.config.ts",
-        "prettier.config.js",
-        "prettier.config.mjs",
-        "prettier.config.mts",
-        "prettier.config.cjs",
-        ".prettierrc",
-        ".prettierrc.json",
-        ".prettierrc.js",
-        ".prettierrc.cjs",
-        ".prettierrc.mjs",
-        ".prettierrc.yml",
-        ".prettierrc.yaml",
-    ],
+    configFiles: TOOL_SIGNATURES.prettier.configFiles,
     detect: ({ matchedConfigs }) => {
         const sharedInputs = [
             "{projectRoot}/src/**/*",
@@ -42,6 +30,6 @@ export const prettierDetector: Detector = {
 
         return { targets };
     },
-    fallbackDependency: "prettier",
+    fallbackDependency: TOOL_SIGNATURES.prettier.packageNames[0],
     name: "prettier",
 };

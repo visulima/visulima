@@ -213,13 +213,13 @@ vis migrate syncpack --dry-run
 - `versionGroups` (non-banned) and `semverGroups` — `pinVersion`, `snapTo`, `policy: "sameRange"`, and the broader DSL surface are deferred to [issue #622](https://github.com/visulima/visulima/issues/622).
 - `dependencyTypes`, `specifierTypes`, `filter` — no direct vis equivalent today; reviewer is prompted to recreate them with `policy.*` filters.
 - `source` (workspace globs) — vis derives these from `pnpm-workspace.yaml` / `package.json#workspaces`; reviewer is asked to verify they match.
-- Pre-commit hooks (`.husky/pre-commit`, `.vis-hooks/pre-commit`, `.git/hooks/pre-commit`) referencing `syncpack` are flagged but **not auto-rewritten** — `syncpack lint` ≈ `vis lint` and `syncpack format` ≈ `vis sort-package-json`, but `fix-mismatches` / `set-semver-ranges` have no 1:1 mapping. The reviewer makes the call.
+- Pre-commit hooks (`.husky/pre-commit`, `.vis-hooks/pre-commit`, `.git/hooks/pre-commit`) referencing `syncpack` are flagged but **not auto-rewritten** — `syncpack lint` ≈ `vis deps` and `syncpack format` ≈ `vis sort-package-json`, but `fix-mismatches` / `set-semver-ranges` have no 1:1 mapping. The reviewer makes the call.
 - CI workflow files (`.github/workflows/*.yml`, `.gitlab-ci.yml`, `.circleci/config.yml`, `.woodpecker.yml`, `.drone.yml`) referencing `syncpack` are flagged with a manual step — YAML rewriting is too brittle to automate.
 
 **Superseded (no migration needed):**
 
 - `sortAz`, `sortFirst`, `sortExports`, `sortPackages`, `formatBugs`, `formatRepository` — handled by `vis sort-package-json`.
-- `lintFormatting`, `lintSemverRanges`, `lintVersions` — covered by `vis lint` by default.
+- `lintFormatting`, `lintSemverRanges`, `lintVersions` — covered by `vis deps` by default.
 - `indent` — vis honors `.editorconfig` (when `editorconfig: true`), so explicit indent config is unnecessary.
 
 **Not supported in v1:**
@@ -228,7 +228,7 @@ TS/JS configs (`.syncpackrc.{cjs,js,mjs,ts}`, `syncpack.config.{cjs,js,mjs,ts}`)
 
 ### sherif
 
-Strips the `sherif` dep / scripts / `package.json#sherif` block and surfaces a positive `vis lint --<rule>` command suggestion (vis has no global rule-disable, so the migration translates sherif's `ignore-rules` into the explicit "rules to keep enabled" form):
+Strips the `sherif` dep / scripts / `package.json#sherif` block and surfaces a positive `vis deps --<rule>` command suggestion (vis has no global rule-disable, so the migration translates sherif's `ignore-rules` into the explicit "rules to keep enabled" form):
 
 ```bash
 vis migrate sherif
@@ -248,9 +248,9 @@ vis migrate sherif --dry-run
 - The `sherif` block inside `package.json` is removed.
 - A `.bak` of `package.json` is created before mutation.
 
-**Sherif → vis lint mapping:**
+**Sherif → vis deps mapping:**
 
-| Sherif rule (in `ignore-rules`) | vis lint flag                                        |
+| Sherif rule (in `ignore-rules`) | vis deps flag                                        |
 | ------------------------------- | ---------------------------------------------------- |
 | `empty-dependencies`            | `--empty-deps`                                       |
 | `multiple-dependency-versions`  | `--workspace-versions`                               |
@@ -265,10 +265,10 @@ vis migrate sherif --dry-run
 
 **Routed to manual steps:**
 
-- `ignore-rules` (when set) → suggested replacement script: `vis lint --<rule> --<rule> ...` listing every covered rule _except_ the disabled ones.
+- `ignore-rules` (when set) → suggested replacement script: `vis deps --<rule> --<rule> ...` listing every covered rule _except_ the disabled ones.
 - `ignore-dependencies` → mirror in `vis.config.ts` under `policy.workspaceVersions.ignore`, `policy.customTypes.ignore`, `policy.typesInDeps.ignore`, `policy.redefineRoot.ignore` (per-rule scoping in vis vs. global in sherif).
 - `ignore-packages` / `ignore-paths` → flagged for review; vis has no global package/path-skip yet (only per-rule scoping via `policy.bannedDeps.{packages,paths}`).
-- Pre-commit hooks and CI workflows referencing `sherif` are flagged but not auto-rewritten — the reviewer chooses the right `vis lint` flag set.
+- Pre-commit hooks and CI workflows referencing `sherif` are flagged but not auto-rewritten — the reviewer chooses the right `vis deps` flag set.
 
 ### self
 

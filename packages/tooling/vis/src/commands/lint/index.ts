@@ -1,190 +1,46 @@
 import type { Command, CreateOptions } from "@visulima/cerebro";
 
 const lint: Command = {
-    description:
-        "Lint workspace dependency policies (workspace-protocol, banned-deps, redefine-root, workspace-versions, custom-types, empty-deps, root-private, root-package-manager, root-deps, missing-package-json, dead-workspace-patterns, types-in-deps, similar-deps)",
+    description: "Orchestrate detected source-code linters (eslint, …) across the workspace",
     examples: [
-        ["vis lint", "Run every enabled lint and exit non-zero on failures"],
-        ["vis lint --workspace-protocol", "Only check that internal deps use workspace:*"],
-        ["vis lint --workspace-protocol --fix", "Auto-rewrite internal deps to use workspace:*"],
-        ["vis lint --redefine-root", "Flag deps duplicated between root and child packages"],
-        ["vis lint --banned-deps", "Flag deps matching policy.bannedDeps in vis config"],
-        ["vis lint --workspace-versions", "Flag external deps declared at different versions across packages"],
-        ["vis lint --workspace-versions --fix", "Rewrite drifting deps to the highest sibling version"],
-        ["vis lint --workspace-versions --dep react", "Limit version-drift check to a single dep"],
-        ["vis lint --workspace-versions --resolve catalog --fix", "Rewrite drifting deps to catalog: when a catalog already pins them"],
-        ["vis lint --workspace-versions --resolve catalog --propose-min 3", "Suggest new catalog entries for deps ≥3 packages already agree on"],
-        ["vis lint --custom-types", "Flag drift in engines.{node,pnpm}, packageManager, volta.{node,pnpm,yarn}, devEngines"],
-        ["vis lint --custom-types --fix", "Align all engines/packageManager/volta versions to the highest sibling"],
-        ["vis lint --empty-deps --fix", "Drop empty `dependencies` / `devDependencies` / etc. blocks across the workspace"],
-        ["vis lint --root-private --fix", "Ensure the workspace root package.json has \"private\": true"],
-        ["vis lint --root-package-manager", "Ensure the root package.json declares a `packageManager` field"],
-        ["vis lint --root-deps --fix", "Move runtime deps off the private workspace root into devDependencies"],
-        ["vis lint --missing-package-json", "Flag workspace dirs that don't contain a package.json"],
-        ["vis lint --dead-workspace-patterns --fix", "Drop workspace patterns that match zero packages"],
-        ["vis lint --types-in-deps --fix", "Move @types/* out of dependencies on private packages"],
-        ["vis lint --similar-deps", "Flag drift across related dep families (react+react-dom, @babel/*, …)"],
-        ["vis lint --ban left-pad --ban request", "One-off ban: flag any package declaring left-pad or request"],
-        ["vis lint --pin react@18.2.0", "One-off pin: flag any package declaring react at a different version"],
+        ["vis lint", "Run every detected linter against the workspace"],
+        ["vis lint --fix", "Apply auto-fixes where the tool supports them"],
         ["vis lint --format json", "Emit findings as JSON for CI / editor integrations"],
+        ["vis lint --format sarif", "Emit a SARIF 2.1.0 document for code-scanning uploads"],
+        ["vis lint --format junit", "Emit a JUnit XML report for CI dashboards"],
+        ["vis lint --format github", "Emit GitHub Actions workflow commands for inline PR annotations"],
+        ["vis lint src/foo.ts src/bar.ts", "Lint a specific file list"],
+        ["vis lint --quiet", "Suppress warnings — only errors are reported"],
+        ["vis lint --max-warnings 0", "Treat any warning as a failure"],
+        ["vis lint --since main", "Only lint files changed vs the main branch"],
+        ["vis lint --staged", "Only lint files currently staged in the git index"],
+        ["vis lint --watch", "Re-run linters when watched files change (cache makes incremental near-free)"],
+        ["vis lint --format sarif --output lint.sarif", "Write the SARIF report to lint.sarif instead of stdout"],
     ],
-    group: "Security & Health",
+    group: "Lint & Format",
     loader: () => import("./handler"),
     name: "lint",
     options: [
-        {
-            defaultValue: false,
-            description: "Lint that internal deps use the workspace: protocol",
-            name: "workspace-protocol",
-            type: Boolean,
-        },
-        {
-            defaultValue: false,
-            description: "Lint that no child re-declares a dep already pinned in the workspace root",
-            name: "redefine-root",
-            type: Boolean,
-        },
-        {
-            defaultValue: false,
-            description: "Lint deps against policy.bannedDeps in vis config",
-            name: "banned-deps",
-            type: Boolean,
-        },
-        {
-            defaultValue: false,
-            description: "Lint that all packages declare external deps at the same version",
-            name: "workspace-versions",
-            type: Boolean,
-        },
-        {
-            defaultValue: false,
-            description: "Lint engines.{node,pnpm}, packageManager, volta.*, devEngines.* for drift across packages",
-            name: "custom-types",
-            type: Boolean,
-        },
-        {
-            defaultValue: false,
-            description: "Flag empty dependency blocks (`dependencies: {}`, `devDependencies: {}`, …) across the workspace",
-            name: "empty-deps",
-            type: Boolean,
-        },
-        {
-            defaultValue: false,
-            description: "Ensure the workspace root package.json sets `\"private\": true`",
-            name: "root-private",
-            type: Boolean,
-        },
-        {
-            defaultValue: false,
-            description: "Ensure the workspace root package.json declares a `packageManager` field",
-            name: "root-package-manager",
-            type: Boolean,
-        },
-        {
-            defaultValue: false,
-            description: "Flag runtime dependencies on the private workspace root (move them to devDependencies)",
-            name: "root-deps",
-            type: Boolean,
-        },
-        {
-            defaultValue: false,
-            description: "Flag workspace directories that lack a package.json",
-            name: "missing-package-json",
-            type: Boolean,
-        },
-        {
-            defaultValue: false,
-            description: "Flag workspace patterns (in `pnpm-workspace.yaml` / `package.json#workspaces`) that match zero packages",
-            name: "dead-workspace-patterns",
-            type: Boolean,
-        },
-        {
-            defaultValue: false,
-            description: "Flag `@types/*` declared in `dependencies` on a private package (should be in devDependencies)",
-            name: "types-in-deps",
-            type: Boolean,
-        },
-        {
-            defaultValue: false,
-            description: "Flag version drift across related dep families (react+react-dom, @babel/*, @storybook/*, …)",
-            name: "similar-deps",
-            type: Boolean,
-        },
-        {
-            description: "Restrict --workspace-versions to a single dep",
-            name: "dep",
-            type: String,
-        },
-        {
-            description: "Ban a dep name or glob for this run (repeatable). Auto-enables --banned-deps.",
-            multiple: true,
-            name: "ban",
-            type: String,
-        },
-        {
-            description: "Pin a dep to an exact specifier for this run, e.g. react@^18.2.0 (repeatable). Auto-enables --workspace-versions.",
-            multiple: true,
-            name: "pin",
-            type: String,
-        },
-        {
-            description: "Conflict resolution for --workspace-versions: highest, lowest, or catalog (default: highest)",
-            name: "resolve",
-            type: String,
-        },
-        {
-            description: "Propose catalog entries for deps ≥N packages already agree on. Activates with --resolve catalog.",
-            name: "propose-min",
-            type: Number,
-        },
-        {
-            defaultValue: false,
-            description: "Auto-fix violations in place (writes package.json files)",
-            name: "fix",
-            type: Boolean,
-        },
-        {
-            description: "Specifier used by --fix for workspace-protocol (default: workspace:*)",
-            name: "fix-specifier",
-            type: String,
-        },
-        {
-            description: "Output format: human, json, or minimal (default: human)",
-            name: "format",
-            type: String,
-        },
-        {
-            defaultValue: false,
-            description: "Suppress all output except errors",
-            name: "quiet",
-            type: Boolean,
-        },
+        { defaultValue: false, description: "Apply auto-fixes in place", name: "fix", type: Boolean },
+        { defaultValue: "human", description: "Output format: human, json, minimal, sarif, junit, or github", name: "format", type: String },
+        { defaultValue: false, description: "Suppress warnings — report errors only", name: "quiet", type: Boolean },
+        { description: "Fail the run if more than N warnings are reported", name: "max-warnings", type: Number },
+        { description: "Only lint files changed vs the given git ref (branch, tag, sha)", name: "since", type: String },
+        { defaultValue: false, description: "Only lint files currently staged in the git index", name: "staged", type: Boolean },
+        { description: "Write formatted output to a file path instead of stdout (also accepts `-`/`stdout`/`stderr`)", name: "output", type: String },
+        { defaultValue: false, description: "Re-run linters whenever watched files change", name: "watch", type: Boolean },
     ],
 };
 
 export default lint;
 
 export type LintOptions = CreateOptions<{
-    ban: string[] | undefined;
-    "banned-deps": boolean | undefined;
-    "custom-types": boolean | undefined;
-    "dead-workspace-patterns": boolean | undefined;
-    dep: string | undefined;
-    "empty-deps": boolean | undefined;
     fix: boolean | undefined;
-    "fix-specifier": string | undefined;
-    format: string | undefined;
-    "missing-package-json": boolean | undefined;
-    pin: string[] | undefined;
-    "propose-min": number | undefined;
+    format: "github" | "human" | "json" | "junit" | "minimal" | "sarif";
+    "max-warnings": number | undefined;
+    output: string | undefined;
     quiet: boolean | undefined;
-    "redefine-root": boolean | undefined;
-    resolve: string | undefined;
-    "root-deps": boolean | undefined;
-    "root-package-manager": boolean | undefined;
-    "root-private": boolean | undefined;
-    "similar-deps": boolean | undefined;
-    "types-in-deps": boolean | undefined;
-    "workspace-protocol": boolean | undefined;
-    "workspace-versions": boolean | undefined;
+    since: string | undefined;
+    staged: boolean | undefined;
+    watch: boolean | undefined;
 }>;

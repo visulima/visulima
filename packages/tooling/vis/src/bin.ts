@@ -30,6 +30,7 @@ import dlxCommand from "./commands/dlx";
 import dockerCommand from "./commands/docker";
 import doctorCommand from "./commands/doctor";
 import execCommand from "./commands/exec";
+import fmtCommand from "./commands/fmt";
 import generateCommand from "./commands/generate";
 import graphCommand from "./commands/graph";
 import hookCommands from "./commands/hook";
@@ -39,6 +40,7 @@ import infoCommand from "./commands/info";
 import initCommand from "./commands/init";
 import inspectCommand from "./commands/inspect";
 import installCommand from "./commands/install";
+import depsCommand from "./commands/deps";
 import linkCommand from "./commands/link";
 import lintCommand from "./commands/lint";
 import listCommand from "./commands/list";
@@ -178,7 +180,7 @@ cli.addCommand(replayCommand);
 cli.addCommand(ignoreCommand);
 cli.addCommand(updateCommand);
 cli.addCommand(checkCommand);
-cli.addCommand(lintCommand);
+cli.addCommand(depsCommand);
 cli.addCommand(analyzeCommand);
 cli.addCommand(sortPackageJsonCommand);
 cli.addCommand(stagedCommand);
@@ -190,6 +192,10 @@ cli.addCommand(listCommand);
 cli.addCommand(toolchainCommand);
 cli.addCommand(completionCommand);
 cli.addCommand(versionCommand);
+
+// Lint & format commands
+cli.addCommand(lintCommand);
+cli.addCommand(fmtCommand);
 
 // Package management commands
 cli.addCommand(installCommand);

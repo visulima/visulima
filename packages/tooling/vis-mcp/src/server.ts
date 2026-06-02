@@ -14,7 +14,9 @@ import { registerCacheHash } from "./tools/cache-hash";
 import { registerCacheWhy } from "./tools/cache-why";
 import { registerDescribeProject } from "./tools/describe-project";
 import { registerDescribeTemplate } from "./tools/describe-template";
+import { registerFmt } from "./tools/fmt";
 import { registerGetRunLogs } from "./tools/get-run-logs";
+import { registerLint } from "./tools/lint";
 import { registerListProjects } from "./tools/list-projects";
 import { registerListTargets } from "./tools/list-targets";
 import { registerListTemplates } from "./tools/list-templates";
@@ -114,6 +116,8 @@ export const registerAllTools = (deps: ToolDeps, context: ToolContext): void => 
     registerCacheHash(deps, context);
     registerAudit(deps, context);
     registerAdvisoryStatus(deps, context);
+    registerLint(deps, context);
+    registerFmt(deps, context);
 };
 
 /**

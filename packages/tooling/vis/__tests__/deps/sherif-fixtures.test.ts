@@ -2,14 +2,14 @@ import { isAccessibleSync, readJsonSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 import { describe, expect, it } from "vitest";
 
-import { lintDeadWorkspacePatterns } from "../../src/lint/dead-workspace-pattern";
-import { lintEmptyDeps } from "../../src/lint/empty-deps";
-import { lintMissingPackageJson } from "../../src/lint/missing-package-json";
-import { lintRootDeps } from "../../src/lint/root-deps";
-import { lintRootPackageManager } from "../../src/lint/root-package-manager";
-import { lintRootPrivate } from "../../src/lint/root-private";
-import { lintSimilarDeps } from "../../src/lint/similar-deps";
-import { lintWorkspaceVersions } from "../../src/lint/workspace-versions";
+import { lintDeadWorkspacePatterns } from "../../src/deps/dead-workspace-pattern";
+import { lintEmptyDeps } from "../../src/deps/empty-deps";
+import { lintMissingPackageJson } from "../../src/deps/missing-package-json";
+import { lintRootDeps } from "../../src/deps/root-deps";
+import { lintRootPackageManager } from "../../src/deps/root-package-manager";
+import { lintRootPrivate } from "../../src/deps/root-private";
+import { lintSimilarDeps } from "../../src/deps/similar-deps";
+import { lintWorkspaceVersions } from "../../src/deps/workspace-versions";
 import { collectWorkspaceDirectories, iterateWorkspaceDeps } from "../../src/util/workspace-deps";
 
 /**
@@ -21,7 +21,7 @@ const fixturesRoot = join(__dirname, "..", "..", "__fixtures__", "sherif-lint");
 
 const fixturePath = (name: string): string => join(fixturesRoot, name);
 
-/** Mirrors `detectWorkspaceConfig` from `src/commands/lint/handler.ts`. */
+/** Mirrors `detectWorkspaceConfig` from `src/commands/deps/handler.ts`. */
 const detectWorkspaceConfig = (workspaceRoot: string): boolean => {
     if (isAccessibleSync(join(workspaceRoot, "pnpm-workspace.yaml"))) {
         return true;

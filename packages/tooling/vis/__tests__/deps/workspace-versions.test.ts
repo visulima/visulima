@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { applyWorkspaceVersionsFixes, lintWorkspaceVersions } from "../../src/lint/workspace-versions";
+import { applyWorkspaceVersionsFixes, lintWorkspaceVersions } from "../../src/deps/workspace-versions";
 import { iterateWorkspaceDeps } from "../../src/util/workspace-deps";
 
 let workspaceRoot: string;

@@ -205,6 +205,52 @@
             },
             "description": "Named file-group patterns, reusable from target `inputs` via the `@filegroup:&lt;name>` token. File groups are resolved relative to each project root at discovery time."
         },
+        "fmt": {
+            "type": "object",
+            "properties": {
+                "adapters": {
+                    "type": "object",
+                    "properties": {
+                        "biome": {
+                            "$ref": "#/$defs/LintFmtAdapterOverride"
+                        },
+                        "deno-fmt": {
+                            "$ref": "#/$defs/LintFmtAdapterOverride"
+                        },
+                        "dprint": {
+                            "$ref": "#/$defs/LintFmtAdapterOverride"
+                        },
+                        "oxfmt": {
+                            "$ref": "#/$defs/LintFmtAdapterOverride"
+                        },
+                        "prettier": {
+                            "$ref": "#/$defs/LintFmtAdapterOverride"
+                        },
+                        "ruff-fmt": {
+                            "$ref": "#/$defs/LintFmtAdapterOverride"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "description": "Per-adapter overrides. Keyed by `AdapterId`. Set `enabled: false` to skip an adapter even when detected, or `extraArgs` to append flags verbatim."
+                },
+                "extensionOverrides": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/$defs/FmtAdapterId"
+                    },
+                    "description": "Pin a file extension (without the leading dot) to a specific adapter, overriding the registry's \"first detected adapter wins\" routing. Use to e.g. send `.md` to `dprint` even when both prettier and dprint are present."
+                },
+                "order": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/FmtAdapterId"
+                    },
+                    "description": "Override the adapter precedence order. Adapters omitted from this list still run (appended at the end in registry order), but those listed earlier get priority for extension routing."
+                }
+            },
+            "additionalProperties": false,
+            "description": "Configuration for `vis fmt` — the formatter orchestrator.\n\nTunes adapter detection precedence, per-extension routing, and per-adapter overrides. Flags on the CLI always win over config.\n\nThe default fmt precedence is `oxfmt → biome → dprint → prettier → deno-fmt`. When multiple adapters claim the same extension, the first in this order owns it unless overridden here."
+        },
         "generator": {
             "type": "object",
             "properties": {
@@ -275,6 +321,51 @@
             },
             "additionalProperties": false,
             "description": "Installer backend selection for `vis install` / `vis add` / `vis remove` / `vis update` / `vis ci`.\n\nLets users opt into [aube](https://github.com/endevco/aube) — a Rust-native package manager that reads/writes pnpm/npm/yarn/bun lockfiles in place — as the default installer, while keeping a single switch to fall back to the conventional PM detected from the lockfile.\n\nResolution precedence (highest first): 1. CLI flag (`--installer &lt;name>` / `--no-aube`) 2. Env var `VIS_INSTALLER` 3. This config field 4. Auto-detect (the default)\n\nAube must be installed separately — `vis` does not bundle it. Install via npm (`@endevco/aube`), `mise use -g aube`, or `brew install endevco/tap/aube`."
+        },
+        "lint": {
+            "type": "object",
+            "properties": {
+                "adapters": {
+                    "type": "object",
+                    "properties": {
+                        "biome": {
+                            "$ref": "#/$defs/LintFmtAdapterOverride"
+                        },
+                        "deno-lint": {
+                            "$ref": "#/$defs/LintFmtAdapterOverride"
+                        },
+                        "eslint": {
+                            "$ref": "#/$defs/LintFmtAdapterOverride"
+                        },
+                        "markdownlint": {
+                            "$ref": "#/$defs/LintFmtAdapterOverride"
+                        },
+                        "oxlint": {
+                            "$ref": "#/$defs/LintFmtAdapterOverride"
+                        },
+                        "ruff-check": {
+                            "$ref": "#/$defs/LintFmtAdapterOverride"
+                        },
+                        "shellcheck": {
+                            "$ref": "#/$defs/LintFmtAdapterOverride"
+                        },
+                        "stylelint": {
+                            "$ref": "#/$defs/LintFmtAdapterOverride"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "description": "Per-adapter overrides. Keyed by `AdapterId`. Set `enabled: false` to skip an adapter even when detected, or `extraArgs` to append flags verbatim."
+                },
+                "order": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/LintAdapterId"
+                    },
+                    "description": "Override the adapter precedence order. Adapters omitted from this list still run (appended at the end in registry order) unless explicitly disabled under `adapters[id].enabled`."
+                }
+            },
+            "additionalProperties": false,
+            "description": "Configuration for `vis lint` — the linter orchestrator.\n\nTunes adapter detection precedence and per-adapter overrides. Flags on the CLI always win over config.\n\nThe default lint precedence is `oxlint → biome → eslint → stylelint → deno-lint`. Override with `order` to e.g. let biome fire before oxlint when the workspace standardises on biome."
         },
         "mcpPromote": {
             "type": "object",
@@ -3592,6 +3683,50 @@
                 "project-json"
             ],
             "description": "Recognised input sources for the codeowners aggregator.\n\n- `project-json` — owners declared on each project's `project.json`.   Canonical source; takes precedence over the other two on path conflicts.\n- `nested-codeowners` — `CODEOWNERS` files placed at arbitrary depth   in the workspace tree (excluding the generated root file).\n- `package-json-maintainers` — fallback that reads each project's   `package.json#maintainers` and emits one entry per project root for   projects with no `project.json owners`. GitHub handles are extracted   from each maintainer's `url` (e.g. `https://github.com/&lt;handle&gt;`)."
+        },
+        "LintFmtAdapterOverride": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "description": "Set to `false` to skip this adapter even when its config file or package.json entry is detected. Defaults to `true` (run when detected)."
+                },
+                "extraArgs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Extra arguments appended verbatim to every invocation of this adapter. Useful for tool-specific flags vis doesn't expose directly (e.g. `eslint --rulesdir`)."
+                }
+            },
+            "additionalProperties": false,
+            "description": "Per-adapter override applied by `vis lint` / `vis fmt`. Keyed by adapter id under `lint.adapters` / `fmt.adapters`. Every field is optional — set only what you need to change."
+        },
+        "FmtAdapterId": {
+            "type": "string",
+            "enum": [
+                "biome",
+                "deno-fmt",
+                "dprint",
+                "oxfmt",
+                "prettier",
+                "ruff-fmt"
+            ],
+            "description": "Adapter IDs that can format (adapter `kind` is `\"fmt\"` or `\"both\"`)."
+        },
+        "LintAdapterId": {
+            "type": "string",
+            "enum": [
+                "biome",
+                "deno-lint",
+                "eslint",
+                "markdownlint",
+                "oxlint",
+                "ruff-check",
+                "shellcheck",
+                "stylelint"
+            ],
+            "description": "Adapter IDs that can lint (adapter `kind` is `\"lint\"` or `\"both\"`)."
         },
         "VisPlugin": {
             "type": "object",

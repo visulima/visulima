@@ -1,7 +1,8 @@
+import { TOOL_SIGNATURES } from "../../util/tool-signatures";
 import type { DetectedTargets, Detector } from "../types";
 
 export const denoDetector: Detector = {
-    configFiles: ["deno.json", "deno.jsonc"],
+    configFiles: TOOL_SIGNATURES.deno.configFiles,
     // No `fallbackDependency`: Deno is a runtime, not an npm package.
     detect: ({ matchedConfigs }) => {
         const configRef = matchedConfigs[0] ? `{projectRoot}/${matchedConfigs[0]}` : undefined;
