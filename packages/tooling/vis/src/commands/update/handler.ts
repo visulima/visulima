@@ -1155,7 +1155,11 @@ export const runEcosystemUpdate = async (
         }
     } else if (format !== "minimal") {
         const report = formatEcosystemReport(result, {
-            previewOnly: !willApply,
+            // On `--dry-run` the user already knows nothing is written, so the
+            // "re-run with `--interactive`" footer is misleading (it implies
+            // dropping `--dry-run` alone would apply). Only surface the
+            // preview-only note when we genuinely declined to apply.
+            previewOnly: !willApply && !isDryRun,
             showIgnored: options.interactive === true,
         });
 
@@ -1164,7 +1168,22 @@ export const runEcosystemUpdate = async (
         }
     }
 
-    if (isDryRun || result.updates.length === 0) {
+    if (result.updates.length === 0) {
+        return result;
+    }
+
+    if (isDryRun) {
+        // `table`/`json` already surfaced the available updates above. For
+        // `minimal` (which renders no report) emit the actionable hint here
+        // too — otherwise `--dry-run --format=minimal` would print nothing
+        // at all and the user would never learn updates are available.
+        if (format === "minimal") {
+            logger.info(
+                `\n${yellow("ℹ")} ${String(result.updates.length)} ecosystem reference${result.updates.length === 1 ? "" : "s"} can be bumped — not applied (--dry-run). `
+                + "Re-run without --dry-run and with `--interactive` or `--yes` to apply.",
+            );
+        }
+
         return result;
     }
 

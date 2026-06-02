@@ -2,8 +2,19 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { shouldApplyEcosystem } from "../../../src/commands/update/handler";
 
+// `is-in-ci` exports a boolean default. We back it with a mutable holder so
+// individual tests can flip the CI state — `import isInCi from "is-in-ci"` is a
+// live binding, so reading it re-evaluates the getter each time.
+const ciState = vi.hoisted(() => {
+    return { value: false };
+});
+
 vi.mock(import("is-in-ci"), () => {
-    return { default: false };
+    return {
+        get default() {
+            return ciState.value;
+        },
+    };
 });
 
 interface UpdatePathResult {
@@ -41,6 +52,7 @@ describe(shouldApplyEcosystem, () => {
         }
 
         process.exitCode = originalExitCode;
+        ciState.value = false;
     });
 
     it("applies when --yes is passed", () => {
@@ -59,6 +71,16 @@ describe(shouldApplyEcosystem, () => {
         expect.assertions(1);
 
         process.stdout.isTTY = false;
+
+        expect(shouldApplyEcosystem({ interactive: true }, catalogResult())).toBe(false);
+    });
+
+    it("does NOT apply --interactive when running in CI (even on a TTY)", () => {
+        expect.assertions(1);
+
+        // CI runners can report a TTY, so the interactive picker must still be
+        // refused — there is no human to drive it.
+        ciState.value = true;
 
         expect(shouldApplyEcosystem({ interactive: true }, catalogResult())).toBe(false);
     });
