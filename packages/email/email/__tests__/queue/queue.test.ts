@@ -3,12 +3,16 @@ import { describe, expect, it, vi } from "vitest";
 import { createWorker, MemoryQueue } from "../../src/queue";
 import type { EmailOptions, EmailResult, Result } from "../../src/types";
 
-const okResult = (): Result<EmailResult> => ({
-    data: { messageId: "m1", provider: "stub", sent: true, timestamp: new Date(0) },
-    success: true,
-});
+const okResult = (): Result<EmailResult> => {
+    return {
+        data: { messageId: "m1", provider: "stub", sent: true, timestamp: new Date(0) },
+        success: true,
+    };
+};
 
-const failResult = (): Result<EmailResult> => ({ error: new Error("boom"), success: false });
+const failResult = (): Result<EmailResult> => {
+    return { error: new Error("boom"), success: false };
+};
 
 const message: EmailOptions = {
     from: { email: "from@x.com" },
@@ -34,6 +38,7 @@ describe("queue", () => {
             expect(queue.reserve()).toBeUndefined();
 
             clock = 200; // visibility window elapsed
+
             expect(queue.reserve()).toBeDefined();
         });
 
@@ -48,6 +53,7 @@ describe("queue", () => {
             expect(queue.reserve()).toBeUndefined();
 
             clock = 5000;
+
             expect(queue.reserve()).toBeDefined();
         });
 
@@ -89,13 +95,44 @@ describe("queue", () => {
             await worker.drain();
 
             expect(send).toHaveBeenCalledTimes(2);
-            expect(await queue.size()).toBe(0);
+            expect(queue.size()).toBe(0);
+        });
+
+        it("surfaces queue ack failures via onError instead of aborting the drain", async () => {
+            expect.assertions(2);
+
+            let reserved = false;
+            const queue = {
+                ack: () => {
+                    throw new Error("store down");
+                },
+                enqueue: () => "j1",
+                reserve: () => {
+                    if (reserved) {
+                        return undefined;
+                    }
+
+                    reserved = true;
+
+                    return { attempts: 0, id: "j1", message, scheduledAt: 0 };
+                },
+                retry: () => undefined,
+                size: () => 1,
+            };
+            const onError = vi.fn();
+            const send = vi.fn(() => Promise.resolve(okResult()));
+
+            const worker = createWorker({ onError, queue, send });
+
+            // The ack rejection must be caught (not abort drain) and reported via onError.
+            await expect(worker.drain()).resolves.toBeUndefined();
+            expect(onError).toHaveBeenCalledTimes(1);
         });
 
         it("retries failures and dead-letters after maxAttempts", async () => {
             expect.assertions(2);
 
-            let clock = 0;
+            const clock = 0;
             const queue = new MemoryQueue({ now: () => clock });
             const send = vi.fn(() => Promise.resolve(failResult()));
             const onDeadLetter = vi.fn();

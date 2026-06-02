@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import type { InboundEmail } from "../../src/inbound";
 import {
     extractReply,
     normalizeSubject,
@@ -12,18 +13,19 @@ import {
     parseSesInbound,
     stitchThreads,
 } from "../../src/inbound";
-import type { InboundEmail } from "../../src/inbound";
 
-const baseMessage = (overrides: Partial<InboundEmail>): InboundEmail => ({
-    attachments: [],
-    bcc: [],
-    cc: [],
-    headers: {},
-    provider: "test",
-    references: [],
-    to: [],
-    ...overrides,
-});
+const baseMessage = (overrides: Partial<InboundEmail>): InboundEmail => {
+    return {
+        attachments: [],
+        bcc: [],
+        cc: [],
+        headers: {},
+        provider: "test",
+        references: [],
+        to: [],
+        ...overrides,
+    };
+};
 
 describe("inbound", () => {
     describe(extractReply, () => {
@@ -114,7 +116,7 @@ describe("inbound", () => {
 
         it("splits a list respecting quoted commas", () => {
             expect.assertions(1);
-            expect(parseAddressList('"Doe, John" <john@x.com>, jane@x.com')).toStrictEqual([
+            expect(parseAddressList("\"Doe, John\" <john@x.com>, jane@x.com")).toStrictEqual([
                 { email: "john@x.com", name: "Doe, John" },
                 { email: "jane@x.com" },
             ]);

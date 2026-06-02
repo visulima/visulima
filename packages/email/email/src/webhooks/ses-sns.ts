@@ -92,7 +92,8 @@ const defaultCertificateResolver: CertificateResolver = async (url: string): Pro
         throw new EmailError("webhooks", `Refusing to fetch SNS signing certificate from untrusted URL: ${url}`);
     }
 
-    const response = await fetch(url);
+    // Bound the request so a slow/stalled endpoint cannot block verification indefinitely.
+    const response = await fetch(url, { signal: AbortSignal.timeout(5000) });
 
     if (!response.ok) {
         throw new EmailError("webhooks", `Failed to fetch SNS signing certificate (status ${String(response.status)})`);

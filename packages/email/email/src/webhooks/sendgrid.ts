@@ -2,7 +2,8 @@ import { Buffer } from "node:buffer";
 import { createPublicKey, verify as cryptoVerify } from "node:crypto";
 
 import EmailError from "../errors/email-error";
-import type { WebhookVerificationResult } from "./types";
+import type { TimestampToleranceOptions, WebhookVerificationResult } from "./types";
+import { isTimestampWithinTolerance } from "./utils";
 
 /**
  * Normalizes a SendGrid verification key into a `KeyObject`.
@@ -20,7 +21,12 @@ const toKeyObject = (publicKey: string) => {
 /**
  * Options for {@link verifySendGridWebhook}.
  */
-export interface SendGridWebhookOptions {
+export interface SendGridWebhookOptions extends TimestampToleranceOptions {
+    /**
+     * Override the current time (milliseconds) — primarily for testing.
+     */
+    now?: number;
+
     /**
      * The raw, unparsed request body exactly as received.
      */
@@ -39,23 +45,23 @@ export interface SendGridWebhookOptions {
     signature: string;
 
     /**
-     * The value of the `X-Twilio-Email-Event-Webhook-Timestamp` header.
+     * The value of the `X-Twilio-Email-Event-Webhook-Timestamp` header (unix epoch seconds).
      */
     timestamp: string;
 }
 
 /**
  * Verifies a [SendGrid Event Webhook](https://www.twilio.com/docs/sendgrid/for-developers/tracking-events/getting-started-event-webhook-security-features)
- * using its ECDSA (prime256v1) signature.
+ * using its ECDSA (prime256v1) signature, and rejects stale requests to prevent replay.
  *
  * The signed message is `timestamp + payload`. The signature header is the base64-encoded DER
- * ECDSA signature.
+ * ECDSA signature. The timestamp is unix epoch seconds and must fall within `tolerance` of now.
  * @param options Verification inputs. See {@link SendGridWebhookOptions}.
  * @returns The verification result.
  * @throws {EmailError} When the supplied public key cannot be parsed.
  */
 export const verifySendGridWebhook = (options: SendGridWebhookOptions): WebhookVerificationResult => {
-    const { payload, publicKey, signature, timestamp } = options;
+    const { now, payload, publicKey, signature, timestamp, tolerance = 300 } = options;
 
     if (!signature || !timestamp) {
         return { reason: "missing-headers", valid: false };
@@ -81,6 +87,12 @@ export const verifySendGridWebhook = (options: SendGridWebhookOptions): WebhookV
 
     if (!valid) {
         return { reason: "signature-mismatch", valid: false };
+    }
+
+    // The timestamp is covered by the signature, so a fresh, valid signature implies a fresh timestamp;
+    // this guards against replaying an old (but validly-signed) request.
+    if (!isTimestampWithinTolerance(Number.parseInt(timestamp, 10), tolerance, now)) {
+        return { reason: "timestamp-out-of-tolerance", valid: false };
     }
 
     return { valid: true };

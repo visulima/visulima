@@ -1,18 +1,20 @@
 import { Text } from "jsx-email";
-import { describe, expect, it } from "vitest";
+import { describe, expect, expectTypeOf, it } from "vitest";
 
 import jsxEmail from "../../src/template-engines/jsx-email";
 
 describe("jsx-email template engine", () => {
     it("renders a component element to HTML", async () => {
-        expect.assertions(2);
+        expect.assertions(1);
 
         // Invoking the component as a factory yields the element the renderer expects (no JSX tooling needed).
         const element = Text({ children: "Hello jsx-email" });
 
         const html = await jsxEmail(element);
 
-        expect(typeof html).toBe("string");
+        // `expectTypeOf` is a compile-time check and does not count toward `expect.assertions`.
+        expectTypeOf(html).toBeString();
+
         expect(html).toContain("Hello jsx-email");
     });
 

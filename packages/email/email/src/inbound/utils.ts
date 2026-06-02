@@ -30,6 +30,11 @@ export const parseAddress = (value: string | undefined | null): InboundAddress |
     }
 
     const trimmed = value.trim();
+
+    if (trimmed.length === 0) {
+        return undefined;
+    }
+
     const angleStart = trimmed.lastIndexOf("<");
     const angleEnd = trimmed.lastIndexOf(">");
 

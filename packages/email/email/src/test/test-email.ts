@@ -90,7 +90,12 @@ export const createTestEmail = (): TestEmail => {
     const mail = createMail(provider);
 
     // The mock provider exposes its live capture array through the standard `getInstance()` hook.
-    const inbox = provider.getInstance?.() ?? [];
+    // Fail fast rather than silently detaching the harness from the provider's real outbox.
+    const inbox = provider.getInstance?.();
+
+    if (!inbox) {
+        throw new Error("mockProvider() did not expose getInstance(); cannot create a test harness");
+    }
 
     return {
         mail,

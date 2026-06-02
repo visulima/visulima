@@ -23,7 +23,7 @@ describe("webhooks", () => {
 
         const sign = (timestamp: number): string => {
             const key = Buffer.from(secret.slice("whsec_".length), "base64");
-            const signature = createHmac("sha256", key).update(`${id}.${timestamp}.${payload}`).digest("base64");
+            const signature = createHmac("sha256", key).update(`${id}.${String(timestamp)}.${payload}`).digest("base64");
 
             return `v1,${signature}`;
         };
@@ -116,7 +116,9 @@ describe("webhooks", () => {
         it("accepts a valid signature", () => {
             expect.assertions(1);
 
-            const signature = createHmac("sha256", signingKey).update(`${NOW_SECONDS}${token}`).digest("hex");
+            // signingKey is a throwaway test fixture, not a real credential.
+            // eslint-disable-next-line sonarjs/hardcoded-secret-signatures
+            const signature = createHmac("sha256", signingKey).update(`${String(NOW_SECONDS)}${token}`).digest("hex");
 
             const result = verifyMailgunWebhook({ now: NOW, signature, signingKey, timestamp: NOW_SECONDS, token });
 
@@ -168,12 +170,12 @@ describe("webhooks", () => {
         const payload = JSON.stringify([{ event: "delivered" }]);
         const timestamp = String(NOW_SECONDS);
 
-        it("accepts a valid ECDSA signature", () => {
+        it("accepts a valid, fresh ECDSA signature", () => {
             expect.assertions(1);
 
             const signature = cryptoSign("sha256", Buffer.from(timestamp + payload), { dsaEncoding: "der", key: privateKey }).toString("base64");
 
-            const result = verifySendGridWebhook({ payload, publicKey: publicKeyBase64, signature, timestamp });
+            const result = verifySendGridWebhook({ now: NOW, payload, publicKey: publicKeyBase64, signature, timestamp });
 
             expect(result.valid).toBe(true);
         });
@@ -183,9 +185,21 @@ describe("webhooks", () => {
 
             const signature = cryptoSign("sha256", Buffer.from(timestamp + payload), { dsaEncoding: "der", key: privateKey }).toString("base64");
 
-            const result = verifySendGridWebhook({ payload: "[]", publicKey: publicKeyBase64, signature, timestamp });
+            const result = verifySendGridWebhook({ now: NOW, payload: "[]", publicKey: publicKeyBase64, signature, timestamp });
 
             expect(result.valid).toBe(false);
+        });
+
+        it("rejects a validly-signed but stale request (replay protection)", () => {
+            expect.assertions(2);
+
+            const signature = cryptoSign("sha256", Buffer.from(timestamp + payload), { dsaEncoding: "der", key: privateKey }).toString("base64");
+
+            // `now` is one hour past the signed timestamp, beyond the default 300s tolerance.
+            const result = verifySendGridWebhook({ now: NOW + 3_600_000, payload, publicKey: publicKeyBase64, signature, timestamp });
+
+            expect(result.valid).toBe(false);
+            expect(result.reason).toBe("timestamp-out-of-tolerance");
         });
     });
 
@@ -225,7 +239,7 @@ describe("webhooks", () => {
                 Type: "Notification",
             };
 
-            const stringToSign = ["Message", "MessageId", "Timestamp", "TopicArn", "Type"].map((key) => `${key}\n${message[key]}\n`).join("");
+            const stringToSign = ["Message", "MessageId", "Timestamp", "TopicArn", "Type"].map((key) => `${key}\n${message[key] ?? ""}\n`).join("");
 
             const privateKey = createPrivateKey({ format: "der", key: Buffer.from(privateKeyDerBase64, "base64"), type: "pkcs8" });
             const signature = createSign("RSA-SHA1").update(stringToSign, "utf8").sign(privateKey, "base64");
@@ -292,6 +306,8 @@ describe("webhooks", () => {
             withCredentials.username = "spoofed";
             withCredentials.password = "secret";
 
+            // Intentionally http:// to assert the verifier rejects non-TLS URLs.
+            // eslint-disable-next-line sonarjs/no-clear-text-protocols
             expect(isValidSigningCertUrl("http://sns.us-east-1.amazonaws.com/x.pem")).toBe(false);
             expect(isValidSigningCertUrl("https://evil.com/x.pem")).toBe(false);
             expect(isValidSigningCertUrl(withCredentials.toString())).toBe(false);

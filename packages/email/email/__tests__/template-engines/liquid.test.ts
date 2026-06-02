@@ -18,6 +18,6 @@ describe("liquid template engine", () => {
 
     it("rejects a non-string template", async () => {
         expect.assertions(1);
-        await expect(liquid(42 as unknown)).rejects.toThrow("Liquid template must be a string");
+        await expect(liquid(42)).rejects.toThrow("Liquid template must be a string");
     });
 });

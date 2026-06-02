@@ -11,12 +11,16 @@ import {
 import type { Provider } from "../../src/providers/provider";
 import type { EmailOptions, EmailResult, Result } from "../../src/types";
 
-const okResult = (messageId = "m1"): Result<EmailResult> => ({
-    data: { messageId, provider: "stub", sent: true, timestamp: new Date(0) },
-    success: true,
-});
+const okResult = (messageId = "m1"): Result<EmailResult> => {
+    return {
+        data: { messageId, provider: "stub", sent: true, timestamp: new Date(0) },
+        success: true,
+    };
+};
 
-const failResult = (): Result<EmailResult> => ({ error: new Error("boom"), success: false });
+const failResult = (): Result<EmailResult> => {
+    return { error: new Error("boom"), success: false };
+};
 
 const message: EmailOptions = {
     from: { email: "from@x.com" },
@@ -125,6 +129,40 @@ describe("middleware", () => {
             expect(sendEmail).toHaveBeenCalledTimes(2);
             expect((third.error as Error).message).toContain("Circuit breaker is open");
         });
+
+        it("admits only one concurrent probe while half-open", async () => {
+            expect.assertions(3);
+
+            let clock = 0;
+            let releaseProbe: (value: Result<EmailResult>) => void = () => undefined;
+            const probe = new Promise<Result<EmailResult>>((resolve) => {
+                releaseProbe = resolve;
+            });
+
+            const sendEmail = vi
+                .fn<() => Promise<Result<EmailResult>>>()
+                .mockResolvedValueOnce(failResult()) // opens the breaker
+                .mockReturnValueOnce(probe) // the single half-open probe (stays pending)
+                .mockResolvedValue(okResult());
+
+            const composed = composeMiddleware([circuitBreakerMiddleware({ failureThreshold: 1, now: () => clock, resetTimeout: 1000 })], sendEmail);
+
+            await composed(message); // trips the breaker open
+            clock = 2000; // past the reset window → next request becomes the probe
+
+            const probing = composed(message); // becomes the in-flight probe
+            const blocked = await composed(message); // must fail fast, not reach the provider
+
+            expect((blocked.error as Error).message).toContain("Circuit breaker is open");
+            expect(sendEmail).toHaveBeenCalledTimes(2); // open call + probe only
+
+            // The Promise executor reassigns releaseProbe to the real one-arg resolver.
+            // eslint-disable-next-line sonarjs/no-extra-arguments
+            releaseProbe(okResult());
+            const probed = await probing;
+
+            expect(probed.success).toBe(true);
+        });
     });
 
     describe(dedupeMiddleware, () => {
@@ -160,11 +198,12 @@ describe("middleware", () => {
             await composed(message); // must wait for the bucket to refill
 
             expect(sendEmail).toHaveBeenCalledTimes(2);
-            expect(sleep).toHaveBeenCalled();
+            // The bucket needed a full second of refill (rate 1/s) before the second send.
+            expect(sleep).toHaveBeenCalledWith(1000);
         });
     });
 
-    describe("Mail.use integration", () => {
+    describe("mail.use integration", () => {
         it("routes sends through registered middleware", async () => {
             expect.assertions(2);
 

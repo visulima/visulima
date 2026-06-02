@@ -1,7 +1,7 @@
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 
-import type { EmailOptions } from "../../src/types";
 import { createTestEmail, emailMatchers, registerEmailMatchers } from "../../src/test";
+import type { EmailOptions } from "../../src/types";
 
 declare module "vitest" {
     interface Assertion<T = unknown> {
@@ -12,17 +12,23 @@ declare module "vitest" {
     }
 }
 
-registerEmailMatchers(expect);
+const INVOICE_SUBJECT_PATTERN = /invoice/i;
 
-const sampleMessage = (overrides: Record<string, unknown> = {}) => ({
-    from: { email: "sender@example.com" },
-    subject: "Welcome",
-    text: "Hello there",
-    to: { email: "user@example.com" },
-    ...overrides,
-});
+const sampleMessage = (overrides: Record<string, unknown> = {}) => {
+    return {
+        from: { email: "sender@example.com" },
+        subject: "Welcome",
+        text: "Hello there",
+        to: { email: "user@example.com" },
+        ...overrides,
+    };
+};
 
 describe("test helpers", () => {
+    beforeAll(() => {
+        registerEmailMatchers(expect);
+    });
+
     it("captures sent messages without hitting the network", async () => {
         expect.assertions(2);
 
@@ -71,7 +77,7 @@ describe("test helpers", () => {
             );
 
             expect(email).toHaveSentTo("user@example.com");
-            expect(email).toHaveSentWithSubject(/invoice/i);
+            expect(email).toHaveSentWithSubject(INVOICE_SUBJECT_PATTERN);
             expect(email).toHaveSentWithAttachment("invoice.pdf");
             expect(email).toHaveSentMatching((options) => options.from.email === "sender@example.com");
         });

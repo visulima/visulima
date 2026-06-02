@@ -1,14 +1,16 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { ALL_EVENTS, EventBus, MemoryEventStore } from "../../src/events";
 import type { EmailEvent } from "../../src/events";
+import { ALL_EVENTS, EventBus, MemoryEventStore } from "../../src/events";
 
-const makeEvent = (overrides: Partial<EmailEvent>): EmailEvent => ({
-    id: "e1",
-    timestamp: new Date(0),
-    type: "queued",
-    ...overrides,
-});
+const makeEvent = (overrides: Partial<EmailEvent>): EmailEvent => {
+    return {
+        id: "e1",
+        timestamp: new Date(0),
+        type: "queued",
+        ...overrides,
+    };
+};
 
 describe("events", () => {
     describe(EventBus, () => {

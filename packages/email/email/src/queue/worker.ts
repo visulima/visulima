@@ -97,6 +97,17 @@ export const createWorker = (options: WorkerOptions): Worker => {
     let active = 0;
     let timer: ReturnType<typeof setTimeout> | undefined;
 
+    // Queue mutations (ack/retry) may reject on a transient store error. Surface those via onError
+    // instead of letting them escape processJob — otherwise the rejection is silently swallowed by
+    // tick()'s catch (leaving the job reserved/stuck) or aborts the drain() loop.
+    const guardQueueOp = async (job: QueueJob, op: () => Promise<void> | void): Promise<void> => {
+        try {
+            await op();
+        } catch (error) {
+            onError?.(job, { error: error instanceof Error ? error : new Error(String(error)), success: false });
+        }
+    };
+
     const processJob = async (job: QueueJob): Promise<void> => {
         let result: Result<EmailResult>;
 
@@ -107,7 +118,7 @@ export const createWorker = (options: WorkerOptions): Worker => {
         }
 
         if (result.success) {
-            await queue.ack(job.id);
+            await guardQueueOp(job, () => queue.ack(job.id));
 
             return;
         }
@@ -117,13 +128,13 @@ export const createWorker = (options: WorkerOptions): Worker => {
         const attemptsMade = job.attempts + 1;
 
         if (attemptsMade >= maxAttempts) {
-            await queue.ack(job.id);
+            await guardQueueOp(job, () => queue.ack(job.id));
             onDeadLetter?.(job, result);
 
             return;
         }
 
-        await queue.retry(job.id, backoff(attemptsMade));
+        await guardQueueOp(job, () => queue.retry(job.id, backoff(attemptsMade)));
     };
 
     const tick = async (): Promise<void> => {

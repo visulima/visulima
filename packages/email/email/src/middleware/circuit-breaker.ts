@@ -48,6 +48,8 @@ export const circuitBreakerMiddleware = (options: CircuitBreakerMiddlewareOption
     let state: CircuitState = "closed";
     let failures = 0;
     let openedAt = 0;
+    // True while a single half-open trial request is in flight.
+    let probing = false;
 
     const transition = (next: CircuitState): void => {
         if (state !== next) {
@@ -56,16 +58,40 @@ export const circuitBreakerMiddleware = (options: CircuitBreakerMiddlewareOption
         }
     };
 
+    const openError = (): { error: EmailError; success: false } => {
+        return {
+            error: new EmailError("middleware", "Circuit breaker is open", { code: "CIRCUIT_OPEN" }),
+            success: false,
+        };
+    };
+
     return async (emailOptions, next) => {
-        if (state === "open") {
-            if (now() - openedAt >= resetTimeout) {
-                transition("half-open");
-            } else {
-                return { error: new EmailError("middleware", "Circuit breaker is open", { code: "CIRCUIT_OPEN" }), success: false };
-            }
+        // Once the cooldown elapses, move to half-open and let a single probe through.
+        if (state === "open" && now() - openedAt >= resetTimeout) {
+            transition("half-open");
+            probing = false;
         }
 
-        const result = await next(emailOptions);
+        if (state === "open") {
+            return openError();
+        }
+
+        if (state === "half-open") {
+            // Allow only one concurrent trial; everyone else fails fast until it resolves.
+            if (probing) {
+                return openError();
+            }
+
+            probing = true;
+        }
+
+        let result;
+
+        try {
+            result = await next(emailOptions);
+        } finally {
+            probing = false;
+        }
 
         if (result.success) {
             failures = 0;
