@@ -149,6 +149,32 @@ describe(OneDriveStorage, () => {
         });
     });
 
+    describe("path traversal guards", () => {
+        it("rejects a rootFolderPath containing .. segments at construction", () => {
+            expect.assertions(1);
+
+            expect(
+                () =>
+                    new OneDriveStorage({
+                        ...(storageOptions as OneDriveStorageOptions),
+                        accessToken: "tok",
+                        rootFolderPath: "../escape",
+                    }),
+            ).toThrow(/path segments/);
+        });
+
+        it("rejects a key containing .. segments before building the Graph item URL", async () => {
+            expect.assertions(1);
+
+            const storage = new OneDriveStorage({
+                ...(storageOptions as OneDriveStorageOptions),
+                accessToken: "tok",
+            });
+
+            await expect(storage.getUploadUrl("../../other/file.mp4")).rejects.toThrow(/path segments/);
+        });
+    });
+
     describe(".delete()", () => {
         it("uses bare path without trailing colon for non-root items", async () => {
             expect.assertions(2);

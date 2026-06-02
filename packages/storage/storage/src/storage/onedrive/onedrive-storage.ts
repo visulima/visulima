@@ -61,6 +61,22 @@ const trimSlashes = (s: string): string => {
     return start === 0 && end === s.length ? s : s.slice(start, end);
 };
 
+/**
+ * Reject `.` and `..` path segments. Microsoft Graph resolves `..` inside `/root:/` item paths, so
+ * a key or `rootFolderPath` containing relative segments would escape the configured root folder.
+ * `encodeURIComponent` leaves `.`/`..` untouched, so the guard must run before encoding.
+ */
+const assertNoRelativeSegments = (value: string, label: string): void => {
+    if (
+        trimSlashes(value)
+            .split("/")
+            .filter(Boolean)
+            .some((segment) => segment === "." || segment === "..")
+    ) {
+        throw new Error(`OneDrive storage: ${label} must not contain "." or ".." path segments.`);
+    }
+};
+
 const encodePathSegments = (path: string): string =>
     path
         .split("/")
@@ -294,6 +310,7 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
             this.basePath = "/me/drive";
         }
 
+        assertNoRelativeSegments(config.rootFolderPath ?? "", "rootFolderPath");
         this.rootFolderPath = trimSlashes(config.rootFolderPath ?? "");
         this.publicByDefault = config.publicByDefault ?? false;
         this.copyTimeoutMs = config.copyTimeoutMs ?? 60_000;
@@ -645,6 +662,13 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
     }
 
     public override async getUploadUrl(key: string, options?: { contentLength?: number; contentType?: string; expiresIn?: number }): Promise<string> {
+        if (options?.contentLength !== undefined) {
+            return throwErrorCode(
+                ERRORS.BAD_REQUEST,
+                "OneDrive: `contentLength` is not supported for upload URLs. A Graph upload session does not enforce a server-side content-length policy, so the cap would not bind; enforce size limits at your application gateway/proxy before issuing the session URL.",
+            );
+        }
+
         const session = (await this.client.api(this.itemActionPath(key, "createUploadSession")).post({
             item: {
                 "@microsoft.graph.conflictBehavior": "replace",
@@ -664,6 +688,8 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
     }
 
     private keyParts(key: string): string[] {
+        assertNoRelativeSegments(key, "key");
+
         const inner = trimSlashes(key);
         const parts: string[] = [];
 
@@ -708,6 +734,8 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
      * **not** with the configured base path (`/me/drive`, `/drives/{id}`, …).
      */
     private parentReferencePath(key: string): string {
+        assertNoRelativeSegments(key, "key");
+
         const inner = trimSlashes(key);
         const parts: string[] = [];
 

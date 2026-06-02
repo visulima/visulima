@@ -442,6 +442,13 @@ class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
         key: string,
         options?: { expiresIn?: number; responseContentDisposition?: string; responseContentType?: string },
     ): Promise<string> {
+        if (options?.responseContentDisposition !== undefined || options?.responseContentType !== undefined) {
+            return throwErrorCode(
+                ERRORS.BAD_REQUEST,
+                "cloudinary: `responseContentDisposition`/`responseContentType` are not supported. A public delivery URL has no signature in which to bind the override, and Cloudinary's signed download URL cannot pin an arbitrary Content-Disposition/Content-Type; set the disposition via a Cloudinary delivery transformation instead.",
+            );
+        }
+
         if (this.deliveryType === "upload") {
             return this.client.url(key, {
                 resource_type: this.resourceType,

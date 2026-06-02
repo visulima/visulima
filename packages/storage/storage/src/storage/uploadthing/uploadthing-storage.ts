@@ -363,10 +363,10 @@ class UploadThingStorage extends BaseStorage<UploadThingFile> {
         key: string,
         options?: { expiresIn?: number; responseContentDisposition?: string; responseContentType?: string },
     ): Promise<string> {
-        if (options?.responseContentDisposition) {
+        if (options?.responseContentDisposition !== undefined || options?.responseContentType !== undefined) {
             return throwErrorCode(
                 ERRORS.METHOD_NOT_ALLOWED,
-                "UploadThing: `responseContentDisposition` is not supported — no override exists on UploadThing CDN/signed URLs.",
+                "UploadThing: `responseContentDisposition`/`responseContentType` are not supported — no override exists on UploadThing CDN/signed URLs.",
             );
         }
 

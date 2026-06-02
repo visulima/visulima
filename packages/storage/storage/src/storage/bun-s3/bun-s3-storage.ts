@@ -2,7 +2,7 @@ import { Readable } from "node:stream";
 import type { ReadableStream as NodeReadableStream } from "node:stream/web";
 
 import type { UploadError } from "../../utils/errors";
-import { wrapStorageError } from "../../utils/errors";
+import { ERRORS, throwErrorCode, wrapStorageError } from "../../utils/errors";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
 import type { OperationOptions } from "../types";
@@ -418,7 +418,13 @@ class BunS3Storage extends BaseStorage<BunS3File> {
     }
 
     public override async getUploadUrl(key: string, options?: { contentLength?: number; contentType?: string; expiresIn?: number }): Promise<string> {
-        // `contentLength` cannot be enforced — Bun presign has no max-size policy. Ignored by design.
+        if (options?.contentLength !== undefined) {
+            return throwErrorCode(
+                ERRORS.BAD_REQUEST,
+                "bun-s3: `contentLength` is not supported for upload URLs. A Bun presigned PUT has no content-length-range policy, so the cap would not bind; enforce size limits at your application gateway/proxy, or use a presigned POST form.",
+            );
+        }
+
         return this.client.presign(toKey(key), {
             ...(options?.expiresIn !== undefined && { expiresIn: options.expiresIn }),
             method: "PUT",

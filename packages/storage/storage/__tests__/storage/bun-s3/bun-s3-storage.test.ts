@@ -306,10 +306,18 @@ describe(BunS3Storage, () => {
             const client = makeClient();
             const storage = makeStorage(client);
 
-            const url = await storage.getUploadUrl("file.mp4", { contentLength: 999, contentType: "video/mp4", expiresIn: 60 });
+            const url = await storage.getUploadUrl("file.mp4", { contentType: "video/mp4", expiresIn: 60 });
 
             expect(url).toBe("https://signed.example/put");
             expect(client.presign).toHaveBeenCalledWith("file.mp4", expect.objectContaining({ expiresIn: 60, method: "PUT", type: "video/mp4" }));
+        });
+
+        it("getUploadUrl rejects an unenforceable contentLength", async () => {
+            expect.assertions(1);
+
+            const storage = makeStorage(makeClient());
+
+            await expect(storage.getUploadUrl("file.mp4", { contentLength: 999 })).rejects.toThrow(/contentLength.*not supported/u);
         });
     });
 });
