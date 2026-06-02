@@ -6,6 +6,8 @@ import { buildEnhancedPath, collectNodeModulesBinDirs, withEnhancedPath } from "
 
 describe(collectNodeModulesBinDirs, () => {
     it("returns the cwd's `.bin` first, then each parent's `.bin`", () => {
+        expect.assertions(4);
+
         const dirs = collectNodeModulesBinDirs(`${sep}home${sep}user${sep}project${sep}packages${sep}foo`);
 
         expect(dirs[0]).toBe(`${sep}home${sep}user${sep}project${sep}packages${sep}foo${sep}node_modules${sep}.bin`);
@@ -16,6 +18,8 @@ describe(collectNodeModulesBinDirs, () => {
     });
 
     it("stops walking at the filesystem root", () => {
+        expect.assertions(2);
+
         const dirs = collectNodeModulesBinDirs(sep);
 
         expect(dirs).toHaveLength(1);
@@ -23,6 +27,8 @@ describe(collectNodeModulesBinDirs, () => {
     });
 
     it("resolves relative cwd against process.cwd()", () => {
+        expect.assertions(1);
+
         const dirs = collectNodeModulesBinDirs(".");
 
         // First entry resolves to process.cwd()/node_modules/.bin.
@@ -32,6 +38,8 @@ describe(collectNodeModulesBinDirs, () => {
 
 describe(buildEnhancedPath, () => {
     it("prepends `.bin` dirs to the supplied env's PATH", () => {
+        expect.assertions(2);
+
         const cwd = `${sep}repo${sep}pkg`;
         // Join the caller PATH with the platform `delimiter` (`;` on Windows,
         // `:` elsewhere) so the round-trip through `split(delimiter)` below is
@@ -46,6 +54,8 @@ describe(buildEnhancedPath, () => {
     });
 
     it("falls back to process.env PATH when none is supplied", () => {
+        expect.assertions(1);
+
         const previous = process.env["PATH"];
 
         process.env["PATH"] = "/process/path";
@@ -61,12 +71,16 @@ describe(buildEnhancedPath, () => {
     });
 
     it("honours the Windows `Path` alias when `PATH` is absent", () => {
+        expect.assertions(1);
+
         const result = buildEnhancedPath(`${sep}repo`, { Path: String.raw`C:\Windows` });
 
         expect(result.endsWith(String.raw`C:\Windows`)).toBe(true);
     });
 
     it("returns just the bin chain when no existing PATH is set", () => {
+        expect.assertions(2);
+
         const previous = process.env["PATH"];
         const previousAlias = process.env["Path"];
 
@@ -92,6 +106,8 @@ describe(buildEnhancedPath, () => {
 
 describe(withEnhancedPath, () => {
     it("returns a new env object without mutating the input", () => {
+        expect.assertions(4);
+
         const input: NodeJS.ProcessEnv = { FOO: "bar", PATH: "/usr/bin" };
         const output = withEnhancedPath(input, `${sep}repo`);
 
@@ -102,12 +118,16 @@ describe(withEnhancedPath, () => {
     });
 
     it("mirrors the rewritten value into the Windows `Path` alias", () => {
+        expect.assertions(1);
+
         const output = withEnhancedPath({ PATH: "/a", Path: "/a" }, `${sep}repo`);
 
         expect(output.Path).toBe(output.PATH);
     });
 
     it("does not introduce a `Path` alias when one was not present", () => {
+        expect.assertions(1);
+
         const output = withEnhancedPath({ PATH: "/a" }, `${sep}repo`);
 
         expect("Path" in output).toBe(false);

@@ -32,6 +32,9 @@ const makeTask = (project: string): Task => {
 
 describe("orphan-dep tolerance + deadlock diagnostics", () => {
     it("schedules every task even when dependency lists carry refs to non-existent task ids", async () => {
+        // Asserts once per scheduled task across the orphan-dep fixture set.
+        expect.assertions(27);
+
         const workspaceRoot = await createTemporaryDirectory();
 
         try {
@@ -128,6 +131,8 @@ describe("orphan-dep tolerance + deadlock diagnostics", () => {
     });
 
     it("surfaces a clearer deadlock error that names the stranded tasks on a true cycle", async () => {
+        expect.assertions(2);
+
         const workspaceRoot = await createTemporaryDirectory();
 
         try {
@@ -190,6 +195,8 @@ describe("orphan-dep tolerance + deadlock diagnostics", () => {
 
 describe("skip-dependents on failure (Fix #1)", () => {
     it("marks transitive dependents skipped when an upstream task fails, but runs independent tasks", async () => {
+        expect.assertions(5);
+
         const workspaceRoot = await createTemporaryDirectory();
 
         try {
@@ -253,6 +260,8 @@ describe("skip-dependents on failure (Fix #1)", () => {
     });
 
     it("with bail=true, marks every remaining task skipped on first failure", async () => {
+        expect.assertions(4);
+
         const workspaceRoot = await createTemporaryDirectory();
 
         try {
@@ -319,6 +328,8 @@ describe("skip-dependents on failure (Fix #1)", () => {
 
 describe("lifecycle hook resilience (Fix #2)", () => {
     it("a throwing endTasks hook does not hang the loop or crash the run", async () => {
+        expect.assertions(3);
+
         const workspaceRoot = await createTemporaryDirectory();
 
         try {
@@ -384,6 +395,8 @@ describe("lifecycle hook resilience (Fix #2)", () => {
 
 describe("parallelism: false (Fix #4)", () => {
     it("a task with parallelism=false never runs alongside siblings", async () => {
+        expect.assertions(2);
+
         const workspaceRoot = await createTemporaryDirectory();
 
         try {
