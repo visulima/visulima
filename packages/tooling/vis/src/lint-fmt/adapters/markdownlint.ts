@@ -115,7 +115,7 @@ export const markdownlintAdapter: ToolAdapter = {
                 adapter: "markdownlint",
                 column: parsed.column,
                 file: isAbsolutePath(parsed.file) ? parsed.file : `${presence.root}/${parsed.file}`,
-                fixable: false,
+                fixable: true,
                 line: parsed.line,
                 message: parsed.message,
                 ruleId: parsed.ruleId,

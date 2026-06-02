@@ -35,6 +35,12 @@ const SEVERITY_RANK: Record<FindingSeverity, number> = {
     warning: 2,
 };
 
+/**
+ * Compare two severities by rank (`error` > `warning` > `info`).
+ * @param a First severity.
+ * @param b Second severity.
+ * @returns Negative when `a` ranks below `b`, positive when above, zero when equal.
+ */
 export const compareSeverity = (a: FindingSeverity, b: FindingSeverity): number => SEVERITY_RANK[a] - SEVERITY_RANK[b];
 
 /**
@@ -43,6 +49,8 @@ export const compareSeverity = (a: FindingSeverity, b: FindingSeverity): number 
  * Findings are kept in input order — callers are expected to pass
  * them already ordered (adapter precedence × file path). Sorting here
  * would hide bugs in the orchestration layer.
+ * @param entries Per-adapter run metadata plus that run's findings.
+ * @returns The combined findings, per-adapter summaries, max severity, and failure flag.
  */
 export const aggregate = (entries: ReadonlyArray<AdapterRunSummary & { findings: ReadonlyArray<Finding> }>): AggregateResult => {
     const findings: Finding[] = [];
@@ -80,6 +88,8 @@ export const aggregate = (entries: ReadonlyArray<AdapterRunSummary & { findings:
 /**
  * Group findings by file path. Used by reporters that present a
  * per-file view (most human-readable output and editor integrations).
+ * @param findings Findings to group.
+ * @returns Map of file path to its findings, in first-seen order.
  */
 export const groupFindingsByFile = (findings: ReadonlyArray<Finding>): Map<string, Finding[]> => {
     const out = new Map<string, Finding[]>();
@@ -106,6 +116,8 @@ export const groupFindingsByFile = (findings: ReadonlyArray<Finding>): Map<strin
  * Warnings alone do not fail the run — that's `--max-warnings`' job
  * (each adapter applies its own threshold and emits errors when
  * exceeded).
+ * @param result The aggregated run result.
+ * @returns `1` on any error finding or process failure, otherwise `0`.
  */
 export const exitCodeFor = (result: AggregateResult): number => {
     if (result.hadProcessFailure) {

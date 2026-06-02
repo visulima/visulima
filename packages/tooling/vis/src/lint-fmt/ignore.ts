@@ -116,6 +116,8 @@ const parsePatterns = (raw: string): IgnoreRule[] => {
  * Load ignore patterns from a file, returning an empty array if the
  * file doesn't exist. Used by adapters that want to feed
  * `.eslintignore` / `.prettierignore` into the shared filter.
+ * @param path Absolute path to the ignore file.
+ * @returns Parsed rules, or an empty array if the file is missing/unreadable.
  */
 export const loadIgnoreFile = (path: string): IgnoreRule[] => {
     if (!isAccessibleSync(path)) {
@@ -133,6 +135,10 @@ export const loadIgnoreFile = (path: string): IgnoreRule[] => {
  * Build a merged ignore rule set from the standard inputs. Adapters
  * may append their own rules to the returned array before passing it
  * to `isIgnored`.
+ * @param root Absolute workspace root (locates the `.gitignore`).
+ * @param extras Inline gitignore-style patterns (e.g. from `vis.config.ts`).
+ * @param extraFiles Additional ignore files to load (e.g. `.prettierignore`).
+ * @returns The merged rule list, in application order.
  */
 export const buildIgnoreRules = (
     root: string,
@@ -156,6 +162,11 @@ export const buildIgnoreRules = (
  * `isDirectory` defaults to `false` — call sites that know the file
  * is a directory should pass `true` so directory-only patterns (`dist/`)
  * apply correctly.
+ * @param root Absolute workspace root the path is relativized against.
+ * @param filePath Absolute path to test.
+ * @param rules Ignore rules to apply, in precedence order.
+ * @param isDirectory Whether `filePath` is a directory (enables directory-only rules).
+ * @returns True when the file is ignored by the effective rule set.
  */
 export const isIgnored = (root: string, filePath: string, rules: ReadonlyArray<IgnoreRule>, isDirectory = false): boolean => {
     const relativePath = relative(root, filePath).replaceAll("\\", "/");
@@ -178,6 +189,10 @@ export const isIgnored = (root: string, filePath: string, rules: ReadonlyArray<I
  * Filter a list of files down to those that survive the ignore set.
  * Preserves input order — callers usually feed an already-sorted
  * list (glob output) and rely on stable ordering downstream.
+ * @param root Absolute workspace root the paths are relativized against.
+ * @param files Candidate file paths.
+ * @param rules Ignore rules to apply.
+ * @returns The subset of `files` that are not ignored, in input order.
  */
 export const filterIgnored = (root: string, files: ReadonlyArray<string>, rules: ReadonlyArray<IgnoreRule>): string[] => {
     const out: string[] = [];

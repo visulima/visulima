@@ -15,6 +15,8 @@
  * matching by tool name.
  */
 
+import { pathToFileURL } from "node:url";
+
 import type { AdapterId, Finding, FindingSeverity, ToolPresence } from "../config-types";
 
 /**
@@ -56,6 +58,18 @@ const fileUri = (absolutePath: string, workspaceRoot: string | undefined): { uri
     }
 
     return { uri: absolutePath };
+};
+
+/**
+ * Absolute `file://` URI for the workspace root, with a trailing slash so it
+ * reads as a directory base. Defines the `SRCROOT` `uriBaseId` that
+ * {@link fileUri} stamps on workspace-relative artifact locations, letting
+ * SARIF consumers resolve those relatives back to an absolute path.
+ */
+const workspaceRootUri = (workspaceRoot: string): string => {
+    const { href } = pathToFileURL(workspaceRoot);
+
+    return href.endsWith("/") ? href : `${href}/`;
 };
 
 const compareFindings = (a: Finding, b: Finding): number => {
@@ -137,10 +151,18 @@ const buildRun = (run: SarifAdapterRun, workspaceRoot: string | undefined): Reco
         driver.version = run.presence.declaredVersion;
     }
 
-    return {
+    const result: Record<string, unknown> = {
         results: ordered.map((finding) => buildResult(finding, workspaceRoot)),
         tool: { driver },
     };
+
+    // Define the SRCROOT base referenced by workspace-relative artifact
+    // locations so the relative URIs are resolvable to an absolute path.
+    if (workspaceRoot) {
+        result.originalUriBaseIds = { SRCROOT: { uri: workspaceRootUri(workspaceRoot) } };
+    }
+
+    return result;
 };
 
 /**

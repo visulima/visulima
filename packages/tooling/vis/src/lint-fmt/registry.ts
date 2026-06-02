@@ -39,6 +39,14 @@ const ADAPTER_ORDER: ReadonlyArray<AdapterId> = [
     "deno-fmt",
 ];
 
+/**
+ * Order adapters by precedence: `customOrder` (from `vis.config.ts`) first,
+ * then the static `ADAPTER_ORDER`, then any adapter neither list knows about
+ * appended so it still runs. Deduplicates by id.
+ * @param adapters Detected adapters to order.
+ * @param customOrder Optional user-specified id order that takes precedence.
+ * @returns Adapters in effective precedence order.
+ */
 export const registerAdapters = (
     adapters: ReadonlyArray<ToolAdapter>,
     customOrder?: ReadonlyArray<AdapterId>,
@@ -88,6 +96,10 @@ export const registerAdapters = (
 /**
  * Filter detected adapters by kind (lint vs fmt). `both` matches
  * either.
+ * @param detected Map of detected adapter id to presence.
+ * @param all All adapters, in precedence order.
+ * @param kind Which pipeline to select (`lint` or `fmt`).
+ * @returns Adapter + presence pairs eligible for the requested kind, in order.
  */
 export const adaptersByKind = (
     detected: Map<AdapterId, ToolPresence>,
@@ -120,6 +132,10 @@ const matchesKind = (adapterKind: AdapterKind, want: "lint" | "fmt"): boolean =>
  * `extensionOverrides` lets the user pin a specific extension to a
  * specific adapter via vis.config.ts; without overrides, the first
  * adapter in `adapters` that claims the extension wins.
+ * @param files Files to route.
+ * @param adapters Eligible adapter + presence pairs, in precedence order.
+ * @param extensionOverrides Extension → adapter id pins from `vis.config.ts`.
+ * @returns Map of adapter id to the files routed to it (unclaimed files dropped).
  */
 export const routeFilesByExtension = (
     files: ReadonlyArray<string>,

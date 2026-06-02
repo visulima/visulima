@@ -120,7 +120,7 @@ export interface ToolAdapter {
     argsCheck: (files: ReadonlyArray<string>, options: AdapterRunOptions) => ReadonlyArray<string>;
     /** Args for fix / write mode. */
     argsFix: (files: ReadonlyArray<string>, options: AdapterRunOptions) => ReadonlyArray<string>;
-    /** Argv head — typically `["pnpm", "exec", &lt;tool>]` or absolute. */
+    /** Argv head — typically `["pnpm", "exec", TOOL]` or absolute. */
     bin: (presence: ToolPresence) => ReadonlyArray<string>;
 
     /**

@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { TOOL_SIGNATURES } from "../../util/tool-signatures";
 import type { AdapterRunOptions, Finding, ToolAdapter } from "../config-types";
 import { declaredVersion, findFirstConfig } from "../detect";
+import { resolveFile } from "../paths";
 
 /**
  * Prettier adapter.
@@ -128,15 +129,4 @@ const buildArgs = (files: ReadonlyArray<string>, options: AdapterRunOptions, mod
     args.push(...files);
 
     return args;
-};
-
-const resolveFile = (root: string, line: string): string => {
-    // Prettier emits a path relative to its cwd (which we set to `root`).
-    // Pre-pending root avoids ambiguity downstream — every Finding.file is
-    // expected to be absolute.
-    if (line.startsWith("/")) {
-        return line;
-    }
-
-    return `${root}/${line}`;
 };

@@ -37,7 +37,7 @@ const execute = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Co
     const eligible = allEligible.filter(({ adapter }) => lintConfig?.adapters?.[adapter.id]?.enabled !== false);
 
     if (eligible.length === 0) {
-        logger.warn("vis lint: no linter detected in this workspace (looked for: oxlint, biome, eslint, stylelint, deno).");
+        logger.warn("vis lint: no linter detected in this workspace (looked for: oxlint, biome, eslint, stylelint, ruff, markdownlint, shellcheck, deno).");
 
         return;
     }

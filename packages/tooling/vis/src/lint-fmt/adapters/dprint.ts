@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { TOOL_SIGNATURES } from "../../util/tool-signatures";
 import type { AdapterRunOptions, Finding, ToolAdapter } from "../config-types";
 import { declaredVersion, findFirstConfig } from "../detect";
+import { resolveFile } from "../paths";
 
 /**
  * Dprint adapter. Pluggable Rust-native formatter; the user picks
@@ -116,12 +117,4 @@ const buildArgs = (files: ReadonlyArray<string>, options: AdapterRunOptions, mod
     args.push(...files);
 
     return args;
-};
-
-const resolveFile = (root: string, line: string): string => {
-    if (line.startsWith("/") || /^[a-z]:[\\/]/i.test(line)) {
-        return line;
-    }
-
-    return `${root}/${line}`;
 };

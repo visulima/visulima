@@ -35,7 +35,7 @@ const execute = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Co
     const eligible = allEligible.filter(({ adapter }) => fmtConfig?.adapters?.[adapter.id]?.enabled !== false);
 
     if (eligible.length === 0) {
-        logger.warn("vis fmt: no formatter detected in this workspace (looked for: oxfmt, biome, dprint, prettier, deno).");
+        logger.warn("vis fmt: no formatter detected in this workspace (looked for: oxfmt, biome, dprint, prettier, ruff, deno-fmt).");
 
         return;
     }

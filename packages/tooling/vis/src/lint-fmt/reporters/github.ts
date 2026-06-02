@@ -48,7 +48,8 @@ const encodeMessage = (value: string): string =>
 const encodeProperty = (value: string): string =>
     encodeMessage(value)
         .replaceAll(",", "%2C")
-        .replaceAll(":", "%3A");
+        .replaceAll(":", "%3A")
+        .replaceAll("=", "%3D");
 
 const relativeFile = (file: string, workspaceRoot: string | undefined): string => {
     if (workspaceRoot && file.startsWith(`${workspaceRoot}/`)) {

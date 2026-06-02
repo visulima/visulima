@@ -38,6 +38,12 @@ export interface AdapterJob {
  * This synchronous variant intentionally does NOT consult the cache.
  * It exists for the rare callers (tests, single-shot probes) that
  * want a deterministic spawn-and-return.
+ * @param adapter Tool adapter to invoke.
+ * @param presence Detected presence (provides the `bin` argv head + `root`).
+ * @param files Files to pass to the tool.
+ * @param options Run options (maxWarnings, quiet, extraArgs, …).
+ * @param mode `check` for a dry run, `fix` to write fixes in place.
+ * @returns The spawn duration, exit code (`null` on spawn failure/timeout), and captured output.
  */
 export const runAdapter = (
     adapter: ToolAdapter,
@@ -50,13 +56,29 @@ export const runAdapter = (
     const args = [...bin.slice(1), ...(mode === "fix" ? adapter.argsFix(files, options) : adapter.argsCheck(files, options))];
 
     const start = Date.now();
-    const result = spawnSync(bin[0]!, args, {
-        cwd: presence.root,
-        encoding: "utf8",
-        // 60s ceiling. ESLint can be slow but anything past a minute
-        // on a single batch is almost always a misconfiguration.
-        timeout: 60_000,
-    });
+
+    let result;
+
+    try {
+        result = spawnSync(bin[0]!, args, {
+            cwd: presence.root,
+            encoding: "utf8",
+            // 60s ceiling. ESLint can be slow but anything past a minute
+            // on a single batch is almost always a misconfiguration.
+            timeout: 60_000,
+        });
+    } catch (error) {
+        // A malformed invocation can make spawnSync throw outright; surface it
+        // like runAdapterAsync's error path rather than crashing the orchestrator.
+        return { durationMs: Date.now() - start, exitCode: null, stderr: error instanceof Error ? error.message : String(error), stdout: "" };
+    }
+
+    // Spawn failures (missing binary, timeout-kill) come back via `error` with
+    // a null status — mirror runAdapterAsync's error shape instead of returning
+    // a misleading exitCode.
+    if (result.error) {
+        return { durationMs: Date.now() - start, exitCode: null, stderr: result.error.message, stdout: result.stdout ?? "" };
+    }
 
     return {
         durationMs: Date.now() - start,
