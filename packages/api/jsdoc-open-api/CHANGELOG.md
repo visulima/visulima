@@ -1,3 +1,19 @@
+## @visulima/jsdoc-open-api [3.0.0-alpha.27](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.26...@visulima/jsdoc-open-api@3.0.0-alpha.27) (2026-06-02)
+
+### Miscellaneous Chores
+
+* apply eslint + prettier autofixes across packages ([c1bb784](https://github.com/visulima/visulima/commit/c1bb7848a0d93d0dfe2960c77e3cda22239c79a0))
+
+### Tests
+
+* improve coverage across packages ([91bd6d3](https://github.com/visulima/visulima/commit/91bd6d3b61736e3c8bd1fc59b0b5955f76a5d323))
+* **jsdoc-open-api:** cover cli commands, webpack plugin errors, loaders, and swagger merge paths ([22cff56](https://github.com/visulima/visulima/commit/22cff56740cc473cad3ad45ab3749cfff8ff36d8))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.29
+
 ## @visulima/jsdoc-open-api [3.0.0-alpha.26](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.25...@visulima/jsdoc-open-api@3.0.0-alpha.26) (2026-05-27)
 
 ### Bug Fixes
