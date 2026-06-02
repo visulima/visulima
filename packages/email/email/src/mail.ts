@@ -4,7 +4,7 @@ import MailMessage from "./mail-message";
 import type { Middleware, SendFunction } from "./middleware/types";
 import { composeMiddleware } from "./middleware/types";
 import type { Provider } from "./providers/provider";
-import type { EmailAddress, EmailHeaders, EmailOptions, EmailResult, Receipt, Result } from "./types";
+import type { EmailAddress, EmailHeaders, EmailOptions, EmailResult, MaybePromise, Receipt, Result } from "./types";
 import buildMimeMessage from "./utils/build-mime-message";
 import type { Logger } from "./utils/create-logger";
 import { createLogger } from "./utils/create-logger";
@@ -34,9 +34,115 @@ const logSendResult = (logger: Logger | undefined, result: Result<EmailResult>, 
 };
 
 /**
+ * Builds a single personalized {@link EmailOptions} from a base message and a personalization.
+ * @param base The resolved base options.
+ * @param personalization The per-recipient overrides.
+ * @param render Optional renderer for templated subject/html/text.
+ * @returns The merged email options.
+ */
+const buildPersonalized = async (base: EmailOptions, personalization: Personalization, render?: BatchRenderer): Promise<EmailOptions> => {
+    const merged: EmailOptions = { ...base, to: personalization.to };
+
+    if (personalization.cc) {
+        merged.cc = personalization.cc;
+    }
+
+    if (personalization.bcc) {
+        merged.bcc = personalization.bcc;
+    }
+
+    if (personalization.replyTo) {
+        merged.replyTo = personalization.replyTo;
+    }
+
+    if (personalization.headers) {
+        merged.headers = { ...headersToRecord(base.headers ?? {}), ...headersToRecord(personalization.headers) };
+    }
+
+    merged.subject = personalization.subject ?? base.subject;
+
+    if (render && personalization.data) {
+        merged.subject = await render(merged.subject, personalization.data);
+
+        if (base.html !== undefined) {
+            merged.html = await render(base.html, personalization.data);
+        }
+
+        if (base.text !== undefined) {
+            merged.text = await render(base.text, personalization.data);
+        }
+    }
+
+    return merged;
+};
+
+/**
  * Type alias for messages that can be sent via Mail.send().
  */
 export type SendableMessage = MailMessage | EmailOptions;
+
+/**
+ * Renders a template string against per-recipient data (e.g. a Handlebars/Liquid renderer).
+ */
+export type BatchRenderer = (template: string, data: Record<string, unknown>) => MaybePromise<string>;
+
+/**
+ * A per-recipient override applied on top of the batch's base message.
+ *
+ * Anything left unset falls back to the base message. When a {@link BatchRenderer} is supplied and
+ * `data` is present, the base `subject`/`html`/`text` templates are rendered with this recipient's data.
+ */
+export interface Personalization {
+    /**
+     * Blind carbon-copy recipients for this message.
+     */
+    bcc?: EmailAddress | EmailAddress[];
+
+    /**
+     * Carbon-copy recipients for this message.
+     */
+    cc?: EmailAddress | EmailAddress[];
+
+    /**
+     * Template variables for this recipient (used with the batch {@link BatchRenderer}).
+     */
+    data?: Record<string, unknown>;
+
+    /**
+     * Extra headers merged over the base headers for this message.
+     */
+    headers?: EmailHeaders;
+
+    /**
+     * Reply-to override for this message.
+     */
+    replyTo?: EmailAddress;
+
+    /**
+     * Subject override for this message (rendered with `data` when a renderer is supplied).
+     */
+    subject?: string;
+
+    /**
+     * Primary (`To`) recipients for this message.
+     */
+    to: EmailAddress | EmailAddress[];
+}
+
+/**
+ * Options for {@link Mail.sendBatch}.
+ */
+export interface SendBatchOptions {
+    /**
+     * Renders the base `subject`/`html`/`text` templates against each personalization's `data`.
+     */
+    render?: BatchRenderer;
+
+    /**
+     * Abort signal to cancel the batch mid-flight.
+     */
+    signal?: AbortSignal;
+}
 
 /**
  * Controls the fail-fast capability guard that runs before a message is handed to the provider.
@@ -358,24 +464,6 @@ export class Mail {
     }
 
     /**
-     * Sends the resolved options through the middleware chain (or straight to the provider when no
-     * middleware is registered). The composed chain is memoized and rebuilt whenever {@link Mail.use}
-     * adds a middleware.
-     * @param emailOptions The fully-resolved email options.
-     * @returns The send result.
-     * @private
-     */
-    private async dispatch(emailOptions: EmailOptions): Promise<Result<EmailResult>> {
-        if (this.middlewares.length === 0) {
-            return await this.provider.sendEmail(emailOptions);
-        }
-
-        this.composedSend ??= composeMiddleware(this.middlewares, (options) => Promise.resolve(this.provider.sendEmail(options)));
-
-        return await this.composedSend(emailOptions);
-    }
-
-    /**
      * Sends multiple messages using the email service.
      * Returns an async iterable that yields receipts for each sent message.
      * @example
@@ -494,6 +582,59 @@ export class Mail {
                 successCount,
             });
         }
+    }
+
+    /**
+     * Sends one message per personalization, built from a shared base message.
+     *
+     * Each {@link Personalization} overrides recipients/subject/headers on top of the base; when
+     * `options.render` is supplied, the base `subject`/`html`/`text` are treated as templates and
+     * rendered against each personalization's `data`. Results stream back as {@link Receipt}s, exactly
+     * like {@link Mail.sendMany}.
+     * @param base The shared base message (MailMessage or EmailOptions). Its `to` is ignored.
+     * @param personalizations One entry per outgoing message.
+     * @param options Optional renderer and abort signal. See {@link SendBatchOptions}.
+     * @returns An async iterable of receipts, one per personalization.
+     * @example
+     * ```ts
+     * import { renderHandlebars } from "@visulima/email/template/handlebars";
+     *
+     * for await (const receipt of mail.sendBatch(
+     *   { from: { email: "a@x.com" }, subject: "Hi {{name}}", html: "<p>Hello {{name}}</p>" },
+     *   [{ to: { email: "b@x.com" }, data: { name: "Bob" } }],
+     *   { render: (tpl, data) => renderHandlebars(tpl, data) },
+     * )) { /* ... *\/ }
+     * ```
+     */
+    public sendBatch(base: SendableMessage, personalizations: Personalization[], options?: SendBatchOptions): AsyncIterable<Receipt> {
+        const build = async function* (): AsyncIterable<SendableMessage> {
+            const baseOptions = base instanceof MailMessage ? await base.build() : base;
+
+            for (const personalization of personalizations) {
+                // eslint-disable-next-line no-await-in-loop
+                yield await buildPersonalized(baseOptions, personalization, options?.render);
+            }
+        };
+
+        return this.sendMany(build(), { signal: options?.signal });
+    }
+
+    /**
+     * Sends the resolved options through the middleware chain (or straight to the provider when no
+     * middleware is registered). The composed chain is memoized and rebuilt whenever {@link Mail.use}
+     * adds a middleware.
+     * @param emailOptions The fully-resolved email options.
+     * @returns The send result.
+     * @private
+     */
+    private async dispatch(emailOptions: EmailOptions): Promise<Result<EmailResult>> {
+        if (this.middlewares.length === 0) {
+            return await this.provider.sendEmail(emailOptions);
+        }
+
+        this.composedSend ??= composeMiddleware(this.middlewares, (options) => Promise.resolve(this.provider.sendEmail(options)));
+
+        return await this.composedSend(emailOptions);
     }
 
     /**

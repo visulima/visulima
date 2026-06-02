@@ -1,6 +1,12 @@
 export type { ArfReport } from "./arf";
 export { parseArfReport } from "./arf";
+export type { DmarcRecord } from "./dmarc";
+export { parseDmarcRecord } from "./dmarc";
 export type { ListUnsubscribeHeaders, ListUnsubscribeOptions } from "./list-unsubscribe";
 export { buildListUnsubscribe, parseListUnsubscribe } from "./list-unsubscribe";
+export type { MtaStsPolicy } from "./mta-sts";
+export { parseMtaStsPolicy } from "./mta-sts";
 export type { FilterSuppressedResult, SuppressionEntry, SuppressionReason, SuppressionStore } from "./suppression";
 export { createSuppressionStore, filterSuppressed, MemorySuppressionStore } from "./suppression";
+export type { TlsReport, TlsRptRecord } from "./tls-rpt";
+export { parseTlsReport, parseTlsRptRecord } from "./tls-rpt";
