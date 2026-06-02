@@ -25,12 +25,13 @@
 
 use std::collections::HashMap;
 use std::io::Read;
-use std::os::unix::io::{FromRawFd, RawFd};
+use std::os::unix::io::{AsRawFd, FromRawFd, RawFd};
 use std::os::unix::process::CommandExt;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use std::sync::mpsc;
 use std::thread;
+use std::time::Duration;
 
 use napi::bindgen_prelude::*;
 use napi::threadsafe_function::{ThreadsafeFunction, ThreadsafeFunctionCallMode};
@@ -177,32 +178,56 @@ fn run(
 
     let cwd_for_norm = cwd.unwrap_or_else(|| std::env::current_dir().unwrap_or_else(|_| PathBuf::from("/")));
 
-    // Reader thread: drain datagrams until EOF.
-    let reader = thread::spawn(move || drain(parent_fd, &cwd_for_norm));
+    // Cancel pipe shared by the datagram reader + both stdio drains. A
+    // lingering descendant inherits both the report socket and the captured
+    // stdout/stderr pipes, so without this any of the three would block on
+    // EOF forever once the main target exits. See voidzero-dev/vite-task#396.
+    let mut cancel_fds = [0 as RawFd; 2];
+    if unsafe { libc::pipe(cancel_fds.as_mut_ptr()) } != 0 {
+        close(parent_fd);
+        return Err(std::io::Error::last_os_error());
+    }
+    let cancel_read = cancel_fds[0];
+    let cancel_write = cancel_fds[1];
 
-    // Drain stdout/stderr concurrently to avoid deadlocking on full pipes.
+    // Reader thread sends its accesses back through a rendezvous channel so we
+    // can bound the wait after the main target exits.
+    let (acc_tx, acc_rx) = mpsc::sync_channel::<Vec<InterposeFileAccess>>(0);
+    let reader = thread::spawn(move || {
+        let _ = acc_tx.send(drain(parent_fd, &cwd_for_norm, cancel_read));
+    });
+
+    // Drain stdout/stderr concurrently to avoid deadlocking on full pipes,
+    // bounded by the same cancel pipe.
     let mut stdout_pipe = child.stdout.take();
     let mut stderr_pipe = child.stderr.take();
-
-    let out_handle = thread::spawn(move || {
-        let mut buf = Vec::new();
-        if let Some(p) = stdout_pipe.as_mut() {
-            let _ = p.read_to_end(&mut buf);
-        }
-        buf
-    });
-    let err_handle = thread::spawn(move || {
-        let mut buf = Vec::new();
-        if let Some(p) = stderr_pipe.as_mut() {
-            let _ = p.read_to_end(&mut buf);
-        }
-        buf
-    });
+    let out_handle =
+        thread::spawn(move || stdout_pipe.take().map(|p| read_bounded(p, cancel_read)).unwrap_or_default());
+    let err_handle =
+        thread::spawn(move || stderr_pipe.take().map(|p| read_bounded(p, cancel_read)).unwrap_or_default());
 
     let status = child.wait()?;
+
+    // The main target exited; give descendants a short grace to flush, then
+    // stop waiting so a lingering one can't hang the run.
+    const DRAIN_GRACE: Duration = Duration::from_millis(2000);
+    let accesses = match acc_rx.recv_timeout(DRAIN_GRACE) {
+        Ok(list) => list,
+        Err(mpsc::RecvTimeoutError::Timeout) => {
+            signal_cancel(cancel_write);
+            acc_rx.recv().unwrap_or_default()
+        }
+        Err(mpsc::RecvTimeoutError::Disconnected) => Vec::new(),
+    };
+
+    // Unblock the stdio drains too (harmless if they already hit EOF), collect,
+    // and close the shared cancel pipe once everyone has joined.
+    signal_cancel(cancel_write);
+    let _ = reader.join();
     let stdout = out_handle.join().unwrap_or_default();
     let stderr = err_handle.join().unwrap_or_default();
-    let accesses = reader.join().unwrap_or_default();
+    close(cancel_read);
+    close(cancel_write);
 
     Ok(InterposeTrackingResult {
         accesses,
@@ -212,41 +237,148 @@ fn run(
     })
 }
 
-/// Receive `[mode][path]` datagrams until EOF, de-duplicating (path, kind).
-fn drain(parent_fd: RawFd, cwd: &Path) -> Vec<InterposeFileAccess> {
+/// Receive `[mode][path]` datagrams until EOF (all write ends closed) or until
+/// `cancel_fd` becomes readable — the caller signals cancel once the main
+/// target has exited and a grace window lapsed, so a lingering descendant
+/// holding the inherited socket can't block here forever (vite-task#396).
+fn drain(parent_fd: RawFd, cwd: &Path, cancel_fd: RawFd) -> Vec<InterposeFileAccess> {
     // Take ownership so the fd is closed when the reader returns.
     let socket = unsafe { std::fs::File::from_raw_fd(parent_fd) };
     let raw = socket.as_raw_fd_compat();
+
+    // Non-blocking so recv returns EAGAIN instead of parking; we block in poll.
+    unsafe {
+        let flags = libc::fcntl(raw, libc::F_GETFL);
+        if flags >= 0 {
+            libc::fcntl(raw, libc::F_SETFL, flags | libc::O_NONBLOCK);
+        }
+    }
 
     let mut seen = std::collections::HashSet::<(String, u8)>::new();
     let mut out = Vec::new();
     let mut buf = [0u8; 1 + 1024];
 
     loop {
-        // SOCK_DGRAM: one recv == one whole datagram.
-        let n = unsafe { libc::recv(raw, buf.as_mut_ptr().cast(), buf.len(), 0) };
+        let mut fds = [
+            libc::pollfd { fd: raw, events: libc::POLLIN, revents: 0 },
+            libc::pollfd { fd: cancel_fd, events: libc::POLLIN, revents: 0 },
+        ];
 
-        if n <= 0 {
-            break; // 0 = EOF (all write ends closed); <0 = error.
+        let prc = unsafe { libc::poll(fds.as_mut_ptr(), 2, -1) };
+
+        if prc < 0 {
+            if std::io::Error::last_os_error().raw_os_error() == Some(libc::EINTR) {
+                continue;
+            }
+
+            break;
         }
 
-        let n = n as usize;
+        // Cancelled — return what we've gathered so far.
+        if fds[1].revents != 0 {
+            break;
+        }
 
-        let mode = buf[0];
-        let path_bytes = &buf[1..n];
-
-        if path_bytes.is_empty() {
+        if fds[0].revents == 0 {
             continue;
         }
 
-        let path = normalize(path_bytes, cwd);
+        // Drain every datagram currently buffered before polling again.
+        loop {
+            // SOCK_DGRAM: one recv == one whole datagram.
+            let n = unsafe { libc::recv(raw, buf.as_mut_ptr().cast(), buf.len(), 0) };
 
-        if seen.insert((path.clone(), mode)) {
-            out.push(InterposeFileAccess { path, kind: kind_str(mode).to_string() });
+            if n == 0 {
+                return out; // EOF — all write ends closed.
+            }
+
+            if n < 0 {
+                // EAGAIN: nothing more buffered right now → poll again. Any
+                // other error: give up on the socket.
+                if std::io::Error::last_os_error().raw_os_error() == Some(libc::EAGAIN) {
+                    break;
+                }
+
+                return out;
+            }
+
+            let n = n as usize;
+            let mode = buf[0];
+            let path_bytes = &buf[1..n];
+
+            if path_bytes.is_empty() {
+                continue;
+            }
+
+            let path = normalize(path_bytes, cwd);
+
+            if seen.insert((path.clone(), mode)) {
+                out.push(InterposeFileAccess { path, kind: kind_str(mode).to_string() });
+            }
         }
     }
 
     out
+}
+
+/// Read `reader` to EOF, stopping early if `cancel_fd` becomes readable. Mirrors
+/// the seccomp path's bounded stdio drain so a descendant that inherited the
+/// captured pipes can't block on EOF forever. Errors are swallowed.
+fn read_bounded<R: Read + AsRawFd>(mut reader: R, cancel_fd: RawFd) -> Vec<u8> {
+    let raw = reader.as_raw_fd();
+
+    unsafe {
+        let flags = libc::fcntl(raw, libc::F_GETFL);
+        if flags >= 0 {
+            libc::fcntl(raw, libc::F_SETFL, flags | libc::O_NONBLOCK);
+        }
+    }
+
+    let mut buf = Vec::new();
+    let mut chunk = [0u8; 8192];
+
+    loop {
+        let mut fds = [
+            libc::pollfd { fd: raw, events: libc::POLLIN, revents: 0 },
+            libc::pollfd { fd: cancel_fd, events: libc::POLLIN, revents: 0 },
+        ];
+
+        let prc = unsafe { libc::poll(fds.as_mut_ptr(), 2, -1) };
+
+        if prc < 0 {
+            if std::io::Error::last_os_error().raw_os_error() == Some(libc::EINTR) {
+                continue;
+            }
+
+            break;
+        }
+
+        if fds[1].revents != 0 {
+            break;
+        }
+
+        if fds[0].revents == 0 {
+            continue;
+        }
+
+        match reader.read(&mut chunk) {
+            Ok(0) => break,
+            Ok(n) => buf.extend_from_slice(&chunk[..n]),
+            Err(ref e) if matches!(e.kind(), std::io::ErrorKind::WouldBlock | std::io::ErrorKind::Interrupted) => {
+                continue
+            }
+            Err(_) => break,
+        }
+    }
+
+    buf
+}
+
+/// Best-effort one-byte write to wake every poll watching the cancel pipe.
+fn signal_cancel(cancel_write: RawFd) {
+    unsafe {
+        libc::write(cancel_write, [1u8].as_ptr().cast(), 1);
+    }
 }
 
 /// Join relative paths against the spawn cwd; pass absolutes through. Lossy
