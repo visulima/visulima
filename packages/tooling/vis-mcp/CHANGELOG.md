@@ -1,3 +1,27 @@
+## @visulima/vis-mcp [1.0.0-alpha.17](https://github.com/visulima/visulima/compare/@visulima/vis-mcp@1.0.0-alpha.16...@visulima/vis-mcp@1.0.0-alpha.17) (2026-06-02)
+
+### Features
+
+* **vis:** lint + fmt orchestrator ([3a78ed7](https://github.com/visulima/visulima/commit/3a78ed709922e6a35648e0d0eb3f41cc49f89b7a))
+
+### Bug Fixes
+
+* **tests:** revert unsafe vitest autofixes from the lint sweep ([378f27c](https://github.com/visulima/visulima/commit/378f27caa370f1d3188aef2ed36d46839abc88c4))
+
+### Miscellaneous Chores
+
+* apply eslint + prettier autofixes across packages ([c1bb784](https://github.com/visulima/visulima/commit/c1bb7848a0d93d0dfe2960c77e3cda22239c79a0))
+
+### Tests
+
+* **vis-mcp:** cover cli-failure catch paths, resolveVisBin fallback, and version/exec edge branches ([a46fa08](https://github.com/visulima/visulima/commit/a46fa08c991ceeab1e5d4ae575768581aba7bdec))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.29
+* **@visulima/vis:** upgraded to 1.0.0-alpha.27
+
 ## @visulima/vis-mcp [1.0.0-alpha.16](https://github.com/visulima/visulima/compare/@visulima/vis-mcp@1.0.0-alpha.15...@visulima/vis-mcp@1.0.0-alpha.16) (2026-05-29)
 
 ### Tests
