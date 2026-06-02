@@ -1,3 +1,24 @@
+## @visulima/error-handler [2.0.0-alpha.29](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.0-alpha.28...@visulima/error-handler@2.0.0-alpha.29) (2026-06-02)
+
+### Bug Fixes
+
+* **tests:** revert unsafe vitest autofixes from the lint sweep ([378f27c](https://github.com/visulima/visulima/commit/378f27caa370f1d3188aef2ed36d46839abc88c4))
+
+### Miscellaneous Chores
+
+* apply eslint + prettier autofixes across packages ([c1bb784](https://github.com/visulima/visulima/commit/c1bb7848a0d93d0dfe2960c77e3cda22239c79a0))
+
+### Tests
+
+* **error-handler:** cover negotiation, formatters, and onError paths ([9826de9](https://github.com/visulima/visulima/commit/9826de9093bf5a08c3e073390d6fc0da22ab93b1))
+* **error-handler:** cover negotiator, reason-phrase and status branches ([3ad3ed0](https://github.com/visulima/visulima/commit/3ad3ed0bfac60a441091212bbc907f2440d364b3))
+* improve coverage across packages ([91bd6d3](https://github.com/visulima/visulima/commit/91bd6d3b61736e3c8bd1fc59b0b5955f76a5d323))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.31
+
 ## @visulima/error-handler [2.0.0-alpha.28](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.0-alpha.27...@visulima/error-handler@2.0.0-alpha.28) (2026-05-27)
 
 ### Bug Fixes
