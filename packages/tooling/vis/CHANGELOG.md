@@ -1,3 +1,26 @@
+## @visulima/vis [1.0.0-alpha.27](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.26...@visulima/vis@1.0.0-alpha.27) (2026-06-02)
+
+### Features
+
+* **task-runner,vis:** per-task pty + concurrency weight, abort cache gate, fspy scaffolds ([#656](https://github.com/visulima/visulima/issues/656)) ([ca64010](https://github.com/visulima/visulima/commit/ca64010b236903e08273680ea65dec7046fcd18b))
+* **vis:** declarative task arguments + per-target script mode ([#662](https://github.com/visulima/visulima/issues/662)) ([417ca53](https://github.com/visulima/visulima/commit/417ca5395728a0776cbfcd0122ae21e3159a4c48))
+* **vis:** lint + fmt orchestrator ([3a78ed7](https://github.com/visulima/visulima/commit/3a78ed709922e6a35648e0d0eb3f41cc49f89b7a))
+
+### Bug Fixes
+
+* **task-runner:** tolerate dev-only dependency cycles ([#664](https://github.com/visulima/visulima/issues/664)) ([9ad384e](https://github.com/visulima/visulima/commit/9ad384e34927b40823ae104d6b05a581dcd05705)), closes [#411](https://github.com/visulima/visulima/issues/411)
+* **vis:** correct flag name in conflicting-schema error (--projects) ([#667](https://github.com/visulima/visulima/issues/667)) ([c56122b](https://github.com/visulima/visulima/commit/c56122bc6bc654e4a9e118e96b9ba852bc9b784f))
+* **vis:** require explicit opt-in to apply ecosystem updates ([#663](https://github.com/visulima/visulima/issues/663)) ([90cf12d](https://github.com/visulima/visulima/commit/90cf12dffa9dd53cc21849e9a41488dfbe2c8221))
+
+
+### Dependencies
+
+* **@visulima/task-runner:** upgraded to 1.0.0-alpha.18
+* **@visulima/tui:** upgraded to 1.0.0-alpha.21
+* **@visulima/error:** upgraded to 6.0.0-alpha.31
+* **@visulima/fs:** upgraded to 5.0.0-alpha.29
+* **@visulima/package:** upgraded to 5.0.0-alpha.28
+
 ## @visulima/vis [1.0.0-alpha.26](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.25...@visulima/vis@1.0.0-alpha.26) (2026-05-29)
 
 ### Bug Fixes
