@@ -1053,23 +1053,25 @@ const buildEcosystemOptions = (options: Record<string, unknown>, visConfig: VisC
 /**
  * Decides whether the ecosystem stage should apply updates to disk.
  *
- * Plain `vis update` (no args, no `--yes`, no `--interactive`) defaults
- * to **preview only** — it must never silently mutate CI files when the
- * user didn't opt in. The user can apply by re-running with `--yes`.
+ * Ecosystem edits rewrite CI workflow files, Dockerfiles, and GitLab CI
+ * config — they must never be written unless the user explicitly opted
+ * in. Critically, the catalog/npm path applying does NOT carry over: a
+ * plain `vis update` that bumps npm deps still leaves GitHub Actions,
+ * Docker, and GitLab references in **preview only** mode. Auto-applying
+ * them on the back of an npm bump silently mutates files the user never
+ * selected.
  *
- * Apply is permitted when:
- *   - `--yes` was passed (explicit opt-in)
- *   - `--interactive` was passed AND catalog committed updates (the user
- *     has already engaged with the apply flow once this run)
- *   - The catalog path itself applied updates AND we're in a TTY
- *     (a non-CI session where the user can see the report)
+ * Apply is permitted only when:
+ *   - `--yes` was passed (explicit "apply all" opt-in), or
+ *   - `--interactive` was passed in a TTY (the picker lets the user
+ *     choose which references to apply).
  *
  * Apply is refused outright when:
  *   - `--dry-run` was passed
  *   - The catalog/PM stage failed (`process.exitCode` is non-zero)
  *   - The catalog TUI was canceled (user said no).
  */
-const shouldApplyEcosystem = (options: Record<string, unknown>, catalogResult: UpdatePathResult): boolean => {
+export const shouldApplyEcosystem = (options: Record<string, unknown>, catalogResult: UpdatePathResult): boolean => {
     if (options.dryRun === true) {
         return false;
     }
@@ -1086,15 +1088,9 @@ const shouldApplyEcosystem = (options: Record<string, unknown>, catalogResult: U
         return true;
     }
 
-    if (options.interactive === true && catalogResult.applied) {
-        return true;
-    }
-
-    if (catalogResult.applied && Boolean(process.stdout.isTTY) && !isInCi) {
-        return true;
-    }
-
-    return false;
+    // The npm/catalog path applying does NOT authorise ecosystem writes —
+    // only an explicit `--interactive` selection (in a TTY) does.
+    return options.interactive === true && Boolean(process.stdout.isTTY) && !isInCi;
 };
 
 /**
@@ -1137,6 +1133,10 @@ export const runEcosystemUpdate = async (
 
     const format = (options.format as string | undefined) ?? "table";
     const isDryRun = Boolean(options.dryRun);
+    // Decide up-front whether we'll write anything, so the report can tell
+    // the user these references are preview-only (not auto-applied) when
+    // they didn't opt in via `--yes` / `--interactive`.
+    const willApply = shouldApplyEcosystem(options, catalogResult);
 
     if (format === "json") {
         // The catalog path may have already written a JSON document to
@@ -1154,7 +1154,10 @@ export const runEcosystemUpdate = async (
             process.stdout.write(`${formatEcosystemJson(result)}\n`);
         }
     } else if (format !== "minimal") {
-        const report = formatEcosystemReport(result, { showIgnored: options.interactive === true });
+        const report = formatEcosystemReport(result, {
+            previewOnly: !willApply,
+            showIgnored: options.interactive === true,
+        });
 
         if (report) {
             logger.info(report);
@@ -1165,14 +1168,21 @@ export const runEcosystemUpdate = async (
         return result;
     }
 
-    if (!shouldApplyEcosystem(options, catalogResult)) {
-        // Show a clear hint so users know how to opt in. We intentionally
-        // do NOT exit non-zero here — having outdated CI references is
-        // not a failure, it's information.
-        logger.info(
-            `\n${yellow("ℹ")} ${String(result.updates.length)} ecosystem reference${result.updates.length === 1 ? "" : "s"} can be bumped. `
-            + "Re-run with `--yes` to apply (or `--no-actions` / `--no-docker` / `--no-gitlab` to silence by ecosystem).",
-        );
+    if (!willApply) {
+        // The table report already carries the preview note via
+        // `previewOnly`; `minimal` renders no report, so emit the
+        // actionable hint here instead. `json` is deliberately excluded —
+        // its document is written to stdout and a trailing prose line
+        // would corrupt it for `jq`/parser consumers. We intentionally do
+        // NOT exit non-zero — outdated CI references are information, not
+        // a failure.
+        if (format === "minimal") {
+            logger.info(
+                `\n${yellow("ℹ")} ${String(result.updates.length)} ecosystem reference${result.updates.length === 1 ? "" : "s"} can be bumped — not applied automatically. `
+                + "Re-run with `--interactive` to choose, or `--yes` to apply all "
+                + "(or `--no-actions` / `--no-docker` / `--no-gitlab` to silence by ecosystem).",
+            );
+        }
 
         return result;
     }

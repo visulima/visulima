@@ -71,7 +71,7 @@ const formatAdvisoryLines = (update: EcosystemUpdate): string[] => {
  * matches the catalog reporter's tone. Used by `vis update`'s non-TUI
  * paths (CI, --format=table on a non-TTY, etc.).
  */
-export const formatEcosystemReport = (result: EcosystemCheckResult, options: { showIgnored: boolean }): string => {
+export const formatEcosystemReport = (result: EcosystemCheckResult, options: { previewOnly?: boolean; showIgnored: boolean }): string => {
     const lines: string[] = [];
     const totalUpdates = result.updates.length;
 
@@ -157,6 +157,15 @@ export const formatEcosystemReport = (result: EcosystemCheckResult, options: { s
         for (const failure of result.failed) {
             lines.push(`    ${failure.file}: ${failure.reason}`);
         }
+    }
+
+    if (options.previewOnly) {
+        // Make it unmistakable that these CI / Docker / GitLab references
+        // are NOT rewritten on the back of an npm bump — the user has to
+        // opt in. Mirrors the actionable hint emitted for minimal/json.
+        lines.push(
+            `\n  ${yellow("ℹ")} ${dim("Not applied automatically — re-run with `--interactive` to choose which to apply, or `--yes` to apply all.")}`,
+        );
     }
 
     return lines.join("\n");
