@@ -46,7 +46,7 @@ const toAbortError = (reason: unknown): Error => {
     return error;
 };
 
-const downloadToBuffer = async (client: Client, path: string): Promise<Buffer> => {
+const downloadToBuffer = async (client: Client, path: string, startAt?: number): Promise<Buffer> => {
     const chunks: Buffer[] = [];
     const sink = new Writable({
         write(chunk, _encoding, callback) {
@@ -55,7 +55,10 @@ const downloadToBuffer = async (client: Client, path: string): Promise<Buffer> =
         },
     });
 
-    await client.downloadTo(sink, path);
+    // `basic-ftp` issues a REST command for a non-zero startAt, so the transfer begins at the
+    // requested byte offset (real bandwidth saving when resuming). FTP has no native "stop at"
+    // marker, so an inclusive range end is honoured by slicing the tail off client-side.
+    await client.downloadTo(sink, path, startAt && startAt > 0 ? startAt : undefined);
 
     return Buffer.concat(chunks);
 };
@@ -79,6 +82,8 @@ class FtpStorage extends BaseStorage<FtpFile> {
     public static override readonly name: string = "ftp";
 
     public override checksumTypes: string[] = [];
+
+    public override readonly supportsRange: boolean = true;
 
     protected meta: MetaStorage<FtpFile>;
 
@@ -196,15 +201,23 @@ class FtpStorage extends BaseStorage<FtpFile> {
         });
     }
 
-    public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
+    public async get({ id }: FileQuery, options?: OperationOptions & { range?: { end?: number; start: number } }): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
             const file = await this.checkIfExpired(await this.getMeta(id));
             const path = file.path ?? this.keyToPath(file.name || id);
+            const { range } = options ?? {};
 
             const content = await this.runOperation(options, (signal) =>
                 this.run(signal, async (client) => {
                     try {
-                        return await downloadToBuffer(client, path);
+                        const buffer = await downloadToBuffer(client, path, range?.start);
+
+                        // `start` is honoured server-side via REST; the inclusive `end` is sliced off here.
+                        if (range?.end !== undefined) {
+                            return buffer.subarray(0, range.end - range.start + 1);
+                        }
+
+                        return buffer;
                     } catch (error) {
                         if (isNotFoundError(error)) {
                             return throwErrorCode(ERRORS.FILE_NOT_FOUND);
@@ -225,7 +238,7 @@ class FtpStorage extends BaseStorage<FtpFile> {
                 modifiedAt: file.modifiedAt,
                 name: file.name,
                 originalName: file.originalName,
-                size: file.size ?? content.length,
+                size: range ? content.length : (file.size ?? content.length),
             };
         });
     }

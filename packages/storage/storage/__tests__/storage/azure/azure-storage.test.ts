@@ -204,7 +204,9 @@ describe("azureStorage authentication & signed URLs", () => {
             sasToken: "sv=2021-08-06&sig=preissued",
         });
 
-        await expect(storage.getReadUrl("file.txt", { responseContentDisposition: "attachment" })).rejects.toThrow(/not supported|require a freshly minted SAS/u);
+        await expect(storage.getReadUrl("file.txt", { responseContentDisposition: "attachment" })).rejects.toThrow(
+            /not supported|require a freshly minted SAS/u,
+        );
     });
 
     it("mints a User Delegation SAS when given a Microsoft Entra credential", async () => {

@@ -58,6 +58,8 @@ class SftpStorage extends BaseStorage<SftpFile> {
 
     public override checksumTypes: string[] = [];
 
+    public override readonly supportsRange: boolean = true;
+
     protected meta: MetaStorage<SftpFile>;
 
     private readonly connection: SftpStorageOptions["connection"];
@@ -178,15 +180,26 @@ class SftpStorage extends BaseStorage<SftpFile> {
         });
     }
 
-    public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
+    public async get({ id }: FileQuery, options?: OperationOptions & { range?: { end?: number; start: number } }): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
             const file = await this.checkIfExpired(await this.getMeta(id));
             const path = file.path ?? this.keyToPath(file.name || id);
+            const { range } = options ?? {};
 
             const content = await this.runOperation(options, (signal) =>
                 this.run(signal, async (client) => {
                     try {
-                        return (await client.get(path)) as Buffer;
+                        // ssh2 read-stream offsets are byte-accurate and `end` is inclusive, so the
+                        // server streams only the requested slice — no client-side truncation needed.
+                        // ssh2-sftp-client@12 forwards `readStreamOptions` to ssh2's createReadStream
+                        // (which accepts start/end); the bundled @types@9 omit them, hence the cast.
+                        const transferOptions = range
+                            ? ({
+                                  readStreamOptions: { start: range.start, ...(range.end === undefined ? {} : { end: range.end }) },
+                              } as unknown as Parameters<typeof client.get>[2])
+                            : undefined;
+
+                        return (await client.get(path, undefined, transferOptions)) as Buffer;
                     } catch (error) {
                         if (isNotFoundError(error)) {
                             return throwErrorCode(ERRORS.FILE_NOT_FOUND);
@@ -207,7 +220,7 @@ class SftpStorage extends BaseStorage<SftpFile> {
                 modifiedAt: file.modifiedAt,
                 name: file.name,
                 originalName: file.originalName,
-                size: file.size ?? content.length,
+                size: range ? content.length : (file.size ?? content.length),
             };
         });
     }

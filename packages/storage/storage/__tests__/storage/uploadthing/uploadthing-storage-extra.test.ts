@@ -44,11 +44,13 @@ vi.mock(import("uploadthing/server"), () => {
     };
 });
 
-const buildOptions = (overrides: Partial<UploadThingStorageOptions> = {}): UploadThingStorageOptions => { return {
-    ...(storageOptions as UploadThingStorageOptions),
-    token: validToken,
-    ...overrides,
-}; };
+const buildOptions = (overrides: Partial<UploadThingStorageOptions> = {}): UploadThingStorageOptions => {
+    return {
+        ...(storageOptions as UploadThingStorageOptions),
+        token: validToken,
+        ...overrides,
+    };
+};
 
 const bufferToStream = (buffer: Buffer): Readable => Readable.from([buffer]);
 

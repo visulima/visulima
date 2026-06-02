@@ -124,9 +124,10 @@ export interface S3ApiOperations {
     }>;
 
     listObjectsV2: (
-        params: { Bucket: string; ContinuationToken?: string; MaxKeys?: number },
+        params: { Bucket: string; ContinuationToken?: string; Delimiter?: string; MaxKeys?: number; Prefix?: string },
         options?: S3CallOptions,
     ) => Promise<{
+        CommonPrefixes?: { Prefix?: string }[];
         Contents?: { Key?: string; LastModified?: Date }[];
         IsTruncated?: boolean;
         NextContinuationToken?: string;
@@ -157,6 +158,8 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
     public override checksumTypes: string[] = ["md5", "crc32", "crc32c", "sha1", "sha256"];
 
     public override readonly supportsRange: boolean = true;
+
+    public override readonly supportsDelimiter: boolean = true;
 
     protected bucket: string;
 
@@ -607,6 +610,80 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                 return items;
             },
             { limit },
+        );
+    }
+
+    /**
+     * Directory-style listing via S3's native `Delimiter`/`Prefix` — the provider returns the direct
+     * child objects plus the `CommonPrefixes` ("subdirectories") one delimiter level below `prefix`,
+     * so the whole subtree never has to be fetched. Pages until exhausted or `limit` direct files
+     * have been collected; common prefixes are accumulated (deduped) across pages.
+     */
+    public override async listDirectory(
+        options?: OperationOptions & { delimiter: string; limit?: number; prefix?: string },
+    ): Promise<{ files: TFile[]; prefixes: string[] }> {
+        return this.instrumentOperation(
+            "listDirectory",
+            async () => {
+                const s3Api = this.getS3Api();
+                const limit = options?.limit ?? 1000;
+                const pageSize = Math.min(limit, 1000);
+
+                let parameters: { Bucket: string; ContinuationToken?: string; Delimiter?: string; MaxKeys?: number; Prefix?: string } = {
+                    Bucket: this.bucket,
+                    Delimiter: options?.delimiter,
+                    MaxKeys: pageSize,
+                    ...(options?.prefix !== undefined && { Prefix: options.prefix }),
+                };
+
+                const files: TFile[] = [];
+                const prefixes = new Set<string>();
+
+                let truncated = true;
+
+                while (truncated && files.length < limit) {
+                    try {
+                        const response = await this.runOperation(options, (signal) => s3Api.listObjectsV2(parameters, { signal }));
+
+                        for (const { Prefix } of response?.CommonPrefixes || []) {
+                            if (Prefix !== undefined) {
+                                prefixes.add(Prefix);
+                            }
+                        }
+
+                        for (const { Key, LastModified } of response?.Contents || []) {
+                            if (files.length >= limit) {
+                                break;
+                            }
+
+                            if (Key === undefined) {
+                                continue;
+                            }
+
+                            files.push({ id: Key, ...(LastModified && { createdAt: LastModified }) } as TFile);
+                        }
+
+                        truncated = response.IsTruncated || false;
+
+                        if (truncated && response.NextContinuationToken && files.length < limit) {
+                            parameters = {
+                                ...parameters,
+                                ContinuationToken: response.NextContinuationToken,
+                                MaxKeys: Math.min(pageSize, limit - files.length),
+                            };
+                        }
+                    } catch (error) {
+                        const httpError = this.normalizeError(error instanceof Error ? error : new Error(String(error)));
+
+                        await this.onError(httpError);
+
+                        throw error;
+                    }
+                }
+
+                return { files, prefixes: [...prefixes] };
+            },
+            { limit: options?.limit ?? 1000 },
         );
     }
 

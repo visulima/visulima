@@ -21,18 +21,25 @@ export type {
     HookActionType,
     HookEvent,
     ListAllOptions,
+    ListDirectoryResult,
     ListOptions,
     MultipartOptions,
     SignedReadUrlOptions,
     SignedUploadUrlOptions,
+    StorageCapabilities,
+    SyncOptions,
+    SyncProgress,
+    SyncResult,
     TransferOptions,
     TransferProgress,
     TransferResult,
+    UploadControlState,
+    UploadControlToken,
     UploadOptions,
     UploadProgress,
     UploadProgressCallback,
 } from "./files";
-export { Files, transfer } from "./files";
+export { Files, sync, transfer, UploadControl } from "./files";
 export { waitForStorage } from "./handler/utils/storage-utils";
 export { NoOpMetrics, OpenTelemetryMetrics } from "./metrics";
 export { default as DiskStorage } from "./storage/local/disk-storage";
