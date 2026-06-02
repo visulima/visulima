@@ -46,10 +46,17 @@ const SIGNABLE_KEYS_BY_TYPE: Record<string, string[]> = {
     UnsubscribeConfirmation: ["Message", "MessageId", "SubscribeURL", "Timestamp", "Token", "TopicArn", "Type"],
 };
 
+// Only AWS's documented SNS signing hosts: `sns.<region>.amazonaws.com` (and `.cn` for China).
+// A broader `*.amazonaws.com` allowlist would let an attacker host a forged cert on any AWS-owned
+// domain they can write to (e.g. a public S3 bucket), bypassing signature verification, and enable
+// SSRF via the default cert fetcher.
+const SIGNING_CERT_HOST_PATTERN = /^sns\.[a-z0-9-]+\.amazonaws\.com(?:\.cn)?$/;
+const TRAILING_DOT_PATTERN = /\.$/;
+
 /**
- * Validates that a signing-certificate URL points at an AWS-controlled host over HTTPS.
+ * Validates that a signing-certificate URL points at an AWS SNS signing host over HTTPS.
  * @param url The `SigningCertURL` from the SNS message.
- * @returns `true` when the URL is an acceptable AWS certificate endpoint.
+ * @returns `true` when the URL is an acceptable AWS SNS certificate endpoint.
  */
 const isValidSigningCertUrl = (url: string): boolean => {
     let parsed: URL;
@@ -60,7 +67,18 @@ const isValidSigningCertUrl = (url: string): boolean => {
         return false;
     }
 
-    return parsed.protocol === "https:" && (parsed.hostname === "amazonaws.com" || parsed.hostname.endsWith(".amazonaws.com"));
+    if (parsed.protocol !== "https:") {
+        return false;
+    }
+
+    // Reject embedded credentials and explicit ports — both are vectors for slipping past host checks.
+    if (parsed.username !== "" || parsed.password !== "" || parsed.port !== "") {
+        return false;
+    }
+
+    const hostname = parsed.hostname.toLowerCase().replace(TRAILING_DOT_PATTERN, "");
+
+    return SIGNING_CERT_HOST_PATTERN.test(hostname);
 };
 
 /**

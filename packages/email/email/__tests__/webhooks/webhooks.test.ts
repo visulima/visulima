@@ -268,17 +268,34 @@ describe("webhooks", () => {
     });
 
     describe(isValidSigningCertUrl, () => {
-        it("accepts amazonaws.com https URLs", () => {
-            expect.assertions(2);
+        it("accepts documented SNS signing hosts over https", () => {
+            expect.assertions(3);
             expect(isValidSigningCertUrl("https://sns.us-east-1.amazonaws.com/x.pem")).toBe(true);
-            expect(isValidSigningCertUrl("https://amazonaws.com/x.pem")).toBe(true);
+            expect(isValidSigningCertUrl("https://sns.eu-west-2.amazonaws.com/x.pem")).toBe(true);
+            // China partition.
+            expect(isValidSigningCertUrl("https://sns.cn-north-1.amazonaws.com.cn/x.pem")).toBe(true);
         });
 
-        it("rejects non-AWS or non-https URLs", () => {
+        it("rejects non-SNS AWS hosts (signature-bypass / SSRF surface)", () => {
             expect.assertions(3);
+            expect(isValidSigningCertUrl("https://amazonaws.com/x.pem")).toBe(false);
+            expect(isValidSigningCertUrl("https://attacker.s3.amazonaws.com/x.pem")).toBe(false);
+            expect(isValidSigningCertUrl("https://sns.us-east-1.amazonaws.com.evil.com/x.pem")).toBe(false);
+        });
+
+        it("rejects non-https, embedded credentials, and explicit ports", () => {
+            expect.assertions(4);
+
+            // Built via the URL API so no literal credential string ends up in source.
+            const withCredentials = new URL("https://sns.us-east-1.amazonaws.com/x.pem");
+
+            withCredentials.username = "spoofed";
+            withCredentials.password = "secret";
+
             expect(isValidSigningCertUrl("http://sns.us-east-1.amazonaws.com/x.pem")).toBe(false);
             expect(isValidSigningCertUrl("https://evil.com/x.pem")).toBe(false);
-            expect(isValidSigningCertUrl("https://amazonaws.com.evil.com/x.pem")).toBe(false);
+            expect(isValidSigningCertUrl(withCredentials.toString())).toBe(false);
+            expect(isValidSigningCertUrl("https://sns.us-east-1.amazonaws.com:8443/x.pem")).toBe(false);
         });
     });
 });
