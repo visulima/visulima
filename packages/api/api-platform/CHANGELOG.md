@@ -1,3 +1,21 @@
+## @visulima/api-platform [4.0.0-alpha.28](https://github.com/visulima/visulima/compare/@visulima/api-platform@4.0.0-alpha.27...@visulima/api-platform@4.0.0-alpha.28) (2026-06-02)
+
+### Miscellaneous Chores
+
+* apply eslint + prettier autofixes across packages ([c1bb784](https://github.com/visulima/visulima/commit/c1bb7848a0d93d0dfe2960c77e3cda22239c79a0))
+
+### Tests
+
+* **api-platform:** cover connect middleware, swagger handlers, next routes/webpack, cli list, and zod date schemas ([fe550fd](https://github.com/visulima/visulima/commit/fe550fd253a04d12c0770cb13d4c9d16331023f6))
+
+
+### Dependencies
+
+* **@visulima/connect:** upgraded to 4.0.0-alpha.29
+* **@visulima/fs:** upgraded to 5.0.0-alpha.29
+* **@visulima/jsdoc-open-api:** upgraded to 3.0.0-alpha.27
+* **@visulima/crud:** upgraded to 3.0.0-alpha.16
+
 ## @visulima/api-platform [4.0.0-alpha.27](https://github.com/visulima/visulima/compare/@visulima/api-platform@4.0.0-alpha.26...@visulima/api-platform@4.0.0-alpha.27) (2026-05-27)
 
 ### Bug Fixes

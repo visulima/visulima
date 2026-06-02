@@ -1,6 +1,6 @@
 {
     "name": "@visulima/api-platform",
-    "version": "4.0.0-alpha.27",
+    "version": "4.0.0-alpha.28",
     "description": "Visulima API platform is a set of tools to build and consume web APIs",
     "keywords": [
         "accepts",
@@ -174,9 +174,9 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/connect": "4.0.0-alpha.28",
-        "@visulima/fs": "5.0.0-alpha.28",
-        "@visulima/jsdoc-open-api": "3.0.0-alpha.26",
+        "@visulima/connect": "4.0.0-alpha.29",
+        "@visulima/fs": "5.0.0-alpha.29",
+        "@visulima/jsdoc-open-api": "3.0.0-alpha.27",
         "@visulima/path": "3.0.0-alpha.11",
         "accepts": "catalog:prod",
         "debug": "catalog:prod",
@@ -214,7 +214,7 @@
         "@types/react-dom": "catalog:types",
         "@types/swagger-ui-react": "^5.18.0",
         "@types/webpack": "catalog:types",
-        "@visulima/crud": "3.0.0-alpha.15",
+        "@visulima/crud": "3.0.0-alpha.16",
         "@visulima/packem": "catalog:dev",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
@@ -263,7 +263,7 @@
     "peerDependencies": {
         "@hapi/hapi": "catalog:peer",
         "@koa/router": "catalog:backend",
-        "@visulima/crud": "3.0.0-alpha.15",
+        "@visulima/crud": "3.0.0-alpha.16",
         "chalk": "catalog:peer",
         "commander": "catalog:peer",
         "cors": "catalog:peer",
