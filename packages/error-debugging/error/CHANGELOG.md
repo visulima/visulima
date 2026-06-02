@@ -1,3 +1,17 @@
+## @visulima/error [6.0.0-alpha.31](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.30...@visulima/error@6.0.0-alpha.31) (2026-06-02)
+
+### Bug Fixes
+
+* **tests:** revert unsafe vitest autofixes from the lint sweep ([378f27c](https://github.com/visulima/visulima/commit/378f27caa370f1d3188aef2ed36d46839abc88c4))
+
+### Miscellaneous Chores
+
+* apply eslint + prettier autofixes across packages ([c1bb784](https://github.com/visulima/visulima/commit/c1bb7848a0d93d0dfe2960c77e3cda22239c79a0))
+
+### Tests
+
+* **error:** cover ai finder, solution finders, stacktrace and code-frame branches ([08fdd54](https://github.com/visulima/visulima/commit/08fdd549855a04f9f1aa9fd9c555cefb401b2297))
+
 ## @visulima/error [6.0.0-alpha.30](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.29...@visulima/error@6.0.0-alpha.30) (2026-05-27)
 
 ### Bug Fixes
