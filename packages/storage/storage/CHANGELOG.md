@@ -1,3 +1,27 @@
+## @visulima/storage [1.0.0-alpha.33](https://github.com/visulima/visulima/compare/@visulima/storage@1.0.0-alpha.32...@visulima/storage@1.0.0-alpha.33) (2026-06-02)
+
+### Features
+
+* **storage:** add sync, read-only, delimiter and range support ([20258fd](https://github.com/visulima/visulima/commit/20258fdf4be3ea9edce03a9c788bb492a2781aa5))
+
+### Bug Fixes
+
+* **storage:** reject unenforceable URL signing options and harden path traversal ([#670](https://github.com/visulima/visulima/issues/670)) ([8711c03](https://github.com/visulima/visulima/commit/8711c0364afb71d3c76cf6bba51a63cb6f0e0ddd))
+* **tests:** revert unsafe vitest autofixes from the lint sweep ([378f27c](https://github.com/visulima/visulima/commit/378f27caa370f1d3188aef2ed36d46839abc88c4))
+
+### Miscellaneous Chores
+
+* apply eslint + prettier autofixes across packages ([c1bb784](https://github.com/visulima/visulima/commit/c1bb7848a0d93d0dfe2960c77e3cda22239c79a0))
+
+### Tests
+
+* improve coverage across packages ([91bd6d3](https://github.com/visulima/visulima/commit/91bd6d3b61736e3c8bd1fc59b0b5955f76a5d323))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.29
+
 ## @visulima/storage [1.0.0-alpha.32](https://github.com/visulima/visulima/compare/@visulima/storage@1.0.0-alpha.31...@visulima/storage@1.0.0-alpha.32) (2026-05-27)
 
 ### Features
