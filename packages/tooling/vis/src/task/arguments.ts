@@ -17,10 +17,18 @@ export type TaskArgumentValue = boolean | number | string;
 
 /** A single declared argument for a task target. */
 export interface TaskArgument {
-    /** Short single-character alias (e.g. `r` for `--reporter`, used as `-r`). */
+    /**
+     * Short single-character alias (e.g. `r` for `--reporter`, used as `-r`).
+     * Must be exactly one character — enforced at run time by
+     * {@link validateArgumentSchema}.
+     */
     alias?: string;
 
-    /** Allowed values when {@link TaskArgument.type} is `"enum"`. */
+    /**
+     * Allowed values when {@link TaskArgument.type} is `"enum"`. Must be
+     * non-empty (and is required) for `enum` — enforced at run time by
+     * {@link validateArgumentSchema}.
+     */
     choices?: string[];
 
     /** Value applied when the argument is omitted. Skips the required check. */
@@ -29,7 +37,11 @@ export interface TaskArgument {
     /** One-line help text surfaced by per-task `--help`. */
     description?: string;
 
-    /** Canonical name, without the leading `--` (kebab-case by convention). */
+    /**
+     * Canonical name, without the leading `--` (kebab-case by convention).
+     * Must start with a letter and contain only letters, digits, `-`, `_` —
+     * enforced at run time by {@link validateArgumentSchema}.
+     */
     name: string;
 
     /**
@@ -153,6 +165,58 @@ const coerce = (
     }
 
     return { value: raw };
+};
+
+/**
+ * Validate the declared schema *itself* (not user input). The generated JSON
+ * schema can't express these conditional invariants, so a config can be
+ * schema-valid yet wrong; surfacing the problems here makes `vis run` fail
+ * fast with a clear message instead of misbehaving. Returns the problems;
+ * empty when the schema is well-formed.
+ */
+export const validateArgumentSchema = (schema: TaskArgument[]): string[] => {
+    const problems: string[] = [];
+    const seen = new Set<string>();
+
+    for (const argument of schema) {
+        const label = argument.name || "<unnamed>";
+
+        if (!argument.name || !/^[a-zA-Z][\w-]*$/u.test(argument.name)) {
+            problems.push(`argument name "${label}" is empty or invalid (start with a letter; use letters, digits, '-', '_')`);
+        }
+
+        if (seen.has(argument.name)) {
+            problems.push(`duplicate argument name "${label}"`);
+        }
+
+        seen.add(argument.name);
+
+        if (argument.alias !== undefined && argument.alias.length !== 1) {
+            problems.push(`argument "${label}" alias "${argument.alias}" must be a single character`);
+        }
+
+        const type = argument.type ?? "string";
+
+        if (type === "enum" && (argument.choices === undefined || argument.choices.length === 0)) {
+            problems.push(`argument "${label}" has type "enum" but declares no choices`);
+        }
+
+        if (argument.default !== undefined) {
+            const defaultType = typeof argument.default;
+            const matches
+                = (type === "number" && defaultType === "number")
+                    || (type === "boolean" && defaultType === "boolean")
+                    || ((type === "string" || type === "enum") && defaultType === "string");
+
+            if (!matches) {
+                problems.push(`argument "${label}" default ${JSON.stringify(argument.default)} does not match type "${type}"`);
+            } else if (type === "enum" && argument.choices && !argument.choices.includes(argument.default as string)) {
+                problems.push(`argument "${label}" default "${String(argument.default)}" is not one of its choices`);
+            }
+        }
+    }
+
+    return problems;
 };
 
 /**

@@ -696,14 +696,14 @@
             "properties": {
                 "alias": {
                     "type": "string",
-                    "description": "Short single-character alias (e.g. `r` for `--reporter`, used as `-r`)."
+                    "description": "Short single-character alias (e.g. `r` for `--reporter`, used as `-r`). Must be exactly one character — enforced at run time by  {@link  validateArgumentSchema } ."
                 },
                 "choices": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     },
-                    "description": "Allowed values when  {@link  TaskArgument.type }  is `\"enum\"`."
+                    "description": "Allowed values when  {@link  TaskArgument.type }  is `\"enum\"`. Must be non-empty (and is required) for `enum` — enforced at run time by  {@link  validateArgumentSchema } ."
                 },
                 "default": {
                     "$ref": "#/$defs/TaskArgumentValue",
@@ -715,7 +715,7 @@
                 },
                 "name": {
                     "type": "string",
-                    "description": "Canonical name, without the leading `--` (kebab-case by convention)."
+                    "description": "Canonical name, without the leading `--` (kebab-case by convention). Must start with a letter and contain only letters, digits, `-`, `_` — enforced at run time by  {@link  validateArgumentSchema } ."
                 },
                 "positional": {
                     "type": "boolean",
@@ -868,7 +868,7 @@
                     "items": {
                         "type": "string"
                     },
-                    "description": "Arguments passed to the per-target shell/interpreter before the command string. Defaults to `[\"-c\"]` (POSIX shells, pwsh). Set this to run the command under an interpreter that uses a different flag — e.g. `shell: \"node\", shellArgs: [\"-e\"]` runs the command as inline JS (\"script mode\"), or `shellArgs: [\"-lc\"]` for a login shell. Only applies when `shell`/`unixShell`/`windowsShell` resolves to a custom shell."
+                    "description": "Arguments passed to the per-target shell/interpreter before the command string. Defaults to `[\"-c\"]` (POSIX shells, pwsh). Set this to run the command under an interpreter that uses a different flag — e.g. `shell: \"node\", shellArgs: [\"-e\"]` runs the command as inline JS (\"script mode\"), or `shellArgs: [\"-lc\"]` for a login shell. Only applies when `shell`/`unixShell`/`windowsShell` resolves to a custom shell.\n\nMust be non-empty when set — an empty array would drop the interpreter flag entirely, so the runtime falls back to `-c` defensively."
                 },
                 "strictEnv": {
                     "type": "boolean",

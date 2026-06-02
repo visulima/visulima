@@ -6,7 +6,7 @@
  * decision is unit-testable in isolation from the 2k-line run handler.
  */
 import type { TaskArgument } from "../../task/arguments";
-import { parseTaskArguments, renderTaskArgumentsHelp, taskArgumentEnv } from "../../task/arguments";
+import { parseTaskArguments, renderTaskArgumentsHelp, taskArgumentEnv, validateArgumentSchema } from "../../task/arguments";
 
 /** Outcome of resolving forwarded args against a target's argument schema. */
 export type TaskArgumentResolution
@@ -30,6 +30,18 @@ export const resolveTaskArguments = (
 ): TaskArgumentResolution => {
     if (!schema || schema.length === 0) {
         return { env: {}, kind: "ok" };
+    }
+
+    // Reject a malformed schema (bad alias/name, enum without choices,
+    // mismatched default) before it can misbehave at runtime.
+    const schemaProblems = validateArgumentSchema(schema);
+
+    if (schemaProblems.length > 0) {
+        return {
+            errors: schemaProblems.map((problem) => `invalid \`arguments\` schema for "${target}": ${problem}`),
+            help: renderTaskArgumentsHelp(target, description, schema),
+            kind: "invalid",
+        };
     }
 
     if (forwardedArgs.includes("--help") || forwardedArgs.includes("-h")) {

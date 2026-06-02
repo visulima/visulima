@@ -1,7 +1,13 @@
 import { describe, expect, it } from "vitest";
 
 import type { TaskArgument } from "../../src/task/arguments";
-import { parseTaskArguments, renderTaskArgumentsHelp, taskArgumentEnv, taskArgumentEnvName } from "../../src/task/arguments";
+import {
+    parseTaskArguments,
+    renderTaskArgumentsHelp,
+    taskArgumentEnv,
+    taskArgumentEnvName,
+    validateArgumentSchema,
+} from "../../src/task/arguments";
 
 describe(parseTaskArguments, () => {
     it("parses --flag=value and --flag value forms", () => {
@@ -114,6 +120,51 @@ describe(parseTaskArguments, () => {
 
         // `--bail` is not declared; it must not error (the command still gets it).
         expect(parseTaskArguments(schema, ["--reporter=dot", "--bail"]).errors).toStrictEqual([]);
+    });
+});
+
+describe(validateArgumentSchema, () => {
+    it("accepts a well-formed schema", () => {
+        expect.assertions(1);
+
+        const schema: TaskArgument[] = [
+            { alias: "r", name: "reporter" },
+            { choices: ["dev", "prod"], default: "dev", name: "mode", type: "enum" },
+            { default: 0, name: "retries", type: "number" },
+        ];
+
+        expect(validateArgumentSchema(schema)).toStrictEqual([]);
+    });
+
+    it("flags a multi-character alias", () => {
+        expect.assertions(1);
+
+        expect(validateArgumentSchema([{ alias: "rep", name: "reporter" }])).toStrictEqual([
+            `argument "reporter" alias "rep" must be a single character`,
+        ]);
+    });
+
+    it("flags an enum without choices", () => {
+        expect.assertions(1);
+
+        expect(validateArgumentSchema([{ name: "mode", type: "enum" }])).toStrictEqual([
+            `argument "mode" has type "enum" but declares no choices`,
+        ]);
+    });
+
+    it("flags a default that does not match the type", () => {
+        expect.assertions(1);
+
+        expect(validateArgumentSchema([{ default: "abc", name: "retries", type: "number" }])).toStrictEqual([
+            `argument "retries" default "abc" does not match type "number"`,
+        ]);
+    });
+
+    it("flags an empty / invalid name and duplicates", () => {
+        expect.assertions(2);
+
+        expect(validateArgumentSchema([{ name: "" }])[0]).toContain("is empty or invalid");
+        expect(validateArgumentSchema([{ name: "dup" }, { name: "dup" }])).toContain(`duplicate argument name "dup"`);
     });
 });
 

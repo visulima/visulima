@@ -214,6 +214,9 @@ export interface VisTargetOptions {
      * `shell: "node", shellArgs: ["-e"]` runs the command as inline JS
      * ("script mode"), or `shellArgs: ["-lc"]` for a login shell. Only applies
      * when `shell`/`unixShell`/`windowsShell` resolves to a custom shell.
+     *
+     * Must be non-empty when set — an empty array would drop the interpreter
+     * flag entirely, so the runtime falls back to `-c` defensively.
      */
     shellArgs?: string[];
 

@@ -851,7 +851,10 @@ const createConcurrentExecutor = (deps: ExecutorDependencies) => {
         // into a file lookup), so fall back to `-c`.
         const shellArgs = visOptions?.shellArgs;
         const shellInvokeArgs = shellArgs && shellArgs.length > 0 ? shellArgs.join(" ") : "-c";
-        const command = customShell ? `${customShell} ${shellInvokeArgs} ${singleQuoteEscape(commandWithAffected)}` : commandWithAffected;
+        // `shellQuote` is platform-aware (POSIX single-quote / cmd.exe
+        // double-quote) — `singleQuoteEscape` would leave literal `'…'` around
+        // the command under cmd.exe, breaking e.g. `node -e` on Windows.
+        const command = customShell ? `${customShell} ${shellInvokeArgs} ${shellQuote(commandWithAffected)}` : commandWithAffected;
 
         const envFileVars = visOptions?.envFile ? loadEnvFileCached(envFileCache, resolvedCwd, visOptions.envFile) : undefined;
 
@@ -1443,14 +1446,37 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
     const ptyFlag = options.pty === true;
 
     // First-class task arguments: validate the forwarded args against the
-    // invoked target's declared schema (taken from the first project that
-    // declares one — a target's argument contract is the same wherever it
-    // runs), surface per-task `--help`, and expose validated values to the
-    // command as VIS_ARG_* env vars. See `./task-arguments`.
-    const argumentSchema = projectsWithTarget
-        .map((projectName) => projectTargetIndex.get(projectName)?.arguments)
-        .find((schema): schema is NonNullable<typeof schema> => Array.isArray(schema) && schema.length > 0);
-    const argumentDescription = projectTargetIndex.get(projectsWithTarget[0] as string)?.description;
+    // invoked target's declared schema, surface per-task `--help`, and expose
+    // validated values to the command as VIS_ARG_* env vars. See
+    // `./task-arguments`. Because the same args + VIS_ARG_* reach every
+    // selected project, all of them must agree on the contract — fail fast if
+    // two projects expose this target with different `arguments` schemas
+    // rather than validate one project's invocation against another's.
+    const schemasByProject = projectsWithTarget
+        .map((projectName) => { return { project: projectName, schema: projectTargetIndex.get(projectName)?.arguments }; })
+        .filter((entry): entry is { project: string; schema: NonNullable<VisTargetConfiguration["arguments"]> } => Array.isArray(entry.schema) && entry.schema.length > 0);
+
+    const distinctSchemas = new Map<string, string[]>();
+
+    for (const { project, schema } of schemasByProject) {
+        const key = JSON.stringify(schema);
+        const projects = distinctSchemas.get(key) ?? [];
+
+        projects.push(project);
+        distinctSchemas.set(key, projects);
+    }
+
+    if (distinctSchemas.size > 1) {
+        const groups = [...distinctSchemas.values()].map((projects) => projects.join(", ")).join(" | ");
+
+        throw new Error(
+            `Target "${target}" declares conflicting \`arguments\` schemas across projects (${groups}). `
+            + `Run a single project (e.g. \`vis run ${schemasByProject[0]?.project}:${target}\` or --project=<name>) so the argument contract is unambiguous.`,
+        );
+    }
+
+    const argumentSchema = schemasByProject[0]?.schema;
+    const argumentDescription = projectTargetIndex.get(schemasByProject[0]?.project ?? (projectsWithTarget[0] as string))?.description;
     const argumentResolution = resolveTaskArguments(target, argumentDescription, argumentSchema, forwardedArgs);
 
     if (argumentResolution.kind === "help") {

@@ -25,6 +25,16 @@ describe(resolveTaskArguments, () => {
         expect(result.kind === "help" && result.text).toContain("Usage: vis run test");
     });
 
+    it("rejects a malformed schema before parsing user args", () => {
+        expect.assertions(2);
+
+        // enum without choices — a schema-valid but runtime-invalid config.
+        const result = resolveTaskArguments("test", undefined, [{ name: "mode", type: "enum" }], ["--mode=x"]);
+
+        expect(result.kind).toBe("invalid");
+        expect(result.kind === "invalid" && result.errors[0]).toContain("invalid `arguments` schema");
+    });
+
     it("reports validation errors with help for invalid input", () => {
         expect.assertions(3);
 
