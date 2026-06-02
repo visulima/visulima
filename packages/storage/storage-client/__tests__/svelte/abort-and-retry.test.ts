@@ -14,26 +14,28 @@ type FakeAdapter = {
 
 const lastAdapter: { current: FakeAdapter | undefined } = { current: undefined };
 
-vi.mock("../../src/core/multipart-adapter", () => ({
-    createMultipartAdapter: vi.fn(() => {
-        const adapter: FakeAdapter = {
-            abort: vi.fn(),
-            abortBatch: vi.fn(),
-            abortItem: vi.fn(),
-            clear: vi.fn(),
-            upload: vi.fn(),
-            uploadBatch: vi.fn(),
-            uploader: {
-                retryBatch: vi.fn(),
-                retryItem: vi.fn(),
-            },
-        };
+vi.mock("../../src/core/multipart-adapter", () => {
+    return {
+        createMultipartAdapter: vi.fn(() => {
+            const adapter: FakeAdapter = {
+                abort: vi.fn(),
+                abortBatch: vi.fn(),
+                abortItem: vi.fn(),
+                clear: vi.fn(),
+                upload: vi.fn(),
+                uploadBatch: vi.fn(),
+                uploader: {
+                    retryBatch: vi.fn(),
+                    retryItem: vi.fn(),
+                },
+            };
 
-        lastAdapter.current = adapter;
+            lastAdapter.current = adapter;
 
-        return adapter;
-    }),
-}));
+            return adapter;
+        }),
+    };
+});
 
 const { createAbortAll } = await import("../../src/svelte/create-abort-all");
 const { createAbortBatch } = await import("../../src/svelte/create-abort-batch");
