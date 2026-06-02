@@ -125,6 +125,49 @@ describe(createTaskGraph, () => {
         expect(graph.dependencies["app:build"]).toContain("lib-b:build");
     });
 
+    it("does not create a build-order cycle from a peer-dependency back-edge (vite-task#411)", () => {
+        expect.assertions(3);
+
+        // app → builder via dependencies; builder → app via peerDependencies.
+        // The peer back-edge must NOT become a build-order edge, else the two
+        // `^build` targets would form a false cycle (app→builder→app), which
+        // is exactly what vite-task#411 reported. pnpm/turbo exclude peer deps
+        // from build order; so do we.
+        const peerWorkspace: WorkspaceConfiguration = {
+            projects: {
+                app: { root: "packages/app", targets: { build: { command: "tsc", dependsOn: ["^build"] } } },
+                builder: { root: "packages/builder", targets: { build: { command: "tsc", dependsOn: ["^build"] } } },
+            },
+        };
+
+        const peerGraph: ProjectGraph = {
+            dependencies: {
+                app: [{ source: "app", target: "builder", type: "static" }],
+                builder: [{ source: "builder", target: "app", type: "peerDependency" }],
+            },
+            nodes: {
+                app: { data: peerWorkspace.projects["app"]!, name: "app", type: "library" },
+                builder: { data: peerWorkspace.projects["builder"]!, name: "builder", type: "library" },
+            },
+        };
+
+        const appBuild: Task = {
+            id: "app:build",
+            outputs: [],
+            overrides: {},
+            target: { project: "app", target: "build" },
+        };
+
+        const graph = createTaskGraph([appBuild], { projectGraph: peerGraph, workspace: peerWorkspace });
+
+        // app:build pulls in builder:build (the real dependencies edge)…
+        expect(graph.dependencies["app:build"]).toContain("builder:build");
+        // …but builder:build must NOT depend back on app:build (peer skipped)…
+        expect(graph.dependencies["builder:build"] ?? []).not.toContain("app:build");
+        // …so app:build is not its own transitive dependency — no cycle.
+        expect(graph.dependencies["app:build"]).not.toContain("app:build");
+    });
+
     it("should handle same-project dependencies", () => {
         expect.assertions(1);
 
