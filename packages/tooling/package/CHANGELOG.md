@@ -1,3 +1,18 @@
+## @visulima/package [5.0.0-alpha.28](https://github.com/visulima/visulima/compare/@visulima/package@5.0.0-alpha.27...@visulima/package@5.0.0-alpha.28) (2026-06-02)
+
+### Miscellaneous Chores
+
+* apply eslint + prettier autofixes across packages ([c1bb784](https://github.com/visulima/visulima/commit/c1bb7848a0d93d0dfe2960c77e3cda22239c79a0))
+
+### Tests
+
+* **package:** cover confirm prompt, lockfile parsers, package-json/manager, monorepo, and pnpm workspace branches ([7916131](https://github.com/visulima/visulima/commit/7916131a2206a8ebefb0817d7ae0a340fdee2ba0))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.29
+
 ## @visulima/package [5.0.0-alpha.27](https://github.com/visulima/visulima/compare/@visulima/package@5.0.0-alpha.26...@visulima/package@5.0.0-alpha.27) (2026-05-27)
 
 ### Bug Fixes
