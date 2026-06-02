@@ -1574,6 +1574,12 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
     // stripped from the graph again after preflight injection so the
     // regular runner doesn't execute them — they run via `runPersistentTasks`.
     let taskGraph = createTaskGraph([...initialTasks, ...persistentTasks], {
+        onCycleBroken: (cycle) => {
+            // A dependency cycle that runs only through devDependency edges
+            // is tolerated (pnpm does the same) — we break it and warn rather
+            // than deadlocking. Cycles with a real (static) edge stay fatal.
+            logger.warn(`Ignoring dev-only dependency cycle (build order is ambiguous): ${cycle.join(" → ")}`);
+        },
         projectGraph,
         targetDefaults: config.tasks as unknown as Record<string, Partial<TargetConfiguration>>,
         workspace,

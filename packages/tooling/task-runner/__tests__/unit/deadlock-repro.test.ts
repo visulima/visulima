@@ -6,10 +6,12 @@ import { describe, expect, it } from "vitest";
 
 import { Cache } from "../../src/cache";
 import { EmptyLifeCycle } from "../../src/life-cycle";
+import { createTaskGraph } from "../../src/task-graph";
+import { findCycle } from "../../src/task-graph-utils";
 import { InProcessTaskHasher } from "../../src/task-hasher";
 import { TaskOrchestrator } from "../../src/task-orchestrator";
 import { TaskScheduler } from "../../src/task-scheduler";
-import type { ProjectGraph, Task, TaskExecutor, TaskGraph } from "../../src/types";
+import type { DependencyType, ProjectGraph, Task, TaskExecutor, TaskGraph, WorkspaceConfiguration } from "../../src/types";
 
 const createTemporaryDirectory = async (): Promise<string> => {
     // eslint-disable-next-line sonarjs/pseudo-random
@@ -190,6 +192,116 @@ describe("orphan-dep tolerance + deadlock diagnostics", () => {
         } finally {
             await rm(workspaceRoot, { force: true, recursive: true });
         }
+    });
+});
+
+describe("dev-dependency cycles via --filter (#411)", () => {
+    const makeWorkspace = (): WorkspaceConfiguration => {
+        return {
+            projects: {
+                "pkg-a": { root: "packages/pkg-a", targets: { build: { command: "tsc", dependsOn: ["^build"] } } },
+                "pkg-b": { root: "packages/pkg-b", targets: { build: { command: "tsc", dependsOn: ["^build"] } } },
+            },
+        };
+    };
+
+    // Two siblings that depend on each other in the project graph, with the
+    // edge kinds under test. Mirrors `--filter pkg-a pkg-b` narrowing the run
+    // to exactly the two packages that form the cycle.
+    const makeProjectGraph = (aToB: DependencyType, bToA: DependencyType): ProjectGraph => {
+        return {
+            dependencies: {
+                "pkg-a": [{ source: "pkg-a", target: "pkg-b", type: aToB }],
+                "pkg-b": [{ source: "pkg-b", target: "pkg-a", type: bToA }],
+            },
+            nodes: {
+                "pkg-a": { data: { root: "packages/pkg-a" }, name: "pkg-a", type: "library" },
+                "pkg-b": { data: { root: "packages/pkg-b" }, name: "pkg-b", type: "library" },
+            },
+        };
+    };
+
+    const runGraph = async (taskGraph: TaskGraph, projectGraph: ProjectGraph) => {
+        const workspaceRoot = await createTemporaryDirectory();
+
+        try {
+            const projects = { "pkg-a": { root: "packages/pkg-a" }, "pkg-b": { root: "packages/pkg-b" } };
+            const executor: TaskExecutor = async () => {
+                return { code: 0, terminalOutput: "ok" };
+            };
+            const orchestrator = new TaskOrchestrator({
+                cache: new Cache({ workspaceRoot }),
+                lifeCycle: new EmptyLifeCycle(),
+                scheduler: new TaskScheduler(taskGraph, projectGraph, 2),
+                skipCache: true,
+                taskExecutor: executor,
+                taskGraph,
+                taskHasher: new InProcessTaskHasher({ projects, workspaceRoot }),
+                workspaceRoot,
+            });
+
+            return await orchestrator.run();
+        } finally {
+            await rm(workspaceRoot, { force: true, recursive: true });
+        }
+    };
+
+    it("breaks a dev-only cycle between filtered siblings instead of deadlocking", async () => {
+        expect.assertions(4);
+
+        const projectGraph = makeProjectGraph("devDependency", "devDependency");
+        const broken: string[][] = [];
+
+        const taskGraph = createTaskGraph([makeTask("pkg-a"), makeTask("pkg-b")], {
+            onCycleBroken: (cycle) => broken.push(cycle),
+            projectGraph,
+            workspace: makeWorkspace(),
+        });
+
+        // The dev-only cycle is broken at graph-construction time...
+        expect(findCycle(taskGraph)).toBeUndefined();
+        expect(broken).toHaveLength(1);
+
+        // ...so the orchestrator runs both tasks to completion rather than
+        // throwing "Circular dependency found".
+        const results = await runGraph(taskGraph, projectGraph);
+
+        expect(results.get("pkg-a:build")?.status).toBe("success");
+        expect(results.get("pkg-b:build")?.status).toBe("success");
+    });
+
+    it("leaves a static cycle intact so the orchestrator still reports it fatally", async () => {
+        expect.assertions(3);
+
+        const projectGraph = makeProjectGraph("static", "static");
+        const broken: string[][] = [];
+
+        const taskGraph = createTaskGraph([makeTask("pkg-a"), makeTask("pkg-b")], {
+            onCycleBroken: (cycle) => broken.push(cycle),
+            projectGraph,
+            workspace: makeWorkspace(),
+        });
+
+        // A real (static) cycle must not be silently broken.
+        expect(broken).toHaveLength(0);
+        expect(findCycle(taskGraph)).toBeDefined();
+
+        await expect(runGraph(taskGraph, projectGraph)).rejects.toThrow(/Circular dependency found/);
+    });
+
+    it("keeps a cycle fatal when at least one edge is a static dependency", () => {
+        expect.assertions(2);
+
+        const broken: string[][] = [];
+
+        const taskGraph = createTaskGraph([makeTask("pkg-a"), makeTask("pkg-b")], {
+            onCycleBroken: (cycle) => broken.push(cycle),
+            projectGraph: makeProjectGraph("devDependency", "static"),
+            workspace: makeWorkspace(),
+        });
+
+        expect(broken).toHaveLength(0);
+        expect(findCycle(taskGraph)).toBeDefined();
     });
 });
 
