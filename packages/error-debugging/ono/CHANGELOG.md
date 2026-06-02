@@ -1,3 +1,10 @@
+## @visulima/ono [2.0.0-alpha.34](https://github.com/visulima/visulima/compare/@visulima/ono@2.0.0-alpha.33...@visulima/ono@2.0.0-alpha.34) (2026-06-02)
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.31
+
 ## @visulima/ono [2.0.0-alpha.33](https://github.com/visulima/visulima/compare/@visulima/ono@2.0.0-alpha.32...@visulima/ono@2.0.0-alpha.33) (2026-05-27)
 
 ### Bug Fixes
