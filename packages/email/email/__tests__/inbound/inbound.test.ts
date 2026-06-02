@@ -59,6 +59,22 @@ describe("inbound", () => {
             expect(extractReply(body)).toBe("My answer is yes.");
         });
 
+        it("strips an Outlook forwarded header block", () => {
+            expect.assertions(1);
+
+            const body = ["Forwarding this.", "", "From: boss@x.com", "Sent: Monday", "To: me@x.com", "Subject: Re: hi", "old content"].join("\n");
+
+            expect(extractReply(body)).toBe("Forwarding this.");
+        });
+
+        it("keeps prose that merely starts with 'From:'", () => {
+            expect.assertions(1);
+
+            const body = ["From: my perspective this works great.", "", "Thanks!"].join("\n");
+
+            expect(extractReply(body)).toBe("From: my perspective this works great.\n\nThanks!");
+        });
+
         it("strips a signature when requested", () => {
             expect.assertions(2);
 

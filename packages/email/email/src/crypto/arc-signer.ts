@@ -240,6 +240,11 @@ const loadPrivateKey = async (privateKey: string, passphrase?: string) => {
  * Adds `ARC-Authentication-Results`, `ARC-Message-Signature`, and `ARC-Seal` headers. Use this when
  * your service forwards mail and wants downstream receivers to trust the authentication results you
  * observed.
+ *
+ * IMPORTANT: the body hash (`bh=`) is computed over `text` + "\n\n" + `html` with relaxed
+ * canonicalization — the same simplification as the DKIM signer. For a third-party ARC verifier to
+ * accept the seal, the body actually transmitted on the wire must canonicalize to this same value, so
+ * apply ARC at the point where the MIME body is finalized (or feed in the exact rendered body).
  * @param email The email to seal.
  * @param options The seal options. See {@link ArcSealOptions}.
  * @returns The email with the ARC header set added, and the raw {@link ArcHeaderSet}.

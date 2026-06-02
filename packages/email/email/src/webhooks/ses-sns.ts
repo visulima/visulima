@@ -133,8 +133,8 @@ const buildStringToSign = (message: SnsMessage): string | undefined => {
  * Verifies the RSA signature on an Amazon SNS message (used to wrap AWS SES events).
  *
  * Signature version `1` uses SHA1, version `2` uses SHA256. The signing certificate is fetched from
- * `SigningCertURL` (validated to be an `*.amazonaws.com` HTTPS endpoint) unless a custom
- * {@link CertificateResolver} is supplied.
+ * `SigningCertURL` (validated to be an `sns.&lt;region>.amazonaws.com` HTTPS endpoint with no userinfo
+ * or explicit port) unless a custom {@link CertificateResolver} is supplied.
  * @param message The parsed SNS message envelope.
  * @param options Optional overrides. See {@link SnsVerifyOptions}.
  * @returns The verification result.

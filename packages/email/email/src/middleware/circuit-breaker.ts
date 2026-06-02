@@ -76,6 +76,10 @@ export const circuitBreakerMiddleware = (options: CircuitBreakerMiddlewareOption
             return openError();
         }
 
+        // Track whether THIS request is the half-open probe, so a concurrent closed-state request's
+        // `finally` can't clear the flag out from under an in-flight probe.
+        let isProbe = false;
+
         if (state === "half-open") {
             // Allow only one concurrent trial; everyone else fails fast until it resolves.
             if (probing) {
@@ -83,6 +87,7 @@ export const circuitBreakerMiddleware = (options: CircuitBreakerMiddlewareOption
             }
 
             probing = true;
+            isProbe = true;
         }
 
         let result;
@@ -90,7 +95,9 @@ export const circuitBreakerMiddleware = (options: CircuitBreakerMiddlewareOption
         try {
             result = await next(emailOptions);
         } finally {
-            probing = false;
+            if (isProbe) {
+                probing = false;
+            }
         }
 
         if (result.success) {
