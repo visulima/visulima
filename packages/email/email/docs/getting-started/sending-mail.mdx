@@ -488,7 +488,70 @@ const userEmail = normalizeEmailAliases("user.name+tag@gmail.com");
 - **Gmail**: Removes dots (`.`) and plus aliases (`+`)
 - **Yahoo, Outlook, Hotmail, Live, MSN, iCloud, ProtonMail, Zoho, FastMail, Mail.com, GMX**: Removes plus aliases (`+`) only, dots are preserved
 
+## Batch Sending with Personalization
+
+`mail.sendBatch(base, personalizations, options?)` sends one message per personalization, built from a shared base message. Each personalization overrides the recipients (and optionally `subject`, `cc`, `bcc`, `replyTo`, and `headers`) on top of the base. Results stream back as receipts, exactly like `sendMany`.
+
+```typescript
+import { createMail } from "@visulima/email";
+
+const mail = createMail(provider);
+
+for await (const receipt of mail.sendBatch({ from: { email: "news@example.com" }, subject: "Hello", html: "<p>Hi</p>" }, [
+    { to: { email: "a@example.com" } },
+    { subject: "Custom subject", to: { email: "b@example.com" } },
+])) {
+    if (receipt.successful) {
+        console.log("Sent:", receipt.messageId);
+    }
+}
+```
+
+Pass a `render` function to treat the base `subject`/`html`/`text` as templates and render them per recipient with that recipient's `data`:
+
+```typescript
+import { renderHandlebars } from "@visulima/email/template/handlebars";
+
+await Array.fromAsync(
+    mail.sendBatch(
+        { from: { email: "news@example.com" }, subject: "Hi {{name}}", html: "<p>Hello {{name}}</p>" },
+        [
+            { to: { email: "bob@example.com" }, data: { name: "Bob" } },
+            { to: { email: "ada@example.com" }, data: { name: "Ada" } },
+        ],
+        { render: (template, data) => renderHandlebars(template, data) },
+    ),
+);
+```
+
+Pass `{ signal }` (an `AbortSignal`) to cancel the batch mid-flight.
+
+## Result Helpers
+
+Every `send` returns a `Result<EmailResult>` (`{ success, data?, error? }`). The helpers exported from the package root (and from `@visulima/email/utils/result`) make branching ergonomic:
+
+```typescript
+import { isOk, isErr, unwrap, unwrapOr, mapOk, tryAsync } from "@visulima/email";
+
+const result = await mail.send(message);
+
+if (isOk(result)) {
+    console.log(result.data.messageId); // `data` is narrowed to be present
+}
+
+const messageId = unwrapOr(
+    mapOk(result, (data) => data.messageId),
+    "unknown",
+);
+
+// `tryAsync` captures any throwing async call as a Result instead of throwing:
+const wrapped = await tryAsync(() => mail.send(message).then(unwrap));
+```
+
 ## Next Steps
 
 - [Building Messages](/docs/packages/email/mail-messages/building-messages) - Learn more about the message builder
 - [Attachments](/docs/packages/email/mail-messages/attachments) - Add attachments to your emails
+- [Middleware](/docs/packages/email/middleware/introduction) - Retry, rate-limit, circuit breaker, dedupe
+- [Queue](/docs/packages/email/queue/introduction) - Durable background sending
+- [Testing](/docs/packages/email/testing/introduction) - The mock provider and Vitest matchers
