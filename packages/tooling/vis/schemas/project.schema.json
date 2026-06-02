@@ -659,9 +659,16 @@
                     },
                     "description": "Alternate names that resolve to this target on the CLI. Useful for shortening long canonical names (`test` ↔ `t`) or for offering migration-friendly aliases when renaming targets. Aliases must be globally unique within the workspace."
                 },
+                "arguments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/TaskArgument"
+                    },
+                    "description": "Declarative argument schema for this target. Forwarded CLI args (`vis run &lt;target> -- --flag value`) are validated against it, surfaced by per-task `--help`, and exposed to the command as `VIS_ARG_&lt;NAME>` environment variables."
+                },
                 "description": {
                     "type": "string",
-                    "description": "One-line description surfaced by `vis list` and (in future) per-task `--help`. Kept short — longer docs belong in project READMEs or vis.config.ts comments."
+                    "description": "One-line description surfaced by `vis list` and per-task `--help`. Kept short — longer docs belong in project READMEs or vis.config.ts comments."
                 },
                 "inferred": {
                     "type": "boolean",
@@ -683,6 +690,69 @@
             },
             "additionalProperties": false,
             "description": "An extended target configuration that adds the vis-specific options on top of task-runner's `TargetConfiguration`."
+        },
+        "TaskArgument": {
+            "type": "object",
+            "properties": {
+                "alias": {
+                    "type": "string",
+                    "description": "Short single-character alias (e.g. `r` for `--reporter`, used as `-r`)."
+                },
+                "choices": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Allowed values when  {@link  TaskArgument.type }  is `\"enum\"`."
+                },
+                "default": {
+                    "$ref": "#/$defs/TaskArgumentValue",
+                    "description": "Value applied when the argument is omitted. Skips the required check."
+                },
+                "description": {
+                    "type": "string",
+                    "description": "One-line help text surfaced by per-task `--help`."
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Canonical name, without the leading `--` (kebab-case by convention)."
+                },
+                "positional": {
+                    "type": "boolean",
+                    "description": "Consume the value from the next free positional argument instead of a `--flag`. Positional args are filled in declaration order."
+                },
+                "required": {
+                    "type": "boolean",
+                    "description": "Fail the task when the argument is absent and has no `default`."
+                },
+                "type": {
+                    "$ref": "#/$defs/TaskArgumentType",
+                    "description": "Value type for coercion + validation. Defaults to `\"string\"`."
+                }
+            },
+            "required": [
+                "name"
+            ],
+            "additionalProperties": false,
+            "description": "A single declared argument for a task target."
+        },
+        "TaskArgumentValue": {
+            "type": [
+                "boolean",
+                "number",
+                "string"
+            ],
+            "description": "A coerced task-argument value."
+        },
+        "TaskArgumentType": {
+            "type": "string",
+            "enum": [
+                "boolean",
+                "enum",
+                "number",
+                "string"
+            ],
+            "description": "Value type a  {@link  TaskArgument }  coerces to and validates against."
         },
         "VisTargetOptions": {
             "type": "object",
@@ -792,6 +862,13 @@
                 "shell": {
                     "type": "string",
                     "description": "Per-target shell override. When set, the command runs through this shell instead of the platform default."
+                },
+                "shellArgs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Arguments passed to the per-target shell/interpreter before the command string. Defaults to `[\"-c\"]` (POSIX shells, pwsh). Set this to run the command under an interpreter that uses a different flag — e.g. `shell: \"node\", shellArgs: [\"-e\"]` runs the command as inline JS (\"script mode\"), or `shellArgs: [\"-lc\"]` for a login shell. Only applies when `shell`/`unixShell`/`windowsShell` resolves to a custom shell."
                 },
                 "strictEnv": {
                     "type": "boolean",

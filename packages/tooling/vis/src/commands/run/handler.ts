@@ -44,6 +44,7 @@ import { runToolchainPreflight } from "../../runtime/toolchain";
 import { runReadiness } from "../../services/readiness";
 import { deleteEntry, readAllEntries } from "../../services/registry";
 import type { ServiceEntry } from "../../services/types";
+import { parseTaskArguments, renderTaskArgumentsHelp, taskArgumentEnv } from "../../task/arguments";
 import { decidePty } from "../../task/pty-decision";
 import { filterProjectsByQuery, resolveSelector } from "../../task/selectors";
 import { resolveSkipCachePatterns } from "../../task/skip-cache";
@@ -158,7 +159,13 @@ const runPersistentTasks = async (
             return {
                 command,
                 cwd,
-                env: { INIT_CWD: initCwd, ...envFileVars, ...serviceEnv, ...affectedEnv },
+                env: {
+                    INIT_CWD: initCwd,
+                    ...envFileVars,
+                    ...serviceEnv,
+                    ...affectedEnv,
+                    ...(task.overrides[TASK_ARG_ENV_KEY] as Record<string, string> | undefined),
+                },
                 name: task.id,
                 ...(usePty
                     ? {
@@ -608,6 +615,9 @@ const buildAffectedFilesArgs = (command: string, affectedFiles: string[] | undef
 /** Override key carrying CLI args that should only reach the target task. */
 const FORWARDED_ARGS_KEY = "visForwardedArgs";
 
+/** Override key carrying validated `VIS_ARG_*` env vars for the target task. */
+const TASK_ARG_ENV_KEY = "visTaskArgEnv";
+
 /**
  * Appends forwarded positional args (`vis run test --reporter=verbose`)
  * to the task's command. Only the user-invoked target task carries this
@@ -835,7 +845,10 @@ const createConcurrentExecutor = (deps: ExecutorDependencies) => {
         const commandWithAffected = buildAffectedFilesArgs(commandWithArgs, affectedFiles, visOptions?.affectedFiles);
 
         const customShell = resolveTargetShell(visOptions, currentOs);
-        const command = customShell ? `${customShell} -c ${singleQuoteEscape(commandWithAffected)}` : commandWithAffected;
+        // `shellArgs` lets a target pick a non-`-c` interpreter (e.g.
+        // `shell: "node", shellArgs: ["-e"]` runs the command as inline JS).
+        const shellInvokeArgs = (visOptions?.shellArgs ?? ["-c"]).join(" ");
+        const command = customShell ? `${customShell} ${shellInvokeArgs} ${singleQuoteEscape(commandWithAffected)}` : commandWithAffected;
 
         const envFileVars = visOptions?.envFile ? loadEnvFileCached(envFileCache, resolvedCwd, visOptions.envFile) : undefined;
 
@@ -857,6 +870,7 @@ const createConcurrentExecutor = (deps: ExecutorDependencies) => {
             ...serviceEnv,
             ...execOptions.env,
             ...affectedFilesEnv,
+            ...(task.overrides[TASK_ARG_ENV_KEY] as Record<string, string> | undefined),
         };
 
         // Per-target opt-in/out wins over the workspace flag — let a
@@ -1425,6 +1439,44 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
 
     const ptyFlag = options.pty === true;
 
+    // First-class task arguments: validate the forwarded args against the
+    // invoked target's declared schema, surface per-task `--help`, and expose
+    // validated values to the command as VIS_ARG_* env vars. The schema is
+    // taken from the first project whose target declares one — a target's
+    // argument contract is the same wherever it runs.
+    const argumentSchema = projectsWithTarget
+        .map((projectName) => projectTargetIndex.get(projectName)?.arguments)
+        .find((schema): schema is NonNullable<typeof schema> => Array.isArray(schema) && schema.length > 0);
+
+    let taskArgumentEnvVars: Record<string, string> = {};
+
+    if (argumentSchema) {
+        const description = projectTargetIndex.get(projectsWithTarget[0] as string)?.description;
+
+        if (forwardedArgs.includes("--help") || forwardedArgs.includes("-h")) {
+            logger.info(renderTaskArgumentsHelp(target, description, argumentSchema));
+
+            return;
+        }
+
+        const parsed = parseTaskArguments(argumentSchema, forwardedArgs);
+
+        if (parsed.errors.length > 0) {
+            logger.info(`Invalid arguments for "${target}":`);
+
+            for (const message of parsed.errors) {
+                logger.info(`  ✖ ${message}`);
+            }
+
+            logger.info("");
+            logger.info(renderTaskArgumentsHelp(target, description, argumentSchema));
+
+            throw new Error(`Invalid arguments for target "${target}"`);
+        }
+
+        taskArgumentEnvVars = taskArgumentEnv(parsed.values);
+    }
+
     let initialTasks: Task[] = projectsWithTarget.map((projectName) => {
         const project = workspace.projects[projectName];
         const visTarget = projectTargetIndex.get(projectName)!;
@@ -1452,6 +1504,7 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
             overrides: {
                 command: expandedCommand,
                 ...(forwardedArgs.length > 0 ? { [FORWARDED_ARGS_KEY]: forwardedArgs } : {}),
+                ...(Object.keys(taskArgumentEnvVars).length > 0 ? { [TASK_ARG_ENV_KEY]: taskArgumentEnvVars } : {}),
                 ...(mergedOptions ? { visOptions: mergedOptions } : {}),
             },
             parallelism: visTarget.parallelism,

@@ -1,8 +1,10 @@
 import type { TargetConfiguration } from "@visulima/task-runner";
 
 import type { ServiceConfig } from "../services/types";
+import type { TaskArgument } from "./arguments";
 
 export type { ServiceConfig } from "../services/types";
+export type { TaskArgument, TaskArgumentType } from "./arguments";
 
 /**
  * Semantic classification for a target.
@@ -206,6 +208,16 @@ export interface VisTargetOptions {
     shell?: string;
 
     /**
+     * Arguments passed to the per-target shell/interpreter before the command
+     * string. Defaults to `["-c"]` (POSIX shells, pwsh). Set this to run the
+     * command under an interpreter that uses a different flag — e.g.
+     * `shell: "node", shellArgs: ["-e"]` runs the command as inline JS
+     * ("script mode"), or `shellArgs: ["-lc"]` for a login shell. Only applies
+     * when `shell`/`unixShell`/`windowsShell` resolves to a custom shell.
+     */
+    shellArgs?: string[];
+
+    /**
      * Override the workspace `strictEnv` setting for this target. When
      * truthy, the target fails if its command references an env var
      * that resolves to neither the task's effective env nor
@@ -257,9 +269,17 @@ export interface VisTargetConfiguration extends Omit<TargetConfiguration, "optio
     aliases?: string[];
 
     /**
-     * One-line description surfaced by `vis list` and (in future)
-     * per-task `--help`. Kept short — longer docs belong in project
-     * READMEs or vis.config.ts comments.
+     * Declarative argument schema for this target. Forwarded CLI args
+     * (`vis run &lt;target> -- --flag value`) are validated against it, surfaced
+     * by per-task `--help`, and exposed to the command as `VIS_ARG_&lt;NAME>`
+     * environment variables.
+     */
+    arguments?: TaskArgument[];
+
+    /**
+     * One-line description surfaced by `vis list` and per-task `--help`.
+     * Kept short — longer docs belong in project READMEs or
+     * vis.config.ts comments.
      */
     description?: string;
 
