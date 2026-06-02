@@ -1,3 +1,27 @@
+## @visulima/task-runner [1.0.0-alpha.18](https://github.com/visulima/visulima/compare/@visulima/task-runner@1.0.0-alpha.17...@visulima/task-runner@1.0.0-alpha.18) (2026-06-02)
+
+### Features
+
+* **task-runner,vis:** per-task pty + concurrency weight, abort cache gate, fspy scaffolds ([#656](https://github.com/visulima/visulima/issues/656)) ([ca64010](https://github.com/visulima/visulima/commit/ca64010b236903e08273680ea65dec7046fcd18b))
+
+### Bug Fixes
+
+* **task-runner:** atomic restoreOutputs and graceful REAPI shutdown ([a3f7088](https://github.com/visulima/visulima/commit/a3f7088c58560f9c98d9d68914ebaf0a458e319d)), closes [#inflightRpcs](https://github.com/visulima/visulima/issues/inflightRpcs) [#closeQuiescenceTimeoutMs](https://github.com/visulima/visulima/issues/closeQuiescenceTimeoutMs)
+* **task-runner:** bound fspy drains so a lingering child can't hang the run ([#666](https://github.com/visulima/visulima/issues/666)) ([3f56348](https://github.com/visulima/visulima/commit/3f56348e1998b50e3b8496ce5f97a9a34932946d)), closes [vite-task#396](https://github.com/visulima/vite-task/issues/396) [vite-task#396](https://github.com/visulima/vite-task/issues/396) [vite-task#396](https://github.com/visulima/vite-task/issues/396) [vite-task#396](https://github.com/visulima/vite-task/issues/396) [vite-task#396](https://github.com/visulima/vite-task/issues/396)
+* **task-runner:** close remaining audit findings ([28c5870](https://github.com/visulima/visulima/commit/28c587008a7f4be73c0e4695f443eccf1a9ed264)), closes [vite-task#358](https://github.com/visulima/vite-task/issues/358)
+* **task-runner:** harden native runner and respect caller FORCE_COLOR ([d1e7231](https://github.com/visulima/visulima/commit/d1e72317428501c1221ffb3c1a4a0e0c5bcfafc0))
+* **task-runner:** harden scheduler, cache, and remote backends ([ce94b16](https://github.com/visulima/visulima/commit/ce94b16c7600967e2d47b1e18975a904f8aef779))
+* **task-runner:** tolerate dev-only dependency cycles ([#664](https://github.com/visulima/visulima/issues/664)) ([9ad384e](https://github.com/visulima/visulima/commit/9ad384e34927b40823ae104d6b05a581dcd05705)), closes [#411](https://github.com/visulima/visulima/issues/411)
+
+### Miscellaneous Chores
+
+* cs fixes ([#659](https://github.com/visulima/visulima/issues/659)) ([61f8912](https://github.com/visulima/visulima/commit/61f891274c1de22a36af256fc981b585b9ec6a6a))
+* **task-runner:** track fspy_macos Cargo.lock ([7a69ff9](https://github.com/visulima/visulima/commit/7a69ff9bcbc25b2c6d8f249c66b135d1ff9a1577))
+
+### Tests
+
+* **task-runner:** regression guard for vite-task[#411](https://github.com/visulima/visulima/issues/411) (peer-dep cycle) ([#665](https://github.com/visulima/visulima/issues/665)) ([41ed071](https://github.com/visulima/visulima/commit/41ed0710d103647137f0448d999f355451f80df4))
+
 ## @visulima/task-runner [1.0.0-alpha.17](https://github.com/visulima/visulima/compare/@visulima/task-runner@1.0.0-alpha.16...@visulima/task-runner@1.0.0-alpha.17) (2026-05-29)
 
 ### Bug Fixes
