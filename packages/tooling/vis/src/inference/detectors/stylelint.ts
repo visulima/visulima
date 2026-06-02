@@ -1,18 +1,8 @@
+import { TOOL_SIGNATURES } from "../../util/tool-signatures";
 import type { Detector } from "../types";
 
 export const stylelintDetector: Detector = {
-    configFiles: [
-        "stylelint.config.ts",
-        "stylelint.config.js",
-        "stylelint.config.mjs",
-        "stylelint.config.cjs",
-        ".stylelintrc",
-        ".stylelintrc.json",
-        ".stylelintrc.js",
-        ".stylelintrc.cjs",
-        ".stylelintrc.yml",
-        ".stylelintrc.yaml",
-    ],
+    configFiles: TOOL_SIGNATURES.stylelint.configFiles,
     detect: ({ matchedConfigs }) => {
         return {
             targets: {

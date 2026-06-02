@@ -1,7 +1,8 @@
+import { TOOL_SIGNATURES } from "../../util/tool-signatures";
 import type { DetectedTargets, Detector } from "../types";
 
 export const oxfmtDetector: Detector = {
-    configFiles: [".oxfmtrc.json", ".oxfmtrc.jsonc", "oxfmt.config.ts", "oxfmt.config.js", "oxfmt.config.mjs", "oxfmt.config.mts", "oxfmt.config.cjs"],
+    configFiles: TOOL_SIGNATURES.oxfmt.configFiles,
     detect: ({ matchedConfigs }) => {
         const sharedInputs = [
             "{projectRoot}/src/**/*",
@@ -28,6 +29,6 @@ export const oxfmtDetector: Detector = {
 
         return { targets };
     },
-    fallbackDependency: "oxfmt",
+    fallbackDependency: TOOL_SIGNATURES.oxfmt.packageNames[0],
     name: "oxfmt",
 };

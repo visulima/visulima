@@ -470,6 +470,43 @@ describe("inference", () => {
             expect(result.targets["format:check"]?.command).toBe("prettier --check .");
         });
 
+        it("should infer dprint fmt + check from dprint.json", () => {
+            expect.assertions(3);
+
+            writeFile("dprint.json", "{}");
+
+            const result = inferProjectTargets({
+                pkg: {},
+                projectDirectory: "packages/lib",
+                projectRoot: tmp,
+            });
+
+            expect(result.targets["format"]?.command).toBe("dprint fmt");
+            expect(result.targets["format:check"]?.command).toBe("dprint check");
+            // mutating target stays uncached (no `type` set), matching prettier/oxfmt.
+            expect(result.targets["format"]?.type).toBeUndefined();
+        });
+
+        it("should rank dprint last when prettier, biome, oxfmt all coexist", () => {
+            expect.assertions(2);
+
+            writeFile("prettier.config.js", "module.exports = {}");
+            writeFile("biome.json", "{}");
+            writeFile(".oxfmtrc.json", "{}");
+            writeFile("dprint.json", "{}");
+
+            const result = inferProjectTargets({
+                pkg: {},
+                projectDirectory: "packages/lib",
+                projectRoot: tmp,
+            });
+
+            // prettier wins; dprint detector still runs but its `format`
+            // entry is skipped by the first-wins merge in inferProjectTargets.
+            expect(result.targets["format"]?.command).toBe("prettier --write .");
+            expect(result.targets["format:check"]?.command).toBe("prettier --check .");
+        });
+
         it("should infer nuxt build/dev/preview/generate from nuxt.config.ts", () => {
             expect.assertions(5);
 

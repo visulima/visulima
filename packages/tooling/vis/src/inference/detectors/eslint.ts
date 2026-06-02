@@ -1,17 +1,8 @@
+import { TOOL_SIGNATURES } from "../../util/tool-signatures";
 import type { Detector } from "../types";
 
 export const eslintDetector: Detector = {
-    configFiles: [
-        "eslint.config.ts",
-        "eslint.config.js",
-        "eslint.config.mjs",
-        "eslint.config.mts",
-        "eslint.config.cjs",
-        ".eslintrc.json",
-        ".eslintrc.js",
-        ".eslintrc.cjs",
-        ".eslintrc",
-    ],
+    configFiles: TOOL_SIGNATURES.eslint.configFiles,
     detect: ({ matchedConfigs }) => {
         return {
             targets: {
@@ -34,6 +25,6 @@ export const eslintDetector: Detector = {
             },
         };
     },
-    fallbackDependency: "eslint",
+    fallbackDependency: TOOL_SIGNATURES.eslint.packageNames[0],
     name: "eslint",
 };

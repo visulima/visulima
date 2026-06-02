@@ -7,7 +7,7 @@ import { tmpdir } from "node:os";
 import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { applyWorkspaceProtocolFixes, lintWorkspaceProtocol } from "../../src/lint/workspace-protocol";
+import { applyWorkspaceProtocolFixes, lintWorkspaceProtocol } from "../../src/deps/workspace-protocol";
 import { iterateWorkspaceDeps } from "../../src/util/workspace-deps";
 
 let workspaceRoot: string;

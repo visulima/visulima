@@ -12,6 +12,7 @@ import { changesetDetector } from "./detectors/changeset";
 import { cypressDetector } from "./detectors/cypress";
 import { denoDetector } from "./detectors/deno";
 import { docusaurusDetector } from "./detectors/docusaurus";
+import { dprintDetector } from "./detectors/dprint";
 import { drizzleDetector } from "./detectors/drizzle";
 import { eslintDetector } from "./detectors/eslint";
 import { gatsbyDetector } from "./detectors/gatsby";
@@ -56,7 +57,7 @@ export type { DetectContext, DetectedTargets, Detector } from "./types";
  * - `test`: vitest > jest > bun > deno (`test:e2e` is playwright >
  *   cypress)
  * - `lint`: eslint > biome > oxlint > deno
- * - `format` / `format:check`: prettier > biome > oxfmt
+ * - `format` / `format:check`: prettier > biome > oxfmt > dprint
  *
  * Single-owner targets (no collision possible): `typecheck` (typescript),
  * `storybook` / `build-storybook`, `knip`, `lint:css` (stylelint),
@@ -94,6 +95,7 @@ export const BUILT_IN_DETECTORS: ReadonlyArray<Detector> = [
     biomeDetector,
     oxlintDetector,
     oxfmtDetector,
+    dprintDetector,
     stylelintDetector,
     knipDetector,
     denoDetector,

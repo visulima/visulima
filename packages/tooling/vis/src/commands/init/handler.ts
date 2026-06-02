@@ -92,9 +92,12 @@ const generateConfigContent = (_pm: string, options: ConfigInitOptions): string 
 
     // Staged section
     if (options.staged) {
+        // The vis lint/fmt orchestrators auto-detect every installed linter/formatter
+        // and dispatch only against staged files — no need to repeat per-extension
+        // globs here. Users with bespoke routing can still drop in explicit
+        // `eslint --fix`/`prettier --write` entries below.
         sections.push(`    staged: {
-        "*.{ts,tsx}": "eslint --fix",
-        "*.{ts,tsx,js,jsx,json,md}": "prettier --write",
+        "*": ["vis lint --staged --fix", "vis fmt --staged"],
     },`);
     }
 

@@ -12,7 +12,9 @@ import { registerCacheHash } from "../src/tools/cache-hash";
 import { registerCacheWhy } from "../src/tools/cache-why";
 import { registerDescribeProject } from "../src/tools/describe-project";
 import { registerDescribeTemplate } from "../src/tools/describe-template";
+import { registerFmt } from "../src/tools/fmt";
 import { registerGetRunLogs } from "../src/tools/get-run-logs";
+import { registerLint } from "../src/tools/lint";
 import { registerListProjects } from "../src/tools/list-projects";
 import { registerListTargets } from "../src/tools/list-targets";
 import { registerListTemplates } from "../src/tools/list-templates";
@@ -664,6 +666,167 @@ describe(registerAdvisoryStatus, () => {
         const { calls, server } = makeFakeServer();
 
         registerAdvisoryStatus({ server }, { visBin: "/definitely-not-a-real-binary", workspaceRoot });
+
+        const error = parseError(await calls[0]!.handler({}));
+
+        expect(error.error).toBeTruthy();
+    });
+});
+
+describe(registerLint, () => {
+    it("should register the tool and return findings without erroring on non-zero exit", async () => {
+        expect.assertions(4);
+
+        const { calls, server } = makeFakeServer();
+
+        registerLint({ server }, ctx());
+
+        expect(calls[0]!.name).toBe("lint");
+
+        const result = parseOk(await calls[0]!.handler({})) as {
+            exitCode: number;
+            findings: { adapter: string; severity: string }[];
+            runs: { adapter: string }[];
+        };
+
+        // fake-vis exits 1 for lint with findings; the tool must still parse stdout.
+        expect(result.exitCode).toBe(1);
+        expect(result.findings).toHaveLength(2);
+        expect(result.runs[0]!.adapter).toBe("eslint");
+    });
+
+    it("should forward --since when no --staged", async () => {
+        expect.assertions(2);
+
+        const { calls, server } = makeFakeServer();
+
+        registerLint({ server }, ctx());
+
+        const response = await calls[0]!.handler({ since: "main" });
+        const payload = JSON.parse(response.content[0]!.text) as { findings?: unknown; flags?: string[] };
+        const flags = payload.flags ?? [];
+
+        expect(payload.findings).toBeDefined();
+        expect(flags).toContain("--since");
+    });
+
+    it("should prefer --staged over --since when both are set", async () => {
+        expect.assertions(2);
+
+        const { calls, server } = makeFakeServer();
+
+        registerLint({ server }, ctx());
+
+        const response = await calls[0]!.handler({ since: "main", staged: true });
+        const payload = JSON.parse(response.content[0]!.text) as { flags?: string[] };
+        const flags = payload.flags ?? [];
+
+        expect(flags).toContain("--staged");
+        expect(flags).not.toContain("--since");
+    });
+
+    it("should forward --max-warnings and --quiet", async () => {
+        expect.assertions(3);
+
+        const { calls, server } = makeFakeServer();
+
+        registerLint({ server }, ctx());
+
+        const response = await calls[0]!.handler({ maxWarnings: 0, quiet: true });
+        const payload = JSON.parse(response.content[0]!.text) as { flags?: string[] };
+        const flags = payload.flags ?? [];
+
+        expect(flags).toContain("--quiet");
+        expect(flags).toContain("--max-warnings");
+        expect(flags[flags.indexOf("--max-warnings") + 1]).toBe("0");
+    });
+
+    it("should append positional files at the end", async () => {
+        expect.assertions(2);
+
+        const { calls, server } = makeFakeServer();
+
+        registerLint({ server }, ctx());
+
+        const response = await calls[0]!.handler({ files: ["src/a.ts", "src/b.ts"] });
+        const payload = JSON.parse(response.content[0]!.text) as { flags?: string[] };
+        const flags = payload.flags ?? [];
+
+        expect(flags).toContain("src/a.ts");
+        expect(flags).toContain("src/b.ts");
+    });
+
+    it("should surface CLI spawn failures via errorResponse", async () => {
+        expect.assertions(1);
+
+        const { calls, server } = makeFakeServer();
+
+        registerLint({ server }, { visBin: "/definitely-not-a-real-binary", workspaceRoot });
+
+        const error = parseError(await calls[0]!.handler({}));
+
+        expect(error.error).toBeTruthy();
+    });
+});
+
+describe(registerFmt, () => {
+    it("should register the tool and return findings in check mode", async () => {
+        expect.assertions(4);
+
+        const { calls, server } = makeFakeServer();
+
+        registerFmt({ server }, ctx());
+
+        expect(calls[0]!.name).toBe("fmt");
+
+        const result = parseOk(await calls[0]!.handler({})) as {
+            exitCode: number;
+            findings: { adapter: string }[];
+            mode: string;
+        };
+
+        expect(result.exitCode).toBe(1);
+        expect(result.mode).toBe("check");
+        expect(result.findings[0]!.adapter).toBe("prettier");
+    });
+
+    it("should always pass --check (read-only)", async () => {
+        expect.assertions(1);
+
+        const { calls, server } = makeFakeServer();
+
+        registerFmt({ server }, ctx());
+
+        const response = await calls[0]!.handler({});
+        const payload = JSON.parse(response.content[0]!.text) as { flags?: string[] };
+
+        expect(payload.flags ?? []).toContain("--check");
+    });
+
+    it("should forward --staged and --since precedence", async () => {
+        expect.assertions(2);
+
+        const { calls, server } = makeFakeServer();
+
+        registerFmt({ server }, ctx());
+
+        const stagedResponse = await calls[0]!.handler({ staged: true });
+        const stagedPayload = JSON.parse(stagedResponse.content[0]!.text) as { flags?: string[] };
+
+        expect(stagedPayload.flags ?? []).toContain("--staged");
+
+        const sinceResponse = await calls[0]!.handler({ since: "HEAD~1" });
+        const sincePayload = JSON.parse(sinceResponse.content[0]!.text) as { flags?: string[] };
+
+        expect(sincePayload.flags ?? []).toContain("--since");
+    });
+
+    it("should surface CLI spawn failures via errorResponse", async () => {
+        expect.assertions(1);
+
+        const { calls, server } = makeFakeServer();
+
+        registerFmt({ server }, { visBin: "/definitely-not-a-real-binary", workspaceRoot });
 
         const error = parseError(await calls[0]!.handler({}));
 

@@ -143,6 +143,54 @@ if (argv[0] === "audit" && argv.includes("--format") && argv[argv.indexOf("--for
     process.exit(0);
 }
 
+if (argv[0] === "lint" && argv.includes("--format") && argv[argv.indexOf("--format") + 1] === "json") {
+    writeJson({
+        findings: [
+            {
+                adapter: "eslint",
+                file: "/repo/src/a.ts",
+                line: 10,
+                column: 5,
+                severity: "error",
+                ruleId: "no-bad",
+                message: "Bad thing detected",
+                fixable: false,
+            },
+            {
+                adapter: "oxlint",
+                file: "/repo/src/b.ts",
+                line: 3,
+                severity: "warning",
+                message: "warn",
+            },
+        ],
+        runs: [
+            { adapter: "eslint", durationMs: 1234, exitCode: 1, findingCount: 1 },
+            { adapter: "oxlint", durationMs: 250, exitCode: 0, findingCount: 1 },
+        ],
+        flags: argv,
+    });
+    process.exit(1);
+}
+
+if (argv[0] === "fmt" && argv.includes("--check") && argv.includes("--format") && argv[argv.indexOf("--format") + 1] === "json") {
+    writeJson({
+        mode: "check",
+        findings: [
+            {
+                adapter: "prettier",
+                file: "/repo/src/a.ts",
+                severity: "info",
+                message: "Code style issues would be auto-fixed",
+                fixable: true,
+            },
+        ],
+        runs: [{ adapter: "prettier", durationMs: 87, exitCode: 1, findingCount: 1 }],
+        flags: argv,
+    });
+    process.exit(1);
+}
+
 if (argv[0] === "advisories" && argv[1] === "status" && argv.includes("--format") && argv[argv.indexOf("--format") + 1] === "json") {
     writeJson({
         dbPath: argv.includes("--db") ? argv[argv.indexOf("--db") + 1] : "/cache/vis/advisories/db.sqlite",

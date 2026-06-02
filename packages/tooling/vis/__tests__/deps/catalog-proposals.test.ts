@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { applyCatalogProposals, proposeCatalogAdditions, renderCatalogProposalsDiff } from "../../src/lint/catalog-proposals";
+import { applyCatalogProposals, proposeCatalogAdditions, renderCatalogProposalsDiff } from "../../src/deps/catalog-proposals";
 import { iterateWorkspaceDeps } from "../../src/util/workspace-deps";
 
 let workspaceRoot: string;

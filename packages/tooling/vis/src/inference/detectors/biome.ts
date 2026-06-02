@@ -1,7 +1,8 @@
+import { TOOL_SIGNATURES } from "../../util/tool-signatures";
 import type { DetectedTargets, Detector } from "../types";
 
 export const biomeDetector: Detector = {
-    configFiles: ["biome.json", "biome.jsonc"],
+    configFiles: TOOL_SIGNATURES.biome.configFiles,
     detect: ({ matchedConfigs }) => {
         const sharedInputs = [
             "{projectRoot}/src/**/*",
@@ -30,6 +31,6 @@ export const biomeDetector: Detector = {
 
         return { targets };
     },
-    fallbackDependency: "@biomejs/biome",
+    fallbackDependency: TOOL_SIGNATURES.biome.packageNames[0],
     name: "biome",
 };
