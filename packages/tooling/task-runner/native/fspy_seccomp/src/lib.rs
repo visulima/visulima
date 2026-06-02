@@ -199,34 +199,23 @@ pub fn track_command(
     let supervisor_fd = notify_fd;
     let supervisor_thread = thread::spawn(move || {
         let result = supervisor::run(supervisor_fd, cancel_read);
-        // Closing the fds matches "parent owns the listener" — once
-        // the supervisor returns we have no further use for them.
-        unsafe {
-            libc::close(supervisor_fd);
-            libc::close(cancel_read);
-        }
+        // We own the notify fd; the parent owns the shared cancel pipe and
+        // closes it once every consumer (supervisor + both stdio drains) has
+        // finished.
+        unsafe { libc::close(supervisor_fd) };
         let _ = tx.send(result);
     });
 
     // Drain stdout/stderr on dedicated threads. Reading inline would
     // deadlock if the child wrote enough to fill the pipe buffer
-    // (~64 KiB) while we waited on the supervisor.
-    let mut child_stdout = child.stdout.take();
-    let mut child_stderr = child.stderr.take();
-    let stdout_thread = thread::spawn(move || -> io::Result<Vec<u8>> {
-        let mut buf = Vec::new();
-        if let Some(mut s) = child_stdout.take() {
-            s.read_to_end(&mut buf)?;
-        }
-        Ok(buf)
-    });
-    let stderr_thread = thread::spawn(move || -> io::Result<Vec<u8>> {
-        let mut buf = Vec::new();
-        if let Some(mut s) = child_stderr.take() {
-            s.read_to_end(&mut buf)?;
-        }
-        Ok(buf)
-    });
+    // (~64 KiB) while we waited on the supervisor. The drain is bounded by
+    // the same `cancel_read` pipe: a descendant that inherited (and keeps
+    // open) the captured pipes would otherwise block `read_to_end` on EOF
+    // forever — the second half of the vite-task#396 hang.
+    let child_stdout = child.stdout.take();
+    let child_stderr = child.stderr.take();
+    let stdout_thread = thread::spawn(move || child_stdout.map(|s| drain_bounded(s, cancel_read)).unwrap_or_default());
+    let stderr_thread = thread::spawn(move || child_stderr.map(|s| drain_bounded(s, cancel_read)).unwrap_or_default());
 
     let status = child.wait()?;
 
@@ -238,33 +227,97 @@ pub fn track_command(
     // descendant keeps running untracked; we never hang the run.
     const SUPERVISOR_GRACE: Duration = Duration::from_millis(2000);
 
-    let accesses = match rx.recv_timeout(SUPERVISOR_GRACE) {
-        Ok(Ok(list)) => list,
-        Ok(Err(e)) => {
-            let _ = supervisor_thread.join();
-            unsafe { libc::close(cancel_write) };
-            return Err(e);
-        }
+    let accesses_result = match rx.recv_timeout(SUPERVISOR_GRACE) {
+        Ok(result) => result,
         Err(RecvTimeoutError::Timeout) => {
-            // Wake the supervisor's poll; it returns whatever it gathered.
-            unsafe { libc::write(cancel_write, [1_u8].as_ptr().cast(), 1) };
+            // Grace elapsed with a descendant still alive. Wake every consumer
+            // (the supervisor's poll and both stdio drains share this pipe),
+            // then collect whatever the supervisor gathered.
+            signal_cancel(cancel_write);
 
-            match rx.recv() {
-                Ok(Ok(list)) => list,
-                _ => Vec::new(),
-            }
+            rx.recv().unwrap_or_else(|_| Ok(Vec::new()))
         }
-        Err(RecvTimeoutError::Disconnected) => Vec::new(),
+        Err(RecvTimeoutError::Disconnected) => Ok(Vec::new()),
     };
-    unsafe { libc::close(cancel_write) };
+
+    // Unblock the stdio drains too (harmless if they already hit EOF), then
+    // collect everything and close the shared cancel pipe once.
+    signal_cancel(cancel_write);
     let _ = supervisor_thread.join();
+    let stdout = stdout_thread.join().unwrap_or_default();
+    let stderr = stderr_thread.join().unwrap_or_default();
+    unsafe {
+        libc::close(cancel_read);
+        libc::close(cancel_write);
+    }
 
-    let stdout = stdout_thread.join().unwrap_or_else(|_| Ok(Vec::new())).unwrap_or_default();
-    let stderr = stderr_thread.join().unwrap_or_else(|_| Ok(Vec::new())).unwrap_or_default();
-
+    let accesses = accesses_result?;
     let exit_code = status.code().or_else(|| status.signal().map(|s| 128 + s)).unwrap_or(-1);
 
     Ok(TrackingResult { accesses, exit_code, stdout, stderr })
+}
+
+/// Read `reader` to EOF, but stop early once `cancel_fd` becomes readable.
+/// Used for the captured stdout/stderr so a descendant that inherited (and
+/// keeps open) the pipe can't block the drain on EOF forever — the second
+/// half of the vite-task#396 hang. On cancel the bytes read so far are
+/// returned; errors are swallowed (partial output beats a hung run).
+fn drain_bounded<R: Read + AsRawFd>(mut reader: R, cancel_fd: RawFd) -> Vec<u8> {
+    let raw = reader.as_raw_fd();
+
+    // Non-blocking so `read` returns WouldBlock rather than parking if poll
+    // raced us or reports POLLHUP without pending data.
+    unsafe {
+        let flags = libc::fcntl(raw, libc::F_GETFL);
+        if flags >= 0 {
+            libc::fcntl(raw, libc::F_SETFL, flags | libc::O_NONBLOCK);
+        }
+    }
+
+    let mut buf = Vec::new();
+    let mut chunk = [0_u8; 8192];
+
+    loop {
+        let mut fds = [
+            libc::pollfd { fd: raw, events: libc::POLLIN, revents: 0 },
+            libc::pollfd { fd: cancel_fd, events: libc::POLLIN, revents: 0 },
+        ];
+
+        let prc = unsafe { libc::poll(fds.as_mut_ptr(), 2, -1) };
+
+        if prc < 0 {
+            if io::Error::last_os_error().raw_os_error() == Some(libc::EINTR) {
+                continue;
+            }
+
+            break;
+        }
+
+        // Cancelled — return what we've gathered so far.
+        if fds[1].revents != 0 {
+            break;
+        }
+
+        if fds[0].revents == 0 {
+            continue;
+        }
+
+        match reader.read(&mut chunk) {
+            Ok(0) => break, // EOF: all writers closed the pipe.
+            Ok(n) => buf.extend_from_slice(&chunk[..n]),
+            Err(ref e) if matches!(e.kind(), io::ErrorKind::WouldBlock | io::ErrorKind::Interrupted) => continue,
+            Err(_) => break,
+        }
+    }
+
+    buf
+}
+
+/// Best-effort one-byte write to wake every `poll` watching the cancel pipe.
+fn signal_cancel(cancel_write: RawFd) {
+    unsafe {
+        libc::write(cancel_write, [1_u8].as_ptr().cast(), 1);
+    }
 }
 
 fn mk_socket_path() -> PathBuf {
