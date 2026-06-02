@@ -118,6 +118,30 @@ describe(formatEcosystemReport, () => {
         expect(report).toContain("Arbitrary code execution via crafted ref");
     });
 
+    it("appends a preview-only footer when previewOnly is set and updates exist", () => {
+        expect.assertions(2);
+
+        const updates = [makeUpdate({ ecosystem: "actions", name: "actions/checkout", updateType: "minor" })];
+        const report = stripAnsi(formatEcosystemReport(buildResult(updates), { previewOnly: true, showIgnored: false }));
+
+        expect(report).toContain("Not applied automatically");
+        expect(report).toContain("--interactive");
+    });
+
+    it("omits the preview-only footer when previewOnly is not set (apply path)", () => {
+        expect.assertions(1);
+
+        const updates = [makeUpdate({ ecosystem: "actions", name: "actions/checkout", updateType: "minor" })];
+
+        expect(stripAnsi(formatEcosystemReport(buildResult(updates), { showIgnored: false }))).not.toContain("Not applied automatically");
+    });
+
+    it("does not render the preview-only footer when everything is up to date", () => {
+        expect.assertions(1);
+
+        expect(stripAnsi(formatEcosystemReport(buildResult([]), { previewOnly: true, showIgnored: false }))).not.toContain("Not applied automatically");
+    });
+
     it("appends the changelog/release URL when the update carries one", () => {
         expect.assertions(2);
 

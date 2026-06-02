@@ -77,6 +77,7 @@ import type { RunOptions } from "./index";
 import type { ServiceBridgeEntry } from "./service-event-bridge";
 import { ServiceEventBridge } from "./service-event-bridge";
 import { buildBootstrapPaths, extractPreflightTasks, injectServiceTasks, resolveServicesPolicy } from "./service-preflight";
+import { resolveTaskArguments } from "./task-arguments";
 
 const AFFECTED_FILES_ENV = "VIS_AFFECTED_FILES";
 
@@ -158,7 +159,13 @@ const runPersistentTasks = async (
             return {
                 command,
                 cwd,
-                env: { INIT_CWD: initCwd, ...envFileVars, ...serviceEnv, ...affectedEnv },
+                env: {
+                    INIT_CWD: initCwd,
+                    ...envFileVars,
+                    ...serviceEnv,
+                    ...affectedEnv,
+                    ...(task.overrides[TASK_ARG_ENV_KEY] as Record<string, string> | undefined),
+                },
                 name: task.id,
                 ...(usePty
                     ? {
@@ -608,6 +615,9 @@ const buildAffectedFilesArgs = (command: string, affectedFiles: string[] | undef
 /** Override key carrying CLI args that should only reach the target task. */
 const FORWARDED_ARGS_KEY = "visForwardedArgs";
 
+/** Override key carrying validated `VIS_ARG_*` env vars for the target task. */
+const TASK_ARG_ENV_KEY = "visTaskArgEnv";
+
 /**
  * Appends forwarded positional args (`vis run test --reporter=verbose`)
  * to the task's command. Only the user-invoked target task carries this
@@ -835,7 +845,16 @@ const createConcurrentExecutor = (deps: ExecutorDependencies) => {
         const commandWithAffected = buildAffectedFilesArgs(commandWithArgs, affectedFiles, visOptions?.affectedFiles);
 
         const customShell = resolveTargetShell(visOptions, currentOs);
-        const command = customShell ? `${customShell} -c ${singleQuoteEscape(commandWithAffected)}` : commandWithAffected;
+        // `shellArgs` lets a target pick a non-`-c` interpreter (e.g.
+        // `shell: "node", shellArgs: ["-e"]` runs the command as inline JS).
+        // An empty array would drop the flag entirely (turning `node 'cmd'`
+        // into a file lookup), so fall back to `-c`.
+        const shellArgs = visOptions?.shellArgs;
+        const shellInvokeArgs = shellArgs && shellArgs.length > 0 ? shellArgs.join(" ") : "-c";
+        // `shellQuote` is platform-aware (POSIX single-quote / cmd.exe
+        // double-quote) — `singleQuoteEscape` would leave literal `'…'` around
+        // the command under cmd.exe, breaking e.g. `node -e` on Windows.
+        const command = customShell ? `${customShell} ${shellInvokeArgs} ${shellQuote(commandWithAffected)}` : commandWithAffected;
 
         const envFileVars = visOptions?.envFile ? loadEnvFileCached(envFileCache, resolvedCwd, visOptions.envFile) : undefined;
 
@@ -857,6 +876,7 @@ const createConcurrentExecutor = (deps: ExecutorDependencies) => {
             ...serviceEnv,
             ...execOptions.env,
             ...affectedFilesEnv,
+            ...(task.overrides[TASK_ARG_ENV_KEY] as Record<string, string> | undefined),
         };
 
         // Per-target opt-in/out wins over the workspace flag — let a
@@ -1425,6 +1445,61 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
 
     const ptyFlag = options.pty === true;
 
+    // First-class task arguments: validate the forwarded args against the
+    // invoked target's declared schema, surface per-task `--help`, and expose
+    // validated values to the command as VIS_ARG_* env vars. See
+    // `./task-arguments`. Because the same args + VIS_ARG_* reach every
+    // selected project, all of them must agree on the contract — fail fast if
+    // two projects expose this target with different `arguments` schemas
+    // rather than validate one project's invocation against another's.
+    const schemasByProject = projectsWithTarget
+        .map((projectName) => { return { project: projectName, schema: projectTargetIndex.get(projectName)?.arguments }; })
+        .filter((entry): entry is { project: string; schema: NonNullable<VisTargetConfiguration["arguments"]> } => Array.isArray(entry.schema) && entry.schema.length > 0);
+
+    const distinctSchemas = new Map<string, string[]>();
+
+    for (const { project, schema } of schemasByProject) {
+        const key = JSON.stringify(schema);
+        const projects = distinctSchemas.get(key) ?? [];
+
+        projects.push(project);
+        distinctSchemas.set(key, projects);
+    }
+
+    if (distinctSchemas.size > 1) {
+        const groups = [...distinctSchemas.values()].map((projects) => projects.join(", ")).join(" | ");
+
+        throw new Error(
+            `Target "${target}" declares conflicting \`arguments\` schemas across projects (${groups}). `
+            + `Run a single project (e.g. \`vis run ${schemasByProject[0]?.project}:${target}\` or --projects=<name>) so the argument contract is unambiguous.`,
+        );
+    }
+
+    const argumentSchema = schemasByProject[0]?.schema;
+    const argumentDescription = projectTargetIndex.get(schemasByProject[0]?.project ?? (projectsWithTarget[0] as string))?.description;
+    const argumentResolution = resolveTaskArguments(target, argumentDescription, argumentSchema, forwardedArgs);
+
+    if (argumentResolution.kind === "help") {
+        logger.info(argumentResolution.text);
+
+        return;
+    }
+
+    if (argumentResolution.kind === "invalid") {
+        logger.info(`Invalid arguments for "${target}":`);
+
+        for (const message of argumentResolution.errors) {
+            logger.info(`  ✖ ${message}`);
+        }
+
+        logger.info("");
+        logger.info(argumentResolution.help);
+
+        throw new Error(`Invalid arguments for target "${target}"`);
+    }
+
+    const taskArgumentEnvVars = argumentResolution.env;
+
     let initialTasks: Task[] = projectsWithTarget.map((projectName) => {
         const project = workspace.projects[projectName];
         const visTarget = projectTargetIndex.get(projectName)!;
@@ -1452,6 +1527,7 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
             overrides: {
                 command: expandedCommand,
                 ...(forwardedArgs.length > 0 ? { [FORWARDED_ARGS_KEY]: forwardedArgs } : {}),
+                ...(Object.keys(taskArgumentEnvVars).length > 0 ? { [TASK_ARG_ENV_KEY]: taskArgumentEnvVars } : {}),
                 ...(mergedOptions ? { visOptions: mergedOptions } : {}),
             },
             parallelism: visTarget.parallelism,
@@ -1498,6 +1574,12 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
     // stripped from the graph again after preflight injection so the
     // regular runner doesn't execute them — they run via `runPersistentTasks`.
     let taskGraph = createTaskGraph([...initialTasks, ...persistentTasks], {
+        onCycleBroken: (cycle) => {
+            // A dependency cycle that runs only through devDependency edges
+            // is tolerated (pnpm does the same) — we break it and warn rather
+            // than deadlocking. Cycles with a real (static) edge stay fatal.
+            logger.warn(`Ignoring dev-only dependency cycle (build order is ambiguous): ${cycle.join(" → ")}`);
+        },
         projectGraph,
         targetDefaults: config.tasks as unknown as Record<string, Partial<TargetConfiguration>>,
         workspace,
