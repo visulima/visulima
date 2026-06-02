@@ -11,7 +11,7 @@ import { oxlintAdapter } from "../../lint-fmt/adapters/oxlint";
 import { ruffCheckAdapter } from "../../lint-fmt/adapters/ruff";
 import { shellcheckAdapter } from "../../lint-fmt/adapters/shellcheck";
 import { stylelintAdapter } from "../../lint-fmt/adapters/stylelint";
-import type { AdapterRunOptions, Finding } from "../../lint-fmt/config-types";
+import type { AdapterRunOptions, Finding, LintAdapterId } from "../../lint-fmt/config-types";
 import { detectAdapters } from "../../lint-fmt/detect";
 import { changedFilesSince, filterByExtensions, stagedFiles } from "../../lint-fmt/diff";
 import type { OutputSink } from "../../lint-fmt/output";
@@ -34,7 +34,7 @@ const execute = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Co
     const adapters = registerAdapters(SOURCE_ADAPTERS, lintConfig?.order);
     const detected = detectAdapters(root, adapters);
     const allEligible = adaptersByKind(detected, adapters, "lint");
-    const eligible = allEligible.filter(({ adapter }) => lintConfig?.adapters?.[adapter.id]?.enabled !== false);
+    const eligible = allEligible.filter(({ adapter }) => lintConfig?.adapters?.[adapter.id as LintAdapterId]?.enabled !== false);
 
     if (eligible.length === 0) {
         logger.warn("vis lint: no linter detected in this workspace (looked for: oxlint, biome, eslint, stylelint, ruff, markdownlint, shellcheck, deno).");
@@ -43,7 +43,7 @@ const execute = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Co
     }
 
     const baseExtraArgs = (adapterId: AdapterJob["adapter"]["id"]): string[] | undefined => {
-        const extra = lintConfig?.adapters?.[adapterId]?.extraArgs;
+        const extra = lintConfig?.adapters?.[adapterId as LintAdapterId]?.extraArgs;
 
         return extra && extra.length > 0 ? [...extra] : undefined;
     };

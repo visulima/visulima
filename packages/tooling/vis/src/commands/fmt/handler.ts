@@ -9,7 +9,7 @@ import { dprintAdapter } from "../../lint-fmt/adapters/dprint";
 import { oxfmtAdapter } from "../../lint-fmt/adapters/oxfmt";
 import { prettierAdapter } from "../../lint-fmt/adapters/prettier";
 import { ruffFmtAdapter } from "../../lint-fmt/adapters/ruff";
-import type { AdapterRunOptions, Finding } from "../../lint-fmt/config-types";
+import type { AdapterRunOptions, Finding, FmtAdapterId } from "../../lint-fmt/config-types";
 import { detectAdapters } from "../../lint-fmt/detect";
 import { changedFilesSince, stagedFiles } from "../../lint-fmt/diff";
 import type { OutputSink } from "../../lint-fmt/output";
@@ -32,7 +32,7 @@ const execute = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Co
     const adapters = registerAdapters(FORMAT_ADAPTERS, fmtConfig?.order);
     const detected = detectAdapters(root, adapters);
     const allEligible = adaptersByKind(detected, adapters, "fmt");
-    const eligible = allEligible.filter(({ adapter }) => fmtConfig?.adapters?.[adapter.id]?.enabled !== false);
+    const eligible = allEligible.filter(({ adapter }) => fmtConfig?.adapters?.[adapter.id as FmtAdapterId]?.enabled !== false);
 
     if (eligible.length === 0) {
         logger.warn("vis fmt: no formatter detected in this workspace (looked for: oxfmt, biome, dprint, prettier, ruff, deno-fmt).");
@@ -41,7 +41,7 @@ const execute = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Co
     }
 
     const baseExtraArgs = (adapterId: AdapterJob["adapter"]["id"]): string[] | undefined => {
-        const extra = fmtConfig?.adapters?.[adapterId]?.extraArgs;
+        const extra = fmtConfig?.adapters?.[adapterId as FmtAdapterId]?.extraArgs;
 
         return extra && extra.length > 0 ? [...extra] : undefined;
     };

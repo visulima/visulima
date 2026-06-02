@@ -1,7 +1,7 @@
 import type { ConstraintsConfig, NamedInputs, ProjectConfiguration, TargetConfiguration, TaskRunnerOptions } from "@visulima/task-runner";
 
 import type { SimilarDepFamily } from "../deps/similar-deps";
-import type { AdapterId as LintFmtAdapterId } from "../lint-fmt/config-types";
+import type { FmtAdapterId, LintAdapterId } from "../lint-fmt/config-types";
 import type { ToolchainConfig as InternalToolchainConfig, VersionManagerName } from "../runtime/toolchain";
 import type { StagedConfig } from "../staged";
 import type { VisTargetConfiguration } from "../task/target-options";
@@ -433,7 +433,7 @@ export interface VisConfig {
          * `enabled: false` to skip an adapter even when detected, or
          * `extraArgs` to append flags verbatim.
          */
-        adapters?: Partial<Record<LintFmtAdapterId, LintFmtAdapterOverride>>;
+        adapters?: Partial<Record<FmtAdapterId, LintFmtAdapterOverride>>;
 
         /**
          * Pin a file extension (without the leading dot) to a specific
@@ -441,14 +441,14 @@ export interface VisConfig {
          * wins" routing. Use to e.g. send `.md` to `dprint` even when
          * both prettier and dprint are present.
          */
-        extensionOverrides?: Record<string, LintFmtAdapterId>;
+        extensionOverrides?: Record<string, FmtAdapterId>;
 
         /**
          * Override the adapter precedence order. Adapters omitted from
          * this list still run (appended at the end in registry order),
          * but those listed earlier get priority for extension routing.
          */
-        order?: LintFmtAdapterId[];
+        order?: FmtAdapterId[];
     };
 
     /**
@@ -626,14 +626,14 @@ export interface VisConfig {
          * `enabled: false` to skip an adapter even when detected, or
          * `extraArgs` to append flags verbatim.
          */
-        adapters?: Partial<Record<LintFmtAdapterId, LintFmtAdapterOverride>>;
+        adapters?: Partial<Record<LintAdapterId, LintFmtAdapterOverride>>;
 
         /**
          * Override the adapter precedence order. Adapters omitted from
          * this list still run (appended at the end in registry order)
          * unless explicitly disabled under `adapters[id].enabled`.
          */
-        order?: LintFmtAdapterId[];
+        order?: LintAdapterId[];
     };
 
     /**

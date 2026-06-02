@@ -217,37 +217,16 @@
                         "deno-fmt": {
                             "$ref": "#/$defs/LintFmtAdapterOverride"
                         },
-                        "deno-lint": {
-                            "$ref": "#/$defs/LintFmtAdapterOverride"
-                        },
                         "dprint": {
-                            "$ref": "#/$defs/LintFmtAdapterOverride"
-                        },
-                        "eslint": {
-                            "$ref": "#/$defs/LintFmtAdapterOverride"
-                        },
-                        "markdownlint": {
                             "$ref": "#/$defs/LintFmtAdapterOverride"
                         },
                         "oxfmt": {
                             "$ref": "#/$defs/LintFmtAdapterOverride"
                         },
-                        "oxlint": {
-                            "$ref": "#/$defs/LintFmtAdapterOverride"
-                        },
                         "prettier": {
                             "$ref": "#/$defs/LintFmtAdapterOverride"
                         },
-                        "ruff-check": {
-                            "$ref": "#/$defs/LintFmtAdapterOverride"
-                        },
                         "ruff-fmt": {
-                            "$ref": "#/$defs/LintFmtAdapterOverride"
-                        },
-                        "shellcheck": {
-                            "$ref": "#/$defs/LintFmtAdapterOverride"
-                        },
-                        "stylelint": {
                             "$ref": "#/$defs/LintFmtAdapterOverride"
                         }
                     },
@@ -257,14 +236,14 @@
                 "extensionOverrides": {
                     "type": "object",
                     "additionalProperties": {
-                        "$ref": "#/$defs/AdapterId"
+                        "$ref": "#/$defs/FmtAdapterId"
                     },
                     "description": "Pin a file extension (without the leading dot) to a specific adapter, overriding the registry's \"first detected adapter wins\" routing. Use to e.g. send `.md` to `dprint` even when both prettier and dprint are present."
                 },
                 "order": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/$defs/AdapterId"
+                        "$ref": "#/$defs/FmtAdapterId"
                     },
                     "description": "Override the adapter precedence order. Adapters omitted from this list still run (appended at the end in registry order), but those listed earlier get priority for extension routing."
                 }
@@ -352,13 +331,7 @@
                         "biome": {
                             "$ref": "#/$defs/LintFmtAdapterOverride"
                         },
-                        "deno-fmt": {
-                            "$ref": "#/$defs/LintFmtAdapterOverride"
-                        },
                         "deno-lint": {
-                            "$ref": "#/$defs/LintFmtAdapterOverride"
-                        },
-                        "dprint": {
                             "$ref": "#/$defs/LintFmtAdapterOverride"
                         },
                         "eslint": {
@@ -367,19 +340,10 @@
                         "markdownlint": {
                             "$ref": "#/$defs/LintFmtAdapterOverride"
                         },
-                        "oxfmt": {
-                            "$ref": "#/$defs/LintFmtAdapterOverride"
-                        },
                         "oxlint": {
                             "$ref": "#/$defs/LintFmtAdapterOverride"
                         },
-                        "prettier": {
-                            "$ref": "#/$defs/LintFmtAdapterOverride"
-                        },
                         "ruff-check": {
-                            "$ref": "#/$defs/LintFmtAdapterOverride"
-                        },
-                        "ruff-fmt": {
                             "$ref": "#/$defs/LintFmtAdapterOverride"
                         },
                         "shellcheck": {
@@ -395,7 +359,7 @@
                 "order": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/$defs/AdapterId"
+                        "$ref": "#/$defs/LintAdapterId"
                     },
                     "description": "Override the adapter precedence order. Adapters omitted from this list still run (appended at the end in registry order) unless explicitly disabled under `adapters[id].enabled`."
                 }
@@ -3738,23 +3702,31 @@
             "additionalProperties": false,
             "description": "Per-adapter override applied by `vis lint` / `vis fmt`. Keyed by adapter id under `lint.adapters` / `fmt.adapters`. Every field is optional — set only what you need to change."
         },
-        "AdapterId": {
+        "FmtAdapterId": {
             "type": "string",
             "enum": [
                 "biome",
                 "deno-fmt",
-                "deno-lint",
                 "dprint",
+                "oxfmt",
+                "prettier",
+                "ruff-fmt"
+            ],
+            "description": "Adapter IDs that can format (adapter `kind` is `\"fmt\"` or `\"both\"`)."
+        },
+        "LintAdapterId": {
+            "type": "string",
+            "enum": [
+                "biome",
+                "deno-lint",
                 "eslint",
                 "markdownlint",
-                "oxfmt",
                 "oxlint",
-                "prettier",
                 "ruff-check",
-                "ruff-fmt",
                 "shellcheck",
                 "stylelint"
-            ]
+            ],
+            "description": "Adapter IDs that can lint (adapter `kind` is `\"lint\"` or `\"both\"`)."
         },
         "VisPlugin": {
             "type": "object",
