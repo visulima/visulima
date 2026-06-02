@@ -172,46 +172,77 @@ export class TrackedTaskExecutor {
 
         await writeFile(preloadFile, scriptContent);
 
+        // After the process exits, how long to wait for its stdout/stderr to
+        // close before resolving anyway. A descendant that inherited the pipes
+        // (an orphaned browser from a vitest-browser-mode test, a backgrounded
+        // job) can hold them open indefinitely; without this bound the run
+        // would hang on `close`. See voidzero-dev/vite-task#396.
+        const STDIO_DRAIN_GRACE_MS = 2000;
+
         return new Promise((resolve) => {
             // eslint-disable-next-line sonarjs/os-command
-            const child = exec(
-                command,
-                {
+            const child = exec(command, {
+                cwd,
+                env: withEnhancedPath(
+                    {
+                        ...process.env,
+                        ...env,
+                        NODE_OPTIONS: `${process.env["NODE_OPTIONS"] ?? ""} --import ${preloadFile}`.trim(),
+                    },
                     cwd,
-                    env: withEnhancedPath(
-                        {
-                            ...process.env,
-                            ...env,
-                            NODE_OPTIONS: `${process.env["NODE_OPTIONS"] ?? ""} --import ${preloadFile}`.trim(),
-                        },
-                        cwd,
-                    ),
-                    maxBuffer: 50 * 1024 * 1024,
-                },
-                async (_error, stdout, stderr) => {
-                    this.#activeProcesses.delete(child);
+                ),
+                maxBuffer: 50 * 1024 * 1024,
+            });
 
+            // Capture output ourselves so we can resolve on the process's
+            // `exit` (which fires regardless of lingering pipe holders) rather
+            // than only on `close` (which waits for every stdio writer).
+            let stdout = "";
+            let stderr = "";
+
+            child.stdout?.on("data", (chunk: Buffer | string) => {
+                stdout += chunk.toString();
+            });
+            child.stderr?.on("data", (chunk: Buffer | string) => {
+                stderr += chunk.toString();
+            });
+
+            let settled = false;
+
+            const finish = (): void => {
+                if (settled) {
+                    return;
+                }
+
+                settled = true;
+
+                this.#activeProcesses.delete(child);
+
+                (async () => {
                     let accesses: FileAccess[] = [];
 
                     try {
-                        const logContent = await readFile(logFile, "utf8");
-
-                        accesses = this.#parsePreloadLog(logContent);
+                        accesses = this.#parsePreloadLog(await readFile(logFile, "utf8"));
                     } catch {
                         // Log file may not exist if command didn't use Node.js
                     }
 
-                    // Clean up
                     await rm(logFile, { force: true }).catch(() => {});
                     await rm(preloadFile, { force: true }).catch(() => {});
 
-                    resolve({
-                        accesses,
-                        code: child.exitCode ?? 1,
-                        terminalOutput: stdout + stderr,
-                    });
-                },
-            );
+                    resolve({ accesses, code: child.exitCode ?? 1, terminalOutput: stdout + stderr });
+                })().catch(() => {});
+            };
+
+            // Normal completion: every stdio writer closed → finish now.
+            child.on("close", finish);
+            // Process exited but `close` may never come if a descendant still
+            // holds the pipes — finish after a short grace regardless.
+            child.on("exit", () => {
+                setTimeout(finish, STDIO_DRAIN_GRACE_MS).unref();
+            });
+            // Spawn failure (e.g. shell missing) — don't hang.
+            child.on("error", finish);
 
             this.#activeProcesses.add(child);
         });
