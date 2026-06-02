@@ -50,7 +50,7 @@ use std::os::unix::io::{AsRawFd, FromRawFd, OwnedFd, RawFd};
 use std::os::unix::process::ExitStatusExt;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
-use std::sync::mpsc::sync_channel;
+use std::sync::mpsc::{sync_channel, RecvTimeoutError};
 use std::thread;
 use std::time::{Duration, Instant};
 
@@ -183,15 +183,28 @@ pub fn track_command(
     // doesn't double-wait.
     let child = guard.release();
 
+    // A self-pipe used to wake the supervisor out of its blocking poll
+    // once the main target has exited (so a lingering descendant can't
+    // pin the run open forever). See voidzero-dev/vite-task#396.
+    let mut cancel_fds = [0_i32; 2];
+    if unsafe { libc::pipe(cancel_fds.as_mut_ptr()) } != 0 {
+        return Err(io::Error::last_os_error());
+    }
+    let cancel_read = cancel_fds[0];
+    let cancel_write = cancel_fds[1];
+
     // Supervisor runs in a thread so we can simultaneously read
     // stdio + wait on the child without deadlocking.
     let (tx, rx) = sync_channel::<io::Result<Vec<FileAccess>>>(0);
     let supervisor_fd = notify_fd;
     let supervisor_thread = thread::spawn(move || {
-        let result = supervisor::run(supervisor_fd);
-        // Closing the fd matches "parent owns the listener" — once
-        // the supervisor returns we have no further use for it.
-        unsafe { libc::close(supervisor_fd) };
+        let result = supervisor::run(supervisor_fd, cancel_read);
+        // Closing the fds matches "parent owns the listener" — once
+        // the supervisor returns we have no further use for them.
+        unsafe {
+            libc::close(supervisor_fd);
+            libc::close(cancel_read);
+        }
         let _ = tx.send(result);
     });
 
@@ -217,14 +230,33 @@ pub fn track_command(
 
     let status = child.wait()?;
 
-    let accesses = match rx.recv() {
+    // The main target has exited. Give the supervisor a short grace window
+    // to flush accesses from descendants that exit promptly, then stop
+    // waiting — a lingering descendant (an orphaned browser from a
+    // vitest-browser-mode test, a backgrounded `&` job, …) would otherwise
+    // keep the seccomp notify fd alive and block here forever. The
+    // descendant keeps running untracked; we never hang the run.
+    const SUPERVISOR_GRACE: Duration = Duration::from_millis(2000);
+
+    let accesses = match rx.recv_timeout(SUPERVISOR_GRACE) {
         Ok(Ok(list)) => list,
         Ok(Err(e)) => {
             let _ = supervisor_thread.join();
+            unsafe { libc::close(cancel_write) };
             return Err(e);
         }
-        Err(_) => Vec::new(),
+        Err(RecvTimeoutError::Timeout) => {
+            // Wake the supervisor's poll; it returns whatever it gathered.
+            unsafe { libc::write(cancel_write, [1_u8].as_ptr().cast(), 1) };
+
+            match rx.recv() {
+                Ok(Ok(list)) => list,
+                _ => Vec::new(),
+            }
+        }
+        Err(RecvTimeoutError::Disconnected) => Vec::new(),
     };
+    unsafe { libc::close(cancel_write) };
     let _ = supervisor_thread.join();
 
     let stdout = stdout_thread.join().unwrap_or_else(|_| Ok(Vec::new())).unwrap_or_default();

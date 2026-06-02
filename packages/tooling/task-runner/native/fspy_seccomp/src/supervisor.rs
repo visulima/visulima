@@ -45,7 +45,8 @@ const SECCOMP_IOCTL_NOTIF_RECV: Ioctl = ioc(3, 0x21, 0, 80);
 /// `_IOWR('!', 1, struct seccomp_notif_resp)` — 24-byte struct.
 const SECCOMP_IOCTL_NOTIF_SEND: Ioctl = ioc(3, 0x21, 1, 24);
 
-/// Drain the listener until the tracked process tree exits.
+/// Drain the listener until the tracked process tree exits — or until
+/// `cancel_fd` becomes readable, whichever comes first.
 ///
 /// Returns the gathered accesses. Stops on:
 /// - `ENOENT` / `ECANCELED` from the receive ioctl. Both surface
@@ -54,7 +55,14 @@ const SECCOMP_IOCTL_NOTIF_SEND: Ioctl = ioc(3, 0x21, 1, 24);
 ///   when the last task exits mid-receive.
 /// - `EINTR` is retried — interrupts here mean the supervisor's own
 ///   thread received a signal, not that tracking should bail.
-pub fn run(notify_fd: RawFd) -> io::Result<Vec<FileAccess>> {
+/// - `cancel_fd` readable. The caller writes to it once the *main*
+///   target has exited and a grace window has lapsed, so a lingering
+///   descendant (e.g. an orphaned browser process from a
+///   vitest-browser-mode test) can't keep the notify fd alive and
+///   block the run forever. See voidzero-dev/vite-task#396. We
+///   `poll(2)` both fds rather than blocking in the recv ioctl so
+///   this wake-up is possible at all.
+pub fn run(notify_fd: RawFd, cancel_fd: RawFd) -> io::Result<Vec<FileAccess>> {
     // Stack-allocated request/response buffers. The kernel writes
     // the full struct each notification, so allocating per-iteration
     // would just churn the heap.
@@ -64,6 +72,36 @@ pub fn run(notify_fd: RawFd) -> io::Result<Vec<FileAccess>> {
     let mut accesses = Vec::new();
 
     loop {
+        // Block until a notification is pending OR the caller asks us to
+        // stop. Without this poll we'd sit in a blocking recv ioctl that
+        // only returns when the *entire* tracked tree exits.
+        let mut fds = [
+            libc::pollfd { fd: notify_fd, events: libc::POLLIN, revents: 0 },
+            libc::pollfd { fd: cancel_fd, events: libc::POLLIN, revents: 0 },
+        ];
+
+        let prc = unsafe { libc::poll(fds.as_mut_ptr(), 2, -1) };
+
+        if prc < 0 {
+            let err = io::Error::last_os_error();
+
+            if err.raw_os_error() == Some(libc::EINTR) {
+                continue;
+            }
+
+            return Err(err);
+        }
+
+        // Cancellation requested — return what we've gathered so far.
+        if fds[1].revents != 0 {
+            break;
+        }
+
+        // Spurious wake with nothing on the notify fd — loop again.
+        if fds[0].revents == 0 {
+            continue;
+        }
+
         // Zero between iterations so stale fields from the previous
         // notification can't leak through if the kernel writes a
         // shorter payload. The kernel always writes the fields we
