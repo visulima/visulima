@@ -261,6 +261,10 @@
             "types": "./dist/utils/parse-address.d.ts",
             "default": "./dist/utils/parse-address.js"
         },
+        "./utils/result": {
+            "types": "./dist/utils/result.d.ts",
+            "default": "./dist/utils/result.js"
+        },
         "./utils/format-email-address": {
             "types": "./dist/utils/format-email-address.d.ts",
             "default": "./dist/utils/format-email-address.js"

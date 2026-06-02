@@ -33,4 +33,6 @@ export type {
     Receipt,
     Result,
 } from "./types";
+export type { OkResult } from "./utils/result";
+export { isErr, isOk, mapOk, tryAsync, unwrap, unwrapOr } from "./utils/result";
 export { default as checkFeatureSupport, type FeatureSupportResult, type FeatureViolation } from "./utils/validation/check-feature-support";
