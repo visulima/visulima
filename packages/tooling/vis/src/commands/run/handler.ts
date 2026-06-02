@@ -847,7 +847,10 @@ const createConcurrentExecutor = (deps: ExecutorDependencies) => {
         const customShell = resolveTargetShell(visOptions, currentOs);
         // `shellArgs` lets a target pick a non-`-c` interpreter (e.g.
         // `shell: "node", shellArgs: ["-e"]` runs the command as inline JS).
-        const shellInvokeArgs = (visOptions?.shellArgs ?? ["-c"]).join(" ");
+        // An empty array would drop the flag entirely (turning `node 'cmd'`
+        // into a file lookup), so fall back to `-c`.
+        const shellArgs = visOptions?.shellArgs;
+        const shellInvokeArgs = shellArgs && shellArgs.length > 0 ? shellArgs.join(" ") : "-c";
         const command = customShell ? `${customShell} ${shellInvokeArgs} ${singleQuoteEscape(commandWithAffected)}` : commandWithAffected;
 
         const envFileVars = visOptions?.envFile ? loadEnvFileCached(envFileCache, resolvedCwd, visOptions.envFile) : undefined;

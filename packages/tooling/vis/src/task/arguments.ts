@@ -56,6 +56,62 @@ export interface ParsedTaskArguments {
 
 const asKebab = (name: string): string => name.replace(/^--?/u, "");
 
+/** Tokens accepted as explicit boolean values (case-insensitive). */
+const BOOLEAN_LITERALS = new Set(["0", "1", "false", "no", "true", "yes"]);
+
+/**
+ * A token is a *value* (not a flag) when it doesn't start with `-`, or when it
+ * is a negative number (`-5`, `-1.5`) — so `--offset -5` consumes `-5` while
+ * `--reporter -r` does not swallow the `-r` flag.
+ */
+const isValueToken = (token: string): boolean => !token.startsWith("-") || /^-(?:\d|\.\d)/u.test(token);
+
+/**
+ * Set `provided[name]` from either the inline `=value`, the next token, or a
+ * presence-only `"true"`. Returns the number of *extra* tokens consumed (0 or
+ * 1) so the caller can advance its loop counter. Boolean args only consume a
+ * following token when it is a boolean literal, so `--watch true` works
+ * without leaving `true` as a stray positional.
+ */
+const captureValue = (
+    provided: Map<string, string>,
+    name: string,
+    argument: TaskArgument | undefined,
+    inline: string | undefined,
+    raw: string[],
+    index: number,
+): number => {
+    if (inline !== undefined) {
+        provided.set(name, inline);
+
+        return 0;
+    }
+
+    const next = raw[index + 1];
+
+    if ((argument?.type ?? "string") === "boolean") {
+        if (next !== undefined && BOOLEAN_LITERALS.has(next.toLowerCase())) {
+            provided.set(name, next.toLowerCase());
+
+            return 1;
+        }
+
+        provided.set(name, "true");
+
+        return 0;
+    }
+
+    if (next !== undefined && isValueToken(next)) {
+        provided.set(name, next);
+
+        return 1;
+    }
+
+    provided.set(name, "true");
+
+    return 0;
+};
+
 const coerce = (
     argument: TaskArgument,
     raw: string,
@@ -63,9 +119,11 @@ const coerce = (
     const type = argument.type ?? "string";
 
     if (type === "number") {
-        const value = Number(raw);
+        const trimmed = raw.trim();
+        const value = Number(trimmed);
 
-        if (Number.isNaN(value)) {
+        // Reject empty (`Number("")` is 0) and non-finite (`Infinity`, `NaN`).
+        if (trimmed === "" || !Number.isFinite(value)) {
             return { error: `--${argument.name} expects a number, got "${raw}"` };
         }
 
@@ -138,19 +196,8 @@ export const parseTaskArguments = (schema: TaskArgument[], raw: string[]): Parse
 
         if (matchLong) {
             const name = matchLong[1] as string;
-            const argument = byName.get(name);
-            const inline = matchLong[2];
 
-            if (inline !== undefined) {
-                provided.set(name, inline);
-            } else if (argument && (argument.type ?? "string") === "boolean") {
-                provided.set(name, "true");
-            } else if (index + 1 < raw.length && !(raw[index + 1] as string).startsWith("-")) {
-                index += 1;
-                provided.set(name, raw[index] as string);
-            } else {
-                provided.set(name, "true");
-            }
+            index += captureValue(provided, name, byName.get(name), matchLong[2], raw, index);
 
             continue;
         }
@@ -160,19 +207,8 @@ export const parseTaskArguments = (schema: TaskArgument[], raw: string[]): Parse
 
         if (matchShort && shortName !== undefined) {
             const argument = byAlias.get(shortName);
-            const name = argument?.name ?? shortName;
-            const inline = matchShort[2];
 
-            if (inline !== undefined) {
-                provided.set(name, inline);
-            } else if (argument && (argument.type ?? "string") === "boolean") {
-                provided.set(name, "true");
-            } else if (index + 1 < raw.length && !(raw[index + 1] as string).startsWith("-")) {
-                index += 1;
-                provided.set(name, raw[index] as string);
-            } else {
-                provided.set(name, "true");
-            }
+            index += captureValue(provided, argument?.name ?? shortName, argument, matchShort[2], raw, index);
 
             continue;
         }
@@ -214,7 +250,11 @@ export const parseTaskArguments = (schema: TaskArgument[], raw: string[]): Parse
     return { errors, values };
 };
 
-/** `VIS_ARG_&lt;UPPER_SNAKE>` env-var name for a declared argument. */
+/**
+ * `VIS_ARG_&lt;UPPER_SNAKE>` env-var name for a declared argument. Non-alphanumeric
+ * runs collapse to `_`, so argument names should be unique after normalization
+ * (`min-age` and `min_age` both map to `VIS_ARG_MIN_AGE`).
+ */
 export const taskArgumentEnvName = (name: string): string => `VIS_ARG_${asKebab(name).replaceAll(/[^a-zA-Z0-9]+/gu, "_").toUpperCase()}`;
 
 /** Build the `{ VIS_ARG_*: value }` env block from validated values. */

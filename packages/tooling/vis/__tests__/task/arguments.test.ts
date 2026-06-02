@@ -39,6 +39,40 @@ describe(parseTaskArguments, () => {
         expect(parseTaskArguments(schema, ["--retries=abc"]).errors).toStrictEqual([`--retries expects a number, got "abc"`]);
     });
 
+    it("rejects empty and non-finite numbers", () => {
+        expect.assertions(2);
+
+        const schema: TaskArgument[] = [{ name: "retries", type: "number" }];
+
+        // `Number("")` is 0 and `Number("Infinity")` is finite-looking — both must fail.
+        expect(parseTaskArguments(schema, ["--retries="]).errors).toStrictEqual([`--retries expects a number, got ""`]);
+        expect(parseTaskArguments(schema, ["--retries=Infinity"]).errors).toStrictEqual([
+            `--retries expects a number, got "Infinity"`,
+        ]);
+    });
+
+    it("consumes a negative number as a value, not a flag", () => {
+        expect.assertions(1);
+
+        const schema: TaskArgument[] = [{ name: "offset", type: "number" }];
+
+        expect(parseTaskArguments(schema, ["--offset", "-5"]).values).toStrictEqual({ offset: -5 });
+    });
+
+    it("consumes an explicit boolean value without leaving a stray positional", () => {
+        expect.assertions(2);
+
+        const schema: TaskArgument[] = [
+            { name: "watch", type: "boolean" },
+            { name: "file", positional: true },
+        ];
+
+        // `false` is consumed by --watch, so it must NOT fill the positional `file`.
+        expect(parseTaskArguments(schema, ["--watch", "false"]).values).toStrictEqual({ watch: false });
+        // A non-boolean token after a boolean flag stays a positional.
+        expect(parseTaskArguments(schema, ["--watch", "a.ts"]).values).toStrictEqual({ file: "a.ts", watch: true });
+    });
+
     it("validates enum choices", () => {
         expect.assertions(2);
 
