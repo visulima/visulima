@@ -69,7 +69,7 @@ describe.each([
         const path = `test.${name}.detect-indent.jsonc`;
 
         // 4-space indent
-        await writeFile(path, '{\n    "name": "original"\n}\n', "utf8");
+        await writeFile(path, "{\n    \"name\": \"original\"\n}\n", "utf8");
 
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "writeJsonc") {
@@ -81,7 +81,7 @@ describe.each([
         const content = await readFile(path, "utf8");
 
         // After fresh stringify with detected 4-space indent
-        expect(content).toContain('    "name"');
+        expect(content).toContain("    \"name\"");
 
         await rm(path);
     });
@@ -90,7 +90,7 @@ describe.each([
         expect.assertions(2);
 
         const path = `test.${name}.no-preserve.jsonc`;
-        const original = '{\n  // comment\n  "a": 1\n}\n';
+        const original = "{\n  // comment\n  \"a\": 1\n}\n";
 
         await writeFile(path, original, "utf8");
 
@@ -128,8 +128,8 @@ describe.each([
 
         const content = await readFile(path, "utf8");
 
-        expect(content).toContain('"keep"');
-        expect(content).not.toContain('"secret"');
+        expect(content).toContain("\"keep\"");
+        expect(content).not.toContain("\"secret\"");
 
         await rm(path);
     });
