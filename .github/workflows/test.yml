@@ -76,9 +76,10 @@ jobs:
         needs: "files-changed"
         # "Wait for Build Native workflow" routinely burns 17-22 min on this
         # job before tests even start; runner-queue spikes have pushed that
-        # past 30. 90 min absorbs a 50-min wait (with cushion) plus the
-        # ~20-min test phase, without cancelling the matrix mid-tests.
-        timeout-minutes: 90
+        # past 30 and, on saturated days, past the old 50-min cap. 130 min
+        # absorbs an 80-min wait (with cushion) plus the ~20-min test phase,
+        # without cancelling the matrix mid-tests.
+        timeout-minutes: 130
         strategy:
             matrix:
                 include:
@@ -182,9 +183,13 @@ jobs:
               # Plain shell + gh api works on every runner without Ruby.
               # GitHub-hosted runner queue depth occasionally pushes the
               # gate job's start time 30+ minutes past the last build
-              # completion. 55-min step ceiling + 50-min internal deadline
-              # gives enough slack to ride that out.
-              timeout-minutes: 55
+              # completion — and on bad days the build matrix itself stays
+              # queued long enough that the old 50-min deadline timed out
+              # mid-build (check still in_progress). 85-min step ceiling +
+              # 80-min internal deadline rides out those spikes; the gate
+              # still exits in ~minutes in the common case, so the higher
+              # ceiling only costs wall-clock when the runner pool is saturated.
+              timeout-minutes: 85
               shell: "bash"
               env:
                   GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
@@ -193,7 +198,7 @@ jobs:
               run: |
                   set -euo pipefail
                   check_name="Check Native Build"
-                  deadline=$(( $(date +%s) + 3000 ))
+                  deadline=$(( $(date +%s) + 4800 ))
                   while :; do
                       # Transient HTTP 401s on secrets.GITHUB_TOKEN happen
                       # mid-poll (the token gets briefly rotated by Actions).
@@ -224,7 +229,7 @@ jobs:
                           echo "Check '$check_name' not yet registered or token blip, waiting 15s..."
                       fi
                       if [ "$(date +%s)" -ge "$deadline" ]; then
-                          echo "Timed out waiting for '$check_name' after 50 minutes"
+                          echo "Timed out waiting for '$check_name' after 80 minutes"
                           exit 1
                       fi
                       sleep 15
@@ -405,7 +410,7 @@ jobs:
         # Mirrors the `test` job ceiling: Build Native wait may eat up to
         # 55 min when runner queues back up; browser tests + install need
         # the remaining buffer. 90 min absorbs both without cancelling.
-        timeout-minutes: 90
+        timeout-minutes: 130
         env:
             NODE: "22"
         steps:
@@ -470,9 +475,13 @@ jobs:
               # Plain shell + gh api works on every runner without Ruby.
               # GitHub-hosted runner queue depth occasionally pushes the
               # gate job's start time 30+ minutes past the last build
-              # completion. 55-min step ceiling + 50-min internal deadline
-              # gives enough slack to ride that out.
-              timeout-minutes: 55
+              # completion — and on bad days the build matrix itself stays
+              # queued long enough that the old 50-min deadline timed out
+              # mid-build (check still in_progress). 85-min step ceiling +
+              # 80-min internal deadline rides out those spikes; the gate
+              # still exits in ~minutes in the common case, so the higher
+              # ceiling only costs wall-clock when the runner pool is saturated.
+              timeout-minutes: 85
               shell: "bash"
               env:
                   GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
@@ -481,7 +490,7 @@ jobs:
               run: |
                   set -euo pipefail
                   check_name="Check Native Build"
-                  deadline=$(( $(date +%s) + 3000 ))
+                  deadline=$(( $(date +%s) + 4800 ))
                   while :; do
                       # Transient HTTP 401s on secrets.GITHUB_TOKEN happen
                       # mid-poll (the token gets briefly rotated by Actions).
@@ -512,7 +521,7 @@ jobs:
                           echo "Check '$check_name' not yet registered or token blip, waiting 15s..."
                       fi
                       if [ "$(date +%s)" -ge "$deadline" ]; then
-                          echo "Timed out waiting for '$check_name' after 50 minutes"
+                          echo "Timed out waiting for '$check_name' after 80 minutes"
                           exit 1
                       fi
                       sleep 15
