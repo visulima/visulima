@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createTusAdapter } from "../../src/core/tus-adapter";
 import { defaultFingerprint } from "../../src/core/fingerprint";
+import { createTusAdapter } from "../../src/core/tus-adapter";
 import { UploadControl } from "../../src/core/upload-control";
 import { MemoryUrlStorage } from "../../src/core/url-storage";
 
@@ -28,7 +28,7 @@ const captureFetchCall = (call: unknown[]): FetchArgs => {
             headers[key] = value;
         }
     } else {
-        Object.assign(headers, headersInit as Record<string, string>);
+        Object.assign(headers, headersInit);
     }
 
     return { body: init?.body, headers, method: init?.method, url };
@@ -338,12 +338,12 @@ describe("tus-adapter resume", () => {
         // PATCH delays so we can abort mid-flight via the control.
         mockFetch.mockImplementationOnce(
             async (_url: string, init?: RequestInit) =>
-                new Promise<Response>((_, reject) => {
+                new Promise<Response>((_resolve, reject) => {
                     init?.signal?.addEventListener("abort", () => {
-                        const err = new Error("Aborted");
+                        const error = new Error("Aborted");
 
-                        err.name = "AbortError";
-                        reject(err);
+                        error.name = "AbortError";
+                        reject(error);
                     });
                 }),
         );
