@@ -1,3 +1,18 @@
+## @visulima/crud [3.0.0-alpha.16](https://github.com/visulima/visulima/compare/@visulima/crud@3.0.0-alpha.15...@visulima/crud@3.0.0-alpha.16) (2026-06-02)
+
+### Bug Fixes
+
+* **tests:** revert unsafe vitest autofixes from the lint sweep ([378f27c](https://github.com/visulima/visulima/commit/378f27caa370f1d3188aef2ed36d46839abc88c4))
+
+### Miscellaneous Chores
+
+* apply eslint + prettier autofixes across packages ([c1bb784](https://github.com/visulima/visulima/commit/c1bb7848a0d93d0dfe2960c77e3cda22239c79a0))
+
+### Tests
+
+* **crud:** cover json-schema parser traversal, missing-resource 404s, query/where parsing ([5b5f0f1](https://github.com/visulima/visulima/commit/5b5f0f115d86edbe4a1e88f5f35ac1f617e97c82))
+* improve coverage across packages ([91bd6d3](https://github.com/visulima/visulima/commit/91bd6d3b61736e3c8bd1fc59b0b5955f76a5d323))
+
 ## @visulima/crud [3.0.0-alpha.15](https://github.com/visulima/visulima/compare/@visulima/crud@3.0.0-alpha.14...@visulima/crud@3.0.0-alpha.15) (2026-05-27)
 
 ### Bug Fixes
