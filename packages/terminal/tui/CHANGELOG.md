@@ -1,3 +1,18 @@
+## @visulima/tui [1.0.0-alpha.21](https://github.com/visulima/visulima/compare/@visulima/tui@1.0.0-alpha.20...@visulima/tui@1.0.0-alpha.21) (2026-06-02)
+
+### Miscellaneous Chores
+
+* apply eslint + prettier autofixes across packages ([c1bb784](https://github.com/visulima/visulima/commit/c1bb7848a0d93d0dfe2960c77e3cda22239c79a0))
+
+### Tests
+
+* **tui:** cover input parser, text-wrap, measure-text/element, and selection logic ([47b4311](https://github.com/visulima/visulima/commit/47b43119fb47fad536ea68e4d3ae0a4ede159b87))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.31
+
 ## @visulima/tui [1.0.0-alpha.20](https://github.com/visulima/visulima/compare/@visulima/tui@1.0.0-alpha.19...@visulima/tui@1.0.0-alpha.20) (2026-05-27)
 
 ### Features
