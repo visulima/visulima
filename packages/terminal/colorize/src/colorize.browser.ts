@@ -55,7 +55,7 @@ const createStyle = (
             // eslint-disable-next-line unicorn/prefer-string-replace-all,sonarjs/slow-regex
             const inputWithoutStyles = input.replace(/,.*;/g, "");
 
-            return [`%c${inputWithoutStyles}`, style.css, ...(collectedStyles ?? [])];
+            return [`%c${inputWithoutStyles}`, style.css, ...collectedStyles ?? []];
         }
 
         if (typeof input === "number" || typeof input === "string") {
