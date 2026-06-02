@@ -1,7 +1,7 @@
 export { type AttachmentDataOptions, type AttachmentOptions, detectMimeType, generateContentId, readFileAsBuffer } from "./attachment-helpers";
 export { default as EmailError } from "./errors/email-error";
 export { default as RequiredOptionError } from "./errors/required-option-error";
-export { createMail, Mail, type MailGlobalConfig, type SendableMessage } from "./mail";
+export { createMail, type FeatureCheckMode, Mail, type MailGlobalConfig, type MailOptions, type SendableMessage } from "./mail";
 export { default as MailMessage } from "./mail-message";
 export type { Provider, ProviderFactory } from "./providers/provider";
 export { defineProvider } from "./providers/provider";
@@ -22,3 +22,4 @@ export type {
     Receipt,
     Result,
 } from "./types";
+export { default as checkFeatureSupport, type FeatureSupportResult, type FeatureViolation } from "./utils/validation/check-feature-support";

@@ -5,6 +5,7 @@ import { createLogger } from "../../utils/create-logger";
 import generateMessageId from "../../utils/generate-message-id";
 import type { Provider, ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
+import { aggregateProviderFeatures } from "../utils";
 import type { FailoverConfig, FailoverEmailOptions } from "./types";
 
 const isProviderFactory = (value: unknown): value is ProviderFactory => typeof value === "function";
@@ -83,17 +84,10 @@ const provider: ProviderFactory<FailoverConfig> = defineProvider((config: Failov
     };
 
     return {
-        features: {
-            attachments: true,
-            batchSending: false,
-            customHeaders: true,
-            html: true,
-            replyTo: true,
-            scheduling: false,
-            tagging: false,
-            templates: false,
-            tracking: false,
-        },
+        // Derived from the configured mailers: a capability is advertised only when every routed
+        // provider agrees, otherwise it is left undefined ("unknown") so the fail-fast capability
+        // guard delegates the decision to whichever mailer ultimately handles the message.
+        features: aggregateProviderFeatures(options.mailers),
 
         /**
          * Initializes the failover provider and all underlying providers.

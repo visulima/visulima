@@ -1,4 +1,5 @@
 import DraftMailMessage from "./draft-mail-message";
+import EmailError from "./errors/email-error";
 import MailMessage from "./mail-message";
 import type { Provider } from "./providers/provider";
 import type { EmailAddress, EmailHeaders, EmailOptions, EmailResult, Receipt, Result } from "./types";
@@ -6,6 +7,7 @@ import buildMimeMessage from "./utils/build-mime-message";
 import type { Logger } from "./utils/create-logger";
 import { createLogger } from "./utils/create-logger";
 import headersToRecord from "./utils/headers-to-record";
+import checkFeatureSupport from "./utils/validation/check-feature-support";
 
 /**
  * Logs the result of sending an email.
@@ -33,6 +35,25 @@ const logSendResult = (logger: Logger | undefined, result: Result<EmailResult>, 
  * Type alias for messages that can be sent via Mail.send().
  */
 export type SendableMessage = MailMessage | EmailOptions;
+
+/**
+ * Controls the fail-fast capability guard that runs before a message is handed to the provider.
+ *
+ * `"error"` (default) rejects the send with a failed Result when the message uses a capability the provider has explicitly declared unsupported.
+ * `"warn"` logs a warning and sends anyway. `"off"` skips the check entirely.
+ */
+export type FeatureCheckMode = "error" | "off" | "warn";
+
+/**
+ * Options for a {@link Mail} instance.
+ */
+export interface MailOptions {
+    /**
+     * How to handle messages that use capabilities the provider has declared unsupported.
+     * @default "error"
+     */
+    featureCheck?: FeatureCheckMode;
+}
 
 /**
  * Global email configuration that applies to all emails sent through a Mail instance.
@@ -82,12 +103,16 @@ export class Mail {
 
     private globalConfig?: MailGlobalConfig;
 
+    private readonly featureCheck: FeatureCheckMode;
+
     /**
      * Creates a new Mail instance with a provider.
      * @param provider The email provider instance.
+     * @param options Optional Mail configuration.
      */
-    public constructor(provider: Provider) {
+    public constructor(provider: Provider, options?: MailOptions) {
         this.provider = provider;
+        this.featureCheck = options?.featureCheck ?? "error";
     }
 
     /**
@@ -290,6 +315,12 @@ export class Mail {
 
         emailOptions = this.applyGlobalConfig(emailOptions);
 
+        const featureError = this.assertFeatureSupport(emailOptions);
+
+        if (featureError) {
+            return { error: featureError, success: false };
+        }
+
         const result = await this.provider.sendEmail(emailOptions);
 
         logSendResult(this.logger, result, this.provider.name ?? "unknown");
@@ -419,6 +450,51 @@ export class Mail {
     }
 
     /**
+     * Runs the fail-fast capability guard for the configured {@link FeatureCheckMode}.
+     * @param emailOptions The fully-resolved email options about to be sent.
+     * @returns An {@link EmailError} when the send should be rejected, otherwise undefined.
+     * @private
+     */
+    private assertFeatureSupport(emailOptions: EmailOptions): EmailError | undefined {
+        if (this.featureCheck === "off") {
+            return undefined;
+        }
+
+        const { supported, violations } = checkFeatureSupport(emailOptions, this.provider.features);
+
+        if (supported) {
+            return undefined;
+        }
+
+        const providerName = this.provider.name ?? "unknown";
+        const fields = violations.map((violation) => violation.field);
+        const reasons = violations.map((violation) => violation.message);
+
+        if (this.featureCheck === "warn") {
+            if (this.logger) {
+                this.logger.warn("Message uses capabilities the provider does not support", {
+                    fields,
+                    provider: providerName,
+                });
+            }
+
+            return undefined;
+        }
+
+        if (this.logger) {
+            this.logger.error("Message rejected by capability guard", {
+                fields,
+                provider: providerName,
+            });
+        }
+
+        return new EmailError(providerName, `Provider does not support the following message fields: ${fields.join(", ")}`, {
+            code: "UNSUPPORTED_FEATURES",
+            hint: reasons,
+        });
+    }
+
+    /**
      * Builds email options from a MailMessage instance for draft creation.
      * Applies global configuration before building to ensure required fields are set.
      * @param message The MailMessage or DraftMailMessage instance.
@@ -544,11 +620,15 @@ export class Mail {
 /**
  * Creates a new Mail instance with a provider.
  * @param provider The email provider instance.
+ * @param options Optional Mail configuration, e.g. the {@link FeatureCheckMode}.
  * @returns A new Mail instance.
  * @example
  * ```ts
  * const mail = createMail(provider);
  * mail.setFrom({ email: "noreply@example.com", name: "My App" });
+ *
+ * // Disable the fail-fast capability guard
+ * const lenient = createMail(provider, { featureCheck: "off" });
  * ```
  */
-export const createMail = (provider: Provider): Mail => new Mail(provider);
+export const createMail = (provider: Provider, options?: MailOptions): Mail => new Mail(provider, options);

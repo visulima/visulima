@@ -249,6 +249,10 @@
             "types": "./dist/utils/validation/verify-email.d.ts",
             "default": "./dist/utils/validation/verify-email.js"
         },
+        "./validation/check-feature-support": {
+            "types": "./dist/utils/validation/check-feature-support.d.ts",
+            "default": "./dist/utils/validation/check-feature-support.js"
+        },
         "./utils/normalize-email-aliases": {
             "types": "./dist/utils/normalize-email-aliases.d.ts",
             "default": "./dist/utils/normalize-email-aliases.js"

@@ -1,4 +1,4 @@
 {
     "title": "Getting Started",
-    "pages": ["introduction", "configuration", "sending-mail"]
+    "pages": ["introduction", "configuration", "sending-mail", "capability-guard"]
 }

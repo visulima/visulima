@@ -517,14 +517,8 @@ describe(roundRobinProvider, () => {
 
             expect(roundRobin.features).toStrictEqual({
                 attachments: true,
-                batchSending: false,
-                customHeaders: true,
                 html: true,
                 replyTo: true,
-                scheduling: false,
-                tagging: false,
-                templates: false,
-                tracking: false,
             });
         });
     });

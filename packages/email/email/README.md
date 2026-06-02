@@ -114,6 +114,46 @@ const message = new MailMessage().to("user@example.com").subject("Hello").html("
 await mail.send(message);
 ```
 
+### Capability Guard (fail-fast field support)
+
+Every provider declares which capabilities it supports through its `features` flags (attachments, tagging, scheduling, HTML, custom headers, reply-to, templates, ...). Before a message is handed to the provider, `Mail` runs a fail-fast check: if the message uses a capability the provider has **explicitly** declared unsupported (`features[x] === false`), the send is rejected locally — no wasted network round-trip and no silent data loss.
+
+```typescript
+import { createMail } from "@visulima/email";
+import { awsSesProvider } from "@visulima/email/providers/aws-ses";
+
+// AWS SES declares `tagging: false`
+const mail = createMail(awsSesProvider({ accessKeyId, secretAccessKey, region }));
+
+const result = await mail.send({
+    from: { email: "noreply@example.com" },
+    subject: "Hi",
+    tags: ["promo"], // not representable by AWS SES
+    text: "Body",
+    to: { email: "user@example.com" },
+});
+
+result.success; // false
+(result.error as { code?: string }).code; // "UNSUPPORTED_FEATURES"
+```
+
+Capabilities left `undefined` are treated as "unknown" and never rejected, so providers that publish a partial (or no) `features` map are never falsely blocked. The behaviour is configurable per `Mail` instance:
+
+```typescript
+createMail(provider, { featureCheck: "error" }); // default — reject unsupported fields
+createMail(provider, { featureCheck: "warn" }); // log a warning and send anyway
+createMail(provider, { featureCheck: "off" }); // skip the check entirely
+```
+
+You can also run the check standalone (e.g. inside a custom provider):
+
+```typescript
+import { checkFeatureSupport } from "@visulima/email";
+// or the focused entry point: "@visulima/email/validation/check-feature-support"
+
+const { supported, violations } = checkFeatureSupport(message, provider.features);
+```
+
 ### Creating Draft Emails
 
 You can create draft emails in EML (RFC 822) format without sending them. The `draft()` method returns the email as an EML string with an `X-Unsent: 1` header automatically added:

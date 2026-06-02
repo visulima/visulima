@@ -313,6 +313,21 @@ const mock = mockProvider({
 });
 ```
 
+## Mail Options
+
+`createMail` accepts an optional second argument to configure the `Mail` instance itself (as opposed to the provider):
+
+```typescript
+import { createMail } from "@visulima/email";
+import { resendProvider } from "@visulima/email/providers/resend";
+
+const mail = createMail(resendProvider({ apiKey: "re_xxx" }), {
+    featureCheck: "error", // "error" (default) | "warn" | "off"
+});
+```
+
+`featureCheck` controls the fail-fast [capability guard](/docs/packages/email/getting-started/capability-guard), which rejects messages that use fields the provider has explicitly declared unsupported before they reach the network. See the dedicated guide for details.
+
 ## Environment Variables
 
 It's recommended to store sensitive configuration in environment variables:
