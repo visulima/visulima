@@ -1,3 +1,18 @@
+## @visulima/storage-client [1.0.0-alpha.16](https://github.com/visulima/visulima/compare/@visulima/storage-client@1.0.0-alpha.15...@visulima/storage-client@1.0.0-alpha.16) (2026-06-02)
+
+### Bug Fixes
+
+* **tests:** revert unsafe vitest autofixes from the lint sweep ([378f27c](https://github.com/visulima/visulima/commit/378f27caa370f1d3188aef2ed36d46839abc88c4))
+
+### Miscellaneous Chores
+
+* apply eslint + prettier autofixes across packages ([c1bb784](https://github.com/visulima/visulima/commit/c1bb7848a0d93d0dfe2960c77e3cda22239c79a0))
+
+### Tests
+
+* improve coverage across packages ([91bd6d3](https://github.com/visulima/visulima/commit/91bd6d3b61736e3c8bd1fc59b0b5955f76a5d323))
+* **storage-client:** clear eslint errors in test suite ([#669](https://github.com/visulima/visulima/issues/669)) ([2a3928d](https://github.com/visulima/visulima/commit/2a3928d7a6fbe1dd7213e57f941ff3b1d6c745ec))
+
 ## @visulima/storage-client [1.0.0-alpha.15](https://github.com/visulima/visulima/compare/@visulima/storage-client@1.0.0-alpha.14...@visulima/storage-client@1.0.0-alpha.15) (2026-05-27)
 
 ### Features
