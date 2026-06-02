@@ -6,7 +6,7 @@ import type { ColorizeType } from "./types";
 const colorize: ColorizeType = new ColorizeImpl();
 
 // eslint-disable-next-line import/exports-last
-export const makeTaggedTemplate = (instance: ColorizeType): ((firstString: TemplateStringsArray, ...arguments_: any[]) => string) =>
+export const makeTaggedTemplate = (instance: ColorizeType): (firstString: TemplateStringsArray, ...arguments_: any[]) => string =>
     makeColorizeTemplate(makeTemplate(instance));
 
 // eslint-disable-next-line import/exports-last

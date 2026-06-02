@@ -12,7 +12,7 @@ description = "macOS file-access tracker — a DYLD-interpose dylib injected via
 # lives in `native/src/macos.rs` instead (mirrors how the seccomp helper is a
 # separate binary from the parent binding).
 [lib]
-crate-type = ["cdylib"]
+crate-type = [ "cdylib" ]
 
 [target.'cfg(target_os = "macos")'.dependencies]
 # `libc` for the real syscall wrappers we forward to, the socket primitives,

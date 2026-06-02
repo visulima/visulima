@@ -25,15 +25,15 @@ describe(template, () => {
         expect.assertions(2);
 
         expect(function_`{bold.rgb(144,10,178).inverse Hello, {~inverse there!}}`).toBe(
-            "\u001B[1m\u001B[38;2;144;10;178m\u001B[7mHello, " +
-                "\u001B[27m\u001B[39m\u001B[22m\u001B[1m" +
-                "\u001B[38;2;144;10;178mthere!\u001B[39m\u001B[22m",
+            "\u001B[1m\u001B[38;2;144;10;178m\u001B[7mHello, "
+            + "\u001B[27m\u001B[39m\u001B[22m\u001B[1m"
+            + "\u001B[38;2;144;10;178mthere!\u001B[39m\u001B[22m",
         );
 
         expect(function_`{bold.bgRgb(144,10,178).inverse Hello, {~inverse there!}}`).toBe(
-            "\u001B[1m\u001B[48;2;144;10;178m\u001B[7mHello, " +
-                "\u001B[27m\u001B[49m\u001B[22m\u001B[1m" +
-                "\u001B[48;2;144;10;178mthere!\u001B[49m\u001B[22m",
+            "\u001B[1m\u001B[48;2;144;10;178m\u001B[7mHello, "
+            + "\u001B[27m\u001B[49m\u001B[22m\u001B[1m"
+            + "\u001B[48;2;144;10;178mthere!\u001B[49m\u001B[22m",
         );
     });
 
@@ -75,13 +75,13 @@ describe(template, () => {
 			I hope you enjoy
 		}`,
         ).toBe(
-            "\u001B[1m\u001B[22m\n" +
-                "\u001B[1m\t\t\tHello! This is a\u001B[22m\n" +
-                "\u001B[1m\t\t\tmultiline block!\u001B[22m\n" +
-                "\u001B[1m\t\t\t:)\u001B[22m\n" +
-                "\u001B[1m\t\t\u001B[22m \u001B[4m\u001B[24m\n" +
-                "\u001B[4m\t\t\tI hope you enjoy\u001B[24m\n" +
-                "\u001B[4m\t\t\u001B[24m",
+            "\u001B[1m\u001B[22m\n"
+            + "\u001B[1m\t\t\tHello! This is a\u001B[22m\n"
+            + "\u001B[1m\t\t\tmultiline block!\u001B[22m\n"
+            + "\u001B[1m\t\t\t:)\u001B[22m\n"
+            + "\u001B[1m\t\t\u001B[22m \u001B[4m\u001B[24m\n"
+            + "\u001B[4m\t\t\tI hope you enjoy\u001B[24m\n"
+            + "\u001B[4m\t\t\u001B[24m",
         );
     });
 

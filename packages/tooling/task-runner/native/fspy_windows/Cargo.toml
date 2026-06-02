@@ -9,7 +9,10 @@ description = "Windows file-access tracker — an injected DLL that IAT-hooks th
 # cdylib: the injected DLL. rlib: lets `native/src/windows.rs` (the parent
 # NAPI) reuse the shared `FileAccess`/wire types without re-declaring them.
 [lib]
-crate-type = ["cdylib", "rlib"]
+crate-type = [
+  "cdylib",
+  "rlib"
+]
 
 [target.'cfg(windows)'.dependencies]
 # Pure-Rust Windows bindings. We hand-roll IAT hooking (PE import-table
