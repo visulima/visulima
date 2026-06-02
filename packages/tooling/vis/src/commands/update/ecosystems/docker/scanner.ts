@@ -10,26 +10,26 @@ import { join } from "@visulima/path";
  * compose `image:` value have different formatting rules.
  */
 export interface ImageReference {
-    /** Full original reference token as it appeared in the file. */
-    readonly original: string;
-    /** Image namespace (`library` for unqualified). */
-    readonly namespace: string;
-    /** Image short name (e.g. `node` in `library/node`). */
-    readonly name: string;
-    /** Registry host. `docker.io` is the default; ghcr.io, mcr.microsoft.com etc. are kept verbatim. */
-    readonly registry: string;
-    /** Tag portion or `latest` when omitted. */
-    readonly tag: string;
     /** Digest portion (`sha256:…`) when present, otherwise `undefined`. */
     readonly digest: string | undefined;
     /** Path of the file that the reference came from. */
     readonly file: string;
-    /** 1-based line number for diagnostics. */
-    readonly line: number;
-    /** Origin file kind — drives the applier behaviour. */
-    readonly kind: "dockerfile" | "compose";
     /** When set, the reference is excluded via `# vis-update-ignore` directive on the line. */
     readonly ignoreReason: string | undefined;
+    /** Origin file kind — drives the applier behaviour. */
+    readonly kind: "dockerfile" | "compose";
+    /** 1-based line number for diagnostics. */
+    readonly line: number;
+    /** Image short name (e.g. `node` in `library/node`). */
+    readonly name: string;
+    /** Image namespace (`library` for unqualified). */
+    readonly namespace: string;
+    /** Full original reference token as it appeared in the file. */
+    readonly original: string;
+    /** Registry host. `docker.io` is the default; ghcr.io, mcr.microsoft.com etc. are kept verbatim. */
+    readonly registry: string;
+    /** Tag portion or `latest` when omitted. */
+    readonly tag: string;
 }
 
 const DEFAULT_REGISTRY = "docker.io";
@@ -57,9 +57,9 @@ export const parseImageReference = (raw: string): Omit<ImageReference, "file" | 
     let working = trimmed;
     let digest: string | undefined;
 
-    const atIndex = working.indexOf("@" + SHA_PREFIX);
+    const atIndex = working.indexOf(`@${SHA_PREFIX}`);
 
-    if (atIndex >= 0) {
+    if (atIndex !== -1) {
         digest = working.slice(atIndex + 1);
         working = working.slice(0, atIndex);
     }
@@ -84,8 +84,9 @@ export const parseImageReference = (raw: string): Omit<ImageReference, "file" | 
     let nameWithNamespace = pathPart;
 
     const colonIndex = pathPart.lastIndexOf(":");
+
     // Beware: a registry like `localhost:5000` was already split off above.
-    if (colonIndex >= 0 && !pathPart.slice(colonIndex).includes("/")) {
+    if (colonIndex !== -1 && !pathPart.slice(colonIndex).includes("/")) {
         tag = pathPart.slice(colonIndex + 1);
         nameWithNamespace = pathPart.slice(0, colonIndex);
     }
@@ -94,7 +95,7 @@ export const parseImageReference = (raw: string): Omit<ImageReference, "file" | 
     let name = nameWithNamespace;
     const namespaceSlash = nameWithNamespace.indexOf("/");
 
-    if (namespaceSlash >= 0) {
+    if (namespaceSlash !== -1) {
         namespace = nameWithNamespace.slice(0, namespaceSlash);
         name = nameWithNamespace.slice(namespaceSlash + 1);
     }
@@ -130,15 +131,15 @@ const isCommentOnlyLine = (line: string): boolean => {
 };
 
 /**
- * Regex for a Dockerfile `FROM` line. Captures the image reference and
- * an optional trailing alias. Multi-stage builds use
- * `FROM base AS stage` — `AS` is captured separately so it round-trips.
+ * Regex for a Dockerfile `FROM` line. Group 1 is the image reference; an
+ * optional `AS stage` alias and any other trailing tokens are skipped, and
+ * group 2 captures a trailing `# comment` (used for ignore directives).
  *
  * BuildKit allows flags before the image (`FROM --platform=$BUILDPLATFORM node:18`).
- * The leading `(?:--\S+\s+)*` consumes any number of `--key=value` flags
- * so the image captured in group 2 is the actual image, not the flag.
+ * The leading `(?:--\S+\s+)*` consumes any number of `--key=value` flags so
+ * the captured image is the actual image, not the flag.
  */
-const FROM_LINE_RE = /^(\s*FROM\s+(?:--\S+\s+)*)([^\s#]+)(\s+AS\s+\S+)?(\s*#.*)?$/i;
+const FROM_LINE_RE = /^\s*FROM\s+(?:--\S+\s+)*([^\s#]+)(?:\s[^#]*)?(#.*)?$/i;
 
 const extractFromDockerfile = (filePath: string, content: string): ImageReference[] => {
     const lines = content.split(/\r?\n/);
@@ -146,9 +147,7 @@ const extractFromDockerfile = (filePath: string, content: string): ImageReferenc
 
     let pendingIgnore = false;
 
-    for (let index = 0; index < lines.length; index++) {
-        const line = lines[index] ?? "";
-
+    for (const [index, line] of lines.entries()) {
         // The next-line directive must live on its own line. When the
         // marker appears on a `FROM` line itself it's the inline form —
         // handled below via IGNORE_INLINE_RE on the trailing comment.
@@ -170,7 +169,7 @@ const extractFromDockerfile = (filePath: string, content: string): ImageReferenc
             continue;
         }
 
-        const value = match[2] ?? "";
+        const value = match[1] ?? "";
 
         // `FROM scratch` has no upstream to update against.
         if (value === "scratch") {
@@ -179,7 +178,7 @@ const extractFromDockerfile = (filePath: string, content: string): ImageReferenc
             continue;
         }
 
-        const trailingComment = match[4]?.trim();
+        const trailingComment = match[2]?.trim();
         let ignoreReason = pendingIgnore ? "vis-update-ignore-next-line" : undefined;
 
         if (trailingComment && IGNORE_NEXT_RE.test(trailingComment)) {
@@ -215,12 +214,14 @@ const extractFromDockerfile = (filePath: string, content: string): ImageReferenc
 /**
  * Compose files can express the image in two ways:
  *   - top-level `image: name:tag`
- *   - inside `services.<name>.image: name:tag`
+ *   - inside `services.&lt;name>.image: name:tag`
  *
  * We keep the line-based extractor to preserve quoting and indentation
  * exactly. The regex matches both `key: value` and `key: "value"` forms.
+ * Group 1 is the optional quote (so the closing `\1` backref matches it),
+ * group 2 the value, group 3 the trailing comment.
  */
-const COMPOSE_IMAGE_RE = /^(\s*image:\s*)(['"]?)([^'"\s#]+)\2(\s*#.*)?$/;
+const COMPOSE_IMAGE_RE = /^\s*image:\s*(['"]?)([^'"\s#]+)\1(\s*#.*)?$/;
 
 const extractFromCompose = (filePath: string, content: string): ImageReference[] => {
     const lines = content.split(/\r?\n/);
@@ -228,9 +229,7 @@ const extractFromCompose = (filePath: string, content: string): ImageReference[]
 
     let pendingIgnore = false;
 
-    for (let index = 0; index < lines.length; index++) {
-        const line = lines[index] ?? "";
-
+    for (const [index, line] of lines.entries()) {
         if (IGNORE_NEXT_RE.test(line) && isCommentOnlyLine(line)) {
             pendingIgnore = true;
 
@@ -247,8 +246,8 @@ const extractFromCompose = (filePath: string, content: string): ImageReference[]
             continue;
         }
 
-        const value = match[3] ?? "";
-        const trailingComment = match[4]?.trim();
+        const value = match[2] ?? "";
+        const trailingComment = match[3]?.trim();
         let ignoreReason = pendingIgnore ? "vis-update-ignore-next-line" : undefined;
 
         if (trailingComment && IGNORE_NEXT_RE.test(trailingComment)) {
@@ -301,7 +300,7 @@ const isComposeFile = (name: string): boolean => {
     return /^(?:docker-)?compose(?:\..+)?\.ya?ml$/.test(lower);
 };
 
-const SKIP_DIRS = new Set([".git", "node_modules", ".pnpm-store", ".turbo", ".nx", "dist", "build", ".cache"]);
+const SKIP_DIRS = new Set([".cache", ".git", ".nx", ".pnpm-store", ".turbo", "build", "dist", "node_modules"]);
 
 // `walkSync` runs `skip` patterns against the full resolved path, not the
 // entry name alone. Match any path segment so e.g. `…/node_modules/sub/…`
