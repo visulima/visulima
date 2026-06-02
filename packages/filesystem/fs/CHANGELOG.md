@@ -1,3 +1,24 @@
+## @visulima/fs [5.0.0-alpha.29](https://github.com/visulima/visulima/compare/@visulima/fs@5.0.0-alpha.28...@visulima/fs@5.0.0-alpha.29) (2026-06-02)
+
+### Bug Fixes
+
+* **fs:** normalize file:// URL names via path's toPath in find-up ([124b2ce](https://github.com/visulima/visulima/commit/124b2ced6f165ba161a4a29bf26ffb0e2fc389cf))
+
+### Miscellaneous Chores
+
+* apply eslint + prettier autofixes across packages ([c1bb784](https://github.com/visulima/visulima/commit/c1bb7848a0d93d0dfe2960c77e3cda22239c79a0))
+* cs fixes ([#659](https://github.com/visulima/visulima/issues/659)) ([61f8912](https://github.com/visulima/visulima/commit/61f891274c1de22a36af256fc981b585b9ec6a6a))
+
+### Tests
+
+* **fs:** cover ini-preserve rewrites, sanitize fallbacks, json5 hooks, walk symlinks, and move/remove options ([6e61c3a](https://github.com/visulima/visulima/commit/6e61c3adba9e438e45bcd2a277b7a1db3b6845b7))
+* improve coverage across packages ([91bd6d3](https://github.com/visulima/visulima/commit/91bd6d3b61736e3c8bd1fc59b0b5955f76a5d323))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.31
+
 ## @visulima/fs [5.0.0-alpha.28](https://github.com/visulima/visulima/compare/@visulima/fs@5.0.0-alpha.27...@visulima/fs@5.0.0-alpha.28) (2026-05-27)
 
 ### Bug Fixes
