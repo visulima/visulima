@@ -44,7 +44,6 @@ import { runToolchainPreflight } from "../../runtime/toolchain";
 import { runReadiness } from "../../services/readiness";
 import { deleteEntry, readAllEntries } from "../../services/registry";
 import type { ServiceEntry } from "../../services/types";
-import { parseTaskArguments, renderTaskArgumentsHelp, taskArgumentEnv } from "../../task/arguments";
 import { decidePty } from "../../task/pty-decision";
 import { filterProjectsByQuery, resolveSelector } from "../../task/selectors";
 import { resolveSkipCachePatterns } from "../../task/skip-cache";
@@ -78,6 +77,7 @@ import type { RunOptions } from "./index";
 import type { ServiceBridgeEntry } from "./service-event-bridge";
 import { ServiceEventBridge } from "./service-event-bridge";
 import { buildBootstrapPaths, extractPreflightTasks, injectServiceTasks, resolveServicesPolicy } from "./service-preflight";
+import { resolveTaskArguments } from "./task-arguments";
 
 const AFFECTED_FILES_ENV = "VIS_AFFECTED_FILES";
 
@@ -1440,42 +1440,36 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
     const ptyFlag = options.pty === true;
 
     // First-class task arguments: validate the forwarded args against the
-    // invoked target's declared schema, surface per-task `--help`, and expose
-    // validated values to the command as VIS_ARG_* env vars. The schema is
-    // taken from the first project whose target declares one — a target's
-    // argument contract is the same wherever it runs.
+    // invoked target's declared schema (taken from the first project that
+    // declares one — a target's argument contract is the same wherever it
+    // runs), surface per-task `--help`, and expose validated values to the
+    // command as VIS_ARG_* env vars. See `./task-arguments`.
     const argumentSchema = projectsWithTarget
         .map((projectName) => projectTargetIndex.get(projectName)?.arguments)
         .find((schema): schema is NonNullable<typeof schema> => Array.isArray(schema) && schema.length > 0);
+    const argumentDescription = projectTargetIndex.get(projectsWithTarget[0] as string)?.description;
+    const argumentResolution = resolveTaskArguments(target, argumentDescription, argumentSchema, forwardedArgs);
 
-    let taskArgumentEnvVars: Record<string, string> = {};
+    if (argumentResolution.kind === "help") {
+        logger.info(argumentResolution.text);
 
-    if (argumentSchema) {
-        const description = projectTargetIndex.get(projectsWithTarget[0] as string)?.description;
-
-        if (forwardedArgs.includes("--help") || forwardedArgs.includes("-h")) {
-            logger.info(renderTaskArgumentsHelp(target, description, argumentSchema));
-
-            return;
-        }
-
-        const parsed = parseTaskArguments(argumentSchema, forwardedArgs);
-
-        if (parsed.errors.length > 0) {
-            logger.info(`Invalid arguments for "${target}":`);
-
-            for (const message of parsed.errors) {
-                logger.info(`  ✖ ${message}`);
-            }
-
-            logger.info("");
-            logger.info(renderTaskArgumentsHelp(target, description, argumentSchema));
-
-            throw new Error(`Invalid arguments for target "${target}"`);
-        }
-
-        taskArgumentEnvVars = taskArgumentEnv(parsed.values);
+        return;
     }
+
+    if (argumentResolution.kind === "invalid") {
+        logger.info(`Invalid arguments for "${target}":`);
+
+        for (const message of argumentResolution.errors) {
+            logger.info(`  ✖ ${message}`);
+        }
+
+        logger.info("");
+        logger.info(argumentResolution.help);
+
+        throw new Error(`Invalid arguments for target "${target}"`);
+    }
+
+    const taskArgumentEnvVars = argumentResolution.env;
 
     let initialTasks: Task[] = projectsWithTarget.map((projectName) => {
         const project = workspace.projects[projectName];

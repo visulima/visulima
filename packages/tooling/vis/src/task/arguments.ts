@@ -156,10 +156,11 @@ export const parseTaskArguments = (schema: TaskArgument[], raw: string[]): Parse
         }
 
         const matchShort = /^-([^=-])(?:=(.*))?$/su.exec(token);
+        const shortName = matchShort?.[1];
 
-        if (matchShort) {
-            const argument = byAlias.get(matchShort[1] as string);
-            const name = argument?.name ?? (matchShort[1]);
+        if (matchShort && shortName !== undefined) {
+            const argument = byAlias.get(shortName);
+            const name = argument?.name ?? shortName;
             const inline = matchShort[2];
 
             if (inline !== undefined) {
