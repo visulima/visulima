@@ -1471,7 +1471,7 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
 
         throw new Error(
             `Target "${target}" declares conflicting \`arguments\` schemas across projects (${groups}). `
-            + `Run a single project (e.g. \`vis run ${schemasByProject[0]?.project}:${target}\` or --project=<name>) so the argument contract is unambiguous.`,
+            + `Run a single project (e.g. \`vis run ${schemasByProject[0]?.project}:${target}\` or --projects=<name>) so the argument contract is unambiguous.`,
         );
     }
 
