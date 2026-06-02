@@ -139,7 +139,7 @@ class MemoryStorage<TFile extends File = File> extends BaseStorage<TFile> {
 
     public async write(part: FilePart | FileQuery, _options?: OperationOptions): Promise<TFile> {
         return this.instrumentOperation("write", async () => {
-            const file = await this.getMeta((part).id);
+            const file = await this.getMeta(part.id);
 
             if (!hasContent(part)) {
                 return file;
@@ -202,7 +202,7 @@ class MemoryStorage<TFile extends File = File> extends BaseStorage<TFile> {
             }
 
             let content = entry.bytes;
-            const range = (_options)?.range;
+            const range = _options?.range;
 
             if (range) {
                 const start = Math.max(0, range.start);
@@ -243,7 +243,7 @@ class MemoryStorage<TFile extends File = File> extends BaseStorage<TFile> {
             }
 
             let content = entry.bytes;
-            const range = (_options)?.range;
+            const range = _options?.range;
 
             if (range) {
                 const start = Math.max(0, range.start);

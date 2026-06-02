@@ -276,9 +276,10 @@ class S3ClientAdapter implements S3ApiOperations {
     }
 
     public async listObjectsV2(
-        params: { Bucket: string; ContinuationToken?: string; MaxKeys?: number },
+        params: { Bucket: string; ContinuationToken?: string; Delimiter?: string; MaxKeys?: number; Prefix?: string },
         options?: S3CallOptions,
     ): Promise<{
+        CommonPrefixes?: { Prefix?: string }[];
         Contents?: { Key?: string; LastModified?: Date }[];
         IsTruncated?: boolean;
         NextContinuationToken?: string;
@@ -286,12 +287,17 @@ class S3ClientAdapter implements S3ApiOperations {
         const command = new ListObjectsV2Command({
             Bucket: params.Bucket,
             ContinuationToken: params.ContinuationToken,
+            Delimiter: params.Delimiter,
             MaxKeys: params.MaxKeys,
+            Prefix: params.Prefix,
         });
 
         const response: ListObjectsV2CommandOutput = await this.client.send(command, sendOptions(options));
 
         return {
+            CommonPrefixes: response.CommonPrefixes?.map((item) => {
+                return { Prefix: item.Prefix };
+            }),
             Contents: response.Contents?.map((item) => {
                 return {
                     Key: item.Key,

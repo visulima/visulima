@@ -68,7 +68,7 @@ new Files({ adapter: new DiskStorage({ directory: "./uploads" }) });
 new Files({ adapter: new BunnyStorage({ zone, accessKey, region: "de" }) });
 ```
 
-→ See the [Files facade reference](https://visulima.com/docs/packages/storage/files-facade) for the full method surface (`upload`, `download`, `head`, `exists`, `delete`, `copy`, `move`, `list`, `listAll`, `url`, `signedUploadUrl`, `.raw`) and body-type matrix. Top-level `transfer(source, destination)` streams whole buckets between adapters.
+→ See the [Files facade reference](https://visulima.com/docs/packages/storage/files-facade) for the full method surface (`upload`, `download`, `head`, `exists`, `delete`, `copy`, `move`, `list`, `listAll`, `url`, `signedUploadUrl`, `.raw`) and body-type matrix. `list({ delimiter: "/" })` returns directory-style `{ files, prefixes }`; pass `{ readonly: true }` (or call `files.readonly()`) for a locked view, and read `files.capabilities` to branch on adapter support. Top-level `transfer(source, destination)` streams whole buckets between adapters; `sync(source, destination)` does an incremental, optionally-pruning mirror (with `dryRun`).
 
 ## Building an upload server?
 

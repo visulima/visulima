@@ -18,7 +18,9 @@ Runtime adapters for upload endpoints: `node`, `fetch` (re-used by `bun`/`cloudf
 
 ### Top-level features
 
-- `Files` facade (`src/files/`) — `upload`, `download`, `head`, `exists`, `delete`, `copy`, `move`, `list`, `listAll`, `url`, `signedUploadUrl`, plus `.raw` escape hatch and top-level `transfer(source, destination)` for cross-adapter streaming.
+- `Files` facade (`src/files/`) — `upload` (pausable/abortable via `UploadControl`), `download` (byte `range`), `head`, `exists`, `delete`, `copy`, `move`, `list` (S3-style `delimiter` returns `{ files, prefixes }`), `listAll`, `url`, `signedUploadUrl`, plus `.raw` escape hatch, a `capabilities` getter, `readonly()` locked views, and top-level `transfer(source, destination)` (one-shot stream) / `sync(source, destination)` (incremental, optionally-pruning, `dryRun`) for cross-adapter migration/mirroring.
+    - Adapter capability flags on `BaseStorage`: `supportsRange`, `supportsMetadata`, `supportsCacheControl`, `supportsDelimiter` — the facade gates optional ops on these and surfaces them via `Files.capabilities`.
+    - `delimiter` is pushed down natively where the provider can collapse prefixes server-side (S3 family via `listDirectory`, GCS); other adapters fall back to facade synthesis. Azure ships a native `deleteBatch` (Blob Batch API); FTP/SFTP support ranged `get`.
 - Transformers (`src/transformer/`) — `image-transformer` (sharp), `video-transformer` / `audio-transformer` (mediabunny). All extend `base-transformer`.
 - AI adapters (`src/ai/`) — `ai-sdk`, `openai`, `claude`, `tanstack` integrations.
 - Nuxt adapter (`src/adapter/nuxt/`).

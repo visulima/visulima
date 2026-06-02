@@ -54,6 +54,8 @@ class GCStorage extends BaseStorage<GCSFile> {
 
     public override checksumTypes: string[] = ["md5", "crc32c"];
 
+    public override readonly supportsDelimiter: boolean = true;
+
     public override get raw(): GoogleAuth {
         return this.authClient;
     }
@@ -538,6 +540,79 @@ class GCStorage extends BaseStorage<GCSFile> {
                 return items;
             },
             { limit },
+        );
+    }
+
+    /**
+     * Directory-style listing via the GCS JSON API's native `delimiter`/`prefix` — the API returns
+     * the direct child objects in `items` and the common prefixes ("subdirectories") in `prefixes`,
+     * so the subtree is never fully walked. Pages until exhausted or `limit` files are collected.
+     */
+    public override async listDirectory(
+        options?: OperationOptions & { delimiter: string; limit?: number; prefix?: string },
+    ): Promise<{ files: GCSFile[]; prefixes: string[] }> {
+        return this.instrumentOperation(
+            "listDirectory",
+            async () => {
+                const limit = options?.limit ?? 1000;
+                const pageSize = Math.min(limit, 1000);
+                const files: GCSFile[] = [];
+                const prefixes = new Set<string>();
+
+                let truncated = true;
+                let parameters: GaxiosOptions = {
+                    params: {
+                        delimiter: options?.delimiter,
+                        maxResults: pageSize,
+                        ...(options?.prefix !== undefined && { prefix: options.prefix }),
+                    },
+                    url: this.storageBaseURI,
+                };
+
+                while (truncated && files.length < limit) {
+                    try {
+                        const { data } = await this.makeRequest<{
+                            items?: { name: string; timeCreated: string; updated: string }[];
+                            nextPageToken?: string;
+                            prefixes?: string[];
+                        }>(parameters, options);
+
+                        for (const commonPrefix of data?.prefixes || []) {
+                            prefixes.add(commonPrefix);
+                        }
+
+                        for (const { name, timeCreated, updated } of data?.items || []) {
+                            if (files.length >= limit) {
+                                break;
+                            }
+
+                            files.push({ createdAt: timeCreated, id: name, modifiedAt: updated } as GCSFile);
+                        }
+
+                        truncated = data?.nextPageToken !== undefined;
+
+                        if (truncated && files.length < limit) {
+                            parameters = {
+                                ...parameters,
+                                params: {
+                                    ...parameters.params,
+                                    maxResults: Math.min(pageSize, limit - files.length),
+                                    pageToken: data.nextPageToken,
+                                },
+                            };
+                        }
+                    } catch (error) {
+                        const httpError = this.normalizeError((error instanceof Error ? error : new Error(String(error))) as ClientError);
+
+                        await this.onError(httpError);
+
+                        throw error;
+                    }
+                }
+
+                return { files, prefixes: [...prefixes] };
+            },
+            { limit: options?.limit ?? 1000 },
         );
     }
 

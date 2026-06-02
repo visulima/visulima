@@ -4,3 +4,4 @@
 *.lock
 dist
 CHANGELOG.md
+coverage

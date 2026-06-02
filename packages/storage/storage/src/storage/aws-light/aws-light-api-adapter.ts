@@ -436,9 +436,10 @@ ${partsXml}
     }
 
     public async listObjectsV2(
-        params: { Bucket: string; ContinuationToken?: string; MaxKeys?: number },
+        params: { Bucket: string; ContinuationToken?: string; Delimiter?: string; MaxKeys?: number; Prefix?: string },
         options?: S3CallOptions,
     ): Promise<{
+        CommonPrefixes?: { Prefix?: string }[];
         Contents?: { Key?: string; LastModified?: Date }[];
         IsTruncated?: boolean;
         NextContinuationToken?: string;
@@ -453,6 +454,14 @@ ${partsXml}
 
         if (params.ContinuationToken) {
             queryParams["continuation-token"] = params.ContinuationToken;
+        }
+
+        if (params.Delimiter !== undefined) {
+            queryParams.delimiter = params.Delimiter;
+        }
+
+        if (params.Prefix !== undefined) {
+            queryParams.prefix = params.Prefix;
         }
 
         const url = this.buildUrl("", queryParams);
@@ -471,7 +480,16 @@ ${partsXml}
         const listResult = (xml.ListBucketResult as Record<string, unknown>) || xml;
         const contents = listResult.Contents || (Array.isArray(listResult.Contents) ? listResult.Contents : []);
 
+        // The regex parseXml above can't preserve repeated <CommonPrefixes> siblings, so pull them
+        // straight from the raw XML. Input is a controlled S3 response, so the pattern is ReDoS-safe.
+        const commonPrefixes: { Prefix?: string }[] = [];
+
+        for (const match of xmlText.matchAll(/<CommonPrefixes>\s*<Prefix>([^<]*)<\/Prefix>\s*<\/CommonPrefixes>/g)) {
+            commonPrefixes.push({ Prefix: match[1] });
+        }
+
         return {
+            CommonPrefixes: commonPrefixes,
             Contents: Array.isArray(contents)
                 ? contents.map((item: Record<string, unknown>) => {
                       return {

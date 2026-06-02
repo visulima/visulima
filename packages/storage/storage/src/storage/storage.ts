@@ -216,6 +216,32 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
     public readonly supportsRange: boolean = false;
 
     /**
+     * Adapter capability flag: when `true`, the adapter persists user-supplied
+     * key/value metadata alongside the object and returns it on `get`/`head`.
+     * Defaults to `true` — most backends carry metadata. Adapters that drop or
+     * ignore custom metadata override this to `false`; the `Files` facade reads
+     * it via {@link Files.capabilities} so callers can fail fast instead of
+     * silently losing metadata.
+     */
+    public readonly supportsMetadata: boolean = true;
+
+    /**
+     * Adapter capability flag: when `true`, the adapter honours an object
+     * `cacheControl` directive on write. Defaults to `false` — most backends
+     * have no cache-control concept. Exposed through {@link Files.capabilities}.
+     */
+    public readonly supportsCacheControl: boolean = false;
+
+    /**
+     * Adapter capability flag: when `true`, the adapter implements
+     * {@link BaseStorage.listDirectory} so the provider collapses keys into
+     * common prefixes server-side. The `Files` facade prefers this native path
+     * for `list({ delimiter })`; adapters that leave it `false` fall back to
+     * synthesizing the directory view from a full listing in the facade.
+     */
+    public readonly supportsDelimiter: boolean = false;
+
+    /**
      * Adapter capability flag: when `true`, the adapter reports its own
      * byte-level `onProgress` events during `write`. The `Files` facade skips
      * its coarse "start/done" emission for adapters that report progress
@@ -632,6 +658,22 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
         return this.instrumentOperation("list", async () => {
             throw new Error("Not implemented");
         });
+    }
+
+    /**
+     * Directory-style listing: collapse keys that share a path segment into common prefixes,
+     * server-side, instead of returning every object. Adapters that can push the `delimiter` down to
+     * the provider (S3 family, GCS, Azure) override this and set
+     * {@link BaseStorage.supportsDelimiter} to `true`; the default throws so the `Files` facade knows
+     * to fall back to synthesizing the view from {@link BaseStorage.list}.
+     * @param _options Listing options — `delimiter` (required), plus optional `prefix`/`limit` and the usual per-call signal/timeout/retries.
+     * @returns Direct-child files and the common prefixes one delimiter level below `prefix`.
+     * @throws {UploadError} `METHOD_NOT_ALLOWED` when the adapter has no native delimiter support.
+     */
+    public async listDirectory(
+        _options?: OperationOptions & { delimiter: string; limit?: number; prefix?: string },
+    ): Promise<{ files: TFile[]; prefixes: string[] }> {
+        return throwErrorCode(ERRORS.METHOD_NOT_ALLOWED, `${this.constructor.name} does not implement listDirectory()`);
     }
 
     /**

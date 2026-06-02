@@ -6,6 +6,7 @@ import {
     CreateMultipartUploadCommand,
     DeleteObjectCommand,
     HeadObjectCommand,
+    ListObjectsV2Command,
     ListPartsCommand,
     S3Client,
     UploadPartCommand,
@@ -515,6 +516,31 @@ describe("s3PresignedStorage", () => {
             const exists = await storage.exists({ id: "orphaned-object-id" });
 
             expect(exists).toBe(false);
+        });
+    });
+
+    describe("listDirectory", () => {
+        it("declares native delimiter support", () => {
+            expect(storage.supportsDelimiter).toBe(true);
+        });
+
+        it("forwards Delimiter/Prefix and returns CommonPrefixes + direct files", async () => {
+            expect.assertions(4);
+
+            s3Mock.on(ListObjectsV2Command).resolves({
+                CommonPrefixes: [{ Prefix: "photos/2023/" }, { Prefix: "photos/2024/" }],
+                Contents: [{ Key: "photos/cover.jpg", LastModified: new Date("2022-02-02") }],
+                IsTruncated: false,
+            });
+
+            const result = await storage.listDirectory({ delimiter: "/", prefix: "photos/" });
+
+            const call = s3Mock.commandCalls(ListObjectsV2Command)[0];
+
+            expect(call?.args[0].input.Delimiter).toBe("/");
+            expect(call?.args[0].input.Prefix).toBe("photos/");
+            expect(result.prefixes).toStrictEqual(["photos/2023/", "photos/2024/"]);
+            expect(result.files.map((file) => file.id)).toStrictEqual(["photos/cover.jpg"]);
         });
     });
 });

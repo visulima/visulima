@@ -10,7 +10,7 @@ import type { RetryConfig } from "../../utils/retry";
 import LocalMetaStorage from "../local/local-meta-storage";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
-import type { OperationOptions } from "../types";
+import type { BatchOperationResponse, OperationOptions } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch } from "../utils/file";
 import type { AzureSasSigner } from "./azure-client";
@@ -24,7 +24,7 @@ import type { AzureStorageOptions } from "./types";
  * @remarks
  * ## Supported Operations
  * - ✅ create, write, delete, get, list, update, copy, move
- * - ✅ Batch operations: deleteBatch, copyBatch, moveBatch (inherited from BaseStorage)
+ * - ✅ Batch operations: deleteBatch (native Blob Batch API, 256/request), copyBatch + moveBatch (inherited from BaseStorage)
  * - ✅ exists: Implemented (checks metadata and Azure blob)
  * - ❌ getStream: Not implemented (use get() for file retrieval)
  * - ✅ getReadUrl / getUploadUrl: service SAS (shared key / connection string) or User Delegation SAS (Microsoft Entra credential). SAS-token adapters append the pre-issued token. Anonymous (public-container) adapters serve unsigned read URLs only — uploads are rejected.
@@ -250,6 +250,70 @@ class AzureStorage extends BaseStorage {
 
             return deletedFile;
         });
+    }
+
+    /**
+     * Deletes many blobs in one round-trip using Azure's native
+     * [Blob Batch API](https://learn.microsoft.com/rest/api/storageservices/blob-batch)
+     * (up to 256 sub-requests per request) instead of issuing one DELETE per key.
+     *
+     * Sidecar metadata removal and the {@link onDelete} hook are still applied per
+     * successfully-deleted id; a 404 sub-response is treated as success to match the
+     * `deleteIfExists` semantics of the single-key {@link delete}. If the batch endpoint
+     * is unavailable (e.g. an Azurite build without batch support) the call transparently
+     * falls back to the per-key base implementation.
+     * @param ids File ids/keys to delete.
+     * @param options Optional per-call signal/timeout/retries.
+     */
+    public override async deleteBatch(ids: string[], options?: OperationOptions): Promise<BatchOperationResponse<AzureFile>> {
+        if (ids.length === 0) {
+            return { failed: [], failedCount: 0, successful: [], successfulCount: 0 };
+        }
+
+        const BATCH_LIMIT = 256;
+
+        try {
+            const batchClient = this.client.getBlobBatchClient();
+            const successful: AzureFile[] = [];
+            const failed: { error: string; id: string }[] = [];
+
+            for (let offset = 0; offset < ids.length; offset += BATCH_LIMIT) {
+                const chunk = ids.slice(offset, offset + BATCH_LIMIT);
+                const blobClients = chunk.map((id) => this.containerClient.getBlockBlobClient(this.getFullPath(id)));
+
+                const response = await this.runOperation(options, (signal) => batchClient.deleteBlobs(blobClients, { abortSignal: signal }));
+
+                // Sub-responses come back in request order; 202 = deleted, 404 = already gone.
+                for (const [index, sub] of response.subResponses.entries()) {
+                    const id = chunk[index] as string;
+
+                    if (sub.status === 202 || sub.status === 404) {
+                        successful.push({ id, name: id, status: "deleted" } as AzureFile);
+                    } else {
+                        failed.push({ error: sub.errorCode ?? `HTTP ${sub.status}`, id });
+                    }
+                }
+            }
+
+            // Metadata sidecars are cleaned up independently of the blob batch. Failures here are
+            // non-fatal — the blob is already gone — so they never demote a successful delete.
+            await Promise.all(
+                successful.map(async (file) => {
+                    try {
+                        await this.deleteMeta(file.id);
+                        await this.onDelete(file);
+                    } catch {
+                        // best-effort sidecar cleanup
+                    }
+                }),
+            );
+
+            return { failed, failedCount: failed.length, successful, successfulCount: successful.length };
+        } catch (error: unknown) {
+            this.logger?.warn(`Azure Blob Batch delete unavailable, falling back to per-key delete: ${error instanceof Error ? error.message : String(error)}`);
+
+            return super.deleteBatch(ids, options);
+        }
     }
 
     /**

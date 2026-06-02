@@ -1,3 +1,4 @@
+/* eslint-disable max-classes-per-file -- UploadControl ships alongside the Files facade it drives. */
 import { PassThrough, Readable } from "node:stream";
 
 import { BaseStorage } from "../storage/storage";
@@ -34,6 +35,149 @@ export interface UploadProgress {
 
 export type UploadProgressCallback = (event: UploadProgress) => void;
 
+/** Lifecycle state of an {@link UploadControl}. */
+export type UploadControlState = "aborted" | "completed" | "idle" | "paused" | "uploading";
+
+/**
+ * Serializable snapshot of an {@link UploadControl}, returned by {@link UploadControl.serialize}
+ * and accepted by {@link UploadControl.from}. Captures the key and bytes observed so a UI can
+ * restore progress display across reloads. Note: byte-accurate *resume* of the transfer itself is
+ * a protocol concern handled by the TUS / multipart handlers and `@visulima/storage-client`; a
+ * rehydrated control restarts the body from the beginning.
+ */
+export interface UploadControlToken {
+    key?: string;
+    loaded: number;
+    version: 1;
+}
+
+/**
+ * Pause / resume / abort handle threaded into {@link Files.upload} via {@link UploadOptions.control}.
+ *
+ * `pause()` applies backpressure to the body stream; `resume()` releases it. This is effective for
+ * streaming bodies feeding streaming adapters (S3, GCS, Azure, FTP/SFTP). Buffered adapters
+ * (memory, disk) read the whole body in one shot and cannot be paused mid-transfer.
+ * `abort()` cancels the operation through the merged {@link OperationOptions.signal}.
+ * `serialize()` / {@link UploadControl.from} round-trip the key + bytes observed for UI continuity.
+ * @example
+ * ```ts
+ * const control = new UploadControl();
+ * const promise = files.upload("big.bin", stream, { size, control });
+ * pauseButton.onclick = () => control.pause();
+ * resumeButton.onclick = () => control.resume();
+ * cancelButton.onclick = () => control.abort();
+ * await promise;
+ * ```
+ */
+export class UploadControl {
+    /** Caller-facing key being uploaded; populated once the upload starts. */
+    public key?: string;
+
+    private readonly controller = new AbortController();
+
+    private internalState: UploadControlState = "idle";
+
+    private loadedBytes: number;
+
+    private startPaused = false;
+
+    private boundStream?: Readable;
+
+    public constructor(initial?: { key?: string; loaded?: number }) {
+        this.loadedBytes = initial?.loaded ?? 0;
+        this.key = initial?.key;
+    }
+
+    /**
+     * Rehydrate a control from a {@link serialize} token (object or JSON string). The returned
+     * control is `idle` with its `loaded` counter pre-seeded for progress display.
+     */
+    public static from(token: UploadControlToken | string): UploadControl {
+        const parsed = typeof token === "string" ? (JSON.parse(token) as UploadControlToken) : token;
+
+        return new UploadControl({ key: parsed.key, loaded: parsed.loaded });
+    }
+
+    /** Abort signal merged into the upload operation. */
+    public get signal(): AbortSignal {
+        return this.controller.signal;
+    }
+
+    public get state(): UploadControlState {
+        return this.internalState;
+    }
+
+    /** Bytes observed leaving the facade so far. */
+    public get loaded(): number {
+        return this.loadedBytes;
+    }
+
+    public pause(): void {
+        if (this.internalState === "uploading" || this.internalState === "idle") {
+            this.internalState = "paused";
+            this.startPaused = true;
+            this.boundStream?.pause();
+        }
+    }
+
+    public resume(): void {
+        if (this.internalState === "paused") {
+            this.internalState = "uploading";
+            this.startPaused = false;
+            this.boundStream?.resume();
+        }
+    }
+
+    public abort(reason?: unknown): void {
+        if (this.internalState !== "completed" && this.internalState !== "aborted") {
+            this.internalState = "aborted";
+            this.controller.abort(reason);
+        }
+    }
+
+    public serialize(): UploadControlToken {
+        return { key: this.key, loaded: this.loadedBytes, version: 1 };
+    }
+
+    /**
+     * Attach the live body stream so `pause()`/`resume()` can drive its backpressure. Called by
+     * {@link Files.upload}; not part of the stable public surface.
+     * @internal
+     */
+    public _bind(stream: Readable, key: string): void {
+        this.boundStream = stream;
+        this.key ??= key;
+
+        if (this.internalState !== "aborted") {
+            this.internalState = this.startPaused ? "paused" : "uploading";
+        }
+
+        if (this.startPaused) {
+            stream.pause();
+        }
+    }
+
+    /**
+     * Record bytes observed by the facade's progress meter.
+     * @internal
+     */
+    public _progress(loaded: number): void {
+        this.loadedBytes = loaded;
+    }
+
+    /**
+     * Mark the upload finished; releases the stream reference.
+     * @internal
+     */
+    public _complete(): void {
+        if (this.internalState !== "aborted") {
+            this.internalState = "completed";
+        }
+
+        this.boundStream = undefined;
+    }
+}
+
 /**
  * Multipart tuning for {@link Files.upload}. `true` enables multipart with
  * adapter defaults; an object lets the caller tune the per-part size and the
@@ -48,6 +192,14 @@ export interface MultipartOptions {
 
 export interface UploadOptions {
     contentType?: string;
+
+    /**
+     * Pause / resume / abort handle for this upload. Pausing applies backpressure to the body
+     * stream (effective for streaming bodies and streaming adapters; buffered adapters consume the
+     * whole body at once and cannot be paused mid-flight); aborting cancels the operation via the
+     * merged {@link OperationOptions.signal}. See {@link UploadControl}.
+     */
+    control?: UploadControl;
     metadata?: Record<string, unknown>;
 
     /**
@@ -87,14 +239,47 @@ export interface SignedUploadUrlOptions {
 }
 
 export interface ListOptions {
+    /**
+     * Collapse keys that share a path segment into S3-style common prefixes ("directories").
+     * When set, {@link Files.list} returns a {@link ListDirectoryResult} (`{ files, prefixes }`)
+     * instead of a flat array: keys with no further `delimiter` after the listing prefix come back
+     * as `files`, and everything below a shared boundary is folded into a single `prefixes` entry.
+     * Pass `"/"` for conventional folder semantics.
+     */
+    delimiter?: string;
     limit?: number;
     prefix?: string;
+}
+
+/**
+ * Directory-style listing returned by {@link Files.list} when a `delimiter` is supplied.
+ */
+export interface ListDirectoryResult {
+    /** Objects that live directly under the listing prefix (no further delimiter). */
+    files: FileObject[];
+    /** Common prefixes ("subdirectories") one delimiter level below the listing prefix. */
+    prefixes: string[];
 }
 
 export interface ListAllOptions {
     /** Per-page size requested from the adapter. */
     limit?: number;
     prefix?: string;
+}
+
+/**
+ * Capability snapshot for the adapter behind a {@link Files} instance, surfaced so callers can
+ * branch (or fail fast) instead of discovering an unsupported operation mid-flight.
+ */
+export interface StorageCapabilities {
+    /** The adapter honours an object `cacheControl` directive on write. */
+    cacheControl: boolean;
+    /** The adapter persists and returns user-supplied key/value metadata. */
+    metadata: boolean;
+    /** The adapter honours byte-range downloads (`download({ range })`). */
+    range: boolean;
+    /** This `Files` view rejects every mutating operation. */
+    readonly: boolean;
 }
 
 export interface DownloadOptions extends OperationOptions {
@@ -197,6 +382,15 @@ export interface FilesOptions<TStorage extends BaseStorage = BaseStorage> {
      * `users-archive/`.
      */
     prefix?: string;
+
+    /**
+     * When `true`, every mutating operation (`upload`, `delete`, `copy`, `move`, `signedUploadUrl`)
+     * fails immediately with `FilesError { code: "ReadOnly" }` before the adapter is touched; reads
+     * (`download`, `head`, `exists`, `list`, `listAll`, `url`) pass through. Derive a locked view of
+     * an existing client with {@link Files.readonly} instead of threading the flag manually.
+     * @default false
+     */
+    readonly?: boolean;
 }
 
 /**
@@ -523,11 +717,57 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
 
     private readonly prefix: string;
 
+    private readonly readonlyMode: boolean;
+
     public constructor(options: FilesOptions<TStorage>) {
         this.adapter = options.adapter;
         this.defaults = options.defaults ?? {};
         this.hooks = options.hooks ?? {};
         this.prefix = normalizePrefix(options.prefix ?? "");
+        this.readonlyMode = options.readonly ?? false;
+    }
+
+    /**
+     * Adapter capability + mode snapshot. Read before relying on an optional operation
+     * (`range` downloads, custom `metadata`, `cacheControl`) so callers can branch instead of
+     * hitting a `MethodNotAllowed` mid-flight. `readonly` reflects this view, not the adapter.
+     */
+    public get capabilities(): StorageCapabilities {
+        return {
+            cacheControl: this.adapter.supportsCacheControl,
+            metadata: this.adapter.supportsMetadata,
+            range: this.adapter.supportsRange,
+            readonly: this.readonlyMode,
+        };
+    }
+
+    /**
+     * Derive a read-only view sharing this instance's adapter, prefix, defaults, and hooks. Every
+     * mutating call on the returned client fails with `FilesError { code: "ReadOnly" }` before the
+     * adapter is touched. Cheaper and safer than handing a writable client to code that should only
+     * read.
+     * @example
+     * ```ts
+     * const ro = files.readonly();
+     * await ro.download("a.txt"); // ok
+     * await ro.delete("a.txt");   // throws ReadOnly
+     * ```
+     */
+    public readonly(): Files<TStorage> {
+        return new Files<TStorage>({
+            adapter: this.adapter,
+            defaults: this.defaults,
+            hooks: this.hooks,
+            prefix: this.prefix,
+            readonly: true,
+        });
+    }
+
+    /** Fail closed before any adapter mutation when this view is read-only. */
+    private assertWritable(): void {
+        if (this.readonlyMode) {
+            throwErrorCode(ERRORS.READ_ONLY, "This Files instance is read-only");
+        }
     }
 
     /**
@@ -680,6 +920,14 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
     }
 
     private async uploadOne(key: string, body: FileBody, options: (OperationOptions & UploadOptions) | undefined): Promise<FileObject> {
+        this.assertWritable();
+
+        if (options?.metadata && Object.keys(options.metadata).length > 0 && !this.adapter.supportsMetadata) {
+            throwErrorCode(ERRORS.METHOD_NOT_ALLOWED, `Adapter ${this.adapter.constructor.name} does not persist custom metadata`);
+        }
+
+        const control = options?.control;
+
         return this.withHooks("upload", { key }, async () => {
             const resolved = this.resolveKey(key);
 
@@ -696,8 +944,16 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
                 ...(size === undefined ? {} : { size }),
             };
 
-            const operationOptions = this.mergeOptions(options, { key, type: "upload" });
+            // Fold the control's abort signal into the operation so abort() cancels the adapter call,
+            // and bind the body stream so pause()/resume() can drive its backpressure.
+            const perCall: (OperationOptions & UploadOptions) | undefined = control
+                ? { ...options, signal: options?.signal ? AbortSignal.any([options.signal, control.signal]) : control.signal }
+                : options;
+
+            const operationOptions = this.mergeOptions(perCall, { key, type: "upload" });
             const multipart = options?.multipart;
+
+            control?._bind(stream, key);
 
             const file = await this.adapter.create(
                 {
@@ -715,27 +971,35 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
             // in a PassThrough that emits per-chunk byte counts. For buffered bodies whose total
             // length is known up-front, also emit a coarse start/done pair so a single callback
             // can drive any UI without sniffing for chunk-level deltas.
+            // Wrap the body in a PassThrough that emits per-chunk byte counts when the caller wants
+            // progress (or a control is attached, which tracks bytes for serialize()) and the adapter
+            // doesn't report its own. For buffered bodies of known length, also emit a coarse
+            // start/done pair so a single callback can drive any UI without sniffing chunk deltas.
             const reportsNatively = this.adapter.reportsUploadProgress;
-            const wantsProgress = !!options?.onProgress;
+            const callback = options?.onProgress;
+            const wantsProgress = !!callback || !!control;
             let progressStream: Readable = stream;
 
             if (wantsProgress && !reportsNatively) {
-                const callback = options?.onProgress as UploadProgressCallback;
                 let loaded = 0;
                 const passthrough = new PassThrough();
 
                 // Emit the synthetic `loaded: 0` start event **before** attaching the data listener so
                 // callers always see the ordering start → chunk[1] → chunk[2] → ... — even if a stream
                 // happens to emit synchronously the moment we pipe.
-                if (size !== undefined) {
+                if (size !== undefined && callback) {
                     safeInvoke(callback as (argument: unknown) => void, { loaded: 0, total: size });
                 }
 
                 stream.on("data", (chunk: Buffer | Uint8Array | string) => {
-                    const chunkSize = typeof chunk === "string" ? Buffer.byteLength(chunk) : (chunk).byteLength;
+                    const chunkSize = typeof chunk === "string" ? Buffer.byteLength(chunk) : chunk.byteLength;
 
                     loaded += chunkSize;
-                    safeInvoke(callback as (argument: unknown) => void, { loaded, total: size });
+                    control?._progress(loaded);
+
+                    if (callback) {
+                        safeInvoke(callback as (argument: unknown) => void, { loaded, total: size });
+                    }
                 });
 
                 stream.pipe(passthrough);
@@ -748,10 +1012,13 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
                 id: file.id,
                 start: 0,
                 ...(multipart !== undefined && { multipart }),
-                ...(reportsNatively && wantsProgress && { onProgress: options?.onProgress }),
+                ...(reportsNatively && callback && { onProgress: callback }),
             };
 
             const written = await this.adapter.write(part, operationOptions);
+
+            control?._complete();
+
             const result = toFileObject(written, resolved);
             const stripped = this.stripPrefix(result.key);
 
@@ -764,17 +1031,19 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
     }
 
     private async uploadMany(items: BulkUploadItem[], bulkOptions: BulkUploadOptions | undefined): Promise<BulkUploadResult> {
+        this.assertWritable();
+
         const { concurrency = DEFAULT_BULK_CONCURRENCY, multipart, onProgress, stopOnError = false, ...rest } = bulkOptions ?? {};
 
         const settled = await runConcurrent(
             items,
             async ({ body, key, ...uploadOptions }) => {
-                const perItemProgress
-                    = uploadOptions.onProgress
-                    ?? (onProgress
+                const perItemProgress =
+                    uploadOptions.onProgress ??
+                    (onProgress
                         ? (event: UploadProgress) => {
-                            onProgress({ ...event, key });
-                        }
+                              onProgress({ ...event, key });
+                          }
                         : undefined);
 
                 return this.uploadOne(key, body, {
@@ -1034,6 +1303,8 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
     public delete(keys: string[], options?: BulkOptions): Promise<BulkDeleteResult>;
 
     public async delete(keyOrKeys: string[] | string, options?: BulkOptions | OperationOptions): Promise<BulkDeleteResult | void> {
+        this.assertWritable();
+
         if (Array.isArray(keyOrKeys)) {
             return this.deleteMany(keyOrKeys, options);
         }
@@ -1132,6 +1403,8 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
      * destination object's metadata with the caller-facing (un-prefixed) key.
      */
     public async copy(source: string, destination: string, options?: OperationOptions & { storageClass?: string }): Promise<FileObject> {
+        this.assertWritable();
+
         return this.withHooks("copy", { from: source, to: destination }, async () => {
             const resolvedSource = this.resolveKey(source);
             const resolvedDestination = this.resolveKey(destination);
@@ -1166,6 +1439,8 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
         toOrOptions?: BulkOptions | string,
         maybeOptions?: OperationOptions & { storageClass?: string },
     ): Promise<BulkMoveResult | FileObject> {
+        this.assertWritable();
+
         if (Array.isArray(fromOrItems)) {
             return this.moveMany(fromOrItems, toOrOptions as BulkOptions | undefined);
         }
@@ -1243,14 +1518,31 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
      * keys outside the prefix namespace (e.g. `users-archive/` when prefix is `users`) are filtered
      * out. The optional `prefix` filter is interpreted *relative to the constructor prefix*.
      *
+     * Pass `delimiter` for directory-style listing: keys are collapsed into S3-style common
+     * prefixes and the call returns `{ files, prefixes }` instead of a flat array (see
+     * {@link ListDirectoryResult}). Objects with no further delimiter after the listing prefix come
+     * back as `files`; everything below a shared boundary folds into a single `prefixes` entry.
+     *
      * **Caveat with constructor prefix**: `limit` is applied by the underlying adapter *before*
      * the path-boundary filter runs, so the returned array may contain fewer than `limit` items
      * even when more in-namespace objects exist. Use {@link Files.listAll} when you need every
      * in-namespace object.
      */
-    public async list(options: ListOptions & OperationOptions = {}): Promise<FileObject[]> {
+    public async list(options?: Omit<ListOptions, "delimiter"> & OperationOptions): Promise<FileObject[]>;
+
+    public async list(options: ListOptions & OperationOptions & { delimiter: string }): Promise<ListDirectoryResult>;
+
+    public async list(options: ListOptions & OperationOptions = {}): Promise<FileObject[] | ListDirectoryResult> {
         return this.withHooks("list", {}, async () => {
-            const { limit, prefix: callerPrefix, ...operationOptions } = options;
+            const { delimiter, limit, prefix: callerPrefix, ...operationOptions } = options;
+
+            // Native pushdown: when the adapter can collapse common prefixes server-side, let it —
+            // far cheaper than fetching every key and folding them in the facade. Otherwise fall
+            // through to the synthesis path below.
+            if (delimiter !== undefined && this.adapter.supportsDelimiter) {
+                return this.listDirectoryNative(delimiter, callerPrefix, limit, operationOptions);
+            }
+
             const files = await this.adapter.list(limit ?? 1000, this.mergeOptions(operationOptions, { type: "list" }));
 
             const mapped: FileObject[] = [];
@@ -1268,12 +1560,80 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
                 mapped.push(object);
             }
 
-            if (callerPrefix) {
-                return mapped.filter((file) => file.key.startsWith(callerPrefix));
+            const scoped = callerPrefix ? mapped.filter((file) => file.key.startsWith(callerPrefix)) : mapped;
+
+            if (delimiter === undefined) {
+                return scoped;
             }
 
-            return mapped;
+            // Directory-style listing: split each in-scope key on the first delimiter after the
+            // listing prefix. No further delimiter → a direct child file; otherwise fold into a
+            // common prefix (deduped, returned in sort order).
+            const base = callerPrefix ?? "";
+            const directFiles: FileObject[] = [];
+            const prefixSet = new Set<string>();
+
+            for (const object of scoped) {
+                const remainder = object.key.slice(base.length);
+                const index = remainder.indexOf(delimiter);
+
+                if (index === -1) {
+                    directFiles.push(object);
+                } else {
+                    prefixSet.add(base + remainder.slice(0, index + delimiter.length));
+                }
+            }
+
+            return { files: directFiles, prefixes: [...prefixSet].toSorted() };
         });
+    }
+
+    /**
+     * Native directory listing: push the `delimiter` down to an adapter that collapses common
+     * prefixes server-side ({@link BaseStorage.supportsDelimiter}). Resolves the listing prefix
+     * against the constructor prefix, then strips it back off the returned keys and prefixes so the
+     * result matches the facade-synthesized shape.
+     */
+    private async listDirectoryNative(
+        delimiter: string,
+        callerPrefix: string | undefined,
+        limit: number | undefined,
+        operationOptions: OperationOptions,
+    ): Promise<ListDirectoryResult> {
+        const storagePrefix = [this.prefix, callerPrefix].filter(Boolean).join("/");
+
+        const { files, prefixes } = await this.adapter.listDirectory({
+            delimiter,
+            ...(limit !== undefined && { limit }),
+            ...(storagePrefix && { prefix: storagePrefix }),
+            ...this.mergeOptions(operationOptions, { type: "list" }),
+        });
+
+        const mappedFiles: FileObject[] = [];
+
+        for (const file of files) {
+            const object = toFileObject(file);
+            const stripped = this.stripPrefix(object.key);
+
+            if (stripped === null) {
+                continue;
+            }
+
+            object.key = stripped;
+            mappedFiles.push(object);
+        }
+
+        const mappedPrefixes: string[] = [];
+
+        for (const raw of prefixes) {
+            const stripped = this.stripPrefix(raw);
+
+            if (stripped !== null) {
+                mappedPrefixes.push(stripped);
+            }
+        }
+
+        return { files: mappedFiles, prefixes: mappedPrefixes.toSorted() };
     }
 
     /**
@@ -1371,6 +1731,8 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
     }
 
     public async signedUploadUrl(key: string, options?: OperationOptions & SignedUploadUrlOptions): Promise<string> {
+        this.assertWritable();
+
         return this.withHooks("signedUploadUrl", { key }, async () => {
             const resolved = this.resolveKey(key);
 
@@ -1572,6 +1934,314 @@ export const transfer = async (source: Files, destination: Files, options: Trans
     }
 
     return errors.length > 0 ? { errors, skipped, transferred } : { skipped, transferred };
+};
+
+/**
+ * Per-key event reported to {@link SyncOptions.onProgress}.
+ */
+export interface SyncProgress {
+    /** 1-based index of the current key in walk order. */
+    done: number;
+    error?: Error;
+    key: string;
+    status: "deleted" | "errored" | "skipped" | "unchanged" | "updated" | "uploaded";
+}
+
+export interface SyncOptions extends OperationOptions {
+    /**
+     * In-flight key operations.
+     * @default 8
+     */
+    concurrency?: number;
+
+    /**
+     * Compute the plan without writing anything. The returned `uploaded`/`updated`/`deleted` lists
+     * describe what *would* happen; the destination is left untouched.
+     * @default false
+     */
+    dryRun?: boolean;
+
+    /** Per-page size requested from the source adapter while walking. */
+    limit?: number;
+
+    /** Fire-and-forget progress reporter. Throws are swallowed. */
+    onProgress?: (event: SyncProgress) => void;
+
+    /** Restrict the sync to this prefix on both source and destination. */
+    prefix?: string;
+
+    /**
+     * Delete destination keys that no longer exist on the source (mirror semantics). Pruning runs
+     * after the copy pass so a failed upload never triggers a delete of its counterpart.
+     * @default false
+     */
+    prune?: boolean;
+
+    /**
+     * When `true`, the first failing operation rejects {@link sync} instead of being collected in
+     * `errors`. Pruning is skipped when a copy-phase error stops the run.
+     * @default false
+     */
+    stopOnError?: boolean;
+
+    /** Transform each source key into the destination key. Defaults to identity. */
+    transformKey?: (key: string) => string;
+}
+
+export interface SyncResult {
+    /** Destination keys removed because they were absent from the source (only when `prune`). */
+    deleted: string[];
+    errors?: BulkError[];
+    /** Source keys whose destination copy already matched and was left untouched. */
+    unchanged: string[];
+    /** Source keys re-uploaded because the destination copy differed. */
+    updated: string[];
+    /** Source keys newly created at the destination. */
+    uploaded: string[];
+}
+
+/**
+ * Decide whether a destination object still matches its source counterpart. Prefers strong signals
+ * (size, then etag) and falls back to modification time; when nothing is comparable it treats the
+ * pair as matching so a metadata-poor adapter doesn't force endless re-uploads.
+ */
+const objectsMatch = (source: FileObject, destination: FileObject): boolean => {
+    if (typeof source.size === "number" && typeof destination.size === "number" && source.size !== destination.size) {
+        return false;
+    }
+
+    if (source.etag && destination.etag) {
+        return source.etag === destination.etag;
+    }
+
+    if (typeof source.size === "number" && typeof destination.size === "number") {
+        // Sizes match and there is no etag to contradict them.
+        return true;
+    }
+
+    const sourceTime = source.lastModified === undefined ? undefined : Number(new Date(source.lastModified));
+    const destinationTime = destination.lastModified === undefined ? undefined : Number(new Date(destination.lastModified));
+
+    if (sourceTime !== undefined && destinationTime !== undefined && !Number.isNaN(sourceTime) && !Number.isNaN(destinationTime)) {
+        // Re-upload only when the source is strictly newer.
+        return sourceTime <= destinationTime;
+    }
+
+    return true;
+};
+
+/**
+ * Incremental, optionally-pruning mirror from `source` to `destination`. Built entirely on the
+ * public {@link Files} surface — no adapter implements anything new.
+ *
+ * Each source object is compared against its destination counterpart (by size, then etag, then
+ * modification time) and only copied when missing or differing; matching objects are skipped. With
+ * `prune: true`, destination keys absent from the source are deleted afterwards (full mirror).
+ * Pass `dryRun: true` to compute the plan without writing.
+ *
+ * Like the other bulk methods, `sync` doesn't throw on partial failure: results come back as
+ * `{ uploaded, updated, unchanged, deleted, errors? }`.
+ * @example
+ * ```ts
+ * const from = new Files({ adapter: new S3Storage({ bucket: "primary", ... }) });
+ * const to = new Files({ adapter: new GCSStorage({ bucket: "mirror", ... }) });
+ *
+ * // Preview first…
+ * const plan = await sync(from, to, { prefix: "assets/", prune: true, dryRun: true });
+ * // …then apply.
+ * const result = await sync(from, to, { prefix: "assets/", prune: true });
+ * ```
+ */
+export const sync = async (source: Files, destination: Files, options: SyncOptions = {}): Promise<SyncResult> => {
+    const {
+        concurrency = DEFAULT_BULK_CONCURRENCY,
+        dryRun = false,
+        limit,
+        onProgress,
+        prefix,
+        prune = false,
+        signal,
+        stopOnError = false,
+        transformKey,
+    } = options;
+
+    const uploaded: string[] = [];
+    const updated: string[] = [];
+    const unchanged: string[] = [];
+    const deleted: string[] = [];
+    const errors: BulkError[] = [];
+
+    // Destination keys the source still owns — collected during the copy pass so pruning knows what
+    // to keep. Stores resolved destination keys (post-transformKey).
+    const sourceDestinationKeys = new Set<string>();
+
+    let stopped = false;
+    let done = 0;
+
+    const emit = (event: SyncProgress): void => {
+        if (!onProgress) {
+            return;
+        }
+
+        try {
+            onProgress(event);
+        } catch {
+            // fire-and-forget
+        }
+    };
+
+    const walk = source.listAll({ ...(prefix !== undefined && { prefix }), ...(limit !== undefined && { limit }) });
+
+    const syncOne = async (sourceObject: FileObject): Promise<void> => {
+        if (stopped || signal?.aborted) {
+            return;
+        }
+
+        const sourceKey = sourceObject.key;
+        const destinationKey = transformKey ? transformKey(sourceKey) : sourceKey;
+
+        sourceDestinationKeys.add(destinationKey);
+
+        try {
+            let destinationObject: FileObject | undefined;
+
+            try {
+                destinationObject = await destination.head(destinationKey, { signal });
+            } catch {
+                // Missing at destination (or head unsupported) → treat as a fresh upload.
+                destinationObject = undefined;
+            }
+
+            if (destinationObject) {
+                let sourceMeta = sourceObject;
+
+                // listAll() yields only id/createdAt for several cloud adapters (S3/GCS/Azure `list`
+                // omit size + etag), which would silently collapse the comparison to mtime. Head the
+                // source to recover the strong signals when the walk didn't surface them.
+                if (sourceObject.size === undefined && sourceObject.etag === undefined) {
+                    try {
+                        sourceMeta = await source.head(sourceKey, { signal });
+                    } catch {
+                        // Head unsupported/failed — fall back to the walked object (mtime comparison).
+                    }
+                }
+
+                if (objectsMatch(sourceMeta, destinationObject)) {
+                    unchanged.push(sourceKey);
+                    done += 1;
+                    emit({ done, key: sourceKey, status: "unchanged" });
+
+                    return;
+                }
+            }
+
+            const isUpdate = destinationObject !== undefined;
+
+            if (!dryRun) {
+                const downloaded = await source.download(sourceKey, { signal });
+
+                await destination.upload(destinationKey, downloaded.body, {
+                    ...(downloaded.contentType && { contentType: downloaded.contentType }),
+                    ...(downloaded.metadata && { metadata: downloaded.metadata }),
+                    signal,
+                });
+            }
+
+            if (isUpdate) {
+                updated.push(sourceKey);
+            } else {
+                uploaded.push(sourceKey);
+            }
+
+            done += 1;
+            emit({ done, key: sourceKey, status: isUpdate ? "updated" : "uploaded" });
+        } catch (error: unknown) {
+            const bulk = toBulkError(sourceKey, error);
+
+            errors.push(bulk);
+            done += 1;
+            emit({ done, error: bulk.error, key: sourceKey, status: "errored" });
+
+            if (stopOnError) {
+                stopped = true;
+
+                throw bulk.error;
+            }
+        }
+    };
+
+    // Copy pass — streaming worker pool over the source walk.
+    const width = Math.max(1, concurrency);
+
+    const worker = async (): Promise<void> => {
+        while (!stopped && !signal?.aborted) {
+            const next = await walk.next();
+
+            if (next.done) {
+                return;
+            }
+
+            await syncOne(next.value);
+        }
+    };
+
+    try {
+        await Promise.all(Array.from({ length: width }, () => worker()));
+    } finally {
+        await walk.return?.();
+    }
+
+    // Prune pass — delete destination keys the source no longer owns. Skipped if a copy-phase error
+    // stopped the run, so a half-finished walk can't trigger spurious deletes.
+    if (prune && !stopped && !signal?.aborted) {
+        const orphans: string[] = [];
+
+        const destinationWalk = destination.listAll({ ...(prefix !== undefined && { prefix }), ...(limit !== undefined && { limit }) });
+
+        try {
+            for await (const object of destinationWalk) {
+                if (!sourceDestinationKeys.has(object.key)) {
+                    orphans.push(object.key);
+                }
+            }
+        } finally {
+            await destinationWalk.return?.();
+        }
+
+        const pruneSettled = await runConcurrent(
+            orphans,
+            async (key) => {
+                if (!dryRun) {
+                    await destination.delete(key, { signal });
+                }
+
+                return key;
+            },
+            { concurrency: width, signal, stopOnError },
+        );
+
+        for (const [index, result] of pruneSettled.entries()) {
+            const key = orphans[index] as string;
+
+            if (!result) {
+                continue;
+            }
+
+            if (result.status === "fulfilled") {
+                deleted.push(key);
+                done += 1;
+                emit({ done, key, status: "deleted" });
+            } else {
+                const bulk = toBulkError(key, result.reason);
+
+                errors.push(bulk);
+                done += 1;
+                emit({ done, error: bulk.error, key, status: "errored" });
+            }
+        }
+    }
+
+    return errors.length > 0 ? { deleted, errors, unchanged, updated, uploaded } : { deleted, unchanged, updated, uploaded };
 };
 
 export default Files;

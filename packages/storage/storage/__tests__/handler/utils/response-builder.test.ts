@@ -13,8 +13,8 @@ import {
 } from "../../../src/handler/utils/response-builder";
 import type { UploadFile } from "../../../src/storage/utils/file";
 
-const buildFile = (overrides: Partial<UploadFile> = {}): UploadFile =>
-    { return {
+const buildFile = (overrides: Partial<UploadFile> = {}): UploadFile => {
+    return {
         bytesWritten: 100,
         contentType: "video/mp4",
         id: "f1",
@@ -24,7 +24,8 @@ const buildFile = (overrides: Partial<UploadFile> = {}): UploadFile =>
         size: 200,
         status: "created",
         ...overrides,
-    }; };
+    };
+};
 
 describe("response-builder", () => {
     describe(buildResponseFile, () => {
