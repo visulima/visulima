@@ -127,13 +127,13 @@
     },
     "dependencies": {
         "@visulima/colorize": "2.0.0-alpha.12",
-        "@visulima/string": "3.0.0-alpha.14",
         "@visulima/tabular": "4.0.0-alpha.12",
-        "fastest-levenshtein": "catalog:prod",
-        "terminal-size": "catalog:prod"
+        "fastest-levenshtein": "catalog:prod"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",
+        "@visulima/string": "3.0.0-alpha.14",
+        "terminal-size": "catalog:prod",
         "@anolilab/prettier-config": "catalog:lint",
         "@anolilab/semantic-release-pnpm": "catalog:dev",
         "@anolilab/semantic-release-preset": "catalog:dev",
