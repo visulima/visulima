@@ -1,3 +1,5 @@
+export type { ArcHeaderSet, ArcSealOptions } from "./arc-signer";
+export { arcMessageSignatureBase, arcSealBase, signArc } from "./arc-signer";
 export { createDkimSigner, DkimSigner } from "./dkim-signer";
 export { createSmimeEncrypter, SmimeEncrypter } from "./smime-encrypter";
 export { createSmimeSigner, SmimeSigner } from "./smime-signer";

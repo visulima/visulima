@@ -105,6 +105,10 @@
             "types": "./dist/template-engines/jsx-email.d.ts",
             "default": "./dist/template-engines/jsx-email.js"
         },
+        "./template/i18n": {
+            "types": "./dist/template-engines/i18n.d.ts",
+            "default": "./dist/template-engines/i18n.js"
+        },
         "./providers/aws-ses": {
             "types": "./dist/providers/aws-ses/index.d.ts",
             "default": "./dist/providers/aws-ses/index.js"
@@ -180,6 +184,10 @@
         "./queue": {
             "types": "./dist/queue/index.d.ts",
             "default": "./dist/queue/index.js"
+        },
+        "./queue/unstorage": {
+            "types": "./dist/queue/unstorage-queue.d.ts",
+            "default": "./dist/queue/unstorage-queue.js"
         },
         "./test": {
             "types": "./dist/test/index.d.ts",
@@ -362,6 +370,7 @@
         "secretlint": "catalog:lint",
         "semantic-release": "catalog:cli",
         "typescript": "catalog:tsc",
+        "unstorage": "^1.13.0",
         "vitest": "catalog:test"
     },
     "peerDependencies": {
@@ -374,7 +383,8 @@
         "liquidjs": "^10.0.0",
         "mjml": "catalog:peer",
         "nodemailer": ">=7",
-        "pkijs": "catalog:peer"
+        "pkijs": "catalog:peer",
+        "unstorage": "^1.13.0"
     },
     "peerDependenciesMeta": {
         "@opentelemetry/api": {
@@ -405,6 +415,9 @@
             "optional": true
         },
         "pkijs": {
+            "optional": true
+        },
+        "unstorage": {
             "optional": true
         }
     },
