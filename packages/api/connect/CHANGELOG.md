@@ -1,3 +1,18 @@
+## @visulima/connect [4.0.0-alpha.29](https://github.com/visulima/visulima/compare/@visulima/connect@4.0.0-alpha.28...@visulima/connect@4.0.0-alpha.29) (2026-06-02)
+
+### Bug Fixes
+
+* **tests:** revert unsafe vitest autofixes from the lint sweep ([378f27c](https://github.com/visulima/visulima/commit/378f27caa370f1d3188aef2ed36d46839abc88c4))
+
+### Miscellaneous Chores
+
+* apply eslint + prettier autofixes across packages ([c1bb784](https://github.com/visulima/visulima/commit/c1bb7848a0d93d0dfe2960c77e3cda22239c79a0))
+
+### Tests
+
+* **connect:** cover node/edge router add zod-wrap branches and regexp param extraction ([de129f8](https://github.com/visulima/visulima/commit/de129f806fb7e5b0d6bccb9acbf60d9a1887fe68))
+* improve coverage across packages ([91bd6d3](https://github.com/visulima/visulima/commit/91bd6d3b61736e3c8bd1fc59b0b5955f76a5d323))
+
 ## @visulima/connect [4.0.0-alpha.28](https://github.com/visulima/visulima/compare/@visulima/connect@4.0.0-alpha.27...@visulima/connect@4.0.0-alpha.28) (2026-05-27)
 
 ### Bug Fixes
