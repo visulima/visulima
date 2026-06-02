@@ -1,13 +1,16 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { UploadControl, type UploadControlSnapshot } from "../../src/core/upload-control";
+import type { UploadControlSnapshot } from "../../src/core/upload-control";
+import { UploadControl } from "../../src/core/upload-control";
 
-const makeMeta = () => ({
-    endpoint: "http://localhost/api/upload",
-    fingerprint: "tus::http://localhost/api/upload::test.bin::100::application/octet-stream::0",
-    protocol: "tus" as const,
-    uploadUrl: "http://localhost/api/upload/123",
-});
+const makeMeta = () => {
+    return {
+        endpoint: "http://localhost/api/upload",
+        fingerprint: "tus::http://localhost/api/upload::test.bin::100::application/octet-stream::0",
+        protocol: "tus" as const,
+        uploadUrl: "http://localhost/api/upload/123",
+    };
+};
 
 describe(UploadControl, () => {
     it("starts with all metadata undefined and offset 0", () => {

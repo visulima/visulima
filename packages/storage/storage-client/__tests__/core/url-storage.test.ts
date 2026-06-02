@@ -1,17 +1,20 @@
 import { describe, expect, it } from "vitest";
 
-import { defaultUrlStorage, LocalStorageUrlStorage, MemoryUrlStorage, type UrlStorageEntry } from "../../src/core/url-storage";
+import type { UrlStorageEntry } from "../../src/core/url-storage";
+import { defaultUrlStorage, LocalStorageUrlStorage, MemoryUrlStorage } from "../../src/core/url-storage";
 
-const makeEntry = (overrides: Partial<UrlStorageEntry> = {}): UrlStorageEntry => ({
-    createdAt: 1_700_000_000_000,
-    endpoint: "http://localhost/api/upload",
-    fingerprint: "tus::http://localhost/api/upload::test.bin::100::application/octet-stream::0",
-    lastModified: 0,
-    protocol: "tus",
-    size: 100,
-    uploadUrl: "http://localhost/api/upload/123",
-    ...overrides,
-});
+const makeEntry = (overrides: Partial<UrlStorageEntry> = {}): UrlStorageEntry => {
+    return {
+        createdAt: 1_700_000_000_000,
+        endpoint: "http://localhost/api/upload",
+        fingerprint: "tus::http://localhost/api/upload::test.bin::100::application/octet-stream::0",
+        lastModified: 0,
+        protocol: "tus",
+        size: 100,
+        uploadUrl: "http://localhost/api/upload/123",
+        ...overrides,
+    };
+};
 
 interface MemoryStore {
     getItem: (key: string) => string | null;
@@ -92,7 +95,7 @@ describe(MemoryUrlStorage, () => {
         const entries = await storage.listEntries();
 
         expect(entries).toHaveLength(2);
-        expect(entries.map((entry) => entry.fingerprint).sort()).toStrictEqual(["a", "b"]);
+        expect(entries.map((entry) => entry.fingerprint).toSorted((first, second) => first.localeCompare(second))).toStrictEqual(["a", "b"]);
     });
 });
 
