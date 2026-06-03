@@ -9,20 +9,24 @@ import type { RunResult, ToolPresence } from "../../../src/lint-fmt/config-types
 
 let workspaceRoot: string;
 
-const stubResult = (overrides: Partial<RunResult>): RunResult => ({
-    durationMs: 1,
-    exitCode: 0,
-    stderr: "",
-    stdout: "",
-    ...overrides,
-});
+const stubResult = (overrides: Partial<RunResult>): RunResult => {
+    return {
+        durationMs: 1,
+        exitCode: 0,
+        stderr: "",
+        stdout: "",
+        ...overrides,
+    };
+};
 
-const presence = (): ToolPresence => ({
-    adapter: "eslint",
-    declared: true,
-    declaredVersion: "^9.0.0",
-    root: workspaceRoot,
-});
+const presence = (): ToolPresence => {
+    return {
+        adapter: "eslint",
+        declared: true,
+        declaredVersion: "^9.0.0",
+        root: workspaceRoot,
+    };
+};
 
 describe("eslintAdapter", () => {
     beforeEach(() => {
@@ -65,8 +69,8 @@ describe("eslintAdapter", () => {
         const check = eslintAdapter.argsCheck(["src/a.ts"], {});
         const fix = eslintAdapter.argsFix(["src/a.ts"], {});
 
-        expect(check.includes("--fix")).toBe(false);
-        expect(fix.includes("--fix")).toBe(true);
+        expect(check).not.toContain("--fix");
+        expect(fix).toContain("--fix");
     });
 
     it("includes --max-warnings when set", () => {

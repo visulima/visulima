@@ -9,20 +9,24 @@ import type { RunResult, ToolPresence } from "../../../src/lint-fmt/config-types
 
 let workspaceRoot: string;
 
-const stubResult = (overrides: Partial<RunResult>): RunResult => ({
-    durationMs: 1,
-    exitCode: 0,
-    stderr: "",
-    stdout: "",
-    ...overrides,
-});
+const stubResult = (overrides: Partial<RunResult>): RunResult => {
+    return {
+        durationMs: 1,
+        exitCode: 0,
+        stderr: "",
+        stdout: "",
+        ...overrides,
+    };
+};
 
-const presence = (): ToolPresence => ({
-    adapter: "biome",
-    declared: true,
-    declaredVersion: "^2.0.0",
-    root: workspaceRoot,
-});
+const presence = (): ToolPresence => {
+    return {
+        adapter: "biome",
+        declared: true,
+        declaredVersion: "^2.0.0",
+        root: workspaceRoot,
+    };
+};
 
 describe("biomeAdapter", () => {
     beforeEach(() => {
@@ -66,8 +70,8 @@ describe("biomeAdapter", () => {
 
         expect(check[0]).toBe("check");
         expect(check).toContain("--reporter=json");
-        expect(check.includes("--write")).toBe(false);
-        expect(fix.includes("--write")).toBe(true);
+        expect(check).not.toContain("--write");
+        expect(fix).toContain("--write");
     });
 
     it("threads --max-diagnostics when maxWarnings is set", () => {

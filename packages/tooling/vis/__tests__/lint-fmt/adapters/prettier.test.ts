@@ -9,20 +9,24 @@ import type { RunResult, ToolPresence } from "../../../src/lint-fmt/config-types
 
 let workspaceRoot: string;
 
-const stubResult = (overrides: Partial<RunResult>): RunResult => ({
-    durationMs: 1,
-    exitCode: 0,
-    stderr: "",
-    stdout: "",
-    ...overrides,
-});
+const stubResult = (overrides: Partial<RunResult>): RunResult => {
+    return {
+        durationMs: 1,
+        exitCode: 0,
+        stderr: "",
+        stdout: "",
+        ...overrides,
+    };
+};
 
-const presence = (): ToolPresence => ({
-    adapter: "prettier",
-    declared: true,
-    declaredVersion: "^3.0.0",
-    root: workspaceRoot,
-});
+const presence = (): ToolPresence => {
+    return {
+        adapter: "prettier",
+        declared: true,
+        declaredVersion: "^3.0.0",
+        root: workspaceRoot,
+    };
+};
 
 describe("prettierAdapter", () => {
     beforeEach(() => {

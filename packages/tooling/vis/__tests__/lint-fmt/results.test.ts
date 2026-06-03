@@ -14,7 +14,7 @@ const finding = (overrides: Partial<Finding> = {}): Finding => {
     };
 };
 
-describe("aggregate", () => {
+describe(aggregate, () => {
     it("returns empty result when there are no findings or runs", () => {
         expect.assertions(4);
 
@@ -76,7 +76,7 @@ describe("aggregate", () => {
     });
 });
 
-describe("groupFindingsByFile", () => {
+describe(groupFindingsByFile, () => {
     it("buckets findings per file and preserves insertion order", () => {
         expect.assertions(3);
 
@@ -92,7 +92,7 @@ describe("groupFindingsByFile", () => {
     });
 });
 
-describe("exitCodeFor", () => {
+describe(exitCodeFor, () => {
     it("returns 0 when there are no errors and no process failures", () => {
         expect.assertions(1);
 
@@ -124,7 +124,7 @@ describe("exitCodeFor", () => {
     });
 });
 
-describe("compareSeverity", () => {
+describe(compareSeverity, () => {
     it("orders info < warning < error", () => {
         expect.assertions(3);
 

@@ -1,4 +1,4 @@
-import { chmodSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 
 import { join } from "@visulima/path";
@@ -11,11 +11,34 @@ import { runAdapter, runAdaptersParallel } from "../../src/lint-fmt/runner";
 let workspaceRoot: string;
 let scriptDir: string;
 
-const writeScript = (name: string, body: string): string => {
-    const path = join(scriptDir, name);
+interface ScriptSpec {
+    appendTo?: string;
+    delayMs?: number;
+    exitCode?: number;
+    stdout?: string;
+}
 
-    writeFileSync(path, `#!/usr/bin/env bash\n${body}\n`, { mode: 0o755 });
-    chmodSync(path, 0o755);
+// Writes a tiny Node "tool" script so the runner can spawn it on every platform
+// (bash scripts do not execute on Windows). Invoked via `node <script>`.
+const writeScript = (name: string, spec: ScriptSpec): string => {
+    const path = join(scriptDir, name);
+    const lines: string[] = [];
+
+    if (spec.appendTo !== undefined) {
+        lines.push(`require("node:fs").appendFileSync(${JSON.stringify(spec.appendTo)}, ${JSON.stringify("run\n")});`);
+    }
+
+    if (spec.stdout !== undefined) {
+        lines.push(`process.stdout.write(${JSON.stringify(`${spec.stdout}\n`)});`);
+    }
+
+    if (spec.delayMs === undefined) {
+        lines.push(`process.exit(${String(spec.exitCode ?? 0)});`);
+    } else {
+        lines.push(`setTimeout(() => { process.exit(${String(spec.exitCode ?? 0)}); }, ${String(spec.delayMs)});`);
+    }
+
+    writeFileSync(path, lines.join("\n"));
 
     return path;
 };
@@ -24,7 +47,7 @@ const stubAdapter = (id: string, scriptPath: string, extra: Partial<ToolAdapter>
     return {
         argsCheck: () => ["check"],
         argsFix: () => ["fix"],
-        bin: () => [scriptPath],
+        bin: () => ["node", scriptPath],
         cacheKey: () => "",
         detect: () => undefined,
         extensions: ["ts"],
@@ -54,9 +77,9 @@ describe("lint-fmt runner", () => {
         it("returns results in input job order", async () => {
             expect.assertions(4);
 
-            const a = writeScript("a.sh", "echo from-a");
-            const b = writeScript("b.sh", "echo from-b");
-            const c = writeScript("c.sh", "echo from-c");
+            const a = writeScript("a.cjs", { stdout: "from-a" });
+            const b = writeScript("b.cjs", { stdout: "from-b" });
+            const c = writeScript("c.cjs", { stdout: "from-c" });
 
             const jobs: AdapterJob[] = [
                 { adapter: stubAdapter("oxlint", a), files: ["."], presence: stubPresence() },
@@ -75,7 +98,7 @@ describe("lint-fmt runner", () => {
         it("captures non-zero exit codes", async () => {
             expect.assertions(2);
 
-            const fail = writeScript("fail.sh", "echo bye; exit 7");
+            const fail = writeScript("fail.cjs", { exitCode: 7, stdout: "bye" });
             const jobs: AdapterJob[] = [{ adapter: stubAdapter("eslint", fail), files: ["."], presence: stubPresence() }];
 
             const [result] = await runAdaptersParallel(jobs, {}, "check");
@@ -98,8 +121,8 @@ describe("lint-fmt runner", () => {
             process.env.VIS_LINT_FMT_SERIAL = "1";
 
             try {
-                const a = writeScript("a.sh", "echo one");
-                const b = writeScript("b.sh", "echo two");
+                const a = writeScript("a.cjs", { stdout: "one" });
+                const b = writeScript("b.cjs", { stdout: "two" });
 
                 const jobs: AdapterJob[] = [
                     { adapter: stubAdapter("oxlint", a), files: ["."], presence: stubPresence() },
@@ -122,7 +145,7 @@ describe("lint-fmt runner", () => {
         it("delivers parallel speedup vs sequential", async () => {
             expect.assertions(1);
 
-            const sleepy = writeScript("slow.sh", "sleep 0.3");
+            const sleepy = writeScript("slow.cjs", { delayMs: 300 });
 
             const jobs: AdapterJob[] = Array.from({ length: 4 }, (_, index) => {
                 return {
@@ -148,7 +171,7 @@ describe("lint-fmt runner", () => {
         it("runs synchronously and reports stdout / exit code", () => {
             expect.assertions(2);
 
-            const script = writeScript("hello.sh", "echo hi");
+            const script = writeScript("hello.cjs", { stdout: "hi" });
             const result: RunResult = runAdapter(stubAdapter("oxlint", script), stubPresence(), ["."], {}, "check");
 
             expect(result.stdout.trim()).toBe("hi");
@@ -169,7 +192,7 @@ describe("lint-fmt runner", () => {
             // calls we know the second hit short-circuited if the file
             // still has one line.
             const counterFile = join(scriptDir, "count.log");
-            const counter = writeScript("counter.sh", `echo run >> ${counterFile}\necho hit`);
+            const counter = writeScript("counter.cjs", { appendTo: counterFile, stdout: "hit" });
 
             const presence: ToolPresence = { adapter: "oxlint", declared: false, root: workspaceRoot };
             const adapter = stubAdapter("oxlint", counter, { cacheKey: () => "stable" });
@@ -199,7 +222,7 @@ describe("lint-fmt runner", () => {
             writeFileSync(sourceFile, "export const a = 1;");
 
             const counterFile = join(scriptDir, "count2.log");
-            const counter = writeScript("counter2.sh", `echo run >> ${counterFile}\necho ok`);
+            const counter = writeScript("counter2.cjs", { appendTo: counterFile, stdout: "ok" });
 
             const presence: ToolPresence = { adapter: "oxlint", declared: false, root: workspaceRoot };
             const adapter = stubAdapter("oxlint", counter, { cacheKey: () => "stable" });
@@ -224,7 +247,7 @@ describe("lint-fmt runner", () => {
             const cacheRoot = mkdtempSync(join(tmpdir(), "vis-runner-cache-"));
 
             const counterFile = join(scriptDir, "count3.log");
-            const counter = writeScript("counter3.sh", `echo run >> ${counterFile}\necho ok`);
+            const counter = writeScript("counter3.cjs", { appendTo: counterFile, stdout: "ok" });
 
             const presence: ToolPresence = { adapter: "oxlint", declared: false, root: workspaceRoot };
             const adapter = stubAdapter("oxlint", counter, { cacheKey: () => "stable" });
