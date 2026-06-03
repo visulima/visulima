@@ -266,6 +266,10 @@ for (const command of dockerCommands) {
     cli.addCommand(command);
 }
 
+for (const command of toolchainCommands) {
+    cli.addCommand(command);
+}
+
 cli.addCommand(ciIgnoreCommand);
 
 // Post-command: upgrade notice + tips
