@@ -71,3 +71,34 @@ export const parseMtaStsPolicy = (policy: string): MtaStsPolicy => {
         version,
     };
 };
+
+/**
+ * Input for {@link buildMtaStsPolicy}.
+ */
+export interface MtaStsPolicyInput {
+    /**
+     * Maximum policy lifetime in seconds (`max_age`), e.g. `604800` (one week).
+     */
+    maxAge: number;
+
+    /**
+     * Enforcement mode.
+     */
+    mode: "enforce" | "none" | "testing";
+
+    /**
+     * Allowed MX host patterns (a leading `*.` wildcard is permitted).
+     */
+    mx: string[];
+}
+
+/**
+ * Generates an MTA-STS policy file to serve at `https://mta-sts.&lt;domain>/.well-known/mta-sts.txt`.
+ * @param input The policy contents. See {@link MtaStsPolicyInput}.
+ * @returns The policy file text (CRLF-terminated lines, per RFC 8461).
+ */
+export const buildMtaStsPolicy = (input: MtaStsPolicyInput): string => {
+    const lines = ["version: STSv1", `mode: ${input.mode}`, ...input.mx.map((host) => `mx: ${host}`), `max_age: ${String(input.maxAge)}`];
+
+    return `${lines.join("\r\n")}\r\n`;
+};

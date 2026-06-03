@@ -7,5 +7,7 @@ export {
     toHaveSentWithAttachment,
     toHaveSentWithSubject,
 } from "./matchers";
+export type { EmailSnapshot } from "./snapshot";
+export { toEmailSnapshot } from "./snapshot";
 export type { TestEmail } from "./test-email";
 export { createTestEmail } from "./test-email";
