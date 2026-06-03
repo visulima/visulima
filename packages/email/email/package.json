@@ -173,6 +173,10 @@
             "types": "./dist/crypto/index.d.ts",
             "default": "./dist/crypto/index.js"
         },
+        "./render": {
+            "types": "./dist/render/index.d.ts",
+            "default": "./dist/render/index.js"
+        },
         "./webhooks": {
             "types": "./dist/webhooks/index.d.ts",
             "default": "./dist/webhooks/index.js"
@@ -375,6 +379,7 @@
         "eslint": "catalog:lint",
         "handlebars": "catalog:dev",
         "jsx-email": "^2.0.0",
+        "juice": "^11.0.0",
         "liquidjs": "^10.0.0",
         "mjml": "catalog:dev",
         "nodemailer": "catalog:dev",
@@ -396,6 +401,7 @@
         "asn1js": "catalog:peer",
         "handlebars": "catalog:peer",
         "jsx-email": "^2.0.0",
+        "juice": "^11.0.0",
         "liquidjs": "^10.0.0",
         "mjml": "catalog:peer",
         "nodemailer": ">=7",
@@ -419,6 +425,9 @@
             "optional": true
         },
         "jsx-email": {
+            "optional": true
+        },
+        "juice": {
             "optional": true
         },
         "liquidjs": {
