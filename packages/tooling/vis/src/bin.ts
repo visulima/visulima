@@ -63,7 +63,7 @@ import stagedCommand from "./commands/staged";
 import statusCommand from "./commands/status";
 import syncCommand from "./commands/sync";
 import taskWhyCommand from "./commands/task-why";
-import toolchainCommand from "./commands/toolchain";
+import toolchainCommands from "./commands/toolchain";
 import unlinkCommand from "./commands/unlink";
 import updateCommand from "./commands/update";
 import upgradeCommand from "./commands/upgrade";
@@ -189,7 +189,6 @@ cli.addCommand(statusCommand);
 cli.addCommand(dashboardCommand);
 cli.addCommand(syncCommand);
 cli.addCommand(listCommand);
-cli.addCommand(toolchainCommand);
 cli.addCommand(completionCommand);
 cli.addCommand(versionCommand);
 
@@ -264,6 +263,10 @@ for (const command of attestCommands) {
 }
 
 for (const command of dockerCommands) {
+    cli.addCommand(command);
+}
+
+for (const command of toolchainCommands) {
     cli.addCommand(command);
 }
 
