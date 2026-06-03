@@ -33,21 +33,18 @@ export interface I18nRenderOptions {
  * @returns The matching key, or `undefined` when nothing matches.
  */
 export const resolveLocale = (templates: LocaleTemplates, locale: string, defaultLocale?: string): string | undefined => {
-    if (Object.hasOwn(templates, locale)) {
-        return locale;
-    }
+    // Locale tags are case-insensitive (BCP 47), so match against a lower-cased view of the keys and
+    // return the original key so the template lookup stays exact.
+    const byLowerKey = new Map(Object.keys(templates).map((key) => [key.toLowerCase(), key]));
+    const lookup = (candidate: string | undefined): string | undefined => {
+        if (candidate === undefined) {
+            return undefined;
+        }
 
-    const language = locale.split("-")[0];
+        return byLowerKey.get(candidate.toLowerCase());
+    };
 
-    if (language && Object.hasOwn(templates, language)) {
-        return language;
-    }
-
-    if (defaultLocale !== undefined && Object.hasOwn(templates, defaultLocale)) {
-        return defaultLocale;
-    }
-
-    return undefined;
+    return lookup(locale) ?? lookup(locale.split("-")[0]) ?? lookup(defaultLocale);
 };
 
 /**

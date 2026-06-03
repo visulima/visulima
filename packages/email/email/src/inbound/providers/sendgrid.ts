@@ -24,11 +24,21 @@ const parseRawHeaders = (raw: string | undefined): Record<string, string> => {
         return headers;
     }
 
+    let lastKey: string | undefined;
+
     for (const line of raw.replaceAll("\r\n", "\n").split("\n")) {
+        if ((line.startsWith(" ") || line.startsWith("\t")) && lastKey !== undefined) {
+            // RFC 5322 folded continuation line — unfold onto the previous header instead of dropping it.
+            headers[lastKey] = `${headers[lastKey] ?? ""} ${line.trim()}`.trim();
+
+            continue;
+        }
+
         const colonIndex = line.indexOf(":");
 
-        if (colonIndex > 0 && !line.startsWith(" ") && !line.startsWith("\t")) {
-            headers[line.slice(0, colonIndex).trim().toLowerCase()] = line.slice(colonIndex + 1).trim();
+        if (colonIndex > 0) {
+            lastKey = line.slice(0, colonIndex).trim().toLowerCase();
+            headers[lastKey] = line.slice(colonIndex + 1).trim();
         }
     }
 

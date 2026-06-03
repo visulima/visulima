@@ -1,8 +1,7 @@
 import type { InboundAddress } from "./types";
 
-// Anchored, linear patterns (no nested quantifiers) — safe from catastrophic backtracking.
-// eslint-disable-next-line sonarjs/slow-regex
-const MESSAGE_ID_PATTERN = /<[^>]+>/g;
+// `[^<>]` (not `[^>]`) keeps this linear: an unclosed run of "<" can't trigger O(n²) backtracking.
+const MESSAGE_ID_PATTERN = /<[^<>]+>/g;
 const WHITESPACE_PATTERN = /\s+/;
 const SURROUNDING_QUOTES_PATTERN = /^"|"$/g;
 

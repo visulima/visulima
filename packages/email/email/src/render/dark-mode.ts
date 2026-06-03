@@ -1,5 +1,6 @@
-const HEAD_OPEN = /<head[^>]*>/i;
-const HTML_OPEN = /<html[^>]*>/i;
+// `[^<>]` (not `[^>]`) keeps these linear: an unclosed run of "<" can't trigger O(n²) backtracking.
+const HEAD_OPEN = /<head[^<>]*>/i;
+const HTML_OPEN = /<html[^<>]*>/i;
 
 /**
  * Options for {@link addDarkModeSupport}.

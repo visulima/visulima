@@ -47,9 +47,8 @@ const parsePostmarkInbound = (payload: PostmarkInboundPayload): InboundEmail => 
         }
     }
 
-    // Anchored, linear pattern — safe from catastrophic backtracking.
-    // eslint-disable-next-line sonarjs/slow-regex
-    const references = (headers.references ?? "").match(/<[^>]+>/g) ?? [];
+    // `[^<>]` (not `[^>]`) keeps this linear: an unclosed run of "<" can't trigger O(n²) backtracking.
+    const references = (headers.references ?? "").match(/<[^<>]+>/g) ?? [];
 
     const attachments: InboundAttachment[] = (payload.Attachments ?? []).map((attachment) => {
         return {
@@ -69,7 +68,9 @@ const parsePostmarkInbound = (payload: PostmarkInboundPayload): InboundEmail => 
         headers,
         html: nonEmpty(payload.HtmlBody),
         inReplyTo: headers["in-reply-to"],
-        messageId: payload.MessageID ? `<${payload.MessageID}>` : headers["message-id"],
+        // Prefer the RFC 5322 Message-ID header (what inReplyTo/references reference) over Postmark's
+        // internal MessageID, so thread stitching links replies correctly.
+        messageId: headers["message-id"] ?? (payload.MessageID ? `<${payload.MessageID}>` : undefined),
         provider: "postmark",
         raw: payload,
         references,

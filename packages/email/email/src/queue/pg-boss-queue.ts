@@ -4,6 +4,8 @@ import type { EmailQueue, EnqueueOptions, QueueJob } from "./types";
 interface PgBossJob {
     data: unknown;
     id: string;
+    /** pg-boss retry count (present when fetched with `includeMetadata`). */
+    retryCount?: number;
 }
 
 /**
@@ -12,7 +14,7 @@ interface PgBossJob {
 interface PgBossLike {
     complete: (name: string, id: string) => Promise<unknown>;
     fail: (name: string, id: string) => Promise<unknown>;
-    fetch: (name: string, options?: { batchSize?: number }) => Promise<PgBossJob[] | PgBossJob | null>;
+    fetch: (name: string, options?: { batchSize?: number; includeMetadata?: boolean }) => Promise<PgBossJob[] | PgBossJob | null>;
     getQueueSize: (name: string) => Promise<number>;
     send: (name: string, data: object, options?: { startAfter?: Date | number | string }) => Promise<null | string>;
 }
@@ -30,9 +32,10 @@ interface PgBossQueueOptions {
 /**
  * An {@link EmailQueue} backed by [pg-boss](https://github.com/timgit/pg-boss) (Postgres).
  *
- * Pass a started pg-boss instance (an optional peer). `reserve` uses `fetch` (which marks the job
- * active for pg-boss's own expiration window); `retry` calls `fail`, so the retry delay is governed by
- * the queue's pg-boss retry policy rather than the `delayMs` argument.
+ * Pass a started pg-boss instance (an optional peer). `reserve` uses `fetch` with `includeMetadata`, so
+ * the job's `attempts` reflects pg-boss's own `retryCount` (letting `createWorker`'s `maxAttempts`
+ * dead-lettering work). `retry` calls `fail`, so the retry *delay* is governed by the queue's pg-boss
+ * retry policy (`retryDelay`/`retryBackoff`) rather than the worker's `delayMs` argument.
  */
 class PgBossQueue implements EmailQueue {
     private readonly boss: PgBossLike;
@@ -54,7 +57,7 @@ class PgBossQueue implements EmailQueue {
 
     /** Reserves the next ready job. */
     public async reserve(): Promise<QueueJob | undefined> {
-        const fetched = await this.boss.fetch(this.queueName, { batchSize: 1 });
+        const fetched = await this.boss.fetch(this.queueName, { batchSize: 1, includeMetadata: true });
 
         if (!fetched) {
             return undefined;
@@ -66,7 +69,8 @@ class PgBossQueue implements EmailQueue {
             return undefined;
         }
 
-        return { attempts: 0, id: job.id, message: job.data as EmailOptions, scheduledAt: 0 };
+        // Surface pg-boss's retryCount so the worker's maxAttempts/dead-letter logic can converge.
+        return { attempts: job.retryCount ?? 0, id: job.id, message: job.data as EmailOptions, scheduledAt: 0 };
     }
 
     /** Acknowledges (removes) a processed job. */

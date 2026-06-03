@@ -46,6 +46,15 @@ export const withTelemetry = (tracer: Tracer, options: TelemetryMiddlewareOption
                 }
 
                 return result;
+            } catch (error) {
+                // A thrown send (vs. a failed result) must still be recorded on the span before it ends.
+                if (error instanceof Error) {
+                    span.recordException(error);
+                }
+
+                span.setStatus({ code: SPAN_STATUS_ERROR, message: error instanceof Error ? error.message : "send failed" });
+
+                throw error;
             } finally {
                 span.end();
             }

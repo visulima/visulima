@@ -44,6 +44,10 @@ interface SqsQueueOptions {
 // SQS allows a maximum delay of 15 minutes.
 const MAX_DELAY_SECONDS = 900;
 
+const ATTR_READY = "ApproximateNumberOfMessages";
+// eslint-disable-next-line no-secrets/no-secrets -- SQS attribute name, not a secret
+const ATTR_IN_FLIGHT = "ApproximateNumberOfMessagesNotVisible";
+
 const toDelaySeconds = (scheduledAt: Date | number | undefined, now: number): number => {
     if (scheduledAt === undefined) {
         return 0;
@@ -52,7 +56,8 @@ const toDelaySeconds = (scheduledAt: Date | number | undefined, now: number): nu
     const target = scheduledAt instanceof Date ? scheduledAt.getTime() : scheduledAt;
     const seconds = Math.ceil((target - now) / 1000);
 
-    return Math.min(MAX_DELAY_SECONDS, Math.max(0, seconds));
+    // Lower-bound only — the caller rejects delays beyond the SQS maximum rather than clamping them.
+    return Math.max(0, seconds);
 };
 
 /**
@@ -80,8 +85,16 @@ class SqsQueue implements EmailQueue {
 
     /** Enqueues the message. */
     public async enqueue(message: EmailOptions, options: EnqueueOptions = {}): Promise<string> {
+        const delaySeconds = toDelaySeconds(options.scheduledAt, Date.now());
+
+        if (delaySeconds > MAX_DELAY_SECONDS) {
+            // SQS caps native delays at 15 minutes; silently clamping would deliver far-future jobs early,
+            // breaking the "deliver no earlier than scheduledAt" contract. Fail fast instead.
+            throw new RangeError(`SQS supports a maximum scheduling delay of ${String(MAX_DELAY_SECONDS)}s (15 minutes); use a scheduler for longer delays`);
+        }
+
         const result = await this.client.sendMessage({
-            DelaySeconds: toDelaySeconds(options.scheduledAt, Date.now()),
+            DelaySeconds: delaySeconds,
             MessageBody: JSON.stringify(message),
             QueueUrl: this.queueUrl,
         });
@@ -107,10 +120,22 @@ class SqsQueue implements EmailQueue {
 
         const receiveCount = Number(message.Attributes?.ApproximateReceiveCount ?? "1");
 
+        let parsed: EmailOptions;
+
+        try {
+            parsed = JSON.parse(message.Body ?? "{}") as EmailOptions;
+        } catch {
+            // A poison (non-JSON) message would otherwise throw on every reserve() and stall the worker.
+            // Drop it and report no job ready, so polling continues.
+            await this.client.deleteMessage({ QueueUrl: this.queueUrl, ReceiptHandle: message.ReceiptHandle });
+
+            return undefined;
+        }
+
         return {
             attempts: Math.max(0, receiveCount - 1),
             id: message.ReceiptHandle,
-            message: JSON.parse(message.Body ?? "{}") as EmailOptions,
+            message: parsed,
             scheduledAt: 0,
         };
     }
@@ -130,14 +155,15 @@ class SqsQueue implements EmailQueue {
         });
     }
 
-    /** Returns the number of queued jobs. */
+    /** Returns the number of queued jobs (ready + in-flight/reserved). */
     public async size(): Promise<number> {
         const result = await this.client.getQueueAttributes({
-            AttributeNames: ["ApproximateNumberOfMessages"],
+            AttributeNames: [ATTR_READY, ATTR_IN_FLIGHT],
             QueueUrl: this.queueUrl,
         });
 
-        return Number(result.Attributes?.ApproximateNumberOfMessages ?? 0);
+        // `EmailQueue.size` is "ready + reserved": add in-flight (not-visible) messages to the ready count.
+        return Number(result.Attributes?.[ATTR_READY] ?? 0) + Number(result.Attributes?.[ATTR_IN_FLIGHT] ?? 0);
     }
 }
 

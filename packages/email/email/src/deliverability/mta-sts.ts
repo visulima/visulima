@@ -1,3 +1,5 @@
+const MTA_STS_MODES = new Set<string>(["enforce", "none", "testing"]);
+
 /**
  * A parsed [MTA-STS](https://www.rfc-editor.org/rfc/rfc8461) policy
  * (`https://mta-sts.&lt;domain>/.well-known/mta-sts.txt`).
@@ -67,7 +69,7 @@ export const parseMtaStsPolicy = (policy: string): MtaStsPolicy => {
         maxAge,
         mode,
         mx,
-        valid: version === "STSv1",
+        valid: version === "STSv1" && mode !== undefined && maxAge !== undefined,
         version,
     };
 };
@@ -98,7 +100,21 @@ export interface MtaStsPolicyInput {
  * @returns The policy file text (CRLF-terminated lines, per RFC 8461).
  */
 export const buildMtaStsPolicy = (input: MtaStsPolicyInput): string => {
-    const lines = ["version: STSv1", `mode: ${input.mode}`, ...input.mx.map((host) => `mx: ${host}`), `max_age: ${String(input.maxAge)}`];
+    if (!MTA_STS_MODES.has(input.mode)) {
+        throw new TypeError("buildMtaStsPolicy: `mode` must be one of \"enforce\", \"testing\", or \"none\"");
+    }
+
+    if (!Number.isInteger(input.maxAge) || input.maxAge < 0) {
+        throw new TypeError("buildMtaStsPolicy: `maxAge` must be a non-negative integer");
+    }
+
+    const mx = input.mx.map((host) => host.trim());
+
+    if (mx.length === 0 || mx.some((host) => host.length === 0)) {
+        throw new TypeError("buildMtaStsPolicy: `mx` must contain at least one non-empty host");
+    }
+
+    const lines = ["version: STSv1", `mode: ${input.mode}`, ...mx.map((host) => `mx: ${host}`), `max_age: ${String(input.maxAge)}`];
 
     return `${lines.join("\r\n")}\r\n`;
 };

@@ -9,7 +9,8 @@ const parseFields = (raw: string): Record<string, string> => {
     const normalized = raw.replaceAll("\r\n", "\n");
 
     let section = normalized;
-    const markerIndex = normalized.indexOf(FEEDBACK_REPORT_MARKER);
+    // Content types are case-insensitive (RFC 2045), so match the marker case-insensitively.
+    const markerIndex = normalized.toLowerCase().indexOf(FEEDBACK_REPORT_MARKER);
 
     if (markerIndex !== -1) {
         // Skip past the content-type line and the blank line that ends the part headers.

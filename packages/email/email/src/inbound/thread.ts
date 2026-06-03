@@ -112,7 +112,13 @@ export const stitchThreads = (messages: InboundEmail[]): EmailThread[] => {
 
     const keyFor = (message: InboundEmail, index: number): string => {
         if (message.messageId) {
-            return normalizeMessageId(message.messageId);
+            const normalized = normalizeMessageId(message.messageId);
+
+            // A malformed id (e.g. "<>") normalizes to "" — fall back to the synthetic index key so
+            // unrelated messages aren't merged into one empty-keyed thread.
+            if (normalized !== "") {
+                return normalized;
+            }
         }
 
         return `__index_${String(index)}`;

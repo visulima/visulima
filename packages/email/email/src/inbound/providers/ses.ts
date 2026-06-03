@@ -55,7 +55,9 @@ const parseSesInbound = (payload: SesInboundPayload): InboundEmail => {
         headers,
         html: nonEmpty(payload.html),
         inReplyTo: headers["in-reply-to"],
-        messageId: mail.messageId ? `<${mail.messageId}>` : headers["message-id"],
+        // Prefer the RFC 5322 Message-ID header (commonHeaders.messageId / the message-id header) over
+        // the SES-assigned mail.messageId, so thread stitching links replies correctly.
+        messageId: common.messageId ?? headers["message-id"] ?? (mail.messageId ? `<${mail.messageId}>` : undefined),
         provider: "ses",
         raw: payload,
         references: parseReferences(headers.references),

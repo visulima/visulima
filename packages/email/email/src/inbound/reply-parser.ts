@@ -13,7 +13,8 @@ const ATTRIBUTION_PATTERNS: RegExp[] = [
     // Spanish: "El 1 de enero de 2024, John Doe escribió:"
     /^El .*escribió:$/i,
     // Turkish: "1 Ocak 2024 Pazartesi tarihinde John Doe şunları yazdı:"
-    /yazdı:$/i,
+    // Require the "tarihinde ... yazdı:" attribution shape so ordinary prose ending in "yazdı:" isn't truncated.
+    /^.+\btarihinde\b.+yazdı:$/i,
 ];
 
 /**

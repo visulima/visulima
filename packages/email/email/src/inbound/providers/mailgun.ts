@@ -52,6 +52,23 @@ const parseMessageHeaders = (raw: [string, string][] | string | undefined): Reco
 };
 
 /**
+ * Canonicalizes a Message-ID to the angle-bracketed RFC 5322 form. Mailgun delivers the value
+ * bracketed in `message-headers` but often bare in the top-level `Message-Id` field; normalizing both
+ * keeps `inReplyTo`/`references` comparisons consistent.
+ * @param value The raw Message-ID value (bare or bracketed).
+ * @returns The bracketed Message-ID, or `undefined` when there is no value.
+ */
+const canonicalizeMessageId = (value: string | undefined): string | undefined => {
+    if (!value) {
+        return undefined;
+    }
+
+    const trimmed = value.trim();
+
+    return trimmed.startsWith("<") && trimmed.endsWith(">") ? trimmed : `<${trimmed}>`;
+};
+
+/**
  * Parses a [Mailgun inbound](https://documentation.mailgun.com/docs/mailgun/user-manual/receive-forward-store/)
  * route payload into the normalized {@link InboundEmail} shape.
  * @param payload The parsed form fields of the Mailgun inbound request.
@@ -68,7 +85,7 @@ const parseMailgunInbound = (payload: MailgunInboundPayload): InboundEmail => {
         headers,
         html: nonEmpty(payload["body-html"]),
         inReplyTo: headers["in-reply-to"],
-        messageId: payload["Message-Id"] ?? headers["message-id"],
+        messageId: canonicalizeMessageId(payload["Message-Id"] ?? headers["message-id"]),
         provider: "mailgun",
         raw: payload,
         references: parseReferences(headers.references),

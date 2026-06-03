@@ -32,7 +32,7 @@ const result = verifyStandardWebhook({
     // both webhook-* and svix-* names.
     headers: request.headers,
     // The signing secret — supports the whsec_-prefixed base64 form, or a raw string.
-    secret: "whsec_MfKQ9r8GKYqrTwjUPD8ILPZIo2LaLaSw",
+    secret: "whsec_YOUR_WEBHOOK_SECRET",
 });
 
 if (!result.valid) {

@@ -50,6 +50,12 @@ export const RATE_LIMIT_PRESETS = {
  */
 export const rateLimitMiddleware = (options: RateLimitMiddlewareOptions): Middleware => {
     const { burst, now = Date.now, rate, sleep = defaultSleep } = options;
+
+    if (rate <= 0 || Number.isNaN(rate)) {
+        // A non-positive rate would make the token bucket never refill, spinning the acquire loop forever.
+        throw new TypeError("rateLimitMiddleware: `rate` must be a positive number");
+    }
+
     const capacity = burst ?? rate;
 
     let tokens = capacity;

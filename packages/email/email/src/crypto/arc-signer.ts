@@ -5,11 +5,13 @@ import { createHash, createPrivateKey, createPublicKey, createSign, sign as cryp
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { readFile } from "@visulima/fs";
 
-import type { EmailAddress, EmailOptions } from "../types";
+import type { EmailOptions } from "../types";
 import headersToRecord from "../utils/headers-to-record";
+import { formatAddresses } from "./format-address";
 
 const WHITESPACE_RUN = /\s+/g;
 const TRAILING_SPACE = / $/;
+const AAR_INSTANCE = /^\s*i=(\d+)\s*;/;
 
 /**
  * Default headers signed by the ARC-Message-Signature when none are specified.
@@ -127,20 +129,6 @@ interface ArcVerifyResult {
     valid: boolean;
 }
 
-const formatAddress = (address: EmailAddress): string => {
-    if (address.name) {
-        return `${address.name} <${address.email}>`;
-    }
-
-    return address.email;
-};
-
-const formatAddresses = (addresses: EmailAddress | EmailAddress[]): string => {
-    const list = Array.isArray(addresses) ? addresses : [addresses];
-
-    return list.map((address) => formatAddress(address)).join(", ");
-};
-
 /**
  * RFC 6376 "relaxed" canonicalization of a single header field.
  * @param name The header field name.
@@ -164,7 +152,8 @@ const relaxedBody = (body: string): string => {
         text = text.slice(0, -2);
     }
 
-    return text.length > 0 ? `${text}\r\n` : "";
+    // RFC 6376 relaxed body canonicalization: an empty body still hashes as a single CRLF.
+    return text.length > 0 ? `${text}\r\n` : "\r\n";
 };
 
 /**
@@ -367,6 +356,13 @@ const loadPrivateKey = async (privateKey: string, passphrase?: string): Promise<
  */
 const signArc = async (email: EmailOptions, options: ArcSealOptions): Promise<{ email: EmailOptions; headers: ArcHeaderSet }> => {
     const instance = options.instance ?? 1;
+
+    if (instance !== 1) {
+        // Only the originating sealer is supported; a higher instance has no prior chain to seal and
+        // would emit a structurally invalid set (cv=none with i>1) rather than failing fast.
+        throw new Error(`signArc only supports an originating sealer (instance 1); received i=${String(instance)}`);
+    }
+
     const algorithm = options.algorithm ?? "rsa-sha256";
     // Resolve the timestamp once so the AMS and ARC-Seal share an identical t= value.
     const sealOptions: ArcSealOptions = { ...options, timestamp: options.timestamp ?? Math.floor(Date.now() / 1000) };
@@ -416,10 +412,24 @@ const verifyArc = (email: EmailOptions, headers: ArcHeaderSet | Record<string, s
         return { components: { ams: false, bodyHash: false, seal: false }, reason: "missing-arc-headers", valid: false };
     }
 
-    const publicKey = typeof options.publicKey === "string" ? createPublicKey(options.publicKey) : options.publicKey;
+    let publicKey: KeyObject;
+
+    try {
+        publicKey = typeof options.publicKey === "string" ? createPublicKey(options.publicKey) : options.publicKey;
+    } catch {
+        return { components: { ams: false, bodyHash: false, seal: false }, reason: "invalid-public-key", valid: false };
+    }
 
     const amsTags = parseArcTags(amsValue);
     const sealTags = parseArcTags(sealValue);
+    const aarInstance = AAR_INSTANCE.exec(aarValue)?.[1];
+
+    // This verifier only covers an originating (i=1) seal with cv=none; reject any other shape so
+    // result.valid never claims more than the documented contract.
+    if (aarInstance !== "1" || amsTags.i !== "1" || sealTags.i !== "1" || sealTags.cv !== "none") {
+        return { components: { ams: false, bodyHash: false, seal: false }, cv: sealTags.cv, reason: "unsupported-arc-instance", valid: false };
+    }
+
     const amsAlgorithm: ArcAlgorithm = amsTags.a === "ed25519-sha256" ? "ed25519-sha256" : "rsa-sha256";
     const sealAlgorithm: ArcAlgorithm = sealTags.a === "ed25519-sha256" ? "ed25519-sha256" : "rsa-sha256";
 

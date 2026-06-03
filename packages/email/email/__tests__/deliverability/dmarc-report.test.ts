@@ -42,10 +42,10 @@ const SAMPLE = `<?xml version="1.0"?>
 </feedback>`;
 
 describe(parseDmarcReport, () => {
-    it("parses metadata, policy and records", () => {
+    it("parses metadata, policy and records", async () => {
         expect.assertions(7);
 
-        const report = parseDmarcReport(SAMPLE);
+        const report = await parseDmarcReport(SAMPLE);
 
         expect(report.organizationName).toBe("google.com");
         expect(report.reportId).toBe("12345");
@@ -56,10 +56,10 @@ describe(parseDmarcReport, () => {
         expect(report.records[0]?.authResults.dkim[0]?.result).toBe("pass");
     });
 
-    it("normalizes a single record and a single auth result to arrays", () => {
+    it("normalizes a single record and a single auth result to arrays", async () => {
         expect.assertions(2);
 
-        const report = parseDmarcReport(SAMPLE);
+        const report = await parseDmarcReport(SAMPLE);
 
         expect(report.records[1]?.disposition).toBe("reject");
         expect(report.records[1]?.authResults.spf).toHaveLength(1);

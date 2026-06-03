@@ -1,5 +1,6 @@
 import type { MockEmailEntry } from "../providers/mock/types";
 import type { EmailAddress, EmailOptions } from "../types";
+import headersToRecord from "../utils/headers-to-record";
 
 const formatAddress = (address: EmailAddress): string => {
     if (address.name) {
@@ -74,6 +75,14 @@ export const toEmailSnapshot = (source: EmailOptions | MockEmailEntry): EmailSna
 
     if (options.html !== undefined) {
         snapshot.html = options.html;
+    }
+
+    if (options.headers !== undefined) {
+        const headers = headersToRecord(options.headers);
+
+        if (Object.keys(headers).length > 0) {
+            snapshot.headers = headers;
+        }
     }
 
     if (options.attachments && options.attachments.length > 0) {

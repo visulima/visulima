@@ -1,4 +1,5 @@
-const BODY_OPEN = /<body[^>]*>/i;
+// `[^<>]` (not `[^>]`) keeps this linear: an unclosed run of "<" can't trigger O(n²) backtracking.
+const BODY_OPEN = /<body[^<>]*>/i;
 
 const escapeHtml = (value: string): string =>
     value

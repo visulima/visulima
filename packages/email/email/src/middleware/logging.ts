@@ -55,14 +55,16 @@ export const loggingMiddleware = (options: LoggingMiddlewareOptions = {}): Middl
     return async (emailOptions, next) => {
         const recipients = summarizeRecipients(emailOptions.to, redact);
 
-        logger.info("[@visulima/email] sending", { subject: emailOptions.subject, to: recipients });
+        // The subject often carries PII (names, order details); gate it behind the same redact flag.
+        logger.info("[@visulima/email] sending", { subject: redact ? undefined : emailOptions.subject, to: recipients });
 
         const result = await next(emailOptions);
 
         if (result.success) {
             logger.info("[@visulima/email] sent", { messageId: result.data?.messageId, to: recipients });
         } else {
-            logger.error("[@visulima/email] send failed", { error: result.error, to: recipients });
+            // Log a sanitized error message rather than the raw error, which can embed the full payload.
+            logger.error("[@visulima/email] send failed", { error: result.error instanceof Error ? result.error.message : result.error, to: recipients });
         }
 
         return result;

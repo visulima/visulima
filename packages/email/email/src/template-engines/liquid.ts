@@ -1,5 +1,3 @@
-import { Liquid } from "liquidjs";
-
 import EmailError from "../errors/email-error";
 import type { TemplateRenderer } from "./types";
 
@@ -18,6 +16,8 @@ const liquid: TemplateRenderer = async (template: unknown, data?: Record<string,
             throw new TypeError("Liquid template must be a string");
         }
 
+        // Loaded lazily so a missing optional peer surfaces here as an EmailError, not at import time.
+        const { Liquid } = await import("liquidjs");
         const engine = new Liquid(options ?? {});
 
         return await engine.parseAndRender(template, data ?? {});
@@ -26,7 +26,7 @@ const liquid: TemplateRenderer = async (template: unknown, data?: Record<string,
             throw error;
         }
 
-        if (error instanceof Error && error.message.includes("Cannot find module")) {
+        if (error instanceof Error && ((error as NodeJS.ErrnoException).code === "ERR_MODULE_NOT_FOUND" || error.message.includes("Cannot find module") || error.message.includes("Cannot find package"))) {
             throw new EmailError("liquid", "liquidjs is not installed. Please install it: pnpm add liquidjs", { cause: error });
         }
 

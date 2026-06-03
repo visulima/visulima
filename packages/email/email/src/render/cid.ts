@@ -1,5 +1,5 @@
-// Matches src="cid:foo" / href='cid:bar' (attribute, quote, then the cid token).
-const CID_ATTRIBUTE = /(src|href)=(["'])cid:([^"']+)\2/gi;
+// Matches src="cid:foo" / href = 'cid:bar' (attribute, optional whitespace around "=", quote, token).
+const CID_ATTRIBUTE = /\b(src|href)\s*=\s*(["'])cid:([^"']+)\2/gi;
 
 /**
  * Rewrites `cid:` references in `src`/`href` attributes using a resolver.

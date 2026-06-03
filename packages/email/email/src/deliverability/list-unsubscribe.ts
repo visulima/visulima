@@ -102,9 +102,8 @@ export const buildListUnsubscribe = (options: ListUnsubscribeOptions): ListUnsub
  * @returns The list of unwrapped targets (URLs / mailto URIs).
  */
 export const parseListUnsubscribe = (header: string): string[] => {
-    // Anchored, linear pattern — safe from catastrophic backtracking.
-    // eslint-disable-next-line sonarjs/slow-regex
-    const matches = header.match(/<[^>]+>/g);
+    // `[^<>]` (not `[^>]`) keeps this linear: an unclosed run of "<" can't trigger O(n²) backtracking.
+    const matches = header.match(/<[^<>]+>/g);
 
     if (!matches) {
         return [];

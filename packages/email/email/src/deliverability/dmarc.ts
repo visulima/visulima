@@ -92,6 +92,12 @@ export interface DmarcRecord {
 export const parseDmarcRecord = (record: string): DmarcRecord => {
     const tags: Record<string, string> = {};
 
+    // A valid DMARC record must begin with the version tag (RFC 7489 §6.3): "v=DMARC1".
+    const firstTag = record
+        .split(";")
+        .map((part) => part.trim())
+        .find((part) => part.length > 0);
+
     for (const part of record.split(";")) {
         const index = part.indexOf("=");
 
@@ -119,6 +125,6 @@ export const parseDmarcRecord = (record: string): DmarcRecord => {
         ruf: splitUris(tags.ruf),
         subdomainPolicy: validPolicy(tags.sp),
         tags,
-        valid: (tags.v ?? "").toUpperCase() === "DMARC1",
+        valid: firstTag?.toLowerCase() === "v=dmarc1",
     };
 };

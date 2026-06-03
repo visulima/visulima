@@ -56,7 +56,14 @@ const cloudflareEmailProvider: ProviderFactory<CloudflareEmailConfig> = definePr
                     return { error: new EmailError(PROVIDER_NAME, `Invalid email options: ${validationErrors.join(", ")}`), success: false };
                 }
 
-                const recipient = Array.isArray(emailOptions.to) ? emailOptions.to[0] : emailOptions.to;
+                const toRecipients = Array.isArray(emailOptions.to) ? emailOptions.to : [emailOptions.to];
+
+                if (toRecipients.length !== 1 || emailOptions.cc !== undefined || emailOptions.bcc !== undefined) {
+                    // The Workers Email binding sends one envelope recipient; reject rather than silently drop.
+                    return { error: new EmailError(PROVIDER_NAME, "Cloudflare Email supports exactly one `to` recipient and does not support cc/bcc"), success: false };
+                }
+
+                const [recipient] = toRecipients;
 
                 if (!recipient) {
                     return { error: new EmailError(PROVIDER_NAME, "A single `to` recipient is required"), success: false };

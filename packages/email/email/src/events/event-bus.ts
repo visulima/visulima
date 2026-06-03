@@ -65,12 +65,21 @@ export class EventBus {
      * @param event The event to dispatch.
      */
     public emit(event: EmailEvent): void {
+        const invoke = (listener: EmailEventListener): void => {
+            try {
+                listener(event);
+            } catch {
+                // Isolate subscriber failures so one throwing listener can't drop the others
+                // (e.g. a failing metrics observer must not break persistence).
+            }
+        };
+
         for (const listener of this.listeners.get(event.type) ?? []) {
-            listener(event);
+            invoke(listener);
         }
 
         for (const listener of this.listeners.get(ALL_EVENTS) ?? []) {
-            listener(event);
+            invoke(listener);
         }
     }
 

@@ -1,4 +1,4 @@
-import { XMLParser } from "fast-xml-parser";
+import type { XMLParser } from "fast-xml-parser";
 
 import EmailError from "../errors/email-error";
 
@@ -141,16 +141,24 @@ interface DmarcAggregateReport {
  * @returns The parsed report. See {@link DmarcAggregateReport}.
  * @throws {EmailError} When `fast-xml-parser` is not installed or the XML cannot be parsed.
  */
-const parseDmarcReport = (xml: string): DmarcAggregateReport => {
-    let parsedXml: XmlNode;
+const parseDmarcReport = async (xml: string): Promise<DmarcAggregateReport> => {
+    let Parser: typeof XMLParser;
 
     try {
-        parsedXml = new XMLParser({ ignoreAttributes: true, parseTagValue: false }).parse(xml) as XmlNode;
+        ({ XMLParser: Parser } = await import("fast-xml-parser"));
     } catch (error) {
-        if (error instanceof Error && error.message.includes("Cannot find module")) {
+        if (error instanceof Error && ((error as NodeJS.ErrnoException).code === "ERR_MODULE_NOT_FOUND" || error.message.includes("Cannot find module") || error.message.includes("Cannot find package"))) {
             throw new EmailError("deliverability", "fast-xml-parser is not installed. Please install it: pnpm add fast-xml-parser", { cause: error });
         }
 
+        throw new EmailError("deliverability", `Failed to load fast-xml-parser: ${(error as Error).message}`, { cause: error });
+    }
+
+    let parsedXml: XmlNode;
+
+    try {
+        parsedXml = new Parser({ ignoreAttributes: true, parseTagValue: false }).parse(xml) as XmlNode;
+    } catch (error) {
         throw new EmailError("deliverability", `Failed to parse DMARC report: ${(error as Error).message}`, { cause: error });
     }
 
