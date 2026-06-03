@@ -27,7 +27,7 @@ const GIT_ENV_VARS = [
     "GIT_CEILING_DIRECTORIES",
 ] as const;
 
-let savedGitEnv: Record<string, string | undefined> = {};
+let savedGitEnv: Record<string, string | undefined>;
 
 const sh = (args: string[], cwd: string): string => execFileSync("git", args, { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim();
 
@@ -64,7 +64,7 @@ describe("runStaged — integration", () => {
 
         for (const key of GIT_ENV_VARS) {
             savedGitEnv[key] = process.env[key];
-            delete process.env[key];
+            Reflect.deleteProperty(process.env, key);
         }
 
         root = initRepo();
@@ -75,7 +75,7 @@ describe("runStaged — integration", () => {
 
         for (const key of GIT_ENV_VARS) {
             if (savedGitEnv[key] === undefined) {
-                delete process.env[key];
+                Reflect.deleteProperty(process.env, key);
             } else {
                 process.env[key] = savedGitEnv[key];
             }
