@@ -11,12 +11,13 @@ import auditCommand from "../../src/commands/audit";
 import cacheCommands from "../../src/commands/cache";
 import checkCommand from "../../src/commands/check";
 import ciCommand from "../../src/commands/ci";
+import ciIgnoreCommand from "../../src/commands/ci-ignore";
 import cleanCommand from "../../src/commands/clean";
 import createCommand from "../../src/commands/create";
 import dedupeCommand from "../../src/commands/dedupe";
 import devcontainerCommand from "../../src/commands/devcontainer";
 import dlxCommand from "../../src/commands/dlx";
-import dockerCommand from "../../src/commands/docker";
+import dockerCommands from "../../src/commands/docker";
 import doctorCommand from "../../src/commands/doctor";
 import execCommand from "../../src/commands/exec";
 import generateCommand from "../../src/commands/generate";
@@ -61,7 +62,6 @@ const FLAT_COMMANDS: Command[] = [
     dedupeCommand,
     devcontainerCommand,
     dlxCommand,
-    dockerCommand,
     doctorCommand,
     execCommand,
     generateCommand,
@@ -91,7 +91,7 @@ const FLAT_COMMANDS: Command[] = [
     whyCommand,
 ];
 
-const ALL_COMMANDS: Command[] = [...FLAT_COMMANDS, ...aiCommands, ...cacheCommands, ...hookCommands, ...migrateCommands];
+const ALL_COMMANDS: Command[] = [...FLAT_COMMANDS, ciIgnoreCommand, ...aiCommands, ...cacheCommands, ...dockerCommands, ...hookCommands, ...migrateCommands];
 
 describe("vis lazy command contract", () => {
     it.each(ALL_COMMANDS.map((c) => [c.name, c]))("%s declares loader, not execute", (_name, command) => {

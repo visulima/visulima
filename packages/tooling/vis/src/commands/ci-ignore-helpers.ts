@@ -1,5 +1,5 @@
 /**
- * Pure helpers for `vis ignore`. Split from `ignore.ts` so tests can
+ * Pure helpers for `vis ci ignore`. Split from the handler so tests can
  * exercise them without pulling in `@visulima/task-runner`, which
  * otherwise drags the whole run-graph module through ESM evaluation.
  */
