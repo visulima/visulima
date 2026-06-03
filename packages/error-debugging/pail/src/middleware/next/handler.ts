@@ -92,8 +92,7 @@ export const createWithPail
                             ?? (errorInstance as Error & { statusCode?: number }).statusCode
                             ?? 500;
 
-                    finish({ error: errorInstance });
-                    logger.setStatus(errorStatus);
+                    finish({ error: errorInstance, status: errorStatus });
 
                     throw error;
                 }
