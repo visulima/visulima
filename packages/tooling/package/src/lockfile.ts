@@ -105,8 +105,8 @@ const PNPM_SECTION_HEADER = /^[a-z][a-zA-Z0-9]*:\s*$/m;
 const PNPM_INTEGRITY = /resolution:\s*\{[^}]*integrity:\s*([^,}\s]+)/;
 
 const YARN_BLOCK
-    // eslint-disable-next-line sonarjs/slow-regex, sonarjs/regex-complexity, regexp/no-super-linear-backtracking
-    = /^["']?((?:@[^/@"']+\/)?[^@"'\n]+)@[^"'\n]+["']?:?[\t\v\f\r \u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]*\n((?:[\t ][^\n]*(?:\n|$))+)/gm;
+    // eslint-disable-next-line sonarjs/slow-regex -- linear yarn.lock block parser (no super-linear backtracking)
+    = /^["']?((?:@[^/@"']+\/)?[^@"'\n]+)@[^\n]+\n((?:[\t ][^\n]*(?:\n|$))+)/gm;
 // eslint-disable-next-line sonarjs/slow-regex
 const YARN_VERSION = /^\s+version:?\s+"?([^"\n]+)"?/m;
 // eslint-disable-next-line sonarjs/slow-regex
