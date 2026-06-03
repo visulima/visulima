@@ -185,6 +185,10 @@
             "types": "./dist/deliverability/index.d.ts",
             "default": "./dist/deliverability/index.js"
         },
+        "./deliverability/dmarc-report": {
+            "types": "./dist/deliverability/dmarc-report.d.ts",
+            "default": "./dist/deliverability/dmarc-report.js"
+        },
         "./inbound": {
             "types": "./dist/inbound/index.d.ts",
             "default": "./dist/inbound/index.js"
@@ -377,6 +381,7 @@
         "conventional-changelog-conventionalcommits": "catalog:dev",
         "esbuild": "catalog:build",
         "eslint": "catalog:lint",
+        "fast-xml-parser": "^4.5.0",
         "handlebars": "catalog:dev",
         "jsx-email": "^2.0.0",
         "juice": "^11.0.0",
@@ -399,6 +404,7 @@
         "@react-email/render": "catalog:frontend",
         "@vue-email/render": "catalog:frontend",
         "asn1js": "catalog:peer",
+        "fast-xml-parser": "^4.5.0",
         "handlebars": "catalog:peer",
         "jsx-email": "^2.0.0",
         "juice": "^11.0.0",
@@ -419,6 +425,9 @@
             "optional": true
         },
         "asn1js": {
+            "optional": true
+        },
+        "fast-xml-parser": {
             "optional": true
         },
         "handlebars": {

@@ -4319,6 +4319,9 @@ importers:
       eslint:
         specifier: catalog:lint
         version: 10.4.0(jiti@2.7.0)
+      fast-xml-parser:
+        specifier: '>=4.5.4'
+        version: 5.7.3
       handlebars:
         specifier: catalog:dev
         version: 4.7.9
