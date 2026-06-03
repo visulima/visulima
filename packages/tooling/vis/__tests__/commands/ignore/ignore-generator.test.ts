@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, promises as fs, readFileSync } from "node:fs";
 
 import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -25,6 +25,18 @@ const callText = (calls: LoggerCall[]): string => calls.map((c) => c.slice(1).jo
 describe("vis ignore (generator)", () => {
     let workspaceRoot: string;
 
+    const makeToolbox = (logger: ReturnType<typeof makeLogger>["logger"], options: Record<string, unknown> = {}) =>
+        ({
+            argument: [],
+            fs,
+            logger,
+            options,
+            process: { cwd: workspaceRoot },
+            runtime: {} as never,
+            visConfig: undefined,
+            workspaceRoot,
+        }) as never;
+
     beforeEach(() => {
         workspaceRoot = createTemporaryDirectory("vis-ignore-cmd-");
     });
@@ -38,7 +50,7 @@ describe("vis ignore (generator)", () => {
 
         const first = makeLogger();
 
-        await ignoreExecute({ argument: [], logger: first.logger, options: { write: true }, runtime: {} as never, visConfig: undefined, workspaceRoot } as never);
+        await ignoreExecute(makeToolbox(first.logger, { write: true }));
 
         const path = join(workspaceRoot, ".dockerignore");
 
@@ -51,7 +63,7 @@ describe("vis ignore (generator)", () => {
 
         const second = makeLogger();
 
-        await ignoreExecute({ argument: [], logger: second.logger, options: { write: true }, runtime: {} as never, visConfig: undefined, workspaceRoot } as never);
+        await ignoreExecute(makeToolbox(second.logger, { write: true }));
 
         expect(callText(second.calls)).toMatch(/already up to date/);
     });
@@ -61,14 +73,7 @@ describe("vis ignore (generator)", () => {
 
         const { logger } = makeLogger();
 
-        await ignoreExecute({
-            argument: [],
-            logger,
-            options: { target: "vercel", write: true },
-            runtime: {} as never,
-            visConfig: undefined,
-            workspaceRoot,
-        } as never);
+        await ignoreExecute(makeToolbox(logger, { target: "vercel", write: true }));
 
         expect(existsSync(join(workspaceRoot, ".vercelignore"))).toBe(true);
     });
@@ -78,8 +83,6 @@ describe("vis ignore (generator)", () => {
 
         const { logger } = makeLogger();
 
-        await expect(
-            ignoreExecute({ argument: [], logger, options: { target: "bogus" }, runtime: {} as never, visConfig: undefined, workspaceRoot } as never),
-        ).rejects.toThrow(/Invalid --target/);
+        await expect(ignoreExecute(makeToolbox(logger, { target: "bogus" }))).rejects.toThrow(/Invalid --target/);
     });
 });

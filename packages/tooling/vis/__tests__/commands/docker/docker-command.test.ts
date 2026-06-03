@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, promises as fs, readFileSync, writeFileSync } from "node:fs";
 
 import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -35,6 +35,18 @@ const callText = (calls: LoggerCall[]): string => calls.map((c) => c.slice(1).jo
 describe("vis docker", () => {
     let workspaceRoot: string;
 
+    const makeToolbox = (logger: ReturnType<typeof makeLogger>["logger"], options: Record<string, unknown> = {}) =>
+        ({
+            argument: [],
+            fs,
+            logger,
+            options,
+            process: { cwd: workspaceRoot },
+            runtime: {} as never,
+            visConfig: undefined,
+            workspaceRoot,
+        }) as never;
+
     beforeEach(() => {
         workspaceRoot = createTemporaryDirectory("vis-docker-cmd-");
 
@@ -61,9 +73,7 @@ describe("vis docker", () => {
 
         const { logger } = makeLogger();
 
-        await expect(
-            scaffoldExecute({ argument: [], logger, options: {}, runtime: {} as never, visConfig: undefined, workspaceRoot } as never),
-        ).rejects.toThrow(/Missing --focus/);
+        await expect(scaffoldExecute(makeToolbox(logger))).rejects.toThrow(/Missing --focus/);
     });
 
     it("scaffold writes the workspace context for the focus closure", async () => {
@@ -71,7 +81,7 @@ describe("vis docker", () => {
 
         const { calls, logger } = makeLogger();
 
-        await scaffoldExecute({ argument: [], logger, options: { focus: "@my/app" }, runtime: {} as never, visConfig: undefined, workspaceRoot } as never);
+        await scaffoldExecute(makeToolbox(logger, { focus: "@my/app" }));
 
         const outDir = join(workspaceRoot, ".vis/docker");
 
@@ -85,11 +95,11 @@ describe("vis docker", () => {
 
         const { logger: scaffoldLogger } = makeLogger();
 
-        await scaffoldExecute({ argument: [], logger: scaffoldLogger, options: { focus: "@my/app" }, runtime: {} as never, visConfig: undefined, workspaceRoot } as never);
+        await scaffoldExecute(makeToolbox(scaffoldLogger, { focus: "@my/app" }));
 
         const { calls, logger } = makeLogger();
 
-        await pruneExecute({ argument: [], logger, options: {}, runtime: {} as never, visConfig: undefined, workspaceRoot } as never);
+        await pruneExecute(makeToolbox(logger));
 
         expect(callText(calls)).toMatch(/Pruned \d+ unfocused project/);
     });
@@ -99,7 +109,7 @@ describe("vis docker", () => {
 
         const { logger } = makeLogger();
 
-        await initExecute({ argument: [], logger, options: { focus: "@my/app" }, runtime: {} as never, visConfig: undefined, workspaceRoot } as never);
+        await initExecute(makeToolbox(logger, { focus: "@my/app" }));
 
         const dockerfile = join(workspaceRoot, "Dockerfile");
 
