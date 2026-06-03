@@ -4,11 +4,13 @@ import { generateKeyPairSync, verify as cryptoVerify } from "node:crypto";
 import { describe, expect, it } from "vitest";
 
 import type { ArcSealOptions } from "../../src/crypto/arc-signer";
-import { arcMessageSignatureBase, arcSealBase, signArc } from "../../src/crypto/arc-signer";
+import { arcMessageSignatureBase, arcSealBase, signArc, verifyArc } from "../../src/crypto/arc-signer";
 import type { EmailOptions } from "../../src/types";
 
 const { privateKey, publicKey } = generateKeyPairSync("rsa", { modulusLength: 2048 });
 const privateKeyPem = privateKey.export({ format: "pem", type: "pkcs8" });
+const ed = generateKeyPairSync("ed25519");
+const edPrivatePem = ed.privateKey.export({ format: "pem", type: "pkcs8" });
 
 const email: EmailOptions = {
     from: { email: "sender@example.com", name: "Sender" },
@@ -79,5 +81,56 @@ describe("arc signer", () => {
         const second = await signArc(email, options);
 
         expect(first.headers).toStrictEqual(second.headers);
+    });
+
+    describe(verifyArc, () => {
+        it("verifies an RSA-signed chain it produced", async () => {
+            expect.assertions(4);
+
+            const { headers } = await signArc(email, options);
+            const result = verifyArc(email, headers, { publicKey });
+
+            expect(result.valid).toBe(true);
+            expect(result.components.ams).toBe(true);
+            expect(result.components.seal).toBe(true);
+            expect(result.cv).toBe("none");
+        });
+
+        it("verifies an Ed25519-signed chain (RFC 8463)", async () => {
+            expect.assertions(1);
+
+            const { headers } = await signArc(email, { ...options, algorithm: "ed25519-sha256", privateKey: edPrivatePem });
+            const result = verifyArc(email, headers, { publicKey: ed.publicKey });
+
+            expect(result.valid).toBe(true);
+        });
+
+        it("rejects a tampered body (body-hash mismatch)", async () => {
+            expect.assertions(2);
+
+            const { headers } = await signArc(email, options);
+            const result = verifyArc({ ...email, text: "tampered" }, headers, { publicKey });
+
+            expect(result.valid).toBe(false);
+            expect(result.components.bodyHash).toBe(false);
+        });
+
+        it("rejects verification with the wrong key", async () => {
+            expect.assertions(1);
+
+            const { headers } = await signArc(email, options);
+            const result = verifyArc(email, headers, { publicKey: ed.publicKey });
+
+            expect(result.valid).toBe(false);
+        });
+
+        it("reports missing ARC headers", () => {
+            expect.assertions(2);
+
+            const result = verifyArc(email, {}, { publicKey });
+
+            expect(result.valid).toBe(false);
+            expect(result.reason).toBe("missing-arc-headers");
+        });
     });
 });

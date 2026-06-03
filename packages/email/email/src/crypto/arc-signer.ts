@@ -1,4 +1,6 @@
-import { createHash, createPrivateKey, createSign } from "node:crypto";
+import { Buffer } from "node:buffer";
+import type { KeyObject } from "node:crypto";
+import { createHash, createPrivateKey, createPublicKey, createSign, sign as cryptoSign, verify as cryptoVerify } from "node:crypto";
 
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { readFile } from "@visulima/fs";
@@ -15,9 +17,20 @@ const TRAILING_SPACE = / $/;
 const DEFAULT_SIGNED_HEADERS = ["from", "to", "cc", "subject", "date", "message-id", "mime-version"];
 
 /**
+ * The signature algorithm for the ARC headers. RSA per RFC 8617, Ed25519 per RFC 8463.
+ */
+type ArcAlgorithm = "ed25519-sha256" | "rsa-sha256";
+
+/**
  * Options for {@link signArc}.
  */
 interface ArcSealOptions {
+    /**
+     * Signature algorithm (`a=`). `rsa-sha256` (default) or `ed25519-sha256` (RFC 8463).
+     * @default "rsa-sha256"
+     */
+    algorithm?: ArcAlgorithm;
+
     /**
      * The `Authentication-Results` value to chain (authserv-id plus method results),
      * e.g. `example.com; spf=pass smtp.mailfrom=...; dkim=pass header.d=...`.
@@ -59,7 +72,7 @@ interface ArcSealOptions {
     passphrase?: string;
 
     /**
-     * RSA private key (PEM string, or a `file://` path).
+     * Private key (PEM string, or a `file://` path). RSA or Ed25519 to match `algorithm`.
      */
     privateKey: string;
 
@@ -76,6 +89,42 @@ interface ArcHeaderSet {
     "ARC-Authentication-Results": string;
     "ARC-Message-Signature": string;
     "ARC-Seal": string;
+}
+
+/**
+ * Options for {@link verifyArc}.
+ */
+interface ArcVerifyOptions {
+    /**
+     * The ARC/DKIM public key for the signing domain+selector — a PEM string or a `KeyObject`. Look it
+     * up at `&lt;selector>._domainkey.&lt;d>` (the `p=` tag), decoded to SPKI.
+     */
+    publicKey: KeyObject | string;
+}
+
+/**
+ * The outcome of {@link verifyArc}.
+ */
+interface ArcVerifyResult {
+    /**
+     * Per-component verification: the ARC-Message-Signature, the ARC-Seal, and the body hash.
+     */
+    components: { ams: boolean; bodyHash: boolean; seal: boolean };
+
+    /**
+     * The chain-validation status (`cv`) from the ARC-Seal.
+     */
+    cv?: string;
+
+    /**
+     * A machine-readable reason when `valid` is `false`.
+     */
+    reason?: string;
+
+    /**
+     * Whether the whole instance verified (signature + seal + body hash).
+     */
+    valid: boolean;
 }
 
 const formatAddress = (address: EmailAddress): string => {
@@ -141,6 +190,73 @@ const buildHeaders = (email: EmailOptions): Record<string, string> => {
 };
 
 /**
+ * Parses a DKIM/ARC tag string (`k=v; k2=v2`) into a record of trimmed tag values.
+ * @param value The tag string.
+ * @returns The parsed tags keyed by name.
+ */
+const parseArcTags = (value: string): Record<string, string> => {
+    const tags: Record<string, string> = {};
+
+    for (const part of value.split(";")) {
+        const index = part.indexOf("=");
+
+        if (index !== -1) {
+            tags[part.slice(0, index).trim()] = part.slice(index + 1).trim();
+        }
+    }
+
+    return tags;
+};
+
+/**
+ * Returns the header value up to and including the empty `b=` tag (the bytes that are signed).
+ * @param headerValue The full ARC header value.
+ * @returns The value with the `b=` signature removed.
+ */
+const stripSignature = (headerValue: string): string => {
+    const index = headerValue.lastIndexOf("b=");
+
+    return index === -1 ? headerValue : headerValue.slice(0, index + 2);
+};
+
+/**
+ * Computes the body hash for the message, matching the signer (relaxed canonicalization of
+ * `text` + "\n\n" + `html`).
+ * @param email The email whose body to hash.
+ * @returns The base64 SHA-256 body hash.
+ */
+const bodyHashOf = (email: EmailOptions): string => {
+    const body = [email.text, email.html].filter((part): part is string => part !== undefined).join("\n\n");
+
+    return createHash("sha256").update(relaxedBody(body)).digest("base64");
+};
+
+const signData = (data: string, key: KeyObject, algorithm: ArcAlgorithm): string => {
+    if (algorithm === "ed25519-sha256") {
+        // RFC 8463: Ed25519 signs the SHA-256 digest of the data. node requires `null` as the algorithm.
+        // eslint-disable-next-line unicorn/no-null
+        return cryptoSign(null, createHash("sha256").update(data).digest(), key).toString("base64");
+    }
+
+    return createSign("RSA-SHA256").update(data).sign(key, "base64");
+};
+
+const verifyData = (data: string, signature: string, key: KeyObject, algorithm: ArcAlgorithm): boolean => {
+    const signatureBytes = Buffer.from(signature, "base64");
+
+    try {
+        if (algorithm === "ed25519-sha256") {
+            // eslint-disable-next-line unicorn/no-null
+            return cryptoVerify(null, createHash("sha256").update(data).digest(), key, signatureBytes);
+        }
+
+        return cryptoVerify("RSA-SHA256", Buffer.from(data), key, signatureBytes);
+    } catch {
+        return false;
+    }
+};
+
+/**
  * Computes the exact byte string that the ARC-Message-Signature `b=` value signs.
  *
  * Exposed so ARC verifiers (and tests) can re-derive the signing input.
@@ -150,6 +266,7 @@ const buildHeaders = (email: EmailOptions): Record<string, string> => {
  */
 const arcMessageSignatureBase = (email: EmailOptions, options: ArcSealOptions): { header: string; signBase: string } => {
     const instance = options.instance ?? 1;
+    const algorithm = options.algorithm ?? "rsa-sha256";
     const timestamp = options.timestamp ?? Math.floor(Date.now() / 1000);
     const headers = buildHeaders(email);
 
@@ -161,18 +278,15 @@ const arcMessageSignatureBase = (email: EmailOptions, options: ArcSealOptions): 
         return key !== undefined && headers[key] !== undefined && headers[key] !== "";
     });
 
-    const body = [email.text, email.html].filter((part): part is string => part !== undefined).join("\n\n");
-    const bodyHash = createHash("sha256").update(relaxedBody(body)).digest("base64");
-
     const headerValue = [
         `i=${String(instance)}`,
-        "a=rsa-sha256",
+        `a=${algorithm}`,
         "c=relaxed/relaxed",
         `d=${options.domainName}`,
         `s=${options.keySelector}`,
         `t=${String(timestamp)}`,
         `h=${signedHeaderNames.join(":")}`,
-        `bh=${bodyHash}`,
+        `bh=${bodyHashOf(email)}`,
         "b=",
     ].join("; ");
 
@@ -201,12 +315,13 @@ const arcMessageSignatureBase = (email: EmailOptions, options: ArcSealOptions): 
  */
 const arcSealBase = (aarValue: string, amsValue: string, options: ArcSealOptions): { header: string; signBase: string } => {
     const instance = options.instance ?? 1;
+    const algorithm = options.algorithm ?? "rsa-sha256";
     const timestamp = options.timestamp ?? Math.floor(Date.now() / 1000);
     const cv = options.cv ?? "none";
 
     const headerValue = [
         `i=${String(instance)}`,
-        "a=rsa-sha256",
+        `a=${algorithm}`,
         `cv=${cv}`,
         `d=${options.domainName}`,
         `s=${options.keySelector}`,
@@ -223,7 +338,7 @@ const arcSealBase = (aarValue: string, amsValue: string, options: ArcSealOptions
     return { header: headerValue, signBase };
 };
 
-const loadPrivateKey = async (privateKey: string, passphrase?: string) => {
+const loadPrivateKey = async (privateKey: string, passphrase?: string): Promise<KeyObject> => {
     let content = privateKey;
 
     if (content.startsWith("file://")) {
@@ -239,7 +354,7 @@ const loadPrivateKey = async (privateKey: string, passphrase?: string) => {
  *
  * Adds `ARC-Authentication-Results`, `ARC-Message-Signature`, and `ARC-Seal` headers. Use this when
  * your service forwards mail and wants downstream receivers to trust the authentication results you
- * observed.
+ * observed. Supports RSA (default) and Ed25519 (`algorithm: "ed25519-sha256"`, RFC 8463) keys.
  *
  * IMPORTANT: the body hash (`bh=`) is computed over `text` + "\n\n" + `html` with relaxed
  * canonicalization — the same simplification as the DKIM signer. For a third-party ARC verifier to
@@ -252,6 +367,7 @@ const loadPrivateKey = async (privateKey: string, passphrase?: string) => {
  */
 const signArc = async (email: EmailOptions, options: ArcSealOptions): Promise<{ email: EmailOptions; headers: ArcHeaderSet }> => {
     const instance = options.instance ?? 1;
+    const algorithm = options.algorithm ?? "rsa-sha256";
     // Resolve the timestamp once so the AMS and ARC-Seal share an identical t= value.
     const sealOptions: ArcSealOptions = { ...options, timestamp: options.timestamp ?? Math.floor(Date.now() / 1000) };
     const key = await loadPrivateKey(options.privateKey, options.passphrase);
@@ -259,12 +375,10 @@ const signArc = async (email: EmailOptions, options: ArcSealOptions): Promise<{ 
     const aarValue = `i=${String(instance)}; ${options.authenticationResults}`;
 
     const ams = arcMessageSignatureBase(email, sealOptions);
-    const amsSignature = createSign("RSA-SHA256").update(ams.signBase).sign(key, "base64");
-    const amsValue = `${ams.header}${amsSignature}`;
+    const amsValue = `${ams.header}${signData(ams.signBase, key, algorithm)}`;
 
     const seal = arcSealBase(aarValue, amsValue, sealOptions);
-    const sealSignature = createSign("RSA-SHA256").update(seal.signBase).sign(key, "base64");
-    const sealValue = `${seal.header}${sealSignature}`;
+    const sealValue = `${seal.header}${signData(seal.signBase, key, algorithm)}`;
 
     const headers: ArcHeaderSet = {
         "ARC-Authentication-Results": aarValue,
@@ -281,5 +395,67 @@ const signArc = async (email: EmailOptions, options: ArcSealOptions): Promise<{ 
     };
 };
 
-export type { ArcHeaderSet, ArcSealOptions };
-export { arcMessageSignatureBase, arcSealBase, signArc };
+/**
+ * Verifies an originating (i=1) ARC header set against the signing domain's public key.
+ *
+ * Re-derives the AMS and ARC-Seal signing inputs from `email` + the supplied ARC headers, recomputes
+ * the body hash, and checks all three. The public key must be the one published for the seal's
+ * `s=`/`d=` (the DKIM-style `&lt;selector>._domainkey.&lt;domain>` TXT `p=` value).
+ * @param email The message that was sealed (same fields used when signing).
+ * @param headers The ARC header set (or any record containing the three `ARC-*` headers).
+ * @param options Verification options. See {@link ArcVerifyOptions}.
+ * @returns The verification result. See {@link ArcVerifyResult}.
+ */
+const verifyArc = (email: EmailOptions, headers: ArcHeaderSet | Record<string, string>, options: ArcVerifyOptions): ArcVerifyResult => {
+    const lower = Object.fromEntries(Object.entries(headers).map(([key, value]) => [key.toLowerCase(), value])) as Record<string, string>;
+    const amsValue = lower["arc-message-signature"];
+    const sealValue = lower["arc-seal"];
+    const aarValue = lower["arc-authentication-results"];
+
+    if (!amsValue || !sealValue || !aarValue) {
+        return { components: { ams: false, bodyHash: false, seal: false }, reason: "missing-arc-headers", valid: false };
+    }
+
+    const publicKey = typeof options.publicKey === "string" ? createPublicKey(options.publicKey) : options.publicKey;
+
+    const amsTags = parseArcTags(amsValue);
+    const sealTags = parseArcTags(sealValue);
+    const amsAlgorithm: ArcAlgorithm = amsTags.a === "ed25519-sha256" ? "ed25519-sha256" : "rsa-sha256";
+    const sealAlgorithm: ArcAlgorithm = sealTags.a === "ed25519-sha256" ? "ed25519-sha256" : "rsa-sha256";
+
+    // Body hash: recompute and compare to the bh= tag.
+    const bodyHash = amsTags.bh !== undefined && amsTags.bh === bodyHashOf(email);
+
+    // ARC-Message-Signature: canonicalize the h= headers + the AMS header with an emptied b=.
+    const messageHeaders = buildHeaders(email);
+    const signedNames = (amsTags.h ?? "").split(":").map((name) => name.trim().toLowerCase()).filter(Boolean);
+    const canonicalizedHeaders = signedNames
+        .map((name) => {
+            const key = Object.keys(messageHeaders).find((header) => header.toLowerCase() === name);
+
+            return relaxedHeader(name, key ? messageHeaders[key] ?? "" : "");
+        })
+        .join("\r\n");
+    const amsSignBase = `${canonicalizedHeaders}\r\n${relaxedHeader("ARC-Message-Signature", stripSignature(amsValue))}`;
+    const ams = verifyData(amsSignBase, amsTags.b ?? "", publicKey, amsAlgorithm);
+
+    // ARC-Seal: AAR + full AMS + the AS header with an emptied b=.
+    const sealSignBase = [
+        relaxedHeader("ARC-Authentication-Results", aarValue),
+        relaxedHeader("ARC-Message-Signature", amsValue),
+        relaxedHeader("ARC-Seal", stripSignature(sealValue)),
+    ].join("\r\n");
+    const seal = verifyData(sealSignBase, sealTags.b ?? "", publicKey, sealAlgorithm);
+
+    const valid = ams && seal && bodyHash;
+
+    return {
+        components: { ams, bodyHash, seal },
+        cv: sealTags.cv,
+        reason: valid ? undefined : "signature-mismatch",
+        valid,
+    };
+};
+
+export type { ArcAlgorithm, ArcHeaderSet, ArcSealOptions, ArcVerifyOptions, ArcVerifyResult };
+export { arcMessageSignatureBase, arcSealBase, signArc, verifyArc };
