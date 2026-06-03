@@ -1,13 +1,18 @@
 import { Buffer } from "node:buffer";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 import MailMessage from "../src/mail-message";
 import type { EmailOptions } from "../src/types";
+
+const FAILED_RENDER_TEMPLATE_REGEX = /Failed to render template/;
+const FAILED_RENDER_TEXT_TEMPLATE_REGEX = /Failed to render text template/;
+// eslint-disable-next-line sonarjs/publicly-writable-directories -- fixed fake path used only for icalEvent path assertions; no real filesystem write occurs
+const FAKE_ICAL_PATH = "/tmp/event.ics";
 
 let temporaryDirectory: string;
 let temporaryFilePath: string;
@@ -19,10 +24,10 @@ beforeAll(() => {
 });
 
 afterAll(() => {
-    rmSync(temporaryDirectory, { recursive: true, force: true });
+    rmSync(temporaryDirectory, { force: true, recursive: true });
 });
 
-describe("MailMessage - extended fluent builder", () => {
+describe("mailMessage - extended fluent builder", () => {
     describe("attachFromPath", () => {
         it("should add an attachment from a real file", async () => {
             expect.assertions(3);
@@ -133,10 +138,11 @@ describe("MailMessage - extended fluent builder", () => {
 
             const message = new MailMessage();
 
-            const sign = vi.fn(async (email: any) => ({
-                ...email,
-                headers: { ...email.headers, "DKIM-Signature": "test-signature" },
-            }));
+            const sign = vi.fn((email: EmailOptions): Promise<EmailOptions> =>
+                Promise.resolve({
+                    ...email,
+                    headers: { ...(email.headers as Record<string, string>), "DKIM-Signature": "test-signature" },
+                }));
 
             message.from("sender@example.com").to("user@example.com").subject("Test").html("<h1>Hi</h1>").sign({ sign });
 
@@ -151,10 +157,11 @@ describe("MailMessage - extended fluent builder", () => {
 
             const message = new MailMessage();
 
-            const encrypt = vi.fn(async (email: any) => ({
-                ...email,
-                html: "<encrypted/>",
-            }));
+            const encrypt = vi.fn((email: EmailOptions): Promise<EmailOptions> =>
+                Promise.resolve({
+                    ...email,
+                    html: "<encrypted/>",
+                }));
 
             message.from("sender@example.com").to("user@example.com").subject("Test").html("<h1>Hi</h1>").encrypt({ encrypt });
 
@@ -169,8 +176,8 @@ describe("MailMessage - extended fluent builder", () => {
 
             const message = new MailMessage();
 
-            const sign = vi.fn(async (email: any) => ({ ...email, html: `${email.html}-signed` }));
-            const encrypt = vi.fn(async (email: any) => ({ ...email, html: `${email.html}-encrypted` }));
+            const sign = vi.fn((email: EmailOptions): Promise<EmailOptions> => Promise.resolve({ ...email, html: `${email.html ?? ""}-signed` }));
+            const encrypt = vi.fn((email: EmailOptions): Promise<EmailOptions> => Promise.resolve({ ...email, html: `${email.html ?? ""}-encrypted` }));
 
             message
                 .from("sender@example.com")
@@ -239,11 +246,11 @@ describe("MailMessage - extended fluent builder", () => {
                 .to("user@example.com")
                 .subject("Test")
                 .html("<h1>Hi</h1>")
-                .icalEventFromFile("/tmp/event.ics");
+                .icalEventFromFile(FAKE_ICAL_PATH);
 
             const built = await message.build();
 
-            expect(built.icalEvent?.path).toBe("/tmp/event.ics");
+            expect(built.icalEvent?.path).toBe(FAKE_ICAL_PATH);
         });
 
         it("should attach from file URL", async () => {
@@ -251,7 +258,7 @@ describe("MailMessage - extended fluent builder", () => {
 
             const message = new MailMessage();
 
-            const url = pathToFileURL("/tmp/event.ics");
+            const url = pathToFileURL(FAKE_ICAL_PATH);
 
             message
                 .from("sender@example.com")
@@ -262,7 +269,7 @@ describe("MailMessage - extended fluent builder", () => {
 
             const built = await message.build();
 
-            expect(built.icalEvent?.path).toBe("/tmp/event.ics");
+            expect(built.icalEvent?.path).toBe(FAKE_ICAL_PATH);
         });
 
         it("should attach from URL", async () => {
@@ -289,7 +296,7 @@ describe("MailMessage - extended fluent builder", () => {
 
             const message = new MailMessage();
 
-            const renderer = vi.fn(async () => "<h1>Rendered</h1>");
+            const renderer = vi.fn((): Promise<string> => Promise.resolve("<h1>Rendered</h1>"));
 
             await message
                 .from("sender@example.com")
@@ -307,7 +314,7 @@ describe("MailMessage - extended fluent builder", () => {
 
             const message = new MailMessage();
 
-            const renderer = vi.fn(async () => "<h1>Rendered</h1>");
+            const renderer = vi.fn((): Promise<string> => Promise.resolve("<h1>Rendered</h1>"));
 
             await message
                 .from("sender@example.com")
@@ -326,9 +333,7 @@ describe("MailMessage - extended fluent builder", () => {
 
             const message = new MailMessage();
 
-            const renderer = vi.fn(async () => {
-                throw new Error("Render failure");
-            });
+            const renderer = vi.fn((): Promise<string> => Promise.reject(new Error("Render failure")));
 
             await expect(
                 message
@@ -336,7 +341,7 @@ describe("MailMessage - extended fluent builder", () => {
                     .to("user@example.com")
                     .subject("Test")
                     .view(renderer, "template"),
-            ).rejects.toThrow(/Failed to render template/);
+            ).rejects.toThrow(FAILED_RENDER_TEMPLATE_REGEX);
         });
     });
 
@@ -346,7 +351,7 @@ describe("MailMessage - extended fluent builder", () => {
 
             const message = new MailMessage();
 
-            const renderer = vi.fn(async () => "Hello John");
+            const renderer = vi.fn((): Promise<string> => Promise.resolve("Hello John"));
 
             await message
                 .from("sender@example.com")
@@ -365,7 +370,7 @@ describe("MailMessage - extended fluent builder", () => {
 
             const message = new MailMessage();
 
-            const renderer = vi.fn(async () => 42 as any);
+            const renderer = vi.fn((): Promise<string> => Promise.resolve(42 as unknown as string));
 
             await expect(
                 message
@@ -374,7 +379,7 @@ describe("MailMessage - extended fluent builder", () => {
                     .subject("Test")
                     .html("<h1>Hi</h1>")
                     .viewText(renderer, "template"),
-            ).rejects.toThrow(/Failed to render text template/);
+            ).rejects.toThrow(FAILED_RENDER_TEXT_TEMPLATE_REGEX);
         });
 
         it("should throw on renderer error", async () => {
@@ -382,9 +387,7 @@ describe("MailMessage - extended fluent builder", () => {
 
             const message = new MailMessage();
 
-            const renderer = vi.fn(async () => {
-                throw new Error("Render failure");
-            });
+            const renderer = vi.fn((): Promise<string> => Promise.reject(new Error("Render failure")));
 
             await expect(
                 message
@@ -393,7 +396,7 @@ describe("MailMessage - extended fluent builder", () => {
                     .subject("Test")
                     .html("<h1>Hi</h1>")
                     .viewText(renderer, "template"),
-            ).rejects.toThrow(/Failed to render text template/);
+            ).rejects.toThrow(FAILED_RENDER_TEXT_TEMPLATE_REGEX);
         });
     });
 
@@ -574,7 +577,7 @@ describe("MailMessage - extended fluent builder", () => {
     });
 
     describe("text/html charset", () => {
-        it("should set text and html with custom charsets", async () => {
+        it("should set text and html with custom charsets", () => {
             expect.assertions(2);
 
             const message = new MailMessage();
