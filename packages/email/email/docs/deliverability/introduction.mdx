@@ -1,0 +1,351 @@
+---
+title: Deliverability
+description: List-Unsubscribe headers, suppression lists, and DMARC/MTA-STS/TLS-RPT/ARF report parsers for @visulima/email
+---
+
+# Deliverability
+
+The `@visulima/email/deliverability` entry point bundles the tooling you need to meet modern bulk-sender requirements: one-click `List-Unsubscribe` headers, a pluggable suppression list, and pure parsers for the DNS records and feedback reports that drive your sending reputation.
+
+```typescript
+import {
+    buildListUnsubscribe,
+    parseListUnsubscribe,
+    MemorySuppressionStore,
+    createSuppressionStore,
+    filterSuppressed,
+    parseDmarcRecord,
+    parseMtaStsPolicy,
+    parseTlsRptRecord,
+    parseTlsReport,
+    parseArfReport,
+} from "@visulima/email/deliverability";
+```
+
+## List-Unsubscribe
+
+`buildListUnsubscribe()` produces the `List-Unsubscribe` (and, when requested, `List-Unsubscribe-Post`) headers. Gmail and Yahoo's 2024 bulk-sender rules expect bulk senders to expose a [RFC 8058](https://www.rfc-editor.org/rfc/rfc8058) one-click unsubscribe.
+
+```typescript
+type ListUnsubscribeOptions = {
+    url?: string; // an https: URL the recipient (or their client) can use to unsubscribe
+    mailto?: string; // a bare address or full mailto: URI
+    oneClick?: boolean; // emit the RFC 8058 List-Unsubscribe-Post header
+    mailtoSubject?: string; // default subject for a bare mailto address (default: "unsubscribe")
+};
+
+type ListUnsubscribeHeaders = {
+    "List-Unsubscribe": string;
+    "List-Unsubscribe-Post"?: string;
+};
+```
+
+At least one of `url` or `mailto` must be provided, otherwise `buildListUnsubscribe()` throws a `TypeError`.
+
+```typescript
+import { buildListUnsubscribe } from "@visulima/email/deliverability";
+
+const headers = buildListUnsubscribe({
+    url: "https://example.com/unsub?id=abc",
+    mailto: "unsubscribe@example.com",
+    oneClick: true,
+});
+// {
+//   "List-Unsubscribe": "<https://example.com/unsub?id=abc>, <mailto:unsubscribe@example.com?subject=unsubscribe>",
+//   "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+// }
+```
+
+### One-Click Requires an HTTPS URL
+
+RFC 8058 one-click unsubscribe is only meaningful over HTTPS. Passing `oneClick: true` without an `https:` `url` throws a `TypeError`:
+
+```typescript
+// Throws: One-click unsubscribe (RFC 8058) requires an https `url`
+buildListUnsubscribe({ mailto: "unsubscribe@example.com", oneClick: true });
+```
+
+### Merging Into an Email
+
+Merge the returned headers into a message with `setHeaders()`:
+
+```typescript
+import { createMail, MailMessage } from "@visulima/email";
+import { resendProvider } from "@visulima/email/providers/resend";
+import { buildListUnsubscribe } from "@visulima/email/deliverability";
+
+const mail = createMail(resendProvider({ apiKey: "re_xxx" }));
+
+const message = new MailMessage()
+    .to("user@example.com")
+    .from("newsletter@example.com")
+    .subject("This week at Acme")
+    .html("<h1>Hello</h1>")
+    .setHeaders(
+        buildListUnsubscribe({
+            url: "https://example.com/unsub?id=abc",
+            mailto: "unsubscribe@example.com",
+            oneClick: true,
+        }),
+    );
+
+await mail.send(message);
+```
+
+### Parsing a List-Unsubscribe Header
+
+`parseListUnsubscribe()` unwraps the angle-bracketed targets from a raw header value into a `string[]`:
+
+```typescript
+import { parseListUnsubscribe } from "@visulima/email/deliverability";
+
+const targets = parseListUnsubscribe("<https://example.com/unsub?id=abc>, <mailto:unsubscribe@example.com?subject=unsubscribe>");
+// ["https://example.com/unsub?id=abc", "mailto:unsubscribe@example.com?subject=unsubscribe"]
+```
+
+## Suppression Lists
+
+A suppression list is the addresses you must never send to again — bounces, spam complaints, and unsubscribes. `MemorySuppressionStore` is an in-memory implementation suitable for tests, single-process apps, or as a write-through cache in front of a durable store. Matching is case-insensitive (addresses are normalized to lower case on write).
+
+```typescript
+type SuppressionReason = "bounce" | "complaint" | "manual" | "unsubscribe";
+
+type SuppressionEntry = {
+    address: string; // the normalized (lower-cased) address
+    createdAt: Date;
+    reason: SuppressionReason;
+    metadata?: Record<string, unknown>;
+};
+```
+
+```typescript
+import { MemorySuppressionStore } from "@visulima/email/deliverability";
+
+const store = new MemorySuppressionStore();
+
+store.add("User@Example.com", "bounce", { type: "hard" });
+
+store.has("user@example.com"); // true (case-insensitive)
+store.get("user@example.com"); // { address: "user@example.com", reason: "bounce", createdAt: Date, metadata: { type: "hard" } }
+store.size; // 1
+
+for (const entry of store.list()) {
+    console.log(entry.address, entry.reason);
+}
+
+store.remove("user@example.com"); // true
+```
+
+The `createSuppressionStore()` factory is a convenience for an in-memory store, optionally seeded with existing entries:
+
+```typescript
+import { createSuppressionStore } from "@visulima/email/deliverability";
+
+const store = createSuppressionStore([
+    { address: "bounced@example.com", reason: "bounce" },
+    { address: "complained@example.com", reason: "complaint", metadata: { source: "fbl" } },
+]);
+```
+
+### Pre-Send Filtering
+
+`filterSuppressed()` partitions a recipient list into `allowed` and `suppressed`. It accepts `EmailAddress` objects (`{ email, name? }`) and is asynchronous, so it works with both in-memory and durable stores:
+
+```typescript
+import { createMail, MailMessage } from "@visulima/email";
+import { resendProvider } from "@visulima/email/providers/resend";
+import { createSuppressionStore, filterSuppressed } from "@visulima/email/deliverability";
+
+const mail = createMail(resendProvider({ apiKey: "re_xxx" }));
+const store = createSuppressionStore([{ address: "bounced@example.com", reason: "bounce" }]);
+
+const recipients = [{ email: "ok@example.com" }, { email: "bounced@example.com" }];
+
+const { allowed, suppressed } = await filterSuppressed(recipients, store);
+
+if (suppressed.length > 0) {
+    console.warn(
+        "Skipping suppressed recipients:",
+        suppressed.map((r) => r.email),
+    );
+}
+
+if (allowed.length > 0) {
+    const message = new MailMessage().to(allowed).from("newsletter@example.com").subject("Hello").html("<h1>Hello</h1>");
+    await mail.send(message);
+}
+```
+
+### Backing the Store With Redis or a Database
+
+For production, implement the `SuppressionStore` interface to back the list with Redis, Postgres, or a provider's native suppression API. Implementations are expected to normalize addresses to lower case on write, and methods may be sync or async.
+
+```typescript
+type SuppressionStore = {
+    add: (address: string, reason: SuppressionReason, metadata?: Record<string, unknown>) => Promise<void> | void;
+    has: (address: string) => boolean | Promise<boolean>;
+    get: (address: string) => (SuppressionEntry | undefined) | Promise<SuppressionEntry | undefined>;
+    remove: (address: string) => boolean | Promise<boolean>;
+    list?: () => Iterable<SuppressionEntry> | Promise<Iterable<SuppressionEntry>>;
+};
+```
+
+```typescript
+import type { Redis } from "ioredis";
+import type { SuppressionEntry, SuppressionReason, SuppressionStore } from "@visulima/email/deliverability";
+
+const createRedisSuppressionStore = (redis: Redis): SuppressionStore => {
+    const key = (address: string) => `suppression:${address.trim().toLowerCase()}`;
+
+    return {
+        async add(address, reason, metadata) {
+            const entry: SuppressionEntry = { address: address.trim().toLowerCase(), createdAt: new Date(), reason, metadata };
+
+            await redis.set(key(address), JSON.stringify(entry));
+        },
+        async has(address) {
+            return (await redis.exists(key(address))) === 1;
+        },
+        async get(address) {
+            const raw = await redis.get(key(address));
+
+            return raw ? (JSON.parse(raw) as SuppressionEntry) : undefined;
+        },
+        async remove(address) {
+            return (await redis.del(key(address))) === 1;
+        },
+    };
+};
+```
+
+## Report & Record Parsers
+
+All parsers are pure functions — no I/O, no DNS. Fetch the records or reports yourself (DNS lookup, HTTPS request, inbound webhook) and pass the raw text in.
+
+### DMARC
+
+`parseDmarcRecord()` parses the `_dmarc.<domain>` TXT policy record. Unknown policy values (anything other than `none` / `quarantine` / `reject`) become `undefined`. The original tag/value pairs are preserved under `tags`.
+
+```typescript
+import { parseDmarcRecord } from "@visulima/email/deliverability";
+
+const record = parseDmarcRecord(
+    "v=DMARC1; p=reject; sp=quarantine; pct=100; adkim=s; aspf=r; rua=mailto:agg@example.com; ruf=mailto:forensic@example.com; fo=1",
+);
+// {
+//   valid: true,
+//   policy: "reject",
+//   subdomainPolicy: "quarantine",
+//   percent: 100,
+//   adkim: "s",
+//   aspf: "r",
+//   rua: ["mailto:agg@example.com"],
+//   ruf: ["mailto:forensic@example.com"],
+//   fo: "1",
+//   tags: { v: "DMARC1", p: "reject", sp: "quarantine", pct: "100", adkim: "s", aspf: "r", rua: "...", ruf: "...", fo: "1" },
+// }
+```
+
+### MTA-STS
+
+`parseMtaStsPolicy()` parses the policy file served at `https://mta-sts.<domain>/.well-known/mta-sts.txt`:
+
+```typescript
+import { parseMtaStsPolicy } from "@visulima/email/deliverability";
+
+const policy = parseMtaStsPolicy(["version: STSv1", "mode: enforce", "mx: mail.example.com", "mx: *.example.net", "max_age: 604800"].join("\n"));
+// {
+//   valid: true,
+//   version: "STSv1",
+//   mode: "enforce",
+//   mx: ["mail.example.com", "*.example.net"],
+//   maxAge: 604800,
+// }
+```
+
+### TLS-RPT
+
+`parseTlsRptRecord()` parses the `_smtp._tls.<domain>` TXT record, and `parseTlsReport()` normalizes a TLS-RPT JSON report (passed as a JSON string or an already-parsed object) into a session-count summary.
+
+```typescript
+import { parseTlsRptRecord, parseTlsReport } from "@visulima/email/deliverability";
+
+const record = parseTlsRptRecord("v=TLSRPTv1; rua=mailto:tlsrpt@example.com");
+// { valid: true, version: "TLSRPTv1", rua: ["mailto:tlsrpt@example.com"] }
+
+const report = parseTlsReport(rawTlsRptJson);
+// {
+//   organizationName: "google.com",
+//   reportId: "2024-01-01T00:00:00Z_example.com",
+//   startDate: "2024-01-01T00:00:00Z",
+//   endDate: "2024-01-02T00:00:00Z",
+//   totalSuccessful: 1234,
+//   totalFailure: 5,
+//   policies: [ /* raw policy objects */ ],
+// }
+```
+
+### ARF (Feedback-Loop Complaints)
+
+`parseArfReport()` parses an [ARF](https://www.rfc-editor.org/rfc/rfc5965) feedback-loop complaint — the report mailbox providers send when a recipient marks your message as spam. Pass the full raw ARF email or just its `message/feedback-report` part. Use `originalRcptTo` to drive suppression of the complaining recipient.
+
+```typescript
+import { parseArfReport } from "@visulima/email/deliverability";
+
+const report = parseArfReport(rawArfEmail);
+// {
+//   feedbackType: "abuse",
+//   originalRcptTo: "complainer@example.com",
+//   originalMailFrom: "newsletter@example.com",
+//   reportedDomain: "example.com",
+//   sourceIp: "192.0.2.1",
+//   arrivalDate: "Mon, 01 Jan 2024 00:00:00 +0000",
+//   fields: { /* every lower-cased field from the report part */ },
+// }
+```
+
+## The 2024 Gmail / Yahoo Bulk-Sender Pattern
+
+Putting the pieces together: emit a one-click `List-Unsubscribe`, filter every send against your suppression list, and feed inbound ARF complaints back into that same list. This closes the loop the bulk-sender rules require — recipients can always unsubscribe in one click, and a spam complaint permanently suppresses the complainer.
+
+```typescript
+import { createMail, MailMessage } from "@visulima/email";
+import { resendProvider } from "@visulima/email/providers/resend";
+import { buildListUnsubscribe, createSuppressionStore, filterSuppressed, parseArfReport } from "@visulima/email/deliverability";
+
+const mail = createMail(resendProvider({ apiKey: "re_xxx" }));
+const suppression = createSuppressionStore();
+
+// 1. Pre-send: drop anyone on the suppression list, attach a one-click unsubscribe.
+const sendBulk = async (recipients: { email: string }[]) => {
+    const { allowed } = await filterSuppressed(recipients, suppression);
+
+    if (allowed.length === 0) {
+        return;
+    }
+
+    const message = new MailMessage()
+        .to(allowed)
+        .from("newsletter@example.com")
+        .subject("This week at Acme")
+        .html("<h1>Hello</h1>")
+        .setHeaders(
+            buildListUnsubscribe({
+                url: "https://example.com/unsub?id=abc",
+                mailto: "unsubscribe@example.com",
+                oneClick: true,
+            }),
+        );
+
+    await mail.send(message);
+};
+
+// 2. Inbound ARF webhook: a spam complaint suppresses the complainer.
+const handleComplaint = async (rawArfEmail: string) => {
+    const report = parseArfReport(rawArfEmail);
+
+    if (report.originalRcptTo) {
+        await suppression.add(report.originalRcptTo, "complaint", { source: "fbl", reportedDomain: report.reportedDomain });
+    }
+};
+```

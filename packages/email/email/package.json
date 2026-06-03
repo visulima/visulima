@@ -4,16 +4,28 @@
     "description": "A comprehensive email library with multi-provider support, crypto utilities, and template engines",
     "keywords": [
         "ahasend",
+        "arc",
         "aws-ses",
         "azure",
+        "batch",
         "better-mail",
         "brevo",
         "crypto",
+        "deliverability",
         "disposable-email",
         "disposable-email-domains",
         "dkim",
+        "dmarc",
         "email",
         "encryption",
+        "i18n",
+        "inbound-email",
+        "jsx-email",
+        "liquid",
+        "list-unsubscribe",
+        "middleware",
+        "queue",
+        "webhook",
         "failover",
         "handlebars",
         "html-to-text",
@@ -97,6 +109,18 @@
             "types": "./dist/template-engines/html-to-text.d.ts",
             "default": "./dist/template-engines/html-to-text.js"
         },
+        "./template/liquid": {
+            "types": "./dist/template-engines/liquid.d.ts",
+            "default": "./dist/template-engines/liquid.js"
+        },
+        "./template/jsx-email": {
+            "types": "./dist/template-engines/jsx-email.d.ts",
+            "default": "./dist/template-engines/jsx-email.js"
+        },
+        "./template/i18n": {
+            "types": "./dist/template-engines/i18n.d.ts",
+            "default": "./dist/template-engines/i18n.js"
+        },
         "./providers/aws-ses": {
             "types": "./dist/providers/aws-ses/index.d.ts",
             "default": "./dist/providers/aws-ses/index.js"
@@ -148,6 +172,58 @@
         "./crypto": {
             "types": "./dist/crypto/index.d.ts",
             "default": "./dist/crypto/index.js"
+        },
+        "./render": {
+            "types": "./dist/render/index.d.ts",
+            "default": "./dist/render/index.js"
+        },
+        "./webhooks": {
+            "types": "./dist/webhooks/index.d.ts",
+            "default": "./dist/webhooks/index.js"
+        },
+        "./deliverability": {
+            "types": "./dist/deliverability/index.d.ts",
+            "default": "./dist/deliverability/index.js"
+        },
+        "./deliverability/dmarc-report": {
+            "types": "./dist/deliverability/dmarc-report.d.ts",
+            "default": "./dist/deliverability/dmarc-report.js"
+        },
+        "./inbound": {
+            "types": "./dist/inbound/index.d.ts",
+            "default": "./dist/inbound/index.js"
+        },
+        "./events": {
+            "types": "./dist/events/index.d.ts",
+            "default": "./dist/events/index.js"
+        },
+        "./middleware": {
+            "types": "./dist/middleware/index.d.ts",
+            "default": "./dist/middleware/index.js"
+        },
+        "./queue": {
+            "types": "./dist/queue/index.d.ts",
+            "default": "./dist/queue/index.js"
+        },
+        "./queue/unstorage": {
+            "types": "./dist/queue/unstorage-queue.d.ts",
+            "default": "./dist/queue/unstorage-queue.js"
+        },
+        "./queue/sqs": {
+            "types": "./dist/queue/sqs-queue.d.ts",
+            "default": "./dist/queue/sqs-queue.js"
+        },
+        "./queue/pg-boss": {
+            "types": "./dist/queue/pg-boss-queue.d.ts",
+            "default": "./dist/queue/pg-boss-queue.js"
+        },
+        "./queue/bullmq": {
+            "types": "./dist/queue/bullmq-queue.d.ts",
+            "default": "./dist/queue/bullmq-queue.js"
+        },
+        "./test": {
+            "types": "./dist/test/index.d.ts",
+            "default": "./dist/test/index.js"
         },
         "./providers/sendgrid": {
             "types": "./dist/providers/sendgrid/index.d.ts",
@@ -213,9 +289,25 @@
             "types": "./dist/providers/sweego/index.d.ts",
             "default": "./dist/providers/sweego/index.js"
         },
+        "./providers/mailchannels": {
+            "types": "./dist/providers/mailchannels/index.d.ts",
+            "default": "./dist/providers/mailchannels/index.js"
+        },
+        "./providers/cloudflare-email": {
+            "types": "./dist/providers/cloudflare-email/index.d.ts",
+            "default": "./dist/providers/cloudflare-email/index.js"
+        },
+        "./providers/loops": {
+            "types": "./dist/providers/loops/index.d.ts",
+            "default": "./dist/providers/loops/index.js"
+        },
         "./utils/parse-address": {
             "types": "./dist/utils/parse-address.d.ts",
             "default": "./dist/utils/parse-address.js"
+        },
+        "./utils/result": {
+            "types": "./dist/utils/result.d.ts",
+            "default": "./dist/utils/result.js"
         },
         "./utils/format-email-address": {
             "types": "./dist/utils/format-email-address.d.ts",
@@ -313,7 +405,11 @@
         "conventional-changelog-conventionalcommits": "catalog:dev",
         "esbuild": "catalog:build",
         "eslint": "catalog:lint",
+        "fast-xml-parser": "^4.5.0",
         "handlebars": "catalog:dev",
+        "jsx-email": "^2.0.0",
+        "juice": "^11.0.0",
+        "liquidjs": "^10.0.0",
         "mjml": "catalog:dev",
         "nodemailer": "catalog:dev",
         "openapi-types": "catalog:dev",
@@ -324,6 +420,7 @@
         "secretlint": "catalog:lint",
         "semantic-release": "catalog:cli",
         "typescript": "catalog:tsc",
+        "unstorage": "^1.13.0",
         "vitest": "catalog:test"
     },
     "peerDependencies": {
@@ -331,10 +428,15 @@
         "@react-email/render": "catalog:frontend",
         "@vue-email/render": "catalog:frontend",
         "asn1js": "catalog:peer",
+        "fast-xml-parser": "^4.5.0",
         "handlebars": "catalog:peer",
+        "jsx-email": "^2.0.0",
+        "juice": "^11.0.0",
+        "liquidjs": "^10.0.0",
         "mjml": "catalog:peer",
         "nodemailer": ">=7",
-        "pkijs": "catalog:peer"
+        "pkijs": "catalog:peer",
+        "unstorage": "^1.13.0"
     },
     "peerDependenciesMeta": {
         "@opentelemetry/api": {
@@ -349,7 +451,19 @@
         "asn1js": {
             "optional": true
         },
+        "fast-xml-parser": {
+            "optional": true
+        },
         "handlebars": {
+            "optional": true
+        },
+        "jsx-email": {
+            "optional": true
+        },
+        "juice": {
+            "optional": true
+        },
+        "liquidjs": {
             "optional": true
         },
         "mjml": {
@@ -359,6 +473,9 @@
             "optional": true
         },
         "pkijs": {
+            "optional": true
+        },
+        "unstorage": {
             "optional": true
         }
     },

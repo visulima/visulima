@@ -1,0 +1,238 @@
+---
+title: Webhooks
+description: Verify inbound webhook signatures from Resend, Mailgun, SendGrid, Postmark, and AWS SES/SNS with @visulima/email
+---
+
+# Webhooks
+
+@visulima/email ships signature verifiers for the inbound webhooks every major provider sends — delivery, bounce, complaint, and open/click events. Each verifier lives under the `@visulima/email/webhooks` subpath and returns the same simple result shape, so you can branch on it the same way regardless of provider.
+
+```typescript
+type WebhookVerificationResult = {
+    valid: boolean;
+    reason?: string;
+};
+```
+
+All verifiers are **synchronous** except `verifySnsMessage`, which is **async** (it may fetch a certificate over the network).
+
+> **Always pass the RAW, unparsed request body.** Most schemes sign the exact bytes you received. Parsing JSON and re-serializing it changes whitespace and key order, which breaks verification. Read the raw body string first, then hand both the body and the request headers to the verifier.
+
+## Standard Webhooks / Svix (`verifyStandardWebhook`)
+
+The [Standard Webhooks](https://www.standardwebhooks.com/) scheme is used by Svix and any provider built on it. The signed content is `${id}.${timestamp}.${payload}`, HMAC-SHA256'd with the (base64-decoded) secret. The `webhook-signature` header may carry several space-separated `v1,<sig>` entries; a match against any one of them passes.
+
+```typescript
+import { verifyStandardWebhook } from "@visulima/email/webhooks";
+
+const result = verifyStandardWebhook({
+    // The raw request body string, exactly as received.
+    payload: rawBody,
+    // A Headers instance or a plain record. Lookups are case-insensitive and accept
+    // both webhook-* and svix-* names.
+    headers: request.headers,
+    // The signing secret — supports the whsec_-prefixed base64 form, or a raw string.
+    secret: "whsec_YOUR_WEBHOOK_SECRET",
+});
+
+if (!result.valid) {
+    console.warn("rejected webhook:", result.reason);
+}
+```
+
+| Field        | Type                           | Description                                                                                                                     |
+| ------------ | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| `payload`    | `string`                       | The raw, unparsed request body exactly as received.                                                                             |
+| `headers`    | `Headers \| Record<string, …>` | Request headers. Recognizes `webhook-id`/`svix-id`, `webhook-timestamp`/`svix-timestamp`, `webhook-signature`/`svix-signature`. |
+| `secret`     | `string`                       | The signing secret. Supports the `whsec_` base64 form.                                                                          |
+| `tolerance?` | `number`                       | Replay window in seconds. `0` disables it. Default: `300`.                                                                      |
+| `now?`       | `number`                       | Override the current time (milliseconds) — primarily for testing.                                                               |
+
+## Resend (`verifyResendWebhook`)
+
+Resend signs webhooks with Svix, so `verifyResendWebhook` is an alias of `verifyStandardWebhook`. It accepts the `svix-*` headers Resend sends.
+
+```typescript
+import { verifyResendWebhook } from "@visulima/email/webhooks";
+
+const result = verifyResendWebhook({
+    payload: rawBody,
+    headers: request.headers, // svix-id, svix-timestamp, svix-signature
+    secret: process.env.RESEND_WEBHOOK_SECRET!, // whsec_...
+});
+```
+
+## Mailgun (`verifyMailgunWebhook`)
+
+Mailgun nests `timestamp`, `token`, and `signature` under a `signature` object in the webhook JSON body. The signature is `HMAC-SHA256(key = signingKey, message = timestamp + token)`, sent as a hex digest.
+
+```typescript
+import { verifyMailgunWebhook } from "@visulima/email/webhooks";
+
+const body = await request.json();
+
+const result = verifyMailgunWebhook({
+    // Your Mailgun HTTP webhook signing key (Settings → Webhooks).
+    signingKey: process.env.MAILGUN_WEBHOOK_SIGNING_KEY!,
+    timestamp: body.signature.timestamp,
+    token: body.signature.token,
+    signature: body.signature.signature,
+});
+
+if (result.valid) {
+    // handle the event payload at body["event-data"]
+}
+```
+
+| Field        | Type               | Description                                                |
+| ------------ | ------------------ | ---------------------------------------------------------- |
+| `signingKey` | `string`           | Your Mailgun HTTP webhook signing key.                     |
+| `timestamp`  | `number \| string` | From `signature.timestamp` (unix seconds).                 |
+| `token`      | `string`           | From `signature.token`.                                    |
+| `signature`  | `string`           | The hex HMAC from `signature.signature`.                   |
+| `tolerance?` | `number`           | Replay window in seconds. `0` disables it. Default: `300`. |
+| `now?`       | `number`           | Override the current time (milliseconds), for testing.     |
+
+## SendGrid (`verifySendGridWebhook`)
+
+SendGrid's Event Webhook uses an **ECDSA** (prime256v1) signature over `timestamp + payload`, and rejects stale requests to prevent replay. The signature and timestamp arrive in the `X-Twilio-Email-Event-Webhook-Signature` and `X-Twilio-Email-Event-Webhook-Timestamp` headers.
+
+```typescript
+import { verifySendGridWebhook } from "@visulima/email/webhooks";
+
+const result = verifySendGridWebhook({
+    payload: rawBody,
+    // The verification key from SendGrid's Event Webhook settings.
+    // Either the base64 DER (SPKI) string SendGrid shows, or a full PEM block.
+    publicKey: process.env.SENDGRID_WEBHOOK_PUBLIC_KEY!,
+    signature: request.headers["x-twilio-email-event-webhook-signature"],
+    timestamp: request.headers["x-twilio-email-event-webhook-timestamp"],
+});
+```
+
+| Field        | Type     | Description                                                    |
+| ------------ | -------- | -------------------------------------------------------------- |
+| `payload`    | `string` | The raw, unparsed request body.                                |
+| `publicKey`  | `string` | The SendGrid verification key — base64 DER (SPKI) or PEM.      |
+| `signature`  | `string` | `X-Twilio-Email-Event-Webhook-Signature` (base64 DER ECDSA).   |
+| `timestamp`  | `string` | `X-Twilio-Email-Event-Webhook-Timestamp` (unix epoch seconds). |
+| `tolerance?` | `number` | Replay window in seconds. `0` disables it. Default: `300`.     |
+| `now?`       | `number` | Override the current time (milliseconds), for testing.         |
+
+This verifier throws an `EmailError` when the supplied public key cannot be parsed.
+
+## Postmark (`verifyPostmarkWebhook`)
+
+Postmark does **not** sign webhook payloads. Instead it supports HTTP Basic Auth credentials embedded in the webhook URL (plus IP allow-listing). This verifier validates the incoming `Authorization` header against the username/password you configured.
+
+```typescript
+import { verifyPostmarkWebhook } from "@visulima/email/webhooks";
+
+const result = verifyPostmarkWebhook({
+    authorization: request.headers.authorization, // e.g. "Basic dXNlcjpwYXNz"
+    username: process.env.POSTMARK_WEBHOOK_USER!,
+    password: process.env.POSTMARK_WEBHOOK_PASS!,
+});
+```
+
+| Field           | Type                  | Description                                          |
+| --------------- | --------------------- | ---------------------------------------------------- |
+| `authorization` | `string \| undefined` | The incoming `Authorization` header value.           |
+| `username`      | `string`              | The username configured on the Postmark webhook URL. |
+| `password`      | `string`              | The password configured on the Postmark webhook URL. |
+
+## AWS SES / SNS (`verifySnsMessage`)
+
+AWS SES delivers events (deliveries, bounces, complaints) wrapped in **SNS notifications**, which are signed with RSA. `verifySnsMessage` is **async**: it fetches the signing certificate referenced by the message's `SigningCertURL`, then verifies the signature.
+
+The default certificate fetcher only accepts `https://sns.<region>.amazonaws.com` URLs (and the `.cn` China partition). In tests, inject a `certificateResolver` to avoid network access.
+
+```typescript
+import { verifySnsMessage } from "@visulima/email/webhooks";
+
+const message = await request.json(); // the SNS envelope
+
+const result = await verifySnsMessage(message);
+
+if (result.valid) {
+    // For SES notifications, the SES event lives in JSON.parse(message.Message)
+}
+```
+
+Injecting a resolver (e.g. for tests or caching):
+
+```typescript
+const result = await verifySnsMessage(message, {
+    certificateResolver: (url) => certificateCache.get(url) ?? fetchPem(url),
+});
+```
+
+### `isValidSigningCertUrl`
+
+The host allowlist used by the default fetcher is exposed directly, so you can pre-validate a `SigningCertURL` before doing any work:
+
+```typescript
+import { isValidSigningCertUrl } from "@visulima/email/webhooks";
+
+isValidSigningCertUrl("https://sns.us-east-1.amazonaws.com/cert.pem"); // true
+isValidSigningCertUrl("https://evil.example.com/cert.pem"); // false
+```
+
+## Putting it together: a request handler
+
+A typical Express / Hono style handler reads the **raw** body and the headers, verifies, then branches on `result.valid`:
+
+```typescript
+import { verifyResendWebhook } from "@visulima/email/webhooks";
+
+// Express — make sure the raw body is available (e.g. express.raw({ type: "*/*" })).
+app.post("/webhooks/resend", (request, response) => {
+    const rawBody = request.body.toString("utf8");
+
+    const result = verifyResendWebhook({
+        payload: rawBody,
+        headers: request.headers,
+        secret: process.env.RESEND_WEBHOOK_SECRET!,
+    });
+
+    if (!result.valid) {
+        response.status(400).json({ error: result.reason ?? "invalid signature" });
+
+        return;
+    }
+
+    // Safe to parse and handle now that the signature is verified.
+    const event = JSON.parse(rawBody);
+
+    // ...dispatch on event.type
+
+    response.status(204).end();
+});
+```
+
+```typescript
+import { Hono } from "hono";
+import { verifyResendWebhook } from "@visulima/email/webhooks";
+
+const app = new Hono();
+
+app.post("/webhooks/resend", async (c) => {
+    const rawBody = await c.req.text(); // raw, unparsed body
+
+    const result = verifyResendWebhook({
+        payload: rawBody,
+        headers: c.req.raw.headers, // a Headers instance
+        secret: c.env.RESEND_WEBHOOK_SECRET,
+    });
+
+    if (!result.valid) {
+        return c.json({ error: result.reason ?? "invalid signature" }, 400);
+    }
+
+    const event = JSON.parse(rawBody);
+
+    // ...dispatch on event.type
+
+    return c.body(null, 204);
+});
+```

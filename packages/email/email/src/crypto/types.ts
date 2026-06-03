@@ -5,6 +5,12 @@ import type { EmailOptions } from "../types";
  */
 export interface DkimOptions {
     /**
+     * Signature algorithm. 'rsa-sha256' (default, RFC 6376) or 'ed25519-sha256' (RFC 8463).
+     * Default: 'rsa-sha256'
+     */
+    algorithm?: "ed25519-sha256" | "rsa-sha256";
+
+    /**
      * Body canonicalization algorithm ('simple' or 'relaxed')
      * Default: 'simple'
      */

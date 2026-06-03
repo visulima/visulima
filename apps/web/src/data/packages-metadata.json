@@ -160,7 +160,7 @@
     },
     "email": {
         "displayName": "Email",
-        "features": ["Multiple providers", "Template support", "Attachment handling", "Queue integration"]
+        "features": ["Multiple providers", "Template engines & i18n", "Inbound parsing & webhooks", "Deliverability tooling", "Middleware pipeline", "Queue & batch sending"]
     },
     "storage": {
         "displayName": "Storage",
