@@ -7,8 +7,7 @@
  * and re-runs hadolint to report what remains.
  */
 
-import { readFileSync, writeFileSync } from "node:fs";
-
+import type { CerebroFs } from "@visulima/cerebro";
 import { bold, cyan, dim, green, red, yellow } from "@visulima/colorize";
 import { isAccessibleSync } from "@visulima/fs";
 import { isAbsolute, join } from "@visulima/path";
@@ -47,6 +46,8 @@ export interface DockerLintInput {
     files: string[];
     /** Apply safe autofixers, then re-lint. */
     fix: boolean;
+    /** Filesystem adapter from the command toolbox. */
+    fs: CerebroFs;
     /** Emit JSON instead of human output. */
     json: boolean;
     logger: Pick<Console, "error" | "info">;
@@ -97,7 +98,7 @@ const summarize = (findings: HadolintFinding[]): Record<HadolintFinding["level"]
  * @param input Lint configuration.
  */
 export const runDockerLint = async (input: DockerLintInput): Promise<number> => {
-    const { autoInstall, configPath, cwd, files, fix, json, logger } = input;
+    const { autoInstall, configPath, cwd, files, fix, fs, json, logger } = input;
 
     const targets = resolveFiles(files, cwd);
 
@@ -126,11 +127,11 @@ export const runDockerLint = async (input: DockerLintInput): Promise<number> => 
     if (fix && findings.length > 0) {
         for (const file of targets) {
             const fileFindings = findings.filter((finding) => finding.file === file);
-            const original = readFileSync(file, "utf8");
+            const original = await fs.readFile(file, "utf8");
             const result = applyFixers(original, fileFindings);
 
             if (result.fixedCount > 0) {
-                writeFileSync(file, result.content);
+                await fs.writeFile(file, result.content);
                 fixedCount += result.fixedCount;
             }
         }

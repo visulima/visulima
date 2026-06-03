@@ -1,9 +1,7 @@
-import { writeFileSync } from "node:fs";
 import { createInterface } from "node:readline";
 
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 import { dim } from "@visulima/colorize";
-import { isAccessibleSync } from "@visulima/fs";
 import { isAbsolute, join } from "@visulima/path";
 
 import { buildProjectGraph, discoverWorkspace } from "../../config/workspace";
@@ -71,19 +69,30 @@ export const pruneExecute: CommandExecute<Toolbox<Console, DockerPruneOptions>> 
 };
 
 /** `vis docker lint` — lint a Dockerfile with hadolint (downloaded on demand). */
-export const lintExecute: CommandExecute<Toolbox<Console, DockerLintOptions>> = async ({ argument, logger, options, workspaceRoot }) => {
+export const lintExecute: CommandExecute<Toolbox<Console, DockerLintOptions>> = async ({ argument, fs, logger, options, process: runtimeProcess, workspaceRoot }) => {
     const code = await runDockerLint({
         autoInstall: Boolean(options.install),
         configPath: options.config,
-        cwd: workspaceRoot ?? process.cwd(),
+        cwd: workspaceRoot ?? runtimeProcess.cwd,
         files: argument.filter(Boolean),
         fix: Boolean(options.fix),
+        fs,
         json: Boolean(options.json),
         logger,
     });
 
     if (code !== 0) {
         process.exitCode = code;
+    }
+};
+
+const canAccess = async (fs: Toolbox["fs"], path: string): Promise<boolean> => {
+    try {
+        await fs.access(path);
+
+        return true;
+    } catch {
+        return false;
     }
 };
 
@@ -102,8 +111,8 @@ const confirmOverwrite = async (path: string): Promise<boolean> => {
 };
 
 /** `vis docker init` — generate a multi-stage Dockerfile (create-only). */
-export const initExecute: CommandExecute<Toolbox<Console, DockerInitOptions>> = async ({ argument, logger, options, workspaceRoot }) => {
-    const wsRoot = workspaceRoot ?? process.cwd();
+export const initExecute: CommandExecute<Toolbox<Console, DockerInitOptions>> = async ({ argument, fs, logger, options, process: runtimeProcess, workspaceRoot }) => {
+    const wsRoot = workspaceRoot ?? runtimeProcess.cwd;
     const requested = argument[0] ?? "Dockerfile";
     const outPath = isAbsolute(requested) ? requested : join(wsRoot, requested);
 
@@ -121,7 +130,7 @@ export const initExecute: CommandExecute<Toolbox<Console, DockerInitOptions>> = 
         return;
     }
 
-    if (isAccessibleSync(outPath) && !options.force) {
+    if ((await canAccess(fs, outPath)) && !options.force) {
         const interactive = Boolean(process.stdin.isTTY);
 
         if (!interactive) {
@@ -140,7 +149,7 @@ export const initExecute: CommandExecute<Toolbox<Console, DockerInitOptions>> = 
         }
     }
 
-    writeFileSync(outPath, content);
+    await fs.writeFile(outPath, content);
     logger.info(`Created ${outPath} (package manager: ${manager}).`);
     logger.info(dim(`Next: vis docker scaffold${focus ? ` --focus=${focus}` : ""} --include-sources, then DOCKER_BUILDKIT=1 docker build .`));
 };
