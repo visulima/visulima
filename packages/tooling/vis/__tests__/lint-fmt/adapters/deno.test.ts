@@ -1,5 +1,6 @@
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
+import { fileURLToPath } from "node:url";
 
 import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -9,19 +10,23 @@ import type { AdapterId, RunResult, ToolPresence } from "../../../src/lint-fmt/c
 
 let workspaceRoot: string;
 
-const stubResult = (overrides: Partial<RunResult>): RunResult => ({
-    durationMs: 1,
-    exitCode: 0,
-    stderr: "",
-    stdout: "",
-    ...overrides,
-});
+const stubResult = (overrides: Partial<RunResult>): RunResult => {
+    return {
+        durationMs: 1,
+        exitCode: 0,
+        stderr: "",
+        stdout: "",
+        ...overrides,
+    };
+};
 
-const presence = (id: AdapterId): ToolPresence => ({
-    adapter: id,
-    declared: false,
-    root: workspaceRoot,
-});
+const presence = (id: AdapterId): ToolPresence => {
+    return {
+        adapter: id,
+        declared: false,
+        root: workspaceRoot,
+    };
+};
 
 describe("denoLintAdapter", () => {
     beforeEach(() => {
@@ -56,8 +61,8 @@ describe("denoLintAdapter", () => {
         const fix = denoLintAdapter.argsFix(["src/a.ts"], {});
 
         expect(check).toContain("--json");
-        expect(check.includes("--fix")).toBe(false);
-        expect(fix.includes("--fix")).toBe(true);
+        expect(check).not.toContain("--fix");
+        expect(fix).toContain("--fix");
     });
 
     it("parses 0-based diagnostics into 1-based findings", () => {
@@ -78,7 +83,9 @@ describe("denoLintAdapter", () => {
         const findings = denoLintAdapter.parse(stubResult({ exitCode: 1, stdout }), presence("deno-lint"));
 
         expect(findings).toHaveLength(1);
-        expect(findings[0]).toMatchObject({ column: 6, file: "/repo/src/a.ts", line: 1, ruleId: "no-unused-vars" });
+        // The adapter resolves `file://` URLs to native paths (back-slashes on Windows), so compute
+        // the expected value the same way rather than hard-coding the POSIX form.
+        expect(findings[0]).toMatchObject({ column: 6, file: fileURLToPath("file:///repo/src/a.ts"), line: 1, ruleId: "no-unused-vars" });
         expect(findings[0]?.severity).toBe("warning");
     });
 
@@ -116,7 +123,7 @@ describe("denoFmtAdapter", () => {
 
         expect(denoFmtAdapter.bin(presence("deno-fmt"))).toStrictEqual(["deno", "fmt"]);
         expect(denoFmtAdapter.argsCheck(["src/a.ts"], {})).toContain("--check");
-        expect(denoFmtAdapter.argsFix(["src/a.ts"], {}).includes("--check")).toBe(false);
+        expect(denoFmtAdapter.argsFix(["src/a.ts"], {})).not.toContain("--check");
     });
 
     it("turns each `from <path>:` header into one info finding (deduped)", () => {

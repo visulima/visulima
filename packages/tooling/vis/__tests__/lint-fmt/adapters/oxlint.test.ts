@@ -9,20 +9,24 @@ import type { RunResult, ToolPresence } from "../../../src/lint-fmt/config-types
 
 let workspaceRoot: string;
 
-const stubResult = (overrides: Partial<RunResult>): RunResult => ({
-    durationMs: 1,
-    exitCode: 0,
-    stderr: "",
-    stdout: "",
-    ...overrides,
-});
+const stubResult = (overrides: Partial<RunResult>): RunResult => {
+    return {
+        durationMs: 1,
+        exitCode: 0,
+        stderr: "",
+        stdout: "",
+        ...overrides,
+    };
+};
 
-const presence = (): ToolPresence => ({
-    adapter: "oxlint",
-    declared: true,
-    declaredVersion: "^0.10.0",
-    root: workspaceRoot,
-});
+const presence = (): ToolPresence => {
+    return {
+        adapter: "oxlint",
+        declared: true,
+        declaredVersion: "^0.10.0",
+        root: workspaceRoot,
+    };
+};
 
 describe("oxlintAdapter", () => {
     beforeEach(() => {
@@ -61,8 +65,8 @@ describe("oxlintAdapter", () => {
     it("appends --fix in fix mode and omits it in check mode", () => {
         expect.assertions(2);
 
-        expect(oxlintAdapter.argsCheck(["src/a.ts"], {}).includes("--fix")).toBe(false);
-        expect(oxlintAdapter.argsFix(["src/a.ts"], {}).includes("--fix")).toBe(true);
+        expect(oxlintAdapter.argsCheck(["src/a.ts"], {})).not.toContain("--fix");
+        expect(oxlintAdapter.argsFix(["src/a.ts"], {})).toContain("--fix");
     });
 
     it("threads --max-warnings as a `=` separated flag", () => {
