@@ -136,8 +136,8 @@ const wrapText = (
                 // eslint-disable-next-line no-param-reassign
                 horizontal = horizontal.slice(Math.floor(horizontal.length / 2));
 
-                title =
-                    colorizeBorder(horizontal.slice(1), getStringWidth(horizontal.slice(1))) + text + colorizeBorder(horizontal, getStringWidth(horizontal)); // We reduce the left part of one character to avoid the bar to go beyond its limit
+                title
+                    = colorizeBorder(horizontal.slice(1), getStringWidth(horizontal.slice(1))) + text + colorizeBorder(horizontal, getStringWidth(horizontal)); // We reduce the left part of one character to avoid the bar to go beyond its limit
             } else {
                 // eslint-disable-next-line no-param-reassign
                 horizontal = horizontal.slice(horizontal.length / 2);
@@ -297,10 +297,10 @@ const boxContent = (content: string, contentWidth: number, columnsWidth: number,
     result += lines
         .map(
             (line) =>
-                marginLeft +
-                colorizeBorder(chars.left, "left", getStringWidth(chars.left)) +
-                colorizeContent(line) +
-                colorizeBorder(chars.right, "right", getStringWidth(chars.right)),
+                marginLeft
+                + colorizeBorder(chars.left, "left", getStringWidth(chars.left))
+                + colorizeContent(line)
+                + colorizeBorder(chars.right, "right", getStringWidth(chars.right)),
         )
         .join(NEWLINE);
 
@@ -376,10 +376,10 @@ const determineDimensions = (text: string, columnsWidth: number, options: Dimens
     const borderWidth = getBorderWidth(options.borderStyle);
     const maxWidth = columnsWidth - options.margin.left - options.margin.right - borderWidth;
 
-    const widest =
-        widestLine(wordWrap(text, { trim: false, width: columnsWidth - borderWidth, wrapMode: WrapMode.BREAK_WORDS })) +
-        options.padding.left +
-        options.padding.right;
+    const widest
+        = widestLine(wordWrap(text, { trim: false, width: columnsWidth - borderWidth, wrapMode: WrapMode.BREAK_WORDS }))
+            + options.padding.left
+            + options.padding.right;
 
     // If title and width are provided, title adheres to fixed width
     if (options.headerText && widthOverride) {
