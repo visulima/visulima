@@ -10,7 +10,23 @@ export default defineConfig({
     externals: [/^@visulima\/vis(\/|$)/],
     rollup: {
         resolveExternals: {
-            exclude: ["@visulima/tabular", /^@visulima\/tabular(\/|$)/],
+            // Force-bundle the entire React renderer stack into vis so that vis's own
+            // components, @visulima/tui (which declares react/react-reconciler as peers),
+            // and react-reconciler all close over a SINGLE inlined React module. Leaving
+            // any of them external lets node resolve a second React copy at runtime, which
+            // surfaces as "Invalid hook call ... more than one copy of React". The packages
+            // stay declared in package.json so their transitive runtime deps (yoga-layout,
+            // scheduler, …) still install — only the inlined copies are actually executed.
+            exclude: [
+                "@visulima/tabular",
+                /^@visulima\/tabular(\/|$)/,
+                "react",
+                /^react\//,
+                "react-reconciler",
+                /^react-reconciler(\/|$)/,
+                "@visulima/tui",
+                /^@visulima\/tui(\/|$)/,
+            ],
         },
         css: {
             mode: "inline",
@@ -67,6 +83,23 @@ export default defineConfig({
                     "fastest-levenshtein",
                     "terminal-size",
                     "@jridgewell/trace-mapping",
+                    // Pulled in transitively by the now-bundled @visulima/tui renderer.
+                    // These stay installed via @visulima/tui (a vis dependency), so the
+                    // bundled code resolves them at runtime; the allowlist just silences
+                    // packem's shamefully-hoisted warning. The exact set that surfaces
+                    // depends on the install's hoisting layout, so list all of tui's
+                    // third-party runtime deps. yoga-layout is its layout engine, scheduler
+                    // backs react-reconciler, and react-devtools-core/ws are optional
+                    // devtools peers lazily required by the reconciler.
+                    "yoga-layout",
+                    "scheduler",
+                    "cli-boxes",
+                    "code-excerpt",
+                    "patch-console",
+                    "signal-exit",
+                    "tseep",
+                    "react-devtools-core",
+                    "ws",
                 ],
             },
         },
