@@ -8,7 +8,7 @@ import { removeSync, writeFileSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import type { IgnoreDecision } from "../../../src/commands/ignore-helpers";
+import type { IgnoreDecision } from "../../../src/commands/ci-ignore-helpers";
 import {
     CI_BASE_SHA_ENV_VARS,
     commitHasForceDeployMessage,
@@ -24,7 +24,7 @@ import {
     resolveCiBaseSha,
     SKIP_TOKENS,
     validateGitRef,
-} from "../../../src/commands/ignore-helpers";
+} from "../../../src/commands/ci-ignore-helpers";
 
 /**
  * Builds a temp directory with an initialised git repo and a seeded

@@ -1,175 +1,51 @@
-import type { CommandExecute, Toolbox } from "@visulima/cerebro";
-import type { AffectedOptions, AffectedScope } from "@visulima/task-runner";
-import { getAffectedProjects } from "@visulima/task-runner";
+import { readFileSync, writeFileSync } from "node:fs";
 
-import { buildProjectGraph, discoverWorkspace } from "../../config/workspace";
-import type { IgnoreDecision } from "../ignore-helpers";
-import {
-    commitHasForceDeployMessage,
-    commitHasSkipMessage,
-    decideBuild,
-    decideSkip,
-    exitCodeFor,
-    formatDecisionLine,
-    isRefReachable,
-    readLastCommitMessage,
-    resolveCiBaseSha,
-    validateGitRef,
-} from "../ignore-helpers";
+import type { CommandExecute, Toolbox } from "@visulima/cerebro";
+import { dim } from "@visulima/colorize";
+import { isAccessibleSync } from "@visulima/fs";
+import { join } from "@visulima/path";
+
+import type { IgnoreTarget } from "../../util/ignore-file";
+import { buildIgnorePatterns, IGNORE_FILENAMES, mergeIgnore } from "../../util/ignore-file";
 import type { IgnoreOptions } from "./index";
 
-const VALID_SCOPES = new Set<AffectedScope>(["deep", "direct", "none"]);
+const isIgnoreTarget = (value: string): value is IgnoreTarget => value === "docker" || value === "npm" || value === "slug" || value === "vercel";
 
-const execute = async ({ argument, logger, options, visConfig, workspaceRoot }: Toolbox<Console, IgnoreOptions>): Promise<void> => {
-    const project = argument[0] ?? "";
-    const isJson = Boolean(options.json);
-    const isVerbose = Boolean(options.verbose);
-    const exitZeroOnBuild = Boolean((options as Record<string, unknown>)["exit-zero-on-build"] ?? options.exitZeroOnBuild);
+/** `vis ignore` — generate/merge a build/publish ignore file (no duplicate entries). */
+const execute: CommandExecute<Toolbox<Console, IgnoreOptions>> = async ({ logger, options, workspaceRoot }) => {
+    const cwd = workspaceRoot ?? process.cwd();
+    const target = options.target ?? "docker";
 
-    const debug = (message: string): void => {
-        if (isVerbose && !isJson) {
-            logger.info(`❱ ${message}`);
-        }
-    };
-
-    /**
-     * Terminal sink: renders the decision and calls `process.exit`.
-     * Direct `process.exit` is deliberate — Vercel and Netlify read
-     * the literal exit code, and cerebro's error-handler plugin
-     * would clobber thrown errors with a 1 exit code carrying the
-     * wrong semantic (error, not "build").
-     */
-    const emit = (decision: IgnoreDecision): never => {
-        if (isJson) {
-            process.stdout.write(`${JSON.stringify(decision)}\n`);
-        } else {
-            logger.info(formatDecisionLine(decision));
-        }
-
-        // eslint-disable-next-line unicorn/no-process-exit -- Vercel ignore-build-step protocol requires the process to exit with a specific code (0 = build, 1 = skip)
-        process.exit(exitCodeFor(decision, exitZeroOnBuild));
-    };
-
-    if (!project) {
-        return emit(decideBuild("", "missing-project-argument", "Missing project argument. Usage: vis ignore <project>"));
+    if (!isIgnoreTarget(target)) {
+        throw new Error(`Invalid --target "${target}". Expected one of: docker, vercel, npm, slug.`);
     }
 
-    if (!workspaceRoot) {
-        return emit(decideBuild(project, "workspace-error", "Could not determine workspace root — building defensively"));
+    const filename = IGNORE_FILENAMES[target];
+    const path = join(cwd, filename);
+    const existing = isAccessibleSync(path) ? readFileSync(path, "utf8") : "";
+    const { added, content } = mergeIgnore(existing, buildIgnorePatterns(target));
+
+    if (options.json) {
+        process.stdout.write(`${JSON.stringify({ added, file: filename, target }, null, 2)}\n`);
+
+        return;
     }
 
-    const commitMessage = await readLastCommitMessage(workspaceRoot);
-    const commitSubject = commitMessage.trim().split("\n")[0] ?? "";
+    if (options.write) {
+        if (added.length === 0) {
+            logger.info(`${filename} is already up to date (no new patterns).`);
 
-    debug(`commit: ${commitSubject}`);
-
-    if (commitMessage && commitHasForceDeployMessage(commitMessage, project)) {
-        return emit(decideBuild(project, "commit-force-deploy", `Force-deploy keyword in commit: "${commitSubject}"`));
-    }
-
-    if (commitMessage && commitHasSkipMessage(commitMessage, project)) {
-        return emit(decideSkip(project, "commit-skip", `Skip keyword in commit: "${commitSubject}"`));
-    }
-
-    let workspace;
-    let packageJsons;
-
-    try {
-        ({ packageJsons, workspace } = discoverWorkspace(workspaceRoot, visConfig));
-    } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-
-        return emit(decideBuild(project, "workspace-error", `Workspace discovery failed (${message}) — building defensively`));
-    }
-
-    if (!Object.hasOwn(workspace.projects, project)) {
-        return emit(decideBuild(project, "project-unknown", `Project "${project}" not found in workspace — building defensively`));
-    }
-
-    // The buildProjectGraph → validateGitRef → isRefReachable →
-    // getAffectedProjects chain is wrapped in a single try/catch so
-    // any throw in this section falls back to the defensive-build
-    // emit() path instead of bubbling up to cerebro's error handler
-    // (which would exit with error semantics — wrong for a CI hook).
-    try {
-        const explicitBase = options.base?.trim();
-        const ciBase = resolveCiBaseSha();
-        let baseRef = explicitBase || ciBase || "HEAD~1";
-        const headRef = options.head?.trim() || "HEAD";
-
-        validateGitRef(baseRef);
-        validateGitRef(headRef);
-
-        debug(`resolved base ref: ${baseRef} (source: ${explicitBase ? "flag" : ciBase ? "ci-env" : "default"})`);
-
-        // Kick off the git rev-parse reachability probe without
-        // awaiting so the synchronous `buildProjectGraph` work
-        // overlaps with the child-process round-trip. Saves
-        // 20–50ms per deploy on warm CI runners.
-        const reachablePromise = isRefReachable(workspaceRoot, baseRef);
-        const projectGraph = buildProjectGraph(workspaceRoot, workspace, packageJsons);
-
-        if (!(await reachablePromise)) {
-            debug(`base ref ${baseRef} not reachable — falling back to HEAD~1`);
-            baseRef = "HEAD~1";
+            return;
         }
 
-        debug(`comparing ${baseRef}...${headRef}`);
+        writeFileSync(path, content);
+        logger.info(`Added ${added.length} pattern(s) to ${filename}.`);
 
-        const downstream = (options.downstream ?? "deep") as AffectedScope;
-        const upstream = (options.upstream ?? "none") as AffectedScope;
-
-        if (!VALID_SCOPES.has(downstream)) {
-            throw new Error(`Invalid --downstream value: "${downstream}". Must be "none", "direct", or "deep".`);
-        }
-
-        if (!VALID_SCOPES.has(upstream)) {
-            throw new Error(`Invalid --upstream value: "${upstream}". Must be "none", "direct", or "deep".`);
-        }
-
-        const affectedOptions: AffectedOptions = {
-            base: baseRef,
-            downstream,
-            head: headRef,
-            projectGraph,
-            projects: workspace.projects,
-            upstream,
-            workspaceRoot,
-        };
-
-        const result = await getAffectedProjects(affectedOptions);
-
-        debug(`changed files: ${result.changedFiles.length}`);
-        debug(`affected projects: ${result.affectedProjects.join(", ") || "(none)"}`);
-
-        const refs = { base: baseRef, head: headRef };
-
-        if (result.changedFiles.length === 0) {
-            return emit(decideSkip(project, "no-changes", `No files changed between ${baseRef}...${headRef}`, { ...refs, affectedProjects: [] }));
-        }
-
-        if (result.affectedProjects.includes(project)) {
-            return emit(
-                decideBuild(project, "project-affected", `Build ${project}: affected by ${result.changedFiles.length} changed file(s)`, {
-                    ...refs,
-                    affectedProjects: result.affectedProjects,
-                }),
-            );
-        }
-
-        return emit(
-            decideSkip(project, "project-not-affected", `Skip ${project}: not affected by changes between ${baseRef}...${headRef}`, {
-                ...refs,
-                affectedProjects: result.affectedProjects,
-            }),
-        );
-    } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-
-        logger.error(`Affected detection failed: ${errorMessage}`);
-
-        return emit(decideBuild(project, "workspace-error", `Affected detection failed (${errorMessage}) — building defensively`));
+        return;
     }
+
+    process.stdout.write(content.endsWith("\n") ? content : `${content}\n`);
+    logger.info(dim(`(${added.length} new pattern(s); re-run with --write to save ${filename})`));
 };
 
 export default execute as CommandExecute<Toolbox>;

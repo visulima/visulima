@@ -1,161 +1,57 @@
 ---
 title: "vis ignore"
-description: "CI build gating for Vercel and Netlify 'Ignored Build Step' — exits with inverted codes so deployment platforms skip unaffected builds."
+description: "Generate or merge an ignore file (.dockerignore / .vercelignore / .npmignore / .slugignore) without adding duplicate entries."
 ---
 
 # vis ignore
 
-Decide whether a deployment should proceed, based on whether a given project is affected by the current commit. Drops directly into **Vercel's "Ignored Build Step"** and **Netlify's `ignore` field** using inverted exit codes.
+Generates a curated set of ignore patterns for files that don't belong in a build context or published package — docs, type-defs, source maps, tests, CI config, editor files — and merges them into an existing ignore file **without adding entries that are already present**. Re-running is idempotent.
 
-Inspired by [`nx-ignore`](https://github.com/nrwl/nx-labs/tree/main/packages/nx-ignore) but reuses vis's own affected detection — no parallel Nx install required on the deploy runner.
+Inspired by [`untracked`](https://github.com/Kikobeats/untracked), but reimplemented dependency-free and monorepo-aware.
+
+> Looking for the CI "Ignored Build Step" gate that used to live at `vis ignore`? It moved to [`vis ci ignore`](./ci-ignore).
 
 ## Usage
 
 ```bash
-vis ignore <project> [options]
+vis ignore [options]
 ```
 
-## Exit codes
+## Targets
 
-`vis ignore` uses **inverted** exit codes so it matches the contract Vercel and Netlify expect from an ignore hook:
+The `--target` flag selects which ignore file to write and which extras to include:
 
-| Exit code | Meaning                 | Platform behavior   |
-| --------- | ----------------------- | ------------------- |
-| `0`       | Project is not affected | Cancels the build   |
-| `1`       | Project is affected     | Continues the build |
-
-Pass `--exit-zero-on-build` to invert this back to normal semantics (useful for local testing and for gating downstream CI jobs where `0 = success`).
+| Target             | File            | Includes `node_modules`?                   |
+| ------------------ | --------------- | ------------------------------------------ |
+| `docker` (default) | `.dockerignore` | Yes (built inside the image)               |
+| `vercel`           | `.vercelignore` | Yes                                        |
+| `slug`             | `.slugignore`   | Yes                                        |
+| `npm`              | `.npmignore`    | No — npm excludes it from tarballs already |
 
 ## Examples
 
 ```bash
-# Vercel / Netlify default — uses CI env vars automatically
-vis ignore my-app
-
-# Explicit base ref
-vis ignore my-app --base "$VERCEL_GIT_PREVIOUS_SHA"
-
-# Emit the decision as JSON (pipe into jq in GitHub Actions)
-vis ignore my-app --json
-
-# Normal exit semantics for local testing
-vis ignore my-app --exit-zero-on-build
-
-# Debug the decision path
-vis ignore my-app --verbose
+vis ignore                          # print a .dockerignore (deduped against an existing one)
+vis ignore --write                  # write/merge .dockerignore in place
+vis ignore --target=vercel --write  # write a .vercelignore
+vis ignore --target=npm --json      # emit the npm-target result as JSON
 ```
+
+## Merging (no duplicate entries)
+
+When the target file already exists, `vis ignore` reads it, compares each candidate pattern against the existing entries (verbatim, case-sensitive), and appends **only the missing ones** under a `# Added by vis ignore` section. Entries already present — including any you added by hand — are never duplicated or reordered. If nothing is missing, the file is left untouched.
+
+By default the merged result is printed to stdout; pass `--write` to save it, or `--json` for a machine-readable `{ target, file, added }` record.
 
 ## Options
 
-| Option                              | Default                   | Description                                            |
-| ----------------------------------- | ------------------------- | ------------------------------------------------------ |
-| `--base <ref>`                      | CI env var, then `HEAD~1` | Git base ref for the affected comparison               |
-| `--head <ref>`                      | `HEAD`                    | Git head ref for the affected comparison               |
-| `--downstream <none\|direct\|deep>` | `deep`                    | How far to follow dependents of changed projects       |
-| `--upstream <none\|direct\|deep>`   | `none`                    | How far to follow dependencies of changed projects     |
-| `--json`                            | `false`                   | Emit the decision as JSON on stdout instead of text    |
-| `--exit-zero-on-build`              | `false`                   | Disable inverted exit codes (build exits `0`, not `1`) |
-| `--verbose`                         | `false`                   | Print debug info about the decision path               |
-
-## How it works
-
-1. **Commit-message gating** — reads the latest commit message and short-circuits on skip or force-deploy keywords before touching git diff.
-2. **Workspace discovery** — resolves the workspace root and verifies that the requested project actually exists. Unknown projects exit with `build` (defensive default).
-3. **Base ref resolution** — walks `--base` flag → CI env var chain → `HEAD~1`. If the resolved ref isn't reachable (e.g. Vercel's shallow clone), silently falls back to `HEAD~1`.
-4. **Affected detection** — runs the same `getAffectedProjects` pipeline as [`vis affected`](./affected), respecting `--downstream` and `--upstream` scope.
-5. **Decision emit** — prints the outcome (human text or JSON) and calls `process.exit` with the inverted exit code.
-
-## Commit-message keywords
-
-Keywords take precedence over git-diff detection — useful for emergency bypasses and forced deploys.
-
-### Skip build
-
-| Token                  | Scope                                |
-| ---------------------- | ------------------------------------ |
-| `[skip ci]`            | All projects                         |
-| `[ci skip]`            | All projects                         |
-| `[no ci]`              | All projects                         |
-| `[vis skip]`           | All projects                         |
-| `[vis skip <project>]` | Single project                       |
-| `[nx skip]`            | All projects (legacy, for migration) |
-| `[nx skip <project>]`  | Single project (legacy)              |
-
-### Force build
-
-| Token                    | Scope                   |
-| ------------------------ | ----------------------- |
-| `[vis deploy]`           | All projects            |
-| `[vis deploy <project>]` | Single project          |
-| `[nx deploy]`            | All projects (legacy)   |
-| `[nx deploy <project>]`  | Single project (legacy) |
-
-Legacy `[nx …]` tokens are accepted so teams migrating from `nx-ignore` don't have to rewrite their commit automation on day one.
-
-## Base SHA resolution order
-
-`vis ignore` probes these env vars in order. The first non-empty match wins, unless `--base` is passed explicitly.
-
-| Priority | Env var                   | Provider          |
-| -------- | ------------------------- | ----------------- |
-| 1        | `--base <ref>` flag       | Explicit override |
-| 2        | `CACHED_COMMIT_REF`       | Netlify           |
-| 3        | `VERCEL_GIT_PREVIOUS_SHA` | Vercel            |
-| 4        | `GITHUB_BASE_REF`         | GitHub Actions    |
-| 5        | `CI_COMMIT_BEFORE_SHA`    | GitLab CI         |
-| 6        | `HEAD~1`                  | Fallback          |
-
-Cloudflare Pages, Cloudflare Workers Builds, Render, and AWS Amplify are **not** detected here — their platforms don't invoke custom ignore scripts at all, so env detection would only create the illusion of support. See the [supported platforms matrix](#supported-platforms).
-
-## JSON output
-
-`--json` writes a structured decision record to stdout and suppresses the human text. Useful for pipelines that gate downstream jobs on the decision.
-
-```json
-{
-    "project": "my-app",
-    "action": "skip",
-    "reason": "project-not-affected",
-    "message": "Skip my-app: not affected by changes between HEAD~1...HEAD",
-    "base": "HEAD~1",
-    "head": "HEAD",
-    "affectedProjects": ["other-app"]
-}
-```
-
-### Reason codes
-
-| Reason                     | When it's emitted                                     |
-| -------------------------- | ----------------------------------------------------- |
-| `commit-skip`              | Commit message contains a skip token                  |
-| `commit-force-deploy`      | Commit message contains a force-deploy token          |
-| `no-changes`               | Git diff shows no changed files between base and head |
-| `project-affected`         | Project appears in the affected set                   |
-| `project-not-affected`     | Project does not appear in the affected set           |
-| `project-unknown`          | Project not found in the workspace                    |
-| `missing-project-argument` | Command was invoked without a project name            |
-| `workspace-error`          | Workspace root or discovery failed                    |
-
-Decisions with reasons `project-unknown`, `missing-project-argument`, and `workspace-error` always map to `action: "build"` — we never cancel a build because of a tooling problem.
-
-## Supported platforms
-
-| Platform                      | Native hook                | `vis ignore` works?                         |
-| ----------------------------- | -------------------------- | ------------------------------------------- |
-| **Vercel**                    | Ignored Build Step         | Yes — drop-in                               |
-| **Netlify**                   | `ignore` in `netlify.toml` | Yes — drop-in                               |
-| **GitHub Actions**            | None (CI gating only)      | Yes — via `--json` + job `if:` conditions   |
-| **GitLab CI**                 | None (CI gating only)      | Yes — via `--json` + `rules:`               |
-| **Cloudflare Pages**          | Build Watch Paths (globs)  | No — platform doesn't invoke custom scripts |
-| **Cloudflare Workers Builds** | Build Watch Paths          | No — same reason                            |
-| **Render**                    | Build Filters (globs)      | No — use their path filters                 |
-| **AWS Amplify**               | `[skip-cd]` commit keyword | No — no custom-command hook                 |
-
-For platforms without a native hook, use their built-in path filtering alongside vis, or move CI gating into GitHub Actions / GitLab CI and wrap `vis ignore --json` there.
-
-See the [CI/CD guide](../guides/ci-cd) for complete deployment integration examples.
+| Option     | Default  | Description                                           |
+| ---------- | -------- | ----------------------------------------------------- |
+| `--target` | `docker` | Ignore-file target: `docker`, `vercel`, `npm`, `slug` |
+| `--write`  | `false`  | Write the result to disk instead of printing it       |
+| `--json`   | `false`  | Emit the result as JSON                               |
 
 ## See also
 
-- [`vis affected`](./affected) — run a target only on affected projects (what `vis ignore` is built on)
-- [CI/CD guide](../guides/ci-cd) — full deployment integration patterns
+- [`vis docker`](./docker) — Docker scaffold/prune, Dockerfile generation, and hadolint linting
+- [`vis ci ignore`](./ci-ignore) — CI "Ignored Build Step" gate for Vercel/Netlify

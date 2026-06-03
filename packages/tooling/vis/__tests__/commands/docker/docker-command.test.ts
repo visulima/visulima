@@ -1,9 +1,9 @@
-import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
 import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import dockerExecute from "../../../src/commands/docker/handler";
+import { initExecute, pruneExecute, scaffoldExecute } from "../../../src/commands/docker/handler";
 import { cleanupTemporaryDirectory, createTemporaryDirectory } from "../../test-helpers";
 
 type LoggerCall = [string, ...unknown[]];
@@ -30,6 +30,8 @@ const makeLogger = (): {
     };
 };
 
+const callText = (calls: LoggerCall[]): string => calls.map((c) => c.slice(1).join(" ")).join("\n");
+
 describe("vis docker", () => {
     let workspaceRoot: string;
 
@@ -38,6 +40,7 @@ describe("vis docker", () => {
 
         writeFileSync(join(workspaceRoot, "pnpm-workspace.yaml"), "packages:\n  - 'packages/*'\n");
         writeFileSync(join(workspaceRoot, "package.json"), JSON.stringify({ name: "root" }));
+        writeFileSync(join(workspaceRoot, "pnpm-lock.yaml"), "lockfileVersion: '9.0'\n");
 
         const appDir = join(workspaceRoot, "packages", "app");
         const libDir = join(workspaceRoot, "packages", "lib");
@@ -53,54 +56,13 @@ describe("vis docker", () => {
         cleanupTemporaryDirectory(workspaceRoot);
     });
 
-    it("throws when subcommand is missing", async () => {
-        expect.assertions(1);
-
-        const { logger } = makeLogger();
-
-        await expect(
-            dockerExecute({
-                argument: [],
-                logger,
-                options: {},
-                runtime: {} as never,
-                visConfig: undefined,
-                workspaceRoot,
-            } as never),
-        ).rejects.toThrow(/Missing subcommand/);
-    });
-
-    it("throws when an unknown subcommand is passed", async () => {
-        expect.assertions(1);
-
-        const { logger } = makeLogger();
-
-        await expect(
-            dockerExecute({
-                argument: ["wat"],
-                logger,
-                options: {},
-                runtime: {} as never,
-                visConfig: undefined,
-                workspaceRoot,
-            } as never),
-        ).rejects.toThrow(/Unknown subcommand/);
-    });
-
     it("scaffold throws without --focus", async () => {
         expect.assertions(1);
 
         const { logger } = makeLogger();
 
         await expect(
-            dockerExecute({
-                argument: ["scaffold"],
-                logger,
-                options: {},
-                runtime: {} as never,
-                visConfig: undefined,
-                workspaceRoot,
-            } as never),
+            scaffoldExecute({ argument: [], logger, options: {}, runtime: {} as never, visConfig: undefined, workspaceRoot } as never),
         ).rejects.toThrow(/Missing --focus/);
     });
 
@@ -109,53 +71,44 @@ describe("vis docker", () => {
 
         const { calls, logger } = makeLogger();
 
-        await dockerExecute({
-            argument: ["scaffold"],
-            logger,
-            options: { focus: "@my/app" },
-            runtime: {} as never,
-            visConfig: undefined,
-            workspaceRoot,
-        } as never);
+        await scaffoldExecute({ argument: [], logger, options: { focus: "@my/app" }, runtime: {} as never, visConfig: undefined, workspaceRoot } as never);
 
         const outDir = join(workspaceRoot, ".vis/docker");
 
         expect(existsSync(join(outDir, "workspace", "packages", "app", "package.json"))).toBe(true);
         expect(existsSync(join(outDir, "workspace", "packages", "lib", "package.json"))).toBe(true);
-
-        const text = calls.map((c) => c.slice(1).join(" ")).join("\n");
-
-        expect(text).toContain("Scaffolded");
+        expect(callText(calls)).toContain("Scaffolded");
     });
 
     it("prune logs the number of removed projects", async () => {
         expect.assertions(1);
 
-        // Scaffold first so we have a manifest to prune against
         const { logger: scaffoldLogger } = makeLogger();
 
-        await dockerExecute({
-            argument: ["scaffold"],
-            logger: scaffoldLogger,
-            options: { focus: "@my/app" },
-            runtime: {} as never,
-            visConfig: undefined,
-            workspaceRoot,
-        } as never);
+        await scaffoldExecute({ argument: [], logger: scaffoldLogger, options: { focus: "@my/app" }, runtime: {} as never, visConfig: undefined, workspaceRoot } as never);
 
         const { calls, logger } = makeLogger();
 
-        await dockerExecute({
-            argument: ["prune"],
-            logger,
-            options: {},
-            runtime: {} as never,
-            visConfig: undefined,
-            workspaceRoot,
-        } as never);
+        await pruneExecute({ argument: [], logger, options: {}, runtime: {} as never, visConfig: undefined, workspaceRoot } as never);
 
-        const text = calls.map((c) => c.slice(1).join(" ")).join("\n");
+        expect(callText(calls)).toMatch(/Pruned \d+ unfocused project/);
+    });
 
-        expect(text).toMatch(/Pruned \d+ unfocused project/);
+    it("init writes a Dockerfile for the detected package manager", async () => {
+        expect.assertions(3);
+
+        const { logger } = makeLogger();
+
+        await initExecute({ argument: [], logger, options: { focus: "@my/app" }, runtime: {} as never, visConfig: undefined, workspaceRoot } as never);
+
+        const dockerfile = join(workspaceRoot, "Dockerfile");
+
+        expect(existsSync(dockerfile)).toBe(true);
+
+        const content = readFileSync(dockerfile, "utf8");
+
+        expect(content).toContain("FROM node:22-slim AS base");
+        // pnpm-lock.yaml present → pnpm install command
+        expect(content).toContain("pnpm install --frozen-lockfile");
     });
 });

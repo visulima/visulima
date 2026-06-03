@@ -21,6 +21,7 @@ import auditCommand from "./commands/audit";
 import cacheCommands from "./commands/cache";
 import checkCommand from "./commands/check";
 import ciCommand from "./commands/ci";
+import ciIgnoreCommand from "./commands/ci-ignore";
 import cleanCommand from "./commands/clean";
 import createCommand from "./commands/create";
 import dashboardCommand from "./commands/dashboard";
@@ -28,7 +29,7 @@ import dedupeCommand from "./commands/dedupe";
 import depsCommand from "./commands/deps";
 import devcontainerCommand from "./commands/devcontainer";
 import dlxCommand from "./commands/dlx";
-import dockerCommand from "./commands/docker";
+import dockerCommands from "./commands/docker";
 import doctorCommand from "./commands/doctor";
 import execCommand from "./commands/exec";
 import fmtCommand from "./commands/fmt";
@@ -62,7 +63,7 @@ import stagedCommand from "./commands/staged";
 import statusCommand from "./commands/status";
 import syncCommand from "./commands/sync";
 import taskWhyCommand from "./commands/task-why";
-import toolchainCommand from "./commands/toolchain";
+import toolchainCommands from "./commands/toolchain";
 import unlinkCommand from "./commands/unlink";
 import updateCommand from "./commands/update";
 import upgradeCommand from "./commands/upgrade";
@@ -187,9 +188,7 @@ cli.addCommand(stagedCommand);
 cli.addCommand(statusCommand);
 cli.addCommand(dashboardCommand);
 cli.addCommand(syncCommand);
-cli.addCommand(dockerCommand);
 cli.addCommand(listCommand);
-cli.addCommand(toolchainCommand);
 cli.addCommand(completionCommand);
 cli.addCommand(versionCommand);
 
@@ -262,6 +261,16 @@ for (const command of securityCommands) {
 for (const command of attestCommands) {
     cli.addCommand(command);
 }
+
+for (const command of dockerCommands) {
+    cli.addCommand(command);
+}
+
+for (const command of toolchainCommands) {
+    cli.addCommand(command);
+}
+
+cli.addCommand(ciIgnoreCommand);
 
 // Post-command: upgrade notice + tips
 cli.addPlugin(postCommandPlugin(upgradeCheckCallback));
