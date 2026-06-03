@@ -1,6 +1,6 @@
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -68,11 +68,15 @@ describe("denoLintAdapter", () => {
     it("parses 0-based diagnostics into 1-based findings", () => {
         expect.assertions(3);
 
+        // A drive-less URL like `file:///repo/src/a.ts` makes fileURLToPath throw
+        // "File URL path must be absolute" on Windows, so derive a platform-valid absolute
+        // file URL (real `deno` emits drive-qualified URLs on Windows anyway).
+        const sourceFileUrl = pathToFileURL(join(workspaceRoot, "src", "a.ts")).href;
         const stdout = JSON.stringify({
             diagnostics: [
                 {
                     code: "no-unused-vars",
-                    filename: "file:///repo/src/a.ts",
+                    filename: sourceFileUrl,
                     message: "`x` is never used",
                     range: { end: { col: 6, line: 0 }, start: { col: 5, line: 0 } },
                 },
@@ -85,7 +89,7 @@ describe("denoLintAdapter", () => {
         expect(findings).toHaveLength(1);
         // The adapter resolves `file://` URLs to native paths (back-slashes on Windows), so compute
         // the expected value the same way rather than hard-coding the POSIX form.
-        expect(findings[0]).toMatchObject({ column: 6, file: fileURLToPath("file:///repo/src/a.ts"), line: 1, ruleId: "no-unused-vars" });
+        expect(findings[0]).toMatchObject({ column: 6, file: fileURLToPath(sourceFileUrl), line: 1, ruleId: "no-unused-vars" });
         expect(findings[0]?.severity).toBe("warning");
     });
 
