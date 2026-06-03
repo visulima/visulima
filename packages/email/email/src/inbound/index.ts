@@ -1,3 +1,5 @@
+export type { InboundHandler, InboundHandlerOptions, InboundProvider } from "./handler";
+export { defineInboundHandler, parseInbound } from "./handler";
 export type { CloudflareEmailLike } from "./providers/cloudflare";
 export { default as parseCloudflareInbound } from "./providers/cloudflare";
 export { default as parseMailgunInbound } from "./providers/mailgun";
