@@ -94,7 +94,7 @@ describe(SafeStreamHandler, () => {
         handler.write("second");
 
         expect(stream.write).toHaveBeenCalledTimes(1);
-        expect(warnSpy).toHaveBeenCalledWith('Stream busy: busy-stream. Write will be dropped: "second"');
+        expect(warnSpy).toHaveBeenCalledWith("Stream busy: busy-stream. Write will be dropped: \"second\"");
     });
 
     it("should become ready again on drain", () => {

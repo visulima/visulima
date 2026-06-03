@@ -33,70 +33,70 @@ type NextPailOptions<T extends string = string> = PailMiddlewareOptions<T>;
  * });
  * ```
  */
-export const createWithPail =
-    <T extends string = string>(options: NextPailOptions<T>) =>
+export const createWithPail
+    = <T extends string = string>(options: NextPailOptions<T>) =>
+
     /**
      * Wrap a Next.js route handler or server action with wide event logging.
      * @returns A wrapped handler that creates and emits a WideEvent
      */
-    <TArgs extends unknown[], TReturn>(handler: (...args: TArgs) => Promise<TReturn> | TReturn): ((...args: TArgs) => Promise<TReturn>) =>
-    async (...args: TArgs): Promise<TReturn> => {
-        const [firstArgument] = args;
-        const isRequest = firstArgument instanceof Request;
+        <TArgs extends unknown[], TReturn>(handler: (...args: TArgs) => Promise<TReturn> | TReturn): (...args: TArgs) => Promise<TReturn> =>
+            async (...args: TArgs): Promise<TReturn> => {
+                const [firstArgument] = args;
+                const isRequest = firstArgument instanceof Request;
 
-        let method = "UNKNOWN";
-        let path = "/";
-        // eslint-disable-next-line n/no-unsupported-features/node-builtins
-        let requestId: string = crypto.randomUUID();
-        let headers: Record<string, string> = {};
+                let method = "UNKNOWN";
+                let path = "/";
+                // eslint-disable-next-line n/no-unsupported-features/node-builtins
+                let requestId: string = crypto.randomUUID();
+                let headers: Record<string, string> = {};
 
-        if (isRequest) {
-            const request = firstArgument;
-            const url = new URL(request.url);
+                if (isRequest) {
+                    const request = firstArgument;
+                    const url = new URL(request.url);
 
-            method = request.method;
-            path = url.pathname;
-            headers = extractSafeHeaders(request.headers);
+                    method = request.method;
+                    path = url.pathname;
+                    headers = extractSafeHeaders(request.headers);
 
-            // Reuse request ID from middleware if present
-            const middlewareRequestId = request.headers.get("x-request-id");
+                    // Reuse request ID from middleware if present
+                    const middlewareRequestId = request.headers.get("x-request-id");
 
-            if (middlewareRequestId) {
-                requestId = middlewareRequestId;
-            }
-        }
+                    if (middlewareRequestId) {
+                        requestId = middlewareRequestId;
+                    }
+                }
 
-        const { finish, logger, skipped } = createMiddlewareLogger(options, {
-            headers,
-            method,
-            path,
-            requestId,
-        });
+                const { finish, logger, skipped } = createMiddlewareLogger(options, {
+                    headers,
+                    method,
+                    path,
+                    requestId,
+                });
 
-        if (skipped) {
-            return handler(...args);
-        }
+                if (skipped) {
+                    return handler(...args);
+                }
 
-        try {
-            const result = await pailStorage.run(logger, () => handler(...args));
-            const status = result instanceof Response ? result.status : 200;
+                try {
+                    const result = await pailStorage.run(logger, () => handler(...args));
+                    const status = result instanceof Response ? result.status : 200;
 
-            finish({ status });
+                    finish({ status });
 
-            return result;
-        } catch (error) {
-            const errorInstance = error instanceof Error ? error : new Error(String(error));
-            const errorStatus =
-                (errorInstance as Error & { status?: number; statusCode?: number }).status ??
-                (errorInstance as Error & { statusCode?: number }).statusCode ??
-                500;
+                    return result;
+                } catch (error) {
+                    const errorInstance = error instanceof Error ? error : new Error(String(error));
+                    const errorStatus
+                        = (errorInstance as Error & { status?: number; statusCode?: number }).status
+                            ?? (errorInstance as Error & { statusCode?: number }).statusCode
+                            ?? 500;
 
-            finish({ error: errorInstance });
-            logger.setStatus(errorStatus);
+                    finish({ error: errorInstance, status: errorStatus });
 
-            throw error;
-        }
-    };
+                    throw error;
+                }
+            };
 
 export type { NextPailOptions };
 export type { WideEvent } from "../../wide-event";

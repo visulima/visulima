@@ -1,6 +1,8 @@
+// eslint-disable-next-line import/no-extraneous-dependencies -- bundled into dist by packem; kept a devDependency on purpose
 import { getStringWidth } from "@visulima/string";
 import { createTable } from "@visulima/tabular";
 import { NO_BORDER } from "@visulima/tabular/style";
+// eslint-disable-next-line import/no-extraneous-dependencies -- bundled into dist by packem; kept a devDependency on purpose
 import terminalSize from "terminal-size";
 
 import type { Content as IContent } from "../../../types/command-line-usage";

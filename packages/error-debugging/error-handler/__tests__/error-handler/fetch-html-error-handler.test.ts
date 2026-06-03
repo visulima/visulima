@@ -1,12 +1,13 @@
-import type { HtmlErrorHandlerOptions } from "../../src/error-handler/html-error-handler";
-
 import httpErrors from "http-errors";
 import { describe, expect, it } from "vitest";
 
 import { fetchHtmlErrorHandler } from "../../src/error-handler/fetch-html-error-handler";
+import type { HtmlErrorHandlerOptions } from "../../src/error-handler/html-error-handler";
 
-const exerciseEveryMockMethod = (options: HtmlErrorHandlerOptions = {}): ReturnType<typeof fetchHtmlErrorHandler> => {
-    return fetchHtmlErrorHandler({
+const TEXT_HTML_REGEX = /text\/html/;
+
+const exerciseEveryMockMethod = (options: HtmlErrorHandlerOptions = {}): ReturnType<typeof fetchHtmlErrorHandler> =>
+    fetchHtmlErrorHandler({
         ...options,
         errorPage: ({ response }) => {
             // Cast to any so we can poke the full ServerResponse stub surface.
@@ -14,7 +15,7 @@ const exerciseEveryMockMethod = (options: HtmlErrorHandlerOptions = {}): ReturnT
 
             // setHeader / getHeader / getHeaders / getHeaderNames / hasHeader / removeHeader / writeHead
             r.setHeader("x-test", "value");
-            r.setHeader("x-array", ["a", "b"] as unknown as never);
+            r.setHeader("x-array", ["a", "b"]);
             r.getHeader("x-test");
             r.getHeaders();
             r.getHeaderNames();
@@ -72,7 +73,6 @@ const exerciseEveryMockMethod = (options: HtmlErrorHandlerOptions = {}): ReturnT
             return "<custom>OK</custom>";
         },
     });
-};
 
 describe(fetchHtmlErrorHandler, () => {
     it("should return a Response with default HTML page", async () => {
@@ -84,7 +84,7 @@ describe(fetchHtmlErrorHandler, () => {
 
         expect(response).toBeInstanceOf(Response);
         expect(response.status).toBe(500);
-        expect(response.headers.get("content-type")).toMatch(/text\/html/);
+        expect(response.headers.get("content-type")).toMatch(TEXT_HTML_REGEX);
 
         const text = await response.text();
 
@@ -144,7 +144,7 @@ describe(fetchHtmlErrorHandler, () => {
 
         const handler = fetchHtmlErrorHandler({
             errorPage: ({ error, reasonPhrase, statusCode }) =>
-                `<p>${statusCode} ${reasonPhrase}: ${error.message}</p>`,
+                `<p>${String(statusCode)} ${reasonPhrase}: ${error.message}</p>`,
         });
 
         const response = await handler(new httpErrors.BadGateway("upstream offline"), new Request("https://example.com/"));
@@ -162,7 +162,8 @@ describe(fetchHtmlErrorHandler, () => {
         expect.assertions(2);
 
         const handler = fetchHtmlErrorHandler({
-            errorPage: async ({ statusCode }) => `<p>async page ${statusCode}</p>`,
+            // eslint-disable-next-line @typescript-eslint/require-await -- exercises the async errorPage code path
+            errorPage: async ({ statusCode }) => `<p>async page ${String(statusCode)}</p>`,
         });
 
         const response = await handler(new httpErrors.ImATeapot(), new Request("https://example.com/"));
@@ -209,7 +210,7 @@ describe(fetchHtmlErrorHandler, () => {
         const handler = fetchHtmlErrorHandler();
         const response = await handler(new Error("oops"), new Request("https://example.com/"));
 
-        expect(response.headers.get("content-type")).toMatch(/text\/html/);
+        expect(response.headers.get("content-type")).toMatch(TEXT_HTML_REGEX);
     });
 
     it("should expose all stubbed ServerResponse methods via the mock response", async () => {

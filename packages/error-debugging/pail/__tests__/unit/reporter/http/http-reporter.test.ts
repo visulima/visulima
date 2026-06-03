@@ -324,7 +324,7 @@ describe(HttpReporter, () => {
 
         await vi.runAllTimersAsync();
 
-        expect(mockCompressData).toHaveBeenCalledWith(expect.stringContaining('"level":"informational"'));
+        expect(mockCompressData).toHaveBeenCalledWith(expect.stringContaining("\"level\":\"informational\""));
         expect(mockSendWithRetry).toHaveBeenCalledWith(
             expect.any(String),
             expect.any(String),

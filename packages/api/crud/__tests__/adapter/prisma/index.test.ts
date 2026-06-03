@@ -38,7 +38,7 @@ const makeClient = (overrides: Partial<TestClient> = {}): TestClient => {
     const client = {
         $connect: vi.fn(),
         $disconnect: vi.fn().mockResolvedValue(undefined),
-        // eslint-disable-next-line no-underscore-dangle
+
         _dmmf: { mappingsMap: { User: { plural: "users" } } },
         user: makeDelegate(),
         ...overrides,
@@ -114,7 +114,6 @@ describe(PrismaAdapter, () => {
 
             const client = makeClient() as Record<string, unknown> & TestClient;
 
-            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
             delete client["_dmmf"];
             client["_getDmmf"] = vi.fn().mockResolvedValue({ mappingsMap: { User: { plural: "users" } } });
 
@@ -133,7 +132,6 @@ describe(PrismaAdapter, () => {
 
             const client = makeClient() as Record<string, unknown> & TestClient;
 
-            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
             delete client["_dmmf"];
 
             const a = new PrismaAdapter({
@@ -269,7 +267,7 @@ describe(PrismaAdapter, () => {
             const error = new PrismaClientKnownRequestError("bad request");
 
             expect(() => adapter.handleError(error)).toThrow(
-                expect.objectContaining({ statusCode: 400 }) as unknown as Error,
+                expect.objectContaining({ statusCode: 400 }),
             );
         });
 
@@ -279,7 +277,7 @@ describe(PrismaAdapter, () => {
             const error = new PrismaClientValidationError("validation");
 
             expect(() => adapter.handleError(error)).toThrow(
-                expect.objectContaining({ statusCode: 400 }) as unknown as Error,
+                expect.objectContaining({ statusCode: 400 }),
             );
         });
 
@@ -289,7 +287,7 @@ describe(PrismaAdapter, () => {
             const error = new Error("kaboom");
 
             expect(() => adapter.handleError(error)).toThrow(
-                expect.objectContaining({ statusCode: 500 }) as unknown as Error,
+                expect.objectContaining({ statusCode: 500 }),
             );
         });
     });

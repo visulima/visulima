@@ -18,7 +18,7 @@ const mailer = (features: FeatureFlags): Provider => {
     };
 };
 
-describe("aggregateProviderFeatures", () => {
+describe(aggregateProviderFeatures, () => {
     it("returns an empty map when there are no resolvable children", () => {
         expect.assertions(1);
 

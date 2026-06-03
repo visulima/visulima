@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-extraneous-dependencies -- bundled into dist by packem; kept a devDependency on purpose
 import camelCase from "@visulima/string/case/camel-case";
 
 import type { OptionDefinition } from "../../types/command";

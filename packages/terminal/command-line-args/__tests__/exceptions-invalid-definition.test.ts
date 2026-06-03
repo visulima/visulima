@@ -59,7 +59,7 @@ describe("exceptions invalid definition", () => {
         expect(() => commandLineArgs(optionDefinitions, { argv })).toThrow(InvalidDefinitionsError);
     });
 
-    it('throws if dev set an alias of "-"', () => {
+    it("throws if dev set an alias of \"-\"", () => {
         expect.assertions(1);
 
         const optionDefinitions = [{ alias: "-", name: "colours" }];
