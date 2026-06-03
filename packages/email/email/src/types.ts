@@ -158,6 +158,13 @@ export interface EmailOptions {
     icalEvent?: CalendarEventOptions & { content?: string; href?: string; path?: string };
     priority?: Priority;
     replyTo?: EmailAddress;
+
+    /**
+     * The message stream this email belongs to. Used by `Mail.mount` to route the message to a
+     * mounted provider (e.g. a Postmark broadcast stream). Providers that don't support streams ignore it.
+     */
+    stream?: string;
+
     subject: string;
     tags?: string[];
 

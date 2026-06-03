@@ -542,49 +542,35 @@ const executeDetect = (workspaceRoot: string, toolchainConfig: ToolchainConfig |
     process.stdout.write(`${primary.name}\n`);
 };
 
-const execute = async ({ argument, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, ToolchainOptions>): Promise<void> => {
-    if (!wsRoot) {
+const requireRoot = (workspaceRoot: string | undefined): string => {
+    if (!workspaceRoot) {
         throw new Error("Could not determine workspace root. Run inside a monorepo.");
     }
 
-    const action = argument[0] ?? "status";
-    const toolchainConfig = visConfig?.toolchain;
-
-    switch (action) {
-        case "detect": {
-            executeDetect(wsRoot, toolchainConfig);
-
-            return;
-        }
-
-        case "install": {
-            executeInstall(wsRoot, toolchainConfig, options);
-
-            return;
-        }
-
-        case "status": {
-            executeStatus(wsRoot, toolchainConfig, options);
-
-            return;
-        }
-
-        case "use": {
-            executeUse(wsRoot, toolchainConfig, argument[1], options);
-
-            return;
-        }
-
-        case "which": {
-            executeWhich(wsRoot, toolchainConfig, argument[1]);
-
-            return;
-        }
-
-        default: {
-            throw new Error(`Unknown toolchain action "${action}". Known: status, detect, install, use, which.`);
-        }
-    }
+    return workspaceRoot;
 };
 
-export default execute as CommandExecute<Toolbox>;
+/** `vis toolchain status` — detected managers + expected-vs-actual versions. */
+export const statusExecute: CommandExecute<Toolbox<Console, ToolchainOptions>> = async ({ options, visConfig, workspaceRoot }) => {
+    executeStatus(requireRoot(workspaceRoot), visConfig?.toolchain, options);
+};
+
+/** `vis toolchain detect` — print the primary manager's name. */
+export const detectExecute: CommandExecute<Toolbox<Console, ToolchainOptions>> = async ({ visConfig, workspaceRoot }) => {
+    executeDetect(requireRoot(workspaceRoot), visConfig?.toolchain);
+};
+
+/** `vis toolchain install` — install pinned versions via the right manager. */
+export const installExecute: CommandExecute<Toolbox<Console, ToolchainOptions>> = async ({ options, visConfig, workspaceRoot }) => {
+    executeInstall(requireRoot(workspaceRoot), visConfig?.toolchain, options);
+};
+
+/** `vis toolchain use &lt;tool>@&lt;version>` — pin a version via the best manager. */
+export const useExecute: CommandExecute<Toolbox<Console, ToolchainOptions>> = async ({ argument, options, visConfig, workspaceRoot }) => {
+    executeUse(requireRoot(workspaceRoot), visConfig?.toolchain, argument[0], options);
+};
+
+/** `vis toolchain which &lt;tool>` — resolve the binary path a manager would launch. */
+export const whichExecute: CommandExecute<Toolbox<Console, ToolchainOptions>> = async ({ argument, visConfig, workspaceRoot }) => {
+    executeWhich(requireRoot(workspaceRoot), visConfig?.toolchain, argument[0]);
+};

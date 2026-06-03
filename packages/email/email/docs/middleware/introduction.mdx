@@ -1,0 +1,237 @@
+---
+title: Middleware
+description: Retry, rate-limit, circuit-breaker, dedupe, logging, and OAuth2 send middleware for @visulima/email
+---
+
+# Middleware
+
+The `@visulima/email/middleware` entry point ships composable middlewares that wrap the provider's `sendEmail` call — adding retries, rate limiting, circuit breaking, deduplication, logging, and OAuth2 credential injection without coupling any of that logic to your provider adapter.
+
+```typescript
+import {
+    retryMiddleware,
+    rateLimitMiddleware,
+    RATE_LIMIT_PRESETS,
+    circuitBreakerMiddleware,
+    dedupeMiddleware,
+    loggingMiddleware,
+    oauth2Middleware,
+    composeMiddleware,
+} from "@visulima/email/middleware";
+```
+
+## Attaching Middleware
+
+Register middleware on a `Mail` instance with `mail.use()`. It is chainable, and middlewares run in registration order — the **first** registered is the **outermost** wrapper around the provider call.
+
+```typescript
+import { createMail } from "@visulima/email";
+import { resendProvider } from "@visulima/email/providers/resend";
+import { rateLimitMiddleware, retryMiddleware } from "@visulima/email/middleware";
+
+const mail = createMail(resendProvider({ apiKey: "re_xxx" }))
+    .use(rateLimitMiddleware({ rate: 10 }))
+    .use(retryMiddleware({ retries: 3 }));
+```
+
+In the chain above, every send first passes through the rate limiter (outermost), then the retry middleware, then the provider. Because rate limiting wraps retries, retried attempts are also paced by the limiter.
+
+## retryMiddleware
+
+Retries failed sends with full-jitter exponential backoff (`random(0, baseDelay * 2 ** attempt)`), which avoids the thundering-herd problem a fixed retry schedule causes. After all attempts are exhausted, an optional `onDeadLetter` hook fires so you can persist or alert on the final failure.
+
+```typescript
+type RetryMiddlewareOptions = {
+    retries?: number; // max attempts including the first (default: 3)
+    baseDelay?: number; // base backoff in ms (default: 200)
+    shouldRetry?: (result: Result<EmailResult>) => boolean; // default: retry every failure
+    onDeadLetter?: (options: EmailOptions, result: Result<EmailResult>) => Promise<void> | void;
+    sleep?: (ms: number) => Promise<void>; // injectable for tests
+};
+```
+
+```typescript
+import { retryMiddleware } from "@visulima/email/middleware";
+
+mail.use(
+    retryMiddleware({
+        retries: 5,
+        baseDelay: 250,
+        shouldRetry: (result) => !result.success && result.error?.message.includes("rate"),
+        onDeadLetter: async (options, result) => {
+            await deadLetterQueue.push({ to: options.to, error: result.error });
+        },
+    }),
+);
+```
+
+## rateLimitMiddleware
+
+Throttles sends with a token-bucket limiter. When capacity is exhausted it **awaits** capacity rather than failing, smoothing bursts to your sustained `rate`.
+
+```typescript
+type RateLimitMiddlewareOptions = {
+    rate: number; // sustained sends per second
+    burst?: number; // max burst capacity in tokens (default: rate)
+    now?: () => number; // time source in ms (default: Date.now)
+    sleep?: (ms: number) => Promise<void>; // injectable for tests
+};
+```
+
+`RATE_LIMIT_PRESETS` provides per-second presets tuned to common providers' default plans — override them for your own quota:
+
+| Provider   | Sends / second |
+| ---------- | -------------- |
+| `resend`   | 10             |
+| `sendgrid` | 100            |
+| `mailgun`  | 100            |
+| `postmark` | 100            |
+| `aws-ses`  | 14             |
+
+```typescript
+import { rateLimitMiddleware, RATE_LIMIT_PRESETS } from "@visulima/email/middleware";
+
+mail.use(rateLimitMiddleware({ rate: RATE_LIMIT_PRESETS.resend }));
+
+// Or allow short bursts above the sustained rate:
+mail.use(rateLimitMiddleware({ rate: RATE_LIMIT_PRESETS.sendgrid, burst: 200 }));
+```
+
+## circuitBreakerMiddleware
+
+Trips a circuit after repeated provider failures: while **open** it fails fast (returning a `CIRCUIT_OPEN` error) instead of hammering a struggling provider. After `resetTimeout`, it moves to **half-open** and lets a single probe request through; success closes the circuit, failure re-opens it.
+
+```typescript
+type CircuitBreakerMiddlewareOptions = {
+    failureThreshold?: number; // consecutive failures before opening (default: 5)
+    resetTimeout?: number; // ms to stay open before a half-open probe (default: 30000)
+    onStateChange?: (state: "closed" | "half-open" | "open") => void;
+    now?: () => number; // time source in ms (default: Date.now)
+};
+```
+
+```typescript
+import { circuitBreakerMiddleware } from "@visulima/email/middleware";
+
+mail.use(
+    circuitBreakerMiddleware({
+        failureThreshold: 5,
+        resetTimeout: 30_000,
+        onStateChange: (state) => console.warn(`[email] circuit ${state}`),
+    }),
+);
+```
+
+## dedupeMiddleware
+
+Suppresses duplicate sends of the same message within a TTL window — useful behind at-least-once delivery sources (queues, webhooks) that may replay a message. Repeats return the original cached result instead of re-sending. The default key is a SHA-256 content hash of recipients, subject, and body.
+
+```typescript
+type DedupeMiddlewareOptions = {
+    ttl?: number; // how long a key is remembered, in ms (default: 60000)
+    keyFn?: (options: EmailOptions) => string; // default: content hash
+    now?: () => number; // time source in ms (default: Date.now)
+};
+```
+
+```typescript
+import { dedupeMiddleware } from "@visulima/email/middleware";
+
+// Default content-hash dedupe within 5 minutes.
+mail.use(dedupeMiddleware({ ttl: 5 * 60_000 }));
+
+// Or dedupe on your own idempotency key from the message headers.
+mail.use(
+    dedupeMiddleware({
+        keyFn: (options) => String(options.headers?.["X-Idempotency-Key"] ?? options.subject),
+    }),
+);
+```
+
+## loggingMiddleware
+
+Logs each send attempt and its outcome. Recipient addresses are **redacted by default** (e.g. `j•••@example.com`) to keep PII out of your logs. Pass `redact: false` in trusted environments, or a custom logger to route logs anywhere.
+
+```typescript
+type LoggingMiddlewareOptions = {
+    logger?: Pick<Console, "error" | "info">; // default: console
+    redact?: boolean; // redact recipient addresses (default: true)
+};
+```
+
+```typescript
+import { loggingMiddleware } from "@visulima/email/middleware";
+
+mail.use(loggingMiddleware());
+
+// With a custom logger and no redaction (e.g. a local dev environment):
+mail.use(loggingMiddleware({ logger: myLogger, redact: false }));
+```
+
+## oauth2Middleware
+
+Injects an OAuth2 bearer credential into each outgoing message, caching it until just before expiry and refreshing on demand. Use it for Gmail / Microsoft 365, where access tokens are short-lived. The token can be injected as a request header (default) or handed to the `onToken` callback for SMTP XOAUTH2 clients.
+
+```typescript
+type OAuth2Token = {
+    accessToken: string;
+    expiresAt?: number; // absolute epoch ms; omit for non-expiring tokens
+};
+
+type OAuth2MiddlewareOptions = {
+    fetchToken: () => Promise<OAuth2Token> | OAuth2Token; // your refresh flow
+    headerName?: string; // header to inject into (default: "Authorization")
+    scheme?: string; // auth scheme prefix (default: "Bearer")
+    skewMs?: number; // refresh this many ms before expiry (default: 60000)
+    onToken?: (token: OAuth2Token) => void; // e.g. feed SMTP XOAUTH2
+    now?: () => number; // time source in ms (default: Date.now)
+};
+```
+
+```typescript
+import { oauth2Middleware } from "@visulima/email/middleware";
+
+mail.use(
+    oauth2Middleware({
+        fetchToken: async () => {
+            const { access_token, expires_in } = await refreshGoogleToken();
+
+            return { accessToken: access_token, expiresAt: Date.now() + expires_in * 1000 };
+        },
+    }),
+);
+```
+
+`fetchToken` is only called when the cached token is missing or within `skewMs` of expiry, so token refreshes are minimized across sends.
+
+## composeMiddleware
+
+When you need to compose a middleware stack **without** a `Mail` instance — for testing, or to wrap a bare send function — use `composeMiddleware()`. It folds the middlewares (in registration order) around a terminal `SendFunction`.
+
+```typescript
+import { composeMiddleware, retryMiddleware, dedupeMiddleware } from "@visulima/email/middleware";
+import type { SendFunction } from "@visulima/email/middleware";
+
+const terminal: SendFunction = async (options) => provider.sendEmail(options);
+
+const send = composeMiddleware([dedupeMiddleware(), retryMiddleware({ retries: 3 })], terminal);
+
+const result = await send(emailOptions);
+```
+
+## A Realistic Stack
+
+A production stack typically rate-limits to the provider's quota, fails fast when the provider is down, and retries transient failures. Order matters: register from outermost to innermost.
+
+```typescript
+import { createMail } from "@visulima/email";
+import { resendProvider } from "@visulima/email/providers/resend";
+import { circuitBreakerMiddleware, RATE_LIMIT_PRESETS, rateLimitMiddleware, retryMiddleware } from "@visulima/email/middleware";
+
+const mail = createMail(resendProvider({ apiKey: "re_xxx" }))
+    .use(rateLimitMiddleware({ rate: RATE_LIMIT_PRESETS.resend }))
+    .use(circuitBreakerMiddleware())
+    .use(retryMiddleware({ retries: 3 }));
+```
+
+Every send is first paced by the rate limiter, then short-circuited by the circuit breaker if Resend is unhealthy, and finally retried with backoff on transient failures before reaching the provider.

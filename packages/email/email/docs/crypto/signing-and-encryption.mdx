@@ -55,9 +55,6 @@ const message = new MailMessage().to("user@example.com").from("sender@example.co
 const result = await mail.send(message);
 ```
 
-<｜tool▁calls▁begin｜><｜tool▁call▁begin｜>
-read_file
-
 #### DKIM Options
 
 The DKIM signer supports various configuration options:
@@ -88,6 +85,41 @@ const dkimSigner = createDkimSigner({
 - **Deno**: Full support including file-based keys (`file://` paths)
 - **Cloudflare Workers/workerd**: Full support - requires `nodejs_compat` flag and key content as strings (no file paths). Uses `unenv` polyfills for `node:crypto` compatibility ([unenv](https://github.com/unjs/unenv)).
 - **Other environments**: Provide key content directly (no file support)
+
+### ARC Signer
+
+ARC ([Authenticated Received Chain, RFC 8617](https://www.rfc-editor.org/rfc/rfc8617)) lets a forwarding service preserve the authentication results (SPF/DKIM/DMARC) it observed, so downstream receivers can still trust them after the message is relayed. `signArc` seals a message for an **originating sealer** (instance `i=1`), adding three headers: `ARC-Authentication-Results`, `ARC-Message-Signature`, and `ARC-Seal`.
+
+```typescript
+import { signArc } from "@visulima/email/crypto";
+
+const { email: sealed, headers } = await signArc(message, {
+    domainName: "forwarder.example.com",
+    keySelector: "arc1",
+    privateKey: process.env.ARC_PRIVATE_KEY, // PEM string, or a "file://" path
+    authenticationResults: "forwarder.example.com; spf=pass smtp.mailfrom=sender.example; dkim=pass header.d=sender.example",
+});
+
+// `sealed` is the EmailOptions with the three ARC-* headers added; `headers` is the raw header set.
+```
+
+#### ARC Options
+
+| Option                  | Type                         | Default    | Description                                        |
+| ----------------------- | ---------------------------- | ---------- | -------------------------------------------------- |
+| `domainName`            | `string`                     | required   | Signing domain (`d=`)                              |
+| `keySelector`           | `string`                     | required   | DNS key selector (`s=`)                            |
+| `privateKey`            | `string`                     | required   | RSA private key (PEM, or `file://` path)           |
+| `authenticationResults` | `string`                     | required   | The `Authentication-Results` value to chain        |
+| `cv`                    | `"none" \| "pass" \| "fail"` | `"none"`   | Chain validation status (always `none` for `i=1`)  |
+| `headersToSign`         | `string[]`                   | common set | Lower-cased header names covered by the AMS (`h=`) |
+| `instance`              | `number`                     | `1`        | ARC instance (`i=`); only `1` is supported         |
+| `timestamp`             | `number`                     | now        | Signature time (`t=`) in unix seconds              |
+| `passphrase`            | `string`                     | -          | Passphrase for an encrypted private key            |
+
+The signature-base builders `arcMessageSignatureBase(email, options)` and `arcSealBase(aarValue, amsValue, options)` are also exported so an ARC verifier can re-derive the exact bytes that were signed.
+
+> **Note:** like the DKIM signer, the body hash (`bh=`) is computed over `text` + `"\n\n"` + `html` with relaxed canonicalization. For a third-party ARC verifier to accept the seal, the body transmitted on the wire must canonicalize to the same value — apply ARC where the final MIME body is known. Only RSA keys are supported today (Ed25519 is not yet implemented).
 
 ### S/MIME Signer
 

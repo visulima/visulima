@@ -1,4 +1,6 @@
 import type { Plugin } from "@visulima/cerebro";
+import { isAccessibleSync } from "@visulima/fs";
+import { join } from "@visulima/path";
 
 import { showMcpPromote } from "../util/mcp-promote";
 import { showSponsorNotice } from "../util/sponsor";
@@ -15,9 +17,14 @@ const postCommandPlugin = (upgradeCheckCallback?: () => void): Plugin => {
                 upgradeCheckCallback();
             }
 
+            const root = (toolbox as { workspaceRoot?: string }).workspaceRoot ?? process.cwd();
+
             showTip({
                 args,
                 command,
+                hasDockerfile: isAccessibleSync(join(root, "Dockerfile")),
+                hasDockerignore: isAccessibleSync(join(root, ".dockerignore")),
+                hasVercelConfig: isAccessibleSync(join(root, "vercel.json")) || isAccessibleSync(join(root, ".vercel")),
                 hasVisConfig: toolbox.visConfig !== undefined && Object.keys(toolbox.visConfig).length > 0,
                 success,
             });

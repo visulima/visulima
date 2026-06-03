@@ -1,4 +1,4 @@
 {
     "title": "Email",
-    "pages": ["index", "installation", "getting-started", "mail-messages", "templates", "providers", "crypto", "local-development", "testing"]
+    "pages": ["index", "installation", "getting-started", "mail-messages", "templates", "providers", "middleware", "queue", "webhooks", "inbound", "deliverability", "events", "crypto", "local-development", "testing"]
 }

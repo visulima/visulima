@@ -7,6 +7,8 @@ description: "Run affected targets in a CI-optimized pipeline"
 
 Bundles the CI lifecycle into a single command: install dependencies, detect affected projects, and run targets — with base/head refs auto-detected from CI provider environment variables.
 
+> **Subcommand:** [`vis ci ignore <project>`](./ci-ignore) — the "Ignored Build Step" gate for Vercel/Netlify that decides whether a deploy should run based on affected status.
+
 ## Usage
 
 ```bash
