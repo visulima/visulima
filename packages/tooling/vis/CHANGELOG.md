@@ -1,3 +1,10 @@
+## @visulima/vis [1.0.0-alpha.28](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.27...@visulima/vis@1.0.0-alpha.28) (2026-06-03)
+
+### Bug Fixes
+
+* **vis:** bundle react stack to dedupe react copies ([#672](https://github.com/visulima/visulima/issues/672)) ([fc35522](https://github.com/visulima/visulima/commit/fc35522a8414922c0b99a60c2f13d73e4767a6ac))
+* **vis:** resolve lint + Windows test failures from [#655](https://github.com/visulima/visulima/issues/655) ([#673](https://github.com/visulima/visulima/issues/673)) ([de2586d](https://github.com/visulima/visulima/commit/de2586dd1e04b8c61cc9f6fff05ecb666881253d))
+
 ## @visulima/vis [1.0.0-alpha.27](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.26...@visulima/vis@1.0.0-alpha.27) (2026-06-02)
 
 ### Features
