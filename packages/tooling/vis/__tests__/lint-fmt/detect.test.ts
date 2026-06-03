@@ -32,7 +32,7 @@ const stubAdapter = (id: AdapterId, declaredName: string, configCandidates: stri
     };
 };
 
-describe("declaredVersion", () => {
+describe(declaredVersion, () => {
     it("walks every dep field", () => {
         expect.assertions(4);
 
@@ -43,7 +43,7 @@ describe("declaredVersion", () => {
     });
 });
 
-describe("findFirstConfig", () => {
+describe(findFirstConfig, () => {
     beforeEach(() => {
         workspaceRoot = mkdtempSync(join(tmpdir(), "vis-detect-config-"));
     });
@@ -68,7 +68,7 @@ describe("findFirstConfig", () => {
     });
 });
 
-describe("readRootPackageJson", () => {
+describe(readRootPackageJson, () => {
     beforeEach(() => {
         workspaceRoot = mkdtempSync(join(tmpdir(), "vis-detect-pkg-"));
     });
@@ -100,7 +100,7 @@ describe("readRootPackageJson", () => {
     });
 });
 
-describe("detectAdapters", () => {
+describe(detectAdapters, () => {
     beforeEach(() => {
         workspaceRoot = mkdtempSync(join(tmpdir(), "vis-detect-adapters-"));
     });
