@@ -19,6 +19,12 @@ import { getVisStateDir } from "./vis-paths";
 interface TipContext {
     args: string[];
     command: string;
+    /** A `Dockerfile` exists at the workspace root. */
+    hasDockerfile?: boolean;
+    /** A `.dockerignore` exists at the workspace root. */
+    hasDockerignore?: boolean;
+    /** A `vercel.json` / `.vercel/` exists at the workspace root. */
+    hasVercelConfig?: boolean;
     hasVisConfig?: boolean;
     success: boolean;
 }
@@ -164,6 +170,27 @@ const tips: Tip[] = [
         matches: (context) => context.command === "env" && context.args.includes("install") && context.success,
         message: () => "Use 'vis env pin <version>' to pin the Node.js version for your project.",
         probability: 0.5,
+    },
+    {
+        cooldownMs: 12 * 60 * 60 * 1000, // 12 hours
+        id: "docker-lint",
+        matches: (context) => Boolean(context.hasDockerfile) && context.success && context.command !== "docker",
+        message: () => "Found a Dockerfile — run 'vis docker lint' to check it against hadolint best practices.",
+        probability: 0.3,
+    },
+    {
+        cooldownMs: 24 * 60 * 60 * 1000, // 24 hours
+        id: "docker-ignore",
+        matches: (context) => Boolean(context.hasDockerfile) && !context.hasDockerignore && context.success && context.command !== "ignore",
+        message: () => "No .dockerignore next to your Dockerfile — run 'vis ignore --write' to shrink the build context.",
+        probability: 0.4,
+    },
+    {
+        cooldownMs: 24 * 60 * 60 * 1000, // 24 hours
+        id: "vercel-ignore",
+        matches: (context) => Boolean(context.hasVercelConfig) && context.success && context.command !== "ignore",
+        message: () => "Deploying to Vercel? Run 'vis ignore --target=vercel --write' to generate a deduped .vercelignore.",
+        probability: 0.25,
     },
     {
         id: "upgrade-check",

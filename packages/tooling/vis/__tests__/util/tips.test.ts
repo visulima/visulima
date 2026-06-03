@@ -183,6 +183,45 @@ describe("tip matching", () => {
     });
 });
 
+describe("docker detection tips", () => {
+    const base: TipContext = { args: ["install"], command: "install", success: true };
+
+    it("docker-lint matches when a Dockerfile is present", () => {
+        expect.assertions(2);
+
+        const tip = tips.find((t) => t.id === "docker-lint")!;
+
+        expect(tip.matches({ ...base, hasDockerfile: true })).toBe(true);
+        expect(tip.matches({ ...base, hasDockerfile: false })).toBe(false);
+    });
+
+    it("docker-lint does not match the docker command itself (avoids self-promotion)", () => {
+        expect.assertions(1);
+
+        const tip = tips.find((t) => t.id === "docker-lint")!;
+
+        expect(tip.matches({ ...base, command: "docker", hasDockerfile: true })).toBe(false);
+    });
+
+    it("docker-ignore matches only when a Dockerfile exists without a .dockerignore", () => {
+        expect.assertions(2);
+
+        const tip = tips.find((t) => t.id === "docker-ignore")!;
+
+        expect(tip.matches({ ...base, hasDockerfile: true, hasDockerignore: false })).toBe(true);
+        expect(tip.matches({ ...base, hasDockerfile: true, hasDockerignore: true })).toBe(false);
+    });
+
+    it("vercel-ignore matches when a vercel config is present", () => {
+        expect.assertions(2);
+
+        const tip = tips.find((t) => t.id === "vercel-ignore")!;
+
+        expect(tip.matches({ ...base, hasVercelConfig: true })).toBe(true);
+        expect(tip.matches({ ...base, hasVercelConfig: false })).toBe(false);
+    });
+});
+
 describe("tip messages", () => {
     const makeContext = (command: string): TipContext => {
         return {
