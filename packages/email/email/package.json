@@ -289,6 +289,18 @@
             "types": "./dist/providers/sweego/index.d.ts",
             "default": "./dist/providers/sweego/index.js"
         },
+        "./providers/mailchannels": {
+            "types": "./dist/providers/mailchannels/index.d.ts",
+            "default": "./dist/providers/mailchannels/index.js"
+        },
+        "./providers/cloudflare-email": {
+            "types": "./dist/providers/cloudflare-email/index.d.ts",
+            "default": "./dist/providers/cloudflare-email/index.js"
+        },
+        "./providers/loops": {
+            "types": "./dist/providers/loops/index.d.ts",
+            "default": "./dist/providers/loops/index.js"
+        },
         "./utils/parse-address": {
             "types": "./dist/utils/parse-address.d.ts",
             "default": "./dist/utils/parse-address.js"
