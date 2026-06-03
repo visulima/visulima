@@ -303,6 +303,7 @@ describe(injectServiceTasks, () => {
         expect(payload.cwd).toBe("/ws/packages/api");
         // Pre-existing env keys survive the rewrite.
         expect(payload.env.DATABASE_URL).toBe("postgres://127.0.0.1:5432");
+
         // `env.PATH` is built by task-runner's `withEnhancedPath`, which now
         // uses native OS separators (`\` + `;` on Windows) since it constructs
         // a real `PATH` for a spawned process. Normalise to `/` so the
