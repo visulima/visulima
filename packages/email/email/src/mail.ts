@@ -1,8 +1,10 @@
 import DraftMailMessage from "./draft-mail-message";
 import EmailError from "./errors/email-error";
 import MailMessage from "./mail-message";
+import type { Middleware, SendFunction } from "./middleware/types";
+import { composeMiddleware } from "./middleware/types";
 import type { Provider } from "./providers/provider";
-import type { EmailAddress, EmailHeaders, EmailOptions, EmailResult, Receipt, Result } from "./types";
+import type { EmailAddress, EmailHeaders, EmailOptions, EmailResult, MaybePromise, Receipt, Result } from "./types";
 import buildMimeMessage from "./utils/build-mime-message";
 import type { Logger } from "./utils/create-logger";
 import { createLogger } from "./utils/create-logger";
@@ -32,9 +34,115 @@ const logSendResult = (logger: Logger | undefined, result: Result<EmailResult>, 
 };
 
 /**
+ * Builds a single personalized {@link EmailOptions} from a base message and a personalization.
+ * @param base The resolved base options.
+ * @param personalization The per-recipient overrides.
+ * @param render Optional renderer for templated subject/html/text.
+ * @returns The merged email options.
+ */
+const buildPersonalized = async (base: EmailOptions, personalization: Personalization, render?: BatchRenderer): Promise<EmailOptions> => {
+    const merged: EmailOptions = { ...base, to: personalization.to };
+
+    if (personalization.cc) {
+        merged.cc = personalization.cc;
+    }
+
+    if (personalization.bcc) {
+        merged.bcc = personalization.bcc;
+    }
+
+    if (personalization.replyTo) {
+        merged.replyTo = personalization.replyTo;
+    }
+
+    if (personalization.headers) {
+        merged.headers = { ...headersToRecord(base.headers ?? {}), ...headersToRecord(personalization.headers) };
+    }
+
+    merged.subject = personalization.subject ?? base.subject;
+
+    if (render && personalization.data) {
+        merged.subject = await render(merged.subject, personalization.data);
+
+        if (base.html !== undefined) {
+            merged.html = await render(base.html, personalization.data);
+        }
+
+        if (base.text !== undefined) {
+            merged.text = await render(base.text, personalization.data);
+        }
+    }
+
+    return merged;
+};
+
+/**
  * Type alias for messages that can be sent via Mail.send().
  */
 export type SendableMessage = MailMessage | EmailOptions;
+
+/**
+ * Renders a template string against per-recipient data (e.g. a Handlebars/Liquid renderer).
+ */
+export type BatchRenderer = (template: string, data: Record<string, unknown>) => MaybePromise<string>;
+
+/**
+ * A per-recipient override applied on top of the batch's base message.
+ *
+ * Anything left unset falls back to the base message. When a {@link BatchRenderer} is supplied and
+ * `data` is present, the base `subject`/`html`/`text` templates are rendered with this recipient's data.
+ */
+export interface Personalization {
+    /**
+     * Blind carbon-copy recipients for this message.
+     */
+    bcc?: EmailAddress | EmailAddress[];
+
+    /**
+     * Carbon-copy recipients for this message.
+     */
+    cc?: EmailAddress | EmailAddress[];
+
+    /**
+     * Template variables for this recipient (used with the batch {@link BatchRenderer}).
+     */
+    data?: Record<string, unknown>;
+
+    /**
+     * Extra headers merged over the base headers for this message.
+     */
+    headers?: EmailHeaders;
+
+    /**
+     * Reply-to override for this message.
+     */
+    replyTo?: EmailAddress;
+
+    /**
+     * Subject override for this message (rendered with `data` when a renderer is supplied).
+     */
+    subject?: string;
+
+    /**
+     * Primary (`To`) recipients for this message.
+     */
+    to: EmailAddress | EmailAddress[];
+}
+
+/**
+ * Options for {@link Mail.sendBatch}.
+ */
+export interface SendBatchOptions {
+    /**
+     * Renders the base `subject`/`html`/`text` templates against each personalization's `data`.
+     */
+    render?: BatchRenderer;
+
+    /**
+     * Abort signal to cancel the batch mid-flight.
+     */
+    signal?: AbortSignal;
+}
 
 /**
  * Controls the fail-fast capability guard that runs before a message is handed to the provider.
@@ -105,6 +213,12 @@ export class Mail {
 
     private readonly featureCheck: FeatureCheckMode;
 
+    private readonly middlewares: Middleware[] = [];
+
+    private composedSend?: SendFunction;
+
+    private readonly mountedProviders = new Map<string, Provider>();
+
     /**
      * Creates a new Mail instance with a provider.
      * @param provider The email provider instance.
@@ -128,6 +242,48 @@ export class Mail {
     public setLogger(logger: Console): this {
         this.loggerInstance = logger;
         this.logger = createLogger("Mail", logger);
+
+        return this;
+    }
+
+    /**
+     * Registers a send middleware. Middlewares wrap the provider's `sendEmail` call and run in
+     * registration order (first registered is the outermost wrapper), enabling retry, rate-limiting,
+     * circuit-breaking, deduplication, logging, and credential injection.
+     * @param middleware The middleware to add. See the `@visulima/email/middleware` entry point.
+     * @returns This instance for method chaining.
+     * @example
+     * ```ts
+     * import { retryMiddleware, rateLimitMiddleware } from "@visulima/email/middleware";
+     *
+     * const mail = createMail(provider)
+     *   .use(rateLimitMiddleware({ rate: 10 }))
+     *   .use(retryMiddleware({ retries: 3 }));
+     * ```
+     */
+    public use(middleware: Middleware): this {
+        this.middlewares.push(middleware);
+        // Invalidate the memoized chain so the new middleware is picked up on the next send.
+        this.composedSend = undefined;
+
+        return this;
+    }
+
+    /**
+     * Mounts an alternate provider for a named message stream. A message whose `stream` matches is
+     * routed to the mounted provider (still passing through the middleware chain); everything else uses
+     * the default provider. Mirrors Postmark-style multi-stream routing.
+     * @param streamName The stream identifier matched against a message's `stream` field.
+     * @param provider The provider to route that stream's messages to.
+     * @returns This instance for method chaining.
+     * @example
+     * ```ts
+     * const mail = createMail(transactionalProvider).mount("broadcast", broadcastProvider);
+     * await mail.send({ ...message, stream: "broadcast" }); // → broadcastProvider
+     * ```
+     */
+    public mount(streamName: string, provider: Provider): this {
+        this.mountedProviders.set(streamName, provider);
 
         return this;
     }
@@ -321,7 +477,7 @@ export class Mail {
             return { error: featureError, success: false };
         }
 
-        const result = await this.provider.sendEmail(emailOptions);
+        const result = await this.dispatch(emailOptions);
 
         logSendResult(this.logger, result, this.provider.name ?? "unknown");
 
@@ -447,6 +603,76 @@ export class Mail {
                 successCount,
             });
         }
+    }
+
+    /**
+     * Sends one message per personalization, built from a shared base message.
+     *
+     * Each {@link Personalization} overrides recipients/subject/headers on top of the base; when
+     * `options.render` is supplied, the base `subject`/`html`/`text` are treated as templates and
+     * rendered against each personalization's `data`. Results stream back as {@link Receipt}s, exactly
+     * like {@link Mail.sendMany}.
+     * @param base The shared base message (MailMessage or EmailOptions). Its `to` is ignored.
+     * @param personalizations One entry per outgoing message.
+     * @param options Optional renderer and abort signal. See {@link SendBatchOptions}.
+     * @returns An async iterable of receipts, one per personalization.
+     * @example
+     * ```ts
+     * import { renderHandlebars } from "@visulima/email/template/handlebars";
+     *
+     * for await (const receipt of mail.sendBatch(
+     *   // `to` is required on EmailOptions but ignored here — each personalization supplies its own.
+     *   { from: { email: "a@x.com" }, to: { email: "placeholder@x.com" }, subject: "Hi {{name}}", html: "<p>Hello {{name}}</p>" },
+     *   [{ to: { email: "b@x.com" }, data: { name: "Bob" } }],
+     *   { render: (tpl, data) => renderHandlebars(tpl, data) },
+     * )) { /* ... *\/ }
+     * ```
+     */
+    public sendBatch(base: SendableMessage, personalizations: Personalization[], options?: SendBatchOptions): AsyncIterable<Receipt> {
+        const build = async function* (): AsyncIterable<SendableMessage> {
+            const baseOptions = base instanceof MailMessage ? await base.build() : base;
+
+            for (const personalization of personalizations) {
+                // eslint-disable-next-line no-await-in-loop
+                yield await buildPersonalized(baseOptions, personalization, options?.render);
+            }
+        };
+
+        return this.sendMany(build(), { signal: options?.signal });
+    }
+
+    /**
+     * Sends the resolved options through the middleware chain (or straight to the provider when no
+     * middleware is registered). The composed chain is memoized and rebuilt whenever {@link Mail.use}
+     * adds a middleware.
+     * @param emailOptions The fully-resolved email options.
+     * @returns The send result.
+     * @private
+     */
+    private async dispatch(emailOptions: EmailOptions): Promise<Result<EmailResult>> {
+        if (this.middlewares.length === 0) {
+            return await this.resolveProvider(emailOptions).sendEmail(emailOptions);
+        }
+
+        // The terminal resolves the provider per-message so mounted streams route correctly.
+        this.composedSend ??= composeMiddleware(this.middlewares, (options) => Promise.resolve(this.resolveProvider(options).sendEmail(options)));
+
+        return await this.composedSend(emailOptions);
+    }
+
+    /**
+     * Resolves which provider should handle a message: the provider mounted for its `stream`, or the
+     * default provider.
+     * @param emailOptions The message being sent.
+     * @returns The provider to use.
+     * @private
+     */
+    private resolveProvider(emailOptions: EmailOptions): Provider {
+        if (emailOptions.stream !== undefined) {
+            return this.mountedProviders.get(emailOptions.stream) ?? this.provider;
+        }
+
+        return this.provider;
     }
 
     /**

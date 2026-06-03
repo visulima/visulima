@@ -1,4 +1,5 @@
-import { createHash, createPrivateKey, createSign } from "node:crypto";
+import type { KeyObject } from "node:crypto";
+import { createHash, createPrivateKey, createSign, sign as cryptoSign } from "node:crypto";
 
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { readFile } from "@visulima/fs";
@@ -98,7 +99,7 @@ const createDkimSignatureHeader = (headers: Record<string, string>, options: Dki
 
     const dkimHeader = [
         `v=1`,
-        `a=rsa-sha256`,
+        `a=${options.algorithm ?? "rsa-sha256"}`,
         `c=${headerCanon}/${bodyCanon}`,
         `d=${options.domainName}`,
         `s=${options.keySelector}`,
@@ -108,6 +109,23 @@ const createDkimSignatureHeader = (headers: Record<string, string>, options: Dki
     ].join("; ");
 
     return dkimHeader;
+};
+
+/**
+ * Signs the canonicalized DKIM data with the configured algorithm.
+ * @param data The data to sign.
+ * @param key The private key.
+ * @param algorithm The signature algorithm.
+ * @returns The base64-encoded signature.
+ */
+const signDkimData = (data: string, key: KeyObject, algorithm?: "ed25519-sha256" | "rsa-sha256"): string => {
+    if (algorithm === "ed25519-sha256") {
+        // RFC 8463: Ed25519 signs the SHA-256 digest of the signed data. node requires `null` algorithm.
+        // eslint-disable-next-line unicorn/no-null
+        return cryptoSign(null, createHash("sha256").update(data).digest(), key).toString("base64");
+    }
+
+    return createSign("RSA-SHA256").update(data).sign(key, "base64");
 };
 
 /**
@@ -252,9 +270,6 @@ export class DkimSigner implements EmailSigner {
         const dkimSignatureHeader = createDkimSignatureHeader(headers, this.options, bodyHash);
 
         const signData = `${canonicalHeaders}\r\nDKIM-Signature: ${dkimSignatureHeader}`;
-        const signer = createSign("RSA-SHA256");
-
-        signer.update(signData);
 
         let signature: string;
 
@@ -264,7 +279,7 @@ export class DkimSigner implements EmailSigner {
                 passphrase: this.options.passphrase,
             });
 
-            signature = signer.sign(key, "base64");
+            signature = signDkimData(signData, key, this.options.algorithm);
         } catch (error) {
             // eslint-disable-next-line preserve-caught-error
             throw new Error(`Failed to create DKIM signature: ${(error as Error).message}`);

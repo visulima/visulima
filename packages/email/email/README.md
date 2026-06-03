@@ -1416,6 +1416,83 @@ normalizeEmailAliases("user+tag@gmx.com"); // "user@gmx.com"
 normalizeEmailAliases("user@example.com"); // "user@example.com"
 ```
 
+## Batch Sending & Result Helpers
+
+Send one message per recipient from a shared base, with optional per-recipient template rendering, via `mail.sendBatch(base, personalizations, options?)`. Every `send` returns a `Result<EmailResult>`; the `isOk`/`isErr`/`unwrap`/`unwrapOr`/`mapOk`/`tryAsync` helpers (exported from the root and `@visulima/email/utils/result`) make handling it ergonomic.
+
+```typescript
+import { createMail, isOk, unwrapOr } from "@visulima/email";
+
+const mail = createMail(provider);
+
+for await (const receipt of mail.sendBatch(
+    { from: { email: "news@example.com" }, subject: "Hi {{name}}", html: "<p>Hello {{name}}</p>" },
+    [{ to: { email: "a@example.com" }, data: { name: "Ada" } }],
+    { render: (template, data) => renderHandlebars(template, data) },
+)) {
+    if (receipt.successful) console.log("sent", receipt.messageId);
+}
+```
+
+See [Sending Mail](https://visulima.com/docs/package/email/getting-started/sending-mail).
+
+## Middleware
+
+Attach resilience middleware with `mail.use(...)`: retry (full-jitter backoff + dead-letter), rate limiting (with per-provider presets), circuit breaker, deduplication, OAuth2 token refresh, and PII-redacting logging.
+
+```typescript
+import { createMail } from "@visulima/email";
+import { circuitBreakerMiddleware, RATE_LIMIT_PRESETS, rateLimitMiddleware, retryMiddleware } from "@visulima/email/middleware";
+
+const mail = createMail(provider)
+    .use(rateLimitMiddleware({ rate: RATE_LIMIT_PRESETS.resend }))
+    .use(circuitBreakerMiddleware())
+    .use(retryMiddleware({ retries: 3 }));
+```
+
+See [Middleware](https://visulima.com/docs/package/email/middleware/introduction).
+
+## Queue & Worker
+
+Durable background sending via the `EmailQueue` interface: an in-memory `MemoryQueue`, an `UnstorageQueue` (`@visulima/email/queue/unstorage`) backed by any [unstorage](https://unstorage.unjs.io/) store (Redis/FS/KV/Postgres), and a `createWorker(...)` with bounded concurrency, retry/backoff and dead-lettering.
+
+```typescript
+import { createMail } from "@visulima/email";
+import { createWorker, MemoryQueue } from "@visulima/email/queue";
+
+const queue = new MemoryQueue();
+const mail = createMail(provider);
+
+await queue.enqueue({ from: { email: "a@x.com" }, to: { email: "b@x.com" }, subject: "Hi", text: "yo" });
+createWorker({ queue, send: mail.send.bind(mail), concurrency: 5 }).start();
+```
+
+See [Queue](https://visulima.com/docs/package/email/queue/introduction).
+
+## Webhook Verification
+
+Verify provider webhook signatures with `@visulima/email/webhooks`: `verifyStandardWebhook`/`verifyResendWebhook` (Svix/Standard Webhooks), `verifyMailgunWebhook`, `verifySendGridWebhook` (ECDSA + replay window), `verifyPostmarkWebhook` (Basic Auth), and `verifySnsMessage` (AWS SES via SNS, with a tight `sns.<region>.amazonaws.com` cert allowlist). All return `{ valid, reason? }` — always pass the **raw** request body.
+
+See [Webhooks](https://visulima.com/docs/package/email/webhooks/introduction).
+
+## Inbound Parsing
+
+Normalize inbound webhooks from Postmark, SendGrid, Mailgun, Cloudflare Email and SES into one `InboundEmail` shape, then strip quoted history with `extractReply()` (EN/DE/FR/ES/TR) and group conversations with `stitchThreads()`.
+
+See [Inbound](https://visulima.com/docs/package/email/inbound/introduction).
+
+## Deliverability
+
+2024 bulk-sender tooling in `@visulima/email/deliverability`: RFC 8058 one-click `buildListUnsubscribe`, suppression stores (`MemorySuppressionStore` + `filterSuppressed`), and parsers for DMARC records, MTA-STS policies, TLS-RPT records/reports, and ARF feedback-loop complaints. ARC sealing (`signArc`) lives in `@visulima/email/crypto`.
+
+See [Deliverability](https://visulima.com/docs/package/email/deliverability/introduction).
+
+## Events & Testing
+
+A unified `EmailEvent` stream (`EventBus` + `MemoryEventStore` in `@visulima/email/events`), and a test harness (`@visulima/email/test`): `createTestEmail()` plus Vitest matchers `toHaveSentTo` / `toHaveSentWithSubject` / `toHaveSentWithAttachment` / `toHaveSentMatching`.
+
+See [Events](https://visulima.com/docs/package/email/events/introduction) and [Testing](https://visulima.com/docs/package/email/testing/introduction).
+
 ## Related
 
 ## Supported Node.js Versions
