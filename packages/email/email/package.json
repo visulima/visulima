@@ -209,6 +209,18 @@
             "types": "./dist/queue/unstorage-queue.d.ts",
             "default": "./dist/queue/unstorage-queue.js"
         },
+        "./queue/sqs": {
+            "types": "./dist/queue/sqs-queue.d.ts",
+            "default": "./dist/queue/sqs-queue.js"
+        },
+        "./queue/pg-boss": {
+            "types": "./dist/queue/pg-boss-queue.d.ts",
+            "default": "./dist/queue/pg-boss-queue.js"
+        },
+        "./queue/bullmq": {
+            "types": "./dist/queue/bullmq-queue.d.ts",
+            "default": "./dist/queue/bullmq-queue.js"
+        },
         "./test": {
             "types": "./dist/test/index.d.ts",
             "default": "./dist/test/index.js"
