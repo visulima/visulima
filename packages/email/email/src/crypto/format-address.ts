@@ -1,5 +1,7 @@
 import type { EmailAddress } from "../types";
 
+const INVALID_ADDR_SPEC = /[\r\n<>]/;
+
 /**
  * Sanitizes a display name for use in a quoted email header per RFC 5322.
  *
@@ -38,8 +40,15 @@ export const sanitizeDisplayName = (name: string): string => {
  * Formats a single email address as a header value, quoting and sanitizing the display name.
  * @param address The email address to format.
  * @returns A quoted `"Name" &lt;email>` string, or the bare email when there is no usable name.
+ * @throws {Error} When the address contains CR/LF or angle brackets that would break the header.
  */
 export const formatAddress = (address: EmailAddress): string => {
+    if (INVALID_ADDR_SPEC.test(address.email)) {
+        // The addr-spec is interpolated verbatim into a signed header; CR/LF or angle brackets would
+        // allow header injection, so reject rather than emit a malformed/forged header.
+        throw new Error("Invalid email address for header formatting");
+    }
+
     if (address.name) {
         const sanitizedName = sanitizeDisplayName(address.name);
 

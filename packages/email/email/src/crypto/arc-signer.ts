@@ -356,6 +356,7 @@ const loadPrivateKey = async (privateKey: string, passphrase?: string): Promise<
  */
 const signArc = async (email: EmailOptions, options: ArcSealOptions): Promise<{ email: EmailOptions; headers: ArcHeaderSet }> => {
     const instance = options.instance ?? 1;
+    const cv = options.cv ?? "none";
 
     if (instance !== 1) {
         // Only the originating sealer is supported; a higher instance has no prior chain to seal and
@@ -363,9 +364,15 @@ const signArc = async (email: EmailOptions, options: ArcSealOptions): Promise<{ 
         throw new Error(`signArc only supports an originating sealer (instance 1); received i=${String(instance)}`);
     }
 
+    if (cv !== "none") {
+        // An originating seal is always cv=none; a non-none value would produce a seal our own
+        // verifyArc() rejects, contradicting the documented contract.
+        throw new Error(`signArc only supports cv=none for an originating sealer; received cv=${cv}`);
+    }
+
     const algorithm = options.algorithm ?? "rsa-sha256";
     // Resolve the timestamp once so the AMS and ARC-Seal share an identical t= value.
-    const sealOptions: ArcSealOptions = { ...options, timestamp: options.timestamp ?? Math.floor(Date.now() / 1000) };
+    const sealOptions: ArcSealOptions = { ...options, cv: "none", timestamp: options.timestamp ?? Math.floor(Date.now() / 1000) };
     const key = await loadPrivateKey(options.privateKey, options.passphrase);
 
     const aarValue = `i=${String(instance)}; ${options.authenticationResults}`;
