@@ -1,8 +1,5 @@
-import { readFileSync, writeFileSync } from "node:fs";
-
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 import { dim } from "@visulima/colorize";
-import { isAccessibleSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
 import type { IgnoreTarget } from "../../util/ignore-file";
@@ -11,9 +8,17 @@ import type { IgnoreOptions } from "./index";
 
 const isIgnoreTarget = (value: string): value is IgnoreTarget => value === "docker" || value === "npm" || value === "slug" || value === "vercel";
 
+const readExisting = async (fs: Toolbox["fs"], path: string): Promise<string> => {
+    try {
+        return await fs.readFile(path, "utf8");
+    } catch {
+        return "";
+    }
+};
+
 /** `vis ignore` — generate/merge a build/publish ignore file (no duplicate entries). */
-const execute: CommandExecute<Toolbox<Console, IgnoreOptions>> = async ({ logger, options, workspaceRoot }) => {
-    const cwd = workspaceRoot ?? process.cwd();
+const execute: CommandExecute<Toolbox<Console, IgnoreOptions>> = async ({ fs, logger, options, process: runtimeProcess, workspaceRoot }) => {
+    const cwd = workspaceRoot ?? runtimeProcess.cwd;
     const target = options.target ?? "docker";
 
     if (!isIgnoreTarget(target)) {
@@ -22,7 +27,7 @@ const execute: CommandExecute<Toolbox<Console, IgnoreOptions>> = async ({ logger
 
     const filename = IGNORE_FILENAMES[target];
     const path = join(cwd, filename);
-    const existing = isAccessibleSync(path) ? readFileSync(path, "utf8") : "";
+    const existing = await readExisting(fs, path);
     const { added, content } = mergeIgnore(existing, buildIgnorePatterns(target));
 
     if (options.json) {
@@ -38,7 +43,7 @@ const execute: CommandExecute<Toolbox<Console, IgnoreOptions>> = async ({ logger
             return;
         }
 
-        writeFileSync(path, content);
+        await fs.writeFile(path, content);
         logger.info(`Added ${added.length} pattern(s) to ${filename}.`);
 
         return;
