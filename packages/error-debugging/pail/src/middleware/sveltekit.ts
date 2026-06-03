@@ -99,40 +99,40 @@ type SvelteKitHandleOptions<T extends string = string> = PailMiddlewareOptions<T
  * export const handleError = pailHandleError();
  * ```
  */
-export const pailHandle =
-    <T extends string = string>(options: SvelteKitHandleOptions<T>): PailSvelteKitHandle =>
-    async ({ event, resolve }: PailSvelteKitHandleInput): Promise<Response> => {
+export const pailHandle
+    = <T extends string = string>(options: SvelteKitHandleOptions<T>): PailSvelteKitHandle =>
+        async ({ event, resolve }: PailSvelteKitHandleInput): Promise<Response> => {
         // eslint-disable-next-line n/no-unsupported-features/node-builtins
-        const requestId = event.request.headers.get("x-request-id") ?? crypto.randomUUID();
-        const safeHeaders = extractSafeHeaders(event.request.headers);
+            const requestId = event.request.headers.get("x-request-id") ?? crypto.randomUUID();
+            const safeHeaders = extractSafeHeaders(event.request.headers);
 
-        const { finish, logger, skipped } = createMiddlewareLogger(options, {
-            headers: safeHeaders,
-            method: event.request.method,
-            path: event.url.pathname,
-            requestId,
-        });
+            const { finish, logger, skipped } = createMiddlewareLogger(options, {
+                headers: safeHeaders,
+                method: event.request.method,
+                path: event.url.pathname,
+                requestId,
+            });
 
-        if (skipped) {
-            return resolve(event);
-        }
-
-        // eslint-disable-next-line no-param-reassign
-        event.locals.log = logger;
-
-        return loggerStorage.storage.run(logger, async () => {
-            try {
-                const response = await resolve(event);
-
-                finish({ status: response.status });
-
-                return response;
-            } catch (error) {
-                finish({ error: error instanceof Error ? error : new Error(String(error)) });
-                throw error;
+            if (skipped) {
+                return resolve(event);
             }
-        });
-    };
+
+            // eslint-disable-next-line no-param-reassign
+            event.locals.log = logger;
+
+            return loggerStorage.storage.run(logger, async () => {
+                try {
+                    const response = await resolve(event);
+
+                    finish({ status: response.status });
+
+                    return response;
+                } catch (error) {
+                    finish({ error: error instanceof Error ? error : new Error(String(error)) });
+                    throw error;
+                }
+            });
+        };
 
 /**
  * Create a SvelteKit `handleError` hook that captures errors into the WideEvent logger.
@@ -140,15 +140,15 @@ export const pailHandle =
  * Should be used alongside `pailHandle` to ensure errors are recorded in the wide event.
  * @returns SvelteKit handleError hook function
  */
-export const pailHandleError =
-    (): PailSvelteKitHandleError =>
-    ({ error, event }: PailSvelteKitHandleErrorInput): void => {
-        const logger = event.locals.log;
+export const pailHandleError
+    = (): PailSvelteKitHandleError =>
+        ({ error, event }: PailSvelteKitHandleErrorInput): void => {
+            const logger = event.locals.log;
 
-        if (logger && error instanceof Error) {
-            logger.error(error.message, error);
-        }
-    };
+            if (logger && error instanceof Error) {
+                logger.error(error.message, error);
+            }
+        };
 
 /**
  * Convenience function that returns both handle and handleError hooks.

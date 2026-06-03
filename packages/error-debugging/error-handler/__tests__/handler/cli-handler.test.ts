@@ -3,12 +3,12 @@ import { describe, expect, it, vi } from "vitest";
 
 import { ansiHandler, cliHandler } from "../../src/handler/cli-handler";
 
-describe("ansiHandler", () => {
+describe(ansiHandler, () => {
     it("should return the rendered error string when no solution finder produces a hint", async () => {
         expect.assertions(2);
 
         const noopFinder: SolutionFinder = {
-            handle: async () => undefined,
+            handle: () => Promise.resolve(undefined),
             name: "test-noop",
             priority: 1,
         };
@@ -24,12 +24,11 @@ describe("ansiHandler", () => {
         expect.assertions(3);
 
         const matchingFinder: SolutionFinder = {
-            handle: async (): Promise<Solution> => {
-                return {
+            handle: (): Promise<Solution> =>
+                Promise.resolve({
                     body: "Try restarting the universe",
                     header: "Hint",
-                };
-            },
+                }),
             name: "test-match",
             priority: 1,
         };
@@ -80,10 +79,11 @@ describe("cliHandler (terminalOutput)", () => {
         const logSpy = vi.fn();
 
         const finder: SolutionFinder = {
-            handle: async () => ({
-                body: "Sometimes you have to turn it off and on again.",
-                header: "Possible fix",
-            }),
+            handle: () =>
+                Promise.resolve({
+                    body: "Sometimes you have to turn it off and on again.",
+                    header: "Possible fix",
+                }),
             name: "test-hint",
             priority: 1,
         };

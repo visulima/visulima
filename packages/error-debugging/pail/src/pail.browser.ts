@@ -26,7 +26,7 @@ import arrayify from "./utils/arrayify";
 import getLongestLabel from "./utils/get-longest-label";
 import mergeTypes from "./utils/merge-types";
 
-const preventLoop = <T extends (this: ThisType<T>, ...args: Parameters<T>) => ReturnType<T>>(function_: T): ((...args: Parameters<T>) => ReturnType<T>) => {
+const preventLoop = <T extends (this: ThisType<T>, ...args: Parameters<T>) => ReturnType<T>>(function_: T): (...args: Parameters<T>) => ReturnType<T> => {
     let doing = false;
 
     // eslint-disable-next-line func-names
@@ -148,11 +148,11 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
         const parentLogLevels = (options as any).parentLogLevels as Record<string, number> | undefined;
 
         // Reuse stringify from parent if available (same configuration)
-        this.stringify =
-            parentStringify ??
-            stringifyConfigure({
-                strict: true,
-            });
+        this.stringify
+            = parentStringify
+                ?? stringifyConfigure({
+                    strict: true,
+                });
 
         this.startTimerMessage = options.messages?.timerStart ?? "Initialized timer...";
         this.endTimerMessage = options.messages?.timerEnd ?? "Timer run for:";
@@ -526,15 +526,15 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
 
         // Combine parent and child reporters - pass Sets directly to avoid array conversion
         const childReporters = options?.reporters ?? [];
-        const allReporters =
-            childReporters.length > 0
+        const allReporters
+            = childReporters.length > 0
                 ? ([...this.reporters, ...childReporters] as unknown as Reporter<LC>[])
                 : ([...this.reporters] as unknown as Reporter<LC>[]);
 
         // Combine parent and child processors - pass Sets directly to avoid array conversion
         const childProcessors = options?.processors ?? [];
-        const allProcessors =
-            childProcessors.length > 0
+        const allProcessors
+            = childProcessors.length > 0
                 ? ([...this.processors, ...childProcessors] as unknown as Processor<LC>[])
                 : ([...this.processors] as unknown as Processor<LC>[]);
 
@@ -559,14 +559,14 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
         // Optimize: only create messages object if there are overrides
         const mergedMessages = options?.messages
             ? {
-                  timerEnd: this.endTimerMessage,
-                  timerStart: this.startTimerMessage,
-                  ...options.messages,
-              }
+                timerEnd: this.endTimerMessage,
+                timerStart: this.startTimerMessage,
+                ...options.messages,
+            }
             : {
-                  timerEnd: this.endTimerMessage,
-                  timerStart: this.startTimerMessage,
-              };
+                timerEnd: this.endTimerMessage,
+                timerStart: this.startTimerMessage,
+            };
 
         // Create child logger options
         // Pass parent types, longestLabel, stringify, and logLevels for optimization when unchanged
@@ -1070,10 +1070,10 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
 
             if (diffTime < this.throttle) {
                 try {
-                    const isSameLog =
-                        this.lastLog.object &&
-                        JSON.stringify([meta.label, meta.scope, meta.type, meta.message, meta.prefix, meta.suffix, meta.context]) ===
-                            JSON.stringify([
+                    const isSameLog
+                        = this.lastLog.object
+                            && JSON.stringify([meta.label, meta.scope, meta.type, meta.message, meta.prefix, meta.suffix, meta.context])
+                            === JSON.stringify([
                                 this.lastLog.object.label,
                                 this.lastLog.object.scope,
                                 this.lastLog.object.type,
@@ -1103,11 +1103,11 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
     }
 }
 
-export type PailBrowserType<T extends string = string, L extends string = string> = Console &
-    (new <TC extends string = string, LC extends string = string>(options?: ConstructorOptions<TC, LC>) => PailBrowserType<TC, LC>) &
-    PailBrowserImpl<T, L> &
-    Record<DefaultLogTypes, LoggerFunction> &
-    Record<T, LoggerFunction> & {
+export type PailBrowserType<T extends string = string, L extends string = string> = Console
+    & (new <TC extends string = string, LC extends string = string>(options?: ConstructorOptions<TC, LC>) => PailBrowserType<TC, LC>)
+    & PailBrowserImpl<T, L>
+    & Record<DefaultLogTypes, LoggerFunction>
+    & Record<T, LoggerFunction> & {
         force: Record<DefaultLogTypes, LoggerFunction> & Record<T, LoggerFunction>;
     };
 

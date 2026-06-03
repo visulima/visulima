@@ -1,29 +1,28 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { Plugin, ViteDevServer } from "vite";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
-import errorOverlayPlugin from "../../src/index";
 import { MESSAGE_TYPE, PLUGIN_NAME } from "../../src/constants";
+import errorOverlayPlugin from "../../src/index";
 
 // Globally stub `process.on` so plugin instances created in any describe block
 // don't leak real `unhandledRejection` listeners. Tests that need to inspect the
 // registered handler can read from `globalRegistered`.
-const globalRegistered: Array<{ event: string; handler: (...args: any[]) => unknown }> = [];
-let __globalProcessOnSpy: ReturnType<typeof vi.spyOn>;
-let __globalProcessOffSpy: ReturnType<typeof vi.spyOn>;
+const globalRegistered: { event: string; handler: (...args: any[]) => unknown }[] = [];
+let globalProcessOnSpy: ReturnType<typeof vi.spyOn>;
+let globalProcessOffSpy: ReturnType<typeof vi.spyOn>;
 
 beforeAll(() => {
-    __globalProcessOnSpy = vi.spyOn(process, "on").mockImplementation((event: any, handler: any) => {
+    globalProcessOnSpy = vi.spyOn(process, "on").mockImplementation((event: any, handler: any) => {
         globalRegistered.push({ event, handler });
 
         return process;
     });
-    __globalProcessOffSpy = vi.spyOn(process, "off").mockImplementation(() => process);
+    globalProcessOffSpy = vi.spyOn(process, "off").mockImplementation(() => process);
 });
 
 afterAll(() => {
-    __globalProcessOnSpy.mockRestore();
-    __globalProcessOffSpy.mockRestore();
+    globalProcessOnSpy.mockRestore();
+    globalProcessOffSpy.mockRestore();
 });
 
 beforeEach(() => {
@@ -41,7 +40,6 @@ const createMockWs = () => {
         on: vi.fn((event: string, handler: any) => {
             handlers.set(event, handler);
         }),
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         send: vi.fn((data: any, _client?: any) => {
             sent.push(data);
         }),
@@ -80,7 +78,7 @@ const createMockServer = (overrides: Partial<ViteDevServer> = {}) => {
             }),
         },
         ssrFixStacktrace: vi.fn(() => {}),
-        transformRequest: vi.fn(async (_url: string) => ({ code: "/* original */" })),
+        transformRequest: vi.fn(async (_url: string) => { return { code: "/* original */" }; }),
         ws,
         ...overrides,
     };
@@ -311,7 +309,7 @@ describe("errorOverlayPlugin.configureServer", () => {
 
         closeHandler?.();
 
-        expect(__globalProcessOffSpy).toHaveBeenCalledWith("unhandledRejection", expect.any(Function));
+        expect(globalProcessOffSpy).toHaveBeenCalledWith("unhandledRejection", expect.any(Function));
     });
 
     it("falls back to process.cwd() when server.config.root is empty", () => {
@@ -332,17 +330,17 @@ describe("errorOverlayPlugin.configureServer", () => {
 
         const plugin = getPlugin();
         const { server } = createMockServer();
-        const originalErr = new Error("Failed to resolve import \"./missing\" from \"src/App.tsx\"");
+        const originalError = new Error("Failed to resolve import \"./missing\" from \"src/App.tsx\"");
 
-        server.transformRequest = vi.fn(async () => {
-            throw originalErr;
+        vi.spyOn(server, "transformRequest").mockImplementation(async () => {
+            throw originalError;
         });
 
         (plugin.configureServer as any)(server);
 
-        await expect(server.transformRequest("/src/App.tsx")).rejects.toBe(originalErr);
-        expect((originalErr as any).sourceFile).toBe("src/App.tsx");
-        expect((originalErr as any).importPath).toBe("./missing");
+        await expect(server.transformRequest("/src/App.tsx")).rejects.toBe(originalError);
+        expect((originalError as any).sourceFile).toBe("src/App.tsx");
+        expect((originalError as any).importPath).toBe("./missing");
     });
 
     it("rethrows non-import errors unchanged from transformRequest", async () => {
@@ -350,17 +348,17 @@ describe("errorOverlayPlugin.configureServer", () => {
 
         const plugin = getPlugin();
         const { server } = createMockServer();
-        const err = new Error("some other failure");
+        const error = new Error("some other failure");
 
-        server.transformRequest = vi.fn(async () => {
-            throw err;
+        vi.spyOn(server, "transformRequest").mockImplementation(async () => {
+            throw error;
         });
 
         (plugin.configureServer as any)(server);
 
-        await expect(server.transformRequest("/x")).rejects.toBe(err);
+        await expect(server.transformRequest("/x")).rejects.toBe(error);
         // No mutation
-        expect((err as any).sourceFile).toBeUndefined();
+        expect((error as any).sourceFile).toBeUndefined();
     });
 
     it("returns the original successful transformRequest result", async () => {
@@ -403,13 +401,13 @@ describe("errorOverlayPlugin ws.send interception", () => {
 
         (plugin.configureServer as any)(server);
 
-        const errPayload = {
+        const errorPayload = {
             err: { message: "dup", stack: "Error: dup\n    at /tmp/project-root/file.ts:1:1" },
             type: "error",
         };
 
-        await server.ws.send(errPayload);
-        await server.ws.send(errPayload);
+        await server.ws.send(errorPayload);
+        await server.ws.send(errorPayload);
 
         // Second call was deduplicated, so only one passthrough.
         expect(sent.length).toBeLessThanOrEqual(1);
@@ -464,7 +462,7 @@ describe("errorOverlayPlugin ws.send interception", () => {
         // Either replaced with extended payload (object with `errors` array) or fell back gracefully.
         // We treat both as success since we just care that the code path executed without throwing.
         const wasMutated = payload.err && typeof payload.err === "object" && "errors" in payload.err;
-        const fellBack = payload.err && payload.err.message?.includes("Failed to resolve import");
+        const fellBack = payload.err?.message?.includes("Failed to resolve import");
 
         expect(wasMutated || fellBack).toBe(true);
         // ws.send was reassigned by the plugin, so we use the sent array as the source of truth.
@@ -520,7 +518,9 @@ describe("errorOverlayPlugin ws.send interception", () => {
 });
 
 describe("errorOverlayPlugin HMR client error handler", () => {
-    const buildClient = () => ({ send: vi.fn() });
+    const buildClient = () => {
+        return { send: vi.fn() };
+    };
 
     it("no-ops when forwardConsole is disabled", async () => {
         expect.assertions(1);
