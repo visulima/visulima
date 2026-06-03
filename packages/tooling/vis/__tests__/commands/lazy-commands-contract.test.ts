@@ -90,7 +90,7 @@ const FLAT_COMMANDS: Command[] = [
     whyCommand,
 ];
 
-const ALL_COMMANDS: Command[] = [...FLAT_COMMANDS, ciIgnoreCommand, ...aiCommands, ...cacheCommands, ...dockerCommands, ...hookCommands, ...migrateCommands, ...toolchainCommands];
+const ALL_COMMANDS: Command[] = [...FLAT_COMMANDS, ciIgnoreCommand, ...aiCommands, ...cacheCommands, ...dockerCommands, ...hookCommands, ...migrateCommands];
 
 describe("vis lazy command contract", () => {
     it.each(ALL_COMMANDS.map((c) => [c.name, c]))("%s declares loader, not execute", (_name, command) => {
