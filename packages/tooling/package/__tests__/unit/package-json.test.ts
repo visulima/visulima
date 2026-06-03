@@ -58,7 +58,7 @@ describe("package-json", () => {
             let result = function_(fixturePath);
 
             if (name === "findPackageJson") {
-                result = await function_(fixturePath);
+                result = await result;
             }
 
             expect((result as NormalizedReadResult).packageJson).toBeTypeOf("object");
@@ -74,7 +74,7 @@ describe("package-json", () => {
             let first = function_(fixturePath, { cache });
 
             if (name === "findPackageJson") {
-                first = await function_(fixturePath, { cache });
+                first = await first;
             }
 
             expect(cache.has(join(fixturePath, "package.json"))).toBe(true);
@@ -83,7 +83,7 @@ describe("package-json", () => {
             let second = function_(fixturePath, { cache });
 
             if (name === "findPackageJson") {
-                second = await function_(fixturePath, { cache });
+                second = await second;
             }
 
             expect((second as NormalizedReadResult).packageJson.name).toBe("nextjs_12_example_connect");
@@ -96,13 +96,13 @@ describe("package-json", () => {
             let first = function_(fixturePath, { cache: true });
 
             if (name === "findPackageJson") {
-                first = await function_(fixturePath, { cache: true });
+                first = await first;
             }
 
             let second = function_(fixturePath, { cache: true });
 
             if (name === "findPackageJson") {
-                second = await function_(fixturePath, { cache: true });
+                second = await second;
             }
 
             // The internal cache returns the exact same object on repeat reads.

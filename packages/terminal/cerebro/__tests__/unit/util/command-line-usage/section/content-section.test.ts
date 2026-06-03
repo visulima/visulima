@@ -111,7 +111,7 @@ describe("line-usage/content-section", () => {
 
         const result = new ContentSection(sections).toString();
 
-        expect(result).toBe(`first raw line\nsecond raw line${isWindows ? "\r\n" : "\n"}`);
+        expect(result).toBe(`first raw line${isWindows ? "\r\n" : "\n"}second raw line${isWindows ? "\r\n" : "\n"}`);
     });
 
     it("should throw for raw content that is neither a string nor an array of strings", () => {
