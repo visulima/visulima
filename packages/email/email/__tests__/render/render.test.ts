@@ -35,9 +35,14 @@ describe("render pipeline", () => {
         it("rewrites cid: src references via the resolver", () => {
             expect.assertions(2);
 
-            const html = rewriteCidLinks("<img src=\"cid:logo\"><img src=\"cid:keep\">", (cid) => {
-                return cid === "logo" ? "https://cdn/logo.png" : undefined;
-            });
+            const resolver = (cid: string): string | undefined => {
+                if (cid === "logo") {
+                    return "https://cdn/logo.png";
+                }
+
+                return undefined;
+            };
+            const html = rewriteCidLinks("<img src=\"cid:logo\"><img src=\"cid:keep\">", resolver);
 
             expect(html).toContain("src=\"https://cdn/logo.png\"");
             expect(html).toContain("src=\"cid:keep\"");
