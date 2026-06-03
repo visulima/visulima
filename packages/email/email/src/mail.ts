@@ -217,6 +217,8 @@ export class Mail {
 
     private composedSend?: SendFunction;
 
+    private readonly mountedProviders = new Map<string, Provider>();
+
     /**
      * Creates a new Mail instance with a provider.
      * @param provider The email provider instance.
@@ -263,6 +265,25 @@ export class Mail {
         this.middlewares.push(middleware);
         // Invalidate the memoized chain so the new middleware is picked up on the next send.
         this.composedSend = undefined;
+
+        return this;
+    }
+
+    /**
+     * Mounts an alternate provider for a named message stream. A message whose `stream` matches is
+     * routed to the mounted provider (still passing through the middleware chain); everything else uses
+     * the default provider. Mirrors Postmark-style multi-stream routing.
+     * @param streamName The stream identifier matched against a message's `stream` field.
+     * @param provider The provider to route that stream's messages to.
+     * @returns This instance for method chaining.
+     * @example
+     * ```ts
+     * const mail = createMail(transactionalProvider).mount("broadcast", broadcastProvider);
+     * await mail.send({ ...message, stream: "broadcast" }); // → broadcastProvider
+     * ```
+     */
+    public mount(streamName: string, provider: Provider): this {
+        this.mountedProviders.set(streamName, provider);
 
         return this;
     }
@@ -630,12 +651,28 @@ export class Mail {
      */
     private async dispatch(emailOptions: EmailOptions): Promise<Result<EmailResult>> {
         if (this.middlewares.length === 0) {
-            return await this.provider.sendEmail(emailOptions);
+            return await this.resolveProvider(emailOptions).sendEmail(emailOptions);
         }
 
-        this.composedSend ??= composeMiddleware(this.middlewares, (options) => Promise.resolve(this.provider.sendEmail(options)));
+        // The terminal resolves the provider per-message so mounted streams route correctly.
+        this.composedSend ??= composeMiddleware(this.middlewares, (options) => Promise.resolve(this.resolveProvider(options).sendEmail(options)));
 
         return await this.composedSend(emailOptions);
+    }
+
+    /**
+     * Resolves which provider should handle a message: the provider mounted for its `stream`, or the
+     * default provider.
+     * @param emailOptions The message being sent.
+     * @returns The provider to use.
+     * @private
+     */
+    private resolveProvider(emailOptions: EmailOptions): Provider {
+        if (emailOptions.stream !== undefined) {
+            return this.mountedProviders.get(emailOptions.stream) ?? this.provider;
+        }
+
+        return this.provider;
     }
 
     /**
