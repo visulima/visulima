@@ -1,3 +1,17 @@
+## @visulima/path [3.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/path@3.0.0-alpha.11...@visulima/path@3.0.0-alpha.12) (2026-06-04)
+
+### Bug Fixes
+
+* **path:** widen filename() return type to string | undefined ([f88109b](https://github.com/visulima/visulima/commit/f88109bfaf4d7f0e6fdebb3080cf0fd389aa4dcb))
+
+### Miscellaneous Chores
+
+* apply eslint + prettier autofixes across packages ([c1bb784](https://github.com/visulima/visulima/commit/c1bb7848a0d93d0dfe2960c77e3cda22239c79a0))
+
+### Tests
+
+* **path:** cover barrel exports, cwd/delimiter fallbacks, and isWindows branches ([6a95447](https://github.com/visulima/visulima/commit/6a9544758ea74bc67e84f596365964406f55f536))
+
 ## @visulima/path [3.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/path@3.0.0-alpha.10...@visulima/path@3.0.0-alpha.11) (2026-05-27)
 
 ### Bug Fixes
