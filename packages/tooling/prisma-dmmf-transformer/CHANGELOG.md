@@ -1,3 +1,13 @@
+## @visulima/prisma-dmmf-transformer [3.0.0-alpha.15](https://github.com/visulima/visulima/compare/@visulima/prisma-dmmf-transformer@3.0.0-alpha.14...@visulima/prisma-dmmf-transformer@3.0.0-alpha.15) (2026-06-04)
+
+### Bug Fixes
+
+* **prisma-dmmf-transformer:** 3 bug fixes ([8ef0156](https://github.com/visulima/visulima/commit/8ef0156f998df24bbf8a84385e92eb0a158b328b))
+
+### Tests
+
+* **prisma-dmmf-transformer:** cover per-field json schema property edge branches ([58d4277](https://github.com/visulima/visulima/commit/58d4277b8f65cae64203ca569f1d4fb5990a2221))
+
 ## @visulima/prisma-dmmf-transformer [3.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/prisma-dmmf-transformer@3.0.0-alpha.13...@visulima/prisma-dmmf-transformer@3.0.0-alpha.14) (2026-05-27)
 
 ### Bug Fixes
