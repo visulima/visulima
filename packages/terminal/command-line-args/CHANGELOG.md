@@ -1,3 +1,23 @@
+## @visulima/command-line-args [2.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/command-line-args@2.0.0-alpha.10...@visulima/command-line-args@2.0.0-alpha.11) (2026-06-04)
+
+### Bug Fixes
+
+* **command-line-args:** 3 bug fixes ([d84178a](https://github.com/visulima/visulima/commit/d84178ad6f9e062404bb32b2a6918f18ab4b9e31))
+* **lint:** clear pre-existing eslint rot across packages ([#674](https://github.com/visulima/visulima/issues/674)) ([5354253](https://github.com/visulima/visulima/commit/5354253b163bd50bcefaf8a3fddf831bdb5df32b))
+
+### Miscellaneous Chores
+
+* apply eslint + prettier autofixes across packages ([c1bb784](https://github.com/visulima/visulima/commit/c1bb7848a0d93d0dfe2960c77e3cda22239c79a0))
+
+### Tests
+
+* **command-line-args:** cover validation errors, boolean/number parsing, debug, and resolve edge cases ([dbebe1d](https://github.com/visulima/visulima/commit/dbebe1db1aeceece87bf08d79f6bc83dcc8effe0))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.32
+
 ## @visulima/command-line-args [2.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/command-line-args@2.0.0-alpha.9...@visulima/command-line-args@2.0.0-alpha.10) (2026-05-27)
 
 ### Bug Fixes
