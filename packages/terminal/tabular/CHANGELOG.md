@@ -1,3 +1,24 @@
+## @visulima/tabular [4.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/tabular@4.0.0-alpha.12...@visulima/tabular@4.0.0-alpha.13) (2026-06-04)
+
+### Bug Fixes
+
+* **lint:** clear pre-existing eslint rot across packages ([#674](https://github.com/visulima/visulima/issues/674)) ([5354253](https://github.com/visulima/visulima/commit/5354253b163bd50bcefaf8a3fddf831bdb5df32b))
+* **tabular:** 3 bug fixes ([37cc0e3](https://github.com/visulima/visulima/commit/37cc0e39b5404ce2bc282517462a0596ccc9a02f)), closes [#cellVerticalPositionCache](https://github.com/visulima/visulima/issues/cellVerticalPositionCache) [#alignCellContentCache](https://github.com/visulima/visulima/issues/alignCellContentCache)
+
+### Miscellaneous Chores
+
+* apply eslint + prettier autofixes across packages ([c1bb784](https://github.com/visulima/visulima/commit/c1bb7848a0d93d0dfe2960c77e3cda22239c79a0))
+
+### Tests
+
+* **tabular:** cover border utils, row-height sizing, and table/grid edge-case layout paths ([3139e0f](https://github.com/visulima/visulima/commit/3139e0f9d35a342fb1dc9ae800dbd452c65350ef))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.13
+* **@visulima/string:** upgraded to 3.0.0-alpha.15
+
 ## @visulima/tabular [4.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/tabular@4.0.0-alpha.11...@visulima/tabular@4.0.0-alpha.12) (2026-05-27)
 
 ### Bug Fixes
