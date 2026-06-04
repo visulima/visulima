@@ -1,6 +1,6 @@
 {
     "name": "@visulima/progress-bar",
-    "version": "1.0.0-alpha.2",
+    "version": "1.0.0-alpha.3",
     "description": "Terminal progress bars with multiple styles and multi-bar support",
     "keywords": [
         "cli",
@@ -63,7 +63,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/interactive-manager": "1.0.0-alpha.3"
+        "@visulima/interactive-manager": "1.0.0-alpha.4"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",

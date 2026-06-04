@@ -1,3 +1,24 @@
+## @visulima/progress-bar [1.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/progress-bar@1.0.0-alpha.2...@visulima/progress-bar@1.0.0-alpha.3) (2026-06-04)
+
+### Bug Fixes
+
+* **progress-bar:** 3 bug fixes ([499bf5e](https://github.com/visulima/visulima/commit/499bf5e8d33438c88ff2b8802cab2a98ebe82a63))
+
+### Miscellaneous Chores
+
+* apply eslint + prettier autofixes across packages ([c1bb784](https://github.com/visulima/visulima/commit/c1bb7848a0d93d0dfe2960c77e3cda22239c79a0))
+
+### Tests
+
+* improve coverage across packages ([91bd6d3](https://github.com/visulima/visulima/commit/91bd6d3b61736e3c8bd1fc59b0b5955f76a5d323))
+* **progress-bar:** cover gradient char selection, fallbacks, eta and composite multi-bar paths ([cae30a3](https://github.com/visulima/visulima/commit/cae30a3f47b7f645e0174d4317ecd70f159cec71))
+* **progress-bar:** fix eslint errors in progress-bar test files ([9232a88](https://github.com/visulima/visulima/commit/9232a88ee2efd52a56770cea139a836c441901cf))
+
+
+### Dependencies
+
+* **@visulima/interactive-manager:** upgraded to 1.0.0-alpha.4
+
 ## @visulima/progress-bar [1.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/progress-bar@1.0.0-alpha.1...@visulima/progress-bar@1.0.0-alpha.2) (2026-05-27)
 
 ### Bug Fixes
