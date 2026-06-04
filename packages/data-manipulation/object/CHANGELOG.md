@@ -1,3 +1,17 @@
+## @visulima/object [3.0.0-alpha.15](https://github.com/visulima/visulima/compare/@visulima/object@3.0.0-alpha.14...@visulima/object@3.0.0-alpha.15) (2026-06-04)
+
+### Bug Fixes
+
+* **object:** 1 bug fix + 1 perf ([d317d30](https://github.com/visulima/visulima/commit/d317d30cf89629f3a2cea5a1f7a6e9b3967c86d4))
+
+### Miscellaneous Chores
+
+* apply eslint + prettier autofixes across packages ([c1bb784](https://github.com/visulima/visulima/commit/c1bb7848a0d93d0dfe2960c77e3cda22239c79a0))
+
+### Tests
+
+* **object:** cover recursive pick/omit non-plain-object and empty-keys branches ([79c3498](https://github.com/visulima/visulima/commit/79c34986008e0633e61a4be39dc18c2b02589e3d))
+
 ## @visulima/object [3.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/object@3.0.0-alpha.13...@visulima/object@3.0.0-alpha.14) (2026-05-27)
 
 ### Bug Fixes
