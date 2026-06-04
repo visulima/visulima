@@ -1,3 +1,23 @@
+## @visulima/colorize [2.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/colorize@2.0.0-alpha.12...@visulima/colorize@2.0.0-alpha.13) (2026-06-04)
+
+### Bug Fixes
+
+* **colorize:** 1 bug fix + 1 perf ([e5a53ed](https://github.com/visulima/visulima/commit/e5a53ed2e6761a40853afcbd0c939a558b4f1680))
+
+### Miscellaneous Chores
+
+* apply eslint + prettier autofixes across packages ([c1bb784](https://github.com/visulima/visulima/commit/c1bb7848a0d93d0dfe2960c77e3cda22239c79a0))
+* cs fixes ([#659](https://github.com/visulima/visulima/issues/659)) ([61f8912](https://github.com/visulima/visulima/commit/61f891274c1de22a36af256fc981b585b9ec6a6a))
+
+### Tests
+
+* **colorize:** cover ansi-code downsampling, gradient utils, css/unescape/template and browser paths ([70d84af](https://github.com/visulima/visulima/commit/70d84af748296eb718b527da9a25cd079b3b5138))
+
+
+### Dependencies
+
+* **@visulima/is-ansi-color-supported:** upgraded to 3.0.0-alpha.12
+
 ## @visulima/colorize [2.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/colorize@2.0.0-alpha.11...@visulima/colorize@2.0.0-alpha.12) (2026-05-27)
 
 ### Bug Fixes
