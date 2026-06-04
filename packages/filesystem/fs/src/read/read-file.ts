@@ -75,16 +75,15 @@ const readFile = async <O extends ReadFileOptions<keyof typeof decompressionMeth
 
     const { buffer, compression, encoding, flag } = options ?? {};
 
-    // @ts-expect-error - TS doesn't like our typed `encoding` option
-    return await nodeReadFile(path, flag ? { encoding, flag } : { encoding })
+    return await nodeReadFile(path, flag ? { flag } : {})
         .then(
             async (content) =>
-                await new Promise<ContentType<O> | undefined>((resolve, reject) => {
+                await new Promise<ContentType<O>>((resolve, reject) => {
                     (decompressionMethods[compression ?? "none"] as DecompressionMethod)(content as Buffer, (error, result) => {
                         if (error) {
                             reject(error);
                         } else {
-                            resolve((buffer ? result : result.toString()) as ContentType<O>);
+                            resolve((buffer ? result : result.toString((encoding ?? "utf8") as BufferEncoding)) as ContentType<O>);
                         }
                     });
                 }),

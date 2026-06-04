@@ -70,7 +70,7 @@ const writeFileSync = (path: URL | string, content: ArrayBuffer | ArrayBufferVie
 
         let stat: Stats | undefined;
 
-        nodeWriteFileSync(temporaryPath, toUint8Array(content), { encoding: options.encoding, flag: options.flag });
+        nodeWriteFileSync(temporaryPath, typeof content === "string" ? Buffer.from(content, options.encoding ?? "utf8") : toUint8Array(content), { flag: options.flag });
 
         if (pathExists && !options.overwrite) {
             stat = statSync(path);

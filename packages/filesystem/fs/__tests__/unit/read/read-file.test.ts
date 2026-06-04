@@ -70,6 +70,22 @@ describe.each([
         expect(result).toBe("hello world!");
     });
 
+    it("should read gzip file with an explicit encoding", async () => {
+        expect.assertions(1);
+
+        const result = await function_(join(fixturePath, "text.md.gz"), { compression: "gzip", encoding: "utf8" });
+
+        expect(result).toBe("hello world!");
+    });
+
+    it("should read brotli file with an explicit encoding", async () => {
+        expect.assertions(1);
+
+        const result = await function_(join(fixturePath, "note.md.br"), { compression: "brotli", encoding: "utf8" });
+
+        expect(result).toBe("hello world!");
+    });
+
     it("should read invalid compression", async () => {
         expect.assertions(1);
 

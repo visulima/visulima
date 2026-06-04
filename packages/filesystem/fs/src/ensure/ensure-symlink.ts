@@ -48,7 +48,7 @@ const ensureSymlink = async (target: URL | string, linkName: URL | string, type?
     try {
         const linkStatInfo = await lstat(linkName);
 
-        if (linkStatInfo.isSymbolicLink() && isStatsIdentical(await stat(targetRealPath), await stat(linkName))) {
+        if (linkStatInfo.isSymbolicLink()) {
             const [sourceStat, destinationStat] = await Promise.all([stat(targetRealPath), stat(linkName)]);
 
             if (isStatsIdentical(sourceStat, destinationStat)) {

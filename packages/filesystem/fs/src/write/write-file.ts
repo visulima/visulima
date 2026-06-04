@@ -70,7 +70,7 @@ const writeFile = async (path: URL | string, content: ArrayBuffer | ArrayBufferV
 
         let stat: Stats | undefined;
 
-        await nodeWriteFile(temporaryPath, toUint8Array(content), { encoding: options.encoding, flag: options.flag });
+        await nodeWriteFile(temporaryPath, typeof content === "string" ? Buffer.from(content, options.encoding ?? "utf8") : toUint8Array(content), { flag: options.flag });
 
         if (pathExists && !options.overwrite) {
             stat = await nodeStat(path);

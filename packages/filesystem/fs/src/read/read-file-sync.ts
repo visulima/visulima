@@ -68,13 +68,12 @@ const readFileSync = <O extends ReadFileOptions<keyof typeof decompressionMethod
 
     const { buffer, compression, encoding, flag } = options ?? {};
 
-    // @ts-expect-error - TS doesn't like our typed `encoding` option
-    const content = nodeReadFileSync(path, flag ? { encoding, flag } : { encoding });
+    const content = nodeReadFileSync(path, flag ? { flag: flag as string } : {});
 
     const decompress = decompressionMethods[compression ?? "none"] as DecompressionMethod;
     const decompressed = decompress(content);
 
-    return (buffer ? decompressed : decompressed.toString()) as ContentType<O>;
+    return (buffer ? decompressed : decompressed.toString((encoding ?? "utf8") as BufferEncoding)) as ContentType<O>;
 };
 
 export default readFileSync;
