@@ -21,7 +21,7 @@ const getPropertyDefinition
 
 const transformDmmf = (dmmf: DMMF.Document, transformOptions: TransformOptions = {}): JSONSchema7 => {
     // TODO: Remove default values as soon as prisma version < 3.10.0 doesn't have to be supported anymore
-    const { enums, models, types } = dmmf.datamodel;
+    const { enums, models, types = [] } = dmmf.datamodel;
     const initialJSON = {
         $schema: "http://json-schema.org/draft-07/schema#",
         definitions: {},
