@@ -1,3 +1,18 @@
+## @visulima/redact [3.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/redact@3.0.0-alpha.12...@visulima/redact@3.0.0-alpha.13) (2026-06-04)
+
+### Bug Fixes
+
+* **lint:** clear pre-existing eslint rot across packages ([#674](https://github.com/visulima/visulima/issues/674)) ([5354253](https://github.com/visulima/visulima/commit/5354253b163bd50bcefaf8a3fddf831bdb5df32b))
+* **redact:** 2 bug fixes + 1 perf ([3114fe2](https://github.com/visulima/visulima/commit/3114fe24ab406401d6339673a4df2eacb2924cb8))
+
+### Miscellaneous Chores
+
+* apply eslint + prettier autofixes across packages ([c1bb784](https://github.com/visulima/visulima/commit/c1bb7848a0d93d0dfe2960c77e3cda22239c79a0))
+
+### Tests
+
+* **redact:** cover primitive early-return, wildcard map/url params, numeric modifiers and rollback paths ([8105995](https://github.com/visulima/visulima/commit/810599579beb4845b84f49aefa572bde23440f59))
+
 ## @visulima/redact [3.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/redact@3.0.0-alpha.11...@visulima/redact@3.0.0-alpha.12) (2026-05-27)
 
 ### Bug Fixes
