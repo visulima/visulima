@@ -1,6 +1,3 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { stringify } from "qs-esm";
-
 import type { PaginationMeta, PaginationResult, Paginator as IPaginator } from "./types";
 
 type UrlsForRange = { isActive: boolean; page: number; url: string }[];
@@ -10,6 +7,14 @@ type UrlsForRange = { isActive: boolean; page: number; url: string }[];
  * `offset` and `limit` based pagination.
  */
 export default class Paginator<T = unknown> extends Array<T> implements IPaginator<T> {
+    /**
+     * Ensure inherited Array methods (map/filter/slice/...) return plain Arrays
+     * instead of partially-constructed Paginator instances.
+     */
+    public static override get [Symbol.species](): ArrayConstructor {
+        return Array;
+    }
+
     /**
      * The first page is always 1
      */
@@ -32,7 +37,8 @@ export default class Paginator<T = unknown> extends Array<T> implements IPaginat
         public currentPage: number,
         ...rows: T[]
     ) {
-        super(...rows);
+        super();
+        this.push(...rows);
 
         this.totalNumber = totalNumber;
 
@@ -102,9 +108,18 @@ export default class Paginator<T = unknown> extends Array<T> implements IPaginat
      * page.
      */
     public getUrl(page: number): string {
-        const qstring = stringify({ ...this.qs, page: Math.max(page, 1) });
+        const searchParameters = new URLSearchParams();
 
-        return `${this.url}?${qstring}`;
+        for (const [key, value] of Object.entries(this.qs)) {
+            // eslint-disable-next-line unicorn/no-null
+            if (value !== undefined && value !== null) {
+                searchParameters.append(key, String(value));
+            }
+        }
+
+        searchParameters.append("page", String(Math.max(page, 1)));
+
+        return `${this.url}?${searchParameters.toString()}`;
     }
 
     /**
@@ -169,7 +184,9 @@ export default class Paginator<T = unknown> extends Array<T> implements IPaginat
      * The Last page number.
      */
     public get lastPage(): number {
-        return Math.max(Math.ceil(this.total / this.perPage), 1);
+        const per = this.perPage > 0 ? this.perPage : 1;
+
+        return Math.max(Math.ceil(this.total / per), 1);
     }
 
     /**
