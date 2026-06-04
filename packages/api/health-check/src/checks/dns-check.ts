@@ -14,25 +14,27 @@ interface DnsOptions extends Options {
  * Register the `dns` checker to ensure that a domain is reachable.
  */
 const dnsCheck
-    = (host: string, expectedAddresses?: string[], options?: DnsOptions): Checker =>
-        async () => {
-            const { family = "all", hints, ...config } = options ?? {};
+    = (host: string, expectedAddresses?: string[], options?: DnsOptions): Checker => {
+        const { family = "all", hints, ...config } = options ?? {};
 
-            const cacheable = new CacheableLookup(config);
+        const cacheable = new CacheableLookup(config);
 
+        return async () => {
             try {
-                const meta: EntryObject = await cacheable.lookupAsync(host.replace(/^https?:\/\//, ""), {
+                const meta: EntryObject | EntryObject[] = await cacheable.lookupAsync(host.replace(/^https?:\/\//, ""), {
                     hints,
                     ...family === "all" ? { all: true } : { family },
                 } as LookupOptions);
 
-                if (Array.isArray(expectedAddresses) && !expectedAddresses.includes(meta.address)) {
+                const resolvedAddresses = Array.isArray(meta) ? meta.map((entry) => entry.address) : [meta.address];
+
+                if (Array.isArray(expectedAddresses) && !resolvedAddresses.some((address) => expectedAddresses.includes(address))) {
                     return {
                         displayName: `${DISPLAY_NAME} ${host}`,
                         health: {
                             healthy: false,
 
-                            message: `${DISPLAY_NAME} ${host} returned address ${meta.address} instead of ${expectedAddresses.join(", ")}.`,
+                            message: `${DISPLAY_NAME} ${host} returned address ${resolvedAddresses.join(", ")} instead of ${expectedAddresses.join(", ")}.`,
                             timestamp: new Date().toISOString(),
                         },
                         meta: {
@@ -68,5 +70,6 @@ const dnsCheck
                 };
             }
         };
+    };
 
 export default dnsCheck;
