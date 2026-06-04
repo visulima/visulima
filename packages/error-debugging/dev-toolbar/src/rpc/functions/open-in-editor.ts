@@ -2,6 +2,8 @@ import path from "node:path";
 
 import type { ViteDevServer } from "vite";
 
+import { isPathInsideBase } from "../../store/annotation-store";
+
 /**
  * Open a file in the editor at a specific line/column.
  * Uses `launch-editor` which knows the right CLI flags for each editor
@@ -15,7 +17,12 @@ import type { ViteDevServer } from "vite";
  * launch-editor auto-detects from EDITOR / VISUAL env vars or the running IDE.
  */
 const openInEditor = async (server: ViteDevServer, file: string, line?: number, column?: number, editor?: string): Promise<void> => {
-    const filePath = file.startsWith("/") ? file : path.join(server.config.root, file);
+    const filePath = path.resolve(server.config.root, file);
+
+    if (!isPathInsideBase(filePath, server.config.root)) {
+        throw new Error(`Refusing to open file outside project root: ${file}`);
+    }
+
     const columnPart = column === undefined ? "" : `:${column}`;
     const position = line === undefined ? "" : `:${line}${columnPart}`;
     const target = `${filePath}${position}`;

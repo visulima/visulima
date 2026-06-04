@@ -66,9 +66,8 @@ export interface ServerFunctions {
      * @param file File path
      * @param line Line number (1-based)
      * @param column Column number (1-based)
-     * @param editor Editor override (e.g. "code", "webstorm") — empty string means auto-detect
      */
-    openInEditor: (file: string, line?: number, column?: number, editor?: string) => Promise<void>;
+    openInEditor: (file: string, line?: number, column?: number) => Promise<void>;
 
     /**
      * Read file contents

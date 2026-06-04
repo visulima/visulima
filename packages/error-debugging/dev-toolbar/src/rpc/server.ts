@@ -2,6 +2,7 @@ import type { ViteDevServer, WebSocketClient } from "vite";
 
 import type { CreateAnnotationData, UpdateAnnotationData } from "../types/annotations";
 import type { ClientFunctions, ServerFunctions, ServerRPCContext } from "../types/rpc";
+import { isPathInsideBase } from "../store/annotation-store";
 import { createAnnotation, deleteAnnotation, getAnnotations, getScreenshot, saveScreenshot, updateAnnotation } from "./functions/annotations";
 import { getStaticAssets } from "./functions/assets";
 import { getModuleGraph } from "./functions/module-graph";
@@ -22,11 +23,16 @@ const createDefaultServerFunctions = (server: ViteDevServer, options: { editor?:
         getStaticAssets: async () => getStaticAssets(server),
         getTailwindConfig: async () => getTailwindConfig(server),
         getViteConfig: async () => getViteConfig(server),
-        openInEditor: async (file: string, line?: number, column?: number, editor?: string) =>
-            openInEditor(server, file, line, column, editor || options.editor),
+        openInEditor: async (file: string, line?: number, column?: number) => openInEditor(server, file, line, column, options.editor),
         readFile: async (path: string) => {
             const { readFile } = await import("node:fs/promises");
-            const filePath = path.startsWith("/") ? path : `${server.config.root}/${path}`;
+            const { resolve } = await import("node:path");
+            const root = server.config.root;
+            const filePath = resolve(root, path);
+
+            if (!isPathInsideBase(filePath, root)) {
+                throw new Error(`Refusing to read file outside project root: ${path}`);
+            }
 
             return readFile(filePath, "utf8");
         },

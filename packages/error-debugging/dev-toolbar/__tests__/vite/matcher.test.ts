@@ -42,6 +42,17 @@ describe("vite/matcher", () => {
             expect(matcher([/\.tsx?$/], "/style.css")).toBe(false);
         });
 
+        it("anchors glob patterns so they do not over-match substrings", () => {
+            expect.assertions(4);
+
+            // A bare component-name glob must not match names that merely contain it.
+            expect(matcher(["Button"], "Button")).toBe(true);
+            expect(matcher(["Button"], "IconButton")).toBe(false);
+            // A path glob must not match a value with extra leading/trailing characters.
+            expect(matcher(["src/foo.tsx"], "src/foo.tsx")).toBe(true);
+            expect(matcher(["src/foo.tsx"], "zzz/src/foo.tsxxx")).toBe(false);
+        });
+
         it("matches when any pattern in a mixed list matches", () => {
             expect.assertions(2);
 
