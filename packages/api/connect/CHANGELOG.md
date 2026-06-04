@@ -1,3 +1,10 @@
+## @visulima/connect [4.0.0-alpha.30](https://github.com/visulima/visulima/compare/@visulima/connect@4.0.0-alpha.29...@visulima/connect@4.0.0-alpha.30) (2026-06-04)
+
+### Bug Fixes
+
+* **connect:** 2 bug fixes ([dec9933](https://github.com/visulima/visulima/commit/dec993367ed1bbf635db541264aa7cb2d914b61c))
+* **lint:** clear pre-existing eslint rot across packages ([#674](https://github.com/visulima/visulima/issues/674)) ([5354253](https://github.com/visulima/visulima/commit/5354253b163bd50bcefaf8a3fddf831bdb5df32b))
+
 ## @visulima/connect [4.0.0-alpha.29](https://github.com/visulima/visulima/compare/@visulima/connect@4.0.0-alpha.28...@visulima/connect@4.0.0-alpha.29) (2026-06-02)
 
 ### Bug Fixes
