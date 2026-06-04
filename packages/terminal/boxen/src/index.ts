@@ -7,7 +7,7 @@
  */
 
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { alignText, getStringWidth, wordWrap, WrapMode } from "@visulima/string";
+import { alignText, getStringWidth, slice, wordWrap, WrapMode } from "@visulima/string";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import terminalSize from "terminal-size";
 
@@ -72,6 +72,9 @@ const getBorderChars = (borderStyle: BorderStyle | string): BorderStyle => {
 
         characters = cliBox;
     } else {
+        // eslint-disable-next-line no-param-reassign
+        borderStyle = { ...borderStyle };
+
         // Ensure retro-compatibility
         if (typeof borderStyle.vertical === "string") {
             // eslint-disable-next-line no-param-reassign
@@ -122,7 +125,9 @@ const wrapText = (
         }
 
         case "right": {
-            title = `${colorizeBorder(horizontal.slice(textWidth + 2), getStringWidth(horizontal.slice(textWidth)) + 2)} ${text} `;
+            const seg = horizontal.slice(textWidth + 2);
+
+            title = `${colorizeBorder(seg, getStringWidth(seg))} ${text} `;
 
             break;
         }
@@ -131,16 +136,16 @@ const wrapText = (
             // eslint-disable-next-line no-param-reassign
             horizontal = horizontal.slice(textWidth);
 
-            if (horizontal.length % 2 === 1) {
+            if (getStringWidth(horizontal) % 2 === 1) {
                 // This is needed in case the length is odd
                 // eslint-disable-next-line no-param-reassign
-                horizontal = horizontal.slice(Math.floor(horizontal.length / 2));
+                horizontal = slice(horizontal, Math.floor(getStringWidth(horizontal) / 2));
 
                 title
-                    = colorizeBorder(horizontal.slice(1), getStringWidth(horizontal.slice(1))) + text + colorizeBorder(horizontal, getStringWidth(horizontal)); // We reduce the left part of one character to avoid the bar to go beyond its limit
+                    = colorizeBorder(slice(horizontal, 1), getStringWidth(slice(horizontal, 1))) + text + colorizeBorder(horizontal, getStringWidth(horizontal)); // We reduce the left part of one character to avoid the bar to go beyond its limit
             } else {
                 // eslint-disable-next-line no-param-reassign
-                horizontal = horizontal.slice(horizontal.length / 2);
+                horizontal = slice(horizontal, getStringWidth(horizontal) / 2);
 
                 const horizontalLength = getStringWidth(horizontal);
 
@@ -328,10 +333,10 @@ const boxContent = (content: string, contentWidth: number, columnsWidth: number,
     return result;
 };
 
-const sanitizeOptions = (options: DimensionOptions): DimensionOptions => {
+const sanitizeOptions = (options: DimensionOptions, terminal: { columns: number; rows: number }): DimensionOptions => {
     // If fullscreen is enabled, max-out unspecified width/height
     if (options.fullscreen) {
-        let newDimensions = terminalSize();
+        let newDimensions = terminal;
 
         if (typeof options.fullscreen === "function") {
             newDimensions = options.fullscreen(newDimensions.columns, newDimensions.rows);
@@ -368,9 +373,14 @@ const formatTitle = (title: string, borderStyle: BorderStyle | string): string =
 };
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
-const determineDimensions = (text: string, columnsWidth: number, options: DimensionOptions): DimensionOptions => {
+const determineDimensions = (
+    text: string,
+    columnsWidth: number,
+    options: DimensionOptions,
+    terminal: { columns: number; rows: number },
+): DimensionOptions => {
     // eslint-disable-next-line no-param-reassign
-    options = sanitizeOptions(options);
+    options = sanitizeOptions(options, terminal);
 
     const widthOverride = options.width !== undefined;
     const borderWidth = getBorderWidth(options.borderStyle);
@@ -384,7 +394,7 @@ const determineDimensions = (text: string, columnsWidth: number, options: Dimens
     // If title and width are provided, title adheres to fixed width
     if (options.headerText && widthOverride) {
         // eslint-disable-next-line no-param-reassign
-        options.headerText = options.headerText.slice(0, Math.max(0, (options.width as number) - 2));
+        options.headerText = slice(options.headerText, 0, Math.max(0, (options.width as number) - 2));
 
         if (options.headerText) {
             // eslint-disable-next-line no-param-reassign
@@ -392,7 +402,7 @@ const determineDimensions = (text: string, columnsWidth: number, options: Dimens
         }
     } else if (options.headerText) {
         // eslint-disable-next-line no-param-reassign
-        options.headerText = options.headerText.slice(0, Math.max(0, maxWidth - 2));
+        options.headerText = slice(options.headerText, 0, Math.max(0, maxWidth - 2));
 
         // Recheck if title isn't empty now
         if (options.headerText) {
@@ -479,9 +489,10 @@ export const boxen = (text: string, options: Options = {}): string => {
         text = text.replaceAll("\t", " ".repeat(config.transformTabToSpace));
     }
 
-    const { columns } = terminalSize();
+    const terminal = terminalSize();
+    const { columns } = terminal;
 
-    config = determineDimensions(text, columns, config);
+    config = determineDimensions(text, columns, config, terminal);
 
     return boxContent(makeContentText(text, config as ContentTextOptions), config.width as number, columns, config);
 };
