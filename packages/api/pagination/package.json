@@ -82,7 +82,6 @@
         "openapi-types": "catalog:dev",
         "prettier": "catalog:lint",
         "publint": "catalog:dev",
-        "qs-esm": "catalog:dev",
         "rimraf": "catalog:node",
         "semantic-release": "catalog:cli",
         "typescript": "catalog:tsc",
