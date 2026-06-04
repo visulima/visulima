@@ -17,10 +17,10 @@ const isColorSupported = (): ColorSupportLevel =>
             if (navigator.userAgentData) {
                 // @ts-expect-error - `navigator` is not defined in Node.
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
-                const brand = navigator.userAgentData.brands.find(({ b }: { b: string }) => b === "Chromium");
+                const brand = navigator.userAgentData.brands.find(({ brand }: { brand: string }) => brand === "Chromium");
 
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                if (brand?.version > 93) {
+                if (Number(brand?.version) > 93) {
                     return SPACE_TRUE_COLORS;
                 }
             }

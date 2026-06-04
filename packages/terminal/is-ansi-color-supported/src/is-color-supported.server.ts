@@ -74,9 +74,12 @@ const isColorSupportedFactory = (stdName: "err" | "out"): ColorSupportLevel => {
     } else if (forceColorValueIsString && (forceColorValue as string).length === 0) {
         forceColor = SPACE_16_COLORS;
     } else if (forceColorValueIsString && (forceColorValue as string).length > 0) {
-        forceColor = Math.min(Number.parseInt(forceColorValue as string, 10), 3) as ColorSupportLevel;
+        const parsed = Number.parseInt(forceColorValue as string, 10);
+
+        forceColor = Number.isNaN(parsed) ? undefined : (Math.min(parsed, 3) as ColorSupportLevel);
     } else if (forceColorValueIsNumber) {
-        forceColor = Math.min(forceColorValue, 3) as ColorSupportLevel;
+        // Deno's `env.toObject()` (and other runtimes) can yield a raw numeric FORCE_COLOR value.
+        forceColor = Number.isNaN(forceColorValue) ? undefined : (Math.min(forceColorValue, 3) as ColorSupportLevel);
     }
 
     if (forceColorValue !== "true" && forceColorValue !== "false" && forceColor !== undefined && forceColor < 4) {
@@ -209,8 +212,8 @@ const isColorSupportedFactory = (stdName: "err" | "out"): ColorSupportLevel => {
         // PM2 does not set process.stdout.isTTY, but colors may be supported (depends on actual terminal)
         isTTY = true;
     } else {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        isTTY = proc[`std${stdName}`] && "isTTY" in proc[`std${stdName}`];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        isTTY = Boolean(proc[`std${stdName}`]?.isTTY);
     }
 
     if (isTTY && TERM_COLOR_RE.test(<string>environment.TERM)) {
