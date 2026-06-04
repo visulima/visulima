@@ -47,9 +47,9 @@ describe(listHandler, () => {
             resourceName: "users",
         })) as { data: { data: unknown[]; meta: Record<string, unknown> }; status: number };
 
-        // listHandler mutates query.skip/limit
+        // listHandler mutates query.skip/take
         expect(query.skip).toBe(2);
-        expect(query.limit).toBe(2);
+        expect((query as { take?: number }).take).toBe(2);
         expect(result.data.data).toStrictEqual(items);
     });
 
@@ -75,7 +75,7 @@ describe(listHandler, () => {
             resourceName: "users",
         });
 
-        expect(query.limit).toBe(5);
+        expect((query as { take?: number }).take).toBe(5);
         expect(query.skip).toBe(0);
     });
 

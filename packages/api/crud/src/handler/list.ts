@@ -28,7 +28,7 @@ const listHandler: ListHandler = async ({ adapter, pagination, query, resourceNa
         // eslint-disable-next-line no-param-reassign
         query.skip = (paginationOptions.page - 1) * paginationOptions.perPage;
         // eslint-disable-next-line no-param-reassign
-        query.limit = paginationOptions.perPage;
+        (query as { take?: number }).take = paginationOptions.perPage;
     }
 
     const resources = await adapter.getAll(resourceName, query);
