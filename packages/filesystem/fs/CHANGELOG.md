@@ -1,3 +1,15 @@
+## @visulima/fs [5.0.0-alpha.30](https://github.com/visulima/visulima/compare/@visulima/fs@5.0.0-alpha.29...@visulima/fs@5.0.0-alpha.30) (2026-06-04)
+
+### Bug Fixes
+
+* **fs:** 2 bug fixes + 1 perf ([2fde6e6](https://github.com/visulima/visulima/commit/2fde6e6253556e5934775584d88a204bb4c8d445))
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 3.0.0-alpha.12
+* **@visulima/error:** upgraded to 6.0.0-alpha.32
+
 ## @visulima/fs [5.0.0-alpha.29](https://github.com/visulima/visulima/compare/@visulima/fs@5.0.0-alpha.28...@visulima/fs@5.0.0-alpha.29) (2026-06-02)
 
 ### Bug Fixes
