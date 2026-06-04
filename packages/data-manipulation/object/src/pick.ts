@@ -20,7 +20,7 @@ const isFullArray = (input: any) => Array.isArray(input) && input.length > 0;
  * @param keys an array of prop names you want to keep - allows dot-notation for nested props, eg. `nested.prop` will keep just `{ nested: { prop: 1 } }`
  * @returns a new object with just the picked props
  */
-const pick = <T extends { [key in string]: unknown }, K extends Paths<T>>(object: T, keys: Paths<T>[]): PickDeep<T, K> => {
+const pick = <T extends { [key in string]: unknown }, const K extends Paths<T>>(object: T, keys: K[]): PickDeep<T, K> => {
     if (!isFullArray(keys)) {
         return {} as PickDeep<T, K>;
     }
