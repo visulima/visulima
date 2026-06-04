@@ -1,3 +1,16 @@
+## @visulima/error-handler [2.0.0-alpha.30](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.0-alpha.29...@visulima/error-handler@2.0.0-alpha.30) (2026-06-04)
+
+### Bug Fixes
+
+* **error-handler:** 3 bug fixes ([550c3f1](https://github.com/visulima/visulima/commit/550c3f16fb702d01c24192c434ea190e83d2a21b))
+* **lint:** clear pre-existing eslint rot across packages ([#674](https://github.com/visulima/visulima/issues/674)) ([5354253](https://github.com/visulima/visulima/commit/5354253b163bd50bcefaf8a3fddf831bdb5df32b))
+
+
+### Dependencies
+
+* **@visulima/boxen:** upgraded to 3.0.0-alpha.12
+* **@visulima/error:** upgraded to 6.0.0-alpha.32
+
 ## @visulima/error-handler [2.0.0-alpha.29](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.0-alpha.28...@visulima/error-handler@2.0.0-alpha.29) (2026-06-02)
 
 ### Bug Fixes
