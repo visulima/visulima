@@ -26,12 +26,12 @@ export const isUint8Array: (x: unknown) => x is Uint8Array
  * @param txt The input string, array of strings, or template strings array.
  * @returns A Uint8Array representing the ASCII encoded string.
  */
-export const asciiToUint8Array = (txt: TemplateStringsArray | string | [string]): Uint8Array => {
+export const asciiToUint8Array = (txt: TemplateStringsArray | string | [string], ...subs: unknown[]): Uint8Array => {
     if (typeof txt === "string") {
         return asciiToUint8Array([txt]);
     }
 
-    const [input] = Array.isArray(txt) ? txt : [String.raw(txt)]; // Handle TemplateStringsArray
+    const input = "raw" in txt ? String.raw(txt, ...subs) : txt[0]; // Handle TemplateStringsArray (with interpolations) vs [string]
     const inputLength = input.length;
     const result = new Uint8Array(inputLength); // Renamed 'res' to 'result'
 
@@ -50,12 +50,12 @@ export const asciiToUint8Array = (txt: TemplateStringsArray | string | [string])
  * @param txt The input string, array of strings, or template strings array.
  * @returns A Uint8Array representing the UTF-8 encoded string.
  */
-export const utf8ToUint8Array = (txt: TemplateStringsArray | [string] | string): Uint8Array => {
+export const utf8ToUint8Array = (txt: TemplateStringsArray | [string] | string, ...subs: unknown[]): Uint8Array => {
     if (typeof txt === "string") {
         return utf8ToUint8Array([txt]);
     }
 
-    const [input] = Array.isArray(txt) ? txt : [String.raw(txt)]; // Handle TemplateStringsArray
+    const input = "raw" in txt ? String.raw(txt, ...subs) : txt[0]; // Handle TemplateStringsArray (with interpolations) vs [string]
 
     return bufferToUint8Array(Buffer.from(input, "utf8"));
 };
@@ -88,10 +88,6 @@ export const toUint8Array = (data: unknown): Uint8Array => {
     }
 
     if (typeof Buffer === "function") {
-        if (Buffer.isBuffer(data)) {
-            return bufferToUint8Array(data); // Use our converter for consistency
-        }
-
         // Attempt to convert string via Buffer.from.
         // Other Buffer-compatible types like ArrayBuffer or ArrayBufferView (which Buffer is)
         // are typically handled by earlier checks or are Buffers themselves.
