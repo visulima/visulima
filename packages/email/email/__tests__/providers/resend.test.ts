@@ -200,9 +200,9 @@ describe(resendProvider, () => {
 
             const payload = JSON.parse(callArgs[2] as string);
 
-            expect(payload.from).toBe("Sender <sender@example.com>");
+            expect(payload.from).toBe("\"Sender\" <sender@example.com>");
 
-            expect(payload.to).toStrictEqual(["User 1 <user1@example.com>", "user2@example.com"]);
+            expect(payload.to).toStrictEqual(["\"User 1\" <user1@example.com>", "user2@example.com"]);
         });
 
         it("should include tags if provided", async () => {

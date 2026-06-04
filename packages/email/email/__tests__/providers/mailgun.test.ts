@@ -239,8 +239,8 @@ describe(mailgunProvider, () => {
             const callArgs = makeRequestMock.mock.calls[1]; // Second call is sendEmail
             const body = callArgs[2] as string;
 
-            expect(body).toContain("from=Sender%20%3Csender%40example.com%3E");
-            expect(body).toContain("to=User%201%20%3Cuser1%40example.com%3E%2Cuser2%40example.com");
+            expect(body).toContain("from=%22Sender%22%20%3Csender%40example.com%3E");
+            expect(body).toContain("to=%22User%201%22%20%3Cuser1%40example.com%3E%2Cuser2%40example.com");
         });
 
         it("should include CC and BCC recipients", async () => {

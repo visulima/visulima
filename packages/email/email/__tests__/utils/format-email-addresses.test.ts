@@ -19,6 +19,6 @@ describe(formatEmailAddresses, () => {
         const addresses: EmailAddress[] = [{ email: "user1@example.com" }, { email: "user2@example.com", name: "User 2" }];
         const formatted = formatEmailAddresses(addresses);
 
-        expect(formatted).toBe("user1@example.com, User 2 <user2@example.com>");
+        expect(formatted).toBe("user1@example.com, \"User 2\" <user2@example.com>");
     });
 });
