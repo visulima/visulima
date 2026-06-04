@@ -6,6 +6,7 @@ import type { TraceMap } from "@jridgewell/trace-mapping";
 import { AnyMap } from "@jridgewell/trace-mapping";
 
 const INLINE_SOURCEMAP_REGEX = /^data:application\/json[^,]+base64,/;
+const REMOTE_URL_REGEX = /^[a-z][a-z0-9+.-]*:\/\//i;
 // eslint-disable-next-line regexp/no-super-linear-backtracking, sonarjs/regex-complexity, sonarjs/slow-regex
 const SOURCEMAP_REGEX = /\/\/[@#][ \t]+sourceMappingURL=([^\s'"]+)[ \t]*$|\/\*[@#][ \t]+sourceMappingURL=([^*]+?)[ \t]*\*\/[ \t]*$/;
 const LINE_SPLIT_REGEX = /\r?\n/;
@@ -39,7 +40,21 @@ const resolveSourceMapUrl = (sourceFile: string, sourcePath: string): string | u
         return undefined;
     }
 
-    return isInlineMap(url) ? url : resolve(sourcePath, url);
+    if (isInlineMap(url)) {
+        return url;
+    }
+
+    // Unsupported data: URI variants (e.g. URL-encoded, non-base64) are not decodable here; skip rather than treat as a path.
+    if (/^data:/i.test(url)) {
+        return undefined;
+    }
+
+    // A remote (e.g. http/https) sourceMappingURL cannot be read from the local filesystem.
+    if (REMOTE_URL_REGEX.test(url) && !url.startsWith("file:")) {
+        return undefined;
+    }
+
+    return resolve(sourcePath, url);
 };
 
 const decodeInlineMap = (data: string) => {
@@ -66,8 +81,10 @@ const loadSourceMap = (filename: string): TraceMap | undefined => {
 
     let traceMapContent: string | undefined;
 
+    const inline = isInlineMap(sourceMapUrl);
+
     // If it's an inline map, decode it and pass it through the same consumer factory
-    if (isInlineMap(sourceMapUrl)) {
+    if (inline) {
         traceMapContent = decodeInlineMap(sourceMapUrl);
     } else {
         try {
@@ -79,7 +96,7 @@ const loadSourceMap = (filename: string): TraceMap | undefined => {
     }
 
     try {
-        const mapBaseUrl = isInlineMap(sourceMapUrl) ? sourceMapUrl : pathToFileURL(sourceMapUrl).href;
+        const mapBaseUrl = inline ? sourceMapUrl : pathToFileURL(sourceMapUrl).href;
 
         return new AnyMap(traceMapContent as string, mapBaseUrl);
     } catch (error: unknown) {
