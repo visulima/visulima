@@ -123,7 +123,7 @@ const getJSONSchemaForPropertyReference = (field: DMMF.Field, { persistOriginalT
         ? reference
         : {
             anyOf: [reference, { type: "null" }],
-            ...persistOriginalType && {
+            ...(persistOriginalType === "true") && {
                 originalType: field.type,
             },
         };
@@ -167,7 +167,7 @@ const getPropertyDefinition = (modelMetaData: ModelMetaData, transformOptions: T
 
     return {
         type,
-        ...transformOptions.persistOriginalType && {
+        ...(transformOptions.persistOriginalType === "true") && {
             originalType: field.type,
         },
         ...isDefined(defaultValue) && { default: defaultValue },

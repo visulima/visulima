@@ -22,7 +22,7 @@ const getJSONSchemaModel
                 type: "object",
             };
 
-            if (transformOptions.includeRequiredFields) {
+            if (transformOptions.includeRequiredFields === "true") {
             // eslint-disable-next-line unicorn/no-array-reduce
                 definition.required = definitionPropertiesMap.reduce((filtered: string[], [name, , fieldMetaData]) => {
                     if (fieldMetaData.required && fieldMetaData.isScalar && !fieldMetaData.hasDefaultValue) {
