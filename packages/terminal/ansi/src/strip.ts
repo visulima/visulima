@@ -13,7 +13,7 @@ const regex = ansiRegex();
  * Removes ANSI escape codes from a string.
  *
  * This function first removes OSC (Operating System Command) sequences like title strings
- * (e.g., `\u001B]0;title\u0007`) and then uses a comprehensive regex (from the `ansi-regex` package)
+ * (e.g., `]0;title`) and then uses a comprehensive regex (from the `ansi-regex` package)
  * to strip all other ANSI escape codes.
  * @param input The string from which to remove ANSI escape codes.
  * @returns The input string with all ANSI escape codes stripped.
@@ -25,13 +25,13 @@ const regex = ansiRegex();
  * const strippedText = strip(textWithAnsi);
  * console.log(strippedText); // Output: "Hello, World!"
  *
- * const titleSequence = "\u001B]0;My Window Title\u0007Some content";
+ * const titleSequence = "]0;My Window TitleSome content";
  * const strippedTitle = strip(titleSequence);
  * console.log(strippedTitle); // Output: "Some content"
  * ```
  */
 // eslint-disable-next-line no-control-regex
-const OSC_TITLE_REGEX = /\u001B\]0;.*\u0007/;
+const OSC_TITLE_REGEX = /\]0;[\s\S]*?/g;
 
 const strip = (input: string): string => input.replace(OSC_TITLE_REGEX, "").replace(regex, "");
 

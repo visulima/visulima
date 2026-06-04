@@ -18,16 +18,8 @@ import { DCS, SEP, ST } from "./constants";
 const stringToHex = (input: string): string => {
     let hex = "";
 
-    for (let index = 0; index < input.length; index += 1) {
-        const charCode = input.codePointAt(index);
-
-        if (charCode === undefined) {
-            continue;
-        }
-
-        const byteHex = charCode.toString(16).toUpperCase();
-
-        hex += byteHex.length === 1 ? `0${byteHex}` : byteHex;
+    for (const byte of new TextEncoder().encode(input)) {
+        hex += byte.toString(16).toUpperCase().padStart(2, "0");
     }
 
     return hex;
