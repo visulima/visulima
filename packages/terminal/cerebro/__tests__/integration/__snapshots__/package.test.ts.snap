@@ -17,7 +17,7 @@ exports[`usage \`@visulima/cerebro\` npm package > should work as ESM package 1`
 
  Global Options 
 
-  --verbose boolean       Turn on verbose output              
+  -v, --verbose boolean   Turn on verbose output              
   --debug boolean         Turn on debugging output            
   -h, --help boolean      Print out helpful usage information 
   -q, --quiet boolean     Silence output                      
