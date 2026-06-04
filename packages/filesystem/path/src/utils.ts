@@ -104,7 +104,7 @@ export const resolveAlias = (path: string, aliases: Record<string, string>): str
  * @param path The full path of the file from which to extract the filename.
  * @returns the filename without the extension, or `undefined` if the filename cannot be extracted.
  */
-export const filename = (path: string): string => <string>FILENAME_RE.exec(path)?.[2];
+export const filename = (path: string): string | undefined => FILENAME_RE.exec(path)?.[2];
 
 /**
  * Reverting the resolveAlias method.
