@@ -278,6 +278,10 @@ const colorEquals = (color1: string | [number, number, number] | null, color2: s
 // https://github.com/denoland/deno/blob/ece2a3de5b19588160634452638aa656218853c5/ext/console/01_console.js#L2821
 // eslint-disable-next-line sonarjs/cognitive-complexity
 export const parseCss = (cssString: string): CssObject => {
+    if (typeof cssString !== "string") {
+        return getDefaultCss();
+    }
+
     const css = getDefaultCss();
 
     const rawEntries = [];

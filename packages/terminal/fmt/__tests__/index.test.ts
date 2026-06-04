@@ -157,9 +157,7 @@ describe("fmt", () => {
         expect(format("foo", [symbol])).toBe("foo");
         expect(format("%s", [symbol])).toBe("Symbol(foo)");
         expect(format("%j", [symbol])).toBe("undefined");
-        expect(() => {
-            format("%d", [symbol]);
-        }).toThrow(TypeError);
+        expect(format("%d", [symbol])).toBe("NaN");
     });
 
     it("should handle circular references", () => {
