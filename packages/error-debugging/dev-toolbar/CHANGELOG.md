@@ -1,3 +1,18 @@
+## @visulima/dev-toolbar [1.0.0-alpha.32](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.0-alpha.31...@visulima/dev-toolbar@1.0.0-alpha.32) (2026-06-04)
+
+### Bug Fixes
+
+* **dev-toolbar:** 3 bug fixes ([ff28161](https://github.com/visulima/visulima/commit/ff281617a8346dcfae90db522507b8a7c0c94c61))
+
+### Miscellaneous Chores
+
+* apply eslint + prettier autofixes across packages ([c1bb784](https://github.com/visulima/visulima/commit/c1bb7848a0d93d0dfe2960c77e3cda22239c79a0))
+
+### Tests
+
+* **dev-toolbar:** cover rpc functions/server/client, timeline, hooks, messaging presets and vite matcher ([16f7dd8](https://github.com/visulima/visulima/commit/16f7dd85180082d48016193255b4d251f4d145ea))
+* **dev-toolbar:** cover vite-config rpc function branches ([1c66865](https://github.com/visulima/visulima/commit/1c668656af8b595c1bb7ac37f6249eb3d21feecc))
+
 ## @visulima/dev-toolbar [1.0.0-alpha.31](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.0-alpha.30...@visulima/dev-toolbar@1.0.0-alpha.31) (2026-05-27)
 
 ### Bug Fixes
