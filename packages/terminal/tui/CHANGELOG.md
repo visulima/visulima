@@ -1,3 +1,20 @@
+## @visulima/tui [1.0.0-alpha.22](https://github.com/visulima/visulima/compare/@visulima/tui@1.0.0-alpha.21...@visulima/tui@1.0.0-alpha.22) (2026-06-04)
+
+### Bug Fixes
+
+* **tui:** 2 bug fixes + 2 perf ([53eb884](https://github.com/visulima/visulima/commit/53eb884de4609e6fb2c0ed8af7773673c0b83b2f))
+
+
+### Dependencies
+
+* **@visulima/ansi:** upgraded to 4.0.0-alpha.16
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.13
+* **@visulima/error:** upgraded to 6.0.0-alpha.32
+* **@visulima/spinner:** upgraded to 1.0.0-alpha.3
+* **@visulima/string:** upgraded to 3.0.0-alpha.15
+* **@visulima/boxen:** upgraded to 3.0.0-alpha.12
+* **@visulima/tabular:** upgraded to 4.0.0-alpha.13
+
 ## @visulima/tui [1.0.0-alpha.21](https://github.com/visulima/visulima/compare/@visulima/tui@1.0.0-alpha.20...@visulima/tui@1.0.0-alpha.21) (2026-06-02)
 
 ### Miscellaneous Chores
