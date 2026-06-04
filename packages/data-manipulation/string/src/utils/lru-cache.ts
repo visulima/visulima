@@ -3,12 +3,9 @@ class LRUCache<K, V> {
 
     private readonly cache: Map<K, V>;
 
-    private keyOrder: K[];
-
     public constructor(capacity: number) {
         this.capacity = capacity;
         this.cache = new Map<K, V>();
-        this.keyOrder = [];
     }
 
     public get(key: K): V | undefined {
@@ -16,11 +13,13 @@ class LRUCache<K, V> {
             return undefined;
         }
 
-        // Move key to the end (most recently used)
-        this.keyOrder = this.keyOrder.filter((k) => k !== key);
-        this.keyOrder.push(key);
+        // Move key to the end (most recently used) using Map insertion order
+        const value = this.cache.get(key) as V;
 
-        return this.cache.get(key);
+        this.cache.delete(key);
+        this.cache.set(key, value);
+
+        return value;
     }
 
     public has(key: K): boolean {
@@ -30,29 +29,25 @@ class LRUCache<K, V> {
     public set(key: K, value: V): void {
         if (this.cache.has(key)) {
             // Update existing key's position
-            this.keyOrder = this.keyOrder.filter((k) => k !== key);
+            this.cache.delete(key);
         } else if (this.cache.size >= this.capacity) {
-            // Remove least recently used item
-            const lruKey = this.keyOrder.shift();
+            // Remove least recently used item (first inserted key)
+            const lruKey = this.cache.keys().next().value;
 
             if (lruKey !== undefined) {
                 this.cache.delete(lruKey);
             }
         }
 
-        // Add new key
         this.cache.set(key, value);
-        this.keyOrder.push(key);
     }
 
     public delete(key: K): void {
         this.cache.delete(key);
-        this.keyOrder = this.keyOrder.filter((k) => k !== key);
     }
 
     public clear(): void {
         this.cache.clear();
-        this.keyOrder = [];
     }
 
     public size(): number {

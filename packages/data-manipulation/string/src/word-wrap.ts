@@ -1,6 +1,6 @@
-import { ANSI_ESCAPE_BELL, ANSI_SGR_TERMINATOR, ESCAPES, RE_ZERO_WIDTH } from "./constants";
+import { ANSI_ESCAPE_BELL, ANSI_ESCAPE_LINK, ANSI_SGR_TERMINATOR, ESCAPES, RE_ZERO_WIDTH } from "./constants";
 import { getStringWidth } from "./get-string-width";
-import { checkEscapeSequence, processAnsiString } from "./utils/ansi-parser";
+import { processAnsiString } from "./utils/ansi-parser";
 import AnsiStateTracker from "./utils/ansi-state-tracker";
 import preserveAnsi from "./utils/preserve-ansi";
 
@@ -93,10 +93,7 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
             escapeBuffer = char;
             currentLine += char;
 
-            // eslint-disable-next-line @typescript-eslint/no-misused-spread -- intentional: Unicode code point splitting needed for ANSI detection
-            const escapeInfo = checkEscapeSequence([...string], index);
-
-            isInsideLinkEscape = escapeInfo.isInsideLinkEscape;
+            isInsideLinkEscape = string.startsWith(ANSI_ESCAPE_LINK, index + 1);
             index += 1;
 
             continue;
