@@ -1,3 +1,13 @@
+## @visulima/is-ansi-color-supported [3.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@3.0.0-alpha.11...@visulima/is-ansi-color-supported@3.0.0-alpha.12) (2026-06-04)
+
+### Bug Fixes
+
+* **is-ansi-color-supported:** 2 bug fixes ([0e1fd0c](https://github.com/visulima/visulima/commit/0e1fd0cba80160781b8136d44506afd7f3219dd8))
+
+### Tests
+
+* **is-ansi-color-supported:** cover edge-light runtime, browser userAgentData, and server ci/term paths ([8633292](https://github.com/visulima/visulima/commit/863329255aaa41530e741808b197bebd8f63b70d))
+
 ## @visulima/is-ansi-color-supported [3.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@3.0.0-alpha.10...@visulima/is-ansi-color-supported@3.0.0-alpha.11) (2026-05-27)
 
 ### Bug Fixes
