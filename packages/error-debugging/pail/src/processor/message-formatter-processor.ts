@@ -35,6 +35,9 @@ class MessageFormatterProcessor<L extends string = string> implements StringifyA
     /** Custom formatters for message interpolation */
     readonly #formatters: Record<string, FormatterFunction> | undefined;
 
+    /** Cached formatter built from #formatters; stringify is resolved live via the closure */
+    #formatter: typeof format | undefined;
+
     /**
      * Creates a new MessageFormatterProcessor instance.
      * @param options Configuration options
@@ -61,16 +64,20 @@ class MessageFormatterProcessor<L extends string = string> implements StringifyA
      * @returns The processed metadata with formatted messages
      */
     public process(meta: Meta<L>): Meta<L> {
-        const formatter = build({
-            formatters: this.#formatters,
-            stringify: (value: unknown) => {
-                if (!this.#stringify) {
-                    return JSON.stringify(value);
-                }
+        if (this.#formatter === undefined) {
+            this.#formatter = build({
+                formatters: this.#formatters,
+                stringify: (value: unknown) => {
+                    if (!this.#stringify) {
+                        return JSON.stringify(value);
+                    }
 
-                return this.#stringify(value);
-            },
-        });
+                    return this.#stringify(value);
+                },
+            });
+        }
+
+        const formatter = this.#formatter;
 
         if (meta.message !== undefined) {
             // eslint-disable-next-line no-param-reassign

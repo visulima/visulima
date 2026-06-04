@@ -35,6 +35,8 @@ class RotatingFileStream {
 
     readonly #createRfsStream: typeof createRotatingStream | undefined;
 
+    readonly #handler: SafeStreamHandler | undefined;
+
     /**
      * Creates a new RotatingFileStream instance.
      * @param filePath Path to the log file
@@ -56,6 +58,7 @@ class RotatingFileStream {
 
         if (!this.#immediate) {
             this.#stream = this.#createRfsStream(this.#filePath, options);
+            this.#handler = new SafeStreamHandler(this.#stream as Writable, this.#filePath);
         }
     }
 
@@ -67,19 +70,17 @@ class RotatingFileStream {
      * @param message The message to write to the file
      */
     public write(message: string): void {
-        let fileStream = this.#stream;
-
         if (this.#immediate) {
-            fileStream = (this.#createRfsStream as typeof createRotatingStream)(this.#filePath, this.#options);
-        }
+            const fileStream = (this.#createRfsStream as typeof createRotatingStream)(this.#filePath, this.#options);
+            const stream = new SafeStreamHandler(fileStream as Writable, this.#filePath);
 
-        const stream = new SafeStreamHandler(fileStream as Writable, this.#filePath);
-
-        stream.write(message);
-
-        if (this.#immediate) {
+            stream.write(message);
             stream.end();
+
+            return;
         }
+
+        (this.#handler as SafeStreamHandler).write(message);
     }
 
     /**

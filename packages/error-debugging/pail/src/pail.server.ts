@@ -343,7 +343,7 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
      */
     public wrapStd(): void {
         this.#wrapStream(this.stdout, "log");
-        this.#wrapStream(this.stderr, "log");
+        this.#wrapStream(this.stderr, "error");
     }
 
     /**

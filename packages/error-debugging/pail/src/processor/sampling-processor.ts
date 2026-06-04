@@ -65,9 +65,9 @@ interface SamplingProcessorOptions<L extends string = string> {
  * based on their content. For example, you might drop 90% of info logs but
  * force-keep any that contain error information or relate to slow operations.
  *
- * When a log is dropped by sampling, the processor sets a `__dropped: true`
+ * When a log is dropped by sampling, the processor sets a `dropped: true`
  * boolean flag on the meta object. Reporters should check for this flag and
- * skip entries where `__dropped` is `true`.
+ * skip entries where `dropped` is `true`.
  * @template L - The log level type
  * @example
  * ```typescript
@@ -113,7 +113,7 @@ class SamplingProcessor<L extends string = string> implements Processor<L> {
      *
      * First evaluates head sampling (random per-level), then checks tail
      * sampling conditions. If a log is dropped, the meta is marked with
-     * `__dropped: true` so reporters can skip it.
+     * `dropped: true` so reporters can skip it.
      * @param meta The log metadata to process
      * @returns The processed metadata, potentially marked as dropped
      */
