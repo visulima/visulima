@@ -82,7 +82,21 @@ const baseTypesMap: Record<string, InspectType<any>> = {
 
 const nodeInspectCustomSymbol = Symbol.for("nodejs.util.inspect.custom");
 
+/**
+ * The symbol consumers can attach a custom inspector to, mirroring loupe's
+ * `Symbol.for("chai/inspect")` contract. Exposed publicly as {@link custom}.
+ */
+const chaiInspectSymbol = Symbol.for("chai/inspect");
+
 const inspectCustom = (value: object, options: Options, type: string, depth: number): string => {
+    // Honour loupe's `chai/inspect` contract first so values shared with the chai
+    // ecosystem render identically. The handler receives only `options`.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+    if (chaiInspectSymbol in value && typeof (value as any)[chaiInspectSymbol] === "function") {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return
+        return (value as any)[chaiInspectSymbol](options);
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
     if (!("window" in globalThis) && typeof (value as any)[nodeInspectCustomSymbol] === "function") {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return
@@ -107,8 +121,22 @@ const inspectCustom = (value: object, options: Options, type: string, depth: num
     return "";
 };
 
+/**
+ * Per top-level `inspect()` call state, threaded through the recursion instead of
+ * being re-captured by a fresh closure at every descent. `depth` is the current
+ * nesting level, `seen` a mutable DFS stack for circular-reference detection, and
+ * `inspect` the single recursion callback handed to the type inspectors.
+ */
+interface InspectContext {
+    depth: number;
+    inspect: InternalInspect;
+    seen: unknown[];
+}
+
 // eslint-disable-next-line sonarjs/cognitive-complexity
-const internalInspect = (value: unknown, options: Options, depth: number, seen: unknown[]): string => {
+const internalInspect = (value: unknown, options: Options, context: InspectContext): string => {
+    const { depth, inspect, seen } = context;
+
     if (seen.includes(value)) {
         return "[Circular]";
     }
@@ -116,16 +144,6 @@ const internalInspect = (value: unknown, options: Options, depth: number, seen: 
     if (depth >= options.depth && options.depth > 0 && typeof value === "object") {
         return Array.isArray(value) ? "[Array]" : "[Object]";
     }
-
-    // eslint-disable-next-line @typescript-eslint/no-shadow
-    const inspect: InternalInspect = (object: unknown, from: unknown, options: Options): string => {
-        if (from) {
-            // eslint-disable-next-line no-param-reassign
-            seen = [...seen, from];
-        }
-
-        return internalInspect(object, options, depth + 1, seen);
-    };
 
     const indent = options.indent ? getIndent(options.indent, depth) : undefined;
 
@@ -210,8 +228,51 @@ export const inspect = (value: unknown, options_: Partial<Options> = {}): string
         throw new TypeError("option \"indent\" must be \"\\t\", an integer > 0, or `undefined`");
     }
 
-    return internalInspect(value, options, 0, []);
+    const context: InspectContext = {
+        depth: 0,
+        // Assigned just below; the recursion callback needs the context to exist first.
+        inspect: undefined as unknown as InternalInspect,
+        seen: [],
+    };
+
+    // The single recursion callback for this top-level call, handed to every type
+    // inspector. Creating it once here (rather than re-allocating a closure on each
+    // descent) keeps allocation off the hot path. It maintains `seen` and `depth` as
+    // a mutable DFS stack — push/increment before descending, pop/decrement after —
+    // giving O(1) circular-reference detection instead of the O(n) copy a
+    // `[...seen, from]` spread would cost (which degrades to O(n²) across siblings).
+    // eslint-disable-next-line @typescript-eslint/no-shadow
+    context.inspect = (object: unknown, from: unknown, options: Options): string => {
+        if (from === undefined || from === null) {
+            context.depth += 1;
+
+            const result = internalInspect(object, options, context);
+
+            context.depth -= 1;
+
+            return result;
+        }
+
+        context.seen.push(from);
+        context.depth += 1;
+
+        const result = internalInspect(object, options, context);
+
+        context.depth -= 1;
+        context.seen.pop();
+
+        return result;
+    };
+
+    return internalInspect(value, options, context);
 };
+
+/**
+ * The symbol a value can expose a custom inspector under. Mirrors loupe's
+ * `custom` export (`Symbol.for("chai/inspect")`); the attached function is
+ * called with the resolved {@link Options} and must return a string.
+ */
+export const custom: symbol = chaiInspectSymbol;
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 export const registerConstructor = (constructor: Function, inspector: Inspect): boolean => {
