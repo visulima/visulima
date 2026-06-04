@@ -1,3 +1,9 @@
+## @visulima/string [3.0.0-alpha.16](https://github.com/visulima/visulima/compare/@visulima/string@3.0.0-alpha.15...@visulima/string@3.0.0-alpha.16) (2026-06-04)
+
+### Performance Improvements
+
+* **string:** disable esbuild keepNames in prod build ([8de9067](https://github.com/visulima/visulima/commit/8de906769625aa282246f470d4ff6dbb76cc52b2))
+
 ## @visulima/string [3.0.0-alpha.15](https://github.com/visulima/visulima/compare/@visulima/string@3.0.0-alpha.14...@visulima/string@3.0.0-alpha.15) (2026-06-04)
 
 ### Bug Fixes
