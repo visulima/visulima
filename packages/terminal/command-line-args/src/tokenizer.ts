@@ -32,13 +32,6 @@ const isLongOption = (argument: string) => hasLongOptionPrefix(argument) && !arg
 const isLongOptionAndValue = (argument: string) => hasLongOptionPrefix(argument) && argument.includes(EQUAL_CHAR, 3);
 
 /**
- * Check if value is an option value (doesn't start with hyphen).
- * @param value The value to check
- * @returns True if value is defined and doesn't start with hyphen
- */
-const hasOptionValue = (value: string | undefined): boolean => value !== undefined && value.length > 0 && value.codePointAt(0) !== HYPHEN_CODE;
-
-/**
  * Check if argument is a short option (e.g., `-f`).
  * @param argument The argument to check
  * @returns True if argument is exactly 2 characters, starts with hyphen, and second char is not hyphen or digit
@@ -131,8 +124,6 @@ export const parseArgsTokens = (args: string[]): ArgumentToken[] => {
             break;
         }
 
-        const nextArgument = remainings[0];
-
         if (groupCount > 0) {
             // eslint-disable-next-line no-plusplus
             groupCount--;
@@ -159,44 +150,13 @@ export const parseArgsTokens = (args: string[]): ArgumentToken[] => {
 
         if (isShortOption(argument)) {
             const shortOption = argument.charAt(1);
-            let value: string | undefined;
 
-            if (groupCount) {
-                tokens.push({
-                    index,
-                    kind: "option",
-                    name: shortOption,
-                    rawName: argument,
-                    value,
-                });
-
-                if (groupCount === 1 && hasOptionValue(nextArgument)) {
-                    // Consume the value from remainings, but do NOT increment index
-                    // because this value is associated with the current short option,
-                    // which is part of the current argv index (e.g., in "-abc value",
-                    // value belongs to index of the whole "-abc" argument, not a new index)
-                    value = remainings.shift();
-
-                    tokens.push({
-                        index,
-                        kind: "option",
-                        value,
-                    });
-                }
-            } else {
-                tokens.push({
-                    index,
-                    kind: "option",
-                    name: shortOption,
-                    rawName: argument,
-                    value,
-                });
-            }
-
-            if (value !== undefined) {
-                // eslint-disable-next-line no-plusplus
-                ++index;
-            }
+            tokens.push({
+                index,
+                kind: "option",
+                name: shortOption,
+                rawName: argument,
+            });
 
             continue;
         }

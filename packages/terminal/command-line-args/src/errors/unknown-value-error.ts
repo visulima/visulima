@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { VisulimaError } from "@visulima/error/error";
 
 /**

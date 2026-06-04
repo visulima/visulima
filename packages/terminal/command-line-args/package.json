@@ -70,6 +70,9 @@
         "test:ui": "vitest --ui --coverage.enabled=true",
         "test:watch": "vitest"
     },
+    "dependencies": {
+        "@visulima/error": "6.0.0-alpha.30"
+    },
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",
         "@anolilab/semantic-release-pnpm": "catalog:dev",
@@ -78,7 +81,6 @@
         "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
         "@total-typescript/ts-reset": "catalog:dev",
         "@types/node": "catalog:types",
-        "@visulima/error": "6.0.0-alpha.30",
         "@visulima/packem": "catalog:dev",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",

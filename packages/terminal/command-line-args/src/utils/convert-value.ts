@@ -8,7 +8,7 @@ type TypeConstructor = (input: string) => unknown;
  * @param type The type to check
  * @returns True if the type is Boolean or BooleanConstructor
  */
-const isBooleanType = (type: unknown): type is BooleanConstructor => type === Boolean || (typeof type === "function" && type.name.startsWith("Boolean"));
+const isBooleanType = (type: unknown): type is BooleanConstructor => type === Boolean || (typeof type === "function" && type.name === "Boolean");
 
 /**
  * Check if a type is number.

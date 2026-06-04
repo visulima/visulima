@@ -7,8 +7,7 @@ const DIGIT_PATTERN = /\d/;
 /**
  * Check if a type is boolean.
  */
-const isBooleanType = (type: unknown): boolean =>
-    type !== undefined && type !== null && (type === Boolean || (typeof type === "function" && (type as { name: string }).name.startsWith("Boolean")));
+const isBooleanType = (type: unknown): boolean => type === Boolean || (typeof type === "function" && (type as { name: string }).name === "Boolean");
 
 /**
  * Check if a custom type function is valid by checking its shape only.
