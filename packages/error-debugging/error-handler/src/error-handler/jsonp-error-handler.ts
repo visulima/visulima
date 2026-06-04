@@ -20,7 +20,7 @@ const jsonpErrorHandler
 
             const url = new URL(request.url ?? "http://localhost", "http://localhost");
             const callbackParameterName = options.callbackParamName ?? defaultCallbackParameter;
-            const callbackName = url.searchParams.get(callbackParameterName) ?? "callback";
+            let callbackName = url.searchParams.get(callbackParameterName) ?? defaultCallbackParameter;
 
             let payload: JsonpErrorBody;
 
@@ -37,6 +37,12 @@ const jsonpErrorHandler
                     statusCode,
                     ...expose ? { stack: error.stack } : {},
                 };
+            }
+
+            // Restrict the JSONP callback to a safe JS identifier path so the
+            // request-controlled value cannot inject executable JavaScript.
+            if (callbackName.length > 64 || !/^[A-Za-z_$][\w$.]*$/u.test(callbackName)) {
+                callbackName = defaultCallbackParameter;
             }
 
             response.setHeader("content-type", "application/javascript; charset=utf-8");
