@@ -1,6 +1,6 @@
 {
     "name": "@visulima/tui",
-    "version": "1.0.0-alpha.21",
+    "version": "1.0.0-alpha.22",
     "description": "React-based TUI library powered by a native Rust diff engine, drop-in Ink-compatible API",
     "keywords": [
         "cli",
@@ -588,11 +588,11 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/ansi": "4.0.0-alpha.15",
-        "@visulima/colorize": "2.0.0-alpha.12",
-        "@visulima/error": "6.0.0-alpha.31",
-        "@visulima/spinner": "1.0.0-alpha.2",
-        "@visulima/string": "3.0.0-alpha.14",
+        "@visulima/ansi": "4.0.0-alpha.16",
+        "@visulima/colorize": "2.0.0-alpha.13",
+        "@visulima/error": "6.0.0-alpha.32",
+        "@visulima/spinner": "1.0.0-alpha.3",
+        "@visulima/string": "3.0.0-alpha.15",
         "cli-boxes": "catalog:prod",
         "code-excerpt": "catalog:prod",
         "is-in-ci": "catalog:prod",
@@ -621,7 +621,7 @@
         "@types/react-reconciler": "catalog:types",
         "@types/scheduler": "catalog:types",
         "@types/ws": "catalog:types",
-        "@visulima/boxen": "3.0.0-alpha.11",
+        "@visulima/boxen": "3.0.0-alpha.12",
         "@visulima/packem": "catalog:dev",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
@@ -653,7 +653,7 @@
     "peerDependencies": {
         "@shikijs/langs": "catalog:prod",
         "@shikijs/themes": "catalog:dev",
-        "@visulima/tabular": "4.0.0-alpha.12",
+        "@visulima/tabular": "4.0.0-alpha.13",
         "cfonts": "catalog:prod",
         "diff": "catalog:prod",
         "marked": "catalog:dev",
