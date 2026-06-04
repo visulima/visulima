@@ -760,14 +760,18 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                     // Web ReadableStream
                     const reader = (Body as ReadableStream<Uint8Array>).getReader();
 
-                    while (true) {
-                        const { done, value } = await reader.read();
+                    try {
+                        while (true) {
+                            const { done, value } = await reader.read();
 
-                        if (done) {
-                            break;
+                            if (done) {
+                                break;
+                            }
+
+                            chunks.push(value);
                         }
-
-                        chunks.push(value);
+                    } finally {
+                        reader.releaseLock();
                     }
                 }
             }
