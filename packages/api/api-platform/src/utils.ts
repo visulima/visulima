@@ -41,7 +41,7 @@ export const parseQuery = (request: IncomingApiRequest): Record<string, unknown>
     }
 
     // Note: Fake protocol is required to parse query string
-    const url = new URL(`https://${request.headers.host?.replace(TRAILING_SLASH_REGEX, "") ?? ""}/${request.url}`);
+    const url = new URL(request.url, `https://${request.headers.host?.replace(TRAILING_SLASH_REGEX, "") ?? ""}`);
 
     return Object.fromEntries(url.searchParams.entries());
 };

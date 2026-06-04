@@ -60,7 +60,7 @@ describe("connect/middleware/rate-limiter-middleware", () => {
         expect(consume).toHaveBeenCalledWith("203.0.113.7");
     });
 
-    it("should spread the enumerable own properties of the headers argument", async () => {
+    it("should invoke the headers callback with the limiter result and apply its returned headers", async () => {
         expect.assertions(2);
 
         const limiter = new RateLimiterMemory({ duration: 60, points: 5 });
@@ -70,21 +70,15 @@ describe("connect/middleware/rate-limiter-middleware", () => {
             method: "GET",
         });
 
-        // The middleware spreads `...headers`; for a function that means its
-        // enumerable own properties, not the call result.
-        const headerCallback = (_limiterResponse: RateLimiterRes): Record<string, string> => {
-            return {};
+        // The middleware invokes the callback with the rate-limit result and
+        // spreads the headers it returns.
+        const headers = (limiterResponse: RateLimiterRes): Record<string, string> => {
+            return { "X-Custom-Header": String(limiterResponse.remainingPoints) };
         };
-
-        const headers = headerCallback as typeof headerCallback & {
-            "X-Custom-Header": string;
-        };
-
-        headers["X-Custom-Header"] = "custom-value";
 
         await rateLimiterMiddleware(limiter, headers)(req, res, vi.fn());
 
-        expect(res.getHeader("X-Custom-Header")).toBe("custom-value");
+        expect(res.getHeader("X-Custom-Header")).toBe("4");
         expect(res.getHeader("X-RateLimit-Remaining")).toBe(4);
     });
 

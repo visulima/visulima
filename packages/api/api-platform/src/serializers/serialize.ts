@@ -31,37 +31,33 @@ const serialize = <Request extends IncomingMessage, Response extends ServerRespo
     const accept = accepts(request);
     const types: string[] = [...(accept.types() as string[]), options.defaultContentType];
 
-    let serializedData = data;
-    let breakTypes = false;
-
-    types.forEach((type) => {
-        serializers.forEach(({ regex, serializer }) => {
+    for (const type of types) {
+        for (const { regex, serializer } of serializers) {
             if (regex.test(type)) {
                 response.setHeader(contentTypeKey, type);
 
-                serializedData = serializer(serializedData);
-                breakTypes = true;
-            }
-        });
-
-        if (!breakTypes) {
-            if (yamlTypeRegex.test(type)) {
-                response.setHeader(contentTypeKey, type);
-
-                serializedData = yamlTransformer(hasJsonStructure(data) ? JSON.parse(data as string) : data);
-            } else if (type.includes("xml")) {
-                response.setHeader(contentTypeKey, type);
-
-                const xmlRootKey = toHeaderCase(String(request.url?.replace("/api/", "")).trim());
-
-                serializedData = xmlTransformer({
-                    [xmlRootKey]: hasJsonStructure(data) ? JSON.parse(data as string) : data,
-                });
+                return serializer(data) as Buffer | Uint8Array | string;
             }
         }
-    });
 
-    return serializedData as Buffer | Uint8Array | string;
+        if (yamlTypeRegex.test(type)) {
+            response.setHeader(contentTypeKey, type);
+
+            return yamlTransformer(hasJsonStructure(data) ? JSON.parse(data as string) : data) as Buffer | Uint8Array | string;
+        }
+
+        if (type.includes("xml")) {
+            response.setHeader(contentTypeKey, type);
+
+            const xmlRootKey = toHeaderCase(String(request.url?.replace("/api/", "")).trim());
+
+            return xmlTransformer({
+                [xmlRootKey]: hasJsonStructure(data) ? JSON.parse(data as string) : data,
+            }) as Buffer | Uint8Array | string;
+        }
+    }
+
+    return data as Buffer | Uint8Array | string;
 };
 /* eslint-enable @typescript-eslint/no-unnecessary-type-parameters, sonarjs/function-return-type */
 
