@@ -251,7 +251,12 @@ export const parseBytes = (value: string, options?: ParseByteOptions): number =>
         .replace(ZEBI_REGEX, "ZETTA")
         .replace(YIBI_REGEX, "YOTTA")
         .replace(IB_SUFFIX_REGEX, "$1B") as Uppercase<Unit> | "B";
-    const level = BYTE_SIZES[config.units].findIndex((unit) => (unit.short[0] as string).toUpperCase() === type[0]);
+    const level = BYTE_SIZES[config.units].findIndex((unit) => unit.short.toUpperCase() === type || unit.long.toUpperCase() === type);
+
+    if (level === -1) {
+        return Number.NaN;
+    }
+
     const base = fromBase(config.base);
 
     return localizedNumber * base ** level;
@@ -294,7 +299,7 @@ export const formatBytes = (bytes: number, options?: FormateByteOptions<ByteSize
     const requestedUnitIndex = referenceTable.findIndex((unit) => unit.short === requestedUnit);
 
     if (bytes === 0) {
-        const level = Math.min(0, Math.max(requestedUnitIndex, referenceTable.length - 1));
+        const level = requestedUnitIndex === -1 ? 0 : Math.min(requestedUnitIndex, referenceTable.length - 1);
 
         // eslint-disable-next-line prefer-template
         return "0" + space + (referenceTable[level] as { long: string; short: string })[long ? "long" : "short"];
