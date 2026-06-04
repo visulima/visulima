@@ -5,7 +5,7 @@ import type { DeleteHandler } from "../types";
 const deleteHandler: DeleteHandler = async ({ adapter, query, resourceId, resourceName }) => {
     const resource = await adapter.getOne(resourceName, resourceId, query);
 
-    if (typeof resource === "object") {
+    if (resource) {
         const deletedResource = await adapter.delete(resourceName, resourceId, query);
 
         return {

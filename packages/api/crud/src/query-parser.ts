@@ -29,22 +29,15 @@ const parseWhere = (where: string): WhereField => {
 };
 
 const parseOrderBy = (orderBy: string): OrderByField => {
-    const parsed: OrderByField = {};
     const orderByObject = JSON.parse(orderBy) as Record<string, "$asc" | "$desc">;
+    const keys = Object.keys(orderByObject);
+    const key = keys[0];
 
-    if (Object.keys(orderByObject).length > 0) {
-        const key = Object.keys(orderByObject)[0] as string;
-
-        if (orderByObject[key] === "$asc" || orderByObject[key] === "$desc") {
-            parsed[key] = orderByObject[key];
-        }
-    }
-
-    if (Object.keys(parsed).length !== 1) {
+    if (keys.length !== 1 || key === undefined || (orderByObject[key] !== "$asc" && orderByObject[key] !== "$desc")) {
         throw new Error("orderBy needs to be an object with exactly 1 property with either $asc or $desc value");
     }
 
-    return parsed;
+    return { [key]: orderByObject[key] };
 };
 
 // eslint-disable-next-line sonarjs/cognitive-complexity

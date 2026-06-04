@@ -145,7 +145,7 @@ export interface ParsedQueryParameters {
 export type ExecuteHandler<Request, Response> = (request: Request, response: Response) => Promise<void>;
 
 export interface FakePrismaClient {
-    $connect: () => void;
+    $connect: () => Promise<void> | void;
     $disconnect: () => Promise<void>;
     [key: string]: unknown;
     _dmmf?: unknown;

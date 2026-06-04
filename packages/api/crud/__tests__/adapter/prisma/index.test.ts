@@ -307,6 +307,7 @@ describe(PrismaAdapter, () => {
                 },
                 select: { id: true },
                 skip: 5,
+                where: { id: 5 },
             });
 
             expect(parsed).toStrictEqual({

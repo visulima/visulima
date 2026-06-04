@@ -15,11 +15,18 @@ export const getResourceNameFromUrl = <M extends string = string>(
         throw new TypeError("Path is undefined");
     }
 
+    const segments = realPath.split("/").filter(Boolean);
+
     const modelName = (Object.keys(models) as M[]).find((name) => {
         const routeName = models[name];
-        const camelCaseModel = ensureCamelCase(routeName);
 
-        return new RegExp(`(${routeName}|${camelCaseModel}$)|(${routeName}|${camelCaseModel}/)`, "g").test(realPath);
+        // A model configured with an empty route name resolves to a falsy resourceName so the
+        // caller can reach its missing-resource branch; treat it as matching any path.
+        if (routeName === "") {
+            return true;
+        }
+
+        return segments.includes(routeName) || segments.includes(ensureCamelCase(routeName));
     });
 
     if (modelName === undefined) {

@@ -46,9 +46,8 @@ export default class PrismaAdapter<T, M extends string, PrismaClient> implements
         this.ctorModels = models as M[];
     }
 
-    // eslint-disable-next-line @typescript-eslint/require-await -- $connect is typed as () => void by FakePrismaClient; preserve original fire-and-forget behavior
     public async connect(): Promise<void> {
-        this.prismaClient.$connect();
+        return await this.prismaClient.$connect();
     }
 
     public async create(resourceName: M, data: unknown, query: PrismaParsedQueryParameters): Promise<T> {
@@ -119,9 +118,11 @@ export default class PrismaAdapter<T, M extends string, PrismaClient> implements
             where: query.where,
         });
 
+        const take = query.take ?? 0;
+
         return {
-            page: Math.ceil((query.skip ?? 0) / (query.take ?? 0)) + 1,
-            pageCount: Math.ceil(total / (query.take ?? 0)),
+            page: take > 0 ? Math.ceil((query.skip ?? 0) / take) + 1 : 1,
+            pageCount: take > 0 ? Math.ceil(total / take) : 0,
             total,
         };
     }
@@ -171,8 +172,8 @@ export default class PrismaAdapter<T, M extends string, PrismaClient> implements
             parsed.include = parsePrismaRecursiveField(query.include, "include");
         }
 
-        if (query.originalQuery?.where) {
-            parsed.where = parsePrismaWhere(JSON.parse(query.originalQuery.where) as WhereField, this.manyRelations[resourceName] ?? []);
+        if (query.where) {
+            parsed.where = parsePrismaWhere(query.where as WhereField, this.manyRelations[resourceName] ?? []);
         }
 
         if (query.orderBy) {
