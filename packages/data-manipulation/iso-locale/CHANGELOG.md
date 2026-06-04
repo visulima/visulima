@@ -1,3 +1,18 @@
+## @visulima/iso-locale [1.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/iso-locale@1.0.0-alpha.10...@visulima/iso-locale@1.0.0-alpha.11) (2026-06-04)
+
+### Bug Fixes
+
+* **iso-locale:** 2 bug fixes + 1 perf ([5a75216](https://github.com/visulima/visulima/commit/5a752163531e8bd458dffa264e05466e33f9d444))
+
+### Miscellaneous Chores
+
+* apply eslint + prettier autofixes across packages ([c1bb784](https://github.com/visulima/visulima/commit/c1bb7848a0d93d0dfe2960c77e3cda22239c79a0))
+
+### Tests
+
+* improve coverage across packages ([91bd6d3](https://github.com/visulima/visulima/commit/91bd6d3b61736e3c8bd1fc59b0b5955f76a5d323))
+* **iso-locale:** cover numeric country lookups, currency fallbacks, and bcp47 parse branches ([695bf35](https://github.com/visulima/visulima/commit/695bf354daac3699c166b6a3a671cec15bd639ee))
+
 ## @visulima/iso-locale [1.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/iso-locale@1.0.0-alpha.9...@visulima/iso-locale@1.0.0-alpha.10) (2026-05-27)
 
 ### Bug Fixes
