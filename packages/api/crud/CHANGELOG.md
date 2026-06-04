@@ -1,3 +1,16 @@
+## @visulima/crud [3.0.0-alpha.17](https://github.com/visulima/visulima/compare/@visulima/crud@3.0.0-alpha.16...@visulima/crud@3.0.0-alpha.17) (2026-06-04)
+
+### Bug Fixes
+
+* **crud:** 5 bug fixes ([77a51d0](https://github.com/visulima/visulima/commit/77a51d0d2d5221fe043283defe15672eb47c9a38))
+* **lint:** clear pre-existing eslint rot across packages ([#674](https://github.com/visulima/visulima/issues/674)) ([5354253](https://github.com/visulima/visulima/commit/5354253b163bd50bcefaf8a3fddf831bdb5df32b))
+
+
+### Dependencies
+
+* **@visulima/pagination:** upgraded to 5.0.0-alpha.13
+* **@visulima/prisma-dmmf-transformer:** upgraded to 3.0.0-alpha.15
+
 ## @visulima/crud [3.0.0-alpha.16](https://github.com/visulima/visulima/compare/@visulima/crud@3.0.0-alpha.15...@visulima/crud@3.0.0-alpha.16) (2026-06-02)
 
 ### Bug Fixes
