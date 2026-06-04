@@ -10,7 +10,7 @@ import { parse } from "marked";
 import type { IndexHtmlTransformResult, Plugin, PluginOption, TransformOptions, ViteDevServer, WebSocketClient } from "vite";
 
 import findLanguageBasedOnExtension from "../../../../shared/utils/find-language-based-on-extension";
-import { DEFAULT_ERROR_MESSAGE, DEFAULT_ERROR_NAME, MESSAGE_TYPE, PLUGIN_NAME, RECENT_ERROR_TTL_MS } from "./constants";
+import { CAUSE_CHAIN_DEPTH_LIMIT, DEFAULT_ERROR_MESSAGE, DEFAULT_ERROR_NAME, MESSAGE_TYPE, PLUGIN_NAME, RECENT_ERROR_TTL_MS } from "./constants";
 import { patchOverlay } from "./overlay/patch-overlay";
 import type {
     DevelopmentLogger,
@@ -81,6 +81,13 @@ const createRecentErrorTracker = (): RecentErrorTracker => {
      */
     const shouldSkip = (signature: string): boolean => {
         const now = Date.now();
+
+        for (const [key, ts] of recentErrors) {
+            if (now - ts >= RECENT_ERROR_TTL_MS) {
+                recentErrors.delete(key);
+            }
+        }
+
         const lastOccurrence = recentErrors.get(signature) || 0;
 
         if (now - lastOccurrence < RECENT_ERROR_TTL_MS) {
@@ -293,8 +300,8 @@ interface CauseData {
     stack?: string;
 }
 
-const reconstructCauseChain = (causeData: CauseData | undefined): Error | undefined => {
-    if (!causeData) {
+const reconstructCauseChain = (causeData: CauseData | undefined, depth = 0): Error | undefined => {
+    if (!causeData || depth >= CAUSE_CHAIN_DEPTH_LIMIT) {
         return undefined;
     }
 
@@ -304,7 +311,7 @@ const reconstructCauseChain = (causeData: CauseData | undefined): Error | undefi
     causeError.stack = String(causeData.stack || "");
 
     if (causeData.cause) {
-        causeError.cause = reconstructCauseChain(causeData.cause);
+        causeError.cause = reconstructCauseChain(causeData.cause, depth + 1);
     }
 
     return causeError;
@@ -314,14 +321,12 @@ const reconstructCauseChain = (causeData: CauseData | undefined): Error | undefi
  * Sets up WebSocket message interception to handle error data from the client.
  * @param server The Vite dev server instance
  * @param shouldSkip Function to check if an error should be skipped
- * @param recentErrors Map of recent error signatures
  * @param rootPath The root path of the project
  * @param solutionFinders Array of solution finder handlers
  */
 const setupWebSocketInterception = (
     server: ViteDevServer,
     shouldSkip: (signature: string) => boolean,
-    recentErrors: Map<string, number>,
     rootPath: string,
     solutionFinders: SolutionFinder[],
     framework: string | undefined,
@@ -366,8 +371,6 @@ const setupWebSocketInterception = (
 
                         // eslint-disable-next-line no-param-reassign
                         data.err = extensionPayload;
-
-                        recentErrors.set(JSON.stringify(extensionPayload), Date.now());
                     }
                 } else {
                     const name = String(err?.name || "Error");
@@ -396,8 +399,6 @@ const setupWebSocketInterception = (
 
                     // eslint-disable-next-line no-param-reassign
                     data.err = extensionPayload;
-
-                    recentErrors.set(JSON.stringify(extensionPayload), Date.now());
                 }
             }
 
@@ -419,7 +420,6 @@ const setupWebSocketInterception = (
  * @param server The Vite dev server instance
  * @param developmentLogger The development logger to use
  * @param shouldSkip Function to check if an error should be skipped
- * @param recentErrors Map of recent error signatures
  * @param rootPath The root path of the project
  * @param solutionFinders Array of solution finder handlers
  * @param forwardConsole Whether to log/display runtime errors
@@ -428,7 +428,6 @@ const setupHMRHandler = (
     server: ViteDevServer,
     developmentLogger: DevelopmentLogger,
     shouldSkip: (signature: string) => boolean,
-    recentErrors: Map<string, number>,
     rootPath: string,
     solutionFinders: SolutionFinder[],
     forwardConsole: boolean,
@@ -482,8 +481,6 @@ const setupHMRHandler = (
                 solutionFinders,
                 framework,
             );
-
-            recentErrors.set(JSON.stringify(extensionPayload), Date.now());
 
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const payload: any = { err: { ...extensionPayload }, type: "error" };
@@ -655,7 +652,7 @@ const errorOverlayPlugin = (
             const rootPath = server.config.root || process.cwd();
 
             const developmentLogger = createDevelopmentLogger(server);
-            const { recentErrors, shouldSkip } = createRecentErrorTracker();
+            const { shouldSkip } = createRecentErrorTracker();
 
             const originalTransformRequest = server.transformRequest.bind(server);
 
@@ -687,9 +684,9 @@ const errorOverlayPlugin = (
                 framework = "vue";
             }
 
-            setupWebSocketInterception(server, shouldSkip, recentErrors, rootPath, options?.solutionFinders ?? [], framework);
+            setupWebSocketInterception(server, shouldSkip, rootPath, options?.solutionFinders ?? [], framework);
 
-            setupHMRHandler(server, developmentLogger, shouldSkip, recentErrors, rootPath, options?.solutionFinders ?? [], forwardConsole, framework);
+            setupHMRHandler(server, developmentLogger, shouldSkip, rootPath, options?.solutionFinders ?? [], forwardConsole, framework);
 
             const handleUnhandledRejection = createUnhandledRejectionHandler(server, rootPath, developmentLogger);
 

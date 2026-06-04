@@ -565,13 +565,13 @@ const buildExtendedErrorData = async (
             if (targetCompiledLine && compiledColumn <= targetCompiledLine.length) {
                 const errorMessage = primaryError.message;
                 const columnIndex = Math.max(0, compiledColumn - 1);
-                const textAtLocation = new Set(targetCompiledLine.slice(Math.max(0, columnIndex)));
+                const textAtLocation = targetCompiledLine.slice(Math.max(0, columnIndex));
 
                 const hasErrorPattern
-                    = textAtLocation.has("new Error(")
-                        || textAtLocation.has("throw new Error")
-                        || textAtLocation.has("throw ")
-                        || textAtLocation.has(errorMessage.slice(0, 20));
+                    = textAtLocation.includes("new Error(")
+                        || textAtLocation.includes("throw new Error")
+                        || textAtLocation.includes("throw ")
+                        || textAtLocation.includes(errorMessage.slice(0, 20));
 
                 compiledFrameHasCorrectCode = hasErrorPattern;
 
