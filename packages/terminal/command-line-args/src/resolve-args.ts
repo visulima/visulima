@@ -13,7 +13,7 @@ const NUMERIC_PATTERN = /^\d+$/;
  * @param type The type to check
  * @returns True if the type is Boolean or BooleanConstructor
  */
-const isBooleanType = (type: unknown): type is BooleanConstructor => type === Boolean || (typeof type === "function" && type.name.startsWith("Boolean"));
+const isBooleanType = (type: unknown): type is BooleanConstructor => type === Boolean || (typeof type === "function" && type.name === "Boolean");
 
 /**
  * Check if a key is special (starts with underscore).
@@ -155,6 +155,7 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const values: Record<string, any> = {};
     const unknownArgs: { index: number; value: string }[] = [];
+    const unknownTokenIndexEntries: { index: number; value: string }[] = [];
     const consumedPositionalIndices = new Set<number>();
     let stoppedByTerminator = false;
 
@@ -273,7 +274,10 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
                             if (options.partial) {
                                 values._unknown ??= [];
 
-                                (values._unknown as string[]).push(`${token.rawName ?? `--${token.name}`}${token.value ? `=${token.value}` : ""}`);
+                                const rawUnknown = `${token.rawName ?? `--${token.name}`}${token.value ? `=${token.value}` : ""}`;
+
+                                (values._unknown as string[]).push(rawUnknown);
+                                unknownTokenIndexEntries.push({ index: token.index, value: rawUnknown });
                                 value = true;
                             } else {
                                 throw new UnknownOptionError(token.name);
@@ -407,18 +411,8 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
         const allUnknownItems: { index: number; value: string }[] = [...unknownArgs];
 
         if (values._unknown) {
-            const valueUnknownMap = new Map<string, number>();
-
-            for (const [i, element] of argv.entries()) {
-                valueUnknownMap.set(element, i);
-            }
-
-            for (const argument of values._unknown as string[]) {
-                const index = valueUnknownMap.get(argument);
-
-                if (index !== undefined) {
-                    allUnknownItems.push({ index, value: argument });
-                }
+            for (const entry of unknownTokenIndexEntries) {
+                allUnknownItems.push({ index: entry.index, value: entry.value });
             }
         }
 
