@@ -593,6 +593,14 @@ class Cache {
     /**
      * Removes old cache entries that exceed the maximum age,
      * and enforces the maximum cache size by evicting oldest entries.
+     *
+     * NOTE: `maxCacheSize` only bounds the *legacy* `<hash>/` entry
+     * layout. The v2 CAS subtree (rooted at {@link V2_ROOT}) is skipped
+     * here — it manages its own lifetime via blob-level touch + reference
+     * accounting (see `cas/store.ts`) and is deliberately excluded from
+     * both age and size accounting below. Consequently a cache dominated
+     * by v2 blobs reports a small measured size and may exceed
+     * `maxCacheSize`; size-based eviction is not driven from the CAS GC.
      */
 
     public async removeOldEntries(): Promise<void> {

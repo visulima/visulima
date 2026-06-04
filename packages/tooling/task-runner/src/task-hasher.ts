@@ -1,5 +1,7 @@
 import { execFile } from "node:child_process";
 import { readFile, stat } from "node:fs/promises";
+// eslint-disable-next-line n/no-unsupported-features/node-builtins
+import { matchesGlob } from "node:path";
 
 import type { Xxh3Hasher } from "@shared/xxh3";
 // eslint-disable-next-line import/no-extraneous-dependencies -- bundled inline by packem from workspace devDependency
@@ -605,12 +607,7 @@ class InProcessTaskHasher implements TaskHasher {
             const resolved = normalizeFileset(input.fileset).replace("{projectRoot}", projectRoot).replace("{workspaceRoot}", ".");
 
             if (resolved.startsWith("!")) {
-                patterns.push(
-                    resolved
-                        .slice(1)
-                        .replace(/\/\*\*\/\*$/, "")
-                        .replace(/\/\*$/, ""),
-                );
+                patterns.push(resolved.slice(1));
             }
         }
 
@@ -647,7 +644,7 @@ class InProcessTaskHasher implements TaskHasher {
         const absoluteNegations = negationPatterns.map((p) => resolve(this.#workspaceRoot, p));
         const result: Record<string, string> = {};
 
-        const isExcluded = (filePath: string): boolean => absoluteNegations.some((neg) => filePath.startsWith(`${neg}/`) || filePath === neg);
+        const isExcluded = (filePath: string): boolean => absoluteNegations.some((neg) => matchesGlob(filePath, neg));
 
         try {
             if (this.#native) {
