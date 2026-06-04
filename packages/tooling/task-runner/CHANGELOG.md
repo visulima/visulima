@@ -1,3 +1,15 @@
+## @visulima/task-runner [1.0.0-alpha.19](https://github.com/visulima/visulima/compare/@visulima/task-runner@1.0.0-alpha.18...@visulima/task-runner@1.0.0-alpha.19) (2026-06-04)
+
+### Bug Fixes
+
+* **task-runner:** 3 bug fixes ([ccf08a1](https://github.com/visulima/visulima/commit/ccf08a1faed664d4545b7594bba9afade782b2e5))
+
+
+### Dependencies
+
+* **@visulima/humanizer:** upgraded to 3.0.0-alpha.13
+* **@visulima/path:** upgraded to 3.0.0-alpha.12
+
 ## @visulima/task-runner [1.0.0-alpha.18](https://github.com/visulima/visulima/compare/@visulima/task-runner@1.0.0-alpha.17...@visulima/task-runner@1.0.0-alpha.18) (2026-06-02)
 
 ### Features
