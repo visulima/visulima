@@ -8,7 +8,7 @@ export const closestN = (string_: string, array: ReadonlyArray<string>, n: numbe
     for (const element of array) {
         const candidateValue = element;
         let currentDistance = distance(string_, candidateValue);
-        let currentValue: string = candidateValue;
+        let currentValue: string | undefined = candidateValue;
 
         for (let index = 0; index < n; index += 1) {
             if (currentDistance < (distances[index] as number)) {
@@ -18,7 +18,7 @@ export const closestN = (string_: string, array: ReadonlyArray<string>, n: numbe
                 distances[index] = currentDistance;
                 values[index] = currentValue;
                 currentDistance = temporaryDistance;
-                currentValue = temporaryValue ?? "";
+                currentValue = temporaryValue;
             }
         }
     }

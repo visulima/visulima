@@ -964,9 +964,12 @@ const processTextWithAnsiEmoji = (text: string, locale: NodeLocale | undefined, 
         } else {
             // If emoji handling is enabled and the segment contains emoji,
             // split on emoji boundaries.
+            RE_EMOJI.lastIndex = 0;
             const subs: string[] = RE_EMOJI.test(seg) ? splitByEmoji(seg).filter(Boolean) : [seg];
 
             for (const emojiSub of subs) {
+                RE_EMOJI.lastIndex = 0;
+
                 if (RE_EMOJI.test(emojiSub)) {
                     result.push(emojiSub);
                 } else {
