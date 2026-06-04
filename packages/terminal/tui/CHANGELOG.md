@@ -1,3 +1,11 @@
+## @visulima/tui [1.0.0-alpha.23](https://github.com/visulima/visulima/compare/@visulima/tui@1.0.0-alpha.22...@visulima/tui@1.0.0-alpha.23) (2026-06-04)
+
+
+### Dependencies
+
+* **@visulima/string:** upgraded to 3.0.0-alpha.16
+* **@visulima/boxen:** upgraded to 3.0.0-alpha.13
+
 ## @visulima/tui [1.0.0-alpha.22](https://github.com/visulima/visulima/compare/@visulima/tui@1.0.0-alpha.21...@visulima/tui@1.0.0-alpha.22) (2026-06-04)
 
 ### Bug Fixes

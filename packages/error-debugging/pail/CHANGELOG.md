@@ -1,3 +1,19 @@
+## @visulima/pail [4.0.0-alpha.21](https://github.com/visulima/visulima/compare/@visulima/pail@4.0.0-alpha.20...@visulima/pail@4.0.0-alpha.21) (2026-06-04)
+
+### Performance Improvements
+
+* **pail:** disable esbuild keepNames in prod build ([346908c](https://github.com/visulima/visulima/commit/346908c9f91c726cb9bb74dbf1122783ab2c925f))
+
+### Tests
+
+* **pail:** fix message-formatter benchmark format string ([c0567c6](https://github.com/visulima/visulima/commit/c0567c68e5ddec0b61f799582ba5f62beb763019))
+
+
+### Dependencies
+
+* **@visulima/inspector:** upgraded to 2.0.0-alpha.13
+* **@visulima/string:** upgraded to 3.0.0-alpha.16
+
 ## @visulima/pail [4.0.0-alpha.20](https://github.com/visulima/visulima/compare/@visulima/pail@4.0.0-alpha.19...@visulima/pail@4.0.0-alpha.20) (2026-06-04)
 
 ### Bug Fixes

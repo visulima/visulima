@@ -1,3 +1,10 @@
+## @visulima/package [5.0.0-alpha.30](https://github.com/visulima/visulima/compare/@visulima/package@5.0.0-alpha.29...@visulima/package@5.0.0-alpha.30) (2026-06-04)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.31
+
 ## @visulima/package [5.0.0-alpha.29](https://github.com/visulima/visulima/compare/@visulima/package@5.0.0-alpha.28...@visulima/package@5.0.0-alpha.29) (2026-06-04)
 
 ### Bug Fixes
