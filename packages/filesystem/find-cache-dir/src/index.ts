@@ -1,4 +1,3 @@
-import { existsSync } from "node:fs";
 import { cwd, env } from "node:process";
 
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -50,15 +49,15 @@ const findCacheDirectory = async (name: string, options?: Options): Promise<stri
     // Otherwise, if node_modules/.cache exists: If it is writeable, return node_modules/.cache/${name}, otherwise return undefined
     // Otherwise: If node_modules is writeable, return node_modules/.cache/${name}, otherwise return undefined
 
-    if (existsSync(cacheNameDirectory) && !await isAccessible(cacheNameDirectory, W_OK)) {
+    if (!(await isAccessible(cacheNameDirectory, W_OK)) && (await isAccessible(cacheNameDirectory))) {
         return undefined;
     }
 
-    if (existsSync(cacheDirectory) && !await isAccessible(cacheDirectory, W_OK)) {
+    if (!(await isAccessible(cacheDirectory, W_OK)) && (await isAccessible(cacheDirectory))) {
         return undefined;
     }
 
-    if (existsSync(nodeModulesDirectory) && !await isAccessible(nodeModulesDirectory, W_OK)) {
+    if (!(await isAccessible(nodeModulesDirectory, W_OK)) && (await isAccessible(nodeModulesDirectory))) {
         return undefined;
     }
 
@@ -93,15 +92,15 @@ const findCacheDirectorySync = (name: string, options?: Options): string | undef
     // Otherwise, if node_modules/.cache exists: If it is writeable, return node_modules/.cache/${name}, otherwise return undefined
     // Otherwise: If node_modules is writeable, return node_modules/.cache/${name}, otherwise return undefined
 
-    if (existsSync(cacheNameDirectory) && !isAccessibleSync(cacheNameDirectory, W_OK)) {
+    if (!isAccessibleSync(cacheNameDirectory, W_OK) && isAccessibleSync(cacheNameDirectory)) {
         return undefined;
     }
 
-    if (existsSync(cacheDirectory) && !isAccessibleSync(cacheDirectory, W_OK)) {
+    if (!isAccessibleSync(cacheDirectory, W_OK) && isAccessibleSync(cacheDirectory)) {
         return undefined;
     }
 
-    if (existsSync(nodeModulesDirectory) && !isAccessibleSync(nodeModulesDirectory, W_OK)) {
+    if (!isAccessibleSync(nodeModulesDirectory, W_OK) && isAccessibleSync(nodeModulesDirectory)) {
         return undefined;
     }
 
