@@ -76,7 +76,7 @@ const toJSON = (from: JsonError) => {
 };
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
-const serializeValue = (value: unknown, seen: Set<Error>, depth: number, options: Options): unknown => {
+const serializeValue = (value: unknown, seen: Set<Error>, depth: number, options: Options, seenObjects: Set<object> = new Set()): unknown => {
     if (value && value instanceof Uint8Array && value.constructor.name === "Buffer") {
         return "[object Buffer]";
     }
@@ -120,6 +120,10 @@ const serializeValue = (value: unknown, seen: Set<Error>, depth: number, options
     }
 
     if (isPlainObject(value)) {
+        if (seenObjects.has(value)) {
+            return "[Circular]";
+        }
+
         // Check if we would exceed maxDepth after incrementing
         // If depth + 1 >= maxDepth, return empty object (we serialize the object itself but not its contents)
         if (options.maxDepth !== undefined && options.maxDepth !== Number.POSITIVE_INFINITY && depth + 1 >= options.maxDepth) {
@@ -129,12 +133,16 @@ const serializeValue = (value: unknown, seen: Set<Error>, depth: number, options
         // eslint-disable-next-line no-param-reassign
         depth += 1;
 
+        seenObjects.add(value);
+
         const plainObject: Record<string, unknown> = {};
 
         // eslint-disable-next-line guard-for-in,no-restricted-syntax
         for (const key in value) {
-            plainObject[key] = serializeValue(value[key], seen, depth, options);
+            plainObject[key] = serializeValue(value[key], seen, depth, options, seenObjects);
         }
+
+        seenObjects.delete(value);
 
         return plainObject;
     }

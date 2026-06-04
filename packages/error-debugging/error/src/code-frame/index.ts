@@ -55,7 +55,7 @@ export const codeFrame = (source: string, loc: CodeFrameNodeLocation, options?: 
             const number = start + 1 + index;
             const hasMarker = markerLines[number];
 
-            const paddedNumber = ` ${String(number)}`.slice(-numberMaxWidth);
+            const paddedNumber = String(number).padStart(numberMaxWidth);
             const lastMarkerLine = !markerLines[number + 1];
 
             const gutter = ` ${paddedNumber}${config.showGutter ? " |" : ""}`;
