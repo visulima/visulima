@@ -1020,7 +1020,7 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
             return throwErrorCode(ERRORS.FILE_LOCKED);
         }
 
-        if (this.config.concurrency && typeof this.config.concurrency === "number" && this.config.concurrency < activeUploads.length) {
+        if (this.config.concurrency && typeof this.config.concurrency === "number" && this.config.concurrency <= activeUploads.length) {
             return throwErrorCode(ERRORS.STORAGE_BUSY);
         }
 

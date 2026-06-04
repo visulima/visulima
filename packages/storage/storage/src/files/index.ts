@@ -547,7 +547,7 @@ const toFileObject = (file: StorageFile, fallbackKey?: string): FileObject => {
  */
 const assertNoRelativeSegments = (value: string, label: string): void => {
     if (value.split("/").some((segment) => segment === "." || segment === "..")) {
-        throwErrorCode(ERRORS.INVALID_FILE_NAME, `${label} must not contain "." or ".." path segments: "${value}"`);
+        throwErrorCode(ERRORS.INVALID_FILE_NAME, `${ERRORS.INVALID_FILE_NAME}: ${label} must not contain "." or ".." path segments: "${value}"`);
     }
 };
 
@@ -782,13 +782,13 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
 
     /** Resolve a caller-supplied key into the underlying storage key. */
     private resolveKey(key: string): string {
-        if (!this.prefix) {
-            return key;
-        }
-
         const normalized = key.replace(/^\/+/u, "");
 
         assertNoRelativeSegments(normalized, "key");
+
+        if (!this.prefix) {
+            return key;
+        }
 
         return `${this.prefix}/${normalized}`;
     }
@@ -1336,9 +1336,9 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
             const earlyErrors: BulkError[] = [];
 
             for (const key of keys) {
-                const resolved = this.resolveKey(key);
-
                 try {
+                    const resolved = this.resolveKey(key);
+
                     BaseStorage.assertSafeId(resolved);
                     validKeys.push(key);
                     resolvedIds.push(resolved);

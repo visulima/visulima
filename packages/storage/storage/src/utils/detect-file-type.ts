@@ -49,8 +49,8 @@ export const detectFileTypeFromStream = async (
                 chunks.push(chunk);
                 totalLength += chunk.length;
 
-                // Start detection when we have enough data or first chunk
-                if (totalLength >= sampleSize || totalLength > 0) {
+                // Start detection only once we have accumulated enough data
+                if (totalLength >= sampleSize) {
                     detectionStarted = true;
                     const buffer = Buffer.concat(chunks);
 
@@ -67,6 +67,22 @@ export const detectFileTypeFromStream = async (
 
             // Pass all chunks through
             callback(undefined, chunk);
+        },
+        flush(callback) {
+            // Stream ended before reaching sampleSize: detect on whatever was accumulated
+            if (!detectionStarted && chunks.length > 0) {
+                detectionStarted = true;
+
+                detectionPromise = fileTypeFromBuffer(Buffer.concat(chunks))
+                    .then((detected) => {
+                        fileType = detected;
+
+                        return detected;
+                    })
+                    .catch(() => undefined);
+            }
+
+            callback();
         },
     });
 

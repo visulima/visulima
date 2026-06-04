@@ -643,18 +643,26 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
 
             // Handle AbortController signal manually
             // Note: We handle signal manually instead of using pipeline options for better compatibility
+            let onAbort: (() => void) | undefined;
+
             if (signal) {
-                signal.addEventListener("abort", () => {
+                onAbort = () => {
                     cleanupStreams();
                     destination.destroy();
                     lengthChecker.destroy();
                     checksumChecker.destroy();
                     part.body.destroy();
                     resolve([Number.NaN, keepPartial ? undefined : ERRORS.REQUEST_ABORTED]);
-                });
+                };
+
+                signal.addEventListener("abort", onAbort, { once: true });
             }
 
             pipeline(part.body, lengthChecker, checksumChecker, destination, (error) => {
+                if (signal && onAbort) {
+                    signal.removeEventListener("abort", onAbort);
+                }
+
                 if (error) {
                     cleanupStreams();
 
