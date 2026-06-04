@@ -1,7 +1,7 @@
 import type { InteractiveManager } from "@visulima/interactive-manager";
 
 import type { ProgressBarOptions, ProgressBarPayload } from "./types";
-import { BRAILLE_CAP_LEFT, BRAILLE_CAP_RIGHT, getBarChar } from "./utils";
+import { applyStyleToOptions, BRAILLE_CAP_LEFT, BRAILLE_CAP_RIGHT, getBarChar } from "./utils";
 
 /**
  * Terminal progress bar with multiple styles, gradient support, and peak markers.
@@ -27,7 +27,9 @@ export class ProgressBar {
 
     private payload?: ProgressBarPayload;
 
-    public constructor(options: ProgressBarOptions, interactiveManager?: InteractiveManager, payload?: ProgressBarPayload) {
+    public constructor(rawOptions: ProgressBarOptions, interactiveManager?: InteractiveManager, payload?: ProgressBarPayload) {
+        const options = applyStyleToOptions(rawOptions);
+
         const isCompleteArray = Array.isArray(options.barCompleteChar);
         const isIncompleteArray = Array.isArray(options.barIncompleteChar);
         const isGradientMode = isCompleteArray || isIncompleteArray;
@@ -64,7 +66,7 @@ export class ProgressBar {
     }
 
     public update(current: number, payload?: ProgressBarPayload): void {
-        this.current = Math.min(current, this.options.total);
+        this.current = Math.max(0, Math.min(current, this.options.total));
 
         if (payload) {
             this.payload = { ...this.payload, ...payload };
@@ -159,6 +161,13 @@ export class ProgressBar {
             chars[0] = BRAILLE_CAP_LEFT;
             chars[chars.length - 1] = BRAILLE_CAP_RIGHT;
             bar = chars.join("");
+        }
+
+        const barGlue = this.options.barGlue ?? "";
+
+        if (barGlue !== "") {
+            // eslint-disable-next-line @typescript-eslint/no-misused-spread
+            bar = [...bar].join(barGlue);
         }
 
         let format = this.options.format ?? "progress [{bar}] {percentage}% | ETA: {eta}s | {value}/{total}";
