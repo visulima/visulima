@@ -34,9 +34,9 @@ export const registerListTargets = ({ server }: ToolDeps, context: ToolContext):
                 const rows = filtered.flatMap((entry) =>
                     (entry.targets ?? []).map((target) => {
                         return {
+                            ...target,
                             project: entry.name,
                             target: target.name,
-                            ...target,
                         };
                     }),
                 );
