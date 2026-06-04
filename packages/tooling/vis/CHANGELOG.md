@@ -1,3 +1,38 @@
+## @visulima/vis [1.0.0-alpha.29](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.28...@visulima/vis@1.0.0-alpha.29) (2026-06-04)
+
+### Features
+
+* **vis:** docker lint/init + ignore-file commands ([#675](https://github.com/visulima/visulima/issues/675)) ([f22c9f3](https://github.com/visulima/visulima/commit/f22c9f34304a41e257f9f0371d1aaa312f90df25))
+* **vis:** docker lint/init, ci-ignore, hadolint + toolbox DI ([#677](https://github.com/visulima/visulima/issues/677)) ([e5b5bd1](https://github.com/visulima/visulima/commit/e5b5bd164ed648341d4e1d655098b72bd040e4ed))
+
+### Bug Fixes
+
+* **vis:** 1 bug fix + 2 perf ([fdf3eb8](https://github.com/visulima/visulima/commit/fdf3eb86c19b471fd9891721e83fff7578df1da0))
+
+
+### Dependencies
+
+* **@visulima/secret-scanner:** upgraded to 1.0.0-alpha.5
+* **@visulima/tabular:** upgraded to 4.0.0-alpha.13
+* **@visulima/task-runner:** upgraded to 1.0.0-alpha.19
+* **@visulima/tui:** upgraded to 1.0.0-alpha.22
+* **@visulima/ansi:** upgraded to 4.0.0-alpha.16
+* **@visulima/cerebro:** upgraded to 3.0.0-alpha.30
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.13
+* **@visulima/error:** upgraded to 6.0.0-alpha.32
+* **@visulima/find-ai-runner:** upgraded to 1.0.0-alpha.7
+* **@visulima/find-cache-dir:** upgraded to 3.0.0-alpha.11
+* **@visulima/fs:** upgraded to 5.0.0-alpha.30
+* **@visulima/humanizer:** upgraded to 3.0.0-alpha.13
+* **@visulima/interactive-manager:** upgraded to 1.0.0-alpha.4
+* **@visulima/package:** upgraded to 5.0.0-alpha.29
+* **@visulima/pail:** upgraded to 4.0.0-alpha.20
+* **@visulima/path:** upgraded to 3.0.0-alpha.12
+* **@visulima/redact:** upgraded to 3.0.0-alpha.13
+* **@visulima/source-map:** upgraded to 3.0.0-alpha.11
+* **@visulima/spinner:** upgraded to 1.0.0-alpha.3
+* **@visulima/string:** upgraded to 3.0.0-alpha.15
+
 ## @visulima/vis [1.0.0-alpha.28](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.27...@visulima/vis@1.0.0-alpha.28) (2026-06-03)
 
 ### Bug Fixes
