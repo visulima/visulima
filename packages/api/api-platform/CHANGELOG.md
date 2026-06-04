@@ -1,3 +1,18 @@
+## @visulima/api-platform [4.0.0-alpha.29](https://github.com/visulima/visulima/compare/@visulima/api-platform@4.0.0-alpha.28...@visulima/api-platform@4.0.0-alpha.29) (2026-06-04)
+
+### Bug Fixes
+
+* **api-platform:** 6 bug fixes ([de6844e](https://github.com/visulima/visulima/commit/de6844ef3913c3bcb81008b5d4c8598a4aef25d4))
+
+
+### Dependencies
+
+* **@visulima/connect:** upgraded to 4.0.0-alpha.30
+* **@visulima/fs:** upgraded to 5.0.0-alpha.30
+* **@visulima/jsdoc-open-api:** upgraded to 3.0.0-alpha.28
+* **@visulima/path:** upgraded to 3.0.0-alpha.12
+* **@visulima/crud:** upgraded to 3.0.0-alpha.17
+
 ## @visulima/api-platform [4.0.0-alpha.28](https://github.com/visulima/visulima/compare/@visulima/api-platform@4.0.0-alpha.27...@visulima/api-platform@4.0.0-alpha.28) (2026-06-02)
 
 ### Miscellaneous Chores
