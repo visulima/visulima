@@ -20,7 +20,7 @@ const isFullArray = (input: any) => Array.isArray(input) && input.length > 0;
  * @param keys the prop names you want to omit
  * @returns a new object without the omitted props
  */
-const omit = <T extends { [key in string]: unknown }, K extends string>(object: T, keys: Paths<T>[]): OmitDeep<T, K> => {
+const omit = <T extends { [key in string]: unknown }, const K extends Paths<T>>(object: T, keys: K[]): OmitDeep<T, K> => {
     if (!isFullArray(keys)) {
         return object as OmitDeep<T, K>;
     }

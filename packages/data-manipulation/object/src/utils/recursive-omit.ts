@@ -32,14 +32,18 @@ const recursiveOmit = <T extends { [key in string]: unknown }, OmittedKeys exten
 
         // no further recursion needed
         if (!isPlainObject(value)) {
-            // eslint-disable-next-line no-param-reassign
-            carry[key] = value;
+            Object.defineProperty(carry, key, { configurable: true, enumerable: true, value, writable: true });
 
             return carry;
         }
 
-        // eslint-disable-next-line no-param-reassign,@typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-argument
-        carry[key] = recursiveOmit<T, any>(object[key] as any, omittedKeys, path);
+        Object.defineProperty(carry, key, {
+            configurable: true,
+            enumerable: true,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-argument
+            value: recursiveOmit<T, any>(object[key] as any, omittedKeys, path),
+            writable: true,
+        });
 
         return carry;
     }, {}) as T;

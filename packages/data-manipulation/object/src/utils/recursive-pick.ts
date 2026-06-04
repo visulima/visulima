@@ -30,11 +30,14 @@ const recursivePick = <T extends { [key in string]: unknown }, PickedKeys extend
         if (pickedKeys.length > 0) {
             let passed = false;
 
+            const pathPieces = path.split(".");
+            const pathDepth = pathPieces.length;
+
             pickedKeys.forEach((pickedKey: Paths<T>) => {
-                const pathDepth = path.split(".").length;
-                const pickedKeyDepth = (pickedKey as string).split(".").length;
-                const pickedKeyUpToNow = (pickedKey as string).split(".").slice(0, pathDepth).join(".");
-                const pathUpToPickedKeyDepth = path.split(".").slice(0, pickedKeyDepth).join(".");
+                const pickedKeyPieces = (pickedKey as string).split(".");
+                const pickedKeyDepth = pickedKeyPieces.length;
+                const pickedKeyUpToNow = pickedKeyPieces.slice(0, pathDepth).join(".");
+                const pathUpToPickedKeyDepth = pathPieces.slice(0, pickedKeyDepth).join(".");
 
                 if (pathsAreEqual(pathUpToPickedKeyDepth, pickedKeyUpToNow)) {
                     passed = true;
@@ -51,14 +54,18 @@ const recursivePick = <T extends { [key in string]: unknown }, PickedKeys extend
 
         // no further recursion needed
         if (!isPlainObject(value)) {
-            // eslint-disable-next-line no-param-reassign
-            carry[key] = value;
+            Object.defineProperty(carry, key, { configurable: true, enumerable: true, value, writable: true });
 
             return carry;
         }
 
-        // eslint-disable-next-line no-param-reassign,@typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-argument
-        carry[key] = recursivePick<T, any>(object[key] as any, pickedKeys, path);
+        Object.defineProperty(carry, key, {
+            configurable: true,
+            enumerable: true,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-argument
+            value: recursivePick<T, any>(object[key] as any, pickedKeys, path),
+            writable: true,
+        });
 
         return carry;
     }, {}) as T;
