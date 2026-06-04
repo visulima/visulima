@@ -1,3 +1,14 @@
+## @visulima/boxen [3.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/boxen@3.0.0-alpha.12...@visulima/boxen@3.0.0-alpha.13) (2026-06-04)
+
+### Performance Improvements
+
+* **boxen:** disable esbuild keepNames in prod build ([aa3f457](https://github.com/visulima/visulima/commit/aa3f457076945af0b62685af7a1578e6fe7040a2))
+
+
+### Dependencies
+
+* **@visulima/string:** upgraded to 3.0.0-alpha.16
+
 ## @visulima/boxen [3.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/boxen@3.0.0-alpha.11...@visulima/boxen@3.0.0-alpha.12) (2026-06-04)
 
 ### Bug Fixes
