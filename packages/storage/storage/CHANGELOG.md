@@ -1,3 +1,17 @@
+## @visulima/storage [1.0.0-alpha.34](https://github.com/visulima/visulima/compare/@visulima/storage@1.0.0-alpha.33...@visulima/storage@1.0.0-alpha.34) (2026-06-04)
+
+### Bug Fixes
+
+* **storage:** 4 bug fixes ([587b168](https://github.com/visulima/visulima/commit/587b16893bfd85d20ce205ac6836e83e4e3f8cdf))
+
+
+### Dependencies
+
+* **@visulima/pagination:** upgraded to 5.0.0-alpha.13
+* **@visulima/fs:** upgraded to 5.0.0-alpha.30
+* **@visulima/humanizer:** upgraded to 3.0.0-alpha.13
+* **@visulima/path:** upgraded to 3.0.0-alpha.12
+
 ## @visulima/storage [1.0.0-alpha.33](https://github.com/visulima/visulima/compare/@visulima/storage@1.0.0-alpha.32...@visulima/storage@1.0.0-alpha.33) (2026-06-02)
 
 ### Features
