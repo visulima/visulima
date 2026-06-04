@@ -1,3 +1,9 @@
+## @visulima/storage-client [1.0.0-alpha.17](https://github.com/visulima/visulima/compare/@visulima/storage-client@1.0.0-alpha.16...@visulima/storage-client@1.0.0-alpha.17) (2026-06-04)
+
+### Bug Fixes
+
+* **storage-client:** 5 bug fixes + 1 perf ([edb1f4c](https://github.com/visulima/visulima/commit/edb1f4cd5a5b9102ad4850a29c7b657eb65c353c))
+
 ## @visulima/storage-client [1.0.0-alpha.16](https://github.com/visulima/visulima/compare/@visulima/storage-client@1.0.0-alpha.15...@visulima/storage-client@1.0.0-alpha.16) (2026-06-02)
 
 ### Bug Fixes
