@@ -1,6 +1,6 @@
 {
     "name": "@visulima/cerebro",
-    "version": "3.0.0-alpha.29",
+    "version": "3.0.0-alpha.30",
     "description": "A delightful toolkit for building cross-runtime CLIs for Node.js, Deno, and Bun.",
     "keywords": [
         "ansi",
@@ -126,14 +126,12 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/colorize": "2.0.0-alpha.12",
-        "@visulima/tabular": "4.0.0-alpha.12",
+        "@visulima/colorize": "2.0.0-alpha.13",
+        "@visulima/tabular": "4.0.0-alpha.13",
         "fastest-levenshtein": "catalog:prod"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",
-        "@visulima/string": "3.0.0-alpha.14",
-        "terminal-size": "catalog:prod",
         "@anolilab/prettier-config": "catalog:lint",
         "@anolilab/semantic-release-pnpm": "catalog:dev",
         "@anolilab/semantic-release-preset": "catalog:dev",
@@ -141,13 +139,14 @@
         "@bomb.sh/tab": "catalog:dev",
         "@total-typescript/ts-reset": "catalog:dev",
         "@types/node": "catalog:types",
-        "@visulima/boxen": "3.0.0-alpha.11",
-        "@visulima/command-line-args": "2.0.0-alpha.10",
-        "@visulima/error": "6.0.0-alpha.30",
-        "@visulima/find-cache-dir": "3.0.0-alpha.10",
+        "@visulima/boxen": "3.0.0-alpha.12",
+        "@visulima/command-line-args": "2.0.0-alpha.11",
+        "@visulima/error": "6.0.0-alpha.32",
+        "@visulima/find-cache-dir": "3.0.0-alpha.11",
         "@visulima/packem": "catalog:dev",
-        "@visulima/pail": "4.0.0-alpha.19",
-        "@visulima/path": "3.0.0-alpha.11",
+        "@visulima/pail": "4.0.0-alpha.20",
+        "@visulima/path": "3.0.0-alpha.12",
+        "@visulima/string": "3.0.0-alpha.15",
         "@vitest/coverage-v8": "catalog:test",
         "ci-info": "catalog:dev",
         "commander": "catalog:dev",
@@ -159,14 +158,15 @@
         "publint": "catalog:dev",
         "rimraf": "catalog:node",
         "semantic-release": "catalog:cli",
+        "terminal-size": "catalog:prod",
         "typescript": "catalog:tsc",
         "vitest": "catalog:test"
     },
     "peerDependencies": {
         "@bomb.sh/tab": "catalog:peer",
-        "@visulima/boxen": "3.0.0-alpha.11",
-        "@visulima/find-cache-dir": "3.0.0-alpha.10",
-        "@visulima/pail": "4.0.0-alpha.19",
+        "@visulima/boxen": "3.0.0-alpha.12",
+        "@visulima/find-cache-dir": "3.0.0-alpha.11",
+        "@visulima/pail": "4.0.0-alpha.20",
         "github-slugger": "catalog:peer"
     },
     "peerDependenciesMeta": {
