@@ -1,6 +1,6 @@
 {
     "name": "@visulima/tui",
-    "version": "1.0.0-alpha.22",
+    "version": "1.0.0-alpha.23",
     "description": "React-based TUI library powered by a native Rust diff engine, drop-in Ink-compatible API",
     "keywords": [
         "cli",
@@ -592,7 +592,7 @@
         "@visulima/colorize": "2.0.0-alpha.13",
         "@visulima/error": "6.0.0-alpha.32",
         "@visulima/spinner": "1.0.0-alpha.3",
-        "@visulima/string": "3.0.0-alpha.15",
+        "@visulima/string": "3.0.0-alpha.16",
         "cli-boxes": "catalog:prod",
         "code-excerpt": "catalog:prod",
         "is-in-ci": "catalog:prod",
@@ -621,7 +621,7 @@
         "@types/react-reconciler": "catalog:types",
         "@types/scheduler": "catalog:types",
         "@types/ws": "catalog:types",
-        "@visulima/boxen": "3.0.0-alpha.12",
+        "@visulima/boxen": "3.0.0-alpha.13",
         "@visulima/packem": "catalog:dev",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
