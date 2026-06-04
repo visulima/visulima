@@ -34,7 +34,13 @@ export class Router<H extends FunctionLike> {
             return currentFunction(...arguments_, next) as Promise<unknown>;
         };
 
-        return (fns[index] as FunctionLike)(...arguments_, next) as Promise<unknown>;
+        const first = fns[index];
+
+        if (first === undefined) {
+            return Promise.resolve();
+        }
+
+        return first(...arguments_, next) as Promise<unknown>;
     }
 
     private static extractRegExpParams(matches: RegExpExecArray): Record<string, string> {

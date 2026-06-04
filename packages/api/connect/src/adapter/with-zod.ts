@@ -16,12 +16,19 @@ const withZod
             try {
                 transformedRequest = await schema.parseAsync(request);
             } catch (error: unknown) {
-                const message
-                    = error instanceof z.ZodError && typeof error.format === "function"
-                        ? error.issues.map((issue) => `${issue.path.join("/")} - ${issue.message}`).join("/n")
-                        : (error as Error).message;
+                if (error instanceof z.ZodError) {
+                    const message = error.issues.map((issue) => `${issue.path.join("/")} - ${issue.message}`).join("\n");
 
-                throw createHttpError(422, message);
+                    const httpError = createHttpError(422, message);
+
+                    // Preserve the structured zod issues so downstream error handlers
+                    // can serialize per-field validation details.
+                    (httpError as typeof httpError & { issues: z.ZodError["issues"] }).issues = error.issues;
+
+                    throw httpError;
+                }
+
+                throw createHttpError(422, (error as Error).message);
             }
 
             return handler(transformedRequest, response, next);
