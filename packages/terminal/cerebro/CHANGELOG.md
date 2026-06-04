@@ -1,3 +1,37 @@
+## @visulima/cerebro [3.0.0-alpha.30](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.29...@visulima/cerebro@3.0.0-alpha.30) (2026-06-04)
+
+### Bug Fixes
+
+* **cerebro:** 6 bug fixes ([717f07e](https://github.com/visulima/visulima/commit/717f07ef9ffcc1c28a01250fe1534fa45f5d11cf))
+* **lint:** clear pre-existing eslint rot across packages ([#674](https://github.com/visulima/visulima/issues/674)) ([5354253](https://github.com/visulima/visulima/commit/5354253b163bd50bcefaf8a3fddf831bdb5df32b))
+
+### Miscellaneous Chores
+
+* apply eslint + prettier autofixes across packages ([c1bb784](https://github.com/visulima/visulima/commit/c1bb7848a0d93d0dfe2960c77e3cda22239c79a0))
+
+### Tests
+
+* **cerebro:** cover plugins, error/validation utils, update-notifier, and command processing branches ([6e40a11](https://github.com/visulima/visulima/commit/6e40a11ec1dd7204083a7d4d1b52a85cb66533e6))
+* **cerebro:** update ESM/CJS integration snapshot for -v alias ([897bb2f](https://github.com/visulima/visulima/commit/897bb2f97d0279801d8d87cf94c0373922550477))
+* fix cross-platform flakes in package + cerebro ([#676](https://github.com/visulima/visulima/issues/676)) ([d1afb4b](https://github.com/visulima/visulima/commit/d1afb4ba743cf18bdf9f02081539d70bdcda91e9))
+
+### Build System
+
+* **cerebro:** move @visulima/string and terminal-size to devDependencies ([27924b4](https://github.com/visulima/visulima/commit/27924b4716de5631e43e7b7485e6b44a232f27ee))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.13
+* **@visulima/tabular:** upgraded to 4.0.0-alpha.13
+* **@visulima/string:** upgraded to 3.0.0-alpha.15
+* **@visulima/boxen:** upgraded to 3.0.0-alpha.12
+* **@visulima/command-line-args:** upgraded to 2.0.0-alpha.11
+* **@visulima/error:** upgraded to 6.0.0-alpha.32
+* **@visulima/find-cache-dir:** upgraded to 3.0.0-alpha.11
+* **@visulima/pail:** upgraded to 4.0.0-alpha.20
+* **@visulima/path:** upgraded to 3.0.0-alpha.12
+
 ## @visulima/cerebro [3.0.0-alpha.29](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.28...@visulima/cerebro@3.0.0-alpha.29) (2026-05-29)
 
 ### Tests
