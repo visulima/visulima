@@ -1,3 +1,18 @@
+## @visulima/deep-clone [4.0.0-alpha.15](https://github.com/visulima/visulima/compare/@visulima/deep-clone@4.0.0-alpha.14...@visulima/deep-clone@4.0.0-alpha.15) (2026-06-04)
+
+### Bug Fixes
+
+* **deep-clone:** 4 bug fixes + 1 perf ([fd2fe5d](https://github.com/visulima/visulima/commit/fd2fe5df3a4a5aad5e487675a0a1b24dc3f66aca))
+
+### Miscellaneous Chores
+
+* apply eslint + prettier autofixes across packages ([c1bb784](https://github.com/visulima/visulima/commit/c1bb7848a0d93d0dfe2960c77e3cda22239c79a0))
+
+### Tests
+
+* **deep-clone:** cover frozen/symbol object copy, error without stack, get-clean-clone branches and shared-buffer guards ([b5927dc](https://github.com/visulima/visulima/commit/b5927dc63fc60e8e37cb1041ed48ba0a719a49d1))
+* improve coverage across packages ([91bd6d3](https://github.com/visulima/visulima/commit/91bd6d3b61736e3c8bd1fc59b0b5955f76a5d323))
+
 ## @visulima/deep-clone [4.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/deep-clone@4.0.0-alpha.13...@visulima/deep-clone@4.0.0-alpha.14) (2026-05-27)
 
 ### Bug Fixes
