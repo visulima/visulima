@@ -515,14 +515,25 @@ export const runConcurrentFallback = (commands: ConcurrentCommandConfig[], optio
                 const cmdIndex = pending.shift()!;
                 const config = commands[cmdIndex]!;
 
-                const proc
-                    = config.stdin === "pty"
-                        ? spawnCommandPty(cmdIndex, config, options.shellPath, onEvent, (ce) => {
-                            handleClose(cmdIndex, ce);
-                        })
-                        : spawnCommand(cmdIndex, config, options.shellPath, onEvent, (ce) => {
+                let proc: ActiveProcess;
+
+                if (config.stdin === "pty") {
+                    try {
+                        proc = spawnCommandPty(cmdIndex, config, options.shellPath, onEvent, (ce) => {
                             handleClose(cmdIndex, ce);
                         });
+                    } catch {
+                        // PTY spawn failed (node-pty unavailable or spawn error) —
+                        // fall back to pipe mode so the run can still settle.
+                        proc = spawnCommand(cmdIndex, config, options.shellPath, onEvent, (ce) => {
+                            handleClose(cmdIndex, ce);
+                        });
+                    }
+                } else {
+                    proc = spawnCommand(cmdIndex, config, options.shellPath, onEvent, (ce) => {
+                        handleClose(cmdIndex, ce);
+                    });
+                }
 
                 active.push(proc);
             }
@@ -555,6 +566,11 @@ export const runConcurrentFallback = (commands: ConcurrentCommandConfig[], optio
             }
         };
 
+        // Bump the cap so several concurrent fallback runs (or a host
+        // with its own signal handlers) don't trip Node's 10-listener
+        // MaxListenersExceeded warning. Mirrors concurrent.ts.
+        process.setMaxListeners(process.getMaxListeners() + 3);
+
         process.on("SIGINT", handleSigint);
         process.on("SIGTERM", handleNonInteractiveAbort);
         process.on("exit", handleNonInteractiveAbort);
@@ -565,6 +581,7 @@ export const runConcurrentFallback = (commands: ConcurrentCommandConfig[], optio
             process.removeListener("SIGINT", handleSigint);
             process.removeListener("SIGTERM", handleNonInteractiveAbort);
             process.removeListener("exit", handleNonInteractiveAbort);
+            process.setMaxListeners(Math.max(0, process.getMaxListeners() - 3));
             originalResolve(result);
         }) as typeof resolve;
 

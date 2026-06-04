@@ -56,11 +56,21 @@ const FRAMEWORK_DEFINITIONS: ReadonlyArray<{
         packages: ["@remix-run/react", "@remix-run/node"],
     },
     {
+        // KNOWN FOOTGUN: `PUBLIC_` is an extremely broad, non-namespaced
+        // prefix. When framework inference is enabled, every `PUBLIC_*`
+        // env var folds into the task hash, so unrelated `PUBLIC_*` vars
+        // bust the cache for any project depending on astro. SvelteKit
+        // only treats `PUBLIC_` vars as public when accessed via
+        // `$env/static/public`, but we can't see access sites from
+        // package.json alone — the over-broad match is intentional and
+        // errs toward correctness over cache hit rate.
         envPrefixes: ["PUBLIC_"],
         name: "Astro",
         packages: ["astro"],
     },
     {
+        // See the Astro note above — same `PUBLIC_` over-broad-match
+        // caveat applies to SvelteKit.
         envPrefixes: ["PUBLIC_"],
         name: "SvelteKit",
         packages: ["@sveltejs/kit"],
