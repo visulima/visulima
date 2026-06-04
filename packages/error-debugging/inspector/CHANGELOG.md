@@ -1,3 +1,9 @@
+## @visulima/inspector [2.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/inspector@2.0.0-alpha.12...@visulima/inspector@2.0.0-alpha.13) (2026-06-04)
+
+### Features
+
+* **inspector:** chai/inspect support, match/beat loupe perf ([7313b5a](https://github.com/visulima/visulima/commit/7313b5aa0cb729c65c3f8916dcf44485da6e43bb)), closes [visulima/packem#207](https://github.com/visulima/packem/issues/207)
+
 ## @visulima/inspector [2.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/inspector@2.0.0-alpha.11...@visulima/inspector@2.0.0-alpha.12) (2026-06-04)
 
 ### Bug Fixes
