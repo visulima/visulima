@@ -14,6 +14,18 @@ class SafeStreamHandler {
     public constructor(stream: Writable, name: string) {
         this.#stream = stream;
         this.#name = name;
+
+        this.#stream.on("error", (error) => {
+            throw error;
+        });
+
+        this.#stream.on("drain", () => {
+            this.#ready = true;
+        });
+
+        this.#stream.on("finish", () => {
+            this.#ready = true;
+        });
     }
 
     /**
@@ -45,18 +57,6 @@ class SafeStreamHandler {
         }
 
         this.#ready = false;
-
-        this.#stream.on("error", (error) => {
-            throw error;
-        });
-
-        this.#stream.on("drain", () => {
-            this.#ready = true;
-        });
-
-        this.#stream.on("finish", () => {
-            this.#ready = true;
-        });
 
         this.#ready = this.#stream.write(message, () => {});
     }
