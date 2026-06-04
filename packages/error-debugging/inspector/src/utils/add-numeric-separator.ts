@@ -4,6 +4,13 @@ const decimalGroupRegex = /\d{3}/g;
 const trailingUnderscoreRegex = /_$/;
 
 const addNumericSeparator = (number_: bigint | number, string_: string): string => {
+    // A separator is only inserted once there are four or more consecutive digits.
+    // Anything shorter (the overwhelmingly common small-integer case) can therefore
+    // skip the regex work entirely. A leading "-" leaves at most three digits.
+    if (string_.length < 4 || (string_.length === 4 && string_.codePointAt(0) === 45) /* "-" */) {
+        return string_;
+    }
+
     if (number_ === Number.POSITIVE_INFINITY || number_ === Number.NEGATIVE_INFINITY || string_.includes("e")) {
         return string_;
     }

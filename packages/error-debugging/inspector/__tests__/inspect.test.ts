@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { inspect } from "../src";
+import { custom as customSymbol, inspect } from "../src";
 import type { Options } from "../src/types";
 
 describe("arrays", () => {
@@ -64,6 +64,17 @@ describe("objects", () => {
         };
 
         expect(inspect(object, { customInspect: true })).toBe("abc");
+    });
+
+    it("uses the `chai/inspect` (custom) symbol when `customInspect` is turned on", () => {
+        expect.assertions(2);
+
+        const object = {
+            [customSymbol]: () => "chai-custom",
+        };
+
+        expect(inspect(object, { customInspect: true })).toBe("chai-custom");
+        expect(inspect(object, { customInspect: false })).not.toBe("chai-custom");
     });
 
     it("inspects custom inspect function result", () => {
