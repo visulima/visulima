@@ -1,3 +1,24 @@
+## @visulima/secret-scanner [1.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/secret-scanner@1.0.0-alpha.4...@visulima/secret-scanner@1.0.0-alpha.5) (2026-06-04)
+
+### Bug Fixes
+
+* **secret-scanner:** 2 bug fixes + 1 perf ([183e90e](https://github.com/visulima/visulima/commit/183e90ec13c938215972493f6bc89a69df066e68))
+
+### Miscellaneous Chores
+
+* apply eslint + prettier autofixes across packages ([c1bb784](https://github.com/visulima/visulima/commit/c1bb7848a0d93d0dfe2960c77e3cda22239c79a0))
+
+### Tests
+
+* **secret-scanner:** cover transport/http validators, prepare-scan, and index entry diagnostics ([610bc8a](https://github.com/visulima/visulima/commit/610bc8a0efaf011cd6fa89e72eea9f909a3d16f4))
+
+
+### Dependencies
+
+* **@visulima/find-cache-dir:** upgraded to 3.0.0-alpha.11
+* **@visulima/fs:** upgraded to 5.0.0-alpha.30
+* **@visulima/path:** upgraded to 3.0.0-alpha.12
+
 ## @visulima/secret-scanner [1.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/secret-scanner@1.0.0-alpha.3...@visulima/secret-scanner@1.0.0-alpha.4) (2026-05-27)
 
 ### Bug Fixes
