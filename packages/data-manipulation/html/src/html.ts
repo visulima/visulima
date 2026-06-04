@@ -35,8 +35,7 @@ function html(stringsOrValue: TemplateStringsArray | string, ...valuesOrEscape: 
         let result = strings[0] ?? "";
 
         for (const [i, element] of valuesOrEscape.entries()) {
-            // eslint-disable-next-line @typescript-eslint/no-base-to-string
-            result += escapeHtml(String(element ?? ""), true);
+            result += escapeHtml(element, true);
             result += strings[i + 1] ?? "";
         }
 
