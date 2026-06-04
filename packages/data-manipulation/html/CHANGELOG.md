@@ -1,3 +1,17 @@
+## @visulima/html [1.0.0-alpha.19](https://github.com/visulima/visulima/compare/@visulima/html@1.0.0-alpha.18...@visulima/html@1.0.0-alpha.19) (2026-06-04)
+
+### Bug Fixes
+
+* **html:** 1 bug fix ([a300939](https://github.com/visulima/visulima/commit/a300939fb1689808be2dd972364740d925d3789b))
+
+### Miscellaneous Chores
+
+* apply eslint + prettier autofixes across packages ([c1bb784](https://github.com/visulima/visulima/commit/c1bb7848a0d93d0dfe2960c77e3cda22239c79a0))
+
+### Tests
+
+* **html:** cover vendor-prefix and tagged-template fallback branches ([8db69d5](https://github.com/visulima/visulima/commit/8db69d5da388a55e2550ed5bb5ef4ae651bc21f8))
+
 ## @visulima/html [1.0.0-alpha.18](https://github.com/visulima/visulima/compare/@visulima/html@1.0.0-alpha.17...@visulima/html@1.0.0-alpha.18) (2026-05-27)
 
 ### Bug Fixes
