@@ -14,7 +14,6 @@ export const onError
         showTrace: boolean,
     ): (error: unknown, request: Request, response: Response, routes: Route<Nextable<FunctionLike>>[]) => Promise<Response | undefined> =>
     /* eslint-enable @typescript-eslint/no-unnecessary-type-parameters */
-    // eslint-disable-next-line @typescript-eslint/require-await -- the returned handler must match the connect async signature even though no awaits occur
         async (error: unknown, request: Request, response: Response): Promise<Response | undefined> => {
             const apiFormat: string = request.headers.accept as string;
 
@@ -31,11 +30,10 @@ export const onError
                 }
             }
 
-            // eslint-disable-next-line no-param-reassign
-            (error as Error & { expose: boolean }).expose = showTrace;
+            // eslint-disable-next-line no-param-reassign -- only enable trace exposure when both showTrace is set and the error itself permits exposure (http-errors sets expose=false on 5xx)
+            (error as Error & { expose?: boolean }).expose = showTrace && (error as { expose?: boolean }).expose !== false;
 
-            // eslint-disable-next-line no-void -- preserve fire-and-forget semantics; awaiting would change error propagation timing
-            void errorHandler(error, request, response);
+            await errorHandler(error, request, response);
 
             return undefined;
         };

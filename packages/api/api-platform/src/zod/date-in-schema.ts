@@ -6,7 +6,7 @@ import * as z from "zod";
 // 2021-01-01T00:00:00Z
 // 2021-01-01T00:00:00
 // 2021-01-01
-const isoDateRegex: RegExp = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?)?Z?$/;
+const isoDateRegex: RegExp = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?)?$/;
 
 type ZodDateIn = z.ZodType<Date, string>;
 
