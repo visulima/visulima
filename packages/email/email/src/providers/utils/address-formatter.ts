@@ -1,17 +1,15 @@
+import { formatAddress as formatHeaderAddress } from "../../crypto/format-address";
 import type { EmailAddress } from "../../types";
 
 /**
  * Formats a single email address as "Name &lt;email>" or just "email" if no name is provided.
+ *
+ * Delegates to the hardened crypto formatter so the email is rejected when it contains CR/LF or
+ * angle brackets, and the display name is quoted/escaped — closing the header-injection footgun.
  * @param address The email address object to format.
  * @returns The formatted email address string.
  */
-export const formatAddress = (address: EmailAddress): string => {
-    if (address.name) {
-        return `${address.name} <${address.email}>`;
-    }
-
-    return address.email;
-};
+export const formatAddress = (address: EmailAddress): string => formatHeaderAddress(address);
 
 /**
  * Formats an array of email addresses or a single address as "Name &lt;email>" format.

@@ -153,7 +153,16 @@ const verifySnsMessage = async (message: SnsMessage, options: SnsVerifyOptions =
         return { reason: "unknown-message-type", valid: false };
     }
 
-    const algorithm = message.SignatureVersion === "2" ? "RSA-SHA256" : "RSA-SHA1";
+    let algorithm: string;
+
+    if (message.SignatureVersion === "1") {
+        algorithm = "RSA-SHA1";
+    } else if (message.SignatureVersion === "2") {
+        algorithm = "RSA-SHA256";
+    } else {
+        // Reject unknown/absent versions rather than silently downgrading to the weaker SHA1.
+        return { reason: "unknown-signature-version", valid: false };
+    }
 
     const pem = await certificateResolver(message.SigningCertURL);
 

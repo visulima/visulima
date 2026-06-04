@@ -246,9 +246,9 @@ describe(postmarkProvider, () => {
 
             const payload = JSON.parse(callArgs[2] as string);
 
-            expect(payload.From).toBe("Sender <sender@example.com>");
+            expect(payload.From).toBe("\"Sender\" <sender@example.com>");
 
-            expect(payload.To).toBe("User 1 <user1@example.com>,user2@example.com");
+            expect(payload.To).toBe("\"User 1\" <user1@example.com>,user2@example.com");
         });
 
         it("should include CC and BCC recipients", async () => {

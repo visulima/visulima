@@ -23,7 +23,7 @@ describe(formatAddress, () => {
     it("should format an address with a name", () => {
         expect.assertions(1);
 
-        expect(formatAddress({ email: "user@example.com", name: "User" })).toBe("User <user@example.com>");
+        expect(formatAddress({ email: "user@example.com", name: "User" })).toBe("\"User\" <user@example.com>");
     });
 
     it("should format an address without a name", () => {
@@ -37,13 +37,13 @@ describe(formatAddresses, () => {
     it("should format a single address", () => {
         expect.assertions(1);
 
-        expect(formatAddresses({ email: "user@example.com", name: "User" })).toStrictEqual(["User <user@example.com>"]);
+        expect(formatAddresses({ email: "user@example.com", name: "User" })).toStrictEqual(["\"User\" <user@example.com>"]);
     });
 
     it("should format an array of addresses", () => {
         expect.assertions(1);
 
-        expect(formatAddresses([{ email: "a@example.com" }, { email: "b@example.com", name: "B" }])).toStrictEqual(["a@example.com", "B <b@example.com>"]);
+        expect(formatAddresses([{ email: "a@example.com" }, { email: "b@example.com", name: "B" }])).toStrictEqual(["a@example.com", "\"B\" <b@example.com>"]);
     });
 });
 
@@ -222,7 +222,7 @@ describe(formatMailpaceAddresses, () => {
 
         expect(formatMailpaceAddresses([{ email: "a@example.com" }, { email: "b@example.com", name: "B" }])).toStrictEqual([
             "a@example.com",
-            "B <b@example.com>",
+            "\"B\" <b@example.com>",
         ]);
     });
 });

@@ -19,7 +19,7 @@ describe(formatEmailAddress, () => {
         const address: EmailAddress = { email: "user@example.com", name: "John Doe" };
         const formatted = formatEmailAddress(address);
 
-        expect(formatted).toBe("John Doe <user@example.com>");
+        expect(formatted).toBe("\"John Doe\" <user@example.com>");
     });
 
     it("should throw error for invalid email", () => {

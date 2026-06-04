@@ -70,7 +70,7 @@ describe(buildMimeMessage, () => {
 
             const message = await buildMimeMessage(options);
 
-            expect(message).toContain("From: John Doe <sender@example.com>");
+            expect(message).toContain("From: \"John Doe\" <sender@example.com>");
         });
 
         it("should handle multiple recipients", async () => {
@@ -86,7 +86,7 @@ describe(buildMimeMessage, () => {
             const message = await buildMimeMessage(options);
 
             expect(message).toContain("recipient1@example.com");
-            expect(message).toContain("Jane Doe <recipient2@example.com>");
+            expect(message).toContain("\"Jane Doe\" <recipient2@example.com>");
         });
 
         it("should handle CC recipients", async () => {
@@ -102,7 +102,7 @@ describe(buildMimeMessage, () => {
 
             const message = await buildMimeMessage(options);
 
-            expect(message).toContain("Cc: CC Recipient <cc@example.com>");
+            expect(message).toContain("Cc: \"CC Recipient\" <cc@example.com>");
         });
 
         it("should handle BCC recipients", async () => {
@@ -136,7 +136,7 @@ describe(buildMimeMessage, () => {
 
             const message = await buildMimeMessage(options);
 
-            expect(message).toContain("Reply-To: Reply To <reply@example.com>");
+            expect(message).toContain("Reply-To: \"Reply To\" <reply@example.com>");
         });
     });
 

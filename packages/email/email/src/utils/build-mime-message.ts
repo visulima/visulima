@@ -11,6 +11,18 @@ import toBase64 from "./to-base64";
 const hasBuffer = globalThis.Buffer !== undefined;
 
 /**
+ * Wraps a continuous base64 string at 76 characters per line.
+ *
+ * RFC 2045 mandates base64 be wrapped at 76 chars and RFC 5321 forbids lines longer than 998
+ * octets, so an unwrapped multi-KB line is rejected by strict MX/SMTP servers. `.{1,76}` ensures
+ * the final short chunk is also emitted; `trimEnd` drops the trailing CRLF because the caller pushes
+ * a blank line right after.
+ * @param b64 The base64 string to wrap.
+ * @returns The base64 string wrapped at 76 characters per line.
+ */
+const wrapBase64 = (b64: string): string => b64.replaceAll(/.{1,76}/g, "$&\r\n").trimEnd();
+
+/**
  * Builds a MIME-formatted email message from email options.
  * @param options The email options to build the MIME message from.
  * @returns The MIME-formatted email message as a string.
@@ -110,7 +122,7 @@ const buildMimeMessage = async <T extends EmailOptions>(options: T): Promise<str
             const attachmentContent = attachment.resolvedContent;
 
             if (encoding === "base64") {
-                message.push(toBase64(attachmentContent));
+                message.push(wrapBase64(toBase64(attachmentContent)));
             } else if (encoding === "7bit" || encoding === "8bit") {
                 if (typeof attachmentContent === "string") {
                     message.push(attachmentContent);
@@ -123,7 +135,7 @@ const buildMimeMessage = async <T extends EmailOptions>(options: T): Promise<str
                     message.push(decoder.decode(attachmentContent));
                 }
             } else {
-                message.push(toBase64(attachmentContent));
+                message.push(wrapBase64(toBase64(attachmentContent)));
             }
 
             message.push("");

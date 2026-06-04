@@ -1,6 +1,6 @@
+import { sanitizeDisplayName } from "../crypto/format-address";
 import EmailError from "../errors/email-error";
 import type { EmailAddress } from "../types";
-import { sanitizeHeaderValue } from "./sanitize-header";
 import validateEmailDefault from "./validation/validate-email";
 
 /**
@@ -15,9 +15,13 @@ const formatEmailAddress = (address: EmailAddress): string => {
     }
 
     if (address.name) {
-        const sanitizedName = sanitizeHeaderValue(address.name);
+        // Quote and escape the display name so a name like `Foo" <evil@x.com>, "Bar` cannot inject
+        // an extra recipient into the From/To/Cc header. Reuse the hardened crypto helper.
+        const sanitizedName = sanitizeDisplayName(address.name);
 
-        return `${sanitizedName} <${address.email}>`;
+        if (sanitizedName) {
+            return `"${sanitizedName}" <${address.email}>`;
+        }
     }
 
     return address.email;

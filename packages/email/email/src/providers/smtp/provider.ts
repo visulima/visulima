@@ -920,7 +920,13 @@ const smtpProvider: ProviderFactory<SmtpConfig> = defineProvider((config: SmtpCo
                     }
 
                     // Send message content and finish with .
-                    await sendSmtpCommand(socket, `${mimeMessage}\r\n.`, "250");
+                    // Dot-stuff the DATA payload per RFC 5321 §4.5.2: any line that begins with
+                    // a '.' must be prefixed with an extra '.' so the message body cannot be
+                    // truncated or injected by a leading-dot line that the server would read as
+                    // the end-of-data terminator.
+                    const stuffedMessage = mimeMessage.replace(/\r\n\./g, "\r\n..").replace(/^\./, "..");
+
+                    await sendSmtpCommand(socket, `${stuffedMessage}\r\n.`, "250");
 
                     // Generate message ID if not present in response
                     const messageId = generateMessageId();
