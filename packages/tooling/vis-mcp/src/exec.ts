@@ -14,9 +14,30 @@ const DEFAULT_TIMEOUT_MS = 120_000;
 export const execVis = async (visBin: string, args: ReadonlyArray<string>, options: ExecOptions = {}): Promise<ExecResult> => {
     const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
 
+    // Only forward string-valued env keys. An `options.env` entry typed as
+    // `string | undefined` must not leak into the child as the literal string
+    // "undefined" (the result of spreading an undefined value), so filter it.
+    const env: Record<string, string> = {};
+
+    for (const [key, value] of Object.entries(process.env)) {
+        if (value !== undefined) {
+            env[key] = value;
+        }
+    }
+
+    if (options.env) {
+        for (const [key, value] of Object.entries(options.env)) {
+            if (value !== undefined) {
+                env[key] = value;
+            }
+        }
+    }
+
+    env.NO_COLOR = "1";
+
     const spawnOptions: SpawnOptions = {
         cwd: options.cwd ?? process.cwd(),
-        env: { ...process.env, ...options.env, NO_COLOR: "1" },
+        env,
         stdio: ["ignore", "pipe", "pipe"],
         windowsHide: true,
     };
@@ -29,6 +50,7 @@ export const execVis = async (visBin: string, args: ReadonlyArray<string>, optio
         let stdout = "";
         let stderr = "";
         let timedOut = false;
+        let killTimer: NodeJS.Timeout | undefined;
 
         const timer = setTimeout(() => {
             timedOut = true;
@@ -36,7 +58,8 @@ export const execVis = async (visBin: string, args: ReadonlyArray<string>, optio
             // Escalate to SIGKILL if the child ignores SIGTERM. 2s is generous
             // enough for graceful shutdown but short enough that hung children
             // don't pin the MCP request.
-            setTimeout(() => child.kill("SIGKILL"), 2000).unref();
+            killTimer = setTimeout(() => child.kill("SIGKILL"), 2000);
+            killTimer.unref();
         }, timeoutMs);
 
         child.stdout?.setEncoding("utf8");
@@ -51,11 +74,21 @@ export const execVis = async (visBin: string, args: ReadonlyArray<string>, optio
 
         child.once("error", (error) => {
             clearTimeout(timer);
+
+            if (killTimer) {
+                clearTimeout(killTimer);
+            }
+
             reject(error);
         });
 
         child.once("close", (code) => {
             clearTimeout(timer);
+
+            if (killTimer) {
+                clearTimeout(killTimer);
+            }
+
             resolve({
                 exitCode: code ?? -1,
                 stderr,
