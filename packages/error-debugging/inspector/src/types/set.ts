@@ -1,3 +1,4 @@
+import { INDENT_SEPARATOR } from "../constants";
 import type { Indent, InspectType, Options } from "../types";
 import { indentedJoin } from "../utils/indent";
 import inspectList from "../utils/inspect-list";
@@ -10,7 +11,7 @@ const inspectSet: InspectType<Set<unknown>> = (set: Set<unknown>, options: Optio
     // eslint-disable-next-line no-param-reassign
     options.truncate -= 7;
 
-    let returnValue = inspectList([...set], set, options, inspect);
+    let returnValue = inspectList([...set], set, options, inspect, undefined, indent ? INDENT_SEPARATOR : ", ");
 
     if (indent) {
         returnValue = indentedJoin(returnValue, indent);
