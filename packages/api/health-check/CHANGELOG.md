@@ -1,3 +1,13 @@
+## @visulima/health-check [4.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/health-check@4.0.0-alpha.10...@visulima/health-check@4.0.0-alpha.11) (2026-06-04)
+
+### Bug Fixes
+
+* **health-check:** 2 bug fixes ([560c924](https://github.com/visulima/visulima/commit/560c924923e23ce168cea67010412d1bdc286490))
+
+### Tests
+
+* **health-check:** cover unhealthy ternaries, displayName fallback, and dns/ping catch paths ([d26f4c6](https://github.com/visulima/visulima/commit/d26f4c6de9dbccd6cfed9a866f0a4429eb8f79a5))
+
 ## @visulima/health-check [4.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/health-check@4.0.0-alpha.9...@visulima/health-check@4.0.0-alpha.10) (2026-05-27)
 
 ### Bug Fixes
