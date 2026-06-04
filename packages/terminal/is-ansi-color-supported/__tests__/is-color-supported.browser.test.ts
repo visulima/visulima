@@ -29,7 +29,7 @@ describe("isColorSupported", () => {
         vi.stubGlobal("navigator", {
             userAgent: "",
             userAgentData: {
-                brands: [{ b: "Chromium", version: 120 }],
+                brands: [{ brand: "Chromium", version: "120" }],
             },
         });
 
@@ -42,7 +42,7 @@ describe("isColorSupported", () => {
         vi.stubGlobal("navigator", {
             userAgent: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.0.0 Safari/537.36",
             userAgentData: {
-                brands: [{ b: "Chromium", version: 90 }],
+                brands: [{ brand: "Chromium", version: "90" }],
             },
         });
 
@@ -55,7 +55,7 @@ describe("isColorSupported", () => {
         vi.stubGlobal("navigator", {
             userAgent: "Mozilla/5.0 (Macintosh) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15",
             userAgentData: {
-                brands: [{ b: "Not.A/Brand", version: 99 }],
+                brands: [{ brand: "Not.A/Brand", version: "99" }],
             },
         });
 
