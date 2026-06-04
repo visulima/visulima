@@ -4,7 +4,8 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "test:bench": "node ./"
+        "test:bench": "node ./",
+        "test:bench:vitest": "vitest bench"
     },
     "dependencies": {
         "@visulima/colorize": "workspace:*",
@@ -21,7 +22,9 @@
         "picocolors": "catalog:prod"
     },
     "devDependencies": {
+        "@codspeed/vitest-plugin": "catalog:test",
         "benchmark": "catalog:dev",
-        "typescript": "catalog:tsc"
+        "typescript": "catalog:tsc",
+        "vitest": "catalog:test"
     }
 }
