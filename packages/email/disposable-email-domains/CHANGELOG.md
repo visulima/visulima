@@ -1,3 +1,18 @@
+## @visulima/disposable-email-domains [1.0.0-alpha.16](https://github.com/visulima/visulima/compare/@visulima/disposable-email-domains@1.0.0-alpha.15...@visulima/disposable-email-domains@1.0.0-alpha.16) (2026-06-04)
+
+### Bug Fixes
+
+* **disposable-email-domains:** 1 bug fix ([184bf0b](https://github.com/visulima/visulima/commit/184bf0b96713ec7f8f90e37bacf7ca69e9711f33))
+
+### Tests
+
+* **disposable-email-domains:** cover wildcard matching and lazy domains.json loader ([c626a16](https://github.com/visulima/visulima/commit/c626a16d464a581ca27c1ba86612bc407bf83703))
+
+
+### Dependencies
+
+* **@visulima/tabular:** upgraded to 4.0.0-alpha.13
+
 ## @visulima/disposable-email-domains [1.0.0-alpha.15](https://github.com/visulima/visulima/compare/@visulima/disposable-email-domains@1.0.0-alpha.14...@visulima/disposable-email-domains@1.0.0-alpha.15) (2026-05-27)
 
 ### Bug Fixes
