@@ -24,7 +24,7 @@
  * Source: https://github.com/sveltejs/svelte/blob/4e6104a9393e1b24831909bb3f6811568c3db413/packages/svelte/src/escaping.js
  */
 
-const ATTR_REGEX = /[&"<]/g;
+const ATTR_REGEX = /[&"'<]/g;
 const CONTENT_REGEX = /[&<]/g;
 
 /**
@@ -59,11 +59,11 @@ const escapeHtml = (value: unknown, isAttribute: boolean = false): string => {
         const ch = htmlString[i];
 
         // eslint-disable-next-line sonarjs/no-nested-conditional
-        escaped += htmlString.slice(last, i) + (ch === "&" ? "&amp;" : ch === "\"" ? "&quot;" : "&lt;");
+        escaped += htmlString.slice(last, i) + (ch === "&" ? "&amp;" : ch === "\"" ? "&quot;" : ch === "'" ? "&#39;" : "&lt;");
         last = i + 1;
     }
 
-    return escaped + htmlString.slice(Math.max(0, last));
+    return escaped + htmlString.slice(last);
 };
 
 export default escapeHtml;

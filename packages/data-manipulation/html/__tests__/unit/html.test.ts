@@ -38,7 +38,7 @@ describe(html, () => {
             const malicious = "<script>alert('xss')</script>";
             const result1 = html`<div>${malicious}</div>`;
 
-            expect(result1).toBe("<div>&lt;script>alert('xss')&lt;/script></div>");
+            expect(result1).toBe("<div>&lt;script>alert(&#39;xss&#39;)&lt;/script></div>");
 
             // HTML entity injection
             const htmlContent = "<img src=x onerror=alert(1)>";
@@ -50,7 +50,7 @@ describe(html, () => {
             const attributeValue = "\" onclick=\"alert('xss')\"";
             const result3 = html`<div class="${attributeValue}">Content</div>`;
 
-            expect(result3).toBe("<div class=\"&quot; onclick=&quot;alert('xss')&quot;\">Content</div>");
+            expect(result3).toBe("<div class=\"&quot; onclick=&quot;alert(&#39;xss&#39;)&quot;\">Content</div>");
         });
 
         it("should escape special characters in interpolated values", () => {
@@ -168,7 +168,7 @@ describe(html, () => {
             };
             const result = html`<div>${object}</div>`;
 
-            expect(result).toBe("<div>&lt;script>alert('xss')&lt;/script></div>");
+            expect(result).toBe("<div>&lt;script>alert(&#39;xss&#39;)&lt;/script></div>");
         });
 
         it("should handle array interpolation", () => {

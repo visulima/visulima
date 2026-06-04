@@ -126,6 +126,14 @@ describe(escapeHtml, () => {
             expect(result).toBe("&lt;div>");
         });
 
+        it("should escape single quotes in attributes to prevent single-quoted attribute breakout", () => {
+            expect.assertions(1);
+
+            const result = escapeHtml("' onmouseover='x", true);
+
+            expect(result).toBe("&#39; onmouseover=&#39;x");
+        });
+
         it("should handle boolean isAttr parameter", () => {
             expect.assertions(1);
 
