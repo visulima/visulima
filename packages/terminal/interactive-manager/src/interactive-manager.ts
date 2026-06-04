@@ -114,7 +114,7 @@ class InteractiveManager {
      * @param eraseRowCount erase output rows count
      */
     public resume(stream: StreamType, eraseRowCount?: number): void {
-        if (this.#isSuspended) {
+        if (this.#isSuspended && this.#isActive) {
             this.#isSuspended = false;
 
             if (eraseRowCount) {
@@ -188,17 +188,12 @@ class InteractiveManager {
             const actualLength = this.lastLength - position;
             const outside = Math.max(actualLength - height, this.outside);
 
-            // eslint-disable-next-line unicorn/no-array-reduce
-            let output = rows.reduce<string[]>(
-                (accumulator, row) => [
-                    ...accumulator,
-                    wordWrap(row, {
-                        trim: false,
-                        width,
-                        wrapMode: WrapMode.STRICT_WIDTH,
-                    }),
-                ],
-                [],
+            let output = rows.map((row) =>
+                wordWrap(row, {
+                    trim: false,
+                    width,
+                    wrapMode: WrapMode.STRICT_WIDTH,
+                }),
             );
 
             if (height <= actualLength) {
