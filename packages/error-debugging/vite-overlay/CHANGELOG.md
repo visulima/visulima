@@ -1,3 +1,16 @@
+## @visulima/vite-overlay [2.0.0-alpha.33](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.0-alpha.32...@visulima/vite-overlay@2.0.0-alpha.33) (2026-06-04)
+
+### Bug Fixes
+
+* **lint:** clear pre-existing eslint rot across packages ([#674](https://github.com/visulima/visulima/issues/674)) ([5354253](https://github.com/visulima/visulima/commit/5354253b163bd50bcefaf8a3fddf831bdb5df32b))
+* **vite-overlay:** 3 bug fixes ([436844a](https://github.com/visulima/visulima/commit/436844a292272fe5b64442e2e638374e5d3df611))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.32
+* **@visulima/path:** upgraded to 3.0.0-alpha.12
+
 ## @visulima/vite-overlay [2.0.0-alpha.32](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.0-alpha.31...@visulima/vite-overlay@2.0.0-alpha.32) (2026-06-02)
 
 ### Bug Fixes
