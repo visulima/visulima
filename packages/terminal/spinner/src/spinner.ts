@@ -94,6 +94,8 @@ export class Spinner {
 
     #startTime: number = 0;
 
+    #endTime: number = 0;
+
     #interactiveManager?: InteractiveManager;
 
     #multiSpinner?: MultiSpinner;
@@ -133,11 +135,19 @@ export class Spinner {
      * Current elapsed time in milliseconds.
      */
     public get elapsedTime(): number {
-        return Date.now() - this.#startTime;
+        return (this.#endTime || Date.now()) - this.#startTime;
     }
 
     /**
      * Get or set the spinner text.
+     */
+    public get text(): string {
+        return this.#text;
+    }
+
+    /**
+     * Get the spinner text.
+     * @deprecated Use the `text` getter instead.
      */
     public get getText(): string {
         return this.#text;
@@ -157,6 +167,14 @@ export class Spinner {
 
     /**
      * Get or set the prefix text.
+     */
+    public get prefixText(): string {
+        return this.#prefixText;
+    }
+
+    /**
+     * Get the prefix text.
+     * @deprecated Use the `prefixText` getter instead.
      */
     public get getPrefixText(): string {
         return this.#prefixText;
@@ -214,6 +232,7 @@ export class Spinner {
 
         this.#isActive = true;
         this.#startTime = Date.now();
+        this.#endTime = 0;
         this.#frame = 0;
 
         if (text) {
@@ -364,6 +383,7 @@ export class Spinner {
         }
 
         this.#isActive = false;
+        this.#endTime = Date.now();
 
         if (!this.#verbose) {
             return;
