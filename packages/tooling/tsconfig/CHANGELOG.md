@@ -1,3 +1,15 @@
+## @visulima/tsconfig [3.0.0-alpha.29](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.0.0-alpha.28...@visulima/tsconfig@3.0.0-alpha.29) (2026-06-04)
+
+### Bug Fixes
+
+* **tsconfig:** 2 bug fixes ([efc52ce](https://github.com/visulima/visulima/commit/efc52ce63e5cbe9a3b18a98c5cba2886deec6404))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.30
+* **@visulima/path:** upgraded to 3.0.0-alpha.12
+
 ## @visulima/tsconfig [3.0.0-alpha.28](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.0.0-alpha.27...@visulima/tsconfig@3.0.0-alpha.28) (2026-06-02)
 
 
