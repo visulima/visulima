@@ -52,6 +52,11 @@ jobs:
               uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
               with:
                   persist-credentials: false
+                  # Full history so dorny/paths-filter resolves the main...alpha
+                  # merge-base without `git fetch --deepen`, which races with the
+                  # harden-runner agent rewriting .git/shallow (fatal: shallow file
+                  # has changed since we read it -> git exit 128).
+                  fetch-depth: 0
 
             - name: "Wait before retrying checkout"
               if: "steps.checkout.outcome == 'failure'"
@@ -63,6 +68,7 @@ jobs:
               uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
               with:
                   persist-credentials: false
+                  fetch-depth: 0
 
             - name: "Check for native file changes"
               uses: "dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d" # v4.0.1
