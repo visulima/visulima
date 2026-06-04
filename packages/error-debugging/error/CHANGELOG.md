@@ -1,3 +1,14 @@
+## @visulima/error [6.0.0-alpha.32](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.31...@visulima/error@6.0.0-alpha.32) (2026-06-04)
+
+### Bug Fixes
+
+* **error:** 4 bug fixes ([db024ed](https://github.com/visulima/visulima/commit/db024ed12a05910526799dc8738a3bb68ff76fd6))
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 3.0.0-alpha.12
+
 ## @visulima/error [6.0.0-alpha.31](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.30...@visulima/error@6.0.0-alpha.31) (2026-06-02)
 
 ### Bug Fixes
