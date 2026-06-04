@@ -1,3 +1,23 @@
+## @visulima/string [3.0.0-alpha.15](https://github.com/visulima/visulima/compare/@visulima/string@3.0.0-alpha.14...@visulima/string@3.0.0-alpha.15) (2026-06-04)
+
+### Bug Fixes
+
+* **string:** 3 bug fixes + 2 perf ([3591a75](https://github.com/visulima/visulima/commit/3591a75f8c9e5db4f990808d1c87fc3434d4acdf))
+
+### Miscellaneous Chores
+
+* apply eslint + prettier autofixes across packages ([c1bb784](https://github.com/visulima/visulima/commit/c1bb7848a0d93d0dfe2960c77e3cda22239c79a0))
+
+### Tests
+
+* improve coverage across packages ([91bd6d3](https://github.com/visulima/visulima/commit/91bd6d3b61736e3c8bd1fc59b0b5955f76a5d323))
+* **string:** cover utility helpers, case edge paths, replace/slice/wrap/truncate and ansi-parser branches ([f8f9340](https://github.com/visulima/visulima/commit/f8f934011945f120ab5fa21454d88652d7ef5d33))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.13
+
 ## @visulima/string [3.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/string@3.0.0-alpha.13...@visulima/string@3.0.0-alpha.14) (2026-05-27)
 
 ### Bug Fixes
