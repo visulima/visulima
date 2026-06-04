@@ -1,3 +1,22 @@
+## @visulima/email [1.0.0-alpha.35](https://github.com/visulima/visulima/compare/@visulima/email@1.0.0-alpha.34...@visulima/email@1.0.0-alpha.35) (2026-06-04)
+
+### Features
+
+* **email:** inbound, webhooks, deliverability, middleware, queue, events, testing + ARC/i18n/batch ([#671](https://github.com/visulima/visulima/issues/671)) ([2ca23f2](https://github.com/visulima/visulima/commit/2ca23f27ecc5064d693c16bd3f44ccaeaf050888))
+
+### Bug Fixes
+
+* **email:** 5 bug fixes ([4e87c42](https://github.com/visulima/visulima/commit/4e87c429a56d68d7a0a09325484ed299ffe6493c))
+* **lint:** clear pre-existing eslint rot across packages ([#674](https://github.com/visulima/visulima/issues/674)) ([5354253](https://github.com/visulima/visulima/commit/5354253b163bd50bcefaf8a3fddf831bdb5df32b))
+
+
+### Dependencies
+
+* **@visulima/disposable-email-domains:** upgraded to 1.0.0-alpha.16
+* **@visulima/error:** upgraded to 6.0.0-alpha.32
+* **@visulima/fs:** upgraded to 5.0.0-alpha.30
+* **@visulima/path:** upgraded to 3.0.0-alpha.12
+
 ## @visulima/email [1.0.0-alpha.34](https://github.com/visulima/visulima/compare/@visulima/email@1.0.0-alpha.33...@visulima/email@1.0.0-alpha.34) (2026-06-02)
 
 ### Features
