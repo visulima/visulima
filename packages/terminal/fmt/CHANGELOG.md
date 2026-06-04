@@ -1,3 +1,18 @@
+## @visulima/fmt [2.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/fmt@2.0.0-alpha.11...@visulima/fmt@2.0.0-alpha.12) (2026-06-04)
+
+### Bug Fixes
+
+* **fmt:** 3 bug fixes ([1e631a3](https://github.com/visulima/visulima/commit/1e631a3d1f61960de5fd08f0798fa34c4867733d))
+
+### Miscellaneous Chores
+
+* apply eslint + prettier autofixes across packages ([c1bb784](https://github.com/visulima/visulima/commit/c1bb7848a0d93d0dfe2960c77e3cda22239c79a0))
+
+### Tests
+
+* **fmt:** cover format specifiers, browser %c path, and parseCss edge values ([5f1981f](https://github.com/visulima/visulima/commit/5f1981f9c577f71d26f5e51f0767b48b9a86894f))
+* improve coverage across packages ([91bd6d3](https://github.com/visulima/visulima/commit/91bd6d3b61736e3c8bd1fc59b0b5955f76a5d323))
+
 ## @visulima/fmt [2.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/fmt@2.0.0-alpha.10...@visulima/fmt@2.0.0-alpha.11) (2026-05-27)
 
 ### Bug Fixes
