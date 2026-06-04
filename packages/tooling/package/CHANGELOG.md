@@ -1,3 +1,20 @@
+## @visulima/package [5.0.0-alpha.29](https://github.com/visulima/visulima/compare/@visulima/package@5.0.0-alpha.28...@visulima/package@5.0.0-alpha.29) (2026-06-04)
+
+### Bug Fixes
+
+* **lint:** clear pre-existing eslint rot across packages ([#674](https://github.com/visulima/visulima/issues/674)) ([5354253](https://github.com/visulima/visulima/commit/5354253b163bd50bcefaf8a3fddf831bdb5df32b))
+* **package:** 4 bug fixes ([1e2fba6](https://github.com/visulima/visulima/commit/1e2fba6b0d048f3b90f4e0b428fd984d66f1431e))
+
+### Tests
+
+* fix cross-platform flakes in package + cerebro ([#676](https://github.com/visulima/visulima/issues/676)) ([d1afb4b](https://github.com/visulima/visulima/commit/d1afb4ba743cf18bdf9f02081539d70bdcda91e9))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.30
+* **@visulima/path:** upgraded to 3.0.0-alpha.12
+
 ## @visulima/package [5.0.0-alpha.28](https://github.com/visulima/visulima/compare/@visulima/package@5.0.0-alpha.27...@visulima/package@5.0.0-alpha.28) (2026-06-02)
 
 ### Miscellaneous Chores
