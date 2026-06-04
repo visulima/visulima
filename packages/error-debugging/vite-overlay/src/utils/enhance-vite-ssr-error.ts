@@ -183,7 +183,7 @@ const enhanceViteSsrError = async (rawError: unknown, server: ViteDevServer): Pr
 
     const topFile = extractTopFileFromStack(error);
 
-    const fileContents = topFile ? await safeReadFile(topFile) : undefined;
+    const fileContents = topFile && !topFile.includes("://") && !topFile.startsWith("\0") ? await safeReadFile(topFile) : undefined;
 
     await enhanceFailedLoadError(error, topFile, fileContents);
     enhanceMdxError(error, topFile);
