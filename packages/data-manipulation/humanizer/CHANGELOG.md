@@ -1,3 +1,14 @@
+## @visulima/humanizer [3.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/humanizer@3.0.0-alpha.12...@visulima/humanizer@3.0.0-alpha.13) (2026-06-04)
+
+### Bug Fixes
+
+* **humanizer:** 3 bug fixes + 1 perf ([97686e3](https://github.com/visulima/visulima/commit/97686e33c6c286c1f4f3ecafd5852368355d26e7))
+
+### Tests
+
+* **humanizer:** cover bytes/duration edge paths, slavic plural forms, and create-duration-language options ([f557598](https://github.com/visulima/visulima/commit/f55759841d579f8608ea24ec9b48cef573e5ab85))
+* improve coverage across packages ([91bd6d3](https://github.com/visulima/visulima/commit/91bd6d3b61736e3c8bd1fc59b0b5955f76a5d323))
+
 ## @visulima/humanizer [3.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/humanizer@3.0.0-alpha.11...@visulima/humanizer@3.0.0-alpha.12) (2026-05-27)
 
 ### Bug Fixes
