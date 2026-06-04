@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { INDENT_SEPARATOR } from "../../src/constants";
 import { getIndent, indentedJoin } from "../../src/utils/indent";
 
 describe("getIndent", () => {
@@ -30,9 +31,17 @@ describe("indentedJoin", () => {
         expect(indentedJoin("", { base: "  ", prev: "\n" })).toBe("");
     });
 
-    it("joins comma-separated values across indented lines", () => {
+    it("joins sentinel-separated values across indented lines", () => {
         expect.assertions(1);
 
-        expect(indentedJoin("a: 1, b: 2", { base: "  ", prev: "\n" })).toBe("\n  a: 1,\n  b: 2\n");
+        expect(indentedJoin(`a: 1${INDENT_SEPARATOR}b: 2`, { base: "  ", prev: "\n" })).toBe("\n  a: 1,\n  b: 2\n");
+    });
+
+    it("does not split entries that themselves contain a comma-space", () => {
+        expect.assertions(1);
+
+        // The value `'x, y'` contains a literal ", " — it must stay on one line and
+        // only the sentinel between the two entries should become a line break.
+        expect(indentedJoin(`a: 'x, y'${INDENT_SEPARATOR}b: 2`, { base: "  ", prev: "\n" })).toBe("\n  a: 'x, y',\n  b: 2\n");
     });
 });

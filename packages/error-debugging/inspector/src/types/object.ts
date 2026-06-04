@@ -1,3 +1,4 @@
+import { INDENT_SEPARATOR } from "../constants";
 import type { Indent, InspectType, InternalInspect, Options } from "../types";
 import { indentedJoin } from "../utils/indent";
 import inspectList from "../utils/inspect-list";
@@ -21,7 +22,7 @@ const inspectObject: InspectType<object> = (object: object, options: Options, in
         return "{ [object Window] }";
     }
 
-    if (object === globalThis || ("global" in globalThis && object === globalThis)) {
+    if (object === globalThis) {
         return "{ [object globalThis] }";
     }
 
@@ -50,12 +51,15 @@ const inspectObject: InspectType<object> = (object: object, options: Options, in
     // eslint-disable-next-line no-param-reassign
     options.truncate -= 4;
 
+    const entrySeparator = indent ? INDENT_SEPARATOR : ", ";
+
     const propertyContents = inspectList(
         properties.map((key) => [key, object[key as keyof typeof object]]),
         object,
         options,
         inspect,
         inspectProperty,
+        entrySeparator,
     );
     const symbolContents = inspectList(
         symbols.map((key) => [key, object[key as keyof typeof object]]),
@@ -63,12 +67,13 @@ const inspectObject: InspectType<object> = (object: object, options: Options, in
         options,
         inspect,
         inspectProperty,
+        entrySeparator,
     );
 
     let separator = "";
 
     if (propertyContents && symbolContents) {
-        separator = ", ";
+        separator = entrySeparator;
     }
 
     if (indent) {

@@ -1,3 +1,4 @@
+import { INDENT_SEPARATOR } from "../constants";
 import type { Indent, InspectType, InternalInspect, Options } from "../types";
 import { indentedJoin } from "../utils/indent";
 import inspectList from "../utils/inspect-list";
@@ -25,7 +26,9 @@ const inspectArray: InspectType<unknown[]> = (array: unknown[], options: Options
     // eslint-disable-next-line no-param-reassign
     options.truncate -= 4;
 
-    let listContents = inspectList(array, array, options, inspect);
+    const hasIndent = Boolean(indent) && multiLineValues(array);
+
+    let listContents = inspectList(array, array, options, inspect, undefined, hasIndent ? INDENT_SEPARATOR : ", ");
 
     // eslint-disable-next-line no-param-reassign
     options.truncate -= listContents.length;
@@ -42,9 +45,7 @@ const inspectArray: InspectType<unknown[]> = (array: unknown[], options: Options
         );
     }
 
-    const hasIndent = indent && multiLineValues(array);
-
-    if (hasIndent) {
+    if (hasIndent && indent) {
         listContents = indentedJoin(listContents, indent);
     }
 

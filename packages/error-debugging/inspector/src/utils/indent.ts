@@ -1,3 +1,4 @@
+import { INDENT_SEPARATOR } from "../constants";
 import type { Indent, Options } from "../types";
 
 export const getIndent = (indent: Options["indent"], depth: Options["depth"]): Indent | undefined => {
@@ -24,5 +25,5 @@ export const indentedJoin = (values: string, indent: Indent): string => {
 
     const lineJoiner = indent.prev + indent.base;
 
-    return lineJoiner + values.split(", ").join(`,${lineJoiner}`) + indent.prev;
+    return lineJoiner + values.split(INDENT_SEPARATOR).join(`,${lineJoiner}`) + indent.prev;
 };

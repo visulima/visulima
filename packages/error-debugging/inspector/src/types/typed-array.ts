@@ -40,8 +40,8 @@ const inspectTypedArray: InspectType<TypedArray> = (array: TypedArray, options: 
         // eslint-disable-next-line no-param-reassign
         options.truncate -= string.length;
 
-        if (array[index] !== array.length && options.truncate <= 3) {
-            output += `${TRUNCATOR}(${String(array.length - (array[index] as number) + 1)})`;
+        if (index !== array.length - 1 && options.truncate <= 3) {
+            output += `${TRUNCATOR}(${String(array.length - index)})`;
             break;
         }
 
