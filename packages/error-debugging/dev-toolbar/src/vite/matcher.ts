@@ -17,7 +17,7 @@ const globToRegex = (glob: string): RegExp => {
         )
         .join(".*");
 
-    return new RegExp(pattern);
+    return new RegExp(`^${pattern}$`);
 };
 
 /**

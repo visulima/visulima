@@ -199,7 +199,7 @@ describe("rpc/server", () => {
             expect(send).toHaveBeenCalledWith("dev-toolbar:rpc:response", { id: "req-7", result: "world" });
         });
 
-        it("readFile reads an absolute path verbatim", async () => {
+        it("readFile reads an absolute path that stays inside the project root", async () => {
             expect.assertions(1);
 
             const absolute = path.join(tmpDir, "abs.txt");
@@ -217,21 +217,41 @@ describe("rpc/server", () => {
             expect(send).toHaveBeenCalledWith("dev-toolbar:rpc:response", { id: "req-8", result: "abs-content" });
         });
 
-        it("openInEditor falls back to the configured editor when no override is given", async () => {
+        it("readFile rejects a relative path that escapes the project root", async () => {
             expect.assertions(1);
 
             const { server, viteServer } = makeServer(tmpDir);
 
-            createServerRPCContext(viteServer, undefined, { editor: "webstorm" });
+            createServerRPCContext(viteServer);
 
-            const { client } = makeClient();
+            const { client, send } = makeClient();
 
-            await server.ws.getHandler()?.({ args: ["/abs/file.ts", 1, 1], id: "req-9", method: "openInEditor" }, client);
+            await server.ws.getHandler()?.({ args: ["../../../../etc/passwd"], id: "req-8b", method: "readFile" }, client);
 
-            expect(launchMock).toHaveBeenCalledWith("/abs/file.ts:1:1", "webstorm");
+            expect(send).toHaveBeenCalledWith(
+                "dev-toolbar:rpc:error",
+                expect.objectContaining({ error: expect.stringContaining("outside project root"), id: "req-8b" }),
+            );
         });
 
-        it("openInEditor prefers an explicit editor argument over the configured one", async () => {
+        it("readFile rejects an absolute path outside the project root", async () => {
+            expect.assertions(1);
+
+            const { server, viteServer } = makeServer(tmpDir);
+
+            createServerRPCContext(viteServer);
+
+            const { client, send } = makeClient();
+
+            await server.ws.getHandler()?.({ args: ["/etc/passwd"], id: "req-8c", method: "readFile" }, client);
+
+            expect(send).toHaveBeenCalledWith(
+                "dev-toolbar:rpc:error",
+                expect.objectContaining({ error: expect.stringContaining("outside project root"), id: "req-8c" }),
+            );
+        });
+
+        it("openInEditor uses the configured editor for an in-root file", async () => {
             expect.assertions(1);
 
             const { server, viteServer } = makeServer(tmpDir);
@@ -240,9 +260,42 @@ describe("rpc/server", () => {
 
             const { client } = makeClient();
 
-            await server.ws.getHandler()?.({ args: ["/abs/file.ts", 2, 3, "code"], id: "req-10", method: "openInEditor" }, client);
+            await server.ws.getHandler()?.({ args: ["src/file.ts", 1, 1], id: "req-9", method: "openInEditor" }, client);
 
-            expect(launchMock).toHaveBeenCalledWith("/abs/file.ts:2:3", "code");
+            expect(launchMock).toHaveBeenCalledWith(`${path.join(tmpDir, "src/file.ts")}:1:1`, "webstorm");
+        });
+
+        it("openInEditor ignores a client-supplied editor argument and uses the configured one", async () => {
+            expect.assertions(1);
+
+            const { server, viteServer } = makeServer(tmpDir);
+
+            createServerRPCContext(viteServer, undefined, { editor: "webstorm" });
+
+            const { client } = makeClient();
+
+            // A 4th "code" arg is sent by a hostile client but must be ignored.
+            await server.ws.getHandler()?.({ args: ["src/file.ts", 2, 3, "code"], id: "req-10", method: "openInEditor" }, client);
+
+            expect(launchMock).toHaveBeenCalledWith(`${path.join(tmpDir, "src/file.ts")}:2:3`, "webstorm");
+        });
+
+        it("openInEditor rejects a path outside the project root", async () => {
+            expect.assertions(2);
+
+            const { server, viteServer } = makeServer(tmpDir);
+
+            createServerRPCContext(viteServer, undefined, { editor: "webstorm" });
+
+            const { client, send } = makeClient();
+
+            await server.ws.getHandler()?.({ args: ["../../etc/passwd", 1, 1], id: "req-11", method: "openInEditor" }, client);
+
+            expect(launchMock).not.toHaveBeenCalled();
+            expect(send).toHaveBeenCalledWith(
+                "dev-toolbar:rpc:error",
+                expect.objectContaining({ error: expect.stringContaining("outside project root"), id: "req-11" }),
+            );
         });
 
         it("dispatches each default function through the websocket handler", async () => {

@@ -1,4 +1,3 @@
-import { getEditorPreference } from "../../toolbar/hooks/use-frame-state";
 import type { A11yInfo } from "./a11y-capture";
 import { captureA11yInfo, formatA11yText } from "./a11y-capture";
 import {
@@ -831,7 +830,7 @@ const openInEditor = (source: string): void => {
 
     const rpc = (globalThis as any).__VISULIMA_DEVTOOLS__?.rpc;
 
-    rpc?.openInEditor?.(file, line, col, getEditorPreference()).catch(() => {
+    rpc?.openInEditor?.(file, line, col).catch(() => {
         /* ignore */
     });
 };
