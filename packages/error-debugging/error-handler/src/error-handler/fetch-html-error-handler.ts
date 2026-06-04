@@ -239,11 +239,20 @@ export const fetchHtmlErrorHandler = (options: HtmlErrorHandlerOptions = {}): (e
         // Convert the mock response to a fetch Response
         const contentType = mockResponse.getHeader("content-type") ?? "text/html; charset=utf-8";
 
+        const headers: Record<string, string> = {
+            "content-type": contentType as string,
+        };
+
+        for (const [key, value] of Object.entries(mockResponse.headers)) {
+            if (key === "content-type") {
+                continue;
+            }
+
+            headers[key] = Array.isArray(value) ? value.join(", ") : String(value);
+        }
+
         return new Response(mockResponse.body, {
-            headers: {
-                "content-type": contentType as string,
-                ...mockResponse.headers,
-            },
+            headers,
             status: mockResponse.statusCode,
         });
     };

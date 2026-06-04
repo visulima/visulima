@@ -84,8 +84,17 @@ const createNegotiatedErrorHandler
                 }
             }
 
-            // eslint-disable-next-line no-param-reassign
-            (error as Error & { expose: boolean }).expose = showTrace;
+            // When the caller opts out of traces (showTrace === false), honour that
+            // explicitly and suppress traces regardless of the error's own expose flag.
+            // When traces are requested, preserve an http-errors instance's own expose
+            // semantics and only set the flag if the error does not already define it.
+            if (!showTrace) {
+                // eslint-disable-next-line no-param-reassign
+                (error as Error & { expose: boolean }).expose = false;
+            } else if (!("expose" in error)) {
+                // eslint-disable-next-line no-param-reassign
+                (error as Error & { expose: boolean }).expose = true;
+            }
 
             await errorHandler(error, request, response);
         };

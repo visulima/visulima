@@ -48,41 +48,84 @@ class MockServerResponse {
     public flushHeaders(): void {}
 }
 
-// Simple content type negotiation for fetch (without @tinyhttp/accepts dependency)
+// Server preference order (same as the @tinyhttp/accepts node path). Each entry
+// maps the chosen response type to the set of acceptable media types.
+const serverPreferences: { chosen: string; types: string[] }[] = [
+    { chosen: "text/html", types: ["text/html"] },
+    { chosen: "application/vnd.api+json", types: ["application/vnd.api+json"] },
+    { chosen: "application/problem+json", types: ["application/problem+json"] },
+    { chosen: "application/json", types: ["application/json"] },
+    { chosen: "text/plain", types: ["text/plain"] },
+    { chosen: "application/javascript", types: ["application/javascript", "text/javascript"] },
+    { chosen: "application/xml", types: ["application/xml", "text/xml"] },
+];
+
+// Content type negotiation for fetch (without the @tinyhttp/accepts dependency).
+// Parses the Accept header into (media type, q-value) pairs, drops entries with
+// q=0, and matches against the server preference order using full media-type
+// comparison (plus `*/*` and `type/*` wildcards) rather than substring includes.
 const negotiateContentType = (acceptHeader: string | null): string => {
     if (!acceptHeader) {
         return "text/html";
     }
 
-    const accept = acceptHeader.toLowerCase();
+    const accepted: { quality: number; subtype: string; type: string }[] = [];
 
-    // Server preference order (same as node version)
-    if (accept.includes("text/html")) {
+    for (const part of acceptHeader.split(",")) {
+        const [rawType, ...parameters] = part.trim().split(";");
+        const mediaType = (rawType ?? "").trim().toLowerCase();
+
+        if (mediaType === "") {
+            continue;
+        }
+
+        let quality = 1;
+
+        for (const parameter of parameters) {
+            const [key, rawValue] = parameter.trim().split("=");
+
+            if ((key ?? "").trim().toLowerCase() === "q") {
+                const parsed = Number.parseFloat((rawValue ?? "").trim());
+
+                if (!Number.isNaN(parsed)) {
+                    quality = parsed;
+                }
+            }
+        }
+
+        if (quality <= 0) {
+            continue;
+        }
+
+        const [type = "", subtype = ""] = mediaType.split("/");
+
+        accepted.push({ quality, subtype, type });
+    }
+
+    if (accepted.length === 0) {
         return "text/html";
     }
 
-    if (accept.includes("application/vnd.api+json")) {
-        return "application/vnd.api+json";
-    }
+    const matches = (candidate: string): boolean => {
+        const [candidateType, candidateSubtype] = candidate.split("/");
 
-    if (accept.includes("application/problem+json")) {
-        return "application/problem+json";
-    }
+        return accepted.some(({ subtype, type }) => {
+            if (type === "*" && subtype === "*") {
+                return true;
+            }
 
-    if (accept.includes("application/json")) {
-        return "application/json";
-    }
+            if (type === candidateType && subtype === "*") {
+                return true;
+            }
 
-    if (accept.includes("text/plain")) {
-        return "text/plain";
-    }
+            return type === candidateType && subtype === candidateSubtype;
+        });
+    };
 
-    if (accept.includes("application/javascript") || accept.includes("text/javascript")) {
-        return "application/javascript";
-    }
-
-    if (accept.includes("application/xml") || accept.includes("text/xml")) {
-        return "application/xml";
+    for (const { chosen, types } of serverPreferences) {
+        if (types.some((type) => matches(type))) {
+            return chosen;
+        }
     }
 
     return "text/html"; // default
@@ -177,9 +220,17 @@ const createFetchNegotiatedErrorHandler
                 }
             }
 
-            // Set expose property
-            // eslint-disable-next-line no-param-reassign
-            (error as Error & { expose: boolean }).expose = showTrace;
+            // When the caller opts out of traces (showTrace === false), honour that
+            // explicitly and suppress traces regardless of the error's own expose flag.
+            // When traces are requested, preserve an http-errors instance's own expose
+            // semantics and only set the flag if the error does not already define it.
+            if (!showTrace) {
+                // eslint-disable-next-line no-param-reassign
+                (error as Error & { expose: boolean }).expose = false;
+            } else if (!("expose" in error)) {
+                // eslint-disable-next-line no-param-reassign
+                (error as Error & { expose: boolean }).expose = true;
+            }
 
             return fetchErrorHandler(error, request);
         };
