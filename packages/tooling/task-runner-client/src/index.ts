@@ -44,17 +44,29 @@ const escapeGlobChar = (character: string): string => {
     return `\\${character}`;
 };
 
+const globRegexCache = new Map<string, RegExp>();
+
 const matchEnv = (pattern: string, environment: NodeJS.ProcessEnv): Record<string, string> => {
-    const regex = new RegExp(`^${pattern.replaceAll(/[.*+?^${}()|[\]\\]/g, escapeGlobChar)}$`);
-    const result: Record<string, string> = {};
+    let regex = globRegexCache.get(pattern);
+
+    if (regex === undefined) {
+        regex = new RegExp(`^${pattern.replaceAll(/[.*+?^${}()|[\]\\]/g, escapeGlobChar)}$`);
+        globRegexCache.set(pattern, regex);
+    }
+
+    // Collect into a Map first so reserved names like `__proto__`/`constructor`
+    // can't trigger prototype-pollution setters, then materialize via
+    // Object.fromEntries (defines own data properties, never invokes setters)
+    // so the returned value keeps a normal Object prototype.
+    const result = new Map<string, string>();
 
     for (const [key, value] of Object.entries(environment)) {
         if (value !== undefined && regex.test(key)) {
-            result[key] = value;
+            result.set(key, value);
         }
     }
 
-    return result;
+    return Object.fromEntries(result);
 };
 
 /**
