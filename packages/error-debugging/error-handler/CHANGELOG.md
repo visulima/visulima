@@ -1,3 +1,10 @@
+## @visulima/error-handler [2.0.0-alpha.31](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.0-alpha.30...@visulima/error-handler@2.0.0-alpha.31) (2026-06-04)
+
+
+### Dependencies
+
+* **@visulima/boxen:** upgraded to 3.0.0-alpha.13
+
 ## @visulima/error-handler [2.0.0-alpha.30](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.0-alpha.29...@visulima/error-handler@2.0.0-alpha.30) (2026-06-04)
 
 ### Bug Fixes
