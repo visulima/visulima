@@ -1,3 +1,17 @@
+## @visulima/bytes [3.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/bytes@3.0.0-alpha.11...@visulima/bytes@3.0.0-alpha.12) (2026-06-04)
+
+### Bug Fixes
+
+* **bytes:** 1 bug fix ([336c49c](https://github.com/visulima/visulima/commit/336c49c35ffa173ad06a6b163640644666b00946))
+
+### Miscellaneous Chores
+
+* apply eslint + prettier autofixes across packages ([c1bb784](https://github.com/visulima/visulima/commit/c1bb7848a0d93d0dfe2960c77e3cda22239c79a0))
+
+### Tests
+
+* **bytes:** cover tagged-template raw paths and no-Buffer browser branches ([d64731c](https://github.com/visulima/visulima/commit/d64731cf17581beea977992ff69ddb35465dbd93))
+
 ## @visulima/bytes [3.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/bytes@3.0.0-alpha.10...@visulima/bytes@3.0.0-alpha.11) (2026-05-27)
 
 ### Bug Fixes
