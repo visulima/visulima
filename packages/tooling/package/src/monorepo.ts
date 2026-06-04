@@ -79,7 +79,7 @@ export const findMonorepoRoot = async (cwd?: URL | string): Promise<RootMonorepo
         }
     }
 
-    throw new Error(`No monorepo root could be found upwards from the directory ${cwd as string} using lerna, yarn, pnpm, or npm as indicators.`);
+    throw new Error(`No monorepo root could be found upwards from the directory ${(cwd as string) ?? process.cwd()} using lerna, yarn, pnpm, or npm as indicators.`);
 };
 
 /**
@@ -144,5 +144,5 @@ export const findMonorepoRootSync = (cwd?: URL | string): RootMonorepo => {
         }
     }
 
-    throw new Error(`No monorepo root could be found upwards from the directory ${cwd as string} using lerna, yarn, pnpm, or npm as indicators.`);
+    throw new Error(`No monorepo root could be found upwards from the directory ${(cwd as string) ?? process.cwd()} using lerna, yarn, pnpm, or npm as indicators.`);
 };

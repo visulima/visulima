@@ -1,4 +1,4 @@
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 
 import { findUp, findUpSync } from "@visulima/fs";
@@ -170,8 +170,7 @@ export const findPackageManagerSync = (cwd?: URL | string): PackageManagerResult
  * @param name The name of the package manager. The type of `name` is `string`.
  * @returns The version of the package manager. The return type of the function is `string`.
  */
-// eslint-disable-next-line sonarjs/os-command
-export const getPackageManagerVersion = (name: string): string => execSync(`${name} --version`).toString("utf8").trim();
+export const getPackageManagerVersion = (name: string): string => execFileSync(name, ["--version"]).toString("utf8").trim();
 
 /**
  * An asynchronous function that detects what package manager executes the process.
@@ -182,7 +181,7 @@ export const getPackageManagerVersion = (name: string): string => execSync(`${na
  */
 export const identifyInitiatingPackageManager = ():
     | {
-        name: PackageManager | "cnpm";
+        name: PackageManager | "cnpm" | (string & {});
         version: string;
     }
     | undefined => {
@@ -192,10 +191,14 @@ export const identifyInitiatingPackageManager = ():
 
     const pmSpec = process.env.npm_config_user_agent.split(" ")[0] as string;
     const separatorPos = pmSpec.lastIndexOf("/");
-    const name = pmSpec.slice(0, Math.max(0, separatorPos));
+    const rawName = pmSpec.slice(0, Math.max(0, separatorPos));
+
+    const knownPackageManagers: (PackageManager | "cnpm")[] = ["npm", "pnpm", "yarn", "bun", "cnpm"];
+
+    const name: PackageManager | "cnpm" | string = rawName === "npminstall" ? "cnpm" : rawName;
 
     return {
-        name: name === "npminstall" ? "cnpm" : (name as PackageManager),
+        name: knownPackageManagers.includes(name as PackageManager | "cnpm") ? (name as PackageManager | "cnpm") : name,
         version: pmSpec.slice(Math.max(0, separatorPos + 1)),
     };
 };
@@ -242,11 +245,14 @@ To install the missing package${s}, please run the following command:
 `;
 
     const atLatest = (name: string): string => {
-        if (!name.split("@").includes("@")) {
-            return `${name}@latest`;
+        const lastAt = name.lastIndexOf("@");
+
+        // lastAt > 0 means a version segment is already present (index 0 is the scope marker for @scope/pkg)
+        if (lastAt > 0) {
+            return name;
         }
 
-        return name;
+        return `${name}@latest`;
     };
 
     const packageManagerCommands = options.packageManagers.map((packageManager) => {
