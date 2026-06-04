@@ -449,7 +449,7 @@ Defined in: [packages/tsconfig/src/find-tsconfig.ts:10](https://github.com/visul
 
 ```ts
 optional cache:
-  | Map<string, TsConfigJsonResolved>
+  | Map<string, TsConfigResult>
   | boolean;
 ```
 
