@@ -13,6 +13,7 @@ import { parse } from "marked";
 
 import findLanguageBasedOnExtension from "../../../../../../../shared/utils/find-language-based-on-extension";
 import getFileSource from "../../../../../../../shared/utils/get-file-source";
+import process from "../../../utils/process";
 
 const solutions = async (
     error: Error | SolutionError | VisulimaError,
@@ -35,7 +36,7 @@ const solutions = async (
 
         const { handle: solutionHandler, name } = handler;
 
-        if (process.env.DEBUG) {
+        if (process.env?.DEBUG) {
             // eslint-disable-next-line no-console
             console.debug(`Running solution finder: ${name}`);
         }
