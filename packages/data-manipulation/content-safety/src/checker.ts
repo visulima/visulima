@@ -20,7 +20,13 @@ import { BANNED_WORDS } from "./banned-words";
 export interface BannedWordMatch {
     /** Zero-based end index in the original text (exclusive) */
     endIndex: number;
-    /** ISO 639-1 language code the word was matched from (e.g., 'en', 'de', 'ja') */
+    /**
+     * ISO 639-1 language code the word was matched from (e.g., 'en', 'de', 'ja').
+     * @remarks
+     * When an identical spelling appears in more than one language dictionary, this
+     * is the first dictionary (by dictionary iteration order) the word appears in,
+     * not necessarily the only language that bans it.
+     */
     language: string;
     /** Zero-based start index in the original text */
     startIndex: number;
@@ -76,10 +82,15 @@ const WORD_TOKEN_RE = /[\p{L}\p{N}]+/gu;
 const HAS_CJK_CHAR_RE = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/u;
 
 /**
- * Pre-compiled whitespace regex for splitting normalized words into tokens.
+ * Locale-independent case fold that also normalizes the Turkish dotted İ (U+0130).
+ * `"İ".toLowerCase()` yields `"i" + U+0307` (combining dot above), which would never
+ * equal the lowercase-stored key `"i"`. Stripping the combining dot above after folding
+ * makes uppercase Turkish İ and ASCII I fold identically.
  * @internal
  */
-const WHITESPACE_RE = /\s+/;
+const COMBINING_DOT_ABOVE_RE = /̇/g;
+
+const foldCase = (value: string): string => value.normalize("NFC").toLowerCase().normalize("NFD").replace(COMBINING_DOT_ABOVE_RE, "").normalize("NFC");
 
 interface Token {
     end: number;
@@ -106,18 +117,24 @@ const addNonCjkEntry = (
     lang: string,
     tables: Pick<LookupTables, "nonCjkPhrases" | "nonCjkSingleWords"> & { maxPhraseTokens: number },
 ): number => {
-    const tokens = normalized.split(WHITESPACE_RE);
+    const tokens = [...normalized.matchAll(WORD_TOKEN_RE)].map((match) => match[0]);
+
+    if (tokens.length === 0) {
+        return tables.maxPhraseTokens;
+    }
+
+    const key = tokens.join(" ");
 
     if (tokens.length === 1) {
-        if (!tables.nonCjkSingleWords.has(normalized)) {
-            tables.nonCjkSingleWords.set(normalized, lang);
+        if (!tables.nonCjkSingleWords.has(key)) {
+            tables.nonCjkSingleWords.set(key, lang);
         }
 
         return tables.maxPhraseTokens;
     }
 
-    if (!tables.nonCjkPhrases.has(normalized)) {
-        tables.nonCjkPhrases.set(normalized, lang);
+    if (!tables.nonCjkPhrases.has(key)) {
+        tables.nonCjkPhrases.set(key, lang);
 
         return Math.max(tables.maxPhraseTokens, tokens.length);
     }
@@ -135,7 +152,7 @@ const buildLookupTables = (): LookupTables => {
         const isCjk = CJK_LANGUAGES.has(lang);
 
         for (const word of words) {
-            const normalized = word.normalize("NFC").toLowerCase();
+            const normalized = foldCase(word);
 
             if (isCjk && HAS_CJK_CHAR_RE.test(normalized)) {
                 cjkEntries.push({ language: lang, word: normalized });
@@ -231,7 +248,7 @@ const findCjkMatches = (lowerNormalized: string, normalized: string): BannedWord
                 startIndex: pos,
                 word: normalized.slice(pos, pos + word.length),
             });
-            pos += 1;
+            pos += word.length;
         }
     }
 
@@ -298,7 +315,7 @@ export const checkBannedWords = (text: string): BannedWordsResult => {
     }
 
     const normalized = text.normalize("NFC");
-    const lowerNormalized = normalized.toLowerCase();
+    const lowerNormalized = foldCase(normalized);
     const tokens = tokenize(lowerNormalized);
 
     const matches: BannedWordMatch[] = [
@@ -306,6 +323,10 @@ export const checkBannedWords = (text: string): BannedWordsResult => {
         ...findPhraseMatches(tokens, normalized),
         ...findCjkMatches(lowerNormalized, normalized),
     ];
+
+    // Order by start position, then longest-first, so the documented
+    // reverse-censor pattern produces correct, position-ordered output.
+    matches.sort((a, b) => a.startIndex - b.startIndex || b.endIndex - b.startIndex - (a.endIndex - a.startIndex));
 
     return {
         hasBannedWords: matches.length > 0,
