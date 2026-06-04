@@ -79,10 +79,10 @@ export class Grid {
     readonly #terminalWidth: number;
 
     // Cache for alignCellContent results
-    readonly #alignCellContentCache = new WeakMap<GridItem, Map<number, string[]>>();
+    #alignCellContentCache = new WeakMap<GridItem, Map<number, string[]>>();
 
     // Cache for determineCellVerticalPosition results
-    readonly #cellVerticalPositionCache = new WeakMap<GridItem, { firstRow: number; lastRow: number }>();
+    #cellVerticalPositionCache = new WeakMap<GridItem, { firstRow: number; lastRow: number }>();
 
     /**
      * Create the initial grid layout array (will be dynamically sized later).
@@ -234,6 +234,11 @@ export class Grid {
      */
     public toString(): string {
         const gridLayout = Grid.createGridLayout();
+
+        // Reset per-render caches: cell objects are reused across renders but their
+        // layout-dependent vertical positions change after setColumns/setRows/addItem/etc.
+        this.#alignCellContentCache = new WeakMap();
+        this.#cellVerticalPositionCache = new WeakMap();
 
         this.placeItems(gridLayout);
 
@@ -637,6 +642,28 @@ export class Grid {
 
             return Math.max(1, Math.floor(availableWidth * proportion));
         });
+
+        // If the per-column Math.max(1, ...) floor pushed the total above availableWidth
+        // (more columns than available width), reclaim the overflow from the widest
+        // columns (those above 1) so the grid still fits effectiveMaxWidth.
+        let overflow = adjustedWidths.reduce((sum, width) => sum + width, 0) - availableWidth;
+
+        while (overflow > 0) {
+            let widestIndex = -1;
+
+            for (let index = 0; index < adjustedWidths.length; index += 1) {
+                if ((adjustedWidths[index] ?? 0) > 1 && (widestIndex === -1 || (adjustedWidths[index] ?? 0) > (adjustedWidths[widestIndex] ?? 0))) {
+                    widestIndex = index;
+                }
+            }
+
+            if (widestIndex === -1) {
+                break; // every column already at the minimum of 1
+            }
+
+            (adjustedWidths[widestIndex] as number) -= 1;
+            overflow -= 1;
+        }
 
         // Distribute any remaining width
         let remainingWidth = availableWidth - adjustedWidths.reduce((sum, width) => sum + width, 0);

@@ -65,7 +65,13 @@ export interface GridItem {
     /** Vertical alignment of the content */
     vAlign?: VerticalAlignment;
 
-    /** Exact width for this cell, overrides table-level columnWidths */
+    /**
+     * Exact width for this cell, overrides table-level columnWidths.
+     *
+     * NOTE: This field is only consumed by `Table` (it is folded into the
+     * table-level fixed column widths). When using `Grid` directly, this value
+     * is ignored — Grid width calculation only reads `maxWidth` and `colSpan`.
+     */
     width?: number;
 
     /** Options for controlling word wrapping (takes precedence over truncate) */
