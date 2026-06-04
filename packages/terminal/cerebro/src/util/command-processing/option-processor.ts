@@ -42,7 +42,7 @@ export const addNegatableOptions = (command: { name: string; options?: OptionDef
 
     for (const option of command.options) {
         if (option.name.startsWith("no-")) {
-            const nonNegatedName = option.name.replace("no-", "");
+            const nonNegatedName = option.name.replace(/^no-/, "");
 
             if (!optionNames.has(nonNegatedName)) {
                 if (option.type !== Boolean) {

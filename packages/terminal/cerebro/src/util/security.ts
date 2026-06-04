@@ -26,7 +26,7 @@ const ABSOLUTE_PATH_PATTERN = /^[A-Z]:/i;
  * @throws {TypeError} If the argument is not a string.
  * @throws {Error} If the argument exceeds maximum length or contains dangerous characters.
  */
-export const sanitizeArgument = (argument: string): string => {
+export const sanitizeArgument = (argument: string, checkDangerousChars = true): string => {
     if (typeof argument !== "string") {
         throw new TypeError("Argument must be a string");
     }
@@ -37,9 +37,11 @@ export const sanitizeArgument = (argument: string): string => {
     }
 
     // Check for dangerous characters
-    for (const char of argument) {
-        if (DANGEROUS_CHARS.has(char)) {
-            throw new Error(`Argument contains dangerous character: ${char}`);
+    if (checkDangerousChars) {
+        for (const char of argument) {
+            if (DANGEROUS_CHARS.has(char)) {
+                throw new Error(`Argument contains dangerous character: ${char}`);
+            }
         }
     }
 
@@ -54,7 +56,7 @@ export const sanitizeArgument = (argument: string): string => {
  * @throws {TypeError} If args is not an array or if any argument is not a string.
  * @throws {Error} If there are too many arguments or if any argument is invalid.
  */
-export const sanitizeArguments = (args: ReadonlyArray<string>): string[] => {
+export const sanitizeArguments = (args: ReadonlyArray<string>, checkDangerousChars = true): string[] => {
     if (!Array.isArray(args)) {
         throw new TypeError("Arguments must be an array");
     }
@@ -63,7 +65,7 @@ export const sanitizeArguments = (args: ReadonlyArray<string>): string[] => {
         throw new Error(`Too many arguments (maximum ${String(MAX_ARGS)})`);
     }
 
-    return args.map((argument) => sanitizeArgument(argument));
+    return args.map((argument) => sanitizeArgument(argument, checkDangerousChars));
 };
 
 /**
@@ -81,7 +83,9 @@ export const validateSafePath = (path: string): string => {
     const sanitizedPath = path.trim();
 
     // Check for directory traversal attempts
-    if (sanitizedPath.includes("..") || sanitizedPath.includes("../") || sanitizedPath.includes("..\\")) {
+    const segments = sanitizedPath.split(/[/\\]/);
+
+    if (segments.includes("..")) {
         throw new Error("Path contains directory traversal sequences");
     }
 

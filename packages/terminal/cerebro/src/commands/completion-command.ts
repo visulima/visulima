@@ -307,7 +307,6 @@ const completionCommand: ICommand = {
             typeLabel: "{underline shell}",
         } satisfies OptionDefinition<string>,
         {
-            defaultOption: true,
             defaultValue: detectRuntime(),
             description: "JavaScript runtime (node, bun, deno). Defaults to current runtime if detected.",
             name: "runtime",
