@@ -198,8 +198,9 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
         }
 
         const offsetHeader = response.headers.get("Upload-Offset");
+        const parsed = offsetHeader ? Number.parseInt(offsetHeader, 10) : 0;
 
-        return offsetHeader ? Number.parseInt(offsetHeader, 10) : 0;
+        return Number.isFinite(parsed) ? parsed : 0;
     };
 
     const persistUploadEntry = async (entryFingerprint: string, uploadUrl: string, file: File): Promise<void> => {
@@ -318,8 +319,9 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
         }
 
         const offsetHeader = response.headers.get("Upload-Offset");
+        const parsed = offsetHeader ? Number.parseInt(offsetHeader, 10) : 0;
 
-        return offsetHeader ? Number.parseInt(offsetHeader, 10) : 0;
+        return Number.isFinite(parsed) ? parsed : 0;
     };
 
     /**
@@ -373,7 +375,13 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
             throw new Error("Missing Upload-Offset header in PATCH response");
         }
 
-        return Number.parseInt(newOffsetHeader, 10);
+        const parsed = Number.parseInt(newOffsetHeader, 10);
+
+        if (!Number.isFinite(parsed)) {
+            throw new Error("Invalid Upload-Offset header in PATCH response");
+        }
+
+        return parsed;
     };
 
     /**

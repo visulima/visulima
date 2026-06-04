@@ -164,7 +164,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
                 // Exponential backoff: 1s, 2s, 4s
                 const delay = 1000 * 2 ** (maxRetries - retriesLeft);
 
-                await abortableDelay(delay, init.signal as AbortSignal);
+                await abortableDelay(delay, init.signal ?? undefined);
 
                 return fetchWithRetry(url, init, retriesLeft - 1);
             }
@@ -179,7 +179,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
             if (retriesLeft > 0 && retry) {
                 const delay = 1000 * 2 ** (maxRetries - retriesLeft);
 
-                await abortableDelay(delay, init.signal as AbortSignal);
+                await abortableDelay(delay, init.signal ?? undefined);
 
                 return fetchWithRetry(url, init, retriesLeft - 1);
             }
@@ -340,8 +340,8 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
             uploadState.uploadedChunks.add(chunk.offset);
         }
 
-        // Upload chunks in parallel (but respect pause/abort)
-        const uploadPromises: Promise<void>[] = [];
+        // Collect the chunks that still need uploading.
+        const pending: { endOffset: number; startOffset: number }[] = [];
 
         for (let i = 0; i < totalChunks; i += 1) {
             const startOffset = i * chunkSize;
@@ -352,26 +352,48 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
                 continue;
             }
 
-            // Skip if paused
-            while (uploadState.paused && !uploadState.aborted) {
-                // eslint-disable-next-line no-await-in-loop -- Sequential delay required for abortable delay
-                await new Promise<void>((resolve) => {
-                    setTimeout(() => {
-                        resolve();
-                    }, 100);
-                });
-            }
-
-            if (uploadState.aborted) {
-                throw new Error("Upload aborted");
-            }
-
-            // Upload chunk
-            uploadPromises.push(uploadChunk(file, fileId, startOffset, endOffset, signal));
+            pending.push({ endOffset, startOffset });
         }
 
-        // Wait for all chunks to upload
-        await Promise.all(uploadPromises);
+        // Drain the queue with a bounded worker pool so we never fire every PATCH at once.
+        const CONCURRENCY = 4;
+        let nextIndex = 0;
+
+        const worker = async (): Promise<void> => {
+            while (nextIndex < pending.length) {
+                // Skip if paused
+                // eslint-disable-next-line no-await-in-loop -- Sequential delay required for abortable delay
+                while (uploadState.paused && !uploadState.aborted) {
+                    // eslint-disable-next-line no-await-in-loop -- Sequential delay required for abortable delay
+                    await new Promise<void>((resolve) => {
+                        setTimeout(() => {
+                            resolve();
+                        }, 100);
+                    });
+                }
+
+                if (uploadState.aborted) {
+                    throw new Error("Upload aborted");
+                }
+
+                const index = nextIndex;
+
+                nextIndex += 1;
+
+                const pair = pending[index];
+
+                if (!pair) {
+                    break;
+                }
+
+                // eslint-disable-next-line no-await-in-loop -- Sequential drain within a single worker bounds concurrency
+                await uploadChunk(file, fileId, pair.startOffset, pair.endOffset, signal);
+            }
+        };
+
+        const workerCount = Math.min(CONCURRENCY, pending.length);
+
+        await Promise.all(Array.from({ length: workerCount }, () => worker()));
 
         // Verify upload is complete
         const finalStatus = await getUploadStatus(fileId);

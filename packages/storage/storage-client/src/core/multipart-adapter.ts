@@ -79,6 +79,7 @@ export const createMultipartAdapter = (options: MultipartAdapterOptions): Multip
             new Promise<UploadResult>((resolve, reject) => {
                 let resolved = false;
                 let timeoutId: ReturnType<typeof setTimeout> | undefined;
+                let itemId: string | undefined;
 
                 const parseFileMeta = (item: UploadItem): Partial<FileMeta> => {
                     let fileMeta: Partial<FileMeta> = {};
@@ -113,7 +114,7 @@ export const createMultipartAdapter = (options: MultipartAdapterOptions): Multip
                 };
 
                 const onItemFinish = (itemOrBatch: UploadItem | BatchState): void => {
-                    if ("file" in itemOrBatch && !resolved && itemOrBatch.file.name === file.name) {
+                    if ("file" in itemOrBatch && !resolved && itemOrBatch.id === itemId) {
                         const item = itemOrBatch;
                         const fileMeta = parseFileMeta(item);
                         const uploadResult = buildUploadResult(item, fileMeta);
@@ -126,7 +127,7 @@ export const createMultipartAdapter = (options: MultipartAdapterOptions): Multip
                 };
 
                 const onError = (itemOrBatch: UploadItem | BatchState): void => {
-                    if ("file" in itemOrBatch && !resolved && itemOrBatch.file.name === file.name) {
+                    if ("file" in itemOrBatch && !resolved && itemOrBatch.id === itemId) {
                         const item = itemOrBatch;
                         const error = new Error(item.error ?? "Upload failed");
 
@@ -150,7 +151,7 @@ export const createMultipartAdapter = (options: MultipartAdapterOptions): Multip
                 uploader.on("ITEM_FINISH", onItemFinish);
                 uploader.on("ITEM_ERROR", onError);
 
-                uploader.add(file);
+                itemId = uploader.add(file);
 
                 timeoutId = setTimeout(() => {
                     if (!resolved) {

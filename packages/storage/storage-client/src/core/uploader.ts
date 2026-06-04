@@ -252,7 +252,8 @@ export class Uploader {
 
         const item = this.items.get(id);
 
-        if (item) {
+        // Only transition items that haven't reached a terminal state.
+        if (item && item.status !== "completed" && item.status !== "error") {
             item.status = "aborted";
             this.items.set(id, item);
 
@@ -287,19 +288,35 @@ export class Uploader {
             this.abortItem(itemId);
         }
 
-        batch.status = "cancelled";
-        this.batches.set(batchId, batch);
-        this.emitBatch("BATCH_CANCELLED", batch);
+        // Derive the final batch status from item states rather than hard-coding
+        // "cancelled", so a batch with already-completed items isn't reported as
+        // fully cancelled (losing the completed/error counts).
+        const items = batch.itemIds.map((id) => this.items.get(id)).filter(Boolean);
+        const hasCompleted = items.some((item) => item.status === "completed");
+
+        batch.completedCount = items.filter((item) => item.status === "completed").length;
+        batch.errorCount = items.filter((item) => item.status === "error").length;
+
+        if (hasCompleted) {
+            batch.status = "error";
+            this.batches.set(batchId, batch);
+            this.emitBatch("BATCH_ERROR", batch);
+        } else {
+            batch.status = "cancelled";
+            this.batches.set(batchId, batch);
+            this.emitBatch("BATCH_CANCELLED", batch);
+        }
     }
 
     /**
      * Aborts all uploads.
      */
     public abort(): void {
-        this.activeUploads.forEach((xhr, id) => {
-            xhr.abort();
+        const ids = [...this.activeUploads.keys()];
+
+        for (const id of ids) {
             this.abortItem(id);
-        });
+        }
 
         this.activeUploads.clear();
     }

@@ -67,6 +67,19 @@ export class UploadControl {
             throw new Error(`UploadControl: unsupported snapshot version ${String(snapshot.v)}`);
         }
 
+        // The token crosses process/transport boundaries (localStorage, URL, server),
+        // so validate the required fields at the boundary instead of letting missing
+        // values surface later as `undefined` deep inside the adapter resume logic.
+        for (const field of ["endpoint", "fingerprint", "uploadUrl"] as const) {
+            if (typeof snapshot[field] !== "string" || snapshot[field].length === 0) {
+                throw new Error(`UploadControl: snapshot is missing required string field "${field}"`);
+            }
+        }
+
+        if (snapshot.protocol !== "tus" && snapshot.protocol !== "chunked-rest") {
+            throw new Error(`UploadControl: snapshot has invalid protocol ${String(snapshot.protocol)}`);
+        }
+
         const control = new UploadControl();
 
         control.#hydrate(snapshot);
