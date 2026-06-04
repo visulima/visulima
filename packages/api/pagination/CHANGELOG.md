@@ -1,3 +1,13 @@
+## @visulima/pagination [5.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/pagination@5.0.0-alpha.12...@visulima/pagination@5.0.0-alpha.13) (2026-06-04)
+
+### Bug Fixes
+
+* **pagination:** 3 bug fixes ([bcc5dbf](https://github.com/visulima/visulima/commit/bcc5dbf91aac391b3df1d83d6a1850a7b4bdbcc2))
+
+### Miscellaneous Chores
+
+* apply eslint + prettier autofixes across packages ([c1bb784](https://github.com/visulima/visulima/commit/c1bb7848a0d93d0dfe2960c77e3cda22239c79a0))
+
 ## @visulima/pagination [5.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/pagination@5.0.0-alpha.11...@visulima/pagination@5.0.0-alpha.12) (2026-05-27)
 
 ### Bug Fixes
