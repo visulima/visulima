@@ -12,5 +12,7 @@ export const copyRegExpLoose = <Value extends RegExp>(regExp: Value): Value => {
 export const copyRegExpStrict = <Value extends RegExp>(regExp: Value, state: State): Value => {
     const clone = new RegExp(regExp.source, regExp.flags) as Value;
 
+    state.cache.set(regExp, clone);
+
     return copyOwnProperties(regExp, clone, state);
 };

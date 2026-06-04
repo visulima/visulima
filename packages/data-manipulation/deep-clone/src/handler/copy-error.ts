@@ -12,6 +12,8 @@ const copyError = <Value extends EvalError | ExtendedError | RangeError | Refere
     // @ts-expect-error - We don't know the type of the object, can be an error
     const error = new object.constructor(object.message) as EvalError | ExtendedError | RangeError | ReferenceError | SyntaxError | TypeError | URIError;
 
+    state.cache.set(object, error);
+
     // If a `stack` property is present, copy it over...
     if (object.stack) {
         error.stack = object.stack;

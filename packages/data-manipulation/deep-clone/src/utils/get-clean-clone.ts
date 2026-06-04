@@ -10,7 +10,7 @@ const getCleanClone = (input: unknown): any => {
     const Constructor = input.constructor;
 
     if (Constructor === Object) {
-        return input === Object.prototype ? {} : Object.create(input);
+        return input === Object.prototype ? {} : Object.create(Object.getPrototypeOf(input));
     }
 
     if (Function.prototype.toString.call(Constructor).includes("[native code]")) {
@@ -23,7 +23,7 @@ const getCleanClone = (input: unknown): any => {
         }
     }
 
-    return Object.create(input);
+    return Object.create(Object.getPrototypeOf(input));
 };
 
 export default getCleanClone;
