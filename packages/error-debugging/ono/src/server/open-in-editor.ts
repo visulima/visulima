@@ -2,7 +2,7 @@ import { realpathSync } from "node:fs";
 import type { IncomingMessage, ServerResponse } from "node:http";
 
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { isAbsolute, normalize, relative, resolve as resolvePath, sep } from "@visulima/path";
+import { isAbsolute, normalize, relative, resolve as resolvePath } from "@visulima/path";
 import launchEditorMiddleware from "launch-editor-middleware";
 
 import { getProcessPlatform } from "../utils/process";
@@ -63,11 +63,28 @@ export const createOpenInEditorMiddleware = (options: OpenInEditorOptions = {}):
                 try {
                     let data = "";
 
+                    const cleanup = () => {
+                        if (typeof request.removeListener !== "function") {
+                            return;
+                        }
+
+                        request.removeListener("data", onData);
+                        request.removeListener("end", onEnd);
+                        request.removeListener("error", onError);
+                    };
+
                     const onData = (chunk: unknown) => {
                         data += String(chunk);
+
+                        if (data.length > 1_000_000) {
+                            cleanup();
+                            resolve({});
+                        }
                     };
 
                     const onEnd = () => {
+                        cleanup();
+
                         try {
                             resolve((data ? JSON.parse(data) : {}) as EditorPayload);
                         } catch {
@@ -75,11 +92,14 @@ export const createOpenInEditorMiddleware = (options: OpenInEditorOptions = {}):
                         }
                     };
 
+                    const onError = () => {
+                        cleanup();
+                        resolve({});
+                    };
+
                     request.on("data", onData);
                     request.on("end", onEnd);
-                    request.on("error", () => {
-                        resolve({});
-                    });
+                    request.on("error", onError);
                 } catch {
                     resolve({});
                 }
@@ -132,10 +152,10 @@ export const createOpenInEditorMiddleware = (options: OpenInEditorOptions = {}):
                     return undefined;
                 }
             } catch {
-                // If realpathSync fails (e.g., file doesn't exist), fall back to basic check
-                const rootWithSeparator: string = projectRoot.endsWith(sep) ? projectRoot : projectRoot + (sep as unknown as string);
+                // If realpathSync fails (e.g., file doesn't exist), fall back to a normalized relative check
+                const relFallback: string = relative(normalize(projectRoot), normalize(absPath));
 
-                if (!absPath.startsWith(rootWithSeparator)) {
+                if (relFallback.startsWith("..") || isAbsolute(relFallback)) {
                     return undefined;
                 }
             }
@@ -156,7 +176,9 @@ export const createOpenInEditorMiddleware = (options: OpenInEditorOptions = {}):
                 return;
             }
 
-            const mw = launchEditorMiddleware(payload.editor, projectRoot);
+            const safeEditor = payload.editor && /^[\w.+-]+$/.test(payload.editor) ? payload.editor : undefined;
+
+            const mw = launchEditorMiddleware(safeEditor, projectRoot);
 
             const q = new URLSearchParams({
                 column: String(payload.column ?? 1),
@@ -164,8 +186,8 @@ export const createOpenInEditorMiddleware = (options: OpenInEditorOptions = {}):
                 line: String(payload.line ?? 1),
             });
 
-            if (payload.editor) {
-                q.set("editor", payload.editor);
+            if (safeEditor) {
+                q.set("editor", safeEditor);
             }
 
             request.url = `/?${q.toString()}`;
