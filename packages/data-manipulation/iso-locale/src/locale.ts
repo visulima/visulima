@@ -5,6 +5,8 @@ import { convert6393To6391 } from "./data/iso-639-mapping";
 const ALPHA2_REGEX = /^[A-Z]{2}$/;
 const LANG_REGEX = /^[a-z]{2,3}$/;
 const SCRIPT_REGEX = /^[A-Z]{4}$/i;
+const UN_M49_REGEX = /^\d{3}$/;
+const VARIANT_REGEX = /^([\da-z]{5,8}|\d[\da-z]{3})$/i;
 
 /**
  * Get currency code from locale or country code.
@@ -30,12 +32,16 @@ export const getCurrency = (locale: string): string | undefined => {
             }
         }
     } else if (locale.includes("_")) {
-        // Handle underscore format: en_US, pt_BR, etc.
+        // Handle underscore format: en_US, en_US_POSIX, etc.
         const parts = locale.split("_");
-        const part = parts.at(-1)?.toUpperCase();
 
-        if (part?.length === 2 && ALPHA2_REGEX.test(part)) {
-            countryCode = part;
+        for (let i = 1; i < parts.length; i += 1) {
+            const part = parts[i]?.toUpperCase();
+
+            if (part?.length === 2 && ALPHA2_REGEX.test(part)) {
+                countryCode = part;
+                break;
+            }
         }
     } else if (locale.length === 2) {
         // Assume it's a direct country code
@@ -94,7 +100,12 @@ export const parseBCP47Tag = (tag: string): { country?: string; language: string
             script = part;
         } else if (part.length === 2 && ALPHA2_REGEX.test(part.toUpperCase())) {
             country = part.toUpperCase();
+        } else if (part.length === 3 && UN_M49_REGEX.test(part)) {
+            // UN M.49 numeric region code (e.g., "419")
+            country = part;
         }
+        // Any other subtag (registered variant, or unrecognized) is ignored by the
+        // lenient parser. Strictness is enforced by isValidBCP47Tag, not here.
     }
 
     const result: { country?: string; language: string; script?: string } = { language };
@@ -172,14 +183,39 @@ export const isValidBCP47Tag = (tag: string): boolean => {
         return false;
     }
 
-    // If country is present, it must be 2 letters
-    if (parsed.country && parsed.country.length !== 2) {
+    // If country is present, it must be a 2-letter alpha region or a 3-digit UN M.49 region
+    if (parsed.country && !ALPHA2_REGEX.test(parsed.country) && !UN_M49_REGEX.test(parsed.country)) {
         return false;
     }
 
     // If script is present, it must be 4 letters
     if (parsed.script && parsed.script.length !== 4) {
         return false;
+    }
+
+    // Reject tags containing unrecognized/garbage subtags. parseBCP47Tag is
+    // intentionally lenient (it silently drops anything it can't classify), so
+    // strictness is enforced here by re-scanning every non-language subtag and
+    // requiring each to be a known shape: 4-letter script, 2-letter alpha region,
+    // 3-digit UN M.49 region, or a registered variant subtag.
+    const subtags = tag.split("-");
+
+    for (let i = 1; i < subtags.length; i += 1) {
+        const part = subtags[i];
+
+        if (!part) {
+            // Empty subtag (e.g. from a double hyphen) — skip, parseBCP47Tag allows it.
+            continue;
+        }
+
+        const isScript = part.length === 4 && SCRIPT_REGEX.test(part);
+        const isAlpha2Region = part.length === 2 && ALPHA2_REGEX.test(part.toUpperCase());
+        const isM49Region = part.length === 3 && UN_M49_REGEX.test(part);
+        const isVariant = VARIANT_REGEX.test(part);
+
+        if (!isScript && !isAlpha2Region && !isM49Region && !isVariant) {
+            return false;
+        }
     }
 
     return true;

@@ -35,7 +35,7 @@ const iso6393To6391Map: Record<string, string> = {
     eus: "eu",
     fao: "fo",
     fil: "tl",
-    fin: "fin",
+    fin: "fi",
     fra: "fr",
     gil: "gil", // Gilbertese (no ISO 639-1)
     gla: "gd", // Scottish Gaelic

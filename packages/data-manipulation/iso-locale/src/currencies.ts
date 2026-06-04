@@ -139,12 +139,12 @@ export const isValid = (code: string | number): boolean => {
 /**
  * Currencies indexed by code
  */
-export const byCode: Readonly<Record<string, Currency>> = currenciesByCode;
+export const byCode: Readonly<Record<string, Currency>> = Object.freeze(currenciesByCode);
 
 /**
  * Currencies indexed by numeric code
  */
-export const byNumber: Readonly<Record<string, Currency>> = currenciesByNumber;
+export const byNumber: Readonly<Record<string, Currency>> = Object.freeze(currenciesByNumber);
 
 /**
  * Get currency by name (exact match, case-insensitive).

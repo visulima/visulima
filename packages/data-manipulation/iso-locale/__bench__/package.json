@@ -1,0 +1,17 @@
+{
+    "name": "iso-locale-bench",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "test:bench": "vitest bench"
+    },
+    "dependencies": {
+        "@visulima/iso-locale": "workspace:*"
+    },
+    "devDependencies": {
+        "@codspeed/vitest-plugin": "catalog:test",
+        "typescript": "catalog:tsc",
+        "vitest": "catalog:test"
+    }
+}

@@ -136,17 +136,17 @@ export const isValid = (code: string | number): boolean => {
 /**
  * Countries indexed by alpha-2 code.
  */
-export const byAlpha2: Readonly<Record<string, Country>> = countriesByAlpha2;
+export const byAlpha2: Readonly<Record<string, Country>> = Object.freeze(countriesByAlpha2);
 
 /**
  * Countries indexed by alpha-3 code.
  */
-export const byAlpha3: Readonly<Record<string, Country>> = countriesByAlpha3;
+export const byAlpha3: Readonly<Record<string, Country>> = Object.freeze(countriesByAlpha3);
 
 /**
  * Countries indexed by numeric code.
  */
-export const byNumeric: Readonly<Record<string, Country>> = countriesByNumeric;
+export const byNumeric: Readonly<Record<string, Country>> = Object.freeze(countriesByNumeric);
 
 /**
  * Get flag emoji for a country.
