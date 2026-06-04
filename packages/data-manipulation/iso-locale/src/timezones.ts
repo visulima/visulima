@@ -1,5 +1,11 @@
 import countryTimezonesData from "./data/timezones";
 
+const allTimezonesSet = new Set<string>();
+
+Object.values(countryTimezonesData).forEach((tzList) => {
+    tzList.forEach((tz) => allTimezonesSet.add(tz));
+});
+
 /**
  * Get all timezones for a country.
  * @param countryCode ISO 3166-1 alpha-2 country code (e.g., "US")
@@ -25,15 +31,7 @@ export const getCountriesForTimezone = (timezone: string): string[] =>
  * Get all available timezones.
  * @returns Array of all IANA timezone identifiers
  */
-export const all = (): string[] => {
-    const timezones = new Set<string>();
-
-    Object.values(countryTimezonesData).forEach((tzList) => {
-        tzList.forEach((tz) => timezones.add(tz));
-    });
-
-    return [...timezones].toSorted((a, b) => a.localeCompare(b));
-};
+export const all = (): string[] => [...allTimezonesSet].toSorted((a, b) => a.localeCompare(b));
 
 /**
  * Get all countries with timezone data.
@@ -46,7 +44,7 @@ export const getCountriesWithTimezones = (): string[] => Object.keys(countryTime
  * @param timezone IANA timezone identifier
  * @returns true if timezone exists, false otherwise
  */
-export const isValidTimezone = (timezone: string): boolean => all().includes(timezone);
+export const isValidTimezone = (timezone: string): boolean => allTimezonesSet.has(timezone);
 
 /**
  * Get primary timezone for a country (first timezone in the list).
