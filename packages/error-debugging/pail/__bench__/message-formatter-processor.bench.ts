@@ -12,7 +12,8 @@ import { bench, describe } from "vitest";
  */
 
 const formatters = {
-    user: (value: unknown) => `[USER:${(value as { id: number }).id}]`,
+    // Custom formatter tokens must be a single character (consumed as `%u`).
+    u: (value: unknown) => String((value as { id: number }).id).padStart(4, "0"),
 };
 
 const stringify = (value: unknown): string => JSON.stringify(value);
@@ -20,12 +21,12 @@ const stringify = (value: unknown): string => JSON.stringify(value);
 const makeMeta = () =>
     ({
         badge: undefined,
-        context: [{ id: 123 }],
+        context: [{ id: 123 }, "session-42"],
         date: new Date(),
         error: undefined,
         groups: [],
         label: undefined,
-        message: "User {user} logged in with value {0}",
+        message: "User %u logged in with value %s",
         prefix: undefined,
         scope: undefined,
         suffix: undefined,
