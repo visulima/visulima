@@ -557,8 +557,22 @@ describe(deepClone, () => {
                 expect(clone(arguments_), "same values").toStrictEqual(arguments_);
                 expect(clone(arguments_), "different object").not.toBe(arguments_);
 
-                // eslint-disable-next-line prefer-rest-params
-                expect(clone(arguments), "same values").toStrictEqual(arguments);
+                if (label === "strict") {
+                    // The strict clone copies every own property (including the
+                    // non-enumerable `Symbol.iterator`), so it remains iterable and
+                    // deep-equals the original `arguments` exotic object.
+                    // eslint-disable-next-line prefer-rest-params
+                    expect(clone(arguments), "same values").toStrictEqual(arguments);
+                } else {
+                    // The loose clone only copies own enumerable properties, so the
+                    // exotic `arguments` object becomes a plain object. Previously this
+                    // passed only because `getCleanClone` leaked the source object as
+                    // the clone's prototype (the bug fixed in get-clean-clone.ts),
+                    // which let the clone inherit `Symbol.iterator`. Compare by value.
+                    // eslint-disable-next-line prefer-rest-params
+                    expect({ ...clone(arguments) }, "same values").toStrictEqual({ ...arguments });
+                }
+
                 // eslint-disable-next-line prefer-rest-params
                 expect(clone(arguments), "different object").not.toBe(arguments);
             }

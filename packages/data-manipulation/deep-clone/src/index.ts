@@ -133,6 +133,8 @@ export const deepClone = <T>(originalData: T, options?: Options): DeepReadwrite<
             || value instanceof Int32Array
             || value instanceof Float32Array
             || value instanceof Float64Array
+            || value instanceof BigInt64Array
+            || value instanceof BigUint64Array
         ) {
             const { buffer } = value;
 
