@@ -232,7 +232,16 @@ export default class Output {
             // When not clipped, allow writes beyond terminal width by growing the row
             const maxX = clip ? Math.min(clip.x2!, row.length) : Infinity;
 
+            const parsedSpans = parsed.getSpans();
+            let spanCursor = 0;
+            let spanEnd = parsedSpans[0]?.length ?? 0;
+
             for (let i = 0; i < parsed.length; i++) {
+                while (spanCursor < parsedSpans.length && i >= spanEnd) {
+                    spanCursor++;
+                    spanEnd += parsedSpans[spanCursor]?.length ?? 0;
+                }
+
                 if (offsetX >= maxX) {
                     break;
                 }
@@ -253,7 +262,7 @@ export default class Output {
                         row.ensureWidth(offsetX + 2);
                     }
 
-                    const span = parsed.getSpan(i);
+                    const span = parsedSpans[spanCursor];
                     const isFullWidth = parsed.getFullWidth(i);
                     const flags = (span?.formatFlags ?? 0) | (isFullWidth ? FULL_WIDTH_MASK : 0);
 
@@ -313,7 +322,16 @@ export default class Output {
 
             const destinationRow = this.grid[targetY]!;
 
+            const srcSpans = srcLine.getSpans();
+            let spanCursor = 0;
+            let spanEnd = srcSpans[0]?.length ?? 0;
+
             for (let rx = 0; rx < srcLine.length; rx++) {
+                while (spanCursor < srcSpans.length && rx >= spanEnd) {
+                    spanCursor++;
+                    spanEnd += srcSpans[spanCursor]?.length ?? 0;
+                }
+
                 const targetX = x + rx;
 
                 if (targetX < 0 || targetX >= destinationRow.length) {
@@ -321,9 +339,17 @@ export default class Output {
                 }
 
                 const value = srcLine.getValue(rx);
+                const span = srcSpans[spanCursor];
+                const hasStyles
+                    = (span !== undefined && (span.formatFlags & ~FULL_WIDTH_MASK) !== 0)
+                    || span?.fgColor !== undefined
+                    || span?.bgColor !== undefined
+                    || span?.link !== undefined;
 
-                if (value !== " " || srcLine.hasStyles(rx)) {
-                    destinationRow.setCharFast(targetX, value, srcLine.getFormatFlags(rx), srcLine.getFgColor(rx), srcLine.getBgColor(rx), srcLine.getLink(rx));
+                if (value !== " " || hasStyles) {
+                    const flags = (span?.formatFlags ?? 0) | (srcLine.getFullWidth(rx) ? FULL_WIDTH_MASK : 0);
+
+                    destinationRow.setCharFast(targetX, value, flags, span?.fgColor, span?.bgColor, span?.link);
                 }
             }
         }
@@ -337,7 +363,16 @@ export default class Output {
         let col = x;
         const effectiveMax = clip ? Math.min(clip.x2!, maxWidth) : Infinity;
 
+        const sourceSpans = source.getSpans();
+        let spanCursor = 0;
+        let spanEnd = sourceSpans[0]?.length ?? 0;
+
         for (let i = 0; i < source.length; i++) {
+            while (spanCursor < sourceSpans.length && i >= spanEnd) {
+                spanCursor++;
+                spanEnd += sourceSpans[spanCursor]?.length ?? 0;
+            }
+
             if (col >= effectiveMax) {
                 break;
             }
@@ -358,7 +393,7 @@ export default class Output {
                     row.ensureWidth(col + 2);
                 }
 
-                const span = source.getSpan(i);
+                const span = sourceSpans[spanCursor];
                 const isFullWidth = source.getFullWidth(i);
                 const flags = (span?.formatFlags ?? 0) | (isFullWidth ? FULL_WIDTH_MASK : 0);
 
@@ -456,7 +491,16 @@ export default class Output {
         for (let y = 0; y < rows; y++) {
             const row = output[y]!;
 
+            const rowSpans = row.getSpans();
+            let spanCursor = 0;
+            let spanEnd = rowSpans[0]?.length ?? 0;
+
             for (let x = 0; x < row.length && x < this.width; x++) {
+                while (spanCursor < rowSpans.length && x >= spanEnd) {
+                    spanCursor++;
+                    spanEnd += rowSpans[spanCursor]?.length ?? 0;
+                }
+
                 const value = row.getValue(x);
 
                 if (value.length === 0) {
@@ -466,7 +510,7 @@ export default class Output {
                 const charCode = value.codePointAt(0) ?? 32;
                 const bufIndex = (y * this.width + x) * 2;
 
-                const span = row.getSpan(x);
+                const span = rowSpans[spanCursor];
                 const formatFlags = span?.formatFlags ?? 0;
                 const fgColor = span?.fgColor;
                 const bgColor = span?.bgColor;

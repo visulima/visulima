@@ -16,8 +16,10 @@ type Output = {
 // in long-running applications. Limits: 10,000 entries, 1MB of key data.
 const cache = new DataLimitedLruMap<Output>(10_000, 1_000_000);
 
-// Cache for character width lookups (single characters, bounded by Unicode range)
-const widthCache = new Map<string, number>();
+// Cache for character width lookups. Keyed on grapheme cluster values which can
+// be multi-codepoint (combining marks, ZWJ emoji, regional indicators) and are
+// therefore effectively unbounded — use an LRU to prevent memory growth.
+const widthCache = new DataLimitedLruMap<number>(10_000, 1_000_000);
 
 // Cache for StyledLine tokenization
 const styledLineCache = new DataLimitedLruMap<StyledLine>(10_000, 1_000_000);
@@ -128,7 +130,16 @@ const measureText = (text: string): Output => {
     }
 
     const lines = text.split("\n");
-    const width = Math.max(...lines.map((line) => safeGetStringWidth(line)));
+    let width = 0;
+
+    for (const line of lines) {
+        const w = safeGetStringWidth(line);
+
+        if (w > width) {
+            width = w;
+        }
+    }
+
     const height = lines.length;
     const dimensions = { height, width };
 
