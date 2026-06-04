@@ -1,3 +1,24 @@
+## @visulima/ansi [4.0.0-alpha.16](https://github.com/visulima/visulima/compare/@visulima/ansi@4.0.0-alpha.15...@visulima/ansi@4.0.0-alpha.16) (2026-06-04)
+
+### Bug Fixes
+
+* **ansi:** 3 bug fixes ([5b6977c](https://github.com/visulima/visulima/commit/5b6977caa2479f094ec4e04125127e06275c3aae))
+* **lint:** clear pre-existing eslint rot across packages ([#674](https://github.com/visulima/visulima/issues/674)) ([5354253](https://github.com/visulima/visulima/commit/5354253b163bd50bcefaf8a3fddf831bdb5df32b))
+
+### Miscellaneous Chores
+
+* apply eslint + prettier autofixes across packages ([c1bb784](https://github.com/visulima/visulima/commit/c1bb7848a0d93d0dfe2960c77e3cda22239c79a0))
+
+### Tests
+
+* **ansi:** cover cursor moves, iterm2 file data, xterm/title guards, device-attribute reports and barrel ([13cd284](https://github.com/visulima/visulima/commit/13cd2848b0927d8150b5c8e8a2c24526ff3bdc57))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.13
+* **@visulima/path:** upgraded to 3.0.0-alpha.12
+
 ## @visulima/ansi [4.0.0-alpha.15](https://github.com/visulima/visulima/compare/@visulima/ansi@4.0.0-alpha.14...@visulima/ansi@4.0.0-alpha.15) (2026-05-27)
 
 ### Bug Fixes
