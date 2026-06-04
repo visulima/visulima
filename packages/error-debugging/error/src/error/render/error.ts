@@ -131,7 +131,9 @@ const getErrors = (error: AggregateError, options: Options, deep: number): strin
     return `\n${message}`;
 };
 
-const getCause = (error: RenderableError, options: Options, deep: number): string => {
+const getCause = (error: RenderableError, options: Options, deep: number, seen: Set<unknown> = new Set()): string => {
+    seen.add(error);
+
     let message = `${getPrefix(options.prefix, options.indentation, deep)}Caused by:\n\n`;
 
     const cause = error.cause as Error;
@@ -159,13 +161,19 @@ const getCause = (error: RenderableError, options: Options, deep: number): strin
         }
     }
 
-    if (cause.cause) {
-        message += `\n${getCause(cause, options, deep + 1)}`;
-    } else if (cause instanceof AggregateError) {
+    if (cause instanceof AggregateError) {
         const errors = getErrors(cause, options, deep);
 
         if (errors !== undefined) {
             message += `\n${errors}`;
+        }
+    }
+
+    if (cause.cause) {
+        if (seen.has(cause)) {
+            message += `\n${getPrefix(options.prefix, options.indentation, deep + 1)}Caused by: [Circular]`;
+        } else {
+            message += `\n${getCause(cause, options, deep + 1, seen)}`;
         }
     }
 

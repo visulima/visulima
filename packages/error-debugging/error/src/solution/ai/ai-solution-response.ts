@@ -27,15 +27,28 @@ const aiSolutionResponse = (rawText: string): string => {
         ].join("</br></br>");
     }
 
-    const links = between("LINKS", "ENDLINKS", rawText)
-        .split("\n")
-        .map((link) => JSON.parse(link) as { title: string; url: string });
+    const linksRaw = between("LINKS", "ENDLINKS", rawText);
+    const links = linksRaw
+        ? linksRaw
+              .split("\n")
+              .map((line) => line.trim())
+              .filter(Boolean)
+              .map((link) => {
+                  try {
+                      return JSON.parse(link) as { title: string; url: string };
+                  } catch {
+                      return undefined;
+                  }
+              })
+              .filter((link): link is { title: string; url: string } => link !== undefined)
+        : [];
 
-    return `${description.replaceAll(/"([^"]*)"(?:\s|\.)/g, "<code>$1</code> ")}
+    const linksSection
+        = links.length > 0
+            ? `\n\n## Links\n\n${links.map((link) => `- <a href="${link.url}" target="_blank" rel="noopener noreferrer">${link.title}</a>`).join("\n")}`
+            : "";
 
-## Links
-
-${links.map((link) => `- <a href="${link.url}" target="_blank" rel="noopener noreferrer">${link.title}</a>`).join("\n")}
+    return `${description.replaceAll(/"([^"]*)"(?:\s|\.)/g, "<code>$1</code> ")}${linksSection}
 
 --------------------
 This solution was generated with the <a href="https://sdk.vercel.ai/" target="_blank" rel="noopener noreferrer">AI SDK</a> and may not be 100% accurate.`;
