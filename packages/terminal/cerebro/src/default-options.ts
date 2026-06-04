@@ -2,6 +2,7 @@ import type { OptionDefinition } from "./types/command";
 
 const defaultOptions: OptionDefinition<boolean>[] = [
     {
+        alias: "v",
         description: "Turn on verbose output",
         group: "global",
         name: "verbose",

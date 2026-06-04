@@ -220,7 +220,7 @@ export class Cli<T extends Console = Console> implements ICli<T> {
         if (this.#argv === undefined) {
             const rawArgv = parseRawCommand(this.#options.argv as string[]);
 
-            this.#argv = sanitizeArguments(rawArgv);
+            this.#argv = sanitizeArguments(rawArgv, false);
 
             this.#setVerbosityLevel();
         }
@@ -252,7 +252,7 @@ export class Cli<T extends Console = Console> implements ICli<T> {
                 break;
             }
 
-            if (argument === "--debug" || argument === "-vvv") {
+            if (argument === "--debug") {
                 env.CEREBRO_OUTPUT_LEVEL = String(VERBOSITY_DEBUG);
                 verbositySet = true;
                 break;
@@ -342,7 +342,7 @@ export class Cli<T extends Console = Console> implements ICli<T> {
             const negatedOptions = command.options.filter((option) => option.name.startsWith("no-"));
 
             for (const negatedOption of negatedOptions) {
-                const nonNegatedName = negatedOption.name.replace("no-", "");
+                const nonNegatedName = negatedOption.name.replace(/^no-/, "");
                 const negatedFlag = `--${negatedOption.name}`;
                 const nonNegatedFlag = `--${nonNegatedName}`;
 
@@ -1153,7 +1153,7 @@ export class Cli<T extends Console = Console> implements ICli<T> {
             throw new CerebroError(`Command "${command.name}" has no function to execute`, "INVALID_COMMAND", { commandName: command.name });
         }
 
-        const sanitizedArgv = sanitizeArguments(providedArgv);
+        const sanitizedArgv = sanitizeArguments(providedArgv, false);
         const commandArguments = [...sanitizedArgv];
 
         this.#logger.debug(`running command '${commandName}' programmatically with args: ${commandArguments.join(", ")}`);
