@@ -77,7 +77,8 @@ describe("package-json", () => {
                 first = await first;
             }
 
-            expect(cache.has(join(fixturePath, "package.json"))).toBe(true);
+            // The cache key folds in parse options, so assert the entry exists by size rather than by bare path.
+            expect(cache.size).toBe(1);
 
             // Second lookup must come straight from the cache (same reference).
             let second = function_(fixturePath, { cache });

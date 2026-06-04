@@ -34,6 +34,25 @@ type ReadOptions = {
 
 const PackageJsonFileCache = new Map<string, NormalizedReadResult>();
 
+type CacheKeyOptions = {
+    ignoreWarnings?: (RegExp | string)[];
+    json5?: boolean;
+    resolveCatalogs?: boolean;
+    strict?: boolean;
+    yaml?: boolean;
+};
+
+/**
+ * Builds a cache key that folds in the parse-affecting options so that two reads of the same
+ * file path with different options (strict / json5 / yaml / resolveCatalogs / ignoreWarnings)
+ * do not collide on a path-only key.
+ * @param filePath The resolved file path.
+ * @param options The parse options affecting the produced result.
+ * @returns A composite cache key string.
+ */
+const buildReadCacheKey = (filePath: string, options: CacheKeyOptions = {}): string =>
+    `${filePath}|s${options.strict ? 1 : 0}|c${options.resolveCatalogs ? 1 : 0}|j${options.json5 !== false ? 1 : 0}|y${options.yaml !== false ? 1 : 0}|w${options.ignoreWarnings ? 1 : 0}`;
+
 class PackageJsonValidationError extends Error {
     public constructor(warnings: string[]) {
         super(`The following warnings were encountered while normalizing package data:\n- ${warnings.join("\n- ")}`);
@@ -219,9 +238,10 @@ export const findPackageJson = async (cwd?: URL | string, options: ReadOptions =
     }
 
     const cache = options.cache && typeof options.cache !== "boolean" ? options.cache : PackageJsonFileCache;
+    const cacheKey = buildReadCacheKey(filePath, options);
 
-    if (options.cache && cache.has(filePath)) {
-        return cache.get(filePath) as NormalizedReadResult;
+    if (options.cache && cache.has(cacheKey)) {
+        return cache.get(cacheKey) as NormalizedReadResult;
     }
 
     // Parse the file based on its extension
@@ -244,7 +264,7 @@ export const findPackageJson = async (cwd?: URL | string, options: ReadOptions =
     };
 
     if (options.cache) {
-        cache.set(filePath, output);
+        cache.set(cacheKey, output);
     }
 
     return output;
@@ -294,9 +314,10 @@ export const findPackageJsonSync = (cwd?: URL | string, options: ReadOptions = {
     }
 
     const cache = options.cache && typeof options.cache !== "boolean" ? options.cache : PackageJsonFileCache;
+    const cacheKey = buildReadCacheKey(filePath, options);
 
-    if (options.cache && cache.has(filePath)) {
-        return cache.get(filePath) as NormalizedReadResult;
+    if (options.cache && cache.has(cacheKey)) {
+        return cache.get(cacheKey) as NormalizedReadResult;
     }
 
     // Parse the file based on its extension
@@ -319,7 +340,7 @@ export const findPackageJsonSync = (cwd?: URL | string, options: ReadOptions = {
     };
 
     if (options.cache) {
-        cache.set(filePath, output);
+        cache.set(cacheKey, output);
     }
 
     return output;
@@ -391,9 +412,10 @@ export const parsePackageJsonSync = (
 
         // Check cache for file-based parsing
         const cache = options?.cache && typeof options.cache !== "boolean" ? options.cache : PackageJsonParseCache;
+        const cacheKey = buildReadCacheKey(filePath, options);
 
-        if (options?.cache && cache.has(filePath)) {
-            return cache.get(filePath) as NormalizedPackageJson;
+        if (options?.cache && cache.has(cacheKey)) {
+            return cache.get(cacheKey) as NormalizedPackageJson;
         }
 
         // Parse the file based on its extension
@@ -425,7 +447,7 @@ export const parsePackageJsonSync = (
     if (isFile && options?.cache) {
         const cache = typeof options.cache === "boolean" ? PackageJsonParseCache : options.cache;
 
-        cache.set(filePath as string, result);
+        cache.set(buildReadCacheKey(filePath as string, options), result);
     }
 
     return result;
@@ -474,9 +496,10 @@ export const parsePackageJson = async (
 
         // Check cache for file-based parsing
         const cache = options?.cache && typeof options.cache !== "boolean" ? options.cache : PackageJsonParseCache;
+        const cacheKey = buildReadCacheKey(filePath, options);
 
-        if (options?.cache && cache.has(filePath)) {
-            return cache.get(filePath) as NormalizedPackageJson;
+        if (options?.cache && cache.has(cacheKey)) {
+            return cache.get(cacheKey) as NormalizedPackageJson;
         }
 
         // Parse the file based on its extension
@@ -508,7 +531,7 @@ export const parsePackageJson = async (
     if (isFile && options?.cache) {
         const cache = typeof options.cache === "boolean" ? PackageJsonParseCache : options.cache;
 
-        cache.set(filePath as string, result);
+        cache.set(buildReadCacheKey(filePath as string, options), result);
     }
 
     return result;

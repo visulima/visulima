@@ -21,12 +21,12 @@ const whichPMFixturePath = join(dirname(fileURLToPath(import.meta.url)), "..", "
 // eslint-disable-next-line vitest/prefer-import-in-mock
 vi.mock("node:child_process", () => {
     return {
-        execSync: (command: string) => {
-            if (command === "npm --version") {
+        execFileSync: (file: string, arguments_: string[]) => {
+            if (file === "npm" && arguments_[0] === "--version") {
                 return "7.0.15";
             }
 
-            if (command === "yarn --version") {
+            if (file === "yarn" && arguments_[0] === "--version") {
                 return "1.22.10";
             }
 
