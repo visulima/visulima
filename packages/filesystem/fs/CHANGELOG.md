@@ -1,3 +1,9 @@
+## @visulima/fs [5.0.0-alpha.31](https://github.com/visulima/visulima/compare/@visulima/fs@5.0.0-alpha.30...@visulima/fs@5.0.0-alpha.31) (2026-06-04)
+
+### Performance Improvements
+
+* **fs:** share walk entry accessors, disable keepNames ([7fbae0b](https://github.com/visulima/visulima/commit/7fbae0b27c4b7eafef559446ec0dddcf1044151d))
+
 ## @visulima/fs [5.0.0-alpha.30](https://github.com/visulima/visulima/compare/@visulima/fs@5.0.0-alpha.29...@visulima/fs@5.0.0-alpha.30) (2026-06-04)
 
 ### Bug Fixes
