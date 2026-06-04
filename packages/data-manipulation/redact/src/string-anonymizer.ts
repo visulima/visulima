@@ -91,7 +91,9 @@ const processWithRegex = (stringAnonymizeModifiers: StringAnonymize[], input: st
     for (const modifier of stringAnonymizeModifiers) {
         const { key, pattern } = modifier;
 
-        const rx = new RegExp(pattern, "giu");
+        const rx = (modifier as { compiledPattern?: RegExp }).compiledPattern ?? new RegExp(pattern, "giu");
+
+        rx.lastIndex = 0;
 
         let match;
 

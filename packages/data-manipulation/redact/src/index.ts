@@ -3,7 +3,6 @@ import { hasProperty, setProperty } from "dot-prop";
 
 import stringAnonymize from "./string-anonymizer";
 import type { InternalAnonymize, RedactOptions, Rules } from "./types";
-import isJson from "./utils/is-json";
 import parseUrlParameters from "./utils/parse-url-parameters";
 import wildcard from "./utils/wildcard";
 
@@ -179,20 +178,17 @@ const recursiveFilter = (
 
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition,sonarjs/different-types-comparison -- typeof null === "object", so null guard is needed
     if (typeof input === "string" || (typeof input === "object" && input !== null && input.constructor === String)) {
-        if (isJson(input)) {
-            try {
-                const parsed: unknown = JSON.parse(input);
+        try {
+            const parsed: unknown = JSON.parse(input);
 
-                if ((typeof parsed !== "object" && typeof parsed !== "string") || parsed === null) {
-                    return input;
-                }
-
+            if (typeof parsed === "object" && parsed !== null) {
                 const filtered = recursiveFilter(parsed, examinedObjects, saveCopy, rules, options, identifier);
 
                 return JSON.stringify(filtered);
-            } catch (error: unknown) {
-                options?.logger?.debug(error);
             }
+            // non-object JSON scalars (number/boolean/null/string) fall through to URL/stringAnonymize below
+        } catch {
+            // not JSON — fall through to URL/stringAnonymize
         }
 
         // check if it's an url with parameters
@@ -303,17 +299,20 @@ export function redact<V>(input: V, rules: Rules, options?: RedactOptions): V {
         } else if (typeof modifier === "number") {
             preparedModifiers.push({ deep: false, key: modifier.toString(), replacement: "<REDACTED>" });
         } else {
-            modifier.key = modifier.key.toLowerCase();
+            const lowerKey = modifier.key.toLowerCase();
 
-            if (modifier.key.includes("*")) {
-                (modifier as InternalAnonymize).wildcard = true;
+            const prepared: InternalAnonymize = {
+                ...modifier,
+                key: lowerKey,
+                replacement: modifier.replacement ?? `<${lowerKey.toUpperCase()}>`,
+                wildcard: lowerKey.includes("*") ? true : (modifier as InternalAnonymize).wildcard,
+            };
+
+            if (prepared.pattern !== undefined) {
+                prepared.compiledPattern = new RegExp(prepared.pattern, "giu");
             }
 
-            if (!modifier.replacement) {
-                (modifier as InternalAnonymize).replacement = `<${modifier.key.toUpperCase()}>`;
-            }
-
-            preparedModifiers.push(modifier);
+            preparedModifiers.push(prepared);
         }
     }
 
