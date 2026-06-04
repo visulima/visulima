@@ -35,8 +35,8 @@ const PROVIDERS: Record<AiProviderName, AiProviderConfig> = {
 
 /** Resolve `~` to the user's home directory. */
 const resolveHome = (filePath: string): string => {
-    if (filePath.startsWith("~")) {
-        return join(homedir(), filePath.slice(1));
+    if (filePath === "~" || filePath.startsWith("~/") || (IS_WINDOWS && filePath.startsWith("~\\"))) {
+        return join(homedir(), filePath.slice(2));
     }
 
     return filePath;
@@ -172,7 +172,7 @@ const detectAvailableProviders = (): AiProviderInfo[] => detectAllProviders().fi
 const buildCliArgs = (name: AiProviderName, prompt: string, options: AiRunOptions = {}): string[] => {
     const config = PROVIDERS[name];
     const model = options.model ?? config.defaultModel;
-    const maxTokens = options.maxTokens ?? DEFAULT_MAX_TOKENS;
+    const maxTokens = options.maxTokens !== undefined && Number.isFinite(options.maxTokens) ? options.maxTokens : DEFAULT_MAX_TOKENS;
 
     return config.buildArgs(prompt, model, maxTokens);
 };
@@ -194,7 +194,7 @@ const runProvider = async (provider: AiProviderInfo, prompt: string, options: Ai
     }
 
     const cliArguments = buildCliArgs(provider.name, prompt, options);
-    const timeoutMs = options.timeoutMs ?? DEFAULT_RUN_TIMEOUT;
+    const timeoutMs = options.timeoutMs !== undefined && Number.isFinite(options.timeoutMs) ? options.timeoutMs : DEFAULT_RUN_TIMEOUT;
 
     return new Promise((resolve, reject) => {
         const spawnOptions: SpawnOptionsWithoutStdio = {
@@ -210,9 +210,12 @@ const runProvider = async (provider: AiProviderInfo, prompt: string, options: Ai
         let stderr = "";
         let timedOut = false;
 
+        let killTimer: NodeJS.Timeout | undefined;
+
         const timer = setTimeout(() => {
             timedOut = true;
             child.kill("SIGTERM");
+            killTimer = setTimeout(() => child.kill("SIGKILL"), 5000);
             reject(new Error(`${provider.name} CLI timed out after ${String(timeoutMs)}ms`));
         }, timeoutMs);
 
@@ -226,6 +229,7 @@ const runProvider = async (provider: AiProviderInfo, prompt: string, options: Ai
 
         child.on("close", (code: number | null) => {
             clearTimeout(timer);
+            clearTimeout(killTimer);
 
             if (timedOut) {
                 return;
@@ -240,6 +244,7 @@ const runProvider = async (provider: AiProviderInfo, prompt: string, options: Ai
 
         child.on("error", (error: Error) => {
             clearTimeout(timer);
+            clearTimeout(killTimer);
 
             if (!timedOut) {
                 reject(new Error(`Failed to spawn ${provider.name} CLI: ${error.message}`));

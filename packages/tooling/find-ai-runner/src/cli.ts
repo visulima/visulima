@@ -150,10 +150,13 @@ const handleRun = async (cliPositionals: string[], cliValues: CliValues): Promis
         return;
     }
 
+    const maxTokensRaw = cliValues["max-tokens"] ? Number(cliValues["max-tokens"]) : undefined;
+    const timeoutRaw = cliValues.timeout ? Number(cliValues.timeout) : undefined;
+
     const result = await runProvider(provider, prompt, {
-        maxTokens: cliValues["max-tokens"] ? Number(cliValues["max-tokens"]) : undefined,
+        maxTokens: maxTokensRaw !== undefined && Number.isFinite(maxTokensRaw) ? maxTokensRaw : undefined,
         model: cliValues.model,
-        timeoutMs: cliValues.timeout ? Number(cliValues.timeout) : undefined,
+        timeoutMs: timeoutRaw !== undefined && Number.isFinite(timeoutRaw) ? timeoutRaw : undefined,
     });
 
     console.log(result.stdout);
@@ -179,8 +182,10 @@ const handleArgs = (cliPositionals: string[], cliValues: CliValues): void => {
         return;
     }
 
+    const maxTokensArg = cliValues["max-tokens"] ? Number(cliValues["max-tokens"]) : undefined;
+
     const args = buildCliArgs(name, prompt, {
-        maxTokens: cliValues["max-tokens"] ? Number(cliValues["max-tokens"]) : undefined,
+        maxTokens: maxTokensArg !== undefined && Number.isFinite(maxTokensArg) ? maxTokensArg : undefined,
         model: cliValues.model,
     });
 
