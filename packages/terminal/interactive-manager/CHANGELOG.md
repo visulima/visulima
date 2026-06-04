@@ -1,3 +1,24 @@
+## @visulima/interactive-manager [1.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/interactive-manager@1.0.0-alpha.3...@visulima/interactive-manager@1.0.0-alpha.4) (2026-06-04)
+
+### Bug Fixes
+
+* **interactive-manager:** 2 bug fixes + 1 perf ([e7d9871](https://github.com/visulima/visulima/commit/e7d98710254f1d784c5c1f2a8d95eddec92f01d4))
+
+### Miscellaneous Chores
+
+* apply eslint + prettier autofixes across packages ([c1bb784](https://github.com/visulima/visulima/commit/c1bb7848a0d93d0dfe2960c77e3cda22239c79a0))
+
+### Tests
+
+* improve coverage across packages ([91bd6d3](https://github.com/visulima/visulima/commit/91bd6d3b61736e3c8bd1fc59b0b5955f76a5d323))
+* **interactive-manager:** cover viewport overflow and scroll clamp paths ([1ec80f6](https://github.com/visulima/visulima/commit/1ec80f633b42f1db00227cf5eeb5c314027aea4e))
+
+
+### Dependencies
+
+* **@visulima/ansi:** upgraded to 4.0.0-alpha.16
+* **@visulima/string:** upgraded to 3.0.0-alpha.15
+
 ## @visulima/interactive-manager [1.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/interactive-manager@1.0.0-alpha.2...@visulima/interactive-manager@1.0.0-alpha.3) (2026-05-27)
 
 ### Bug Fixes
