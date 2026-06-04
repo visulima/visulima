@@ -62,10 +62,23 @@ const generateCommand = async (
     for (const dir of paths) {
         // Check if the path is a directory
         // eslint-disable-next-line unicorn/no-await-expression-member,no-await-in-loop
-        (await lstat(dir)).isDirectory();
+        const isDirectory = (await lstat(dir)).isDirectory();
 
         // eslint-disable-next-line no-await-in-loop
         const realDirectory = await realpath(dir);
+
+        if (!isDirectory) {
+            const parsedJsDocumentFile = parseFile(realDirectory, jsDocumentCommentsToOpenApi, options.verbose);
+
+            spec.addData(parsedJsDocumentFile.map((item) => item.spec));
+
+            const parsedSwaggerJsDocumentFile = parseFile(realDirectory, swaggerJsDocumentCommentsToOpenApi, options.verbose);
+
+            spec.addData(parsedSwaggerJsDocumentFile.map((item) => item.spec));
+
+            // eslint-disable-next-line no-continue
+            continue;
+        }
 
         // eslint-disable-next-line no-await-in-loop
         const files: string[] = await collect(realDirectory, {

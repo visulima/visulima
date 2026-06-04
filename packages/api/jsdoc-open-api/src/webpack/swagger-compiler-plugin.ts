@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from "node:fs";
+import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { exit } from "node:process";
 
@@ -121,13 +121,12 @@ class SwaggerCompilerPlugin {
 
             const { assetsPath } = this;
 
-            mkdir(dirname(assetsPath), { recursive: true }, (error) => {
-                if (error) {
-                    errorHandler(error);
-                }
-
-                writeFile(assetsPath, JSON.stringify(spec, undefined, 2), errorHandler);
-            });
+            try {
+                await mkdir(dirname(assetsPath), { recursive: true });
+                await writeFile(assetsPath, JSON.stringify(spec, undefined, 2));
+            } catch (error) {
+                errorHandler(error);
+            }
 
             if (this.verbose) {
                 // eslint-disable-next-line no-console

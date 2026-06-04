@@ -22,6 +22,11 @@ const parseFile = (
 
     if (extension === ".yaml" || extension === ".yml") {
         const spec = yaml.parse(fileContent);
+
+        if (spec === null || typeof spec !== "object") {
+            return [];
+        }
+
         const invalidKeys = Object.keys(spec).filter((key) => !ALLOWED_KEYS.has(key));
 
         if (invalidKeys.length > 0) {
