@@ -92,9 +92,11 @@ export const format = (fmt: Record<string, any> | string, arguments_: any[] = []
                             result += fmt.slice(lastPosition, index);
                         }
 
-                        result += cssToAnsi(css, previousCss);
+                        const ansi = cssToAnsi(css, previousCss);
 
-                        if (result !== "") {
+                        result += ansi;
+
+                        if (ansi !== "") {
                             usedStyle = true;
                             previousCss = css;
                         }
@@ -117,7 +119,9 @@ export const format = (fmt: Record<string, any> | string, arguments_: any[] = []
                         result += fmt.slice(lastPosition, index);
                     }
 
-                    result += Number(arguments_[a as keyof typeof arguments_]).toString();
+                    const dValue = arguments_[a as keyof typeof arguments_];
+
+                    result += (typeof dValue === "symbol" ? Number.NaN : Number(dValue)).toString();
                     lastPosition = index + 2;
 
                     index += 1;
@@ -133,7 +137,9 @@ export const format = (fmt: Record<string, any> | string, arguments_: any[] = []
                         result += fmt.slice(lastPosition, index);
                     }
 
-                    result += Math.floor(Number(arguments_[a as keyof typeof arguments_])).toString();
+                    const iValue = arguments_[a as keyof typeof arguments_];
+
+                    result += Math.floor(typeof iValue === "symbol" ? Number.NaN : Number(iValue)).toString();
                     lastPosition = index + 2;
 
                     index += 1;
@@ -158,6 +164,8 @@ export const format = (fmt: Record<string, any> | string, arguments_: any[] = []
                         // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                         result += `'${temporaryArgument}'`;
                         lastPosition = index + 2;
+
+                        index += 1;
                         break;
                     }
 
@@ -165,6 +173,8 @@ export const format = (fmt: Record<string, any> | string, arguments_: any[] = []
                         // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
                         result += (temporaryArgument as Function).name ? `[Function: ${(temporaryArgument as Function).name}]` : "[Function: <anonymous>]";
                         lastPosition = index + 2;
+
+                        index += 1;
                         break;
                     }
 
