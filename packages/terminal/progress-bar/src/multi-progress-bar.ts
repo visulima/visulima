@@ -114,6 +114,7 @@ export class MultiProgressBar {
     public remove(bar: ProgressBar): boolean {
         for (const [id, existingBar] of this.bars.entries()) {
             if (existingBar === bar) {
+                this.barColors.delete(existingBar);
                 this.bars.delete(id);
 
                 if (this.bars.size === 0) {
@@ -177,6 +178,9 @@ export class MultiProgressBar {
         if (this.interactiveManager) {
             this.interactiveManager.unhook(false);
         }
+
+        this.bars.clear();
+        this.barColors.clear();
     }
 
     private renderComposite(bars: MultiBarInstance[]): string {
@@ -204,7 +208,7 @@ export class MultiProgressBar {
 
         bars.forEach((bar, index) => {
             const state = bar.getBarState();
-            const filled = Math.round((state.current / state.total) * width);
+            const filled = Math.round((state.current / Math.max(1, state.total)) * width);
 
             for (let i = 0; i < width; i += 1) {
                 if (i < filled) {
@@ -248,7 +252,7 @@ export class MultiProgressBar {
             }
 
             const barState = bar.getBarState();
-            const barPercent = (barState.current / barState.total) * 100;
+            const barPercent = (barState.current / Math.max(1, barState.total)) * 100;
 
             if (barPercent < smallestPercent || (barPercent === smallestPercent && (selectedBar === undefined || stackBarIndex > selectedBar))) {
                 smallestPercent = barPercent;
