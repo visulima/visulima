@@ -1,4 +1,5 @@
-import { readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { randomUUID } from "node:crypto";
+import { readdirSync, renameSync, rmSync, statSync, unlinkSync, writeFileSync } from "node:fs";
 
 import { xxh3Hash } from "@shared/xxh3";
 import { ensureDirSync, isAccessibleSync, readJsonSync } from "@visulima/fs";
@@ -27,6 +28,27 @@ interface CacheStats {
 
 const ensureCacheDirectory = (): void => {
     ensureDirSync(getCacheDirectory());
+};
+
+/**
+ * Write to a temp sibling then rename into place so concurrent readers never
+ * observe a partially written cache file (torn read).
+ */
+const atomicWrite = (target: string, contents: string): void => {
+    const tmp = `${target}.${String(process.pid)}.${randomUUID()}.tmp`;
+
+    try {
+        writeFileSync(tmp, contents, "utf8");
+        renameSync(tmp, target);
+    } catch (error) {
+        try {
+            unlinkSync(tmp);
+        } catch {
+            // ignore cleanup failure
+        }
+
+        throw error;
+    }
 };
 
 const buildCacheKey = (provider: string, analysisType: string, outdated: Pick<OutdatedEntry, "currentRange" | "packageName" | "targetVersion">[]): string => {
@@ -76,7 +98,7 @@ const setCachedAnalysis = (cacheKey: string, result: AiAnalysisResult, ttlMs: nu
         ttlMs,
     };
 
-    writeFileSync(join(cacheDirectory, `${cacheKey}.json`), JSON.stringify(entry, undefined, 2), "utf8");
+    atomicWrite(join(cacheDirectory, `${cacheKey}.json`), JSON.stringify(entry, undefined, 2));
 };
 
 const getTtlForAnalysisType = (analysisType: AnalysisType | (string & {}), configTtl?: number): number => {
@@ -156,7 +178,7 @@ const setCachedJson = (cacheKey: string, result: unknown, ttlMs: number): void =
         ttlMs,
     };
 
-    writeFileSync(join(cacheDirectory, `${cacheKey}.json`), JSON.stringify(entry, undefined, 2), "utf8");
+    atomicWrite(join(cacheDirectory, `${cacheKey}.json`), JSON.stringify(entry, undefined, 2));
 };
 
 const clearCache = (): number => {
