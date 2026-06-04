@@ -11,7 +11,7 @@ import { isRelative } from "@visulima/path/utils";
 import { parse } from "jsonc-parser";
 import type { TsConfigJson } from "type-fest";
 
-import type { TsConfigJsonResolved } from "./types";
+import type { Cache, TsConfigJsonResolved } from "./types";
 import resolveExtendsPath from "./utils/resolve-extends-path";
 import { detectTypeScriptVersion } from "./utils/typescript-version";
 import { applyVersionDefaults } from "./version-defaults";
@@ -62,7 +62,13 @@ const prefixPattern = (fromDirectoryPath: string, extendsDirectoryPath: string, 
     return `${relativeDirectory}/${cleanPattern}`;
 };
 
-const resolveExtends = (resolvedExtendsPath: string, fromDirectoryPath: string, circularExtendsTracker: Set<string>, options?: Options) => {
+const resolveExtends = (
+    resolvedExtendsPath: string,
+    fromDirectoryPath: string,
+    circularExtendsTracker: Set<string>,
+    options?: Options,
+    resolveExtendsCache?: Cache<string>,
+) => {
     if (circularExtendsTracker.has(resolvedExtendsPath)) {
         throw new Error(`Circularity detected while resolving configuration: ${resolvedExtendsPath}`);
     }
@@ -71,7 +77,7 @@ const resolveExtends = (resolvedExtendsPath: string, fromDirectoryPath: string, 
 
     const extendsDirectoryPath = dirname(resolvedExtendsPath);
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    const extendsConfig = internalParseTsConfig(resolvedExtendsPath, options, circularExtendsTracker);
+    const extendsConfig = internalParseTsConfig(resolvedExtendsPath, options, circularExtendsTracker, resolveExtendsCache);
 
     delete extendsConfig.references;
 
@@ -120,7 +126,12 @@ const resolveExtends = (resolvedExtendsPath: string, fromDirectoryPath: string, 
 };
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
-const internalParseTsConfig = (tsconfigPath: string, options?: Options, circularExtendsTracker = new Set<string>()): TsConfigJsonResolved => {
+const internalParseTsConfig = (
+    tsconfigPath: string,
+    options?: Options,
+    circularExtendsTracker = new Set<string>(),
+    resolveExtendsCache: Cache<string> = new Map<string, string>(),
+): TsConfigJsonResolved => {
     /**
      * Decided not to cache the TsConfigJsonResolved object because it's
      * mutable.
@@ -171,13 +182,13 @@ const internalParseTsConfig = (tsconfigPath: string, options?: Options, circular
         // eslint-disable-next-line unicorn/no-for-loop,no-plusplus -- index-based loop preferred for array performance
         for (let index = 0; index < reversedExtends.length; index++) {
             const extendsPath = reversedExtends[index] as string;
-            const resolvedExtendsPath = resolveExtendsPath(extendsPath, directoryPath);
+            const resolvedExtendsPath = resolveExtendsPath(extendsPath, directoryPath, resolveExtendsCache);
 
             if (!resolvedExtendsPath) {
                 throw new NotFoundError(`No such file or directory, for '${extendsPath}' found.`);
             }
 
-            const extendsConfig = resolveExtends(resolvedExtendsPath, directoryPath, new Set(circularExtendsTracker), options);
+            const extendsConfig = resolveExtends(resolvedExtendsPath, directoryPath, new Set(circularExtendsTracker), options, resolveExtendsCache);
 
             // eslint-disable-next-line @typescript-eslint/no-use-before-define
             if (extendsConfig.compilerOptions?.rootDir !== undefined && !extendsConfig.compilerOptions.rootDir.startsWith(configDirectoryPlaceholder)) {

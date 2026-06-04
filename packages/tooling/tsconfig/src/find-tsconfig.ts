@@ -8,7 +8,7 @@ import type { TsConfigJsonResolved } from "./types";
 const TsConfigFileCache = new Map<string, TsConfigResult>();
 
 export type Options = ReadTsConfigOptions & {
-    cache?: Map<string, TsConfigJsonResolved> | boolean;
+    cache?: Map<string, TsConfigResult> | boolean;
     configFileName?: string;
 };
 
@@ -44,20 +44,22 @@ export const findTsConfig = async (cwd?: URL | string, options: Options = {}): P
     }
 
     const cache = options.cache && typeof options.cache !== "boolean" ? options.cache : TsConfigFileCache;
+    const cacheKey = `${filePath}::${String(options.tscCompatible)}::${String(options.typescriptVersion)}`;
 
-    if (options.cache && cache.has(filePath)) {
-        return cache.get(filePath) as TsConfigResult;
+    if (options.cache && cache.has(cacheKey)) {
+        return cache.get(cacheKey) as TsConfigResult;
     }
 
     const output = {
         config: readTsConfig(filePath, {
             tscCompatible: options.tscCompatible,
+            typescriptVersion: options.typescriptVersion,
         }),
         path: filePath,
     };
 
     if (options.cache) {
-        cache.set(filePath, output);
+        cache.set(cacheKey, output);
     }
 
     return output;
@@ -81,20 +83,22 @@ export const findTsConfigSync = (cwd?: URL | string, options: Options = {}): TsC
     }
 
     const cache = options.cache && typeof options.cache !== "boolean" ? options.cache : TsConfigFileCache;
+    const cacheKey = `${filePath}::${String(options.tscCompatible)}::${String(options.typescriptVersion)}`;
 
-    if (options.cache && cache.has(filePath)) {
-        return cache.get(filePath) as TsConfigResult;
+    if (options.cache && cache.has(cacheKey)) {
+        return cache.get(cacheKey) as TsConfigResult;
     }
 
     const output = {
         config: readTsConfig(filePath, {
             tscCompatible: options.tscCompatible,
+            typescriptVersion: options.typescriptVersion,
         }),
         path: filePath,
     };
 
     if (options.cache) {
-        cache.set(filePath, output);
+        cache.set(cacheKey, output);
     }
 
     return output;
