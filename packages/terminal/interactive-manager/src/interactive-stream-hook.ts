@@ -50,8 +50,8 @@ class InteractiveStreamHook {
     public active(): void {
         this.write(cursorHide);
 
-        // @ts-ignore - We are modifying the write method
-        this.#stream.write = (data: Uint8Array | string, ...arguments_: [((error?: Error) => void)?] | [(string | undefined)?, ((error?: Error) => void)?]) => {
+        // We are modifying the write method; cast keeps signature drift visible instead of suppressed.
+        (this.#stream.write as NodeJS.WriteStream["write"]) = (data: Uint8Array | string, ...arguments_: [((error?: Error) => void)?] | [(string | undefined)?, ((error?: Error) => void)?]) => {
             const callback = arguments_.at(-1);
 
             this.#history.push(
@@ -95,6 +95,13 @@ class InteractiveStreamHook {
             this.#history.forEach((element) => {
                 this.write(element);
             });
+
+            const tail = this.#decoder.end();
+
+            if (tail) {
+                this.write(tail);
+            }
+
             this.#history = [];
         }
 
