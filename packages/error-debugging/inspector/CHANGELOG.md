@@ -1,3 +1,18 @@
+## @visulima/inspector [2.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/inspector@2.0.0-alpha.11...@visulima/inspector@2.0.0-alpha.12) (2026-06-04)
+
+### Bug Fixes
+
+* **inspector:** 2 bug fixes ([67663e7](https://github.com/visulima/visulima/commit/67663e7d8d14b2849c924f114435ddd740e272cc))
+
+### Tests
+
+* **inspector:** cover html nodes, register apis, indent and key rendering ([668c2c1](https://github.com/visulima/visulima/commit/668c2c149d6ca7a7dbc434ee589ff3ad7c9c7b7d))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.13
+
 ## @visulima/inspector [2.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/inspector@2.0.0-alpha.10...@visulima/inspector@2.0.0-alpha.11) (2026-05-27)
 
 ### Bug Fixes
