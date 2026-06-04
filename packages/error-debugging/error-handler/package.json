@@ -1,6 +1,6 @@
 {
     "name": "@visulima/error-handler",
-    "version": "2.0.0-alpha.30",
+    "version": "2.0.0-alpha.31",
     "description": "Error handlers for use in development and production environments.",
     "keywords": [
         "anolilab",
@@ -149,7 +149,7 @@
     },
     "dependencies": {
         "@tinyhttp/accepts": "catalog:prod",
-        "@visulima/boxen": "3.0.0-alpha.12",
+        "@visulima/boxen": "3.0.0-alpha.13",
         "@visulima/error": "6.0.0-alpha.32",
         "http-errors": "catalog:prod",
         "http-status-codes": "catalog:prod",

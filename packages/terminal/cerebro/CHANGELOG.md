@@ -1,3 +1,16 @@
+## @visulima/cerebro [3.0.0-alpha.31](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.30...@visulima/cerebro@3.0.0-alpha.31) (2026-06-04)
+
+### Performance Improvements
+
+* **cerebro:** disable esbuild keepNames in prod build ([18e4db0](https://github.com/visulima/visulima/commit/18e4db065acd5d83f65e1f56e3923ebda7bb86b6))
+
+
+### Dependencies
+
+* **@visulima/boxen:** upgraded to 3.0.0-alpha.13
+* **@visulima/pail:** upgraded to 4.0.0-alpha.21
+* **@visulima/string:** upgraded to 3.0.0-alpha.16
+
 ## @visulima/cerebro [3.0.0-alpha.30](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.29...@visulima/cerebro@3.0.0-alpha.30) (2026-06-04)
 
 ### Bug Fixes
