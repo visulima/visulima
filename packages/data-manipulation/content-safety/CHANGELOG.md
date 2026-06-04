@@ -1,3 +1,13 @@
+## @visulima/content-safety [1.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/content-safety@1.0.0-alpha.9...@visulima/content-safety@1.0.0-alpha.10) (2026-06-04)
+
+### Bug Fixes
+
+* **content-safety:** 3 bug fixes ([24e1619](https://github.com/visulima/visulima/commit/24e16190e7f8adea2e6c6512d46900268ae6f62b))
+
+### Tests
+
+* **content-safety:** cover public entry point and cjk overlap/phrase paths ([e6b0626](https://github.com/visulima/visulima/commit/e6b06260cc431492beae4e973197f872a91c1c9b))
+
 ## @visulima/content-safety [1.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/content-safety@1.0.0-alpha.8...@visulima/content-safety@1.0.0-alpha.9) (2026-05-27)
 
 ### Bug Fixes
