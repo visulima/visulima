@@ -1,3 +1,25 @@
+## @visulima/boxen [3.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/boxen@3.0.0-alpha.11...@visulima/boxen@3.0.0-alpha.12) (2026-06-04)
+
+### Bug Fixes
+
+* **boxen:** 4 bug fixes + 1 perf ([c7dc1ad](https://github.com/visulima/visulima/commit/c7dc1ad31abcd515d60872358b4d09afcb33e7de))
+* **lint:** clear pre-existing eslint rot across packages ([#674](https://github.com/visulima/visulima/issues/674)) ([5354253](https://github.com/visulima/visulima/commit/5354253b163bd50bcefaf8a3fddf831bdb5df32b))
+
+### Miscellaneous Chores
+
+* apply eslint + prettier autofixes across packages ([c1bb784](https://github.com/visulima/visulima/commit/c1bb7848a0d93d0dfe2960c77e3cda22239c79a0))
+
+### Tests
+
+* **boxen:** cover retro border shorthand, invalid side throw, title centering and overflow padding ([b735d99](https://github.com/visulima/visulima/commit/b735d99a78ac7fc9e0f460e1dbf6a6d5c79c104c))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.13
+* **@visulima/path:** upgraded to 3.0.0-alpha.12
+* **@visulima/string:** upgraded to 3.0.0-alpha.15
+
 ## @visulima/boxen [3.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/boxen@3.0.0-alpha.10...@visulima/boxen@3.0.0-alpha.11) (2026-05-27)
 
 ### Bug Fixes
