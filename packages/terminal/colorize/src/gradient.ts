@@ -27,10 +27,20 @@ export const gradient = (
         builder = builder.reverse();
     }
 
+    const colorCache = new Map<number, ColorizeType[]>();
+
     return (string_: string): string => {
         const stripped = string_.replaceAll(WHITESPACE_GLOBAL, "");
         const colorsCount = Math.max(stripped.length, builder.stops.length);
-        const colors = interpolation === "rgb" ? builder.rgb(colorsCount) : builder.hsv(colorsCount, hsvSpin);
+
+        let cached = colorCache.get(colorsCount);
+
+        if (!cached) {
+            cached = interpolation === "rgb" ? builder.rgb(colorsCount) : builder.hsv(colorsCount, hsvSpin);
+            colorCache.set(colorsCount, cached);
+        }
+
+        const colors = [...cached];
 
         let result = "";
 
@@ -68,11 +78,19 @@ export const multilineGradient = (
         builder = builder.reverse();
     }
 
+    const colorCache = new Map<number, ColorizeType[]>();
+
     return (string_: string): string => {
         const lines = string_.split("\n");
 
         const colorsCount = Reflect.apply(Math.max, undefined, [...lines.map((l) => l.length), builder.stops.length]);
-        const colors = interpolation === "rgb" ? builder.rgb(colorsCount) : builder.hsv(colorsCount, hsvSpin);
+
+        let colors = colorCache.get(colorsCount);
+
+        if (!colors) {
+            colors = interpolation === "rgb" ? builder.rgb(colorsCount) : builder.hsv(colorsCount, hsvSpin);
+            colorCache.set(colorsCount, colors);
+        }
 
         const results: string[] = [];
 

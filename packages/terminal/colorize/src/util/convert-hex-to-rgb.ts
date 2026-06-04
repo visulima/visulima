@@ -20,7 +20,7 @@
  * @returns {[number, number, number]} The red, green, blue values in range [0, 255] .
  */
 
-const HEX_COLOR_REGEX = /([a-f\d]{3,6})/i;
+const HEX_COLOR_REGEX = /^#?([a-f\d]{3}|[a-f\d]{6})$/i;
 
 // eslint-disable-next-line import/prefer-default-export -- public API uses named export
 export const convertHexToRgb = (hex: string): [number, number, number] => {
