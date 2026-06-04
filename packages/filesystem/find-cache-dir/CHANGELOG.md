@@ -1,3 +1,24 @@
+## @visulima/find-cache-dir [3.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/find-cache-dir@3.0.0-alpha.10...@visulima/find-cache-dir@3.0.0-alpha.11) (2026-06-04)
+
+### Bug Fixes
+
+* **find-cache-dir:** 1 bug fix + 1 perf ([fe5b33e](https://github.com/visulima/visulima/commit/fe5b33e4b25410b34dcfb768befd38ca7bb1a1a7))
+* **lint:** clear pre-existing eslint rot across packages ([#674](https://github.com/visulima/visulima/issues/674)) ([5354253](https://github.com/visulima/visulima/commit/5354253b163bd50bcefaf8a3fddf831bdb5df32b))
+
+### Miscellaneous Chores
+
+* apply eslint + prettier autofixes across packages ([c1bb784](https://github.com/visulima/visulima/commit/c1bb7848a0d93d0dfe2960c77e3cda22239c79a0))
+
+### Tests
+
+* **find-cache-dir:** cover create option, not-found undefined return, and cwd fallback ([dca21a2](https://github.com/visulima/visulima/commit/dca21a25a08aa1b042c022fb6c90ac83b96e5674))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.30
+* **@visulima/path:** upgraded to 3.0.0-alpha.12
+
 ## @visulima/find-cache-dir [3.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/find-cache-dir@3.0.0-alpha.9...@visulima/find-cache-dir@3.0.0-alpha.10) (2026-05-27)
 
 ### Bug Fixes
