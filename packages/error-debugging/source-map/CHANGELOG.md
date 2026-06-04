@@ -1,3 +1,22 @@
+## @visulima/source-map [3.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/source-map@3.0.0-alpha.10...@visulima/source-map@3.0.0-alpha.11) (2026-06-04)
+
+### Bug Fixes
+
+* **source-map:** 2 bug fixes ([9319e40](https://github.com/visulima/visulima/commit/9319e403dd8170127c1b3f2fbddb27af98dfb308))
+
+### Miscellaneous Chores
+
+* apply eslint + prettier autofixes across packages ([c1bb784](https://github.com/visulima/visulima/commit/c1bb7848a0d93d0dfe2960c77e3cda22239c79a0))
+
+### Tests
+
+* **source-map:** cover block-comment url and non-error throw branches ([892f351](https://github.com/visulima/visulima/commit/892f3511c0a010ff87fd156b0866f4219eec1391))
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 3.0.0-alpha.12
+
 ## @visulima/source-map [3.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/source-map@3.0.0-alpha.9...@visulima/source-map@3.0.0-alpha.10) (2026-05-27)
 
 ### Bug Fixes

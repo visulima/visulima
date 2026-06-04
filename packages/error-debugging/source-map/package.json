@@ -1,6 +1,6 @@
 {
     "name": "@visulima/source-map",
-    "version": "3.0.0-alpha.10",
+    "version": "3.0.0-alpha.11",
     "description": "Provides functionality related to source maps.",
     "keywords": [
         "map",
@@ -75,7 +75,7 @@
         "@total-typescript/ts-reset": "catalog:dev",
         "@types/node": "catalog:types",
         "@visulima/packem": "catalog:dev",
-        "@visulima/path": "3.0.0-alpha.11",
+        "@visulima/path": "3.0.0-alpha.12",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
         "conventional-changelog-conventionalcommits": "catalog:dev",
