@@ -8,7 +8,7 @@ import { Box } from "@visulima/tui/components/box";
 import { Table } from "@visulima/tui/components/table";
 import { Text } from "@visulima/tui/components/text";
 import React from "react";
-import { coerce, parse, rcompare } from "semver";
+import { coerce, compare, parse, rcompare } from "semver";
 
 import { readPnpmWorkspacePatterns, resolveWorkspacePatterns } from "../config/workspace";
 import type { SecurityProvider } from "../security/provider";
@@ -238,7 +238,7 @@ const compareVersions = (a: ParsedVersion, b: ParsedVersion): number => {
     }
 
     if (a.prerelease && b.prerelease) {
-        return a.prerelease < b.prerelease ? -1 : a.prerelease > b.prerelease ? 1 : 0;
+        return compare(versionToString(a), versionToString(b));
     }
 
     return 0;
@@ -246,11 +246,19 @@ const compareVersions = (a: ParsedVersion, b: ParsedVersion): number => {
 
 const isNewer = (current: ParsedVersion, target: ParsedVersion): boolean => compareVersions(target, current) > 0;
 
+const globRegexCache = new Map<string, RegExp>();
+
 const matchesPattern = (name: string, pattern: string): boolean => {
-    // Collapse consecutive wildcards to prevent ReDoS, then convert glob to regex
-    const collapsed = pattern.replaceAll(CONSECUTIVE_WILDCARDS_REGEX, "*");
-    const escaped = collapsed.replaceAll(GLOB_SPECIAL_CHARS_REGEX, String.raw`\$&`);
-    const regex = new RegExp(`^${escaped.replaceAll("*", ".*").replaceAll("?", ".")}$`);
+    let regex = globRegexCache.get(pattern);
+
+    if (!regex) {
+        // Collapse consecutive wildcards to prevent ReDoS, then convert glob to regex
+        const collapsed = pattern.replaceAll(CONSECUTIVE_WILDCARDS_REGEX, "*");
+        const escaped = collapsed.replaceAll(GLOB_SPECIAL_CHARS_REGEX, String.raw`\$&`);
+
+        regex = new RegExp(`^${escaped.replaceAll("*", ".*").replaceAll("?", ".")}$`);
+        globRegexCache.set(pattern, regex);
+    }
 
     return regex.test(name);
 };

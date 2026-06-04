@@ -186,6 +186,7 @@ export const generateVariants = (name: string): Set<string> => {
 
 let cachedBlocklist: Blocklist | undefined;
 let cachedReverseLookup: Map<string, string> | undefined;
+let cachedVariantLookup: Map<string, string> | undefined;
 
 const loadBlocklist = (): Blocklist => {
     if (!cachedBlocklist) {
@@ -224,6 +225,23 @@ const getReverseLookup = (): Map<string, string> => {
     return cachedReverseLookup;
 };
 
+/** Reverse lookup: generated variant -> legitimate name (first-match wins, mirrors blocklist key order). */
+const getVariantLookup = (): Map<string, string> => {
+    if (!cachedVariantLookup) {
+        cachedVariantLookup = new Map<string, string>();
+
+        for (const legitimate of Object.keys(loadBlocklist())) {
+            for (const variant of generateVariants(legitimate)) {
+                if (!cachedVariantLookup.has(variant)) {
+                    cachedVariantLookup.set(variant, legitimate);
+                }
+            }
+        }
+    }
+
+    return cachedVariantLookup;
+};
+
 /** Strip scope from a package name (e.g. "@scope/foo" -> "foo"). */
 const bareName = (packageName: string): string => (packageName.startsWith("@") ? (packageName.split("/")[1] ?? packageName) : packageName);
 
@@ -242,10 +260,10 @@ export const checkTyposquat = (packageName: string): TyposquatMatch | undefined 
     }
 
     // 2. Heuristic: check if this name is a generated variant of any known package
-    for (const legitimate of Object.keys(loadBlocklist())) {
-        if (generateVariants(legitimate).has(bare)) {
-            return { input: packageName, legitimate, method: "heuristic" };
-        }
+    const heuristic = getVariantLookup().get(bare);
+
+    if (heuristic) {
+        return { input: packageName, legitimate: heuristic, method: "heuristic" };
     }
 
     return undefined;
