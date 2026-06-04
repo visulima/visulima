@@ -227,14 +227,12 @@ export const runHttpValidation = async ({ extraVariables, perHostLimiter, secret
         controller.abort("timeout");
     }, DEFAULT_TIMEOUT_MS);
 
+    const onAbort = () => {
+        controller.abort(signal?.reason);
+    };
+
     if (signal) {
-        signal.addEventListener(
-            "abort",
-            () => {
-                controller.abort(signal.reason);
-            },
-            { once: true },
-        );
+        signal.addEventListener("abort", onAbort, { once: true });
     }
 
     const host = perHostLimiter?.hostFromUrl(url) ?? "";
@@ -253,11 +251,13 @@ export const runHttpValidation = async ({ extraVariables, perHostLimiter, secret
         response = perHostLimiter ? await perHostLimiter.run(host, doFetch) : await doFetch();
     } catch {
         clearTimeout(timeoutId);
+        signal?.removeEventListener("abort", onAbort);
 
         return "error";
     }
 
     clearTimeout(timeoutId);
+    signal?.removeEventListener("abort", onAbort);
     observeRateLimit(response, perHostLimiter, host);
 
     // Lazy body fetch — we only read + cache it when a matcher needs it.

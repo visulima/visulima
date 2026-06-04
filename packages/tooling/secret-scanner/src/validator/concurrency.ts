@@ -15,13 +15,18 @@ export class ConcurrencyLimiter {
     }
 
     public async run<T>(fn: () => Promise<T>): Promise<T> {
-        if (this.active >= this.capacity) {
+        for (;;) {
+            if (this.active < this.capacity) {
+                this.active += 1;
+
+                break;
+            }
+
+            // eslint-disable-next-line no-await-in-loop -- must wait for a slot before re-checking capacity.
             await new Promise<void>((resolve) => {
                 this.queue.push(resolve);
             });
         }
-
-        this.active += 1;
 
         try {
             return await fn();

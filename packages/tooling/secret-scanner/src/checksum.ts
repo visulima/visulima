@@ -21,6 +21,8 @@ const INLINE_FLAGS_PATTERN = /^\s*\(\?([a-z]+)\)\s*/;
 const FREE_SPACING_COMMENT_PATTERN = /#[^\n]*/g;
 const WHITESPACE_PATTERN = /\s+/g;
 
+const RULE_REGEX_CACHE = new Map<string, RegExp | null>();
+
 /**
  * Convert a Rust/Python-style rule pattern to a JS `RegExp` good enough to
  * re-extract named captures from an already-matched substring.
@@ -175,11 +177,19 @@ export const renderChecksumTemplate = (template: string, variables: Record<strin
  * caller treats `undefined` the same as `skip_if_missing` (default: keep).
  */
 export const checkChecksum = (match: string, rulePattern: string, spec: ChecksumSpec): boolean | undefined => {
-    let regex: RegExp;
+    let regex = RULE_REGEX_CACHE.get(rulePattern);
 
-    try {
-        regex = ruleRegexToJs(rulePattern);
-    } catch {
+    if (regex === undefined) {
+        try {
+            regex = ruleRegexToJs(rulePattern);
+        } catch {
+            regex = null;
+        }
+
+        RULE_REGEX_CACHE.set(rulePattern, regex);
+    }
+
+    if (regex === null) {
         return undefined;
     }
 
