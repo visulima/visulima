@@ -12,6 +12,12 @@ let cachedDomains: string[] | undefined;
  */
 let cachedDomainSet: Set<string> | undefined;
 
+/**
+ * Tracks whether the domains-load failure warning has already been emitted,
+ * so the warning is surfaced once rather than on every call.
+ */
+let hasWarnedOnDomainsFailure = false;
+
 const filename = fileURLToPath(import.meta.url);
 const dirnamePath = dirname(filename);
 
@@ -29,8 +35,21 @@ const getDomains = (): string[] => {
             const parsed = JSON.parse(domainsContent);
 
             cachedDomains = Array.isArray(parsed) ? (parsed as string[]) : [];
-        } catch {
-            cachedDomains = [];
+        } catch (error) {
+            // Surface the failure once so a broken install (missing/corrupted dist/domains.json)
+            // is detectable, but stay resilient by returning an empty list.
+            if (!hasWarnedOnDomainsFailure) {
+                hasWarnedOnDomainsFailure = true;
+
+                // eslint-disable-next-line no-console
+                console.warn(
+                    "[@visulima/disposable-email-domains] Failed to load dist/domains.json; disposable email detection is disabled.",
+                    error,
+                );
+            }
+
+            // Do not cache the empty fallback so a later successful read can populate it.
+            return [];
         }
     }
 
@@ -63,13 +82,13 @@ const extractDomain = (email: string): string | undefined => {
     }
 
     const normalizedEmail = email.toLowerCase().trim();
-    const atIndex = normalizedEmail.indexOf("@");
+    const atIndex = normalizedEmail.lastIndexOf("@");
 
     if (atIndex === -1 || atIndex === 0 || atIndex === normalizedEmail.length - 1) {
         return undefined;
     }
 
-    const domain = normalizedEmail.slice(atIndex + 1);
+    const domain = normalizedEmail.slice(atIndex + 1).replace(/\.$/, "");
 
     return domain || undefined;
 };
