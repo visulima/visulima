@@ -1,3 +1,22 @@
+## @visulima/spinner [1.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/spinner@1.0.0-alpha.2...@visulima/spinner@1.0.0-alpha.3) (2026-06-04)
+
+### Bug Fixes
+
+* **spinner:** 1 bug fix ([c63cbac](https://github.com/visulima/visulima/commit/c63cbacf22a590af9cd1644ac9fbdebd51e9ca60))
+
+### Miscellaneous Chores
+
+* apply eslint + prettier autofixes across packages ([c1bb784](https://github.com/visulima/visulima/commit/c1bb7848a0d93d0dfe2960c77e3cda22239c79a0))
+
+### Tests
+
+* **spinner:** cover declarative style resolution, active-state setters, resume/pause and multi-spinner paths ([674e028](https://github.com/visulima/visulima/commit/674e02812dbdff32342278da2af423080c0d75fd))
+
+
+### Dependencies
+
+* **@visulima/interactive-manager:** upgraded to 1.0.0-alpha.4
+
 ## @visulima/spinner [1.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/spinner@1.0.0-alpha.1...@visulima/spinner@1.0.0-alpha.2) (2026-05-27)
 
 ### Bug Fixes
