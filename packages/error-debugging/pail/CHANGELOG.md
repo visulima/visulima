@@ -1,3 +1,26 @@
+## @visulima/pail [4.0.0-alpha.20](https://github.com/visulima/visulima/compare/@visulima/pail@4.0.0-alpha.19...@visulima/pail@4.0.0-alpha.20) (2026-06-04)
+
+### Bug Fixes
+
+* **lint:** clear pre-existing eslint rot across packages ([#674](https://github.com/visulima/visulima/issues/674)) ([5354253](https://github.com/visulima/visulima/commit/5354253b163bd50bcefaf8a3fddf831bdb5df32b))
+* **pail:** 3 bug fixes + 2 perf ([b90de36](https://github.com/visulima/visulima/commit/b90de36906ccbbd2578aad974b59b08c2ce0ee1e))
+
+### Miscellaneous Chores
+
+* apply eslint + prettier autofixes across packages ([c1bb784](https://github.com/visulima/visulima/commit/c1bb7848a0d93d0dfe2960c77e3cda22239c79a0))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.13
+* **@visulima/interactive-manager:** upgraded to 1.0.0-alpha.4
+* **@visulima/ansi:** upgraded to 4.0.0-alpha.16
+* **@visulima/error:** upgraded to 6.0.0-alpha.32
+* **@visulima/fmt:** upgraded to 2.0.0-alpha.12
+* **@visulima/inspector:** upgraded to 2.0.0-alpha.12
+* **@visulima/redact:** upgraded to 3.0.0-alpha.13
+* **@visulima/string:** upgraded to 3.0.0-alpha.15
+
 ## @visulima/pail [4.0.0-alpha.19](https://github.com/visulima/visulima/compare/@visulima/pail@4.0.0-alpha.18...@visulima/pail@4.0.0-alpha.19) (2026-05-29)
 
 ### Bug Fixes
