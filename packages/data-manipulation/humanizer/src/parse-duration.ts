@@ -15,6 +15,8 @@ const STANDARD_UNIT_MEASURES: DurationUnitMeasures = {
 };
 
 const ESCAPE_REGEX = /[-/\\^$*+?.()|[\]{}]/g;
+
+const UNIT_REGEX_CACHE = new WeakMap<DurationUnitMeasures | Record<string, string>, RegExp>();
 const ISO_FORMAT = /^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/i;
 const COLON_FORMAT = /^(?:(\d+):)?(?:(\d+):)?(\d+)$/;
 const NUMERIC_STRING_REGEX = /^[+-]?\d+(?:\.\d+)?$/;
@@ -70,7 +72,7 @@ const parseDuration = (value: string, options?: ParseDurationOptions): number | 
 
     const isoMatch = ISO_FORMAT.exec(value);
 
-    if (isoMatch) {
+    if (isoMatch && (isoMatch[1] !== undefined || isoMatch[2] !== undefined || isoMatch[3] !== undefined)) {
         const hours = Number.parseInt(isoMatch[1] ?? "0", 10);
         const minutes = Number.parseInt(isoMatch[2] ?? "0", 10);
         const seconds = Number.parseInt(isoMatch[3] ?? "0", 10);
@@ -99,14 +101,18 @@ const parseDuration = (value: string, options?: ParseDurationOptions): number | 
         return hours * 3_600_000 + minutes * 60_000 + seconds * 1000;
     }
 
-    const currentUnitMapKeys = Object.keys(currentUnitMap);
+    let durationRegex = UNIT_REGEX_CACHE.get(currentUnitMap);
 
-    const regexKeys = currentUnitMapKeys
-        .toSorted((a, b) => b.length - a.length)
-        .map((k) => k.replaceAll(ESCAPE_REGEX, String.raw`\$&`)) // escape meta chars
-        .join("|");
+    if (durationRegex === undefined) {
+        const regexKeys = Object.keys(currentUnitMap)
+            .toSorted((a, b) => b.length - a.length)
+            .map((k) => k.replaceAll(ESCAPE_REGEX, String.raw`\$&`)) // escape meta chars
+            .join("|");
 
-    const durationRegex = new RegExp(String.raw`(-?\d*\.?\d+)\s*(${regexKeys})`, "gi");
+        durationRegex = new RegExp(String.raw`(-?\d*\.?\d+)\s*(${regexKeys})`, "gi");
+
+        UNIT_REGEX_CACHE.set(currentUnitMap, durationRegex);
+    }
 
     let totalMs = 0;
     let match;
