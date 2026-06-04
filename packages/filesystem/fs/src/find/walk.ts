@@ -13,6 +13,7 @@ import WalkError from "../error/walk-error";
 import type { WalkEntry, WalkOptions } from "../types";
 import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
 import globToRegExp from "./utils/glob-to-regexp";
+import createWalkEntry from "./utils/walk-entry";
 import walkInclude from "./utils/walk-include";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
@@ -23,13 +24,7 @@ const _createWalkEntry = async (path: string): Promise<WalkEntry> => {
 
     const info: Stats = await stat(normalizePath);
 
-    return {
-        isDirectory: () => info.isDirectory(),
-        isFile: () => info.isFile(),
-        isSymbolicLink: () => info.isSymbolicLink(),
-        name,
-        path: normalizePath,
-    };
+    return createWalkEntry(info, name, normalizePath);
 };
 
 /**
@@ -126,15 +121,7 @@ export default async function* walk(
                     // eslint-disable-next-line no-await-in-loop
                     path = await realpath(path);
                 } else if (includeSymlinks && walkInclude(path, extensions, mappedMatch, mappedSkip)) {
-                    yield {
-                        isDirectory: () => entry.isDirectory(),
-
-                        isFile: () => entry.isFile(),
-
-                        isSymbolicLink: () => entry.isSymbolicLink(),
-                        name: entry.name,
-                        path,
-                    };
+                    yield createWalkEntry(entry, entry.name, path);
 
                     continue;
                 } else {
@@ -154,13 +141,7 @@ export default async function* walk(
                     skip: mappedSkip,
                 });
             } else if (entry.isFile() && includeFiles && walkInclude(path, extensions, mappedMatch, mappedSkip)) {
-                yield {
-                    isDirectory: () => entry.isDirectory(),
-                    isFile: () => entry.isFile(),
-                    isSymbolicLink: () => entry.isSymbolicLink(),
-                    name: entry.name,
-                    path,
-                };
+                yield createWalkEntry(entry, entry.name, path);
             }
         }
     } catch (error) {
