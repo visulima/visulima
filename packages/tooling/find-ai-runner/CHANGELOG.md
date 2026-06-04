@@ -1,3 +1,13 @@
+## @visulima/find-ai-runner [1.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/find-ai-runner@1.0.0-alpha.6...@visulima/find-ai-runner@1.0.0-alpha.7) (2026-06-04)
+
+### Bug Fixes
+
+* **find-ai-runner:** 3 bug fixes ([f6d28d9](https://github.com/visulima/visulima/commit/f6d28d9ac893d5fd168b5b03f63e624c9b7c8614))
+
+### Tests
+
+* **find-ai-runner:** cover cli handlers, runProvider spawn lifecycle, and detect edge cases ([0ec5200](https://github.com/visulima/visulima/commit/0ec52003112fa7da5646bc92b04072d66974ce98))
+
 ## @visulima/find-ai-runner [1.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/find-ai-runner@1.0.0-alpha.5...@visulima/find-ai-runner@1.0.0-alpha.6) (2026-05-27)
 
 ### Bug Fixes
