@@ -1,3 +1,14 @@
+## @visulima/vis [1.0.0-alpha.31](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.30...@visulima/vis@1.0.0-alpha.31) (2026-06-06)
+
+### Bug Fixes
+
+* **vis:** expand {projectRoot}/{projectName} tokens in task outputs ([d32a206](https://github.com/visulima/visulima/commit/d32a206dde082276f3fe06c032d07373a0c9a59e))
+
+
+### Dependencies
+
+* **@visulima/task-runner:** upgraded to 1.0.0-alpha.20
+
 ## @visulima/vis [1.0.0-alpha.30](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.29...@visulima/vis@1.0.0-alpha.30) (2026-06-04)
 
 
