@@ -268,6 +268,47 @@ describe(createTaskGraph, () => {
         expect(taskGraph.tasks["app:build"]?.outputs).toStrictEqual([]);
     });
 
+    it("maps {projectRoot} to '.' for a root-less project so outputs stay inside the workspace", () => {
+        expect.assertions(1);
+
+        // `createTaskGraph` only populates outputs on EXPANDED dependency tasks,
+        // so the root-less project must be a dependency of the requested task.
+        const workspaceRootProject: WorkspaceConfiguration = {
+            projects: {
+                app: {
+                    root: "apps/app",
+                    targets: { build: { command: "tsc", dependsOn: ["^build"] } },
+                },
+                rootless: {
+                    // The workspace-root project has an empty `root`.
+                    root: "",
+                    targets: { build: { command: "tsc", outputs: ["{projectRoot}/dist"] } },
+                },
+            },
+        };
+
+        const graph: ProjectGraph = {
+            dependencies: { app: [{ source: "app", target: "rootless", type: "static" }], rootless: [] },
+            nodes: {
+                app: { data: workspaceRootProject.projects["app"]!, name: "app", type: "application" },
+                rootless: { data: workspaceRootProject.projects["rootless"]!, name: "rootless", type: "library" },
+            },
+        };
+
+        const appBuild: Task = {
+            id: "app:build",
+            outputs: [],
+            overrides: {},
+            target: { project: "app", target: "build" },
+        };
+
+        const taskGraph = createTaskGraph([appBuild], { projectGraph: graph, workspace: workspaceRootProject });
+
+        // Empty root → `.`, so the output is the workspace-relative `./dist`,
+        // not the escaping absolute `/dist` that silently resolves to nothing.
+        expect(taskGraph.tasks["rootless:build"]?.outputs).toStrictEqual(["./dist"]);
+    });
+
     it("carries hashMode onto expanded dependency tasks", () => {
         expect.assertions(2);
 

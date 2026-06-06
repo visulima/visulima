@@ -4,6 +4,7 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
+import type { ActionResult } from "../../src/backends/types";
 import { Cache, formatCacheSize, parseCacheSize } from "../../src/cache";
 
 const createTemporaryDirectory = async (): Promise<string> => {
@@ -123,6 +124,69 @@ describe(Cache, () => {
             const content = await readFile(join(outputDirectory, "bundle.js"), "utf8");
 
             expect(content).toBe("console.log('hello')");
+        });
+
+        // Regression: a nested output (`packages/a/dist`) must be swapped on its
+        // own leaf — NOT via the archive's shared top-level dir (`packages`),
+        // which would rename every sibling package aside and then drop the
+        // backup, wiping unrelated source. (The pre-fix restore derived swap
+        // roots from `readdir` of the staging dir, yielding `packages`.)
+        it("restoring a nested output leaves its parent dir and sibling packages untouched", async () => {
+            expect.assertions(4);
+
+            await mkdir(join(workspaceRoot, "packages", "a", "dist"), { recursive: true });
+            await writeFile(join(workspaceRoot, "packages", "a", "dist", "bundle.js"), "built-a");
+            // Sibling source in the SAME package — must survive.
+            await writeFile(join(workspaceRoot, "packages", "a", "index.ts"), "source-a");
+            // A whole SIBLING package — must survive.
+            await mkdir(join(workspaceRoot, "packages", "b", "src"), { recursive: true });
+            await writeFile(join(workspaceRoot, "packages", "b", "src", "main.ts"), "source-b");
+
+            await cache.put("nested", "built", ["packages/a/dist"], 0);
+
+            // A rebuild changed dist; restore the cached version over it.
+            await writeFile(join(workspaceRoot, "packages", "a", "dist", "bundle.js"), "stale");
+
+            const restored = await cache.restoreOutputs("nested", ["packages/a/dist"]);
+
+            expect(restored).toBe(true);
+            expect(await readFile(join(workspaceRoot, "packages", "a", "dist", "bundle.js"), "utf8")).toBe("built-a");
+            // The bug deleted these two:
+            expect(await readFile(join(workspaceRoot, "packages", "a", "index.ts"), "utf8")).toBe("source-a");
+            expect(await readFile(join(workspaceRoot, "packages", "b", "src", "main.ts"), "utf8")).toBe("source-b");
+        });
+
+        it("writes an outputs manifest naming the exact captured leaf paths", async () => {
+            expect.assertions(1);
+
+            await mkdir(join(workspaceRoot, "packages", "a", "dist"), { recursive: true });
+            await writeFile(join(workspaceRoot, "packages", "a", "dist", "x.js"), "x");
+
+            await cache.put("manifest-check", "built", ["packages/a/dist"], 0);
+
+            const manifest: string[] = JSON.parse(await readFile(join(cache.cacheDirectory, "manifest-check", "outputs-manifest.json"), "utf8"));
+
+            // A literal directory output resolves to the directory itself.
+            expect(manifest).toStrictEqual(["packages/a/dist"]);
+        });
+
+        it("treats a cache entry whose manifest is missing as a miss (never the unsafe parent swap)", async () => {
+            expect.assertions(2);
+
+            await mkdir(join(workspaceRoot, "packages", "a", "dist"), { recursive: true });
+            await writeFile(join(workspaceRoot, "packages", "a", "dist", "x.js"), "x");
+            await cache.put("legacy", "built", ["packages/a/dist"], 0);
+
+            // Simulate a legacy/partial entry: drop the manifest sidecar.
+            await rm(join(cache.cacheDirectory, "legacy", "outputs-manifest.json"), { force: true });
+
+            // A sibling that the unsafe top-level swap would have destroyed.
+            await writeFile(join(workspaceRoot, "packages", "a", "keep.ts"), "keep");
+
+            const restored = await cache.restoreOutputs("legacy", ["packages/a/dist"]);
+
+            expect(restored).toBe(false);
+            expect(await readFile(join(workspaceRoot, "packages", "a", "keep.ts"), "utf8")).toBe("keep");
         });
 
         it("should return true when no outputs to restore", async () => {
@@ -478,6 +542,45 @@ describe(Cache, () => {
             const result = await cache.get("entry1");
 
             expect(result).toBeUndefined();
+        });
+
+        it("refuses to delete when the cache directory is the workspace root (misconfig guard)", async () => {
+            expect.assertions(1);
+
+            // A misconfigured cacheDirectory pointing AT the workspace must not
+            // let clear() recursively delete the whole project.
+            const misconfigured = new Cache({ cacheDirectory: workspaceRoot, workspaceRoot });
+
+            await writeFile(join(workspaceRoot, "important.txt"), "keep");
+            await misconfigured.clear();
+
+            expect(await readFile(join(workspaceRoot, "important.txt"), "utf8")).toBe("keep");
+        });
+    });
+
+    describe("materializeOutputs path safety", () => {
+        const digest = { hash: "0".repeat(64), sizeBytes: 1 };
+
+        it.each([
+            ["../escape.txt", "parent traversal"],
+            ["../../tmp/evil.txt", "deep parent traversal"],
+            ["", "empty path resolves to the workspace root"],
+        ])("rejects an output file path that escapes the workspace: %s (%s)", async (badPath) => {
+            expect.assertions(2);
+
+            const result: ActionResult = {
+                exitCode: 0,
+                outputDirectories: [],
+                outputFiles: [{ digest, isExecutable: false, path: badPath }],
+            };
+
+            // The path is rejected BEFORE any blob is streamed, so a missing
+            // digest is irrelevant — the guard short-circuits to a miss.
+            const ok = await cache.materializeOutputs(result, workspaceRoot);
+
+            expect(ok).toBe(false);
+            // Nothing was written outside the workspace.
+            await expect(stat(join(workspaceRoot, "..", "escape.txt"))).rejects.toThrow(/ENOENT/);
         });
     });
 });

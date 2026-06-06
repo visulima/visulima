@@ -57,6 +57,35 @@ describe(resolveOutputs, () => {
         expect(resolved).toStrictEqual(["dist/bundle.js"]);
     });
 
+    it("expands a LITERAL directory output to files so negatives can exclude nested entries", async () => {
+        expect.assertions(1);
+
+        await mkdir(join(workspaceRoot, "dist/cache"), { recursive: true });
+        await writeFile(join(workspaceRoot, "dist/bundle.js"), "b");
+        await writeFile(join(workspaceRoot, "dist/cache/tmp.bin"), "tmp");
+
+        // Literal `dist` (no glob metachars) PLUS a negative. Before the fix
+        // the literal directory path survived the negative filter wholesale
+        // (`matchesGlob("dist", "dist/cache/**")` is false), so the entire
+        // tree — cache included — was archived.
+        const resolved = await resolveOutputs(workspaceRoot, ["dist", "!dist/cache/**"]);
+
+        expect(resolved).toStrictEqual(["dist/bundle.js"]);
+    });
+
+    it("keeps a literal directory output as a single dir entry when there are no negatives", async () => {
+        expect.assertions(1);
+
+        await mkdir(join(workspaceRoot, "dist"), { recursive: true });
+        await writeFile(join(workspaceRoot, "dist/a.js"), "a");
+
+        // No negatives → the fast path: a literal dir stays one entry,
+        // archived recursively. (Avoids walking large output trees needlessly.)
+        const resolved = await resolveOutputs(workspaceRoot, ["dist"]);
+
+        expect(resolved).toStrictEqual(["dist"]);
+    });
+
     it("materialises { auto: true } from autoWrites into workspace-relative paths", async () => {
         expect.assertions(1);
 

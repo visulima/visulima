@@ -3,7 +3,7 @@ import { cp, mkdir, open, readdir, readFile, rename, rm, stat, writeFile } from 
 import { pipeline } from "node:stream/promises";
 
 import { formatBytes, parseBytes } from "@visulima/humanizer";
-import { dirname, join, resolve } from "@visulima/path";
+import { dirname, join, relative, resolve } from "@visulima/path";
 
 import type { ExtractOptions } from "./archive";
 import { createTarBrotli, extractTarBrotli } from "./archive";
@@ -258,6 +258,19 @@ class Cache {
     public async materializeOutputs(result: ActionResult, workspaceRoot: string): Promise<boolean> {
         for (const file of result.outputFiles) {
             const destination = resolve(workspaceRoot, file.path);
+
+            // `file.path` comes from a cached ActionResult (local CAS or a
+            // remote REAPI backend) and is otherwise untrusted. An absolute
+            // path, a `..` escape, or an empty string would make
+            // `fetchBlobToFile` overwrite a file OUTSIDE the workspace
+            // (e.g. `/etc/hosts`). Reject anything that doesn't resolve to a
+            // path strictly inside the workspace and treat it as a miss.
+            const rel = relative(workspaceRoot, destination);
+
+            if (rel.length === 0 || rel.startsWith("..")) {
+                return false;
+            }
+
             // eslint-disable-next-line no-await-in-loop -- streaming each blob serially keeps fd usage flat
             const ok = await fetchBlobToFile(this.#cacheDirectory, file.digest, destination);
 
@@ -594,7 +607,7 @@ class Cache {
      * Removes old cache entries that exceed the maximum age,
      * and enforces the maximum cache size by evicting oldest entries.
      *
-     * NOTE: `maxCacheSize` only bounds the *legacy* `<hash>/` entry
+     * NOTE: `maxCacheSize` only bounds the *legacy* `&lt;hash>/` entry
      * layout. The v2 CAS subtree (rooted at {@link V2_ROOT}) is skipped
      * here — it manages its own lifetime via blob-level touch + reference
      * accounting (see `cas/store.ts`) and is deliberately excluded from
@@ -683,6 +696,15 @@ class Cache {
      * Clears the entire cache.
      */
     public async clear(): Promise<void> {
+        const directory = resolve(this.#cacheDirectory);
+
+        // Never recursively delete the workspace root or the filesystem root —
+        // a misconfigured `cacheDirectory` (e.g. `/` or the project root passed
+        // by accident or via an env var) must not take the whole tree with it.
+        if (directory === resolve(this.#workspaceRoot) || dirname(directory) === directory) {
+            return;
+        }
+
         try {
             await rm(this.#cacheDirectory, { force: true, recursive: true });
         } catch {
@@ -702,6 +724,14 @@ class Cache {
 }
 
 const OUTPUTS_ARCHIVE_FILENAME = "outputs.tar.br";
+
+/**
+ * Sidecar to {@link OUTPUTS_ARCHIVE_FILENAME}: a JSON array of the exact
+ * workspace-relative output leaf paths captured in the archive. Restore swaps
+ * at these paths so a nested output (`packages/x/dist`) is replaced on its own
+ * instead of via its shared parent directory.
+ */
+const OUTPUTS_MANIFEST_FILENAME = "outputs-manifest.json";
 
 /**
  * Resolves `outputs` through `resolveOutputs()` — expanding globs,
@@ -762,13 +792,21 @@ const archiveOutputsCompressed = async (
             }
         });
 
-        const stagedCount = stagedFlags.filter(Boolean).length;
+        const stagedRelativePaths = resolvedPaths.filter((_, index) => stagedFlags[index]);
 
-        if (stagedCount === 0) {
+        if (stagedRelativePaths.length === 0) {
             return;
         }
 
         await createTarBrotli(stagingDirectory, finalPath);
+
+        // Persist the exact output leaf paths alongside the archive so
+        // restore swaps at this granularity. The archive itself preserves
+        // each output's full workspace-relative path, so its top-level
+        // directory is a shared parent — for nested monorepo outputs like
+        // `packages/x/dist` that parent is `packages`, and renaming it aside
+        // on restore would take every sibling package (src and all) with it.
+        await writeFile(join(cacheEntryDirectory, OUTPUTS_MANIFEST_FILENAME), JSON.stringify(stagedRelativePaths));
     } finally {
         await rm(stagingDirectory, { force: true, recursive: true }).catch(() => {});
     }
@@ -811,10 +849,13 @@ const runBounded = async <T, R>(limit: number, items: ReadonlyArray<T>, fn: (ite
  * Uses a backup-and-rollback flow so a mid-restore failure never
  * destroys the user's existing output tree:
  *  1. decompress + extract to a staging dir
- *  2. read the archive's top-level entries as the set of swap roots
- *     (e.g. `dist`, `build` — whatever the archive contains). This
- *     lets glob-expanded archives restore cleanly without callers
- *     having to re-resolve patterns against the post-task workspace.
+ *  2. read the swap roots from the sidecar manifest
+ *     ({@link OUTPUTS_MANIFEST_FILENAME}) — the exact output leaf paths
+ *     captured at store time (e.g. `packages/x/dist`), NOT the archive's
+ *     top-level directory. The archive preserves full workspace-relative
+ *     paths, so its top-level entry is a shared parent; swapping that
+ *     wholesale would rename sibling trees aside and wipe them. An entry
+ *     with no manifest is treated as a miss (the task re-runs).
  *  3. for each root, move the existing tree aside to
  *     `&lt;path>.pre-restore-&lt;uid>` (atomic rename) before copying the
  *     staged version into place.
@@ -822,10 +863,9 @@ const runBounded = async <T, R>(limit: number, items: ReadonlyArray<T>, fn: (ite
  *     ends up exactly where they started
  *  5. on success, rm the backups
  *
- * Note: swap roots come from the archive's top-level entries. If a
- * task's outputs were filtered via negative globs, those paths won't
- * appear in the archive and therefore won't be touched on restore —
- * matching the user's "exclude from cache, keep on disk" intent.
+ * Note: only the manifest's paths are touched. Outputs filtered out via
+ * negative globs never enter the archive or the manifest, so they're left
+ * on disk — matching the user's "exclude from cache, keep on disk" intent.
  */
 const restoreOutputsCompressed = async (cacheEntryDirectory: string, workspaceRoot: string, options?: ExtractOptions): Promise<boolean> => {
     const archivePath = join(cacheEntryDirectory, OUTPUTS_ARCHIVE_FILENAME);
@@ -891,17 +931,35 @@ const restoreOutputsCompressed = async (cacheEntryDirectory: string, workspaceRo
         await mkdir(stagingDirectory, { recursive: true });
         await extractTarBrotli(archivePath, stagingDirectory, options);
 
-        // Derive swap roots from what's actually in the archive — the
-        // caller doesn't need to re-resolve globs against the
-        // post-task workspace. readdir order is fs-dependent; sort
-        // for cross-machine determinism on rollback diagnostics.
-        const stagingEntries = await readdir(stagingDirectory);
-        const topLevel = stagingEntries.sort();
+        // Swap roots are the exact output leaf paths recorded in the
+        // manifest at store time — NOT the archive's top-level directory.
+        // The archive preserves each output's full workspace-relative path,
+        // so its top-level entry is a shared parent (`packages` for a
+        // `packages/x/dist` output); swapping that wholesale would rename
+        // every sibling package aside and then drop the backup, wiping them.
+        let outputPaths: string[];
+
+        try {
+            outputPaths = JSON.parse(await readFile(join(cacheEntryDirectory, OUTPUTS_MANIFEST_FILENAME), "utf8")) as string[];
+        } catch {
+            // Legacy/partial entry with no manifest: the exact leaves are
+            // unknown, and the old top-level fallback is the unsafe path
+            // above. Treat as a miss so the task re-runs and re-caches with
+            // a manifest rather than risk swapping a parent tree.
+            return false;
+        }
 
         const swapId = uniqueId();
 
-        for (const entry of topLevel) {
+        for (const entry of [...outputPaths].sort()) {
             const absoluteOutput = resolve(workspaceRoot, entry);
+
+            // Defence-in-depth: never swap the workspace root itself (or an
+            // empty/`.` entry that resolves to it), whatever a malformed
+            // manifest holds.
+            if (entry.length === 0 || absoluteOutput === resolve(workspaceRoot)) {
+                return false;
+            }
 
             states.push({
                 absoluteOutput,

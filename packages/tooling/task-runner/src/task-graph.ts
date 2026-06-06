@@ -92,11 +92,17 @@ const getTaskOutputs = (
 
     const outputs = targetConfig?.outputs ?? defaultConfig?.outputs ?? [];
 
-    // Only string entries carry `{projectRoot}`/`{projectName}`
-    // tokens; `{ auto: true }` is an opaque marker resolved later
-    // against the file-access tracker, so it passes through verbatim.
+    // Only string entries carry `{projectRoot}`/`{projectName}` tokens;
+    // `{ auto: true }` is an opaque marker resolved later against the
+    // file-access tracker, so it passes through verbatim. An empty
+    // `project.root` (the workspace-root project) maps `{projectRoot}` to `.`
+    // rather than `""` — otherwise `{projectRoot}/dist` becomes the absolute
+    // `/dist`, which escapes the workspace and silently resolves to nothing
+    // (an empty cache entry). `replaceAll` covers patterns that repeat a token.
+    const projectRoot = project?.root && project.root.length > 0 ? project.root : ".";
+
     return outputs.map((output) =>
-        typeof output === "string" ? output.replace("{projectRoot}", project?.root ?? "").replace("{projectName}", projectName) : output,
+        typeof output === "string" ? output.replaceAll("{projectRoot}", projectRoot).replaceAll("{projectName}", projectName) : output,
     );
 };
 
