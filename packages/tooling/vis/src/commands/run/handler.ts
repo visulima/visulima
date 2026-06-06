@@ -1520,10 +1520,25 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
         // keeps every consumer in sync.
         const expandedCommand = visTarget.command ? expandTokensInString(visTarget.command, { affectedFiles, projectRoot: project?.root }) : visTarget.command;
 
+        // Expand `{projectRoot}`/`{projectName}` tokens in outputs (string
+        // entries only; `{ auto: true }` passes through). Unexpanded, the
+        // task-runner treats `{projectRoot}/dist` as a literal glob whose braces
+        // match nothing, so output caching captures nothing. An empty project
+        // root maps to `.` so the path stays a workspace-relative `./dist`
+        // instead of an escaping `/dist`. Idempotent if already expanded.
+        const outputsProjectRoot = project?.root && project.root.length > 0 ? project.root : ".";
+        const expandedOutputs = (visTarget.outputs ?? []).map((output) => {
+            if (typeof output !== "string") {
+                return output;
+            }
+
+            return output.replaceAll("{projectRoot}", outputsProjectRoot).replaceAll("{projectName}", projectName);
+        });
+
         return {
             cache: visTarget.cache,
             id: taskId,
-            outputs: visTarget.outputs ?? [],
+            outputs: expandedOutputs,
             overrides: {
                 command: expandedCommand,
                 ...(forwardedArgs.length > 0 ? { [FORWARDED_ARGS_KEY]: forwardedArgs } : {}),
