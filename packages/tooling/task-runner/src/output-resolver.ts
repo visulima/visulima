@@ -97,7 +97,11 @@ export const resolveOutputs = async (workspaceRoot: string, outputs: OutputSpec[
     // Run all positive patterns concurrently — independent FS walks
     // with no ordering constraints, so a task declaring multiple
     // output roots (`["dist/**", "build/**"]`) overlaps their walks.
-    const patternResults = await Promise.all(positives.map((pattern) => expandPattern(workspaceRoot, pattern)));
+    // When negatives are present, literal directory positives are
+    // expanded to their files so the negatives can exclude nested
+    // entries (see {@link expandPattern}).
+    const hasNegatives = negatives.length > 0;
+    const patternResults = await Promise.all(positives.map((pattern) => expandPattern(workspaceRoot, pattern, hasNegatives)));
 
     for (const paths of patternResults) {
         for (const rel of paths) {
@@ -113,34 +117,17 @@ export const resolveOutputs = async (workspaceRoot: string, outputs: OutputSpec[
 };
 
 /**
- * Expands a single positive pattern — literal stat or `fs.glob` walk
- * — to the set of workspace-relative file paths it matches. Missing
- * literals and empty glob results both resolve to an empty list so
- * the caller can `Promise.all` safely.
+ * Walks `globPattern` via `fs.glob` and returns the workspace-relative
+ * paths of the FILES it matches (directories are skipped — they're
+ * captured implicitly by archiving their files). Empty matches resolve
+ * to an empty list so the caller can `Promise.all` safely.
  */
-const expandPattern = async (workspaceRoot: string, pattern: string): Promise<string[]> => {
-    if (!GLOB_METACHARS.test(pattern)) {
-        const absolute = resolve(workspaceRoot, pattern);
-        const rel = toWorkspaceRelative(workspaceRoot, absolute);
-
-        if (!rel) {
-            return [];
-        }
-
-        try {
-            await stat(absolute);
-
-            return [rel];
-        } catch {
-            return [];
-        }
-    }
-
+const collectFiles = async (workspaceRoot: string, globPattern: string): Promise<string[]> => {
     // `withFileTypes: true` gives us Dirent inline — no follow-up
     // fstat per match to separate files from directories.
     const paths: string[] = [];
 
-    for await (const entry of glob(pattern, { cwd: workspaceRoot, withFileTypes: true })) {
+    for await (const entry of glob(globPattern, { cwd: workspaceRoot, withFileTypes: true })) {
         if (!entry.isFile()) {
             continue;
         }
@@ -153,4 +140,43 @@ const expandPattern = async (workspaceRoot: string, pattern: string): Promise<st
     }
 
     return paths;
+};
+
+/**
+ * Expands a single positive pattern — literal stat or `fs.glob` walk
+ * — to the set of workspace-relative paths it matches. Missing
+ * literals and empty glob results both resolve to an empty list so
+ * the caller can `Promise.all` safely.
+ *
+ * `expandDirectories` (set when the spec has negative patterns) makes a
+ * literal directory expand to its constituent files instead of the
+ * directory path itself, so negatives like `!dist/cache/**` can exclude
+ * nested entries. Without it, `matchesGlob("dist", "dist/cache/**")` is
+ * false and the whole tree — exclusions and all — would be archived.
+ */
+const expandPattern = async (workspaceRoot: string, pattern: string, expandDirectories: boolean): Promise<string[]> => {
+    if (!GLOB_METACHARS.test(pattern)) {
+        const absolute = resolve(workspaceRoot, pattern);
+        const rel = toWorkspaceRelative(workspaceRoot, absolute);
+
+        if (!rel) {
+            return [];
+        }
+
+        let entryStat;
+
+        try {
+            entryStat = await stat(absolute);
+        } catch {
+            return [];
+        }
+
+        if (expandDirectories && entryStat.isDirectory()) {
+            return collectFiles(workspaceRoot, `${pattern}/**`);
+        }
+
+        return [rel];
+    }
+
+    return collectFiles(workspaceRoot, pattern);
 };
