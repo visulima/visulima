@@ -1,3 +1,9 @@
+## @visulima/task-runner [1.0.0-alpha.20](https://github.com/visulima/visulima/compare/@visulima/task-runner@1.0.0-alpha.19...@visulima/task-runner@1.0.0-alpha.20) (2026-06-06)
+
+### Bug Fixes
+
+* **task-runner:** output-cache data loss + path-safety bugs ([aaa4007](https://github.com/visulima/visulima/commit/aaa4007ed3daea0151588c2ce42bc80eaceb40fd))
+
 ## @visulima/task-runner [1.0.0-alpha.19](https://github.com/visulima/visulima/compare/@visulima/task-runner@1.0.0-alpha.18...@visulima/task-runner@1.0.0-alpha.19) (2026-06-04)
 
 ### Bug Fixes
