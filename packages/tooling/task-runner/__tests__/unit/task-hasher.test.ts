@@ -90,6 +90,100 @@ describe(InProcessTaskHasher, () => {
         expect(hash1.nodes).not.toStrictEqual(hash2.nodes);
     });
 
+    it("should emit a diagnostic when a cacheable task's file-set inputs resolve to zero files", async () => {
+        expect.assertions(2);
+
+        const diagnostics: { message: string; taskId: string }[] = [];
+
+        const hasher = new InProcessTaskHasher({
+            onDiagnostic: (taskId, message) => {
+                diagnostics.push({ message, taskId });
+            },
+            projects: {
+                "lib-a": {
+                    root: "packages/lib-a",
+                    targets: { build: { inputs: ["{projectRoot}/does-not-exist/**/*"] } },
+                },
+            },
+            workspaceRoot,
+        });
+
+        const task: Task = {
+            cache: true,
+            id: "lib-a:build",
+            outputs: [],
+            overrides: {},
+            target: { project: "lib-a", target: "build" },
+        };
+
+        await hasher.hashTask(task);
+
+        expect(diagnostics).toHaveLength(1);
+        expect(diagnostics[0]?.taskId).toBe("lib-a:build");
+    });
+
+    it("should not emit a diagnostic when file-set inputs resolve to real files", async () => {
+        expect.assertions(1);
+
+        const diagnostics: { message: string; taskId: string }[] = [];
+
+        const hasher = new InProcessTaskHasher({
+            onDiagnostic: (taskId, message) => {
+                diagnostics.push({ message, taskId });
+            },
+            projects: {
+                "lib-a": {
+                    root: "packages/lib-a",
+                    targets: { build: { inputs: ["{projectRoot}/**/*"] } },
+                },
+            },
+            workspaceRoot,
+        });
+
+        const task: Task = {
+            cache: true,
+            id: "lib-a:build",
+            outputs: [],
+            overrides: {},
+            target: { project: "lib-a", target: "build" },
+        };
+
+        await hasher.hashTask(task);
+
+        expect(diagnostics).toHaveLength(0);
+    });
+
+    it("should not emit a diagnostic for a non-cacheable task with empty file-set inputs", async () => {
+        expect.assertions(1);
+
+        const diagnostics: { message: string; taskId: string }[] = [];
+
+        const hasher = new InProcessTaskHasher({
+            onDiagnostic: (taskId, message) => {
+                diagnostics.push({ message, taskId });
+            },
+            projects: {
+                "lib-a": {
+                    root: "packages/lib-a",
+                    targets: { build: { inputs: ["{projectRoot}/does-not-exist/**/*"] } },
+                },
+            },
+            workspaceRoot,
+        });
+
+        const task: Task = {
+            cache: false,
+            id: "lib-a:build",
+            outputs: [],
+            overrides: {},
+            target: { project: "lib-a", target: "build" },
+        };
+
+        await hasher.hashTask(task);
+
+        expect(diagnostics).toHaveLength(0);
+    });
+
     it("should produce different command hashes for different overrides", async () => {
         expect.assertions(1);
 
