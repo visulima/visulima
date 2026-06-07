@@ -17,7 +17,7 @@ import { addManualStep, addMigrationWarning, bumpPerMigration } from "./types";
 //
 // What needs rewriting:
 // - package.json scripts calling `gitleaks`
-// - pre-commit hooks (.husky/*, .vis-hooks/*)
+// - pre-commit hooks (.husky/*, .vis/hooks/*)
 // - CI workflows (noted as manual step — too brittle to auto-edit)
 
 const GITLEAKS_CONFIG_NAMES = ["gitleaks.toml", ".gitleaks.toml"];
@@ -193,7 +193,7 @@ const rewriteScripts = (root: string, dryRun: boolean, logger: MigrateLogger, re
 };
 
 const rewriteHooks = (root: string, dryRun: boolean, logger: MigrateLogger, report: MigrationReport): void => {
-    const candidates = [".husky/pre-commit", ".vis-hooks/pre-commit", ".git/hooks/pre-commit"];
+    const candidates = [".husky/pre-commit", ".vis/hooks/pre-commit", ".git/hooks/pre-commit"];
     const customConfig = detectGitleaksConfig(root);
     const replacement = customConfig ? `vis secrets --staged --config ${customConfig}` : "vis secrets --staged";
 

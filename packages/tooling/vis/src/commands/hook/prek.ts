@@ -480,7 +480,7 @@ const mergeAdditionalDependencies = (root: string, deps: ReadonlyArray<Additiona
 };
 
 /**
- * Marker doc next to `config.json` for users who land in `.vis-hooks/`
+ * Marker doc next to `config.json` for users who land in `.vis/hooks/`
  * looking for what the file does. Re-runs of `vis hook migrate` are
  * idempotent so it's safe to overwrite.
  */

@@ -94,7 +94,7 @@ export default defineConfig({
 });
 ```
 
-`vis init` scaffolds exactly this block when pre-commit hooks are enabled; `vis hook install` then wires `.vis-hooks/pre-commit` to invoke `vis staged`. In CI, `vis ci lint test build` runs lint as part of the affected-targets pipeline — no extra plumbing required.
+`vis init` scaffolds exactly this block when pre-commit hooks are enabled; `vis hook install` then wires `.vis/hooks/pre-commit` to invoke `vis staged`. In CI, `vis ci lint test build` runs lint as part of the affected-targets pipeline — no extra plumbing required.
 
 ## Caching
 

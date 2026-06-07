@@ -8,7 +8,7 @@ import { DEFAULT_HOOKS_DIRECTORY } from "./constants";
 /**
  * Sidecar configuration consumed by `vis hook run --stage &lt;stage>`.
  *
- * Lives at `&lt;hooksDirectory>/config.json` (default `.vis-hooks/config.json`)
+ * Lives at `&lt;hooksDirectory>/config.json` (default `.vis/hooks/config.json`)
  * and is the single source of truth for what each git hook actually
  * does. The generated `&lt;stage>` shell scripts are intentionally thin —
  * they only `exec` vis with the stage name and forward `$@`, which lets
@@ -283,7 +283,7 @@ const parseConfig = (raw: unknown, warnings: ParseWarning[]): HookConfig => {
 };
 
 /**
- * Load `.vis-hooks/config.json` from disk. Returns `undefined` when the
+ * Load `.vis/hooks/config.json` from disk. Returns `undefined` when the
  * file is absent so callers can short-circuit (no hooks configured),
  * and throws on malformed JSON / schema violations so users notice
  * typos instead of getting a silent no-op at commit time.
@@ -313,7 +313,7 @@ export const loadHookConfig = (root: string, hooksDirectory: string = DEFAULT_HO
 };
 
 /**
- * Write `.vis-hooks/config.json` atomically-ish (via writeFileSync;
+ * Write `.vis/hooks/config.json` atomically-ish (via writeFileSync;
  * single fsync). Pretty-prints with 4-space indent to match the
  * project's JSON convention.
  */

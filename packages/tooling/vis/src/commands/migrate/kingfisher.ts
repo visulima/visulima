@@ -300,7 +300,7 @@ const rewriteHooks = (root: string, dryRun: boolean, logger: MigrateLogger, repo
     }
 };
 
-const HOOK_CANDIDATES = [".husky/pre-commit", ".vis-hooks/pre-commit", ".git/hooks/pre-commit"];
+const HOOK_CANDIDATES = [".husky/pre-commit", ".vis/hooks/pre-commit", ".git/hooks/pre-commit"];
 
 const hasKingfisherRef = (path: string): boolean => {
     if (!isAccessibleSync(path)) {

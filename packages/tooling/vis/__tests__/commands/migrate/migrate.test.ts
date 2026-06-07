@@ -571,14 +571,14 @@ describe(rewritePreCommitHook, () => {
     it("should replace npx lint-staged with vis staged", () => {
         expect.assertions(2);
 
-        mkdirSync(join(temporary.root, ".vis-hooks"), { recursive: true });
-        writeFileSync(join(temporary.root, ".vis-hooks", "pre-commit"), "#!/usr/bin/env sh\nnpx lint-staged\n");
+        mkdirSync(join(temporary.root, ".vis/hooks"), { recursive: true });
+        writeFileSync(join(temporary.root, ".vis/hooks", "pre-commit"), "#!/usr/bin/env sh\nnpx lint-staged\n");
 
-        const result = rewritePreCommitHook(temporary.root, ".vis-hooks");
+        const result = rewritePreCommitHook(temporary.root, ".vis/hooks");
 
         expect(result).toBe(true);
 
-        const content = readFileSync(join(temporary.root, ".vis-hooks", "pre-commit"), "utf8");
+        const content = readFileSync(join(temporary.root, ".vis/hooks", "pre-commit"), "utf8");
 
         expect(content).toContain("vis staged");
     });
@@ -586,14 +586,14 @@ describe(rewritePreCommitHook, () => {
     it("should replace pnpm exec lint-staged with vis staged", () => {
         expect.assertions(2);
 
-        mkdirSync(join(temporary.root, ".vis-hooks"), { recursive: true });
-        writeFileSync(join(temporary.root, ".vis-hooks", "pre-commit"), "#!/usr/bin/env sh\npnpm exec lint-staged\n");
+        mkdirSync(join(temporary.root, ".vis/hooks"), { recursive: true });
+        writeFileSync(join(temporary.root, ".vis/hooks", "pre-commit"), "#!/usr/bin/env sh\npnpm exec lint-staged\n");
 
-        const result = rewritePreCommitHook(temporary.root, ".vis-hooks");
+        const result = rewritePreCommitHook(temporary.root, ".vis/hooks");
 
         expect(result).toBe(true);
 
-        const content = readFileSync(join(temporary.root, ".vis-hooks", "pre-commit"), "utf8");
+        const content = readFileSync(join(temporary.root, ".vis/hooks", "pre-commit"), "utf8");
 
         expect(content).toContain("vis staged");
     });
@@ -601,14 +601,14 @@ describe(rewritePreCommitHook, () => {
     it("should replace bare lint-staged with vis staged", () => {
         expect.assertions(2);
 
-        mkdirSync(join(temporary.root, ".vis-hooks"), { recursive: true });
-        writeFileSync(join(temporary.root, ".vis-hooks", "pre-commit"), "#!/usr/bin/env sh\nlint-staged\n");
+        mkdirSync(join(temporary.root, ".vis/hooks"), { recursive: true });
+        writeFileSync(join(temporary.root, ".vis/hooks", "pre-commit"), "#!/usr/bin/env sh\nlint-staged\n");
 
-        const result = rewritePreCommitHook(temporary.root, ".vis-hooks");
+        const result = rewritePreCommitHook(temporary.root, ".vis/hooks");
 
         expect(result).toBe(true);
 
-        const content = readFileSync(join(temporary.root, ".vis-hooks", "pre-commit"), "utf8");
+        const content = readFileSync(join(temporary.root, ".vis/hooks", "pre-commit"), "utf8");
 
         expect(content).toContain("vis staged");
     });
@@ -616,14 +616,14 @@ describe(rewritePreCommitHook, () => {
     it("should preserve env var prefix", () => {
         expect.assertions(2);
 
-        mkdirSync(join(temporary.root, ".vis-hooks"), { recursive: true });
-        writeFileSync(join(temporary.root, ".vis-hooks", "pre-commit"), "#!/usr/bin/env sh\nNODE_OPTIONS=--max-old-space-size=4096 npx lint-staged\n");
+        mkdirSync(join(temporary.root, ".vis/hooks"), { recursive: true });
+        writeFileSync(join(temporary.root, ".vis/hooks", "pre-commit"), "#!/usr/bin/env sh\nNODE_OPTIONS=--max-old-space-size=4096 npx lint-staged\n");
 
-        const result = rewritePreCommitHook(temporary.root, ".vis-hooks");
+        const result = rewritePreCommitHook(temporary.root, ".vis/hooks");
 
         expect(result).toBe(true);
 
-        const content = readFileSync(join(temporary.root, ".vis-hooks", "pre-commit"), "utf8");
+        const content = readFileSync(join(temporary.root, ".vis/hooks", "pre-commit"), "utf8");
 
         expect(content).toContain("NODE_OPTIONS=--max-old-space-size=4096 vis staged");
     });
@@ -631,23 +631,23 @@ describe(rewritePreCommitHook, () => {
     it("should not modify if already has vis staged", () => {
         expect.assertions(1);
 
-        mkdirSync(join(temporary.root, ".vis-hooks"), { recursive: true });
-        writeFileSync(join(temporary.root, ".vis-hooks", "pre-commit"), "#!/usr/bin/env sh\nvis staged\n");
+        mkdirSync(join(temporary.root, ".vis/hooks"), { recursive: true });
+        writeFileSync(join(temporary.root, ".vis/hooks", "pre-commit"), "#!/usr/bin/env sh\nvis staged\n");
 
-        expect(rewritePreCommitHook(temporary.root, ".vis-hooks")).toBe(false);
+        expect(rewritePreCommitHook(temporary.root, ".vis/hooks")).toBe(false);
     });
 
     it("should return false if no lint-staged line found (no mutation)", () => {
         expect.assertions(2);
 
-        mkdirSync(join(temporary.root, ".vis-hooks"), { recursive: true });
-        writeFileSync(join(temporary.root, ".vis-hooks", "pre-commit"), "#!/usr/bin/env sh\necho hello\n");
+        mkdirSync(join(temporary.root, ".vis/hooks"), { recursive: true });
+        writeFileSync(join(temporary.root, ".vis/hooks", "pre-commit"), "#!/usr/bin/env sh\necho hello\n");
 
-        const result = rewritePreCommitHook(temporary.root, ".vis-hooks");
+        const result = rewritePreCommitHook(temporary.root, ".vis/hooks");
 
         expect(result).toBe(false);
 
-        const content = readFileSync(join(temporary.root, ".vis-hooks", "pre-commit"), "utf8");
+        const content = readFileSync(join(temporary.root, ".vis/hooks", "pre-commit"), "utf8");
 
         expect(content).not.toContain("vis staged");
     });
@@ -655,7 +655,7 @@ describe(rewritePreCommitHook, () => {
     it("should return false when no pre-commit hook exists", () => {
         expect.assertions(1);
 
-        expect(rewritePreCommitHook(temporary.root, ".vis-hooks")).toBe(false);
+        expect(rewritePreCommitHook(temporary.root, ".vis/hooks")).toBe(false);
     });
 });
 
@@ -1034,8 +1034,8 @@ describe(migrateLintStaged, () => {
         expect.assertions(2);
 
         writeFileSync(join(temporary.root, "package.json"), JSON.stringify({ "lint-staged": { "*.ts": "eslint" } }, undefined, 4));
-        mkdirSync(join(temporary.root, ".vis-hooks"), { recursive: true });
-        writeFileSync(join(temporary.root, ".vis-hooks", "pre-commit"), "#!/usr/bin/env sh\nnpx lint-staged\n");
+        mkdirSync(join(temporary.root, ".vis/hooks"), { recursive: true });
+        writeFileSync(join(temporary.root, ".vis/hooks", "pre-commit"), "#!/usr/bin/env sh\nnpx lint-staged\n");
 
         const logger = createLogger();
         const report = createMigrationReport();
@@ -1044,7 +1044,7 @@ describe(migrateLintStaged, () => {
 
         expect(report.gitHooksConfigured).toBe(true);
 
-        const hookContent = readFileSync(join(temporary.root, ".vis-hooks", "pre-commit"), "utf8");
+        const hookContent = readFileSync(join(temporary.root, ".vis/hooks", "pre-commit"), "utf8");
 
         expect(hookContent).toContain("vis staged");
     });

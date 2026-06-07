@@ -640,7 +640,7 @@ const removeSyncpackFromPackageJson = (
     return result;
 };
 
-const HOOK_CANDIDATES = [".husky/pre-commit", ".vis-hooks/pre-commit", ".git/hooks/pre-commit"] as const;
+const HOOK_CANDIDATES = [".husky/pre-commit", ".vis/hooks/pre-commit", ".git/hooks/pre-commit"] as const;
 
 const CI_PATH_CANDIDATES = [".github/workflows", ".gitlab-ci.yml", ".circleci/config.yml", ".woodpecker.yml", ".drone.yml"] as const;
 

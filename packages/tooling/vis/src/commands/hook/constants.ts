@@ -15,7 +15,14 @@ const HOOKS = [
     "pre-auto-gc",
 ] as const;
 
-const DEFAULT_HOOKS_DIRECTORY = ".vis-hooks";
+const DEFAULT_HOOKS_DIRECTORY = ".vis/hooks";
+
+/**
+ * Pre-1.0 hooks directory. `vis hook install` migrates an existing
+ * `.vis-hooks` to {@link DEFAULT_HOOKS_DIRECTORY} in place. Kept only for
+ * that one-time move — nothing should write here.
+ */
+const LEGACY_HOOKS_DIRECTORY = ".vis-hooks";
 
 // prek / pre-commit framework config files that we know how to parse.
 // YAML files are listed first so they take precedence when both formats exist.
@@ -61,4 +68,4 @@ interface InstallResult {
 }
 
 export type { InstallResult };
-export { DEFAULT_HOOKS_DIRECTORY, HOOKS, PREK_CONFIG_FILES, PREK_STAGE_ALIASES, PREK_STAGES_WITH_GIT_ARGS, PREK_SUPPORTED_STAGES, PREK_TRANSLATABLE_LANGUAGES };
+export { DEFAULT_HOOKS_DIRECTORY, HOOKS, LEGACY_HOOKS_DIRECTORY, PREK_CONFIG_FILES, PREK_STAGE_ALIASES, PREK_STAGES_WITH_GIT_ARGS, PREK_SUPPORTED_STAGES, PREK_TRANSLATABLE_LANGUAGES };
