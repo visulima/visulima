@@ -1,3 +1,14 @@
+## @visulima/vis [1.0.0-alpha.33](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.32...@visulima/vis@1.0.0-alpha.33) (2026-06-07)
+
+### Features
+
+* **task-runner:** warn when a cacheable task's inputs resolve to zero files ([3a4ecbb](https://github.com/visulima/visulima/commit/3a4ecbbef46b49afa4cb8b3e0b741fae0de42b3c))
+
+
+### Dependencies
+
+* **@visulima/task-runner:** upgraded to 1.0.0-alpha.21
+
 ## @visulima/vis [1.0.0-alpha.32](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.31...@visulima/vis@1.0.0-alpha.32) (2026-06-07)
 
 ### Bug Fixes
