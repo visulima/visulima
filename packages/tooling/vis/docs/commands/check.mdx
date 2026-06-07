@@ -1,13 +1,16 @@
 ---
 title: "vis check"
-description: "Check for outdated dependencies in workspace catalogs"
+description: "Check for outdated dependencies, security vulnerabilities, and supply chain settings"
 ---
 
 # vis check
 
-Check for outdated dependencies in workspace catalogs. Only supported for **pnpm** or **bun** workspaces with catalogs.
+Check for outdated dependencies, known security vulnerabilities, and supply-chain
+settings. On **pnpm** / **bun** workspaces it checks catalog dependencies; on
+**npm** / **yarn** it checks `dependencies` / `devDependencies` (scope with `--dev` /
+`--prod`).
 
-**Alias:** `vis c`
+**Aliases:** `vis c`, `vis outdated`
 
 ## Usage
 
@@ -18,26 +21,36 @@ vis check [packages] [options]
 ## Examples
 
 ```bash
-vis check                           # Check all catalog dependencies
-vis check react                     # Check specific packages
-vis check --target minor            # Only show minor/patch updates
-vis check --exclude '@types/*'      # Exclude packages by pattern
-vis check --security                # Include security vulnerability info
-vis check --format json             # Machine-readable output
-vis check --exit-code               # Exit 1 if outdated (for CI)
+vis check                              # Check all catalog dependencies
+vis check react                        # Check specific packages
+vis check --target minor               # Only show minor/patch updates
+vis check --exclude '@types/*'         # Exclude packages by pattern
+vis check --no-security                # Skip vulnerability scanning
+vis check --security-config            # Audit supply-chain security settings
+vis check --security-config --sync     # Sync security config to pnpm-workspace.yaml
+vis check --format json                # Machine-readable output
+vis check --exit-code                  # Exit 1 if outdated (for CI)
 ```
 
 ## Options
 
-| Option         | Alias | Default  | Description                                          |
-| -------------- | ----- | -------- | ---------------------------------------------------- |
-| `--target`     | `-t`  | `latest` | Update target: `latest`, `minor`, or `patch`         |
-| `--include`    |       |          | Glob pattern to include packages (repeatable)        |
-| `--exclude`    |       |          | Glob pattern to exclude packages (repeatable)        |
-| `--prerelease` |       | `false`  | Include prerelease versions                          |
-| `--security`   |       | `false`  | Check for known security vulnerabilities (OSV.dev)   |
-| `--format`     |       | `table`  | Output format: `table`, `json`, or `minimal`         |
-| `--exit-code`  |       | `false`  | Exit with code 1 if outdated dependencies found (CI) |
+| Option               | Alias | Default  | Description                                                                           |
+| -------------------- | ----- | -------- | ------------------------------------------------------------------------------------- |
+| `--target`           | `-t`  | `latest` | Update target: `latest`, `minor`, or `patch`                                          |
+| `--include`          |       |          | Glob pattern to include packages (repeatable)                                         |
+| `--exclude`          |       |          | Glob pattern to exclude packages (repeatable)                                         |
+| `--prerelease`       |       | `false`  | Include prerelease versions                                                           |
+| `--no-security`      |       | `false`  | Skip security vulnerability scanning                                                  |
+| `--security-config`  |       | `false`  | Audit supply-chain security settings                                                  |
+| `--sync`             |       | `false`  | Sync security settings to `pnpm-workspace.yaml` (pnpm only, with `--security-config`) |
+| `--format`           |       | `table`  | Output format: `table`, `json`, or `minimal`                                          |
+| `--exit-code`        |       | `false`  | Exit with code 1 if outdated dependencies found (for CI)                              |
+| `--ai`               |       | `false`  | Run AI analysis on outdated packages                                                  |
+| `--ai-type`          |       |          | AI analysis type: `impact`, `security`, `compatibility`, or `recommend`               |
+| `--dev`              | `-D`  | `false`  | Check only `devDependencies` (npm/yarn mode; conflicts with `--prod`)                 |
+| `--prod`             | `-P`  | `false`  | Check only `dependencies` (npm/yarn mode; conflicts with `--dev`)                     |
+| `--peer`             |       | `false`  | Include `peerDependencies` in outdated checks                                         |
+| `--include-internal` |       | `false`  | Also check workspace-owned package names against the registry                         |
 
 ## Output Formats
 
@@ -67,19 +80,6 @@ Machine-readable JSON output including both outdated entries and any packages th
 ### Minimal
 
 Compact one-line-per-package output, suitable for scripting.
-
-## Configuration Defaults
-
-Set defaults in `vis.json` to avoid repeating options:
-
-```json
-{
-    "update": {
-        "target": "minor",
-        "exclude": ["legacy-*", "deprecated-*"]
-    }
-}
-```
 
 ## CI Usage
 

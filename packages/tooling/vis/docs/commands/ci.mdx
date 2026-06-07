@@ -39,13 +39,14 @@ vis ci test --query "language=typescript"  # Filter by project metadata
 
 ## Options
 
-| Option         | Default       | Description                                 |
-| -------------- | ------------- | ------------------------------------------- |
-| `--install`    | `true`        | Install deps first (`--no-install` to skip) |
-| `--base`       | auto-detected | Git base ref for affected detection         |
-| `--head`       | `HEAD`        | Git head ref                                |
-| `--upstream`   | `none`        | Upstream scope: `none`, `direct`, `deep`    |
-| `--downstream` | `deep`        | Downstream scope: `none`, `direct`, `deep`  |
-| `--parallel`   | `4`           | Max parallel tasks per target               |
-| `--partition`  |               | Partition for distributed CI (e.g. `1/4`)   |
-| `--query`      |               | Filter affected projects by query           |
+| Option             | Default       | Description                                                                                                          |
+| ------------------ | ------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `--install`        | `true`        | Install deps first (`--no-install` to skip)                                                                          |
+| `--skip-toolchain` | `false`       | Skip the toolchain pre-flight (no auto-install for any pinned tool: node/pnpm/yarn/npm/bun/deno/go/python/ruby/rust) |
+| `--base`           | auto-detected | Git base ref for affected detection                                                                                  |
+| `--head`           | `HEAD`        | Git head ref                                                                                                         |
+| `--upstream`       | `none`        | Upstream scope: `none`, `direct`, `deep`                                                                             |
+| `--downstream`     | `deep`        | Downstream scope: `none`, `direct`, `deep`                                                                           |
+| `--parallel`       | `4`           | Max parallel tasks per target                                                                                        |
+| `--partition`      |               | Partition for distributed CI (e.g. `1/4`)                                                                            |
+| `--query`          |               | Filter affected projects by query                                                                                    |

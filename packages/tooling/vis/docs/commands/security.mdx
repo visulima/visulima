@@ -93,6 +93,16 @@ Vis canonicalises all durations to **minutes**. The syncer rounds sub-minute fra
 
 Yarn classic (no `.yarnrc.yml`) is silently skipped because it has no equivalent native setting.
 
+### keys-refresh
+
+Force-refresh the cached npm signing keys used by the **signatures marshall**. The keys are fetched from `registry.npmjs.org` and cached on disk; use this to drop a stale cache or pre-warm a fresh key set.
+
+```bash
+vis security keys-refresh           # drop the disk cache and fetch a fresh key set
+vis security keys-refresh --clear   # only drop the cache, do not refetch
+vis security keys-refresh --json    # emit the refresh result as JSON for tooling
+```
+
 ### verify-lockfile
 
 Re-validate the **entire resolved lockfile closure** against the supply-chain policies — vis's counterpart to pnpm v11's lockfile-verification phase. Unlike the pre-install marshalls (which only inspect packages being _added_), this catches a tampered/poisoned lockfile even on npm/yarn/bun and even when nothing is being added.
@@ -146,6 +156,13 @@ When none of the three is configured the run is **skipped** (exit 0). A **missin
 | ---------- | ------- | -------------------------------------------------------------- |
 | `--status` | `false` | Report whether `@lavamoat/preinstall-always-fail` is installed |
 | `--remove` | `false` | Strip `@lavamoat/preinstall-always-fail` from `package.json`   |
+
+### `vis security keys-refresh`
+
+| Option    | Default | Description                                            |
+| --------- | ------- | ------------------------------------------------------ |
+| `--clear` | `false` | Only clear the cache, do not refetch                   |
+| `--json`  | `false` | Emit the result as JSON instead of human-readable text |
 
 ### `vis security verify-lockfile`
 
