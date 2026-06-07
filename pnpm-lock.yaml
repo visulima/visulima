@@ -10259,7 +10259,7 @@ importers:
         specifier: 4.0.0-alpha.13
         version: link:../../terminal/tabular
       '@visulima/task-runner':
-        specifier: 1.0.0-alpha.20
+        specifier: 1.0.0-alpha.21
         version: link:../task-runner
       '@visulima/tui':
         specifier: 1.0.0-alpha.23
@@ -10600,7 +10600,7 @@ importers:
         specifier: 3.0.0-alpha.12
         version: link:../../filesystem/path
       '@visulima/vis':
-        specifier: 1.0.0-alpha.32
+        specifier: 1.0.0-alpha.33
         version: link:../vis
       zod:
         specifier: catalog:utils
