@@ -2194,6 +2194,11 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
     // is applied later in the executor against this resolved baseline.
     const resolvedStrictEnv = options.strictEnv ?? config.strictEnv ?? false;
 
+    // One warning per task per run for the "cacheable task, zero input files"
+    // diagnostic (see `TaskRunnerOptions.onDiagnostic`) — a config bug usually
+    // trips every affected task, so dedupe to keep the output readable.
+    const warnedEmptyInputs = new Set<string>();
+
     const runnerOptions: TaskRunnerOptions = {
         dryRun: options.dryRun ?? false,
         parallel: resolvedParallel,
@@ -2232,6 +2237,17 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
         // contract — see `VisHooks["task:fingerprint"]`).
         onFingerprint: async (task, contributor) => {
             await hooks.callHook("task:fingerprint", task, contributor);
+        },
+        // Surface the hasher's "cacheable task resolved 0 input files" diagnostic
+        // through the logger — the early-warning for a dropped/misconfigured input
+        // that would otherwise silently false-cache-hit forever.
+        onDiagnostic: (taskId, message) => {
+            if (warnedEmptyInputs.has(taskId)) {
+                return;
+            }
+
+            warnedEmptyInputs.add(taskId);
+            logger.warn(message);
         },
     };
 

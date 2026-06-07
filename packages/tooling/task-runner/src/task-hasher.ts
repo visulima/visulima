@@ -98,6 +98,14 @@ interface TaskHasherOptions {
      * hashing for the offending task.
      */
     onFingerprint?: FingerprintHook;
+    /**
+     * Non-fatal diagnostic sink. Currently fired when a cacheable task declares
+     * file-set inputs that resolve to ZERO files — the signature that the task
+     * will reuse one cache entry on every run (the failure mode a dropped
+     * `namedInputs`, a wrong `{projectRoot}`, or a typo'd glob produces). The
+     * caller wires this to its logger; the message is advisory, never throws.
+     */
+    onDiagnostic?: (taskId: string, message: string) => void;
     /** Project configurations keyed by project name */
     projects: Record<string, ProjectConfiguration>;
 
@@ -338,6 +346,8 @@ class InProcessTaskHasher implements TaskHasher {
 
     readonly #onFingerprint: FingerprintHook | undefined;
 
+    readonly #onDiagnostic: ((taskId: string, message: string) => void) | undefined;
+
     #globalHash: string | undefined = undefined;
 
     public constructor(options: TaskHasherOptions) {
@@ -355,6 +365,7 @@ class InProcessTaskHasher implements TaskHasher {
         this.#autoEnvVars = options.autoEnvVars ?? false;
         this.#incrementalHasher = options.incrementalHasher;
         this.#onFingerprint = options.onFingerprint;
+        this.#onDiagnostic = options.onDiagnostic;
     }
 
     public async hashTask(task: Task): Promise<TaskHashDetails> {
@@ -372,13 +383,21 @@ class InProcessTaskHasher implements TaskHasher {
         const inputs = this.#resolveInputs(task);
         const negationPatterns = this.#collectNegationPatterns(inputs, task.target.project);
 
+        // Track file-set inputs vs the files they actually contribute, so we can
+        // warn when a cacheable task declares file-set inputs that resolve to
+        // nothing (see {@link TaskHasherOptions.onDiagnostic}).
+        let fileSetInputCount = 0;
+        let fileSetFileCount = 0;
+
         for (const input of inputs) {
             if (isFileSetInput(input)) {
+                fileSetInputCount += 1;
                 // eslint-disable-next-line no-await-in-loop -- filesets must be processed sequentially to accumulate into shared nodes/runtime maps
                 const fileHashes = await this.#hashFileSet(task, normalizeFileset(input.fileset), negationPatterns);
 
                 for (const [filePath, hash] of Object.entries(fileHashes)) {
                     nodes[filePath] = hash;
+                    fileSetFileCount += 1;
                 }
             } else if (isRuntimeInput(input)) {
                 // eslint-disable-next-line no-await-in-loop -- runtime inputs processed within sequential input loop
@@ -393,6 +412,18 @@ class InProcessTaskHasher implements TaskHasher {
                     implicitDeps[dep] = hash;
                 }
             }
+        }
+
+        // A cacheable task that declared file-set inputs which resolved to ZERO
+        // files keys its cache on no file content, so it reuses one entry on every
+        // run and never re-executes on a source change. That's almost always a
+        // misconfiguration — a named input that didn't resolve, a wrong
+        // `{projectRoot}`, or a glob matching nothing. Surface it (advisory only).
+        if (task.cache !== false && fileSetInputCount > 0 && fileSetFileCount === 0) {
+            this.#onDiagnostic?.(
+                task.id,
+                `task "${task.id}" is cacheable but its file-set inputs matched 0 files, so it will reuse one cache entry on every run and never re-execute on a source change. Check the task's \`inputs\` (and any \`namedInputs\` they reference) resolve to real files under the project.`,
+            );
         }
 
         for (const envVariable of this.#envVars) {
