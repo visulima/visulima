@@ -326,7 +326,7 @@ const cleanupLintStagedArtifacts = (root: string, report: MigrationReport, useEd
  * Rewrite pre-commit hooks in known hook directories.
  */
 const rewriteHooks = (root: string, options: { silent?: boolean }, logger: MigrateLogger, report: MigrationReport): void => {
-    const hooksDirectories = [".vis-hooks", ".husky"];
+    const hooksDirectories = [".vis/hooks", ".husky"];
 
     for (const hooksDirectory of hooksDirectories) {
         if (isAccessibleSync(join(root, hooksDirectory)) && rewritePreCommitHook(root, hooksDirectory)) {

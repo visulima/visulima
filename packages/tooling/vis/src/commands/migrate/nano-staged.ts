@@ -283,7 +283,7 @@ const cleanupNanoStagedArtifacts = (root: string, report: MigrationReport, useEd
 };
 
 const rewriteHooks = (root: string, options: { silent?: boolean }, logger: MigrateLogger, report: MigrationReport): void => {
-    const hooksDirectories = [".vis-hooks", ".husky"];
+    const hooksDirectories = [".vis/hooks", ".husky"];
 
     for (const hooksDirectory of hooksDirectories) {
         if (isAccessibleSync(join(root, hooksDirectory)) && rewritePreCommitHook(root, hooksDirectory)) {

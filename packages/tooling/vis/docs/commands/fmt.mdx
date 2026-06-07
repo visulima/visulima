@@ -87,7 +87,7 @@ export default defineConfig({
 });
 ```
 
-`vis init` scaffolds exactly this block when pre-commit hooks are enabled; `vis hook install` then wires `.vis-hooks/pre-commit` to invoke `vis staged`. For CI gating that fails on unformatted files, run `vis fmt --check` (optionally `--since <base>`) as a separate target alongside lint.
+`vis init` scaffolds exactly this block when pre-commit hooks are enabled; `vis hook install` then wires `.vis/hooks/pre-commit` to invoke `vis staged`. For CI gating that fails on unformatted files, run `vis fmt --check` (optionally `--since <base>`) as a separate target alongside lint.
 
 ## Caching
 

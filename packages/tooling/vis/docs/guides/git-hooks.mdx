@@ -15,7 +15,7 @@ vis provides built-in git hook management as a lightweight alternative to tools 
 vis hook install
 ```
 
-This configures `core.hooksPath` to point to your hooks directory (`.vis-hooks` by default).
+This configures `core.hooksPath` to point to your hooks directory (`.vis/hooks` by default).
 
 ### Creating a Hook
 
@@ -23,9 +23,9 @@ Create executable scripts in the hooks directory:
 
 ```bash
 echo '#!/bin/sh
-pnpm run lint-staged' > .vis-hooks/pre-commit
+pnpm run lint-staged' > .vis/hooks/pre-commit
 
-chmod +x .vis-hooks/pre-commit
+chmod +x .vis/hooks/pre-commit
 ```
 
 ### Commit the Hooks Directory
@@ -33,7 +33,7 @@ chmod +x .vis-hooks/pre-commit
 Add the hooks directory to version control so the entire team shares the same hooks:
 
 ```bash
-git add .vis-hooks/
+git add .vis/hooks/
 git commit -m "chore: add git hooks"
 ```
 
@@ -63,8 +63,8 @@ vis hook migrate
 vis hook scripts are plain shell, so anything that needs a managed toolchain still has to run via prek. The migrator covers everything else:
 
 1. Parses `.pre-commit-config.yaml`, `.pre-commit-config.yml`, or `prek.toml` (YAML takes precedence when both are present).
-2. For each `local` hook with `language: system`, `script`, or `fail`, writes one shell script per stage (e.g. `.vis-hooks/pre-commit`, `.vis-hooks/commit-msg`). Multiple hooks in the same stage are concatenated in declaration order.
-3. Preserves `files`/`exclude` regex and `types`/`types_or`/`exclude_types` filters by routing the invocation through a bundled Node helper (`.vis-hooks/.builtins/prek-runner.mjs`) that replicates pre-commit's file-selection semantics. User strings pass via argv — never interpolated into the shell — so even hostile regex patterns can't break out.
+2. For each `local` hook with `language: system`, `script`, or `fail`, writes one shell script per stage (e.g. `.vis/hooks/pre-commit`, `.vis/hooks/commit-msg`). Multiple hooks in the same stage are concatenated in declaration order.
+3. Preserves `files`/`exclude` regex and `types`/`types_or`/`exclude_types` filters by routing the invocation through a bundled Node helper (`.vis/hooks/.builtins/prek-runner.mjs`) that replicates pre-commit's file-selection semantics. User strings pass via argv — never interpolated into the shell — so even hostile regex patterns can't break out.
 4. Translates a curated set of remote hooks from `pre-commit/pre-commit-hooks` to bundled builtins so prek doesn't need to stay installed just for them: `trailing-whitespace`, `end-of-file-fixer`, `check-merge-conflict`, `check-json`, `mixed-line-ending`. Each is a faithful JavaScript port of the upstream Python implementation.
 5. Merges each hook's `additional_dependencies` into the project's `package.json` `devDependencies`. Pip-style pins (`name==x.y.z`) are surfaced as a manual step instead of written to the manifest.
 6. Forwards `"$@"` for stages where git passes an argument (`commit-msg`, `prepare-commit-msg`, `pre-rebase`, `post-*`) when `pass_filenames` is truthy.
@@ -79,7 +79,7 @@ Anything that can't be translated is surfaced as a warning:
 
 TOML configs (`prek.toml`) are parsed via `@visulima/fs/toml` (which wraps `smol-toml`), so both formats work out of the box.
 
-Commit `.vis-hooks/.builtins/` along with the rest of the hooks directory so teammates get the same runner and builtin implementations.
+Commit `.vis/hooks/.builtins/` along with the rest of the hooks directory so teammates get the same runner and builtin implementations.
 
 ## Running hooks manually
 
@@ -119,7 +119,7 @@ VIS_GIT_HOOKS=2 git commit -m "debug hooks"
 
 ```bash
 #!/bin/sh
-# .vis-hooks/pre-commit
+# .vis/hooks/pre-commit
 pnpm run lint-staged
 ```
 
@@ -127,7 +127,7 @@ pnpm run lint-staged
 
 ```bash
 #!/bin/sh
-# .vis-hooks/commit-msg
+# .vis/hooks/commit-msg
 pnpm run commitlint --edit "$1"
 ```
 
@@ -135,7 +135,7 @@ pnpm run commitlint --edit "$1"
 
 ```bash
 #!/bin/sh
-# .vis-hooks/pre-push
+# .vis/hooks/pre-push
 pnpm run typecheck
 ```
 
@@ -143,7 +143,7 @@ pnpm run typecheck
 
 ```bash
 #!/bin/sh
-# .vis-hooks/pre-commit
+# .vis/hooks/pre-commit
 vis check --exit-code --format minimal || {
   echo "Outdated dependencies detected. Run 'vis check' for details."
   exit 1
