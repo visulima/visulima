@@ -2204,6 +2204,16 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
         // wins over a config value and relative paths are normalized
         // against `workspaceRoot` via `resolveCacheDirectory()`.
         cacheDirectory: resolvedCacheDirectory,
+        // `namedInputs` lives at the TOP LEVEL of the vis config, not under
+        // `taskRunner`, so the `...configTaskRunner` spread above does not carry
+        // it. Forward it explicitly: without it the task-runner's hasher gets an
+        // empty named-inputs map, so a task whose `inputs` reference a named
+        // input (`production`, `default`, …) resolves those names as LITERAL,
+        // non-existent directories — contributing zero files to the cache key.
+        // The task then false-cache-hits forever and never re-runs on a source
+        // change. (Tasks with no `inputs` fall back to `{projectRoot}/**/*`,
+        // which is why `lint:types` worked while `build` did not.)
+        namedInputs: config.namedInputs,
         // Forward the vis-owned data directory so run summaries land in
         // `<workspaceRoot>/.vis/` rather than the task-runner default
         // `<workspaceRoot>/.task-runner/`. The config-supplied value
