@@ -1,3 +1,9 @@
+## @visulima/vis [1.0.0-alpha.32](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.31...@visulima/vis@1.0.0-alpha.32) (2026-06-07)
+
+### Bug Fixes
+
+* **vis:** forward config.namedInputs to the task runner ([02201de](https://github.com/visulima/visulima/commit/02201ded24b2881df8d6f7f0e6c573f4bd3123dc))
+
 ## @visulima/vis [1.0.0-alpha.31](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.30...@visulima/vis@1.0.0-alpha.31) (2026-06-06)
 
 ### Bug Fixes
