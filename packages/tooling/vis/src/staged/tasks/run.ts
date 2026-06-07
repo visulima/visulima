@@ -180,7 +180,7 @@ const runCommand = async (command: CommandDescriptor, options: RunTasksOptions, 
 
         if (command.command) {
             const result = await execCommand(command.command, command.files, {
-                cwd: options.cwd,
+                cwd: command.cwd ?? options.cwd,
                 killSignal: options.killSignal,
                 maxArgLength: options.maxArgLength,
                 signal,
